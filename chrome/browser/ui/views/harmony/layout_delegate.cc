@@ -20,23 +20,23 @@ LayoutDelegate* LayoutDelegate::Get() {
              : layout_delegate_.Pointer();
 }
 
-int LayoutDelegate::GetLayoutDistance(LayoutDistanceType type) const {
-  switch (type) {
-    case LayoutDistanceType::DIALOG_BUTTON_MARGIN:
+int LayoutDelegate::GetMetric(Metric metric) const {
+  switch (metric) {
+    case Metric::DIALOG_BUTTON_MARGIN:
       return views::kButtonHEdgeMarginNew;
-    case LayoutDistanceType::PANEL_CONTENT_MARGIN:
+    case Metric::PANEL_CONTENT_MARGIN:
       return views::kPanelHorizMargin;
-    case LayoutDistanceType::RELATED_BUTTON_HORIZONTAL_SPACING:
+    case Metric::RELATED_BUTTON_HORIZONTAL_SPACING:
       return views::kRelatedButtonHSpacing;
-    case LayoutDistanceType::RELATED_CONTROL_HORIZONTAL_SPACING:
+    case Metric::RELATED_CONTROL_HORIZONTAL_SPACING:
       return views::kRelatedControlHorizontalSpacing;
-    case LayoutDistanceType::RELATED_CONTROL_VERTICAL_SPACING:
+    case Metric::RELATED_CONTROL_VERTICAL_SPACING:
       return views::kRelatedControlVerticalSpacing;
-    case LayoutDistanceType::SUBSECTION_HORIZONTAL_INDENT:
+    case Metric::SUBSECTION_HORIZONTAL_INDENT:
       return views::kCheckboxIndent;
-    case LayoutDistanceType::UNRELATED_CONTROL_VERTICAL_SPACING:
+    case Metric::UNRELATED_CONTROL_VERTICAL_SPACING:
       return views::kUnrelatedControlVerticalSpacing;
-    case LayoutDistanceType::UNRELATED_CONTROL_VERTICAL_SPACING_LARGE:
+    case Metric::UNRELATED_CONTROL_VERTICAL_SPACING_LARGE:
       return views::kUnrelatedControlLargeVerticalSpacing;
   }
   NOTREACHED();
@@ -56,6 +56,6 @@ bool LayoutDelegate::IsHarmonyMode() const {
   return false;
 }
 
-int LayoutDelegate::GetDialogPreferredWidth(DialogWidthType type) const {
+int LayoutDelegate::GetDialogPreferredWidth(DialogWidth width) const {
   return 0;
 }

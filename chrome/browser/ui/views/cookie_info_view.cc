@@ -147,11 +147,12 @@ void CookieInfoView::Init() {
   expires_value_field_ = new views::Textfield;
 
   views::GridLayout* layout = new views::GridLayout(this);
-  layout->SetInsets(
-      0, LayoutDelegate::Get()->GetLayoutDistance(
-             LayoutDelegate::LayoutDistanceType::DIALOG_BUTTON_MARGIN),
-      0, LayoutDelegate::Get()->GetLayoutDistance(
-             LayoutDelegate::LayoutDistanceType::DIALOG_BUTTON_MARGIN));
+  layout->SetInsets(0,
+                    LayoutDelegate::Get()->GetMetric(
+                        LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN),
+                    0,
+                    LayoutDelegate::Get()->GetMetric(
+                        LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN));
   SetLayoutManager(layout);
 
   int three_column_layout_id = 0;
@@ -159,9 +160,10 @@ void CookieInfoView::Init() {
   column_set->AddColumn(LayoutDelegate::Get()->GetControlLabelGridAlignment(),
                         views::GridLayout::CENTER, 0,
                         views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, LayoutDelegate::Get()->GetLayoutDistance(
-                                      LayoutDelegate::LayoutDistanceType::
-                                          RELATED_CONTROL_HORIZONTAL_SPACING));
+  column_set->AddPaddingColumn(
+      0,
+      LayoutDelegate::Get()->GetMetric(
+          LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,

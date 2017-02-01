@@ -186,7 +186,7 @@ ContentSettingBubbleContents::~ContentSettingBubbleContents() {
 gfx::Size ContentSettingBubbleContents::GetPreferredSize() const {
   gfx::Size preferred_size(views::View::GetPreferredSize());
   int preferred_width = LayoutDelegate::Get()->GetDialogPreferredWidth(
-      LayoutDelegate::DialogWidthType::SMALL);
+      LayoutDelegate::DialogWidth::SMALL);
   if (!preferred_width)
     preferred_width = (!content_setting_bubble_model_->bubble_content()
                             .domain_lists.empty() &&
@@ -210,17 +210,12 @@ void ContentSettingBubbleContents::Init() {
   GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
   const LayoutDelegate* layout_delegate = LayoutDelegate::Get();
-  const int related_control_horizontal_spacing =
-      layout_delegate->GetLayoutDistance(
-          LayoutDelegate::LayoutDistanceType::
-              RELATED_CONTROL_HORIZONTAL_SPACING);
-  const int related_control_vertical_spacing =
-      layout_delegate->GetLayoutDistance(
-          LayoutDelegate::LayoutDistanceType::RELATED_CONTROL_VERTICAL_SPACING);
-  const int unrelated_control_vertical_spacing =
-      layout_delegate->GetLayoutDistance(
-          LayoutDelegate::LayoutDistanceType::
-              UNRELATED_CONTROL_VERTICAL_SPACING);
+  const int related_control_horizontal_spacing = layout_delegate->GetMetric(
+      LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING);
+  const int related_control_vertical_spacing = layout_delegate->GetMetric(
+      LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING);
+  const int unrelated_control_vertical_spacing = layout_delegate->GetMetric(
+      LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING);
 
   const int kSingleColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kSingleColumnSetId);
@@ -308,8 +303,9 @@ void ContentSettingBubbleContents::Init() {
   views::ColumnSet* indented_single_column_set =
       layout->AddColumnSet(indented_kSingleColumnSetId);
   indented_single_column_set->AddPaddingColumn(
-      0, layout_delegate->GetLayoutDistance(
-             LayoutDelegate::LayoutDistanceType::SUBSECTION_HORIZONTAL_INDENT));
+      0,
+      layout_delegate->GetMetric(
+          LayoutDelegate::Metric::SUBSECTION_HORIZONTAL_INDENT));
   indented_single_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
                                         1, GridLayout::USE_PREF, 0, 0);
 
@@ -351,8 +347,8 @@ void ContentSettingBubbleContents::Init() {
         layout->AddColumnSet(kMediaMenuColumnSetId);
     menu_column_set->AddPaddingColumn(
         0,
-        layout_delegate->GetLayoutDistance(
-             LayoutDelegate::LayoutDistanceType::SUBSECTION_HORIZONTAL_INDENT));
+        layout_delegate->GetMetric(
+            LayoutDelegate::Metric::SUBSECTION_HORIZONTAL_INDENT));
     menu_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                                GridLayout::USE_PREF, 0, 0);
     menu_column_set->AddPaddingColumn(0, related_control_horizontal_spacing);

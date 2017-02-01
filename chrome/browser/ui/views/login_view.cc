@@ -58,9 +58,10 @@ LoginView::LoginView(const base::string16& authority,
     column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
   column_set->AddColumn(layout_delegate->GetControlLabelGridAlignment(),
                         GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, layout_delegate->GetLayoutDistance(
-                                   LayoutDelegate::LayoutDistanceType::
-                                       RELATED_CONTROL_HORIZONTAL_SPACING));
+  column_set->AddPaddingColumn(
+      0,
+      layout_delegate->GetMetric(
+          LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
   if (layout_delegate->UseExtraDialogPadding())
@@ -73,33 +74,37 @@ LoginView::LoginView(const base::string16& authority,
     message_label_->SetMultiLine(true);
     message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     message_label_->SetAllowCharacterBreak(true);
-    layout->AddPaddingRow(0, layout_delegate->GetLayoutDistance(
-                                 LayoutDelegate::LayoutDistanceType::
-                                     RELATED_CONTROL_VERTICAL_SPACING));
+    layout->AddPaddingRow(
+        0,
+        layout_delegate->GetMetric(
+            LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
     layout->StartRow(0, single_column_view_set_id);
     layout->AddView(message_label_);
   }
 
-  layout->AddPaddingRow(0, layout_delegate->GetLayoutDistance(
-                               LayoutDelegate::LayoutDistanceType::
-                                   UNRELATED_CONTROL_VERTICAL_SPACING_LARGE));
+  layout->AddPaddingRow(
+      0,
+      layout_delegate->GetMetric(
+          LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING_LARGE));
 
   layout->StartRow(0, labels_column_set_id);
   layout->AddView(username_label_);
   layout->AddView(username_field_);
 
-  layout->AddPaddingRow(0, layout_delegate->GetLayoutDistance(
-                               LayoutDelegate::LayoutDistanceType::
-                                   RELATED_CONTROL_VERTICAL_SPACING));
+  layout->AddPaddingRow(
+      0,
+      layout_delegate->GetMetric(
+          LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
 
   layout->StartRow(0, labels_column_set_id);
   layout->AddView(password_label_);
   layout->AddView(password_field_);
 
   if (layout_delegate->UseExtraDialogPadding()) {
-    layout->AddPaddingRow(0, layout_delegate->GetLayoutDistance(
-                                 LayoutDelegate::LayoutDistanceType::
-                                     UNRELATED_CONTROL_VERTICAL_SPACING));
+    layout->AddPaddingRow(
+        0,
+        layout_delegate->GetMetric(
+            LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING));
   }
 
   if (login_model_data) {

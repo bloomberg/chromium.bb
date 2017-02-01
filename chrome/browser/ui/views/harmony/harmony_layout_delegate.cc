@@ -15,23 +15,23 @@ HarmonyLayoutDelegate* HarmonyLayoutDelegate::Get() {
   return harmony_layout_delegate_.Pointer();
 }
 
-int HarmonyLayoutDelegate::GetLayoutDistance(LayoutDistanceType type) const {
-  switch (type) {
-    case LayoutDistanceType::DIALOG_BUTTON_MARGIN:
+int HarmonyLayoutDelegate::GetMetric(Metric metric) const {
+  switch (metric) {
+    case Metric::DIALOG_BUTTON_MARGIN:
       return kHarmonyLayoutUnit;
-    case LayoutDistanceType::PANEL_CONTENT_MARGIN:
+    case Metric::PANEL_CONTENT_MARGIN:
       return kHarmonyLayoutUnit;
-    case LayoutDistanceType::RELATED_BUTTON_HORIZONTAL_SPACING:
+    case Metric::RELATED_BUTTON_HORIZONTAL_SPACING:
       return kHarmonyLayoutUnit / 2;
-    case LayoutDistanceType::RELATED_CONTROL_HORIZONTAL_SPACING:
+    case Metric::RELATED_CONTROL_HORIZONTAL_SPACING:
       return kHarmonyLayoutUnit;
-    case LayoutDistanceType::RELATED_CONTROL_VERTICAL_SPACING:
+    case Metric::RELATED_CONTROL_VERTICAL_SPACING:
       return kHarmonyLayoutUnit / 2;
-    case LayoutDistanceType::SUBSECTION_HORIZONTAL_INDENT:
+    case Metric::SUBSECTION_HORIZONTAL_INDENT:
       return 0;
-    case LayoutDistanceType::UNRELATED_CONTROL_VERTICAL_SPACING:
+    case Metric::UNRELATED_CONTROL_VERTICAL_SPACING:
       return kHarmonyLayoutUnit;
-    case LayoutDistanceType::UNRELATED_CONTROL_VERTICAL_SPACING_LARGE:
+    case Metric::UNRELATED_CONTROL_VERTICAL_SPACING_LARGE:
       return kHarmonyLayoutUnit;
   }
   NOTREACHED();
@@ -51,13 +51,13 @@ bool HarmonyLayoutDelegate::IsHarmonyMode() const {
   return true;
 }
 
-int HarmonyLayoutDelegate::GetDialogPreferredWidth(DialogWidthType type) const {
-  switch (type) {
-    case DialogWidthType::SMALL:
+int HarmonyLayoutDelegate::GetDialogPreferredWidth(DialogWidth width) const {
+  switch (width) {
+    case DialogWidth::SMALL:
       return 320;
-    case DialogWidthType::MEDIUM:
+    case DialogWidth::MEDIUM:
       return 448;
-    case DialogWidthType::LARGE:
+    case DialogWidth::LARGE:
       return 512;
   }
   NOTREACHED();

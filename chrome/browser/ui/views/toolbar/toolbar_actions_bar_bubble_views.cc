@@ -69,11 +69,10 @@ views::View* ToolbarActionsBarBubbleViews::CreateExtraView() {
 
   if (icon && label) {
     views::View* parent = new views::View();
-    parent->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                             LayoutDelegate::Get()->GetLayoutDistance(
-                                 LayoutDelegate::LayoutDistanceType::
-                                     RELATED_CONTROL_VERTICAL_SPACING)));
+    parent->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 0,
+        LayoutDelegate::Get()->GetMetric(
+            LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING)));
     parent->AddChildView(icon.release());
     parent->AddChildView(label.release());
     return parent;
@@ -110,8 +109,8 @@ void ToolbarActionsBarBubbleViews::Init() {
   LayoutDelegate* delegate = LayoutDelegate::Get();
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, 0, 0,
-      delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
-                                      RELATED_CONTROL_VERTICAL_SPACING)));
+      delegate->GetMetric(
+          LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING)));
 
   // Add the content string.
   views::Label* content_label = new views::Label(
@@ -128,8 +127,9 @@ void ToolbarActionsBarBubbleViews::Init() {
   if (!item_list.empty()) {
     item_list_ = new views::Label(item_list);
     item_list_->SetBorder(views::CreateEmptyBorder(
-        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
-                                           RELATED_CONTROL_HORIZONTAL_SPACING),
+        0,
+        delegate->GetMetric(
+            LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING),
         0, 0));
     item_list_->SetMultiLine(true);
     item_list_->SizeToFit(width);

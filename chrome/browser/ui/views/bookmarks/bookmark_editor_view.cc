@@ -352,8 +352,9 @@ void BookmarkEditorView::Init() {
   column_set->AddColumn(delegate->GetControlLabelGridAlignment(),
                         GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
-      0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
-                                         RELATED_CONTROL_HORIZONTAL_SPACING));
+      0,
+      delegate->GetMetric(
+          LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -365,13 +366,15 @@ void BookmarkEditorView::Init() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
-      1, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
-                                         RELATED_CONTROL_HORIZONTAL_SPACING));
+      1,
+      delegate->GetMetric(
+          LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
-      0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
-                                         RELATED_CONTROL_HORIZONTAL_SPACING));
+      0,
+      delegate->GetMetric(
+          LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->LinkColumnSizes(0, 2, 4, -1);
@@ -391,8 +394,9 @@ void BookmarkEditorView::Init() {
         l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_EDITOR_URL_LABEL));
 
     layout->AddPaddingRow(
-        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
-                                           RELATED_CONTROL_VERTICAL_SPACING));
+        0,
+        delegate->GetMetric(
+            LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
 
     layout->StartRow(0, labels_column_set_id);
     layout->AddView(url_label_);
@@ -401,16 +405,18 @@ void BookmarkEditorView::Init() {
 
   if (show_tree_) {
     layout->AddPaddingRow(
-        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
-                                           RELATED_CONTROL_VERTICAL_SPACING));
+        0,
+        delegate->GetMetric(
+            LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
     layout->StartRow(1, single_column_view_set_id);
     layout->AddView(tree_view_->CreateParentIfNecessary());
   }
 
   if (delegate->UseExtraDialogPadding()) {
     layout->AddPaddingRow(
-        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
-                                           RELATED_CONTROL_VERTICAL_SPACING));
+        0,
+        delegate->GetMetric(
+            LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
   }
 
   if (!show_tree_ || bb_model_->loaded())

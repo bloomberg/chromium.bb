@@ -71,14 +71,12 @@ const SkColor kCookiesBorderColor = SkColorSetRGB(0xC8, 0xC8, 0xC8);
 const int kTabbedPaneTopPadding = 14;
 const int kCookieInfoBottomPadding = 4;
 
-LayoutDelegate::LayoutDistanceType GetTreeviewToButtonsDistanceType() {
+LayoutDelegate::Metric GetTreeviewToButtonsMetric() {
   // Hack: in the Harmony specs, the buttons under the treeview are "unrelated"
   // to it (which looks better), but in the existing dialog they were related.
   return LayoutDelegate::Get()->IsHarmonyMode()
-             ? LayoutDelegate::LayoutDistanceType::
-                   UNRELATED_CONTROL_VERTICAL_SPACING
-             : LayoutDelegate::LayoutDistanceType::
-                   RELATED_CONTROL_VERTICAL_SPACING;
+             ? LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING
+             : LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING;
 }
 
 }  // namespace
@@ -285,7 +283,7 @@ gfx::Size CollectedCookiesViews::GetMinimumSize() const {
 
 gfx::Size CollectedCookiesViews::GetPreferredSize() const {
   int preferred = LayoutDelegate::Get()->GetDialogPreferredWidth(
-      LayoutDelegate::DialogWidthType::MEDIUM);
+      LayoutDelegate::DialogWidth::MEDIUM);
   return gfx::Size(preferred ? preferred : View::GetPreferredSize().width(),
                    View::GetPreferredSize().height());
 }
@@ -332,9 +330,10 @@ void CollectedCookiesViews::Init() {
   tabbed_pane->SelectTabAt(0);
   tabbed_pane->set_listener(this);
   if (LayoutDelegate::Get()->UseExtraDialogPadding()) {
-    layout->AddPaddingRow(0, LayoutDelegate::Get()->GetLayoutDistance(
-                                 LayoutDelegate::LayoutDistanceType::
-                                     RELATED_CONTROL_VERTICAL_SPACING));
+    layout->AddPaddingRow(
+        0,
+        LayoutDelegate::Get()->GetMetric(
+            LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
   }
 
   layout->StartRow(0, single_column_layout_id);
@@ -391,24 +390,26 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   column_set = layout->AddColumnSet(three_columns_layout_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, LayoutDelegate::Get()->GetLayoutDistance(
-                                      LayoutDelegate::LayoutDistanceType::
-                                          RELATED_BUTTON_HORIZONTAL_SPACING));
+  column_set->AddPaddingColumn(
+      0,
+      LayoutDelegate::Get()->GetMetric(
+          LayoutDelegate::Metric::RELATED_BUTTON_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(allowed_label_);
-  layout->AddPaddingRow(0, LayoutDelegate::Get()->GetLayoutDistance(
-                               LayoutDelegate::LayoutDistanceType::
-                                   UNRELATED_CONTROL_VERTICAL_SPACING));
+  layout->AddPaddingRow(
+      0,
+      LayoutDelegate::Get()->GetMetric(
+          LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING));
 
   layout->StartRow(1, single_column_layout_id);
   layout->AddView(CreateScrollView(allowed_cookies_tree_), 1, 1,
                   GridLayout::FILL, GridLayout::FILL, kTreeViewWidth,
                   kTreeViewHeight);
-  layout->AddPaddingRow(0, LayoutDelegate::Get()->GetLayoutDistance(
-                               GetTreeviewToButtonsDistanceType()));
+  layout->AddPaddingRow(
+      0, LayoutDelegate::Get()->GetMetric(GetTreeviewToButtonsMetric()));
 
   layout->StartRow(0, three_columns_layout_id);
   layout->AddView(block_allowed_button_);
@@ -465,24 +466,26 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   column_set = layout->AddColumnSet(three_columns_layout_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, LayoutDelegate::Get()->GetLayoutDistance(
-                                      LayoutDelegate::LayoutDistanceType::
-                                          RELATED_BUTTON_HORIZONTAL_SPACING));
+  column_set->AddPaddingColumn(
+      0,
+      LayoutDelegate::Get()->GetMetric(
+          LayoutDelegate::Metric::RELATED_BUTTON_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(blocked_label_, 1, 1, GridLayout::FILL, GridLayout::FILL);
-  layout->AddPaddingRow(0, LayoutDelegate::Get()->GetLayoutDistance(
-                               LayoutDelegate::LayoutDistanceType::
-                                   UNRELATED_CONTROL_VERTICAL_SPACING));
+  layout->AddPaddingRow(
+      0,
+      LayoutDelegate::Get()->GetMetric(
+          LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING));
 
   layout->StartRow(1, single_column_layout_id);
   layout->AddView(
       CreateScrollView(blocked_cookies_tree_), 1, 1,
       GridLayout::FILL, GridLayout::FILL, kTreeViewWidth, kTreeViewHeight);
-  layout->AddPaddingRow(0, LayoutDelegate::Get()->GetLayoutDistance(
-                               GetTreeviewToButtonsDistanceType()));
+  layout->AddPaddingRow(
+      0, LayoutDelegate::Get()->GetMetric(GetTreeviewToButtonsMetric()));
 
   layout->StartRow(0, three_columns_layout_id);
   layout->AddView(allow_blocked_button_);

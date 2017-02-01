@@ -9,7 +9,7 @@
 
 class LayoutDelegate {
  public:
-  enum class LayoutDistanceType {
+  enum class Metric {
     // Horizontal or vertical margin between the edge of a dialog and a
     // contained button.
     DIALOG_BUTTON_MARGIN,
@@ -32,7 +32,7 @@ class LayoutDelegate {
     UNRELATED_CONTROL_VERTICAL_SPACING_LARGE,
   };
 
-  enum class DialogWidthType {
+  enum class DialogWidth {
     SMALL,
     MEDIUM,
     LARGE,
@@ -46,8 +46,8 @@ class LayoutDelegate {
   // HarmonyLayoutDelegate.
   static LayoutDelegate* Get();
 
-  // Returns the requested distance in DIPs.
-  virtual int GetLayoutDistance(LayoutDistanceType type) const;
+  // Returns the requested metric in DIPs.
+  virtual int GetMetric(Metric metric) const;
 
   // Returns the alignment used for control labels in a GridLayout; for example,
   // in this GridLayout:
@@ -70,9 +70,9 @@ class LayoutDelegate {
   // TODO(pkasting): Fix callers and remove this.
   virtual bool IsHarmonyMode() const;
 
-  // Returns the preferred width in DIPs for a dialog of the specified |type|.
+  // Returns the preferred width in DIPs for a dialog of the specified |width|.
   // May return 0 if the dialog has no preferred width.
-  virtual int GetDialogPreferredWidth(DialogWidthType type) const;
+  virtual int GetDialogPreferredWidth(DialogWidth width) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutDelegate);
