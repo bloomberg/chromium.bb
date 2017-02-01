@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_block_node.h"
+#include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "core/layout/ng/ng_units.h"
 #include "wtf/RefPtr.h"
@@ -19,7 +20,6 @@ class NGBreakToken;
 class NGColumnMapper;
 class NGConstraintSpace;
 class NGConstraintSpaceBuilder;
-class NGBoxFragment;
 class NGFragment;
 class NGFragmentBuilder;
 class NGPhysicalFragment;
@@ -97,40 +97,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
     return content_size_;
   }
 
-  // Computes collapsed margins for 2 adjoining blocks and updates the resultant
-  // fragment's MarginStrut if needed.
-  // See https://www.w3.org/TR/CSS2/box.html#collapsing-margins
-  //
-  // @param child_margins Margins information for the current child.
-  // @param fragment Current child's fragment.
-  // @return NGBoxStrut with margins block start/end.
-  NGBoxStrut CollapseMargins(const NGBoxStrut& child_margins,
-                             const NGBoxFragment& fragment);
-
-  // Calculates position of the in-flow block-level fragment that needs to be
-  // positioned relative to the current fragment that is being built.
-  //
-  // @param fragment Fragment that needs to be placed.
-  // @param child_margins Margins information for the current child fragment.
-  // @return Position of the fragment in the parent's constraint space.
-  NGLogicalOffset PositionFragment(const NGFragment& fragment,
-                                   const NGBoxStrut& child_margins);
-
-  // Calculates position of the float fragment that needs to be
-  // positioned relative to the current fragment that is being built.
-  //
-  // @param fragment Fragment that needs to be placed.
-  // @param child_margins Margins information for the current child fragment.
-  // @return Position of the fragment in the parent's constraint space.
-  NGLogicalOffset PositionFloatFragment(const NGFragment& fragment,
-                                        const NGBoxStrut& child_margins);
-
-  // Updates block-{start|end} of the currently constructed fragment.
-  //
-  // This method is supposed to be called on every child but it only updates
-  // the block-start once (on the first non-zero height child fragment) and
-  // keeps updating block-end (on every non-zero height child).
-  void UpdateMarginStrut(const NGDeprecatedMarginStrut& from);
+  // Calculates offset for the provided fragment which is relative to the
+  // fragment's parent.
+  NGLogicalOffset CalculateRelativeOffset(const NGBoxFragment& fragment);
 
   NGLogicalOffset GetChildSpaceOffset() const {
     return NGLogicalOffset(border_and_padding_.inline_start, content_size_);
@@ -174,10 +143,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
   // MarginStrut for the previous child.
-  NGDeprecatedMarginStrut prev_child_margin_strut_;
-  // Whether the block-start was set for the currently built
-  // fragment's margin strut.
-  bool is_fragment_margin_strut_block_start_updated_ : 1;
+  NGMarginStrut curr_margin_strut_;
+  NGLogicalOffset bfc_offset_;
+  NGLogicalOffset curr_bfc_offset_;
   NGBoxStrut curr_child_margins_;
 };
 

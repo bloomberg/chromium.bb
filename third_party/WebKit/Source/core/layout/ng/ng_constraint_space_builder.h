@@ -44,6 +44,13 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
 
   NGConstraintSpaceBuilder& SetWritingMode(NGWritingMode writing_mode);
 
+  NGConstraintSpaceBuilder& SetMarginStrut(const NGMarginStrut& margin_strut);
+
+  NGConstraintSpaceBuilder& SetBfcOffset(const NGLogicalOffset& offset) {
+    bfc_offset_ = offset;
+    return *this;
+  }
+
   // Creates a new constraint space. This may be called multiple times, for
   // example the constraint space will be different for a child which:
   //  - Establishes a new formatting context.
@@ -70,6 +77,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
   unsigned is_new_fc_ : 1;
   unsigned text_direction_ : 1;
 
+  NGMarginStrut margin_strut_;
+  NGLogicalOffset bfc_offset_;
   std::shared_ptr<NGExclusions> exclusions_;
 };
 

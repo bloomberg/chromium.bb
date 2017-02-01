@@ -38,6 +38,10 @@ class CORE_EXPORT NGFragmentBuilder final
   NGFragmentBuilder& AddFloatingObject(NGFloatingObject*,
                                        const NGLogicalOffset&);
 
+  NGFragmentBuilder& SetBfcOffset(const NGLogicalOffset& offset);
+
+  NGFragmentBuilder& AddUnpositionedFloat(NGFloatingObject* floating_object);
+
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
   // out-of-flow descendants by layout algorithms.
@@ -71,19 +75,16 @@ class CORE_EXPORT NGFragmentBuilder final
   NGFragmentBuilder& AddOutOfFlowDescendant(NGBlockNode*,
                                             const NGStaticPosition&);
 
-  NGFragmentBuilder& AddUnpositionedFloat(NGFloatingObject* floating_object);
-
   void SetBreakToken(NGBreakToken* token) {
     DCHECK(!break_token_);
     break_token_ = token;
   }
   bool HasBreakToken() const { return break_token_; }
 
-  // Sets MarginStrut for the resultant fragment.
-  NGFragmentBuilder& SetMarginStrutBlockStart(
-      const NGDeprecatedMarginStrut& from);
-  NGFragmentBuilder& SetMarginStrutBlockEnd(
-      const NGDeprecatedMarginStrut& from);
+  NGFragmentBuilder& SetEndMarginStrut(const NGMarginStrut& from) {
+    end_margin_strut_ = from;
+    return *this;
+  }
 
   // Offsets are not supposed to be set during fragment construction, so we
   // do not provide a setter here.
@@ -94,14 +95,22 @@ class CORE_EXPORT NGFragmentBuilder final
                                          unsigned start_index,
                                          unsigned end_index);
 
-  // List of floats that need to be positioned.
-  HeapVector<Member<NGFloatingObject>>& UnpositionedFloats() {
+  // Mutable list of floats that need to be positioned.
+  HeapVector<Member<NGFloatingObject>>& MutableUnpositionedFloats() {
     return unpositioned_floats_;
+  }
+
+  // List of floats that need to be positioned.
+  const HeapVector<Member<NGFloatingObject>>& UnpositionedFloats() const {
+    return unpositioned_floats_;
+  }
+
+  const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
+    return bfc_offset_;
   }
 
   DECLARE_VIRTUAL_TRACE();
 
- private:
   // Out-of-flow descendant placement information.
   // The generated fragment must compute NGStaticPosition for all
   // out-of-flow descendants.
@@ -129,8 +138,6 @@ class CORE_EXPORT NGFragmentBuilder final
   NGLogicalSize size_;
   NGLogicalSize overflow_;
 
-  NGDeprecatedMarginStrut margin_strut_;
-
   HeapVector<Member<NGPhysicalFragment>> children_;
   Vector<NGLogicalOffset> offsets_;
 
@@ -148,6 +155,9 @@ class CORE_EXPORT NGFragmentBuilder final
   HeapVector<Member<NGFloatingObject>> positioned_floats_;
 
   Member<NGBreakToken> break_token_;
+
+  WTF::Optional<NGLogicalOffset> bfc_offset_;
+  NGMarginStrut end_margin_strut_;
 };
 
 }  // namespace blink

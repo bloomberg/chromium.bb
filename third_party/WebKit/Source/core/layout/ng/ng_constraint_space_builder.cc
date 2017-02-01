@@ -23,6 +23,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
       fragmentation_type_(parent_space->BlockFragmentationType()),
       is_new_fc_(parent_space->IsNewFormattingContext()),
       text_direction_(static_cast<unsigned>(parent_space->Direction())),
+      bfc_offset_(parent_space->bfc_offset_),
       exclusions_(parent_space->Exclusions()) {}
 
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
@@ -54,6 +55,12 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetPercentageResolutionSize(
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetTextDirection(
     TextDirection text_direction) {
   text_direction_ = static_cast<unsigned>(text_direction);
+  return *this;
+}
+
+NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetMarginStrut(
+    const NGMarginStrut& margin_strut) {
+  margin_strut_ = margin_strut;
   return *this;
 }
 
@@ -119,6 +126,9 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
   bool is_in_parallel_flow = (parent_writing_mode_ == kHorizontalTopBottom) ==
                              (writing_mode_ == kHorizontalTopBottom);
 
+  NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
+  NGLogicalOffset bfc_offset = is_new_fc_ ? NGLogicalOffset() : bfc_offset_;
+
   if (is_in_parallel_flow) {
     return new NGConstraintSpace(
         static_cast<NGWritingMode>(writing_mode_),
@@ -131,7 +141,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-        exclusions);
+        margin_strut, bfc_offset, exclusions);
   }
 
   return new NGConstraintSpace(
@@ -145,7 +155,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-      exclusions);
+      margin_strut, bfc_offset, exclusions);
 }
 
 }  // namespace blink

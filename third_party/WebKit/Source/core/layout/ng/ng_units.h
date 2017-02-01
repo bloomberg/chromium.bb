@@ -303,38 +303,17 @@ inline std::ostream& operator<<(std::ostream& stream, const NGBoxStrut& value) {
 }
 
 // This struct is used for the margin collapsing calculation.
-// TODO(glebl): Deprecated. It's being replaced by NGMarginStrut
-struct CORE_EXPORT NGDeprecatedMarginStrut {
-  LayoutUnit margin_block_start;
-  LayoutUnit margin_block_end;
-
-  LayoutUnit negative_margin_block_start;
-  LayoutUnit negative_margin_block_end;
-
-  LayoutUnit BlockEndSum() const;
-
-  void AppendMarginBlockStart(const LayoutUnit& value);
-  void AppendMarginBlockEnd(const LayoutUnit& value);
-  void SetMarginBlockStart(const LayoutUnit& value);
-  void SetMarginBlockEnd(const LayoutUnit& value);
-
-  bool IsEmpty() const;
-
-  String ToString() const;
-
-  bool operator==(const NGDeprecatedMarginStrut& other) const;
-};
-
-// This struct is used for the margin collapsing calculation.
 struct CORE_EXPORT NGMarginStrut {
   LayoutUnit margin;
   LayoutUnit negative_margin;
 
-  bool operator==(const NGMarginStrut& other) const;
-
+  // Appends negative or positive value to the current margin strut.
   void Append(const LayoutUnit& value);
 
-  LayoutUnit Collapse() const;
+  // Sum up negative and positive margins of this strut.
+  LayoutUnit Sum() const;
+
+  bool operator==(const NGMarginStrut& other) const;
 
   String ToString() const;
 };

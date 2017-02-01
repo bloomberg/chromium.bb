@@ -20,7 +20,7 @@ class NGPhysicalFragment;
 struct CORE_EXPORT NGFloatingObject
     : public GarbageCollected<NGFloatingObject> {
   NGFloatingObject(NGPhysicalFragment* fragment,
-                   const NGConstraintSpace* space,
+                   NGConstraintSpace* space,
                    NGBlockNode* node,
                    const ComputedStyle& style,
                    const NGBoxStrut& margins)
@@ -32,7 +32,8 @@ struct CORE_EXPORT NGFloatingObject
   }
 
   Member<NGPhysicalFragment> fragment;
-  Member<const NGConstraintSpace> space;
+  // TODO(glebl): Constraint space should be const here.
+  Member<NGConstraintSpace> space;
   Member<NGBlockNode> node;
   NGExclusion::Type exclusion_type;
   EClear clear_type;

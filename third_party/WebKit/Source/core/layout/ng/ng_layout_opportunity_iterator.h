@@ -26,12 +26,11 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
   // @param space Constraint space with exclusions for which this iterator needs
   //              to generate layout opportunities.
   // @param opt_origin_point Optional origin_point parameter that is used as a
-  //                     default start point for layout opportunities.
+  //                         default start point for layout opportunities.
   // @param opt_leader_point Optional 'leader' parameter that is used to specify
-  // the
-  //                     ending point of temporary excluded rectangle which
-  //                     starts from 'origin'. This rectangle may represent a
-  //                     text fragment for example.
+  //                         the ending point of temporary excluded rectangle
+  //                         which starts from 'origin'. This rectangle may
+  //                         represent a text fragment for example.
   NGLayoutOpportunityIterator(
       NGConstraintSpace* space,
       const WTF::Optional<NGLogicalOffset>& opt_origin_point = WTF::nullopt,

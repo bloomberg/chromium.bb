@@ -206,62 +206,12 @@ NGBoxStrut NGPhysicalBoxStrut::ConvertToLogical(NGWritingMode writing_mode,
   return strut;
 }
 
-LayoutUnit NGDeprecatedMarginStrut::BlockEndSum() const {
-  return margin_block_end + negative_margin_block_end;
+LayoutUnit NGMarginStrut::Sum() const {
+  return margin + negative_margin;
 }
 
-void NGDeprecatedMarginStrut::AppendMarginBlockStart(const LayoutUnit& value) {
-  if (value < 0) {
-    negative_margin_block_start =
-        -std::max(value.abs(), negative_margin_block_start.abs());
-  } else {
-    margin_block_start = std::max(value, margin_block_start);
-  }
-}
-
-void NGDeprecatedMarginStrut::AppendMarginBlockEnd(const LayoutUnit& value) {
-  if (value < 0) {
-    negative_margin_block_end =
-        -std::max(value.abs(), negative_margin_block_end.abs());
-  } else {
-    margin_block_end = std::max(value, margin_block_end);
-  }
-}
-
-void NGDeprecatedMarginStrut::SetMarginBlockStart(const LayoutUnit& value) {
-  if (value < 0) {
-    negative_margin_block_start = value;
-  } else {
-    margin_block_start = value;
-  }
-}
-
-void NGDeprecatedMarginStrut::SetMarginBlockEnd(const LayoutUnit& value) {
-  if (value < 0) {
-    negative_margin_block_end = value;
-  } else {
-    margin_block_end = value;
-  }
-}
-
-String NGDeprecatedMarginStrut::ToString() const {
-  return String::format("Start: (%d %d) End: (%d %d)",
-                        margin_block_start.toInt(), margin_block_end.toInt(),
-                        negative_margin_block_start.toInt(),
-                        negative_margin_block_end.toInt());
-}
-
-bool NGDeprecatedMarginStrut::IsEmpty() const {
-  return *this == NGDeprecatedMarginStrut();
-}
-
-bool NGDeprecatedMarginStrut::operator==(
-    const NGDeprecatedMarginStrut& other) const {
-  return std::tie(other.margin_block_start, other.margin_block_end,
-                  other.negative_margin_block_start,
-                  other.negative_margin_block_end) ==
-         std::tie(margin_block_start, margin_block_end,
-                  negative_margin_block_start, negative_margin_block_end);
+bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
+  return margin == other.margin && negative_margin == other.negative_margin;
 }
 
 void NGMarginStrut::Append(const LayoutUnit& value) {
@@ -272,17 +222,8 @@ void NGMarginStrut::Append(const LayoutUnit& value) {
   }
 }
 
-LayoutUnit NGMarginStrut::Collapse() const {
-  return margin + negative_margin;
-}
-
 String NGMarginStrut::ToString() const {
   return String::format("%d %d", margin.toInt(), negative_margin.toInt());
-}
-
-bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
-  return std::tie(other.margin, other.negative_margin) ==
-         std::tie(margin, negative_margin);
 }
 
 bool NGExclusion::operator==(const NGExclusion& other) const {

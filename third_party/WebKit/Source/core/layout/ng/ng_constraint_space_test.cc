@@ -151,9 +151,10 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
 //
 // Expected:
 //   Layout opportunity iterator generates the next opportunities:
-//   - 1st Start Point (0, 200): 350x150, 250x200
-//   - 3rd Start Point (550, 200): 50x200
-//   - 4th Start Point (0, 300): 600x50, 500x100
+//   - 1st Start Point (0, 200): 350x150, 250x400
+//   - 3rd Start Point (550, 200): 50x400
+//   - 4th Start Point (0, 300): 600x50, 500x300
+//   - 5th Start Point (0, 400): 600x200
 //   All other opportunities that are located before the origin point should be
 //   filtered out.
 TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddleWithOriginAndLeader) {
@@ -181,12 +182,16 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddleWithOriginAndLeader) {
       new NGLayoutOpportunityIterator(space, origin_point, leader_point);
   // 1st Start Point
   EXPECT_EQ("250,200 350x150", OpportunityToString(iterator->Next()));
-  EXPECT_EQ("250,200 250x200", OpportunityToString(iterator->Next()));
+  EXPECT_EQ("250,200 250x400", OpportunityToString(iterator->Next()));
   // 2nd Start Point
-  EXPECT_EQ("550,200 50x200", OpportunityToString(iterator->Next()));
+  EXPECT_EQ("550,200 50x400", OpportunityToString(iterator->Next()));
   // 3rd Start Point
   EXPECT_EQ("0,300 600x50", OpportunityToString(iterator->Next()));
-  EXPECT_EQ("0,300 500x100", OpportunityToString(iterator->Next()));
+  EXPECT_EQ("0,300 500x300", OpportunityToString(iterator->Next()));
+  // 4th Start Point
+  EXPECT_EQ("0,400 600x200", OpportunityToString(iterator->Next()));
+  // TODO(glebl): The opportunity below should not be generated.
+  EXPECT_EQ("250,400 350x200", OpportunityToString(iterator->Next()));
   // Iterator is exhausted.
   EXPECT_EQ("(empty)", OpportunityToString(iterator->Next()));
 }

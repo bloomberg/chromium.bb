@@ -80,6 +80,12 @@ NGFragmentBuilder& NGFragmentBuilder::AddFloatingObject(
   return *this;
 }
 
+NGFragmentBuilder& NGFragmentBuilder::SetBfcOffset(
+    const NGLogicalOffset& offset) {
+  bfc_offset_ = offset;
+  return *this;
+}
+
 NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
     NGBlockNode* child,
     NGLogicalOffset child_offset) {
@@ -136,20 +142,6 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowDescendant(
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::SetMarginStrutBlockStart(
-    const NGDeprecatedMarginStrut& from) {
-  margin_strut_.margin_block_start = from.margin_block_start;
-  margin_strut_.negative_margin_block_start = from.negative_margin_block_start;
-  return *this;
-}
-
-NGFragmentBuilder& NGFragmentBuilder::SetMarginStrutBlockEnd(
-    const NGDeprecatedMarginStrut& from) {
-  margin_strut_.margin_block_end = from.margin_block_end;
-  margin_strut_.negative_margin_block_end = from.negative_margin_block_end;
-  return *this;
-}
-
 NGPhysicalBoxFragment* NGFragmentBuilder::ToBoxFragment() {
   // TODO(layout-ng): Support text fragments
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox);
@@ -182,8 +174,9 @@ NGPhysicalBoxFragment* NGFragmentBuilder::ToBoxFragment() {
 
   return new NGPhysicalBoxFragment(
       layout_object_, physical_size, overflow_.ConvertToPhysical(writing_mode_),
-      children, out_of_flow_descendants_, out_of_flow_positions_, margin_strut_,
-      unpositioned_floats_, positioned_floats_, break_token);
+      children, out_of_flow_descendants_, out_of_flow_positions_,
+      unpositioned_floats_, positioned_floats_, bfc_offset_, end_margin_strut_,
+      break_token);
 }
 
 NGPhysicalTextFragment* NGFragmentBuilder::ToTextFragment(NGInlineNode* node,

@@ -9,6 +9,7 @@
 #include "core/layout/ng/ng_units.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Optional.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -16,14 +17,6 @@ namespace blink {
 class LayoutBox;
 class NGBoxFragment;
 class NGLayoutOpportunityIterator;
-
-// TODO(glebl@): unused, delete.
-enum NGExclusionType {
-  kNGClearNone = 0,
-  kNGClearFloatLeft = 1,
-  kNGClearFloatRight = 2,
-  kNGClearFragment = 4
-};
 
 enum NGFragmentationType {
   kFragmentNone,
@@ -64,11 +57,6 @@ class CORE_EXPORT NGConstraintSpace final
   // The available space size.
   // See: https://drafts.csswg.org/css-sizing/#available
   NGLogicalSize AvailableSize() const { return available_size_; }
-
-  // Offset relative to the root constraint space.
-  NGLogicalOffset Offset() const { return offset_; }
-  // TODO(layout-ng): Set offset via NGConstraintSpacebuilder.
-  void SetOffset(const NGLogicalOffset& offset) { offset_ = offset; }
 
   // Return the block-direction space available in the current fragmentainer.
   LayoutUnit FragmentainerSpaceAvailable() const {
@@ -122,8 +110,11 @@ class CORE_EXPORT NGConstraintSpace final
   void Subtract(const NGBoxFragment*);
 
   NGLayoutOpportunityIterator* LayoutOpportunities(
-      unsigned clear = kNGClearNone,
-      bool for_inline_or_bfc = false);
+      const WTF::Optional<NGLogicalOffset>& opt_origin_point = WTF::nullopt);
+
+  NGMarginStrut MarginStrut() const { return margin_strut_; }
+
+  NGLogicalOffset BfcOffset() const { return bfc_offset_; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
@@ -144,6 +135,8 @@ class CORE_EXPORT NGConstraintSpace final
                     bool is_block_direction_triggers_scrollbar,
                     NGFragmentationType block_direction_fragmentation_type,
                     bool is_new_fc,
+                    const NGMarginStrut& margin_strut,
+                    const NGLogicalOffset& bfc_offset,
                     const std::shared_ptr<NGExclusions>& exclusions);
 
   NGLogicalSize available_size_;
@@ -165,10 +158,11 @@ class CORE_EXPORT NGConstraintSpace final
   // formatting Context
   unsigned is_new_fc_ : 1;
 
-  NGLogicalOffset offset_;
   unsigned writing_mode_ : 3;
   unsigned direction_ : 1;
 
+  NGMarginStrut margin_strut_;
+  NGLogicalOffset bfc_offset_;
   const std::shared_ptr<NGExclusions> exclusions_;
 };
 

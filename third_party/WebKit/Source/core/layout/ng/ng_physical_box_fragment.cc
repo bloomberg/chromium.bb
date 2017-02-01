@@ -13,9 +13,10 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     HeapVector<Member<NGPhysicalFragment>>& children,
     HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
     Vector<NGStaticPosition>& out_of_flow_positions,
-    NGDeprecatedMarginStrut margin_strut,
     HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
     HeapVector<Member<NGFloatingObject>>& positioned_floats,
+    const WTF::Optional<NGLogicalOffset>& bfc_offset,
+    const NGMarginStrut& end_margin_strut,
     NGBreakToken* break_token)
     : NGPhysicalFragment(layout_object,
                          size,
@@ -26,7 +27,8 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
                          unpositioned_floats,
                          positioned_floats,
                          break_token),
-      margin_strut_(margin_strut) {
+      bfc_offset_(bfc_offset),
+      end_margin_strut_(end_margin_strut) {
   children_.swap(children);
 }
 

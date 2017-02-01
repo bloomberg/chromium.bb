@@ -27,13 +27,17 @@ NGLayoutOpportunity CreateLayoutOpportunityFromConstraintSpace(
     const NGConstraintSpace& space,
     const NGLogicalOffset& origin_point) {
   NGLayoutOpportunity opportunity;
-  opportunity.offset = space.Offset();
-  opportunity.size = space.AvailableSize();
+  // TODO(glebl): Perhaps fix other methods (e.g IsContained) instead of using
+  // INT_MAX here.
+  opportunity.size.block_size = space.AvailableSize().block_size >= 0
+                                    ? space.AvailableSize().block_size
+                                    : LayoutUnit(INT_MAX);
+  opportunity.size.inline_size = space.AvailableSize().inline_size >= 0
+                                     ? space.AvailableSize().inline_size
+                                     : LayoutUnit(INT_MAX);
 
   // adjust to the origin_point.
   opportunity.offset += origin_point;
-  opportunity.size.inline_size -= origin_point.inline_offset;
-  opportunity.size.block_size -= origin_point.block_offset;
   return opportunity;
 }
 
@@ -213,25 +217,6 @@ bool CompareNGLayoutOpportunitesByStartPoint(const NGLayoutOpportunity& lhs,
   return rhs.size.inline_size < lhs.size.inline_size;
 }
 
-void RunPreconditionChecks(
-    const NGConstraintSpace& space,
-    const WTF::Optional<NGLogicalOffset>& opt_origin_point,
-    const WTF::Optional<NGLogicalOffset>& opt_leader_point) {
-  if (opt_origin_point) {
-    NGLogicalOffset origin_point = opt_origin_point.value();
-    DCHECK_GE(origin_point, space.Offset())
-        << "Origin point " << origin_point
-        << " should lay below the constraint space's offset " << space.Offset();
-  }
-
-  if (opt_leader_point) {
-    NGLogicalOffset leader_point = opt_leader_point.value();
-    DCHECK_GE(leader_point, space.Offset())
-        << "Leader point " << leader_point
-        << " should lay below the constraint space's offset " << space.Offset();
-  }
-}
-
 NGExclusion ToLeaderExclusion(const NGLogicalOffset& origin_point,
                               const NGLogicalOffset& leader_point) {
   LayoutUnit inline_size =
@@ -251,8 +236,6 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
     const WTF::Optional<NGLogicalOffset>& opt_origin_point,
     const WTF::Optional<NGLogicalOffset>& opt_leader_point)
     : constraint_space_(space) {
-  RunPreconditionChecks(*space, opt_origin_point, opt_leader_point);
-
   // TODO(chrome-layout-team): Combine exclusions that shadow each other.
   auto& exclusions = constraint_space_->Exclusions();
   DCHECK(std::is_sorted(exclusions->storage.begin(), exclusions->storage.end(),

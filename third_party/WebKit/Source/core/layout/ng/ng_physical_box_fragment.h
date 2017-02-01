@@ -9,6 +9,7 @@
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_units.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -25,22 +26,28 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
       HeapVector<Member<NGPhysicalFragment>>& children,
       HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
       Vector<NGStaticPosition>& out_of_flow_positions,
-      NGDeprecatedMarginStrut margin_strut,
       HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
       HeapVector<Member<NGFloatingObject>>& positioned_floats,
+      const WTF::Optional<NGLogicalOffset>& bfc_offset,
+      const NGMarginStrut& end_margin_strut,
       NGBreakToken* break_token = nullptr);
 
   const HeapVector<Member<NGPhysicalFragment>>& Children() const {
     return children_;
   }
 
-  NGDeprecatedMarginStrut MarginStrut() const { return margin_strut_; }
+  const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
+    return bfc_offset_;
+  }
+
+  const NGMarginStrut& EndMarginStrut() const { return end_margin_strut_; }
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
   HeapVector<Member<NGPhysicalFragment>> children_;
-  NGDeprecatedMarginStrut margin_strut_;
+  const WTF::Optional<NGLogicalOffset> bfc_offset_;
+  const NGMarginStrut end_margin_strut_;
 };
 
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(NGPhysicalBoxFragment);

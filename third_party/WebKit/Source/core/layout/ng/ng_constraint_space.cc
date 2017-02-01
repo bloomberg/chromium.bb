@@ -24,6 +24,8 @@ NGConstraintSpace::NGConstraintSpace(
     bool is_block_direction_triggers_scrollbar,
     NGFragmentationType block_direction_fragmentation_type,
     bool is_new_fc,
+    const NGMarginStrut& margin_strut,
+    const NGLogicalOffset& bfc_offset,
     const std::shared_ptr<NGExclusions>& exclusions)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),
@@ -39,6 +41,8 @@ NGConstraintSpace::NGConstraintSpace(
       is_new_fc_(is_new_fc),
       writing_mode_(writing_mode),
       direction_(static_cast<unsigned>(direction)),
+      margin_strut_(margin_strut),
+      bfc_offset_(bfc_offset),
       exclusions_(exclusions) {}
 
 NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
@@ -104,18 +108,19 @@ void NGConstraintSpace::Subtract(const NGBoxFragment*) {
 }
 
 NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunities(
-    unsigned clear,
-    bool for_inline_or_bfc) {
-  NGLayoutOpportunityIterator* iterator = new NGLayoutOpportunityIterator(this);
+    const WTF::Optional<NGLogicalOffset>& opt_origin_point) {
+  NGLayoutOpportunityIterator* iterator =
+      new NGLayoutOpportunityIterator(this, opt_origin_point);
   return iterator;
 }
 
 String NGConstraintSpace::ToString() const {
-  return String::format("%s,%s %sx%s",
-                        offset_.inline_offset.toString().ascii().data(),
-                        offset_.block_offset.toString().ascii().data(),
+  return String::format("Offset: %s,%s Size: %sx%s MarginStrut: %s",
+                        bfc_offset_.inline_offset.toString().ascii().data(),
+                        bfc_offset_.block_offset.toString().ascii().data(),
                         AvailableSize().inline_size.toString().ascii().data(),
-                        AvailableSize().block_size.toString().ascii().data());
+                        AvailableSize().block_size.toString().ascii().data(),
+                        margin_strut_.ToString().ascii().data());
 }
 
 }  // namespace blink
