@@ -14,11 +14,6 @@ UkmSource::~UkmSource() = default;
 void UkmSource::PopulateProto(Source* proto_source) {
   proto_source->set_url(committed_url_.spec());
 
-  base::TimeDelta navigation_start_in_msec =
-      navigation_start_ - base::Time::UnixEpoch();
-  proto_source->set_navigation_time_msec(
-      navigation_start_in_msec.InMilliseconds());
-
   proto_source->set_first_contentful_paint_msec(
       first_contentful_paint_.InMilliseconds());
 }

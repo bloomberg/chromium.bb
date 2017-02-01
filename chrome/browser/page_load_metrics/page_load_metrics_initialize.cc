@@ -25,6 +25,7 @@
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/resource_prefetch_predictor_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -85,6 +86,12 @@ void PageLoadMetricsEmbedder::RegisterObservers(
             web_contents_->GetBrowserContext()));
     tracker->AddObserver(base::MakeUnique<CssScanningMetricsObserver>());
     tracker->AddObserver(base::MakeUnique<ProtocolPageLoadMetricsObserver>());
+
+    std::unique_ptr<page_load_metrics::PageLoadMetricsObserver> ukm_observer =
+        UkmPageLoadMetricsObserver::CreateIfNeeded();
+    if (ukm_observer)
+      tracker->AddObserver(std::move(ukm_observer));
+
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
         no_state_prefetch_observer =
             NoStatePrefetchPageLoadMetricsObserver::CreateIfNeeded(

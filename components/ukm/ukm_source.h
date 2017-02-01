@@ -26,11 +26,6 @@ class UkmSource {
     committed_url_ = committed_url;
   }
 
-  base::Time navigation_start() const { return navigation_start_; }
-  void set_navigation_start(base::Time navigation_start) {
-    navigation_start_ = navigation_start;
-  }
-
   base::TimeDelta first_contentful_paint() const {
     return first_contentful_paint_;
   }
@@ -43,7 +38,6 @@ class UkmSource {
 
  private:
   GURL committed_url_;
-  base::Time navigation_start_;
   base::TimeDelta first_contentful_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmSource);

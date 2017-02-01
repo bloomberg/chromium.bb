@@ -37,9 +37,7 @@ class UkmServiceTestingHarness {
   UkmServiceTestingHarness();
   virtual ~UkmServiceTestingHarness();
 
-  const TestUkmService& test_ukm_service() const {
-    return *test_ukm_service_.get();
-  }
+  TestUkmService* test_ukm_service() { return test_ukm_service_.get(); }
 
  private:
   TestingPrefServiceSimple test_prefs_;

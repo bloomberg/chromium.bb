@@ -107,8 +107,6 @@ TEST_F(UkmServiceTest, SourceSerialization) {
 
   std::unique_ptr<UkmSource> source = base::WrapUnique(new UkmSource());
   source->set_committed_url(GURL("https://google.com"));
-  base::Time test_time;
-  source->set_navigation_start(test_time);
   source->set_first_contentful_paint(base::TimeDelta::FromMilliseconds(300));
 
   service.RecordSource(std::move(source));
@@ -121,10 +119,6 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   const Source& proto_source = proto_report.sources(0);
 
   EXPECT_EQ(GURL("https://google.com").spec(), proto_source.url());
-  base::Time navigation_time =
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(proto_source.navigation_time_msec());
-  EXPECT_EQ(test_time, navigation_time);
   EXPECT_EQ(300, proto_source.first_contentful_paint_msec());
 }
 

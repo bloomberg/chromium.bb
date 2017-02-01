@@ -77,6 +77,7 @@ TestingBrowserProcess::TestingBrowserProcess()
       io_thread_(nullptr),
       system_request_context_(nullptr),
       rappor_service_(nullptr),
+      ukm_service_(nullptr),
       platform_part_(new TestingBrowserProcessPlatformPart()) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions_browser_client_.reset(
