@@ -153,8 +153,7 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
   out.device.matched_output_device_id =
       audio_manager_->GetAssociatedOutputDeviceID(info.device.id);
 
-  if (info.device.type == MEDIA_TAB_AUDIO_CAPTURE ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)) {
     // Don't need to query the hardware information if using fake device.
     input_params.sample_rate = 44100;
@@ -164,6 +163,17 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
       out.device.matched_output.channel_layout = media::CHANNEL_LAYOUT_STEREO;
     }
   } else {
+    // TODO(tommi): As is, we hit this code path when device.type is
+    // MEDIA_TAB_AUDIO_CAPTURE and the device id is not a device that
+    // the AudioManager can know about. This currently does not fail because
+    // the implementation of GetInputStreamParameters returns valid parameters
+    // by default for invalid devices. That behavior is problematic because it
+    // causes other parts of the code to attempt to open truly invalid or
+    // missing devices and falling back on alternate devices (and likely fail
+    // twice in a row). Tab audio capture should not pass through here and
+    // GetInputStreamParameters should return invalid parameters for invalid
+    // devices.
+
     // Get the preferred sample rate and channel configuration for the
     // audio device.
     media::AudioParameters params =
