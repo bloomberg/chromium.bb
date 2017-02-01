@@ -780,62 +780,60 @@ add_executable(aom_cx_set_ref
                "${AOM_ROOT}/examples/aom_cx_set_ref.c"
                $<TARGET_OBJECTS:aom_common_app_util>
                $<TARGET_OBJECTS:aom_encoder_app_util>)
-target_link_libraries(aom_cx_set_ref PUBLIC aom)
 
 add_executable(aomdec
                "${AOM_ROOT}/aomdec.c"
                $<TARGET_OBJECTS:aom_common_app_util>
                $<TARGET_OBJECTS:aom_decoder_app_util>)
-target_link_libraries(aomdec PUBLIC aom)
 
 add_executable(aomenc
                "${AOM_ROOT}/aomenc.c"
                $<TARGET_OBJECTS:aom_common_app_util>
                $<TARGET_OBJECTS:aom_encoder_app_util>
                $<TARGET_OBJECTS:aom_encoder_stats>)
-target_link_libraries(aomenc PUBLIC aom)
 
 add_executable(decode_to_md5
                "${AOM_ROOT}/examples/decode_to_md5.c"
                $<TARGET_OBJECTS:aom_common_app_util>
                $<TARGET_OBJECTS:aom_decoder_app_util>)
-target_link_libraries(decode_to_md5 PUBLIC aom)
 
 add_executable(decode_with_drops
                "${AOM_ROOT}/examples/decode_with_drops.c"
                $<TARGET_OBJECTS:aom_common_app_util>
                $<TARGET_OBJECTS:aom_decoder_app_util>)
-target_link_libraries(decode_with_drops PUBLIC aom)
 
 add_executable(lossless_encoder
                "${AOM_ROOT}/examples/lossless_encoder.c"
                $<TARGET_OBJECTS:aom_common_app_util>
                $<TARGET_OBJECTS:aom_encoder_app_util>)
-target_link_libraries(lossless_encoder PUBLIC aom)
 
 add_executable(set_maps
                "${AOM_ROOT}/examples/set_maps.c"
                $<TARGET_OBJECTS:aom_common_app_util>
                $<TARGET_OBJECTS:aom_encoder_app_util>)
-target_link_libraries(set_maps PUBLIC aom)
 
 add_executable(simple_decoder
                "${AOM_ROOT}/examples/simple_decoder.c"
                $<TARGET_OBJECTS:aom_common_app_util>
                $<TARGET_OBJECTS:aom_decoder_app_util>)
-target_link_libraries(simple_decoder PUBLIC aom)
 
 add_executable(simple_encoder
                "${AOM_ROOT}/examples/simple_encoder.c"
                $<TARGET_OBJECTS:aom_common_app_util>
                $<TARGET_OBJECTS:aom_encoder_app_util>)
-target_link_libraries(simple_encoder PUBLIC aom)
 
 add_executable(twopass_encoder
                "${AOM_ROOT}/examples/twopass_encoder.c"
                $<TARGET_OBJECTS:aom_common_app_util>
                $<TARGET_OBJECTS:aom_encoder_app_util>)
-target_link_libraries(twopass_encoder PUBLIC aom)
+
+# List of app targets.
+set(AOM_APP_TARGETS aom_cx_set_ref aomdec aomenc decode_to_md5 decode_with_drops
+    lossless_encoder set_maps simple_decoder simple_encoder twopass_encoder)
+
+foreach (aom_app ${AOM_APP_TARGETS})
+  target_link_libraries(${aom_app} PUBLIC aom)
+endforeach ()
 
 if (CONFIG_LIBYUV)
   add_library(yuv OBJECT ${AOM_LIBYUV_SOURCES})
@@ -843,16 +841,10 @@ if (CONFIG_LIBYUV)
   include_directories("${AOM_ROOT}/third_party/libyuv/include")
 
   # Add to existing targets.
-  target_sources(aom_cx_set_ref PUBLIC $<TARGET_OBJECTS:yuv>)
-  target_sources(aomdec PUBLIC $<TARGET_OBJECTS:yuv>)
-  target_sources(aomenc PUBLIC $<TARGET_OBJECTS:yuv>)
-  target_sources(decode_to_md5 PUBLIC $<TARGET_OBJECTS:yuv>)
-  target_sources(decode_with_drops PUBLIC $<TARGET_OBJECTS:yuv>)
-  target_sources(lossless_encoder PUBLIC $<TARGET_OBJECTS:yuv>)
-  target_sources(set_maps PUBLIC $<TARGET_OBJECTS:yuv>)
-  target_sources(simple_decoder PUBLIC $<TARGET_OBJECTS:yuv>)
-  target_sources(simple_encoder PUBLIC $<TARGET_OBJECTS:yuv>)
-  target_sources(twopass_encoder PUBLIC $<TARGET_OBJECTS:yuv>)
+  foreach (aom_app ${AOM_APP_TARGETS})
+    target_sources(${aom_app} PUBLIC $<TARGET_OBJECTS:yuv>)
+    set_property(TARGET ${aom_app} PROPERTY LINKER_LANGUAGE CXX)
+  endforeach ()
 endif ()
 
 if (CONFIG_WEBM_IO)
@@ -863,16 +855,11 @@ if (CONFIG_WEBM_IO)
   # Add to existing targets.
   target_sources(aom_decoder_app_util PUBLIC ${AOM_WEBM_DECODER_SOURCES})
   target_sources(aom_encoder_app_util PUBLIC ${AOM_WEBM_ENCODER_SOURCES})
-  target_sources(aom_cx_set_ref PUBLIC $<TARGET_OBJECTS:webm>)
-  target_sources(aomdec PUBLIC $<TARGET_OBJECTS:webm>)
-  target_sources(aomenc PUBLIC $<TARGET_OBJECTS:webm>)
-  target_sources(decode_to_md5 PUBLIC $<TARGET_OBJECTS:webm>)
-  target_sources(decode_with_drops PUBLIC $<TARGET_OBJECTS:webm>)
-  target_sources(lossless_encoder PUBLIC $<TARGET_OBJECTS:webm>)
-  target_sources(set_maps PUBLIC $<TARGET_OBJECTS:webm>)
-  target_sources(simple_decoder PUBLIC $<TARGET_OBJECTS:webm>)
-  target_sources(simple_encoder PUBLIC $<TARGET_OBJECTS:webm>)
-  target_sources(twopass_encoder PUBLIC $<TARGET_OBJECTS:webm>)
+
+  foreach (aom_app ${AOM_APP_TARGETS})
+    target_sources(${aom_app} PUBLIC $<TARGET_OBJECTS:webm>)
+    set_property(TARGET ${aom_app} PROPERTY LINKER_LANGUAGE CXX)
+   endforeach ()
 endif ()
 
 if (CONFIG_UNIT_TESTS)
