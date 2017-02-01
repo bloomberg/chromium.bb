@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/device_power_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/fingerprint_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
@@ -120,6 +121,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
       base::MakeUnique<chromeos::settings::ChangePictureHandler>());
   AddSettingsPageUIHandler(
       base::MakeUnique<chromeos::settings::CupsPrintersHandler>(web_ui));
+  AddSettingsPageUIHandler(
+      base::MakeUnique<chromeos::settings::FingerprintHandler>());
   AddSettingsPageUIHandler(
       base::MakeUnique<chromeos::settings::KeyboardHandler>(web_ui));
   AddSettingsPageUIHandler(
