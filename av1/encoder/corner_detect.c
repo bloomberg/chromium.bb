@@ -20,7 +20,7 @@
 #include "av1/encoder/corner_detect.h"
 
 // Fast_9 wrapper
-#define FAST_BARRIER 40
+#define FAST_BARRIER 20
 int fast_corner_detect(unsigned char *buf, int width, int height, int stride,
                        int *points, int max_points) {
   int num_points;

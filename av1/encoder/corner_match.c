@@ -16,7 +16,7 @@
 
 #include "av1/encoder/corner_match.h"
 
-#define MATCH_SZ 15
+#define MATCH_SZ 13
 #define MATCH_SZ_BY2 ((MATCH_SZ - 1) / 2)
 #define MATCH_SZ_SQ (MATCH_SZ * MATCH_SZ)
 #define SEARCH_SZ 9
