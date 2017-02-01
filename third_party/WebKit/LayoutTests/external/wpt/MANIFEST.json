@@ -18552,6 +18552,12 @@
      {}
     ]
    ],
+   "IndexedDB/idbobjectstore_getKey.html": [
+    [
+     "/IndexedDB/idbobjectstore_getKey.html",
+     {}
+    ]
+   ],
    "IndexedDB/idbobjectstore_index.htm": [
     [
      "/IndexedDB/idbobjectstore_index.htm",
@@ -34936,7 +34942,7 @@
    "testharness"
   ],
   "IndexedDB/idbkeyrange-includes.htm": [
-   "fffdcf4d0bb1d9de1b9f65b62784bb39dd280250",
+   "7599b7440c8cfc5cbd8f2586487035eced554530",
    "testharness"
   ],
   "IndexedDB/idbkeyrange.htm": [
@@ -35209,6 +35215,10 @@
   ],
   "IndexedDB/idbobjectstore_getAllKeys.html": [
    "bfb992f18be3cea8e6febebc22b2a524bfc8cb3a",
+   "testharness"
+  ],
+  "IndexedDB/idbobjectstore_getKey.html": [
+   "58272cd29a4137d30247cef03da5576bd5beddc2",
    "testharness"
   ],
   "IndexedDB/idbobjectstore_index.htm": [
