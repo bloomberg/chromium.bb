@@ -280,8 +280,14 @@ void UserImageScreen::Show() {
       kContextKeySelectedImageURL,
       default_user_image::GetDefaultImageUrl(selected_image_));
 
-  // Start fetching the profile image.
-  GetUserImageManager()->DownloadProfileImage(kProfileDownloadReason);
+  const user_manager::User* user = GetUser();
+  // Fetch profile image for GAIA accounts.
+  if (user && user->HasGaiaAccount()) {
+    GetContextEditor().SetBoolean(kContextKeyHasGaiaAccount, true);
+    GetUserImageManager()->DownloadProfileImage(kProfileDownloadReason);
+  } else {
+    GetContextEditor().SetBoolean(kContextKeyHasGaiaAccount, false);
+  }
 }
 
 void UserImageScreen::Hide() {

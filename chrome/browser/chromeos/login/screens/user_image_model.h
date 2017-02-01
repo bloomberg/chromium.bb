@@ -19,6 +19,7 @@ class UserImageModel : public BaseScreen {
   static const char kContextKeyIsCameraPresent[];
   static const char kContextKeySelectedImageURL[];
   static const char kContextKeyProfilePictureDataURL[];
+  static const char kContextKeyHasGaiaAccount[];
 
   explicit UserImageModel(BaseScreenDelegate* base_screen_delegate);
   ~UserImageModel() override;
