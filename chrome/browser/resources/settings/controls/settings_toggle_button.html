@@ -39,10 +39,13 @@
     <div id="outerRow" noSubLabel$="[[!subLabel]]">
       <div class="flex" on-tap="onLabelWrapperTap_"
           actionable$="[[!controlDisabled_(disabled, pref)]]">
-        <div class="label">[[label]]</div>
+        <div class="label">
+          [[label]]
+          <content select=".label-controls"></content>
+        </div>
         <div class="secondary label">[[subLabel]]</div>
       </div>
-      <content selector=".more-actions"></content>
+      <content select=".more-actions"></content>
       <template is="dom-if" if="[[pref.controlledBy]]">
         <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
       </template>
