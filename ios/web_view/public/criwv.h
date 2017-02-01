@@ -11,6 +11,7 @@
 @protocol CRIWVWebView;
 
 // Main interface for the CRIWV library.
+__attribute__((visibility("default")))
 @interface CRIWV : NSObject
 
 // Initializes the CRIWV library.  This function should be called from
