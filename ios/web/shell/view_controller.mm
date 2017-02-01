@@ -136,10 +136,6 @@ using web::NavigationManager;
   UIView* view = _webState->GetView();
   [view setFrame:[_containerView bounds]];
   [_containerView addSubview:view];
-
-  NavigationManager::WebLoadParams params(GURL("https://dev.chromium.org/"));
-  params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  self.navigationManager->LoadURLWithParams(params);
 }
 
 - (NavigationManager*)navigationManager {

@@ -34,6 +34,10 @@
   web::WebState* webState = web::shell_test_util::GetCurrentWebState();
   if (webState->ContentIsHTML())
     web::WaitUntilWindowIdInjected(webState);
+
+  // Ensure any UI elements handled by EarlGrey become idle for any subsequent
+  // EarlGrey steps.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 @end

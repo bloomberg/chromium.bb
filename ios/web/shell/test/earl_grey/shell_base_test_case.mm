@@ -39,8 +39,6 @@ using web::WebViewContainingText;
 // Set up called once for the class.
 + (void)setUp {
   [super setUp];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("Chromium")]
-      assertWithMatcher:grey_notNil()];
   HttpServer::GetSharedInstance().StartOrDie();
 }
 
