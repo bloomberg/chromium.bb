@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "base/cancelable_callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/wm_helper.h"
@@ -103,9 +103,8 @@ class Pointer : public ui::EventHandler,
   // The current cursor.
   ui::Cursor cursor_;
 
-  // Cancelable callback for pending cursor capture.
-  base::CancelableCallback<void(std::unique_ptr<cc::CopyOutputResult>)>
-      cursor_captured_callback_;
+  // Weak pointer factory used for cursor capture callbacks.
+  base::WeakPtrFactory<Pointer> cursor_capture_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Pointer);
 };

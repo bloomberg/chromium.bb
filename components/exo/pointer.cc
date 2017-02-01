@@ -50,7 +50,9 @@ bool SameLocation(const ui::LocatedEvent* event, const gfx::PointF& location) {
 // Pointer, public:
 
 Pointer::Pointer(PointerDelegate* delegate)
-    : delegate_(delegate), cursor_(ui::kCursorNull) {
+    : delegate_(delegate),
+      cursor_(ui::kCursorNull),
+      cursor_capture_weak_ptr_factory_(this) {
   auto* helper = WMHelper::GetInstance();
   helper->AddPreTargetHandler(this);
   helper->AddCursorObserver(this);
@@ -121,7 +123,7 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
   if (surface_) {
     CaptureCursor();
   } else {
-    cursor_captured_callback_.Cancel();
+    cursor_capture_weak_ptr_factory_.InvalidateWeakPtrs();
     cursor_ = ui::kCursorNone;
     UpdateCursor();
   }
@@ -152,6 +154,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       focus_->UnregisterCursorProvider(this);
       focus_ = nullptr;
       cursor_ = ui::kCursorNull;
+      cursor_capture_weak_ptr_factory_.InvalidateWeakPtrs();
     }
     // Second generate an enter event if focus moved to a new target.
     if (target) {
@@ -328,17 +331,16 @@ void Pointer::CaptureCursor() {
   float primary_device_scale_factor =
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
 
-  // Cancel pending capture and create a new request.
-  cursor_captured_callback_.Reset(
-      base::Bind(&Pointer::OnCursorCaptured, base::Unretained(this),
-                 gfx::ScaleToFlooredPoint(
-                     hotspot_,
-                     // |hotspot_| is in surface coordinate space so apply both
-                     // device scale and UI scale.
-                     cursor_scale_ * primary_device_scale_factor)));
-  surface_->window()->layer()->RequestCopyOfOutput(
+  std::unique_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateBitmapRequest(
-          cursor_captured_callback_.callback()));
+          base::Bind(&Pointer::OnCursorCaptured,
+                     cursor_capture_weak_ptr_factory_.GetWeakPtr(),
+                     gfx::ScaleToFlooredPoint(
+                         hotspot_,
+                         // |hotspot_| is in surface coordinate space so apply
+                         // both device scale and UI scale.
+                         cursor_scale_ * primary_device_scale_factor)));
+  surface_->window()->layer()->RequestCopyOfOutput(std::move(request));
 }
 
 void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
