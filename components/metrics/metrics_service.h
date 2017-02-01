@@ -198,9 +198,6 @@ class MetricsService : public base::HistogramFlattener {
                                int message_size,
                                bool is_cellular);
 
-  // Merge any data from metrics providers into the global StatisticsRecorder.
-  void MergeHistogramDeltas();
-
  protected:
   // Exposed for testing.
   MetricsLogManager* log_manager() { return &log_manager_; }

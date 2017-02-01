@@ -559,11 +559,6 @@ void MetricsService::UpdateMetricsUsagePrefs(const std::string& service_name,
   }
 }
 
-void MetricsService::MergeHistogramDeltas() {
-  for (MetricsProvider* provider : metrics_providers_)
-    provider->MergeHistogramDeltas();
-}
-
 //------------------------------------------------------------------------------
 // private methods
 //------------------------------------------------------------------------------

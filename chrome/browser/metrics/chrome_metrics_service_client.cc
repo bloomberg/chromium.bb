@@ -20,6 +20,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
@@ -765,11 +766,6 @@ void ChromeMetricsServiceClient::CollectFinalHistograms() {
   details->StartFetch();
 }
 
-void ChromeMetricsServiceClient::MergeHistogramDeltas() {
-  DCHECK(GetMetricsService());
-  GetMetricsService()->MergeHistogramDeltas();
-}
-
 void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -804,10 +800,8 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
 
   // Merge histograms from metrics providers into StatisticsRecorder.
   content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&ChromeMetricsServiceClient::MergeHistogramDeltas,
-                 weak_ptr_factory_.GetWeakPtr()),
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&base::StatisticsRecorder::ImportProvidedHistograms),
       callback);
 
   // Set up the callback task to call after we receive histograms from all

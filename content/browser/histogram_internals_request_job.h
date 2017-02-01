@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request_simple_job.h"
 
 namespace content {
@@ -17,16 +18,23 @@ class HistogramInternalsRequestJob : public net::URLRequestSimpleJob {
   HistogramInternalsRequestJob(net::URLRequest* request,
                                net::NetworkDelegate* network_delegate);
 
+  // net::URLRequestSimpleJob:
+  void Start() override;
   int GetData(std::string* mime_type,
               std::string* charset,
               std::string* data,
               const net::CompletionCallback& callback) const override;
 
  private:
-  ~HistogramInternalsRequestJob() override {}
+  ~HistogramInternalsRequestJob() override;
+
+  // Starts the real URL request.
+  void StartUrlRequest();
 
   // The string to select histograms which have |path_| as a substring.
   std::string path_;
+
+  base::WeakPtrFactory<HistogramInternalsRequestJob> weak_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(HistogramInternalsRequestJob);
 };

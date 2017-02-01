@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_provider.h"
@@ -30,7 +31,8 @@ namespace metrics {
 // Any number of files can be registered and will be polled once per upload
 // cycle (at startup and periodically thereafter -- about every 30 minutes
 // for desktop) for data to send.
-class FileMetricsProvider : public MetricsProvider {
+class FileMetricsProvider : public MetricsProvider,
+                            public base::StatisticsRecorder::HistogramProvider {
  public:
   enum SourceType {
     // "Atomic" files are a collection of histograms that are written
@@ -172,9 +174,11 @@ class FileMetricsProvider : public MetricsProvider {
   // metrics::MetricsDataProvider:
   void OnDidCreateMetricsLog() override;
   bool HasInitialStabilityMetrics() override;
-  void MergeHistogramDeltas() override;
   void RecordInitialHistogramSnapshots(
       base::HistogramSnapshotManager* snapshot_manager) override;
+
+  // base::StatisticsRecorder::HistogramProvider:
+  void MergeHistogramDeltas() override;
 
   // A task-runner capable of performing I/O.
   scoped_refptr<base::TaskRunner> task_runner_;

@@ -30,6 +30,8 @@ SubprocessMetricsProvider* g_subprocess_metrics_provider_for_testing;
 
 SubprocessMetricsProvider::SubprocessMetricsProvider()
     : scoped_observer_(this), weak_ptr_factory_(this) {
+  base::StatisticsRecorder::RegisterHistogramProvider(
+      weak_ptr_factory_.GetWeakPtr());
   content::BrowserChildProcessObserver::Add(this);
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());

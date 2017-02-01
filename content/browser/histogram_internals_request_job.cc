@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "content/browser/histogram_synchronizer.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
@@ -15,8 +16,9 @@
 namespace content {
 
 HistogramInternalsRequestJob::HistogramInternalsRequestJob(
-    net::URLRequest* request, net::NetworkDelegate* network_delegate)
-    : net::URLRequestSimpleJob(request, network_delegate) {
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate)
+    : net::URLRequestSimpleJob(request, network_delegate), weak_factory_(this) {
   const std::string& spec = request->url().possibly_invalid_spec();
   const url::Parsed& parsed = request->url().parsed_for_possibly_invalid_spec();
   // + 1 to skip the slash at the beginning of the path.
@@ -25,6 +27,8 @@ HistogramInternalsRequestJob::HistogramInternalsRequestJob(
   if (offset < static_cast<int>(spec.size()))
     path_.assign(spec.substr(offset));
 }
+
+HistogramInternalsRequestJob::~HistogramInternalsRequestJob() {}
 
 void AboutHistogram(std::string* data, const std::string& path) {
   HistogramSynchronizer::FetchHistograms();
@@ -54,6 +58,17 @@ void AboutHistogram(std::string* data, const std::string& path) {
   base::StatisticsRecorder::WriteHTMLGraph(unescaped_query, data);
 }
 
+void HistogramInternalsRequestJob::Start() {
+  // First import histograms from all providers and then start the URL fetch
+  // job. It's not possible to call URLRequestSimpleJob::Start through Bind,
+  // it ends up re-calling this method, so a small helper method is used.
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&base::StatisticsRecorder::ImportProvidedHistograms),
+      base::Bind(&HistogramInternalsRequestJob::StartUrlRequest,
+                 weak_factory_.GetWeakPtr()));
+}
+
 int HistogramInternalsRequestJob::GetData(
     std::string* mime_type,
     std::string* charset,
@@ -65,6 +80,10 @@ int HistogramInternalsRequestJob::GetData(
   data->clear();
   AboutHistogram(data, path_);
   return net::OK;
+}
+
+void HistogramInternalsRequestJob::StartUrlRequest() {
+  URLRequestSimpleJob::Start();
 }
 
 }  // namespace content

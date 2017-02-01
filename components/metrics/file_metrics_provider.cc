@@ -122,6 +122,8 @@ FileMetricsProvider::FileMetricsProvider(
     : task_runner_(task_runner),
       pref_service_(local_state),
       weak_factory_(this) {
+  base::StatisticsRecorder::RegisterHistogramProvider(
+      weak_factory_.GetWeakPtr());
 }
 
 FileMetricsProvider::~FileMetricsProvider() {}
@@ -522,20 +524,6 @@ bool FileMetricsProvider::HasInitialStabilityMetrics() {
   return !sources_for_previous_run_.empty();
 }
 
-void FileMetricsProvider::MergeHistogramDeltas() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Measure the total time spent processing all sources as well as the time
-  // per individual file. This method is called on the UI thread so it's
-  // important to know how much total "jank" may be introduced.
-  SCOPED_UMA_HISTOGRAM_TIMER("UMA.FileMetricsProvider.SnapshotTime.Total");
-
-  for (std::unique_ptr<SourceInfo>& source : sources_mapped_) {
-    SCOPED_UMA_HISTOGRAM_TIMER("UMA.FileMetricsProvider.SnapshotTime.File");
-    MergeHistogramDeltasFromSource(source.get());
-  }
-}
-
 void FileMetricsProvider::RecordInitialHistogramSnapshots(
     base::HistogramSnapshotManager* snapshot_manager) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -561,6 +549,20 @@ void FileMetricsProvider::RecordInitialHistogramSnapshots(
 
     // Update the last-seen time so it isn't read again unless it changes.
     RecordSourceAsRead(source.get());
+  }
+}
+
+void FileMetricsProvider::MergeHistogramDeltas() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Measure the total time spent processing all sources as well as the time
+  // per individual file. This method is called on the UI thread so it's
+  // important to know how much total "jank" may be introduced.
+  SCOPED_UMA_HISTOGRAM_TIMER("UMA.FileMetricsProvider.SnapshotTime.Total");
+
+  for (std::unique_ptr<SourceInfo>& source : sources_mapped_) {
+    SCOPED_UMA_HISTOGRAM_TIMER("UMA.FileMetricsProvider.SnapshotTime.File");
+    MergeHistogramDeltasFromSource(source.get());
   }
 }
 

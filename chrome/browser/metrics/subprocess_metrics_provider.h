@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics/metrics_provider.h"
@@ -27,10 +28,12 @@ class PersistentHistogramAllocator;
 // memory segments between processes. Merging occurs when a process exits,
 // when metrics are being collected for upload, or when something else needs
 // combined metrics (such as the chrome://histograms page).
-class SubprocessMetricsProvider : public metrics::MetricsProvider,
-                                  public content::BrowserChildProcessObserver,
-                                  public content::NotificationObserver,
-                                  public content::RenderProcessHostObserver {
+class SubprocessMetricsProvider
+    : public metrics::MetricsProvider,
+      public base::StatisticsRecorder::HistogramProvider,
+      public content::BrowserChildProcessObserver,
+      public content::NotificationObserver,
+      public content::RenderProcessHostObserver {
  public:
   SubprocessMetricsProvider();
   ~SubprocessMetricsProvider() override;
