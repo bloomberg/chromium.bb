@@ -171,6 +171,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_SupervisedUserFlow) {
   GetFakeUserManager()->SetUserFlow(
       manager_id, new chromeos::SupervisedUserCreationFlow(manager_id));
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+  GetFakeUserManager()->ResetUserFlow(manager_id);
 }
 
 // TODO(hidehiko): Add test for Ephemeral users. There seems no way to easily
