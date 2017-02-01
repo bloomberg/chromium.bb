@@ -35,24 +35,6 @@ SafeSitesState GetState(const Profile* profile) {
   if (!profile->GetPrefs()->GetBoolean(prefs::kSupervisedUserSafeSites))
     return SafeSitesState::DISABLED;
 
-  std::string arg = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kSupervisedUserSafeSites);
-  if (!arg.empty()) {
-    if (arg == "enabled")
-      return SafeSitesState::ENABLED;
-    if (arg == "disabled")
-      return SafeSitesState::DISABLED;
-    if (arg == "blacklist-only")
-      return SafeSitesState::BLACKLIST_ONLY;
-    if (arg == "online-check-only")
-      return SafeSitesState::ONLINE_CHECK_ONLY;
-
-    LOG(WARNING) << "Invalid value \"" << arg << "\" specified for flag \""
-                 << switches::kSupervisedUserSafeSites
-                 << "\", defaulting to \"disabled\"";
-    return SafeSitesState::DISABLED;
-  }
-
   // If no cmdline arg is specified, evaluate the field trial.
   if (trial_group == "Disabled")
     return SafeSitesState::DISABLED;

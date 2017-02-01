@@ -6761,18 +6761,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DATASAVER_PROMPT_DEMO_MODE" desc="The value of the Data Saver prompt flag which always shows prompt on network properties change.">
         Demo mode
       </message>
-      <message name="IDS_FLAGS_SUPERVISED_USER_SAFESITES_NAME" desc="Name of the flag to enable/disable the supervised user SafeSites filtering feature.">
-        Child account SafeSites filtering
-      </message>
-      <message name="IDS_FLAGS_SUPERVISED_USER_SAFESITES_DESCRIPTION" desc="Description for the flag to enable/disable the supervised user SafeSites filtering feature.">
-        Enable or disable SafeSites filtering for child accounts.
-      </message>
-      <message name="IDS_SUPERVISED_USER_SAFESITES_BLACKLIST_ONLY" desc="Description for the choice to enable only the static blacklist in the supervised user SafeSites filtering feature.">
-        Static blacklist only
-      </message>
-      <message name="IDS_SUPERVISED_USER_SAFESITES_ONLINE_CHECK_ONLY" desc="Description for the choice to enable only the online check in the supervised user SafeSites filtering feature.">
-        Online check only
-      </message>
       <message name="IDS_FLAGS_DISABLE_UNIFIED_MEDIA_PIPELINE_NAME" desc="Title for the flag to disable the unified media pipeline on Android.">
         Disables the unified media pipeline on Android.
       </message>
@@ -8049,7 +8037,7 @@ the Bookmarks menu.">
       <!-- Supervised User Block Interstitial data -->
 
        <message name="IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT" desc="The default text for feedback about a blocked site.">
-        <ph name="REASON">$1<ex>This site was blocked due to the SafeSites filter.</ex></ph>
+        <ph name="REASON">$1<ex>It may have mature content.</ex></ph>
 I don't think this site should be blocked!
       </message>
 

@@ -418,22 +418,6 @@ const FeatureEntry::Choice kDataSaverPromptChoices[] = {
 };
 #endif  // OS_CHROMEOS
 
-const FeatureEntry::Choice kSupervisedUserSafeSitesChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    switches::kSupervisedUserSafeSites,
-    "enabled" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    switches::kSupervisedUserSafeSites,
-    "disabled" },
-  { IDS_SUPERVISED_USER_SAFESITES_BLACKLIST_ONLY,
-    switches::kSupervisedUserSafeSites,
-    "blacklist-only" },
-  { IDS_SUPERVISED_USER_SAFESITES_ONLINE_CHECK_ONLY,
-    switches::kSupervisedUserSafeSites,
-    "online-check-only" }
-};
-
 const FeatureEntry::Choice kV8CacheOptionsChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kV8CacheOptions, "none" },
@@ -1600,9 +1584,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_DATASAVER_PROMPT_DESCRIPTION, kOsCrOS,
      MULTI_VALUE_TYPE(kDataSaverPromptChoices)},
 #endif  // OS_CHROMEOS
-    {"supervised-user-safesites", IDS_FLAGS_SUPERVISED_USER_SAFESITES_NAME,
-     IDS_FLAGS_SUPERVISED_USER_SAFESITES_DESCRIPTION, kOsAll,
-     MULTI_VALUE_TYPE(kSupervisedUserSafeSitesChoices)},
 #if defined(OS_ANDROID)
     {"enable-autofill-keyboard-accessory-view",
      IDS_FLAGS_AUTOFILL_ACCESSORY_VIEW_NAME,

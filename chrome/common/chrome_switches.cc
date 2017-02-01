@@ -792,10 +792,6 @@ const char kStartStackProfiler[]            = "start-stack-profiler";
 // Used for testing.
 const char kSupervisedUserId[]              = "managed-user-id";
 
-// Enables/disables SafeSites filtering for supervised users. Possible values
-// are "enabled", "disabled", "blacklist-only", and "online-check-only".
-const char kSupervisedUserSafeSites[]       = "supervised-user-safesites";
-
 // Used to authenticate requests to the Sync service for supervised users.
 // Setting this switch also causes Sync to be set up for a supervised user.
 const char kSupervisedUserSyncToken[]       = "managed-user-sync-token";
