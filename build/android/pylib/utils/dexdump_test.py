@@ -78,11 +78,9 @@ class DexdumpXMLParseTest(unittest.TestCase):
         'classes': {
           'Class1': {
             'methods': ['class1Method1', 'class1Method2'],
-            'superclass': 'java.lang.Object',
           },
           'Class2': {
             'methods': ['class2Method1'],
-            'superclass': 'java.lang.Object',
           }
         },
       },
@@ -94,9 +92,9 @@ class DexdumpXMLParseTest(unittest.TestCase):
   def testParsePackageNode(self):
     example_xml_string = (
         '<package name="com.foo.bar">'
-        '<class name="Class1" extends="java.lang.Object">'
+        '<class name="Class1">'
         '</class>'
-        '<class name="Class2" extends="java.lang.Object">'
+        '<class name="Class2">'
         '</class>'
         '</package>')
 
@@ -108,11 +106,9 @@ class DexdumpXMLParseTest(unittest.TestCase):
       'classes': {
         'Class1': {
           'methods': [],
-          'superclass': 'java.lang.Object',
         },
         'Class2': {
           'methods': [],
-          'superclass': 'java.lang.Object',
         },
       },
     }
@@ -120,7 +116,7 @@ class DexdumpXMLParseTest(unittest.TestCase):
 
   def testParseClassNode(self):
     example_xml_string = (
-        '<class name="Class1" extends="java.lang.Object">'
+        '<class name="Class1">'
         '<method name="method1">'
         '</method>'
         '<method name="method2">'
@@ -132,7 +128,6 @@ class DexdumpXMLParseTest(unittest.TestCase):
 
     expected = {
       'methods': ['method1', 'method2'],
-      'superclass': 'java.lang.Object',
     }
     self.assertEquals(expected, actual)
 

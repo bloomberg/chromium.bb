@@ -67,12 +67,7 @@ def _ParseRootNode(root):
   results = {}
   for child in root:
     if child.tag == 'package':
-      package_name = child.attrib['name']
-      parsed_node = _ParsePackageNode(child)
-      if package_name in results:
-        results[package_name]['classes'].update(parsed_node['classes'])
-      else:
-        results[package_name] = parsed_node
+      results[child.attrib['name']] = _ParsePackageNode(child)
   return results
 
 
@@ -112,4 +107,4 @@ def _ParseClassNode(class_node):
   for child in class_node:
     if child.tag == 'method':
       methods.append(child.attrib['name'])
-  return {'methods': methods, 'superclass': class_node.attrib['extends']}
+  return {'methods': methods}
