@@ -12,6 +12,7 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/chromeos/ime/infolist_window.h"
 #include "ui/views/widget/widget.h"
@@ -44,12 +45,19 @@ void CandidateWindowControllerImpl::InitCandidateWindowView() {
   if (candidate_window_view_)
     return;
 
-  aura::Window* active_window = ash::wm::GetActiveWindow();
-  candidate_window_view_ =
-      new ui::ime::CandidateWindowView(ash::Shell::GetContainer(
-          active_window ? active_window->GetRootWindow()
-                        : ash::Shell::GetTargetRootWindow(),
-          ash::kShellWindowId_SettingBubbleContainer));
+  // TODO(moshayedi): crbug.com/684658. Setting parent is nullptr in mash is
+  // just for the sake of not crashing. It doesn't provide the same behaviour
+  // as we have in ChromeOS. For example, candidate pop-up disappears when
+  // dragging the window in mash, but it shouldn't.
+  gfx::NativeView parent = nullptr;
+  if (!chrome::IsRunningInMash()) {
+    aura::Window* active_window = ash::wm::GetActiveWindow();
+    parent = ash::Shell::GetContainer(
+        active_window ? active_window->GetRootWindow()
+                      : ash::Shell::GetTargetRootWindow(),
+        ash::kShellWindowId_SettingBubbleContainer);
+  }
+  candidate_window_view_ = new ui::ime::CandidateWindowView(parent);
   candidate_window_view_->AddObserver(this);
   candidate_window_view_->SetCursorBounds(cursor_bounds_, composition_head_);
   views::Widget* widget = candidate_window_view_->InitWidget();
