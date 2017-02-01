@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_math.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/buffering_state.h"
@@ -71,6 +72,7 @@ CourierRenderer::CourierRenderer(
       rpc_handle_(rpc_broker_->GetUniqueHandle()),
       remote_renderer_handle_(RpcBroker::kInvalidHandle),
       video_renderer_sink_(video_renderer_sink),
+      clock_(new base::DefaultTickClock()),
       weak_factory_(this) {
   VLOG(2) << __func__;
   // Note: The constructor is running on the main thread, but will be destroyed
@@ -710,7 +712,7 @@ void CourierRenderer::OnMediaTimeUpdated() {
   if (!flush_cb_.is_null())
     return;  // Don't manage and check the queue when Flush() is on-going.
 
-  base::TimeTicks current_time = base::TimeTicks::Now();
+  base::TimeTicks current_time = clock_->NowTicks();
   if (current_time < ignore_updates_until_time_)
     return;  // Not stable yet.
 
@@ -758,7 +760,7 @@ void CourierRenderer::UpdateVideoStatsQueue(int video_frames_decoded,
     return;
   }
 
-  base::TimeTicks current_time = base::TimeTicks::Now();
+  base::TimeTicks current_time = clock_->NowTicks();
   if (current_time < ignore_updates_until_time_)
     return;  // Not stable yet.
 
@@ -796,7 +798,7 @@ void CourierRenderer::ResetMeasurements() {
   sum_video_frames_dropped_ = 0;
   sum_video_frames_decoded_ = 0;
   stats_updated_ = false;
-  ignore_updates_until_time_ = base::TimeTicks::Now() + kStabilizationPeriod;
+  ignore_updates_until_time_ = clock_->NowTicks() + kStabilizationPeriod;
 
   if (state_ != STATE_ERROR &&
       (audio_demuxer_stream_adapter_ || video_demuxer_stream_adapter_)) {
@@ -813,7 +815,7 @@ void CourierRenderer::MeasureAndRecordDataRates() {
   // resuming playback. Since the goal here is to measure the sustained content
   // bitrates, ignore the byte counts the first time since the last
   // ResetMeasurements() call.
-  const base::TimeTicks current_time = base::TimeTicks::Now();
+  const base::TimeTicks current_time = clock_->NowTicks();
   if (current_time < ignore_updates_until_time_ + kDataFlowPollPeriod) {
     if (audio_demuxer_stream_adapter_)
       audio_demuxer_stream_adapter_->GetBytesWrittenAndReset();

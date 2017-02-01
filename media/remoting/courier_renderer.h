@@ -225,6 +225,8 @@ class CourierRenderer : public Renderer {
   // Records events and measurements of interest.
   RendererMetricsRecorder metrics_recorder_;
 
+  std::unique_ptr<base::TickClock> clock_;
+
   // A timer that polls the DemuxerStreamAdapters periodically to measure
   // the data flow rates for metrics.
   base::RepeatingTimer data_flow_poll_timer_;
