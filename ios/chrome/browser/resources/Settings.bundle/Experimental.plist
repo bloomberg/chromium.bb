@@ -128,28 +128,6 @@
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Enable All Bookmarks</string>
-			<key>Key</key>
-			<string>AllBookmarks</string>
-			<key>DefaultValue</key>
-			<string></string>
-			<key>Titles</key>
-			<array>
-				<string>Default</string>
-				<string>Enabled</string>
-				<string>Disabled</string>
-			</array>
-			<key>Values</key>
-			<array>
-				<string></string>
-				<string>Enabled</string>
-				<string>Disabled</string>
-			</array>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSMultiValueSpecifier</string>
-			<key>Title</key>
 			<string>Enable Popular Sites</string>
 			<key>Key</key>
 			<string>EnablePopularSites</string>

@@ -137,18 +137,12 @@ using bookmarks::BookmarkNode;
       [[NSMutableArray alloc] init]);
   [self.menuItems addObject:topSection];
 
-  if (experimental_flags::IsAllBookmarksEnabled()) {
-    // All Items is always visible.
-    [topSection addObject:[BookmarkMenuItem allMenuItem]];
-  }
-  // Bookmarks Bar, Mobile Bookmarks and Other Bookmarks are special folders and
-  // are shown at the top if they contain anything.
-  if (!mobileBookmarks->empty() ||
-      !experimental_flags::IsAllBookmarksEnabled()) {
-    [topSection
-        addObject:[BookmarkMenuItem folderMenuItemForNode:mobileBookmarks
-                                             rootAncestor:mobileBookmarks]];
-  }
+  // Mobile bookmark is shown even if empty.
+  [topSection
+      addObject:[BookmarkMenuItem folderMenuItemForNode:mobileBookmarks
+                                           rootAncestor:mobileBookmarks]];
+  // Bookmarks Bar and Other Bookmarks are special folders and are shown at the
+  // top if they contain anything.
   if (!bookmarkBar->empty()) {
     [topSection addObject:[BookmarkMenuItem folderMenuItemForNode:bookmarkBar
                                                      rootAncestor:bookmarkBar]];
@@ -265,15 +259,6 @@ using bookmarks::BookmarkNode;
     // A child of the selected folder has been deleted or a url not visible in
     // the UI right now has been deleted. Nothing to do as the menu itself needs
     // no change.
-    return;
-  }
-
-  if (node == self.primaryMenuItem.rootAncestor) {
-    // The deleted node is the root node of the current selected folder. Move to
-    // all items.
-    self.primaryMenuItem = [BookmarkMenuItem allMenuItem];
-    [self.delegate bookmarkMenuView:self selectedMenuItem:self.primaryMenuItem];
-    [self reloadData];
     return;
   }
 
@@ -400,8 +385,7 @@ using bookmarks::BookmarkNode;
     shouldProcessInkTouchesAtTouchLocation:(CGPoint)location {
   NSIndexPath* indexPath = [self.tableView indexPathForRowAtPoint:location];
   BookmarkMenuItem* menuItem = [self menuItemAtIndexPath:indexPath];
-  return menuItem.type == bookmarks::MenuItemAll ||
-         menuItem.type == bookmarks::MenuItemFolder;
+  return menuItem.type == bookmarks::MenuItemFolder;
 }
 
 - (MDCInkView*)inkTouchController:(MDCInkTouchController*)inkTouchController

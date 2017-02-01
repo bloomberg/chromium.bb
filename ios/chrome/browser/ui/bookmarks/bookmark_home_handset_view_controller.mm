@@ -21,7 +21,6 @@
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_editing_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_navigation_bar.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_all_collection_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_cells.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_collection_view.h"
@@ -68,7 +67,6 @@ const CGFloat kBookmarkMenuWidth = 264;
 // time, it contains exactly one of the BookmarkCollectionView subclasses.
 @property(nonatomic, retain) UIView* contentView;
 // The possible views that can be shown from the menu.
-@property(nonatomic, retain) BookmarkAllCollectionView* allItemsView;
 @property(nonatomic, retain) BookmarkFolderCollectionView* folderView;
 // This view is created and used if the model is not fully loaded yet by the
 // time this controller starts.
@@ -121,7 +119,6 @@ const CGFloat kBookmarkMenuWidth = 264;
 // view has been loaded, and the bookmark model is loaded.
 - (void)loadBookmarkViews;
 // If the view doesn't exist, create it.
-- (void)ensureAllViewExists;
 - (void)ensureFolderViewExists;
 // Updates the property 'primaryMenuItem'.
 // Updates the UI to reflect the new state of 'primaryMenuItem'.
@@ -219,7 +216,6 @@ const CGFloat kBookmarkMenuWidth = 264;
 @end
 
 @implementation BookmarkHomeHandsetViewController
-@synthesize allItemsView = _allItemsView;
 @synthesize contentView = _contentView;
 @synthesize folderView = _folderView;
 @synthesize waitForModelView = _waitForModelView;
@@ -257,7 +253,6 @@ const CGFloat kBookmarkMenuWidth = 264;
 }
 
 - (void)dealloc {
-  _allItemsView.delegate = nil;
   _folderView.delegate = nil;
 
   _menuView.delegate = nil;
@@ -380,21 +375,6 @@ const CGFloat kBookmarkMenuWidth = 264;
   }
 }
 
-- (void)ensureAllViewExists {
-  if (self.allItemsView)
-    return;
-
-  base::scoped_nsobject<BookmarkAllCollectionView> view(
-      [[BookmarkAllCollectionView alloc]
-          initWithBrowserState:self.browserState
-                         frame:[self frameForPrimaryView]]);
-  self.allItemsView = view;
-  self.allItemsView.delegate = self;
-  [self.allItemsView setEditing:self.editing animated:NO];
-  self.allItemsView.autoresizingMask =
-      UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-}
-
 - (void)ensureFolderViewExists {
   if (self.folderView)
     return;
@@ -412,30 +392,21 @@ const CGFloat kBookmarkMenuWidth = 264;
 
 - (void)updatePrimaryMenuItem:(BookmarkMenuItem*)menuItem
                      animated:(BOOL)animated {
+  DCHECK(menuItem.type == bookmarks::MenuItemFolder);
   if ([self.primaryMenuItem isEqual:menuItem])
     return;
 
   // Disable editing on previous primary view before dismissing it. No need to
   // animate because this view is immediately removed from hierarchy.
-  [self.primaryView setEditing:NO animated:NO];
+  if ([[self primaryMenuItem] supportsEditing])
+    [self.primaryView setEditing:NO animated:NO];
 
   [[self primaryView] removeFromSuperview];
   self.primaryMenuItem = menuItem;
 
-  switch (self.primaryMenuItem.type) {
-    case bookmarks::MenuItemAll:
-      [self ensureAllViewExists];
-      break;
-    case bookmarks::MenuItemFolder:
-      [self ensureFolderViewExists];
-      [self.folderView resetFolder:self.primaryMenuItem.folder];
-      [self.folderView promoStateChangedAnimated:NO];
-      break;
-    case bookmarks::MenuItemDivider:
-    case bookmarks::MenuItemSectionHeader:
-      NOTREACHED();
-      break;
-  }
+  [self ensureFolderViewExists];
+  [self.folderView resetFolder:self.primaryMenuItem.folder];
+  [self.folderView promoStateChangedAnimated:NO];
 
   UIView* primaryView = [self primaryView];
   [[self primaryView] changeOrientation:GetInterfaceOrientation()];
@@ -451,16 +422,9 @@ const CGFloat kBookmarkMenuWidth = 264;
 }
 
 - (UIView<BookmarkHomePrimaryView>*)primaryView {
-  switch (self.primaryMenuItem.type) {
-    case bookmarks::MenuItemAll:
-      return self.allItemsView;
-    case bookmarks::MenuItemFolder:
-      return self.folderView;
-    case bookmarks::MenuItemDivider:
-    case bookmarks::MenuItemSectionHeader:
-      NOTREACHED();
-      return nil;
-  }
+  if (self.primaryMenuItem.type == bookmarks::MenuItemFolder)
+    return self.folderView;
+  return nil;
 }
 
 #pragma mark - Editing bar methods.
@@ -1157,15 +1121,6 @@ const CGFloat kBookmarkMenuWidth = 264;
 #pragma mark - BookmarkPromoControllerDelegate
 
 - (void)promoStateChanged:(BOOL)promoEnabled {
-  [self.allItemsView.collectionView reloadData];
-  // This is required to workaround a crash seen once on iOS 7.1 when
-  // the collection gets two reloadData without getting a call to layout
-  // subviews, the collection view will reuse some cached data for the perfoming
-  // the layout which are invalid after the second call to reloadData.
-  // Forcing the layout invalidation after each reloadData seems to fix the
-  // issue.
-  [self.allItemsView.collectionView.collectionViewLayout invalidateLayout];
-
   [self.folderView
       promoStateChangedAnimated:self.folderView == [self primaryView]];
 }

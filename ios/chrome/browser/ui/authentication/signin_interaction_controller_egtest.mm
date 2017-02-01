@@ -547,9 +547,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   }
 
   // Selects the top level folder (Sign In promo is only shown there).
-  NSString* topLevelFolderTitle = experimental_flags::IsAllBookmarksEnabled()
-                                      ? @"All Bookmarks"
-                                      : @"Mobile Bookmarks";
+  NSString* topLevelFolderTitle = @"Mobile Bookmarks";
   id<GREYMatcher> all_bookmarks_matcher =
       grey_allOf(grey_kindOfClass(NSClassFromString(@"BookmarkMenuCell")),
                  grey_descendant(grey_text(topLevelFolderTitle)), nil);
