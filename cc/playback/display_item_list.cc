@@ -262,4 +262,8 @@ void DisplayItemList::GetDiscardableImagesInRect(
   image_map_.GetDiscardableImagesInRect(rect, contents_scale, images);
 }
 
+gfx::Rect DisplayItemList::GetRectForImage(ImageId image_id) const {
+  return image_map_.GetRectForImage(image_id);
+}
+
 }  // namespace cc

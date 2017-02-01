@@ -247,6 +247,10 @@ void RasterSource::GetDiscardableImagesInRect(
   display_list_->GetDiscardableImagesInRect(layer_rect, contents_scale, images);
 }
 
+gfx::Rect RasterSource::GetRectForImage(ImageId image_id) const {
+  return display_list_->GetRectForImage(image_id);
+}
+
 bool RasterSource::CoversRect(const gfx::Rect& layer_rect) const {
   if (size_.IsEmpty())
     return false;

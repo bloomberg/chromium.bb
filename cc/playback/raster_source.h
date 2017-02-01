@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
+#include "cc/playback/image_id.h"
 #include "cc/playback/recording_source.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -106,6 +107,8 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   // Valid rectangle in which everything is recorded and can be rastered from.
   virtual gfx::Rect RecordedViewport() const;
+
+  gfx::Rect GetRectForImage(ImageId image_id) const;
 
   // Tracing functionality.
   virtual void DidBeginTracing();

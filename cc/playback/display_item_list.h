@@ -19,6 +19,7 @@
 #include "cc/base/rtree.h"
 #include "cc/playback/discardable_image_map.h"
 #include "cc/playback/display_item.h"
+#include "cc/playback/image_id.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -149,6 +150,7 @@ class CC_EXPORT DisplayItemList
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   float contents_scale,
                                   std::vector<DrawImage>* images);
+  gfx::Rect GetRectForImage(ImageId image_id) const;
 
   void SetRetainVisualRectsForTesting(bool retain) {
     retain_visual_rects_ = retain;

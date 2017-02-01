@@ -62,9 +62,11 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
   DiscardableImagesMetadataCanvas(
       int width,
       int height,
-      std::vector<std::pair<DrawImage, gfx::Rect>>* image_set)
+      std::vector<std::pair<DrawImage, gfx::Rect>>* image_set,
+      std::unordered_map<ImageId, gfx::Rect>* image_id_to_rect)
       : SkNWayCanvas(width, height),
         image_set_(image_set),
+        image_id_to_rect_(image_id_to_rect),
         canvas_bounds_(SkRect::MakeIWH(width, height)),
         canvas_size_(width, height) {}
 
@@ -198,9 +200,12 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
 
     SkIRect src_irect;
     src_rect.roundOut(&src_irect);
+    gfx::Rect image_rect = SafeClampPaintRectToSize(paint_rect, canvas_size_);
+
+    (*image_id_to_rect_)[image->uniqueID()].Union(image_rect);
     image_set_->push_back(std::make_pair(
         DrawImage(std::move(image), src_irect, filter_quality, matrix),
-        SafeClampPaintRectToSize(paint_rect, canvas_size_)));
+        image_rect));
   }
 
   // Currently this function only handles extracting images from SkImageShaders
@@ -224,6 +229,7 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
   }
 
   std::vector<std::pair<DrawImage, gfx::Rect>>* image_set_;
+  std::unordered_map<ImageId, gfx::Rect>* image_id_to_rect_;
   const SkRect canvas_bounds_;
   const gfx::Size canvas_size_;
   std::vector<SkPaint> saved_paints_;
@@ -239,7 +245,7 @@ std::unique_ptr<SkCanvas> DiscardableImageMap::BeginGeneratingMetadata(
     const gfx::Size& bounds) {
   DCHECK(all_images_.empty());
   return base::MakeUnique<DiscardableImagesMetadataCanvas>(
-      bounds.width(), bounds.height(), &all_images_);
+      bounds.width(), bounds.height(), &all_images_, &image_id_to_rect_);
 }
 
 void DiscardableImageMap::EndGeneratingMetadata() {
@@ -257,6 +263,11 @@ void DiscardableImageMap::GetDiscardableImagesInRect(
   images_rtree_.Search(rect, &indices);
   for (size_t index : indices)
     images->push_back(all_images_[index].first.ApplyScale(contents_scale));
+}
+
+gfx::Rect DiscardableImageMap::GetRectForImage(ImageId image_id) const {
+  const auto& it = image_id_to_rect_.find(image_id);
+  return it == image_id_to_rect_.end() ? gfx::Rect() : it->second;
 }
 
 DiscardableImageMap::ScopedMetadataGenerator::ScopedMetadataGenerator(

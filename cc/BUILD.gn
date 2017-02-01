@@ -263,6 +263,7 @@ cc_component("cc") {
     "playback/float_clip_display_item.h",
     "playback/image_hijack_canvas.cc",
     "playback/image_hijack_canvas.h",
+    "playback/image_id.h",
     "playback/largest_display_item.cc",
     "playback/largest_display_item.h",
     "playback/raster_source.cc",

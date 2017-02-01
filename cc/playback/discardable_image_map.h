@@ -5,12 +5,14 @@
 #ifndef CC_PLAYBACK_DISCARDABLE_IMAGE_MAP_H_
 #define CC_PLAYBACK_DISCARDABLE_IMAGE_MAP_H_
 
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "cc/base/cc_export.h"
 #include "cc/base/rtree.h"
 #include "cc/playback/draw_image.h"
+#include "cc/playback/image_id.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
@@ -46,6 +48,7 @@ class CC_EXPORT DiscardableImageMap {
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   float contents_scale,
                                   std::vector<DrawImage>* images) const;
+  gfx::Rect GetRectForImage(ImageId image_id) const;
 
  private:
   friend class ScopedMetadataGenerator;
@@ -55,6 +58,8 @@ class CC_EXPORT DiscardableImageMap {
   void EndGeneratingMetadata();
 
   std::vector<std::pair<DrawImage, gfx::Rect>> all_images_;
+  std::unordered_map<ImageId, gfx::Rect> image_id_to_rect_;
+
   RTree images_rtree_;
 };
 
