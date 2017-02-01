@@ -124,8 +124,16 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   MediaRouterActionController* action_controller_ = nullptr;
 };
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
+// Flaky on chromeos, linux, win: https://crbug.com/658005
+#define MAYBE_OpenDialogWithMediaRouterAction \
+        DISABLED_OpenDialogWithMediaRouterAction
+#else
+#define MAYBE_OpenDialogWithMediaRouterAction OpenDialogWithMediaRouterAction
+#endif
+
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
-                       OpenDialogWithMediaRouterAction) {
+                       MAYBE_OpenDialogWithMediaRouterAction) {
   // We start off at about:blank page.
   // Make sure there is 1 tab and media router is enabled.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
