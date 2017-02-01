@@ -3885,7 +3885,7 @@ const CodeModules* MinidumpUnloadedModuleList::Copy() const {
   return new BasicCodeModules(this);
 }
 
-vector<linked_ptr<const CodeModule>>
+vector<linked_ptr<const CodeModule> >
 MinidumpUnloadedModuleList::GetShrunkRangeModules() const {
   return vector<linked_ptr<const CodeModule> >();
 }

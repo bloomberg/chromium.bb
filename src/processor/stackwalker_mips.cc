@@ -56,8 +56,8 @@ StackwalkerMIPS::StackwalkerMIPS(const SystemInfo* system_info,
 : Stackwalker(system_info, memory, modules, resolver_helper),
   context_(context) {
   if (context_->context_flags & MD_CONTEXT_MIPS64 ) {
-    if ((memory_ && memory_->GetBase() + memory_->GetSize() - 1)
-        > 0xffffffffffffffff) {
+    if (memory_ && ((memory_->GetBase() + memory_->GetSize() - 1)
+        > 0xffffffffffffffff)) {
       BPLOG(ERROR) << "Memory out of range for stackwalking mips64: "
           << HexString(memory_->GetBase())
           << "+"
@@ -65,7 +65,7 @@ StackwalkerMIPS::StackwalkerMIPS(const SystemInfo* system_info,
       memory_ = NULL;
     }
   } else {
-    if ((memory_ && memory_->GetBase() + memory_->GetSize() - 1) > 0xffffffff) {
+    if (memory_ && ((memory_->GetBase() + memory_->GetSize() - 1) > 0xffffffff)) {
       BPLOG(ERROR) << "Memory out of range for stackwalking mips32: "
           << HexString(memory_->GetBase())
           << "+"
