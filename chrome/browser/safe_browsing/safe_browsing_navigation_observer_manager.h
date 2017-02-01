@@ -118,6 +118,7 @@ class SafeBrowsingNavigationObserverManager
   // to |out_referrer_chain|.
   AttributionResult IdentifyReferrerChainForPPAPIDownload(
       const GURL& initiating_frame_url,
+      const GURL& initiating_main_frame_url,
       int tab_id,
       bool has_user_gesture,
       int user_gesture_count_limit,
@@ -198,6 +199,7 @@ class SafeBrowsingNavigationObserverManager
 
   void AddToReferrerChain(ReferrerChain* referrer_chain,
                           NavigationEvent* nav_event,
+                          const GURL& destination_main_frame_url,
                           ReferrerChainEntry::URLType type);
 
   // Helper function to get the remaining referrer chain when we've already

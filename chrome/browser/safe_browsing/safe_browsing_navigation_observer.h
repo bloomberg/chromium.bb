@@ -33,10 +33,10 @@ struct NavigationEvent {
                                // same as source_url, if source_url was loaded
                                // in main frame.
   GURL original_request_url;   // The original request URL of this navigation.
-  GURL destination_url;        // The actual destination url of this navigation
-                               // event. If this navigation has server side
-                               // redirect(s), actual_target_url will be
-                               // different from initial_request_url.
+  std::vector<GURL> server_redirect_urls;  // Server redirect url chain.
+                                           // Empty if there is no server
+                                           // redirect. If set, last url in this
+                                           // vector is the destination url.
   int source_tab_id;  // Which tab contains the frame with source_url. Tab ID is
                       // returned by SessionTabHelper::IdForTab. This ID is
                       // immutable for a given tab and unique across Chrome
@@ -47,7 +47,13 @@ struct NavigationEvent {
   base::Time last_updated;  // When this NavigationEvent was last updated.
   bool is_user_initiated;  // browser_initiated || has_user_gesture.
   bool has_committed;
-  bool has_server_redirect;
+
+  const GURL& GetDestinationUrl() const {
+    if (!server_redirect_urls.empty())
+      return server_redirect_urls.back();
+    else
+      return original_request_url;
+  }
 };
 
 // Structure to keep track of resolved IP address of a host.

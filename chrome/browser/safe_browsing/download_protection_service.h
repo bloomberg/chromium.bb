@@ -308,10 +308,11 @@ class DownloadProtectionService {
   // Then add referrer chain info to ClientDownloadRequest proto. This function
   // also records UMA stats of download attribution result.
   void AddReferrerChainToPPAPIClientDownloadRequest(
-    const GURL& initiating_frame_url,
-    int tab_id,
-    bool has_user_gesture,
-    ClientDownloadRequest* out_request);
+      const GURL& initiating_frame_url,
+      const GURL& initiating_main_frame_url,
+      int tab_id,
+      bool has_user_gesture,
+      ClientDownloadRequest* out_request);
 
   // These pointers may be NULL if SafeBrowsing is disabled.
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;

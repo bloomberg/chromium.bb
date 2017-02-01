@@ -2,14 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/test/test_renderer_host.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/window_open_disposition.h"
+
+namespace {
+
+const char kNavigationEventCleanUpHistogramName[] =
+    "SafeBrowsing.NavigationObserver.NavigationEventCleanUpCount";
+const char kIPAddressCleanUpHistogramName[] =
+    "SafeBrowsing.NavigationObserver.IPAddressCleanUpCount";
+}
 
 namespace safe_browsing {
 
@@ -43,13 +53,13 @@ class SBNavigationObserverTest : public BrowserWithTestWindowTest {
               actual_nav_event.source_main_frame_url);
     EXPECT_EQ(expected_original_request_url,
               actual_nav_event.original_request_url);
-    EXPECT_EQ(expected_destination_url, actual_nav_event.destination_url);
+    EXPECT_EQ(expected_destination_url, actual_nav_event.GetDestinationUrl());
     EXPECT_EQ(expected_source_tab, actual_nav_event.source_tab_id);
     EXPECT_EQ(expected_target_tab, actual_nav_event.target_tab_id);
     EXPECT_EQ(expected_is_user_initiated, actual_nav_event.is_user_initiated);
     EXPECT_EQ(expected_has_committed, actual_nav_event.has_committed);
     EXPECT_EQ(expected_has_server_redirect,
-              actual_nav_event.has_server_redirect);
+              !actual_nav_event.server_redirect_urls.empty());
   }
 
   SafeBrowsingNavigationObserverManager::NavigationMap* navigation_map() {
@@ -64,10 +74,14 @@ class SBNavigationObserverTest : public BrowserWithTestWindowTest {
     return &navigation_observer_manager_->host_to_ip_map_;
   }
 
+  void RecordHostToIpMapping(const std::string& host, const std::string& ip) {
+    navigation_observer_manager_->RecordHostToIpMapping(host, ip);
+  }
+
   NavigationEvent CreateNavigationEvent(const GURL& destination_url,
                                         const base::Time& timestamp) {
     NavigationEvent nav_event;
-    nav_event.destination_url = destination_url;
+    nav_event.original_request_url = destination_url;
     nav_event.last_updated = timestamp;
     return nav_event;
   }
@@ -103,8 +117,8 @@ TEST_F(SBNavigationObserverTest, BasicNavigationAndCommit) {
   CommitPendingLoad(controller);
   int tab_id = SessionTabHelper::IdForTab(controller->GetWebContents());
   auto nav_map = navigation_map();
-  ASSERT_EQ(std::size_t(1), nav_map->size());
-  ASSERT_EQ(std::size_t(1), nav_map->at(GURL("http://foo/1")).size());
+  ASSERT_EQ(1U, nav_map->size());
+  ASSERT_EQ(1U, nav_map->at(GURL("http://foo/1")).size());
   VerifyNavigationEvent(GURL(),                // source_url
                         GURL(),                // source_main_frame_url
                         GURL("http://foo/1"),  // original_request_url
@@ -128,8 +142,8 @@ TEST_F(SBNavigationObserverTest, ServerRedirect) {
   int tab_id = SessionTabHelper::IdForTab(
       browser()->tab_strip_model()->GetWebContentsAt(0));
   auto nav_map = navigation_map();
-  ASSERT_EQ(std::size_t(1), nav_map->size());
-  ASSERT_EQ(std::size_t(1), nav_map->at(redirect).size());
+  ASSERT_EQ(1U, nav_map->size());
+  ASSERT_EQ(1U, nav_map->at(redirect).size());
   VerifyNavigationEvent(GURL("http://foo/0"),       // source_url
                         GURL("http://foo/0"),       // source_main_frame_url
                         GURL("http://foo/3"),       // original_request_url
@@ -169,17 +183,22 @@ TEST_F(SBNavigationObserverTest, TestCleanUpStaleNavigationEvents) {
       CreateNavigationEvent(url_0, one_hour_ago));
   navigation_map()->at(url_1).push_back(
       CreateNavigationEvent(url_0, one_hour_ago));
-  ASSERT_EQ(std::size_t(2), navigation_map()->size());
-  ASSERT_EQ(std::size_t(4), navigation_map()->at(url_0).size());
-  ASSERT_EQ(std::size_t(2), navigation_map()->at(url_1).size());
+  ASSERT_EQ(2U, navigation_map()->size());
+  ASSERT_EQ(4U, navigation_map()->at(url_0).size());
+  ASSERT_EQ(2U, navigation_map()->at(url_1).size());
+
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kNavigationEventCleanUpHistogramName, 0);
 
   // Cleans up navigation events.
   CleanUpNavigationEvents();
 
   // Verifies all stale and invalid navigation events are removed.
-  ASSERT_EQ(std::size_t(1), navigation_map()->size());
+  ASSERT_EQ(1U, navigation_map()->size());
   EXPECT_EQ(navigation_map()->end(), navigation_map()->find(url_1));
-  EXPECT_EQ(std::size_t(2), navigation_map()->at(url_0).size());
+  EXPECT_EQ(2U, navigation_map()->at(url_0).size());
+  EXPECT_THAT(histograms.GetAllSamples(kNavigationEventCleanUpHistogramName),
+              testing::ElementsAre(base::Bucket(4, 1)));
 }
 
 TEST_F(SBNavigationObserverTest, TestCleanUpStaleUserGestures) {
@@ -201,13 +220,13 @@ TEST_F(SBNavigationObserverTest, TestCleanUpStaleUserGestures) {
   user_gesture_map()->insert(std::make_pair(content0, now));
   user_gesture_map()->insert(std::make_pair(content1, one_minute_ago));
   user_gesture_map()->insert(std::make_pair(content2, in_an_hour));
-  ASSERT_EQ(std::size_t(3), user_gesture_map()->size());
+  ASSERT_EQ(3U, user_gesture_map()->size());
 
   // Cleans up user_gesture_map()
   CleanUpUserGestures();
 
   // Verifies all stale and invalid user gestures are removed.
-  ASSERT_EQ(std::size_t(1), user_gesture_map()->size());
+  ASSERT_EQ(1U, user_gesture_map()->size());
   EXPECT_NE(user_gesture_map()->end(), user_gesture_map()->find(content0));
   EXPECT_EQ(now, user_gesture_map()->at(content0));
 }
@@ -231,16 +250,57 @@ TEST_F(SBNavigationObserverTest, TestCleanUpStaleIPAddresses) {
       std::make_pair(host_1, std::vector<ResolvedIPAddress>()));
   host_to_ip_map()->at(host_1).push_back(
       ResolvedIPAddress(in_an_hour, "3.3.3.3"));
-  ASSERT_EQ(std::size_t(2), host_to_ip_map()->size());
+  ASSERT_EQ(2U, host_to_ip_map()->size());
+
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kIPAddressCleanUpHistogramName, 0);
 
   // Cleans up host_to_ip_map()
   CleanUpIpAddresses();
 
   // Verifies all stale and invalid IP addresses are removed.
-  ASSERT_EQ(std::size_t(1), host_to_ip_map()->size());
+  ASSERT_EQ(1U, host_to_ip_map()->size());
   EXPECT_EQ(host_to_ip_map()->end(), host_to_ip_map()->find(host_1));
-  ASSERT_EQ(std::size_t(1), host_to_ip_map()->at(host_0).size());
+  ASSERT_EQ(1U, host_to_ip_map()->at(host_0).size());
   EXPECT_EQ(now, host_to_ip_map()->at(host_0).front().timestamp);
+  EXPECT_THAT(histograms.GetAllSamples(kIPAddressCleanUpHistogramName),
+              testing::ElementsAre(base::Bucket(2, 1)));
+}
+
+TEST_F(SBNavigationObserverTest, TestRecordHostToIpMapping) {
+  // Setup host_to_ip_map().
+  base::Time now = base::Time::Now();  // Fresh
+  base::Time one_hour_ago =
+      base::Time::FromDoubleT(now.ToDoubleT() - 60.0 * 60.0);  // Stale
+  std::string host_0 = GURL("http://foo/0").host();
+  host_to_ip_map()->insert(
+      std::make_pair(host_0, std::vector<ResolvedIPAddress>()));
+  host_to_ip_map()->at(host_0).push_back(ResolvedIPAddress(now, "1.1.1.1"));
+  host_to_ip_map()->at(host_0).push_back(
+      ResolvedIPAddress(one_hour_ago, "2.2.2.2"));
+
+  // Record a host-IP pair, where host is already in the map, and IP has
+  // never been seen before.
+  RecordHostToIpMapping(host_0, "3.3.3.3");
+  ASSERT_EQ(1U, host_to_ip_map()->size());
+  EXPECT_EQ(3U, host_to_ip_map()->at(host_0).size());
+  EXPECT_EQ("3.3.3.3", host_to_ip_map()->at(host_0).at(2).ip);
+
+  // Record a host-IP pair which is already in the map. It should simply update
+  // its timestamp.
+  ASSERT_EQ(now, host_to_ip_map()->at(host_0).at(0).timestamp);
+  RecordHostToIpMapping(host_0, "1.1.1.1");
+  ASSERT_EQ(1U, host_to_ip_map()->size());
+  EXPECT_EQ(3U, host_to_ip_map()->at(host_0).size());
+  EXPECT_LT(now, host_to_ip_map()->at(host_0).at(2).timestamp);
+
+  // Record a host-ip pair, neither of which has been seen before.
+  std::string host_1 = GURL("http://bar/1").host();
+  RecordHostToIpMapping(host_1, "9.9.9.9");
+  ASSERT_EQ(2U, host_to_ip_map()->size());
+  EXPECT_EQ(3U, host_to_ip_map()->at(host_0).size());
+  EXPECT_EQ(1U, host_to_ip_map()->at(host_1).size());
+  EXPECT_EQ("9.9.9.9", host_to_ip_map()->at(host_1).at(0).ip);
 }
 
 }  // namespace safe_browsing

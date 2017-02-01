@@ -386,6 +386,9 @@ message ClientDownloadRequest {
   // order, i.e. download url comes first in this list, and landing referrer
   // comes last.
   repeated ReferrerChainEntry referrer_chain = 36;
+
+  // Whether DownloadAttribution Finch experiment is enabled for this ping.
+  optional bool download_attribution_finch_enabled = 39;
 }
 
 message ReferrerChainEntry {
@@ -394,14 +397,24 @@ message ReferrerChainEntry {
     LANDING_PAGE = 2;
     LANDING_REFERRER = 3;
     CLIENT_REDIRECT = 4;
-    SERVER_REDIRECT = 5;
+    DEPRECATED_SERVER_REDIRECT = 5;  // Deprecated
+  }
+
+  message ServerRedirect {
+    // [required] server redirect url
+    optional string url = 1;
+
+    // Additional fields for future expansion.
   }
 
   // [required] The url of this Entry.
   optional string url = 1;
 
+  // Only set if it is different from |url|.
+  optional string main_frame_url = 9;
+
   // Type of URLs, such as download url, download referrer, etc.
-  optional URLType type = 2;
+  optional URLType type = 2 [default = CLIENT_REDIRECT];
 
   // IP addresses corresponding to this host.
   repeated string ip_addresses = 3;
@@ -410,13 +423,19 @@ message ReferrerChainEntry {
   optional string referrer_url = 4;
 
   // Main frame URL of referrer.
+  // Only set if it is different from |referrer_url|.
   optional string referrer_main_frame_url = 5;
 
   // If this URL loads in a different tab/frame from previous one.
   optional bool is_retargeting = 6;
 
   optional double navigation_time_msec = 7;
-}  // End of URLChainEntry
+
+  // Set only if server redirects happened in navigation.
+  // The first entry in |server_redirect_chain| should be the original request
+  // url, and the last entry should be the same as |url|.
+  repeated ServerRedirect server_redirect_chain = 8;
+}  // End of ReferrerChainEntry
 
 message ClientDownloadResponse {
   enum Verdict {

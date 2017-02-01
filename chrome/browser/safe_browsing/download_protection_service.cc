@@ -1065,10 +1065,12 @@ class DownloadProtectionService::CheckClientDownloadRequest
     ReferrerChainData* referrer_chain_data =
       static_cast<ReferrerChainData*>(
           item_->GetUserData(kDownloadReferrerChainDataKey));
-    if (referrer_chain_data &&
-        !referrer_chain_data->GetReferrerChain()->empty()) {
-      request.mutable_referrer_chain()->Swap(
-          referrer_chain_data->GetReferrerChain());
+    if (referrer_chain_data) {
+      request.set_download_attribution_finch_enabled(true);
+      if (!referrer_chain_data->GetReferrerChain()->empty()) {
+        request.mutable_referrer_chain()->Swap(
+            referrer_chain_data->GetReferrerChain());
+      }
     }
 
     if (archive_is_valid_ != ArchiveValid::UNSET)
@@ -1300,6 +1302,8 @@ class DownloadProtectionService::PPAPIDownloadRequest
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager)
       : requestor_url_(requestor_url),
         initiating_frame_url_(initiating_frame_url),
+        initiating_main_frame_url_(
+            web_contents ? web_contents->GetLastCommittedURL() : GURL()),
         tab_id_(SessionTabHelper::IdForTab(web_contents)),
         default_file_path_(default_file_path),
         alternate_extensions_(alternate_extensions),
@@ -1433,10 +1437,8 @@ class DownloadProtectionService::PPAPIDownloadRequest
     }
 
     service_->AddReferrerChainToPPAPIClientDownloadRequest(
-        initiating_frame_url_,
-        tab_id_,
-        has_user_gesture_,
-        &request);
+        initiating_frame_url_, initiating_main_frame_url_, tab_id_,
+        has_user_gesture_, &request);
 
     if (!request.SerializeToString(&client_download_request_data_)) {
       // More of an internal error than anything else. Note that the UNKNOWN
@@ -1560,8 +1562,11 @@ class DownloadProtectionService::PPAPIDownloadRequest
   // URL of document that requested the PPAPI download.
   const GURL requestor_url_;
 
-  // URL of the frame that hosted the PPAPI plugin.
+  // URL of the frame that hosts the PPAPI plugin.
   const GURL initiating_frame_url_;
+
+  // URL of the tab that contains the initialting_frame.
+  const GURL initiating_main_frame_url_;
 
   // Tab id that associated with the PPAPI plugin, computed by
   // SessionTabHelper::IdForTab().
@@ -1906,10 +1911,11 @@ std::unique_ptr<ReferrerChain> DownloadProtectionService::IdentifyReferrerChain(
 }
 
 void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
-  const GURL& initiating_frame_url,
-  int tab_id,
-  bool has_user_gesture,
-  ClientDownloadRequest* out_request) {
+    const GURL& initiating_frame_url,
+    const GURL& initiating_main_frame_url,
+    int tab_id,
+    bool has_user_gesture,
+    ClientDownloadRequest* out_request) {
   if (!base::FeatureList::IsEnabled(
       SafeBrowsingNavigationObserverManager::kDownloadAttribution) ||
       !navigation_observer_manager_) {
@@ -1921,10 +1927,8 @@ void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
       tab_id == -1);
   SafeBrowsingNavigationObserverManager::AttributionResult result =
       navigation_observer_manager_->IdentifyReferrerChainForPPAPIDownload(
-          initiating_frame_url,
-          tab_id,
-          has_user_gesture,
-          kDownloadAttributionUserGestureLimit,
+          initiating_frame_url, initiating_main_frame_url, tab_id,
+          has_user_gesture, kDownloadAttributionUserGestureLimit,
           out_request->mutable_referrer_chain());
   UMA_HISTOGRAM_COUNTS_100(
       "SafeBrowsing.ReferrerURLChainSize.PPAPIDownloadAttribution",
@@ -1932,6 +1936,7 @@ void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
   UMA_HISTOGRAM_ENUMERATION(
       "SafeBrowsing.ReferrerAttributionResult.PPAPIDownloadAttribution", result,
       SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
+  out_request->set_download_attribution_finch_enabled(true);
 }
 
 }  // namespace safe_browsing

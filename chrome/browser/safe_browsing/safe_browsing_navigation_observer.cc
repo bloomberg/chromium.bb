@@ -31,40 +31,36 @@ NavigationEvent::NavigationEvent()
     : source_url(),
       source_main_frame_url(),
       original_request_url(),
-      destination_url(),
       source_tab_id(-1),
       target_tab_id(-1),
       frame_id(-1),
       last_updated(base::Time::Now()),
       is_user_initiated(false),
-      has_committed(false),
-      has_server_redirect(false) {}
+      has_committed(false) {}
 
 NavigationEvent::NavigationEvent(NavigationEvent&& nav_event)
     : source_url(std::move(nav_event.source_url)),
       source_main_frame_url(std::move(nav_event.source_main_frame_url)),
       original_request_url(std::move(nav_event.original_request_url)),
-      destination_url(std::move(nav_event.destination_url)),
+      server_redirect_urls(std::move(nav_event.server_redirect_urls)),
       source_tab_id(std::move(nav_event.source_tab_id)),
       target_tab_id(std::move(nav_event.target_tab_id)),
       frame_id(nav_event.frame_id),
       last_updated(nav_event.last_updated),
       is_user_initiated(nav_event.is_user_initiated),
-      has_committed(nav_event.has_committed),
-      has_server_redirect(nav_event.has_server_redirect) {}
+      has_committed(nav_event.has_committed) {}
 
 NavigationEvent& NavigationEvent::operator=(NavigationEvent&& nav_event) {
   source_url = std::move(nav_event.source_url);
   source_main_frame_url = std::move(nav_event.source_main_frame_url);
   original_request_url = std::move(nav_event.original_request_url);
-  destination_url = std::move(nav_event.destination_url);
   source_tab_id = nav_event.source_tab_id;
   target_tab_id = nav_event.target_tab_id;
   frame_id = nav_event.frame_id;
   last_updated = nav_event.last_updated;
   is_user_initiated = nav_event.is_user_initiated;
   has_committed = nav_event.has_committed;
-  has_server_redirect = nav_event.has_server_redirect;
+  server_redirect_urls = std::move(nav_event.server_redirect_urls);
   return *this;
 }
 
@@ -160,7 +156,6 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
   nav_event.original_request_url =
       SafeBrowsingNavigationObserverManager::ClearEmptyRef(
           navigation_handle->GetURL());
-  nav_event.destination_url = nav_event.original_request_url;
 
   nav_event.source_tab_id =
       SessionTabHelper::IdForTab(navigation_handle->GetWebContents());
@@ -185,10 +180,9 @@ void SafeBrowsingNavigationObserver::DidRedirectNavigation(
   }
 
   NavigationEvent* nav_event = &navigation_handle_map_[navigation_handle];
-  nav_event->has_server_redirect = true;
-  nav_event->destination_url =
+  nav_event->server_redirect_urls.push_back(
       SafeBrowsingNavigationObserverManager::ClearEmptyRef(
-          navigation_handle->GetURL());
+          navigation_handle->GetURL()));
   nav_event->last_updated = base::Time::Now();
 }
 
@@ -212,7 +206,7 @@ void SafeBrowsingNavigationObserver::DidFinishNavigation(
       SessionTabHelper::IdForTab(navigation_handle->GetWebContents());
   nav_event->last_updated = base::Time::Now();
 
-  manager_->RecordNavigationEvent(nav_event->destination_url, nav_event);
+  manager_->RecordNavigationEvent(nav_event->GetDestinationUrl(), nav_event);
   navigation_handle_map_.erase(navigation_handle);
 }
 
