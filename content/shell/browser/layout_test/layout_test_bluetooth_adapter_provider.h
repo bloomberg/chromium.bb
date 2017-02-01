@@ -139,7 +139,7 @@ class LayoutTestBluetoothAdapterProvider {
   // Internal structure
   //  - DeviceNameLongerThan29Bytes
   //    - Mock Functions:
-  //      - GetName(): Returns "a_device_name_that_is_longer_than_29_bytes_but_shorter_than_240_bytes"
+  //      - GetName(): Returns "a_device_name_that_is_longer_than_29_bytes_but_shorter_than_248_bytes"
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetDeviceNameLongerThan29BytesAdapter();
 

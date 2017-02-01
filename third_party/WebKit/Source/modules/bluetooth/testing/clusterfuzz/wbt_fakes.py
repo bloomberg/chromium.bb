@@ -34,7 +34,7 @@ ADVERTISED_SERVICES = [
     'heart_rate',
     'human_interface_device',
     'device_information',
-    'a_device_name_that_is_longer_than_29_bytes_but_shorter_than_240_bytes',
+    'a_device_name_that_is_longer_than_29_bytes_but_shorter_than_248_bytes',
     BLOCKLISTED_UUID,
     CONNECTION_ERROR_UUIDS[0],
     DISCONNECTION_UUID,
@@ -49,7 +49,7 @@ SERVICES = [
     'generic_access',
     'heart_rate',
     'human_interface_device',
-    'a_device_name_that_is_longer_than_29_bytes_but_shorter_than_240_bytes',
+    'a_device_name_that_is_longer_than_29_bytes_but_shorter_than_248_bytes',
     BLOCKLISTED_UUID,
     DISCONNECTION_UUID,
     GATT_ERROR_UUID,
@@ -140,7 +140,7 @@ ADAPTERS_WITH_DEVICES = [
     ),
     (
         'DeviceNameLongerThan29BytesAdapter',
-        ['a_device_name_that_is_longer_than_29_bytes_but_shorter_than_240_bytes'],
+        ['a_device_name_that_is_longer_than_29_bytes_but_shorter_than_248_bytes'],
     ),
 ]
 

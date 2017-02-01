@@ -5,15 +5,13 @@
 <script>
 'use strict';
 promise_test(() => {
-  let name_too_long = generate_string(241, 'a');
+  let name_too_long = generate_string(249, 'a');
   return assert_promise_rejects_with_message(
     requestDeviceWithKeyDown({filters: [{namePrefix: name_too_long}]}),
     new DOMException(
       'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
-      'A \'name\' or \'namePrefix\' longer than 240 bytes ' +
-      'results in no devices being found, because a device can\'t ' +
-      'acquire a name longer than 240 bytes.',
-      'NotFoundError'),
-    'Device name prefix longer than 240');
-}, 'A device name prefix longer than 240 must reject.');
+      'A device name can\'t be longer than 248 bytes.',
+      'TypeError'),
+    'Device name prefix longer than 248');
+}, 'A device name prefix longer than 248 must reject.');
 </script>
