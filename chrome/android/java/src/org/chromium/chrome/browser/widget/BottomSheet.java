@@ -21,6 +21,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -112,6 +113,9 @@ public class BottomSheet extends FrameLayout {
 
     /** A handle to the toolbar control container. */
     private View mControlContainer;
+
+    /** A placeholder for if there is no content in the bottom sheet. */
+    private View mPlaceholder;
 
     /** A handle to the FrameLayout that holds the content of the bottom sheet. */
     private FrameLayout mBottomSheetContentContainer;
@@ -342,6 +346,13 @@ public class BottomSheet extends FrameLayout {
                 setSheetState(mCurrentState, false);
             }
         });
+
+        mPlaceholder = new View(getContext());
+        LayoutParams placeHolderParams =
+                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        mPlaceholder.setBackgroundColor(
+                ApiCompatibilityUtils.getColor(getResources(), android.R.color.white));
+        mBottomSheetContentContainer.addView(mPlaceholder, placeHolderParams);
     }
 
     /**
@@ -384,8 +395,12 @@ public class BottomSheet extends FrameLayout {
             mSheetContent = null;
         }
 
-        if (content == null) return;
+        if (content == null) {
+            mBottomSheetContentContainer.addView(mPlaceholder);
+            return;
+        }
 
+        mBottomSheetContentContainer.removeView(mPlaceholder);
         mSheetContent = content;
         mBottomSheetContentContainer.addView(mSheetContent.getScrollingContentView());
     }
