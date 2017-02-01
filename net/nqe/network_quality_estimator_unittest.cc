@@ -228,6 +228,10 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
       "NQE.EstimateAvailable.MainFrame.TransportRTT", 0, 1);
   histogram_tester.ExpectUniqueSample("NQE.EstimateAvailable.MainFrame.Kbps", 0,
                                       1);
+  EXPECT_LE(1u,
+            histogram_tester.GetAllSamples("NQE.RTT.OnECTComputation").size());
+  EXPECT_LE(1u,
+            histogram_tester.GetAllSamples("NQE.Kbps.OnECTComputation").size());
 
   std::unique_ptr<URLRequest> request2(context.CreateRequest(
       estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
@@ -1818,6 +1822,10 @@ TEST(NetworkQualityEstimatorTest,
       "NQE.EstimateAvailable.MainFrame.TransportRTT", 0, 1);
   histogram_tester.ExpectUniqueSample("NQE.EstimateAvailable.MainFrame.Kbps", 0,
                                       1);
+  EXPECT_LE(1u,
+            histogram_tester
+                .GetAllSamples("NQE.EffectiveConnectionType.OnECTComputation")
+                .size());
 
   size_t expected_effective_connection_type_notifications = 1;
   EXPECT_EQ(expected_effective_connection_type_notifications,
@@ -2041,6 +2049,15 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
   histogram_tester.ExpectBucketCount(
       "NQE.MainFrame.EffectiveConnectionType.Unknown",
       EFFECTIVE_CONNECTION_TYPE_UNKNOWN, 1);
+  EXPECT_LE(1u,
+            histogram_tester
+                .GetAllSamples("NQE.EffectiveConnectionType.OnECTComputation")
+                .size());
+  EXPECT_LE(1u,
+            histogram_tester.GetAllSamples("NQE.TransportRTT.OnECTComputation")
+                .size());
+  EXPECT_LE(1u,
+            histogram_tester.GetAllSamples("NQE.RTT.OnECTComputation").size());
 }
 
 #if defined(OS_IOS)

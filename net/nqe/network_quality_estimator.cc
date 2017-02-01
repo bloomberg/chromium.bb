@@ -1033,6 +1033,25 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
   network_quality_ = nqe::internal::NetworkQuality(http_rtt, transport_rtt,
                                                    downstream_throughput_kbps);
 
+  UMA_HISTOGRAM_ENUMERATION("NQE.EffectiveConnectionType.OnECTComputation",
+                            effective_connection_type_,
+                            EFFECTIVE_CONNECTION_TYPE_LAST);
+  if (network_quality_.http_rtt() != nqe::internal::InvalidRTT()) {
+    UMA_HISTOGRAM_TIMES("NQE.RTT.OnECTComputation",
+                        network_quality_.http_rtt());
+  }
+
+  if (network_quality_.transport_rtt() != nqe::internal::InvalidRTT()) {
+    UMA_HISTOGRAM_TIMES("NQE.TransportRTT.OnECTComputation",
+                        network_quality_.transport_rtt());
+  }
+
+  if (network_quality_.downstream_throughput_kbps() !=
+      nqe::internal::INVALID_RTT_THROUGHPUT) {
+    UMA_HISTOGRAM_COUNTS_1M("NQE.Kbps.OnECTComputation",
+                            network_quality_.downstream_throughput_kbps());
+  }
+
   NotifyObserversOfRTTOrThroughputComputed();
 
   if (past_type != effective_connection_type_)
