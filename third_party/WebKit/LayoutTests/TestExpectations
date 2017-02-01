@@ -2105,8 +2105,6 @@ crbug.com/669473 external/csswg-test/css-ui-3/text-overflow-004.html [ Failure ]
 crbug.com/670024 external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
-crbug.com/665820 external/wpt/webmessaging/with-ports/010.html [ Failure ]
-crbug.com/665820 external/wpt/webmessaging/without-ports/010.html [ Failure ]
 crbug.com/673526 external/wpt/webmessaging/message-channels/close.html [ Failure ]
 
 # Added 2016-12-06
