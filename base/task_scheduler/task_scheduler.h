@@ -93,7 +93,9 @@ class BASE_EXPORT TaskScheduler {
   virtual void FlushForTesting() = 0;
 
   // Joins all threads. Tasks that are already running are allowed to complete
-  // their execution. This can only be called once.
+  // their execution. This can only be called once. Using this task scheduler
+  // instance to create task runners or post tasks is not permitted during or
+  // after this call.
   virtual void JoinForTesting() = 0;
 
   // CreateAndSetSimpleTaskScheduler(), CreateAndSetDefaultTaskScheduler(), and
