@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/options/passphrase_textfield.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/layout_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/login/login_state.h"
@@ -934,18 +935,8 @@ void WifiConfigView::Init(bool show_8021x) {
       ParseUIProperty(&passphrase_ui_data_, network, ::onc::wifi::kPassphrase);
   }
 
-  views::GridLayout* layout = new views::GridLayout(this);
+  views::GridLayout* layout = layout_utils::CreatePanelLayout(this);
   LayoutDelegate* delegate = LayoutDelegate::Get();
-  layout->SetInsets(gfx::Insets(
-      delegate->GetLayoutDistance(
-          LayoutDelegate::LayoutDistanceType::PANEL_HORIZ_MARGIN),
-      delegate->GetLayoutDistance(
-          LayoutDelegate::LayoutDistanceType::PANEL_VERT_MARGIN),
-      delegate->GetLayoutDistance(
-          LayoutDelegate::LayoutDistanceType::BUTTON_VEDGE_MARGIN_NEW),
-      delegate->GetLayoutDistance(
-          LayoutDelegate::LayoutDistanceType::BUTTON_HEDGE_MARGIN_NEW)));
-  this->SetLayoutManager(layout);
 
   const int column_view_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);
