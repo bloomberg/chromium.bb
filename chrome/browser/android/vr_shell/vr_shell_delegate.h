@@ -25,9 +25,10 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   VrShellDelegate(JNIEnv* env, jobject obj);
   ~VrShellDelegate() override;
 
-  static VrShellDelegate* GetNativeDelegate(JNIEnv* env, jobject jdelegate);
+  static VrShellDelegate* GetNativeVrShellDelegate(JNIEnv* env,
+                                                   jobject jdelegate);
 
-  void SetDelegate(device::GvrDelegate* delegate);
+  void SetDelegate(device::GvrDelegate* delegate, gvr_context* context);
   void RemoveDelegate();
 
   void SetPresentResult(JNIEnv* env,
@@ -49,11 +50,13 @@ class VrShellDelegate : public device::GvrDelegateProvider {
  private:
   // device::GvrDelegateProvider implementation
   void SetDeviceProvider(device::GvrDeviceProvider* device_provider) override;
+  void ClearDeviceProvider() override;
   void RequestWebVRPresent(const base::Callback<void(bool)>& callback) override;
   void ExitWebVRPresent() override;
-  device::GvrDelegate* GetNonPresentingDelegate() override;
-  void DestroyNonPresentingDelegate() override;
+  device::GvrDelegate* GetDelegate() override;
   void SetListeningForActivate(bool listening) override;
+
+  void CreateNonPresentingDelegate();
 
   std::unique_ptr<NonPresentingGvrDelegate> non_presenting_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
@@ -62,6 +65,10 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   base::Callback<void(bool)> present_callback_;
   long timebase_nanos_ = 0;
   double interval_seconds_ = 0;
+
+  // TODO(mthiesse): Remove the need for this to be stored here.
+  // crbug.com/674594
+  gvr_context* context_ = nullptr;
 
   base::WeakPtrFactory<VrShellDelegate> weak_ptr_factory_;
 

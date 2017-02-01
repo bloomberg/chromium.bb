@@ -10,7 +10,8 @@ namespace device {
 
 unsigned int VRDevice::next_id_ = 1;
 
-VRDevice::VRDevice() : presenting_display_(nullptr), id_(next_id_) {
+VRDevice::VRDevice()
+    : presenting_display_(nullptr), id_(next_id_), weak_ptr_factory_(this) {
   // Prevent wraparound. Devices with this ID will be treated as invalid.
   if (next_id_ != VR_DEVICE_LAST_ID)
     next_id_++;
@@ -43,19 +44,24 @@ bool VRDevice::CheckPresentingDisplay(VRDisplayImpl* display) {
 }
 
 void VRDevice::OnChanged() {
-  mojom::VRDisplayInfoPtr vr_device_info = GetVRDevice();
+  base::Callback<void(mojom::VRDisplayInfoPtr)> callback = base::Bind(
+      &VRDevice::OnVRDisplayInfoCreated, weak_ptr_factory_.GetWeakPtr());
+  GetVRDevice(callback);
+}
+
+void VRDevice::OnVRDisplayInfoCreated(mojom::VRDisplayInfoPtr vr_device_info) {
   if (vr_device_info.is_null())
     return;
-
   for (const auto& display : displays_)
     display->client()->OnChanged(vr_device_info.Clone());
 }
 
 void VRDevice::OnExitPresent() {
+  if (!presenting_display_)
+    return;
   auto it = displays_.find(presenting_display_);
-  if (it != displays_.end())
-    (*it)->client()->OnExitPresent();
-
+  CHECK(it != displays_.end());
+  (*it)->client()->OnExitPresent();
   SetPresentingDisplay(nullptr);
 }
 

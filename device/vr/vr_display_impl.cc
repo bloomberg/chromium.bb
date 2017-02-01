@@ -15,11 +15,17 @@ VRDisplayImpl::VRDisplayImpl(device::VRDevice* device, VRServiceImpl* service)
       device_(device),
       service_(service),
       weak_ptr_factory_(this) {
-  mojom::VRDisplayInfoPtr display_info = device->GetVRDevice();
-  if (service->client()) {
-    service->client()->OnDisplayConnected(binding_.CreateInterfacePtrAndBind(),
-                                          mojo::MakeRequest(&client_),
-                                          std::move(display_info));
+  base::Callback<void(mojom::VRDisplayInfoPtr)> callback = base::Bind(
+      &VRDisplayImpl::OnVRDisplayInfoCreated, weak_ptr_factory_.GetWeakPtr());
+  device->GetVRDevice(callback);
+}
+
+void VRDisplayImpl::OnVRDisplayInfoCreated(
+    mojom::VRDisplayInfoPtr display_info) {
+  if (service_->client()) {
+    service_->client()->OnDisplayConnected(binding_.CreateInterfacePtrAndBind(),
+                                           mojo::MakeRequest(&client_),
+                                           std::move(display_info));
   }
 }
 

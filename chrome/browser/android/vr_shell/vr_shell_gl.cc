@@ -154,6 +154,12 @@ int64_t TimeInMicroseconds() {
       std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
+void RunVRDisplayInfoCallback(
+    const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
+    device::mojom::VRDisplayInfoPtr info) {
+  callback.Run(std::move(info));
+}
+
 }  // namespace
 
 VrShellGl::VrShellGl(
@@ -946,10 +952,6 @@ void VrShellGl::UpdateWebVRTextureBounds(int16_t frame_index,
   }
 }
 
-gvr::GvrApi* VrShellGl::gvr_api() {
-  return gvr_api_.get();
-}
-
 void VrShellGl::ContentBoundsChanged(int width, int height) {
   TRACE_EVENT0("gpu", "VrShellGl::ContentBoundsChanged");
   content_tex_css_width_ = width;
@@ -1055,6 +1057,23 @@ void VrShellGl::SendVSync(base::TimeDelta time,
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
 
   callback.Run(VrShell::VRPosePtrFromGvrPose(head_mat), time, frame_index);
+}
+
+void VrShellGl::ResetPose() {
+  // Should never call RecenterTracking when using with Daydream viewers. On
+  // those devices recentering should only be done via the controller.
+  if (gvr_api_ && gvr_api_->GetViewerType() == GVR_VIEWER_TYPE_CARDBOARD)
+    gvr_api_->RecenterTracking();
+}
+
+void VrShellGl::CreateVRDisplayInfo(
+    const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
+    uint32_t device_id) {
+  device::mojom::VRDisplayInfoPtr info = VrShell::CreateVRDisplayInfo(
+      gvr_api_.get(), content_tex_physical_size_, device_id);
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RunVRDisplayInfoCallback, callback, base::Passed(&info)));
 }
 
 }  // namespace vr_shell

@@ -12,6 +12,7 @@
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace vr_shell {
 
@@ -19,7 +20,7 @@ namespace vr_shell {
 class NonPresentingGvrDelegate : public device::GvrDelegate,
                                  public device::mojom::VRVSyncProvider {
  public:
-  explicit NonPresentingGvrDelegate(long context);
+  explicit NonPresentingGvrDelegate(gvr_context* context);
 
   ~NonPresentingGvrDelegate() override;
 
@@ -29,13 +30,15 @@ class NonPresentingGvrDelegate : public device::GvrDelegate,
   void UpdateWebVRTextureBounds(int16_t frame_index,
                                 const gvr::Rectf& left_bounds,
                                 const gvr::Rectf& right_bounds) override {}
-  void SetWebVRRenderSurfaceSize(int width, int height) override {}
-  gvr::Sizei GetWebVRCompositorSurfaceSize() override;
-  gvr::GvrApi* gvr_api() override;
   void OnVRVsyncProviderRequest(
       device::mojom::VRVSyncProviderRequest request) override;
   void UpdateVSyncInterval(long timebase_nanos,
                            double interval_seconds) override;
+  bool SupportsPresentation() override;
+  void ResetPose() override;
+  void CreateVRDisplayInfo(
+      const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
+      uint32_t device_id) override;
 
   void Pause();
   void Resume();

@@ -439,9 +439,6 @@ public class VrShellDelegate {
             mRequestedWebVR = false;
         }
 
-        // TODO(bshe): Ideally, we do not need two gvr context exist at the same time. We can
-        // probably shutdown non presenting gvr when presenting and create a new one after exit
-        // presenting. See crbug.com/655242
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             nativeOnResume(mNativeVrShellDelegate);

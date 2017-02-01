@@ -22,7 +22,9 @@ class FakeVRDevice : public VRDevice {
 
   void SetVRDevice(const mojom::VRDisplayInfoPtr& device);
 
-  mojom::VRDisplayInfoPtr GetVRDevice() override;
+  // VRDevice
+  void GetVRDevice(
+      const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback) override;
   void ResetPose() override;
 
   void RequestPresent(const base::Callback<void(bool)>& callback) override;

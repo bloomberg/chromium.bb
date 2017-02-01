@@ -59,8 +59,7 @@ void VrCompositor::SurfaceDestroyed() {
 }
 
 void VrCompositor::SetWindowBounds(gfx::Size size) {
-  bounds_ = size;
-  compositor_->SetWindowBounds(bounds_);
+  compositor_->SetWindowBounds(size);
 }
 
 void VrCompositor::SurfaceChanged(jobject surface) {

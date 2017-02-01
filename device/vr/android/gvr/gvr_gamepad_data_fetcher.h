@@ -8,28 +8,27 @@
 #include <string>
 
 #include "device/gamepad/gamepad_data_fetcher.h"
+#include "device/vr/vr_export.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_controller.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace device {
 
-class GvrDelegate;
-
-class GvrGamepadDataFetcher : public GamepadDataFetcher {
+class DEVICE_VR_EXPORT GvrGamepadDataFetcher : public GamepadDataFetcher {
  public:
   class Factory : public GamepadDataFetcherFactory {
    public:
-    Factory(GvrDelegate* delegate, unsigned int display_id);
+    Factory(gvr_context* context, unsigned int display_id);
     ~Factory() override;
     std::unique_ptr<GamepadDataFetcher> CreateDataFetcher() override;
     GamepadSource source() override;
 
    private:
-    GvrDelegate* delegate_;
+    gvr_context* context_;
     unsigned int display_id_;
   };
 
-  GvrGamepadDataFetcher(GvrDelegate* delegate, unsigned int display_id);
+  GvrGamepadDataFetcher(gvr_context* context, unsigned int display_id);
   ~GvrGamepadDataFetcher() override;
 
   GamepadSource source() override;

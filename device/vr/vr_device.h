@@ -23,7 +23,8 @@ class DEVICE_VR_EXPORT VRDevice {
 
   unsigned int id() const { return id_; }
 
-  virtual mojom::VRDisplayInfoPtr GetVRDevice() = 0;
+  virtual void GetVRDevice(
+      const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback) = 0;
   virtual void ResetPose() = 0;
 
   virtual void RequestPresent(const base::Callback<void(bool)>& callback) = 0;
@@ -55,6 +56,8 @@ class DEVICE_VR_EXPORT VRDevice {
   void SetPresentingDisplay(VRDisplayImpl* display);
 
  private:
+  void OnVRDisplayInfoCreated(mojom::VRDisplayInfoPtr vr_device_info);
+
   std::set<VRDisplayImpl*> displays_;
 
   VRDisplayImpl* presenting_display_;
@@ -62,6 +65,8 @@ class DEVICE_VR_EXPORT VRDevice {
   unsigned int id_;
 
   static unsigned int next_id_;
+
+  base::WeakPtrFactory<VRDevice> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDevice);
 };

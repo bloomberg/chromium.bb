@@ -30,6 +30,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "jni/VrShellImpl_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -78,6 +79,7 @@ VrShell::VrShell(JNIEnv* env,
       metrics_helper_(base::MakeUnique<VrMetricsHelper>(main_contents_)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       reprojected_rendering_(reprojected_rendering),
+      gvr_api_(gvr_api),
       weak_ptr_factory_(this) {
   DCHECK(g_instance == nullptr);
   g_instance = this;
@@ -240,16 +242,6 @@ void VrShell::OnLoadProgressChanged(
   html_interface_->SetLoadProgress(progress);
 }
 
-void VrShell::SetWebVRRenderSurfaceSize(int width, int height) {
-  // TODO(klausw,crbug.com/655722): Change the GVR render size and set the WebVR
-  // render surface size.
-}
-
-gvr::Sizei VrShell::GetWebVRCompositorSurfaceSize() {
-  const gfx::Size& size = content_compositor_->GetWindowBounds();
-  return {size.width(), size.height()};
-}
-
 void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
   // TODO(cjgrant): Align this state with the logic that drives the omnibox.
   html_interface_->SetWebVRSecureOrigin(secure_origin);
@@ -265,14 +257,21 @@ void VrShell::UpdateWebVRTextureBounds(int16_t frame_index,
                                      left_bounds, right_bounds));
 }
 
-// TODO(mthiesse): Do not expose GVR API outside of GL thread.
-// It's not thread-safe.
-gvr::GvrApi* VrShell::gvr_api() {
-  if (gl_thread_->GetVrShellGlUnsafe()) {
-    return gl_thread_->GetVrShellGlUnsafe()->gvr_api();
-  }
-  CHECK(false);
-  return nullptr;
+bool VrShell::SupportsPresentation() {
+  return true;
+}
+
+void VrShell::ResetPose() {
+  gl_thread_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VrShellGl::ResetPose, gl_thread_->GetVrShellGl()));
+}
+
+void VrShell::CreateVRDisplayInfo(
+    const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
+    uint32_t device_id) {
+  PostToGlThreadWhenReady(base::Bind(&VrShellGl::CreateVRDisplayInfo,
+                                     gl_thread_->GetVrShellGl(),
+                                     callback, device_id));
 }
 
 void VrShell::SurfacesChanged(jobject content_surface, jobject ui_surface) {
@@ -281,7 +280,7 @@ void VrShell::SurfacesChanged(jobject content_surface, jobject ui_surface) {
 }
 
 void VrShell::GvrDelegateReady() {
-  delegate_provider_->SetDelegate(this);
+  delegate_provider_->SetDelegate(this, gvr_api_);
 }
 
 void VrShell::AppButtonPressed() {
@@ -293,9 +292,9 @@ void VrShell::AppButtonPressed() {
   if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
     if (delegate_provider_->device_provider()) {
       if (html_interface_->GetMenuMode()) {
-        delegate_provider_->device_provider()->OnDisplayBlur();
+        delegate_provider_->device_provider()->Device()->OnBlur();
       } else {
-        delegate_provider_->device_provider()->OnDisplayFocus();
+        delegate_provider_->device_provider()->Device()->OnFocus();
       }
     }
   }
@@ -498,6 +497,55 @@ device::mojom::VRPosePtr VrShell::VRPosePtrFromGvrPose(gvr::Mat4f head_mat) {
   return pose;
 }
 
+device::mojom::VRDisplayInfoPtr VrShell::CreateVRDisplayInfo(
+    gvr::GvrApi* gvr_api, gvr::Sizei compositor_size, uint32_t device_id) {
+  TRACE_EVENT0("input", "GvrDevice::GetVRDevice");
+
+  device::mojom::VRDisplayInfoPtr device = device::mojom::VRDisplayInfo::New();
+
+  device->index = device_id;
+
+  device->capabilities = device::mojom::VRDisplayCapabilities::New();
+  device->capabilities->hasOrientation = true;
+  device->capabilities->hasPosition = false;
+  device->capabilities->hasExternalDisplay = false;
+  device->capabilities->canPresent = true;
+
+  std::string vendor = gvr_api->GetViewerVendor();
+  std::string model = gvr_api->GetViewerModel();
+  device->displayName = vendor + " " + model;
+
+  gvr::BufferViewportList gvr_buffer_viewports =
+      gvr_api->CreateEmptyBufferViewportList();
+  gvr_buffer_viewports.SetToRecommendedBufferViewports();
+
+  device->leftEye = device::mojom::VREyeParameters::New();
+  device->rightEye = device::mojom::VREyeParameters::New();
+  for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
+    device::mojom::VREyeParametersPtr& eye_params =
+        (eye == GVR_LEFT_EYE) ? device->leftEye : device->rightEye;
+    eye_params->fieldOfView = device::mojom::VRFieldOfView::New();
+    eye_params->offset.resize(3);
+    eye_params->renderWidth = compositor_size.width / 2;
+    eye_params->renderHeight = compositor_size.height;
+
+    gvr::BufferViewport eye_viewport = gvr_api->CreateBufferViewport();
+    gvr_buffer_viewports.GetBufferViewport(eye, &eye_viewport);
+    gvr::Rectf eye_fov = eye_viewport.GetSourceFov();
+    eye_params->fieldOfView->upDegrees = eye_fov.top;
+    eye_params->fieldOfView->downDegrees = eye_fov.bottom;
+    eye_params->fieldOfView->leftDegrees = eye_fov.left;
+    eye_params->fieldOfView->rightDegrees = eye_fov.right;
+
+    gvr::Mat4f eye_mat = gvr_api->GetEyeFromHeadMatrix(eye);
+    eye_params->offset[0] = -eye_mat.m[0][3];
+    eye_params->offset[1] = -eye_mat.m[1][3];
+    eye_params->offset[2] = -eye_mat.m[2][3];
+  }
+
+  return device;
+}
+
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------
@@ -514,7 +562,7 @@ jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj,
       reinterpret_cast<ui::WindowAndroid*>(content_window_android),
       content::WebContents::FromJavaWebContents(ui_web_contents),
       reinterpret_cast<ui::WindowAndroid*>(ui_window_android),
-      for_web_vr, VrShellDelegate::GetNativeDelegate(env, delegate),
+      for_web_vr, VrShellDelegate::GetNativeVrShellDelegate(env, delegate),
       reinterpret_cast<gvr_context*>(gvr_api), reprojected_rendering));
 }
 

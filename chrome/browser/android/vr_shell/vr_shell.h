@@ -137,7 +137,12 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void ProcessUIGesture(std::unique_ptr<blink::WebInputEvent> event);
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
 
+  // TODO(mthiesse): Find a better place for these functions to live.
   static device::mojom::VRPosePtr VRPosePtrFromGvrPose(gvr::Mat4f head_mat);
+  static device::mojom::VRDisplayInfoPtr CreateVRDisplayInfo(
+      gvr::GvrApi* gvr_api,
+      gvr::Sizei compositor_size,
+      uint32_t device_id);
 
  private:
   ~VrShell() override;
@@ -155,13 +160,15 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void UpdateWebVRTextureBounds(int16_t frame_index,
                                 const gvr::Rectf& left_bounds,
                                 const gvr::Rectf& right_bounds) override;
-  gvr::GvrApi* gvr_api() override;
-  void SetWebVRRenderSurfaceSize(int width, int height) override;
-  gvr::Sizei GetWebVRCompositorSurfaceSize() override;
   void OnVRVsyncProviderRequest(
       device::mojom::VRVSyncProviderRequest request) override;
   void UpdateVSyncInterval(long timebase_nanos,
                            double interval_seconds) override;
+  bool SupportsPresentation() override;
+  void ResetPose() override;
+  void CreateVRDisplayInfo(
+      const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
+      uint32_t device_id) override;
 
   std::unique_ptr<UiInterface> html_interface_;
 
@@ -182,6 +189,10 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<VrGLThread> gl_thread_;
   bool reprojected_rendering_;
+
+  // TODO(mthiesse): Remove the need for this to be stored here.
+  // crbug.com/674594
+  gvr_context* gvr_api_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

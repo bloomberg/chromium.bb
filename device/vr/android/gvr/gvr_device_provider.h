@@ -14,7 +14,6 @@
 
 namespace device {
 
-class GvrDelegate;
 class GvrDevice;
 
 class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
@@ -31,20 +30,11 @@ class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
   void RequestPresent(const base::Callback<void(bool)>& callback);
   void ExitPresent();
 
-  void OnGvrDelegateReady(GvrDelegate* delegate);
-  void OnGvrDelegateRemoved();
-
-  // TODO(mthiesse): Make the NonPresentingDelegate owned by this class so that
-  // it cannot be removed.
-  void OnNonPresentingDelegateRemoved();
-  void OnDisplayBlur();
-  void OnDisplayFocus();
-  void OnDisplayActivate();
+  GvrDevice* Device() { return vr_device_.get(); }
 
  private:
-  void SwitchToNonPresentingDelegate();
-
   std::unique_ptr<GvrDevice> vr_device_;
+  bool initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDeviceProvider);
 };

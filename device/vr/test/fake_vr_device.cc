@@ -54,9 +54,10 @@ void FakeVRDevice::SetVRDevice(const mojom::VRDisplayInfoPtr& device) {
   device_ = device.Clone();
 }
 
-mojom::VRDisplayInfoPtr FakeVRDevice::GetVRDevice() {
+void FakeVRDevice::GetVRDevice(
+    const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback) {
   mojom::VRDisplayInfoPtr display = device_.Clone();
-  return display.Clone();
+  callback.Run(std::move(display));
 }
 
 void FakeVRDevice::ResetPose() {}

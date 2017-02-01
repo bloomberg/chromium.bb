@@ -9,6 +9,7 @@
 
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 
 namespace device {
 
@@ -29,36 +30,38 @@ void CopyToWebUString(blink::WebUChar* dest,
 
 using namespace blink;
 
-GvrGamepadDataFetcher::Factory::Factory(GvrDelegate* delegate,
+GvrGamepadDataFetcher::Factory::Factory(gvr_context* context,
                                         unsigned int display_id)
-    : delegate_(delegate), display_id_(display_id) {}
+    : context_(context), display_id_(display_id) {}
 
 GvrGamepadDataFetcher::Factory::~Factory() {}
 
 std::unique_ptr<GamepadDataFetcher>
 GvrGamepadDataFetcher::Factory::CreateDataFetcher() {
-  if (!delegate_)
-    return nullptr;
-  return base::MakeUnique<GvrGamepadDataFetcher>(delegate_, display_id_);
+  return base::MakeUnique<GvrGamepadDataFetcher>(context_, display_id_);
 }
 
 GamepadSource GvrGamepadDataFetcher::Factory::source() {
   return GAMEPAD_SOURCE_GVR;
 }
 
-GvrGamepadDataFetcher::GvrGamepadDataFetcher(GvrDelegate* delegate,
+GvrGamepadDataFetcher::GvrGamepadDataFetcher(gvr_context* context,
                                              unsigned int display_id)
     : display_id_(display_id) {
-  gvr::GvrApi* gvr_api = delegate->gvr_api();
   controller_api_.reset(new gvr::ControllerApi());
   int32_t options = gvr::ControllerApi::DefaultOptions();
   options |= GVR_CONTROLLER_ENABLE_GYRO;
-  bool success = controller_api_->Init(options, gvr_api->GetContext());
+
+  // TODO(mthiesse): Use of the gvr_context on multiple threads isn't guaranteed
+  // to be threadsafe. All gvr context usage should be moved to VR Shell's GL
+  // thread. crbug.com/674594
+  std::unique_ptr<gvr::GvrApi> gvr = gvr::GvrApi::WrapNonOwned(context);
+  // TODO(bajones): Monitor changes to the controller handedness.
+  handedness_ = gvr->GetUserPrefs().GetControllerHandedness();
+
+  bool success = controller_api_->Init(options, context);
   if (!success)
     controller_api_.reset(nullptr);
-
-  // TODO(bajones): Monitor changes to the controller handedness.
-  handedness_ = gvr_api->GetUserPrefs().GetControllerHandedness();
 }
 
 GvrGamepadDataFetcher::~GvrGamepadDataFetcher() {}

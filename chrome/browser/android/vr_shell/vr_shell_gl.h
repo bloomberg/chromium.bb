@@ -80,7 +80,6 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void UpdateWebVRTextureBounds(int16_t frame_index,
                                 const gvr::Rectf& left_bounds,
                                 const gvr::Rectf& right_bounds);
-  gvr::GvrApi* gvr_api();
   void SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num);
   gvr::Sizei GetWebVRCompositorSurfaceSize();
 
@@ -89,6 +88,10 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void UpdateVSyncInterval(long timebase_nanos, double interval_seconds);
 
   void OnRequest(device::mojom::VRVSyncProviderRequest request);
+  void ResetPose();
+  void CreateVRDisplayInfo(
+      const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
+      uint32_t device_id);
 
  private:
   void GvrInit(gvr_context* gvr_api);

@@ -31,7 +31,6 @@ class VrGLThread : public base::Thread {
 
   ~VrGLThread() override;
   base::WeakPtr<VrShellGl> GetVrShellGl() { return weak_vr_shell_gl_; }
-  VrShellGl* GetVrShellGlUnsafe() { return vr_shell_gl_.get(); }
 
  protected:
   void Init() override;

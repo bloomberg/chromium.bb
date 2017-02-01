@@ -36,7 +36,6 @@ class VrCompositor : public content::CompositorClient {
 
   void SurfaceDestroyed();
   void SetWindowBounds(gfx::Size size);
-  gfx::Size GetWindowBounds() { return bounds_; }
   void SurfaceChanged(jobject surface);
   void SetLayer(content::WebContents* web_contents);
 
@@ -48,7 +47,6 @@ class VrCompositor : public content::CompositorClient {
   void RestoreLayer();
 
   std::unique_ptr<content::Compositor> compositor_;
-  gfx::Size bounds_;
 
   cc::Layer* layer_ = nullptr;
   cc::Layer* layer_parent_ = nullptr;

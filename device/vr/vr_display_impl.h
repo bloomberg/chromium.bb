@@ -45,6 +45,8 @@ class VRDisplayImpl : public mojom::VRDisplay {
                             bool secure_origin,
                             bool success);
 
+  void OnVRDisplayInfoCreated(mojom::VRDisplayInfoPtr display_info);
+
   mojo::Binding<mojom::VRDisplay> binding_;
   mojom::VRDisplayClientPtr client_;
   device::VRDevice* device_;
