@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.net.qualityprovider.ExternalEstimateProviderA
 import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
-import org.chromium.chrome.browser.physicalweb.PhysicalWebEnvironment;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -316,13 +315,6 @@ public class ChromeApplication extends ContentApplication {
      */
     public PhysicalWebBleClient createPhysicalWebBleClient() {
         return new PhysicalWebBleClient();
-    }
-
-    /**
-     * @return A new {@link PhysicalWebEnvironment} instance.
-     */
-    public PhysicalWebEnvironment createPhysicalWebEnvironment() {
-        return new PhysicalWebEnvironment();
     }
 
     public InstantAppsHandler createInstantAppsHandler() {
