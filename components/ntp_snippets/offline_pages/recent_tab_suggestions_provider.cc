@@ -291,7 +291,10 @@ ContentSuggestion RecentTabSuggestionsProvider::ConvertOfflinePage(
   suggestion.set_publish_date(offline_page.creation_time);
   suggestion.set_publisher_name(base::UTF8ToUTF16(offline_page.url.host()));
   auto extra = base::MakeUnique<RecentTabSuggestionExtra>();
-  extra->tab_id = offline_page.client_id.id;
+  int tab_id;
+  bool success = base::StringToInt(offline_page.client_id.id, &tab_id);
+  DCHECK(success);
+  extra->tab_id = tab_id;
   extra->offline_page_id = offline_page.offline_id;
   suggestion.set_recent_tab_suggestion_extra(std::move(extra));
   return suggestion;

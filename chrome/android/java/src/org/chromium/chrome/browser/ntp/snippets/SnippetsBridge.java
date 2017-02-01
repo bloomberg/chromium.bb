@@ -280,7 +280,7 @@ public class SnippetsBridge implements SuggestionsSource, SuggestionsMetricsRepo
 
     @CalledByNative
     private static void setRecentTabDataForSuggestion(
-            SnippetArticle suggestion, String tabId, long offlinePageId) {
+            SnippetArticle suggestion, int tabId, long offlinePageId) {
         suggestion.setRecentTabData(tabId, offlinePageId);
     }
 

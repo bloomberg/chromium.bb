@@ -39,7 +39,10 @@ namespace ntp_snippets {
 namespace {
 
 OfflinePageItem CreateDummyRecentTab(int id) {
-  return test::CreateDummyOfflinePageItem(id, offline_pages::kLastNNamespace);
+  OfflinePageItem item =
+      test::CreateDummyOfflinePageItem(id, offline_pages::kLastNNamespace);
+  item.client_id.id = base::IntToString(id);
+  return item;
 }
 
 std::vector<OfflinePageItem> CreateDummyRecentTabs(

@@ -87,8 +87,7 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
         suggestion.recent_tab_suggestion_extra() != nullptr) {
       Java_SnippetsBridge_setRecentTabDataForSuggestion(
           env, java_suggestion,
-          ConvertUTF8ToJavaString(
-              env, suggestion.recent_tab_suggestion_extra()->tab_id),
+          suggestion.recent_tab_suggestion_extra()->tab_id,
           suggestion.recent_tab_suggestion_extra()->offline_page_id);
     }
   }

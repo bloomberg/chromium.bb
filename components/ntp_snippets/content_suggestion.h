@@ -38,7 +38,7 @@ struct DownloadSuggestionExtra {
 // Contains additional data which is only available for recent tab suggestions.
 struct RecentTabSuggestionExtra {
   // Corresponding tab identifier.
-  std::string tab_id;
+  int tab_id;
   // Underlying offline page identifier.
   int64_t offline_page_id = 0;
 };

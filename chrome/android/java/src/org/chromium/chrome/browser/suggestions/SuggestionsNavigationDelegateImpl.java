@@ -168,7 +168,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
 
     private boolean openRecentTabSnippet(SnippetArticle article) {
         TabModel tabModel = mTabModelSelector.getModel(false);
-        int tabId = Integer.parseInt(article.getRecentTabId());
+        int tabId = article.getRecentTabId();
         int tabIndex = TabModelUtils.getTabIndexById(tabModel, tabId);
         if (tabIndex == TabModel.INVALID_TAB_INDEX) return false;
         TabModelUtils.setIndex(tabModel, tabIndex);

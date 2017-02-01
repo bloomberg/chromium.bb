@@ -58,7 +58,7 @@ public class SnippetArticle {
     private String mAssetDownloadMimeType;
 
     /** The tab id of the corresponding tab (only for recent tab articles). */
-    private String mRecentTabId;
+    private int mRecentTabId;
 
     /** The offline id of the corresponding offline page, if any. */
     private Long mOfflinePageOfflineId;
@@ -173,7 +173,7 @@ public class SnippetArticle {
      * @return the corresponding recent tab id. May only be called if this snippet is a recent tab
      * article.
      */
-    public String getRecentTabId() {
+    public int getRecentTabId() {
         assert isRecentTab();
         return mRecentTabId;
     }
@@ -182,7 +182,7 @@ public class SnippetArticle {
      * Sets tab id and offline page id for recent tab articles. May only be called if this snippet
      * is a recent tab article.
      */
-    public void setRecentTabData(String tabId, long offlinePageId) {
+    public void setRecentTabData(int tabId, long offlinePageId) {
         assert isRecentTab();
         mRecentTabId = tabId;
         setOfflinePageOfflineId(offlinePageId);
