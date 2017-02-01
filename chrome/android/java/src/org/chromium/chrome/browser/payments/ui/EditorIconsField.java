@@ -38,8 +38,8 @@ class EditorIconsField {
         ((TextView) mLayout.findViewById(R.id.label)).setText(fieldModel.getLabel());
 
         LinearLayout container = (LinearLayout) mLayout.findViewById(R.id.icons_container);
-        int size = context.getResources().getDimensionPixelSize(
-                R.dimen.payments_editor_icon_list_size);
+        int size =
+                context.getResources().getDimensionPixelSize(R.dimen.payments_section_logo_width);
         int margin = context.getResources().getDimensionPixelSize(
                 R.dimen.payments_section_small_spacing);
         LinearLayout.LayoutParams layoutParams =
