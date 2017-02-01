@@ -30,20 +30,24 @@
 import sys
 
 import hasher
-import json5_generator
+import in_generator
 import name_utilities
 import template_expander
 
-from json5_generator import Json5File
+from in_file import InFile
 
 
 def _symbol(entry):
+    # FIXME: Remove this special case for the ugly x-webkit-foo attributes.
+    if entry['name'].startswith('x-webkit-'):
+        return entry['name'].replace('-', '')[1:]
     return entry['name'].replace('-', '_')
 
 
-class MakeQualifiedNamesWriter(json5_generator.Writer):
-    default_parameters = {}
-    default_metadata = {
+class MakeQualifiedNamesWriter(in_generator.Writer):
+    defaults = {
+    }
+    default_parameters = {
         'attrsNullNamespace': None,
         'export': '',
         'namespace': '',
@@ -56,44 +60,43 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
         'to_macro_style': name_utilities.to_macro_style,
     }
 
-    def __init__(self, json5_file_paths):
+    def __init__(self, in_file_paths):
         super(MakeQualifiedNamesWriter, self).__init__(None)
-        assert len(json5_file_paths) <= 2, 'MakeQualifiedNamesWriter requires at most 2 in files, got %d.' % len(json5_file_paths)
+        assert len(in_file_paths) <= 2, 'MakeQualifiedNamesWriter requires at most 2 in files, got %d.' % len(in_file_paths)
 
-        if len(json5_file_paths) == 2:
-            self.tags_json5_file = Json5File.load_from_files(
-                [json5_file_paths.pop(0)], self.default_metadata, self.default_parameters)
+        if len(in_file_paths) == 2:
+            self.tags_in_file = InFile.load_from_files([in_file_paths.pop(0)], self.defaults, self.valid_values, self.default_parameters)
         else:
-            self.tags_json5_file = None
+            self.tags_in_file = None
 
-        self.attrs_json5_file = Json5File.load_from_files([json5_file_paths.pop()], self.default_metadata, self.default_parameters)
+        self.attrs_in_file = InFile.load_from_files([in_file_paths.pop()], self.defaults, self.valid_values, self.default_parameters)
 
-        self.namespace = self._metadata('namespace')
+        self.namespace = self._parameter('namespace')
 
-        namespace_prefix = self._metadata('namespacePrefix') or self.namespace.lower()
-        namespace_uri = self._metadata('namespaceURI')
+        namespace_prefix = self._parameter('namespacePrefix') or self.namespace.lower()
+        namespace_uri = self._parameter('namespaceURI')
 
-        use_namespace_for_attrs = self.attrs_json5_file.metadata['attrsNullNamespace'] is None
+        use_namespace_for_attrs = self.attrs_in_file.parameters['attrsNullNamespace'] is None
 
         self._outputs = {
             (self.namespace + "Names.h"): self.generate_header,
             (self.namespace + "Names.cpp"): self.generate_implementation,
         }
         self._template_context = {
-            'attrs': self.attrs_json5_file.name_dictionaries,
-            'export': self._metadata('export'),
+            'attrs': self.attrs_in_file.name_dictionaries,
+            'export': self._parameter('export'),
             'namespace': self.namespace,
             'namespace_prefix': namespace_prefix,
             'namespace_uri': namespace_uri,
-            'tags': self.tags_json5_file.name_dictionaries if self.tags_json5_file else [],
+            'tags': self.tags_in_file.name_dictionaries if self.tags_in_file else [],
             'use_namespace_for_attrs': use_namespace_for_attrs,
         }
 
-    def _metadata(self, name):
-        metadata = self.attrs_json5_file.metadata[name].strip('"')
-        if self.tags_json5_file:
-            assert metadata == self.tags_json5_file.metadata[name].strip('"'), 'Both files must have the same %s.' % name
-        return metadata
+    def _parameter(self, name):
+        parameter = self.attrs_in_file.parameters[name].strip('"')
+        if self.tags_in_file:
+            assert parameter == self.tags_in_file.parameters[name].strip('"'), 'Both in files must have the same %s.' % name
+        return parameter
 
     @template_expander.use_jinja('MakeQualifiedNames.h.tmpl', filters=filters)
     def generate_header(self):
@@ -104,5 +107,5 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
         return self._template_context
 
 
-if __name__ == "__majson5__":
-    json5_generator.Maker(MakeQualifiedNamesWriter).main()
+if __name__ == "__main__":
+    in_generator.Maker(MakeQualifiedNamesWriter).main(sys.argv)

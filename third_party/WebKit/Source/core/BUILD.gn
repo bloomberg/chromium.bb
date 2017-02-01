@@ -509,8 +509,8 @@ process_in_files("make_core_generated_html_element_factory") {
   script = "../build/scripts/make_element_factory.py"
 
   in_files = [
-    "html/HTMLTagNames.json5",
-    "html/HTMLAttributeNames.json5",
+    "html/HTMLTagNames.in",
+    "html/HTMLAttributeNames.in",
   ]
   other_inputs = make_element_factory_files
   outputs = [
@@ -524,7 +524,7 @@ process_in_files("make_core_generated_html_element_factory") {
 process_in_files("make_core_generated_html_element_type_helpers") {
   script = "../build/scripts/make_element_type_helpers.py"
 
-  in_files = [ "html/HTMLTagNames.json5" ]
+  in_files = [ "html/HTMLTagNames.in" ]
   other_inputs = make_element_type_helpers_files
   outputs = [
     "$blink_core_output_dir/HTMLElementTypeHelpers.cpp",
@@ -536,8 +536,8 @@ process_in_files("make_core_generated_svg_names") {
   script = "../build/scripts/make_element_factory.py"
 
   in_files = [
-    "svg/SVGTagNames.json5",
-    "svg/SVGAttributeNames.json5",
+    "svg/SVGTagNames.in",
+    "svg/SVGAttributeNames.in",
   ]
   other_inputs = make_element_factory_files
   outputs = [
@@ -551,7 +551,7 @@ process_in_files("make_core_generated_svg_names") {
 process_in_files("make_core_generated_svg_element_type_helpers") {
   script = "../build/scripts/make_element_type_helpers.py"
 
-  in_files = [ "svg/SVGTagNames.json5" ]
+  in_files = [ "svg/SVGTagNames.in" ]
   other_inputs = make_element_type_helpers_files
   outputs = [
     "$blink_core_output_dir/SVGElementTypeHelpers.h",
@@ -643,8 +643,8 @@ make_names("make_core_generated_input_mode_names") {
 
 make_qualified_names("make_core_generated_math_ml_names") {
   in_files = [
-    "html/parser/MathMLTagNames.json5",
-    "html/parser/MathMLAttributeNames.json5",
+    "html/parser/MathMLTagNames.in",
+    "html/parser/MathMLAttributeNames.in",
   ]
   outputs = [
     "$blink_core_output_dir/MathMLNames.cpp",
@@ -653,7 +653,7 @@ make_qualified_names("make_core_generated_math_ml_names") {
 }
 
 make_qualified_names("make_core_generated_xlink_names") {
-  in_files = [ "svg/xlinkattrs.json5" ]
+  in_files = [ "svg/xlinkattrs.in" ]
   outputs = [
     "$blink_core_output_dir/XLinkNames.cpp",
     "$blink_core_output_dir/XLinkNames.h",
@@ -661,7 +661,7 @@ make_qualified_names("make_core_generated_xlink_names") {
 }
 
 make_qualified_names("make_core_generated_xml_ns_names") {
-  in_files = [ "xml/xmlnsattrs.json5" ]
+  in_files = [ "xml/xmlnsattrs.in" ]
   outputs = [
     "$blink_core_output_dir/XMLNSNames.cpp",
     "$blink_core_output_dir/XMLNSNames.h",
@@ -669,7 +669,7 @@ make_qualified_names("make_core_generated_xml_ns_names") {
 }
 
 make_qualified_names("make_core_generated_xml_names") {
-  in_files = [ "xml/xmlattrs.json5" ]
+  in_files = [ "xml/xmlattrs.in" ]
   outputs = [
     "$blink_core_output_dir/XMLNames.cpp",
     "$blink_core_output_dir/XMLNames.h",
@@ -773,7 +773,7 @@ action("make_core_generated_html_element_lookup_trie") {
   visibility = [ ":*" ]
   script = "../build/scripts/make_element_lookup_trie.py"
 
-  input_file = "html/HTMLTagNames.json5"
+  input_file = "html/HTMLTagNames.in"
   inputs = make_trie_helpers_files + [
              input_file,
              "../build/scripts/templates/ElementLookupTrie.cpp.tmpl",
