@@ -20,6 +20,7 @@
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
@@ -306,6 +307,10 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintPage_Params)
 
   // The printable area the page author specified.
   IPC_STRUCT_MEMBER(gfx::Rect, content_area)
+
+  // The physical offsets of the printer in DPI. Used for PS printing.
+  IPC_STRUCT_MEMBER(gfx::Point, physical_offsets)
+
 IPC_STRUCT_END()
 
 // TODO(dgn) Rename *ScriptedPrint messages because they are not called only

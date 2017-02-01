@@ -34,6 +34,15 @@ PRINTING_EXPORT const std::string& GetAgent();
 // OS-independent print settings.
 class PRINTING_EXPORT PrintSettings {
  public:
+#if defined(OS_WIN)
+  enum PrinterType {
+    TYPE_NONE = 0,
+    TYPE_XPS,
+    TYPE_POSTSCRIPT_LEVEL2,
+    TYPE_POSTSCRIPT_LEVEL3
+  };
+#endif
+
   // Media properties requested by the user. Default instance represents
   // default media selection.
   struct RequestedMedia {
@@ -154,8 +163,14 @@ class PRINTING_EXPORT PrintSettings {
   void set_print_text_with_gdi(bool use_gdi) { print_text_with_gdi_ = use_gdi; }
   bool print_text_with_gdi() const { return print_text_with_gdi_; }
 
-  void set_printer_is_xps(bool is_xps) { printer_is_xps_ = is_xps; }
-  bool printer_is_xps() const { return printer_is_xps_; }
+  void set_printer_type(PrinterType type) { printer_type_ = type; }
+  bool printer_is_xps() const { return printer_type_ == PrinterType::TYPE_XPS;}
+  bool printer_is_ps2() const {
+    return printer_type_ == PrinterType::TYPE_POSTSCRIPT_LEVEL2;
+  }
+  bool printer_is_ps3() const {
+    return printer_type_ == PrinterType::TYPE_POSTSCRIPT_LEVEL3;
+  }
 #endif
 
   // Cookie generator. It is used to initialize PrintedDocument with its
@@ -228,8 +243,7 @@ class PRINTING_EXPORT PrintSettings {
   // True to print text with GDI.
   bool print_text_with_gdi_;
 
-  // True if the printer is an XPS printer.
-  bool printer_is_xps_;
+  PrinterType printer_type_;
 #endif
 
   // If margin type is custom, this is what was requested.

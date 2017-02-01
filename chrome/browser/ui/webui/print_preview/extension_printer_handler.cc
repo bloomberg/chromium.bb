@@ -33,7 +33,6 @@
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
 #include "extensions/common/value_builder.h"
-#include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
 
 using device::UsbDevice;

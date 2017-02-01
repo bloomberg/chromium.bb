@@ -444,10 +444,10 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       // We should enable autorotation once server will be able to generate
       // PDF that matches paper size and orientation.
       if (utility_host->StartRenderPDFPagesToMetafile(
-              pdf_path,
-              printing::PdfRenderSettings(
-                  render_area, render_dpi, false,
-                  printing::PdfRenderSettings::Mode::NORMAL))) {
+              pdf_path, printing::PdfRenderSettings(
+                            render_area, gfx::Point(0,0), render_dpi,
+                            /*autorotate=*/false,
+                            printing::PdfRenderSettings::Mode::NORMAL))) {
         // The object will self-destruct when the child process dies.
         ignore_result(utility_host.release());
       } else {

@@ -153,7 +153,7 @@ void PrintSettings::Clear() {
   supports_alpha_blend_ = true;
 #if defined(OS_WIN)
   print_text_with_gdi_ = false;
-  printer_is_xps_ = false;
+  printer_type_ = PrintSettings::PrinterType::TYPE_NONE;
 #endif
 }
 

@@ -52,7 +52,8 @@ class PrintingHandler : public UtilityMessageHandler {
   int LoadPDF(base::File pdf_file);
   bool RenderPdfPageToMetafile(int page_number,
                                base::File output_file,
-                               float* scale_factor);
+                               float* scale_factor,
+                               bool postscript);
 #endif  // OS_WIN
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   bool RenderPDFPagesToPWGRaster(base::File pdf_file,

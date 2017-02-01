@@ -89,8 +89,16 @@ void PrintingHandler::OnRenderPDFPagesToMetafile(
     IPC::PlatformFileForTransit pdf_transit,
     const PdfRenderSettings& settings) {
   pdf_rendering_settings_ = settings;
+  chrome_pdf::SetPDFPostscriptPrintingLevel(0);  // Not using postscript.
   chrome_pdf::SetPDFUseGDIPrinting(pdf_rendering_settings_.mode ==
                                    PdfRenderSettings::Mode::GDI_TEXT);
+  if (pdf_rendering_settings_.mode ==
+      PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2) {
+    chrome_pdf::SetPDFPostscriptPrintingLevel(2);
+  } else if (pdf_rendering_settings_.mode ==
+             PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3) {
+    chrome_pdf::SetPDFPostscriptPrintingLevel(3);
+  }
   base::File pdf_file = IPC::PlatformFileForTransitToFile(pdf_transit);
   int page_count = LoadPDF(std::move(pdf_file));
   Send(
@@ -102,8 +110,12 @@ void PrintingHandler::OnRenderPDFPagesToMetafileGetPage(
     IPC::PlatformFileForTransit output_file) {
   base::File emf_file = IPC::PlatformFileForTransitToFile(output_file);
   float scale_factor = 1.0f;
-  bool success =
-      RenderPdfPageToMetafile(page_number, std::move(emf_file), &scale_factor);
+  bool postscript = pdf_rendering_settings_.mode ==
+                        PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2 ||
+                    pdf_rendering_settings_.mode ==
+                        PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3;
+  bool success = RenderPdfPageToMetafile(page_number, std::move(emf_file),
+                                         &scale_factor, postscript);
   Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageDone(
       success, scale_factor));
 }
@@ -112,7 +124,7 @@ void PrintingHandler::OnRenderPDFPagesToMetafileStop() {
   ReleaseProcessIfNeeded();
 }
 
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintingHandler::OnRenderPDFPagesToPWGRaster(
@@ -130,7 +142,7 @@ void PrintingHandler::OnRenderPDFPagesToPWGRaster(
   }
   ReleaseProcessIfNeeded();
 }
-#endif  // ENABLE_PRINT_PREVIEW
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 #if defined(OS_WIN)
 int PrintingHandler::LoadPDF(base::File pdf_file) {
@@ -153,7 +165,8 @@ int PrintingHandler::LoadPDF(base::File pdf_file) {
 
 bool PrintingHandler::RenderPdfPageToMetafile(int page_number,
                                               base::File output_file,
-                                              float* scale_factor) {
+                                              float* scale_factor,
+                                              bool postscript) {
   Emf metafile;
   metafile.Init();
 
@@ -164,18 +177,30 @@ bool PrintingHandler::RenderPdfPageToMetafile(int page_number,
   // original coordinates and we'll be able to print in full resolution.
   // Before playback we'll need to counter the scaling up that will happen
   // in the service (print_system_win.cc).
-  *scale_factor = gfx::CalculatePageScale(
-      metafile.context(), pdf_rendering_settings_.area.right(),
-      pdf_rendering_settings_.area.bottom());
-  gfx::ScaleDC(metafile.context(), *scale_factor);
+  //
+  // The postscript driver does not use the metafile size since it outputs
+  // postscript rather than a metafile. Instead it uses the printable area
+  // sent to RenderPDFPageToDC to determine the area to render. Therefore,
+  // don't scale the DC to match the metafile, and send the printer physical
+  // offsets to the driver.
+  if (!postscript) {
+    *scale_factor = gfx::CalculatePageScale(
+        metafile.context(), pdf_rendering_settings_.area.right(),
+        pdf_rendering_settings_.area.bottom());
+    gfx::ScaleDC(metafile.context(), *scale_factor);
+  }
 
   // The underlying metafile is of type Emf and ignores the arguments passed
   // to StartPage.
   metafile.StartPage(gfx::Size(), gfx::Rect(), 1);
+  int offset_x = postscript ? pdf_rendering_settings_.offsets.x() : 0;
+  int offset_y = postscript ? pdf_rendering_settings_.offsets.y() : 0;
+
   if (!chrome_pdf::RenderPDFPageToDC(
           &pdf_data_.front(), pdf_data_.size(), page_number, metafile.context(),
-          pdf_rendering_settings_.dpi, pdf_rendering_settings_.area.x(),
-          pdf_rendering_settings_.area.y(),
+          pdf_rendering_settings_.dpi,
+          pdf_rendering_settings_.area.x() - offset_x,
+          pdf_rendering_settings_.area.y() - offset_y,
           pdf_rendering_settings_.area.width(),
           pdf_rendering_settings_.area.height(), true, false, true, true,
           pdf_rendering_settings_.autorotate)) {
@@ -309,6 +334,6 @@ void PrintingHandler::OnGetPrinterSemanticCapsAndDefaults(
   }
   ReleaseProcessIfNeeded();
 }
-#endif  // ENABLE_PRINT_PREVIEW
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 }  // namespace printing

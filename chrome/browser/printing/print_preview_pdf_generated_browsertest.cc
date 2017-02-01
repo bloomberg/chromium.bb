@@ -50,6 +50,7 @@
 #include "printing/pdf_render_settings.h"
 #include "printing/units.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -370,7 +371,7 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
 
       total_height_in_pixels += height_in_pixels;
       gfx::Rect rect(width_in_pixels, height_in_pixels);
-      PdfRenderSettings settings(rect, kDpi, true,
+      PdfRenderSettings settings(rect, gfx::Point(0, 0), kDpi, true,
                                  PdfRenderSettings::Mode::NORMAL);
 
       int int_max = std::numeric_limits<int>::max();

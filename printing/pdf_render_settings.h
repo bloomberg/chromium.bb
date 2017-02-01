@@ -11,6 +11,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_param_traits.h"
 #include "printing/printing_export.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
@@ -23,18 +24,29 @@ struct PdfRenderSettings {
     NORMAL = 0,
 #if defined(OS_WIN)
     GDI_TEXT,
-    LAST = GDI_TEXT,
+    POSTSCRIPT_LEVEL2,
+    POSTSCRIPT_LEVEL3,
+    LAST = POSTSCRIPT_LEVEL3,
 #else
     LAST = NORMAL,
 #endif
   };
 
   PdfRenderSettings() : dpi(0), autorotate(false), mode(Mode::NORMAL) {}
-  PdfRenderSettings(gfx::Rect area, int dpi, bool autorotate, Mode mode)
-      : area(area), dpi(dpi), autorotate(autorotate), mode(mode) {}
+  PdfRenderSettings(gfx::Rect area,
+                    gfx::Point offsets,
+                    int dpi,
+                    bool autorotate,
+                    Mode mode)
+      : area(area),
+        offsets(offsets),
+        dpi(dpi),
+        autorotate(autorotate),
+        mode(mode) {}
   ~PdfRenderSettings() {}
 
   gfx::Rect area;
+  gfx::Point offsets;
   int dpi;
   bool autorotate;
   Mode mode;
@@ -43,4 +55,3 @@ struct PdfRenderSettings {
 }  // namespace printing
 
 #endif  // PRINTING_PDF_RENDER_SETTINGS_H_
-

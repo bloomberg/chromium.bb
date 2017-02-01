@@ -180,6 +180,13 @@ const base::Feature kParallelDownloading{
 const base::Feature kPermissionsBlacklist{
     "PermissionsBlacklist", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables postscript generation instead of emf when printing to postscript
+// capable printers.
+#if defined(OS_WIN)
+const base::Feature kPostScriptPrinting{"PostScriptPrinting",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // OS_WIN
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Prefer HTML content by hiding Flash from the list of plugins.
 // https://crbug.com/626728

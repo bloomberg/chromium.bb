@@ -1100,6 +1100,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   // printing and it expects real printable_area value.
   // See http://crbug.com/123408
   PrintMsg_Print_Params& print_params = print_pages_params_->params;
+  printer_printable_area_ = print_params.printable_area;
   print_params.printable_area = gfx::Rect(print_params.page_size);
 
   // Render Pages for printing.
@@ -1334,7 +1335,7 @@ bool PrintWebViewHelper::RenderPreviewPage(
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   PrintPageInternal(page_params, print_preview_context_.prepared_frame(),
-                    initial_render_metafile, nullptr, nullptr);
+                    initial_render_metafile, nullptr, nullptr, nullptr);
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
   if (draft_metafile.get()) {
@@ -1835,7 +1836,8 @@ void PrintWebViewHelper::PrintPageInternal(
     blink::WebLocalFrame* frame,
     PdfMetafileSkia* metafile,
     gfx::Size* page_size_in_dpi,
-    gfx::Rect* content_area_in_dpi) {
+    gfx::Rect* content_area_in_dpi,
+    gfx::Rect* printable_area_in_dpi) {
   PageSizeMargins page_layout_in_points;
 
   double css_scale_factor = 1.0f;
@@ -1864,6 +1866,9 @@ void PrintWebViewHelper::PrintPageInternal(
     // Output PDF matches paper size and should be printer edge to edge.
     *content_area_in_dpi =
         gfx::Rect(0, 0, page_size_in_dpi->width(), page_size_in_dpi->height());
+  }
+  if (printable_area_in_dpi) {
+    *printable_area_in_dpi = printer_printable_area_;
   }
 
   gfx::Rect canvas_area =

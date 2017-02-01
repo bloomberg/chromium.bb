@@ -107,6 +107,10 @@ extern const base::Feature kParallelDownloading;
 
 extern const base::Feature kPermissionsBlacklist;
 
+#if defined(OS_WIN)
+extern const base::Feature kPostScriptPrinting;
+#endif
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 extern const base::Feature kPreferHtmlOverPlugins;
 #endif

@@ -58,7 +58,7 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   page_params.params = params.params;
   for (int page_number : printed_pages) {
     page_params.page_number = page_number;
-    PrintPageInternal(page_params, frame, &metafile, nullptr, nullptr);
+    PrintPageInternal(page_params, frame, &metafile, nullptr, nullptr, nullptr);
   }
 
   // blink::printEnd() for PDF should be called before metafile is closed.

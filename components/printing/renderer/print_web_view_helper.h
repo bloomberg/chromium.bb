@@ -290,7 +290,8 @@ class PrintWebViewHelper
                          blink::WebLocalFrame* frame,
                          PdfMetafileSkia* metafile,
                          gfx::Size* page_size_in_dpi,
-                         gfx::Rect* content_area_in_dpi);
+                         gfx::Rect* content_area_in_dpi,
+                         gfx::Rect* printable_area_in_dpi);
 #endif  // defined(OS_MACOSX)
 
   // Platform specific helper function for rendering page(s) to |metafile|.
@@ -382,6 +383,7 @@ class PrintWebViewHelper
   bool reset_prep_frame_view_;
 
   std::unique_ptr<PrintMsg_PrintPages_Params> print_pages_params_;
+  gfx::Rect printer_printable_area_;
   bool is_print_ready_metafile_sent_;
   bool ignore_css_margins_;
 

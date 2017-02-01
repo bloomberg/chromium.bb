@@ -224,20 +224,18 @@ PrintedDocument* PrintJob::document() const {
 #if defined(OS_WIN)
 class PrintJob::PdfConversionState {
  public:
-  PdfConversionState(gfx::Size page_size,
-                     gfx::Rect content_area,
-                     std::unique_ptr<PdfConverter> converter)
+  PdfConversionState(gfx::Size page_size, gfx::Rect content_area)
       : page_count_(0),
         current_page_(0),
         pages_in_progress_(0),
         page_size_(page_size),
-        content_area_(content_area),
-        converter_(std::move(converter)) {}
+        content_area_(content_area) {}
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
              const PdfRenderSettings& conversion_settings,
              const PdfConverter::StartCallback& start_callback) {
-    converter_->Start(data, conversion_settings, start_callback);
+    converter_ = PdfConverter::StartPdfConverter(
+          data, conversion_settings, start_callback);
   }
 
   void GetMorePages(const PdfConverter::GetPageCallback& get_page_callback) {
@@ -281,16 +279,14 @@ void PrintJob::StartPdfToEmfConversion(
     bool print_text_with_gdi) {
   DCHECK(!pdf_conversion_state_);
   pdf_conversion_state_ =
-      base::MakeUnique<PdfConversionState>(page_size, content_area,
-          PdfConverter::CreatePdfToEmfConverter());
+      base::MakeUnique<PdfConversionState>(page_size, content_area);
   const int kPrinterDpi = settings().dpi();
   PdfRenderSettings settings(
-      content_area, kPrinterDpi, /*autorotate=*/true,
+      content_area, gfx::Point(0,0), kPrinterDpi, /*autorotate=*/true,
       print_text_with_gdi ? PdfRenderSettings::Mode::GDI_TEXT
                           : PdfRenderSettings::Mode::NORMAL);
   pdf_conversion_state_->Start(
-      bytes, settings,
-      base::Bind(&PrintJob::OnPdfConversionStarted, this));
+      bytes, settings, base::Bind(&PrintJob::OnPdfConversionStarted, this));
 }
 
 void PrintJob::OnPdfConversionStarted(int page_count) {
@@ -322,6 +318,23 @@ void PrintJob::OnPdfPageConverted(int page_number,
 
   pdf_conversion_state_->GetMorePages(
       base::Bind(&PrintJob::OnPdfPageConverted, this));
+}
+
+void PrintJob::StartPdfToPostScriptConversion(
+    const scoped_refptr<base::RefCountedMemory>& bytes,
+    const gfx::Rect& content_area,
+    const gfx::Point& physical_offsets,
+    bool ps_level2) {
+  DCHECK(!pdf_conversion_state_);
+  pdf_conversion_state_ = base::MakeUnique<PdfConversionState>(
+      gfx::Size(), gfx::Rect());
+  const int kPrinterDpi = settings().dpi();
+  PdfRenderSettings settings(
+      content_area, physical_offsets, kPrinterDpi, true /* autorotate? */,
+      ps_level2 ? PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2
+                : PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3);
+  pdf_conversion_state_->Start(
+      bytes, settings, base::Bind(&PrintJob::OnPdfConversionStarted, this));
 }
 #endif  // defined(OS_WIN)
 

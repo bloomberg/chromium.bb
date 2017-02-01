@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
+#include "printing/pdf_render_settings.h"
 
 namespace base {
 class FilePath;

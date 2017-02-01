@@ -99,6 +99,12 @@ class PrintJob : public PrintJobWorkerOwner,
       const gfx::Size& page_size,
       const gfx::Rect& content_area,
       bool print_text_with_gdi);
+
+  void StartPdfToPostScriptConversion(
+      const scoped_refptr<base::RefCountedMemory>& bytes,
+      const gfx::Rect& content_area,
+      const gfx::Point& physical_offset,
+      bool ps_level2);
 #endif  // defined(OS_WIN)
 
  protected:
@@ -128,7 +134,7 @@ class PrintJob : public PrintJobWorkerOwner,
   void OnPdfConversionStarted(int page_count);
   void OnPdfPageConverted(int page_number,
                           float scale_factor,
-                          std::unique_ptr<MetafilePlayer> emf);
+                          std::unique_ptr<MetafilePlayer> metafile);
 #endif  // defined(OS_WIN)
 
   content::NotificationRegistrar registrar_;

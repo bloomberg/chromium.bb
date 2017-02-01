@@ -182,24 +182,39 @@ void PrintViewManagerBase::OnDidPrintPage(
 #if defined(OS_WIN)
   print_job_->AppendPrintedPage(params.page_number);
   if (metafile_must_be_valid) {
-    // TODO(thestig): Figure out why rendering text with GDI results in random
-    // missing characters for some users. https://crbug.com/658606
-    bool print_text_with_gdi =
-        document->settings().print_text_with_gdi() &&
-        !document->settings().printer_is_xps() &&
-        base::FeatureList::IsEnabled(features::kGdiTextPrinting);
     scoped_refptr<base::RefCountedBytes> bytes = new base::RefCountedBytes(
         reinterpret_cast<const unsigned char*>(shared_buf->memory()),
         params.data_size);
-
     document->DebugDumpData(bytes.get(), FILE_PATH_LITERAL(".pdf"));
-    print_job_->StartPdfToEmfConversion(
-        bytes, params.page_size, params.content_area,
-        print_text_with_gdi);
+
+    const auto& settings = document->settings();
+    if ((settings.printer_is_ps2() || settings.printer_is_ps3()) &&
+        base::FeatureList::IsEnabled(features::kPostScriptPrinting)) {
+      print_job_->StartPdfToPostScriptConversion(bytes, params.content_area,
+                                                 params.physical_offsets,
+                                                 settings.printer_is_ps2());
+    } else {
+      // TODO(thestig): Figure out why rendering text with GDI results in random
+      // missing characters for some users. https://crbug.com/658606
+      // Update : The missing letters seem to have been caused by the same
+      // problem as https://crbug.com/659604 which was resolved. GDI printing
+      // seems to work with the fix for this bug applied.
+      bool print_text_with_gdi = settings.print_text_with_gdi() &&
+                                 !settings.printer_is_xps() &&
+                                 base::FeatureList::IsEnabled(
+                                     features::kGdiTextPrinting);
+      print_job_->StartPdfToEmfConversion(
+          bytes, params.page_size, params.content_area, print_text_with_gdi);
+    }
   }
 #else
   // Update the rendered document. It will send notifications to the listener.
-  document->SetPage(params.page_number, std::move(metafile), params.page_size,
+  document->SetPage(params.page_number,
+                    std::move(metafile),
+#if defined(OS_WIN)
+                    0.0f /* dummy shrink_factor */,
+#endif
+                    params.page_size,
                     params.content_area);
 
   ShouldQuitFromInnerMessageLoop();

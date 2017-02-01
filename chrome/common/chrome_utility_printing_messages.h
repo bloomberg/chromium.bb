@@ -32,6 +32,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(printing::PdfRenderSettings::Mode,
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PdfRenderSettings)
   IPC_STRUCT_TRAITS_MEMBER(area)
+  IPC_STRUCT_TRAITS_MEMBER(offsets)
   IPC_STRUCT_TRAITS_MEMBER(dpi)
   IPC_STRUCT_TRAITS_MEMBER(autorotate)
   IPC_STRUCT_TRAITS_MEMBER(mode)
@@ -120,7 +121,7 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RenderPDFPagesToMetafiles_GetPage,
 
 // Requests utility process to stop conversion and exit.
 IPC_MESSAGE_CONTROL0(ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop)
-#endif  // ENABLE_PRINTING && OS_WIN
+#endif  //  BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN)
 
 //------------------------------------------------------------------------------
 // Utility process host messages:

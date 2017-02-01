@@ -2221,10 +2221,13 @@ const FeatureEntry kFeatureEntries[] = {
 #endif // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
-     {"gdi-text-printing", IDS_FLAGS_GDI_TEXT_PRINTING,
-       IDS_FLAGS_GDI_TEXT_PRINTING_DESCRIPTION, kOsWin,
-       FEATURE_VALUE_TYPE(features::kGdiTextPrinting)}
-#endif
+    {"gdi-text-printing", IDS_FLAGS_GDI_TEXT_PRINTING,
+     IDS_FLAGS_GDI_TEXT_PRINTING_DESCRIPTION, kOsWin,
+     FEATURE_VALUE_TYPE(features::kGdiTextPrinting)},
+    {"postscript-printing", IDS_FLAGS_POSTSCRIPT_PRINTING,
+     IDS_FLAGS_POSTSCRIPT_PRINTING_DESCRIPTION, kOsWin,
+     FEATURE_VALUE_TYPE(features::kPostScriptPrinting)},
+#endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
     {"show-arc-files-app", IDS_FLAGS_SHOW_ARC_FILES_APP_NAME,

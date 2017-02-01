@@ -31,6 +31,38 @@ bool IsTechnology(HDC hdc, const char* technology) {
   return strcmp(buf, technology) == 0;
 }
 
+bool IsPrinterPostScript(HDC hdc, int* level) {
+  static constexpr char kPostScriptDriver[] = "PostScript";
+  if (!IsTechnology(hdc, kPostScriptDriver)) {
+    return false;
+  }
+
+  // Query the PS Level if possible. Many PS printers do not implement this.
+  if (HasEscapeSupprt(hdc, GET_PS_FEATURESETTING)) {
+    constexpr int param = FEATURESETTING_PSLEVEL;
+    const char* param_char_ptr = reinterpret_cast<const char*>(&param);
+    int param_out = -1;
+    char* param_out_char_ptr = reinterpret_cast<char*>(&param_out);
+    if (ExtEscape(hdc, GET_PS_FEATURESETTING, sizeof(param), param_char_ptr,
+                  sizeof(param_out), param_out_char_ptr) > 0) {
+      if (param_out < 2 || param_out > 3)
+        return false;
+
+      *level = param_out;
+      return true;
+    }
+  }
+
+  // If it looks like a PS printer.
+  if (HasEscapeSupprt(hdc, POSTSCRIPT_PASSTHROUGH) &&
+      HasEscapeSupprt(hdc, POSTSCRIPT_DATA)) {
+    *level = 2;
+    return true;
+  }
+
+  return false;
+}
+
 bool IsPrinterXPS(HDC hdc) {
   static constexpr char kXPSDriver[] =
       "http://schemas.microsoft.com/xps/2005/06";
@@ -84,8 +116,23 @@ void PrintSettingsInitializerWin::InitPrintSettings(
   print_settings->SetPrinterPrintableArea(physical_size_device_units,
                                           printable_area_device_units,
                                           false);
-
-  print_settings->set_printer_is_xps(IsPrinterXPS(hdc));
+  if (IsPrinterXPS(hdc)) {
+    print_settings->set_printer_type(PrintSettings::PrinterType::TYPE_XPS);
+    return;
+  }
+  int level;
+  if (IsPrinterPostScript(hdc, &level)) {
+    if (level == 2) {
+      print_settings->set_printer_type(
+          PrintSettings::PrinterType::TYPE_POSTSCRIPT_LEVEL2);
+      return;
+    }
+    DCHECK_EQ(3, level);
+    print_settings->set_printer_type(
+        PrintSettings::PrinterType::TYPE_POSTSCRIPT_LEVEL3);
+    return;
+  }
+  print_settings->set_printer_type(PrintSettings::PrinterType::TYPE_NONE);
 }
 
 }  // namespace printing
