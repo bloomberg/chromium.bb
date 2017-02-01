@@ -251,7 +251,7 @@ void String::ensure16Bit() {
     m_impl =
         make16BitFrom8BitSource(m_impl->characters8(), length).releaseImpl();
   else
-    m_impl = StringImpl::empty16Bit();
+    m_impl = StringImpl::empty16Bit;
 }
 
 void String::truncate(unsigned length) {
@@ -776,12 +776,12 @@ String String::fromUTF8WithLatin1Fallback(const LChar* string, size_t size) {
 }
 
 const String& emptyString() {
-  DEFINE_STATIC_LOCAL(String, emptyString, (StringImpl::empty()));
+  DEFINE_STATIC_LOCAL(String, emptyString, (StringImpl::empty));
   return emptyString;
 }
 
 const String& emptyString16Bit() {
-  DEFINE_STATIC_LOCAL(String, emptyString, (StringImpl::empty16Bit()));
+  DEFINE_STATIC_LOCAL(String, emptyString, (StringImpl::empty16Bit));
   return emptyString;
 }
 

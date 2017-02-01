@@ -68,7 +68,7 @@ class WTF_EXPORT StringView {
 
   // From a literal string or LChar buffer:
   StringView(const LChar* chars, unsigned length)
-      : m_impl(StringImpl::empty()), m_characters8(chars), m_length(length) {}
+      : m_impl(StringImpl::empty), m_characters8(chars), m_length(length) {}
   StringView(const char* chars, unsigned length)
       : StringView(reinterpret_cast<const LChar*>(chars), length) {}
   StringView(const LChar* chars)
@@ -79,7 +79,7 @@ class WTF_EXPORT StringView {
 
   // From a wide literal string or UChar buffer.
   StringView(const UChar* chars, unsigned length)
-      : m_impl(StringImpl::empty16Bit()),
+      : m_impl(StringImpl::empty16Bit),
         m_characters16(chars),
         m_length(length) {}
   StringView(const UChar* chars);
@@ -203,7 +203,7 @@ inline StringView::StringView(StringImpl& impl,
 inline void StringView::clear() {
   m_length = 0;
   m_bytes = nullptr;
-  m_impl = StringImpl::empty();  // mark as 8 bit.
+  m_impl = StringImpl::empty;  // mark as 8 bit.
 }
 
 inline void StringView::set(const StringImpl& impl,

@@ -30,7 +30,7 @@ String::String(NSString* str) {
 
   CFIndex size = CFStringGetLength(reinterpret_cast<CFStringRef>(str));
   if (size == 0)
-    m_impl = StringImpl::empty();
+    m_impl = StringImpl::empty;
   else {
     Vector<LChar, 1024> lcharBuffer(size);
     CFIndex usedBufLen;

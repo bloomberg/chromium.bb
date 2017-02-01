@@ -836,7 +836,7 @@ bool KURL::protocolIs(const StringView protocol) const {
 }
 
 StringView KURL::stringViewForInvalidComponent() const {
-  return m_string.isNull() ? StringView() : StringView(StringImpl::empty());
+  return m_string.isNull() ? StringView() : StringView(StringImpl::empty);
 }
 
 StringView KURL::componentStringView(const url::Component& component) const {

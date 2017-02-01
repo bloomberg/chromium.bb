@@ -426,7 +426,7 @@ static CounterNode* makeCounterNodeIfNeeded(LayoutObject& object,
 }
 
 LayoutCounter::LayoutCounter(Document* node, const CounterContent& counter)
-    : LayoutText(node, StringImpl::empty()),
+    : LayoutText(node, StringImpl::empty),
       m_counter(counter),
       m_counterNode(nullptr),
       m_nextForSameCounter(nullptr) {

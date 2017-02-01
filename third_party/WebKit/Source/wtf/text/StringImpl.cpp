@@ -28,6 +28,7 @@
 #include "wtf/DynamicAnnotations.h"
 #include "wtf/LeakAnnotations.h"
 #include "wtf/PtrUtil.h"
+#include "wtf/StaticConstructors.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/AtomicString.h"
@@ -344,7 +345,7 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length,
                                                        LChar*& data) {
   if (!length) {
     data = 0;
-    return empty();
+    return empty;
   }
 
   // Allocate a single buffer large enough to contain the StringImpl
@@ -361,7 +362,7 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length,
                                                        UChar*& data) {
   if (!length) {
     data = 0;
-    return empty();
+    return empty;
   }
 
   // Allocate a single buffer large enough to contain the StringImpl
@@ -396,6 +397,22 @@ void StringImpl::freezeStaticStrings() {
 }
 
 unsigned StringImpl::m_highestStaticStringLength = 0;
+
+DEFINE_GLOBAL(StringImpl, globalEmpty);
+DEFINE_GLOBAL(StringImpl, globalEmpty16Bit);
+// Callers need the global empty strings to be non-const.
+StringImpl* StringImpl::empty = const_cast<StringImpl*>(&globalEmpty);
+StringImpl* StringImpl::empty16Bit = const_cast<StringImpl*>(&globalEmpty16Bit);
+void StringImpl::initStatics() {
+  new ((void*)empty) StringImpl(ConstructEmptyString);
+  new ((void*)empty16Bit) StringImpl(ConstructEmptyString16Bit);
+  WTF_ANNOTATE_BENIGN_RACE(StringImpl::empty,
+                           "Benign race on the reference counter of a static "
+                           "string created by StringImpl::empty");
+  WTF_ANNOTATE_BENIGN_RACE(StringImpl::empty16Bit,
+                           "Benign race on the reference counter of a static "
+                           "string created by StringImpl::empty16Bit");
+}
 
 StringImpl* StringImpl::createStatic(const char* string,
                                      unsigned length,
@@ -451,7 +468,7 @@ void StringImpl::reserveStaticStringsCapacityForSize(unsigned size) {
 PassRefPtr<StringImpl> StringImpl::create(const UChar* characters,
                                           unsigned length) {
   if (!characters || !length)
-    return empty();
+    return empty;
 
   UChar* data;
   RefPtr<StringImpl> string = createUninitialized(length, data);
@@ -462,7 +479,7 @@ PassRefPtr<StringImpl> StringImpl::create(const UChar* characters,
 PassRefPtr<StringImpl> StringImpl::create(const LChar* characters,
                                           unsigned length) {
   if (!characters || !length)
-    return empty();
+    return empty;
 
   LChar* data;
   RefPtr<StringImpl> string = createUninitialized(length, data);
@@ -473,7 +490,7 @@ PassRefPtr<StringImpl> StringImpl::create(const LChar* characters,
 PassRefPtr<StringImpl> StringImpl::create8BitIfPossible(const UChar* characters,
                                                         unsigned length) {
   if (!characters || !length)
-    return empty();
+    return empty;
 
   LChar* data;
   RefPtr<StringImpl> string = createUninitialized(length, data);
@@ -489,7 +506,7 @@ PassRefPtr<StringImpl> StringImpl::create8BitIfPossible(const UChar* characters,
 
 PassRefPtr<StringImpl> StringImpl::create(const LChar* string) {
   if (!string)
-    return empty();
+    return empty;
   size_t length = strlen(reinterpret_cast<const char*>(string));
   RELEASE_ASSERT(length <= numeric_limits<unsigned>::max());
   return create(string, length);
@@ -520,7 +537,7 @@ bool StringImpl::containsOnlyWhitespace() {
 PassRefPtr<StringImpl> StringImpl::substring(unsigned start,
                                              unsigned length) const {
   if (start >= m_length)
-    return empty();
+    return empty;
   unsigned maxLength = m_length - start;
   if (length >= maxLength) {
     // PassRefPtr has trouble dealing with const arguments. It should be updated
@@ -959,7 +976,7 @@ template <class UCharPredicate>
 inline PassRefPtr<StringImpl> StringImpl::stripMatchedCharacters(
     UCharPredicate predicate) {
   if (!m_length)
-    return empty();
+    return empty;
 
   unsigned start = 0;
   unsigned end = m_length - 1;
@@ -971,7 +988,7 @@ inline PassRefPtr<StringImpl> StringImpl::stripMatchedCharacters(
 
   // only white space
   if (start > end)
-    return empty();
+    return empty;
 
   // skip white space from end
   while (end && predicate(is8Bit() ? characters8()[end] : characters16()[end]))

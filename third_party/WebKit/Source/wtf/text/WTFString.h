@@ -104,7 +104,7 @@ class WTF_EXPORT String {
   template <typename CharType>
   static String adopt(StringBuffer<CharType>& buffer) {
     if (!buffer.length())
-      return StringImpl::empty();
+      return StringImpl::empty;
     return String(buffer.release());
   }
 
@@ -489,7 +489,7 @@ inline void swap(String& a, String& b) {
 template <size_t inlineCapacity>
 String::String(const Vector<UChar, inlineCapacity>& vector)
     : m_impl(vector.size() ? StringImpl::create(vector.data(), vector.size())
-                           : StringImpl::empty()) {}
+                           : StringImpl::empty) {}
 
 template <>
 inline const LChar* String::getCharacters<LChar>() const {

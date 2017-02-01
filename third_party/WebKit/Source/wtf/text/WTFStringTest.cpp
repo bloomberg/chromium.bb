@@ -445,14 +445,14 @@ TEST(StringTest, Ensure16Bit) {
   EXPECT_FALSE(string16.is8Bit());
   EXPECT_EQ("16bit", string16);
 
-  String empty8(StringImpl::empty());
+  String empty8(StringImpl::empty);
   EXPECT_TRUE(empty8.is8Bit());
   empty8.ensure16Bit();
   EXPECT_FALSE(empty8.is8Bit());
   EXPECT_TRUE(empty8.isEmpty());
   EXPECT_FALSE(empty8.isNull());
 
-  String empty16(StringImpl::empty16Bit());
+  String empty16(StringImpl::empty16Bit);
   EXPECT_FALSE(empty16.is8Bit());
   empty16.ensure16Bit();
   EXPECT_FALSE(empty16.is8Bit());
