@@ -18,4 +18,9 @@ const char kUpdaterDefaultUrl[] = "https://clients2.google.com/service/update2";
 
 const char kUpdaterFallbackUrl[] = "http://clients2.google.com/service/update2";
 
+const char kUpdaterDefaultUrlAlt[] =
+    "https://update.googleapis.com/service/update2";
+
+const char kUpdaterFallbackUrlAlt[] =
+    "http://update.googleapis.com/service/update2";
 }  // namespace component_updater

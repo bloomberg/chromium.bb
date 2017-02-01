@@ -40,6 +40,7 @@
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -3818,9 +3819,16 @@ void ComponentUpdaterPolicyTest::OnDemandComplete(update_client::Error error) {
 void ComponentUpdaterPolicyTest::BeginTest() {
   cus_ = g_browser_process->component_updater();
 
+  const auto config = component_updater::MakeChromeComponentUpdaterConfigurator(
+      base::CommandLine::ForCurrentProcess(), nullptr,
+      g_browser_process->local_state());
+  const auto urls = config->UpdateUrl();
+  ASSERT_TRUE(urls.size());
+  const GURL url = urls.front();
+
   interceptor_factory_ =
       base::MakeUnique<update_client::URLRequestPostInterceptorFactory>(
-          "https", "clients2.google.com",
+          url.scheme(), url.host(),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   post_interceptor_ = interceptor_factory_->CreateInterceptor(
