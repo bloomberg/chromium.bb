@@ -34,6 +34,14 @@ IsolateHolder::IsolateHolder(
 IsolateHolder::IsolateHolder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     AccessMode access_mode)
+    : IsolateHolder(std::move(task_runner),
+                    AccessMode::kSingleThread,
+                    kAllowAtomicsWait) {}
+
+IsolateHolder::IsolateHolder(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    AccessMode access_mode,
+    AllowAtomicsWaitMode atomics_wait_mode)
     : access_mode_(access_mode) {
   v8::ArrayBuffer::Allocator* allocator = g_array_buffer_allocator;
   CHECK(allocator) << "You need to invoke gin::IsolateHolder::Initialize first";
@@ -43,6 +51,7 @@ IsolateHolder::IsolateHolder(
   params.constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
                                        base::SysInfo::AmountOfVirtualMemory());
   params.array_buffer_allocator = allocator;
+  params.allow_atomics_wait = atomics_wait_mode == kAllowAtomicsWait;
   isolate_ = v8::Isolate::New(params);
   isolate_data_.reset(
       new PerIsolateData(isolate_, allocator, access_mode, task_runner));

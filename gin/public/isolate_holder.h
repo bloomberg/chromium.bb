@@ -41,6 +41,12 @@ class GIN_EXPORT IsolateHolder {
     kUseLocker
   };
 
+  // Whether Atomics.wait can be called on this isolate.
+  enum AllowAtomicsWaitMode {
+    kDisallowAtomicsWait,
+    kAllowAtomicsWait
+  };
+
   // Indicates whether V8 works with stable or experimental v8 extras.
   enum V8ExtrasMode {
     kStableV8Extras,
@@ -51,6 +57,9 @@ class GIN_EXPORT IsolateHolder {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                 AccessMode access_mode);
+  IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                AccessMode access_mode,
+                AllowAtomicsWaitMode atomics_wait_mode);
   ~IsolateHolder();
 
   // Should be invoked once before creating IsolateHolder instances to

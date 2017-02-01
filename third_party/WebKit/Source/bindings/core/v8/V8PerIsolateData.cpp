@@ -55,7 +55,10 @@ static void microtasksCompletedCallback(v8::Isolate* isolate) {
 
 V8PerIsolateData::V8PerIsolateData(WebTaskRunner* taskRunner)
     : m_isolateHolder(WTF::makeUnique<gin::IsolateHolder>(
-          taskRunner ? taskRunner->toSingleThreadTaskRunner() : nullptr)),
+          taskRunner ? taskRunner->toSingleThreadTaskRunner() : nullptr,
+          gin::IsolateHolder::kSingleThread,
+          isMainThread() ? gin::IsolateHolder::kDisallowAtomicsWait
+                         : gin::IsolateHolder::kAllowAtomicsWait)),
       m_stringCache(WTF::wrapUnique(new StringCache(isolate()))),
       m_hiddenValue(V8HiddenValue::create()),
       m_privateProperty(V8PrivateProperty::create()),
