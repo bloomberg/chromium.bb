@@ -189,6 +189,9 @@ void ModelLoader::EndFetch(ClientModelStatus status, base::TimeDelta max_age) {
     delay_ms = max_age.InMilliseconds();
   }
 
+  // Reset |fetcher_| as it will be re-created on next fetch.
+  fetcher_.reset();
+
   // Schedule the next model reload.
   ScheduleFetch(delay_ms);
 }
