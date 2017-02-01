@@ -164,14 +164,23 @@ class Json5File(object):
         return entry
 
     def _validate_parameter(self, parameter, value):
-        valid_values = parameter.get("valid_values")
-        if valid_values and value not in valid_values:
-            raise Exception("Unknown value: '%s'\nKnown values: %s" %
-                            (value, valid_values))
         valid_type = parameter.get("valid_type")
         if valid_type and type(value).__name__ != valid_type:
             raise Exception("Incorrect type: '%s'\nExpected type: %s" %
                             (type(value).__name__, valid_type))
+        valid_values = parameter.get("valid_values")
+        if not valid_values:
+            return
+        # If valid_values is a list of simple items and not list of list, then
+        # validate each item in the value list against valid_values.
+        if valid_type == "list" and type(valid_values[0]) is not list:
+            for item in value:
+                if item not in valid_values:
+                    raise Exception("Unknown value: '%s'\nKnown values: %s" %
+                                    (item, valid_values))
+        elif value not in valid_values:
+            raise Exception("Unknown value: '%s'\nKnown values: %s" %
+                            (value, valid_values))
 
 
 class Writer(object):
