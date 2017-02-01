@@ -75,18 +75,19 @@ function test()
         {
             Common.settings.settingForTest('messageLevelFilters2').set(SDK.ConsoleMessage.MessageLevel.Verbose);
             Console.ConsoleView.instance()._filter._textFilterUI.setValue("abc");
+            Console.ConsoleView.instance()._filter._textFilterChanged();
             dumpVisibleMessages();
             next();
         },
         
         function abcMessageRegex(next)
         {
-            Console.ConsoleView.instance()._filter._textFilterUI._regexCheckBox.checked = "checked";
-            Console.ConsoleView.instance()._filter._textFilterUI.setValue("ab[a-z]");
+            Console.ConsoleView.instance()._filter._textFilterUI.setValue("/ab[a-z]/");
+            Console.ConsoleView.instance()._filter._textFilterChanged();
             dumpVisibleMessages();
             next();
         },
-        
+
         function abcMessageRegexWarning(next)
         {
             Common.settings.settingForTest('messageLevelFilters2').set(SDK.ConsoleMessage.MessageLevel.Warning);

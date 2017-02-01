@@ -101,6 +101,7 @@ function test()
         function checkTextFilter(next)
         {
             Console.ConsoleView.instance()._filter._textFilterUI.setValue("outer");
+            Console.ConsoleView.instance()._filter._textFilterChanged();
             dumpVisibleMessages();
             next();
         },
