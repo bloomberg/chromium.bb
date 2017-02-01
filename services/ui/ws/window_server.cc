@@ -583,9 +583,8 @@ void WindowServer::UpdateNativeCursorFromMouseLocation(ServerWindow* window) {
     EventDispatcher* event_dispatcher =
         display_root->window_manager_state()->event_dispatcher();
     event_dispatcher->UpdateCursorProviderByLastKnownLocation();
-    mojom::Cursor cursor_id = mojom::Cursor::CURSOR_NULL;
-    if (event_dispatcher->GetCurrentMouseCursor(&cursor_id))
-      display_root->display()->UpdateNativeCursor(cursor_id);
+    display_root->display()->UpdateNativeCursor(
+        event_dispatcher->GetCurrentMouseCursor());
   }
 }
 
@@ -601,9 +600,8 @@ void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
     return;
 
   event_dispatcher->UpdateNonClientAreaForCurrentWindow();
-  mojom::Cursor cursor_id = mojom::Cursor::CURSOR_NULL;
-  if (event_dispatcher->GetCurrentMouseCursor(&cursor_id))
-    display_root->display()->UpdateNativeCursor(cursor_id);
+  display_root->display()->UpdateNativeCursor(
+      event_dispatcher->GetCurrentMouseCursor());
 }
 
 bool WindowServer::IsUserInHighContrastMode(const UserId& user) const {

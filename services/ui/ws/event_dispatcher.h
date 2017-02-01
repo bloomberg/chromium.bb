@@ -63,9 +63,9 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
     return mouse_pointer_last_location_;
   }
 
-  // If we still have the window of the last mouse move, returns true and sets
-  // the current cursor to use to |cursor_out|.
-  bool GetCurrentMouseCursor(ui::mojom::Cursor* cursor_out);
+  // Returns the cursor for the current target, or POINTER if the mouse is not
+  // over a valid target.
+  ui::mojom::Cursor GetCurrentMouseCursor() const;
 
   // |capture_window_| will receive all input. See window_tree.mojom for
   // details.

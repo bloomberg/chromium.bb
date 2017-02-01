@@ -140,6 +140,8 @@ class DisplayTestApi {
 
   void OnEvent(const ui::Event& event) { display_->OnEvent(event); }
 
+  mojom::Cursor last_cursor() const { return display_->last_cursor_; }
+
  private:
   Display* display_;
 

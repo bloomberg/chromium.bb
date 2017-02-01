@@ -493,7 +493,7 @@ TEST_F(WindowTreeTest, CursorChangesWhenEnteringWindowWithDifferentCursor) {
   // inside.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
   window->SetPredefinedCursor(mojom::Cursor::IBEAM);
-  EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
+  EXPECT_EQ(mojom::Cursor::POINTER, cursor_id());
 
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(21, 22));
   EXPECT_EQ(mojom::Cursor::IBEAM, cursor_id());
@@ -509,11 +509,11 @@ TEST_F(WindowTreeTest, TouchesDontChangeCursor) {
   // inside.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
   window->SetPredefinedCursor(mojom::Cursor::IBEAM);
-  EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
+  EXPECT_EQ(mojom::Cursor::POINTER, cursor_id());
 
   // With a touch event, we shouldn't update the cursor.
   DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
-  EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
+  EXPECT_EQ(mojom::Cursor::POINTER, cursor_id());
 }
 
 TEST_F(WindowTreeTest, DragOutsideWindow) {
@@ -526,7 +526,7 @@ TEST_F(WindowTreeTest, DragOutsideWindow) {
   // change the cursor.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
   window->SetPredefinedCursor(mojom::Cursor::IBEAM);
-  EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
+  EXPECT_EQ(mojom::Cursor::POINTER, cursor_id());
 
   // Move the pointer to the inside of the window
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(21, 22));
@@ -555,7 +555,7 @@ TEST_F(WindowTreeTest, ChangingWindowBoundsChangesCursor) {
   // Put the cursor just outside the bounds of the window.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(41, 41));
   window->SetPredefinedCursor(mojom::Cursor::IBEAM);
-  EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
+  EXPECT_EQ(mojom::Cursor::POINTER, cursor_id());
 
   // Expand the bounds of the window so they now include where the cursor now
   // is.

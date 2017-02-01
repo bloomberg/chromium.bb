@@ -528,11 +528,9 @@ void WindowManagerState::ReleaseNativeCapture() {
 }
 
 void WindowManagerState::UpdateNativeCursorFromDispatcher() {
-  ui::mojom::Cursor cursor_id = mojom::Cursor::CURSOR_NULL;
-  if (event_dispatcher_.GetCurrentMouseCursor(&cursor_id)) {
-    for (Display* display : display_manager()->displays())
-      display->UpdateNativeCursor(cursor_id);
-  }
+  const ui::mojom::Cursor cursor_id = event_dispatcher_.GetCurrentMouseCursor();
+  for (Display* display : display_manager()->displays())
+    display->UpdateNativeCursor(cursor_id);
 }
 
 void WindowManagerState::OnCaptureChanged(ServerWindow* new_capture,
@@ -627,6 +625,8 @@ ServerWindow* WindowManagerState::GetRootWindowContaining(
 void WindowManagerState::OnEventTargetNotFound(const ui::Event& event) {
   window_server()->SendToPointerWatchers(event, user_id(), nullptr, /* window */
                                          nullptr /* ignore_tree */);
+  if (event.IsMousePointerEvent())
+    UpdateNativeCursorFromDispatcher();
 }
 
 void WindowManagerState::OnWindowEmbeddedAppDisconnected(ServerWindow* window) {
