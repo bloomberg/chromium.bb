@@ -759,20 +759,30 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
           callback.Run(value);
         }));
 
+    ON_CALL(*user_description, WriteRemoteDescriptor(_, _, _))
+        .WillByDefault(RunCallback<1 /* success_callback */>());
+
     auto client_config = base::MakeUnique<NiceMockBluetoothGattDescriptor>(
         measurement_interval.get(), "gatt.client_characteristic_configuration",
         BluetoothUUID(kClientConfigUUID), false /* is_local */,
         device::BluetoothRemoteGattCharacteristic::PROPERTY_READ |
             device::BluetoothRemoteGattCharacteristic::PROPERTY_WRITE);
 
+   // Crash if WriteRemoteDescriptor called. Not using GoogleMock's Expect
+   // because this is used in layout tests that may not report a mock
+   // expectation.
+    ON_CALL(*client_config, WriteRemoteDescriptor(_, _, _))
+        .WillByDefault(
+            Invoke([](const std::vector<uint8_t>&, const base::Closure&,
+                      const BluetoothRemoteGattDescriptor::ErrorCallback&) {
+              NOTREACHED();
+            }));
+
     auto no_read_descriptor = base::MakeUnique<NiceMockBluetoothGattDescriptor>(
         measurement_interval.get(), kBlocklistedReadDescriptorUUID,
         BluetoothUUID(kBlocklistedReadDescriptorUUID), false,
         device::BluetoothRemoteGattCharacteristic::PROPERTY_READ |
             device::BluetoothRemoteGattCharacteristic::PROPERTY_WRITE);
-
-    std::vector<uint8_t> value(1);
-    value[0] = false;
 
     // Crash if ReadRemoteDescriptor called. Not using GoogleMock's Expect
     // because this is used in layout tests that may not report a mock
@@ -1118,6 +1128,28 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
           pending = base::Bind(
               &PerformDescriptorReadValue, base::RetainedRef(adapter_ptr),
               user_descriptor_ptr, callback, std::vector<uint8_t>({1}));
+        } else {
+          pending = base::Bind(error_callback,
+                               BluetoothRemoteGattService::GATT_ERROR_FAILED);
+        }
+        device_ptr->PushPendingCallback(pending);
+        if (disconnect) {
+          device_ptr->SetConnected(false);
+          base::ThreadTaskRunnerHandle::Get()->PostTask(
+              FROM_HERE,
+              base::Bind(&NotifyDeviceChanged, base::RetainedRef(adapter_ptr),
+                         device_ptr));
+        }
+      }));
+
+  ON_CALL(*user_descriptor, WriteRemoteDescriptor(_, _, _))
+      .WillByDefault(Invoke([adapter_ptr, device_ptr, user_descriptor_ptr,
+                             disconnect, succeeds](
+          const std::vector<uint8_t>& value, const base::Closure& callback,
+          const BluetoothRemoteGattDescriptor::ErrorCallback& error_callback) {
+        base::Closure pending;
+        if (succeeds) {
+          pending = callback;
         } else {
           pending = base::Bind(error_callback,
                                BluetoothRemoteGattService::GATT_ERROR_FAILED);
@@ -1730,6 +1762,9 @@ LayoutTestBluetoothAdapterProvider::GetErrorCharacteristic(
 
   ON_CALL(*error_descriptor, ReadRemoteDescriptor(_, _))
       .WillByDefault(RunCallback<1 /* error_callback */>(error_code));
+
+  ON_CALL(*error_descriptor, WriteRemoteDescriptor(_, _, _))
+      .WillByDefault(RunCallback<2 /* error_callback */>(error_code));
 
   characteristic->AddMockDescriptor(std::move(error_descriptor));
 

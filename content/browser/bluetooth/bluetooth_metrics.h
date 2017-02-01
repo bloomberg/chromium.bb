@@ -36,6 +36,7 @@ enum class UMAWebBluetoothFunction {
   SERVICE_GET_CHARACTERISTICS = 9,
   GET_PRIMARY_SERVICES = 10,
   DESCRIPTOR_READ_VALUE = 11,
+  DESCRIPTOR_WRITE_VALUE = 12,
   // NOTE: Add new actions immediately above this line. Make sure to update
   // the enum list in tools/metrics/histograms/histograms.xml accordingly.
   COUNT
@@ -239,6 +240,7 @@ enum class UMAGATTOperation {
   CHARACTERISTIC_WRITE,
   START_NOTIFICATIONS,
   DESCRIPTOR_READ,
+  DESCRIPTOR_WRITE,
   // Note: Add new GATT Operations immediately above this line.
   COUNT
 };

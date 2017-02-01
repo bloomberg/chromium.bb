@@ -9,6 +9,7 @@
 #include "core/dom/DOMArrayPiece.h"
 #include "core/dom/DOMDataView.h"
 #include "modules/EventTargetModules.h"
+#include "modules/bluetooth/Bluetooth.h"
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "platform/heap/Handle.h"
@@ -54,10 +55,17 @@ class BluetoothRemoteGATTDescriptor final
   friend class DescriptorReadValueCallback;
 
   BluetoothRemoteGATTServer* getGatt() { return m_characteristic->getGatt(); }
+  mojom::blink::WebBluetoothService* getService() {
+    return m_characteristic->m_device->bluetooth()->service();
+  }
 
   void ReadValueCallback(ScriptPromiseResolver*,
                          mojom::blink::WebBluetoothResult,
                          const Optional<Vector<uint8_t>>&);
+
+  void WriteValueCallback(ScriptPromiseResolver*,
+                          const Vector<uint8_t>&,
+                          mojom::blink::WebBluetoothResult);
 
   mojom::blink::WebBluetoothRemoteGATTDescriptorPtr m_descriptor;
   Member<BluetoothRemoteGATTCharacteristic> m_characteristic;

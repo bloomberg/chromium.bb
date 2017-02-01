@@ -28,12 +28,12 @@ promise_test(
                                     .then(
                                         descriptor =>
                                             assert_promise_rejects_with_message(
-                                                descriptor.readValue(),
+                                                descriptor.writeValue(val),
                                                 testSpec.error,
                                                 testSpec.testName));
                           });
                           return tests;
                         })})},
-    'readValue fails. Should reject with appropriate error.');
+    'writeValue fails. Should reject with appropriate error.');
 
 </script>

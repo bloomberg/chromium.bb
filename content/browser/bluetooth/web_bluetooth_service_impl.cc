@@ -775,6 +775,45 @@ void WebBluetoothServiceImpl::RemoteDescriptorReadValue(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void WebBluetoothServiceImpl::RemoteDescriptorWriteValue(
+    const std::string& descriptor_instance_id,
+    const std::vector<uint8_t>& value,
+    const RemoteDescriptorWriteValueCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // We perform the length check on the renderer side. So if we
+  // get a value with length > 512, we can assume it's a hostile
+  // renderer and kill it.
+  if (value.size() > 512) {
+    CrashRendererAndClosePipe(bad_message::BDH_INVALID_WRITE_VALUE_LENGTH);
+    return;
+  }
+
+  const CacheQueryResult query_result =
+      QueryCacheForDescriptor(descriptor_instance_id);
+
+  if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
+    return;
+  }
+
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    callback.Run(query_result.GetWebResult());
+    return;
+  }
+
+  if (BluetoothBlocklist::Get().IsExcludedFromWrites(
+          query_result.descriptor->GetUUID())) {
+    callback.Run(blink::mojom::WebBluetoothResult::BLOCKLISTED_WRITE);
+    return;
+  }
+
+  query_result.descriptor->WriteRemoteDescriptor(
+      value, base::Bind(&WebBluetoothServiceImpl::OnDescriptorWriteValueSuccess,
+                        weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&WebBluetoothServiceImpl::OnDescriptorWriteValueFailed,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
 void WebBluetoothServiceImpl::RequestDeviceImpl(
     blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
     const RequestDeviceCallback& callback,
@@ -991,6 +1030,22 @@ void WebBluetoothServiceImpl::OnDescriptorReadValueFailed(
   callback.Run(TranslateGATTErrorAndRecord(error_code,
                                            UMAGATTOperation::DESCRIPTOR_READ),
                base::nullopt /* value */);
+}
+
+void WebBluetoothServiceImpl::OnDescriptorWriteValueSuccess(
+    const RemoteDescriptorWriteValueCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(667319): We are reporting failures to UMA but not reporting successes
+  callback.Run(blink::mojom::WebBluetoothResult::SUCCESS);
+}
+
+void WebBluetoothServiceImpl::OnDescriptorWriteValueFailed(
+    const RemoteDescriptorWriteValueCallback& callback,
+    device::BluetoothRemoteGattService::GattErrorCode error_code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(683477) reporting for .writeValue()
+  callback.Run(TranslateGATTErrorAndRecord(error_code,
+                                           UMAGATTOperation::DESCRIPTOR_WRITE));
 }
 
 CacheQueryResult WebBluetoothServiceImpl::QueryCacheForDevice(

@@ -250,6 +250,14 @@ interface WebBluetoothService {
     string descriptor_instance_id) => (
     WebBluetoothResult result,
     array<uint8>? value);
+
+  // Writes a value to the descriptor identified by
+  // |descriptor_instance_id|. The callback is run with
+  // WebBluetoothResult::SUCCESS if the value was successfully
+  // written.
+  RemoteDescriptorWriteValue(
+    string descriptor_instance_id,
+    array<uint8> value) => (WebBluetoothResult result);
 };
 
 // Classes should implement this interface and pass an associated pointer

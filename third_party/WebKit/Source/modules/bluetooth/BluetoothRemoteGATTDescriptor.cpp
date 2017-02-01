@@ -7,7 +7,6 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
-#include "modules/bluetooth/Bluetooth.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "modules/bluetooth/BluetoothRemoteGATTUtils.h"
@@ -74,10 +73,7 @@ ScriptPromise BluetoothRemoteGATTDescriptor::readValue(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
   getGatt()->AddToActiveAlgorithms(resolver);
-
-  mojom::blink::WebBluetoothService* service =
-      m_characteristic->m_device->bluetooth()->service();
-  service->RemoteDescriptorReadValue(
+  getService()->RemoteDescriptorReadValue(
       m_descriptor->instance_id,
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTDescriptor::ReadValueCallback,
@@ -86,15 +82,73 @@ ScriptPromise BluetoothRemoteGATTDescriptor::readValue(
   return promise;
 }
 
+void BluetoothRemoteGATTDescriptor::WriteValueCallback(
+    ScriptPromiseResolver* resolver,
+    const Vector<uint8_t>& value,
+    mojom::blink::WebBluetoothResult result) {
+  if (!resolver->getExecutionContext() ||
+      resolver->getExecutionContext()->isContextDestroyed())
+    return;
+
+  // If the resolver is not in the set of ActiveAlgorithms then the frame
+  // disconnected so we reject.
+  if (!getGatt()->RemoveFromActiveAlgorithms(resolver)) {
+    resolver->reject(BluetoothRemoteGATTUtils::CreateDOMException(
+        BluetoothRemoteGATTUtils::ExceptionType::kGATTServerDisconnected));
+    return;
+  }
+
+  if (result == mojom::blink::WebBluetoothResult::SUCCESS) {
+    m_value = BluetoothRemoteGATTUtils::ConvertWTFVectorToDataView(value);
+    resolver->resolve();
+  } else {
+    resolver->reject(BluetoothError::take(resolver, result));
+  }
+}
+
 ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
     ScriptState* scriptState,
     const DOMArrayPiece& value) {
-  // TODO(668838): Implement WebBluetooth descriptor.writeValue()
-  return ScriptPromise::rejectWithDOMException(
-      scriptState,
-      DOMException::create(NotSupportedError,
-                           "descriptor writeValue is not implemented "
-                           "yet. See https://goo.gl/J6ASzs"));
+  if (!getGatt()->connected()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        BluetoothRemoteGATTUtils::CreateDOMException(
+            BluetoothRemoteGATTUtils::ExceptionType::kGATTServerNotConnected));
+  }
+
+  if (!getGatt()->device()->isValidDescriptor(m_descriptor->instance_id)) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        BluetoothRemoteGATTUtils::CreateDOMException(
+            BluetoothRemoteGATTUtils::ExceptionType::kInvalidDescriptor));
+  }
+
+  // Partial implementation of writeValue algorithm:
+  // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothremotegattdescriptor-writevalue
+
+  // If bytes is more than 512 bytes long (the maximum length of an attribute
+  // value, per Long Attribute Values) return a promise rejected with an
+  // InvalidModificationError and abort.
+  if (value.byteLength() > 512) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState, DOMException::create(InvalidModificationError,
+                                          "Value can't exceed 512 bytes."));
+  }
+
+  // Let valueVector be a copy of the bytes held by value.
+  Vector<uint8_t> valueVector;
+  valueVector.append(value.bytes(), value.byteLength());
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+  getGatt()->AddToActiveAlgorithms(resolver);
+  getService()->RemoteDescriptorWriteValue(
+      m_descriptor->instance_id, valueVector,
+      convertToBaseCallback(WTF::bind(
+          &BluetoothRemoteGATTDescriptor::WriteValueCallback,
+          wrapPersistent(this), wrapPersistent(resolver), valueVector)));
+
+  return promise;
 }
 
 DEFINE_TRACE(BluetoothRemoteGATTDescriptor) {

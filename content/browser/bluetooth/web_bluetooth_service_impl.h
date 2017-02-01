@@ -136,6 +136,10 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void RemoteDescriptorReadValue(
       const std::string& characteristic_instance_id,
       const RemoteDescriptorReadValueCallback& callback) override;
+  void RemoteDescriptorWriteValue(
+      const std::string& descriptor_instance_id,
+      const std::vector<uint8_t>& value,
+      const RemoteDescriptorWriteValueCallback& callback) override;
 
   void RequestDeviceImpl(
       blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
@@ -204,6 +208,13 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       const std::vector<uint8_t>& value);
   void OnDescriptorReadValueFailed(
       const RemoteDescriptorReadValueCallback& callback,
+      device::BluetoothRemoteGattService::GattErrorCode error_code);
+
+  // Callbacks for BluetoothRemoteGattDescriptor::WriteRemoteDescriptor.
+  void OnDescriptorWriteValueSuccess(
+      const RemoteDescriptorWriteValueCallback& callback);
+  void OnDescriptorWriteValueFailed(
+      const RemoteDescriptorWriteValueCallback& callback,
       device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Functions to query the platform cache for the bluetooth object.

@@ -283,6 +283,9 @@ void RecordGATTOperationOutcome(UMAGATTOperation operation,
     case UMAGATTOperation::DESCRIPTOR_READ:
       RecordDescriptorReadValueOutcome(outcome);
       return;
+    case UMAGATTOperation::DESCRIPTOR_WRITE:
+      // TODO(683477) reporting for .writeValue()
+      return;
     case UMAGATTOperation::COUNT:
       NOTREACHED();
       return;

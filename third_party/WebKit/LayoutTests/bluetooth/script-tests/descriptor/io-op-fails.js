@@ -1,6 +1,7 @@
 'use strict';
 promise_test(
     () => {
+        let val = new Uint8Array([1]);
         return setBluetoothFakeAdapter('FailingGATTOperationsAdapter')
             .then(
                 () => requestDeviceWithKeyDown(
@@ -21,7 +22,7 @@ promise_test(
                                     .then(
                                         descriptor =>
                                             assert_promise_rejects_with_message(
-                                                descriptor.CALLS([readValue()]),
+                                                descriptor.CALLS([readValue()|writeValue(val)]),
                                                 testSpec.error,
                                                 testSpec.testName));
                           });

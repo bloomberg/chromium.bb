@@ -15,7 +15,7 @@ promise_test(
                         characteristic.getDescriptor(user_description.name))
                 .then(descriptor => {
                   let promise = assert_promise_rejects_with_message(
-                      descriptor.CALLS([readValue()]),
+                      descriptor.CALLS([readValue()|writeValue(val)]),
                       new DOMException(
                           'GATT Server disconnected while performing a GATT operation.',
                           'NetworkError'));

@@ -1,5 +1,6 @@
 promise_test(
     () => {
+      let val = new Uint8Array([1]);
       return setBluetoothFakeAdapter(
                  'GATTOperationFailsAfterReconnectionAdapter')
           .then(
@@ -13,7 +14,7 @@ promise_test(
                   characteristic.getDescriptor(user_description.name))
           .then(descriptor => {
             let promise = assert_promise_rejects_with_message(
-                descriptor.CALLS([readValue()]),
+                descriptor.CALLS([readValue()|writeValue(val)]),
                 new DOMException(
                     'GATT Server disconnected while performing a GATT operation.',
                     'NetworkError'));

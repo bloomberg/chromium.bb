@@ -343,12 +343,16 @@ class LayoutTestBluetoothAdapterProvider {
   //               BluetoothRemoteGattCharacteristic::PROPERTY_READ
   //           - Descriptors (if |addDescriptors| input is true)
   //             - User Description (2901)
+  //                 - Mock Functions:
+  //                   - Read: Calls success callback with
+  //                           "gatt.characteristic_user_description".
+  //                   - Write: Calls success callback.
   //             - Client Characteristic Configuration (2902)
   //                 Note: This descriptor is blocklisted for writes.
   //             - bad2ddcf-60db-45cd-bef9-fd72b153cf7c
   //                 A test descriptor that is blocklisted.
   //             - bad3ec61-3cc3-4954-9702-7977df514114
-  //                 A test descriptor that is exclude read..
+  //                 A test descriptor that is exclude read.
 
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetDisconnectingHealthThermometer(bool add_descriptors);
@@ -400,6 +404,13 @@ class LayoutTestBluetoothAdapterProvider {
   //                 succeeding callback, otherwise it saves a failing callback.
   //                 This calback is run during CreateGattConnection. If
   //                 |disconnect| is true disconnects the device.
+  //               - user_descriptor
+  //                 - Operations read / write nearly identical to the read and
+  //                   write methods of the characteristic.
+  //                 - Read: If |succeeds| is true, saves a succeeding callback,
+  //                   otherwise it saves a failing callback.
+  //                 - Write: If |succeeds| is true, saves a succeeding callback
+  //                   otherwise it saves a failing callback.
   //         - CreateGattConnection: Runs success callback with a new GATT
   //           connection and runs any pending GATT operation callbacks.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
