@@ -147,9 +147,15 @@
     /** @type {SettingsPrivate} */
     settingsApi_: /** @type {SettingsPrivate} */(chrome.settingsPrivate),
 
+    /** @override */
     created: function() {
       if (!CrSettingsPrefs.deferInitialization)
         this.initialize();
+    },
+
+    /** @override */
+    detached: function() {
+      CrSettingsPrefs.resetForTesting();
     },
 
     /**

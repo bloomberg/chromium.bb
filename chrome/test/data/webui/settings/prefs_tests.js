@@ -72,6 +72,8 @@ cr.define('settings_prefs', function() {
 
       // Initialize a <settings-prefs> before each test.
       setup(function() {
+        PolymerTest.clearBody();
+
         // Override chrome.settingsPrivate with FakeSettingsPrivate.
         fakeApi = new settings.FakeSettingsPrivate(
             prefsTestCases.map(function(testCase) {

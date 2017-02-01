@@ -38,6 +38,7 @@ cr.define('settings_system_page', function() {
     var systemPage;
 
     setup(function() {
+      PolymerTest.clearBody();
       lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
       settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
       settings.SystemPageBrowserProxyImpl.instance_ =

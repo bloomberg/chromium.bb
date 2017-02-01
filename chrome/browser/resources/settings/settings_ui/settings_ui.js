@@ -163,6 +163,11 @@ Polymer({
     settings.setGlobalScrollTarget(this.$.headerPanel.scroller);
   },
 
+  /** @override */
+  detached: function() {
+    settings.resetRouteForTesting();
+  },
+
   /** @param {!settings.Route} route */
   currentRouteChanged: function(route) {
     var urlSearchQuery = settings.getQueryParameters().get('search') || '';

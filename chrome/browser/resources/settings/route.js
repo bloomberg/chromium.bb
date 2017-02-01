@@ -302,6 +302,13 @@ cr.define('settings', function() {
     }
   };
 
+  function resetRouteForTesting() {
+    initializeRouteFromUrlCalled_ = false;
+    lastRouteChangeWasPopstate_ = false;
+    currentRoute_ = Route.BASIC;
+    currentQueryParameters_ = new URLSearchParams();
+  }
+
   /**
    * Helper function to set the current route and notify all observers.
    * @param {!settings.Route} route
@@ -386,6 +393,7 @@ cr.define('settings', function() {
     RouteObserverBehavior: RouteObserverBehavior,
     getRouteForPath: getRouteForPath,
     initializeRouteFromUrl: initializeRouteFromUrl,
+    resetRouteForTesting: resetRouteForTesting,
     getCurrentRoute: getCurrentRoute,
     getQueryParameters: getQueryParameters,
     lastRouteChangeWasPopstate: lastRouteChangeWasPopstate,

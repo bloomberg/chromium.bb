@@ -231,6 +231,7 @@ PasswordsAndFormsBrowserTest.prototype = {
   /** @override */
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);
+    PolymerTest.clearBody();
 
     // Test is run on an individual element that won't have a page language.
     this.accessibilityAuditConfig.auditRulesToIgnore.push('humanLangMissing');
@@ -242,11 +243,6 @@ PasswordsAndFormsBrowserTest.prototype = {
     // Override the AutofillManagerImpl for testing.
     this.autofillManager = new TestAutofillManager();
     AutofillManagerImpl.instance_ = this.autofillManager;
-  },
-
-  /** @override */
-  tearDown: function() {
-    PolymerTest.clearBody();
   },
 
   /**
