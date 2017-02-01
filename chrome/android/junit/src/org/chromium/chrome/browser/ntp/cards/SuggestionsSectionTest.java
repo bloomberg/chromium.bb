@@ -37,7 +37,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.EnableFeatures;
 import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
@@ -92,7 +91,6 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
-    @EnableFeatures(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL)
     public void testDismissSibling() {
         List<SnippetArticle> snippets = createDummySuggestions(3, TEST_CATEGORY_ID);
         SuggestionsSection section = createSectionWithReloadAction(true);
@@ -107,32 +105,6 @@ public class SuggestionsSectionTest {
         assertEquals(setOf(1, 2), section.getItemDismissalGroup(1));
         assertEquals(ItemViewType.ACTION, section.getItemViewType(2));
         assertEquals(setOf(1, 2), section.getItemDismissalGroup(2));
-
-        // With snippets.
-        section.setSuggestions(snippets, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
-        assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
-        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(0));
-        assertEquals(ItemViewType.SNIPPET, section.getItemViewType(1));
-        assertEquals(Collections.singleton(1), section.getItemDismissalGroup(1));
-    }
-
-    @Test
-    @Feature({"Ntp"})
-    @EnableFeatures({})
-    public void testDismissSiblingWithSectionDismissalDisabled() {
-        List<SnippetArticle> snippets = createDummySuggestions(3, TEST_CATEGORY_ID);
-        SuggestionsSection section = createSectionWithReloadAction(true);
-
-        section.setStatus(CategoryStatus.AVAILABLE);
-        assertNotNull(section.getActionItemForTesting());
-
-        // Without snippets.
-        assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
-        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(0));
-        assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
-        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(1));
-        assertEquals(ItemViewType.ACTION, section.getItemViewType(2));
-        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(2));
 
         // With snippets.
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
@@ -259,7 +231,6 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
-    @EnableFeatures({ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL})
     public void testDismissSection() {
         SuggestionsSection section = createSectionWithReloadAction(false);
         section.setStatus(CategoryStatus.AVAILABLE);
@@ -724,7 +695,6 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
-    @EnableFeatures(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL)
     public void testGetItemDismissalGroupWithSuggestions() {
         List<SnippetArticle> suggestions = createDummySuggestions(5, TEST_CATEGORY_ID);
         SuggestionsSection section = createSectionWithReloadAction(false);
@@ -736,7 +706,6 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
-    @EnableFeatures(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL)
     public void testGetItemDismissalGroupWithActionItem() {
         SuggestionsSection section = createSectionWithReloadAction(true);
         assertThat(section.getItemDismissalGroup(1).size(), is(2));
@@ -745,7 +714,6 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
-    @EnableFeatures(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL)
     public void testGetItemDismissalGroupWithoutActionItem() {
         SuggestionsSection section = createSectionWithReloadAction(false);
         assertThat(section.getItemDismissalGroup(1).size(), is(1));

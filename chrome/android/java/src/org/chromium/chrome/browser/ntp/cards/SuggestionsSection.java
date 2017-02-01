@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -468,9 +467,7 @@ public class SuggestionsSection extends InnerNode {
      * (as opposed to individual items in it).
      */
     private Set<Integer> getSectionDismissalRange() {
-        if (hasSuggestions() || !SnippetsConfig.isSectionDismissalEnabled()) {
-            return Collections.emptySet();
-        }
+        if (hasSuggestions()) return Collections.emptySet();
 
         if (!mMoreButton.isVisible()) {
             assert getStartingOffsetForChild(mStatus) == 1;

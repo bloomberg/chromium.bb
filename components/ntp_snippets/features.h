@@ -32,9 +32,6 @@ extern const base::Feature kSaveToOfflineFeature;
 // Feature to allow offline badges to appear on snippets.
 extern const base::Feature kOfflineBadgeFeature;
 
-// Feature to allow dismissing sections.
-extern const base::Feature kSectionDismissalFeature;
-
 // Feature to allow specification of content suggestions source.
 // TODO(peconn): Figure out how to remove this, it is useful to specify the
 // source, but you shouldn't be able to disable it.

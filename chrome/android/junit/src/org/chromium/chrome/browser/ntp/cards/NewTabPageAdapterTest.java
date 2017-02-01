@@ -50,7 +50,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.EnableFeatures;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
@@ -822,7 +821,6 @@ public class NewTabPageAdapterTest {
 
     @Test
     @Feature({"Ntp"})
-    @EnableFeatures(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL)
     public void testAllDismissedVisibility() {
         ArgumentCaptor<DestructionObserver> observers =
                 ArgumentCaptor.forClass(DestructionObserver.class);

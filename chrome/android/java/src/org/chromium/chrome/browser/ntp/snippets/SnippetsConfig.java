@@ -20,10 +20,6 @@ public final class SnippetsConfig {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS_OFFLINE_BADGE);
     }
 
-    public static boolean isSectionDismissalEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL);
-    }
-
     /** https://crbug.com/660837 */
     public static boolean isIncreasedCardVisibilityEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS_INCREASED_VISIBILITY);

@@ -12,7 +12,6 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
@@ -222,8 +221,6 @@ public class SectionList
      */
     @Override
     public void dismissSection(SuggestionsSection section) {
-        assert SnippetsConfig.isSectionDismissalEnabled();
-
         mUiDelegate.getSuggestionsSource().dismissCategory(section.getCategory());
         removeSection(section);
     }

@@ -65,7 +65,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &ntp_snippets::kForeignSessionsSuggestionsFeature,
     &ntp_snippets::kOfflineBadgeFeature,
     &ntp_snippets::kSaveToOfflineFeature,
-    &ntp_snippets::kSectionDismissalFeature,
     &offline_pages::kBackgroundLoaderForDownloadsFeature,
     &offline_pages::kOfflinePagesCTFeature,  // See crbug.com/620421.
     &offline_pages::kOfflinePagesSharingFeature,
