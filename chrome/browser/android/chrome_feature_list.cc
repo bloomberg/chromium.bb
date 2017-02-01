@@ -95,9 +95,6 @@ const base::Feature kChromeHomeFeature{"ChromeHome",
 const base::Feature kContextualSearchSingleActions{
     "ContextualSearchSingleActions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kDownloadAutoResumptionThrottling{
-    "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
