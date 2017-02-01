@@ -1855,11 +1855,16 @@ void PrintWebViewHelper::PrintPageInternal(
   int dpi = static_cast<int>(params.params.dpi);
   // Calculate the actual page size and content area in dpi.
   if (page_size_in_dpi) {
+    // Windows uses this for the actual page size. We have scaled page size
+    // to get blink to reflow the page, so scale it back to the real size
+    // before returning it.
     *page_size_in_dpi =
         gfx::Size(static_cast<int>(ConvertUnitDouble(page_size.width(),
-                                                     kPointsPerInch, dpi)),
+                                                     kPointsPerInch, dpi) *
+                                   css_scale_factor),
                   static_cast<int>(ConvertUnitDouble(page_size.height(),
-                                                     kPointsPerInch, dpi)));
+                                                     kPointsPerInch, dpi) *
+                                   css_scale_factor));
   }
 
   if (content_area_in_dpi) {
