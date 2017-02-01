@@ -18,6 +18,7 @@
 #include "components/search_provider_logos/logo_tracker.h"
 #include "jni/LogoBridge_jni.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -173,11 +174,10 @@ static jlong Init(JNIEnv* env,
 LogoBridge::LogoBridge(jobject j_profile)
     : logo_service_(nullptr), weak_ptr_factory_(this) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  if (profile) {
-    logo_service_ = LogoServiceFactory::GetForProfile(profile);
-    animated_logo_fetcher_ = base::MakeUnique<AnimatedLogoFetcher>(
-        profile->GetRequestContext());
-  }
+  DCHECK(profile);
+  logo_service_ = LogoServiceFactory::GetForProfile(profile);
+  animated_logo_fetcher_ = base::MakeUnique<AnimatedLogoFetcher>(
+      profile->GetRequestContext());
 }
 
 LogoBridge::~LogoBridge() {}
@@ -189,9 +189,6 @@ void LogoBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 void LogoBridge::GetCurrentLogo(JNIEnv* env,
                                 const JavaParamRef<jobject>& obj,
                                 const JavaParamRef<jobject>& j_logo_observer) {
-  if (!logo_service_)
-    return;
-
   // |observer| is deleted in LogoObserverAndroid::OnObserverRemoved().
   LogoObserverAndroid* observer = new LogoObserverAndroid(
       weak_ptr_factory_.GetWeakPtr(), env, j_logo_observer);
@@ -202,9 +199,6 @@ void LogoBridge::GetAnimatedLogo(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  const JavaParamRef<jobject>& j_callback,
                                  const JavaParamRef<jstring>& j_url) {
-  if (!animated_logo_fetcher_)
-    return;
-
   GURL url = GURL(ConvertJavaStringToUTF8(env, j_url));
   animated_logo_fetcher_->Start(env, url, j_callback);
 }
