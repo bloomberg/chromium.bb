@@ -9,6 +9,7 @@
 
 #import "base/ios/block_types.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
@@ -35,6 +36,11 @@ using testing::ElementToDismissContextMenu;
 
 // Tests context menu appears on a regular link.
 - (void)testContextMenu {
+// TODO(crbug.com/687546): Tests disabled on devices.
+#if !TARGET_IPHONE_SIMULATOR
+  EARL_GREY_TEST_DISABLED(@"Disabled for devices because it is very flaky.");
+#endif
+
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   GURL initialURL = web::test::HttpServer::MakeUrl("http://contextMenuOpen");
