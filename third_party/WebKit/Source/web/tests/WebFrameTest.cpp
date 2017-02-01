@@ -7761,6 +7761,16 @@ TEST_P(ParameterizedWebFrameTest, FullscreenMainFrame) {
   webViewHelper.resize(WebSize(viewportWidth, viewportHeight));
   webViewImpl->updateAllLifecyclePhases();
 
+  WebLayer* webScrollLayer = webViewImpl->mainFrameImpl()
+                                 ->frame()
+                                 ->view()
+                                 ->layoutViewportScrollableArea()
+                                 ->layerForScrolling()
+                                 ->platformLayer();
+  ASSERT_TRUE(webScrollLayer->scrollable());
+  ASSERT_TRUE(webScrollLayer->userScrollableHorizontal());
+  ASSERT_TRUE(webScrollLayer->userScrollableVertical());
+
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
   Fullscreen::requestFullscreen(*document->documentElement());
@@ -7780,8 +7790,12 @@ TEST_P(ParameterizedWebFrameTest, FullscreenMainFrame) {
             Fullscreen::fullscreenElementFrom(*document));
 
   // Verify that the main frame is still scrollable.
-  WebLayer* webScrollLayer =
-      webViewImpl->compositor()->scrollLayer()->platformLayer();
+  webScrollLayer = webViewImpl->mainFrameImpl()
+                       ->frame()
+                       ->view()
+                       ->layoutViewportScrollableArea()
+                       ->layerForScrolling()
+                       ->platformLayer();
   ASSERT_TRUE(webScrollLayer->scrollable());
   ASSERT_TRUE(webScrollLayer->userScrollableHorizontal());
   ASSERT_TRUE(webScrollLayer->userScrollableVertical());
