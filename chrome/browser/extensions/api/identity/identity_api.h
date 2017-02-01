@@ -42,20 +42,6 @@ namespace extensions {
 class GetAuthTokenFunctionTest;
 class MockGetAuthTokenFunction;
 
-namespace identity_constants {
-extern const char kInvalidClientId[];
-extern const char kInvalidScopes[];
-extern const char kAuthFailure[];
-extern const char kNoGrant[];
-extern const char kUserRejected[];
-extern const char kUserNotSignedIn[];
-extern const char kInteractionRequired[];
-extern const char kInvalidRedirect[];
-extern const char kOffTheRecord[];
-extern const char kPageLoadFailure[];
-extern const char kCanceled[];
-}  // namespace identity_constants
-
 class IdentityTokenCacheValue {
  public:
   IdentityTokenCacheValue();

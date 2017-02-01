@@ -22,6 +22,7 @@
 #include "extensions/common/extension_builder.h"
 #endif
 #include "chrome/browser/extensions/api/identity/identity_api.h"
+#include "chrome/browser/extensions/api/identity/identity_constants.h"
 #include "chrome/browser/extensions/api/identity/identity_launch_web_auth_flow_function.h"
 #include "chrome/browser/extensions/api/identity/identity_remove_cached_auth_token_function.h"
 #include "chrome/browser/extensions/component_loader.h"

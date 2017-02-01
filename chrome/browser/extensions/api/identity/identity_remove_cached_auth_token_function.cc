@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/identity/identity_remove_cached_auth_token_function.h"
 
 #include "chrome/browser/extensions/api/identity/identity_api.h"
+#include "chrome/browser/extensions/api/identity/identity_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/identity.h"
 

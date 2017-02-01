@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/identity/identity_launch_web_auth_flow_function.h"
 
-#include "chrome/browser/extensions/api/identity/identity_api.h"
+#include "chrome/browser/extensions/api/identity/identity_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/identity.h"
 
