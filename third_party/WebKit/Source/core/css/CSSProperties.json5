@@ -1963,6 +1963,8 @@
     },
     {
       name: "column-width",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
       converter: "convertComputedLength<float>",
       custom_all: true,
       interpolable: true,

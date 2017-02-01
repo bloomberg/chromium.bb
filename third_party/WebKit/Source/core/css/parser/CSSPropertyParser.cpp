@@ -2092,8 +2092,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyWebkitHyphenateCharacter:
     case CSSPropertyWebkitLocale:
       return consumeLocale(m_range);
-    case CSSPropertyColumnWidth:
-      return CSSPropertyColumnUtils::consumeColumnWidth(m_range);
     case CSSPropertyAnimationDelay:
     case CSSPropertyTransitionDelay:
     case CSSPropertyAnimationDirection:
