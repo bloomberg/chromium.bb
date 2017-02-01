@@ -1,0 +1,109 @@
+This is a testharness.js-based test.
+PASS This test uses interpolation-test.js. 
+FAIL CSS Transitions: property <--length> from neutral to [20px] at (-0.3) is [20px] assert_equals: expected "7px " but got "20px "
+FAIL CSS Transitions: property <--length> from neutral to [20px] at (0) is [20px] assert_equals: expected "10px " but got "20px "
+FAIL CSS Transitions: property <--length> from neutral to [20px] at (0.5) is [20px] assert_equals: expected "15px " but got "20px "
+PASS CSS Transitions: property <--length> from neutral to [20px] at (1) is [20px] 
+FAIL CSS Transitions: property <--length> from neutral to [20px] at (1.5) is [20px] assert_equals: expected "25px " but got "20px "
+FAIL CSS Transitions: property <--length> from [initial] to [20px] at (-0.3) is [20px] assert_equals: expected "46px " but got "20px "
+FAIL CSS Transitions: property <--length> from [initial] to [20px] at (0) is [20px] assert_equals: expected "40px " but got "20px "
+FAIL CSS Transitions: property <--length> from [initial] to [20px] at (0.5) is [20px] assert_equals: expected "30px " but got "20px "
+PASS CSS Transitions: property <--length> from [initial] to [20px] at (1) is [20px] 
+FAIL CSS Transitions: property <--length> from [initial] to [20px] at (1.5) is [20px] assert_equals: expected "10px " but got "20px "
+FAIL CSS Transitions: property <--length> from [inherit] to [20px] at (-0.3) is [20px] assert_equals: expected "33px " but got "20px "
+FAIL CSS Transitions: property <--length> from [inherit] to [20px] at (0) is [20px] assert_equals: expected "30px " but got "20px "
+FAIL CSS Transitions: property <--length> from [inherit] to [20px] at (0.5) is [20px] assert_equals: expected "25px " but got "20px "
+PASS CSS Transitions: property <--length> from [inherit] to [20px] at (1) is [20px] 
+FAIL CSS Transitions: property <--length> from [inherit] to [20px] at (1.5) is [20px] assert_equals: expected "15px " but got "20px "
+FAIL CSS Transitions: property <--length> from [unset] to [20px] at (-0.3) is [20px] assert_equals: expected "46px " but got "20px "
+FAIL CSS Transitions: property <--length> from [unset] to [20px] at (0) is [20px] assert_equals: expected "40px " but got "20px "
+FAIL CSS Transitions: property <--length> from [unset] to [20px] at (0.5) is [20px] assert_equals: expected "30px " but got "20px "
+PASS CSS Transitions: property <--length> from [unset] to [20px] at (1) is [20px] 
+FAIL CSS Transitions: property <--length> from [unset] to [20px] at (1.5) is [20px] assert_equals: expected "10px " but got "20px "
+FAIL CSS Transitions: property <--length> from [-10px] to [10px] at (-0.3) is [10px] assert_equals: expected "- 16px " but got "10px "
+FAIL CSS Transitions: property <--length> from [-10px] to [10px] at (0) is [10px] assert_equals: expected "- 10px " but got "10px "
+FAIL CSS Transitions: property <--length> from [-10px] to [10px] at (0.5) is [10px] assert_equals: expected "0px " but got "10px "
+PASS CSS Transitions: property <--length> from [-10px] to [10px] at (1) is [10px] 
+FAIL CSS Transitions: property <--length> from [-10px] to [10px] at (1.5) is [10px] assert_equals: expected "20px " but got "10px "
+FAIL CSS Transitions: property <--length> from [10em] to [20em] at (-0.3) is [400px] assert_equals: expected "140px " but got "400px "
+FAIL CSS Transitions: property <--length> from [10em] to [20em] at (0) is [400px] assert_equals: expected "200px " but got "400px "
+FAIL CSS Transitions: property <--length> from [10em] to [20em] at (0.5) is [400px] assert_equals: expected "300px " but got "400px "
+PASS CSS Transitions: property <--length> from [10em] to [20em] at (1) is [400px] 
+FAIL CSS Transitions: property <--length> from [10em] to [20em] at (1.5) is [400px] assert_equals: expected "500px " but got "400px "
+FAIL CSS Transitions: property <--length> from [10em] to [100px] at (-0.3) is [100px] assert_equals: expected "230px " but got "100px "
+FAIL CSS Transitions: property <--length> from [10em] to [100px] at (0) is [100px] assert_equals: expected "200px " but got "100px "
+FAIL CSS Transitions: property <--length> from [10em] to [100px] at (0.5) is [100px] assert_equals: expected "150px " but got "100px "
+PASS CSS Transitions: property <--length> from [10em] to [100px] at (1) is [100px] 
+FAIL CSS Transitions: property <--length> from [10em] to [100px] at (1.5) is [100px] assert_equals: expected "50px " but got "100px "
+PASS CSS Animations: property <--length> from neutral to [20px] at (-0.3) is [7px] 
+PASS CSS Animations: property <--length> from neutral to [20px] at (0) is [10px] 
+PASS CSS Animations: property <--length> from neutral to [20px] at (0.5) is [15px] 
+PASS CSS Animations: property <--length> from neutral to [20px] at (1) is [20px] 
+PASS CSS Animations: property <--length> from neutral to [20px] at (1.5) is [25px] 
+PASS CSS Animations: property <--length> from [initial] to [20px] at (-0.3) is [46px] 
+PASS CSS Animations: property <--length> from [initial] to [20px] at (0) is [40px] 
+PASS CSS Animations: property <--length> from [initial] to [20px] at (0.5) is [30px] 
+PASS CSS Animations: property <--length> from [initial] to [20px] at (1) is [20px] 
+PASS CSS Animations: property <--length> from [initial] to [20px] at (1.5) is [10px] 
+PASS CSS Animations: property <--length> from [inherit] to [20px] at (-0.3) is [33px] 
+PASS CSS Animations: property <--length> from [inherit] to [20px] at (0) is [30px] 
+PASS CSS Animations: property <--length> from [inherit] to [20px] at (0.5) is [25px] 
+PASS CSS Animations: property <--length> from [inherit] to [20px] at (1) is [20px] 
+PASS CSS Animations: property <--length> from [inherit] to [20px] at (1.5) is [15px] 
+PASS CSS Animations: property <--length> from [unset] to [20px] at (-0.3) is [46px] 
+PASS CSS Animations: property <--length> from [unset] to [20px] at (0) is [40px] 
+PASS CSS Animations: property <--length> from [unset] to [20px] at (0.5) is [30px] 
+PASS CSS Animations: property <--length> from [unset] to [20px] at (1) is [20px] 
+PASS CSS Animations: property <--length> from [unset] to [20px] at (1.5) is [10px] 
+PASS CSS Animations: property <--length> from [-10px] to [10px] at (-0.3) is [-16px] 
+PASS CSS Animations: property <--length> from [-10px] to [10px] at (0) is [-10px] 
+PASS CSS Animations: property <--length> from [-10px] to [10px] at (0.5) is [0px] 
+PASS CSS Animations: property <--length> from [-10px] to [10px] at (1) is [10px] 
+PASS CSS Animations: property <--length> from [-10px] to [10px] at (1.5) is [20px] 
+PASS CSS Animations: property <--length> from [10em] to [20em] at (-0.3) is [140px] 
+PASS CSS Animations: property <--length> from [10em] to [20em] at (0) is [200px] 
+PASS CSS Animations: property <--length> from [10em] to [20em] at (0.5) is [300px] 
+PASS CSS Animations: property <--length> from [10em] to [20em] at (1) is [400px] 
+PASS CSS Animations: property <--length> from [10em] to [20em] at (1.5) is [500px] 
+PASS CSS Animations: property <--length> from [10em] to [100px] at (-0.3) is [230px] 
+PASS CSS Animations: property <--length> from [10em] to [100px] at (0) is [200px] 
+PASS CSS Animations: property <--length> from [10em] to [100px] at (0.5) is [150px] 
+PASS CSS Animations: property <--length> from [10em] to [100px] at (1) is [100px] 
+PASS CSS Animations: property <--length> from [10em] to [100px] at (1.5) is [50px] 
+PASS Web Animations: property <--length> from neutral to [20px] at (-0.3) is [7px] 
+PASS Web Animations: property <--length> from neutral to [20px] at (0) is [10px] 
+PASS Web Animations: property <--length> from neutral to [20px] at (0.5) is [15px] 
+PASS Web Animations: property <--length> from neutral to [20px] at (1) is [20px] 
+PASS Web Animations: property <--length> from neutral to [20px] at (1.5) is [25px] 
+PASS Web Animations: property <--length> from [initial] to [20px] at (-0.3) is [46px] 
+PASS Web Animations: property <--length> from [initial] to [20px] at (0) is [40px] 
+PASS Web Animations: property <--length> from [initial] to [20px] at (0.5) is [30px] 
+PASS Web Animations: property <--length> from [initial] to [20px] at (1) is [20px] 
+PASS Web Animations: property <--length> from [initial] to [20px] at (1.5) is [10px] 
+PASS Web Animations: property <--length> from [inherit] to [20px] at (-0.3) is [33px] 
+PASS Web Animations: property <--length> from [inherit] to [20px] at (0) is [30px] 
+PASS Web Animations: property <--length> from [inherit] to [20px] at (0.5) is [25px] 
+PASS Web Animations: property <--length> from [inherit] to [20px] at (1) is [20px] 
+PASS Web Animations: property <--length> from [inherit] to [20px] at (1.5) is [15px] 
+PASS Web Animations: property <--length> from [unset] to [20px] at (-0.3) is [46px] 
+PASS Web Animations: property <--length> from [unset] to [20px] at (0) is [40px] 
+PASS Web Animations: property <--length> from [unset] to [20px] at (0.5) is [30px] 
+PASS Web Animations: property <--length> from [unset] to [20px] at (1) is [20px] 
+PASS Web Animations: property <--length> from [unset] to [20px] at (1.5) is [10px] 
+PASS Web Animations: property <--length> from [-10px] to [10px] at (-0.3) is [-16px] 
+PASS Web Animations: property <--length> from [-10px] to [10px] at (0) is [-10px] 
+PASS Web Animations: property <--length> from [-10px] to [10px] at (0.5) is [0px] 
+PASS Web Animations: property <--length> from [-10px] to [10px] at (1) is [10px] 
+PASS Web Animations: property <--length> from [-10px] to [10px] at (1.5) is [20px] 
+PASS Web Animations: property <--length> from [10em] to [20em] at (-0.3) is [140px] 
+PASS Web Animations: property <--length> from [10em] to [20em] at (0) is [200px] 
+PASS Web Animations: property <--length> from [10em] to [20em] at (0.5) is [300px] 
+PASS Web Animations: property <--length> from [10em] to [20em] at (1) is [400px] 
+PASS Web Animations: property <--length> from [10em] to [20em] at (1.5) is [500px] 
+PASS Web Animations: property <--length> from [10em] to [100px] at (-0.3) is [230px] 
+PASS Web Animations: property <--length> from [10em] to [100px] at (0) is [200px] 
+PASS Web Animations: property <--length> from [10em] to [100px] at (0.5) is [150px] 
+PASS Web Animations: property <--length> from [10em] to [100px] at (1) is [100px] 
+PASS Web Animations: property <--length> from [10em] to [100px] at (1.5) is [50px] 
+Harness: the test ran to completion.
+

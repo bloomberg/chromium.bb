@@ -39,6 +39,12 @@ class LengthInterpolationFunctions {
                              const CSSToLengthConversionData&,
                              ValueRange);
 
+  // Unlike createLength() this preserves all specificed unit types via calc()
+  // expressions.
+  static const CSSValue* createCSSValue(const InterpolableValue&,
+                                        const NonInterpolableValue*,
+                                        ValueRange);
+
   static void subtractFromOneHundredPercent(InterpolationValue& result);
 };
 

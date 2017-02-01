@@ -118,6 +118,14 @@ CSSLengthInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
       underlyingLength, effectiveZoom(*state.style()));
 }
 
+const CSSValue* CSSLengthInterpolationType::createCSSValue(
+    const InterpolableValue& interpolableValue,
+    const NonInterpolableValue* nonInterpolableValue,
+    const StyleResolverState&) const {
+  return LengthInterpolationFunctions::createCSSValue(
+      interpolableValue, nonInterpolableValue, m_valueRange);
+}
+
 void CSSLengthInterpolationType::composite(
     UnderlyingValueOwner& underlyingValueOwner,
     double underlyingFraction,

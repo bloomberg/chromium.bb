@@ -44,6 +44,10 @@ class CSSLengthInterpolationType : public CSSInterpolationType {
       InterpolationValue&& start,
       InterpolationValue&& end) const final;
 
+  const CSSValue* createCSSValue(const InterpolableValue&,
+                                 const NonInterpolableValue*,
+                                 const StyleResolverState&) const final;
+
   const ValueRange m_valueRange;
 };
 

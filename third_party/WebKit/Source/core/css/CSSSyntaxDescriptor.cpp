@@ -5,6 +5,7 @@
 #include "core/css/CSSSyntaxDescriptor.h"
 
 #include "core/animation/CSSColorInterpolationType.h"
+#include "core/animation/CSSLengthInterpolationType.h"
 #include "core/animation/CSSValueInterpolationType.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSURIValue.h"
@@ -229,6 +230,9 @@ InterpolationTypes CSSSyntaxDescriptor::createInterpolationTypes(
             WTF::makeUnique<CSSColorInterpolationType>(property));
         break;
       case CSSSyntaxType::Length:
+        interpolationTypes.push_back(
+            WTF::makeUnique<CSSLengthInterpolationType>(property));
+        break;
       case CSSSyntaxType::Number:
       case CSSSyntaxType::Percentage:
       case CSSSyntaxType::LengthPercentage:

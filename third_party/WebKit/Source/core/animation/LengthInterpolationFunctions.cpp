@@ -4,6 +4,7 @@
 
 #include "core/animation/LengthInterpolationFunctions.h"
 
+#include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "platform/CalculationValue.h"
@@ -159,6 +160,11 @@ static double clampToRange(double x, ValueRange range) {
   return (range == ValueRangeNonNegative && x < 0) ? 0 : x;
 }
 
+CSSPrimitiveValue::UnitType indexToUnitType(size_t index) {
+  return CSSPrimitiveValue::lengthUnitTypeToUnitType(
+      static_cast<CSSPrimitiveValue::LengthUnitType>(index));
+}
+
 Length LengthInterpolationFunctions::createLength(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
@@ -177,10 +183,7 @@ Length LengthInterpolationFunctions::createLength(
     if (i == CSSPrimitiveValue::UnitTypePercentage) {
       percentage = value;
     } else {
-      CSSPrimitiveValue::UnitType type =
-          CSSPrimitiveValue::lengthUnitTypeToUnitType(
-              static_cast<CSSPrimitiveValue::LengthUnitType>(i));
-      pixels += conversionData.zoomedComputedPixels(value, type);
+      pixels += conversionData.zoomedComputedPixels(value, indexToUnitType(i));
     }
   }
 
@@ -194,6 +197,50 @@ Length LengthInterpolationFunctions::createLength(
   return Length(
       CSSPrimitiveValue::clampToCSSLengthRange(clampToRange(pixels, range)),
       Fixed);
+}
+
+const CSSValue* LengthInterpolationFunctions::createCSSValue(
+    const InterpolableValue& interpolableValue,
+    const NonInterpolableValue* nonInterpolableValue,
+    ValueRange range) {
+  const InterpolableList& interpolableList =
+      toInterpolableList(interpolableValue);
+  bool hasPercentage =
+      CSSLengthNonInterpolableValue::hasPercentage(nonInterpolableValue);
+
+  CSSCalcExpressionNode* rootNode = nullptr;
+  CSSPrimitiveValue* firstValue = nullptr;
+
+  for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
+    double value = toInterpolableNumber(*interpolableList.get(i)).value();
+    if (value == 0 ||
+        (i == CSSPrimitiveValue::UnitTypePercentage && !hasPercentage)) {
+      continue;
+    }
+    CSSPrimitiveValue* currentValue =
+        CSSPrimitiveValue::create(value, indexToUnitType(i));
+
+    if (!firstValue) {
+      DCHECK(!rootNode);
+      firstValue = currentValue;
+      continue;
+    }
+    CSSCalcExpressionNode* currentNode =
+        CSSCalcValue::createExpressionNode(currentValue);
+    if (!rootNode) {
+      rootNode = CSSCalcValue::createExpressionNode(firstValue);
+    }
+    rootNode =
+        CSSCalcValue::createExpressionNode(rootNode, currentNode, CalcAdd);
+  }
+
+  if (rootNode) {
+    return CSSPrimitiveValue::create(CSSCalcValue::create(rootNode));
+  }
+  if (firstValue) {
+    return firstValue;
+  }
+  return CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
 }
 
 }  // namespace blink
