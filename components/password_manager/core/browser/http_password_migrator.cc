@@ -47,7 +47,10 @@ void HttpPasswordMigrator::OnGetPasswordStoreResults(
     rep.SetSchemeStr(url::kHttpsScheme);
     form->origin = form->origin.ReplaceComponents(rep);
     form->signon_realm = form->origin.spec();
-    form->action = form->origin;
+    // If |action| is not HTTPS then it's most likely obsolete. Otherwise, it
+    // may still be valid.
+    if (!form->action.SchemeIs(url::kHttpsScheme))
+      form->action = form->origin;
     form->form_data = autofill::FormData();
     form->generation_upload_status = autofill::PasswordForm::NO_SIGNAL_SENT;
     form->skip_zero_click = false;

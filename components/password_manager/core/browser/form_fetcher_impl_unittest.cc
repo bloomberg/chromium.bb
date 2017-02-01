@@ -490,10 +490,6 @@ TEST_F(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
   form_fetcher_->OnGetPasswordStoreResults(MakeResults(empty_forms));
   ASSERT_TRUE(migrator_ptr);
 
-  // Setting action equal to origin is necessary in order to mirror the behavior
-  // in HttpPasswordMigrator.
-  https_form.action = https_form.origin;
-
   // Now perform the actual migration.
   EXPECT_CALL(*mock_store_, AddLogin(https_form));
   EXPECT_CALL(*static_cast<MockFormFetcherImpl*>(form_fetcher_.get()),

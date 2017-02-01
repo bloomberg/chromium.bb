@@ -28,7 +28,7 @@ PasswordForm CreateTestForm() {
   PasswordForm form;
   form.origin = GURL(kTestHttpURL);
   form.signon_realm = form.origin.spec();
-  form.action = GURL(kTestHttpURL);
+  form.action = GURL("https://example.org/action.html");
   form.username_value = base::ASCIIToUTF16("user");
   form.password_value = base::ASCIIToUTF16("password");
   return form;
@@ -116,7 +116,6 @@ TEST_F(HttpPasswordMigratorTest, FullStore) {
   PasswordForm expected_form = form;
   expected_form.origin = GURL(kTestHttpsURL);
   expected_form.signon_realm = expected_form.origin.spec();
-  expected_form.action = expected_form.origin;
 
   EXPECT_CALL(store(), AddLogin(expected_form));
   EXPECT_CALL(consumer(), ProcessForms(ElementsAre(Pointee(expected_form))));
