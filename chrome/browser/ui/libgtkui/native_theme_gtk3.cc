@@ -360,7 +360,6 @@ NativeThemeGtk3::NativeThemeGtk3() {
   g_type_class_unref(g_type_class_ref(gtk_text_view_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_separator_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_menu_bar_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_arrow_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_scrolled_window_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_range_get_type()));
 
@@ -395,43 +394,26 @@ void NativeThemeGtk3::PaintArrowButton(SkCanvas* canvas,
           : "GtkRange.scrollbar.button");
   GtkStateFlags state_flags = StateToStateFlags(state);
   gtk_style_context_set_state(context, state_flags);
-  SkBitmap bitmap =
-      GetWidgetBitmap(rect.size(), context, BG_RENDER_NORMAL, true);
 
-  gdouble angle = 0;
   switch (direction) {
     case kScrollbarUpArrow:
-      angle = 0;
       gtk_style_context_add_class(context, GTK_STYLE_CLASS_TOP);
       break;
     case kScrollbarRightArrow:
-      angle = G_PI / 2;
       gtk_style_context_add_class(context, GTK_STYLE_CLASS_RIGHT);
       break;
     case kScrollbarDownArrow:
-      angle = G_PI;
       gtk_style_context_add_class(context, GTK_STYLE_CLASS_BOTTOM);
       break;
     case kScrollbarLeftArrow:
-      angle = 3 * G_PI / 2;
       gtk_style_context_add_class(context, GTK_STYLE_CLASS_LEFT);
       break;
     default:
       NOTREACHED();
   }
 
-  CairoSurface surface(bitmap);
-
-  auto arrow_context = AppendCssNodeToStyleContext(context, "GtkArrow#arrow");
-  gfloat arrow_scaling = 0.7;  // Default scaling for a GtkArrow
-  gtk_style_context_get_style(arrow_context, "arrow-scaling", &arrow_scaling,
-                              nullptr);
-  const double w = rect.width();
-  const double h = rect.height();
-  const double arrow_size = std::min(w, h) * arrow_scaling;
-  gtk_render_arrow(arrow_context, surface.cairo(), angle, (w - arrow_size) / 2,
-                   (h - arrow_size) / 2, arrow_size);
-  canvas->drawBitmap(bitmap, rect.x(), rect.y());
+  PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, true);
+  PaintArrow(canvas, rect, direction, SkColorFromStyleContext(context));
 }
 
 void NativeThemeGtk3::PaintScrollbarTrack(
@@ -440,11 +422,11 @@ void NativeThemeGtk3::PaintScrollbarTrack(
     State state,
     const ScrollbarTrackExtraParams& extra_params,
     const gfx::Rect& rect) const {
-  PaintWidget(canvas, rect,
-              GetStyleContextFromCss(GtkVersionCheck(3, 20)
-                  ? "GtkScrollbar#scrollbar #contents #trough"
-                  : "GtkScrollbar.scrollbar.trough"),
-                  BG_RENDER_NORMAL,true);
+  PaintWidget(canvas, rect, GetStyleContextFromCss(
+                                GtkVersionCheck(3, 20)
+                                    ? "GtkScrollbar#scrollbar #contents #trough"
+                                    : "GtkScrollbar.scrollbar.trough"),
+              BG_RENDER_NORMAL, true);
 }
 
 void NativeThemeGtk3::PaintScrollbarThumb(
