@@ -4,10 +4,9 @@
 
 #include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 
-#include "ash/public/cpp/mus_property_mirror_ash.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/window_properties.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/ui/ash/ash_init.h"
@@ -26,11 +25,65 @@
 #include "chrome/browser/ui/views/frame/immersive_handler_factory_mus.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/base/class_property.h"
 #include "ui/keyboard/content/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/mus_property_mirror.h"
+
+namespace {
+
+void MirrorIcon(aura::Window* window,
+                aura::Window* root_window,
+                const aura::WindowProperty<gfx::ImageSkia*>* key) {
+  gfx::ImageSkia* value = window->GetProperty(key);
+  if (!value || value->isNull())
+    root_window->ClearProperty(key);
+  else
+    root_window->SetProperty(key, new gfx::ImageSkia(*value));
+}
+
+}  // namespace
+
+// Relays aura content window properties to its root window (the mash frame).
+// Ash relies on various window properties for frame titles, shelf items, etc.
+// These properties are read from the client's root, not child content windows.
+class MusPropertyMirrorAsh : public views::MusPropertyMirror {
+ public:
+  MusPropertyMirrorAsh() {}
+  ~MusPropertyMirrorAsh() override {}
+
+  // MusPropertyMirror:
+  void MirrorPropertyFromWidgetWindowToRootWindow(aura::Window* window,
+                                                  aura::Window* root_window,
+                                                  const void* key) override {
+    if (key == ash::kShelfIDKey) {
+      int32_t value = window->GetProperty(ash::kShelfIDKey);
+      root_window->SetProperty(ash::kShelfIDKey, value);
+    } else if (key == ash::kShelfItemTypeKey) {
+      int32_t value = window->GetProperty(ash::kShelfItemTypeKey);
+      root_window->SetProperty(ash::kShelfItemTypeKey, value);
+    } else if (key == aura::client::kAppIconKey) {
+      MirrorIcon(window, root_window, aura::client::kAppIconKey);
+    } else if (key == aura::client::kAppIdKey) {
+      std::string* value = window->GetProperty(aura::client::kAppIdKey);
+      root_window->SetProperty(aura::client::kAppIdKey, value);
+    } else if (key == aura::client::kDrawAttentionKey) {
+      bool value = window->GetProperty(aura::client::kDrawAttentionKey);
+      root_window->SetProperty(aura::client::kDrawAttentionKey, value);
+    } else if (key == aura::client::kTitleKey) {
+      base::string16* value = window->GetProperty(aura::client::kTitleKey);
+      root_window->SetProperty(aura::client::kTitleKey, value);
+    } else if (key == aura::client::kWindowIconKey) {
+      MirrorIcon(window, root_window, aura::client::kWindowIconKey);
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MusPropertyMirrorAsh);
+};
 
 ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {}
 
@@ -52,8 +105,7 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
         ash::kShelfItemTypeKey,
         ui::mojom::WindowManager::kShelfItemType_Property);
 
-    mus_client->SetMusPropertyMirror(
-        base::MakeUnique<ash::MusPropertyMirrorAsh>());
+    mus_client->SetMusPropertyMirror(base::MakeUnique<MusPropertyMirrorAsh>());
   }
 }
 

@@ -15,7 +15,6 @@
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shared/app_types.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
