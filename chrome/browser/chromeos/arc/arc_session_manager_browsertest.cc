@@ -223,13 +223,7 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedChromeAccount) {
             ArcSessionManager::Get()->state());
 }
 
-#if defined(OS_CHROMEOS)
-// https://crbug.com/681547 - flaky segfault on linux_chromium_chromeos_rel_ng
-#define MAYBE_ManagedAndroidAccount DISABLED_ManagedAndroidAccount
-#else
-#define MAYBE_ManagedAndroidAccount ManagedAndroidAccount
-#endif
-IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, MAYBE_ManagedAndroidAccount) {
+IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedAndroidAccount) {
   EnableArc();
   token_service()->IssueTokenForAllPendingRequests(kManagedAuthToken,
                                                    base::Time::Max());
