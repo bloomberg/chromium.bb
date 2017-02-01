@@ -83,6 +83,7 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
     return world(isolate->GetCurrentContext());
   }
 
+  static DOMWrapperWorld*& workerWorld();
   static DOMWrapperWorld& mainWorld();
   static PassRefPtr<DOMWrapperWorld> fromWorldId(v8::Isolate*, int worldId);
 

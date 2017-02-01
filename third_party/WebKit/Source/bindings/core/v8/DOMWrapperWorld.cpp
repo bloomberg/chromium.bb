@@ -91,7 +91,11 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(v8::Isolate* isolate,
 DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate, int worldId)
     : m_worldId(worldId),
       m_domDataStore(
-          WTF::wrapUnique(new DOMDataStore(isolate, isMainWorld()))) {}
+          WTF::wrapUnique(new DOMDataStore(isolate, isMainWorld()))) {
+  if (worldId == WorkerWorldId) {
+    workerWorld() = this;
+  }
+}
 
 DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
   ASSERT(isMainThread());
@@ -99,6 +103,12 @@ DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
       DOMWrapperWorld, cachedMainWorld,
       (DOMWrapperWorld::create(v8::Isolate::GetCurrent(), MainWorldId)));
   return *cachedMainWorld;
+}
+
+DOMWrapperWorld*& DOMWrapperWorld::workerWorld() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<DOMWrapperWorld*>, workerWorld,
+                                  new ThreadSpecific<DOMWrapperWorld*>);
+  return *workerWorld;
 }
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::fromWorldId(v8::Isolate* isolate,
@@ -128,15 +138,19 @@ void DOMWrapperWorld::allWorldsInMainThread(
 void DOMWrapperWorld::markWrappersInAllWorlds(
     ScriptWrappable* scriptWrappable,
     const ScriptWrappableVisitor* visitor) {
-  // TODO(hlopko): Currently wrapper in one world will keep wrappers in all
-  // worlds alive (possibly holding on entire documents). This is neither
-  // needed (there is no way to get from one wrapper to another), nor wanted
-  // (big performance and memory overhead).
-
-  // Marking for the main world
-  scriptWrappable->markWrapper(visitor);
-  if (!isMainThread())
+  // Handle marking in per-worker wrapper worlds.
+  if (!isMainThread()) {
+    DCHECK(ThreadState::current()->isolate());
+    if (workerWorld()) {
+      DOMDataStore& dataStore = workerWorld()->domDataStore();
+      if (dataStore.containsWrapper(scriptWrappable)) {
+        dataStore.markWrapper(scriptWrappable);
+      }
+    }
     return;
+  }
+
+  scriptWrappable->markWrapper(visitor);
   WorldMap& isolatedWorlds = isolatedWorldMap();
   for (auto& world : isolatedWorlds.values()) {
     DOMDataStore& dataStore = world->domDataStore();
@@ -172,6 +186,10 @@ DOMWrapperWorld::~DOMWrapperWorld() {
   ASSERT(!isMainWorld());
 
   dispose();
+
+  if (m_worldId == WorkerWorldId) {
+    workerWorld() = nullptr;
+  }
 
   if (!isIsolatedWorld())
     return;
