@@ -578,7 +578,6 @@ void AutofillAgent::ShowNotSecureWarning(
     const blink::WebInputElement& element) {
   if (is_generation_popup_possibly_visible_)
     return;
-  HidePopup();
   password_autofill_agent_->ShowNotSecureWarning(element);
   is_popup_possibly_visible_ = true;
 }
