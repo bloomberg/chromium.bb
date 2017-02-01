@@ -1703,6 +1703,7 @@ test("base_perftests") {
     "message_loop/message_pump_perftest.cc",
 
     # "test/run_all_unittests.cc",
+    "json/json_perftest.cc",
     "threading/thread_perftest.cc",
   ]
   deps = [
