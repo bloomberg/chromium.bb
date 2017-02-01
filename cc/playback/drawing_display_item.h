@@ -27,7 +27,6 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
   explicit DrawingDisplayItem(const DrawingDisplayItem& item);
   ~DrawingDisplayItem() override;
 
-  sk_sp<const SkPicture> GetPicture() const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,

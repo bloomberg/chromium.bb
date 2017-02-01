@@ -250,7 +250,6 @@ cc_component("cc") {
     "playback/decoded_draw_image.h",
     "playback/discardable_image_map.cc",
     "playback/discardable_image_map.h",
-    "playback/display_item.cc",
     "playback/display_item.h",
     "playback/display_item_list.cc",
     "playback/display_item_list.h",

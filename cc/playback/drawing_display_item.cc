@@ -42,10 +42,6 @@ void DrawingDisplayItem::SetNew(sk_sp<const SkPicture> picture) {
   picture_ = std::move(picture);
 }
 
-sk_sp<const SkPicture> DrawingDisplayItem::GetPicture() const {
-  return picture_;
-}
-
 DISABLE_CFI_PERF
 void DrawingDisplayItem::Raster(SkCanvas* canvas,
                                 SkPicture::AbortCallback* callback) const {
