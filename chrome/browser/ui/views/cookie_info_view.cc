@@ -149,9 +149,9 @@ void CookieInfoView::Init() {
   views::GridLayout* layout = new views::GridLayout(this);
   layout->SetInsets(
       0, LayoutDelegate::Get()->GetLayoutDistance(
-             LayoutDelegate::LayoutDistanceType::BUTTON_HEDGE_MARGIN_NEW),
+             LayoutDelegate::LayoutDistanceType::DIALOG_BUTTON_MARGIN),
       0, LayoutDelegate::Get()->GetLayoutDistance(
-             LayoutDelegate::LayoutDistanceType::BUTTON_HEDGE_MARGIN_NEW));
+             LayoutDelegate::LayoutDistanceType::DIALOG_BUTTON_MARGIN));
   SetLayoutManager(layout);
 
   int three_column_layout_id = 0;

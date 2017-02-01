@@ -82,7 +82,7 @@ LoginView::LoginView(const base::string16& authority,
 
   layout->AddPaddingRow(0, layout_delegate->GetLayoutDistance(
                                LayoutDelegate::LayoutDistanceType::
-                                   UNRELATED_CONTROL_LARGE_VERTICAL_SPACING));
+                                   UNRELATED_CONTROL_VERTICAL_SPACING_LARGE));
 
   layout->StartRow(0, labels_column_set_id);
   layout->AddView(username_label_);

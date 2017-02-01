@@ -10,28 +10,26 @@
 class LayoutDelegate {
  public:
   enum class LayoutDistanceType {
-    // Left or right margin.
-    PANEL_HORIZ_MARGIN,
-    // Top or bottom margin.
-    PANEL_VERT_MARGIN,
-    // Horizontal spacing between controls that are logically related.
+    // Horizontal or vertical margin between the edge of a dialog and a
+    // contained button.
+    DIALOG_BUTTON_MARGIN,
+    // Horizontal or vertical margin between the edge of a panel and the
+    // contained content.
+    PANEL_CONTENT_MARGIN,
+    // Horizontal spacing between buttons that are logically related, e.g.
+    // for a button set.
+    RELATED_BUTTON_HORIZONTAL_SPACING,
+    // Horizontal spacing between other controls that are logically related.
     RELATED_CONTROL_HORIZONTAL_SPACING,
     // Vertical spacing between controls that are logically related.
     RELATED_CONTROL_VERTICAL_SPACING,
-    // Horizontal spacing between buttons that are logically related.
-    RELATED_BUTTON_HORIZONTAL_SPACING,
+    // Horizontal indent of a subsection relative to related items above, e.g.
+    // checkboxes below explanatory text/headings.
+    SUBSECTION_HORIZONTAL_INDENT,
     // Vertical spacing between controls that are logically unrelated.
     UNRELATED_CONTROL_VERTICAL_SPACING,
     // Larger vertical spacing between unrelated controls.
-    UNRELATED_CONTROL_LARGE_VERTICAL_SPACING,
-    // Vertical spacing between the edge of the window and the
-    // top or bottom of a button.
-    BUTTON_HEDGE_MARGIN_NEW,
-    // Horizontal spacing between the edge of the window and the
-    // left or right of a button.
-    BUTTON_VEDGE_MARGIN_NEW,
-    // Indent of checkboxes relative to related text.
-    CHECKBOX_INDENT,
+    UNRELATED_CONTROL_VERTICAL_SPACING_LARGE,
   };
 
   enum class DialogWidthType {
@@ -44,13 +42,11 @@ class LayoutDelegate {
   virtual ~LayoutDelegate() {}
 
   // Returns the active LayoutDelegate singleton, depending on UI configuration.
-  // By default, this is the same instance returned by Get(), but if Harmony
-  // or another UI style is enabled, this may be an instance of a LayoutDelegate
-  // subclass instead.
+  // This may be an instance of this class or a subclass, e.g. a
+  // HarmonyLayoutDelegate.
   static LayoutDelegate* Get();
 
-  // Returns a layout distance, indexed by |type|. These distances are in
-  // device-independent units.
+  // Returns the requested distance in DIPs.
   virtual int GetLayoutDistance(LayoutDistanceType type) const;
 
   // Returns the alignment used for control labels in a GridLayout; for example,
@@ -66,13 +62,16 @@ class LayoutDelegate {
   // Views for dialogs should not insert extra padding at their own edges.
   virtual bool UseExtraDialogPadding() const;
 
-  // Returns whether Harmony mode is enabled. This method is deprecated and
-  // should only be used in dire circumstances, such as when Harmony specifies a
-  // different distance type than was previously used.
+  // DEPRECATED.  Returns whether Harmony mode is enabled.
+  //
+  // Instead of using this, create a generic solution that works for all UI
+  // types, e.g. by adding a new LayoutDistance value that means what you need.
+  //
+  // TODO(pkasting): Fix callers and remove this.
   virtual bool IsHarmonyMode() const;
 
-  // Returns the preferred width for a dialog of the specified width type. If
-  // there is no preferred width for |type|, returns 0.
+  // Returns the preferred width in DIPs for a dialog of the specified |type|.
+  // May return 0 if the dialog has no preferred width.
   virtual int GetDialogPreferredWidth(DialogWidthType type) const;
 
  private:

@@ -22,26 +22,22 @@ LayoutDelegate* LayoutDelegate::Get() {
 
 int LayoutDelegate::GetLayoutDistance(LayoutDistanceType type) const {
   switch (type) {
-    case LayoutDistanceType::PANEL_HORIZ_MARGIN:
+    case LayoutDistanceType::DIALOG_BUTTON_MARGIN:
+      return views::kButtonHEdgeMarginNew;
+    case LayoutDistanceType::PANEL_CONTENT_MARGIN:
       return views::kPanelHorizMargin;
-    case LayoutDistanceType::PANEL_VERT_MARGIN:
-      return views::kPanelVertMargin;
     case LayoutDistanceType::RELATED_BUTTON_HORIZONTAL_SPACING:
       return views::kRelatedButtonHSpacing;
     case LayoutDistanceType::RELATED_CONTROL_HORIZONTAL_SPACING:
       return views::kRelatedControlHorizontalSpacing;
     case LayoutDistanceType::RELATED_CONTROL_VERTICAL_SPACING:
       return views::kRelatedControlVerticalSpacing;
+    case LayoutDistanceType::SUBSECTION_HORIZONTAL_INDENT:
+      return views::kCheckboxIndent;
     case LayoutDistanceType::UNRELATED_CONTROL_VERTICAL_SPACING:
       return views::kUnrelatedControlVerticalSpacing;
-    case LayoutDistanceType::UNRELATED_CONTROL_LARGE_VERTICAL_SPACING:
+    case LayoutDistanceType::UNRELATED_CONTROL_VERTICAL_SPACING_LARGE:
       return views::kUnrelatedControlLargeVerticalSpacing;
-    case LayoutDistanceType::BUTTON_VEDGE_MARGIN_NEW:
-      return views::kButtonVEdgeMarginNew;
-    case LayoutDistanceType::BUTTON_HEDGE_MARGIN_NEW:
-      return views::kButtonHEdgeMarginNew;
-    case LayoutDistanceType::CHECKBOX_INDENT:
-      return views::kCheckboxIndent;
   }
   NOTREACHED();
   return 0;

@@ -309,7 +309,7 @@ void ContentSettingBubbleContents::Init() {
       layout->AddColumnSet(indented_kSingleColumnSetId);
   indented_single_column_set->AddPaddingColumn(
       0, layout_delegate->GetLayoutDistance(
-             LayoutDelegate::LayoutDistanceType::CHECKBOX_INDENT));
+             LayoutDelegate::LayoutDistanceType::SUBSECTION_HORIZONTAL_INDENT));
   indented_single_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
                                         1, GridLayout::USE_PREF, 0, 0);
 
@@ -350,8 +350,9 @@ void ContentSettingBubbleContents::Init() {
     views::ColumnSet* menu_column_set =
         layout->AddColumnSet(kMediaMenuColumnSetId);
     menu_column_set->AddPaddingColumn(
-        0, layout_delegate->GetLayoutDistance(
-               LayoutDelegate::LayoutDistanceType::CHECKBOX_INDENT));
+        0,
+        layout_delegate->GetLayoutDistance(
+             LayoutDelegate::LayoutDistanceType::SUBSECTION_HORIZONTAL_INDENT));
     menu_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                                GridLayout::USE_PREF, 0, 0);
     menu_column_set->AddPaddingColumn(0, related_control_horizontal_spacing);
