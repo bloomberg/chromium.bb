@@ -28,7 +28,7 @@ class MockChromeClient : public EmptyChromeClient {
   }
 };
 
-}  // namespace
+}  // namespace {
 
 class PaintLayerScrollableAreaTest : public RenderingTest {
  public:
@@ -548,31 +548,4 @@ TEST_F(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
       .Times(0);
   scrollableArea->setScrollOffset(ScrollOffset(2, 2), ProgrammaticScroll);
 }
-
-TEST_F(PaintLayerScrollableAreaTest,
-       StickyPositionConstraintsInvalidatedByLayout) {
-  setBodyInnerHTML(
-      "<style>#scroller { overflow-y: scroll; height: 100px; }"
-      "#sticky { height: 25px; position: sticky; top: 0; }"
-      "#padding { height: 500px; }</style>"
-      "<div id='scroller'><div id='sticky'></div><div id='padding'></div>"
-      "</div>");
-
-  LayoutBoxModelObject* scroller =
-      toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
-  LayoutBoxModelObject* sticky =
-      toLayoutBoxModelObject(getLayoutObjectByElementId("sticky"));
-
-  EXPECT_FALSE(sticky->layer()->needsCompositingInputsUpdate());
-
-  PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
-  ASSERT_TRUE(scrollableArea);
-
-  // Fake layout.
-  scrollableArea->updateAfterLayout();
-
-  EXPECT_TRUE(sticky->layer()->needsCompositingInputsUpdate());
-  EXPECT_EQ(0u, scrollableArea->stickyConstraintsMap().size());
 }
-
-}  // namespace blink
