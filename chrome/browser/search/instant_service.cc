@@ -103,7 +103,8 @@ InstantService::InstantService(Profile* profile)
   if (base::FeatureList::IsEnabled(kNtpTilesFeature)) {
     most_visited_sites_ =
         ChromeMostVisitedSitesFactory::NewForProfile(profile_);
-    most_visited_sites_->SetMostVisitedURLsObserver(this, 8);
+    if (most_visited_sites_)
+      most_visited_sites_->SetMostVisitedURLsObserver(this, 8);
   } else {
     top_sites_ = TopSitesFactory::GetForProfile(profile_);
     if (top_sites_) {

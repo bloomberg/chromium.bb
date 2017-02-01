@@ -108,6 +108,11 @@ void SupervisorBridge::OnURLFilterChanged() {
 // static
 std::unique_ptr<ntp_tiles::MostVisitedSites>
 ChromeMostVisitedSitesFactory::NewForProfile(Profile* profile) {
+  // MostVisitedSites doesn't exist in incognito profiles.
+  if (profile->IsOffTheRecord()) {
+    return nullptr;
+  }
+
   return base::MakeUnique<ntp_tiles::MostVisitedSites>(
       profile->GetPrefs(), TopSitesFactory::GetForProfile(profile),
       SuggestionsServiceFactory::GetForProfile(profile),
