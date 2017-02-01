@@ -7,6 +7,9 @@
 
 #include "cc/ipc/texture_mailbox.mojom-shared.h"
 #include "cc/resources/texture_mailbox.h"
+#include "gpu/ipc/common/mailbox_holder_struct_traits.h"
+#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/ipc/color/gfx_param_traits.h"
 
 namespace mojo {
 

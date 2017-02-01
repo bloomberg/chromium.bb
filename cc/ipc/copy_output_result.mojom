@@ -1,0 +1,16 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module cc.mojom;
+
+import "cc/ipc/texture_mailbox.mojom";
+import "skia/public/interfaces/bitmap.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
+
+// See cc/output/copy_output_result.h.
+struct CopyOutputResult {
+  gfx.mojom.Size size;
+  skia.mojom.Bitmap? bitmap;
+  cc.mojom.TextureMailbox texture_mailbox;
+};

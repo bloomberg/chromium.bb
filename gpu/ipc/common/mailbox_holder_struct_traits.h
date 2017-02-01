@@ -7,6 +7,8 @@
 
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/ipc/common/mailbox_holder.mojom-shared.h"
+#include "gpu/ipc/common/mailbox_struct_traits.h"
+#include "gpu/ipc/common/sync_token_struct_traits.h"
 
 namespace mojo {
 

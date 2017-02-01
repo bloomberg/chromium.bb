@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "cc/resources/texture_mailbox.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace cc {
 
@@ -27,10 +26,15 @@ CopyOutputResult::CopyOutputResult(
   DCHECK(texture_mailbox_.IsTexture());
 }
 
+CopyOutputResult::CopyOutputResult(CopyOutputResult&& other) = default;
+
 CopyOutputResult::~CopyOutputResult() {
   if (release_callback_)
     release_callback_->Run(gpu::SyncToken(), false);
 }
+
+CopyOutputResult& CopyOutputResult::operator=(CopyOutputResult&& other) =
+    default;
 
 std::unique_ptr<SkBitmap> CopyOutputResult::TakeBitmap() {
   return std::move(bitmap_);

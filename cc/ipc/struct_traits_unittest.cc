@@ -57,6 +57,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(std::move(c));
   }
 
+  void EchoCopyOutputResult(
+      const CopyOutputResult& c,
+      const EchoCopyOutputResultCallback& callback) override {
+    callback.Run(c);
+  }
+
   void EchoFilterOperation(
       const FilterOperation& f,
       const EchoFilterOperationCallback& callback) override {
@@ -124,6 +130,9 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 };
 
 void StubCopyOutputRequestCallback(std::unique_ptr<CopyOutputResult> result) {}
+
+void StubCopyOutputResultCallback(const gpu::SyncToken& sync_token,
+                                  bool is_lost) {}
 
 }  // namespace
 
@@ -370,7 +379,6 @@ TEST_F(StructTraitsTest, CopyOutputRequest) {
   input = CopyOutputRequest::CreateBitmapRequest(callback);
   input->set_area(area);
   input->set_source(source);
-
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   CopyOutputRequest output;
   proxy->EchoCopyOutputRequest(*input.get(), &output);
@@ -393,6 +401,55 @@ TEST_F(StructTraitsTest, CopyOutputRequest) {
   EXPECT_EQ(mailbox, output2.texture_mailbox().mailbox());
   EXPECT_EQ(target, output2.texture_mailbox().target());
   EXPECT_FALSE(output2.has_source());
+}
+
+TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
+  auto bitmap = base::MakeUnique<SkBitmap>();
+  bitmap->allocN32Pixels(7, 8);
+  bitmap->eraseARGB(123, 213, 77, 33);
+  auto input = CopyOutputResult::CreateBitmapResult(std::move(bitmap));
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  CopyOutputResult output;
+  proxy->EchoCopyOutputResult(*input, &output);
+
+  EXPECT_TRUE(output.HasBitmap());
+  EXPECT_FALSE(output.HasTexture());
+  EXPECT_EQ(input->size(), output.size());
+
+  std::unique_ptr<SkBitmap> in_bitmap = input->TakeBitmap();
+  std::unique_ptr<SkBitmap> out_bitmap = output.TakeBitmap();
+  EXPECT_EQ(in_bitmap->getSize(), out_bitmap->getSize());
+  EXPECT_EQ(0, std::memcmp(in_bitmap->getPixels(), out_bitmap->getPixels(),
+                           in_bitmap->getSize()));
+}
+
+TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
+  const gfx::Size size(1234, 5678);
+  const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
+      0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 3};
+  const uint32_t target = 3;
+  auto callback =
+      SingleReleaseCallback::Create(base::Bind(StubCopyOutputResultCallback));
+  gpu::Mailbox mailbox;
+  mailbox.SetName(mailbox_name);
+  TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
+
+  auto input = CopyOutputResult::CreateTextureResult(size, texture_mailbox,
+                                                     std::move(callback));
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  CopyOutputResult output;
+  proxy->EchoCopyOutputResult(*input, &output);
+
+  EXPECT_FALSE(output.HasBitmap());
+  EXPECT_TRUE(output.HasTexture());
+  EXPECT_EQ(size, output.size());
+
+  TextureMailbox out_mailbox;
+  std::unique_ptr<SingleReleaseCallback> out_callback;
+  output.TakeTexture(&out_mailbox, &out_callback);
+  EXPECT_EQ(mailbox, out_mailbox.mailbox());
 }
 
 TEST_F(StructTraitsTest, FilterOperation) {

@@ -11,11 +11,18 @@
 #include "cc/base/cc_export.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
 
 namespace cc {
+
+namespace mojom {
+class CopyOutputResultDataView;
+}
+
 class TextureMailbox;
 
 class CC_EXPORT CopyOutputResult {
@@ -35,10 +42,16 @@ class CC_EXPORT CopyOutputResult {
                                                  std::move(release_callback)));
   }
 
+  CopyOutputResult();
+
+  CopyOutputResult(CopyOutputResult&& other);
+
   ~CopyOutputResult();
 
+  CopyOutputResult& operator=(CopyOutputResult&& other);
+
   bool IsEmpty() const { return !HasBitmap() && !HasTexture(); }
-  bool HasBitmap() const { return !!bitmap_; }
+  bool HasBitmap() const { return !!bitmap_ && !bitmap_->isNull(); }
   bool HasTexture() const { return texture_mailbox_.IsValid(); }
 
   gfx::Size size() const { return size_; }
@@ -47,7 +60,9 @@ class CC_EXPORT CopyOutputResult {
                    std::unique_ptr<SingleReleaseCallback>* release_callback);
 
  private:
-  CopyOutputResult();
+  friend struct mojo::StructTraits<mojom::CopyOutputResultDataView,
+                                   CopyOutputResult>;
+
   explicit CopyOutputResult(std::unique_ptr<SkBitmap> bitmap);
   explicit CopyOutputResult(
       const gfx::Size& size,
