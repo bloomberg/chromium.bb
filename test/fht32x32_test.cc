@@ -166,22 +166,22 @@ using std::tr1::make_tuple;
 
 #if HAVE_AVX2
 const Ht32x32Param kArrayHt32x32Param_avx2[] = {
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 0, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 1, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 2, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 3, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 0, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 1, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 2, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 3, AOM_BITS_8, 1024),
 #if CONFIG_EXT_TX
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 4, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 5, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 6, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 7, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 8, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 10, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 11, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 12, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 13, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 14, AOM_BITS_8, 1024),
-  make_tuple(&av1_fht32x32_avx2, dummy_inv_txfm, 15, AOM_BITS_8, 1024)
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 4, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 5, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 6, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 7, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 8, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 10, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 11, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 12, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 13, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 14, AOM_BITS_8, 1024),
+  make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, 15, AOM_BITS_8, 1024)
 #endif  // CONFIG_EXT_TX
 };
 INSTANTIATE_TEST_CASE_P(AVX2, AV1Trans32x32HT,
