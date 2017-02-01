@@ -10,36 +10,33 @@ namespace subresource_filter {
 
 namespace {
 
-bool IsThirdPartyImpl(const GURL& url, const GURL& first_party_url) {
+bool IsThirdPartyImpl(const GURL& url, const url::Origin& first_party_origin) {
   return !net::registry_controlled_domains::SameDomainOrHost(
-      url, first_party_url,
+      url, first_party_origin,
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
 }  // namespace
 
 FirstPartyOrigin::FirstPartyOrigin(url::Origin document_origin)
-    : document_origin_(std::move(document_origin)) {
-  document_origin_as_gurl_ = GURL(document_origin_.Serialize());
-}
+    : document_origin_(std::move(document_origin)) {}
 
 bool FirstPartyOrigin::IsThirdParty(const GURL& url) const {
   if (document_origin_.unique())
     return true;
-  if (!last_checked_host_.empty() && url.host_piece() == last_checked_host_)
+  base::StringPiece host_piece = url.host_piece();
+  if (!last_checked_host_.empty() && host_piece == last_checked_host_)
     return last_checked_host_was_third_party_;
 
-  url.host_piece().CopyToString(&last_checked_host_);
-  last_checked_host_was_third_party_ =
-      IsThirdPartyImpl(url, document_origin_as_gurl_);
+  last_checked_host_.assign(host_piece.data(), host_piece.size());
+  last_checked_host_was_third_party_ = IsThirdPartyImpl(url, document_origin_);
   return last_checked_host_was_third_party_;
 }
 
 bool FirstPartyOrigin::IsThirdParty(const GURL& url,
                                     const url::Origin& first_party_origin) {
-  // TODO(pkalinnikov): Avoid converting Origin to GURL.
   return first_party_origin.unique() ||
-         IsThirdPartyImpl(url, GURL(first_party_origin.Serialize()));
+         IsThirdPartyImpl(url, first_party_origin);
 }
 
 }  // namespace subresouce_filter

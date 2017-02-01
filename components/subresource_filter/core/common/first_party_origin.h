@@ -33,19 +33,14 @@ class FirstPartyOrigin {
                            const url::Origin& first_party_origin);
 
  private:
-  url::Origin document_origin_;
-
-  // NOTE: GURL is needed to work around the slightly inefficient interfaces of
-  // net::registry_controlled_domains.
-  GURL document_origin_as_gurl_;
+  const url::Origin document_origin_;
 
   // One-entry cache that stores input/output of the last IsThirdParty
-  // call.
-  //
-  // NOTE: registry_controlled_domains::SameDomainOrHost takes GURLs as inputs,
-  // but the cache entry stores only the host part of a GURL. It is assumed that
-  // SameDomainOrHost will return the same result for a GURL which has the same
-  // non-empty host part as the cached one.
+  // call. To improve performance, the cache stores only the host part of the
+  // last checked URL. Checking only the host part before returning the cached
+  // result is correct, because registry_controlled_domains::SameDomainOrHost
+  // would return the same result for any GURL that has the same non-empty
+  // host part as the last checked URL.
   mutable std::string last_checked_host_;
   mutable bool last_checked_host_was_third_party_ = false;
 };
