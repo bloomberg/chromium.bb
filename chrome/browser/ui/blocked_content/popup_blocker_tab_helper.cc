@@ -14,8 +14,8 @@
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
@@ -47,13 +47,16 @@ PopupBlockerTabHelper::PopupBlockerTabHelper(
 PopupBlockerTabHelper::~PopupBlockerTabHelper() {
 }
 
-void PopupBlockerTabHelper::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void PopupBlockerTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
   // Clear all page actions, blocked content notifications and browser actions
-  // for this tab, unless this is an in-page navigation.
-  if (details.is_in_page)
+  // for this tab, unless this is an in-page navigation. Also only consider
+  // main frame navigations that successfully committed.
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSamePage()) {
     return;
+  }
 
   // Close blocked popups.
   if (!blocked_popups_.IsEmpty()) {

@@ -53,9 +53,8 @@ class PopupBlockerTabHelper
   PopupIdMap GetBlockedPopupRequests();
 
   // content::WebContentsObserver overrides:
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
  private:
   struct BlockedRequest;
