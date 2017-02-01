@@ -208,6 +208,11 @@ const DisplayLayout& DisplayManager::GetCurrentDisplayLayout() const {
   return layout;
 }
 
+const DisplayLayout& DisplayManager::GetCurrentResolvedDisplayLayout() const {
+  return current_resolved_layout_ ? *current_resolved_layout_
+                                  : GetCurrentDisplayLayout();
+}
+
 DisplayIdList DisplayManager::GetCurrentDisplayIdList() const {
   if (IsInUnifiedMode()) {
     return CreateDisplayIdList(software_mirroring_display_list_);
@@ -246,7 +251,8 @@ void DisplayManager::SetLayoutForCurrentDisplays(
 
   // TODO(oshima): Call UpdateDisplays instead.
   std::vector<int64_t> updated_ids;
-  ApplyDisplayLayout(GetCurrentDisplayLayout(), &active_display_list_,
+  current_resolved_layout_ = GetCurrentDisplayLayout().Copy();
+  ApplyDisplayLayout(current_resolved_layout_.get(), &active_display_list_,
                      &updated_ids);
   for (int64_t id : updated_ids) {
     NotifyMetricsChanged(GetDisplayForId(id),
@@ -1380,7 +1386,8 @@ void DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
 
   // display_list does not have translation set, so ApplyDisplayLayout cannot
   // provide accurate change information. We'll find the changes after the call.
-  ApplyDisplayLayout(layout, display_list, nullptr);
+  current_resolved_layout_ = layout.Copy();
+  ApplyDisplayLayout(current_resolved_layout_.get(), display_list, nullptr);
   size_t num_displays = display_list->size();
   for (size_t index = 0; index < num_displays; ++index) {
     const Display& display = (*display_list)[index];
@@ -1400,11 +1407,17 @@ void DisplayManager::CreateMirrorWindowIfAny() {
   delegate_->CreateOrUpdateMirroringDisplay(list);
 }
 
-void DisplayManager::ApplyDisplayLayout(const DisplayLayout& layout,
+void DisplayManager::ApplyDisplayLayout(DisplayLayout* layout,
                                         Displays* display_list,
                                         std::vector<int64_t>* updated_ids) {
-  layout.ApplyToDisplayList(display_list, updated_ids,
-                            kMinimumOverlapForInvalidOffset);
+  if (multi_display_mode_ == UNIFIED) {
+    // Applying the layout in unified mode doesn't make sense, since there's no
+    // layout.
+    return;
+  }
+
+  layout->ApplyToDisplayList(display_list, updated_ids,
+                             kMinimumOverlapForInvalidOffset);
 }
 
 void DisplayManager::RunPendingTasksForTest() {

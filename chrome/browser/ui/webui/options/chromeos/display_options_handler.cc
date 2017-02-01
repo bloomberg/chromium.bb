@@ -358,8 +358,10 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
     js_display->Set("availableColorProfiles", available_color_profiles);
 
     if (display_manager->GetNumDisplays() > 1) {
+      // The settings UI must use the resolved display layout to show the
+      // actual applied layout.
       const display::DisplayPlacement placement =
-          display_manager->GetCurrentDisplayLayout().FindPlacementById(
+          display_manager->GetCurrentResolvedDisplayLayout().FindPlacementById(
               display.id());
       if (placement.display_id != display::kInvalidDisplayId) {
         js_display->SetString(

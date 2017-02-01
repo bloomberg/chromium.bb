@@ -362,7 +362,11 @@ TEST_P(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
               display_manager()->GetDisplayAt(0).bounds().ToString());
     EXPECT_EQ("-320,10 320x200",
               display_manager()->GetDisplayAt(1).bounds().ToString());
-    EXPECT_EQ("-310,-290 400x300",
+
+    // The above layout causes an overlap between [P] and [2], making [2]'s
+    // bounds be "-310,-290 400x300" if the overlap is not fixed. The overlap
+    // must be detected and fixed and [2] is shifted up to remove the overlap.
+    EXPECT_EQ("-310,-300 400x300",
               display_manager()->GetDisplayAt(2).bounds().ToString());
   }
   {
@@ -449,6 +453,438 @@ TEST_P(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
     EXPECT_EQ("-280,680 320x200",
               display_manager()->GetDisplayAt(1).bounds().ToString());
   }
+}
+
+// Makes sure that layouts with overlapped displays are detected and fixed when
+// applied.
+TEST_P(DisplayManagerTest, NoOverlappedDisplays) {
+  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  {
+    // Layout with multiple overlaps and special cases:
+    //
+    //            +-----+
+    //       +----+-+6  |
+    //       |  5 | |   |
+    //  +----+----+ |   |
+    //  | 7  |    | |   |
+    //  +----+----+-+---+---+-+---------+
+    //       |      |   P   | |   2     |
+    //       +------+       | |         +----------+
+    //              |       | |         |     3    |
+    //              |       | |         |          |
+    //              +--+----+-+-+-+-----+--+       |
+    //                 |    1   | |   4 |  |       |
+    //                 |        | |     +--+-------+
+    //                 |        | |        |
+    //                 +--------+ +--------+
+
+    display::DisplayIdList list = display::test::CreateDisplayIdListN(
+        8, primary_id, primary_id + 1, primary_id + 2, primary_id + 3,
+        primary_id + 4, primary_id + 5, primary_id + 6, primary_id + 7);
+    display::DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[1], primary_id,
+                                display::DisplayPlacement::BOTTOM, 50);
+    builder.AddDisplayPlacement(list[2], list[1],
+                                display::DisplayPlacement::TOP, 300);
+    builder.AddDisplayPlacement(list[3], list[2],
+                                display::DisplayPlacement::RIGHT, 30);
+    builder.AddDisplayPlacement(list[4], list[2],
+                                display::DisplayPlacement::BOTTOM, 400);
+    builder.AddDisplayPlacement(list[5], primary_id,
+                                display::DisplayPlacement::LEFT, -300);
+    builder.AddDisplayPlacement(list[6], primary_id,
+                                display::DisplayPlacement::TOP, -250);
+    builder.AddDisplayPlacement(list[7], list[6],
+                                display::DisplayPlacement::LEFT, 250);
+    display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+        list, builder.Build());
+
+    UpdateDisplay(
+        "480x400,480x400,480x400,480x400,480x400,480x400,480x400,530x150");
+
+    // The resulting layout after overlaps had been removed:
+    //
+    //
+    //  +---------+
+    //  | 7       +-----+
+    //  +-+-------+  6  |
+    //    |   5   |     |
+    //    |       |     |
+    //    |       |     |
+    //    |       |-+---+----+---------+
+    //    |       | |   P    |   2     |
+    //    +-------+ |        |         +----------+
+    //              |        |         |     3    |
+    //              |        |         |          |
+    //              +--+-----+-+-------+          |
+    //                 |   1   |       |          |
+    //                 |       |  +----+---+------+
+    //                 |       |  |   4    |
+    //                 +-------+  |        |
+    //                            |        |
+    //                            +--------+
+
+    EXPECT_EQ(8U, display_manager()->GetNumDisplays());
+
+    EXPECT_EQ("0,0 480x400",
+              display_manager()->GetDisplayAt(0).bounds().ToString());
+    EXPECT_EQ("50,400 480x400",
+              display_manager()->GetDisplayAt(1).bounds().ToString());
+    EXPECT_EQ("480,0 480x400",
+              display_manager()->GetDisplayAt(2).bounds().ToString());
+    EXPECT_EQ("960,30 480x400",
+              display_manager()->GetDisplayAt(3).bounds().ToString());
+    EXPECT_EQ("730,430 480x400",
+              display_manager()->GetDisplayAt(4).bounds().ToString());
+    EXPECT_EQ("-730,-300 480x400",
+              display_manager()->GetDisplayAt(5).bounds().ToString());
+    EXPECT_EQ("-250,-400 480x400",
+              display_manager()->GetDisplayAt(6).bounds().ToString());
+    EXPECT_EQ("-780,-450 530x150",
+              display_manager()->GetDisplayAt(7).bounds().ToString());
+
+    // Expect that the displays have been reparented correctly, such that a
+    // child is always touching its parent.
+    display::DisplayLayoutBuilder expected_layout_builder(primary_id);
+    expected_layout_builder.AddDisplayPlacement(
+        list[1], primary_id, display::DisplayPlacement::BOTTOM, 50);
+    expected_layout_builder.AddDisplayPlacement(
+        list[2], list[1], display::DisplayPlacement::TOP, 430);
+    expected_layout_builder.AddDisplayPlacement(
+        list[3], list[2], display::DisplayPlacement::RIGHT, 30);
+    // [4] became a child of [3] instead of [2] as they no longer touch.
+    expected_layout_builder.AddDisplayPlacement(
+        list[4], list[3], display::DisplayPlacement::BOTTOM, -230);
+    // [5] became a child of [6] instead of [P] as they no longer touch.
+    expected_layout_builder.AddDisplayPlacement(
+        list[5], list[6], display::DisplayPlacement::LEFT, 100);
+    expected_layout_builder.AddDisplayPlacement(
+        list[6], primary_id, display::DisplayPlacement::TOP, -250);
+    expected_layout_builder.AddDisplayPlacement(
+        list[7], list[6], display::DisplayPlacement::LEFT, -50);
+
+    const display::DisplayLayout& layout =
+        display_manager()->GetCurrentResolvedDisplayLayout();
+
+    EXPECT_TRUE(
+        layout.HasSamePlacementList(*(expected_layout_builder.Build())));
+  }
+
+  {
+    // The following is a special case where a child display is closer to the
+    // origin than its parent. Test that we can handle it successfully without
+    // introducing a circular dependency.
+    //
+    // +---------+
+    // |    P    |    +---------+
+    // |         |    |    3    |
+    // |         |    |         |
+    // |         |    |         |
+    // +------+--+----+         |
+    // |    1 |  | 2  +---------+
+    // |      |  |    |
+    // |      |  |    |
+    // |      |  |    |
+    // +------+--+----+
+    //
+
+    display::DisplayIdList list = display::test::CreateDisplayIdListN(
+        4, primary_id, primary_id + 1, primary_id + 2, primary_id + 3);
+    display::DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[1], primary_id,
+                                display::DisplayPlacement::BOTTOM, 0);
+    builder.AddDisplayPlacement(list[2], primary_id,
+                                display::DisplayPlacement::BOTTOM, 464);
+    builder.AddDisplayPlacement(list[3], list[2],
+                                display::DisplayPlacement::RIGHT, -700);
+    display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+        list, builder.Build());
+    UpdateDisplay("696x800,696x800,300x800,696x800");
+
+    // The expected layout should be:
+    //
+    // +---------+
+    // |    P    |       +---------+
+    // |         |       |    3    |
+    // |         |       |         |
+    // |         |       |         |
+    // +---------+-------+         |
+    // |    1    |   2   +---------+
+    // |         |       |
+    // |         |       |
+    // |         |       |
+    // +---------+-------+
+    //
+    //
+
+    EXPECT_EQ(4U, display_manager()->GetNumDisplays());
+    EXPECT_EQ("0,0 696x800",
+              display_manager()->GetDisplayAt(0).bounds().ToString());
+    EXPECT_EQ("0,800 696x800",
+              display_manager()->GetDisplayAt(1).bounds().ToString());
+    EXPECT_EQ("696,800 300x800",
+              display_manager()->GetDisplayAt(2).bounds().ToString());
+    EXPECT_EQ("996,100 696x800",
+              display_manager()->GetDisplayAt(3).bounds().ToString());
+
+    // This case if not handled correctly might lead to a cyclic dependency.
+    // Make sure this doesn't happen.
+    display::DisplayLayoutBuilder expected_layout_builder(primary_id);
+    expected_layout_builder.AddDisplayPlacement(
+        list[1], primary_id, display::DisplayPlacement::BOTTOM, 0);
+    expected_layout_builder.AddDisplayPlacement(
+        list[2], primary_id, display::DisplayPlacement::BOTTOM, 696);
+    expected_layout_builder.AddDisplayPlacement(
+        list[3], list[2], display::DisplayPlacement::RIGHT, -700);
+
+    const display::DisplayLayout& layout =
+        display_manager()->GetCurrentResolvedDisplayLayout();
+    EXPECT_TRUE(
+        layout.HasSamePlacementList(*(expected_layout_builder.Build())));
+  }
+
+  {
+    // The following is a layout with an overlap to the left of the primary
+    // display.
+    //
+    // +---------+---------+
+    // |    1    |    P    |
+    // |         |         |
+    // +---------+         |
+    // |         |         |
+    // +---------+---------+
+    // |    2    |
+    // |         |
+    // +---------+
+
+    display::DisplayIdList list = display::test::CreateDisplayIdListN(
+        3, primary_id, primary_id + 1, primary_id + 2);
+    display::DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[1], primary_id,
+                                display::DisplayPlacement::LEFT, 0);
+    builder.AddDisplayPlacement(list[2], primary_id,
+                                display::DisplayPlacement::LEFT, 250);
+    display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+        list, builder.Build());
+    UpdateDisplay("696x500,696x500,696x500");
+
+    // The expected layout should be:
+    //
+    // +---------+---------+
+    // |    1    |    P    |
+    // |         |         |
+    // |         |         |
+    // |         |         |
+    // +---------+---------+
+    // |    2    |
+    // |         |
+    // |         |
+    // |         |
+    // +---------+
+
+    EXPECT_EQ(3U, display_manager()->GetNumDisplays());
+    EXPECT_EQ("0,0 696x500",
+              display_manager()->GetDisplayAt(0).bounds().ToString());
+    EXPECT_EQ("-696,0 696x500",
+              display_manager()->GetDisplayAt(1).bounds().ToString());
+    EXPECT_EQ("-696,500 696x500",
+              display_manager()->GetDisplayAt(2).bounds().ToString());
+  }
+
+  {
+    // The following is a layout with an overlap occuring above the primary
+    // display.
+    //
+    //    +------+--+------+
+    //    |  2   |  | 1    |
+    //    |      |  |      |
+    //    |      |  |      |
+    //    |      |  |      |
+    //    +------+--+------+
+    //           |    P    |
+    //           |         |
+    //           |         |
+    //           |         |
+    //           +---------+
+    //
+
+    display::DisplayIdList list = display::test::CreateDisplayIdListN(
+        3, primary_id, primary_id + 1, primary_id + 2);
+    display::DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[1], primary_id,
+                                display::DisplayPlacement::TOP, 0);
+    builder.AddDisplayPlacement(list[2], primary_id,
+                                display::DisplayPlacement::TOP, -348);
+    display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+        list, builder.Build());
+    UpdateDisplay("696x500,696x500,696x500");
+
+    // The expected layout should be:
+    //
+    // +---------+---------+
+    // |    2    |    1    |
+    // |         |         |
+    // |         |         |
+    // |         |         |
+    // +---------+---------+
+    //           |    P    |
+    //           |         |
+    //           |         |
+    //           |         |
+    //           +---------+
+    //
+
+    EXPECT_EQ(3U, display_manager()->GetNumDisplays());
+    EXPECT_EQ("0,0 696x500",
+              display_manager()->GetDisplayAt(0).bounds().ToString());
+    EXPECT_EQ("0,-500 696x500",
+              display_manager()->GetDisplayAt(1).bounds().ToString());
+    EXPECT_EQ("-696,-500 696x500",
+              display_manager()->GetDisplayAt(2).bounds().ToString());
+  }
+}
+
+TEST_P(DisplayManagerTest, NoOverlappedDisplaysNotFitBetweenTwo) {
+  //    +------+--+----+--+------+
+  //    |  1   |  |  2 |  |  3   |
+  //    |      |  |    |  |      |
+  //    |      |  |    |  |      |
+  //    |      |  |    |  |      |
+  //    +-+----+--+----+--+---+--+
+  //      |         P         |
+  //      |                   |
+  //      |                   |
+  //      |                   |
+  //      +-------------------+
+  //
+
+  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayIdList list = display::test::CreateDisplayIdListN(
+      4, primary_id, primary_id + 1, primary_id + 2, primary_id + 3);
+  display::DisplayLayoutBuilder builder(primary_id);
+  builder.AddDisplayPlacement(list[1], primary_id,
+                              display::DisplayPlacement::TOP, -110);
+  builder.AddDisplayPlacement(list[2], primary_id,
+                              display::DisplayPlacement::TOP, 300);
+  builder.AddDisplayPlacement(list[3], primary_id,
+                              display::DisplayPlacement::TOP, 600);
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+      list, builder.Build());
+  UpdateDisplay("1200x500,600x500,600x500,600x500");
+
+  // The expected layout should be:
+  //
+  //    +---------+---------+---------+
+  //    |    1    |    2    |    3    |
+  //    |         |         |         |
+  //    |         |         |         |
+  //    |         |         |         |
+  //    +-+-------+---------+-+-------+
+  //      |         P         |
+  //      |                   |
+  //      |                   |
+  //      |                   |
+  //      +-------------------+
+  //
+
+  EXPECT_EQ(4U, display_manager()->GetNumDisplays());
+  EXPECT_EQ("0,0 1200x500",
+            display_manager()->GetDisplayAt(0).bounds().ToString());
+  EXPECT_EQ("-110,-500 600x500",
+            display_manager()->GetDisplayAt(1).bounds().ToString());
+  EXPECT_EQ("490,-500 600x500",
+            display_manager()->GetDisplayAt(2).bounds().ToString());
+  EXPECT_EQ("1090,-500 600x500",
+            display_manager()->GetDisplayAt(3).bounds().ToString());
+}
+
+TEST_P(DisplayManagerTest, NoOverlappedDisplaysAfterResolutionChange) {
+  // Starting with a good layout with no overlaps, test that if the resolution
+  // of one of the displays is changed, it won't result in any overlaps.
+  //
+  //         +-------------------+
+  //         |         4         |
+  //         |                   |
+  //         |                   |
+  //         |                   |
+  //    +----+----+---------+----+----+
+  //    |    1    |    2    |    3    |
+  //    |         |         |         |
+  //    |         |         |         |
+  //    |         |         |         |
+  //    +----+----+---------+----+----+
+  //         |         p         |
+  //         |                   |
+  //         |                   |
+  //         |                   |
+  //         +-------------------+
+  //
+
+  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayIdList list = display::test::CreateDisplayIdListN(
+      5, primary_id, primary_id + 1, primary_id + 2, primary_id + 3,
+      primary_id + 4);
+  display::DisplayLayoutBuilder builder(primary_id);
+  builder.AddDisplayPlacement(list[1], primary_id,
+                              display::DisplayPlacement::TOP, -250);
+  builder.AddDisplayPlacement(list[2], primary_id,
+                              display::DisplayPlacement::TOP, 250);
+  builder.AddDisplayPlacement(list[3], primary_id,
+                              display::DisplayPlacement::TOP, 750);
+  builder.AddDisplayPlacement(list[4], list[1], display::DisplayPlacement::TOP,
+                              250);
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+      list, builder.Build());
+  UpdateDisplay("1000x500,500x500,500x500,500x500,1000x500");
+
+  // There should be no overlap at all.
+  EXPECT_EQ(5U, display_manager()->GetNumDisplays());
+  EXPECT_EQ("0,0 1000x500",
+            display_manager()->GetDisplayAt(0).bounds().ToString());
+  EXPECT_EQ("-250,-500 500x500",
+            display_manager()->GetDisplayAt(1).bounds().ToString());
+  EXPECT_EQ("250,-500 500x500",
+            display_manager()->GetDisplayAt(2).bounds().ToString());
+  EXPECT_EQ("750,-500 500x500",
+            display_manager()->GetDisplayAt(3).bounds().ToString());
+  EXPECT_EQ("0,-1000 1000x500",
+            display_manager()->GetDisplayAt(4).bounds().ToString());
+
+  // Change the resolution of display (2) and expect the following layout.
+  //
+  //         +-------------------+
+  //         |         4         |
+  //         |                   |
+  //         |                   |
+  //         |                   |
+  //         +----+-------------++
+  //              |      2      |
+  //    +---------+             +---------+
+  //    |    1    |             |    3    |
+  //    |         |             |         |
+  //    |         |             |         |
+  //    |         |             |         |
+  //    +----+----+-------------++--------+
+  //         |         p         |
+  //         |                   |
+  //         |                   |
+  //         |                   |
+  //         +-------------------+
+  //
+
+  UpdateDisplay("1000x500,500x500,600x600,500x500,1000x500");
+
+  EXPECT_EQ(5U, display_manager()->GetNumDisplays());
+  EXPECT_EQ("0,0 1000x500",
+            display_manager()->GetDisplayAt(0).bounds().ToString());
+  EXPECT_EQ("-250,-500 500x500",
+            display_manager()->GetDisplayAt(1).bounds().ToString());
+  EXPECT_EQ("250,-600 600x600",
+            display_manager()->GetDisplayAt(2).bounds().ToString());
+  EXPECT_EQ("850,-500 500x500",
+            display_manager()->GetDisplayAt(3).bounds().ToString());
+  EXPECT_EQ("0,-1100 1000x500",
+            display_manager()->GetDisplayAt(4).bounds().ToString());
 }
 
 TEST_P(DisplayManagerTest, NoMirrorInThreeDisplays) {

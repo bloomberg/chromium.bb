@@ -86,10 +86,11 @@ class DISPLAY_EXPORT DisplayLayout final {
   // Applies the layout to the displays in |display_list|.
   // |updated_ids| (optional) contains the ids for displays whose bounds have
   // changed. |minimum_offset_overlap| represents the minimum required overlap
-  // between displays.
+  // between displays. Any overlap between displays will be fixed, and the
+  // display placement will be fixed.
   void ApplyToDisplayList(Displays* display_list,
                           std::vector<int64_t>* updated_ids,
-                          int minimum_offset_overlap) const;
+                          int minimum_offset_overlap);
 
   // Validates the layout object.
   static bool Validate(const DisplayIdList& list, const DisplayLayout& layout);

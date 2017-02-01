@@ -153,7 +153,6 @@ bool DisplayConfigurationController::IsLimited() {
 
 void DisplayConfigurationController::SetDisplayLayoutImpl(
     std::unique_ptr<display::DisplayLayout> layout) {
-  // TODO(oshima/stevenjb): Add support for 3+ displays.
   display_manager_->SetLayoutForCurrentDisplays(std::move(layout));
   if (display_animator_)
     display_animator_->StartFadeInAnimation();

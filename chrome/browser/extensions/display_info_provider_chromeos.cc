@@ -515,7 +515,7 @@ bool DisplayInfoProviderChromeOS::SetDisplayLayout(
   display::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   display::DisplayLayoutBuilder builder(
-      display_manager->GetCurrentDisplayLayout());
+      display_manager->GetCurrentResolvedDisplayLayout());
 
   bool have_root = false;
   builder.ClearPlacements();
@@ -626,7 +626,7 @@ DisplayInfoProviderChromeOS::GetDisplayLayout() {
   DisplayLayoutList result;
   for (const display::Display& display : displays) {
     const display::DisplayPlacement placement =
-        display_manager->GetCurrentDisplayLayout().FindPlacementById(
+        display_manager->GetCurrentResolvedDisplayLayout().FindPlacementById(
             display.id());
     if (placement.display_id == display::kInvalidDisplayId)
       continue;

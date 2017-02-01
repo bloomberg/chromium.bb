@@ -128,6 +128,9 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // Returns the display layout used for current displays.
   const DisplayLayout& GetCurrentDisplayLayout() const;
 
+  // Returns the actual display layout after it has been resolved and applied.
+  const DisplayLayout& GetCurrentResolvedDisplayLayout() const;
+
   // Returns the current display list.
   DisplayIdList GetCurrentDisplayIdList() const;
 
@@ -412,7 +415,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   // Applies the |layout| and updates the bounds of displays in |display_list|.
   // |updated_ids| contains the ids for displays whose bounds have changed.
-  void ApplyDisplayLayout(const DisplayLayout& layout,
+  void ApplyDisplayLayout(DisplayLayout* layout,
                           Displays* display_list,
                           std::vector<int64_t>* updated_ids);
 
@@ -426,6 +429,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   std::unique_ptr<Screen> screen_;
 
   std::unique_ptr<DisplayLayoutStore> layout_store_;
+
+  std::unique_ptr<DisplayLayout> current_resolved_layout_;
 
   int64_t first_display_id_ = kInvalidDisplayId;
 
