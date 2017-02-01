@@ -256,6 +256,8 @@ void Display::CreateRootWindow(const gfx::Size& size) {
   root_.reset(window_server_->CreateServerWindow(
       display_manager()->GetAndAdvanceNextRootId(),
       ServerWindow::Properties()));
+  root_->set_event_targeting_policy(
+      mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   root_->SetBounds(gfx::Rect(size));
   root_->SetVisible(true);
   focus_controller_ = base::MakeUnique<FocusController>(this, root_.get());

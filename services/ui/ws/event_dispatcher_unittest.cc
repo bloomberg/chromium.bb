@@ -286,7 +286,6 @@ std::unique_ptr<ServerWindow> EventDispatcherTest::CreateChildWindowWithParent(
       new ServerWindow(window_delegate_.get(), id));
   parent->Add(child.get());
   child->SetVisible(true);
-  EnableHitTest(child.get());
   return child;
 }
 
@@ -323,7 +322,6 @@ void EventDispatcherTest::SetUp() {
   window_delegate_ = base::MakeUnique<TestServerWindowDelegate>();
   root_window_ =
       base::MakeUnique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
-  EnableHitTest(root_window_.get());
   window_delegate_->set_root_window(root_window_.get());
   root_window_->SetVisible(true);
 
@@ -1663,11 +1661,11 @@ TEST_F(EventDispatcherTest, ModalWindowMultipleSystemModals) {
 
 TEST_F(EventDispatcherTest, CaptureNotResetOnParentChange) {
   std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-  DisableHitTest(w1.get());
+  w1->set_event_targeting_policy(mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   std::unique_ptr<ServerWindow> w11 =
       CreateChildWindowWithParent(WindowId(1, 4), w1.get());
   std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
-  DisableHitTest(w2.get());
+  w2->set_event_targeting_policy(mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   w1->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -1713,7 +1711,8 @@ TEST_F(EventDispatcherTest, ChangeCaptureFromClientToNonclient) {
 
 TEST_F(EventDispatcherTest, MoveMouseFromNoTargetToValidTarget) {
   ServerWindow* root = root_window();
-  DisableHitTest(root);
+  root->set_event_targeting_policy(
+      mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -1738,7 +1737,8 @@ TEST_F(EventDispatcherTest, MoveMouseFromNoTargetToValidTarget) {
 
 TEST_F(EventDispatcherTest, NoTargetToTargetWithMouseDown) {
   ServerWindow* root = root_window();
-  DisableHitTest(root);
+  root->set_event_targeting_policy(
+      mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -1770,7 +1770,8 @@ TEST_F(EventDispatcherTest, NoTargetToTargetWithMouseDown) {
 
 TEST_F(EventDispatcherTest, DontSendExitToSameClientWhenCaptureChanges) {
   ServerWindow* root = root_window();
-  DisableHitTest(root);
+  root->set_event_targeting_policy(
+      mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   std::unique_ptr<ServerWindow> c1 = CreateChildWindow(WindowId(1, 3));
   std::unique_ptr<ServerWindow> c2 = CreateChildWindow(WindowId(1, 4));
 

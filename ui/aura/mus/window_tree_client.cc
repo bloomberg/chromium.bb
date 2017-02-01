@@ -827,10 +827,11 @@ void WindowTreeClient::SetCanAcceptDrops(Id window_id, bool can_accept_drops) {
   tree_->SetCanAcceptDrops(window_id, can_accept_drops);
 }
 
-void WindowTreeClient::SetCanAcceptEvents(WindowMus* window,
-                                          bool can_accept_events) {
+void WindowTreeClient::SetEventTargetingPolicy(
+    WindowMus* window,
+    ui::mojom::EventTargetingPolicy policy) {
   DCHECK(tree_);
-  tree_->SetCanAcceptEvents(window->server_id(), can_accept_events);
+  tree_->SetEventTargetingPolicy(window->server_id(), policy);
 }
 
 void WindowTreeClient::OnEmbed(ClientSpecificId client_id,

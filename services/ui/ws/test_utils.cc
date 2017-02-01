@@ -525,6 +525,8 @@ ServerWindow* WindowEventTargetingHelper::CreatePrimaryTree(
   const uint32_t embed_flags = 0;
   wm_tree->Embed(embed_window_id, std::move(client), embed_flags);
   ServerWindow* embed_window = wm_tree->GetWindowByClientId(embed_window_id);
+  embed_window->set_event_targeting_policy(
+      mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   WindowTree* tree1 = window_server()->GetTreeWithRoot(embed_window);
   EXPECT_NE(nullptr, tree1);
   EXPECT_NE(tree1, wm_tree);
@@ -554,7 +556,6 @@ void WindowEventTargetingHelper::CreateSecondaryTree(
 
   child1->SetVisible(true);
   child1->SetBounds(window_bounds);
-  EnableHitTest(child1);
 
   TestWindowTreeClient* embed_client =
       ws_test_helper_.window_server_delegate()->last_client();

@@ -295,8 +295,10 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
         params.parent->GetHost()->window(), window());
   }
 
-  if (!params.accept_events)
-    aura::WindowPortMus::Get(window())->SetCanAcceptEvents(false);
+  if (!params.accept_events) {
+    aura::WindowPortMus::Get(window())->SetEventTargetingPolicy(
+        ui::mojom::EventTargetingPolicy::NONE);
+  }
 }
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(

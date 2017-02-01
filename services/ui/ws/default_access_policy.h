@@ -52,7 +52,7 @@ class DefaultAccessPolicy : public AccessPolicy {
   bool CanSetClientArea(const ServerWindow* window) const override;
   bool CanSetHitTestMask(const ServerWindow* window) const override;
   bool CanSetAcceptDrops(const ServerWindow* window) const override;
-  bool CanSetAcceptEvents(const ServerWindow* window) const override;
+  bool CanSetEventTargetingPolicy(const ServerWindow* window) const override;
   bool CanStackAbove(const ServerWindow* above,
                      const ServerWindow* below) const override;
   bool CanStackAtTop(const ServerWindow* window) const override;

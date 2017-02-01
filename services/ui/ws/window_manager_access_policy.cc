@@ -136,7 +136,7 @@ bool WindowManagerAccessPolicy::CanSetAcceptDrops(
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanSetAcceptEvents(
+bool WindowManagerAccessPolicy::CanSetEventTargetingPolicy(
     const ServerWindow* window) const {
   return WasCreatedByThisClient(window) ||
          delegate_->HasRootForAccessPolicy(window);

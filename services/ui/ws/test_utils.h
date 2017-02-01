@@ -106,8 +106,9 @@ class WindowTreeTestApi {
   void set_window_manager_internal(mojom::WindowManager* wm_internal) {
     tree_->window_manager_internal_ = wm_internal;
   }
-  void SetCanAcceptEvents(Id transport_window_id, bool can_accept_events) {
-    tree_->SetCanAcceptEvents(transport_window_id, can_accept_events);
+  void SetEventTargetingPolicy(Id transport_window_id,
+                               mojom::EventTargetingPolicy policy) {
+    tree_->SetEventTargetingPolicy(transport_window_id, policy);
   }
   void AckOldestEvent(
       mojom::EventResult result = mojom::EventResult::UNHANDLED) {

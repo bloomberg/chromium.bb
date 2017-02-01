@@ -66,6 +66,7 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -248,6 +249,11 @@ void ReparentAllWindows(WmWindow* src, WmWindow* dst) {
 WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
   WmWindow* window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_UNKNOWN,
                                                ui::LAYER_NOT_DRAWN);
+  if (WmShell::Get()->IsRunningInMash()) {
+    aura::WindowPortMus::Get(window->aura_window())
+        ->SetEventTargetingPolicy(
+            ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+  }
   window->SetShellWindowId(window_id);
   window->SetName(name);
   parent->AddChild(window);

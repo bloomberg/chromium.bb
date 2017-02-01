@@ -11,8 +11,6 @@
 namespace ui {
 namespace ws {
 
-class ServerWindow;
-
 // Use to poke at the internals of ServerWindowCompositorFrameSinkManager.
 class ServerWindowCompositorFrameSinkManagerTestApi {
  public:
@@ -28,10 +26,6 @@ class ServerWindowCompositorFrameSinkManagerTestApi {
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindowCompositorFrameSinkManagerTestApi);
 };
-
-// Use to make |window| a target for events.
-void EnableHitTest(ServerWindow* window);
-void DisableHitTest(ServerWindow* window);
 
 }  // namespace ws
 }  // namespace ui

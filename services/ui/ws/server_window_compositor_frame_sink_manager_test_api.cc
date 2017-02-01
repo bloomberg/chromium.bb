@@ -27,17 +27,5 @@ void ServerWindowCompositorFrameSinkManagerTestApi::
   manager_->frame_sink_data_.reset();
 }
 
-void EnableHitTest(ServerWindow* window) {
-  ServerWindowCompositorFrameSinkManagerTestApi test_api(
-      window->GetOrCreateCompositorFrameSinkManager());
-  test_api.CreateEmptyDefaultCompositorFrameSink();
-}
-
-void DisableHitTest(ServerWindow* window) {
-  ServerWindowCompositorFrameSinkManagerTestApi test_api(
-      window->GetOrCreateCompositorFrameSinkManager());
-  test_api.DestroyDefaultCompositorFrameSink();
-}
-
 }  // namespace ws
 }  // namespace ui

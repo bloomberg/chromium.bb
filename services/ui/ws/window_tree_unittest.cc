@@ -223,7 +223,9 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   ServerWindow* wm_root = FirstRoot(wm_tree());
   ASSERT_TRUE(wm_root);
   wm_root->SetBounds(gfx::Rect(0, 0, 100, 100));
-  EnableHitTest(wm_root);
+  // This tests expects |wm_root| to be a possible target.
+  wm_root->set_event_targeting_policy(
+      mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   display()->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request(&client);
@@ -244,7 +246,6 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   ASSERT_TRUE(child1);
   child1->SetVisible(true);
   child1->SetBounds(gfx::Rect(20, 20, 20, 20));
-  EnableHitTest(child1);
 
   TestWindowTreeClient* tree1_client = last_window_tree_client();
   tree1_client->tracker()->changes()->clear();
@@ -581,7 +582,6 @@ TEST_F(WindowTreeTest, WindowReorderingChangesCursor) {
   EXPECT_TRUE(tree->AddWindow(embed_window_id, child2_id));
   child2->SetVisible(true);
   child2->SetBounds(gfx::Rect(20, 20, 20, 20));
-  EnableHitTest(child2);
 
   // Give each window a different cursor.
   window1->SetPredefinedCursor(mojom::Cursor::IBEAM);
@@ -607,7 +607,9 @@ TEST_F(WindowTreeTest, EventAck) {
   ServerWindow* wm_root = FirstRoot(wm_tree());
   ASSERT_TRUE(wm_root);
   wm_root->SetBounds(gfx::Rect(0, 0, 100, 100));
-  EnableHitTest(wm_root);
+  // This tests expects |wm_root| to be a possible target.
+  wm_root->set_event_targeting_policy(
+      mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
 
   wm_client()->tracker()->changes()->clear();
   DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));
@@ -1305,10 +1307,13 @@ TEST_F(WindowTreeTest, SetCanAcceptEvents) {
   ServerWindow* window = nullptr;
   EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_client, &tree, &window));
 
-  EXPECT_TRUE(window->can_accept_events());
-  WindowTreeTestApi(tree).SetCanAcceptEvents(
-      ClientWindowIdForWindow(tree, window).id, false);
-  EXPECT_FALSE(window->can_accept_events());
+  EXPECT_EQ(mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS,
+            window->event_targeting_policy());
+  WindowTreeTestApi(tree).SetEventTargetingPolicy(
+      ClientWindowIdForWindow(tree, window).id,
+      mojom::EventTargetingPolicy::NONE);
+  EXPECT_EQ(mojom::EventTargetingPolicy::NONE,
+            window->event_targeting_policy());
 }
 
 // Verifies wm observers capture changes in client.

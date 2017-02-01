@@ -151,7 +151,8 @@ bool DefaultAccessPolicy::CanSetAcceptDrops(const ServerWindow* window) const {
          delegate_->HasRootForAccessPolicy(window);
 }
 
-bool DefaultAccessPolicy::CanSetAcceptEvents(const ServerWindow* window) const {
+bool DefaultAccessPolicy::CanSetEventTargetingPolicy(
+    const ServerWindow* window) const {
   return WasCreatedByThisClient(window) ||
          delegate_->HasRootForAccessPolicy(window);
 }

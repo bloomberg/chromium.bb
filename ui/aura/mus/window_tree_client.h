@@ -119,7 +119,8 @@ class AURA_EXPORT WindowTreeClient
 
   void SetCanFocus(Window* window, bool can_focus);
   void SetCanAcceptDrops(Id window_id, bool can_accept_drops);
-  void SetCanAcceptEvents(WindowMus* window, bool can_accept_events);
+  void SetEventTargetingPolicy(WindowMus* window,
+                               ui::mojom::EventTargetingPolicy policy);
   void SetPredefinedCursor(WindowMus* window,
                            ui::mojom::Cursor old_cursor,
                            ui::mojom::Cursor new_cursor);

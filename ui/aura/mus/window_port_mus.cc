@@ -66,8 +66,9 @@ void WindowPortMus::SetPredefinedCursor(ui::mojom::Cursor cursor_id) {
   predefined_cursor_ = cursor_id;
 }
 
-void WindowPortMus::SetCanAcceptEvents(bool value) {
-  window_tree_client_->SetCanAcceptEvents(this, value);
+void WindowPortMus::SetEventTargetingPolicy(
+    ui::mojom::EventTargetingPolicy policy) {
+  window_tree_client_->SetEventTargetingPolicy(this, policy);
 }
 
 void WindowPortMus::Embed(

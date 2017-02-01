@@ -35,7 +35,6 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       non_client_cursor_id_(mojom::Cursor::CURSOR_NULL),
       opacity_(1),
       can_focus_(true),
-      can_accept_events_(true),
       properties_(properties),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer

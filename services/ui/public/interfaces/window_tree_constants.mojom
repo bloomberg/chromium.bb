@@ -35,6 +35,21 @@ enum EventResult {
   UNHANDLED,
 };
 
+enum EventTargetingPolicy {
+  // The target is a valid target for events, but none of its descendants are
+  // considered.
+  TARGET_ONLY,
+
+  // The target and its descendants are possible targets. This is the default.
+  TARGET_AND_DESCENDANTS,
+
+  // The target is not a valid target, but its descendants are possible targets.
+  DESCENDANTS_ONLY,
+
+  // Neither the target nor its descendants are valid targets.
+  NONE
+};
+
 // A bitfield of what drag operations are possible.
 const uint32 kDropEffectNone = 0;
 const uint32 kDropEffectMove = 1;

@@ -1564,13 +1564,13 @@ void WindowTree::SetCanFocus(Id transport_window_id, bool can_focus) {
   }
 }
 
-void WindowTree::SetCanAcceptEvents(Id transport_window_id,
-                                    bool can_accept_events) {
+void WindowTree::SetEventTargetingPolicy(Id transport_window_id,
+                                         mojom::EventTargetingPolicy policy) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
   // TODO(riajiang): check |event_queue_| is empty for |window|.
-  if (window && access_policy_->CanSetAcceptEvents(window))
-    window->set_can_accept_events(can_accept_events);
+  if (window && access_policy_->CanSetEventTargetingPolicy(window))
+    window->set_event_targeting_policy(policy);
 }
 
 void WindowTree::SetPredefinedCursor(uint32_t change_id,
