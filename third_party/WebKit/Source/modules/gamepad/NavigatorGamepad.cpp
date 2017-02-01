@@ -170,8 +170,7 @@ NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
     : Supplement<Navigator>(navigator),
       ContextLifecycleObserver(navigator.frame() ? navigator.frame()->document()
                                                  : nullptr),
-      PlatformEventController(navigator.frame() ? navigator.frame()->page()
-                                                : nullptr),
+      PlatformEventController(navigator.frame()),
       m_dispatchOneEventRunner(AsyncMethodRunner<NavigatorGamepad>::create(
           this,
           &NavigatorGamepad::dispatchOneEvent)) {

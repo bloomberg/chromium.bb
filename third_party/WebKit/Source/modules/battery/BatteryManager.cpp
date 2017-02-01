@@ -22,7 +22,7 @@ BatteryManager::~BatteryManager() {}
 
 BatteryManager::BatteryManager(ExecutionContext* context)
     : SuspendableObject(context),
-      PlatformEventController(toDocument(context)->page()) {}
+      PlatformEventController(toDocument(context)->frame()) {}
 
 ScriptPromise BatteryManager::startRequest(ScriptState* scriptState) {
   if (!m_batteryProperty) {

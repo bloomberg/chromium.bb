@@ -43,7 +43,7 @@ ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
     WebScreenOrientationClient* client)
     : ScreenOrientationController(frame),
       ContextLifecycleObserver(frame.document()),
-      PlatformEventController(frame.page()),
+      PlatformEventController(&frame),
       m_client(client),
       m_dispatchEventTimer(
           TaskRunnerHelper::get(TaskType::MiscPlatformAPI, &frame),

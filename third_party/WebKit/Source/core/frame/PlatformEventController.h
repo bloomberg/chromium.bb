@@ -25,7 +25,7 @@ class CORE_EXPORT PlatformEventController : public PageVisibilityObserver {
   virtual void didUpdateData() = 0;
 
  protected:
-  explicit PlatformEventController(Page*);
+  explicit PlatformEventController(LocalFrame*);
   virtual ~PlatformEventController();
 
   virtual void registerWithDispatcher() = 0;

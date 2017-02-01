@@ -8,8 +8,8 @@
 
 namespace blink {
 
-PlatformEventController::PlatformEventController(Page* page)
-    : PageVisibilityObserver(page),
+PlatformEventController::PlatformEventController(LocalFrame* frame)
+    : PageVisibilityObserver(frame ? frame->page() : nullptr),
       m_hasEventListener(false),
       m_isActive(false),
       m_timer(this, &PlatformEventController::oneShotCallback) {}

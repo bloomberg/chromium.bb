@@ -12,7 +12,7 @@ namespace blink {
 
 DeviceSingleWindowEventController::DeviceSingleWindowEventController(
     Document& document)
-    : PlatformEventController(document.page()),
+    : PlatformEventController(document.frame()),
       m_needsCheckingNullEvents(true),
       m_document(document) {
   document.domWindow()->registerEventListenerObserver(this);
