@@ -1715,6 +1715,7 @@ test("browser_tests") {
       "../browser/sessions/session_restore_browsertest_chromeos.cc",
       "../browser/sessions/tab_restore_browsertest.cc",
       "../browser/site_details_browsertest.cc",
+      "../browser/ui/ask_google_for_suggestions_dialog_browsertest.cc",
 
       # If this list is used on Android in the future, these browser/speech/*
       # files will probably not be applicable.
@@ -4783,6 +4784,7 @@ test("unit_tests") {
       "../../ui/views/controls/webview/webview_unittest.cc",
       "../browser/ui/views/apps/app_info_dialog/app_info_dialog_views_unittest.cc",
       "../browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc",
+      "../browser/ui/views/confirm_bubble_views_unittest.cc",
       "../browser/ui/views/website_settings/website_settings_popup_view_unittest.cc",
     ]
     if (is_chromeos) {
@@ -4803,7 +4805,6 @@ test("unit_tests") {
         "../browser/ui/views/bookmarks/bookmark_context_menu_unittest.cc",
         "../browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc",
         "../browser/ui/views/bookmarks/bookmark_menu_delegate_unittest.cc",
-        "../browser/ui/views/confirm_bubble_views_unittest.cc",
         "../browser/ui/views/device_chooser_content_view_unittest.cc",
         "../browser/ui/views/download/download_item_view_unittest.cc",
         "../browser/ui/views/extensions/chooser_dialog_view_unittest.cc",

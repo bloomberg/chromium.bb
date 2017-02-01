@@ -41,27 +41,6 @@ const int kButtonVEdgeMargin = 6;
 // left or right of a button.
 const int kButtonHEdgeMargin = 7;
 
-namespace chrome {
-
-void ShowConfirmBubble(gfx::NativeWindow window,
-                       gfx::NativeView anchor_view,
-                       const gfx::Point& origin,
-                       std::unique_ptr<ConfirmBubbleModel> model) {
-  // Create a custom NSViewController that manages a bubble view, and add it to
-  // a child to the specified |anchor_view|. This controller will be
-  // automatically deleted when it loses first-responder status.
-  ConfirmBubbleController* controller =
-      [[ConfirmBubbleController alloc] initWithParent:anchor_view
-                                               origin:origin.ToCGPoint()
-                                                model:std::move(model)];
-  [anchor_view addSubview:[controller view]
-               positioned:NSWindowAbove
-               relativeTo:nil];
-  [[anchor_view window] makeFirstResponder:[controller view]];
-}
-
-}  // namespace chrome
-
 // An interface that is derived from NSTextView and does not accept
 // first-responder status, i.e. a NSTextView-derived class that never becomes
 // the first responder. When we click a NSTextView object, it becomes the first
