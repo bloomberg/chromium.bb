@@ -291,6 +291,16 @@ void RecordDescriptorReadValueOutcome(UMAGATTOperationOutcome error);
 // QueryCacheForDescriptor fails.
 void RecordDescriptorReadValueOutcome(CacheQueryOutcome outcome);
 
+// Descriptor.writeValue() Metrics
+// There should be a call to this function for every call to
+// Send(BluetoothMsg_ReadDescriptorValueSuccess) and
+// Send(BluetoothMsg_ReadDescriptorValueError).
+void RecordDescriptorWriteValueOutcome(UMAGATTOperationOutcome error);
+
+// Records the outcome of a cache query for writeValue. Should only be called if
+// QueryCacheForDescriptor fails.
+void RecordDescriptorWriteValueOutcome(CacheQueryOutcome outcome);
+
 enum class UMARSSISignalStrengthLevel {
   LESS_THAN_OR_EQUAL_TO_MIN_RSSI,
   LEVEL_0,

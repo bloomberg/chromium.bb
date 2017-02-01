@@ -780,6 +780,8 @@ void WebBluetoothServiceImpl::RemoteDescriptorWriteValue(
     const std::vector<uint8_t>& value,
     const RemoteDescriptorWriteValueCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(
+      UMAWebBluetoothFunction::DESCRIPTOR_WRITE_VALUE);
 
   // We perform the length check on the renderer side. So if we
   // get a value with length > 512, we can assume it's a hostile
@@ -797,12 +799,14 @@ void WebBluetoothServiceImpl::RemoteDescriptorWriteValue(
   }
 
   if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    RecordDescriptorWriteValueOutcome(query_result.outcome);
     callback.Run(query_result.GetWebResult());
     return;
   }
 
   if (BluetoothBlocklist::Get().IsExcludedFromWrites(
           query_result.descriptor->GetUUID())) {
+    RecordDescriptorWriteValueOutcome(UMAGATTOperationOutcome::BLOCKLISTED);
     callback.Run(blink::mojom::WebBluetoothResult::BLOCKLISTED_WRITE);
     return;
   }
@@ -1043,7 +1047,7 @@ void WebBluetoothServiceImpl::OnDescriptorWriteValueFailed(
     const RemoteDescriptorWriteValueCallback& callback,
     device::BluetoothRemoteGattService::GattErrorCode error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(683477) reporting for .writeValue()
+  RecordDescriptorWriteValueOutcome(UMAGATTOperationOutcome::SUCCESS);
   callback.Run(TranslateGATTErrorAndRecord(error_code,
                                            UMAGATTOperation::DESCRIPTOR_WRITE));
 }

@@ -284,7 +284,7 @@ void RecordGATTOperationOutcome(UMAGATTOperation operation,
       RecordDescriptorReadValueOutcome(outcome);
       return;
     case UMAGATTOperation::DESCRIPTOR_WRITE:
-      // TODO(683477) reporting for .writeValue()
+      RecordDescriptorWriteValueOutcome(outcome);
       return;
     case UMAGATTOperation::COUNT:
       NOTREACHED();
@@ -368,6 +368,19 @@ void RecordDescriptorReadValueOutcome(UMAGATTOperationOutcome outcome) {
 
 void RecordDescriptorReadValueOutcome(CacheQueryOutcome outcome) {
   RecordDescriptorReadValueOutcome(
+      TranslateCacheQueryOutcomeToGATTOperationOutcome(outcome));
+}
+
+// Descriptor.writeValue
+
+void RecordDescriptorWriteValueOutcome(UMAGATTOperationOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.Descriptor.WriteValue.Outcome",
+                            static_cast<int>(outcome),
+                            static_cast<int>(UMAGATTOperationOutcome::COUNT));
+}
+
+void RecordDescriptorWriteValueOutcome(CacheQueryOutcome outcome) {
+  RecordDescriptorWriteValueOutcome(
       TranslateCacheQueryOutcomeToGATTOperationOutcome(outcome));
 }
 
