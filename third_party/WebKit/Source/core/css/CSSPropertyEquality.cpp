@@ -268,7 +268,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop,
       return a.top() == b.top();
     case CSSPropertyVerticalAlign:
       return a.verticalAlign() == b.verticalAlign() &&
-             (a.verticalAlign() != EVerticalAlign::Length ||
+             (a.verticalAlign() != EVerticalAlign::kLength ||
               a.getVerticalAlignLength() == b.getVerticalAlignLength());
     case CSSPropertyVisibility:
       return a.visibility() == b.visibility();

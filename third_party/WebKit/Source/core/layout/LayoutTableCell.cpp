@@ -249,28 +249,28 @@ void LayoutTableCell::computeIntrinsicPadding(int rowHeight,
 
   int intrinsicPaddingBefore = 0;
   switch (verticalAlign) {
-    case EVerticalAlign::Sub:
-    case EVerticalAlign::Super:
-    case EVerticalAlign::TextTop:
-    case EVerticalAlign::TextBottom:
-    case EVerticalAlign::Length:
-    case EVerticalAlign::Baseline: {
+    case EVerticalAlign::kSub:
+    case EVerticalAlign::kSuper:
+    case EVerticalAlign::kTextTop:
+    case EVerticalAlign::kTextBottom:
+    case EVerticalAlign::kLength:
+    case EVerticalAlign::kBaseline: {
       int baseline = cellBaselinePosition();
       if (baseline > borderBefore() + paddingBefore())
         intrinsicPaddingBefore = section()->rowBaseline(rowIndex()) -
                                  (baseline - oldIntrinsicPaddingBefore);
       break;
     }
-    case EVerticalAlign::Top:
+    case EVerticalAlign::kTop:
       break;
-    case EVerticalAlign::Middle:
+    case EVerticalAlign::kMiddle:
       intrinsicPaddingBefore =
           (rowHeight - logicalHeightWithoutIntrinsicPadding) / 2;
       break;
-    case EVerticalAlign::Bottom:
+    case EVerticalAlign::kBottom:
       intrinsicPaddingBefore = rowHeight - logicalHeightWithoutIntrinsicPadding;
       break;
-    case EVerticalAlign::BaselineMiddle:
+    case EVerticalAlign::kBaselineMiddle:
       break;
   }
 
@@ -1404,7 +1404,7 @@ void LayoutTableCell::scrollbarsChanged(bool horizontalScrollbarChanged,
 
   // Shrink our intrinsic padding as much as possible to accommodate the
   // scrollbar.
-  if (style()->verticalAlign() == EVerticalAlign::Middle) {
+  if (style()->verticalAlign() == EVerticalAlign::kMiddle) {
     LayoutUnit totalHeight = logicalHeight();
     LayoutUnit heightWithoutIntrinsicPadding =
         totalHeight - intrinsicPaddingBefore() - intrinsicPaddingAfter();

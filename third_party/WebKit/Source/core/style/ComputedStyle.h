@@ -1834,7 +1834,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // vertical-align
   static EVerticalAlign initialVerticalAlign() {
-    return EVerticalAlign::Baseline;
+    return EVerticalAlign::kBaseline;
   }
   EVerticalAlign verticalAlign() const {
     return static_cast<EVerticalAlign>(m_nonInheritedData.m_verticalAlign);
@@ -1846,7 +1846,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_verticalAlign = static_cast<unsigned>(v);
   }
   void setVerticalAlignLength(const Length& length) {
-    setVerticalAlign(EVerticalAlign::Length);
+    setVerticalAlign(EVerticalAlign::kLength);
     SET_VAR(m_box, m_verticalAlign, length);
   }
 

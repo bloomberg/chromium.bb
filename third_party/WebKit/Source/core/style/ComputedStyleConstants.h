@@ -155,16 +155,16 @@ enum class EOverflow : unsigned {
 };
 
 enum class EVerticalAlign : unsigned {
-  Baseline,
-  Middle,
-  Sub,
-  Super,
-  TextTop,
-  TextBottom,
-  Top,
-  Bottom,
-  BaselineMiddle,
-  Length
+  kBaseline,
+  kMiddle,
+  kSub,
+  kSuper,
+  kTextTop,
+  kTextBottom,
+  kTop,
+  kBottom,
+  kBaselineMiddle,
+  kLength
 };
 
 enum class ETableLayout : unsigned { kAuto, kFixed };

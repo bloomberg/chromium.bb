@@ -2612,34 +2612,34 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EVerticalAlign a)
     : CSSValue(IdentifierClass) {
   switch (a) {
-    case EVerticalAlign::Top:
+    case EVerticalAlign::kTop:
       m_valueID = CSSValueTop;
       break;
-    case EVerticalAlign::Bottom:
+    case EVerticalAlign::kBottom:
       m_valueID = CSSValueBottom;
       break;
-    case EVerticalAlign::Middle:
+    case EVerticalAlign::kMiddle:
       m_valueID = CSSValueMiddle;
       break;
-    case EVerticalAlign::Baseline:
+    case EVerticalAlign::kBaseline:
       m_valueID = CSSValueBaseline;
       break;
-    case EVerticalAlign::TextBottom:
+    case EVerticalAlign::kTextBottom:
       m_valueID = CSSValueTextBottom;
       break;
-    case EVerticalAlign::TextTop:
+    case EVerticalAlign::kTextTop:
       m_valueID = CSSValueTextTop;
       break;
-    case EVerticalAlign::Sub:
+    case EVerticalAlign::kSub:
       m_valueID = CSSValueSub;
       break;
-    case EVerticalAlign::Super:
+    case EVerticalAlign::kSuper:
       m_valueID = CSSValueSuper;
       break;
-    case EVerticalAlign::BaselineMiddle:
+    case EVerticalAlign::kBaselineMiddle:
       m_valueID = CSSValueWebkitBaselineMiddle;
       break;
-    case EVerticalAlign::Length:
+    case EVerticalAlign::kLength:
       m_valueID = CSSValueInvalid;
   }
 }
@@ -2648,29 +2648,29 @@ template <>
 inline EVerticalAlign CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueTop:
-      return EVerticalAlign::Top;
+      return EVerticalAlign::kTop;
     case CSSValueBottom:
-      return EVerticalAlign::Bottom;
+      return EVerticalAlign::kBottom;
     case CSSValueMiddle:
-      return EVerticalAlign::Middle;
+      return EVerticalAlign::kMiddle;
     case CSSValueBaseline:
-      return EVerticalAlign::Baseline;
+      return EVerticalAlign::kBaseline;
     case CSSValueTextBottom:
-      return EVerticalAlign::TextBottom;
+      return EVerticalAlign::kTextBottom;
     case CSSValueTextTop:
-      return EVerticalAlign::TextTop;
+      return EVerticalAlign::kTextTop;
     case CSSValueSub:
-      return EVerticalAlign::Sub;
+      return EVerticalAlign::kSub;
     case CSSValueSuper:
-      return EVerticalAlign::Super;
+      return EVerticalAlign::kSuper;
     case CSSValueWebkitBaselineMiddle:
-      return EVerticalAlign::BaselineMiddle;
+      return EVerticalAlign::kBaselineMiddle;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return EVerticalAlign::Top;
+  return EVerticalAlign::kTop;
 }
 
 template <>

@@ -676,17 +676,17 @@ LayoutUnit RootInlineBox::verticalPositionForBox(
 
   LayoutUnit verticalPosition;
   EVerticalAlign verticalAlign = boxModel.style()->verticalAlign();
-  if (verticalAlign == EVerticalAlign::Top ||
-      verticalAlign == EVerticalAlign::Bottom)
+  if (verticalAlign == EVerticalAlign::kTop ||
+      verticalAlign == EVerticalAlign::kBottom)
     return LayoutUnit();
 
   LineLayoutItem parent = boxModel.parent();
   if (parent.isLayoutInline() &&
-      parent.style()->verticalAlign() != EVerticalAlign::Top &&
-      parent.style()->verticalAlign() != EVerticalAlign::Bottom)
+      parent.style()->verticalAlign() != EVerticalAlign::kTop &&
+      parent.style()->verticalAlign() != EVerticalAlign::kBottom)
     verticalPosition = box->parent()->logicalTop();
 
-  if (verticalAlign != EVerticalAlign::Baseline) {
+  if (verticalAlign != EVerticalAlign::kBaseline) {
     const Font& font = parent.style(firstLine)->font();
     const SimpleFontData* fontData = font.primaryFont();
     DCHECK(fontData);
@@ -699,21 +699,21 @@ LayoutUnit RootInlineBox::verticalPositionForBox(
     LineDirectionMode lineDirection =
         parent.isHorizontalWritingMode() ? HorizontalLine : VerticalLine;
 
-    if (verticalAlign == EVerticalAlign::Sub) {
+    if (verticalAlign == EVerticalAlign::kSub) {
       verticalPosition += fontSize / 5 + 1;
-    } else if (verticalAlign == EVerticalAlign::Super) {
+    } else if (verticalAlign == EVerticalAlign::kSuper) {
       verticalPosition -= fontSize / 3 + 1;
-    } else if (verticalAlign == EVerticalAlign::TextTop) {
+    } else if (verticalAlign == EVerticalAlign::kTextTop) {
       verticalPosition +=
           boxModel.baselinePosition(baselineType(), firstLine, lineDirection) -
           fontMetrics.ascent(baselineType());
-    } else if (verticalAlign == EVerticalAlign::Middle) {
+    } else if (verticalAlign == EVerticalAlign::kMiddle) {
       verticalPosition = LayoutUnit(
           (verticalPosition - LayoutUnit(fontMetrics.xHeight() / 2) -
            boxModel.lineHeight(firstLine, lineDirection) / 2 +
            boxModel.baselinePosition(baselineType(), firstLine, lineDirection))
               .round());
-    } else if (verticalAlign == EVerticalAlign::TextBottom) {
+    } else if (verticalAlign == EVerticalAlign::kTextBottom) {
       verticalPosition += fontMetrics.descent(baselineType());
       // lineHeight - baselinePosition is always 0 for replaced elements (except
       // inline blocks), so don't bother wasting time in that case.
@@ -722,11 +722,11 @@ LayoutUnit RootInlineBox::verticalPositionForBox(
         verticalPosition -= (boxModel.lineHeight(firstLine, lineDirection) -
                              boxModel.baselinePosition(
                                  baselineType(), firstLine, lineDirection));
-    } else if (verticalAlign == EVerticalAlign::BaselineMiddle) {
+    } else if (verticalAlign == EVerticalAlign::kBaselineMiddle) {
       verticalPosition +=
           -boxModel.lineHeight(firstLine, lineDirection) / 2 +
           boxModel.baselinePosition(baselineType(), firstLine, lineDirection);
-    } else if (verticalAlign == EVerticalAlign::Length) {
+    } else if (verticalAlign == EVerticalAlign::kLength) {
       LayoutUnit lineHeight;
       // Per http://www.w3.org/TR/CSS21/visudet.html#propdef-vertical-align:
       // 'Percentages: refer to the 'line-height' of the element itself'.

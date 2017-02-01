@@ -658,7 +658,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(
     case CSSPropertyWordSpacing:
       return createFromPropertyLength(property, style);
     case CSSPropertyVerticalAlign:
-      if (style.verticalAlign() == EVerticalAlign::Length)
+      if (style.verticalAlign() == EVerticalAlign::kLength)
         return createFromLength(style.getVerticalAlignLength(), style);
       return AnimatableUnknown::create(
           CSSIdentifierValue::create(style.verticalAlign()));

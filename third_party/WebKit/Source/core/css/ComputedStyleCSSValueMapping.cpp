@@ -2786,25 +2786,25 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return CSSIdentifierValue::create(style.getUnicodeBidi());
     case CSSPropertyVerticalAlign:
       switch (style.verticalAlign()) {
-        case EVerticalAlign::Baseline:
+        case EVerticalAlign::kBaseline:
           return CSSIdentifierValue::create(CSSValueBaseline);
-        case EVerticalAlign::Middle:
+        case EVerticalAlign::kMiddle:
           return CSSIdentifierValue::create(CSSValueMiddle);
-        case EVerticalAlign::Sub:
+        case EVerticalAlign::kSub:
           return CSSIdentifierValue::create(CSSValueSub);
-        case EVerticalAlign::Super:
+        case EVerticalAlign::kSuper:
           return CSSIdentifierValue::create(CSSValueSuper);
-        case EVerticalAlign::TextTop:
+        case EVerticalAlign::kTextTop:
           return CSSIdentifierValue::create(CSSValueTextTop);
-        case EVerticalAlign::TextBottom:
+        case EVerticalAlign::kTextBottom:
           return CSSIdentifierValue::create(CSSValueTextBottom);
-        case EVerticalAlign::Top:
+        case EVerticalAlign::kTop:
           return CSSIdentifierValue::create(CSSValueTop);
-        case EVerticalAlign::Bottom:
+        case EVerticalAlign::kBottom:
           return CSSIdentifierValue::create(CSSValueBottom);
-        case EVerticalAlign::BaselineMiddle:
+        case EVerticalAlign::kBaselineMiddle:
           return CSSIdentifierValue::create(CSSValueWebkitBaselineMiddle);
-        case EVerticalAlign::Length:
+        case EVerticalAlign::kLength:
           return zoomAdjustedPixelValueForLength(style.getVerticalAlignLength(),
                                                  style);
       }
