@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.crash.MinidumpDirectoryObserver;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
@@ -169,6 +170,7 @@ public class ChromeBrowserInitializer {
                     ContextUtils.getAppSharedPreferences();
                     DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
                     ActivityAssigner.warmUpSharedPrefs(mApplication);
+                    DownloadManagerService.warmUpSharedPrefs(mApplication);
                     return null;
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -176,6 +178,7 @@ public class ChromeBrowserInitializer {
             ContextUtils.getAppSharedPreferences();
             DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
             ActivityAssigner.warmUpSharedPrefs(mApplication);
+            DownloadManagerService.warmUpSharedPrefs(mApplication);
         }
     }
 
