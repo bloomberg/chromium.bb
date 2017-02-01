@@ -9,6 +9,8 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_expandable_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_item.h"
@@ -19,9 +21,26 @@
 #error "This file requires ARC support."
 #endif
 
+@interface ContentSuggestionsCollectionUpdater ()<ContentSuggestionsDataSink>
+
+@property(nonatomic, weak) id<ContentSuggestionsDataSource> dataSource;
+
+@end
+
 @implementation ContentSuggestionsCollectionUpdater
 
 @synthesize collectionViewController = _collectionViewController;
+@synthesize dataSource = _dataSource;
+
+- (instancetype)initWithDataSource:
+    (id<ContentSuggestionsDataSource>)dataSource {
+  self = [super init];
+  if (self) {
+    _dataSource = dataSource;
+    _dataSource.dataSink = self;
+  }
+  return self;
+}
 
 #pragma mark - Properties
 
@@ -30,6 +49,10 @@
   _collectionViewController = collectionViewController;
   [collectionViewController loadModel];
   CollectionViewModel* model = collectionViewController.collectionViewModel;
+
+  // TODO(crbug.com/686728): Load the data with the dataSource instead of hard
+  // coded value.
+
   NSInteger sectionIdentifier = kSectionIdentifierEnumZero;
 
   // Stack Item.
@@ -86,6 +109,12 @@
     [model addItem:expandableItem toSectionWithIdentifier:sectionIdentifier];
     sectionIdentifier++;
   }
+}
+
+#pragma mark - ContentSuggestionsDataSink
+
+- (void)dataAvailable {
+  // TODO(crbug.com/686728): Get the new data from the DataSource.
 }
 
 #pragma mark - Public methods

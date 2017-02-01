@@ -7,10 +7,16 @@
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 
+namespace ios {
+class ChromeBrowserState;
+}
+
 // Coordinator to manage the Suggestions UI via a
 // ContentSuggestionsViewController.
 @interface ContentSuggestionsCoordinator : ChromeCoordinator
 
+// BrowserState used to create the ContentSuggestionFactory.
+@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // Whether the Suggestions UI is displayed. If this is true, start is a no-op.
 @property(nonatomic, readonly) BOOL visible;
 

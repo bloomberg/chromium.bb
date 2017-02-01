@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 
+@protocol ContentSuggestionsDataSource;
 @class ContentSuggestionsViewController;
 
 // Enum defining the ItemType of this ContentSuggestionsCollectionUpdater.
@@ -23,6 +24,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Updater for a CollectionViewController populating it with some items and
 // handling the items addition.
 @interface ContentSuggestionsCollectionUpdater : NSObject
+
+// Initialize with the |dataSource| used to get the data.
+- (instancetype)initWithDataSource:(id<ContentSuggestionsDataSource>)dataSource
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 // |collectionViewController| this Updater will update. Needs to be set before
 // adding items.

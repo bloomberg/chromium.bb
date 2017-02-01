@@ -40,12 +40,21 @@ const NSTimeInterval kAnimationDuration = 0.35;
 @synthesize suggestionCommandHandler = _suggestionCommandHandler;
 @synthesize collectionUpdater = _collectionUpdater;
 
+- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+                   dataSource:(id<ContentSuggestionsDataSource>)dataSource {
+  self = [super initWithStyle:style];
+  if (self) {
+    _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc]
+        initWithDataSource:dataSource];
+  }
+  return self;
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc] init];
   _collectionUpdater.collectionViewController = self;
 
   self.collectionView.delegate = self;

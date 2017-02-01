@@ -5,11 +5,15 @@
 source_set("content_suggestions") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "content_suggestion.h",
+    "content_suggestion.mm",
     "content_suggestions_article_item.h",
     "content_suggestions_article_item.mm",
     "content_suggestions_collection_updater.h",
     "content_suggestions_collection_updater.mm",
     "content_suggestions_commands.h",
+    "content_suggestions_data_sink.h",
+    "content_suggestions_data_source.h",
     "content_suggestions_expandable_item.h",
     "content_suggestions_expandable_item.mm",
     "content_suggestions_favicon_internal_cell.h",

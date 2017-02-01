@@ -34,7 +34,8 @@
   self.alerter.baseViewController = self.baseViewController;
 
   _suggestionViewController = [[ContentSuggestionsViewController alloc]
-      initWithStyle:CollectionViewControllerStyleDefault];
+      initWithStyle:CollectionViewControllerStyleDefault
+         dataSource:nil];
 
   _suggestionViewController.suggestionCommandHandler =
       reinterpret_cast<id<ContentSuggestionsCommands>>(self.alerter);

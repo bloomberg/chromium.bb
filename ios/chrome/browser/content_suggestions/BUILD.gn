@@ -7,11 +7,17 @@ source_set("content_suggestions") {
   sources = [
     "content_suggestions_coordinator.h",
     "content_suggestions_coordinator.mm",
+    "content_suggestions_mediator.h",
+    "content_suggestions_mediator.mm",
+    "content_suggestions_service_bridge_observer.h",
+    "content_suggestions_service_bridge_observer.mm",
   ]
   deps = [
     "//base",
+    "//components/ntp_snippets",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/ui/content_suggestions",
     "//ui/base",
   ]

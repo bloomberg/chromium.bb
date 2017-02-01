@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_coordinator.h"
 
 #include "base/mac/scoped_nsobject.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
+#include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -16,25 +18,33 @@
 
 @interface ContentSuggestionsCoordinator ()<ContentSuggestionsCommands> {
   UINavigationController* _navigationController;
+  ContentSuggestionsMediator* _contentSuggestionsMediator;
 }
 
 @end
 
 @implementation ContentSuggestionsCoordinator
 
+@synthesize browserState = _browserState;
 @synthesize visible = _visible;
 
 - (void)start {
-  if (self.visible) {
-    // Prevent this coordinator from being started twice in a row.
+  if (self.visible || !self.browserState) {
+    // Prevent this coordinator from being started twice in a row or without a
+    // browser state.
     return;
   }
 
   _visible = YES;
 
+  _contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]
+      initWithContentService:IOSChromeContentSuggestionsServiceFactory::
+                                 GetForBrowserState(self.browserState)];
+
   ContentSuggestionsViewController* suggestionsViewController =
       [[ContentSuggestionsViewController alloc]
-          initWithStyle:CollectionViewControllerStyleDefault];
+          initWithStyle:CollectionViewControllerStyleDefault
+             dataSource:_contentSuggestionsMediator];
 
   suggestionsViewController.suggestionCommandHandler = self;
   _navigationController = [[UINavigationController alloc]

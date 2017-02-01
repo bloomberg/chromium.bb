@@ -12,11 +12,19 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
 
 @protocol ContentSuggestionsCommands;
+@protocol ContentSuggestionsDataSource;
 
 // CollectionViewController to display the suggestions items.
 @interface ContentSuggestionsViewController
     : CollectionViewController<ContentSuggestionsExpandableCellDelegate,
                                ContentSuggestionsFaviconCellDelegate>
+
+- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+                   dataSource:(id<ContentSuggestionsDataSource>)dataSource
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+    NS_UNAVAILABLE;
 
 // Handler for the commands sent by the ContentSuggestionsViewController.
 @property(nonatomic, weak) id<ContentSuggestionsCommands>
