@@ -16,6 +16,7 @@
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
+#include "content/browser/renderer_host/media/audio_output_delegate_impl.h"
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/audio_messages.h"
@@ -195,7 +196,7 @@ AudioRendererHost::DoGetOutputControllers() const {
 
   RenderProcessHost::AudioOutputControllerList controllers;
   for (const auto& delegate : delegates_)
-    controllers.push_back(delegate->controller());
+    controllers.push_back(delegate->GetController());
 
   return controllers;
 }
@@ -343,10 +344,11 @@ void AudioRendererHost::OnCreateStream(int stream_id,
       media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER);
   media_internals->SetWebContentsTitleForAudioLogEntry(
       stream_id, render_process_id_, render_frame_id, audio_log.get());
-  delegates_.push_back(AudioOutputDelegate::Create(
-      this, audio_manager_, std::move(audio_log), mirroring_manager_,
-      media_observer, stream_id, render_frame_id, render_process_id_, params,
-      device_unique_id));
+  delegates_.push_back(
+      base::WrapUnique<AudioOutputDelegate>(new AudioOutputDelegateImpl(
+          this, audio_manager_, std::move(audio_log), mirroring_manager_,
+          media_observer, stream_id, render_frame_id, render_process_id_,
+          params, device_unique_id)));
 
   g_audio_streams_tracker.Get().IncreaseStreamCount();
 
@@ -418,10 +420,11 @@ AudioRendererHost::AudioOutputDelegateVector::iterator
 AudioRendererHost::LookupIteratorById(int stream_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  return std::find_if(delegates_.begin(), delegates_.end(),
-                      [stream_id](const AudioOutputDelegate::UniquePtr& d) {
-                        return d->stream_id() == stream_id;
-                      });
+  return std::find_if(
+      delegates_.begin(), delegates_.end(),
+      [stream_id](const std::unique_ptr<AudioOutputDelegate>& d) {
+        return d->GetStreamId() == stream_id;
+      });
 }
 
 AudioOutputDelegate* AudioRendererHost::LookupById(int stream_id) {

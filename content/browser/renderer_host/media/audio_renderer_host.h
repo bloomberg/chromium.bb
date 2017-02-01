@@ -114,7 +114,8 @@ class CONTENT_EXPORT AudioRendererHost
   // |have_access| is true only if there is permission to access the device.
   typedef base::Callback<void(bool have_access)> OutputDeviceAccessCB;
 
-  using AudioOutputDelegateVector = std::vector<AudioOutputDelegate::UniquePtr>;
+  using AudioOutputDelegateVector =
+      std::vector<std::unique_ptr<AudioOutputDelegate>>;
 
   // The type of a function that is run on the UI thread to check whether the
   // routing IDs reference a valid RenderFrameHost. The function then runs
