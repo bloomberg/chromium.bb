@@ -16,6 +16,7 @@ import android.provider.Settings;
 import android.text.TextUtils;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -26,6 +27,7 @@ import org.robolectric.shadows.ShadowBitmap;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.blink_public.platform.WebDisplayMode;
+import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.common.ScreenOrientationValues;
@@ -44,6 +46,9 @@ import java.util.Map;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class WebApkUpdateManagerTest {
+    @Rule
+    public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
+
     /** WebAPK's id in {@link WebAppDataStorage}. */
     private static final String WEBAPK_ID =
             WebApkConstants.WEBAPK_ID_PREFIX + WebApkTestHelper.WEBAPK_PACKAGE_NAME;
@@ -101,8 +106,10 @@ public class WebApkUpdateManagerTest {
         private boolean mUpdateRequested;
         private String mUpdateName;
         private boolean mDestroyedFetcher;
+        private boolean mIsWebApkForeground;
 
         public TestWebApkUpdateManager(WebappDataStorage.Clock clock) {
+            super(null);
             mClock = clock;
         }
 
@@ -138,9 +145,21 @@ public class WebApkUpdateManagerTest {
         }
 
         @Override
-        protected void updateAsync(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
-            mUpdateRequested = true;
+        protected void scheduleUpdate(WebApkInfo info, String bestIconUrl,
+                boolean isManifestStale) {
             mUpdateName = info.name();
+            super.scheduleUpdate(info, bestIconUrl, isManifestStale);
+        }
+
+        @Override
+        protected void updateAsyncImpl(WebApkInfo info, String bestIconUrl,
+                boolean isManifestStale) {
+            mUpdateRequested = true;
+        }
+
+        @Override
+        protected boolean isInForeground() {
+            return mIsWebApkForeground;
         }
 
         @Override
@@ -152,6 +171,10 @@ public class WebApkUpdateManagerTest {
         @Override
         protected long currentTimeMillis() {
             return mClock.currentTimeMillis();
+        }
+
+        public void setIsWebApkForeground(boolean isForeground) {
+            mIsWebApkForeground = isForeground;
         }
 
         // Stubbed out because real implementation uses native.
@@ -235,7 +258,7 @@ public class WebApkUpdateManagerTest {
     private static WebApkInfo infoFromManifestData(ManifestData manifestData) {
         if (manifestData == null) return null;
 
-        return WebApkInfo.create("", "", manifestData.scopeUrl,
+        return WebApkInfo.create(WEBAPK_ID, "", manifestData.scopeUrl,
                 new WebApkInfo.Icon(manifestData.bestIcon), manifestData.name,
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
                 manifestData.themeColor, manifestData.backgroundColor,
@@ -705,5 +728,60 @@ public class WebApkUpdateManagerTest {
         fetchedData.iconUrlToMurmur2HashMap.put(iconUrl2, hash2);
 
         assertFalse(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
+    @Test
+    public void testForceUpdateWhenUncompletedUpdateRequestRechesMaximumTimes() {
+        mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
+        ManifestData differentManifestData = defaultManifestData();
+        differentManifestData.name = DIFFERENT_NAME;
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
+
+        for (int i = 0; i < 3; ++i) {
+            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+            updateManager.setIsWebApkForeground(true);
+            updateIfNeeded(updateManager);
+
+            onGotManifestData(updateManager, differentManifestData);
+            assertTrue(updateManager.getHasPendingUpdateForTesting());
+            assertFalse(updateManager.updateRequested());
+            assertEquals(i + 1, storage.getUpdateRequests());
+        }
+
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        updateManager.setIsWebApkForeground(true);
+        updateIfNeeded(updateManager);
+
+        onGotManifestData(updateManager, differentManifestData);
+        assertFalse(updateManager.getHasPendingUpdateForTesting());
+        assertTrue(updateManager.updateRequested());
+        assertEquals(0, storage.getUpdateRequests());
+    }
+
+    @Test
+    public void testRequestUpdateAfterWebApkOnStopIsCalled() {
+        ManifestData differentManifestData = defaultManifestData();
+        differentManifestData.name = DIFFERENT_NAME;
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
+
+        mClock.advance(WebApkUpdateManager.FULL_CHECK_UPDATE_INTERVAL);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
+        updateManager.setIsWebApkForeground(true);
+        updateIfNeeded(updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+
+        onGotManifestData(updateManager, differentManifestData);
+        assertTrue(updateManager.getHasPendingUpdateForTesting());
+        assertFalse(updateManager.updateRequested());
+        assertEquals(1, storage.getUpdateRequests());
+
+        // Since {@link WebApkActivity#OnStop()} calls {@link requestPendingUpdate()} to trigger an
+        // update request, we call it directly for testing.
+        updateManager.setIsWebApkForeground(false);
+        updateManager.requestPendingUpdate();
+
+        assertFalse(updateManager.getHasPendingUpdateForTesting());
+        assertTrue(updateManager.updateRequested());
+        assertEquals(0, storage.getUpdateRequests());
     }
 }

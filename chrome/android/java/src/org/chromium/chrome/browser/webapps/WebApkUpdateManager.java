@@ -9,11 +9,14 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.webapk.lib.client.WebApkVersion;
@@ -37,8 +40,23 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      */
     public static final long RETRY_UPDATE_DURATION = TimeUnit.HOURS.toMillis(12L);
 
+    /**
+     * Number of times to wait for updating the WebAPK after it is moved to the background prior
+     * to doing the update while the WebAPK is in the foreground.
+     */
+    private static final int MAX_UPDATE_ATTEMPTS = 3;
+
     /** Data extracted from the WebAPK's launch intent and from the WebAPK's Android Manifest. */
     private WebApkInfo mInfo;
+
+    /**
+     * The cached data for a pending update request which needs to be sent after the WebAPK isn't
+     * running in the foreground.
+     */
+    private PendingUpdate mPendingUpdate;
+
+    /** The WebApkActivity which owns the WebApkUpdateManager. */
+    private final WebApkActivity mActivity;
 
     /**
      * Whether the previous WebAPK update succeeded. True if there has not been any update attempts.
@@ -46,6 +64,26 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     private boolean mPreviousUpdateSucceeded;
 
     private WebApkUpdateDataFetcher mFetcher;
+
+    /**
+     * Contains all the data which is cached for a pending update request once the WebAPK is no
+     * longer running foreground.
+     */
+    private static class PendingUpdate {
+        public WebApkInfo mUpdateInfo;
+        public String mBestIconUrl;
+        public boolean mIsManifestStale;
+
+        public PendingUpdate(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
+            mUpdateInfo = info;
+            mBestIconUrl = bestIconUrl;
+            mIsManifestStale = isManifestStale;
+        }
+    }
+
+    public WebApkUpdateManager(WebApkActivity activity) {
+        mActivity = activity;
+    }
 
     /**
      * Checks whether the WebAPK's Web Manifest has changed. Requests an updated WebAPK if the
@@ -65,8 +103,25 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         mFetcher.start(tab, mInfo, this);
     }
 
+    /**
+     * It sends the pending update request to the WebAPK server if exits.
+     * @return Whether a pending update request is sent to the WebAPK server.
+     */
+    public boolean requestPendingUpdate() {
+        if (mPendingUpdate != null) {
+            updateAsync(mPendingUpdate.mUpdateInfo, mPendingUpdate.mBestIconUrl,
+                    mPendingUpdate.mIsManifestStale);
+            return true;
+        }
+        return false;
+    }
+
     public void destroy() {
         destroyFetcher();
+    }
+
+    public boolean getHasPendingUpdateForTesting() {
+        return mPendingUpdate != null;
     }
 
     @Override
@@ -113,14 +168,14 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         recordUpdate(storage, false);
 
         if (fetchedInfo != null) {
-            updateAsync(fetchedInfo, bestIconUrl, false /* isManifestStale */);
+            scheduleUpdate(fetchedInfo, bestIconUrl, false /* isManifestStale */);
             return;
         }
 
         // Tell the server that the our version of the Web Manifest might be stale and to ignore
         // our Web Manifest data if the server's Web Manifest data is newer. This scenario can
         // occur if the Web Manifest is temporarily unreachable.
-        updateAsync(mInfo, "", true /* isManifestStale */);
+        scheduleUpdate(mInfo, "", true /* isManifestStale */);
     }
 
     /**
@@ -131,9 +186,51 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     }
 
     /**
-     * Sends request to WebAPK Server to update WebAPK.
+     * Sends update request to WebAPK Server if the WebAPK is running in the background; caches the
+     * fetched WebApkInfo otherwise.
      */
-    protected void updateAsync(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
+    protected void scheduleUpdate(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
+        WebappDataStorage storage =
+                WebappRegistry.getInstance().getWebappDataStorage(info.id());
+        int numberOfUpdateRequests = storage.getUpdateRequests();
+        boolean forceUpdateNow =  numberOfUpdateRequests >= MAX_UPDATE_ATTEMPTS;
+        if (!isInForeground() || forceUpdateNow) {
+            updateAsync(info, bestIconUrl, isManifestStale);
+            WebApkUma.recordUpdateRequestSent(WebApkUma.UPDATE_REQUEST_SENT_FIRST_TRY);
+            return;
+        }
+
+        storage.recordUpdateRequest();
+        // The {@link numberOfUpdateRequests} can never exceed 2 here (otherwise we'll have taken
+        // the branch above and have returned before reaching this statement).
+        WebApkUma.recordUpdateRequestQueued(numberOfUpdateRequests);
+        mPendingUpdate = new PendingUpdate(info, bestIconUrl, isManifestStale);
+    }
+
+    /** Returns whether the associated WebApkActivity is running in foreground. */
+    protected boolean isInForeground() {
+        int state = ApplicationStatus.getStateForActivity(mActivity);
+        return (state != ActivityState.STOPPED && state != ActivityState.DESTROYED);
+    }
+
+    /**
+     * Sends update request to the WebAPK Server and cleanup.
+     */
+    private void updateAsync(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
+        updateAsyncImpl(info, bestIconUrl, isManifestStale);
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(mInfo.id());
+        storage.resetUpdateRequests();
+        mPendingUpdate = null;
+    }
+
+    /**
+     * Sends update request to the WebAPK Server.
+     */
+    protected void updateAsyncImpl(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
+        if (info == null) {
+            return;
+        }
+
         int versionCode = readVersionCodeFromAndroidManifest(info.webApkPackageName());
         int size = info.iconUrlToMurmur2HashMap().size();
         String[] iconUrls = new String[size];

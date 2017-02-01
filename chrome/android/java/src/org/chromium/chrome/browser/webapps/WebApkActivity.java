@@ -11,6 +11,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
+import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
@@ -122,6 +123,14 @@ public class WebApkActivity extends WebappActivity {
                 ContextUtils.getApplicationContext(), getWebApkPackageName());
     }
 
+    @Override
+    public void onStopWithNative() {
+        super.onStopWithNative();
+        if (mUpdateManager != null && mUpdateManager.requestPendingUpdate()) {
+            WebApkUma.recordUpdateRequestSent(WebApkUma.UPDATE_REQUEST_SENT_ONSTOP);
+        }
+    }
+
     /**
      * Returns the WebAPK's package name.
      */
@@ -150,7 +159,7 @@ public class WebApkActivity extends WebappActivity {
     public void onDeferredStartup() {
         super.onDeferredStartup();
 
-        mUpdateManager = new WebApkUpdateManager();
+        mUpdateManager = new WebApkUpdateManager(this);
         mUpdateManager.updateIfNeeded(getActivityTab(), (WebApkInfo) mWebappInfo);
     }
 

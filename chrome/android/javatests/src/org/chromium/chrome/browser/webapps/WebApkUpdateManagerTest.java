@@ -8,6 +8,7 @@ import android.content.Context;
 import android.support.test.filters.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -59,6 +60,7 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
         private boolean mNeedsUpdate = false;
 
         public TestWebApkUpdateManager(CallbackHelper waiter) {
+            super(null);
             mWaiter = waiter;
         }
 
@@ -75,7 +77,7 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
         }
 
         @Override
-        protected void updateAsync(WebApkInfo fetchedInfo, String bestIconUrl,
+        protected void scheduleUpdate(WebApkInfo fetchedInfo, String bestIconUrl,
                 boolean isManifestStale) {
             mNeedsUpdate = true;
         }
@@ -120,6 +122,7 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        RecordHistogram.setDisabledForTests(true);
         Context context = getInstrumentation().getTargetContext();
         mTestServer = EmbeddedTestServer.createAndStartServer(context);
         mTab = getActivity().getActivityTab();
@@ -132,6 +135,7 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
     @Override
     protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        RecordHistogram.setDisabledForTests(false);
         super.tearDown();
     }
 

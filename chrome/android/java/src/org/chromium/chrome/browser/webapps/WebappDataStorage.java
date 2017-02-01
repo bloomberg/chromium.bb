@@ -58,6 +58,9 @@ public class WebappDataStorage {
     static final String KEY_DID_LAST_WEBAPK_UPDATE_REQUEST_SUCCEED =
             "did_last_webapk_update_request_succeed";
 
+    // The number of times that updating a WebAPK in the background has been requested.
+    static final String KEY_UPDATE_REQUESTED = "update_requested";
+
     // Unset/invalid constants for last used times and URLs. 0 is used as the null last used time as
     // WebappRegistry assumes that this is always a valid timestamp.
     static final long LAST_USED_UNSET = 0;
@@ -301,6 +304,7 @@ public class WebappDataStorage {
         editor.remove(KEY_LAST_CHECK_WEB_MANIFEST_UPDATE_TIME);
         editor.remove(KEY_LAST_WEBAPK_UPDATE_REQUEST_COMPLETE_TIME);
         editor.remove(KEY_DID_LAST_WEBAPK_UPDATE_REQUEST_SUCCEED);
+        editor.remove(KEY_UPDATE_REQUESTED);
         editor.apply();
     }
 
@@ -399,6 +403,27 @@ public class WebappDataStorage {
      */
     boolean getDidLastWebApkUpdateRequestSucceed() {
         return mPreferences.getBoolean(KEY_DID_LAST_WEBAPK_UPDATE_REQUEST_SUCCEED, false);
+    }
+
+    /**
+     * Increases the number of times that update has been requested for the WebAPK by 1.
+     */
+    void recordUpdateRequest() {
+        mPreferences.edit().putInt(KEY_UPDATE_REQUESTED, getUpdateRequests() + 1).apply();
+    }
+
+    /**
+     * Resets the number of times that update has been requested for the WebAPK.
+     */
+    void resetUpdateRequests() {
+        mPreferences.edit().remove(KEY_UPDATE_REQUESTED).apply();
+    }
+
+    /**
+     * Returns the number of times that update has been requested for this WebAPK.
+     */
+    int getUpdateRequests() {
+        return mPreferences.getInt(KEY_UPDATE_REQUESTED, 0);
     }
 
     protected WebappDataStorage(String webappId) {
