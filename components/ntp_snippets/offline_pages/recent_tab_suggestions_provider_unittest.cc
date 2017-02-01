@@ -177,9 +177,7 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldSortByCreationTime) {
 
 TEST_F(RecentTabSuggestionsProviderTest, ShouldDeliverCorrectCategoryInfo) {
   EXPECT_FALSE(
-      provider()->GetCategoryInfo(recent_tabs_category()).has_more_action());
-  EXPECT_FALSE(
-      provider()->GetCategoryInfo(recent_tabs_category()).has_reload_action());
+      provider()->GetCategoryInfo(recent_tabs_category()).has_fetch_action());
   EXPECT_FALSE(provider()
                    ->GetCategoryInfo(recent_tabs_category())
                    .has_view_all_action());

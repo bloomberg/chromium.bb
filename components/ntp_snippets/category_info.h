@@ -25,8 +25,7 @@ class CategoryInfo {
  public:
   CategoryInfo(const base::string16& title,
                ContentSuggestionsCardLayout card_layout,
-               bool has_more_action,
-               bool has_reload_action,
+               bool has_fetch_action,
                bool has_view_all_action,
                bool show_if_empty,
                const base::string16& no_suggestions_message);
@@ -43,13 +42,9 @@ class CategoryInfo {
   // Layout of the cards to be used to display suggestions in this category.
   ContentSuggestionsCardLayout card_layout() const { return card_layout_; }
 
-  // Whether the category supports a "More" action, that triggers fetching more
-  // suggestions for the category, while keeping the current ones.
-  bool has_more_action() const { return has_more_action_; }
-
-  // Whether the category supports a "Reload" action, that triggers fetching new
-  // suggestions to replace the current ones.
-  bool has_reload_action() const { return has_reload_action_; }
+  // Whether the category supports a "Fetch" action, that triggers fetching more
+  // suggestions for the category.
+  bool has_fetch_action() const { return has_fetch_action_; }
 
   // Whether the category supports a "ViewAll" action, that triggers displaying
   // all the content related to the current categories.
@@ -70,8 +65,7 @@ class CategoryInfo {
   ContentSuggestionsCardLayout card_layout_;
 
   // Supported actions for the category.
-  bool has_more_action_;
-  bool has_reload_action_;
+  bool has_fetch_action_;
   bool has_view_all_action_;
 
   // Whether to show the category if a fetch returns no suggestions.

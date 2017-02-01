@@ -47,7 +47,7 @@ public final class ContentSuggestionsTestUtils {
             @CategoryInt int category, int suggestionCount) {
         // Important: showIfEmpty flag to true.
         SuggestionsCategoryInfo categoryInfo =
-                new CategoryInfoBuilder(category).withReloadAction().showIfEmpty().build();
+                new CategoryInfoBuilder(category).withFetchAction().showIfEmpty().build();
         return registerCategory(suggestionsSource, categoryInfo, suggestionCount);
     }
 
@@ -101,9 +101,8 @@ public final class ContentSuggestionsTestUtils {
     public static class CategoryInfoBuilder {
         @CategoryInt
         private final int mCategory;
-        private boolean mHasMoreAction;
+        private boolean mHasFetchAction;
         private boolean mHasViewAllAction;
-        private boolean mHasReloadAction;
         private boolean mShowIfEmpty;
         private String mTitle = "";
         private String mNoSuggestionsMessage = "";
@@ -114,18 +113,13 @@ public final class ContentSuggestionsTestUtils {
             mCategory = category;
         }
 
-        public CategoryInfoBuilder withMoreAction() {
-            mHasMoreAction = true;
+        public CategoryInfoBuilder withFetchAction() {
+            mHasFetchAction = true;
             return this;
         }
 
         public CategoryInfoBuilder withViewAllAction() {
             mHasViewAllAction = true;
-            return this;
-        }
-
-        public CategoryInfoBuilder withReloadAction() {
-            mHasReloadAction = true;
             return this;
         }
 
@@ -151,8 +145,8 @@ public final class ContentSuggestionsTestUtils {
         }
 
         public SuggestionsCategoryInfo build() {
-            return new SuggestionsCategoryInfo(mCategory, mTitle, mCardLayout, mHasMoreAction,
-                    mHasReloadAction, mHasViewAllAction, mShowIfEmpty, mNoSuggestionsMessage);
+            return new SuggestionsCategoryInfo(mCategory, mTitle, mCardLayout, mHasFetchAction,
+                    mHasViewAllAction, mShowIfEmpty, mNoSuggestionsMessage);
         }
     }
 

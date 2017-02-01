@@ -93,7 +93,7 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testDismissSibling() {
         List<SnippetArticle> snippets = createDummySuggestions(3, TEST_CATEGORY_ID);
-        SuggestionsSection section = createSectionWithReloadAction(true);
+        SuggestionsSection section = createSectionWithFetchAction(true);
 
         section.setStatus(CategoryStatus.AVAILABLE);
         assertNotNull(section.getActionItemForTesting());
@@ -121,7 +121,7 @@ public class SuggestionsSectionTest {
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount,
                 TEST_CATEGORY_ID);
 
-        SuggestionsSection section = createSectionWithReloadAction(false);
+        SuggestionsSection section = createSectionWithFetchAction(false);
         // Simulate initialisation by the adapter. Here we don't care about the notifications, since
         // the RecyclerView will be updated through notifyDataSetChanged.
         section.setStatus(CategoryStatus.AVAILABLE);
@@ -141,7 +141,7 @@ public class SuggestionsSectionTest {
         final int suggestionCount = 5;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount,
                 TEST_CATEGORY_ID);
-        SuggestionsSection section = createSectionWithReloadAction(false);
+        SuggestionsSection section = createSectionWithFetchAction(false);
 
         // Simulate initialisation by the adapter. Here we don't care about the notifications, since
         // the RecyclerView will be updated through notifyDataSetChanged.
@@ -168,7 +168,7 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testRemoveUnknownSuggestion() {
-        SuggestionsSection section = createSectionWithReloadAction(false);
+        SuggestionsSection section = createSectionWithFetchAction(false);
         section.setStatus(CategoryStatus.AVAILABLE);
         section.removeSuggestionById("foobar");
     }
@@ -180,7 +180,7 @@ public class SuggestionsSectionTest {
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount,
                 TEST_CATEGORY_ID);
 
-        SuggestionsSection section = createSectionWithReloadAction(false);
+        SuggestionsSection section = createSectionWithFetchAction(false);
         section.setStatus(CategoryStatus.AVAILABLE);
         reset(mParent);
 
@@ -205,11 +205,7 @@ public class SuggestionsSectionTest {
                 TEST_CATEGORY_ID);
 
         SuggestionsCategoryInfo info =
-                new CategoryInfoBuilder(TEST_CATEGORY_ID)
-                .withMoreAction()
-                .withReloadAction()
-                .showIfEmpty()
-                .build();
+                new CategoryInfoBuilder(TEST_CATEGORY_ID).withFetchAction().showIfEmpty().build();
         SuggestionsSection section = createSection(info);
         section.setStatus(CategoryStatus.AVAILABLE);
         reset(mParent);
@@ -232,7 +228,7 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testDismissSection() {
-        SuggestionsSection section = createSectionWithReloadAction(false);
+        SuggestionsSection section = createSectionWithFetchAction(false);
         section.setStatus(CategoryStatus.AVAILABLE);
         reset(mParent);
         assertEquals(2, section.getItemCount());
@@ -260,7 +256,7 @@ public class SuggestionsSectionTest {
         mBridge.setIsOfflinePageModelLoaded(true);
         mBridge.setItems(Arrays.asList(item0, item1));
 
-        SuggestionsSection section = createSectionWithReloadAction(true);
+        SuggestionsSection section = createSectionWithFetchAction(true);
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
         // Check that we pick up the correct information.
@@ -316,88 +312,29 @@ public class SuggestionsSectionTest {
         // When all the actions are enabled, ViewAll always has the priority and is shown.
 
         // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info =
-                spy(new CategoryInfoBuilder(TEST_CATEGORY_ID)
-                        .withMoreAction()
-                        .withReloadAction()
-                        .withViewAllAction()
-                        .showIfEmpty()
-                        .build());
+        SuggestionsCategoryInfo info = spy(new CategoryInfoBuilder(TEST_CATEGORY_ID)
+                                                   .withFetchAction()
+                                                   .withViewAllAction()
+                                                   .showIfEmpty()
+                                                   .build());
         SuggestionsSection section = createSection(info);
 
         assertTrue(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_VIEW_ALL);
-
-        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
-                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
-
-        assertTrue(section.getActionItemForTesting().isVisible());
-        verifyAction(section, ActionItem.ACTION_VIEW_ALL);
     }
 
     @Test
     @Feature({"Ntp"})
-    public void testReloadAndFetchMoreActionPriority() {
-        // When both Reload and FetchMore are enabled, FetchMore runs when we have suggestions, and
-        // Reload when we don't.
-
-        // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info =
-                spy(new CategoryInfoBuilder(TEST_CATEGORY_ID)
-                        .withMoreAction()
-                        .withReloadAction()
-                        .showIfEmpty()
-                        .build());
-        SuggestionsSection section = createSection(info);
-
-        assertTrue(section.getActionItemForTesting().isVisible());
-        verifyAction(section, ActionItem.ACTION_RELOAD);
-
-        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
-                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
-
-        assertTrue(section.getActionItemForTesting().isVisible());
-        verifyAction(section, ActionItem.ACTION_FETCH_MORE);
-    }
-
-    @Test
-    @Feature({"Ntp"})
-    public void testReloadActionPriority() {
-        // When only Reload is enabled, it only shows when we have no suggestions.
+    public void testFetchActionPriority() {
+        // When only FetchMore is shown when enabled.
 
         // Spy so that VerifyAction can check methods being called.
         SuggestionsCategoryInfo info = spy(
-                new CategoryInfoBuilder(TEST_CATEGORY_ID).withReloadAction().showIfEmpty().build());
+                new CategoryInfoBuilder(TEST_CATEGORY_ID).withFetchAction().showIfEmpty().build());
         SuggestionsSection section = createSection(info);
 
         assertTrue(section.getActionItemForTesting().isVisible());
-        verifyAction(section, ActionItem.ACTION_RELOAD);
-
-        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
-                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
-
-        assertFalse(section.getActionItemForTesting().isVisible());
-        verifyAction(section, ActionItem.ACTION_NONE);
-    }
-
-    @Test
-    @Feature({"Ntp"})
-    public void testFetchMoreActionPriority() {
-        // When only FetchMore is enabled, it only shows when we have suggestions.
-
-        // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info = spy(
-                new CategoryInfoBuilder(TEST_CATEGORY_ID).withMoreAction().showIfEmpty().build());
-        SuggestionsSection section = createSection(info);
-
-        assertFalse(section.getActionItemForTesting().isVisible());
-        verifyAction(section, ActionItem.ACTION_NONE);
-
-        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
-                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
-
-        assertTrue(section.getActionItemForTesting().isVisible());
-        verifyAction(section, ActionItem.ACTION_FETCH_MORE);
+        verifyAction(section, ActionItem.ACTION_FETCH);
     }
 
     @Test
@@ -412,12 +349,6 @@ public class SuggestionsSectionTest {
 
         assertFalse(section.getActionItemForTesting().isVisible());
         verifyAction(section, ActionItem.ACTION_NONE);
-
-        section.setSuggestions(createDummySuggestions(3, TEST_CATEGORY_ID),
-                CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
-
-        assertFalse(section.getActionItemForTesting().isVisible());
-        verifyAction(section, ActionItem.ACTION_NONE);
     }
 
     @Test
@@ -425,14 +356,14 @@ public class SuggestionsSectionTest {
     public void testFetchMoreProgressDisplay() {
         final int suggestionCount = 3;
         SuggestionsCategoryInfo info = spy(
-                new CategoryInfoBuilder(TEST_CATEGORY_ID).withMoreAction().showIfEmpty().build());
+                new CategoryInfoBuilder(TEST_CATEGORY_ID).withFetchAction().showIfEmpty().build());
         SuggestionsSection section = createSection(info);
         section.setSuggestions(createDummySuggestions(suggestionCount, TEST_CATEGORY_ID),
                 CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         assertFalse(section.getProgressItemForTesting().isVisible());
 
         // Tap the button
-        verifyAction(section, ActionItem.ACTION_FETCH_MORE);
+        verifyAction(section, ActionItem.ACTION_FETCH);
         assertTrue(section.getProgressItemForTesting().isVisible());
 
         // Simulate receiving suggestions.
@@ -658,7 +589,7 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testCardIsNotifiedWhenBecomingFirst() {
         List<SnippetArticle> suggestions = createDummySuggestions(5, /* categoryId = */ 42);
-        SuggestionsSection section = createSectionWithReloadAction(false);
+        SuggestionsSection section = createSectionWithFetchAction(false);
         section.setSuggestions(suggestions, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         reset(mParent);
 
@@ -671,7 +602,7 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testCardIsNotifiedWhenBecomingLast() {
         List<SnippetArticle> suggestions = createDummySuggestions(5, /* categoryId = */ 42);
-        SuggestionsSection section = createSectionWithReloadAction(false);
+        SuggestionsSection section = createSectionWithFetchAction(false);
         section.setSuggestions(suggestions, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         reset(mParent);
 
@@ -684,7 +615,7 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testCardIsNotifiedWhenBecomingSoleCard() {
         List<SnippetArticle> suggestions = createDummySuggestions(2, /* categoryId = */ 42);
-        SuggestionsSection section = createSectionWithReloadAction(false);
+        SuggestionsSection section = createSectionWithFetchAction(false);
         section.setSuggestions(suggestions, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         reset(mParent);
 
@@ -697,7 +628,7 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testGetItemDismissalGroupWithSuggestions() {
         List<SnippetArticle> suggestions = createDummySuggestions(5, TEST_CATEGORY_ID);
-        SuggestionsSection section = createSectionWithReloadAction(false);
+        SuggestionsSection section = createSectionWithFetchAction(false);
         section.setSuggestions(suggestions, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
         assertThat(section.getItemDismissalGroup(1).size(), is(1));
@@ -707,7 +638,7 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testGetItemDismissalGroupWithActionItem() {
-        SuggestionsSection section = createSectionWithReloadAction(true);
+        SuggestionsSection section = createSectionWithFetchAction(true);
         assertThat(section.getItemDismissalGroup(1).size(), is(2));
         assertThat(section.getItemDismissalGroup(1), contains(1, 2));
     }
@@ -715,7 +646,7 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testGetItemDismissalGroupWithoutActionItem() {
-        SuggestionsSection section = createSectionWithReloadAction(false);
+        SuggestionsSection section = createSectionWithFetchAction(false);
         assertThat(section.getItemDismissalGroup(1).size(), is(1));
         assertThat(section.getItemDismissalGroup(1), contains(1));
     }
@@ -724,7 +655,7 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testCardIsNotifiedWhenNotTheLastAnymore() {
         List<SnippetArticle> suggestions = createDummySuggestions(5, /* categoryId = */ 42);
-        SuggestionsSection section = createSectionWithReloadAction(false);
+        SuggestionsSection section = createSectionWithFetchAction(false);
 
         section.setSuggestions(suggestions, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
         reset(mParent);
@@ -735,7 +666,7 @@ public class SuggestionsSectionTest {
     }
 
     private SuggestionsSection createSectionWithSuggestions(List<SnippetArticle> snippets) {
-        SuggestionsSection section = createSectionWithReloadAction(true);
+        SuggestionsSection section = createSectionWithFetchAction(true);
         section.setStatus(CategoryStatus.AVAILABLE);
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
 
@@ -752,9 +683,9 @@ public class SuggestionsSectionTest {
         return set;
     }
 
-    private SuggestionsSection createSectionWithReloadAction(boolean hasReloadAction) {
+    private SuggestionsSection createSectionWithFetchAction(boolean hasReloadAction) {
         CategoryInfoBuilder builder = new CategoryInfoBuilder(TEST_CATEGORY_ID).showIfEmpty();
-        if (hasReloadAction) builder.withReloadAction();
+        if (hasReloadAction) builder.withFetchAction();
         return createSection(builder.build());
     }
 
@@ -784,10 +715,7 @@ public class SuggestionsSectionTest {
         verify(section.getCategoryInfo(),
                 (action == ActionItem.ACTION_VIEW_ALL ? times(1) : never()))
                 .performViewAllAction(navDelegate);
-        verify(suggestionsSource,
-                action == ActionItem.ACTION_RELOAD || action == ActionItem.ACTION_FETCH_MORE
-                        ? times(1)
-                        : never())
+        verify(suggestionsSource, (action == ActionItem.ACTION_FETCH ? times(1) : never()))
                 .fetchSuggestions(anyInt(), any(String[].class));
     }
 

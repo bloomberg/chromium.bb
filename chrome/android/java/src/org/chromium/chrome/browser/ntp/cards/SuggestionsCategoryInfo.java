@@ -39,18 +39,11 @@ public class SuggestionsCategoryInfo {
     private final int mCardLayout;
 
     /**
-     * Whether the category supports a "More" action, that triggers fetching more suggestions for
-     * the category, while keeping the current ones.
+     * Whether the category supports a "Fetch" action, that triggers fetching more suggestions for
+     * the category.
      * @see ActionItem
      */
-    private final boolean mHasFetchMoreAction;
-
-    /**
-     * Whether the category supports a "Reload" action, that triggers fetching new suggestions to
-     * replace the current ones.
-     * @see ActionItem
-     */
-    private final boolean mHasReloadAction;
+    private final boolean mHasFetchAction;
 
     /**
      * Whether the category supports a "ViewAll" action, that triggers displaying all the content
@@ -69,14 +62,12 @@ public class SuggestionsCategoryInfo {
     private final String mNoSuggestionsMessage;
 
     public SuggestionsCategoryInfo(@CategoryInt int category, String title,
-            @ContentSuggestionsCardLayoutEnum int cardLayout, boolean hasMoreAction,
-            boolean hasReloadAction, boolean hasViewAllAction, boolean showIfEmpty,
-            String noSuggestionsMessage) {
+            @ContentSuggestionsCardLayoutEnum int cardLayout, boolean hasFetchAction,
+            boolean hasViewAllAction, boolean showIfEmpty, String noSuggestionsMessage) {
         mCategory = category;
         mTitle = title;
         mCardLayout = cardLayout;
-        mHasFetchMoreAction = hasMoreAction;
-        mHasReloadAction = hasReloadAction;
+        mHasFetchAction = hasFetchAction;
         mHasViewAllAction = hasViewAllAction;
         mShowIfEmpty = showIfEmpty;
         mNoSuggestionsMessage = noSuggestionsMessage;
@@ -96,12 +87,8 @@ public class SuggestionsCategoryInfo {
         return mCardLayout;
     }
 
-    public boolean hasFetchMoreAction() {
-        return mHasFetchMoreAction;
-    }
-
-    public boolean hasReloadAction() {
-        return mHasReloadAction;
+    public boolean hasFetchAction() {
+        return mHasFetchAction;
     }
 
     public boolean hasViewAllAction() {

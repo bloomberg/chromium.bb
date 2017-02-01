@@ -65,9 +65,8 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         mSource = new FakeSuggestionsSource();
         mSource.setInfoForCategory(KnownCategories.ARTICLES,
                 new SuggestionsCategoryInfo(KnownCategories.ARTICLES, "Articles test title",
-                        ContentSuggestionsCardLayout.FULL_CARD, /*hasMoreAction=*/true,
-                        /*hasReloadAction=*/true, /*hasViewAllAction=*/false, /*showIfEmpty=*/true,
-                        "noSuggestionsMessage"));
+                        ContentSuggestionsCardLayout.FULL_CARD, /*hasFetchAction=*/true,
+                        /*hasViewAllAction=*/false, /*showIfEmpty=*/true, "noSuggestionsMessage"));
         mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.INITIALIZING);
         NewTabPage.setSuggestionsSourceForTests(mSource);
 

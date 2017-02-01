@@ -680,30 +680,29 @@ public class NewTabPageAdapterTest {
         // 0   | Above-the-fold
         // 1   | Header
         // 2-4 | Sugg*3
-        // 5   | Footer
-        // 6   | Spacer
+        // 5   | Action
+        // 6   | Footer
+        // 7   | Spacer
 
         // Dismiss the second suggestion of the second section.
         mAdapter.dismissItem(3, itemDismissedCallback);
         verify(itemDismissedCallback).onResult(anyString());
         verify(dataObserver).onItemRangeRemoved(3, 1);
-        verify(dataObserver).onItemRangeChanged(5, 1, null);
+        verify(dataObserver).onItemRangeChanged(6, 1, null);
 
         // Make sure the call with the updated position works properly.
         mAdapter.dismissItem(3, itemDismissedCallback);
         verify(itemDismissedCallback, times(2)).onResult(anyString());
         verify(dataObserver, times(2)).onItemRangeRemoved(3, 1);
-        verify(dataObserver).onItemRangeChanged(4, 1, null);
+        verify(dataObserver).onItemRangeChanged(5, 1, null);
 
         // Dismiss the last suggestion in the section. We should now show the status card.
         reset(dataObserver);
         mAdapter.dismissItem(2, itemDismissedCallback);
         verify(itemDismissedCallback, times(3)).onResult(anyString());
         verify(dataObserver).onItemRangeRemoved(2, 1); // Suggestion removed
-        verify(dataObserver).onItemRangeChanged(3, 1, null); // Spacer refresh
-        verify(dataObserver).onItemRangeInserted(2, 1); // Status card added
         verify(dataObserver).onItemRangeChanged(4, 1, null); // Spacer refresh
-        verify(dataObserver).onItemRangeInserted(3, 1); // Action item added
+        verify(dataObserver).onItemRangeInserted(2, 1); // Status card added
         verify(dataObserver).onItemRangeChanged(5, 1, null); // Spacer refresh
 
         // Adapter content:
@@ -723,9 +722,8 @@ public class NewTabPageAdapterTest {
                 createDummySuggestions(newSuggestionCount, KnownCategories.ARTICLES));
         verify(dataObserver).onItemRangeInserted(2, newSuggestionCount);
         verify(dataObserver).onItemRangeChanged(5 + newSuggestionCount, 1, null); // Spacer refresh
-        verify(dataObserver, times(2)).onItemRangeRemoved(2 + newSuggestionCount, 1);
+        verify(dataObserver).onItemRangeRemoved(2 + newSuggestionCount, 1);
         verify(dataObserver).onItemRangeChanged(4 + newSuggestionCount, 1, null); // Spacer refresh
-        verify(dataObserver).onItemRangeChanged(3 + newSuggestionCount, 1, null); // Spacer refresh
 
         // Adapter content:
         // Idx | Item
@@ -733,8 +731,9 @@ public class NewTabPageAdapterTest {
         // 0   | Above-the-fold
         // 1   | Header
         // 2-8 | Sugg*7
-        // 9   | Footer
-        // 10  | Spacer
+        // 9   | Action
+        // 10  | Footer
+        // 11  | Spacer
 
         reset(dataObserver);
         suggestionsSource.setSuggestionsForCategory(
@@ -742,10 +741,8 @@ public class NewTabPageAdapterTest {
         mAdapter.getSectionListForTesting().onCategoryStatusChanged(
                 KnownCategories.ARTICLES, CategoryStatus.SIGNED_OUT);
         verify(dataObserver).onItemRangeRemoved(2, newSuggestionCount);
-        verify(dataObserver).onItemRangeChanged(3, 1, null); // Spacer refresh
-        verify(dataObserver).onItemRangeInserted(2, 1); // Status card added
         verify(dataObserver).onItemRangeChanged(4, 1, null); // Spacer refresh
-        verify(dataObserver).onItemRangeInserted(3, 1); // Action item added
+        verify(dataObserver).onItemRangeInserted(2, 1); // Status card added
         verify(dataObserver).onItemRangeChanged(5, 1, null); // Spacer refresh
     }
 

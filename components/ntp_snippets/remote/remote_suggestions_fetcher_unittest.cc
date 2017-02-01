@@ -115,12 +115,8 @@ MATCHER_P(IsSingleArticle, url, "is a list with the single article %(url)s") {
 }
 
 MATCHER(IsCategoryInfoForArticles, "") {
-  if (!arg.has_more_action()) {
-    *result_listener << "missing expected has_more_action";
-    return false;
-  }
-  if (!arg.has_reload_action()) {
-    *result_listener << "missing expected has_reload_action";
+  if (!arg.has_fetch_action()) {
+    *result_listener << "missing expected has_fetc_action";
     return false;
   }
   if (arg.has_view_all_action()) {
@@ -558,8 +554,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
     } else if (category.category == Category::FromRemoteCategory(2)) {
       ASSERT_THAT(articles.size(), Eq(1u));
       EXPECT_THAT(articles[0]->url().spec(), Eq("http://localhost/foo2"));
-      EXPECT_THAT(category.info.has_more_action(), Eq(true));
-      EXPECT_THAT(category.info.has_reload_action(), Eq(true));
+      EXPECT_THAT(category.info.has_fetch_action(), Eq(true));
       EXPECT_THAT(category.info.has_view_all_action(), Eq(false));
       EXPECT_THAT(category.info.show_if_empty(), Eq(false));
     } else {
@@ -611,7 +606,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest,
 
   ASSERT_TRUE(fetched_categories);
   ASSERT_THAT(fetched_categories->size(), Eq(1u));
-  EXPECT_THAT(fetched_categories->front().info.has_more_action(), Eq(false));
+  EXPECT_THAT(fetched_categories->front().info.has_fetch_action(), Eq(false));
   EXPECT_THAT(fetched_categories->front().info.title(),
               Eq(base::UTF8ToUTF16("Articles for Me")));
 }

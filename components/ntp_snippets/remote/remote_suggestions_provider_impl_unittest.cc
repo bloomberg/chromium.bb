@@ -588,8 +588,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, CategoryTitle) {
   CategoryInfo info_before = service->GetCategoryInfo(articles_category());
   ASSERT_THAT(info_before.title(), Not(IsEmpty()));
   ASSERT_THAT(info_before.title(), Not(Eq(test_default_title)));
-  EXPECT_THAT(info_before.has_more_action(), Eq(true));
-  EXPECT_THAT(info_before.has_reload_action(), Eq(true));
+  EXPECT_THAT(info_before.has_fetch_action(), Eq(true));
   EXPECT_THAT(info_before.has_view_all_action(), Eq(false));
   EXPECT_THAT(info_before.show_if_empty(), Eq(true));
 
@@ -606,8 +605,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, CategoryTitle) {
   CategoryInfo info_with_title = service->GetCategoryInfo(articles_category());
   EXPECT_THAT(info_before.title(), Not(Eq(info_with_title.title())));
   EXPECT_THAT(test_default_title, Eq(info_with_title.title()));
-  EXPECT_THAT(info_before.has_more_action(), Eq(true));
-  EXPECT_THAT(info_before.has_reload_action(), Eq(true));
+  EXPECT_THAT(info_before.has_fetch_action(), Eq(true));
   EXPECT_THAT(info_before.has_view_all_action(), Eq(false));
   EXPECT_THAT(info_before.show_if_empty(), Eq(true));
 }
@@ -663,8 +661,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, MultipleCategories) {
 TEST_F(RemoteSuggestionsProviderImplTest, ArticleCategoryInfo) {
   auto service = MakeSuggestionsProvider();
   CategoryInfo article_info = service->GetCategoryInfo(articles_category());
-  EXPECT_THAT(article_info.has_more_action(), Eq(true));
-  EXPECT_THAT(article_info.has_reload_action(), Eq(true));
+  EXPECT_THAT(article_info.has_fetch_action(), Eq(true));
   EXPECT_THAT(article_info.has_view_all_action(), Eq(false));
   EXPECT_THAT(article_info.show_if_empty(), Eq(true));
 }
@@ -681,8 +678,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ExperimentalCategoryInfo) {
   LoadFromJSONString(service.get(), json_str);
 
   CategoryInfo info = service->GetCategoryInfo(unknown_category());
-  EXPECT_THAT(info.has_more_action(), Eq(false));
-  EXPECT_THAT(info.has_reload_action(), Eq(false));
+  EXPECT_THAT(info.has_fetch_action(), Eq(false));
   EXPECT_THAT(info.has_view_all_action(), Eq(false));
   EXPECT_THAT(info.show_if_empty(), Eq(false));
 }

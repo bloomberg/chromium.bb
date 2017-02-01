@@ -156,16 +156,20 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
 
         mSnippetsSource.setInfoForCategory(
                 fullCategory, new SuggestionsCategoryInfo(fullCategory, "Section Title",
-                                      ContentSuggestionsCardLayout.FULL_CARD, false, false, false,
-                                      true, "No suggestions"));
+                                      ContentSuggestionsCardLayout.FULL_CARD,
+                                      /*has_fetch_action=*/false,
+                                      /*has_view_all_action=*/false,
+                                      /*show_if_empty=*/true, "No suggestions"));
         mSnippetsSource.setStatusForCategory(fullCategory, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(
                 fullCategory, Arrays.asList(shortSnippet, longSnippet));
 
         mSnippetsSource.setInfoForCategory(
                 minimalCategory, new SuggestionsCategoryInfo(minimalCategory, "Section Title",
-                                         ContentSuggestionsCardLayout.MINIMAL_CARD, false, false,
-                                         false, true, "No suggestions"));
+                                         ContentSuggestionsCardLayout.MINIMAL_CARD,
+                                         /* has_fetch_action = */ false,
+                                         /* has_view_all_action = */ false,
+                                         /* show_if_empty = */ true, "No suggestions"));
         mSnippetsSource.setStatusForCategory(minimalCategory, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(
                 minimalCategory, Arrays.asList(minimalSnippet, minimalSnippet2));

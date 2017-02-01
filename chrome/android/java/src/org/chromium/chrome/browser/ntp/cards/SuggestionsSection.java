@@ -242,7 +242,6 @@ public class SuggestionsSection extends InnerNode {
 
     private void refreshChildrenVisibility() {
         mStatus.setVisible(!hasSuggestions());
-        mMoreButton.refreshVisibility();
     }
 
     @Override

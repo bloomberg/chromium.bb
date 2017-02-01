@@ -20,24 +20,22 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Item that allows the user to perform an action on the NTP.
- * Note: Use {@link #refreshVisibility()} to update the visibility of the button instead of calling
- * {@link #setVisible(boolean)} directly.
  */
 public class ActionItem extends OptionalLeaf {
-    @IntDef({ACTION_NONE, ACTION_VIEW_ALL, ACTION_FETCH_MORE, ACTION_RELOAD})
+    @IntDef({ACTION_NONE, ACTION_VIEW_ALL, ACTION_FETCH})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Action {}
     public static final int ACTION_NONE = 0;
     public static final int ACTION_VIEW_ALL = 1;
-    public static final int ACTION_FETCH_MORE = 2;
-    public static final int ACTION_RELOAD = 3;
+    public static final int ACTION_FETCH = 2;
 
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final SuggestionsSection mParentSection;
     private final SuggestionsRanker mSuggestionsRanker;
 
     @Action
-    private int mCurrentAction = ACTION_NONE;
+    private final int mCurrentAction;
+
     private boolean mImpressionTracked;
     private int mPerSectionRank = -1;
 
@@ -45,10 +43,6 @@ public class ActionItem extends OptionalLeaf {
         mCategoryInfo = section.getCategoryInfo();
         mParentSection = section;
         mSuggestionsRanker = ranker;
-    }
-
-    /** Call this instead of {@link #setVisible(boolean)} to update the visibility. */
-    public void refreshVisibility() {
         mCurrentAction = findAppropriateAction();
         setVisible(mCurrentAction != ACTION_NONE);
     }
@@ -86,8 +80,7 @@ public class ActionItem extends OptionalLeaf {
             case ACTION_VIEW_ALL:
                 mCategoryInfo.performViewAllAction(uiDelegate.getNavigationDelegate());
                 return;
-            case ACTION_FETCH_MORE:
-            case ACTION_RELOAD:
+            case ACTION_FETCH:
                 uiDelegate.getSuggestionsSource().fetchSuggestions(
                         mCategoryInfo.getCategory(), mParentSection.getDisplayedSuggestionIds());
                 mParentSection.onFetchStarted();
@@ -101,10 +94,8 @@ public class ActionItem extends OptionalLeaf {
 
     @Action
     private int findAppropriateAction() {
-        boolean hasSuggestions = mParentSection.hasSuggestions();
         if (mCategoryInfo.hasViewAllAction()) return ACTION_VIEW_ALL;
-        if (hasSuggestions && mCategoryInfo.hasFetchMoreAction()) return ACTION_FETCH_MORE;
-        if (!hasSuggestions && mCategoryInfo.hasReloadAction()) return ACTION_RELOAD;
+        if (mCategoryInfo.hasFetchAction()) return ACTION_FETCH;
         return ACTION_NONE;
     }
 

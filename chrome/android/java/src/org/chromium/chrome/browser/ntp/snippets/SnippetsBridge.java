@@ -286,10 +286,10 @@ public class SnippetsBridge implements SuggestionsSource, SuggestionsMetricsRepo
 
     @CalledByNative
     private static SuggestionsCategoryInfo createSuggestionsCategoryInfo(int category, String title,
-            int cardLayout, boolean hasMoreAction, boolean hasReloadAction,
-            boolean hasViewAllAction, boolean showIfEmpty, String noSuggestionsMessage) {
-        return new SuggestionsCategoryInfo(category, title, cardLayout, hasMoreAction,
-                hasReloadAction, hasViewAllAction, showIfEmpty, noSuggestionsMessage);
+            int cardLayout, boolean hasFetchAction, boolean hasViewAllAction, boolean showIfEmpty,
+            String noSuggestionsMessage) {
+        return new SuggestionsCategoryInfo(category, title, cardLayout, hasFetchAction,
+                hasViewAllAction, showIfEmpty, noSuggestionsMessage);
     }
 
     @CalledByNative
