@@ -374,8 +374,6 @@ set(AOM_UNIT_TEST_SOURCES
     #"${AOM_ROOT}/test/accounting_test.cc"
     "${AOM_ROOT}/test/acm_random.h"
     "${AOM_ROOT}/test/active_map_test.cc"
-    # not in test.mk
-    #"${AOM_ROOT}/test/add_noise_test.cc"
     "${AOM_ROOT}/test/altref_test.cc"
     "${AOM_ROOT}/test/android"
     # requires CONFIG_ANS
