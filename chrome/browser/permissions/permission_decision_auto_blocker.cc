@@ -47,14 +47,12 @@ int g_dismissal_embargo_days = 7;
 // TODO(meredithl): Revisit this once UMA metrics have data about request time.
 const int kCheckUrlTimeoutMs = 2000;
 
-// TODO(meredithl): Migrate to a new and more fitting type, once metrics have
-// been gathered, and deprecate CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT.
 std::unique_ptr<base::DictionaryValue> GetOriginDict(
     HostContentSettingsMap* settings,
     const GURL& origin_url) {
   std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(settings->GetWebsiteSetting(
-          origin_url, GURL(), CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
+          origin_url, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
           std::string(), nullptr));
   if (!dict)
     return base::MakeUnique<base::DictionaryValue>();
@@ -92,7 +90,7 @@ int RecordActionInWebsiteSettings(const GURL& url,
   permission_dict->SetInteger(key, ++current_count);
 
   map->SetWebsiteSettingDefaultScope(
-      url, GURL(), CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
+      url, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
       std::string(), std::move(dict));
 
   return current_count;
@@ -193,7 +191,7 @@ void PermissionDecisionAutoBlocker::RemoveCountsByUrl(
 
   std::unique_ptr<ContentSettingsForOneType> settings(
       new ContentSettingsForOneType);
-  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
                              std::string(), settings.get());
 
   for (const auto& site : *settings) {
@@ -201,7 +199,7 @@ void PermissionDecisionAutoBlocker::RemoveCountsByUrl(
 
     if (origin.is_valid() && filter.Run(origin)) {
       map->SetWebsiteSettingDefaultScope(
-          origin, GURL(), CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
+          origin, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
           std::string(), nullptr);
     }
   }
@@ -334,7 +332,6 @@ bool PermissionDecisionAutoBlocker::IsUnderEmbargo(
   return is_under_dismiss_embargo || is_under_blacklist_embargo;
 }
 
-// static
 void PermissionDecisionAutoBlocker::CheckSafeBrowsingResult(
     content::PermissionType permission,
     const GURL& request_origin,
@@ -349,7 +346,6 @@ void PermissionDecisionAutoBlocker::CheckSafeBrowsingResult(
   callback.Run(should_be_embargoed /* permission blocked */);
 }
 
-// static
 void PermissionDecisionAutoBlocker::PlaceUnderEmbargo(
     content::PermissionType permission,
     const GURL& request_origin,
@@ -362,7 +358,7 @@ void PermissionDecisionAutoBlocker::PlaceUnderEmbargo(
       dict.get(), PermissionUtil::GetPermissionString(permission));
   permission_dict->SetDouble(key, clock_->Now().ToInternalValue());
   map->SetWebsiteSettingDefaultScope(
-      request_origin, GURL(), CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
+      request_origin, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
       std::string(), std::move(dict));
 }
 

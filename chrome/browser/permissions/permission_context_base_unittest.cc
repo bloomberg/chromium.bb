@@ -417,7 +417,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     // feature, which is disabled by default.
     auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
     map->ClearSettingsForOneType(
-        CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT);
+        CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA);
 
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kBlockPromptsIfDismissedOften);
