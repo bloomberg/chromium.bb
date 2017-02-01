@@ -15,7 +15,8 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace base {
-class StringValue;
+class Value;
+using StringValue = Value;
 }
 
 namespace chromeos {

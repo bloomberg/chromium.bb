@@ -40,6 +40,48 @@ TEST(ValuesTest, ConstructDouble) {
   EXPECT_EQ(-4.655, value.GetDouble());
 }
 
+TEST(ValuesTest, ConstructStringFromConstCharPtr) {
+  const char* str = "foobar";
+  StringValue value(str);
+  EXPECT_EQ(Value::Type::STRING, value.type());
+  EXPECT_EQ("foobar", value.GetString());
+}
+
+TEST(ValuesTest, ConstructStringFromStdStringConstRef) {
+  std::string str = "foobar";
+  StringValue value(str);
+  EXPECT_EQ(Value::Type::STRING, value.type());
+  EXPECT_EQ("foobar", value.GetString());
+}
+
+TEST(ValuesTest, ConstructStringFromStdStringRefRef) {
+  std::string str = "foobar";
+  StringValue value(std::move(str));
+  EXPECT_EQ(Value::Type::STRING, value.type());
+  EXPECT_EQ("foobar", value.GetString());
+}
+
+TEST(ValuesTest, ConstructStringFromConstChar16Ptr) {
+  string16 str = ASCIIToUTF16("foobar");
+  StringValue value(str.c_str());
+  EXPECT_EQ(Value::Type::STRING, value.type());
+  EXPECT_EQ("foobar", value.GetString());
+}
+
+TEST(ValuesTest, ConstructStringFromString16) {
+  string16 str = ASCIIToUTF16("foobar");
+  StringValue value(str);
+  EXPECT_EQ(Value::Type::STRING, value.type());
+  EXPECT_EQ("foobar", value.GetString());
+}
+
+TEST(ValuesTest, ConstructStringFromStringPiece) {
+  StringPiece str = "foobar";
+  StringValue value(str);
+  EXPECT_EQ(Value::Type::STRING, value.type());
+  EXPECT_EQ("foobar", value.GetString());
+}
+
 // Group of tests for the copy constructors and copy-assigmnent. For equality
 // checks comparisons of the interesting fields are done instead of relying on
 // Equals being correct.
@@ -91,6 +133,19 @@ TEST(ValuesTest, CopyDouble) {
   EXPECT_EQ(value.GetDouble(), blank.GetDouble());
 }
 
+TEST(ValuesTest, CopyString) {
+  StringValue value("foobar");
+  StringValue copied_value(value);
+  EXPECT_EQ(value.type(), copied_value.type());
+  EXPECT_EQ(value.GetString(), copied_value.GetString());
+
+  Value blank;
+
+  blank = value;
+  EXPECT_EQ(value.type(), blank.type());
+  EXPECT_EQ(value.GetString(), blank.GetString());
+}
+
 // Group of tests for the move constructors and move-assigmnent.
 TEST(ValuesTest, MoveBool) {
   FundamentalValue true_value(true);
@@ -138,6 +193,19 @@ TEST(ValuesTest, MoveDouble) {
   blank = FundamentalValue(654.38);
   EXPECT_EQ(Value::Type::DOUBLE, blank.type());
   EXPECT_EQ(654.38, blank.GetDouble());
+}
+
+TEST(ValuesTest, MoveString) {
+  StringValue value("foobar");
+  StringValue moved_value(std::move(value));
+  EXPECT_EQ(Value::Type::STRING, moved_value.type());
+  EXPECT_EQ("foobar", moved_value.GetString());
+
+  Value blank;
+
+  blank = StringValue("foobar");
+  EXPECT_EQ(Value::Type::STRING, blank.type());
+  EXPECT_EQ("foobar", blank.GetString());
 }
 
 TEST(ValuesTest, Basic) {

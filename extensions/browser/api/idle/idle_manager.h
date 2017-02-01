@@ -22,7 +22,8 @@
 #include "ui/base/idle/idle.h"
 
 namespace base {
-class StringValue;
+class Value;
+using StringValue = Value;
 }  // namespace base
 
 namespace content {

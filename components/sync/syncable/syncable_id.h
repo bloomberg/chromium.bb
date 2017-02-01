@@ -15,7 +15,8 @@
 #include "base/trace_event/memory_usage_estimator.h"
 
 namespace base {
-class StringValue;
+class Value;
+using StringValue = Value;
 }  // namespace base
 
 namespace sql {

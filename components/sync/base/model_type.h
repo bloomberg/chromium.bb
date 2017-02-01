@@ -16,8 +16,8 @@
 
 namespace base {
 class ListValue;
-class StringValue;
 class Value;
+using StringValue = Value;
 }
 
 namespace sync_pb {

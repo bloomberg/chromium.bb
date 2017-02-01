@@ -144,6 +144,12 @@ class JSONStringValue : public Value {
   explicit JSONStringValue(StringPiece piece)
       : Value(Type::STRING), string_piece_(piece) {}
 
+  ~JSONStringValue() override {
+    // Ugly hack that prevents ~Value() from trying to destroy string_value_.
+    // TODO(crbug.com/646113): Clean this up when StringValue will be removed.
+    type_ = Type::NONE;
+  }
+
   // Overridden from Value:
   bool GetAsString(std::string* out_value) const override {
     string_piece_.CopyToString(out_value);
@@ -152,6 +158,12 @@ class JSONStringValue : public Value {
   bool GetAsString(string16* out_value) const override {
     *out_value = UTF8ToUTF16(string_piece_);
     return true;
+  }
+  // base::Value::GetAsString contains a proper implementation now, so the old
+  // behavior is copied here.
+  // TODO(crbug.com/646113): Clean this up when StringValue will be removed.
+  bool GetAsString(const StringValue** out_value) const override {
+    return false;
   }
   bool GetAsString(StringPiece* out_value) const override {
     *out_value = string_piece_;

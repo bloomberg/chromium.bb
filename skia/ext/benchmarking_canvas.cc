@@ -121,7 +121,7 @@ std::unique_ptr<base::Value> AsValue(SkBlendMode mode) {
   std::unique_ptr<base::StringValue> val(
       new base::StringValue(SkBlendMode_Name(mode)));
 
-  return std::move(val);
+  return val;
 }
 
 std::unique_ptr<base::Value> AsValue(SkCanvas::PointMode mode) {
@@ -131,7 +131,7 @@ std::unique_ptr<base::Value> AsValue(SkCanvas::PointMode mode) {
   std::unique_ptr<base::StringValue> val(
       new base::StringValue(gModeStrings[mode]));
 
-  return std::move(val);
+  return val;
 }
 
 std::unique_ptr<base::Value> AsValue(const SkColorFilter& filter) {
@@ -261,7 +261,7 @@ std::unique_ptr<base::Value> SaveLayerFlagsAsValue(
 
   std::unique_ptr<base::StringValue> val(new base::StringValue(builder.str()));
 
-  return std::move(val);
+  return val;
 }
 
 std::unique_ptr<base::Value> AsValue(SkClipOp op) {
@@ -276,7 +276,7 @@ std::unique_ptr<base::Value> AsValue(SkClipOp op) {
   DCHECK_LT(index, SK_ARRAY_COUNT(gOpStrings));
   std::unique_ptr<base::StringValue> val(
       new base::StringValue(gOpStrings[index]));
-  return std::move(val);
+  return val;
 }
 
 std::unique_ptr<base::Value> AsValue(const SkRegion& region) {

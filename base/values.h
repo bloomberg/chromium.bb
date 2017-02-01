@@ -30,6 +30,7 @@
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/manual_constructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 
@@ -38,9 +39,9 @@ namespace base {
 class BinaryValue;
 class DictionaryValue;
 class ListValue;
-class StringValue;
 class Value;
 using FundamentalValue = Value;
+using StringValue = Value;
 
 // The Value class is the base class for Values. A Value can be instantiated
 // via the Create*Value() factory methods, or by directly creating instances of
@@ -70,6 +71,19 @@ class BASE_EXPORT Value {
   explicit Value(bool in_bool);
   explicit Value(int in_int);
   explicit Value(double in_double);
+
+  // Value(const char*) and Value(const char16*) are required despite
+  // Value(const std::string&) and Value(const string16&) because otherwise the
+  // compiler will choose the Value(bool) constructor for these arguments.
+  // Value(std::string&&) allow for efficient move construction.
+  // Value(StringPiece) exists due to many callsites passing StringPieces as
+  // arguments.
+  explicit Value(const char* in_string);
+  explicit Value(const std::string& in_string);
+  explicit Value(std::string&& in_string);
+  explicit Value(const char16* in_string);
+  explicit Value(const string16& in_string);
+  explicit Value(StringPiece in_string);
 
   Value& operator=(const Value& that);
   Value& operator=(Value&& that);
@@ -101,6 +115,7 @@ class BASE_EXPORT Value {
   bool GetBool() const;
   int GetInt() const;
   double GetDouble() const;  // Implicitly converts from int if necessary.
+  const std::string& GetString() const;
 
   // These methods allow the convenient retrieval of the contents of the Value.
   // If the current object can be converted into the given type, the value is
@@ -137,42 +152,24 @@ class BASE_EXPORT Value {
   // NULLs are considered equal but different from Value::CreateNullValue().
   static bool Equals(const Value* a, const Value* b);
 
- private:
-  void InternalCopyFrom(const Value& that);
-
+ protected:
+  // TODO(crbug.com/646113): Make this private once JSONStringValue is removed.
   Type type_;
+
+ private:
+  void InternalCopyFundamentalValue(const Value& that);
+  void InternalCopyConstructFrom(const Value& that);
+  void InternalMoveConstructFrom(Value&& that);
+  void InternalCopyAssignFrom(const Value& that);
+  void InternalMoveAssignFrom(Value&& that);
+  void InternalCleanup();
 
   union {
     bool bool_value_;
     int int_value_;
     double double_value_;
+    ManualConstructor<std::string> string_value_;
   };
-};
-
-class BASE_EXPORT StringValue : public Value {
- public:
-  // Initializes a StringValue with a UTF-8 narrow character string.
-  explicit StringValue(StringPiece in_value);
-
-  // Initializes a StringValue with a string16.
-  explicit StringValue(const string16& in_value);
-
-  ~StringValue() override;
-
-  // Returns |value_| as a pointer or reference.
-  std::string* GetString();
-  const std::string& GetString() const;
-
-  // Overridden from Value:
-  bool GetAsString(std::string* out_value) const override;
-  bool GetAsString(string16* out_value) const override;
-  bool GetAsString(const StringValue** out_value) const override;
-  bool GetAsString(StringPiece* out_value) const override;
-  StringValue* DeepCopy() const override;
-  bool Equals(const Value* other) const override;
-
- private:
-  std::string value_;
 };
 
 class BASE_EXPORT BinaryValue: public Value {
@@ -543,11 +540,6 @@ class BASE_EXPORT ValueDeserializer {
 // override each specific type. Otherwise, the default template implementation
 // is preferred over an upcast.
 BASE_EXPORT std::ostream& operator<<(std::ostream& out, const Value& value);
-
-BASE_EXPORT inline std::ostream& operator<<(std::ostream& out,
-                                            const StringValue& value) {
-  return out << static_cast<const Value&>(value);
-}
 
 BASE_EXPORT inline std::ostream& operator<<(std::ostream& out,
                                             const DictionaryValue& value) {

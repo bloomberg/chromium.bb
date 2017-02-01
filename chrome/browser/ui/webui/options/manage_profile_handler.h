@@ -15,7 +15,8 @@
 #include "components/sync/driver/sync_service_observer.h"
 
 namespace base {
-class StringValue;
+class Value;
+using StringValue = Value;
 }
 
 namespace options {

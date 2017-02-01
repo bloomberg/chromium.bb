@@ -27,7 +27,11 @@ class TestStringValue : public base::Value {
   explicit TestStringValue(const std::string& in_value)
       : base::Value(Type::STRING), value_(in_value) {}
 
-  ~TestStringValue() override {}
+  ~TestStringValue() override {
+    // Ugly hack that prevents ~Value() from trying to destroy string_value_.
+    // TODO(crbug.com/646113): Clean this up when StringValue will be removed.
+    type_ = Type::NONE;
+  }
 
   // Overridden from Value:
   bool GetAsString(std::string* out_value) const override {
