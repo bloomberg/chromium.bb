@@ -76,6 +76,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     protected static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
     private static final String UNKNOWN_MIME_TYPE = "application/unknown";
     private static final String DOWNLOAD_UMA_ENTRY = "DownloadUmaEntry";
+    private static final String DOWNLOAD_RETRY_COUNT_FILE_NAME = "DownloadRetryCount";
     private static final long UPDATE_DELAY_MILLIS = 1000;
     // Wait 10 seconds to resume all downloads, so that we won't impact tab loading.
     private static final long RESUME_DELAY_MILLIS = 10000;
@@ -132,6 +133,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private NetworkChangeNotifierAutoDetect mNetworkChangeNotifier;
     // Flag to track if we need to post a task to update download notifications.
     private boolean mIsUIUpdateScheduled;
+    private int mAutoResumptionLimit = -1;
 
     /**
      * Class representing progress of a download.
@@ -256,6 +258,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
         // is a singleton that lives forever and there's no clean shutdown of Chrome on Android.
         init();
         clearPendingOMADownloads();
+        // Pre-load shared prefs to avoid being blocked on the disk access async task in the future.
+        getAutoRetryCountSharedPreference();
     }
 
     @VisibleForTesting
@@ -751,6 +755,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             case DOWNLOAD_STATUS_CANCELLED:
                 recordDownloadFinishedUMA(downloadStatus, downloadItem.getId(),
                         downloadItem.getDownloadInfo().getBytesReceived());
+                clearDownloadRetryCount(downloadItem.getId());
                 break;
             case DOWNLOAD_STATUS_INTERRUPTED:
                 entry = getUmaStatsEntry(downloadItem.getId());
@@ -1106,11 +1111,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
         }
     }
 
-    /**
-     * Called to resume a paused download.
-     * @param item Download item to resume.
-     * @param hasUserGesture Whether the resumption is triggered by user gesture.
-     */
     @Override
     public void resumeDownload(DownloadItem item, boolean hasUserGesture) {
         DownloadProgress progress = mDownloadProgressMap.get(item.getId());
@@ -1135,6 +1135,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
             // unmetered network should not affect the original connection type.
             if (!progress.mCanDownloadWhileMetered) {
                 progress.mCanDownloadWhileMetered = isActiveNetworkMetered(mContext);
+            }
+            clearDownloadRetryCount(item.getId());
+        } else {
+            int count = incrementAndReturnDownloadRetryCount(item.getId());
+            if (count > getAutoResumptionLimit()) {
+                removeAutoResumableDownload(item.getId());
+                onDownloadInterrupted(item.getDownloadInfo(), false);
+                return;
             }
         }
         nativeResumeDownload(getNativeDownloadManagerService(), item.getId(),
@@ -1676,6 +1684,50 @@ public class DownloadManagerService extends BroadcastReceiver implements
         }
     }
 
+    /**
+     * Returns the SharedPreferences for download retry count.
+     * @return The SharedPreferences to use.
+     */
+    private SharedPreferences getAutoRetryCountSharedPreference() {
+        return ContextUtils.getApplicationContext().getSharedPreferences(
+                DOWNLOAD_RETRY_COUNT_FILE_NAME, Context.MODE_PRIVATE);
+    }
+
+    /**
+     * Increments the interruption count for a download. If the interruption count reaches a certain
+     * threshold, the download will no longer auto resume unless user click the resume button
+     * to clear the count.
+     * @param downloadGuid Download GUID.
+     * @return The interruption count of the download, after incrementation.
+     */
+    private int incrementAndReturnDownloadRetryCount(String downloadGuid) {
+        SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference();
+        int count = sharedPrefs.getInt(downloadGuid, 0);
+        count++;
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putInt(downloadGuid, count);
+        editor.apply();
+        return count;
+    }
+
+    /**
+     * clears the interruption count for a download.
+     * @param downloadGuid Download GUID.
+     */
+    private void clearDownloadRetryCount(String downloadGuid) {
+        SharedPreferences sharedPrefs = getAutoRetryCountSharedPreference();
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.remove(downloadGuid);
+        editor.apply();
+    }
+
+    int getAutoResumptionLimit() {
+        if (mAutoResumptionLimit < 0) {
+            mAutoResumptionLimit = nativeGetAutoResumptionLimit();
+        }
+        return mAutoResumptionLimit;
+    }
+
     @Override
     public void onMaxBandwidthChanged(double maxBandwidthMbps) {}
 
@@ -1692,6 +1744,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     public void purgeActiveNetworkList(long[] activeNetIds) {}
 
     private static native boolean nativeIsSupportedMimeType(String mimeType);
+    private static native int nativeGetAutoResumptionLimit();
 
     private native long nativeInit();
     private native void nativeResumeDownload(
