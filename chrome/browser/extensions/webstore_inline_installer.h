@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_INLINE_INSTALLER_H_
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_INLINE_INSTALLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -49,6 +50,7 @@ class WebstoreInlineInstaller : public WebstoreStandaloneInstaller,
   ~WebstoreInlineInstaller() override;
 
   // Implementations WebstoreStandaloneInstaller Template Method's hooks.
+  std::string GetJsonPostData() override;
   bool CheckRequestorAlive() const override;
   const GURL& GetRequestorURL() const override;
   bool ShouldShowPostInstallUI() const override;

@@ -37,15 +37,26 @@ WebstoreDataFetcher::WebstoreDataFetcher(
 
 WebstoreDataFetcher::~WebstoreDataFetcher() {}
 
+void WebstoreDataFetcher::SetJsonPostData(const std::string& json) {
+  json_post_data_ = json;
+}
+
 void WebstoreDataFetcher::Start() {
   GURL webstore_data_url(extension_urls::GetWebstoreItemJsonDataURL(id_));
-
+  net::URLFetcher::RequestType request_type =
+      json_post_data_.empty() ? net::URLFetcher::GET : net::URLFetcher::POST;
   webstore_data_url_fetcher_ =
-      net::URLFetcher::Create(webstore_data_url, net::URLFetcher::GET, this);
+      net::URLFetcher::Create(webstore_data_url, request_type, this);
   webstore_data_url_fetcher_->SetRequestContext(request_context_);
   webstore_data_url_fetcher_->SetReferrer(referrer_url_.spec());
   webstore_data_url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                                            net::LOAD_DISABLE_CACHE);
+
+  if (!json_post_data_.empty()) {
+    webstore_data_url_fetcher_->SetUploadData("application/json",
+                                              json_post_data_);
+  }
+
   if (max_auto_retries_ > 0) {
     webstore_data_url_fetcher_->SetMaxRetriesOn5xx(max_auto_retries_);
     webstore_data_url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(

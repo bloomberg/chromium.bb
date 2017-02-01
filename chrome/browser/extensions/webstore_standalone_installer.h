@@ -91,6 +91,11 @@ class WebstoreStandaloneInstaller
   // Allows subclasses to set properties of the install data.
   virtual void InitInstallData(ActiveInstallData* install_data) const;
 
+  // Gives subclasses an opportunity to provide extra post data in the form of
+  // serialized JSON to the webstore data request before sending. The default
+  // implementation returns an empty string.
+  virtual std::string GetJsonPostData();
+
   // Called at certain check points of the workflow to decide whether it makes
   // sense to proceed with installation. A requestor can be a website that
   // initiated an inline installation, or a command line option.
