@@ -27,6 +27,7 @@
 
 using testing::ContextMenuItemWithText;
 using testing::ElementToDismissContextMenu;
+using web::WebViewContainingText;
 
 // Context menu test cases for the web shell.
 @interface ContextMenuTestCase : ShellBaseTestCase
@@ -36,26 +37,24 @@ using testing::ElementToDismissContextMenu;
 
 // Tests context menu appears on a regular link.
 - (void)testContextMenu {
-// TODO(crbug.com/687546): Tests disabled on devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Disabled for devices because it is very flaky.");
-#endif
-
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   GURL initialURL = web::test::HttpServer::MakeUrl("http://contextMenuOpen");
   GURL destinationURL = web::test::HttpServer::MakeUrl("http://destination");
   // The initial page contains a link to the destination URL.
   std::string linkID = "link";
+  std::string linkText = "link for context menu";
   responses[initialURL] =
       "<body>"
       "<a href='" +
-      destinationURL.spec() + "' id='" + linkID +
-      "'>link for context menu</a>"
+      destinationURL.spec() + "' id='" + linkID + "'>" + linkText +
+      "</a>"
       "</span></body>";
 
   web::test::SetUpSimpleHttpServer(responses);
   [ShellEarlGrey loadURL:initialURL];
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(linkText)]
+      assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::longPressElementForContextMenu(
@@ -85,14 +84,17 @@ using testing::ElementToDismissContextMenu;
   // The initial page contains a link to the destination URL that has an
   // ancestor that disables the context menu via -webkit-touch-callout.
   std::string linkID = "link";
+  std::string linkText = "no-callout link";
   responses[initialURL] = "<body><a href='" + destinationURL.spec() +
                           "' style='-webkit-touch-callout: none' id='" +
-                          linkID +
-                          "'>no-callout link</a>"
+                          linkID + "'>" + linkText +
+                          "</a>"
                           "</body>";
 
   web::test::SetUpSimpleHttpServer(responses);
   [ShellEarlGrey loadURL:initialURL];
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(linkText)]
+      assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::longPressElementForContextMenu(
@@ -115,15 +117,18 @@ using testing::ElementToDismissContextMenu;
   // The initial page contains a link to the destination URL that has an
   // ancestor that disables the context menu via -webkit-touch-callout.
   std::string linkID = "link";
+  std::string linkText = "ancestor no-callout link";
   responses[initialURL] =
       "<body style='-webkit-touch-callout: none'>"
       "<a href='" +
-      destinationURL.spec() + "' id='" + linkID +
-      "'>ancestor no-callout link</a>"
+      destinationURL.spec() + "' id='" + linkID + "'>" + linkText +
+      "</a>"
       "</body>";
 
   web::test::SetUpSimpleHttpServer(responses);
   [ShellEarlGrey loadURL:initialURL];
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(linkText)]
+      assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::longPressElementForContextMenu(
@@ -146,16 +151,19 @@ using testing::ElementToDismissContextMenu;
   // The initial page contains a link to the destination URL that has an
   // ancestor that disables the context menu via -webkit-touch-callout.
   std::string linkID = "link";
+  std::string linkText = "override no-callout link";
   responses[initialURL] =
       "<body style='-webkit-touch-callout: none'>"
       "<a href='" +
       destinationURL.spec() + "' style='-webkit-touch-callout: default' id='" +
-      linkID +
-      "'>override no-callout link</a>"
+      linkID + "'>" + linkText +
+      "</a>"
       "</body>";
 
   web::test::SetUpSimpleHttpServer(responses);
   [ShellEarlGrey loadURL:initialURL];
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(linkText)]
+      assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::longPressElementForContextMenu(
