@@ -195,7 +195,7 @@ MY_TEST_P(ARCH_POSTFIX(V128_V128_Part3), TestIntrinsics) {
   INSTANTIATE_TEST_CASE_P(name, type, ::testing::Values(__VA_ARGS__))
 
 #define SIMD_TUPLE(name, mask, maskwidth) \
-  std::tr1::make_tuple(mask, maskwidth, #name)
+  std::tr1::make_tuple(mask, maskwidth, static_cast<const char *>(#name))
 
 INSTANTIATE(ARCH, ARCH_POSTFIX(U32_V64V64),
             (SIMD_TUPLE(v64_sad_u8, 0U, 0U), SIMD_TUPLE(v64_ssd_u8, 0U, 0U)));
