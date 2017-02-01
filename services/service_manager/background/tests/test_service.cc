@@ -7,10 +7,13 @@
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 
 namespace service_manager {
 
+// A service that exports a simple interface for testing. Used to test the
+// parent background service manager.
 class TestClient : public Service,
                    public InterfaceFactory<mojom::TestService>,
                    public mojom::TestService {
@@ -39,6 +42,8 @@ class TestClient : public Service,
   void Test(const TestCallback& callback) override {
     callback.Run();
   }
+
+  void Quit() override { context()->RequestQuit(); }
 
   mojo::BindingSet<mojom::TestService> bindings_;
 

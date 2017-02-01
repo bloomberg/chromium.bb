@@ -52,7 +52,7 @@ class Service {
   // may be reaped shortly afterward if applicable.
   //
   // Return true from this method to tell the ServiceContext to signal its
-  // shutdown extenrally (i.e. to invoke it's "connection lost" closure if set),
+  // shutdown externally (i.e. to invoke its "connection lost" closure if set),
   // or return false to defer the signal. If deferred, the Service should
   // explicitly call QuitNow() on the ServiceContext when it's ready to be
   // torn down.

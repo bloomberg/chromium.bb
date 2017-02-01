@@ -20,6 +20,7 @@ namespace {
 const char kTestName[] = "background_service_manager_unittest";
 const char kAppName[] = "background_service_manager_test_service";
 
+// The parent unit test suite service, not the underlying test service.
 class ServiceImpl : public Service {
  public:
   ServiceImpl() {}
@@ -39,8 +40,6 @@ void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
   *flag = true;
   closure.Run();
 }
-
-}  // namespace
 
 // Uses BackgroundServiceManager to start the service manager in the background
 // and connects to background_service_manager_test_service, verifying we can
@@ -71,4 +70,41 @@ TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
   EXPECT_TRUE(got_result);
 }
 
+// The out param cannot be last due to base::Bind() currying.
+void QuitCallback(bool* callback_called,
+                  const base::Closure& quit_closure,
+                  const Identity& identity) {
+  EXPECT_EQ(kAppName, identity.name());
+  *callback_called = true;
+  quit_closure.Run();
+}
+
+// Verifies that quitting a service invokes the quit callback.
+TEST(BackgroundServiceManagerTest, SetInstanceQuitCallback) {
+  BackgroundServiceManager background_service_manager(nullptr, nullptr);
+  base::MessageLoop message_loop;
+  mojom::ServicePtr service;
+  ServiceContext service_context(base::MakeUnique<ServiceImpl>(),
+                                 mojom::ServiceRequest(&service));
+  background_service_manager.RegisterService(
+      Identity(kTestName, mojom::kRootUserID), std::move(service), nullptr);
+
+  mojom::TestServicePtr test_service;
+  service_context.connector()->BindInterface(kAppName, &test_service);
+
+  // Set a callback for when the service quits that will quit |run_loop|.
+  base::RunLoop run_loop;
+  bool callback_called = false;
+  background_service_manager.SetInstanceQuitCallback(
+      base::Bind(&QuitCallback, &callback_called, run_loop.QuitClosure()));
+
+  // Ask the service to quit itself.
+  test_service->Quit();
+  run_loop.Run();
+
+  // The run loop was quit by the callback and not by something else.
+  EXPECT_TRUE(callback_called);
+}
+
+}  // namespace
 }  // namespace service_manager

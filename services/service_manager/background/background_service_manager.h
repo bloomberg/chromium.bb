@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/threading/thread.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -15,6 +16,7 @@
 #include "services/service_manager/runner/host/service_process_launcher.h"
 
 namespace base {
+class SingleThreadTaskRunner;
 class Value;
 class WaitableEvent;
 }
@@ -22,6 +24,7 @@ class WaitableEvent;
 namespace service_manager {
 
 class Context;
+class Identity;
 class ServiceManager;
 
 // BackgroundServiceManager runs a Service Manager on a dedicated background
@@ -43,6 +46,12 @@ class BackgroundServiceManager {
                        mojom::ServicePtr service,
                        mojom::PIDReceiverRequest pid_receiver_request);
 
+  // Provide a callback to be notified whenever a service is destroyed.
+  // Typically the creator of BackgroundServiceManager will use this to shut
+  // down when some set of services it created is destroyed. The |callback| is
+  // called on whichever thread called this function.
+  void SetInstanceQuitCallback(base::Callback<void(const Identity&)> callback);
+
  private:
   void InitializeOnBackgroundThread(
       service_manager::ServiceProcessLauncher::Delegate* launcher_delegate,
@@ -52,6 +61,10 @@ class BackgroundServiceManager {
       const Identity& identity,
       mojom::ServicePtrInfo service_info,
       mojom::PIDReceiverRequest pid_receiver_request);
+  void SetInstanceQuitCallbackOnBackgroundThread(
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+      const base::Callback<void(const Identity&)>& callback);
+  void OnInstanceQuitOnBackgroundThread(const Identity& identity);
 
   base::Thread background_thread_;
 

@@ -16,8 +16,9 @@
       },
       "requires": {
         "service_manager": [ "service_manager:instance_per_child" ],
-        "mash_session": [ "app" ],
-        "catalog": [ "control" ]
+        "catalog": [ "control" ],
+        "ash": [ "app" ],
+        "quick_launch": [ "app" ]
       }
     }
   }

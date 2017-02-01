@@ -25,7 +25,13 @@ class MashRunner {
   int Run();
 
  private:
-  void RunMain();
+  // Runs the main process, including the service manager. Returns the exit
+  // value for the process.
+  int RunMain();
+
+  // Runs a background service manager in the main process. Returns the exit
+  // value for the process.
+  int RunServiceManagerInMain();
 
   // Returns 0 if the child process was initialized correctly, or error code on
   // failure.
@@ -33,6 +39,7 @@ class MashRunner {
 
   void StartChildApp(service_manager::mojom::ServiceRequest service_request);
 
+  // Context for service manager in the main process.
   std::unique_ptr<service_manager::ServiceContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(MashRunner);

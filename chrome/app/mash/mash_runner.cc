@@ -32,8 +32,9 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
+#include "mash/common/config.h"
 #include "mash/package/mash_packaged_service.h"
-#include "mash/session/public/interfaces/constants.mojom.h"
+#include "mash/quick_launch/public/interfaces/constants.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -146,6 +147,25 @@ void InitializeCrashReporting() {
 }
 #endif  // defined(OS_CHROMEOS)
 
+// Quits |run_loop| if the |identity| of the quitting service is critical to the
+// system (e.g. the window manager). Used in the main process.
+void OnInstanceQuitInMain(base::RunLoop* run_loop,
+                          int* exit_value,
+                          const service_manager::Identity& identity) {
+  DCHECK(exit_value);
+  DCHECK(run_loop);
+
+  // TODO(jamescook): Also shut down if the window server dies.
+  if (identity.name() != mash::common::GetWindowManagerServiceName())
+    return;
+
+  if (!run_loop->running())
+    return;
+
+  *exit_value = 1;
+  run_loop->Quit();
+}
+
 }  // namespace
 
 MashRunner::MashRunner() {}
@@ -158,11 +178,11 @@ int MashRunner::Run() {
 
   if (IsChild())
     return RunChild();
-  RunMain();
-  return 0;
+
+  return RunMain();
 }
 
-void MashRunner::RunMain() {
+int MashRunner::RunMain() {
   base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
 
   mojo::edk::Init();
@@ -174,6 +194,14 @@ void MashRunner::RunMain() {
       ipc_thread.task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
 
+  int exit_value = RunServiceManagerInMain();
+
+  ipc_thread.Stop();
+  base::TaskScheduler::GetInstance()->Shutdown();
+  return exit_value;
+}
+
+int MashRunner::RunServiceManagerInMain() {
   // TODO(sky): refactor BackgroundServiceManager so can supply own context, we
   // shouldn't we using context as it has a lot of stuff we don't really want
   // in chrome.
@@ -189,11 +217,22 @@ void MashRunner::RunMain() {
           kChromeMashServiceName, service_manager::mojom::kRootUserID),
       std::move(service), nullptr);
 
-  // Ping mash_session to ensure an instance is brought up
-  context_->connector()->Connect(mash::session::mojom::kServiceName);
-  base::RunLoop().Run();
+  // Quit the main process if an important child (e.g. window manager) dies.
+  // On Chrome OS the OS-level session_manager will restart the main process.
+  base::RunLoop run_loop;
+  int exit_value = 0;
+  background_service_manager.SetInstanceQuitCallback(
+      base::Bind(&OnInstanceQuitInMain, &run_loop, &exit_value));
 
-  base::TaskScheduler::GetInstance()->Shutdown();
+  // Ping services that we know we want to launch on startup.
+  // TODO(jamescook): Start the window server / ui service explicitly.
+  context_->connector()->Connect(mash::common::GetWindowManagerServiceName());
+  context_->connector()->Connect(mash::quick_launch::mojom::kServiceName);
+
+  run_loop.Run();
+
+  context_.reset();
+  return exit_value;
 }
 
 int MashRunner::RunChild() {
@@ -213,10 +252,13 @@ void MashRunner::StartChildApp(
   // going to be mojo:ui at this point. So always create a TYPE_UI message loop
   // for now.
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::RunLoop run_loop;
   context_.reset(new service_manager::ServiceContext(
       base::MakeUnique<mash::MashPackagedService>(),
       std::move(service_request)));
-  base::RunLoop().Run();
+  // Quit the child process if it loses its connection to service manager.
+  context_->SetConnectionLostClosure(run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 int MashMain() {

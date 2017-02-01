@@ -6,4 +6,7 @@ module service_manager.mojom;
 
 interface TestService {
   Test() => ();
+
+  // Asks the test service to quit itself.
+  Quit();
 };
