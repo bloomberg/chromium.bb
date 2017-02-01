@@ -7,11 +7,13 @@
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/wm/window_properties.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -55,7 +57,10 @@ void SettingsWindowObserver::OnNewSettingsWindow(Browser* settings_browser) {
   window->SetTitle(l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* icon = rb.GetImageSkiaNamed(IDR_ASH_SHELF_ICON_SETTINGS);
+  gfx::ImageSkia* icon =
+      base::FeatureList::IsEnabled(features::kMaterialDesignSettings)
+          ? rb.GetImageSkiaNamed(IDR_ASH_SHELF_ICON_MD_SETTINGS)
+          : rb.GetImageSkiaNamed(IDR_ASH_SHELF_ICON_SETTINGS);
   // The new gfx::ImageSkia instance is owned by the window itself.
   window->SetProperty(aura::client::kWindowIconKey, new gfx::ImageSkia(*icon));
   aura_window_tracker_->Add(window);
