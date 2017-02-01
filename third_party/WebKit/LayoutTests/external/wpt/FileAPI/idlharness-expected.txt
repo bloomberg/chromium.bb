@@ -1,7 +1,6 @@
 CONSOLE MESSAGE: line 251: callback not yet supported
 This is a testharness.js-based test.
 PASS URL interface: operation createObjectURL(Blob) 
-FAIL URL interface: operation createFor(Blob) assert_own_property: interface object missing static operation expected property "createFor" missing
 PASS URL interface: operation revokeObjectURL(DOMString) 
 PASS Blob interface: existence and properties of interface object 
 PASS Blob interface object length 
