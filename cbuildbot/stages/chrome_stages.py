@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import glob
 import multiprocessing
-import platform
 import os
 
 from chromite.cbuildbot import commands
@@ -251,13 +250,6 @@ class SimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
                         filename=constants.PARTIAL_METADATA_JSON)
 
   def PerformStage(self):
-    if platform.dist()[-1] == 'lucid':
-      # Chrome no longer builds on Lucid. See crbug.com/276311
-      print('Ubuntu lucid is no longer supported.')
-      print('Please upgrade to Ubuntu Precise.')
-      logging.PrintBuildbotStepWarnings()
-      return
-
     steps = [self._BuildAndArchiveChromeSysroot, self._ArchiveChromeEbuildEnv,
              self._GenerateAndUploadMetadata]
     with self.ArtifactUploader(self._upload_queue, archive=False):
