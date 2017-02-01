@@ -532,6 +532,7 @@ test("ios_web_unittests") {
     "public/test/crw_mock_web_state_delegate.h",
     "public/test/crw_mock_web_state_delegate.mm",
     "public/web_state/page_viewport_state_unittest.mm",
+    "test/web_test_unittest.mm",
     "url_scheme_util_unittest.mm",
     "url_util_unittest.cc",
     "web_state/context_menu_params_utils_unittest.mm",

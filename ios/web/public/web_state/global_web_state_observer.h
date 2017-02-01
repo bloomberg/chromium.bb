@@ -45,6 +45,10 @@ class GlobalWebStateObserver {
   virtual void PageLoaded(WebState* web_state,
                           PageLoadCompletionStatus load_completion_status) {}
 
+  // Called when the web process is terminated (usually by crashing, though
+  // possibly by other means).
+  virtual void RenderProcessGone(WebState* web_state) {}
+
   // Called when |web_state| is being destroyed.
   virtual void WebStateDestroyed(WebState* web_state) {}
 

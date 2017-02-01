@@ -1013,6 +1013,9 @@ class CRWWebControllerWebProcessTest : public web::WebTestWithWebController {
             initWithMockWebView:webView_
                      scrollView:[webView_ scrollView]]);
     [web_controller() injectWebViewContentView:webViewContentView];
+
+    // This test intentionally crashes the render process.
+    SetIgnoreRenderProcessCrashesDuringTesting(true);
   }
   base::scoped_nsobject<WKWebView> webView_;
 };

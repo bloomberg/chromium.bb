@@ -46,6 +46,7 @@ class GlobalWebStateEventTracker {
   void WebStateDidStopLoading(WebState* web_state);
   void PageLoaded(WebState* web_state,
                   PageLoadCompletionStatus load_completion_status);
+  void RenderProcessGone(WebState* web_state);
   void WebStateDestroyed(WebState* web_state);
 
   GlobalWebStateEventTracker();

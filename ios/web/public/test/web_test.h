@@ -14,6 +14,7 @@ namespace web {
 
 class BrowserState;
 class TestWebClient;
+class WebTestRenderProcessCrashObserver;
 
 // A test fixture for web tests that need a minimum environment set up that
 // mimics a web embedder.
@@ -32,6 +33,12 @@ class WebTest : public PlatformTest {
   // Returns the BrowserState that is used for testing.
   virtual BrowserState* GetBrowserState();
 
+  // If called with |true|, prevents the test fixture from automatically failing
+  // when a render process crashes during the test.  This is useful for tests
+  // that intentionally crash the render process.  By default, the WebTest
+  // fixture will fail if a render process crashes.
+  void SetIgnoreRenderProcessCrashesDuringTesting(bool allow);
+
  private:
   // The WebClient used in tests.
   ScopedTestingWebClient web_client_;
@@ -39,6 +46,9 @@ class WebTest : public PlatformTest {
   web::TestWebThreadBundle thread_bundle_;
   // The browser state used in tests.
   TestBrowserState browser_state_;
+
+  // Triggers test failures if a render process dies during the test.
+  std::unique_ptr<WebTestRenderProcessCrashObserver> crash_observer_;
 };
 
 }  // namespace web
