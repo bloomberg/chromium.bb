@@ -20,7 +20,7 @@
 - (void)testLaunchAndTappingCell {
   [[EarlGrey selectElementWithMatcher:grey_text(@"TabGridViewController")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_text(@"Tab 0")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Tab 0_button")]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_text(@"TabCommands")]
       assertWithMatcher:grey_notNil()];

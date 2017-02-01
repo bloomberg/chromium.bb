@@ -242,6 +242,22 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
                           }];
 }
 
+- (void)setAppearanceForTabTitle:(NSString*)title
+                         favicon:(UIImage*)favicon
+                        cellSize:(CGSize)cellSize {
+  [_titleLabel setText:title];
+  [_snapshotButton setAccessibilityIdentifier:
+                      [NSString stringWithFormat:@"%@_button", title]];
+  [self contentView].accessibilityLabel = title;
+  if (favicon) {
+    [_favicon setImage:favicon];
+  } else {
+    [_favicon setImage:NativeImage(IDR_IOS_OMNIBOX_HTTP)];
+  }
+
+  // PLACEHOLDER: Set snapshot here.
+}
+
 - (void)setSessionType:(TabSwitcherSessionType)type {
   UIColor* topBarBackgroundColor;
   UIColor* closeButtonTintColor;
