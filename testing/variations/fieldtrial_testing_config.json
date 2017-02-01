@@ -2409,6 +2409,26 @@
             ]
         }
     ],
+    "TranslateRankerLogging": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "TranslateRankerLogging",
+                    "enable_features": [
+                        "TranslateRankerLogging"
+                    ]
+                }
+            ]
+        }
+    ],
     "TranslateUiLangTrial": [
         {
             "platforms": [
