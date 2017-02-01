@@ -222,7 +222,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     bool operator==(const NonInheritedData& other) const {
       return m_effectiveDisplay == other.m_effectiveDisplay &&
              m_originalDisplay == other.m_originalDisplay &&
-             m_overflowAnchor == other.m_overflowAnchor &&
              m_overflowX == other.m_overflowX &&
              m_overflowY == other.m_overflowY &&
              m_verticalAlign == other.m_verticalAlign &&
@@ -251,7 +250,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     unsigned m_effectiveDisplay : 5;  // EDisplay
     unsigned m_originalDisplay : 5;   // EDisplay
-    unsigned m_overflowAnchor : 2;    // EOverflowAnchor
     unsigned m_overflowX : 3;         // EOverflow
     unsigned m_overflowY : 3;         // EOverflow
     unsigned m_verticalAlign : 4;     // EVerticalAlign
@@ -306,8 +304,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_effectiveDisplay =
         m_nonInheritedData.m_originalDisplay =
             static_cast<unsigned>(initialDisplay());
-    m_nonInheritedData.m_overflowAnchor =
-        static_cast<unsigned>(initialOverflowAnchor());
     m_nonInheritedData.m_overflowX = static_cast<unsigned>(initialOverflowX());
     m_nonInheritedData.m_overflowY = static_cast<unsigned>(initialOverflowY());
     m_nonInheritedData.m_verticalAlign =
@@ -1466,18 +1462,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setOutlineOffset(int v) {
     SET_VAR(m_rareNonInheritedData, m_outline.m_offset, v);
-  }
-
-  // Overflow properties.
-  // overflow-anchor
-  static EOverflowAnchor initialOverflowAnchor() {
-    return EOverflowAnchor::kAuto;
-  }
-  EOverflowAnchor overflowAnchor() const {
-    return static_cast<EOverflowAnchor>(m_nonInheritedData.m_overflowAnchor);
-  }
-  void setOverflowAnchor(EOverflowAnchor v) {
-    m_nonInheritedData.m_overflowAnchor = static_cast<unsigned>(v);
   }
 
   // overflow-x

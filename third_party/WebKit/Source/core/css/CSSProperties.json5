@@ -1279,7 +1279,12 @@
     {
       name: "overflow-anchor",
       runtime_flag: "ScrollAnchoring",
-      type_name: "EOverflowAnchor",
+      inherited: false,
+      initial_keyword: "auto",
+      keyword_only: true,
+      keywords: [
+        "visible", "none", "auto",
+      ],
     },
     {
       name: "overflow-wrap",
