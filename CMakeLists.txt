@@ -17,6 +17,18 @@ set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
 include("${AOM_ROOT}/build/cmake/aom_optimization.cmake")
 
+set(AOM_RTCD_SOURCES
+    "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
+    "${AOM_CONFIG_DIR}/aom_scale_rtcd.h"
+    "${AOM_CONFIG_DIR}/av1_rtcd.h"
+    "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl"
+    "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c"
+    "${AOM_ROOT}/aom_scale/aom_scale_rtcd.pl"
+    "${AOM_ROOT}/aom_scale/aom_scale_rtcd.c"
+    "${AOM_ROOT}/av1/common/av1_rtcd_defs.pl"
+    "${AOM_ROOT}/av1/common/av1_rtcd.c"
+    "${AOM_ROOT}/build/make/rtcd.pl")
+
 # TODO(tomfinegan): Use libwebm's cmake support directly.
 set(AOM_LIBWEBM_SOURCES
     "${AOM_ROOT}/third_party/libwebm/common/hdr_util.cc"
@@ -86,7 +98,6 @@ set(AOM_DSP_SOURCES
     "${AOM_ROOT}/aom_dsp/aom_convolve.h"
     "${AOM_ROOT}/aom_dsp/aom_dsp_common.h"
     "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c"
-    "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
     "${AOM_ROOT}/aom_dsp/aom_filter.h"
     "${AOM_ROOT}/aom_dsp/aom_simd.h"
     "${AOM_ROOT}/aom_dsp/aom_simd_inline.h"
@@ -149,7 +160,6 @@ set(AOM_MEM_SOURCES
 set(AOM_SCALE_SOURCES
     "${AOM_ROOT}/aom_scale/aom_scale.h"
     "${AOM_ROOT}/aom_scale/aom_scale_rtcd.c"
-    "${AOM_CONFIG_DIR}/aom_scale_rtcd.h"
     "${AOM_ROOT}/aom_scale/generic/aom_scale.c"
     "${AOM_ROOT}/aom_scale/generic/gen_scalers.c"
     "${AOM_ROOT}/aom_scale/generic/yv12config.c"
@@ -183,7 +193,6 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/common/av1_inv_txfm2d.c"
     "${AOM_ROOT}/av1/common/av1_inv_txfm2d_cfg.h"
     "${AOM_ROOT}/av1/common/av1_rtcd.c"
-    "${AOM_CONFIG_DIR}/av1_rtcd.h"
     "${AOM_ROOT}/av1/common/av1_txfm.h"
     "${AOM_ROOT}/av1/common/blockd.c"
     "${AOM_ROOT}/av1/common/blockd.h"
@@ -652,40 +661,46 @@ include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
 
 # Targets
 # TODO(tomfinegan): Add support for enable/disable encoder/decoder.
-add_library(aom_dsp OBJECT ${AOM_DSP_SOURCES})
-AomAddRtcdGenerationCommand(${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl
-                            ${AOM_CONFIG_DIR}/aom_dsp_rtcd.h
-                            ${AOM_CONFIG_DIR}/aom_dsp/aom_dsp_rtcd.c
-                            aom_dsp_rtcd)
-
-add_library(aom_encoder_stats OBJECT ${AOM_ENCODER_STATS_SOURCES})
-add_library(aom_mem OBJECT ${AOM_MEM_SOURCES})
-
-add_library(aom_scale OBJECT ${AOM_SCALE_SOURCES})
-AomAddRtcdGenerationCommand(${AOM_ROOT}/aom_scale/aom_scale_rtcd.pl
-                            ${AOM_CONFIG_DIR}/aom_scale_rtcd.h
-                            ${AOM_CONFIG_DIR}/aom_scale/aom_scale_rtcd.c
-                            aom_scale_rtcd)
-
-add_library(aom_util OBJECT ${AOM_UTIL_SOURCES})
-
-add_library(aom_av1_common OBJECT ${AOM_AV1_COMMON_SOURCES})
-AomAddRtcdGenerationCommand(${AOM_ROOT}/av1/common/av1_rtcd_defs.pl
-                            ${AOM_CONFIG_DIR}/av1_rtcd.h
-                            ${AOM_CONFIG_DIR}/av1/common/av1_rtcd.c
-                            aom_av1_rtcd)
-
-add_library(aom_av1_decoder OBJECT ${AOM_AV1_DECODER_SOURCES})
-add_library(aom_av1_encoder OBJECT ${AOM_AV1_ENCODER_SOURCES})
+add_rtcd_build_step("${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl"
+                    "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
+                    "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c"
+                    "aom_dsp_rtcd")
+add_rtcd_build_step("${AOM_ROOT}/aom_scale/aom_scale_rtcd.pl"
+                    "${AOM_CONFIG_DIR}/aom_scale_rtcd.h"
+                    "${AOM_ROOT}/aom_scale/aom_scale_rtcd.c"
+                    "aom_scale_rtcd")
+add_rtcd_build_step("${AOM_ROOT}/av1/common/av1_rtcd_defs.pl"
+                    "${AOM_CONFIG_DIR}/av1_rtcd.h"
+                    "${AOM_ROOT}/av1/common/av1_rtcd.c"
+                    "av1_rtcd")
+add_library(aom_rtcd OBJECT ${AOM_RTCD_SOURCES})
+add_library(aom_util OBJECT ${AOM_UTIL_SOURCES} ${AOM_RTCD_HEADER_FILE_LIST})
+add_library(aom_dsp OBJECT ${AOM_DSP_SOURCES} ${AOM_RTCD_HEADER_FILE_LIST})
+add_library(aom_encoder_stats OBJECT ${AOM_ENCODER_STATS_SOURCES}
+            ${AOM_RTCD_HEADER_FILE_LIST})
+add_library(aom_mem OBJECT ${AOM_MEM_SOURCES} ${AOM_RTCD_HEADER_FILE_LIST})
+add_library(aom_scale OBJECT ${AOM_SCALE_SOURCES} ${AOM_RTCD_HEADER_FILE_LIST})
+add_library(aom_av1_common OBJECT ${AOM_AV1_COMMON_SOURCES}
+            ${AOM_RTCD_HEADER_FILE_LIST})
+add_library(aom_av1_decoder OBJECT ${AOM_AV1_DECODER_SOURCES}
+            ${AOM_RTCD_HEADER_FILE_LIST})
+add_library(aom_av1_encoder OBJECT ${AOM_AV1_ENCODER_SOURCES}
+            ${AOM_RTCD_HEADER_FILE_LIST})
 add_library(aom
             ${AOM_SOURCES}
+            ${AOM_RTCD_HEADER_FILE_LIST}
             $<TARGET_OBJECTS:aom_dsp>
             $<TARGET_OBJECTS:aom_mem>
+            $<TARGET_OBJECTS:aom_rtcd>
             $<TARGET_OBJECTS:aom_scale>
             $<TARGET_OBJECTS:aom_util>
             $<TARGET_OBJECTS:aom_av1_common>
             $<TARGET_OBJECTS:aom_av1_decoder>
             $<TARGET_OBJECTS:aom_av1_encoder>)
+
+# List of object and static library targets.
+set(AOM_LIB_TARGETS aom_rtcd aom_util aom_dsp aom_encoder_stats aom_mem
+    aom_scale aom_av1_common aom_av1_decoder aom_av1_encoder aom)
 
 #
 # Assembly and intrinsic targets.
@@ -748,6 +763,12 @@ if (HAVE_AVX2)
                                 "AOM_AV1_ENCODER_AVX2_INTRIN")
 endif ()
 
+# Make all library targets depend on aom_rtcd to make sure it builds first.
+foreach (aom_lib ${AOM_LIB_TARGETS})
+  if (NOT "${aom_lib}" STREQUAL "aom_rtcd")
+    add_dependencies(${aom_lib} aom_rtcd)
+  endif ()
+endforeach ()
 #
 # Application and application support targets.
 #

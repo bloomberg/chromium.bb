@@ -26,6 +26,10 @@ function (add_intrinsics_object_library flag opt_name target_to_update sources)
   add_library(${target_name} OBJECT ${${sources}})
   target_compile_options(${target_name} PUBLIC ${flag})
   target_sources(aom PUBLIC $<TARGET_OBJECTS:${target_name}>)
+
+  # Add the new lib target to the global list of aom library targets.
+  list(APPEND AOM_LIB_TARGETS ${target_name})
+  set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} PARENT_SCOPE)
 endfunction ()
 
 # Adds build commands for ASM files in $sources and uses $asm_build_name to

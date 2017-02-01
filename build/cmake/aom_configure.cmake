@@ -146,34 +146,35 @@ set(AOM_RTCD_SOURCE_FILE_LIST
     "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c"
     "${AOM_ROOT}/aom_scale/aom_scale_rtcd.c"
     "${AOM_ROOT}/av1/common/av1_rtcd.c")
-set(AOM_RTCD_SYMBOL_LIST aom_dsp_rtcd aom_scale_rtcd aom_av1_rtcd)
+set(AOM_RTCD_SYMBOL_LIST aom_dsp_rtcd aom_scale_rtcd av1_rtcd)
 list(LENGTH AOM_RTCD_SYMBOL_LIST AOM_RTCD_CUSTOM_COMMAND_COUNT)
 math(EXPR AOM_RTCD_CUSTOM_COMMAND_COUNT "${AOM_RTCD_CUSTOM_COMMAND_COUNT} - 1")
+
 foreach(NUM RANGE ${AOM_RTCD_CUSTOM_COMMAND_COUNT})
   list(GET AOM_RTCD_CONFIG_FILE_LIST ${NUM} AOM_RTCD_CONFIG_FILE)
   list(GET AOM_RTCD_HEADER_FILE_LIST ${NUM} AOM_RTCD_HEADER_FILE)
   list(GET AOM_RTCD_SOURCE_FILE_LIST ${NUM} AOM_RTCD_SOURCE_FILE)
   list(GET AOM_RTCD_SYMBOL_LIST ${NUM} AOM_RTCD_SYMBOL)
-  execute_process(COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/make/rtcd.pl"
-                  --arch=${AOM_ARCH} --sym=${AOM_RTCD_SYMBOL}
-                  --config=${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd
-                  ${AOM_RTCD_CONFIG_FILE}
-                  OUTPUT_FILE ${AOM_RTCD_HEADER_FILE})
+  execute_process(
+    COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/make/rtcd.pl"
+      --arch=${AOM_ARCH} --sym=${AOM_RTCD_SYMBOL}
+      --config=${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd ${AOM_RTCD_CONFIG_FILE}
+    OUTPUT_FILE ${AOM_RTCD_HEADER_FILE})
 endforeach()
 
-macro(AomAddRtcdGenerationCommand config output source symbol)
-  add_custom_command(OUTPUT ${output}
-                     COMMAND ${PERL_EXECUTABLE}
-                     ARGS "${AOM_ROOT}/build/make/rtcd.pl"
-                          --arch=${AOM_ARCH} --sym=${symbol}
-                          --config=${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd
-                          ${config} > ${output}
-                     DEPENDS ${config}
-                     COMMENT "Generating ${output}"
-                     WORKING_DIRECTORY ${AOM_CONFIG_DIR}
-                     VERBATIM)
-  set_property(SOURCE ${source} APPEND PROPERTY OBJECT_DEPENDS ${output})
-endmacro()
+function (add_rtcd_build_step config output source symbol)
+  add_custom_command(
+    OUTPUT ${output}
+    COMMAND ${PERL_EXECUTABLE}
+    ARGS "${AOM_ROOT}/build/make/rtcd.pl" --arch=${AOM_ARCH} --sym=${symbol}
+      --config=${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd ${config} > ${output}
+    DEPENDS ${config}
+    COMMENT "Generating ${output}"
+    WORKING_DIRECTORY ${AOM_CONFIG_DIR}
+    VERBATIM)
+  set_property(SOURCE ${source} PROPERTY OBJECT_DEPENDS ${output})
+  set_property(SOURCE ${output} PROPERTY GENERATED)
+endfunction ()
 
 # Generate aom_version.h.
 if ("${AOM_GIT_DESCRIPTION}" STREQUAL "")
