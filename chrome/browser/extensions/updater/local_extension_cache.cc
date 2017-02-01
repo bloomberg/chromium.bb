@@ -560,7 +560,8 @@ void LocalExtensionCache::OnCacheEntryInstalled(
 
   CacheMap::iterator it = InsertCacheEntry(cached_extensions_, id, info, false);
   if (it == cached_extensions_.end()) {
-    DCHECK(0) << "Cache contains newer or the same version";
+    LOG(WARNING) << "Cache contains newer or the same version for extension "
+                 << id << " version " << info.version;
     callback.Run(info.file_path, true);
     return;
   }
