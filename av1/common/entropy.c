@@ -4405,11 +4405,14 @@ static void build_token_cdfs(const aom_prob *pdf_model,
   assert(pdf_model[2] != 0);
 
   // Do the head (ZERO, ONE, TWO or more)
-  cdf_head[ZERO_TOKEN] = sum = (pdf_model[1] << 7);
-  scale = (1 << 15) - cdf_head[ZERO_TOKEN];
-  p = AOMMAX(1, (scale * 128 * pdf_model[2] + (1 << 14)) >> 15);
-  cdf_head[ONE_TOKEN] = cdf_head[ZERO_TOKEN] + p;
-  cdf_head[TWO_TOKEN] = (1 << 15);
+  cdf_head[ZERO_TOKEN] = sum = (pdf_model[1] << (CDF_PROB_BITS - 8));
+  assert(cdf_head[ZERO_TOKEN] < CDF_PROB_TOP);
+  scale = CDF_PROB_TOP - cdf_head[ZERO_TOKEN];
+  p = ROUND_POWER_OF_TWO(scale * (pdf_model[2] << (CDF_PROB_BITS - 8)),
+                         CDF_PROB_BITS);
+  cdf_head[ONE_TOKEN] = cdf_head[ZERO_TOKEN] + AOMMAX(1, p);
+  assert(cdf_head[ONE_TOKEN] < CDF_PROB_TOP);
+  cdf_head[TWO_TOKEN] = CDF_PROB_TOP;
 
   // Do the tail
   sum = 0;

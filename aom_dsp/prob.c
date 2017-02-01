@@ -198,7 +198,7 @@ int tree_to_cdf(const aom_tree_index *tree, const aom_prob *probs,
     nsymbs++;
   }
   /* Compute the probabilities of each symbol in Q15 */
-  tree_node_compute_probs(symb, 0, 32768);
+  tree_node_compute_probs(symb, 0, CDF_PROB_TOP);
   /* Extract the cdf, index, path and length */
   tree_node_extract(symb, 0, 0, cdf, index, path, len);
   /* Convert to CDF */

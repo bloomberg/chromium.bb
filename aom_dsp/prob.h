@@ -27,6 +27,9 @@ typedef uint8_t aom_prob;
 // TODO(negge): Rename this aom_prob once we remove vpxbool.
 typedef uint16_t aom_cdf_prob;
 
+#define CDF_PROB_BITS 15
+#define CDF_PROB_TOP (1 << CDF_PROB_BITS)
+
 #define MAX_PROB 255
 
 #define aom_prob_half ((aom_prob)128)
@@ -144,7 +147,7 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
 #if 1
   const int tmp0 = 1 << rate2;
   tmp = tmp0;
-  diff = ((32768 - (nsymbs << rate2)) >> rate) << rate;
+  diff = ((CDF_PROB_TOP - (nsymbs << rate2)) >> rate) << rate;
   // Single loop (faster)
   for (i = 0; i < nsymbs - 1; ++i, tmp += tmp0) {
     tmp += (i == val ? diff : 0);
@@ -155,7 +158,7 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
     tmp = (i + 1) << rate2;
     cdf[i] -= ((cdf[i] - tmp) >> rate);
   }
-  diff = 32768 - cdf[nsymbs - 1];
+  diff = CDF_PROB_TOP - cdf[nsymbs - 1];
 
   for (i = val; i < nsymbs; ++i) {
     cdf[i] += diff;
