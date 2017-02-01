@@ -29,6 +29,7 @@ source_set("mash") {
     "//services/service_manager/runner/common",
     "//services/service_manager/runner/host:lib",
     "//services/service_manager/standalone",
+    "//services/ui/public/interfaces:constants",
     "//url",
   ]
 

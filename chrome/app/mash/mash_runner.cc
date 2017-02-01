@@ -50,6 +50,7 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/runner/init.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -155,13 +156,13 @@ void OnInstanceQuitInMain(base::RunLoop* run_loop,
   DCHECK(exit_value);
   DCHECK(run_loop);
 
-  // TODO(jamescook): Also shut down if the window server dies.
-  if (identity.name() != mash::common::GetWindowManagerServiceName())
+  if (identity.name() != mash::common::GetWindowManagerServiceName() &&
+      identity.name() != ui::mojom::kServiceName) {
     return;
+  }
 
-  if (!run_loop->running())
-    return;
-
+  LOG(ERROR) << "Main process exiting because service " << identity.name()
+             << " quit unexpectedly.";
   *exit_value = 1;
   run_loop->Quit();
 }
@@ -224,8 +225,9 @@ int MashRunner::RunServiceManagerInMain() {
   background_service_manager.SetInstanceQuitCallback(
       base::Bind(&OnInstanceQuitInMain, &run_loop, &exit_value));
 
-  // Ping services that we know we want to launch on startup.
-  // TODO(jamescook): Start the window server / ui service explicitly.
+  // Ping services that we know we want to launch on startup (UI service,
+  // window manager, quick launch app).
+  context_->connector()->Connect(ui::mojom::kServiceName);
   context_->connector()->Connect(mash::common::GetWindowManagerServiceName());
   context_->connector()->Connect(mash::quick_launch::mojom::kServiceName);
 
