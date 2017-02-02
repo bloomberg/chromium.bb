@@ -117,10 +117,12 @@ resources, native libraries, etc.
 * Java editing and gradle compile works.
 * Instrumentation tests included as androidTest.
 * Symlinks to existing .so files in jniLibs (doesn't generate them).
+* Editing resource xml files.
 
 ### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
-* Make gradle aware of resources and assets
+* Make gradle aware of assets
+* Layout editor
 * Add a mode in which gradle is responsible for generating `R.java`
 * Add support for native code editing
 * Make the "Make Project" button work correctly
