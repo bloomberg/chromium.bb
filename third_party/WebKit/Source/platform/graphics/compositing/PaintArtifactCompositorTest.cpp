@@ -705,6 +705,47 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
             scrollNode.main_thread_scrolling_reasons);
 }
 
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformUnderScrollNode) {
+  RefPtr<TransformPaintPropertyNode> scrollTranslation =
+      TransformPaintPropertyNode::createScrollTranslation(
+          TransformPaintPropertyNode::root(),
+          TransformationMatrix().translate(7, 9), FloatPoint3D(), false, 0,
+          CompositingReasonNone, CompositorElementId(),
+          ScrollPaintPropertyNode::root(), IntSize(11, 13), IntSize(27, 31),
+          true, false, 0 /* mainThreadScrollingReasons */);
+
+  RefPtr<TransformPaintPropertyNode> transform =
+      TransformPaintPropertyNode::create(
+          scrollTranslation, TransformationMatrix(), FloatPoint3D(), false, 0,
+          CompositingReason3DTransform);
+
+  TestPaintArtifact artifact;
+  artifact
+      .chunk(scrollTranslation, ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(2, 4, 6, 8), Color::black)
+      .chunk(transform, ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(1, 3, 5, 7), Color::white);
+  update(artifact.build());
+
+  const cc::ScrollTree& scrollTree = propertyTrees().scroll_tree;
+  // Node #0 reserved for null; #1 for root render surface.
+  ASSERT_EQ(3u, scrollTree.size());
+  const cc::ScrollNode& scrollNode = *scrollTree.Node(2);
+
+  // Both layers should refer to the same scroll tree node.
+  EXPECT_EQ(scrollNode.id, contentLayerAt(0)->scroll_tree_index());
+  EXPECT_EQ(scrollNode.id, contentLayerAt(1)->scroll_tree_index());
+
+  const cc::TransformTree& transformTree = propertyTrees().transform_tree;
+  const cc::TransformNode& scrollTransformNode =
+      *transformTree.Node(scrollNode.transform_id);
+  // The layers have different transform nodes.
+  EXPECT_EQ(scrollTransformNode.id, contentLayerAt(0)->transform_tree_index());
+  EXPECT_NE(scrollTransformNode.id, contentLayerAt(1)->transform_tree_index());
+}
+
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   RefPtr<EffectPaintPropertyNode> effect =
       createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);

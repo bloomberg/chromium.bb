@@ -19,6 +19,22 @@ TransformPaintPropertyNode* TransformPaintPropertyNode::root() {
   return root;
 }
 
+const ScrollPaintPropertyNode*
+TransformPaintPropertyNode::findEnclosingScrollNode() const {
+  if (m_scroll)
+    return m_scroll.get();
+
+  for (const auto* ancestor = parent(); ancestor;
+       ancestor = ancestor->parent()) {
+    if (const auto* scrollNode = ancestor->scrollNode())
+      return scrollNode;
+  }
+  // The root transform node references the root scroll node so a scroll node
+  // should always exist.
+  NOTREACHED();
+  return nullptr;
+}
+
 String TransformPaintPropertyNode::toString() const {
   auto transform = String::format(
       "parent=%p transform=%s origin=%s flattensInheritedTransform=%s "
