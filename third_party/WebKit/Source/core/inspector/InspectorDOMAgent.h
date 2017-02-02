@@ -118,6 +118,10 @@ class CORE_EXPORT InspectorDOMAgent final
   Response getDocument(Maybe<int> depth,
                        Maybe<bool> traverseFrames,
                        std::unique_ptr<protocol::DOM::Node>* root) override;
+  Response getFlattenedDocument(
+      Maybe<int> depth,
+      Maybe<bool> pierce,
+      std::unique_ptr<protocol::Array<protocol::DOM::Node>>* nodes) override;
   Response collectClassNamesFromSubtree(
       int nodeId,
       std::unique_ptr<protocol::Array<String>>* classNames) override;
@@ -291,17 +295,21 @@ class CORE_EXPORT InspectorDOMAgent final
 
   void invalidateFrameOwnerElement(LocalFrame*);
 
-  std::unique_ptr<protocol::DOM::Node> buildObjectForNode(Node*,
-                                                          int depth,
-                                                          bool traverseFrames,
-                                                          NodeToIdMap*);
+  std::unique_ptr<protocol::DOM::Node> buildObjectForNode(
+      Node*,
+      int depth,
+      bool traverseFrames,
+      NodeToIdMap*,
+      protocol::Array<protocol::DOM::Node>* flattenResult = nullptr);
   std::unique_ptr<protocol::Array<String>> buildArrayForElementAttributes(
       Element*);
   std::unique_ptr<protocol::Array<protocol::DOM::Node>>
-  buildArrayForContainerChildren(Node* container,
-                                 int depth,
-                                 bool traverseFrames,
-                                 NodeToIdMap* nodesMap);
+  buildArrayForContainerChildren(
+      Node* container,
+      int depth,
+      bool traverseFrames,
+      NodeToIdMap* nodesMap,
+      protocol::Array<protocol::DOM::Node>* flattenResult);
   std::unique_ptr<protocol::Array<protocol::DOM::Node>>
   buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
   std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>

@@ -494,6 +494,29 @@ Response InspectorDOMAgent::getDocument(
   return Response::OK();
 }
 
+Response InspectorDOMAgent::getFlattenedDocument(
+    Maybe<int> depth,
+    Maybe<bool> pierce,
+    std::unique_ptr<protocol::Array<protocol::DOM::Node>>* nodes) {
+  if (!enabled())
+    return Response::Error("Document not enabled");
+
+  if (!m_document)
+    return Response::Error("Document is not available");
+
+  discardFrontendBindings();
+
+  int sanitizedDepth = depth.fromMaybe(-1);
+  if (sanitizedDepth == -1)
+    sanitizedDepth = INT_MAX;
+
+  nodes->reset(new protocol::Array<protocol::DOM::Node>());
+  (*nodes)->addItem(buildObjectForNode(
+      m_document.get(), sanitizedDepth, pierce.fromMaybe(false),
+      m_documentNodeToIdMap.get(), nodes->get()));
+  return Response::OK();
+}
+
 void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId,
                                                  int depth,
                                                  bool pierce) {
@@ -520,7 +543,7 @@ void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId,
   }
 
   std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
-      buildArrayForContainerChildren(node, depth, pierce, nodeMap);
+      buildArrayForContainerChildren(node, depth, pierce, nodeMap, nullptr);
   frontend()->setChildNodes(nodeId, std::move(children));
 }
 
@@ -1540,7 +1563,8 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(
     Node* node,
     int depth,
     bool pierce,
-    NodeToIdMap* nodesMap) {
+    NodeToIdMap* nodesMap,
+    protocol::Array<protocol::DOM::Node>* flattenResult) {
   int id = bind(node, nodesMap);
   String localName;
   String nodeValue;
@@ -1589,8 +1613,8 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(
                                   : nullptr)
         value->setFrameId(IdentifiersFactory::frameId(frame));
       if (Document* doc = frameOwner->contentDocument()) {
-        value->setContentDocument(
-            buildObjectForNode(doc, pierce ? depth : 0, pierce, nodesMap));
+        value->setContentDocument(buildObjectForNode(
+            doc, pierce ? depth : 0, pierce, nodesMap, flattenResult));
       }
     }
 
@@ -1606,8 +1630,8 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(
           protocol::Array<protocol::DOM::Node>::create();
       for (ShadowRoot* root = &shadow->youngestShadowRoot(); root;
            root = root->olderShadowRoot()) {
-        shadowRoots->addItem(
-            buildObjectForNode(root, pierce ? depth : 0, pierce, nodesMap));
+        shadowRoots->addItem(buildObjectForNode(
+            root, pierce ? depth : 0, pierce, nodesMap, flattenResult));
       }
       value->setShadowRoots(std::move(shadowRoots));
       forcePushChildren = true;
@@ -1617,15 +1641,16 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(
       HTMLLinkElement& linkElement = toHTMLLinkElement(*element);
       if (linkElement.isImport() && linkElement.import() &&
           innerParentNode(linkElement.import()) == linkElement) {
-        value->setImportedDocument(
-            buildObjectForNode(linkElement.import(), 0, pierce, nodesMap));
+        value->setImportedDocument(buildObjectForNode(
+            linkElement.import(), 0, pierce, nodesMap, flattenResult));
       }
       forcePushChildren = true;
     }
 
     if (isHTMLTemplateElement(*element)) {
-      value->setTemplateContent(buildObjectForNode(
-          toHTMLTemplateElement(*element).content(), 0, pierce, nodesMap));
+      value->setTemplateContent(
+          buildObjectForNode(toHTMLTemplateElement(*element).content(), 0,
+                             pierce, nodesMap, flattenResult));
       forcePushChildren = true;
     }
 
@@ -1680,7 +1705,8 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(
     if (forcePushChildren && !depth)
       depth = 1;
     std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
-        buildArrayForContainerChildren(node, depth, pierce, nodesMap);
+        buildArrayForContainerChildren(node, depth, pierce, nodesMap,
+                                       flattenResult);
     if (children->length() > 0 ||
         depth)  // Push children along with shadow in any case.
       value->setChildren(std::move(children));
@@ -1704,10 +1730,12 @@ InspectorDOMAgent::buildArrayForElementAttributes(Element* element) {
 }
 
 std::unique_ptr<protocol::Array<protocol::DOM::Node>>
-InspectorDOMAgent::buildArrayForContainerChildren(Node* container,
-                                                  int depth,
-                                                  bool pierce,
-                                                  NodeToIdMap* nodesMap) {
+InspectorDOMAgent::buildArrayForContainerChildren(
+    Node* container,
+    int depth,
+    bool pierce,
+    NodeToIdMap* nodesMap,
+    protocol::Array<protocol::DOM::Node>* flattenResult) {
   std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
       protocol::Array<protocol::DOM::Node>::create();
   if (depth == 0) {
@@ -1716,7 +1744,14 @@ InspectorDOMAgent::buildArrayForContainerChildren(Node* container,
     Node* firstChild = container->firstChild();
     if (firstChild && firstChild->getNodeType() == Node::kTextNode &&
         !firstChild->nextSibling()) {
-      children->addItem(buildObjectForNode(firstChild, 0, pierce, nodesMap));
+      std::unique_ptr<protocol::DOM::Node> childNode =
+          buildObjectForNode(firstChild, 0, pierce, nodesMap, flattenResult);
+      childNode->setParentId(bind(container, nodesMap));
+      if (flattenResult) {
+        flattenResult->addItem(std::move(childNode));
+      } else {
+        children->addItem(std::move(childNode));
+      }
       m_childrenRequested.insert(bind(container, nodesMap));
     }
     return children;
@@ -1727,7 +1762,15 @@ InspectorDOMAgent::buildArrayForContainerChildren(Node* container,
   m_childrenRequested.insert(bind(container, nodesMap));
 
   while (child) {
-    children->addItem(buildObjectForNode(child, depth, pierce, nodesMap));
+    std::unique_ptr<protocol::DOM::Node> childNode =
+        buildObjectForNode(child, depth, pierce, nodesMap, flattenResult);
+    childNode->setParentId(bind(container, nodesMap));
+    if (flattenResult) {
+      flattenResult->addItem(std::move(childNode));
+    } else {
+      children->addItem(std::move(childNode));
+    }
+    m_childrenRequested.insert(bind(container, nodesMap));
     child = innerNextSibling(child);
   }
   return children;

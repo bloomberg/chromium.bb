@@ -189,6 +189,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "HTML",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 1,
            "styleIndex": 0
         })raw_string",
 
@@ -200,7 +201,8 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeId": 3,
            "nodeName": "HEAD",
            "nodeType": 1,
-           "nodeValue": ""
+           "nodeValue": "",
+           "parentId": 2
         })raw_string",
 
         R"raw_string({
@@ -211,7 +213,8 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeId": 4,
            "nodeName": "TITLE",
            "nodeType": 1,
-           "nodeValue": ""
+           "nodeValue": "",
+           "parentId": 3
         })raw_string",
 
         R"raw_string({
@@ -220,7 +223,8 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeId": 5,
            "nodeName": "#text",
            "nodeType": 3,
-           "nodeValue": "Hello world!"
+           "nodeValue": "Hello world!",
+           "parentId": 4
         })raw_string",
 
         R"raw_string({
@@ -232,7 +236,8 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeId": 6,
            "nodeName": "LINK",
            "nodeType": 1,
-           "nodeValue": ""
+           "nodeValue": "",
+           "parentId": 3
         })raw_string",
 
         R"raw_string({
@@ -250,6 +255,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "BODY",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 2,
            "styleIndex": 1
         })raw_string",
 
@@ -268,6 +274,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "DIV",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 7,
            "styleIndex": 0
         })raw_string",
 
@@ -286,6 +293,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "H1",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 8,
            "styleIndex": 2
         })raw_string",
 
@@ -313,6 +321,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "#text",
            "nodeType": 3,
            "nodeValue": "Some text.",
+           "parentId": 9,
            "styleIndex": 2
         })raw_string",
 
@@ -334,6 +343,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "IFRAME",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 8,
            "styleIndex": 6
         })raw_string",
 
@@ -366,6 +376,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "HTML",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 12,
            "styleIndex": 3
         })raw_string",
 
@@ -377,7 +388,8 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeId": 14,
            "nodeName": "HEAD",
            "nodeType": 1,
-           "nodeValue": ""
+           "nodeValue": "",
+           "parentId": 13
         })raw_string",
 
         R"raw_string({
@@ -395,6 +407,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "BODY",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 13,
            "styleIndex": 4
         })raw_string",
 
@@ -413,6 +426,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "H1",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 15,
            "styleIndex": 5
         })raw_string",
 
@@ -440,6 +454,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "#text",
            "nodeType": 3,
            "nodeValue": "Hello from the iframe!",
+           "parentId": 16,
            "styleIndex": 5
         })raw_string",
 
@@ -458,6 +473,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "DIV",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 8,
            "styleIndex": 0
         })raw_string",
 
@@ -476,6 +492,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "DIV",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 18,
            "styleIndex": 0
         })raw_string",
 
@@ -494,6 +511,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "DIV",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 19,
            "styleIndex": 0
         })raw_string",
 
@@ -512,6 +530,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "A",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 20,
            "styleIndex": 7
         })raw_string",
 
@@ -539,6 +558,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "#text",
            "nodeType": 3,
            "nodeValue": "Google!",
+           "parentId": 21,
            "styleIndex": 7
         })raw_string",
 
@@ -557,6 +577,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "P",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 20,
            "styleIndex": 8
         })raw_string",
 
@@ -584,6 +605,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "#text",
            "nodeType": 3,
            "nodeValue": "A paragraph!",
+           "parentId": 23,
            "styleIndex": 8
         })raw_string",
 
@@ -613,6 +635,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "BR",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 20,
            "styleIndex": 6
         })raw_string",
 
@@ -631,9 +654,9 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "DIV",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 20,
            "styleIndex": 9
-        }
-        )raw_string",
+        })raw_string",
 
         R"raw_string({
            "backendNodeId": 29,
@@ -659,6 +682,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "#text",
            "nodeType": 3,
            "nodeValue": "Some ",
+           "parentId": 26,
            "styleIndex": 9
         })raw_string",
 
@@ -677,6 +701,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "EM",
            "nodeType": 1,
            "nodeValue": "",
+           "parentId": 26,
            "styleIndex": 10
         })raw_string",
 
@@ -704,6 +729,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "#text",
            "nodeType": 3,
            "nodeValue": "green",
+           "parentId": 28,
            "styleIndex": 10
         })raw_string",
 
@@ -731,6 +757,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
            "nodeName": "#text",
            "nodeType": 3,
            "nodeValue": " text...",
+           "parentId": 26,
            "styleIndex": 9
         })raw_string"};
 
