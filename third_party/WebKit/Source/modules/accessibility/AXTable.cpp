@@ -164,11 +164,11 @@ bool AXTable::isDataTable() const {
   if (!firstBody)
     return false;
 
-  int numCols = firstBody->numEffectiveColumns();
+  int numColsInFirstBody = firstBody->numEffectiveColumns();
   int numRows = firstBody->numRows();
 
   // If there's only one cell, it's not a good AXTable candidate.
-  if (numRows == 1 && numCols == 1)
+  if (numRows == 1 && numColsInFirstBody == 1)
     return false;
 
   // If there are at least 20 rows, we'll call it a data table.
@@ -203,7 +203,8 @@ bool AXTable::isDataTable() const {
   int headersInFirstColumnCount = 0;
   for (int row = 0; row < numRows; ++row) {
     int headersInFirstRowCount = 0;
-    for (int col = 0; col < numCols; ++col) {
+    int nCols = firstBody->numCols(row);
+    for (int col = 0; col < nCols; ++col) {
       LayoutTableCell* cell = firstBody->primaryCellAt(row, col);
       if (!cell)
         continue;
@@ -291,7 +292,8 @@ bool AXTable::isDataTable() const {
       }
     }
 
-    if (!row && headersInFirstRowCount == numCols && numCols > 1)
+    if (!row && headersInFirstRowCount == numColsInFirstBody &&
+        numColsInFirstBody > 1)
       return true;
   }
 

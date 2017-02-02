@@ -189,7 +189,9 @@ void TableSectionPainter::paintCollapsedSectionBorders(
   // precedence due to cell position is respected.
   for (unsigned r = dirtiedRows.end(); r > dirtiedRows.start(); r--) {
     unsigned row = r - 1;
-    for (unsigned c = dirtiedColumns.end(); c > dirtiedColumns.start(); c--) {
+    unsigned nCols = m_layoutTableSection.numCols(row);
+    for (unsigned c = std::min(dirtiedColumns.end(), nCols);
+         c > dirtiedColumns.start(); c--) {
       unsigned col = c - 1;
       const LayoutTableCell* cell =
           m_layoutTableSection.primaryCellAt(row, col);
@@ -302,9 +304,9 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
           shouldPaintSelfOutline(paintInfoForDescendants.phase))
         TableRowPainter(*row).paintOutline(paintInfoForDescendants,
                                            paintOffset);
-      for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
-        if (c >= m_layoutTableSection.numCols(r))
-          break;
+      unsigned nCols = m_layoutTableSection.numCols(r);
+      for (unsigned c = dirtiedColumns.start();
+           c < nCols && c < dirtiedColumns.end(); c++) {
         const LayoutTableSection::CellStruct& current =
             m_layoutTableSection.cellAt(r, c);
         for (LayoutTableCell* cell : current.cells) {

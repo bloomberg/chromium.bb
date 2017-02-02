@@ -218,10 +218,10 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     return m_grid[row].row[effectiveColumn];
   }
   LayoutTableCell* primaryCellAt(unsigned row, unsigned effectiveColumn) {
-    if (effectiveColumn >= numCols(row))
+    Row& rowVector = m_grid[row].row;
+    if (effectiveColumn >= rowVector.size())
       return nullptr;
-    CellStruct& c = m_grid[row].row[effectiveColumn];
-    return c.primaryCell();
+    return rowVector[effectiveColumn].primaryCell();
   }
   const LayoutTableCell* primaryCellAt(unsigned row,
                                        unsigned effectiveColumn) const {

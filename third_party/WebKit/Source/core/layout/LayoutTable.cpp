@@ -1486,9 +1486,7 @@ LayoutTableCell* LayoutTable::cellBefore(const LayoutTableCell* cell) const {
     return nullptr;
 
   // If we hit a colspan back up to a real cell.
-  LayoutTableSection::CellStruct& prevCell =
-      section->cellAt(cell->rowIndex(), effCol - 1);
-  return prevCell.primaryCell();
+  return section->primaryCellAt(cell->rowIndex(), effCol - 1);
 }
 
 LayoutTableCell* LayoutTable::cellAfter(const LayoutTableCell* cell) const {
