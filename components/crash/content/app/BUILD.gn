@@ -44,7 +44,6 @@ static_library("app") {
   public_deps = [
     ":app_non_mac_win",
     ":lib",
-    "//third_party/kasko",
   ]
   deps = [
     "//base",

@@ -92,11 +92,6 @@ const char kNSEvent[] = "nsevent";
 }  // namespace mac
 #endif
 
-#if BUILDFLAG(ENABLE_KASKO)
-const char kKaskoGuid[] = "kasko-guid";
-const char kKaskoEquivalentGuid[] = "kasko-equivalent-guid";
-#endif
-
 const char kViewCount[] = "view-count";
 
 const char kZeroEncodeDetails[] = "zero-encode-details";
@@ -174,10 +169,6 @@ size_t RegisterChromeCrashKeys() {
     { "remove_route_bt", kMediumSize },
     { "rwhvm_window", kMediumSize },
     // media/:
-#endif
-#if BUILDFLAG(ENABLE_KASKO)
-    { kKaskoGuid, kSmallSize },
-    { kKaskoEquivalentGuid, kSmallSize },
 #endif
     { kBug464926CrashKey, kSmallSize },
     { kViewCount, kSmallSize },

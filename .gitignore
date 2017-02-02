@@ -372,7 +372,6 @@ vs-chromium-project.txt
 /third_party/jsoncpp/source
 /third_party/jsr-305/src
 /third_party/junit/src
-/third_party/kasko
 /third_party/khronos_glcts
 /third_party/leakcanary/src
 /third_party/leveldatabase/src

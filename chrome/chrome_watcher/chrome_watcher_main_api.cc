@@ -10,7 +10,3 @@ const base::FilePath::CharType kChromeWatcherDll[] =
 const char kChromeWatcherDLLEntrypoint[] = "WatcherMain";
 const base::FilePath::CharType kPermanentlyFailedReportsSubdir[] =
     L"Crash Reports Fallback";
-
-base::string16 GetKaskoEndpoint(base::ProcessId client_process_id) {
-  return L"chrome_kasko_" + base::UintToString16(client_process_id);
-}

@@ -34,7 +34,5 @@ include_rules = [
   "+remoting/client/plugin",
   "+sandbox",
   "+services/service_manager/runner/common/client_util.h",
-  "+syzygy/kasko/api",
   "+third_party/crashpad/crashpad",
-  "+third_party/kasko",
 ]

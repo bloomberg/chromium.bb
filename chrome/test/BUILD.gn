@@ -4988,7 +4988,6 @@ if (!is_android) {
       "//chrome/child",
       "//components/crash/core/common",
       "//components/flags_ui:switches",
-      "//third_party/kasko:kasko_features",
     ]
   }
 }

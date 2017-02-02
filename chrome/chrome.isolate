@@ -115,13 +115,6 @@
         ],
       },
     }],
-    ['OS=="win" and kasko==1', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/kasko.dll',
-        ],
-      },
-    }],
     ['OS=="win" and component=="shared_library" and (fastbuild==0 or fastbuild==1)', {
       'variables': {
         'files': [

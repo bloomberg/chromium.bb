@@ -10,7 +10,6 @@
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "third_party/kasko/kasko_features.h"
 
 class DidRunUpdater;
 class ModuleWatcher;
@@ -73,10 +72,6 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
  private:
 #if defined(GOOGLE_CHROME_BUILD)
   std::unique_ptr<DidRunUpdater> did_run_updater_;
-#endif
-#if BUILDFLAG(ENABLE_KASKO)
-  // Cleans up Kasko crash reports that exceeded the maximum upload attempts.
-  base::FilePathWatcher failed_kasko_crash_report_watcher_;
 #endif
 
   std::unique_ptr<ModuleWatcher> module_watcher_;

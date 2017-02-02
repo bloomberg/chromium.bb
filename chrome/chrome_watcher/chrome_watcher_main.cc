@@ -142,8 +142,8 @@ void BrowserMonitor::Watch(base::win::ScopedHandle on_initialized_event) {
   // This needs to run on an IO thread.
   DCHECK_NE(main_thread_, base::ThreadTaskRunnerHandle::Get());
 
-  // Signal our client now that the Kasko reporter is initialized and we have
-  // cleared all of the obstacles that might lead to an early exit.
+  // Signal our client that we have cleared all of the obstacles that might lead
+  // to an early exit.
   ::SetEvent(on_initialized_event.Get());
   on_initialized_event.Close();
 

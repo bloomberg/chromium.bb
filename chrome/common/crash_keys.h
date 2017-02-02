@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/crash/core/common/crash_keys.h"
-#include "third_party/kasko/kasko_features.h"
 
 namespace base {
 class CommandLine;
@@ -146,12 +145,6 @@ extern const char kSendAction[];
 extern const char kNSEvent[];
 
 }  // namespace mac
-#endif
-
-#if BUILDFLAG(ENABLE_KASKO)
-// Used to correlate a report sent via Kasko with one sent via Breakpad.
-extern const char kKaskoGuid[];
-extern const char kKaskoEquivalentGuid[];
 #endif
 
 // Numbers of active views.

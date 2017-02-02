@@ -51,11 +51,9 @@ include_rules = [
   "+services/shape_detection/public/interfaces",
   "+services/ui/public",
   "+skia/ext",
-  "+syzygy/kasko",
   "+third_party/boringssl/src/include",
   "+third_party/crashpad",
   "+third_party/cros_system_api",
-  "+third_party/kasko",
 
   # chrome only needs switches from cc. All usage of the compositor is from
   # content. Definitely don't include generic stuff from cc/base here, if this

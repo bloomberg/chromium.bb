@@ -41,12 +41,6 @@ test("system_load_estimator_unittests") {
   ]
 }
 
-group("kasko_util") {
-  public_deps = [
-    "//third_party/kasko:kasko_features",
-  ]
-}
-
 process_version_rc_template("chrome_watcher_resources") {
   sources = [
     "chrome_watcher.ver",
@@ -64,7 +58,6 @@ shared_library("chrome_watcher") {
   deps = [
     ":chrome_watcher_resources",
     ":client",
-    ":kasko_util",
     "//base",
     "//base:base_static",
     "//build/config/sanitizers:deps",

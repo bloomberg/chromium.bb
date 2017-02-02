@@ -77,10 +77,6 @@
 #include "chrome/browser/google/did_run_updater_win.h"
 #endif
 
-#if BUILDFLAG(ENABLE_KASKO)
-#include "syzygy/kasko/api/reporter.h"
-#endif
-
 namespace {
 
 typedef HRESULT (STDAPICALLTYPE* RegisterApplicationRestartProc)(
@@ -113,41 +109,6 @@ class TranslationDelegate : public installer::TranslationDelegate {
  public:
   base::string16 GetLocalizedString(int installer_string_id) override;
 };
-
-#if BUILDFLAG(ENABLE_KASKO)
-void ObserveFailedCrashReportDirectory(const base::FilePath& path, bool error) {
-  DCHECK(!error);
-  if (error)
-    return;
-  base::FileEnumerator enumerator(path, true, base::FileEnumerator::FILES);
-  for (base::FilePath report_file = enumerator.Next(); !report_file.empty();
-       report_file = enumerator.Next()) {
-    if (report_file.Extension() ==
-        kasko::api::kPermanentFailureMinidumpExtension) {
-      UMA_HISTOGRAM_BOOLEAN("CrashReport.PermanentUploadFailure", true);
-    }
-    bool result = base::DeleteFile(report_file, false);
-    DCHECK(result);
-  }
-}
-
-void StartFailedKaskoCrashReportWatcher(base::FilePathWatcher* watcher) {
-  base::FilePath watcher_data_directory;
-  if (!PathService::Get(chrome::DIR_WATCHER_DATA, &watcher_data_directory)) {
-    NOTREACHED();
-  } else {
-    base::FilePath permanent_failure_directory =
-        watcher_data_directory.Append(kPermanentlyFailedReportsSubdir);
-    if (!watcher->Watch(permanent_failure_directory, true,
-                        base::Bind(&ObserveFailedCrashReportDirectory))) {
-      NOTREACHED();
-    }
-
-    // Call it once to observe any files present prior to the Watch() call.
-    ObserveFailedCrashReportDirectory(permanent_failure_directory, false);
-  }
-}
-#endif  // BUILDFLAG(ENABLE_KASKO)
 
 void DetectFaultTolerantHeap() {
   enum FTHFlags {
@@ -405,18 +366,6 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
       base::Bind(&VerifyInstallation));
 
   InitializeChromeElf();
-
-#if BUILDFLAG(ENABLE_KASKO)
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&StartFailedKaskoCrashReportWatcher,
-                 base::Unretained(&failed_kasko_crash_report_watcher_)),
-      base::TimeDelta::FromMinutes(5));
-#endif  // BUILDFLAG(ENABLE_KASKO)
-
-#if defined(GOOGLE_CHROME_BUILD)
-  did_run_updater_.reset(new DidRunUpdater);
-#endif
 
   // Record UMA data about whether the fault-tolerant heap is enabled.
   // Use a delayed task to minimize the impact on startup time.

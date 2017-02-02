@@ -5,5 +5,4 @@
       version='@MAJOR@.@MINOR@.@BUILD@.@PATCH@'
       type='win32'/>
   <file name='chrome_elf.dll'/>
-  <file name='kasko.dll'/>
 </assembly>
