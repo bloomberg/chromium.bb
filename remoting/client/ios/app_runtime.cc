@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
@@ -28,6 +29,17 @@ namespace remoting {
 namespace ios {
 
 AppRuntime::AppRuntime() {
+  // TODO(sergeyu): Consider adding separate pools for different task classes.
+  const int kMaxBackgroundThreads = 5;
+  if (TaskScheduler::GetInstance()) {
+    // Make sure TaskScheduler is initialized.
+    base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
+  }
+
+  // TODO(sergeyu): AppRuntime is not singleton, but it owns MessageLoop for the
+  // current thread. This means that it's not safe to create multiple AppRuntime
+  // instances on the same thread. AppRuntime should be a singleton, or this
+  // code needs to be moved somewhere else.
   if (!base::MessageLoop::current()) {
     ui_loop_.reset(new base::MessageLoopForUI());
     base::MessageLoopForUI::current()->Attach();

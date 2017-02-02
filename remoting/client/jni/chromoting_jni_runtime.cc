@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "jni/JniInterface_jni.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/url_request_context_getter.h"
@@ -41,6 +42,10 @@ bool RegisterChromotingJniRuntime(JNIEnv* env) {
 
 static void LoadNative(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   base::CommandLine::Init(0, nullptr);
+
+  // TODO(sergeyu): Consider adding separate pools for different task classes.
+  const int kMaxBackgroundThreads = 5;
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
 
   // Create the singleton now so that the Chromoting threads will be set up.
   remoting::ChromotingJniRuntime::GetInstance();

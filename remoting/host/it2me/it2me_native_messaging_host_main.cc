@@ -11,6 +11,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
@@ -45,7 +46,13 @@ namespace remoting {
 
 // Creates a It2MeNativeMessagingHost instance, attaches it to stdin/stdout and
 // runs the message loop until It2MeNativeMessagingHost signals shutdown.
-int StartIt2MeNativeMessagingHost() {
+int It2MeNativeMessagingHostMain(int argc, char** argv) {
+  // This object instance is required by Chrome code (such as MessageLoop).
+  base::AtExitManager exit_manager;
+
+  base::CommandLine::Init(argc, argv);
+  remoting::InitHostLogging();
+
 #if defined(OS_MACOSX)
   // Needed so we don't leak objects when threads are created.
   base::mac::ScopedNSAutoreleasePool pool;
@@ -71,6 +78,10 @@ int StartIt2MeNativeMessagingHost() {
 
   // Required to find the ICU data file, used by some file_util routines.
   base::i18n::InitializeICU();
+
+  // TODO(sergeyu): Consider adding separate pools for different task classes.
+  const int kMaxBackgroundThreads = 5;
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
 
   remoting::LoadResources("");
 
@@ -190,16 +201,6 @@ int StartIt2MeNativeMessagingHost() {
   run_loop.Run();
 
   return kSuccessExitCode;
-}
-
-int It2MeNativeMessagingHostMain(int argc, char** argv) {
-  // This object instance is required by Chrome code (such as MessageLoop).
-  base::AtExitManager exit_manager;
-
-  base::CommandLine::Init(argc, argv);
-  remoting::InitHostLogging();
-
-  return StartIt2MeNativeMessagingHost();
 }
 
 }  // namespace remoting

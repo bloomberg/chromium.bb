@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "net/url_request/url_fetcher.h"
@@ -51,7 +52,13 @@ using remoting::protocol::PairingRegistry;
 
 namespace remoting {
 
-int StartMe2MeNativeMessagingHost() {
+int Me2MeNativeMessagingHostMain(int argc, char** argv) {
+  // This object instance is required by Chrome code (such as MessageLoop).
+  base::AtExitManager exit_manager;
+
+  base::CommandLine::Init(argc, argv);
+  remoting::InitHostLogging();
+
 #if defined(OS_MACOSX)
   // Needed so we don't leak objects when threads are created.
   base::mac::ScopedNSAutoreleasePool pool;
@@ -78,6 +85,10 @@ int StartMe2MeNativeMessagingHost() {
   //   InitializeCrashReporting();
   // }
 #endif  // defined(REMOTING_ENABLE_BREAKPAD)
+
+  // TODO(sergeyu): Consider adding separate pools for different task classes.
+  const int kMaxBackgroundThreads = 5;
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
 
   // Mac OS X requires that the main thread be a UI message loop in order to
   // receive distributed notifications from the System Preferences pane. An
@@ -259,16 +270,6 @@ int StartMe2MeNativeMessagingHost() {
   // Run the loop until channel is alive.
   run_loop.Run();
   return kSuccessExitCode;
-}
-
-int Me2MeNativeMessagingHostMain(int argc, char** argv) {
-  // This object instance is required by Chrome code (such as MessageLoop).
-  base::AtExitManager exit_manager;
-
-  base::CommandLine::Init(argc, argv);
-  remoting::InitHostLogging();
-
-  return StartMe2MeNativeMessagingHost();
 }
 
 }  // namespace remoting
