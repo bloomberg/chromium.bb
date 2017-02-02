@@ -27,6 +27,8 @@ extern const char kDeleteMediaLicenses[];
 extern const char kLastClearBrowsingDataTime[];
 extern const char kClearBrowsingDataHistoryNoticeShownTimes[];
 
+extern const char kLastClearBrowsingDataTab[];
+
 // Registers the Clear Browsing Data UI prefs.
 void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 

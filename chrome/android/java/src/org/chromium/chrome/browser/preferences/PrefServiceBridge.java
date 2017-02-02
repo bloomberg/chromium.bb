@@ -726,8 +726,24 @@ public final class PrefServiceBridge {
                 ignoredDomains, ignoredDomainReasons);
     }
 
-    /*
-     * Whether browser history can be deleted by the user.
+    /**
+     * @return The index of the tab last visited by the user in the CBD dialog.
+     *         Index 0 is for the basic tab, 1 is the advanced tab.
+     */
+    public int getLastSelectedClearBrowsingDataTab() {
+        return nativeGetLastClearBrowsingDataTab();
+    }
+
+    /**
+     * Set the index of the tab last visited by the user.
+     * @param tabIndex The last visited tab index, 0 for basic, 1 for advanced.
+     */
+    public void setLastSelectedClearBrowsingDataTab(int tabIndex) {
+        nativeSetLastClearBrowsingDataTab(tabIndex);
+    }
+
+    /**
+     * @return Whether browser history can be deleted by the user.
      */
     public boolean canDeleteBrowsingHistory() {
         return nativeCanDeleteBrowsingHistory();
@@ -1090,6 +1106,8 @@ public final class PrefServiceBridge {
     private native void nativeClearBrowsingData(int[] dataTypes, int timePeriod,
             String[] blacklistDomains, int[] blacklistedDomainReasons, String[] ignoredDomains,
             int[] ignoredDomainReasons);
+    private native int nativeGetLastClearBrowsingDataTab();
+    private native void nativeSetLastClearBrowsingDataTab(int lastTab);
     private native void nativeRequestInfoAboutOtherFormsOfBrowsingHistory(
             OtherFormsOfBrowsingHistoryListener listener);
     private native boolean nativeCanDeleteBrowsingHistory();

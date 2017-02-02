@@ -74,4 +74,8 @@
              to each other. -->
         <attr name="noBottomSpacing" format="boolean" />
     </declare-styleable>
+
+    <declare-styleable name="SpinnerPreference">
+        <attr name="singleLine" format="boolean" />
+    </declare-styleable>
 </resources>

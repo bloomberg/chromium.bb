@@ -28,6 +28,7 @@ const char kLastClearBrowsingDataTime[] =
   "browser.last_clear_browsing_data_time";
 const char kClearBrowsingDataHistoryNoticeShownTimes[] =
   "browser.clear_data.history_notice_shown_times";
+const char kLastClearBrowsingDataTab[] = "browser.last_clear_browsing_data_tab";
 
 void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
@@ -63,6 +64,12 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterInt64Pref(prefs::kLastClearBrowsingDataTime, 0);
 #endif  // !defined(OS_IOS)
+
+#if defined(OS_ANDROID)
+  registry->RegisterIntegerPref(
+      kLastClearBrowsingDataTab, 0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#endif
 }
 
 }  // namespace prefs

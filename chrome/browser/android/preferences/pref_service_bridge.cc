@@ -589,6 +589,21 @@ static void SetBrowsingDataDeletionTimePeriod(
                                time_period);
 }
 
+static jint GetLastClearBrowsingDataTab(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj) {
+  return GetPrefService()->GetInteger(
+      browsing_data::prefs::kLastClearBrowsingDataTab);
+}
+
+static void SetLastClearBrowsingDataTab(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj,
+                                        jint tab_index) {
+  DCHECK_GE(tab_index, 0);
+  DCHECK_LT(tab_index, 2);
+  GetPrefService()->SetInteger(browsing_data::prefs::kLastClearBrowsingDataTab,
+                               tab_index);
+}
+
 static void ClearBrowsingData(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

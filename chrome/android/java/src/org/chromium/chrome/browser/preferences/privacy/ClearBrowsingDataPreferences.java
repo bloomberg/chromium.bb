@@ -238,7 +238,10 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     // important domains from being cleared.
     private ConfirmImportantSitesDialogFragment mConfirmImportantSitesDialog;
 
-    private final EnumSet<DialogOption> getSelectedOptions() {
+    /**
+     * @return The currently selected DialogOptions.
+     */
+    protected final EnumSet<DialogOption> getSelectedOptions() {
         EnumSet<DialogOption> selected = EnumSet.noneOf(DialogOption.class);
         for (Item item : mItems) {
             if (item.isSelected()) selected.add(item.getOption());
@@ -319,6 +322,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
 
     /**
      * Decides whether a given dialog option should be selected when the dialog is initialized.
+     *
      * @param option The option in question.
      * @return boolean Whether the given option should be preselected.
      */
@@ -382,16 +386,24 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     @Override
     public boolean onPreferenceClick(Preference preference) {
         if (preference.getKey().equals(PREF_CLEAR_BUTTON)) {
-            if (shouldShowImportantSitesDialog()) {
-                showImportantDialogThenClear();
-                return true;
-            }
-            // If sites haven't been fetched, just clear the browsing data regularly rather than
-            // waiting to show the important sites dialog.
-            clearBrowsingData(getSelectedOptions(), null, null, null, null);
+            onClearButtonClicked();
             return true;
         }
         return false;
+    }
+
+    /**
+     * Either shows the important sites dialog or clears browsing data according to the selected
+     * options.
+     */
+    protected final void onClearButtonClicked() {
+        if (shouldShowImportantSitesDialog()) {
+            showImportantDialogThenClear();
+            return;
+        }
+        // If sites haven't been fetched, just clear the browsing data regularly rather than
+        // waiting to show the important sites dialog.
+        clearBrowsingData(getSelectedOptions(), null, null, null, null);
     }
 
     @Override
@@ -413,11 +425,18 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     /**
      * Disable the "Clear" button if none of the options are selected. Otherwise, enable it.
      */
-    private void updateButtonState() {
+    protected void updateButtonState() {
         ButtonPreference clearButton = (ButtonPreference) findPreference(PREF_CLEAR_BUTTON);
         if (clearButton == null) return;
         boolean isEnabled = !getSelectedOptions().isEmpty();
         clearButton.setEnabled(isEnabled);
+    }
+
+    /**
+     * @return The id of the preference xml that should be displayed.
+     */
+    protected int getPreferenceXmlId() {
+        return R.xml.clear_browsing_data_preferences;
     }
 
     @Override
@@ -427,7 +446,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         mMaxImportantSites = PrefServiceBridge.getMaxImportantSites();
         PrefServiceBridge.getInstance().requestInfoAboutOtherFormsOfBrowsingHistory(this);
         getActivity().setTitle(R.string.clear_browsing_data_title);
-        addPreferencesFromResource(R.xml.clear_browsing_data_preferences);
+        addPreferencesFromResource(getPreferenceXmlId());
         DialogOption[] options = getDialogOptions();
         mItems = new Item[options.length];
         for (int i = 0; i < options.length; i++) {
@@ -473,11 +492,28 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         assert spinnerOptionIndex != -1;
         spinner.setOptions(spinnerOptions, spinnerOptionIndex);
 
-        // The "Clear" button.
+        initClearButtonPreference();
+        initFootnote();
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD)) {
+            PrefServiceBridge.fetchImportantSites(this);
+        }
+    }
+
+    /**
+     * Initialize the ButtonPreference.
+     */
+    protected void initClearButtonPreference() {
         ButtonPreference clearButton = (ButtonPreference) findPreference(PREF_CLEAR_BUTTON);
         clearButton.setOnPreferenceClickListener(this);
         clearButton.setShouldDisableView(true);
+    }
 
+    /**
+     * Set the texts that notify the user about data in their google account and that deleting
+     * cookies doesn't sign you out of chrome.
+     */
+    protected void initFootnote() {
         // The general information footnote informs users about data that will not be deleted.
         // If the user is signed in, it also informs users about the behavior of synced deletions.
         // and we show an additional Google-specific footnote. This footnote informs users that they
@@ -511,9 +547,6 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         } else {
             getPreferenceScreen().removePreference(google_summary);
             general_summary.setSummary(R.string.clear_browsing_data_footnote_site_settings);
-        }
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD)) {
-            PrefServiceBridge.fetchImportantSites(this);
         }
     }
 

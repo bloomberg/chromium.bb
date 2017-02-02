@@ -3,6 +3,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<!-- Layout used by ClearBrowsingDataTabsFragment -->
+
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -14,8 +16,11 @@
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
+        <!-- RTL is handled manually in ClearBrowsingDataTabsFragment because
+             it is not working correctly with a ViewPager -->
         <android.support.design.widget.TabLayout
             android:id="@+id/clear_browsing_data_tabs"
+            android:layoutDirection="ltr"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:tabMode="fixed"
