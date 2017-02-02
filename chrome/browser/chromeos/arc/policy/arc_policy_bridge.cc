@@ -7,11 +7,16 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -27,6 +32,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
+#include "crypto/sha2.h"
 
 namespace arc {
 
@@ -244,10 +251,53 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
   return policy_json;
 }
 
+Profile* GetProfile() {
+  const user_manager::User* const primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  return chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
+}
+
+void OnReportComplianceParseFailure(
+    const ArcPolicyBridge::ReportComplianceCallback& callback,
+    const std::string& error) {
+  callback.Run(kPolicyNonCompliantJson);
+}
+
+void UpdateFirstComplianceSinceSignInTiming(
+    const base::TimeDelta& elapsed_time) {
+  UMA_HISTOGRAM_CUSTOM_TIMES("Arc.FirstComplianceReportTime.SinceSignIn",
+                             elapsed_time, base::TimeDelta::FromSeconds(1),
+                             base::TimeDelta::FromMinutes(10), 50);
+}
+
+void UpdateFirstComplianceSinceStartupTiming(
+    const base::TimeDelta& elapsed_time) {
+  UMA_HISTOGRAM_CUSTOM_TIMES("Arc.FirstComplianceReportTime.SinceStartup",
+                             elapsed_time, base::TimeDelta::FromSeconds(1),
+                             base::TimeDelta::FromMinutes(10), 50);
+}
+
+void UpdateComplianceSinceUpdateTiming(const base::TimeDelta& elapsed_time) {
+  UMA_HISTOGRAM_CUSTOM_TIMES("Arc.ComplianceReportSinceUpdateNotificationTime",
+                             elapsed_time,
+                             base::TimeDelta::FromMilliseconds(100),
+                             base::TimeDelta::FromMinutes(10), 50);
+}
+
+// Returns the SHA-256 hash of the JSON dump of the ARC policies, in the textual
+// hex dump format.  Note that no specific JSON normalization is performed, as
+// the spurious hash mismatches, even if they occur (which is unlikely), would
+// only result in some UMA metrics not being sent.
+std::string GetPoliciesHash(const std::string& json_policies) {
+  const std::string hash_bits = crypto::SHA256HashString(json_policies);
+  return base::ToLowerASCII(
+      base::HexEncode(hash_bits.c_str(), hash_bits.length()));
+}
+
 }  // namespace
 
 ArcPolicyBridge::ArcPolicyBridge(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this) {
+    : ArcService(bridge_service), binding_(this), weak_ptr_factory_(this) {
   VLOG(2) << "ArcPolicyBridge::ArcPolicyBridge";
   arc_bridge_service()->policy()->AddObserver(this);
 }
@@ -256,7 +306,8 @@ ArcPolicyBridge::ArcPolicyBridge(ArcBridgeService* bridge_service,
                                  policy::PolicyService* policy_service)
     : ArcService(bridge_service),
       binding_(this),
-      policy_service_(policy_service) {
+      policy_service_(policy_service),
+      weak_ptr_factory_(this) {
   VLOG(2) << "ArcPolicyBridge::ArcPolicyBridge(bridge_service, policy_service)";
   arc_bridge_service()->policy()->AddObserver(this);
 }
@@ -282,6 +333,7 @@ void ArcPolicyBridge::OnInstanceReady() {
     InitializePolicyService();
   }
   policy_service_->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
+  initial_policies_hash_ = GetPoliciesHash(GetCurrentJSONPolicies());
 
   mojom::PolicyInstance* const policy_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->policy(), Init);
@@ -293,35 +345,67 @@ void ArcPolicyBridge::OnInstanceClosed() {
   VLOG(1) << "ArcPolicyBridge::OnPolicyInstanceClosed";
   policy_service_->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
   policy_service_ = nullptr;
+  initial_policies_hash_.clear();
 }
 
 void ArcPolicyBridge::GetPolicies(const GetPoliciesCallback& callback) {
   VLOG(1) << "ArcPolicyBridge::GetPolicies";
-  if (!is_managed_) {
-    callback.Run(std::string());
+  callback.Run(GetCurrentJSONPolicies());
+}
+
+void ArcPolicyBridge::ReportCompliance(
+    const std::string& request,
+    const ReportComplianceCallback& callback) {
+  VLOG(1) << "ArcPolicyBridge::ReportCompliance";
+  safe_json::SafeJsonParser::Parse(
+      request, base::Bind(&ArcPolicyBridge::OnReportComplianceParseSuccess,
+                          weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&OnReportComplianceParseFailure, callback));
+}
+
+void ArcPolicyBridge::OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                                      const policy::PolicyMap& previous,
+                                      const policy::PolicyMap& current) {
+  VLOG(1) << "ArcPolicyBridge::OnPolicyUpdated";
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->policy(),
+                                               OnPolicyUpdated);
+  if (!instance)
     return;
+
+  const std::string policies_hash = GetPoliciesHash(GetCurrentJSONPolicies());
+  if (policies_hash != update_notification_policies_hash_) {
+    update_notification_policies_hash_ = policies_hash;
+    update_notification_time_ = base::Time::Now();
+    compliance_since_update_timing_reported_ = false;
   }
+
+  instance->OnPolicyUpdated();
+}
+
+void ArcPolicyBridge::InitializePolicyService() {
+  auto* profile_policy_connector =
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(GetProfile());
+  policy_service_ = profile_policy_connector->policy_service();
+  is_managed_ = profile_policy_connector->IsManaged();
+}
+
+std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
+  if (!is_managed_)
+    return std::string();
   const policy::PolicyNamespace policy_namespace(policy::POLICY_DOMAIN_CHROME,
                                                  std::string());
   const policy::PolicyMap& policy_map =
       policy_service_->GetPolicies(policy_namespace);
-  callback.Run(GetFilteredJSONPolicies(policy_map));
+  return GetFilteredJSONPolicies(policy_map);
 }
 
-void OnReportComplianceParseSuccess(
+void ArcPolicyBridge::OnReportComplianceParseSuccess(
     const ArcPolicyBridge::ReportComplianceCallback& callback,
     std::unique_ptr<base::Value> parsed_json) {
   const base::DictionaryValue* dict;
-  if (!parsed_json || !parsed_json->GetAsDictionary(&dict)) {
-    callback.Run(kPolicyNonCompliantJson);
-    return;
-  }
-
-  const user_manager::User* const primary_user =
-      user_manager::UserManager::Get()->GetPrimaryUser();
-  Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
-  if (!dict || !profile) {
+  Profile* const profile = GetProfile();
+  if (!profile || !parsed_json || !parsed_json->GetAsDictionary(&dict) ||
+      !dict) {
     callback.Run(kPolicyNonCompliantJson);
     return;
   }
@@ -345,43 +429,40 @@ void OnReportComplianceParseSuccess(
   }
   profile->GetPrefs()->SetBoolean(prefs::kArcPolicyCompliant, compliant);
   callback.Run(compliant ? kPolicyCompliantJson : kPolicyNonCompliantJson);
+
+  UpdateComplianceReportMetrics(dict);
 }
 
-void OnReportComplianceParseFailure(
-    const ArcPolicyBridge::ReportComplianceCallback& callback,
-    const std::string& error) {
-  callback.Run(kPolicyNonCompliantJson);
-}
-
-void ArcPolicyBridge::ReportCompliance(
-    const std::string& request,
-    const ReportComplianceCallback& callback) {
-  VLOG(1) << "ArcPolicyBridge::ReportCompliance";
-  safe_json::SafeJsonParser::Parse(
-      request, base::Bind(&OnReportComplianceParseSuccess, callback),
-      base::Bind(&OnReportComplianceParseFailure, callback));
-}
-
-void ArcPolicyBridge::OnPolicyUpdated(const policy::PolicyNamespace& ns,
-                                      const policy::PolicyMap& previous,
-                                      const policy::PolicyMap& current) {
-  VLOG(1) << "ArcPolicyBridge::OnPolicyUpdated";
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->policy(),
-                                               OnPolicyUpdated);
-  if (!instance)
+void ArcPolicyBridge::UpdateComplianceReportMetrics(
+    const base::DictionaryValue* report) {
+  bool is_arc_plus_plus_report_successful = false;
+  report->GetBoolean("isArcPlusPlusReportSuccessful",
+                     &is_arc_plus_plus_report_successful);
+  std::string reported_policies_hash;
+  report->GetString("policyHash", &reported_policies_hash);
+  if (!is_arc_plus_plus_report_successful || reported_policies_hash.empty())
     return;
-  instance->OnPolicyUpdated();
-}
 
-void ArcPolicyBridge::InitializePolicyService() {
-  const user_manager::User* const primary_user =
-      user_manager::UserManager::Get()->GetPrimaryUser();
-  Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
-  auto* profile_policy_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
-  policy_service_ = profile_policy_connector->policy_service();
-  is_managed_ = profile_policy_connector->IsManaged();
+  const base::Time now = base::Time::Now();
+  ArcSessionManager* const session_manager = ArcSessionManager::Get();
+
+  if (reported_policies_hash == initial_policies_hash_ &&
+      !first_compliance_timing_reported_) {
+    const base::Time sign_in_start_time = session_manager->sign_in_start_time();
+    if (!sign_in_start_time.is_null()) {
+      UpdateFirstComplianceSinceSignInTiming(now - sign_in_start_time);
+    } else {
+      UpdateFirstComplianceSinceStartupTiming(
+          now - session_manager->arc_start_time());
+    }
+    first_compliance_timing_reported_ = true;
+  }
+
+  if (reported_policies_hash == update_notification_policies_hash_ &&
+      !compliance_since_update_timing_reported_) {
+    UpdateComplianceSinceUpdateTiming(now - update_notification_time_);
+    compliance_since_update_timing_reported_ = true;
+  }
 }
 
 }  // namespace arc

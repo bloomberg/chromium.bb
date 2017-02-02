@@ -290,6 +290,8 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   ASSERT_TRUE(arc_session_manager()->IsSessionStopped());
   ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
             arc_session_manager()->state());
+  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->arc_start_time().is_null());
 
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
 
@@ -306,6 +308,9 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   // TODO(hidehiko): Verify state transition from SHOWING_TERMS_OF_SERVICE ->
   // CHECKING_ANDROID_MANAGEMENT, when we extract ArcSessionManager.
   arc_session_manager()->StartArc();
+
+  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
+  EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
 
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   ASSERT_TRUE(arc_session_manager()->IsSessionRunning());
@@ -390,22 +395,28 @@ TEST_F(ArcSessionManagerTest, EnableDisablesArc) {
 TEST_F(ArcSessionManagerTest, SignInStatus) {
   PrefService* const prefs = profile()->GetPrefs();
 
+  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
+  EXPECT_TRUE(arc_session_manager()->arc_start_time().is_null());
+
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   prefs->SetBoolean(prefs::kArcEnabled, true);
 
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
   EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
+
   // Emulate to accept the terms of service.
   prefs->SetBoolean(prefs::kArcTermsAccepted, true);
   arc_session_manager()->StartArc();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
+  EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
   arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
+  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
 
   // Second start, no fetching code is expected.
   arc_session_manager()->Shutdown();

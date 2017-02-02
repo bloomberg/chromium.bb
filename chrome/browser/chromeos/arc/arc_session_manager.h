@@ -216,6 +216,14 @@ class ArcSessionManager : public ArcSessionObserver,
 
   void OnProvisioningFinished(ProvisioningResult result);
 
+  // Returns the time when the sign in process started, or a null time if
+  // signing in didn't happen during this session.
+  base::Time sign_in_start_time() const { return sign_in_start_time_; }
+
+  // Returns the time when ARC was about to start, or a null time if ARC has not
+  // been started yet.
+  base::Time arc_start_time() const { return arc_start_time_; }
+
   // Injectors for testing.
   void SetArcSessionRunnerForTesting(
       std::unique_ptr<ArcSessionRunner> arc_session_runner);
@@ -275,9 +283,13 @@ class ArcSessionManager : public ArcSessionObserver,
   std::unique_ptr<ArcAuthContext> context_;
   std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;
 
-  base::Time sign_in_time_;
+  // The time when the sign in process started.
+  base::Time sign_in_start_time_;
+  // The time when ARC was about to start.
+  base::Time arc_start_time_;
   base::Closure attempt_user_exit_callback_;
 
+  // Must be the last member.
   base::WeakPtrFactory<ArcSessionManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionManager);

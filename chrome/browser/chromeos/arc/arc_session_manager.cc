@@ -280,10 +280,10 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     // For backwards compatibility, use NETWORK_ERROR for
     // CHROME_SERVER_COMMUNICATION_ERROR case.
     UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
-  } else if (!sign_in_time_.is_null()) {
+  } else if (!sign_in_start_time_.is_null()) {
     arc_sign_in_timer_.Stop();
 
-    UpdateProvisioningTiming(base::Time::Now() - sign_in_time_,
+    UpdateProvisioningTiming(base::Time::Now() - sign_in_start_time_,
                              result == ProvisioningResult::SUCCESS,
                              policy_util::IsAccountManaged(profile_));
     UpdateProvisioningResultUMA(result,
@@ -678,6 +678,8 @@ void ArcSessionManager::StartArc() {
   // Arc must be started only if no pending data removal request exists.
   DCHECK(!profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
 
+  arc_start_time_ = base::Time::Now();
+
   provisioning_reported_ = false;
 
   arc_session_runner_->RequestStart();
@@ -845,7 +847,7 @@ void ArcSessionManager::OnAndroidManagementChecked(
   switch (result) {
     case policy::AndroidManagementClient::Result::UNMANAGED:
       VLOG(1) << "Starting ARC for first sign in.";
-      sign_in_time_ = base::Time::Now();
+      sign_in_start_time_ = base::Time::Now();
       arc_sign_in_timer_.Start(
           FROM_HERE, kArcSignInTimeout,
           base::Bind(&ArcSessionManager::OnArcSignInTimeout,
