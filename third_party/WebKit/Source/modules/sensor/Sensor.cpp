@@ -64,12 +64,8 @@ Sensor::~Sensor() = default;
 
 void Sensor::start(ScriptState* scriptState, ExceptionState& exceptionState) {
   if (m_state != Sensor::SensorState::Idle &&
-      m_state != Sensor::SensorState::Errored) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "Cannot start because SensorState is not Idle or errored");
+      m_state != Sensor::SensorState::Errored)
     return;
-  }
 
   initSensorProxyIfNeeded();
 
@@ -84,12 +80,8 @@ void Sensor::start(ScriptState* scriptState, ExceptionState& exceptionState) {
 
 void Sensor::stop(ScriptState*, ExceptionState& exceptionState) {
   if (m_state == Sensor::SensorState::Idle ||
-      m_state == Sensor::SensorState::Errored) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "Cannot stop because SensorState is either Idle or errored");
+      m_state == Sensor::SensorState::Errored)
     return;
-  }
 
   stopListening();
 }
