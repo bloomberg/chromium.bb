@@ -5,6 +5,8 @@
 #ifndef ASH_COMMON_SYSTEM_TRAY_TRAY_POPUP_UTILS_H_
 #define ASH_COMMON_SYSTEM_TRAY_TRAY_POPUP_UTILS_H_
 
+#include <memory>
+
 #include "ash/common/login_status.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_ink_drop_style.h"

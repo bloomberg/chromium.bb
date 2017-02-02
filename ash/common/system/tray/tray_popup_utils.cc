@@ -4,6 +4,9 @@
 
 #include "ash/common/system/tray/tray_popup_utils.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_view_ids.h"
 #include "ash/common/material_design/material_design_controller.h"
@@ -350,30 +353,9 @@ std::unique_ptr<views::InkDropRipple> TrayPopupUtils::CreateInkDropRipple(
     const views::View* host,
     const gfx::Point& center_point,
     SkColor color) {
-  const gfx::Rect bounds =
-      TrayPopupUtils::GetInkDropBounds(ink_drop_style, host);
-  switch (ink_drop_style) {
-    case TrayPopupInkDropStyle::HOST_CENTERED:
-      if (MaterialDesignController::GetMode() ==
-          MaterialDesignController::MATERIAL_EXPERIMENTAL) {
-        return base::MakeUnique<views::SquareInkDropRipple>(
-            bounds.size(), bounds.size().width() / 2, bounds.size(),
-            bounds.size().width() / 2, center_point, bounds.CenterPoint(),
-            color, kTrayPopupInkDropRippleOpacity);
-      }
-    // Intentional fall through.
-    case TrayPopupInkDropStyle::INSET_BOUNDS:
-    case TrayPopupInkDropStyle::FILL_BOUNDS: {
-      const gfx::Insets insets =
-          TrayPopupUtils::GetInkDropInsets(ink_drop_style);
-      return base::MakeUnique<views::FloodFillInkDropRipple>(
-          host->size(), insets, center_point, color,
-          kTrayPopupInkDropRippleOpacity);
-    }
-  }
-  // Required for some compilers.
-  NOTREACHED();
-  return nullptr;
+  return base::MakeUnique<views::FloodFillInkDropRipple>(
+      host->size(), TrayPopupUtils::GetInkDropInsets(ink_drop_style),
+      center_point, color, kTrayPopupInkDropRippleOpacity);
 }
 
 std::unique_ptr<views::InkDropHighlight> TrayPopupUtils::CreateInkDropHighlight(
