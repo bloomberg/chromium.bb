@@ -158,13 +158,19 @@ class OmniboxResultView : public views::View,
                        bool is_ui_rtl,
                        bool is_match_contents_rtl) const;
 
+  // Returns the font to use for the description line of answer suggestions.
+  const gfx::FontList& GetAnswerLineFont() const;
+
+  // Returns the height of the the description line of answer suggestions.
   int GetAnswerLineHeight() const;
+
+  // Returns the height of the content line.
   int GetContentLineHeight() const;
 
   // Creates a RenderText with text and styling from the image line.
   std::unique_ptr<gfx::RenderText> CreateAnswerLine(
       const SuggestionAnswer::ImageLine& line,
-      gfx::FontList font_list) const;
+      const gfx::FontList& font_list) const;
 
   // Adds |text| to |destination|.  |text_type| is an index into the
   // kTextStyles constant defined in the .cc file and is used to style the text,
