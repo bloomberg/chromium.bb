@@ -11357,6 +11357,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--ozone-platform=headless",
           "--override-use-gl-with-osmesa-for-tests",
           "--run-in-mash",
           "--service-overrides=src/chrome/app/mash/mash_service_overrides.json",
@@ -11375,6 +11376,9 @@
         "test": "media_service_unittests"
       },
       {
+        "args": [
+          "--ozone-platform=headless"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": false
         },
