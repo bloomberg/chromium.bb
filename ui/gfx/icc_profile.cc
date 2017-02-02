@@ -15,6 +15,11 @@
 
 namespace gfx {
 
+const uint64_t ICCProfile::test_id_adobe_rgb_ = 1;
+const uint64_t ICCProfile::test_id_color_spin_ = 2;
+const uint64_t ICCProfile::test_id_generic_rgb_ = 3;
+const uint64_t ICCProfile::test_id_srgb_ = 4;
+
 namespace {
 const size_t kMinProfileLength = 128;
 const size_t kMaxProfileLength = 4 * 1024 * 1024;
@@ -28,7 +33,7 @@ struct Cache {
   Cache() : id_to_icc_profile_mru(kMaxCachedICCProfiles) {}
   ~Cache() {}
 
-  // Start from-ICC-data IDs at the end of the hard-coded list.
+  // Start from-ICC-data IDs at the end of the hard-coded test id list above.
   uint64_t next_unused_id = 5;
   base::MRUCache<uint64_t, ICCProfile> id_to_icc_profile_mru;
   base::Lock lock;
@@ -54,13 +59,19 @@ bool ICCProfile::operator!=(const ICCProfile& other) const {
 
 // static
 ICCProfile ICCProfile::FromData(const void* data, size_t size) {
+  return FromDataWithId(data, size, 0);
+}
+
+// static
+ICCProfile ICCProfile::FromDataWithId(const void* data,
+                                      size_t size,
+                                      uint64_t new_profile_id) {
   if (!IsValidProfileLength(size)) {
     if (size != 0)
       DLOG(ERROR) << "Invalid ICC profile length: " << size << ".";
     return ICCProfile();
   }
 
-  uint64_t new_profile_id = 0;
   const char* data_as_char = reinterpret_cast<const char*>(data);
   {
     // Linearly search the cached ICC profiles to find one with the same data.
@@ -75,7 +86,8 @@ ICCProfile ICCProfile::FromData(const void* data, size_t size) {
       auto found = cache.id_to_icc_profile_mru.Get(iter->second.id_);
       return found->second;
     }
-    new_profile_id = cache.next_unused_id++;
+    if (!new_profile_id)
+      new_profile_id = cache.next_unused_id++;
   }
 
   // Create a new cached id and add it to the cache.

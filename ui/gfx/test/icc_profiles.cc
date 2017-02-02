@@ -536,26 +536,27 @@ const unsigned char adobe_rgb_profile_data[] = {
 }
 
 ICCProfile ICCProfileForTestingAdobeRGB() {
-  return ICCProfile::FromData(
+  return ICCProfile::FromDataWithId(
       reinterpret_cast<const char*>(adobe_rgb_profile_data),
-      arraysize(adobe_rgb_profile_data));
+      arraysize(adobe_rgb_profile_data), ICCProfile::test_id_adobe_rgb_);
 }
 
 ICCProfile ICCProfileForTestingGenericRGB() {
-  return ICCProfile::FromData(
+  return ICCProfile::FromDataWithId(
       reinterpret_cast<const char*>(generic_rgb_profile_data),
-      arraysize(generic_rgb_profile_data));
+      arraysize(generic_rgb_profile_data), ICCProfile::test_id_generic_rgb_);
 }
 
 ICCProfile ICCProfileForTestingSRGB() {
-  return ICCProfile::FromData(reinterpret_cast<const char*>(srgb_profile_data),
-                              arraysize(srgb_profile_data));
+  return ICCProfile::FromDataWithId(
+      reinterpret_cast<const char*>(srgb_profile_data),
+      arraysize(srgb_profile_data), ICCProfile::test_id_srgb_);
 }
 
 ICCProfile ICCProfileForTestingColorSpin() {
-  return ICCProfile::FromData(
+  return ICCProfile::FromDataWithId(
       reinterpret_cast<const char*>(colorspin_profile_data),
-      arraysize(colorspin_profile_data));
+      arraysize(colorspin_profile_data), ICCProfile::test_id_color_spin_);
 }
 
 }  // namespace gfx

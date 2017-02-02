@@ -68,6 +68,22 @@ class GFX_EXPORT ICCProfile {
 #endif
 
  private:
+  friend ICCProfile ICCProfileForTestingAdobeRGB();
+  friend ICCProfile ICCProfileForTestingColorSpin();
+  friend ICCProfile ICCProfileForTestingGenericRGB();
+  friend ICCProfile ICCProfileForTestingSRGB();
+  static const uint64_t test_id_adobe_rgb_;
+  static const uint64_t test_id_color_spin_;
+  static const uint64_t test_id_generic_rgb_;
+  static const uint64_t test_id_srgb_;
+
+  // This method is used to hard-code the |id_| to a specific value, and is
+  // used by test methods to ensure that they don't conflict with the values
+  // generated in the browser.
+  static ICCProfile FromDataWithId(const void* icc_profile,
+                                   size_t size,
+                                   uint64_t id);
+
   // TODO(ccameron): Remove this function once its callerrs are gone.
   static ICCProfile FromSkColorSpace(sk_sp<SkColorSpace> color_space);
   static bool IsValidProfileLength(size_t length);

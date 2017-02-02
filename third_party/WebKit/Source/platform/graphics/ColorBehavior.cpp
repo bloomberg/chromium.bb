@@ -33,9 +33,10 @@ void ColorBehavior::setGlobalTargetColorProfile(
 
   // Attempt to convert the ICC profile to an SkColorSpace.
   if (!(profile == gfx::ICCProfile())) {
+    sk_sp<SkColorSpace> space = profile.GetColorSpace().ToSkColorSpace();
+    gTargetColorSpace = space.release();
+
     const std::vector<char>& data = profile.GetData();
-    gTargetColorSpace =
-        SkColorSpace::MakeICC(data.data(), data.size()).release();
     sk_sp<SkICC> skICC = SkICC::Make(data.data(), data.size());
     if (skICC) {
       SkMatrix44 toXYZD50;
