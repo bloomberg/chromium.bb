@@ -51,9 +51,6 @@ import org.chromium.base.Log;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -420,16 +417,10 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
 
     public void loadUrlFromUrlBar(View view) {
         String url = mUrlBar.getText().toString();
-        try {
-            URI uri = new URI(url);
-            url = (uri.getScheme() == null) ? "http://" + uri.toString() : uri.toString();
-        } catch (URISyntaxException e) {
-            String message = "<html><body>URISyntaxException: " + e.getMessage() + "</body></html>";
-            mWebView.loadData(message, "text/html", "UTF-8");
-            setUrlFail(true);
-            return;
-        }
-
+        // Parse with android.net.Uri instead of java.net.URI because Uri does no validation. Rather
+        // than failing in the browser, let WebView handle weird URLs. WebView will escape illegal
+        // characters and display error pages for bad URLs like "blah://example.com".
+        if (Uri.parse(url).getScheme() == null) url = "http://" + url;
         setUrlBarText(url);
         setUrlFail(false);
         loadUrl(url);
