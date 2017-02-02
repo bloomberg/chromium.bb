@@ -440,6 +440,8 @@ public class BottomSheet extends FrameLayout {
         MarginLayoutParams toolbarShadowParams =
                 (MarginLayoutParams) findViewById(R.id.toolbar_shadow).getLayoutParams();
         toolbarShadowParams.topMargin = (int) mToolbarHeight;
+
+        mBottomSheetContentContainer.requestLayout();
     }
 
     /**
