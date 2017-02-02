@@ -64,6 +64,8 @@ enum ErrorType {
   ERROR_MACHINE_NAME_TOO_LONG = 21,
   // User joined maximum number of machines to the domain.
   ERROR_USER_HIT_JOIN_QUOTA = 22,
+  // Kinit or smbclient failed to contact Key Distribution Center.
+  ERROR_CONTACTING_KDC_FAILED = 23,
   // Should be the last.
   ERROR_COUNT,
 };
