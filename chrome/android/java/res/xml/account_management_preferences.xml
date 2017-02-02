@@ -30,10 +30,6 @@
         android:key="child_content"
         android:title="@string/account_management_child_content_title"
         android:order="1003" />
-    <Preference
-        android:key="child_safe_sites"
-        android:title="@string/account_management_child_safe_sites_title"
-        android:order="1004" />
 
     <org.chromium.chrome.browser.preferences.SyncPreference
         android:key="sync_settings"

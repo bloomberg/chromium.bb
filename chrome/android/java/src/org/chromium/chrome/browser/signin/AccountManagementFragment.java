@@ -108,7 +108,6 @@ public class AccountManagementFragment extends PreferenceFragment
     public static final String PREF_PARENTAL_SETTINGS = "parental_settings";
     public static final String PREF_PARENT_ACCOUNTS = "parent_accounts";
     public static final String PREF_CHILD_CONTENT = "child_content";
-    public static final String PREF_CHILD_SAFE_SITES = "child_safe_sites";
     public static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
     public static final String PREF_SYNC_SETTINGS = "sync_settings";
 
@@ -355,7 +354,6 @@ public class AccountManagementFragment extends PreferenceFragment
     private void configureChildAccountPreferences() {
         Preference parentAccounts = findPreference(PREF_PARENT_ACCOUNTS);
         Preference childContent = findPreference(PREF_CHILD_CONTENT);
-        Preference childSafeSites = findPreference(PREF_CHILD_SAFE_SITES);
         if (ChildAccountService.isChildAccount()) {
             Resources res = getActivity().getResources();
             PrefServiceBridge prefService = PrefServiceBridge.getInstance();
@@ -376,26 +374,22 @@ public class AccountManagementFragment extends PreferenceFragment
             parentAccounts.setSummary(parentText);
             parentAccounts.setSelectable(false);
 
-            final boolean unapprovedContentBlocked =
-                    prefService.getDefaultSupervisedUserFilteringBehavior()
-                    == PrefServiceBridge.SUPERVISED_USER_FILTERING_BLOCK;
-            final String contentText = res.getString(
-                    unapprovedContentBlocked ? R.string.account_management_child_content_approved
-                            : R.string.account_management_child_content_all);
-            childContent.setSummary(contentText);
+            final int childContentSummary;
+            int defaultBehavior = prefService.getDefaultSupervisedUserFilteringBehavior();
+            if (defaultBehavior == PrefServiceBridge.SUPERVISED_USER_FILTERING_BLOCK) {
+                childContentSummary = R.string.account_management_child_content_approved;
+            } else if (prefService.isSupervisedUserSafeSitesEnabled()) {
+                childContentSummary = R.string.account_management_child_content_filter_mature;
+            } else {
+                childContentSummary = R.string.account_management_child_content_all;
+            }
+            childContent.setSummary(childContentSummary);
             childContent.setSelectable(false);
-
-            final String safeSitesText = res.getString(
-                    prefService.isSupervisedUserSafeSitesEnabled()
-                            ? R.string.text_on : R.string.text_off);
-            childSafeSites.setSummary(safeSitesText);
-            childSafeSites.setSelectable(false);
         } else {
             PreferenceScreen prefScreen = getPreferenceScreen();
             prefScreen.removePreference(findPreference(PREF_PARENTAL_SETTINGS));
             prefScreen.removePreference(parentAccounts);
             prefScreen.removePreference(childContent);
-            prefScreen.removePreference(childSafeSites);
         }
     }
 
