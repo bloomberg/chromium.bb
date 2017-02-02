@@ -182,7 +182,7 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
   void didUpdateToUniqueOrigin() override;
   void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;
   void didSetFeaturePolicyHeader(
-      const WebParsedFeaturePolicy& parsedHeader) override;
+      const WebParsedFeaturePolicyHeader& parsedHeader) override;
   void didAddContentSecurityPolicy(const String& headerValue,
                                    ContentSecurityPolicyHeaderType,
                                    ContentSecurityPolicyHeaderSource) override;

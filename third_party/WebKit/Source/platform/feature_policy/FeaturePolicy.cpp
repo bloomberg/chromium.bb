@@ -61,12 +61,12 @@ const FeaturePolicy::Feature kWebRTC{
 
 // static
 std::unique_ptr<FeaturePolicy::Whitelist> FeaturePolicy::Whitelist::from(
-    const WebFeaturePolicy::ParsedWhitelist& parsedWhitelist) {
+    const WebParsedFeaturePolicyDeclaration& parsedDeclaration) {
   std::unique_ptr<Whitelist> whitelist(new FeaturePolicy::Whitelist);
-  if (parsedWhitelist.matchesAllOrigins) {
+  if (parsedDeclaration.matchesAllOrigins) {
     whitelist->addAll();
   } else {
-    for (const WebSecurityOrigin& origin : parsedWhitelist.origins)
+    for (const WebSecurityOrigin& origin : parsedDeclaration.origins)
       whitelist->add(static_cast<WTF::PassRefPtr<SecurityOrigin>>(origin));
   }
   return whitelist;
@@ -148,11 +148,11 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::createFromParentPolicy(
 }
 
 // static
-WebParsedFeaturePolicy FeaturePolicy::parseFeaturePolicy(
+WebParsedFeaturePolicyHeader FeaturePolicy::parseFeaturePolicy(
     const String& policy,
     RefPtr<SecurityOrigin> origin,
     Vector<String>* messages) {
-  Vector<WebFeaturePolicy::ParsedWhitelist> whitelists;
+  Vector<WebParsedFeaturePolicyDeclaration> whitelists;
 
   // Use a reasonable parse depth limit; the actual maximum depth is only going
   // to be 4 for a valid policy, but we'll give the featurePolicyParser a chance
@@ -182,7 +182,7 @@ WebParsedFeaturePolicy FeaturePolicy::parseFeaturePolicy(
         continue;
       }
 
-      WebFeaturePolicy::ParsedWhitelist whitelist;
+      WebParsedFeaturePolicyDeclaration whitelist;
       whitelist.featureName = featureName;
       Vector<WebSecurityOrigin> origins;
       String targetString;
@@ -211,14 +211,15 @@ WebParsedFeaturePolicy FeaturePolicy::parseFeaturePolicy(
   return whitelists;
 }
 
-void FeaturePolicy::setHeaderPolicy(const WebParsedFeaturePolicy& policy) {
+void FeaturePolicy::setHeaderPolicy(
+    const WebParsedFeaturePolicyHeader& policy) {
   DCHECK(m_headerWhitelists.isEmpty());
-  for (const WebFeaturePolicy::ParsedWhitelist& parsedWhitelist : policy) {
+  for (const WebParsedFeaturePolicyDeclaration& parsedDeclaration : policy) {
     const FeaturePolicy::Feature* feature =
-        featureForName(parsedWhitelist.featureName, m_features);
+        featureForName(parsedDeclaration.featureName, m_features);
     if (!feature)
       continue;
-    m_headerWhitelists.set(feature, Whitelist::from(parsedWhitelist));
+    m_headerWhitelists.set(feature, Whitelist::from(parsedDeclaration));
   }
 }
 

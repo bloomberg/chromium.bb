@@ -105,50 +105,50 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   Vector<String> messages;
 
   // Empty policy.
-  WebParsedFeaturePolicy parsedPolicy =
+  WebParsedFeaturePolicyHeader parsedHeader =
       FeaturePolicy::parseFeaturePolicy("{}", m_originA.get(), &messages);
-  EXPECT_EQ(0UL, parsedPolicy.size());
+  EXPECT_EQ(0UL, parsedHeader.size());
 
   // Simple policy with "self".
-  parsedPolicy = FeaturePolicy::parseFeaturePolicy(
+  parsedHeader = FeaturePolicy::parseFeaturePolicy(
       "{\"default-self\": [\"self\"]}", m_originA.get(), &messages);
-  EXPECT_EQ(1UL, parsedPolicy.size());
-  EXPECT_EQ("default-self", parsedPolicy[0].featureName);
-  EXPECT_FALSE(parsedPolicy[0].matchesAllOrigins);
-  EXPECT_EQ(1UL, parsedPolicy[0].origins.size());
+  EXPECT_EQ(1UL, parsedHeader.size());
+  EXPECT_EQ("default-self", parsedHeader[0].featureName);
+  EXPECT_FALSE(parsedHeader[0].matchesAllOrigins);
+  EXPECT_EQ(1UL, parsedHeader[0].origins.size());
   EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(
-      parsedPolicy[0].origins[0].get()));
+      parsedHeader[0].origins[0].get()));
 
   // Simple policy with *.
-  parsedPolicy = FeaturePolicy::parseFeaturePolicy(
+  parsedHeader = FeaturePolicy::parseFeaturePolicy(
       "{\"default-self\": [\"*\"]}", m_originA.get(), &messages);
-  EXPECT_EQ(1UL, parsedPolicy.size());
-  EXPECT_EQ("default-self", parsedPolicy[0].featureName);
-  EXPECT_TRUE(parsedPolicy[0].matchesAllOrigins);
-  EXPECT_EQ(0UL, parsedPolicy[0].origins.size());
+  EXPECT_EQ(1UL, parsedHeader.size());
+  EXPECT_EQ("default-self", parsedHeader[0].featureName);
+  EXPECT_TRUE(parsedHeader[0].matchesAllOrigins);
+  EXPECT_EQ(0UL, parsedHeader[0].origins.size());
 
   // Complicated policy.
-  parsedPolicy = FeaturePolicy::parseFeaturePolicy(
+  parsedHeader = FeaturePolicy::parseFeaturePolicy(
       "{\"default-self\": [\"*\"], "
       "\"default-on\": [\"https://example.net\", \"https://example.org\"], "
       "\"default-off\": [\"self\"]}",
       m_originA.get(), &messages);
-  EXPECT_EQ(3UL, parsedPolicy.size());
-  EXPECT_EQ("default-self", parsedPolicy[0].featureName);
-  EXPECT_TRUE(parsedPolicy[0].matchesAllOrigins);
-  EXPECT_EQ(0UL, parsedPolicy[0].origins.size());
-  EXPECT_EQ("default-on", parsedPolicy[1].featureName);
-  EXPECT_FALSE(parsedPolicy[1].matchesAllOrigins);
-  EXPECT_EQ(2UL, parsedPolicy[1].origins.size());
+  EXPECT_EQ(3UL, parsedHeader.size());
+  EXPECT_EQ("default-self", parsedHeader[0].featureName);
+  EXPECT_TRUE(parsedHeader[0].matchesAllOrigins);
+  EXPECT_EQ(0UL, parsedHeader[0].origins.size());
+  EXPECT_EQ("default-on", parsedHeader[1].featureName);
+  EXPECT_FALSE(parsedHeader[1].matchesAllOrigins);
+  EXPECT_EQ(2UL, parsedHeader[1].origins.size());
   EXPECT_TRUE(m_originB->isSameSchemeHostPortAndSuborigin(
-      parsedPolicy[1].origins[0].get()));
+      parsedHeader[1].origins[0].get()));
   EXPECT_TRUE(m_originC->isSameSchemeHostPortAndSuborigin(
-      parsedPolicy[1].origins[1].get()));
-  EXPECT_EQ("default-off", parsedPolicy[2].featureName);
-  EXPECT_FALSE(parsedPolicy[2].matchesAllOrigins);
-  EXPECT_EQ(1UL, parsedPolicy[2].origins.size());
+      parsedHeader[1].origins[1].get()));
+  EXPECT_EQ("default-off", parsedHeader[2].featureName);
+  EXPECT_FALSE(parsedHeader[2].matchesAllOrigins);
+  EXPECT_EQ(1UL, parsedHeader[2].origins.size());
   EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(
-      parsedPolicy[2].origins[0].get()));
+      parsedHeader[2].origins[0].get()));
 }
 
 TEST_F(FeaturePolicyTest, TestInitialPolicy) {

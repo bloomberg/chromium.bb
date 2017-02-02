@@ -97,8 +97,9 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void setFeaturePolicyForTesting(std::unique_ptr<FeaturePolicy> newPolicy) {
     m_featurePolicy = std::move(newPolicy);
   }
-  void setFeaturePolicyFromHeader(const WebParsedFeaturePolicy& parsedHeader,
-                                  FeaturePolicy* parentFeaturePolicy);
+  void setFeaturePolicyFromHeader(
+      const WebParsedFeaturePolicyHeader& parsedHeader,
+      FeaturePolicy* parentFeaturePolicy);
 
  protected:
   SecurityContext();

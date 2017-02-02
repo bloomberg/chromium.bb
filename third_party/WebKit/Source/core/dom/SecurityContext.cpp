@@ -100,7 +100,7 @@ void SecurityContext::enforceSuborigin(const Suborigin& suborigin) {
 }
 
 void SecurityContext::setFeaturePolicyFromHeader(
-    const WebParsedFeaturePolicy& parsedHeader,
+    const WebParsedFeaturePolicyHeader& parsedHeader,
     FeaturePolicy* parentFeaturePolicy) {
   DCHECK(!m_featurePolicy);
   m_featurePolicy = FeaturePolicy::createFromParentPolicy(parentFeaturePolicy,

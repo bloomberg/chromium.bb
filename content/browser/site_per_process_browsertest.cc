@@ -668,9 +668,9 @@ class SitePerProcessFeaturePolicyBrowserTest
                                     "FeaturePolicy");
   }
 
-  ParsedFeaturePolicy CreateFPHeader(const std::string& feature_name,
-                                     const std::vector<GURL>& origins) {
-    ParsedFeaturePolicy result(1);
+  ParsedFeaturePolicyHeader CreateFPHeader(const std::string& feature_name,
+                                           const std::vector<GURL>& origins) {
+    ParsedFeaturePolicyHeader result(1);
     result[0].feature_name = feature_name;
     result[0].matches_all_origins = false;
     DCHECK(!origins.empty());
@@ -679,17 +679,17 @@ class SitePerProcessFeaturePolicyBrowserTest
     return result;
   }
 
-  ParsedFeaturePolicy CreateFPHeaderMatchesAll(
+  ParsedFeaturePolicyHeader CreateFPHeaderMatchesAll(
       const std::string& feature_name) {
-    ParsedFeaturePolicy result(1);
+    ParsedFeaturePolicyHeader result(1);
     result[0].feature_name = feature_name;
     result[0].matches_all_origins = true;
     return result;
   }
 };
 
-bool operator==(const FeaturePolicyParsedWhitelist& first,
-                const FeaturePolicyParsedWhitelist& second) {
+bool operator==(const ParsedFeaturePolicyDeclaration& first,
+                const ParsedFeaturePolicyDeclaration& second) {
   return std::tie(first.feature_name, first.matches_all_origins,
                   first.origins) == std::tie(second.feature_name,
                                              second.matches_all_origins,

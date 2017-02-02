@@ -517,7 +517,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void didChangeSandboxFlags(blink::WebFrame* child_frame,
                              blink::WebSandboxFlags flags) override;
   void didSetFeaturePolicyHeader(
-      const blink::WebParsedFeaturePolicy& parsed_header) override;
+      const blink::WebParsedFeaturePolicyHeader& parsed_header) override;
   void didAddContentSecurityPolicy(
       const blink::WebString& header_value,
       blink::WebContentSecurityPolicyType type,

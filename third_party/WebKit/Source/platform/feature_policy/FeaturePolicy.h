@@ -75,7 +75,7 @@ class PLATFORM_EXPORT FeaturePolicy final {
   class Whitelist final {
    public:
     static std::unique_ptr<Whitelist> from(
-        const WebFeaturePolicy::ParsedWhitelist&);
+        const WebParsedFeaturePolicyDeclaration&);
 
     Whitelist();
 
@@ -132,9 +132,10 @@ class PLATFORM_EXPORT FeaturePolicy final {
   // but will be filtered out when the policy is constructed. If |messages| is
   // not null, then any errors in the input will cause an error message to be
   // appended to it.
-  static WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
-                                                   RefPtr<SecurityOrigin>,
-                                                   Vector<String>* messages);
+  static WebParsedFeaturePolicyHeader parseFeaturePolicy(
+      const String& policy,
+      RefPtr<SecurityOrigin>,
+      Vector<String>* messages);
 
   static std::unique_ptr<FeaturePolicy> createFromParentPolicy(
       const FeaturePolicy* parent,
@@ -142,7 +143,7 @@ class PLATFORM_EXPORT FeaturePolicy final {
 
   // Sets the declared policy from the parsed Feature-Policy HTTP header.
   // Unrecognized features will be ignored.
-  void setHeaderPolicy(const WebParsedFeaturePolicy&);
+  void setHeaderPolicy(const WebParsedFeaturePolicyHeader&);
 
   // Returns whether or not the given feature is enabled by this policy.
   bool isFeatureEnabledForOrigin(const Feature&, const SecurityOrigin&) const;

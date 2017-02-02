@@ -592,7 +592,7 @@ void FrameLoader::didBeginDocument() {
           m_documentLoader->response().httpHeaderField(
               HTTPNames::Feature_Policy);
       Vector<String> messages;
-      const WebParsedFeaturePolicy& parsedHeader =
+      const WebParsedFeaturePolicyHeader& parsedHeader =
           FeaturePolicy::parseFeaturePolicy(
               featurePolicyHeader,
               m_frame->securityContext()->getSecurityOrigin(), &messages);

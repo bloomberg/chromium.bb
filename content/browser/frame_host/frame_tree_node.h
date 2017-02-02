@@ -155,7 +155,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Set the frame's feature policy from an HTTP header, clearing any existing
   // policy.
-  void SetFeaturePolicyHeader(const ParsedFeaturePolicy& parsed_header);
+  void SetFeaturePolicyHeader(const ParsedFeaturePolicyHeader& parsed_header);
 
   // Clear any feature policy associated with the frame.
   void ResetFeaturePolicy();

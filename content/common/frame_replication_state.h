@@ -23,17 +23,17 @@ namespace content {
 // This struct holds feature policy whitelist data that needs to be replicated
 // between a RenderFrame and any of its associated RenderFrameProxies. A list of
 // these form part of the FrameReplicationState below (one entry per feature).
-struct CONTENT_EXPORT FeaturePolicyParsedWhitelist {
-  FeaturePolicyParsedWhitelist();
-  FeaturePolicyParsedWhitelist(const FeaturePolicyParsedWhitelist& fppw);
-  ~FeaturePolicyParsedWhitelist();
+struct CONTENT_EXPORT ParsedFeaturePolicyDeclaration {
+  ParsedFeaturePolicyDeclaration();
+  ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& fppw);
+  ~ParsedFeaturePolicyDeclaration();
 
   std::string feature_name;
   bool matches_all_origins;
   std::vector<url::Origin> origins;
 };
 
-using ParsedFeaturePolicy = std::vector<FeaturePolicyParsedWhitelist>;
+using ParsedFeaturePolicyHeader = std::vector<ParsedFeaturePolicyDeclaration>;
 
 // This structure holds information that needs to be replicated between a
 // RenderFrame and any of its associated RenderFrameProxies.
@@ -102,7 +102,7 @@ struct CONTENT_EXPORT FrameReplicationState {
 
   // Parsed feature policy header. May be empty if no header was sent with the
   // document.
-  ParsedFeaturePolicy feature_policy_header;
+  ParsedFeaturePolicyHeader feature_policy_header;
 
   // Accumulated CSP headers - gathered from http headers, <meta> elements,
   // parent frames (in case of about:blank frames).

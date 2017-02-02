@@ -11,16 +11,17 @@
 
 namespace blink {
 
-struct WebFeaturePolicy {
-  struct ParsedWhitelist {
-    ParsedWhitelist() : matchesAllOrigins(false) {}
-    WebString featureName;
-    bool matchesAllOrigins;
-    WebVector<WebSecurityOrigin> origins;
-  };
+struct WebParsedFeaturePolicyDeclaration {
+  WebParsedFeaturePolicyDeclaration() : matchesAllOrigins(false) {}
+  WebString featureName;
+  bool matchesAllOrigins;
+  WebVector<WebSecurityOrigin> origins;
 };
 
-using WebParsedFeaturePolicy = WebVector<WebFeaturePolicy::ParsedWhitelist>;
+// Used in Blink code to represent parsed headers. Used for IPC between renderer
+// and browser.
+using WebParsedFeaturePolicyHeader =
+    WebVector<WebParsedFeaturePolicyDeclaration>;
 
 }  // namespace blink
 

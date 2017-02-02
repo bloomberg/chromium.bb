@@ -878,17 +878,17 @@ double ConvertToBlinkTime(const base::TimeTicks& time_ticks) {
   return (time_ticks - base::TimeTicks()).InSecondsF();
 }
 
-ParsedFeaturePolicy ToParsedFeaturePolicy(
-    const blink::WebParsedFeaturePolicy& web_parsed_whitelists) {
-  ParsedFeaturePolicy result;
-  for (const blink::WebFeaturePolicy::ParsedWhitelist& web_whitelist :
-       web_parsed_whitelists) {
-    FeaturePolicyParsedWhitelist whitelist;
-    whitelist.feature_name = web_whitelist.featureName.utf8();
-    whitelist.matches_all_origins = web_whitelist.matchesAllOrigins;
-    for (const blink::WebSecurityOrigin& web_origin : web_whitelist.origins)
-      whitelist.origins.push_back(web_origin);
-    result.push_back(whitelist);
+ParsedFeaturePolicyHeader ToParsedFeaturePolicyHeader(
+    const blink::WebParsedFeaturePolicyHeader& parsed_header) {
+  ParsedFeaturePolicyHeader result;
+  for (const blink::WebParsedFeaturePolicyDeclaration& web_declaration :
+       parsed_header) {
+    ParsedFeaturePolicyDeclaration declaration;
+    declaration.feature_name = web_declaration.featureName.utf8();
+    declaration.matches_all_origins = web_declaration.matchesAllOrigins;
+    for (const blink::WebSecurityOrigin& web_origin : web_declaration.origins)
+      declaration.origins.push_back(web_origin);
+    result.push_back(declaration);
   }
   return result;
 }
@@ -3214,9 +3214,9 @@ void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,
 }
 
 void RenderFrameImpl::didSetFeaturePolicyHeader(
-    const blink::WebParsedFeaturePolicy& parsed_header) {
+    const blink::WebParsedFeaturePolicyHeader& parsed_header) {
   Send(new FrameHostMsg_DidSetFeaturePolicyHeader(
-      routing_id_, ToParsedFeaturePolicy(parsed_header)));
+      routing_id_, ToParsedFeaturePolicyHeader(parsed_header)));
 }
 
 void RenderFrameImpl::didAddContentSecurityPolicy(

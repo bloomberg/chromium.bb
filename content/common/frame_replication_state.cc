@@ -9,13 +9,13 @@
 
 namespace content {
 
-FeaturePolicyParsedWhitelist::FeaturePolicyParsedWhitelist()
+ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration()
     : matches_all_origins(false) {}
 
-FeaturePolicyParsedWhitelist::FeaturePolicyParsedWhitelist(
-    const FeaturePolicyParsedWhitelist& fppw) = default;
+ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
+    const ParsedFeaturePolicyDeclaration& rhs) = default;
 
-FeaturePolicyParsedWhitelist::~FeaturePolicyParsedWhitelist() {}
+ParsedFeaturePolicyDeclaration::~ParsedFeaturePolicyDeclaration() {}
 
 FrameReplicationState::FrameReplicationState()
     : sandbox_flags(blink::WebSandboxFlags::None),

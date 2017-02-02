@@ -705,7 +705,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidAccessInitialDocument();
   void OnDidChangeOpener(int32_t opener_routing_id);
   void OnDidChangeName(const std::string& name, const std::string& unique_name);
-  void OnDidSetFeaturePolicyHeader(const ParsedFeaturePolicy& parsed_header);
+  void OnDidSetFeaturePolicyHeader(
+      const ParsedFeaturePolicyHeader& parsed_header);
   void OnDidAddContentSecurityPolicy(const ContentSecurityPolicyHeader& header);
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnUpdateToUniqueOrigin(bool is_potentially_trustworthy_unique_origin);

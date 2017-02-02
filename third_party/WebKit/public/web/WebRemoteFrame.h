@@ -64,7 +64,7 @@ class WebRemoteFrame : public WebFrame {
                                  const WebString& uniqueName) const = 0;
 
   virtual void setReplicatedFeaturePolicyHeader(
-      const WebParsedFeaturePolicy& parsedHeader) const = 0;
+      const WebParsedFeaturePolicyHeader& parsedHeader) const = 0;
 
   // Adds |header| to the set of replicated CSP headers.
   virtual void addReplicatedContentSecurityPolicyHeader(

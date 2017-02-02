@@ -1821,7 +1821,7 @@ void RenderFrameHostImpl::OnDidChangeName(const std::string& name,
 }
 
 void RenderFrameHostImpl::OnDidSetFeaturePolicyHeader(
-    const ParsedFeaturePolicy& parsed_header) {
+    const ParsedFeaturePolicyHeader& parsed_header) {
   frame_tree_node()->SetFeaturePolicyHeader(parsed_header);
 }
 
