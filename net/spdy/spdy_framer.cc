@@ -143,11 +143,9 @@ SpdyFramer::SpdyFramer(SpdyFramer::DecoderAdapterFactoryFn adapter_factory,
       compression_option_(option),
       probable_http_response_(false),
       end_stream_when_done_(false) {
-  // TODO(bnc): The way kMaxControlFrameSize is currently interpreted, it
-  // includes the frame header, whereas kSpdyInitialFrameSizeLimit does not.
-  // Therefore this assertion is unnecessarily strict.
-  static_assert(kMaxControlFrameSize <= kSpdyInitialFrameSizeLimit,
-                "Our send limit should be at most our receive limit");
+  static_assert(
+      kMaxControlFrameSize <= kSpdyInitialFrameSizeLimit + kFrameHeaderSize,
+      "Our send limit should be at most our receive limit");
   Reset();
 
   if (adapter_factory != nullptr) {
