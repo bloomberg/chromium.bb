@@ -370,47 +370,11 @@ class BrowserThemePackTest : public ::testing::Test {
   scoped_refptr<BrowserThemePack> theme_pack_;
 };
 
-
-TEST_F(BrowserThemePackTest, DeriveUnderlineLinkColor) {
-  // If we specify a link color, but don't specify the underline color, the
-  // theme provider should create one.
-  std::string color_json = "{ \"ntp_link\": [128, 128, 128],"
-                           "  \"ntp_section_link\": [128, 128, 128] }";
-  LoadColorJSON(color_json);
-
-  std::map<int, SkColor> colors = GetDefaultColorMap();
-  SkColor link_color = SkColorSetRGB(128, 128, 128);
-  colors[ThemeProperties::COLOR_NTP_LINK] = link_color;
-  colors[ThemeProperties::COLOR_NTP_LINK_UNDERLINE] =
-      BuildThirdOpacity(link_color);
-  colors[ThemeProperties::COLOR_NTP_SECTION_LINK] = link_color;
-  colors[ThemeProperties::COLOR_NTP_SECTION_LINK_UNDERLINE] =
-      BuildThirdOpacity(link_color);
-
-  VerifyColorMap(colors);
-}
-
-TEST_F(BrowserThemePackTest, ProvideUnderlineLinkColor) {
-  // If we specify the underline color, it shouldn't try to generate one.
-  std::string color_json = "{ \"ntp_link\": [128, 128, 128],"
-                           "  \"ntp_link_underline\": [255, 255, 255],"
-                           "  \"ntp_section_link\": [128, 128, 128],"
-                           "  \"ntp_section_link_underline\": [255, 255, 255]"
-                           "}";
-  LoadColorJSON(color_json);
-
-  std::map<int, SkColor> colors = GetDefaultColorMap();
-  SkColor link_color = SkColorSetRGB(128, 128, 128);
-  SkColor underline_color = SkColorSetRGB(255, 255, 255);
-  colors[ThemeProperties::COLOR_NTP_LINK] = link_color;
-  colors[ThemeProperties::COLOR_NTP_LINK_UNDERLINE] = underline_color;
-  colors[ThemeProperties::COLOR_NTP_SECTION_LINK] = link_color;
-  colors[ThemeProperties::COLOR_NTP_SECTION_LINK_UNDERLINE] =
-      underline_color;
-
-  VerifyColorMap(colors);
-}
-
+// 'ntp_section' used to correspond to ThemeProperties::COLOR_NTP_SECTION,
+// but COLOR_NTP_SECTION was since removed because it was never used.
+// While it was in use, COLOR_NTP_HEADER used 'ntp_section' as a fallback when
+// 'ntp_header' was absent.  We still preserve this fallback for themes that
+// relied on this.
 TEST_F(BrowserThemePackTest, UseSectionColorAsNTPHeader) {
   std::string color_json = "{ \"ntp_section\": [190, 190, 190] }";
   LoadColorJSON(color_json);
@@ -418,7 +382,6 @@ TEST_F(BrowserThemePackTest, UseSectionColorAsNTPHeader) {
   std::map<int, SkColor> colors = GetDefaultColorMap();
   SkColor ntp_color = SkColorSetRGB(190, 190, 190);
   colors[ThemeProperties::COLOR_NTP_HEADER] = ntp_color;
-  colors[ThemeProperties::COLOR_NTP_SECTION] = ntp_color;
   VerifyColorMap(colors);
 }
 
@@ -429,7 +392,6 @@ TEST_F(BrowserThemePackTest, ProvideNtpHeaderColor) {
 
   std::map<int, SkColor> colors = GetDefaultColorMap();
   colors[ThemeProperties::COLOR_NTP_HEADER] = SkColorSetRGB(120, 120, 120);
-  colors[ThemeProperties::COLOR_NTP_SECTION] = SkColorSetRGB(190, 190, 190);
   VerifyColorMap(colors);
 }
 

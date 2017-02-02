@@ -66,9 +66,6 @@ const SkColor kDefaultColorNTPLink = SkColorSetRGB(0x06, 0x37, 0x74);
 #endif  // OS_WIN
 
 const SkColor kDefaultColorNTPHeader = SkColorSetRGB(0x96, 0x96, 0x96);
-const SkColor kDefaultColorNTPSection = SkColorSetRGB(0xE5, 0xE5, 0xE5);
-constexpr SkColor kDefaultColorNTPSectionText = SK_ColorBLACK;
-const SkColor kDefaultColorNTPSectionLink = SkColorSetRGB(0x06, 0x37, 0x74);
 constexpr SkColor kDefaultColorButtonBackground = SK_ColorTRANSPARENT;
 
 // Default tints.
@@ -131,10 +128,6 @@ constexpr char kTilingNoRepeat[] = "no-repeat";
 constexpr char kTilingRepeatX[] = "repeat-x";
 constexpr char kTilingRepeatY[] = "repeat-y";
 constexpr char kTilingRepeat[] = "repeat";
-
-SkColor TintForUnderline(SkColor input) {
-  return SkColorSetA(input, SkColorGetA(input) / 3);
-}
 
 }  // namespace
 
@@ -249,18 +242,8 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
       return kDefaultColorNTPText;
     case COLOR_NTP_LINK:
       return kDefaultColorNTPLink;
-    case COLOR_NTP_LINK_UNDERLINE:
-      return TintForUnderline(kDefaultColorNTPLink);
     case COLOR_NTP_HEADER:
       return kDefaultColorNTPHeader;
-    case COLOR_NTP_SECTION:
-      return kDefaultColorNTPSection;
-    case COLOR_NTP_SECTION_TEXT:
-      return kDefaultColorNTPSectionText;
-    case COLOR_NTP_SECTION_LINK:
-      return kDefaultColorNTPSectionLink;
-    case COLOR_NTP_SECTION_LINK_UNDERLINE:
-      return TintForUnderline(kDefaultColorNTPSectionLink);
     case COLOR_BUTTON_BACKGROUND:
       return kDefaultColorButtonBackground;
 

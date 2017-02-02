@@ -48,7 +48,7 @@ namespace {
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 45;
+const int kThemePackVersion = 46;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -235,13 +235,7 @@ const StringToIntTable kColorTable[] = {
   { "ntp_background", ThemeProperties::COLOR_NTP_BACKGROUND },
   { "ntp_text", ThemeProperties::COLOR_NTP_TEXT },
   { "ntp_link", ThemeProperties::COLOR_NTP_LINK },
-  { "ntp_link_underline", ThemeProperties::COLOR_NTP_LINK_UNDERLINE },
   { "ntp_header", ThemeProperties::COLOR_NTP_HEADER },
-  { "ntp_section", ThemeProperties::COLOR_NTP_SECTION },
-  { "ntp_section_text", ThemeProperties::COLOR_NTP_SECTION_TEXT },
-  { "ntp_section_link", ThemeProperties::COLOR_NTP_SECTION_LINK },
-  { "ntp_section_link_underline",
-    ThemeProperties::COLOR_NTP_SECTION_LINK_UNDERLINE },
   { "button_background", ThemeProperties::COLOR_BUTTON_BACKGROUND },
 };
 const size_t kColorTableLength = arraysize(kColorTable);
@@ -969,9 +963,16 @@ void BrowserThemePack::ReadColorsFromJSON(
           color = SkColorSetRGB(r, g, b);
         }
 
-        int id = GetIntForString(iter.key(), kColorTable, kColorTableLength);
-        if (id != -1) {
-          (*temp_colors)[id] = color;
+        if (iter.key() == "ntp_section") {
+          // We no longer use ntp_section, but to support legacy
+          // themes we still need to use it as a fallback for
+          // ntp_header.
+          if (!temp_colors->count(ThemeProperties::COLOR_NTP_HEADER))
+            (*temp_colors)[ThemeProperties::COLOR_NTP_HEADER] = color;
+        } else {
+          int id = GetIntForString(iter.key(), kColorTable, kColorTableLength);
+          if (id != -1)
+            (*temp_colors)[id] = color;
         }
       }
     }
@@ -980,28 +981,6 @@ void BrowserThemePack::ReadColorsFromJSON(
 
 void BrowserThemePack::GenerateMissingColors(
     std::map<int, SkColor>* colors) {
-  // Generate link colors, if missing. (See GetColor()).
-  if (!colors->count(ThemeProperties::COLOR_NTP_HEADER) &&
-      colors->count(ThemeProperties::COLOR_NTP_SECTION)) {
-    (*colors)[ThemeProperties::COLOR_NTP_HEADER] =
-        (*colors)[ThemeProperties::COLOR_NTP_SECTION];
-  }
-
-  if (!colors->count(ThemeProperties::COLOR_NTP_SECTION_LINK_UNDERLINE) &&
-      colors->count(ThemeProperties::COLOR_NTP_SECTION_LINK)) {
-    SkColor color_section_link =
-        (*colors)[ThemeProperties::COLOR_NTP_SECTION_LINK];
-    (*colors)[ThemeProperties::COLOR_NTP_SECTION_LINK_UNDERLINE] =
-        SkColorSetA(color_section_link, SkColorGetA(color_section_link) / 3);
-  }
-
-  if (!colors->count(ThemeProperties::COLOR_NTP_LINK_UNDERLINE) &&
-      colors->count(ThemeProperties::COLOR_NTP_LINK)) {
-    SkColor color_link = (*colors)[ThemeProperties::COLOR_NTP_LINK];
-    (*colors)[ThemeProperties::COLOR_NTP_LINK_UNDERLINE] =
-        SkColorSetA(color_link, SkColorGetA(color_link) / 3);
-  }
-
   // Generate frame colors, if missing. (See GenerateFrameColors()).
   SkColor frame;
   std::map<int, SkColor>::const_iterator it =

@@ -20,8 +20,6 @@
                      "ntp_background": [ 57, 137, 194 ],
                      "ntp_link": [ 0, 0, 0 ],
                      "ntp_section": [ 131, 138, 146, 0.8 ],
-                     "ntp_section_link": [ 255, 255, 255 ],
-                     "ntp_section_text": [ 255, 255, 255 ],
                      "ntp_text": [ 0, 0, 0 ],
                      "tab_background_text": [ 0, 0, 0 ],
                      "tab_text": [ 0, 0, 0 ],
