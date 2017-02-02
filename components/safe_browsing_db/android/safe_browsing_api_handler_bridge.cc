@@ -102,16 +102,12 @@ void OnUrlCheckDone(JNIEnv* env,
           callback_id));
 
   if (result_status != RESULT_STATUS_SUCCESS) {
-    // TODO(nparker): If the API is consistently failing, we might want to
-    // turn it off altogether and retest periodically. This would
-    // alleviate a bad experience if GMSCore is somehow busted.
     if (result_status == RESULT_STATUS_TIMEOUT) {
       ReportUmaResult(UMA_STATUS_TIMEOUT);
       VLOG(1) << "Safe browsing API call timed-out";
     } else {
       DCHECK_EQ(result_status, RESULT_STATUS_INTERNAL_ERROR);
       ReportUmaResult(UMA_STATUS_INTERNAL_ERROR);
-      LOG(WARNING) << "Safe browsing API had internal error";
     }
     RunCallbackOnIOThread(callback.release(), SB_THREAT_TYPE_SAFE,
                           ThreatMetadata());
