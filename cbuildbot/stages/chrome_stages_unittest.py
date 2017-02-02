@@ -26,9 +26,9 @@ from chromite.lib import parallel_unittest
 # pylint: disable=too-many-ancestors
 
 
-class SimpleChromeWorkflowStage(cbuildbot_unittest.SimpleBuilderTestCase,
-                                generic_stages_unittest.AbstractStageTestCase,
-                                cros_test_lib.LoggingTestCase):
+class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
+                                 generic_stages_unittest.AbstractStageTestCase,
+                                 cros_test_lib.LoggingTestCase):
   """Verify stage that creates the chrome-sdk and builds chrome with it."""
   BOT_ID = 'link-paladin'
   RELEASE_TAG = ''
@@ -46,7 +46,7 @@ class SimpleChromeWorkflowStage(cbuildbot_unittest.SimpleBuilderTestCase,
     self._Prepare()
 
   def _Prepare(self, bot_id=None, **kwargs):
-    super(SimpleChromeWorkflowStage, self)._Prepare(bot_id, **kwargs)
+    super(SimpleChromeArtifactsStage, self)._Prepare(bot_id, **kwargs)
 
     self._run.options.chrome_root = '/tmp/non-existent'
     self._run.attrs.metadata.UpdateWithDict({'toolchain-tuple': ['target'],
@@ -54,20 +54,20 @@ class SimpleChromeWorkflowStage(cbuildbot_unittest.SimpleBuilderTestCase,
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
-    return chrome_stages.SimpleChromeWorkflowStage(self._run,
-                                                   self._current_board)
+    return chrome_stages.SimpleChromeArtifactsStage(self._run,
+                                                    self._current_board)
 
   def testIt(self):
     """A simple run-through test."""
     rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     rc_mock.SetDefaultCmdResult()
-    self.PatchObject(chrome_stages.SimpleChromeWorkflowStage,
+    self.PatchObject(chrome_stages.SimpleChromeArtifactsStage,
                      '_ArchiveChromeEbuildEnv',
                      autospec=True)
-    self.PatchObject(chrome_stages.SimpleChromeWorkflowStage,
+    self.PatchObject(chrome_stages.TestSimpleChromeWorkflowStage,
                      '_VerifyChromeDeployed',
                      autospec=True)
-    self.PatchObject(chrome_stages.SimpleChromeWorkflowStage,
+    self.PatchObject(chrome_stages.TestSimpleChromeWorkflowStage,
                      '_VerifySDKEnvironment',
                      autospec=True)
     self.RunStage()

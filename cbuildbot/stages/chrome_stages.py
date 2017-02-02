@@ -146,24 +146,19 @@ class PatchChromeStage(generic_stages.BuilderStage):
       commands.PatchChrome(self._run.options.chrome_root, patch, subdir)
 
 
-class SimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
-                                generic_stages.ArchivingStageMixin):
-  """Run through the simple chrome workflow."""
+class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
+                                 generic_stages.ArchivingStageMixin):
+  """Archive Simple Chrome artifacts."""
 
   option_name = 'chrome_sdk'
   config_name = 'chrome_sdk'
 
   def __init__(self, *args, **kwargs):
-    super(SimpleChromeWorkflowStage, self).__init__(*args, **kwargs)
+    super(SimpleChromeArtifactsStage, self).__init__(*args, **kwargs)
     self._upload_queue = multiprocessing.Queue()
     self._pkg_dir = os.path.join(
         self._build_root, constants.DEFAULT_CHROOT_DIR,
         'build', self._current_board, 'var', 'db', 'pkg')
-    if self._run.options.chrome_root:
-      self.chrome_src = os.path.join(self._run.options.chrome_root, 'src')
-      board_dir = 'out_%s' % self._current_board
-      self.out_board_dir = os.path.join(
-          self.chrome_src, board_dir, 'Release')
 
   def _BuildAndArchiveChromeSysroot(self):
     """Generate and upload sysroot for building Chrome."""
@@ -200,6 +195,34 @@ class SimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
       env_tar = os.path.join(self.archive_path, constants.CHROME_ENV_TAR)
       cros_build_lib.CreateTarball(env_tar, tempdir)
       self._upload_queue.put([os.path.basename(env_tar)])
+
+  def _GenerateAndUploadMetadata(self):
+    self.UploadMetadata(upload_queue=self._upload_queue,
+                        filename=constants.PARTIAL_METADATA_JSON)
+
+  def PerformStage(self):
+    steps = [self._BuildAndArchiveChromeSysroot, self._ArchiveChromeEbuildEnv,
+             self._GenerateAndUploadMetadata]
+    with self.ArtifactUploader(self._upload_queue, archive=False):
+      parallel.RunParallelSteps(steps)
+
+      if self._run.config.chrome_sdk_build_chrome:
+        test_stage = TestSimpleChromeWorkflowStage(self._run,
+                                                   self._current_board)
+        test_stage.Run()
+
+
+class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
+                                    generic_stages.ArchivingStageMixin):
+  """Run through the simple chrome workflow."""
+
+  def __init__(self, *args, **kwargs):
+    super(TestSimpleChromeWorkflowStage, self).__init__(*args, **kwargs)
+    if self._run.options.chrome_root:
+      self.chrome_src = os.path.join(self._run.options.chrome_root, 'src')
+      board_dir = 'out_%s' % self._current_board
+      self.out_board_dir = os.path.join(
+          self.chrome_src, board_dir, 'Release')
 
   def _VerifyChromeDeployed(self, tempdir):
     """Check to make sure deploy_chrome ran correctly."""
@@ -245,27 +268,17 @@ class SimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
                    '--staging-only', '--staging-dir', tempdir])
       self._VerifyChromeDeployed(tempdir)
 
-  def _GenerateAndUploadMetadata(self):
-    self.UploadMetadata(upload_queue=self._upload_queue,
-                        filename=constants.PARTIAL_METADATA_JSON)
-
   def PerformStage(self):
-    steps = [self._BuildAndArchiveChromeSysroot, self._ArchiveChromeEbuildEnv,
-             self._GenerateAndUploadMetadata]
-    with self.ArtifactUploader(self._upload_queue, archive=False):
-      parallel.RunParallelSteps(steps)
-
-      if self._run.config.chrome_sdk_build_chrome:
-        with osutils.TempDir(prefix='chrome-sdk-cache') as tempdir:
-          cache_dir = os.path.join(tempdir, 'cache')
-          extra_args = ['--cwd', self.chrome_src, '--sdk-path',
-                        self.archive_path]
-          sdk_cmd = commands.ChromeSDK(
-              self._build_root, self._current_board, chrome_src=self.chrome_src,
-              goma=self._run.config.chrome_sdk_goma,
-              extra_args=extra_args, cache_dir=cache_dir)
-          self._BuildChrome(sdk_cmd)
-          self._TestDeploy(sdk_cmd)
+    with osutils.TempDir(prefix='chrome-sdk-cache') as tempdir:
+      cache_dir = os.path.join(tempdir, 'cache')
+      extra_args = ['--cwd', self.chrome_src, '--sdk-path',
+                    self.archive_path]
+      sdk_cmd = commands.ChromeSDK(
+          self._build_root, self._current_board, chrome_src=self.chrome_src,
+          goma=self._run.config.chrome_sdk_goma,
+          extra_args=extra_args, cache_dir=cache_dir)
+      self._BuildChrome(sdk_cmd)
+      self._TestDeploy(sdk_cmd)
 
 
 class ChromeLKGMSyncStage(sync_stages.SyncStage):

@@ -182,7 +182,7 @@ class SimpleBuilder(generic_builders.Builder):
         self._RunStage(*x, builder_run=builder_run)
       return
 
-    stage_list += [[chrome_stages.SimpleChromeWorkflowStage, board]]
+    stage_list += [[chrome_stages.SimpleChromeArtifactsStage, board]]
 
     if config.vm_test_runs > 1:
       # Run the VMTests multiple times to see if they fail.
