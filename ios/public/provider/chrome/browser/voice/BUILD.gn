@@ -25,6 +25,7 @@ source_set("voice") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "test_audio_session_controller.cc",
     "test_audio_session_controller.h",

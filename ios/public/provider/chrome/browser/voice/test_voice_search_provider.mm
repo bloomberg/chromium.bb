@@ -4,18 +4,21 @@
 
 #import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_language.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 TestVoiceSearchProvider::TestVoiceSearchProvider() {}
 
 TestVoiceSearchProvider::~TestVoiceSearchProvider() {}
 
 NSArray* TestVoiceSearchProvider::GetAvailableLanguages() const {
-  base::scoped_nsobject<VoiceSearchLanguage> en([[VoiceSearchLanguage alloc]
-          initWithIdentifier:@"en-US"
-                 displayName:@"English (US)"
-      localizationPreference:nil]);
+  VoiceSearchLanguage* en =
+      [[VoiceSearchLanguage alloc] initWithIdentifier:@"en-US"
+                                          displayName:@"English (US)"
+                               localizationPreference:nil];
   return @[ en ];
 }
 
