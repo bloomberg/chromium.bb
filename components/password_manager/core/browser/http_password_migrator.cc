@@ -12,9 +12,10 @@
 namespace password_manager {
 
 HttpPasswordMigrator::HttpPasswordMigrator(const GURL& https_origin,
+                                           MigrationMode mode,
                                            PasswordStore* password_store,
                                            Consumer* consumer)
-    : consumer_(consumer), password_store_(password_store) {
+    : mode_(mode), consumer_(consumer), password_store_(password_store) {
   DCHECK(password_store_);
   DCHECK(https_origin.is_valid());
   DCHECK(https_origin.SchemeIs(url::kHttpsScheme)) << https_origin;
@@ -40,21 +41,27 @@ void HttpPasswordMigrator::OnGetPasswordStoreResults(
                      }),
       results.end());
 
-  // Add the new credentials to the password store. The HTTP forms aren't
-  // removed for now.
+  // Add the new credentials to the password store. The HTTP forms are
+  // removed iff |mode_| == MigrationMode::MOVE.
   for (const auto& form : results) {
+    autofill::PasswordForm new_form = *form;
+
     GURL::Replacements rep;
     rep.SetSchemeStr(url::kHttpsScheme);
-    form->origin = form->origin.ReplaceComponents(rep);
-    form->signon_realm = form->origin.spec();
+    new_form.origin = form->origin.ReplaceComponents(rep);
+    new_form.signon_realm = new_form.origin.spec();
     // If |action| is not HTTPS then it's most likely obsolete. Otherwise, it
     // may still be valid.
     if (!form->action.SchemeIs(url::kHttpsScheme))
-      form->action = form->origin;
-    form->form_data = autofill::FormData();
-    form->generation_upload_status = autofill::PasswordForm::NO_SIGNAL_SENT;
-    form->skip_zero_click = false;
-    password_store_->AddLogin(*form);
+      new_form.action = new_form.origin;
+    new_form.form_data = autofill::FormData();
+    new_form.generation_upload_status = autofill::PasswordForm::NO_SIGNAL_SENT;
+    new_form.skip_zero_click = false;
+    password_store_->AddLogin(new_form);
+
+    if (mode_ == MigrationMode::MOVE)
+      password_store_->RemoveLogin(*form);
+    *form = std::move(new_form);
   }
 
   metrics_util::LogCountHttpMigratedPasswords(results.size());

@@ -25,6 +25,11 @@ class PasswordStore;
 // origin.
 class HttpPasswordMigrator : public PasswordStoreConsumer {
  public:
+  enum class MigrationMode {
+    MOVE,  // HTTP credentials are deleted after migration to HTTPS.
+    COPY,  // HTTP credentials are kept after migration to HTTPS.
+  };
+
   // API to be implemented by an embedder of HttpPasswordMigrator.
   class Consumer {
    public:
@@ -38,6 +43,7 @@ class HttpPasswordMigrator : public PasswordStoreConsumer {
 
   // |https_origin| should specify a valid HTTPS URL.
   HttpPasswordMigrator(const GURL& https_origin,
+                       MigrationMode mode,
                        PasswordStore* password_store,
                        Consumer* consumer);
   ~HttpPasswordMigrator() override;
@@ -47,6 +53,7 @@ class HttpPasswordMigrator : public PasswordStoreConsumer {
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
  private:
+  const MigrationMode mode_;
   Consumer* consumer_;
   PasswordStore* password_store_;
 

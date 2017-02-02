@@ -111,7 +111,8 @@ void FormFetcherImpl::OnGetPasswordStoreResults(
   if (should_migrate_http_passwords_ && results.empty() &&
       form_digest_.origin.SchemeIs(url::kHttpsScheme)) {
     http_migrator_ = base::MakeUnique<HttpPasswordMigrator>(
-        form_digest_.origin, client_->GetPasswordStore(), this);
+        form_digest_.origin, HttpPasswordMigrator::MigrationMode::COPY,
+        client_->GetPasswordStore(), this);
     return;
   }
 
