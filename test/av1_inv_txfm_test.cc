@@ -114,7 +114,9 @@ typedef void (*FwdTxfmFunc)(const int16_t *in, tran_low_t *out, int stride);
 typedef void (*InvTxfmFunc)(const tran_low_t *in, uint8_t *out, int stride);
 typedef std::tr1::tuple<FwdTxfmFunc, InvTxfmFunc, InvTxfmFunc, TX_SIZE, int>
     PartialInvTxfmParam;
+#if !CONFIG_ADAPT_SCAN
 const int kMaxNumCoeffs = 1024;
+#endif
 class AV1PartialIDctTest
     : public ::testing::TestWithParam<PartialInvTxfmParam> {
  public:
