@@ -46,7 +46,7 @@ function linearToDecibel(x) {
 
 // Verify that the rendered result is very close to the reference
 // triangular pulse.
-function checkTriangularPulse(rendered, reference) {
+function checkTriangularPulse(rendered, reference, should) {
     var match = true;
     var maxDelta = 0;
     var valueAtMaxDelta = 0;
@@ -69,19 +69,16 @@ function checkTriangularPulse(rendered, reference) {
     var allowedDeviationDecibels = -124.41;
     var maxDeviationDecibels = linearToDecibel(maxDelta / valueAtMaxDelta);
 
-    if (maxDeviationDecibels <= allowedDeviationDecibels) {
-        testPassed("Triangular portion of convolution is correct.");
-    } else {
-        testFailed("Triangular portion of convolution is not correct.  Max deviation = " + maxDeviationDecibels + " dB at " + maxDeltaIndex);
-        match = false;
-    }
+    should(maxDeviationDecibels,
+           "Deviation (in dB) of triangular portion of convolution")
+        .beLessThanOrEqualTo(allowedDeviationDecibels);
 
     return match;
 }        
 
 // Verify that the rendered data is close to zero for the first part
 // of the tail.
-function checkTail1(data, reference, breakpoint) {
+function checkTail1(data, reference, breakpoint, should) {
     var isZero = true;
     var tail1Max = 0;
 
@@ -104,19 +101,16 @@ function checkTail1(data, reference, breakpoint) {
     var threshold1 = -129.7;
 
     var tail1MaxDecibels = linearToDecibel(tail1Max/refMax);
-    if (tail1MaxDecibels <= threshold1) {
-        testPassed("First part of tail of convolution is sufficiently small.");
-    } else {
-        testFailed("First part of tail of convolution is not sufficiently small: " + tail1MaxDecibels + " dB");
-        isZero = false;
-    }
+    should(tail1MaxDecibels,
+           "Deviation in first part of tail of convolutions")
+        .beLessThanOrEqualTo(threshold1);
 
     return isZero;
 }
 
 // Verify that the second part of the tail of the convolution is
 // exactly zero.
-function checkTail2(data, reference, breakpoint) {
+function checkTail2(data, reference, breakpoint, should) {
     var isZero = true;
     var tail2Max = 0;
     // For the second part of the tail, the maximum value should be
@@ -129,54 +123,46 @@ function checkTail2(data, reference, breakpoint) {
         }
     }
 
-    if (isZero) {
-        testPassed("Rendered signal after tail of convolution is silent.");
-    } else {
-        testFailed("Rendered signal after tail of convolution should be silent.");
-    }
+    should(isZero,
+           "Rendered signal after tail of convolution is silent")
+        .beTrue();
 
     return isZero;
 }
 
-function checkConvolvedResult(trianglePulse) {
-    return function(event) {
-        var renderedBuffer = event.renderedBuffer;
+function checkConvolvedResult(renderedBuffer, trianglePulse, should) {
+    var referenceData = trianglePulse.getChannelData(0);
+    var renderedData = renderedBuffer.getChannelData(0);
 
-        var referenceData = trianglePulse.getChannelData(0);
-        var renderedData = renderedBuffer.getChannelData(0);
-    
-        var success = true;
-    
-        // Verify the triangular pulse is actually triangular.
+    var success = true;
 
-        success = success && checkTriangularPulse(renderedData, referenceData);
-        
-        // Make sure that portion after convolved portion is totally
-        // silent.  But round-off prevents this from being completely
-        // true.  At the end of the triangle, it should be close to
-        // zero.  If we go farther out, it should be even closer and
-        // eventually zero.
+    // Verify the triangular pulse is actually triangular.
 
-        // For the tail of the convolution (where the result would be
-        // theoretically zero), we partition the tail into two
-        // parts.  The first is the at the beginning of the tail,
-        // where we tolerate a small but non-zero value.  The second part is
-        // farther along the tail where the result should be zero.
-        
-        // breakpoint is the point dividing the first two tail parts
-        // we're looking at.  Experimentally determined.
-        var breakpoint = 12800;
+    success = success && checkTriangularPulse(renderedData, referenceData,
+        should);
 
-        success = success && checkTail1(renderedData, referenceData, breakpoint);
-        
-        success = success && checkTail2(renderedData, referenceData, breakpoint);
-        
-        if (success) {
-            testPassed("Test signal was correctly convolved.");
-        } else {
-            testFailed("Test signal was not correctly convolved.");
-        }
+    // Make sure that portion after convolved portion is totally
+    // silent.  But round-off prevents this from being completely
+    // true.  At the end of the triangle, it should be close to
+    // zero.  If we go farther out, it should be even closer and
+    // eventually zero.
 
-        finishJSTest();
-    }
+    // For the tail of the convolution (where the result would be
+    // theoretically zero), we partition the tail into two
+    // parts.  The first is the at the beginning of the tail,
+    // where we tolerate a small but non-zero value.  The second part is
+    // farther along the tail where the result should be zero.
+
+    // breakpoint is the point dividing the first two tail parts
+    // we're looking at.  Experimentally determined.
+    var breakpoint = 12800;
+
+    success = success && checkTail1(renderedData, referenceData, breakpoint,
+        should);
+
+    success = success && checkTail2(renderedData, referenceData, breakpoint,
+        should);
+
+    should(success, "Test signal convolved")
+        .message("correctly", "incorrectly");
 }

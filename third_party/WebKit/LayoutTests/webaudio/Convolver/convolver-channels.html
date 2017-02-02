@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <title>Test Supported Number of Channels for ConvolverNode</title>
@@ -9,8 +10,6 @@
 
   <body>
     <script>
-      description("Test Supported Number of Channels for ConvolverNode");
-      window.jsTestIsAsync = true;
 
       var audit = Audit.createTaskRunner();
 
@@ -37,16 +36,13 @@
           }
         }
 
-        if (success)
-          testPassed("Multiple channels for the convolver correctly handled.");
-        else
-          testFailed("Multiple channels for the convolver were not correctly handled.");
+        Should("Multiple channels for the convolver were handled", success)
+          .summarize("correctly", "incorrectly");
 
         done();
       });      
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 
