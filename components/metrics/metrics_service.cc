@@ -164,14 +164,14 @@
 
 namespace metrics {
 
-namespace {
-
 // This feature moves the upload schedule to a seperate schedule from the
 // log rotation schedule.  This may change upload timing slightly, but
 // would allow some compartmentalization of uploader logic to allow more
 // code reuse between different metrics services.
 const base::Feature kUploadSchedulerFeature{"UMAUploadScheduler",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+namespace {
 
 // This drops records if the number of events (user action and omnibox) exceeds
 // the kEventLimit.
@@ -780,7 +780,7 @@ void MetricsService::CloseCurrentLog() {
 
   current_log->RecordGeneralMetrics(metrics_providers_.get());
   RecordCurrentHistograms();
-
+  DVLOG(1) << "Generated an ongoing log.";
   log_manager_.FinishCurrentLog();
 }
 
@@ -815,6 +815,7 @@ void MetricsService::StartSchedulerIfNecessary() {
 }
 
 void MetricsService::StartScheduledUpload() {
+  DVLOG(1) << "StartScheduledUpload";
   DCHECK(state_ >= INIT_TASK_DONE);
   // If we're getting no notifications, then the log won't have much in it, and
   // it's possible the computer is about to go to sleep, so don't upload and
@@ -855,12 +856,15 @@ void MetricsService::StartScheduledUpload() {
 }
 
 void MetricsService::OnFinalLogInfoCollectionDone() {
-  // If somehow there is a log upload in progress, we return and hope things
-  // work out. The scheduler isn't informed since if this happens, the scheduler
-  // will get a response from the upload.
-  DCHECK(!log_upload_in_progress_);
-  if (log_upload_in_progress_)
-    return;
+  DVLOG(1) << "OnFinalLogInfoCollectionDone";
+  if (!upload_scheduler_) {
+    // If somehow there is a log upload in progress, we return and hope things
+    // work out. The scheduler isn't informed since if this happens, the
+    // scheduler will get a response from the upload.
+    DCHECK(!log_upload_in_progress_);
+    if (log_upload_in_progress_)
+      return;
+  }
 
   // Abort if metrics were turned off during the final info gathering.
   if (!recording_active()) {
@@ -882,6 +886,7 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
     OpenNewLog();
   }
   if (upload_scheduler_) {
+    HandleIdleSinceLastTransmission(true);
     upload_scheduler_->Start();
     rotation_scheduler_->RotationFinished();
   } else {
@@ -890,7 +895,9 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
 }
 
 void MetricsService::SendNextLog() {
-  DCHECK_EQ(SENDING_LOGS, state_);
+  DVLOG(1) << "SendNextLog";
+  if (!upload_scheduler_)
+    DCHECK_EQ(SENDING_LOGS, state_);
   if (!reporting_active()) {
     if (upload_scheduler_) {
       upload_scheduler_->Stop();
@@ -980,6 +987,7 @@ bool MetricsService::PrepareInitialStabilityLog(
   // Note: RecordGeneralMetrics() intentionally not called since this log is for
   //       stability stats from a previous session only.
 
+  DVLOG(1) << "Generated an stability log.";
   log_manager_.FinishCurrentLog();
   log_manager_.ResumePausedLog();
 
@@ -1011,6 +1019,7 @@ void MetricsService::PrepareInitialMetricsLog() {
   current_log->RecordGeneralMetrics(metrics_providers_.get());
   RecordCurrentHistograms();
 
+  DVLOG(1) << "Generated an initial log.";
   log_manager_.FinishCurrentLog();
   log_manager_.ResumePausedLog();
 
@@ -1036,18 +1045,20 @@ void MetricsService::SendStagedLog() {
         base::Bind(&MetricsService::OnLogUploadComplete,
                    self_ptr_factory_.GetWeakPtr()));
   }
-
   const std::string hash =
       base::HexEncode(log_manager_.staged_log_hash().data(),
                       log_manager_.staged_log_hash().size());
   log_uploader_->UploadLog(log_manager_.staged_log(), hash);
 
-  HandleIdleSinceLastTransmission(true);
+  if (!upload_scheduler_)
+    HandleIdleSinceLastTransmission(true);
 }
 
 
 void MetricsService::OnLogUploadComplete(int response_code) {
-  DCHECK_EQ(SENDING_LOGS, state_);
+  DVLOG(1) << "OnLogUploadComplete:" << response_code;
+  if (!upload_scheduler_)
+    DCHECK_EQ(SENDING_LOGS, state_);
   DCHECK(log_upload_in_progress_);
   log_upload_in_progress_ = false;
 
@@ -1083,6 +1094,7 @@ void MetricsService::OnLogUploadComplete(int response_code) {
   bool server_is_healthy = upload_succeeded || response_code == 400;
   if (upload_scheduler_) {
     if (!log_manager_.has_unsent_logs()) {
+      DVLOG(1) << "Stopping upload_scheduler_";
       upload_scheduler_->Stop();
     }
     upload_scheduler_->UploadFinished(server_is_healthy);

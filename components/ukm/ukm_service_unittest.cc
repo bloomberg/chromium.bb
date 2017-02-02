@@ -89,8 +89,9 @@ TEST_F(UkmServiceTest, PersistAndPurge) {
   service.Initialize();
   task_runner_->RunUntilIdle();
   service.EnableReporting();
-  // Should init, generate a log, and unsuccessfully attempt an upload.
+  // Should init, generate a log, and start an upload.
   task_runner_->RunPendingTasks();
+  EXPECT_TRUE(client_.uploader()->is_uploading());
   // Flushes the generated log to disk and generates a new one.
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 2);

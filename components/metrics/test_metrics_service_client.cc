@@ -12,26 +12,6 @@
 
 namespace metrics {
 
-namespace {
-
-class TestMetricsLogUploader : public MetricsLogUploader {
- public:
-  TestMetricsLogUploader(const std::string& server_url,
-                         const std::string& mime_type,
-                         const base::Callback<void(int)>& on_upload_complete)
-      : MetricsLogUploader(server_url, mime_type, on_upload_complete) {}
-  ~TestMetricsLogUploader() override = default;
-
-  // MetricsLogUploader:
-  void UploadLog(const std::string& compressed_log_data,
-                 const std::string& log_hash) override {
-    // Never succeeds at uploading.
-    on_upload_complete_.Run(404);
-  }
-};
-
-}  // namespace
-
 // static
 const char TestMetricsServiceClient::kBrandForTesting[] = "brand_for_testing";
 
@@ -88,8 +68,9 @@ std::unique_ptr<MetricsLogUploader> TestMetricsServiceClient::CreateUploader(
     const std::string& server_url,
     const std::string& mime_type,
     const base::Callback<void(int)>& on_upload_complete) {
-  return std::unique_ptr<MetricsLogUploader>(
-      new TestMetricsLogUploader(server_url, mime_type, on_upload_complete));
+  uploader_ =
+      new TestMetricsLogUploader(server_url, mime_type, on_upload_complete);
+  return std::unique_ptr<MetricsLogUploader>(uploader_);
 }
 
 base::TimeDelta TestMetricsServiceClient::GetStandardUploadInterval() {

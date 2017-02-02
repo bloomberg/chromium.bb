@@ -58,6 +58,9 @@ class MetricsServiceAccessor;
 class MetricsServiceClient;
 class MetricsStateManager;
 
+// Exposed for tests.
+extern const base::Feature kUploadSchedulerFeature;
+
 // See metrics_service.cc for a detailed description.
 class MetricsService : public base::HistogramFlattener {
  public:
