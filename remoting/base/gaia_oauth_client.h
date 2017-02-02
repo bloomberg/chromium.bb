@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SETUP_GAIA_OAUTH_CLIENT_H_
-#define REMOTING_HOST_SETUP_GAIA_OAUTH_CLIENT_H_
+#ifndef REMOTING_BASE_GAIA_OAUTH_CLIENT_H_
+#define REMOTING_BASE_GAIA_OAUTH_CLIENT_H_
 
 #include <queue>
 
@@ -12,7 +12,7 @@
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/url_request/url_request_context_getter.h"
 
-#include "remoting/host/setup/oauth_client.h"
+#include "remoting/base/oauth_client.h"
 
 namespace remoting {
 
@@ -78,4 +78,4 @@ class GaiaOAuthClient : public OAuthClient,
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SETUP_GAIA_OAUTH_CLIENT_H_
+#endif  // REMOTING_BASE_GAIA_OAUTH_CLIENT_H_

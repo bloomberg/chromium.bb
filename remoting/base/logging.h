@@ -9,9 +9,9 @@
 
 namespace remoting {
 
-// Chromoting host code should use HOST_LOG instead of LOG(INFO) to bypass
-// the CheckSpamLogging presubmit check. This won't spam chrome output because
-// it runs in the chromoting host processes.
+// Chromoting host code should use HOST_LOG instead of LOG(INFO) to bypass the
+// CheckSpamLogging presubmit check. This won't spam chrome output because it
+// runs in the chromoting host processes.
 // In the future we may also consider writing to a log file instead of the
 // console.
 #define HOST_LOG LOG(INFO)

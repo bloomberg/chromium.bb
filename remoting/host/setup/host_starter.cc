@@ -14,8 +14,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "google_apis/google_api_keys.h"
+#include "remoting/base/oauth_helper.h"
 #include "remoting/host/pin_hash.h"
-#include "remoting/host/setup/oauth_helper.h"
 
 namespace {
 const int kMaxGetTokensRetries = 3;

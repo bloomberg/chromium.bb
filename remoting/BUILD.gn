@@ -107,7 +107,7 @@ group("test_support") {
   deps = [
     "//base",
     "//net",
-    "//remoting/base",
+    "//remoting/base:test_support",
     "//remoting/client",
     "//remoting/codec:decoder",
     "//remoting/codec:encoder",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/setup/oauth_helper.h"
+#include "remoting/base/oauth_helper.h"
 
 #include <stddef.h>
 
@@ -10,14 +10,15 @@
 
 namespace {
 
-std::string Replace(const std::string& s, const std::string& old_substr,
+std::string Replace(const std::string& s,
+                    const std::string& old_substr,
                     const std::string& new_substr) {
   size_t pos = s.find(old_substr);
   if (pos == std::string::npos) {
     return s;
   }
   return s.substr(0, pos) + new_substr +
-      s.substr(pos + old_substr.length(), std::string::npos);
+         s.substr(pos + old_substr.length(), std::string::npos);
 }
 
 std::string GetTestRedirectUrl() {
@@ -37,8 +38,8 @@ TEST(OauthHelperTest, TestVeryShort) {
 }
 
 TEST(OauthHelperTest, TestEmptyQuery) {
-  ASSERT_EQ("", GetOauthCodeInUrl(GetTestRedirectUrl() + "?",
-                                  GetTestRedirectUrl()));
+  ASSERT_EQ(
+      "", GetOauthCodeInUrl(GetTestRedirectUrl() + "?", GetTestRedirectUrl()));
 }
 
 TEST(OauthHelperTest, TestNoQueryValue) {
@@ -57,9 +58,9 @@ TEST(OauthHelperTest, TestCode) {
 }
 
 TEST(OauthHelperTest, TestCodeInLongQuery) {
-  ASSERT_EQ("Dummy", GetOauthCodeInUrl(GetTestRedirectUrl() +
-                                           "?x=1&code=Dummy&y=2",
-                                       GetTestRedirectUrl()));
+  ASSERT_EQ("Dummy",
+            GetOauthCodeInUrl(GetTestRedirectUrl() + "?x=1&code=Dummy&y=2",
+                              GetTestRedirectUrl()));
 }
 
 TEST(OauthHelperTest, TestBadScheme) {

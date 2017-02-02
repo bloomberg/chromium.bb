@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/oauth_token_getter_impl.h"
+#include "remoting/base/oauth_token_getter_impl.h"
 
 namespace remoting {
 
@@ -12,7 +12,6 @@ OAuthTokenGetter::OAuthCredentials::OAuthCredentials(
     bool is_service_account)
     : login(login),
       refresh_token(refresh_token),
-      is_service_account(is_service_account) {
-}
+      is_service_account(is_service_account) {}
 
 }  // namespace remoting

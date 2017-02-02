@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SETUP_MOCK_OAUTH_CLIENT_H_
-#define REMOTING_HOST_SETUP_MOCK_OAUTH_CLIENT_H_
+#ifndef REMOTING_BASE_MOCK_OAUTH_CLIENT_H_
+#define REMOTING_BASE_MOCK_OAUTH_CLIENT_H_
 
-#include "remoting/host/setup/oauth_client.h"
+#include "remoting/base/oauth_client.h"
 
 namespace remoting {
 
@@ -29,4 +29,4 @@ class MockOAuthClient : public OAuthClient {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SETUP_MOCK_OAUTH_CLIENT_H_
+#endif  // REMOTING_BASE_MOCK_OAUTH_CLIENT_H_

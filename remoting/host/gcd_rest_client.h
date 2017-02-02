@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/time/clock.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "remoting/base/oauth_token_getter.h"
 #include "remoting/base/url_request_context_getter.h"
-#include "remoting/host/oauth_token_getter.h"
 
 namespace base {
 class DictionaryValue;

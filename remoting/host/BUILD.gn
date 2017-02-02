@@ -235,10 +235,6 @@ static_library("host") {
     "mouse_cursor_monitor_proxy.h",
     "mouse_shape_pump.cc",
     "mouse_shape_pump.h",
-    "oauth_token_getter.cc",
-    "oauth_token_getter.h",
-    "oauth_token_getter_impl.cc",
-    "oauth_token_getter_impl.h",
     "pairing_registry_delegate.cc",
     "pairing_registry_delegate.h",
     "pairing_registry_delegate_linux.cc",
@@ -315,6 +311,7 @@ static_library("host") {
     "//google_apis",
     "//ipc",
     "//remoting/base",
+    "//remoting/base:authorization",
     "//remoting/host/security_key",
     "//remoting/protocol",
     "//remoting/resources",
@@ -450,12 +447,8 @@ static_library("test_support") {
     "fake_host_status_monitor.h",
     "fake_mouse_cursor_monitor.cc",
     "fake_mouse_cursor_monitor.h",
-    "fake_oauth_token_getter.cc",
-    "fake_oauth_token_getter.h",
     "host_mock_objects.cc",
     "host_mock_objects.h",
-    "setup/mock_oauth_client.cc",
-    "setup/mock_oauth_client.h",
   ]
 
   configs += [ "//remoting/build/config:version" ]
@@ -467,6 +460,7 @@ static_library("test_support") {
   ]
   public_deps = [
     ":host",
+    "//remoting/base:test_support",
     "//third_party/protobuf:protobuf_lite",
   ]
 
@@ -530,7 +524,6 @@ source_set("unit_tests") {
     "screen_resolution_unittest.cc",
     "server_log_entry_host_unittest.cc",
     "setup/me2me_native_messaging_host_unittest.cc",
-    "setup/oauth_helper_unittest.cc",
     "setup/pin_validator_unittest.cc",
     "third_party_auth_config_unittest.cc",
     "token_validator_base_unittest.cc",
@@ -621,7 +614,10 @@ if (enable_remoting_host) {
         "setup/start_host_main.h",
       ]
 
-      deps += [ "//remoting/host/setup" ]
+      deps += [
+        "//google_apis",
+        "//remoting/host/setup",
+      ]
     }
 
     if (enable_webrtc) {

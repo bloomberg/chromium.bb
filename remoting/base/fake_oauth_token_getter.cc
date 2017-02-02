@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/fake_oauth_token_getter.h"
+#include "remoting/base/fake_oauth_token_getter.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -14,11 +14,9 @@ namespace remoting {
 FakeOAuthTokenGetter::FakeOAuthTokenGetter(Status status,
                                            const std::string& user_email,
                                            const std::string& access_token)
-    : status_(status), user_email_(user_email), access_token_(access_token) {
-}
+    : status_(status), user_email_(user_email), access_token_(access_token) {}
 
-FakeOAuthTokenGetter::~FakeOAuthTokenGetter() {
-}
+FakeOAuthTokenGetter::~FakeOAuthTokenGetter() {}
 
 void FakeOAuthTokenGetter::CallWithToken(const TokenCallback& on_access_token) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

@@ -118,7 +118,6 @@ source_set("win") {
     "//components/policy/core/common",
     "//crypto",
     "//device/power_save_blocker",
-    "//google_apis",
     "//ipc",
     "//remoting/base",
     "//remoting/host/security_key",

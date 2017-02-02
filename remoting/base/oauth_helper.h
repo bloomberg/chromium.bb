@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SETUP_OAUTH_HELPER_H
-#define REMOTING_HOST_SETUP_OAUTH_HELPER_H
+#ifndef REMOTING_BASE_OAUTH_HELPER_H
+#define REMOTING_BASE_OAUTH_HELPER_H
 
 #include <string>
 
@@ -30,4 +30,4 @@ std::string GetOauthCodeInUrl(const std::string& url,
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SETUP_OAUTH_HELPER_H
+#endif  // REMOTING_BASE_OAUTH_HELPER_H

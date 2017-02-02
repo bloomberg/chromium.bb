@@ -15,7 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "remoting/base/constants.h"
-#include "remoting/host/fake_oauth_token_getter.h"
+#include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/host/gcd_rest_client.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"

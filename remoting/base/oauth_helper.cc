@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/setup/oauth_helper.h"
+#include "remoting/base/oauth_helper.h"
 
 #include "base/strings/stringprintf.h"
 #include "google_apis/google_api_keys.h"
@@ -24,16 +24,14 @@ std::string GetComponent(const std::string& url,
 namespace remoting {
 
 std::string GetOauthScope() {
-  return
-      "https://www.googleapis.com/auth/chromoting "
-      "https://www.googleapis.com/auth/googletalk "
-      "https://www.googleapis.com/auth/userinfo.email ";
+  return "https://www.googleapis.com/auth/chromoting "
+         "https://www.googleapis.com/auth/googletalk "
+         "https://www.googleapis.com/auth/userinfo.email ";
 }
 
 std::string GetDefaultOauthRedirectUrl() {
-  return
-      "https://chromoting-oauth.talkgadget.google.com/talkgadget/oauth/"
-      "chrome-remote-desktop/rel/kgngmbheleoaphbjbaiobfdepmghbfah";
+  return "https://chromoting-oauth.talkgadget.google.com/talkgadget/oauth/"
+         "chrome-remote-desktop/rel/kgngmbheleoaphbjbaiobfdepmghbfah";
 }
 
 std::string GetOauthStartUrl(const std::string& redirect_url) {
@@ -47,8 +45,9 @@ std::string GetOauthStartUrl(const std::string& redirect_url) {
       "&approval_prompt=force",
       net::EscapeUrlEncodedData(GetOauthScope(), true).c_str(),
       redirect_url.c_str(),
-      net::EscapeUrlEncodedData(google_apis::GetOAuth2ClientID(
-          google_apis::CLIENT_REMOTING), true).c_str());
+      net::EscapeUrlEncodedData(
+          google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING), true)
+          .c_str());
 }
 
 std::string GetOauthCodeInUrl(const std::string& url,

@@ -71,6 +71,31 @@ source_set("base") {
   }
 }
 
+source_set("authorization") {
+  sources = [
+    "gaia_oauth_client.cc",
+    "gaia_oauth_client.h",
+    "oauth_client.h",
+    "oauth_helper.cc",
+    "oauth_helper.h",
+    "oauth_token_getter.cc",
+    "oauth_token_getter.h",
+    "oauth_token_getter_impl.cc",
+    "oauth_token_getter_impl.h",
+  ]
+
+  configs += [
+    "//build/config/compiler:wexit_time_destructors",
+    "//remoting/build/config:version",
+  ]
+
+  public_deps = [
+    "//base",
+    "//google_apis",
+    "//net",
+  ]
+}
+
 source_set("breakpad") {
   sources = [
     "breakpad.h",
@@ -92,6 +117,31 @@ source_set("breakpad") {
   }
 }
 
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_oauth_token_getter.cc",
+    "fake_oauth_token_getter.h",
+    "mock_oauth_client.cc",
+    "mock_oauth_client.h",
+    "test_rsa_key_pair.h",
+  ]
+
+  deps = [
+    "//remoting/proto",
+  ]
+  public_deps = [
+    ":authorization",
+    ":base",
+    ":breakpad",
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
@@ -102,24 +152,20 @@ source_set("unit_tests") {
     "buffered_socket_writer_unittest.cc",
     "capabilities_unittest.cc",
     "compound_buffer_unittest.cc",
+    "oauth_helper_unittest.cc",
     "rate_counter_unittest.cc",
     "rsa_key_pair_unittest.cc",
     "run_all_unittests.cc",
     "running_samples_unittest.cc",
     "telemetry_log_writer_unittest.cc",
-    "test_rsa_key_pair.h",
     "typed_buffer_unittest.cc",
     "util_unittest.cc",
   ]
 
   deps = [
-    ":base",
-    ":breakpad",
-    "//base",
+    ":test_support",
     "//mojo/edk/system",
     "//net:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture:primitives",
   ]

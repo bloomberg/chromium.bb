@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/oauth_token_getter_impl.h"
+#include "remoting/base/oauth_token_getter_impl.h"
 
 #include <utility>
 
@@ -52,7 +52,7 @@ void OAuthTokenGetterImpl::OnRefreshTokenResponse(
     int expires_seconds) {
   DCHECK(CalledOnValidThread());
   DCHECK(oauth_credentials_.get());
-  HOST_LOG << "Received OAuth token.";
+  VLOG(1) << "Received OAuth token.";
 
   oauth_access_token_ = access_token;
   base::TimeDelta token_expiration =
@@ -79,7 +79,7 @@ void OAuthTokenGetterImpl::OnGetUserEmailResponse(
     const std::string& user_email) {
   DCHECK(CalledOnValidThread());
   DCHECK(oauth_credentials_.get());
-  HOST_LOG << "Received user info.";
+  VLOG(1) << "Received user info.";
 
   if (user_email != oauth_credentials_->login) {
     LOG(ERROR) << "OAuth token and email address do not refer to "
@@ -134,10 +134,10 @@ void OAuthTokenGetterImpl::OnNetworkError(int response_code) {
 
 void OAuthTokenGetterImpl::CallWithToken(const TokenCallback& on_access_token) {
   DCHECK(CalledOnValidThread());
-  bool need_new_auth_token = auth_token_expiry_time_.is_null() ||
-                             base::Time::Now() >= auth_token_expiry_time_ ||
-                             (!oauth_credentials_->is_service_account &&
-                              !email_verified_);
+  bool need_new_auth_token =
+      auth_token_expiry_time_.is_null() ||
+      base::Time::Now() >= auth_token_expiry_time_ ||
+      (!oauth_credentials_->is_service_account && !email_verified_);
 
   if (need_new_auth_token) {
     pending_callbacks_.push(on_access_token);
@@ -156,7 +156,7 @@ void OAuthTokenGetterImpl::InvalidateCache() {
 
 void OAuthTokenGetterImpl::RefreshOAuthToken() {
   DCHECK(CalledOnValidThread());
-  HOST_LOG << "Refreshing OAuth token.";
+  VLOG(1) << "Refreshing OAuth token.";
   DCHECK(!refreshing_oauth_token_);
 
   // Service accounts use different API keys, as they use the client app flow.

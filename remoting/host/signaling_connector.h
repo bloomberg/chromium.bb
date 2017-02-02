@@ -10,7 +10,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
 #include "net/base/network_change_notifier.h"
-#include "remoting/host/oauth_token_getter.h"
+#include "remoting/base/oauth_token_getter.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace remoting {

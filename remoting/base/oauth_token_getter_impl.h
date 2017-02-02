@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_OAUTH_TOKEN_GETTER_IMPL_H_
-#define REMOTING_HOST_OAUTH_TOKEN_GETTER_IMPL_H_
+#ifndef REMOTING_BASE_OAUTH_TOKEN_GETTER_IMPL_H_
+#define REMOTING_BASE_OAUTH_TOKEN_GETTER_IMPL_H_
 
 #include <queue>
 
@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "remoting/host/oauth_token_getter.h"
+#include "remoting/base/oauth_token_getter.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -66,4 +66,4 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_OAUTH_TOKEN_GETTER_IMPL_H_
+#endif  // REMOTING_BASE_OAUTH_TOKEN_GETTER_IMPL_H_

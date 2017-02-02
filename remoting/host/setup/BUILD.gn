@@ -12,13 +12,8 @@ source_set("setup") {
     "daemon_controller_delegate_mac.mm",
     "daemon_controller_delegate_win.cc",
     "daemon_controller_delegate_win.h",
-    "gaia_oauth_client.cc",
-    "gaia_oauth_client.h",
     "me2me_native_messaging_host.cc",
     "me2me_native_messaging_host.h",
-    "oauth_client.h",
-    "oauth_helper.cc",
-    "oauth_helper.h",
     "pin_validator.cc",
     "pin_validator.h",
     "service_client.cc",
@@ -39,6 +34,7 @@ source_set("setup") {
   deps = [
     "//base",
     "//google_apis",
+    "//remoting/base:authorization",
     "//remoting/host",
     "//remoting/host/native_messaging",
   ]

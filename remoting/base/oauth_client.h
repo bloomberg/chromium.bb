@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SETUP_OAUTH_CLIENT_H_
-#define REMOTING_HOST_SETUP_OAUTH_CLIENT_H_
+#ifndef REMOTING_BASE_OAUTH_CLIENT_H_
+#define REMOTING_BASE_OAUTH_CLIENT_H_
 
 #include <string>
 
@@ -20,9 +20,9 @@ class OAuthClient {
   // Called when GetCredentialsFromAuthCode is completed, with the |user_email|
   // and |refresh_token| that correspond to the given |auth_code|, or with empty
   // strings on error.
-  typedef base::Callback<void(
-      const std::string& user_email,
-      const std::string& refresh_token)> CompletionCallback;
+  typedef base::Callback<void(const std::string& user_email,
+                              const std::string& refresh_token)>
+      CompletionCallback;
 
   virtual ~OAuthClient() {}
 
@@ -42,4 +42,4 @@ class OAuthClient {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SETUP_OAUTH_CLIENT_H_
+#endif  // REMOTING_BASE_OAUTH_CLIENT_H_

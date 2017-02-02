@@ -25,11 +25,11 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/network_interfaces.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/base/oauth_client.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/native_messaging/log_message_handler.h"
 #include "remoting/host/pin_hash.h"
-#include "remoting/host/setup/oauth_client.h"
 #include "remoting/protocol/pairing_registry.h"
 
 #if defined(OS_WIN)

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_OAUTH_TOKEN_GETTER_H_
-#define REMOTING_HOST_OAUTH_TOKEN_GETTER_H_
+#ifndef REMOTING_BASE_OAUTH_TOKEN_GETTER_H_
+#define REMOTING_BASE_OAUTH_TOKEN_GETTER_H_
 
 #include <string>
 
@@ -27,7 +27,8 @@ class OAuthTokenGetter {
 
   typedef base::Callback<void(Status status,
                               const std::string& user_email,
-                              const std::string& access_token)> TokenCallback;
+                              const std::string& access_token)>
+      TokenCallback;
 
   // This structure contains information required to perform
   // authentication to OAuth2.
@@ -65,4 +66,4 @@ class OAuthTokenGetter {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_OAUTH_TOKEN_GETTER_H_
+#endif  // REMOTING_BASE_OAUTH_TOKEN_GETTER_H_

@@ -15,8 +15,8 @@
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
+#include "remoting/base/oauth_client.h"
 #include "remoting/host/setup/daemon_controller.h"
-#include "remoting/host/setup/oauth_client.h"
 
 namespace base {
 class DictionaryValue;

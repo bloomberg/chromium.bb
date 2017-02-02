@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/setup/gaia_oauth_client.h"
+#include "remoting/base/gaia_oauth_client.h"
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -15,11 +15,9 @@ namespace remoting {
 
 GaiaOAuthClient::GaiaOAuthClient(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
-    : gaia_oauth_client_(url_request_context_getter.get()) {
-}
+    : gaia_oauth_client_(url_request_context_getter.get()) {}
 
-GaiaOAuthClient::~GaiaOAuthClient() {
-}
+GaiaOAuthClient::~GaiaOAuthClient() {}
 
 void GaiaOAuthClient::GetCredentialsFromAuthCode(
     const gaia::OAuthClientInfo& oauth_client_info,
@@ -96,7 +94,6 @@ GaiaOAuthClient::Request::Request(
 
 GaiaOAuthClient::Request::Request(const Request& other) = default;
 
-GaiaOAuthClient::Request::~Request() {
-}
+GaiaOAuthClient::Request::~Request() {}
 
 }  // namespace remoting

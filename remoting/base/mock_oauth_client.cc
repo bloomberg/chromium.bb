@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/setup/mock_oauth_client.h"
+#include "remoting/base/mock_oauth_client.h"
 
 namespace remoting {
 
 MockOAuthClient::MockOAuthClient(const std::string& user_email,
                                  const std::string& refresh_token)
-    : user_email_(user_email), refresh_token_(refresh_token) {
-}
+    : user_email_(user_email), refresh_token_(refresh_token) {}
 
-MockOAuthClient::~MockOAuthClient() {
-}
+MockOAuthClient::~MockOAuthClient() {}
 
 void MockOAuthClient::GetCredentialsFromAuthCode(
     const gaia::OAuthClientInfo& oauth_client_info,

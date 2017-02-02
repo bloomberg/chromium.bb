@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
-#include "remoting/host/setup/oauth_helper.h"
+#include "remoting/base/oauth_helper.h"
 
 namespace {
 const int kUrlPollIntervalMs = 100;
