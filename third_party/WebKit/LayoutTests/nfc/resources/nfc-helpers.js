@@ -406,7 +406,13 @@ function nfc_mocks(mojo) {
         });
 
     return Promise.resolve({
+      // Interface instance bound to main frame.
       mockNFC: mockNFC,
+      // Constructor for mock NFC class.
+      MockNFC: MockNFC,
+      // Loaded mojom interface.
+      NFC: nfc.NFC,
+      // Helper functions for comparing WebNFC structures.
       assertNFCMessagesEqual: assertNFCMessagesEqual,
       assertNFCPushOptionsEqual: assertNFCPushOptionsEqual,
       assertWebNFCMessagesEqual: assertWebNFCMessagesEqual,

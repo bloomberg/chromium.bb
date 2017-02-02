@@ -775,9 +775,20 @@ void NFC::OnWatch(const WTF::Vector<uint32_t>& ids,
 
 ScriptPromise NFC::rejectIfNotSupported(ScriptState* scriptState) {
   String errorMessage;
-  if (!scriptState->getExecutionContext()->isSecureContext(errorMessage)) {
+  ExecutionContext* context = scriptState->getExecutionContext();
+  if (!context->isSecureContext(errorMessage)) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(SecurityError, errorMessage));
+  }
+
+  // https://w3c.github.io/web-nfc/#security-policies
+  // WebNFC API must be only accessible from top level browsing context.
+  if (!toDocument(context)->domWindow()->frame() ||
+      !toDocument(context)->frame()->isMainFrame()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(SecurityError,
+                             "Must be in a top-level browsing context."));
   }
 
   if (!m_nfc) {
