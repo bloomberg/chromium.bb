@@ -118,6 +118,10 @@ void MusDemo::OnLostConnection(aura::WindowTreeClient* client) {
 void MusDemo::OnPointerEventObserved(const PointerEvent& event,
                                      aura::Window* target) {}
 
+aura::client::CaptureClient* MusDemo::GetCaptureClient() {
+  return capture_client_.get();
+}
+
 aura::PropertyConverter* MusDemo::GetPropertyConverter() {
   return property_converter_.get();
 }

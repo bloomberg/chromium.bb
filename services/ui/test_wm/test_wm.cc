@@ -87,6 +87,9 @@ class TestWM : public service_manager::Service,
                               aura::Window* target) override {
     // Don't care.
   }
+  aura::client::CaptureClient* GetCaptureClient() override {
+    return wm_state_.capture_controller();
+  }
   aura::PropertyConverter* GetPropertyConverter() override {
     return &property_converter_;
   }
