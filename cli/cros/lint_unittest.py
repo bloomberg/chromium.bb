@@ -40,7 +40,7 @@ class TestNode(object):
     self.col_offset = col_offset
 
   def argnames(self):
-    return self.args
+    return [arg.name for arg in self.args.args]
 
   def display_type(self):
     return self._display_type
