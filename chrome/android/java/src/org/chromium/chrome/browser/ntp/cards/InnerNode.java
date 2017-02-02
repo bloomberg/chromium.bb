@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
 import java.util.ArrayList;
@@ -104,8 +107,9 @@ public class InnerNode extends ChildNode implements NodeParent {
     }
 
     @Override
-    public void onItemRangeChanged(TreeNode child, int index, int count, Object payload) {
-        notifyItemRangeChanged(getStartingOffsetForChild(child) + index, count, payload);
+    public void onItemRangeChanged(
+            TreeNode child, int index, int count, @Nullable PartialBindCallback callback) {
+        notifyItemRangeChanged(getStartingOffsetForChild(child) + index, count, callback);
     }
 
     @Override

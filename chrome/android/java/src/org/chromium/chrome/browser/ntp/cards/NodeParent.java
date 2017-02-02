@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.support.annotation.Nullable;
+
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
+
 /**
  * Interface to allow propagating change events upwards in the tree.
  */
@@ -15,10 +19,11 @@ public interface NodeParent {
      * @param index The starting position of the range of changed items, relative to the
      *         {@code child}.
      * @param count The number of changed items.
-     * @param payload Optional parameter, use {@code null} to identify a "full" update.
+     * @param callback Optional parameter, use {@code null} to identify a "full" update.
      * @see android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeChanged(int, int, Object)
      */
-    void onItemRangeChanged(TreeNode child, int index, int count, Object payload);
+    void onItemRangeChanged(
+            TreeNode child, int index, int count, @Nullable PartialBindCallback callback);
 
     /**
      * Notifies that {@code count} items starting at position {@code index} under the {@code child}

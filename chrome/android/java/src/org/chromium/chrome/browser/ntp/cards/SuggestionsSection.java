@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
-import org.chromium.chrome.browser.suggestions.PartialUpdateId;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
@@ -229,7 +228,8 @@ public class SuggestionsSection extends InnerNode {
             article.setOfflinePageOfflineId(newId);
 
             if ((oldId == null) == (newId == null)) return;
-            notifyItemChanged(index, PartialUpdateId.OFFLINE_BADGE);
+            notifyItemChanged(
+                    index, SnippetArticleViewHolder.REFRESH_OFFLINE_BADGE_VISIBILITY_CALLBACK);
         }
     }
 
@@ -276,9 +276,13 @@ public class SuggestionsSection extends InnerNode {
     /** Sends a notification to the items at the provided indices to refresh their background. */
     private void notifyNeighboursModified(int aboveNeighbour, int belowNeighbour) {
         assert aboveNeighbour < belowNeighbour;
-        if (aboveNeighbour >= 0) notifyItemChanged(aboveNeighbour, PartialUpdateId.CARD_BACKGROUND);
+
+        if (aboveNeighbour >= 0) {
+            notifyItemChanged(aboveNeighbour, NewTabPageViewHolder.UPDATE_LAYOUT_PARAMS_CALLBACK);
+        }
+
         if (belowNeighbour < getItemCount()) {
-            notifyItemChanged(belowNeighbour, PartialUpdateId.CARD_BACKGROUND);
+            notifyItemChanged(belowNeighbour, NewTabPageViewHolder.UPDATE_LAYOUT_PARAMS_CALLBACK);
         }
     }
 

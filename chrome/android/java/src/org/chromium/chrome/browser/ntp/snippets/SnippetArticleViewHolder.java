@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
@@ -48,6 +49,13 @@ import java.util.concurrent.TimeUnit;
  * A class that represents the view for a single card snippet.
  */
 public class SnippetArticleViewHolder extends CardViewHolder implements ImpressionTracker.Listener {
+    /**
+     * A single instance of {@link RefreshOfflineBadgeVisibilityCallback} that can be reused as it
+     * has no state.
+     */
+    public static final RefreshOfflineBadgeVisibilityCallback
+            REFRESH_OFFLINE_BADGE_VISIBILITY_CALLBACK = new RefreshOfflineBadgeVisibilityCallback();
+
     private static final String PUBLISHER_FORMAT_STRING = "%s - %s";
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
@@ -253,7 +261,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     }
 
     /** Updates the visibility of the card's offline badge by checking the bound article's info. */
-    public void refreshOfflineBadgeVisibility() {
+    private void refreshOfflineBadgeVisibility() {
         if (!SnippetsConfig.isOfflineBadgeEnabled()) return;
         boolean visible = mArticle.getOfflinePageOfflineId() != null || mArticle.mIsAssetDownload;
         if (visible == (mOfflineBadge.getVisibility() == View.VISIBLE)) return;
@@ -382,5 +390,16 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         ApiCompatibilityUtils.setCompoundDrawablesRelative(
                 mPublisherTextView, drawable, null, null, null);
         mPublisherTextView.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Callback to refresh the offline badge visibility.
+     */
+    public static class RefreshOfflineBadgeVisibilityCallback extends PartialBindCallback {
+        @Override
+        public void onResult(NewTabPageViewHolder holder) {
+            assert holder instanceof SnippetArticleViewHolder;
+            ((SnippetArticleViewHolder) holder).refreshOfflineBadgeVisibility();
+        }
     }
 }

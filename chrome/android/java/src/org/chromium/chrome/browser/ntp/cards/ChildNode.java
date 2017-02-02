@@ -5,6 +5,9 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.annotation.CallSuper;
+import android.support.annotation.Nullable;
+
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 
 /**
  * A node in the tree that has a parent and can notify it about changes.
@@ -35,8 +38,9 @@ public abstract class ChildNode implements TreeNode {
         return mNumItems;
     }
 
-    protected void notifyItemRangeChanged(int index, int count, Object payload) {
-        if (mParent != null) mParent.onItemRangeChanged(this, index, count, payload);
+    protected void notifyItemRangeChanged(
+            int index, int count, @Nullable PartialBindCallback callback) {
+        if (mParent != null) mParent.onItemRangeChanged(this, index, count, callback);
     }
 
     protected void notifyItemRangeChanged(int index, int count) {
@@ -55,8 +59,8 @@ public abstract class ChildNode implements TreeNode {
         if (mParent != null) mParent.onItemRangeRemoved(this, index, count);
     }
 
-    protected void notifyItemChanged(int index, Object payload) {
-        notifyItemRangeChanged(index, 1, payload);
+    protected void notifyItemChanged(int index, @Nullable PartialBindCallback callback) {
+        notifyItemRangeChanged(index, 1, callback);
     }
 
     protected void notifyItemChanged(int index) {

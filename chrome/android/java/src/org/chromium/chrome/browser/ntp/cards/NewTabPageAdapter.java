@@ -13,11 +13,11 @@ import android.view.ViewGroup;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.suggestions.PartialUpdateId;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
@@ -148,20 +148,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         }
 
         for (Object payload : payloads) {
-            @PartialUpdateId
-            int updateId = (int) payload;
-
-            switch (updateId) {
-                case PartialUpdateId.OFFLINE_BADGE:
-                    assert holder instanceof SnippetArticleViewHolder;
-                    ((SnippetArticleViewHolder) holder).refreshOfflineBadgeVisibility();
-                    break;
-                case PartialUpdateId.CARD_BACKGROUND:
-                    holder.updateLayoutParams();
-                    break;
-                default:
-                    assert false; // Unknown payload
-            }
+            assert payload instanceof PartialBindCallback;
+            ((PartialBindCallback) payload).onResult(holder);
         }
     }
 
@@ -209,10 +197,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     @Override
-    public void onItemRangeChanged(
-            TreeNode child, int itemPosition, int itemCount, Object payload) {
+    public void onItemRangeChanged(TreeNode child, int itemPosition, int itemCount,
+            @Nullable PartialBindCallback callback) {
         assert child == mRoot;
-        notifyItemRangeChanged(itemPosition, itemCount, payload);
+        notifyItemRangeChanged(itemPosition, itemCount, callback);
     }
 
     @Override

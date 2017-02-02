@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -217,7 +218,8 @@ public class InnerNodeTest {
         }
 
         @Override
-        public void onItemRangeChanged(TreeNode child, int index, int count, Object payload) {
+        public void onItemRangeChanged(
+                TreeNode child, int index, int count, PartialBindCallback callback) {
             checkCount(child);
         }
 

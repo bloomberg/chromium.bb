@@ -15,6 +15,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -40,11 +42,11 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.EnableFeatures;
 import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.UpdateLayoutParamsCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
-import org.chromium.chrome.browser.suggestions.PartialUpdateId;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
@@ -595,7 +597,8 @@ public class SuggestionsSectionTest {
 
         // Remove the first card. The second one should get the update.
         section.removeSuggestionById(suggestions.get(0).mIdWithinCategory);
-        verify(mParent).onItemRangeChanged(section, 1, 1, PartialUpdateId.CARD_BACKGROUND);
+        verify(mParent).onItemRangeChanged(
+                same(section), eq(1), eq(1), any(UpdateLayoutParamsCallback.class));
     }
 
     @Test
@@ -608,7 +611,8 @@ public class SuggestionsSectionTest {
 
         // Remove the last card. The penultimate one should get the update.
         section.removeSuggestionById(suggestions.get(4).mIdWithinCategory);
-        verify(mParent).onItemRangeChanged(section, 4, 1, PartialUpdateId.CARD_BACKGROUND);
+        verify(mParent).onItemRangeChanged(
+                same(section), eq(4), eq(1), any(UpdateLayoutParamsCallback.class));
     }
 
     @Test
@@ -621,7 +625,8 @@ public class SuggestionsSectionTest {
 
         // Remove the last card. The penultimate one should get the update.
         section.removeSuggestionById(suggestions.get(1).mIdWithinCategory);
-        verify(mParent).onItemRangeChanged(section, 1, 1, PartialUpdateId.CARD_BACKGROUND);
+        verify(mParent).onItemRangeChanged(
+                same(section), eq(1), eq(1), any(UpdateLayoutParamsCallback.class));
     }
 
     @Test
@@ -662,7 +667,8 @@ public class SuggestionsSectionTest {
 
         section.setSuggestions(createDummySuggestions(2, /* categoryId = */ 42, "new"),
                 CategoryStatus.AVAILABLE, /* replaceExisting = */ false);
-        verify(mParent).onItemRangeChanged(section, 5, 1, PartialUpdateId.CARD_BACKGROUND);
+        verify(mParent).onItemRangeChanged(
+                same(section), eq(5), eq(1), any(UpdateLayoutParamsCallback.class));
     }
 
     private SuggestionsSection createSectionWithSuggestions(List<SnippetArticle> snippets) {
