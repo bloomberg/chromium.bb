@@ -240,6 +240,9 @@ void DialFetchDeviceDescriptionFunction::MaybeStartFetch(const GURL& url) {
 
 void DialFetchDeviceDescriptionFunction::OnFetchComplete(
     const api::dial::DialDeviceDescriptionData& result) {
+  // Destroy the DeviceDescriptionFetcher since it still contains a reference
+  // to |this| in its un-invoked callback.
+  device_description_fetcher_.reset();
   api::dial::DialDeviceDescription device_description;
   device_description.device_label = params_->device_label;
   device_description.app_url = result.app_url.spec();
@@ -250,6 +253,9 @@ void DialFetchDeviceDescriptionFunction::OnFetchComplete(
 
 void DialFetchDeviceDescriptionFunction::OnFetchError(
     const std::string& message) {
+  // Destroy the DeviceDescriptionFetcher since it still contains a reference
+  // to |this| in its un-invoked callback.
+  device_description_fetcher_.reset();
   SetError(message);
   SendResponse(false);
 }
