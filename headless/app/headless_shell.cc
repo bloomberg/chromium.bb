@@ -285,7 +285,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
       if (c == EOF || c == '\n') {
         break;
       }
-      expression << c;
+      expression << static_cast<char>(c);
     }
     if (expression.str() == "quit") {
       Shutdown();
