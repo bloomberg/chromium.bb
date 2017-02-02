@@ -59,6 +59,14 @@ void CallGetStatusCountersHelper(
   }
 }
 
+void CallDisableSyncHelper(SyncClient* sync_client, ModelType type) {
+  base::WeakPtr<ModelTypeSyncBridge> bridge =
+      sync_client->GetSyncBridgeForModelType(type);
+  if (bridge) {
+    bridge->DisableSync();
+  }
+}
+
 void ReportError(ModelType model_type,
                  scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
                  const ModelErrorHandler& error_handler,
@@ -221,8 +229,7 @@ void ModelTypeController::Stop() {
   if ((state() == MODEL_LOADED || state() == RUNNING) &&
       (!sync_prefs_.IsFirstSetupComplete() || !preferred_types.Has(type()))) {
     model_thread_->PostTask(
-        FROM_HERE, base::Bind(&ModelTypeSyncBridge::DisableSync,
-                              sync_client_->GetSyncBridgeForModelType(type())));
+        FROM_HERE, base::Bind(&CallDisableSyncHelper, sync_client_, type()));
   }
 
   state_ = NOT_RUNNING;
