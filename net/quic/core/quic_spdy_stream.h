@@ -9,9 +9,9 @@
 #ifndef NET_QUIC_CORE_QUIC_SPDY_STREAM_H_
 #define NET_QUIC_CORE_QUIC_SPDY_STREAM_H_
 
-#include <stddef.h>
 #include <sys/types.h>
 
+#include <cstddef>
 #include <list>
 #include <string>
 
