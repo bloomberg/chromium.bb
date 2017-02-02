@@ -141,23 +141,26 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
 }
 
 void SnippetsInternalsMessageHandler::OnNewSuggestions(Category category) {
-  if (!dom_loaded_)
+  if (!dom_loaded_) {
     return;
+  }
   SendContentSuggestions();
 }
 
 void SnippetsInternalsMessageHandler::OnCategoryStatusChanged(
     Category category,
     CategoryStatus new_status) {
-  if (!dom_loaded_)
+  if (!dom_loaded_) {
     return;
+  }
   SendContentSuggestions();
 }
 
 void SnippetsInternalsMessageHandler::OnSuggestionInvalidated(
     const ntp_snippets::ContentSuggestion::ID& suggestion_id) {
-  if (!dom_loaded_)
+  if (!dom_loaded_) {
     return;
+  }
   SendContentSuggestions();
 }
 
@@ -197,8 +200,9 @@ void SnippetsInternalsMessageHandler::HandleDownload(
 
   SendString("remote-status", std::string());
 
-  if (!remote_suggestions_provider_)
+  if (!remote_suggestions_provider_) {
     return;
+  }
 
   remote_suggestions_provider_->ReloadSuggestions();
 }
@@ -208,8 +212,9 @@ void SnippetsInternalsMessageHandler::HandleClearCachedSuggestions(
   DCHECK_EQ(1u, args->GetSize());
 
   int category_id;
-  if (!args->GetInteger(0, &category_id))
+  if (!args->GetInteger(0, &category_id)) {
     return;
+  }
 
   content_suggestions_service_->ClearCachedSuggestions(
       Category::FromIDValue(category_id));
@@ -221,8 +226,9 @@ void SnippetsInternalsMessageHandler::HandleClearDismissedSuggestions(
   DCHECK_EQ(1u, args->GetSize());
 
   int category_id;
-  if (!args->GetInteger(0, &category_id))
+  if (!args->GetInteger(0, &category_id)) {
     return;
+  }
 
   Category category = Category::FromIDValue(category_id);
   content_suggestions_service_->ClearDismissedSuggestionsForDebugging(category);
@@ -239,11 +245,13 @@ void SnippetsInternalsMessageHandler::HandleToggleDismissedSuggestions(
   DCHECK_EQ(2u, args->GetSize());
 
   int category_id;
-  if (!args->GetInteger(0, &category_id))
+  if (!args->GetInteger(0, &category_id)) {
     return;
+  }
   bool dismissed_visible;
-  if (!args->GetBoolean(1, &dismissed_visible))
+  if (!args->GetBoolean(1, &dismissed_visible)) {
     return;
+  }
 
   Category category = Category::FromIDValue(category_id);
   if (dismissed_visible) {
@@ -385,8 +393,9 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
     const std::string& status =
         remote_suggestions_provider_->suggestions_fetcher_for_debugging()
             ->last_status();
-    if (!status.empty())
+    if (!status.empty()) {
       SendString("remote-status", "Finished: " + status);
+    }
   }
 
   base::DictionaryValue result;
@@ -412,8 +421,9 @@ void SnippetsInternalsMessageHandler::SendString(const std::string& name,
 void SnippetsInternalsMessageHandler::OnDismissedSuggestionsLoaded(
     Category category,
     std::vector<ContentSuggestion> dismissed_suggestions) {
-  if (dismissed_state_[category] == DismissedState::HIDDEN)
+  if (dismissed_state_[category] == DismissedState::HIDDEN) {
     return;
+  }
   dismissed_suggestions_[category] = std::move(dismissed_suggestions);
   dismissed_state_[category] = DismissedState::VISIBLE;
   SendContentSuggestions();
