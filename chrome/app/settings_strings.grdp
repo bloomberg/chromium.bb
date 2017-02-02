@@ -1254,6 +1254,15 @@
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_ALL" desc="Title for list of all other (non preferred) networks.">
       All networks
     </message>
+    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MENU_ADD_PREFERRED" desc="Settings > Internet > Known networks > Dropdown menu item to add a network to the list of preferred networks.">
+      Add to preferred
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MENU_REMOVE_PREFERRED" desc="Settings > Internet > Known networks > Dropdown menu item to remove a network from the list of preferred networks.">
+      Remove from preferred
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MENU_FORGET" desc="Settings > Internet > Known networks > Dropdown menu item to forget a known network.">
+      Forget
+    </message>
 
      <!-- Strings translating ONC (Open Network Configuration) properties -->
      <!-- and translatable values. See onc_spec.html for more information. -->

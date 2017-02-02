@@ -35,6 +35,7 @@
     {
       'target_name': 'internet_known_networks_page',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
         '<(DEPTH)/ui/webui/resources/cr_elements/network/compiled_resources2.gyp:cr_onc_types',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(EXTERNS_GYP):networking_private',
