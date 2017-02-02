@@ -73,9 +73,9 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
       });
     }
 
-    // Returns a supported language that is not enabled, for testing.
-    function getAvailableLanguage() {
-      return languagesPage.languages.supported.find(function(language) {
+    // Returns supported languages that are not enabled.
+    function getAvailableLanguages() {
+      return languagesPage.languages.supported.filter(function(language) {
         return !languageHelper.isLanguageEnabled(language.code);
       });
     }
@@ -202,6 +202,33 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
     suite('language menu', function() {
       var origTranslateEnabled;
 
+      /**
+       * Finds, asserts and returns the menu item for the given i18n key.
+       * @param {string} i18nKey Name of the i18n string for the item's text.
+       * @return {!HTMLElement} Menu item.
+       */
+      function getMenuItem(i18nKey) {
+        var i18nString = assert(loadTimeData.getString(i18nKey));
+        var menuItems = actionMenu.querySelectorAll('.dropdown-item');
+        var menuItem = Array.from(menuItems).find(
+            item => item.textContent.trim() == i18nString);
+        return assert(menuItem, 'Menu item "' + i18nKey + '" not found');
+      }
+
+      /**
+       * Checks the visibility of each expected menu item button.
+       * param {!Object<boolean>} Dictionary from i18n keys to expected
+       *     visibility of those menu items.
+       */
+      function assertMenuItemButtonsVisible(buttonVisibility) {
+        assertTrue(actionMenu.open);
+        for (var buttonKey of Object.keys(buttonVisibility)) {
+          var buttonItem = getMenuItem(buttonKey);
+          assertEquals(!buttonVisibility[buttonKey], buttonItem.hidden,
+                       'Menu item "' + buttonKey + '" hidden');
+        }
+      }
+
       suiteSetup(function() {
         // Cache the value of Translate to avoid side effects.
         origTranslateEnabled = languageHelper.prefs.translate.enabled.value;
@@ -265,8 +292,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
         assertTrue(actionMenu.open);
 
         // Toggle the translate option.
-        var translateOption = actionMenu.querySelector('#offerTranslations');
-        assertTrue(!!translateOption);
+        var translateOption = getMenuItem('offerToTranslateInThisLanguage');
         assertFalse(translateOption.disabled);
         MockInteractions.tap(translateOption);
 
@@ -302,7 +328,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
         var numEnabled = languagesPage.languages.enabled.length;
 
         // Enabled a language which we can then disable.
-        var newLanguage = getAvailableLanguage();
+        var newLanguage = assert(getAvailableLanguages()[0]);
         languageHelper.enableLanguage(newLanguage.code);
 
         // Wait for the language to be enabled.
@@ -323,8 +349,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
           MockInteractions.tap(item.querySelector('paper-icon-button'));
 
           assertTrue(actionMenu.open);
-          var removeMenuItem = assert(actionMenu.querySelector(
-              '.dropdown-item:last-child'));
+          var removeMenuItem = getMenuItem('removeLanguage');
           assertFalse(removeMenuItem.disabled);
           MockInteractions.tap(removeMenuItem);
           assertFalse(actionMenu.open);
@@ -333,6 +358,50 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
           return whenNumEnabledLanguagesBecomes(numEnabled);
         }).then(function() {
           assertFalse(languageHelper.isLanguageEnabled(newLanguage.code));
+        });
+      });
+
+      test('move up/down buttons', function() {
+        // Add several languages.
+        var numEnabled = languagesPage.languages.enabled.length;
+        var available = getAvailableLanguages();
+        for (var i = 0; i < 4; i++)
+          languageHelper.enableLanguage(assert(available[i]).code);
+
+        return whenNumEnabledLanguagesBecomes(numEnabled + 4).then(function() {
+          Polymer.dom.flush();
+
+          var menuButtons =
+              languagesCollapse.querySelectorAll(
+                  '.list-item paper-icon-button[icon="cr:more-vert"]');
+
+          // First language should not have "Move up" or "Move to top".
+          MockInteractions.tap(menuButtons[0]);
+          assertMenuItemButtonsVisible({
+            moveToTop: false, moveUp: false, moveDown: true,
+          });
+          actionMenu.close();
+
+          // Second language should not have "Move up".
+          MockInteractions.tap(menuButtons[1]);
+          assertMenuItemButtonsVisible({
+            moveToTop: true, moveUp: false, moveDown: true,
+          });
+          actionMenu.close();
+
+          // Middle languages should have all buttons.
+          MockInteractions.tap(menuButtons[2]);
+          assertMenuItemButtonsVisible({
+            moveToTop: true, moveUp: true, moveDown: true,
+          });
+          actionMenu.close();
+
+          // Last language should not have "Move down".
+          MockInteractions.tap(menuButtons[menuButtons.length - 1]);
+          assertMenuItemButtonsVisible({
+            moveToTop: true, moveUp: true, moveDown: false,
+          });
+          actionMenu.close();
         });
       });
     });

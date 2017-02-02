@@ -245,19 +245,18 @@
             <hr>
             <button class="dropdown-item" role="menuitem"
                 on-tap="onMoveToTopTap_"
-                hidden="[[isFirstLanguage_(
-                    detailLanguage_, languages.enabled.*)]]">
+                hidden="[[isNthLanguage_(
+                    0, detailLanguage_, languages.enabled.*)]]">
               $i18n{moveToTop}
             </button>
             <button class="dropdown-item" role="menuitem"
                 on-tap="onMoveUpTap_"
-                hidden="[[isFirstOrSecondLanguage_(
-                    detailLanguage_, languages.enabled.*)]]">
+                hidden="[[!showMoveUp_(detailLanguage_, languages.enabled.*)]]">
               $i18n{moveUp}
             </button>
             <button class="dropdown-item" role="menuitem"
                 on-tap="onMoveDownTap_"
-                hidden="[[isLastLanguage_(
+                hidden="[[!showMoveDown_(
                     detailLanguage_, languages.enabled.*)]]">
               $i18n{moveDown}
             </button>

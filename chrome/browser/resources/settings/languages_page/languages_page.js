@@ -92,33 +92,40 @@ Polymer({
   },
 
   /**
+   * Used to determine which "Move" buttons to show for ordering enabled
+   * languages.
+   * @param {number} n
    * @param {!LanguageState} language
-   * @return {boolean} True if |language| is first in the list of enabled
-   *     languages. Used to hide the "Move up" option.
+   * @return {boolean} True if |language| is at the |n|th index in the list of
+   *     enabled languages.
    * @private
    */
-  isFirstLanguage_: function(language) {
-    return language == this.languages.enabled[0];
+  isNthLanguage_: function(n, language) {
+    var compareLanguage = assert(this.languages.enabled[n]);
+    return language.language == compareLanguage.language;
   },
 
   /**
    * @param {!LanguageState} language
-   * @return {boolean} True if |language| is first or second in the list of
-   *     enabled languages. Used to hide the "Move to top" option.
+   * @return {boolean} True if the "Move to top" option for |language| should be
+   *     visible.
    * @private
    */
-  isFirstOrSecondLanguage_: function(language) {
-    return this.languages.enabled.slice(0, 2).includes(language);
+  showMoveUp_: function(language) {
+    // "Move up" is a no-op for the top language, and redundant with
+    // "Move to top" for the 2nd language.
+    return !this.isNthLanguage_(0, language) &&
+           !this.isNthLanguage_(1, language);
   },
 
   /**
    * @param {!LanguageState} language
-   * @return {boolean} True if |language| is last in the list of enabled
-   *     languages. Used to hide the "Move down" option.
+   * @return {boolean} True if the "Move down" option for |language| should be
+   *     visible.
    * @private
    */
-  isLastLanguage_: function(language) {
-    return language == this.languages.enabled.slice(-1)[0];
+  showMoveDown_: function(language) {
+    return !this.isNthLanguage_(this.languages.enabled.length - 1, language);
   },
 
   /**
