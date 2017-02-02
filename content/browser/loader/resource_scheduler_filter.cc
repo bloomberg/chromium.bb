@@ -4,71 +4,46 @@
 
 #include "content/browser/loader/resource_scheduler_filter.h"
 
-#include <stdint.h>
-
-#include "base/macros.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/common/frame_messages.h"
-#include "content/common/view_messages.h"
+#include "ipc/ipc_message_macros.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
-namespace {
-const uint32_t kFilteredMessageClasses[] = {
-    FrameMsgStart, ViewMsgStart,
-};
-}  // namespace
 
 ResourceSchedulerFilter::ResourceSchedulerFilter(int child_id)
-    : BrowserMessageFilter(
-          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
-      child_id_(child_id) {
-}
+    : BrowserMessageFilter(FrameMsgStart), child_id_(child_id) {}
 
-ResourceSchedulerFilter::~ResourceSchedulerFilter() {
-}
+ResourceSchedulerFilter::~ResourceSchedulerFilter() {}
 
 bool ResourceSchedulerFilter::OnMessageReceived(const IPC::Message& message) {
-  ResourceScheduler* scheduler =
-      ResourceDispatcherHostImpl::Get()->scheduler();
-  // scheduler can be NULL during shutdown, in which case it's ok to ignore the
-  // renderer's messages.
+  ResourceScheduler* scheduler = ResourceDispatcherHostImpl::Get()->scheduler();
   if (!scheduler)
     return false;
-
-  switch (message.type()) {
-    case FrameHostMsg_DidCommitProvisionalLoad::ID: {
-      base::PickleIterator iter(message);
-      FrameHostMsg_DidCommitProvisionalLoad_Params params;
-      if (!IPC::ParamTraits<FrameHostMsg_DidCommitProvisionalLoad_Params>::Read(
-          &message, &iter, &params)) {
-        break;
-      }
-      if (ui::PageTransitionIsMainFrame(params.transition) &&
-          !params.was_within_same_page) {
-        // We need to track the RenderViewHost routing_id because of downstream
-        // dependencies (crbug.com/392171 DownloadRequestHandle,
-        // SaveFileManager, ResourceDispatcherHostImpl, MediaStreamUIProxy,
-        // SpeechRecognitionDispatcherHost and possibly others). They look up
-        // the view based on the ID stored in the resource requests.
-        // Once those dependencies are unwound or moved to RenderFrameHost
-        // (crbug.com/304341) we can move the client to be based on the
-        // routing_id of the RenderFrameHost.
-        scheduler->OnNavigate(child_id_, params.render_view_routing_id);
-      }
-      break;
-    }
-
-    case ViewHostMsg_WillInsertBody::ID:
-      scheduler->OnWillInsertBody(child_id_, message.routing_id());
-      break;
-
-    default:
-      break;
-  }
-
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(ResourceSchedulerFilter, message, scheduler)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidCommitProvisionalLoad,
+                        OnDidCommitProvisionalLoad)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_WillInsertBody, OnWillInsertBody)
+  IPC_END_MESSAGE_MAP()
   return false;
+}
+
+void ResourceSchedulerFilter::OnDidCommitProvisionalLoad(
+    ResourceScheduler* scheduler,
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+  // TODO(csharrison): This isn't quite right for OOPIF, as we *do* want to
+  // propagate OnNavigate to the client associated with the OOPIF's RVH. This
+  // should not result in show-stopping bugs, just poorer loading performance.
+  if (ui::PageTransitionIsMainFrame(params.transition) &&
+      !params.was_within_same_page) {
+    scheduler->OnNavigate(child_id_, params.render_view_routing_id);
+  }
+}
+
+void ResourceSchedulerFilter::OnWillInsertBody(ResourceScheduler* scheduler,
+                                               int render_view_routing_id) {
+  scheduler->OnWillInsertBody(child_id_, render_view_routing_id);
 }
 
 }  // namespace content

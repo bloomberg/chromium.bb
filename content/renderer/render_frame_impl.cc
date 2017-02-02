@@ -4530,10 +4530,8 @@ void RenderFrameImpl::didChangeScrollOffset(blink::WebLocalFrame* frame) {
 
 void RenderFrameImpl::willInsertBody(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  if (!frame->parent()) {
-    render_view_->Send(new ViewHostMsg_WillInsertBody(
-        render_view_->GetRoutingID()));
-  }
+  Send(new FrameHostMsg_WillInsertBody(routing_id_,
+                                       render_view_->GetRoutingID()));
 }
 
 void RenderFrameImpl::reportFindInPageMatchCount(int request_id,

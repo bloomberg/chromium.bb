@@ -824,11 +824,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDisambiguationPopup,
                     gfx::Size, /* Size of zoomed image */
                     cc::SharedBitmapId /* id */)
 
-// Notifies the browser that document has parsed the body. This is used by the
-// ResourceScheduler as an indication that bandwidth contention won't block
-// first paint.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_WillInsertBody)
-
 // Notification that the urls for the favicon of a site has been determined.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateFaviconURL,
                     std::vector<content::FaviconURL> /* candidates */)

@@ -5,9 +5,14 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_SCHEDULER_FILTER_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_SCHEDULER_FILTER_H_
 
+#include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 
+struct FrameHostMsg_DidCommitProvisionalLoad_Params;
+
 namespace content {
+
+class ResourceScheduler;
 
 // This class listens for incoming ViewHostMsgs that are applicable to the
 // ResourceScheduler and invokes the appropriate notifications. It must be
@@ -18,13 +23,21 @@ class ResourceSchedulerFilter : public BrowserMessageFilter {
  public:
   explicit ResourceSchedulerFilter(int child_id);
 
-  // BrowserMessageFilter methods:
+  // BrowserMessageFilter:
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   ~ResourceSchedulerFilter() override;
 
+  void OnDidCommitProvisionalLoad(
+      ResourceScheduler* scheduler,
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+  void OnWillInsertBody(ResourceScheduler* scheduler,
+                        int render_view_routing_id);
+
   int child_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceSchedulerFilter);
 };
 
 }  // namespace content

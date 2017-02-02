@@ -8,11 +8,14 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <map>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -44,6 +47,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"
@@ -64,6 +68,8 @@
 #include "ipc/ipc_security_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
@@ -9181,6 +9187,156 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // added to pending delete list.
   rfh->OnMessageReceived(
       FrameHostMsg_ContextMenu(rfh->GetRoutingID(), ContextMenuParams()));
+}
+
+// Test harness that allows for "barrier" style delaying of requests matching
+// certain paths. Call SetDelayedRequestsForPath to delay requests, then
+// SetUpEmbeddedTestServer to register handlers and start the server.
+class RequestDelayingSitePerProcessBrowserTest
+    : public SitePerProcessBrowserTest {
+ public:
+  RequestDelayingSitePerProcessBrowserTest()
+      : test_server_(base::MakeUnique<net::EmbeddedTestServer>()) {}
+
+  // Must be called after any calls to SetDelayedRequestsForPath.
+  void SetUpEmbeddedTestServer() {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SetupCrossSiteRedirector(test_server_.get());
+    test_server_->RegisterRequestHandler(base::Bind(
+        &RequestDelayingSitePerProcessBrowserTest::HandleMockResource,
+        base::Unretained(this)));
+    ASSERT_TRUE(test_server_->Start());
+  }
+
+  // Delays |num_delayed| requests with URLs whose path parts match |path|. When
+  // the |num_delayed| + 1 request matching the path comes in, the rest are
+  // unblocked.
+  // Note: must be called on the UI thread before |test_server_| is started.
+  void SetDelayedRequestsForPath(const std::string& path, int num_delayed) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(!test_server_->Started());
+    num_remaining_requests_to_delay_for_path_[path] = num_delayed;
+  }
+
+ private:
+  // Called on the test server's thread.
+  void AddDelayedResponse(const net::test_server::SendBytesCallback& send,
+                          const net::test_server::SendCompleteCallback& done) {
+    // Just create a closure that closes the socket without sending a response.
+    // This will propagate an error to the underlying request.
+    send_response_closures_.push_back(base::Bind(send, "", done));
+  }
+
+  // Custom embedded test server handler. Looks for requests matching
+  // num_remaining_requests_to_delay_for_path_, and delays them if necessary. As
+  // soon as a single request comes in and:
+  // 1) It matches a delayed path
+  // 2) No path has any more requests to delay
+  // Then we release the barrier and finish all delayed requests.
+  std::unique_ptr<net::test_server::HttpResponse> HandleMockResource(
+      const net::test_server::HttpRequest& request) {
+    auto it =
+        num_remaining_requests_to_delay_for_path_.find(request.GetURL().path());
+    if (it == num_remaining_requests_to_delay_for_path_.end())
+      return nullptr;
+
+    // If there are requests to delay for this path, make a delayed request
+    // which will be finished later. Otherwise fall through to the bottom and
+    // send an empty response.
+    if (it->second > 0) {
+      --it->second;
+      return base::MakeUnique<DelayedResponse>(this);
+    }
+    MaybeStartRequests();
+    return std::unique_ptr<net::test_server::BasicHttpResponse>();
+  }
+
+  // If there are no more requests to delay, post a series of tasks finishing
+  // all the delayed tasks. This will be called on the test server's thread.
+  void MaybeStartRequests() {
+    for (auto it : num_remaining_requests_to_delay_for_path_) {
+      if (it.second > 0)
+        return;
+    }
+    for (const auto it : send_response_closures_) {
+      it.Run();
+    }
+  }
+
+  // This class passes the callbacks needed to respond to a request to the
+  // underlying test fixture.
+  class DelayedResponse : public net::test_server::BasicHttpResponse {
+   public:
+    explicit DelayedResponse(
+        RequestDelayingSitePerProcessBrowserTest* test_harness)
+        : test_harness_(test_harness) {}
+    void SendResponse(
+        const net::test_server::SendBytesCallback& send,
+        const net::test_server::SendCompleteCallback& done) override {
+      test_harness_->AddDelayedResponse(send, done);
+    }
+
+   private:
+    RequestDelayingSitePerProcessBrowserTest* test_harness_;
+
+    DISALLOW_COPY_AND_ASSIGN(DelayedResponse);
+  };
+
+  // Set of closures to call which will complete delayed requests. May only be
+  // modified on the test_server_'s thread.
+  std::vector<base::Closure> send_response_closures_;
+
+  // Map from URL paths to the number of requests to delay for that particular
+  // path. Initialized on the UI thread but modified and read on the test
+  // server's thread after the |test_server_| is started.
+  std::map<std::string, int> num_remaining_requests_to_delay_for_path_;
+
+  // Don't use embedded_test_server() because this one requires custom
+  // initialization.
+  std::unique_ptr<net::EmbeddedTestServer> test_server_;
+};
+
+// Regression tests for https://crbug.com/678206, where the request throttling
+// in ResourceScheduler was not updated for OOPIFs. This resulted in a single
+// hung delayable request (e.g. video) starving all other delayable requests.
+// The tests work by delaying n requests in a cross-domain iframe. Once the n +
+// 1st request goes through to the network stack (ensuring it was not starved),
+// the delayed request completed.
+//
+// If the logic is not correct, these tests will time out, as the n + 1st
+// request will never start.
+IN_PROC_BROWSER_TEST_F(RequestDelayingSitePerProcessBrowserTest,
+                       DelayableSubframeRequestsOneFrame) {
+  std::string path = "/mock-video.mp4";
+  SetDelayedRequestsForPath(path, 2);
+  SetUpEmbeddedTestServer();
+  GURL url(embedded_test_server()->GetURL(
+      "a.com", base::StringPrintf("/site_isolation/"
+                                  "subframes_with_resources.html?urls=%s&"
+                                  "numSubresources=3",
+                                  path.c_str())));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  bool result;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(), "createFrames()", &result));
+  EXPECT_TRUE(result);
+}
+
+IN_PROC_BROWSER_TEST_F(RequestDelayingSitePerProcessBrowserTest,
+                       DelayableSubframeRequestsTwoFrames) {
+  std::string path0 = "/mock-video0.mp4";
+  std::string path1 = "/mock-video1.mp4";
+  SetDelayedRequestsForPath(path0, 2);
+  SetDelayedRequestsForPath(path1, 2);
+  SetUpEmbeddedTestServer();
+  GURL url(embedded_test_server()->GetURL(
+      "a.com", base::StringPrintf("/site_isolation/"
+                                  "subframes_with_resources.html?urls=%s,%s&"
+                                  "numSubresources=3",
+                                  path0.c_str(), path1.c_str())));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  bool result;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(), "createFrames()", &result));
+  EXPECT_TRUE(result);
 }
 
 }  // namespace content

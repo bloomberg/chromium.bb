@@ -421,6 +421,10 @@ class ResourceScheduler::Client {
   }
 
   void OnWillInsertBody() {
+    // Can be called multiple times per RVH in the case of out-of-process
+    // iframes.
+    if (has_html_body_)
+      return;
     has_html_body_ = true;
     LoadAnyStartablePendingRequests(RequestStartTrigger::BODY_REACHED);
   }

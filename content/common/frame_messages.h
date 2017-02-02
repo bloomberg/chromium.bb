@@ -1105,6 +1105,12 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeFrameOwnerProperties,
                     int32_t /* subframe_routing_id */,
                     content::FrameOwnerProperties /* frame_owner_properties */)
 
+// Notifies the browser that document has parsed the body. This is used by the
+// ResourceScheduler as an indication that bandwidth contention won't block
+// first paint.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_WillInsertBody,
+                    int /* render_view_routing_id */)
+
 // Changes the title for the page in the UI when the page is navigated or the
 // title changes. Sent for top-level frames.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateTitle,
