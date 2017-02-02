@@ -2784,9 +2784,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         title = re.sub(r'[^\w ]', '', title)
         if not automatic_title:
           print('WARNING: Patchset title may only contain alphanumeric chars '
-                'and spaces. Cleaned up title:\n%s' % title)
-          if not options.force:
-            ask_for_data('Press enter to continue, Ctrl+C to abort')
+                'and spaces. You can edit it in the UI. '
+                'See https://crbug.com/663787.\n'
+                'Cleaned up title: %s' % title)
       # Per doc, spaces must be converted to underscores, and Gerrit will do the
       # reverse on its side.
       refspec_opts.append('m=' + title.replace(' ', '_'))

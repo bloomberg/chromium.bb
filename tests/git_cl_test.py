@@ -1393,7 +1393,8 @@ class TestGitCl(TestCase):
         title='Dont_put_bad_chars')
     self.assertIn(
         'WARNING: Patchset title may only contain alphanumeric chars '
-        'and spaces. Cleaned up title:\nDont put bad chars\n',
+        'and spaces. You can edit it in the UI. See https://crbug.com/663787.\n'
+        'Cleaned up title: Dont put bad chars\n',
         git_cl.sys.stdout.getvalue())
 
   def test_gerrit_reviewers_cmd_line(self):
