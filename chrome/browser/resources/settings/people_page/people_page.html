@@ -94,7 +94,7 @@
         width: var(--iron-icon-width);
       }
 
-      .footer .settings-box {
+      #disconnectDialog .footer .settings-box {
         --settings-box-row-padding: 0;
       }
 
@@ -369,7 +369,7 @@
       </div>
 <if expr="(not chromeos and is_posix) or is_win or is_macosx">
       <template is="dom-if" if="[[!syncStatus.domain]]">
-        <div class="footer">
+        <div class="footer border-top-divider">
           <div class="settings-box first">
             <paper-checkbox id="deleteProfile" class="start"
                 checked="{{deleteProfile_}}">
