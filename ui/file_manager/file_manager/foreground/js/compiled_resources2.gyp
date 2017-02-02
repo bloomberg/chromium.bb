@@ -123,10 +123,10 @@
 #      'target_name': 'metrics_start',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'mouse_inactivity_watcher',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'mouse_inactivity_watcher',
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'naming_controller',
 #      'includes': ['../../../compile_js2.gypi'],

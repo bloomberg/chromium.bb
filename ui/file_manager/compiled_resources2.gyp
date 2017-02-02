@@ -16,6 +16,7 @@
         'file_manager/foreground/js/metadata/compiled_resources2.gyp:*',
         'gallery/js/compiled_resources2.gyp:*',
         'image_loader/compiled_resources2.gyp:*',
+        'video_player/js/cast/compiled_resources2.gyp:*',
         'video_player/js/compiled_resources2.gyp:*',
       ],
     },
