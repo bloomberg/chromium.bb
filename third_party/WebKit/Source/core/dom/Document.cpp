@@ -690,10 +690,11 @@ String getTypeExtension(Document* document,
     ElementCreationOptions impl;
     V8ElementCreationOptions::toImpl(dict.isolate(), dict.v8Value(), impl,
                                      exceptionState);
+    if (exceptionState.hadException())
+      return emptyString;
+
     if (impl.hasIs())
       return impl.is();
-
-    return toCoreString(dict.v8Value()->ToString());
   }
 
   return emptyString;
