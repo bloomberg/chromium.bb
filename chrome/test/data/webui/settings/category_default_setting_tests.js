@@ -77,12 +77,6 @@ cr.define('category_default_setting', function() {
         },
       };
 
-      // Import necessary html before running suite.
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-           'chrome://md-settings/site_settings/category_default_setting.html');
-      });
-
       // Initialize a site-settings-category before each test.
       setup(function() {
         browserProxy = new TestSiteSettingsPrefsBrowserProxy();

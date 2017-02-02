@@ -54,12 +54,6 @@ cr.define('protocol_handlers', function() {
        */
       var browserProxy = null;
 
-      // Import necessary html before running suite.
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-           'chrome://md-settings/site_settings/protocol_handlers.html');
-      });
-
       setup(function() {
         browserProxy = new TestSiteSettingsPrefsBrowserProxy();
         settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;

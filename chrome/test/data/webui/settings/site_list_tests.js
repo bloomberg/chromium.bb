@@ -325,11 +325,8 @@ cr.define('site_list', function() {
         }
       };
 
-      // Import necessary html before running suite.
       suiteSetup(function() {
         CrSettingsPrefs.setInitialized();
-        return PolymerTest.importHtml(
-            'chrome://md-settings/site_settings/site_list.html');
       });
 
       suiteTeardown(function() {

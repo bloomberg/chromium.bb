@@ -41,12 +41,6 @@ cr.define('zoom_levels', function() {
           },
       ];
 
-      // Import necessary html before running suite.
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-           'chrome://md-settings/site_settings/zoom_levels.html');
-      });
-
       setup(function() {
         browserProxy = new TestSiteSettingsPrefsBrowserProxy();
         settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;

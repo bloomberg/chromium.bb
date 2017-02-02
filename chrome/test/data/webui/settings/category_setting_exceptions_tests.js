@@ -12,13 +12,6 @@ cr.define('category_setting_exceptions', function() {
        */
       var testElement;
 
-      // Import necessary html before running suite.
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-           'chrome://md-settings/site_settings/category_setting_exceptions.html'
-           );
-      });
-
       // Initialize a category-setting-exceptions before each test.
       setup(function() {
         browserProxy = new TestSiteSettingsPrefsBrowserProxy();
