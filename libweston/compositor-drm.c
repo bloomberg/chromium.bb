@@ -119,6 +119,8 @@ struct drm_backend {
 
 	int32_t cursor_width;
 	int32_t cursor_height;
+
+	uint32_t connector;
 };
 
 struct drm_mode {
@@ -2725,13 +2727,18 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 
 	/* collect new connects */
 	for (i = 0; i < resources->count_connectors; i++) {
-		int connector_id = resources->connectors[i];
+		uint32_t connector_id = resources->connectors[i];
 
 		connector = drmModeGetConnector(b->drm.fd, connector_id);
 		if (connector == NULL)
 			continue;
 
 		if (connector->connection != DRM_MODE_CONNECTED) {
+			drmModeFreeConnector(connector);
+			continue;
+		}
+
+		if (b->connector && (b->connector != connector_id)) {
 			drmModeFreeConnector(connector);
 			continue;
 		}
@@ -3218,6 +3225,8 @@ drm_backend_create(struct weston_compositor *compositor,
 		weston_log("failed to create input devices\n");
 		goto err_sprite;
 	}
+
+	b->connector = config->connector;
 
 	if (create_outputs(b, config->connector, drm_device) < 0) {
 		weston_log("failed to create output for %s\n", path);
