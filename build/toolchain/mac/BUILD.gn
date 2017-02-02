@@ -123,6 +123,7 @@ template("mac_toolchain") {
 
     cc = compiler_prefix + _cc
     cxx = compiler_prefix + _cxx
+    ld = _cxx
 
     if (use_clang_static_analyzer) {
       # Static analysis isn't supported under GOMA. See crbug.com/687245
@@ -141,9 +142,9 @@ template("mac_toolchain") {
       cxx = analyzer_wrapper + " --clang-cxx-path=${cxx} --analyzer=" +
             rebase_path("//third_party/scan-build/src/libexec/c++-analyzer",
                         root_build_dir)
-    }
 
-    ld = cxx
+      ld = cxx
+    }
 
     linker_driver =
         "TOOL_VERSION=${tool_versions.linker_driver} " +
