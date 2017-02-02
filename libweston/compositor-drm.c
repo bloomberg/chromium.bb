@@ -2664,8 +2664,7 @@ destroy_sprites(struct drm_backend *backend)
 }
 
 static int
-create_outputs(struct drm_backend *b, uint32_t option_connector,
-	       struct udev_device *drm_device)
+create_outputs(struct drm_backend *b, struct udev_device *drm_device)
 {
 	drmModeConnector *connector;
 	drmModeRes *resources;
@@ -2689,8 +2688,8 @@ create_outputs(struct drm_backend *b, uint32_t option_connector,
 			continue;
 
 		if (connector->connection == DRM_MODE_CONNECTED &&
-		    (option_connector == 0 ||
-		     connector->connector_id == option_connector)) {
+		    (b->connector == 0 ||
+		     connector->connector_id == b->connector)) {
 			if (create_output_for_connector(b, resources,
 							connector, drm_device) < 0) {
 				drmModeFreeConnector(connector);
@@ -3228,7 +3227,7 @@ drm_backend_create(struct weston_compositor *compositor,
 
 	b->connector = config->connector;
 
-	if (create_outputs(b, config->connector, drm_device) < 0) {
+	if (create_outputs(b, drm_device) < 0) {
 		weston_log("failed to create output for %s\n", path);
 		goto err_udev_input;
 	}
