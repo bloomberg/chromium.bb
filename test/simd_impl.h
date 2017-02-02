@@ -78,115 +78,115 @@ template <typename c_ret, typename c_arg1, typename c_arg2>
 void TestSimd2Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
                    const char *name);
 
-const int iterations = 65536;
+const int kIterations = 65536;
 
 // Add a macro layer since TEST_P will quote the name so we need to
 // expand it first with the prefix.
 #define MY_TEST_P(name, test) TEST_P(name, test)
 
 MY_TEST_P(ARCH_POSTFIX(V64_U32), TestIntrinsics) {
-  TestSimd1Arg<c_v64, uint32_t>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<c_v64, uint32_t>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V64_V64), TestIntrinsics) {
-  TestSimd1Arg<c_v64, c_v64>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<c_v64, c_v64>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(U64_V64), TestIntrinsics) {
-  TestSimd1Arg<uint64_t, c_v64>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<uint64_t, c_v64>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(U32_V64), TestIntrinsics) {
-  TestSimd1Arg<uint32_t, c_v64>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<uint32_t, c_v64>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V64_U32U32), TestIntrinsics) {
-  TestSimd2Args<c_v64, uint32_t, uint32_t>(iterations, mask, maskwidth, name);
+  TestSimd2Args<c_v64, uint32_t, uint32_t>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V64_V64V64), TestIntrinsics) {
-  TestSimd2Args<c_v64, c_v64, c_v64>(iterations, mask, maskwidth, name);
+  TestSimd2Args<c_v64, c_v64, c_v64>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(S64_V64V64), TestIntrinsics) {
-  TestSimd2Args<int64_t, c_v64, c_v64>(iterations, mask, maskwidth, name);
+  TestSimd2Args<int64_t, c_v64, c_v64>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(U32_V64V64), TestIntrinsics) {
-  TestSimd2Args<uint32_t, c_v64, c_v64>(iterations, mask, maskwidth, name);
+  TestSimd2Args<uint32_t, c_v64, c_v64>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V64_V64U32), TestIntrinsics) {
-  TestSimd2Args<c_v64, c_v64, uint32_t>(iterations, mask, maskwidth, name);
+  TestSimd2Args<c_v64, c_v64, uint32_t>(kIterations, mask, maskwidth, name);
 }
 
 // Google Test allows up to 50 tests per case, so split the largest
 MY_TEST_P(ARCH_POSTFIX(V64_V64_Part2), TestIntrinsics) {
-  TestSimd1Arg<c_v64, c_v64>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<c_v64, c_v64>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V64_V64V64_Part2), TestIntrinsics) {
-  TestSimd2Args<c_v64, c_v64, c_v64>(iterations, mask, maskwidth, name);
+  TestSimd2Args<c_v64, c_v64, c_v64>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(U32_V128), TestIntrinsics) {
-  TestSimd1Arg<uint32_t, c_v128>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<uint32_t, c_v128>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(U64_V128), TestIntrinsics) {
-  TestSimd1Arg<uint64_t, c_v128>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<uint64_t, c_v128>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V64_V128), TestIntrinsics) {
-  TestSimd1Arg<c_v64, c_v128>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<c_v64, c_v128>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V128_V128), TestIntrinsics) {
-  TestSimd1Arg<c_v128, c_v128>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<c_v128, c_v128>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V128_U32), TestIntrinsics) {
-  TestSimd1Arg<c_v128, uint32_t>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<c_v128, uint32_t>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V128_V64), TestIntrinsics) {
-  TestSimd1Arg<c_v128, c_v64>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<c_v128, c_v64>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V128_V128V128), TestIntrinsics) {
-  TestSimd2Args<c_v128, c_v128, c_v128>(iterations, mask, maskwidth, name);
+  TestSimd2Args<c_v128, c_v128, c_v128>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(U32_V128V128), TestIntrinsics) {
-  TestSimd2Args<uint32_t, c_v128, c_v128>(iterations, mask, maskwidth, name);
+  TestSimd2Args<uint32_t, c_v128, c_v128>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(S64_V128V128), TestIntrinsics) {
-  TestSimd2Args<int64_t, c_v128, c_v128>(iterations, mask, maskwidth, name);
+  TestSimd2Args<int64_t, c_v128, c_v128>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V128_U64U64), TestIntrinsics) {
-  TestSimd2Args<c_v128, uint64_t, uint64_t>(iterations, mask, maskwidth, name);
+  TestSimd2Args<c_v128, uint64_t, uint64_t>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V128_V64V64), TestIntrinsics) {
-  TestSimd2Args<c_v128, c_v64, c_v64>(iterations, mask, maskwidth, name);
+  TestSimd2Args<c_v128, c_v64, c_v64>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V128_V128U32), TestIntrinsics) {
-  TestSimd2Args<c_v128, c_v128, uint32_t>(iterations, mask, maskwidth, name);
+  TestSimd2Args<c_v128, c_v128, uint32_t>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V128_V128V128_Part2), TestIntrinsics) {
-  TestSimd2Args<c_v128, c_v128, c_v128>(iterations, mask, maskwidth, name);
+  TestSimd2Args<c_v128, c_v128, c_v128>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V128_V128_Part2), TestIntrinsics) {
-  TestSimd1Arg<c_v128, c_v128>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<c_v128, c_v128>(kIterations, mask, maskwidth, name);
 }
 
 MY_TEST_P(ARCH_POSTFIX(V128_V128_Part3), TestIntrinsics) {
-  TestSimd1Arg<c_v128, c_v128>(iterations, mask, maskwidth, name);
+  TestSimd1Arg<c_v128, c_v128>(kIterations, mask, maskwidth, name);
 }
 
 // Add a macro layer since INSTANTIATE_TEST_CASE_P will quote the name
