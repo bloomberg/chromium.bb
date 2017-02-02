@@ -57,15 +57,21 @@ void* UserDataKey() {
   return reinterpret_cast<void*>(&user_data_key);
 }
 
+std::string EscapeIdentifiers(const AutofillSpecifics& specifics) {
+  return net::EscapePath(specifics.name()) +
+         std::string(kAutocompleteTagDelimiter) +
+         net::EscapePath(specifics.value());
+}
+
 std::unique_ptr<EntityData> CreateEntityData(const AutofillEntry& entry) {
   auto entity_data = base::MakeUnique<EntityData>();
-  entity_data->non_unique_name = base::UTF16ToUTF8(entry.key().name());
   AutofillSpecifics* autofill = entity_data->specifics.mutable_autofill();
   autofill->set_name(base::UTF16ToUTF8(entry.key().name()));
   autofill->set_value(base::UTF16ToUTF8(entry.key().value()));
   autofill->add_usage_timestamp(entry.date_created().ToInternalValue());
   if (entry.date_created() != entry.date_last_used())
     autofill->add_usage_timestamp(entry.date_last_used().ToInternalValue());
+  entity_data->non_unique_name = EscapeIdentifiers(*autofill);
   return entity_data;
 }
 
@@ -450,11 +456,8 @@ void AutocompleteSyncBridge::LoadMetadata() {
 std::string AutocompleteSyncBridge::GetClientTag(
     const EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_autofill());
-  const AutofillSpecifics specifics = entity_data.specifics.autofill();
   return std::string(kAutocompleteEntryNamespaceTag) +
-         net::EscapePath(specifics.name()) +
-         std::string(kAutocompleteTagDelimiter) +
-         net::EscapePath(specifics.value());
+         EscapeIdentifiers(entity_data.specifics.autofill());
 }
 
 std::string AutocompleteSyncBridge::GetStorageKey(
