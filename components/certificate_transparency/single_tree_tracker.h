@@ -17,6 +17,7 @@
 #include "net/cert/ct_verifier.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/cert/sth_observer.h"
+#include "net/log/net_log_with_source.h"
 
 namespace net {
 
@@ -78,7 +79,8 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
   };
 
   SingleTreeTracker(scoped_refptr<const net::CTLogVerifier> ct_log,
-                    LogDnsClient* dns_client);
+                    LogDnsClient* dns_client,
+                    net::NetLog* net_log);
   ~SingleTreeTracker() override;
 
   // net::ct::CTVerifier::Observer implementation.
@@ -142,6 +144,8 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
+  void LogAuditResultToNetLog(const EntryToAudit& entry, bool success);
+
   // Holds the latest STH fetched and verified for this log.
   net::ct::SignedTreeHead verified_sth_;
 
@@ -166,6 +170,8 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
   LogDnsClient* dns_client_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  net::NetLogWithSource net_log_;
 
   base::WeakPtrFactory<SingleTreeTracker> weak_factory_;
 

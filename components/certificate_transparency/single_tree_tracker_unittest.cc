@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/test/histogram_tester.h"
 #include "components/base32/base32.h"
@@ -25,6 +26,8 @@
 #include "net/cert/x509_certificate.h"
 #include "net/dns/dns_client.h"
 #include "net/log/net_log.h"
+#include "net/log/test_net_log.h"
+#include "net/log/test_net_log_util.h"
 #include "net/test/ct_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,14 +88,23 @@ scoped_refptr<SignedCertificateTimestamp> GetSCT() {
   return sct;
 }
 
-std::string Base32LeafHash(const net::X509Certificate* cert,
-                           const SignedCertificateTimestamp* sct) {
+std::string LeafHash(const net::X509Certificate* cert,
+                     const SignedCertificateTimestamp* sct) {
   net::ct::MerkleTreeLeaf leaf;
   if (!GetMerkleTreeLeaf(cert, sct, &leaf))
     return std::string();
 
   std::string leaf_hash;
   if (!HashMerkleTreeLeaf(leaf, &leaf_hash))
+    return std::string();
+
+  return leaf_hash;
+}
+
+std::string Base32LeafHash(const net::X509Certificate* cert,
+                           const SignedCertificateTimestamp* sct) {
+  std::string leaf_hash = LeafHash(cert, sct);
+  if (leaf_hash.empty())
     return std::string();
 
   return base32::Base32Encode(leaf_hash,
@@ -174,10 +186,10 @@ class SingleTreeTrackerTest : public ::testing::Test {
  protected:
   void CreateTreeTracker() {
     log_dns_client_ = base::MakeUnique<LogDnsClient>(
-        mock_dns_.CreateDnsClient(), net_log_, 1);
+        mock_dns_.CreateDnsClient(), net_log_with_source_, 1);
 
-    tree_tracker_ =
-        base::MakeUnique<SingleTreeTracker>(log_, log_dns_client_.get());
+    tree_tracker_ = base::MakeUnique<SingleTreeTracker>(
+        log_, log_dns_client_.get(), &net_log_);
   }
 
   void CreateTreeTrackerWithDefaultDnsExpectation() {
@@ -198,6 +210,41 @@ class SingleTreeTrackerTest : public ::testing::Test {
         net::Error::ERR_TEMPORARILY_THROTTLED);
   }
 
+  bool MatchAuditingResultInNetLog(net::TestNetLog& net_log,
+                                   std::string expected_leaf_hash,
+                                   bool expected_success) {
+    net::TestNetLogEntry::List entries;
+
+    net_log.GetEntries(&entries);
+    if (entries.size() == 0)
+      return false;
+
+    size_t pos = net::ExpectLogContainsSomewhere(
+        entries, 0, net::NetLogEventType::CT_LOG_ENTRY_AUDITED,
+        net::NetLogEventPhase::NONE);
+
+    const net::TestNetLogEntry& logged_entry = entries[pos];
+
+    std::string logged_log_id, logged_leaf_hash;
+    if (!logged_entry.GetStringValue("log_id", &logged_log_id) ||
+        !logged_entry.GetStringValue("log_entry", &logged_leaf_hash))
+      return false;
+
+    if (base::HexEncode(GetTestPublicKeyId().data(),
+                        GetTestPublicKeyId().size()) != logged_log_id)
+      return false;
+
+    if (base::HexEncode(expected_leaf_hash.data(), expected_leaf_hash.size()) !=
+        logged_leaf_hash)
+      return false;
+
+    bool logged_success;
+    if (!logged_entry.GetBooleanValue("success", &logged_success))
+      return false;
+
+    return logged_success == expected_success;
+  }
+
   base::MessageLoopForIO message_loop_;
   MockLogDnsTraffic mock_dns_;
   scoped_refptr<const net::CTLogVerifier> log_;
@@ -206,7 +253,8 @@ class SingleTreeTrackerTest : public ::testing::Test {
   std::unique_ptr<SingleTreeTracker> tree_tracker_;
   scoped_refptr<net::X509Certificate> chain_;
   scoped_refptr<SignedCertificateTimestamp> cert_sct_;
-  net::NetLogWithSource net_log_;
+  net::TestNetLog net_log_;
+  net::NetLogWithSource net_log_with_source_;
 };
 
 // Test that an SCT is classified as pending for a newer STH if the
@@ -231,6 +279,7 @@ TEST_F(SingleTreeTrackerTest, CorrectlyClassifiesUnobservedSCTNoSTH) {
   // Expect logging of a value indicating a valid STH is required.
   histograms.ExpectTotalCount(kCanCheckForInclusionHistogramName, 1);
   histograms.ExpectBucketCount(kCanCheckForInclusionHistogramName, 0, 1);
+  EXPECT_EQ(0u, net_log_.GetSize());
 }
 
 // Test that an SCT is classified as pending an inclusion check if the
@@ -266,6 +315,7 @@ TEST_F(SingleTreeTrackerTest, CorrectlyClassifiesUnobservedSCTWithRecentSTH) {
   // Nothing should be logged in the result histogram since inclusion check
   // didn't finish.
   histograms.ExpectTotalCount(kInclusionCheckResultHistogramName, 0);
+  EXPECT_EQ(0u, net_log_.GetSize());
 }
 
 // Test that the SingleTreeTracker correctly queues verified SCTs for inclusion
@@ -296,6 +346,7 @@ TEST_F(SingleTreeTrackerTest, CorrectlyUpdatesSCTStatusOnNewSTH) {
   // only supposed to measure the state of newly-observed SCTs, not pending
   // ones.
   histograms.ExpectTotalCount(kCanCheckForInclusionHistogramName, 1);
+  EXPECT_EQ(0u, net_log_.GetSize());
 }
 
 // Test that the SingleTreeTracker does not change an SCT's status if an STH
@@ -319,6 +370,7 @@ TEST_F(SingleTreeTrackerTest, DoesNotUpdatesSCTStatusOnOldSTH) {
   EXPECT_EQ(
       SingleTreeTracker::SCT_PENDING_NEWER_STH,
       tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(0u, net_log_.GetSize());
 }
 
 // Test that the SingleTreeTracker correctly logs that an SCT is pending a new
@@ -342,6 +394,7 @@ TEST_F(SingleTreeTrackerTest, LogsUMAForNewSCTAndOldSTH) {
   // for inclusion as the STH is too old.
   histograms.ExpectTotalCount(kCanCheckForInclusionHistogramName, 1);
   histograms.ExpectBucketCount(kCanCheckForInclusionHistogramName, 1, 1);
+  EXPECT_EQ(0u, net_log_.GetSize());
 }
 
 // Test that an entry transitions to the "not found" state if the LogDnsClient
@@ -368,6 +421,9 @@ TEST_F(SingleTreeTrackerTest, TestEntryNotPendingAfterLeafIndexFetchFailure) {
   EXPECT_EQ(
       SingleTreeTracker::SCT_NOT_OBSERVED,
       tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  // There should have been one NetLog event, logged with failure.
+  EXPECT_TRUE(MatchAuditingResultInNetLog(
+      net_log_, LeafHash(chain_.get(), cert_sct_.get()), false));
 }
 
 // Test that an entry transitions to the "not found" state if the LogDnsClient
@@ -401,6 +457,9 @@ TEST_F(SingleTreeTrackerTest, TestEntryNotPendingAfterInclusionCheckFailure) {
   EXPECT_EQ(
       SingleTreeTracker::SCT_NOT_OBSERVED,
       tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  // There should have been one NetLog event, logged with failure.
+  EXPECT_TRUE(MatchAuditingResultInNetLog(
+      net_log_, LeafHash(chain_.get(), cert_sct_.get()), false));
 }
 
 // Test that an entry transitions to the "included" state if the LogDnsClient
@@ -440,6 +499,9 @@ TEST_F(SingleTreeTrackerTest, TestEntryIncludedAfterInclusionCheckSuccess) {
   EXPECT_EQ(
       SingleTreeTracker::SCT_INCLUDED_IN_LOG,
       tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  // There should have been one NetLog event, with success logged.
+  EXPECT_TRUE(MatchAuditingResultInNetLog(
+      net_log_, LeafHash(chain_.get(), cert_sct_.get()), true));
 }
 
 // Test that pending entries transition states correctly according to the

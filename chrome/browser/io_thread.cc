@@ -596,8 +596,8 @@ void IOThread::Init() {
   // Add built-in logs
   ct_verifier->AddLogs(globals_->ct_logs);
 
-  ct_tree_tracker_.reset(
-      new certificate_transparency::TreeStateTracker(globals_->ct_logs));
+  ct_tree_tracker_.reset(new certificate_transparency::TreeStateTracker(
+      globals_->ct_logs, net_log_));
   // Register the ct_tree_tracker_ as observer for new STHs.
   RegisterSTHObserver(ct_tree_tracker_.get());
   // Register the ct_tree_tracker_ as observer for verified SCTs.

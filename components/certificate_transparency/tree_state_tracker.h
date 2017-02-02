@@ -15,6 +15,7 @@
 #include "net/cert/sth_observer.h"
 
 namespace net {
+class NetLog;
 class CTLogVerifier;
 class X509Certificate;
 
@@ -43,8 +44,8 @@ class TreeStateTracker : public net::CTVerifier::Observer,
   // is based on the assumption that the list of recognized logs does not change
   // during the object's life time.
   // Observed STHs from logs not in this list will be simply ignored.
-  explicit TreeStateTracker(
-      std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs);
+  TreeStateTracker(std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs,
+                   net::NetLog* net_log);
   ~TreeStateTracker() override;
 
   // net::ct::CTVerifier::Observer implementation.

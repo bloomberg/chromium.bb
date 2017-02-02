@@ -39,6 +39,7 @@ source_set("unit_tests") {
     "mock_log_dns_traffic.cc",
     "mock_log_dns_traffic.h",
     "single_tree_tracker_unittest.cc",
+    "tree_state_tracker_unittest.cc",
   ]
   deps = [
     ":certificate_transparency",

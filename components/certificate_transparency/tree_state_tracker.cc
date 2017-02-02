@@ -33,20 +33,22 @@ const base::Feature kCTLogAuditing = {"CertificateTransparencyLogAuditing",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 TreeStateTracker::TreeStateTracker(
-    std::vector<scoped_refptr<const CTLogVerifier>> ct_logs) {
+    std::vector<scoped_refptr<const CTLogVerifier>> ct_logs,
+    net::NetLog* net_log) {
   if (!base::FeatureList::IsEnabled(kCTLogAuditing))
     return;
 
-  // TODO(eranm): Hook up a real NetLog.
-  net::NetLogWithSource net_log;
   std::unique_ptr<net::DnsClient> dns_client =
-      net::DnsClient::CreateClient(net_log.net_log());
-  dns_client_ = base::MakeUnique<LogDnsClient>(std::move(dns_client), net_log,
-                                               kMaxConcurrentDnsQueries);
+      net::DnsClient::CreateClient(net_log);
+  dns_client_ = base::MakeUnique<LogDnsClient>(
+      std::move(dns_client),
+      net::NetLogWithSource::Make(net_log,
+                                  net::NetLogSourceType::CT_TREE_STATE_TRACKER),
+      kMaxConcurrentDnsQueries);
 
   for (const auto& log : ct_logs) {
     tree_trackers_[log->key_id()].reset(
-        new SingleTreeTracker(log, dns_client_.get()));
+        new SingleTreeTracker(log, dns_client_.get(), net_log));
   }
 }
 

@@ -670,6 +670,18 @@ EVENT_TYPE(CERT_CT_COMPLIANCE_CHECKED)
 // }
 EVENT_TYPE(EV_CERT_CT_COMPLIANCE_CHECKED)
 
+// A Certificate Transparency log entry was audited for inclusion in the
+// log.
+//
+// The following parameters are attached to the event:
+// {
+//  "log_entry": <hex-encoded hash of the log entry>
+//  "log_id": <hex-encoded hash of the CT log>
+//  "success": <boolean>
+// }
+
+EVENT_TYPE(CT_LOG_ENTRY_AUDITED)
+
 // ------------------------------------------------------------------------
 // DatagramSocket
 // ------------------------------------------------------------------------
