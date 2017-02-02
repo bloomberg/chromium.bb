@@ -393,7 +393,7 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 
 
 def map_and_run(
-    command, isolated_hash, storage, isolate_cache, outputs, init_name_caches,
+    command, isolated_hash, storage, isolate_cache, outputs, init_named_caches,
     leak_temp_dir, root_dir, hard_timeout, grace_period, bot_file, extra_args,
     install_packages_fn, use_symlinks):
   """Runs a command with optional isolated input/output.
@@ -490,7 +490,7 @@ def map_and_run(
       command = process_command(command, out_dir, bot_file)
       file_path.ensure_command_has_abs_path(command, cwd)
 
-      init_name_caches(run_dir)
+      init_named_caches(run_dir)
 
       sys.stdout.flush()
       start = time.time()
@@ -570,7 +570,7 @@ def map_and_run(
 
 
 def run_tha_test(
-    command, isolated_hash, storage, isolate_cache, outputs, init_name_caches,
+    command, isolated_hash, storage, isolate_cache, outputs, init_named_caches,
     leak_temp_dir, result_json, root_dir, hard_timeout, grace_period, bot_file,
     extra_args, install_packages_fn, use_symlinks):
   """Runs an executable and records execution metadata.
@@ -598,7 +598,7 @@ def run_tha_test(
     isolate_cache: an isolateserver.LocalCache to keep from retrieving the
                    same objects constantly by caching the objects retrieved.
                    Can be on-disk or in-memory.
-    init_name_caches: a function (run_dir) => void that creates symlinks for
+    init_named_caches: a function (run_dir) => void that creates symlinks for
                       named caches in |run_dir|.
     leak_temp_dir: if true, the temporary directory will be deliberately leaked
                    for later examination.
@@ -636,9 +636,9 @@ def run_tha_test(
 
   # run_isolated exit code. Depends on if result_json is used or not.
   result = map_and_run(
-      command, isolated_hash, storage, isolate_cache, outputs, init_name_caches,
-      leak_temp_dir, root_dir, hard_timeout, grace_period, bot_file, extra_args,
-      install_packages_fn, use_symlinks)
+      command, isolated_hash, storage, isolate_cache, outputs,
+      init_named_caches, leak_temp_dir, root_dir, hard_timeout, grace_period,
+      bot_file, extra_args, install_packages_fn, use_symlinks)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
 
   if result_json:
