@@ -353,6 +353,13 @@
   return 0;
 }
 
+- (CGFloat)menubarHeight {
+  // The height of the menubar. We can't use |-[NSMenu menuBarHeight]| since it
+  // returns 0 when the menu bar is hidden.
+  const CGFloat kMenubarHeight = 22;
+  return kMenubarHeight;
+}
+
 - (NSView*)avatarView {
   return nil;
 }

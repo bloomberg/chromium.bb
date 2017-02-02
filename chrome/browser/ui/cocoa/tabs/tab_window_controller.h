@@ -163,6 +163,9 @@
 // the screen (tab strip, omnibox, bookmark bar, etc). Ranges from 0 to -22.
 - (CGFloat)menubarOffset;
 
+// The height of the menubar.
+- (CGFloat)menubarHeight;
+
 // Returns the view of the avatar button.
 - (NSView*)avatarView;
 

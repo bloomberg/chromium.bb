@@ -146,9 +146,6 @@ struct FullscreenToolbarLayout {
 // Sets the value of |inFullscreenMode_|.
 - (void)setTestFullscreenMode:(BOOL)isInFullscreen;
 
-// Returns |kToolbarVerticalOffset|.
-- (CGFloat)toolbarVerticalOffset;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_FULLSCREEN_FULLSCREEN_TOOLBAR_CONTROLLER_H_

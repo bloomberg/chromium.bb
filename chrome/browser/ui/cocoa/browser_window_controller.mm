@@ -1418,6 +1418,10 @@ bool IsTabDetachingInFullscreenEnabled() {
   return !manager || !manager->IsDialogActive();
 }
 
+- (CGFloat)menubarOffset {
+  return [[self fullscreenToolbarController] computeLayout].menubarOffset;
+}
+
 // TabStripControllerDelegate protocol.
 - (void)onActivateTabWithContents:(WebContents*)contents {
   // Update various elements that are interested in knowing the current

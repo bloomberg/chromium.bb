@@ -93,12 +93,14 @@ class FullscreenToolbarControllerTest : public testing::Test {
   void SetUp() override {
     BOOL yes = YES;
     BOOL no = NO;
+    CGFloat menubarHeight = 22;
 
     bwc_ = [OCMockObject mockForClass:[BrowserWindowController class]];
     [[[bwc_ stub] andReturnValue:OCMOCK_VALUE(yes)]
         isKindOfClass:[BrowserWindowController class]];
     [[[bwc_ stub] andReturnValue:OCMOCK_VALUE(yes)] isInAppKitFullscreen];
     [[[bwc_ stub] andReturnValue:OCMOCK_VALUE(no)] isInImmersiveFullscreen];
+    [[[bwc_ stub] andReturnValue:OCMOCK_VALUE(menubarHeight)] menubarHeight];
     [[bwc_ stub] layoutSubviews];
 
     controller_.reset(
@@ -127,8 +129,7 @@ class FullscreenToolbarControllerTest : public testing::Test {
   void CheckLayout(CGFloat toolbarFraction, CGFloat menubarFraction) {
     FullscreenToolbarLayout layout = [controller_ computeLayout];
     EXPECT_EQ(toolbarFraction, layout.toolbarFraction);
-    EXPECT_EQ(menubarFraction * [controller_ toolbarVerticalOffset],
-              layout.menubarOffset);
+    EXPECT_EQ(menubarFraction * -[bwc_ menubarHeight], layout.menubarOffset);
   }
 
   // A mock BrowserWindowController object.

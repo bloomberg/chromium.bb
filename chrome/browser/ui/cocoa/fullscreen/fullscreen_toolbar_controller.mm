@@ -21,11 +21,6 @@ namespace {
 const CGFloat kHideFraction = 0.0;
 const CGFloat kShowFraction = 1.0;
 
-// The amount by which the toolbar is offset downwards (to avoid the menu)
-// when the toolbar style is TOOLBAR_HIDDEN. (We can't use
-// |-[NSMenu menuBarHeight]| since it returns 0 when the menu bar is hidden.)
-const CGFloat kToolbarVerticalOffset = -22;
-
 }  // end namespace
 
 @implementation FullscreenToolbarController
@@ -121,13 +116,14 @@ const CGFloat kToolbarVerticalOffset = -22;
   layout.toolbarStyle = toolbarStyle_;
   layout.toolbarFraction = [self toolbarFraction];
 
+  // Calculate how much the toolbar is offset downwards to avoid the menu.
   if ([browserController_ isInAppKitFullscreen]) {
     layout.menubarOffset = [menubarTracker_ menubarFraction];
   } else {
     layout.menubarOffset =
         [immersiveFullscreenController_ shouldShowMenubar] ? 1 : 0;
   }
-  layout.menubarOffset *= kToolbarVerticalOffset;
+  layout.menubarOffset *= -[browserController_ menubarHeight];
 
   return layout;
 }
@@ -210,10 +206,6 @@ const CGFloat kToolbarVerticalOffset = -22;
 
 - (void)setTestFullscreenMode:(BOOL)isInFullscreen {
   inFullscreenMode_ = isInFullscreen;
-}
-
-- (CGFloat)toolbarVerticalOffset {
-  return kToolbarVerticalOffset;
 }
 
 @end

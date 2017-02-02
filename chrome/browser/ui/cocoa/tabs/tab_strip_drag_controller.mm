@@ -348,9 +348,13 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
   tearProgress = sqrtf(MAX(MIN(tearProgress, 1.0), 0.0));
 
   // Move the dragged window to the right place on the screen.
+  // TODO(spqchan): Write a test to check if the window is at the right place.
+  // See http://crbug.com/687647.
   NSPoint origin = sourceWindowFrame_.origin;
   origin.x += (thisPoint.x - dragOrigin_.x);
-  origin.y += (thisPoint.y - dragOrigin_.y);
+  origin.y +=
+      (thisPoint.y - dragOrigin_.y) +
+      ([sourceController_ menubarOffset] + [sourceController_ menubarHeight]);
 
   if (tearProgress < 1) {
     // If the tear animation is not complete, call back to ourself with the
