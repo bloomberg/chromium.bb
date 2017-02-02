@@ -96,7 +96,6 @@ class MediaParserImpl : public extensions::mojom::MediaParser {
 #else
     callback.Run(false);
 #endif
-    ReleaseProcessIfNeeded();
   }
 
   ChromeContentUtilityClient* const utility_client_;
