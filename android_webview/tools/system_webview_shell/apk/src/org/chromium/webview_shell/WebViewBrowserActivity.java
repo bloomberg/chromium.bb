@@ -44,6 +44,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.chromium.base.Log;
 
@@ -56,6 +57,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,6 +75,12 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     private static final String RESOURCE_FILE_URL = "RESOURCE_FILE_URL";
     // WebKit permissions with no corresponding Android permission can always be granted
     private static final String NO_ANDROID_PERMISSION = "NO_ANDROID_PERMISSION";
+
+    // TODO(timav): Remove these variables after http://crbug.com/626202 is fixed.
+    // The Bundle key for WebView serialized state
+    private static final String SAVE_RESTORE_STATE_KEY = "WEBVIEW_CHROMIUM_STATE";
+    // Maximal size of this state.
+    private static final int MAX_STATE_LENGTH = 300 * 1024;
 
     // Map from WebKit permissions to Android permissions
     private static final HashMap<String, String> sPermissions;
@@ -214,6 +222,17 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     public void onSaveInstanceState(Bundle savedInstanceState) {
         // Deliberately don't catch TransactionTooLargeException here.
         mWebView.saveState(savedInstanceState);
+
+        // TODO(timav): Remove this hack after http://crbug.com/626202 is fixed.
+        // Drop the saved state of it is too long since Android N and above
+        // can't handle large states without a crash.
+        byte[] webViewState = savedInstanceState.getByteArray(SAVE_RESTORE_STATE_KEY);
+        if (webViewState != null && webViewState.length > MAX_STATE_LENGTH) {
+            savedInstanceState.remove(SAVE_RESTORE_STATE_KEY);
+            String message = String.format(
+                    Locale.US, "Can't save state: %dkb is too long", webViewState.length / 1024);
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
