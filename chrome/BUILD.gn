@@ -457,7 +457,10 @@ if (is_win) {
 } else if (is_mac) {
   chrome_helper_name = chrome_product_full_name + " Helper"
   chrome_framework_name = chrome_product_full_name + " Framework"
-  chrome_framework_version = "A"
+
+  if (enable_xpc_notifications) {
+    chrome_framework_version = "A"
+  }
 
   group("chrome") {
     deps = [
