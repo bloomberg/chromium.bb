@@ -99,6 +99,10 @@ SkColor RGBAToSkColor(DOM::RGBA* rgba) {
                         MaskColor(rgba->getB()));
 }
 
+views::Widget* GetWidgetFromWmWindow(WmWindow* window) {
+  return views::Widget::GetWidgetForNativeView(window->aura_window());
+}
+
 }  // namespace
 
 AshDevToolsDOMAgent::AshDevToolsDOMAgent(ash::WmShell* shell) : shell_(shell) {
@@ -253,7 +257,7 @@ std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForWindow(
     ash::WmWindow* window) {
   DCHECK(!window_to_node_id_map_.count(window));
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
-  views::Widget* widget = window->GetInternalWidget();
+  views::Widget* widget = GetWidgetFromWmWindow(window);
   if (widget)
     children->addItem(BuildTreeForRootWidget(widget));
   for (ash::WmWindow* child : window->GetChildren()) {
@@ -317,8 +321,8 @@ void AshDevToolsDOMAgent::RemoveWindowTree(WmWindow* window,
   if (IsHighlightingWindow(window))
     return;
 
-  if (window->GetInternalWidget())
-    RemoveWidgetTree(window->GetInternalWidget(), remove_observer);
+  if (GetWidgetFromWmWindow(window))
+    RemoveWidgetTree(GetWidgetFromWmWindow(window), remove_observer);
 
   for (ash::WmWindow* child : window->GetChildren())
     RemoveWindowTree(child, remove_observer);
@@ -524,7 +528,7 @@ ui::devtools::protocol::Response AshDevToolsDOMAgent::HighlightNode(
 
 bool AshDevToolsDOMAgent::IsHighlightingWindow(WmWindow* window) {
   return widget_for_highlighting_ &&
-         window->GetInternalWidget() == widget_for_highlighting_.get();
+         GetWidgetFromWmWindow(window) == widget_for_highlighting_.get();
 }
 
 }  // namespace devtools
