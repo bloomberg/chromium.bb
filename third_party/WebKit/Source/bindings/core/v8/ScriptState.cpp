@@ -25,7 +25,8 @@ static void derefCallback(const v8::WeakCallbackInfo<ScriptState>& data) {
   data.GetParameter()->deref();
 }
 
-static void weakCallback(const v8::WeakCallbackInfo<ScriptState>& data) {
+static void contextCollectedCallback(
+    const v8::WeakCallbackInfo<ScriptState>& data) {
   data.GetParameter()->clearContext();
   data.SetSecondPassCallback(derefCallback);
 }
@@ -38,7 +39,7 @@ ScriptState::ScriptState(v8::Local<v8::Context> context,
       m_perContextData(V8PerContextData::create(context))
 {
   DCHECK(m_world);
-  m_context.setWeak(this, &weakCallback);
+  m_context.setWeak(this, &contextCollectedCallback);
   context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
 }
 
