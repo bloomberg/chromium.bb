@@ -1091,8 +1091,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         ADAuthUI.realm = params['realm'];
         ADAuthUI.userRealm = '@' + params['realm'];
       }
-      if ('email' in params)
-        ADAuthUI.setUser(params['email']);
+      ADAuthUI.setUser(params['email']);
       this.onAuthReady_();
     },
 
