@@ -4,6 +4,7 @@
 
 #include "ui/gfx/color_transform.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/logging.h"
@@ -454,6 +455,19 @@ class ColorTransformToLinear : public ColorTransformInternal {
     return c.x() * 0.2627f + c.y() * 0.6780f + c.z() * 0.0593f;
   }
 
+  ColorTransform::TriStim ClipToWhite(ColorTransform::TriStim& c) {
+    float maximum = std::max(std::max(c.x(), c.y()), c.z());
+    if (maximum > 1.0f) {
+      float l = Luma(c);
+      c.Scale(1.0f / maximum);
+      ColorTransform::TriStim white(1.0f, 1.0f, 1.0f);
+      white.Scale((1.0f - 1.0f / maximum) * l / Luma(white));
+      ColorTransform::TriStim black(0.0f, 0.0f, 0.0f);
+      c += white - black;
+    }
+    return c;
+  }
+
   void transform(ColorTransform::TriStim* colors, size_t num) override {
     if (fn_valid_) {
       for (size_t i = 0; i < num; i++) {
@@ -472,7 +486,7 @@ class ColorTransformToLinear : public ColorTransformInternal {
               ToLinear(ColorSpace::TransferID::SMPTEST2084, colors[i].y()),
               ToLinear(ColorSpace::TransferID::SMPTEST2084, colors[i].z()));
           smpte2084.Scale(Luma(ret) / Luma(smpte2084));
-          ret = smpte2084;
+          ret = ClipToWhite(smpte2084);
         }
         colors[i] = ret;
       }
