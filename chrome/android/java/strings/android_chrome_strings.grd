@@ -964,9 +964,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Child accounts -->
-      <message name="IDS_KIDS_ACCOUNT" desc="Identifies an account as a child account.">
-        This is a kid’s account
-      </message>
       <message name="IDS_ACCOUNT_MANAGEMENT_PARENTAL_SETTINGS" desc="Title of parental settings section of account page for child account.">
         Parental Settings
       </message>
