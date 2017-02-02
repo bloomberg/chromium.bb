@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -323,9 +322,6 @@ void DesktopWindowTreeHostMus::OnWidgetInitDone() {
   // client-area and hit-test-mask.
   SendClientAreaToServer();
   SendHitTestMaskToServer();
-
-  MusClient::Get()->OnCaptureClientSet(
-      aura::client::GetCaptureClient(window()));
 }
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostMus::CreateTooltip() {
@@ -355,9 +351,6 @@ void DesktopWindowTreeHostMus::Close() {
 }
 
 void DesktopWindowTreeHostMus::CloseNow() {
-  MusClient::Get()->OnCaptureClientUnset(
-      aura::client::GetCaptureClient(window()));
-
   native_widget_delegate_->OnNativeWidgetDestroying();
 
   // If we have children, close them. Use a copy for iteration because they'll

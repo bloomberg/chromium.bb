@@ -28,21 +28,18 @@ class CaptureClient;
 
 // CaptureSynchronizer is resonsible for keeping capture in sync between aura
 // and the mus server.
-class AURA_EXPORT CaptureSynchronizer : public WindowObserver,
-                                        public client::CaptureClientObserver {
+class CaptureSynchronizer : public WindowObserver,
+                            public client::CaptureClientObserver {
  public:
   CaptureSynchronizer(CaptureSynchronizerDelegate* delegate,
-                      ui::mojom::WindowTree* window_tree);
+                      ui::mojom::WindowTree* window_tree,
+                      client::CaptureClient* capture_client);
   ~CaptureSynchronizer() override;
 
   WindowMus* capture_window() { return capture_window_; }
 
   // Called when the server side wants to change capture to |window|.
   void SetCaptureFromServer(WindowMus* window);
-
-  // Called when the |capture_client| has been set or will be unset.
-  void AttachToCaptureClient(client::CaptureClient* capture_client);
-  void DetachFromCaptureClient(client::CaptureClient* capture_client);
 
  private:
   // Internal implementation for capture changes. Adds/removes observer as
@@ -57,6 +54,7 @@ class AURA_EXPORT CaptureSynchronizer : public WindowObserver,
 
   CaptureSynchronizerDelegate* delegate_;
   ui::mojom::WindowTree* window_tree_;
+  client::CaptureClient* capture_client_;
 
   // Window that currently has capture.
   WindowMus* capture_window_ = nullptr;

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/aura/client/capture_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/views/mus/mus_export.h"
@@ -101,14 +100,6 @@ class VIEWS_MUS_EXPORT MusClient
   //  NativeWidget has not been explicitly set.
   NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
                                    internal::NativeWidgetDelegate* delegate);
-
-  // Called when the capture client has been set for a window to notify
-  // PointerWatcherEventRouter and CaptureSynchronizer.
-  void OnCaptureClientSet(aura::client::CaptureClient* capture_client);
-
-  // Called when the capture client will be unset for a window to notify
-  // PointerWatcherEventRouter and CaptureSynchronizer.
-  void OnCaptureClientUnset(aura::client::CaptureClient* capture_client);
 
   void AddObserver(MusClientObserver* observer);
   void RemoveObserver(MusClientObserver* observer);

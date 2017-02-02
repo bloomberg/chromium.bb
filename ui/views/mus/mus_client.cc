@@ -16,7 +16,6 @@
 #include "services/ui/public/interfaces/event_matcher.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/property_converter.h"
@@ -220,20 +219,6 @@ NativeWidget* MusClient::CreateNativeWidget(
                                                    &mus_properties));
   }
   return native_widget;
-}
-
-void MusClient::OnCaptureClientSet(
-    aura::client::CaptureClient* capture_client) {
-  pointer_watcher_event_router_->AttachToCaptureClient(capture_client);
-  window_tree_client_->capture_synchronizer()->AttachToCaptureClient(
-      capture_client);
-}
-
-void MusClient::OnCaptureClientUnset(
-    aura::client::CaptureClient* capture_client) {
-  pointer_watcher_event_router_->DetachFromCaptureClient(capture_client);
-  window_tree_client_->capture_synchronizer()->DetachFromCaptureClient(
-      capture_client);
 }
 
 void MusClient::AddObserver(MusClientObserver* observer) {

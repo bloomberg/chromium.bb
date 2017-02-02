@@ -463,7 +463,8 @@ void WindowTreeClient::WindowTreeConnectionEstablished(
   tree_ = window_tree;
 
   drag_drop_controller_ = base::MakeUnique<DragDropControllerMus>(this, tree_);
-  capture_synchronizer_ = base::MakeUnique<CaptureSynchronizer>(this, tree_);
+  capture_synchronizer_ =
+      base::MakeUnique<CaptureSynchronizer>(this, tree_, GetCaptureClient());
   focus_synchronizer_ = base::MakeUnique<FocusSynchronizer>(this, tree_);
 }
 
