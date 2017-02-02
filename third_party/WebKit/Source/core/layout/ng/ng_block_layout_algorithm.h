@@ -8,6 +8,8 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_box_fragment.h"
+#include "core/layout/ng/ng_break_token.h"
+#include "core/layout/ng/ng_column_mapper.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "core/layout/ng/ng_units.h"
 #include "wtf/RefPtr.h"
@@ -16,8 +18,6 @@ namespace blink {
 
 class ComputedStyle;
 class NGBlockBreakToken;
-class NGBreakToken;
-class NGColumnMapper;
 class NGConstraintSpace;
 class NGConstraintSpaceBuilder;
 class NGFragment;
@@ -43,8 +43,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) const override;
   NGPhysicalFragment* Layout() override;
-
-  DECLARE_VIRTUAL_TRACE();
 
  private:
   NGBoxStrut CalculateMargins(const NGConstraintSpace& space,
@@ -123,21 +121,21 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   RefPtr<const ComputedStyle> style_;
 
-  Member<NGBlockNode> first_child_;
-  Member<NGConstraintSpace> constraint_space_;
+  Persistent<NGBlockNode> first_child_;
+  Persistent<NGConstraintSpace> constraint_space_;
 
   // The break token from which we are currently resuming layout.
-  Member<NGBreakToken> break_token_;
+  Persistent<NGBreakToken> break_token_;
 
-  Member<NGFragmentBuilder> builder_;
-  Member<NGConstraintSpaceBuilder> space_builder_;
-  Member<NGConstraintSpace> space_for_current_child_;
-  Member<NGBlockNode> current_child_;
+  Persistent<NGFragmentBuilder> builder_;
+  Persistent<NGConstraintSpaceBuilder> space_builder_;
+  Persistent<NGConstraintSpace> space_for_current_child_;
+  Persistent<NGBlockNode> current_child_;
 
   // Mapper from the fragmented flow coordinate space coordinates to visual
   // coordinates. Only set on fragmentation context roots, such as multicol
   // containers. Keeps track of the current fragmentainer.
-  Member<NGColumnMapper> fragmentainer_mapper_;
+  Persistent<NGColumnMapper> fragmentainer_mapper_;
 
   NGBoxStrut border_and_padding_;
   LayoutUnit content_size_;

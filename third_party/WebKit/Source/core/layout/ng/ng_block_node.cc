@@ -13,6 +13,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
@@ -79,19 +80,29 @@ NGBlockNode::NGBlockNode(ComputedStyle* style)
 NGBlockNode::~NGBlockNode() {}
 
 NGPhysicalFragment* NGBlockNode::Layout(NGConstraintSpace* constraint_space) {
-  // We can either use the new layout code to do the layout and then copy the
-  // resulting size to the LayoutObject, or use the old layout code and
-  // synthesize a fragment.
-  if (CanUseNewLayout()) {
-    NGLayoutAlgorithm* algorithm =
-        NGLayoutInputNode::AlgorithmForInputNode(this, constraint_space);
-    fragment_ = toNGPhysicalBoxFragment(algorithm->Layout());
-    CopyFragmentDataToLayoutBox(*constraint_space);
-  } else {
+  // Use the old layout code and synthesize a fragment.
+  if (!CanUseNewLayout()) {
     DCHECK(layout_box_);
     fragment_ = RunOldLayout(*constraint_space);
+    return fragment_;
   }
 
+  NGPhysicalFragment* fragment;
+
+  if (HasInlineChildren()) {
+    fragment =
+        NGInlineLayoutAlgorithm(GetLayoutObject(), &Style(),
+                                toNGInlineNode(FirstChild()), constraint_space)
+            .Layout();
+  } else {
+    fragment = NGBlockLayoutAlgorithm(GetLayoutObject(), &Style(),
+                                      toNGBlockNode(FirstChild()),
+                                      constraint_space, CurrentBreakToken())
+                   .Layout();
+  }
+
+  fragment_ = toNGPhysicalBoxFragment(fragment);
+  CopyFragmentDataToLayoutBox(*constraint_space);
   return fragment_;
 }
 

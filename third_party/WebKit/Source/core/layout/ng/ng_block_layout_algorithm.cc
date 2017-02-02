@@ -260,8 +260,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     NGBlockNode* first_child,
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
-    : NGLayoutAlgorithm(kBlockLayoutAlgorithm),
-      style_(style),
+    : style_(style),
       first_child_(first_child),
       constraint_space_(constraint_space),
       break_token_(break_token),
@@ -717,18 +716,6 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() {
   space_builder_->SetBfcOffset(curr_bfc_offset_);
 
   return space_builder_->ToConstraintSpace();
-}
-
-DEFINE_TRACE(NGBlockLayoutAlgorithm) {
-  NGLayoutAlgorithm::trace(visitor);
-  visitor->trace(first_child_);
-  visitor->trace(constraint_space_);
-  visitor->trace(break_token_);
-  visitor->trace(builder_);
-  visitor->trace(space_builder_);
-  visitor->trace(space_for_current_child_);
-  visitor->trace(current_child_);
-  visitor->trace(fragmentainer_mapper_);
 }
 
 }  // namespace blink

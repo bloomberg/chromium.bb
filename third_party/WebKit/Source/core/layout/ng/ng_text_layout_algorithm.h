@@ -6,11 +6,12 @@
 #define NGInlineLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-class NGBreakToken;
 class NGConstraintSpace;
 class NGInlineNode;
 class NGLineBuilder;
@@ -34,21 +35,13 @@ class CORE_EXPORT NGTextLayoutAlgorithm : public NGLayoutAlgorithm {
   NGPhysicalFragment* Layout() override;
   void LayoutInline(NGLineBuilder*);
 
-  DECLARE_VIRTUAL_TRACE();
-
  private:
-  Member<NGInlineNode> inline_box_;
-  Member<NGConstraintSpace> constraint_space_;
-  Member<NGBreakToken> break_token_;
+  Persistent<NGInlineNode> inline_box_;
+  Persistent<NGConstraintSpace> constraint_space_;
+  Persistent<NGBreakToken> break_token_;
 
   friend class NGInlineNodeTest;
 };
-
-DEFINE_TYPE_CASTS(NGTextLayoutAlgorithm,
-                  NGLayoutAlgorithm,
-                  algorithm,
-                  algorithm->algorithmType() == kTextLayoutAlgorithm,
-                  algorithm.algorithmType() == kTextLayoutAlgorithm);
 
 }  // namespace blink
 

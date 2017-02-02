@@ -69,9 +69,9 @@ class NGInlineNodeTest : public ::testing::Test {
     NGConstraintSpace* constraint_space =
         NGConstraintSpaceBuilder(kHorizontalTopBottom).ToConstraintSpace();
     NGLineBuilder line_builder(node, constraint_space);
-    NGTextLayoutAlgorithm* algorithm =
-        new NGTextLayoutAlgorithm(node, constraint_space);
-    algorithm->LayoutInline(&line_builder);
+
+    NGTextLayoutAlgorithm algorithm(node, constraint_space);
+    algorithm.LayoutInline(&line_builder);
 
     NGFragmentBuilder fragment_builder(NGPhysicalFragment::kFragmentBox,
                                        /* layout_object */ nullptr);

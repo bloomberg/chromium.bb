@@ -23,8 +23,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     NGInlineNode* first_child,
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
-    : NGLayoutAlgorithm(kInlineLayoutAlgorithm),
-      style_(style),
+    : style_(style),
       first_child_(first_child),
       constraint_space_(constraint_space),
       break_token_(break_token),
@@ -63,14 +62,6 @@ NGConstraintSpace* NGInlineLayoutAlgorithm::CreateConstraintSpaceForChild(
           .SetTextDirection(constraint_space_->Direction())
           .ToConstraintSpace();
   return child_space;
-}
-
-DEFINE_TRACE(NGInlineLayoutAlgorithm) {
-  NGLayoutAlgorithm::trace(visitor);
-  visitor->trace(first_child_);
-  visitor->trace(constraint_space_);
-  visitor->trace(break_token_);
-  visitor->trace(builder_);
 }
 
 }  // namespace blink

@@ -19,8 +19,7 @@ NGTextLayoutAlgorithm::NGTextLayoutAlgorithm(
     NGInlineNode* inline_box,
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
-    : NGLayoutAlgorithm(kTextLayoutAlgorithm),
-      inline_box_(inline_box),
+    : inline_box_(inline_box),
       constraint_space_(constraint_space),
       break_token_(break_token) {
   DCHECK(inline_box_);
@@ -66,13 +65,6 @@ void NGTextLayoutAlgorithm::LayoutInline(NGLineBuilder* line_builder) {
     start_index = i;
   }
   line_builder->CreateLine();
-}
-
-DEFINE_TRACE(NGTextLayoutAlgorithm) {
-  NGLayoutAlgorithm::trace(visitor);
-  visitor->trace(inline_box_);
-  visitor->trace(constraint_space_);
-  visitor->trace(break_token_);
 }
 
 }  // namespace blink

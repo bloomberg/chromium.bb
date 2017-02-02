@@ -6,32 +6,19 @@
 #define NGLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
 struct MinAndMaxContentSizes;
-class NGConstraintSpace;
 class NGPhysicalFragment;
 
-enum NGLayoutStatus { kNotFinished, kChildAlgorithmRequired, kNewFragment };
-
-enum NGLayoutAlgorithmType {
-  kBlockLayoutAlgorithm,
-  kInlineLayoutAlgorithm,
-  kLegacyBlockLayoutAlgorithm,
-  kTextLayoutAlgorithm
-};
-
 // Base class for all LayoutNG algorithms.
-class CORE_EXPORT NGLayoutAlgorithm
-    : public GarbageCollectedFinalized<NGLayoutAlgorithm> {
-  WTF_MAKE_NONCOPYABLE(NGLayoutAlgorithm);
+class CORE_EXPORT NGLayoutAlgorithm {
+  STACK_ALLOCATED();
 
  public:
-  NGLayoutAlgorithm(NGLayoutAlgorithmType type) : type_(type) {}
   virtual ~NGLayoutAlgorithm() {}
 
   // Actual layout function. Lays out the children and descendents within the
@@ -39,8 +26,6 @@ class CORE_EXPORT NGLayoutAlgorithm
   // resulting layout information.
   // TODO(layout-dev): attempt to make this function const.
   virtual NGPhysicalFragment* Layout() = 0;
-
-  enum MinAndMaxState { kSuccess, kPending, kNotImplemented };
 
   // Computes the min-content and max-content intrinsic sizes for the given box.
   // The result will not take any min-width, max-width or width properties into
@@ -51,13 +36,6 @@ class CORE_EXPORT NGLayoutAlgorithm
   virtual bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) const {
     return false;
   }
-
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
-
-  NGLayoutAlgorithmType algorithmType() const { return type_; }
-
- private:
-  NGLayoutAlgorithmType type_;
 };
 
 }  // namespace blink
