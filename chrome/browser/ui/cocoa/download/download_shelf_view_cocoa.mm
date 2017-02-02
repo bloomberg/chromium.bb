@@ -6,6 +6,7 @@
 
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "ui/base/cocoa/nsview_additions.h"
@@ -59,6 +60,14 @@
       }
     }
   }
+}
+
+- (void)viewWillDraw {
+  if (const ui::ThemeProvider* themeProvider = [[self window] themeProvider]) {
+    [closeButton_
+        setIconColor:themeProvider->GetColor(ThemeProperties::COLOR_TAB_TEXT)];
+  }
+  [super viewWillDraw];
 }
 
 // Mouse down events on the download shelf should not allow dragging the parent

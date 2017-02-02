@@ -9,10 +9,14 @@
 
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 
+@class HoverCloseButton;
+
 // A view that handles any special rendering for the download shelf, painting
 // a gradient and managing a set of DownloadItemViews.
 
 @interface DownloadShelfView : AnimatableView {
+ @private
+  IBOutlet HoverCloseButton* closeButton_;
 }
 @end
 

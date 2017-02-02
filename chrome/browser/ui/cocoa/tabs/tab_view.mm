@@ -613,6 +613,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     return;
   [titleView_ setTextColor:titleColor];
   [self setNeedsDisplayInRect:[titleView_ frame]];
+  [self updateAppearance];
 }
 
 - (BOOL)titleHidden {
@@ -646,11 +647,11 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 }
 
 - (void)accessibilityOptionsDidChange:(id)ignored {
-  [self updateLabelFont];
+  [self updateAppearance];
   [self setNeedsDisplay:YES];
 }
 
-- (void)updateLabelFont {
+- (void)updateAppearance {
   CGFloat fontSize = [titleViewCell_ font].pointSize;
   const ui::ThemeProvider* provider = [[self window] themeProvider];
   if (provider && provider->ShouldIncreaseContrast() && state_ == NSOnState) {
@@ -658,15 +659,16 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   } else {
     [titleViewCell_ setFont:[NSFont systemFontOfSize:fontSize]];
   }
+
+  [closeButton_ setIconColor:[self iconColor]];
 }
 
 - (void)setState:(NSCellStateValue)state {
   if (state_ == state)
     return;
   state_ = state;
-  [self updateLabelFont];
+  [self updateAppearance];
   [self setNeedsDisplay:YES];
-  [closeButton_ setNeedsDisplay:YES];
 }
 
 - (void)setClosing:(BOOL)closing {

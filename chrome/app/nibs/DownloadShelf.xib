@@ -69,6 +69,7 @@
             </subviews>
             <connections>
                 <outlet property="delegate_" destination="-2" id="23"/>
+                <outlet property="closeButton_" destination="3" id="41"/>
             </connections>
         </customView>
         <customObject id="28" customClass="ChromeUILocalizer"/>

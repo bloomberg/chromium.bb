@@ -128,10 +128,6 @@ const SkColor kDefaultTabTextColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
 // the "x", and the default favicon.
 - (SkColor)iconColor;
 
-// Updates the label font after changes to either state or the system "Increase
-// Contrast" setting.
-- (void)updateLabelFont;
-
 // Called when systemwide accessibility options change.
 - (void)accessibilityOptionsDidChange:(id)ignored;
 
