@@ -836,7 +836,7 @@ class MinidumpUnloadedModuleList : public MinidumpStream,
   const MinidumpUnloadedModule*
       GetModuleAtIndex(unsigned int index) const override;
   const CodeModules* Copy() const override;
-  vector<linked_ptr<const CodeModule> > GetShrunkRangeModules() const override;
+  vector<linked_ptr<const CodeModule>> GetShrunkRangeModules() const override;
   bool IsModuleShrinkEnabled() const override;
 
  protected:
@@ -850,7 +850,7 @@ class MinidumpUnloadedModuleList : public MinidumpStream,
   static const uint32_t kStreamType = MD_UNLOADED_MODULE_LIST_STREAM;
 
 
-  bool Read(uint32_t expected_size_) override;
+  bool Read(uint32_t expected_size_);
 
   // The largest number of modules that will be read from a minidump.  The
   // default is 1024.
