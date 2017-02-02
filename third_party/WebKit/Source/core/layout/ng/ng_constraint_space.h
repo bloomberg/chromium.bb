@@ -16,7 +16,6 @@ namespace blink {
 
 class LayoutBox;
 class NGBoxFragment;
-class NGLayoutOpportunityIterator;
 
 enum NGFragmentationType {
   kFragmentNone,
@@ -108,9 +107,6 @@ class CORE_EXPORT NGConstraintSpace final
   // the shape of the fragment this will either modify the inline or block
   // size, or add an exclusion.
   void Subtract(const NGBoxFragment*);
-
-  NGLayoutOpportunityIterator* LayoutOpportunities(
-      const WTF::Optional<NGLogicalOffset>& opt_origin_point = WTF::nullopt);
 
   NGMarginStrut MarginStrut() const { return margin_strut_; }
 

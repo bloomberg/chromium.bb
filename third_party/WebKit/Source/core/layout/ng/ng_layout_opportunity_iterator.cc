@@ -245,7 +245,8 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
   NGLogicalOffset origin_point =
       opt_origin_point ? opt_origin_point.value() : NGLogicalOffset();
   NGLayoutOpportunity initial_opportunity =
-      CreateLayoutOpportunityFromConstraintSpace(*space, origin_point);
+      CreateLayoutOpportunityFromConstraintSpace(*constraint_space_,
+                                                 origin_point);
   opportunity_tree_root_ = new NGLayoutOpportunityTreeNode(initial_opportunity);
 
   if (opt_leader_point) {

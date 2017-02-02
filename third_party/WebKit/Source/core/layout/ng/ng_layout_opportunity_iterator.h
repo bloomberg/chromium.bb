@@ -18,8 +18,9 @@ namespace blink {
 typedef NGLogicalRect NGLayoutOpportunity;
 typedef Vector<NGLayoutOpportunity> NGLayoutOpportunities;
 
-class CORE_EXPORT NGLayoutOpportunityIterator final
-    : public GarbageCollectedFinalized<NGLayoutOpportunityIterator> {
+class CORE_EXPORT NGLayoutOpportunityIterator final {
+  STACK_ALLOCATED();
+
  public:
   // Default constructor.
   //
@@ -40,11 +41,6 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
   // TODO(chrome-layout-team): Refactor with using C++ <iterator> library.
   const NGLayoutOpportunity Next();
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(constraint_space_);
-    visitor->trace(opportunity_tree_root_);
-  }
-
  private:
   // Mutable Getters.
   NGLayoutOpportunityTreeNode* MutableOpportunityTreeRoot() {
@@ -56,11 +52,11 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
     return opportunity_tree_root_.get();
   }
 
-  Member<NGConstraintSpace> constraint_space_;
+  Persistent<NGConstraintSpace> constraint_space_;
 
   NGLayoutOpportunities opportunities_;
   NGLayoutOpportunities::const_iterator opportunity_iter_;
-  Member<NGLayoutOpportunityTreeNode> opportunity_tree_root_;
+  Persistent<NGLayoutOpportunityTreeNode> opportunity_tree_root_;
 };
 
 }  // namespace blink

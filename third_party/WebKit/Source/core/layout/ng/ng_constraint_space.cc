@@ -107,13 +107,6 @@ void NGConstraintSpace::Subtract(const NGBoxFragment*) {
   // TODO(layout-ng): Implement.
 }
 
-NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunities(
-    const WTF::Optional<NGLogicalOffset>& opt_origin_point) {
-  NGLayoutOpportunityIterator* iterator =
-      new NGLayoutOpportunityIterator(this, opt_origin_point);
-  return iterator;
-}
-
 String NGConstraintSpace::ToString() const {
   return String::format("Offset: %s,%s Size: %sx%s MarginStrut: %s",
                         bfc_offset_.inline_offset.toString().ascii().data(),

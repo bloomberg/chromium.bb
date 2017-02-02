@@ -131,10 +131,9 @@ const NGLayoutOpportunity FindLayoutOpportunityForFragment(
   NGLogicalOffset adjusted_origin_point =
       AdjustToTopEdgeAlignmentRule(*space, origin_point);
 
-  NGLayoutOpportunityIterator* opportunity_iter =
-      space->LayoutOpportunities(adjusted_origin_point);
+  NGLayoutOpportunityIterator opportunity_iter(space, adjusted_origin_point);
   NGLayoutOpportunity opportunity;
-  NGLayoutOpportunity opportunity_candidate = opportunity_iter->Next();
+  NGLayoutOpportunity opportunity_candidate = opportunity_iter.Next();
 
   while (!opportunity_candidate.IsEmpty()) {
     opportunity = opportunity_candidate;
@@ -143,7 +142,8 @@ const NGLayoutOpportunity FindLayoutOpportunityForFragment(
     auto fragment_inline_size = fragment.InlineSize() + margins.InlineSum();
     if (opportunity.size.inline_size >= fragment_inline_size)
       break;
-    opportunity_candidate = opportunity_iter->Next();
+
+    opportunity_candidate = opportunity_iter.Next();
   }
   return opportunity;
 }
