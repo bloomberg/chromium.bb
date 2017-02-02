@@ -312,7 +312,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   context_builder.set_host_resolver(std::move(mapped_host_resolver));
 
   std::unique_ptr<net::CookieStore> cookie_store =
-      base::MakeUnique<CookieStoreIOS>(
+      base::MakeUnique<net::CookieStoreIOS>(
           [NSHTTPCookieStorage sharedHTTPCookieStorage]);
   context_builder.SetCookieAndChannelIdStores(std::move(cookie_store), nullptr);
 

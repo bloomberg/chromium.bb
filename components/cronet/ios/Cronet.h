@@ -12,13 +12,13 @@
 
 // Type of HTTP cache; public interface to private implementation defined in
 // URLRequestContextConfig class.
-enum HttpCacheType {
+typedef NS_ENUM(NSInteger, CRNHttpCacheType) {
   // Disabled HTTP cache.  Some data may still be temporarily stored in memory.
-  DISABLED,
+  CRNHttpCacheTypeDisabled,
   // Enable on-disk HTTP cache, including HTTP data.
-  DISK,
+  CRNHttpCacheTypeDisk,
   // Enable in-memory cache, including HTTP data.
-  MEMORY,
+  CRNHttpCacheTypeMemory,
 };
 
 // A block, that takes a request, and returns YES if the request should
@@ -42,7 +42,7 @@ GRPC_SUPPORT_EXPORT
 // Set HTTP Cache type to be used by CronetEngine.  This method only has any
 // effect before |start| is called.  See HttpCacheType enum for available
 // options.
-+ (void)setHttpCacheType:(HttpCacheType)httpCacheType;
++ (void)setHttpCacheType:(CRNHttpCacheType)httpCacheType;
 
 // Adds hint that host supports QUIC on altPort. This method only has any effect
 // before |start| is called.
