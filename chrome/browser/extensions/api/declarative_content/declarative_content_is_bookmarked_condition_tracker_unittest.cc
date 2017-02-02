@@ -22,7 +22,7 @@
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -238,9 +238,10 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest,
   // Navigate the first tab to a URL that we will bookmark.
   delegate_.evaluation_requests().clear();
   LoadURL(tabs[0].get(), GURL("http://bookmarked/"));
-  tracker_->OnWebContentsNavigation(tabs[0].get(),
-                                    content::LoadCommittedDetails(),
-                                    content::FrameNavigateParams());
+  std::unique_ptr<content::NavigationHandle> navigation_handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          GURL(), tabs[0]->GetMainFrame(), true);
+  tracker_->OnWebContentsNavigation(tabs[0].get(), navigation_handle.get());
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tabs[0].get()));
   EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
@@ -283,9 +284,10 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest, ExtensiveChanges) {
   // Navigate the first tab to a URL that we will bookmark.
   delegate_.evaluation_requests().clear();
   LoadURL(tabs[0].get(), GURL("http://bookmarked/"));
-  tracker_->OnWebContentsNavigation(tabs[0].get(),
-                                    content::LoadCommittedDetails(),
-                                    content::FrameNavigateParams());
+  std::unique_ptr<content::NavigationHandle> navigation_handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          GURL(), tabs[0]->GetMainFrame(), true);
+  tracker_->OnWebContentsNavigation(tabs[0].get(), navigation_handle.get());
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tabs[0].get()));
   EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
@@ -386,9 +388,10 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest, Navigation) {
   // Navigate the first tab to one bookmarked URL.
   delegate_.evaluation_requests().clear();
   LoadURL(tabs[0].get(), GURL("http://bookmarked1/"));
-  tracker_->OnWebContentsNavigation(tabs[0].get(),
-                                    content::LoadCommittedDetails(),
-                                    content::FrameNavigateParams());
+  std::unique_ptr<content::NavigationHandle> navigation_handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          GURL(), tabs[0]->GetMainFrame(), true);
+  tracker_->OnWebContentsNavigation(tabs[0].get(), navigation_handle.get());
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tabs[0].get()));
   EXPECT_TRUE(CheckPredicates(tabs[0].get(), true));
@@ -399,9 +402,7 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest, Navigation) {
   // bookmarked state hasn't.
   delegate_.evaluation_requests().clear();
   LoadURL(tabs[0].get(), GURL("http://bookmarked2/"));
-  tracker_->OnWebContentsNavigation(tabs[0].get(),
-                                    content::LoadCommittedDetails(),
-                                    content::FrameNavigateParams());
+  tracker_->OnWebContentsNavigation(tabs[0].get(), navigation_handle.get());
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tabs[0].get()));
   EXPECT_TRUE(CheckPredicates(tabs[0].get(), true));
@@ -410,9 +411,7 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest, Navigation) {
   // Navigate the first tab to a non-bookmarked URL.
   delegate_.evaluation_requests().clear();
   LoadURL(tabs[0].get(), GURL("http://not-bookmarked1/"));
-  tracker_->OnWebContentsNavigation(tabs[0].get(),
-                                    content::LoadCommittedDetails(),
-                                    content::FrameNavigateParams());
+  tracker_->OnWebContentsNavigation(tabs[0].get(), navigation_handle.get());
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tabs[0].get()));
   EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));
@@ -423,9 +422,7 @@ TEST_F(DeclarativeContentIsBookmarkedConditionTrackerTest, Navigation) {
   // bookmarked state hasn't.
   delegate_.evaluation_requests().clear();
   LoadURL(tabs[0].get(), GURL("http://not-bookmarked2/"));
-  tracker_->OnWebContentsNavigation(tabs[0].get(),
-                                    content::LoadCommittedDetails(),
-                                    content::FrameNavigateParams());
+  tracker_->OnWebContentsNavigation(tabs[0].get(), navigation_handle.get());
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tabs[0].get()));
   EXPECT_TRUE(CheckPredicates(tabs[0].get(), false));

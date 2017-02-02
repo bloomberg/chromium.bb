@@ -11,7 +11,7 @@
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "extensions/common/extension_messages.h"
@@ -301,10 +301,10 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, Navigation) {
 
   // Check that an in-page navigation has no effect on the matching selectors.
   {
-    content::LoadCommittedDetails details;
-    details.is_in_page = true;
-    content::FrameNavigateParams params;
-    tracker_.OnWebContentsNavigation(tab.get(), details, params);
+    std::unique_ptr<content::NavigationHandle> navigation_handle =
+        content::NavigationHandle::CreateNavigationHandleForTesting(
+            GURL(), tab->GetMainFrame(), true, net::OK, true);
+    tracker_.OnWebContentsNavigation(tab.get(), navigation_handle.get());
     EXPECT_TRUE(tracker_.EvaluatePredicate(predicate.get(), tab.get()));
     EXPECT_EQ(expected_evaluation_requests, delegate_.evaluation_requests());
   }
@@ -312,10 +312,10 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, Navigation) {
   // Check that a non in-page navigation clears the matching selectors and
   // requests condition evaluation.
   {
-    content::LoadCommittedDetails details;
-    details.is_in_page = false;
-    content::FrameNavigateParams params;
-    tracker_.OnWebContentsNavigation(tab.get(), details, params);
+    std::unique_ptr<content::NavigationHandle> navigation_handle =
+        content::NavigationHandle::CreateNavigationHandleForTesting(
+            GURL(), tab->GetMainFrame(), true);
+    tracker_.OnWebContentsNavigation(tab.get(), navigation_handle.get());
     EXPECT_FALSE(tracker_.EvaluatePredicate(predicate.get(), tab.get()));
     EXPECT_EQ(++expected_evaluation_requests, delegate_.evaluation_requests());
   }

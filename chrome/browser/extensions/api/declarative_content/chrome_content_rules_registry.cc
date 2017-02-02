@@ -132,15 +132,14 @@ void ChromeContentRulesRegistry::MonitorWebContentsForRuleEvaluation(
     evaluator->TrackForWebContents(contents);
 }
 
-void ChromeContentRulesRegistry::DidNavigateMainFrame(
+void ChromeContentRulesRegistry::DidFinishNavigation(
     content::WebContents* contents,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+    content::NavigationHandle* navigation_handle) {
   if (base::ContainsKey(active_rules_, contents)) {
     EvaluationScope evaluation_scope(this);
     for (const std::unique_ptr<ContentPredicateEvaluator>& evaluator :
          evaluators_)
-      evaluator->OnWebContentsNavigation(contents, details, params);
+      evaluator->OnWebContentsNavigation(contents, navigation_handle);
   }
 }
 

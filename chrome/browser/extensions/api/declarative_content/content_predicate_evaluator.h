@@ -13,8 +13,7 @@
 
 namespace content {
 class BrowserContext;
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
+class NavigationHandle;
 class WebContents;
 }  // namespace content
 
@@ -92,8 +91,7 @@ class ContentPredicateEvaluator : public ContentPredicateFactory {
   // would still be evaluated based on the previous URL.
   virtual void OnWebContentsNavigation(
       content::WebContents* contents,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) = 0;
+      content::NavigationHandle* navigation_handle) = 0;
 
   // Returns true if |predicate| evaluates to true on the state associated with
   // |tab|. It must be the case that predicate->GetEvaluator() == this object,

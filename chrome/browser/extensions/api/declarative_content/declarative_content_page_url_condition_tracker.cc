@@ -192,8 +192,7 @@ void DeclarativeContentPageUrlConditionTracker::TrackForWebContents(
 
 void DeclarativeContentPageUrlConditionTracker::OnWebContentsNavigation(
     content::WebContents* contents,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+    content::NavigationHandle* navigation_handle) {
   DCHECK(base::ContainsKey(per_web_contents_tracker_, contents));
   per_web_contents_tracker_[contents]->UpdateMatchesForCurrentUrl(true);
 }

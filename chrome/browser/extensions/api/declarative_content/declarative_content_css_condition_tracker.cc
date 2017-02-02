@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
@@ -98,9 +98,8 @@ DeclarativeContentCssConditionTracker::PerWebContentsTracker::
 }
 
 void DeclarativeContentCssConditionTracker::PerWebContentsTracker::
-OnWebContentsNavigation(const content::LoadCommittedDetails& details,
-                        const content::FrameNavigateParams& params) {
-  if (details.is_in_page) {
+OnWebContentsNavigation(content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsSamePage()) {
     // Within-page navigations don't change the set of elements that
     // exist, and we only support filtering on the top-level URL, so
     // this can't change which rules match.
@@ -232,10 +231,10 @@ void DeclarativeContentCssConditionTracker::TrackForWebContents(
 
 void DeclarativeContentCssConditionTracker::OnWebContentsNavigation(
     content::WebContents* contents,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+    content::NavigationHandle* navigation_handle) {
   DCHECK(base::ContainsKey(per_web_contents_tracker_, contents));
-  per_web_contents_tracker_[contents]->OnWebContentsNavigation(details, params);
+  per_web_contents_tracker_[contents]->OnWebContentsNavigation(
+      navigation_handle);
 }
 
 bool DeclarativeContentCssConditionTracker::EvaluatePredicate(

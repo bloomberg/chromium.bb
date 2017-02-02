@@ -24,13 +24,6 @@ namespace base {
 class Value;
 }
 
-namespace content {
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
-class RenderProcessHost;
-class WebContents;
-}
-
 namespace extensions {
 
 class Extension;
@@ -86,8 +79,7 @@ class DeclarativeContentCssConditionTracker
   void TrackForWebContents(content::WebContents* contents) override;
   void OnWebContentsNavigation(
       content::WebContents* contents,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+      content::NavigationHandle* navigation_handle) override;
   bool EvaluatePredicate(const ContentPredicate* predicate,
                          content::WebContents* tab) const override;
 
@@ -106,8 +98,7 @@ class DeclarativeContentCssConditionTracker
         const WebContentsDestroyedCallback& web_contents_destroyed);
     ~PerWebContentsTracker() override;
 
-    void OnWebContentsNavigation(const content::LoadCommittedDetails& details,
-                                 const content::FrameNavigateParams& params);
+    void OnWebContentsNavigation(content::NavigationHandle* navigation_handle);
 
     const base::hash_set<std::string>& matching_css_selectors() const {
       return matching_css_selectors_;

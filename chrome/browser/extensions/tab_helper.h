@@ -30,11 +30,6 @@
 #include "extensions/common/stack_frame.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace content {
-struct LoadCommittedDetails;
-class RenderFrameHost;
-}
-
 namespace gfx {
 class Image;
 }
@@ -149,9 +144,8 @@ class TabHelper : public content::WebContentsObserver,
 
   // content::WebContentsObserver overrides.
   void RenderFrameCreated(content::RenderFrameHost* host) override;
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;

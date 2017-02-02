@@ -20,12 +20,6 @@ namespace base {
 class Value;
 }
 
-namespace content {
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
-class WebContents;
-}
-
 namespace extensions {
 
 class Extension;
@@ -85,8 +79,7 @@ class DeclarativeContentPageUrlConditionTracker
   void TrackForWebContents(content::WebContents* contents) override;
   void OnWebContentsNavigation(
       content::WebContents* contents,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+      content::NavigationHandle* navigation_handle) override;
   bool EvaluatePredicate(const ContentPredicate* predicate,
                          content::WebContents* tab) const override;
 

@@ -13,9 +13,8 @@
 
 namespace content {
 class BrowserContext;
+class NavigationHandle;
 class WebContents;
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
 }
 
 namespace extensions {
@@ -48,10 +47,11 @@ class ContentRulesRegistry : public RulesRegistry {
       content::WebContents* contents) = 0;
 
   // Applies all content rules given that a tab was just navigated.
-  virtual void DidNavigateMainFrame(
+  // This corresponds to the notification of the same name in
+  // content::WebContentsObserver.
+  virtual void DidFinishNavigation(
       content::WebContents* tab,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) = 0;
+      content::NavigationHandle* navigation_handle) = 0;
 
  protected:
   ~ContentRulesRegistry() override {}

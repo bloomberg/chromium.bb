@@ -28,8 +28,6 @@
 namespace content {
 class BrowserContext;
 class WebContents;
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
 }
 
 namespace extensions {
@@ -69,10 +67,9 @@ class ChromeContentRulesRegistry
   // ContentRulesRegistry:
   void MonitorWebContentsForRuleEvaluation(
       content::WebContents* contents) override;
-  void DidNavigateMainFrame(
+  void DidFinishNavigation(
       content::WebContents* tab,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+      content::NavigationHandle* navigation_handle) override;
 
   // RulesRegistry:
   std::string AddRulesImpl(

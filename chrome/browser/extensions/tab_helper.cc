@@ -40,8 +40,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -316,12 +316,14 @@ void TabHelper::RenderFrameCreated(content::RenderFrameHost* host) {
   SetTabId(host);
 }
 
-void TabHelper::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void TabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+    return;
+
   InvokeForContentRulesRegistries(
-      [this, &details, &params](ContentRulesRegistry* registry) {
-    registry->DidNavigateMainFrame(web_contents(), details, params);
+      [this, navigation_handle](ContentRulesRegistry* registry) {
+    registry->DidFinishNavigation(web_contents(), navigation_handle);
   });
 
   content::BrowserContext* context = web_contents()->GetBrowserContext();
@@ -338,14 +340,15 @@ void TabHelper::DidNavigateMainFrame(
         SetExtensionApp(extension);
     } else {
       UpdateExtensionAppIcon(
-          enabled_extensions.GetExtensionOrAppByURL(params.url));
+          enabled_extensions.GetExtensionOrAppByURL(
+              navigation_handle->GetURL()));
     }
   } else {
     UpdateExtensionAppIcon(
-        enabled_extensions.GetExtensionOrAppByURL(params.url));
+        enabled_extensions.GetExtensionOrAppByURL(navigation_handle->GetURL()));
   }
 
-  if (!details.is_in_page)
+  if (!navigation_handle->IsSamePage())
     ExtensionActionAPI::Get(context)->ClearAllValuesForTab(web_contents());
 }
 
