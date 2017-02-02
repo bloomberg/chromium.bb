@@ -168,10 +168,8 @@ bool OneCopyRasterBufferProvider::IsResourceReadyToDraw(
   if (!async_worker_context_enabled_)
     return true;
 
-  ResourceProvider::ResourceIdArray resources;
-  resources.push_back(resource_id);
   gpu::SyncToken sync_token =
-      resource_provider_->GetSyncTokenForResources(resources);
+      resource_provider_->GetSyncTokenForResources({resource_id});
   if (!sync_token.HasData())
     return true;
 
