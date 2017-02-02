@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "chromeos/cert_loader.h"
@@ -56,7 +57,8 @@ class ClientCertResolverTest : public testing::Test,
       : network_properties_changed_count_(0),
         service_test_(nullptr),
         profile_test_(nullptr),
-        cert_loader_(nullptr) {}
+        cert_loader_(nullptr),
+        scoped_task_scheduler_(&message_loop_) {}
   ~ClientCertResolverTest() override {}
 
   void SetUp() override {
@@ -158,8 +160,6 @@ class ClientCertResolverTest : public testing::Test,
     client_cert_resolver_->Init(network_state_handler_.get(),
                                 managed_config_handler_.get());
     client_cert_resolver_->AddObserver(this);
-    client_cert_resolver_->SetSlowTaskRunnerForTest(
-        message_loop_.task_runner());
   }
 
   void SetupWifi() {
@@ -293,6 +293,7 @@ class ClientCertResolverTest : public testing::Test,
   std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
       managed_config_handler_;
   base::MessageLoop message_loop_;
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   scoped_refptr<net::X509Certificate> test_client_cert_;
   std::string test_ca_cert_pem_;
   crypto::ScopedTestNSSDB test_nssdb_;

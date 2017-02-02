@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -23,7 +22,6 @@
 
 namespace base {
 class Clock;
-class TaskRunner;
 }
 
 namespace chromeos {
@@ -60,11 +58,6 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
 
   void Init(NetworkStateHandler* network_state_handler,
             ManagedNetworkConfigurationHandler* managed_network_config_handler);
-
-  // Sets the task runner that any slow calls will be made from, e.g. calls
-  // to the NSS database. If not set, uses base::WorkerPool.
-  void SetSlowTaskRunnerForTest(
-      const scoped_refptr<base::TaskRunner>& task_runner);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -143,9 +136,6 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
 
   // Unowned associated (global or test) instance.
   ManagedNetworkConfigurationHandler* managed_network_config_handler_;
-
-  // TaskRunner for slow tasks.
-  scoped_refptr<base::TaskRunner> slow_task_runner_for_test_;
 
   // Can be set for testing.
   base::Clock* testing_clock_;
