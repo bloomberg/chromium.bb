@@ -17,14 +17,13 @@ var gStatsWhitelist = new Map();
  * @private
  */
 var kRTCRTPStreamStats = new RTCStats_(null, {
-  ssrc: 'string',
+  // TODO(hbos): As soon as |ssrc| has changed into a number, change to
+  // 'number'. https://bugs.chromium.org/p/webrtc/issues/detail?id=7065, 7066
+  ssrc: 'any',
   associateStatsId: 'string',
   isRemote: 'boolean',
   mediaType: 'string',
   trackId: 'string',
-  // TODO(hbos): As soon as |mediaTrackId| has been renamed to |trackId|, remove
-  // this line. crbug.com/657854
-  mediaTrackId: 'string',
   transportId: 'string',
   codecId: 'string',
   firCount: 'number',
@@ -123,9 +122,6 @@ var kRTCMediaStreamTrackStats = new RTCStats_(null, {
   ended: 'boolean',
   detached: 'boolean',
   kind: 'string',
-  // TODO(hbos): As soon as |ssrcIds| has been removed, remove this line.
-  // crbug.com/659137
-  ssrcIds: 'sequence_string',
   frameWidth: 'number',
   frameHeight: 'number',
   framesPerSecond: 'number',
@@ -169,9 +165,6 @@ var kRTCTransportStats = new RTCStats_(null, {
   bytesReceived: 'number',
   rtcpTransportStatsId: 'string',
   dtlsState: 'string',
-  // TODO(hbos): As soon as |activeConnection| has been replaced by |dtlsState|,
-  // remove this line. crbug.com/653873
-  activeConnection: 'boolean',
   selectedCandidatePairId: 'string',
   localCertificateId: 'string',
   remoteCertificateId: 'string',
@@ -380,6 +373,8 @@ function verifyStatsIsWhitelisted_(stats) {
       throw failTest('stats.' + propertyName + ' is not a whitelisted ' +
           'member: ' + stats[propertyName]);
     }
+    if (whitelistedStats[propertyName] === 'any')
+      continue;
     if (!whitelistedStats[propertyName].startsWith('sequence_')) {
       if (typeof(stats[propertyName]) !== whitelistedStats[propertyName]) {
         throw failTest('stats.' + propertyName + ' should have a different ' +
