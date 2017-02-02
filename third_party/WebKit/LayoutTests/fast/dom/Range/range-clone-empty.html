@@ -4,6 +4,14 @@
 <script src="../../../resources/js-test.js"></script>
 </head>
 <body>
-<script src="script-tests/range-clone-empty.js"></script>
+<script>
+description(
+"This test checks cloning an empty range returns an empty fragment."
+);
+
+var r = document.createRange();
+shouldBeTrue("r.cloneContents() != undefined");
+shouldBeTrue("r.cloneContents() != null");
+</script>
 </body>
 </html>

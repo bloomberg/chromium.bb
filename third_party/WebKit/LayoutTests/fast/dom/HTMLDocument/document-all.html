@@ -4,6 +4,9 @@
 <script src="../../../resources/js-test.js"></script>
 </head>
 <body>
-<script src="script-tests/document-all.js"></script>
+<script>
+var htmlallcollection = document.all;
+shouldBe('htmlallcollection.toString()', "'[object HTMLAllCollection]'");
+</script>
 </body>
 </html>
