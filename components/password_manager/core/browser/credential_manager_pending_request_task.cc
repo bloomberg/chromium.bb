@@ -26,8 +26,10 @@ namespace {
 
 // Send a UMA histogram about if |local_results| has empty or duplicate
 // usernames.
-void ReportAccountChooserUsabilityMetrics(bool had_duplicates,
-                                          bool had_empty_username) {
+void ReportAccountChooserUsabilityMetrics(
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms,
+    bool had_duplicates,
+    bool had_empty_username) {
   metrics_util::AccountChooserUsabilityMetric metric;
   if (had_empty_username && had_duplicates)
     metric = metrics_util::ACCOUNT_CHOOSER_EMPTY_USERNAME_AND_DUPLICATES;
@@ -37,7 +39,14 @@ void ReportAccountChooserUsabilityMetrics(bool had_duplicates,
     metric = metrics_util::ACCOUNT_CHOOSER_DUPLICATES;
   else
     metric = metrics_util::ACCOUNT_CHOOSER_LOOKS_OK;
-  metrics_util::LogAccountChooserUsability(metric);
+
+  int count_empty_icons =
+      std::count_if(forms.begin(), forms.end(),
+                    [](const std::unique_ptr<autofill::PasswordForm>& form) {
+                      return !form->icon_url.is_valid();
+                    });
+  metrics_util::LogAccountChooserUsability(metric, count_empty_icons,
+                                           forms.size());
 }
 
 // Returns true iff |form1| is better suitable for showing in the account
@@ -242,7 +251,8 @@ void CredentialManagerPendingRequestTask::ProcessForms(
     return;
   }
 
-  ReportAccountChooserUsabilityMetrics(has_duplicates, has_empty_username);
+  ReportAccountChooserUsabilityMetrics(local_results, has_duplicates,
+                                       has_empty_username);
   if (!delegate_->client()->PromptUserToChooseCredentials(
           std::move(local_results), origin_,
           base::Bind(
