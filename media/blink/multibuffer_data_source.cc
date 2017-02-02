@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/media_log.h"
 #include "media/blink/buffered_data_source_host_impl.h"
@@ -335,7 +336,7 @@ void MultibufferDataSource::OnBufferingHaveEnough(bool always_cancel) {
 
 int64_t MultibufferDataSource::GetMemoryUsage() const {
   // TODO(hubbe): Make more accurate when url_data_ is shared.
-  return url_data_->CachedSize()
+  return base::checked_cast<int64_t>(url_data_->CachedSize())
          << url_data_->multibuffer()->block_size_shift();
 }
 
