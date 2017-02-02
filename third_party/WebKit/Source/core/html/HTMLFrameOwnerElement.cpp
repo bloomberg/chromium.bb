@@ -59,7 +59,7 @@ static WidgetSet& widgetsPendingDispose() {
 
 SubframeLoadingDisabler::SubtreeRootSet&
 SubframeLoadingDisabler::disabledSubtreeRoots() {
-  DEFINE_STATIC_LOCAL(SubtreeRootSet, nodes, (new SubtreeRootSet));
+  DEFINE_STATIC_LOCAL(SubtreeRootSet, nodes, ());
   return nodes;
 }
 

@@ -151,7 +151,12 @@ class SubframeLoadingDisabler {
   }
 
  private:
-  using SubtreeRootSet = HeapHashCountedSet<Member<Node>>;
+  // The use of UntracedMember<Node>  is safe as all SubtreeRootSet
+  // references are on the stack and reachable in case a conservative
+  // GC hits.
+  // TODO(sof): go back to HeapHashSet<> once crbug.com/684551 has been
+  // resolved.
+  using SubtreeRootSet = HashCountedSet<UntracedMember<Node>>;
 
   CORE_EXPORT static SubtreeRootSet& disabledSubtreeRoots();
 
