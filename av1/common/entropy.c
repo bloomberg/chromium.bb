@@ -4410,7 +4410,7 @@ static void build_token_cdfs(const aom_prob *pdf_model,
   scale = CDF_PROB_TOP - cdf_head[ZERO_TOKEN];
   p = ROUND_POWER_OF_TWO(scale * (pdf_model[2] << (CDF_PROB_BITS - 8)),
                          CDF_PROB_BITS);
-  cdf_head[ONE_TOKEN] = cdf_head[ZERO_TOKEN] + AOMMAX(1, p);
+  cdf_head[ONE_TOKEN] = cdf_head[ZERO_TOKEN] + AOMMIN(AOMMAX(1, p), scale - 1);
   assert(cdf_head[ONE_TOKEN] < CDF_PROB_TOP);
   cdf_head[TWO_TOKEN] = CDF_PROB_TOP;
 
