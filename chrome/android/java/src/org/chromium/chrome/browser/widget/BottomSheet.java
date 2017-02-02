@@ -23,6 +23,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -104,6 +105,9 @@ public class BottomSheet extends FrameLayout {
 
     /** Used for getting the current tab. */
     private TabModelSelector mTabModelSelector;
+
+    /** The fullscreen manager for information about toolbar offsets. */
+    private ChromeFullscreenManager mFullscreenManager;
 
     /** A handle to the content being shown by the sheet. */
     private BottomSheetContent mSheetContent;
@@ -246,6 +250,8 @@ public class BottomSheet extends FrameLayout {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
+        if (isToolbarAndroidViewHidden()) return false;
+
         // The incoming motion event may have been adjusted by the view sending it down. Create a
         // motion event with the raw (x, y) coordinates of the original so the gesture detector
         // functions properly.
@@ -255,6 +261,8 @@ public class BottomSheet extends FrameLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
+        if (isToolbarAndroidViewHidden()) return false;
+
         // The down event is interpreted above in onInterceptTouchEvent, it does not need to be
         // interpreted a second time.
         if (e.getActionMasked() != MotionEvent.ACTION_DOWN) {
@@ -295,6 +303,20 @@ public class BottomSheet extends FrameLayout {
      */
     public void setTabModelSelector(TabModelSelector tabModelSelector) {
         mTabModelSelector = tabModelSelector;
+    }
+
+    /**
+     * @param fullscreenManager Chrome's fullscreen manager for information about toolbar offsets.
+     */
+    public void setFullscreenManager(ChromeFullscreenManager fullscreenManager) {
+        mFullscreenManager = fullscreenManager;
+    }
+
+    /**
+     * @return Whether or not the toolbar Android View is hidden due to being scrolled off-screen.
+     */
+    private boolean isToolbarAndroidViewHidden() {
+        return mFullscreenManager == null || mFullscreenManager.getBottomControlOffset() > 0;
     }
 
     /**

@@ -340,6 +340,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         if (mBottomSheet != null) {
             mBottomSheet.setTabModelSelector(mTabModelSelector);
+            mBottomSheet.setFullscreenManager(mFullscreenManager);
         }
         ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
     }
