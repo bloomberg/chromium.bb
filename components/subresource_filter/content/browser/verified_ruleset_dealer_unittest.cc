@@ -223,16 +223,18 @@ class TestVerifiedRulesetDealerClient {
 
   void ExpectRulesetState(bool expected_availability,
                           RulesetVerificationStatus expected_status =
-                              RulesetVerificationStatus::NOT_VERIFIED) const {
+                              RulesetVerificationStatus::NOT_VERIFIED,
+                          bool expected_cached = false) const {
     ASSERT_EQ(1, invocation_counter_);
     EXPECT_EQ(expected_availability, is_ruleset_file_available_);
-    EXPECT_FALSE(has_cached_ruleset_);
+    EXPECT_EQ(expected_cached, has_cached_ruleset_);
     EXPECT_EQ(expected_status, status_);
   }
 
-  void ExpectRulesetContents(
-      const std::vector<uint8_t> expected_contents) const {
-    ExpectRulesetState(true, RulesetVerificationStatus::INTACT);
+  void ExpectRulesetContents(const std::vector<uint8_t> expected_contents,
+                             bool expected_cached = false) const {
+    ExpectRulesetState(true, RulesetVerificationStatus::INTACT,
+                       expected_cached);
     EXPECT_TRUE(ruleset_is_created_);
     EXPECT_EQ(expected_contents, contents_);
   }
@@ -334,6 +336,220 @@ TEST_F(SubresourceFilterVerifiedRulesetDealerHandleTest, RulesetFileIsUpdated) {
   read_ruleset_1.ExpectRulesetContents(rulesets().indexed_1().contents);
   after_set_ruleset_2.ExpectRulesetState(true);
   read_ruleset_2.ExpectRulesetContents(rulesets().indexed_2().contents);
+}
+
+// Tests for VerifiedRuleset::Handle. ------------------------------------------
+
+namespace {
+
+class TestVerifiedRulesetClient {
+ public:
+  TestVerifiedRulesetClient() = default;
+
+  base::Callback<void(VerifiedRuleset*)> GetCallback() {
+    return base::Bind(&TestVerifiedRulesetClient::Callback,
+                      base::Unretained(this));
+  }
+
+  void ExpectNoRuleset() const {
+    ASSERT_EQ(1, invocation_counter_);
+    EXPECT_FALSE(has_ruleset_);
+  }
+
+  void ExpectRulesetContents(
+      const std::vector<uint8_t> expected_contents) const {
+    ASSERT_EQ(1, invocation_counter_);
+    EXPECT_EQ(expected_contents, contents_);
+  }
+
+ private:
+  void Callback(VerifiedRuleset* ruleset) {
+    ++invocation_counter_;
+    ASSERT_TRUE(ruleset);
+    has_ruleset_ = !!ruleset->Get();
+    if (has_ruleset_)
+      contents_ = ReadRulesetContents(ruleset->Get());
+  }
+
+  bool has_ruleset_ = false;
+  std::vector<uint8_t> contents_;
+
+  int invocation_counter_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestVerifiedRulesetClient);
+};
+
+}  // namespace
+
+class SubresourceFilterVerifiedRulesetHandleTest : public ::testing::Test {
+ public:
+  SubresourceFilterVerifiedRulesetHandleTest() = default;
+
+ protected:
+  void SetUp() override {
+    rulesets_.CreateRulesets(true /* many_rules */);
+    task_runner_ = new base::TestSimpleTaskRunner;
+    dealer_handle_.reset(new VerifiedRulesetDealer::Handle(task_runner_));
+  }
+
+  void TearDown() override {
+    dealer_handle_.reset(nullptr);
+    task_runner_->RunUntilIdle();
+  }
+
+  const TestRulesets& rulesets() const { return rulesets_; }
+  base::TestSimpleTaskRunner* task_runner() { return task_runner_.get(); }
+
+  VerifiedRulesetDealer::Handle* dealer_handle() {
+    return dealer_handle_.get();
+  }
+
+  std::unique_ptr<VerifiedRuleset::Handle> CreateRulesetHandle() {
+    return std::unique_ptr<VerifiedRuleset::Handle>(
+        new VerifiedRuleset::Handle(dealer_handle()));
+  }
+
+ private:
+  TestRulesets rulesets_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  std::unique_ptr<VerifiedRulesetDealer::Handle> dealer_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterVerifiedRulesetHandleTest);
+};
+
+TEST_F(SubresourceFilterVerifiedRulesetHandleTest,
+       RulesetHandleKeepsRulesetMemoryMappedAndVerified) {
+  TestVerifiedRulesetDealerClient created_handle;
+  TestVerifiedRulesetClient read_ruleset;
+  TestVerifiedRulesetDealerClient deleted_handle;
+
+  dealer_handle()->SetRulesetFile(
+      testing::TestRuleset::Open(rulesets().indexed_1()));
+
+  auto ruleset_handle = CreateRulesetHandle();
+  dealer_handle()->GetDealerAsync(created_handle.GetCallback());
+  ruleset_handle->GetRulesetAsync(read_ruleset.GetCallback());
+  ruleset_handle.reset(nullptr);
+  dealer_handle()->GetDealerAsync(deleted_handle.GetCallback());
+  task_runner()->RunUntilIdle();
+
+  created_handle.ExpectRulesetContents(rulesets().indexed_1().contents, true);
+  read_ruleset.ExpectRulesetContents(rulesets().indexed_1().contents);
+  deleted_handle.ExpectRulesetState(true, RulesetVerificationStatus::INTACT);
+}
+
+TEST_F(SubresourceFilterVerifiedRulesetHandleTest,
+       RulesetUnmappedOnlyAfterLastHandleIsDeleted) {
+  TestVerifiedRulesetDealerClient created_handles;
+  TestVerifiedRulesetClient read_ruleset_from_handle_1;
+  TestVerifiedRulesetClient read_ruleset_from_handle_2;
+  TestVerifiedRulesetDealerClient deleted_handle_1;
+  TestVerifiedRulesetClient read_ruleset_again_from_handle_2;
+  TestVerifiedRulesetDealerClient deleted_both_handles;
+
+  dealer_handle()->SetRulesetFile(
+      testing::TestRuleset::Open(rulesets().indexed_1()));
+
+  auto ruleset_handle_1 = CreateRulesetHandle();
+  auto ruleset_handle_2 = CreateRulesetHandle();
+  dealer_handle()->GetDealerAsync(created_handles.GetCallback());
+  ruleset_handle_1->GetRulesetAsync(read_ruleset_from_handle_1.GetCallback());
+  ruleset_handle_2->GetRulesetAsync(read_ruleset_from_handle_2.GetCallback());
+
+  ruleset_handle_1.reset(nullptr);
+  dealer_handle()->GetDealerAsync(deleted_handle_1.GetCallback());
+  ruleset_handle_2->GetRulesetAsync(
+      read_ruleset_again_from_handle_2.GetCallback());
+
+  ruleset_handle_2.reset(nullptr);
+  dealer_handle()->GetDealerAsync(deleted_both_handles.GetCallback());
+
+  task_runner()->RunUntilIdle();
+
+  created_handles.ExpectRulesetContents(rulesets().indexed_1().contents, true);
+  read_ruleset_from_handle_1.ExpectRulesetContents(
+      rulesets().indexed_1().contents);
+  read_ruleset_from_handle_2.ExpectRulesetContents(
+      rulesets().indexed_1().contents);
+  deleted_handle_1.ExpectRulesetContents(rulesets().indexed_1().contents, true);
+  read_ruleset_again_from_handle_2.ExpectRulesetContents(
+      rulesets().indexed_1().contents);
+  deleted_both_handles.ExpectRulesetState(true,
+                                          RulesetVerificationStatus::INTACT);
+}
+
+TEST_F(SubresourceFilterVerifiedRulesetHandleTest,
+       OldRulesetRemainsMappedAfterUpdateUntilHandleIsDeleted) {
+  TestVerifiedRulesetDealerClient created_handle_1;
+  TestVerifiedRulesetClient read_from_handle_1;
+  TestVerifiedRulesetDealerClient created_handle_2_after_update;
+  TestVerifiedRulesetClient read_from_handle_2;
+  TestVerifiedRulesetClient read_again_from_handle_1;
+  TestVerifiedRulesetClient read_from_handle_1_after_update;
+  TestVerifiedRulesetClient read_from_handle_2_after_update;
+  TestVerifiedRulesetDealerClient deleted_all_handles;
+
+  dealer_handle()->SetRulesetFile(
+      testing::TestRuleset::Open(rulesets().indexed_1()));
+
+  auto ruleset_handle_1 = CreateRulesetHandle();
+  dealer_handle()->GetDealerAsync(created_handle_1.GetCallback());
+  ruleset_handle_1->GetRulesetAsync(read_from_handle_1.GetCallback());
+
+  dealer_handle()->SetRulesetFile(
+      testing::TestRuleset::Open(rulesets().indexed_2()));
+  auto ruleset_handle_2 = CreateRulesetHandle();
+  dealer_handle()->GetDealerAsync(created_handle_2_after_update.GetCallback());
+  ruleset_handle_2->GetRulesetAsync(read_from_handle_2.GetCallback());
+  ruleset_handle_1->GetRulesetAsync(read_again_from_handle_1.GetCallback());
+
+  ruleset_handle_1 = CreateRulesetHandle();
+  ruleset_handle_1->GetRulesetAsync(
+      read_from_handle_1_after_update.GetCallback());
+  ruleset_handle_2->GetRulesetAsync(
+      read_from_handle_2_after_update.GetCallback());
+
+  ruleset_handle_1.reset(nullptr);
+  ruleset_handle_2.reset(nullptr);
+  dealer_handle()->GetDealerAsync(deleted_all_handles.GetCallback());
+
+  task_runner()->RunUntilIdle();
+
+  created_handle_1.ExpectRulesetContents(rulesets().indexed_1().contents, true);
+  read_from_handle_1.ExpectRulesetContents(rulesets().indexed_1().contents);
+  created_handle_2_after_update.ExpectRulesetContents(
+      rulesets().indexed_2().contents, true);
+  read_from_handle_2.ExpectRulesetContents(rulesets().indexed_2().contents);
+  read_again_from_handle_1.ExpectRulesetContents(
+      rulesets().indexed_1().contents);
+  read_from_handle_1_after_update.ExpectRulesetContents(
+      rulesets().indexed_2().contents);
+  read_from_handle_2_after_update.ExpectRulesetContents(
+      rulesets().indexed_2().contents);
+  deleted_all_handles.ExpectRulesetState(true,
+                                         RulesetVerificationStatus::INTACT);
+}
+
+TEST_F(SubresourceFilterVerifiedRulesetHandleTest,
+       CorruptRulesetIsNotHandedOut) {
+  TestVerifiedRulesetDealerClient created_handle;
+  TestVerifiedRulesetClient read_ruleset;
+  TestVerifiedRulesetDealerClient deleted_handle;
+
+  testing::TestRuleset::CorruptByTruncating(rulesets().indexed_1(), 4096);
+  dealer_handle()->SetRulesetFile(
+      testing::TestRuleset::Open(rulesets().indexed_1()));
+
+  auto ruleset_handle = CreateRulesetHandle();
+  dealer_handle()->GetDealerAsync(created_handle.GetCallback());
+  ruleset_handle->GetRulesetAsync(read_ruleset.GetCallback());
+  ruleset_handle.reset(nullptr);
+  dealer_handle()->GetDealerAsync(deleted_handle.GetCallback());
+  task_runner()->RunUntilIdle();
+
+  created_handle.ExpectRulesetState(true, RulesetVerificationStatus::CORRUPT);
+  read_ruleset.ExpectNoRuleset();
+  deleted_handle.ExpectRulesetState(true, RulesetVerificationStatus::CORRUPT);
 }
 
 }  // namespace subresource_filter

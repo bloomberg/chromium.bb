@@ -68,6 +68,10 @@ class VerifiedRulesetDealer::Handle {
   explicit Handle(scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~Handle();
 
+  // Returns the |task_runner| on which the VerifiedRulesetDealer, as well as
+  // the MemoryMappedRulesets it creates, should be accessed.
+  base::SequencedTaskRunner* task_runner() { return task_runner_; }
+
   // Invokes |callback| on |task_runner|, providing a pointer to the underlying
   // VerifiedRulesetDealer as an argument. The pointer is guaranteed to be valid
   // at least until the callback returns.
@@ -81,7 +85,65 @@ class VerifiedRulesetDealer::Handle {
   // Note: Raw pointer, |dealer_| already holds a reference to |task_runner_|.
   base::SequencedTaskRunner* task_runner_;
   std::unique_ptr<VerifiedRulesetDealer, base::OnTaskRunnerDeleter> dealer_;
+  base::ThreadChecker thread_checker_;
 
+  DISALLOW_COPY_AND_ASSIGN(Handle);
+};
+
+// Holds a strong reference to MemoryMappedRuleset, and provides acceess to it.
+//
+// Initially holds an empty reference, allowing this object to be created on the
+// UI-thread synchronously, hence letting the Handle to be created synchronously
+// and be immediately used by clients on the UI-thread, while the
+// MemoryMappedRuleset is retrieved on the |task_runner| in a deferred manner.
+class VerifiedRuleset {
+ public:
+  class Handle;
+
+  VerifiedRuleset();
+  ~VerifiedRuleset();
+
+  // Can return nullptr even after initialization in case no ruleset is
+  // available, or if the ruleset is corrupted.
+  const MemoryMappedRuleset* Get() const {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return ruleset_.get();
+  }
+
+ private:
+  // Initializes |ruleset_| with the one provided by the ruleset |dealer|.
+  void Initialize(VerifiedRulesetDealer* dealer);
+
+  scoped_refptr<const MemoryMappedRuleset> ruleset_;
+  base::ThreadChecker thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(VerifiedRuleset);
+};
+
+// The UI-thread handle that owns a VerifiedRuleset living on a dedicated
+// sequenced |task_runner|, same as the VerifiedRulesetDealer lives on. Provides
+// asynchronous access to the instance, and destroys it asynchronously.
+class VerifiedRuleset::Handle {
+ public:
+  // Creates a VerifiedRuleset and initializes it asynchronously on a
+  // |task_runner| using |dealer_handle|. The instance remains owned by this
+  // handle, but living and accessed on the |task_runner|.
+  explicit Handle(VerifiedRulesetDealer::Handle* dealer_handle);
+  ~Handle();
+
+  // Returns the |task_runner| on which the VerifiedRuleset, as well as the
+  // MemoryMappedRuleset it holds a reference to, should be accessed.
+  base::SequencedTaskRunner* task_runner() { return task_runner_; }
+
+  // Invokes |callback| on |task_runner|, providing a pointer to the underlying
+  // VerifiedRuleset as an argument. The pointer is guaranteed to be valid at
+  // least until the callback returns.
+  void GetRulesetAsync(base::Callback<void(VerifiedRuleset*)> callback);
+
+ private:
+  // Note: Raw pointer, |ruleset_| already holds a reference to |task_runner_|.
+  base::SequencedTaskRunner* task_runner_;
+  std::unique_ptr<VerifiedRuleset, base::OnTaskRunnerDeleter> ruleset_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(Handle);

@@ -14,6 +14,8 @@
 
 namespace subresource_filter {
 
+// VerifiedRulesetDealer and its Handle. ---------------------------------------
+
 VerifiedRulesetDealer::VerifiedRulesetDealer() = default;
 VerifiedRulesetDealer::~VerifiedRulesetDealer() = default;
 
@@ -76,6 +78,39 @@ void VerifiedRulesetDealer::Handle::SetRulesetFile(base::File file) {
       FROM_HERE,
       base::Bind(&VerifiedRulesetDealer::SetRulesetFile,
                  base::Unretained(dealer_.get()), base::Passed(&file)));
+}
+
+// VerifiedRuleset and its Handle. ---------------------------------------------
+
+VerifiedRuleset::VerifiedRuleset() {
+  thread_checker_.DetachFromThread();
+}
+
+VerifiedRuleset::~VerifiedRuleset() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void VerifiedRuleset::Initialize(VerifiedRulesetDealer* dealer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dealer);
+  ruleset_ = dealer->GetRuleset();
+}
+
+VerifiedRuleset::Handle::Handle(VerifiedRulesetDealer::Handle* dealer_handle)
+    : task_runner_(dealer_handle->task_runner()),
+      ruleset_(new VerifiedRuleset, base::OnTaskRunnerDeleter(task_runner_)) {
+  dealer_handle->GetDealerAsync(base::Bind(&VerifiedRuleset::Initialize,
+                                           base::Unretained(ruleset_.get())));
+}
+
+VerifiedRuleset::Handle::~Handle() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void VerifiedRuleset::Handle::GetRulesetAsync(
+    base::Callback<void(VerifiedRuleset*)> callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  task_runner_->PostTask(FROM_HERE, base::Bind(callback, ruleset_.get()));
 }
 
 }  // namespace subresource_filter
