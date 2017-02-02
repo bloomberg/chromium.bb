@@ -6,18 +6,16 @@ Tests that AudioChannelSplitter works correctly.
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 </head>
 
 <body>
 
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Tests AudioChannelSplitter.");
+var audit = Audit.createTaskRunner();
 
 var sampleRate = 44100.0;
 var lengthInSampleFrames = 512;
@@ -44,8 +42,7 @@ function createStereoBufferWithDCOffset(length, sampleRate, offset) {
 
 // checkResult() checks that the rendered buffer is stereo and that the left channel is all -1 and right channel all +1.
 // In other words, we've reversed the order of the two channels.
-function checkResult(event) {
-    var buffer = event.renderedBuffer;
+function checkResult(buffer, should) {
 
     var success = true;
 
@@ -53,82 +50,61 @@ function checkResult(event) {
         var bufferDataL = buffer.getChannelData(0);
         var bufferDataR = buffer.getChannelData(1);
 
-        // Go through every sample and make sure it's all -1 for the left-channel, and all +1 for the right-channel.
-        for (var i = 0; i < buffer.length; ++i) {
-            if (bufferDataL[i] != -1 || bufferDataR[i] != 1) {
-                success = false;
-                break;
-            }
-        }
+        success = should(bufferDataL, "Left channel")
+          .beConstantValueOf(-1) && success;
+        success = should(bufferDataR, "Right channel")
+          .beConstantValueOf(1) && success;
     } else {
         success = false;
     }
 
-    if (success) {
-        testPassed("Correctly exchanged left and right channels.");
-    } else {
-        testFailed("Error on exchanging left and right channels.");
-    }
-
-    finishJSTest();
+    should(success, "Left and right channels were exchanged")
+      .message("correctly", "incorrectly");
 }
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-
-    window.jsTestIsAsync = true;
+audit.define("construction", function (task, should) {
+    task.describe("Construction of ChannelSplitterNode");
 
     // Create stereo offline audio context.
     context = new OfflineAudioContext(2, lengthInSampleFrames, sampleRate);
 
-    try {
-        var splitternode = context.createChannelSplitter(0);
-        testFailed("Exception should be thrown for numberOfOutputs <= 0.");
-    } catch(e) {
-        testPassed("Exception been thrown for numberOfOutputs <= 0.");
-    }
+    var splitternode;
+    should(() => {
+      var splitternode = context.createChannelSplitter(0);
+      }, "createChannelSplitter(0)")
+      .throw("IndexSizeError");
 
-    try {
-        var splitternode = context.createChannelSplitter(33);
-        testFailed("Exception should be thrown for numerOfOutputs >= 32.");
-    } catch(e) {
-        testPassed("Exception been thrown for numberOfOutputs >= 32.");
-    }
+    should(() => {
+      splitternode = context.createChannelSplitter(33);
+      }, "createChannelSplitter(33)")
+      .throw("IndexSizeError");
 
-    try {
-        var splitternode = context.createChannelSplitter(32);
-        testPassed("AudioChannelSplitter created successfully with numberOfOutputs = 32.");
-        if (splitternode.numberOfOutputs === 32)
-            testPassed("AudioChannelSplitter has 32 outputs when it is created with numberOfOutputs = 32.");
-        else
-            testFailed("AudioChannelSplitter should have 32 outputs when it is created with numberOfOutputs = 32.");
+    should(() => {
+        splitternode = context.createChannelSplitter(32);
+      }, "splitternode = context.createChannelSplitter(32)")
+      .notThrow();
 
-        if (splitternode.numberOfInputs === 1)
-            testPassed("AudioChannelSplitter has one input.");
-        else
-            testFailed("AudioChannelSplitter should have one input.");
-    } catch(e) {
-        testFailed("Failed to create AudioChannelSplitter with numberOfInputs = 32.");
-    }
+    should(splitternode.numberOfOutputs,
+      "splitternode.numberOfOutputs")
+      .beEqualTo(32);
+    should(splitternode.numberOfInputs,
+      "splitternode.numberOfInputs")
+      .beEqualTo(1)
 
-    try {
-        var splitternode = context.createChannelSplitter();
-        testPassed("AudioChannelSplitter created successfully with empty parameter.");
-        if (splitternode.numberOfOutputs === 6)
-            testPassed("AudioChannelSplitter has 6 outputs when it is created with empty parameter.");
-        else
-            testFailed("AudioChannelSplitter should have 6 outputs when it is created with empty parameter.");
+    should(() => {
+      splitternode = context.createChannelSplitter();
+      }, "splitternode = context.createChannelSplitter()")
+      .notThrow();
 
-        if (splitternode.toString().indexOf("ChannelSplitterNode") > -1)
-            testPassed("ChannelSplitterNode Object is available.");
-        else
-            testFailed("ChannelSplitterNode Object is not available.");
-    } catch(e) {
-        testFailed("Failed to create AudioChannelSplitter with empty parameter.");
-    }
+    should(splitternode.numberOfOutputs,
+      "splitternode.numberOfOutputs")
+      .beEqualTo(6);
+
+    task.done();
+});
+
+audit.define("functionality", function (task, should) {      
+    task.describe("Functionality of ChannelSplitterNode");
 
     // Create a stereo buffer, with all +1 values in left channel, all -1 in right channel.
     sourceBuffer = createStereoBufferWithDCOffset(lengthInSampleFrames, sampleRate, 1);
@@ -150,11 +126,12 @@ function runTest() {
 
     sourceNode.start(0);
 
-    context.oncomplete = checkResult;
-    context.startRendering();
-}
+    context.startRendering()
+      .then(buffer => checkResult(buffer, should))
+      .then(task.done.bind(task));
+});
 
-runTest();
+audit.run();
 
 </script>
 
