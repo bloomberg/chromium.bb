@@ -567,8 +567,8 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document) {
   // Document::inheritHtmlAndBodyElementStyles will set the final overflow
   // style values, but they should initially be auto to avoid premature
   // scrollbar removal in PaintLayerScrollableArea::updateAfterStyleChange.
-  documentStyle->setOverflowX(EOverflow::Auto);
-  documentStyle->setOverflowY(EOverflow::Auto);
+  documentStyle->setOverflowX(EOverflow::kAuto);
+  documentStyle->setOverflowY(EOverflow::kAuto);
 
   document.setupFontBuilder(*documentStyle);
 

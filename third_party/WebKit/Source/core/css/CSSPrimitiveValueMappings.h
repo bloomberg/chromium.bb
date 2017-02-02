@@ -1901,25 +1901,25 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EOverflow e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case EOverflow::Visible:
+    case EOverflow::kVisible:
       m_valueID = CSSValueVisible;
       break;
-    case EOverflow::Hidden:
+    case EOverflow::kHidden:
       m_valueID = CSSValueHidden;
       break;
-    case EOverflow::Scroll:
+    case EOverflow::kScroll:
       m_valueID = CSSValueScroll;
       break;
-    case EOverflow::Auto:
+    case EOverflow::kAuto:
       m_valueID = CSSValueAuto;
       break;
-    case EOverflow::Overlay:
+    case EOverflow::kOverlay:
       m_valueID = CSSValueOverlay;
       break;
-    case EOverflow::PagedX:
+    case EOverflow::kWebkitPagedX:
       m_valueID = CSSValueWebkitPagedX;
       break;
-    case EOverflow::PagedY:
+    case EOverflow::kWebkitPagedY:
       m_valueID = CSSValueWebkitPagedY;
       break;
   }
@@ -1929,25 +1929,25 @@ template <>
 inline EOverflow CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueVisible:
-      return EOverflow::Visible;
+      return EOverflow::kVisible;
     case CSSValueHidden:
-      return EOverflow::Hidden;
+      return EOverflow::kHidden;
     case CSSValueScroll:
-      return EOverflow::Scroll;
+      return EOverflow::kScroll;
     case CSSValueAuto:
-      return EOverflow::Auto;
+      return EOverflow::kAuto;
     case CSSValueOverlay:
-      return EOverflow::Overlay;
+      return EOverflow::kOverlay;
     case CSSValueWebkitPagedX:
-      return EOverflow::PagedX;
+      return EOverflow::kWebkitPagedX;
     case CSSValueWebkitPagedY:
-      return EOverflow::PagedY;
+      return EOverflow::kWebkitPagedY;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return EOverflow::Visible;
+  return EOverflow::kVisible;
 }
 
 template <>

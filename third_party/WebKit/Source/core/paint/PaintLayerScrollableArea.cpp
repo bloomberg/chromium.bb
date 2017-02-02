@@ -627,9 +627,9 @@ bool PaintLayerScrollableArea::userInputScrollable(
   EOverflow overflowStyle = (orientation == HorizontalScrollbar)
                                 ? box().style()->overflowX()
                                 : box().style()->overflowY();
-  return (overflowStyle == EOverflow::Scroll ||
-          overflowStyle == EOverflow::Auto ||
-          overflowStyle == EOverflow::Overlay);
+  return (overflowStyle == EOverflow::kScroll ||
+          overflowStyle == EOverflow::kAuto ||
+          overflowStyle == EOverflow::kOverlay);
 }
 
 bool PaintLayerScrollableArea::shouldPlaceVerticalScrollbarOnLeft() const {
@@ -756,9 +756,9 @@ void PaintLayerScrollableArea::updateAfterLayout() {
 
     // Our proprietary overflow: overlay value doesn't trigger a layout.
     if ((horizontalScrollbarShouldChange &&
-         box().style()->overflowX() != EOverflow::Overlay) ||
+         box().style()->overflowX() != EOverflow::kOverlay) ||
         (verticalScrollbarShouldChange &&
-         box().style()->overflowY() != EOverflow::Overlay)) {
+         box().style()->overflowY() != EOverflow::kOverlay)) {
       if ((verticalScrollbarShouldChange && box().isHorizontalWritingMode()) ||
           (horizontalScrollbarShouldChange &&
            !box().isHorizontalWritingMode())) {
@@ -981,14 +981,14 @@ void PaintLayerScrollableArea::updateAfterStyleChange(
   // With overflow: scroll, scrollbars are always visible but may be disabled.
   // When switching to another value, we need to re-enable them (see bug 11985).
   if (hasHorizontalScrollbar() && oldStyle &&
-      oldStyle->overflowX() == EOverflow::Scroll &&
-      box().style()->overflowX() != EOverflow::Scroll) {
+      oldStyle->overflowX() == EOverflow::kScroll &&
+      box().style()->overflowX() != EOverflow::kScroll) {
     horizontalScrollbar()->setEnabled(true);
   }
 
   if (hasVerticalScrollbar() && oldStyle &&
-      oldStyle->overflowY() == EOverflow::Scroll &&
-      box().style()->overflowY() != EOverflow::Scroll) {
+      oldStyle->overflowY() == EOverflow::kScroll &&
+      box().style()->overflowY() != EOverflow::kScroll) {
     verticalScrollbar()->setEnabled(true);
   }
 

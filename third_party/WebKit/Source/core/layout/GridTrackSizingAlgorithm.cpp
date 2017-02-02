@@ -374,8 +374,8 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::minSizeForChild(
                                          : child.styleRef().logicalMinHeight();
   bool overflowIsVisible =
       isRowAxis
-          ? child.styleRef().overflowInlineDirection() == EOverflow::Visible
-          : child.styleRef().overflowBlockDirection() == EOverflow::Visible;
+          ? child.styleRef().overflowInlineDirection() == EOverflow::kVisible
+          : child.styleRef().overflowBlockDirection() == EOverflow::kVisible;
   if (!childSize.isAuto() || (childMinSize.isAuto() && overflowIsVisible))
     return minContentForChild(child);
 

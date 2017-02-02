@@ -127,8 +127,8 @@ void LayoutTextControl::computeLogicalHeight(
 
     // We are able to have a horizontal scrollbar if the overflow style is
     // scroll, or if its auto and there's no word wrap.
-    if (style()->overflowInlineDirection() == EOverflow::Scroll ||
-        (style()->overflowInlineDirection() == EOverflow::Auto &&
+    if (style()->overflowInlineDirection() == EOverflow::kScroll ||
+        (style()->overflowInlineDirection() == EOverflow::kAuto &&
          innerEditor->layoutObject()->style()->overflowWrap() ==
              NormalOverflowWrap))
       logicalHeight += scrollbarThickness();

@@ -1812,8 +1812,8 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
   }
 
   EOverflowAnchor overflowAnchor = EOverflowAnchor::kAuto;
-  EOverflow overflowX = EOverflow::Auto;
-  EOverflow overflowY = EOverflow::Auto;
+  EOverflow overflowX = EOverflow::kAuto;
+  EOverflow overflowY = EOverflow::kAuto;
   float columnGap = 0;
   if (overflowStyle) {
     overflowAnchor = overflowStyle->overflowAnchor();
@@ -1821,10 +1821,10 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
     overflowY = overflowStyle->overflowY();
     // Visible overflow on the viewport is meaningless, and the spec says to
     // treat it as 'auto':
-    if (overflowX == EOverflow::Visible)
-      overflowX = EOverflow::Auto;
-    if (overflowY == EOverflow::Visible)
-      overflowY = EOverflow::Auto;
+    if (overflowX == EOverflow::kVisible)
+      overflowX = EOverflow::kAuto;
+    if (overflowY == EOverflow::kVisible)
+      overflowY = EOverflow::kAuto;
     if (overflowAnchor == EOverflowAnchor::kVisible)
       overflowAnchor = EOverflowAnchor::kAuto;
     // Column-gap is (ab)used by the current paged overflow implementation (in

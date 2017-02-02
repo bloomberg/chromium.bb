@@ -1103,8 +1103,8 @@ static bool shouldFlexCellChild(const LayoutTableCell& cell,
                                 LayoutObject* cellDescendant) {
   if (!cell.style()->logicalHeight().isSpecified())
     return false;
-  if (cellDescendant->style()->overflowY() == EOverflow::Visible ||
-      cellDescendant->style()->overflowY() == EOverflow::Hidden)
+  if (cellDescendant->style()->overflowY() == EOverflow::kVisible ||
+      cellDescendant->style()->overflowY() == EOverflow::kHidden)
     return true;
   return cellDescendant->isBox() &&
          toLayoutBox(cellDescendant)->shouldBeConsideredAsReplaced();

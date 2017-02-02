@@ -939,14 +939,14 @@ void LayoutBox::computeSelfHitTestRects(Vector<LayoutRect>& rects,
 }
 
 int LayoutBox::verticalScrollbarWidth() const {
-  if (!hasOverflowClip() || style()->overflowY() == EOverflow::Overlay)
+  if (!hasOverflowClip() || style()->overflowY() == EOverflow::kOverlay)
     return 0;
 
   return getScrollableArea()->verticalScrollbarWidth();
 }
 
 int LayoutBox::horizontalScrollbarHeight() const {
-  if (!hasOverflowClip() || style()->overflowX() == EOverflow::Overlay)
+  if (!hasOverflowClip() || style()->overflowX() == EOverflow::kOverlay)
     return 0;
 
   return getScrollableArea()->horizontalScrollbarHeight();
@@ -3215,8 +3215,8 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(
         // height if they have overflow set to visible or hidden or if
         // they are replaced elements, and a 0px height if they have not.
         LayoutTableCell* cell = toLayoutTableCell(cb);
-        if (style()->overflowY() != EOverflow::Visible &&
-            style()->overflowY() != EOverflow::Hidden &&
+        if (style()->overflowY() != EOverflow::kVisible &&
+            style()->overflowY() != EOverflow::kHidden &&
             !shouldBeConsideredAsReplaced() &&
             (!cell->style()->logicalHeight().isAuto() ||
              !cell->table()->style()->logicalHeight().isAuto()))

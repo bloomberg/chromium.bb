@@ -476,8 +476,8 @@ static unsigned verticalScrollDistance(LocalFrame& frame) {
   const ComputedStyle* style = layoutBox.style();
   if (!style)
     return 0;
-  if (!(style->overflowY() == EOverflow::Scroll ||
-        style->overflowY() == EOverflow::Auto ||
+  if (!(style->overflowY() == EOverflow::kScroll ||
+        style->overflowY() == EOverflow::kAuto ||
         hasEditableStyle(*focusedElement)))
     return 0;
   int height = std::min<int>(layoutBox.clientHeight().toInt(),

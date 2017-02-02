@@ -83,9 +83,9 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
       .SetAvailableSize(available_size)
       .SetPercentageResolutionSize(percentage_size)
       .SetIsInlineDirectionTriggersScrollbar(
-          box.styleRef().overflowInlineDirection() == EOverflow::Auto)
+          box.styleRef().overflowInlineDirection() == EOverflow::kAuto)
       .SetIsBlockDirectionTriggersScrollbar(
-          box.styleRef().overflowBlockDirection() == EOverflow::Auto)
+          box.styleRef().overflowBlockDirection() == EOverflow::kAuto)
       .SetIsFixedSizeInline(fixed_inline)
       .SetIsFixedSizeBlock(fixed_block)
       .SetIsShrinkToFit(

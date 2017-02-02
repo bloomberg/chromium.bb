@@ -1465,7 +1465,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // overflow-x
-  static EOverflow initialOverflowX() { return EOverflow::Visible; }
+  static EOverflow initialOverflowX() { return EOverflow::kVisible; }
   EOverflow overflowX() const {
     return static_cast<EOverflow>(m_nonInheritedData.m_overflowX);
   }
@@ -1474,7 +1474,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // overflow-y
-  static EOverflow initialOverflowY() { return EOverflow::Visible; }
+  static EOverflow initialOverflowY() { return EOverflow::kVisible; }
   EOverflow overflowY() const {
     return static_cast<EOverflow>(m_nonInheritedData.m_overflowY);
   }
@@ -3381,11 +3381,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // It's sufficient to just check one direction, since it's illegal to have
   // visible on only one overflow value.
   bool isOverflowVisible() const {
-    DCHECK(overflowX() != EOverflow::Visible || overflowX() == overflowY());
-    return overflowX() == EOverflow::Visible;
+    DCHECK(overflowX() != EOverflow::kVisible || overflowX() == overflowY());
+    return overflowX() == EOverflow::kVisible;
   }
   bool isOverflowPaged() const {
-    return overflowY() == EOverflow::PagedX || overflowY() == EOverflow::PagedY;
+    return overflowY() == EOverflow::kWebkitPagedX ||
+           overflowY() == EOverflow::kWebkitPagedY;
   }
 
   // Visibility utility functions.
@@ -3584,8 +3585,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // If the pagination axis is parallel with the writing mode inline axis,
     // columns may be laid out along the inline axis, just like for regular
     // multicol. Otherwise, we need to lay out along the block axis.
-    if (isOverflowPaged())
-      return (overflowY() == EOverflow::PagedX) == isHorizontalWritingMode();
+    if (isOverflowPaged()) {
+      return (overflowY() == EOverflow::kWebkitPagedX) ==
+             isHorizontalWritingMode();
+    }
     return false;
   }
 
