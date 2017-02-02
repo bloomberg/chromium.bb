@@ -13,6 +13,10 @@
 #include "headless/lib/browser/headless_platform_event_source.h"
 #include "headless/lib/headless_content_client.h"
 
+namespace base {
+class CommandLine;
+}
+
 namespace headless {
 
 class HeadlessBrowserImpl;
@@ -38,6 +42,7 @@ class HeadlessContentMainDelegate : public content::ContentMainDelegate {
  private:
   friend class HeadlessBrowserTest;
 
+  void InitLogging(const base::CommandLine& command_line);
   static void InitializeResourceBundle();
 
   static HeadlessContentMainDelegate* GetInstance();

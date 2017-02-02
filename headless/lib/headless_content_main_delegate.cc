@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
@@ -70,7 +71,58 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   return false;
 }
 
+void HeadlessContentMainDelegate::InitLogging(
+    const base::CommandLine& command_line) {
+  if (!command_line.HasSwitch(switches::kEnableLogging))
+    return;
+
+  logging::LoggingDestination log_mode;
+  base::FilePath log_filename(FILE_PATH_LITERAL("chrome_debug.log"));
+  if (command_line.GetSwitchValueASCII(switches::kEnableLogging) == "stderr") {
+    log_mode = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  } else {
+    base::FilePath custom_filename(
+        command_line.GetSwitchValuePath(switches::kEnableLogging));
+    if (custom_filename.empty()) {
+      log_mode = logging::LOG_TO_ALL;
+    } else {
+      log_mode = logging::LOG_TO_FILE;
+      log_filename = custom_filename;
+    }
+  }
+
+  if (command_line.HasSwitch(switches::kLoggingLevel) &&
+      logging::GetMinLogLevel() >= 0) {
+    std::string log_level =
+        command_line.GetSwitchValueASCII(switches::kLoggingLevel);
+    int level = 0;
+    if (base::StringToInt(log_level, &level) && level >= 0 &&
+        level < logging::LOG_NUM_SEVERITIES) {
+      logging::SetMinLogLevel(level);
+    } else {
+      DLOG(WARNING) << "Bad log level: " << log_level;
+    }
+  }
+
+  base::FilePath log_path;
+  logging::LoggingSettings settings;
+
+  if (PathService::Get(base::DIR_MODULE, &log_path)) {
+    log_path = log_path.Append(log_filename);
+  } else {
+    log_path = log_filename;
+  }
+
+  settings.logging_dest = log_mode;
+  settings.log_file = log_path.value().c_str();
+  settings.lock_log = logging::DONT_LOCK_LOG_FILE;
+  settings.delete_old = logging::DELETE_OLD_LOG_FILE;
+  bool success = logging::InitLogging(settings);
+  DCHECK(success);
+}
+
 void HeadlessContentMainDelegate::PreSandboxStartup() {
+  InitLogging(*base::CommandLine::ForCurrentProcess());
   InitializeResourceBundle();
 }
 

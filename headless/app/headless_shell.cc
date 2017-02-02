@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell_switches.h"
 #include "headless/public/devtools/domains/emulation.h"
 #include "headless/public/devtools/domains/inspector.h"
@@ -384,7 +383,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   bool RemoteDebuggingEnabled() const {
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
-    return command_line.HasSwitch(::switches::kRemoteDebuggingPort);
+    return command_line.HasSwitch(switches::kRemoteDebuggingPort);
   }
 
  private:
@@ -402,7 +401,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
 };
 
 bool ValidateCommandLine(const base::CommandLine& command_line) {
-  if (!command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
+  if (!command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
     if (command_line.GetArgs().size() <= 1)
       return true;
     LOG(ERROR) << "Open multiple tabs is only supported when the "
@@ -442,7 +441,9 @@ int HeadlessShellMain(int argc, const char** argv) {
   HeadlessBrowser::Options::Builder builder(argc, argv);
 
   // Enable devtools if requested.
-  base::CommandLine command_line(argc, argv);
+  base::CommandLine::Init(argc, argv);
+  const base::CommandLine& command_line(
+      *base::CommandLine::ForCurrentProcess());
   if (!ValidateCommandLine(command_line))
     return EXIT_FAILURE;
 
@@ -484,9 +485,9 @@ int HeadlessShellMain(int argc, const char** argv) {
     builder.SetProxyServer(parsed_proxy_server);
   }
 
-  if (command_line.HasSwitch(::switches::kHostResolverRules)) {
+  if (command_line.HasSwitch(switches::kHostResolverRules)) {
     builder.SetHostResolverRules(
-        command_line.GetSwitchValueASCII(::switches::kHostResolverRules));
+        command_line.GetSwitchValueASCII(switches::kHostResolverRules));
   }
 
   if (command_line.HasSwitch(switches::kUseGL)) {
