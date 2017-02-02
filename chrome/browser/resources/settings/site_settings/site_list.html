@@ -16,10 +16,6 @@
 <dom-module id="site-list">
   <template>
     <style include="settings-shared">
-      paper-button {
-        margin-top: 12px;  /* Align with <h2>. */
-      }
-
       paper-icon-button {
         left: 8px;
         right: 8px;
@@ -32,7 +28,8 @@
     <div id="category">
       <div class="settings-box first" hidden$="[[allSites]]">
         <h2 class="start">[[categoryHeader]]</h2>
-        <paper-button class="secondary-button" id="icon" on-tap="onAddSiteTap_">
+        <paper-button class="secondary-button header-aligned-button" id="icon"
+            on-tap="onAddSiteTap_">
           $i18n{add}
         </paper-button>
       </div>

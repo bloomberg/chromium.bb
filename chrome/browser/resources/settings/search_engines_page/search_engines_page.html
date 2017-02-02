@@ -32,17 +32,16 @@
     <template is="dom-if" if="[[showAddSearchEngineDialog_]]" restamp>
       <settings-search-engine-dialog></settings-search-engine-dialog>
     </template>
+
     <div class="settings-box first">
-      <h2>$i18n{searchEnginesOther}</h2>
+      <h2 class="start">$i18n{searchEnginesOther}</h2>
+      <paper-button class="secondary-button header-aligned-button"
+          on-tap="onAddSearchEngineTap_" id="addSearchEngine">
+        $i18n{add}
+      </paper-button>
     </div>
     <settings-search-engines-list engines="[[otherEngines]]">
-      <div class="list-item" id="addSearchEngine">
-        <a is="action-link" class="list-button" on-tap="onAddSearchEngineTap_">
-          $i18n{searchEnginesAddSearchEngine}
-        </a>
-      </div>
     </settings-search-engines-list>
-
     <template is="dom-if" if="[[showExtensionsList_]]">
       <div class="settings-box first">
         <h2>$i18n{searchEnginesExtension}</h2>
