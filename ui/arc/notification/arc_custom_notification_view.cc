@@ -169,7 +169,7 @@ class ArcCustomNotificationView::ContentViewDelegate
   }
 
   bool IsPinned() const override {
-    return owner_->floating_close_button_ == nullptr;
+    return owner_->item_->pinned();
   }
 
  private:
