@@ -127,6 +127,8 @@ void VideoFrameProviderClientImpl::StopRendering() {
   DCHECK(!stopped_);
   client_->RemoveVideoFrameController(this);
   rendering_ = false;
+  if (active_video_layer_)
+    active_video_layer_->SetNeedsRedraw();
 }
 
 void VideoFrameProviderClientImpl::DidReceiveFrame() {
