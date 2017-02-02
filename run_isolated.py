@@ -490,16 +490,15 @@ def map_and_run(
       command = process_command(command, out_dir, bot_file)
       file_path.ensure_command_has_abs_path(command, cwd)
 
-      init_named_caches(run_dir)
-
-      sys.stdout.flush()
-      start = time.time()
-      try:
-        result['exit_code'], result['had_hard_timeout'] = run_command(
-            command, cwd, get_command_env(tmp_dir, cipd_info),
-            hard_timeout, grace_period)
-      finally:
-        result['duration'] = max(time.time() - start, 0)
+      with init_named_caches(run_dir):
+        sys.stdout.flush()
+        start = time.time()
+        try:
+          result['exit_code'], result['had_hard_timeout'] = run_command(
+              command, cwd, get_command_env(tmp_dir, cipd_info),
+              hard_timeout, grace_period)
+        finally:
+          result['duration'] = max(time.time() - start, 0)
   except Exception as e:
     # An internal error occurred. Report accordingly so the swarming task will
     # be retried automatically.
@@ -598,8 +597,8 @@ def run_tha_test(
     isolate_cache: an isolateserver.LocalCache to keep from retrieving the
                    same objects constantly by caching the objects retrieved.
                    Can be on-disk or in-memory.
-    init_named_caches: a function (run_dir) => void that creates symlinks for
-                      named caches in |run_dir|.
+    init_named_caches: a function (run_dir) => context manager that creates
+                      symlinks for named caches in |run_dir|.
     leak_temp_dir: if true, the temporary directory will be deliberately leaked
                    for later examination.
     result_json: file path to dump result metadata into. If set, the process
@@ -961,9 +960,17 @@ def main(args):
         options.cipd_server, options.cipd_client_package,
         options.cipd_client_version, cache_dir=options.cipd_cache)
 
+  @contextlib.contextmanager
   def init_named_caches(run_dir):
+    # WARNING: this function depends on "options" variable defined in the outer
+    # function.
     with named_cache_manager.open():
       named_cache_manager.create_symlinks(run_dir, options.named_caches)
+    try:
+      yield
+    finally:
+      if not options.leak_temp_dir:
+        named_cache_manager.delete_symlinks(run_dir, options.named_caches)
 
   try:
     command = [] if options.isolated else args

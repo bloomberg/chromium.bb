@@ -7,6 +7,7 @@
 
 import StringIO
 import base64
+import contextlib
 import functools
 import json
 import logging
@@ -45,6 +46,11 @@ def write_content(filepath, content):
 
 def json_dumps(data):
   return json.dumps(data, sort_keys=True, separators=(',', ':'))
+
+
+@contextlib.contextmanager
+def init_named_caches_stub(_run_dir):
+  yield
 
 
 class StorageFake(object):
@@ -217,7 +223,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         StorageFake(files),
         isolateserver.MemoryCache(),
         None,
-        lambda run_dir: None,
+        init_named_caches_stub,
         False,
         None,
         None,
@@ -587,7 +593,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           store,
           isolateserver.MemoryCache(),
           None,
-          lambda run_dir: None,
+          init_named_caches_stub,
           False,
           None,
           None,
@@ -673,7 +679,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           store,
           isolateserver.MemoryCache(),
           ['foo', 'foodir/foo2'],
-          lambda run_dir: None,
+          init_named_caches_stub,
           False,
           None,
           None,

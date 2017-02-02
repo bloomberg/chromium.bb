@@ -141,8 +141,9 @@ class CacheManager(object):
     assert isinstance(name, basestring), name
     return self._lru.get_timestamp(name)
 
+  @contextlib.contextmanager
   def create_symlinks(self, root, named_caches):
-    """Creates symlinks in |root| for specified named_caches.
+    """Creates symlinks in |root| for the specified named_caches.
 
     named_caches must be a list of (name, path) tuples.
 
@@ -154,10 +155,7 @@ class CacheManager(object):
     for name, path in named_caches:
       logging.info('Named cache %r -> %r', name, path)
       try:
-        if os.path.isabs(path):
-          raise Error('named cache path must not be absolute')
-        if '..' in path.split(os.path.sep):
-          raise Error('named cache path must not contain ".."')
+        _validate_named_cache_path(path)
         symlink_path = os.path.abspath(os.path.join(root, path))
         file_path.ensure_tree(os.path.dirname(symlink_path))
         requested = self.request(name)
@@ -166,6 +164,22 @@ class CacheManager(object):
       except (OSError, Error) as ex:
         raise Error(
             'cannot create a symlink for cache named "%s" at "%s": %s' % (
+              name, symlink_path, ex))
+
+  def delete_symlinks(self, root, named_caches):
+    """Deletes symlinks from |root| for the specified named_caches.
+
+    named_caches must be a list of (name, path) tuples.
+    """
+    for name, path in named_caches:
+      logging.info('Unlinking named cache "%s"', name)
+      try:
+        _validate_named_cache_path(path)
+        symlink_path = os.path.abspath(os.path.join(root, path))
+        fs.unlink(symlink_path)
+      except (OSError, Error) as ex:
+        raise Error(
+            'cannot unlink cache named "%s" at "%s": %s' % (
               name, symlink_path, ex))
 
   def trim(self, min_free_space):
@@ -262,3 +276,10 @@ def process_named_cache_options(parser, options):
   if options.named_cache_root:
     return CacheManager(os.path.abspath(options.named_cache_root))
   return None
+
+
+def _validate_named_cache_path(path):
+  if os.path.isabs(path):
+    raise Error('named cache path must not be absolute')
+  if '..' in path.split(os.path.sep):
+    raise Error('named cache path must not contain ".."')
