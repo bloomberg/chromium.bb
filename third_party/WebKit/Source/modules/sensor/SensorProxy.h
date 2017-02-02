@@ -19,7 +19,6 @@ namespace blink {
 
 class SensorProviderProxy;
 class SensorReading;
-class SensorReadingFactory;
 class SensorReadingUpdater;
 
 // This class wraps 'Sensor' mojo interface and used by multiple
@@ -77,10 +76,8 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   device::mojom::blink::SensorType type() const { return m_type; }
   device::mojom::blink::ReportingMode reportingMode() const { return m_mode; }
 
-  // The |SensorReading| instance which is shared between sensor instances
-  // of the same type.
   // Note: the returned value is reset after updateSensorReading() call.
-  SensorReading* sensorReading() const { return m_reading; }
+  const device::SensorReading& reading() const { return m_reading; }
 
   const device::mojom::blink::SensorConfiguration* defaultConfig() const;
 
@@ -97,10 +94,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   friend class SensorProviderProxy;
   friend class SensorReadingUpdaterContinuous;
   friend class SensorReadingUpdaterOnChange;
-  SensorProxy(device::mojom::blink::SensorType,
-              SensorProviderProxy*,
-              Page*,
-              std::unique_ptr<SensorReadingFactory>);
+  SensorProxy(device::mojom::blink::SensorType, SensorProviderProxy*, Page*);
 
   // Updates sensor reading from shared buffer.
   void updateSensorReading();
@@ -145,8 +139,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   mojo::ScopedSharedBufferHandle m_sharedBufferHandle;
   mojo::ScopedSharedBufferMapping m_sharedBuffer;
   bool m_suspended;
-  Member<SensorReading> m_reading;
-  std::unique_ptr<SensorReadingFactory> m_readingFactory;
+  device::SensorReading m_reading;
   double m_maximumFrequency;
 
   Member<SensorReadingUpdater> m_readingUpdater;

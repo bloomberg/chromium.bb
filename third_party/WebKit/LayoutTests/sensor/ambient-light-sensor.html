@@ -24,5 +24,14 @@ function verify_sensor_reading(reading) {
   return reading.illuminance == kDefaultReadingValue;
 }
 
+function verify_sensor_reading(sensor, should_be_null) {
+  if (should_be_null) {
+    return sensor.illuminance == null &&
+           sensor.timestamp == null;
+  }
+  return sensor.illuminance == kDefaultReadingValue &&
+         sensor.timestamp != null;
+}
+
 runGenericSensorTests(AmbientLightSensor, update_sensor_reading, verify_sensor_reading);
 </script>

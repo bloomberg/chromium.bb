@@ -170,9 +170,9 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         .then((mockSensor) => {
           return new Promise((resolve, reject) => {
             let wrapper = new CallbackWrapper(() => {
-              assert_true(verifyReading(sensorObject.reading));
+              assert_true(verifyReading(sensorObject));
               sensorObject.stop();
-              assert_equals(sensorObject.reading, null);
+              assert_true(verifyReading(sensorObject, true /*should be null*/));
               resolve(mockSensor);
             }, reject);
 
@@ -204,7 +204,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         .then(mockSensor => {
           return new Promise((resolve, reject) => {
             let wrapper = new CallbackWrapper(() => {
-              assert_true(verifyReading(sensorObject.reading));
+              assert_true(verifyReading(sensorObject));
               resolve(mockSensor);
             }, reject);
 
@@ -246,24 +246,19 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         .then((mockSensor) => {
           return new Promise((resolve, reject) => {
             let wrapper = new CallbackWrapper(() => {
-              // Reading value is correct.
-              assert_true(verifyReading(sensor1.reading));
+              // Reading values are correct for both sensors.
+              assert_true(verifyReading(sensor1));
+              assert_true(verifyReading(sensor2));
 
-              // Both sensors share the same reading instance.
-              let reading = sensor1.reading;
-              assert_equals(reading, sensor2.reading);
-
-              // After first sensor stops its reading is null, reading for second
-              // sensor sensor remains.
+              // After first sensor stops its reading values are null,
+              // reading values for the second sensor sensor remain.
               sensor1.stop();
-              assert_equals(sensor1.reading, null);
-              assert_true(verifyReading(sensor2.reading));
+              assert_true(verifyReading(sensor1, true /*should be null*/));
+              assert_true(verifyReading(sensor2));
 
               sensor2.stop();
-              assert_equals(sensor2.reading, null);
+              assert_true(verifyReading(sensor2, true /*should be null*/));
 
-              // Cached reading remains.
-              assert_true(verifyReading(reading));
               resolve(mockSensor);
             }, reject);
 

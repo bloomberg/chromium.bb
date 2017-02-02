@@ -8,6 +8,8 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/DOMHighResTimeStamp.h"
+#include "core/dom/DOMTimeStamp.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/frame/PlatformEventController.h"
 #include "modules/EventTargetModules.h"
@@ -46,8 +48,7 @@ class Sensor : public EventTargetWithInlineData,
 
   // Getters
   String state() const;
-  // TODO(riju): crbug.com/614797 .
-  SensorReading* reading() const;
+  DOMHighResTimeStamp timestamp(ScriptState*, bool& isNull) const;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
@@ -63,8 +64,6 @@ class Sensor : public EventTargetWithInlineData,
          const SensorOptions&,
          ExceptionState&,
          device::mojom::blink::SensorType);
-  virtual std::unique_ptr<SensorReadingFactory>
-  createSensorReadingFactory() = 0;
 
   using SensorConfigurationPtr = device::mojom::blink::SensorConfigurationPtr;
   using SensorConfiguration = device::mojom::blink::SensorConfiguration;
@@ -73,6 +72,7 @@ class Sensor : public EventTargetWithInlineData,
   // concrete sensor implementations can override this method to handle other
   // parameters if needed.
   virtual SensorConfigurationPtr createSensorConfig();
+  double readingValue(int index, bool& isNull) const;
 
  private:
   void initSensorProxyIfNeeded();
@@ -101,6 +101,8 @@ class Sensor : public EventTargetWithInlineData,
   void notifySensorReadingChanged();
   void notifyOnActivate();
   void notifyError(DOMException* error);
+
+  bool canReturnReadings() const;
 
  private:
   SensorOptions m_sensorOptions;

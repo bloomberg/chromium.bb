@@ -7,7 +7,6 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/sensor/SensorProviderProxy.h"
-#include "modules/sensor/SensorReading.h"
 #include "modules/sensor/SensorReadingUpdater.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
@@ -18,8 +17,7 @@ namespace blink {
 
 SensorProxy::SensorProxy(SensorType sensorType,
                          SensorProviderProxy* provider,
-                         Page* page,
-                         std::unique_ptr<SensorReadingFactory> readingFactory)
+                         Page* page)
     : PageVisibilityObserver(page),
       m_type(sensorType),
       m_mode(ReportingMode::CONTINUOUS),
@@ -27,7 +25,6 @@ SensorProxy::SensorProxy(SensorType sensorType,
       m_clientBinding(this),
       m_state(SensorProxy::Uninitialized),
       m_suspended(false),
-      m_readingFactory(std::move(readingFactory)),
       m_maximumFrequency(0.0) {}
 
 SensorProxy::~SensorProxy() {}
@@ -38,7 +35,6 @@ void SensorProxy::dispose() {
 
 DEFINE_TRACE(SensorProxy) {
   visitor->trace(m_readingUpdater);
-  visitor->trace(m_reading);
   visitor->trace(m_observers);
   visitor->trace(m_provider);
   PageVisibilityObserver::trace(visitor);
@@ -124,7 +120,6 @@ Document* SensorProxy::document() const {
 
 void SensorProxy::updateSensorReading() {
   DCHECK(isInitialized());
-  DCHECK(m_readingFactory);
   int readAttempts = 0;
   const int kMaxReadAttemptsCount = 10;
   device::SensorReading readingData;
@@ -135,7 +130,7 @@ void SensorProxy::updateSensorReading() {
     }
   }
 
-  m_reading = m_readingFactory->createSensorReading(readingData);
+  m_reading = readingData;
 }
 
 void SensorProxy::notifySensorChanged(double timestamp) {
@@ -177,6 +172,7 @@ void SensorProxy::handleSensorError(ExceptionCode code,
 
   m_state = Uninitialized;
   m_frequenciesUsed.clear();
+  m_reading = device::SensorReading();
 
   // The m_sensor.reset() will release all callbacks and its bound parameters,
   // therefore, handleSensorError accepts messages by value.
@@ -185,7 +181,6 @@ void SensorProxy::handleSensorError(ExceptionCode code,
   m_sharedBufferHandle.reset();
   m_defaultConfig.reset();
   m_clientBinding.Close();
-  m_reading = nullptr;
 
   for (Observer* observer : m_observers)
     observer->onSensorError(code, sanitizedMessage, unsanitizedMessage);

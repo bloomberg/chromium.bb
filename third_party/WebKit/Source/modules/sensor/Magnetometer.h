@@ -9,8 +9,6 @@
 
 namespace blink {
 
-class MagnetometerReading;
-
 class Magnetometer final : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -20,14 +18,14 @@ class Magnetometer final : public Sensor {
                               ExceptionState&);
   static Magnetometer* create(ExecutionContext*, ExceptionState&);
 
-  MagnetometerReading* reading() const;
+  double x(bool& isNull) const;
+  double y(bool& isNull) const;
+  double z(bool& isNull) const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   Magnetometer(ExecutionContext*, const SensorOptions&, ExceptionState&);
-  // Sensor overrides.
-  std::unique_ptr<SensorReadingFactory> createSensorReadingFactory() override;
 };
 
 }  // namespace blink

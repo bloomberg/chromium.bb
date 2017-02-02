@@ -24,10 +24,17 @@ function update_sensor_reading(buffer, expects_modified_reading, readsCount) {
     buffer[2] += readsCount;
 }
 
-function verify_sensor_reading(reading) {
-  return reading.x == kDefaultReadingValueX &&
-         reading.y == kDefaultReadingValueY &&
-         reading.z == kDefaultReadingValueZ;
+function verify_sensor_reading(sensor, should_be_null) {
+  if (should_be_null) {
+    return sensor.x == null &&
+           sensor.y == null &&
+           sensor.z == null &&
+           sensor.timestamp == null;
+  }
+  return sensor.x == kDefaultReadingValueX &&
+         sensor.y == kDefaultReadingValueY &&
+         sensor.z == kDefaultReadingValueZ &&
+         sensor.timestamp != null;
 }
 
 runGenericSensorTests(Magnetometer, update_sensor_reading, verify_sensor_reading);

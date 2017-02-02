@@ -10,8 +10,6 @@
 
 namespace blink {
 
-class AccelerometerReading;
-
 class Accelerometer final : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -21,7 +19,9 @@ class Accelerometer final : public Sensor {
                                ExceptionState&);
   static Accelerometer* create(ExecutionContext*, ExceptionState&);
 
-  AccelerometerReading* reading() const;
+  double x(bool& isNull) const;
+  double y(bool& isNull) const;
+  double z(bool& isNull) const;
   bool includesGravity() const;
 
   DECLARE_VIRTUAL_TRACE();
@@ -31,7 +31,6 @@ class Accelerometer final : public Sensor {
                 const AccelerometerOptions&,
                 ExceptionState&);
   // Sensor overrides.
-  std::unique_ptr<SensorReadingFactory> createSensorReadingFactory() override;
   AccelerometerOptions m_accelerometerOptions;
 };
 

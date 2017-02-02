@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "modules/sensor/AccelerometerReading.h"
 
 using device::mojom::blink::SensorType;
 
@@ -34,18 +33,20 @@ Accelerometer::Accelerometer(ExecutionContext* executionContext,
                                       : SensorType::LINEAR_ACCELERATION),
       m_accelerometerOptions(options) {}
 
-AccelerometerReading* Accelerometer::reading() const {
-  return static_cast<AccelerometerReading*>(Sensor::reading());
+double Accelerometer::x(bool& isNull) const {
+  return readingValue(0, isNull);
+}
+
+double Accelerometer::y(bool& isNull) const {
+  return readingValue(1, isNull);
+}
+
+double Accelerometer::z(bool& isNull) const {
+  return readingValue(2, isNull);
 }
 
 bool Accelerometer::includesGravity() const {
   return m_accelerometerOptions.includeGravity();
-}
-
-std::unique_ptr<SensorReadingFactory>
-Accelerometer::createSensorReadingFactory() {
-  return std::unique_ptr<SensorReadingFactory>(
-      new SensorReadingFactoryImpl<AccelerometerReading>());
 }
 
 DEFINE_TRACE(Accelerometer) {

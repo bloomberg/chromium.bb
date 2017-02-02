@@ -5,9 +5,9 @@
       var timeOrigin;
       var sensor;
       function onAmbientLightReadingChange() {
-        if (sensor.reading.illuminance == 50 &&
-            sensor.reading.timeStamp > timeOrigin &&
-            sensor.reading.timeStamp < window.performance.now()) {
+        if (sensor.illuminance == 50 &&
+            sensor.timestamp > timeOrigin &&
+            sensor.timestamp < window.performance.now()) {
           pass();
         } else {
           fail();

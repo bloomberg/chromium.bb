@@ -8,19 +8,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 interface Accelerometer : Sensor
     attribute @@toStringTag
     getter includesGravity
-    getter reading
-    method constructor
-interface AccelerometerReading : SensorReading
-    attribute @@toStringTag
     getter x
     getter y
     getter z
     method constructor
 interface AmbientLightSensor : Sensor
-    attribute @@toStringTag
-    getter reading
-    method constructor
-interface AmbientLightSensorReading : SensorReading
     attribute @@toStringTag
     getter illuminance
     method constructor
@@ -1957,10 +1949,6 @@ interface GamepadPose
     method constructor
 interface Gyroscope : Sensor
     attribute @@toStringTag
-    getter reading
-    method constructor
-interface GyroscopeReading : SensorReading
-    attribute @@toStringTag
     getter x
     getter y
     getter z
@@ -3828,10 +3816,6 @@ interface MIDIPort : EventTarget
     method open
     setter onstatechange
 interface Magnetometer : Sensor
-    attribute @@toStringTag
-    getter reading
-    method constructor
-interface MagnetometerReading : SensorReading
     attribute @@toStringTag
     getter x
     getter y
@@ -6255,8 +6239,8 @@ interface Sensor : EventTarget
     getter onactivate
     getter onchange
     getter onerror
-    getter reading
     getter state
+    getter timestamp
     method constructor
     method start
     method stop
@@ -6266,10 +6250,6 @@ interface Sensor : EventTarget
 interface SensorErrorEvent : Event
     attribute @@toStringTag
     getter error
-    method constructor
-interface SensorReading
-    attribute @@toStringTag
-    getter timeStamp
     method constructor
 interface ServiceWorker : EventTarget
     attribute @@toStringTag

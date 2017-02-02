@@ -11,5 +11,7 @@
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
 ] interface Magnetometer : Sensor {
-    readonly attribute MagnetometerReading? reading;
+    readonly attribute unrestricted double? x;
+    readonly attribute unrestricted double? y;
+    readonly attribute unrestricted double? z;
 };

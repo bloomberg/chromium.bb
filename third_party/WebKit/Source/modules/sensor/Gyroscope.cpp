@@ -4,7 +4,6 @@
 
 #include "modules/sensor/Gyroscope.h"
 
-#include "modules/sensor/GyroscopeReading.h"
 
 using device::mojom::blink::SensorType;
 
@@ -28,12 +27,16 @@ Gyroscope::Gyroscope(ExecutionContext* executionContext,
     : Sensor(executionContext, options, exceptionState, SensorType::GYROSCOPE) {
 }
 
-GyroscopeReading* Gyroscope::reading() const {
-  return static_cast<GyroscopeReading*>(Sensor::reading());
+double Gyroscope::x(bool& isNull) const {
+  return readingValue(0, isNull);
 }
 
-std::unique_ptr<SensorReadingFactory> Gyroscope::createSensorReadingFactory() {
-  return WTF::makeUnique<SensorReadingFactoryImpl<GyroscopeReading>>();
+double Gyroscope::y(bool& isNull) const {
+  return readingValue(1, isNull);
+}
+
+double Gyroscope::z(bool& isNull) const {
+  return readingValue(2, isNull);
 }
 
 DEFINE_TRACE(Gyroscope) {

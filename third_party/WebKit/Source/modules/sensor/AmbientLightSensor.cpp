@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "modules/sensor/AmbientLightSensorReading.h"
 
 using device::mojom::blink::SensorType;
 
@@ -35,14 +34,8 @@ AmbientLightSensor::AmbientLightSensor(ExecutionContext* executionContext,
              exceptionState,
              SensorType::AMBIENT_LIGHT) {}
 
-AmbientLightSensorReading* AmbientLightSensor::reading() const {
-  return static_cast<AmbientLightSensorReading*>(Sensor::reading());
-}
-
-std::unique_ptr<SensorReadingFactory>
-AmbientLightSensor::createSensorReadingFactory() {
-  return std::unique_ptr<SensorReadingFactory>(
-      new SensorReadingFactoryImpl<AmbientLightSensorReading>());
+double AmbientLightSensor::illuminance(bool& isNull) const {
+  return readingValue(0, isNull);
 }
 
 DEFINE_TRACE(AmbientLightSensor) {

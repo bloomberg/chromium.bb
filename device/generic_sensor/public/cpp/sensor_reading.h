@@ -45,7 +45,8 @@ struct DEVICE_GENERIC_SENSOR_PUBLIC_EXPORT SensorReading {
   ~SensorReading();
   SensorReading(const SensorReading& other);
   SensorReadingField<double> timestamp;
-  SensorReadingField<double> values[3];
+  constexpr static int kValuesCount = 3;
+  SensorReadingField<double> values[kValuesCount];
 };
 
 // This structure represents sensor reading buffer: sensor reading and seqlock

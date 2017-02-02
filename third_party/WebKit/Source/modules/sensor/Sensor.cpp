@@ -9,10 +9,11 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/timing/DOMWindowPerformance.h"
+#include "core/timing/Performance.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom-blink.h"
 #include "modules/sensor/SensorErrorEvent.h"
 #include "modules/sensor/SensorProviderProxy.h"
-#include "modules/sensor/SensorReading.h"
 
 using namespace device::mojom::blink;
 
@@ -114,11 +115,26 @@ String Sensor::state() const {
   return ToString(m_state);
 }
 
-SensorReading* Sensor::reading() const {
-  if (m_state != Sensor::SensorState::Activated)
-    return nullptr;
+DOMHighResTimeStamp Sensor::timestamp(ScriptState* scriptState,
+                                      bool& isNull) const {
+  if (!canReturnReadings()) {
+    isNull = true;
+    return 0.0;
+  }
+
+  LocalDOMWindow* window = scriptState->domWindow();
+  if (!window) {
+    isNull = true;
+    return 0.0;
+  }
+
+  Performance* performance = DOMWindowPerformance::performance(*window);
+  DCHECK(performance);
   DCHECK(m_sensorProxy);
-  return m_sensorProxy->sensorReading();
+  isNull = false;
+
+  return performance->monotonicTimeToDOMHighResTimeStamp(
+      m_sensorProxy->reading().timestamp);
 }
 
 DEFINE_TRACE(Sensor) {
@@ -152,6 +168,16 @@ auto Sensor::createSensorConfig() -> SensorConfigurationPtr {
   return result;
 }
 
+double Sensor::readingValue(int index, bool& isNull) const {
+  if (!canReturnReadings()) {
+    isNull = true;
+    return 0.0;
+  }
+  DCHECK(m_sensorProxy);
+  DCHECK(index >= 0 && index < device::SensorReading::kValuesCount);
+  return m_sensorProxy->reading().values[index];
+}
+
 void Sensor::initSensorProxyIfNeeded() {
   if (m_sensorProxy)
     return;
@@ -163,10 +189,8 @@ void Sensor::initSensorProxyIfNeeded() {
   auto provider = SensorProviderProxy::from(document->frame());
   m_sensorProxy = provider->getSensorProxy(m_type);
 
-  if (!m_sensorProxy) {
-    m_sensorProxy = provider->createSensorProxy(m_type, document->page(),
-                                                createSensorReadingFactory());
-  }
+  if (!m_sensorProxy)
+    m_sensorProxy = provider->createSensorProxy(m_type, document->page());
 }
 
 void Sensor::contextDestroyed(ExecutionContext*) {
@@ -283,10 +307,9 @@ void Sensor::reportError(ExceptionCode code,
 
 void Sensor::notifySensorReadingChanged() {
   DCHECK(m_sensorProxy);
-  DCHECK(m_sensorProxy->sensorReading());
 
-  if (m_sensorProxy->sensorReading()->isReadingUpdated(m_storedData)) {
-    m_storedData = m_sensorProxy->sensorReading()->data();
+  if (m_sensorProxy->reading().timestamp != m_storedData.timestamp) {
+    m_storedData = m_sensorProxy->reading();
     dispatchEvent(Event::create(EventTypeNames::change));
   }
 }
@@ -298,6 +321,13 @@ void Sensor::notifyOnActivate() {
 void Sensor::notifyError(DOMException* error) {
   dispatchEvent(
       SensorErrorEvent::create(EventTypeNames::error, std::move(error)));
+}
+
+bool Sensor::canReturnReadings() const {
+  if (m_state != Sensor::SensorState::Activated)
+    return false;
+  DCHECK(m_sensorProxy);
+  return m_sensorProxy->reading().timestamp != 0.0;
 }
 
 }  // namespace blink
