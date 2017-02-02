@@ -1143,8 +1143,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
       }));
 
   ON_CALL(*user_descriptor, WriteRemoteDescriptor(_, _, _))
-      .WillByDefault(Invoke([adapter_ptr, device_ptr, user_descriptor_ptr,
-                             disconnect, succeeds](
+      .WillByDefault(Invoke([adapter_ptr, device_ptr, disconnect, succeeds](
           const std::vector<uint8_t>& value, const base::Closure& callback,
           const BluetoothRemoteGattDescriptor::ErrorCallback& error_callback) {
         base::Closure pending;
