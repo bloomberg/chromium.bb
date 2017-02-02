@@ -940,6 +940,8 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE},
       {"offerToTranslateInThisLanguage",
        IDS_SETTINGS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE},
+      {"offerToEnableTranslate",
+       IDS_SETTINGS_LANGUAGES_OFFER_TO_ENABLE_TRANSLATE},
 #if !defined(OS_MACOSX)
       {"spellCheckListTitle", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LIST_TITLE},
       {"spellCheckExpandA11yLabel",

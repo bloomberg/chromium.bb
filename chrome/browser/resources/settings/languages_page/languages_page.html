@@ -87,16 +87,16 @@
           </cr-expand-button>
         </div>
         <iron-collapse id="languagesCollapse" opened="[[languagesOpened_]]">
-          <div class="list-frame vertical-list">
-            <span class="list-item"
-                hidden="[[isHelpTextHidden_(languages.enabled.*)]]">
-              <span>$i18n{orderLanguagesInstructions}</span>
+          <span class="settings-box first"
+              hidden="[[isHelpTextHidden_(languages.enabled.*)]]">
+            <span>$i18n{orderLanguagesInstructions}</span>
 <if expr="chromeos">
-              <a href="$i18n{languagesLearnMoreURL}" target="_blank">
-                $i18n{learnMore}
-              </a>
+            <a href="$i18n{languagesLearnMoreURL}" target="_blank">
+              $i18n{learnMore}
+            </a>
 </if>
-            </span>
+          </span>
+          <div class="list-frame vertical-list">
             <template is="dom-repeat" items="[[languages.enabled]]">
               <div class$="list-item [[getLanguageItemClass_(
                   item.language.code, language.prospectiveUILanguage)]]">
@@ -132,6 +132,12 @@
                 $i18n{addLanguages}
               </a>
             </div>
+          </div>
+          <div class="settings-box first">
+            <settings-toggle-button id="offerTranslateOtherLangs" class="start"
+                pref="{{prefs.translate.enabled}}"
+                label="$i18n{offerToEnableTranslate}">
+            </settings-toggle-button>
           </div>
         </iron-collapse>
 <if expr="chromeos">

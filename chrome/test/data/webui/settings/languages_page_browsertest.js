@@ -235,7 +235,24 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
             cr.isChromeOS || cr.isWindows ? 1 : 0, separator.offsetHeight);
       });
 
-      test('toggle translate', function(done) {
+      test('test translate.enable toggle', function() {
+        languageHelper.setPrefValue('translate.enabled', true);
+        var toggle = languagesPage.$.offerTranslateOtherLangs.root
+            .querySelectorAll('paper-toggle-button')[0];
+        assertTrue(!!toggle);
+
+        // Clicking on toggle switch it to false.
+        MockInteractions.tap(toggle);
+        var newToggleValue = languageHelper.prefs.translate.enabled.value;
+        assertFalse(newToggleValue);
+
+        // Clicking on toggle switch it to true again.
+        MockInteractions.tap(toggle);
+        newToggleValue = languageHelper.prefs.translate.enabled.value;
+        assertTrue(newToggleValue);
+      });
+
+      test('toggle translate for a specific language', function(done) {
         // Enable Translate so the menu always shows the Translate checkbox.
         languageHelper.setPrefValue('translate.enabled', true);
         languagesPage.set('languages.translateTarget', 'foo');
@@ -260,6 +277,25 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
           assertFalse(actionMenu.open);
           done();
         }, settings.kMenuCloseDelay + 1);
+      });
+
+      test('disable translate hides language-specific option', function() {
+        // Disables translate.
+        languageHelper.setPrefValue('translate.enabled', false);
+        languagesPage.set('languages.translateTarget', 'foo');
+        languagesPage.set('languages.enabled.1.supportsTranslate', true);
+
+        // Makes sure language-specific menu exists.
+        var languageOptionsDropdownTrigger =
+            languagesCollapse.querySelectorAll('paper-icon-button')[1];
+        assertTrue(!!languageOptionsDropdownTrigger);
+        MockInteractions.tap(languageOptionsDropdownTrigger);
+        assertTrue(actionMenu.open);
+
+        // The language-specific translation option should be hidden.
+        var translateOption = actionMenu.querySelector('#offerTranslations');
+        assertTrue(!!translateOption);
+        assertTrue(translateOption.hidden);
       });
 
       test('remove language', function() {
