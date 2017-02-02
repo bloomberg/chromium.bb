@@ -230,10 +230,7 @@ void MojoAsyncResourceHandler::OnWillStart(
 }
 
 bool MojoAsyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                          int* buf_size,
-                                          int min_size) {
-  DCHECK_EQ(-1, min_size);
-
+                                          int* buf_size) {
   // TODO(mmenke):  Cancel with net::ERR_INSUFFICIENT_RESOURCES instead.
   if (!CheckForSufficientResource())
     return false;

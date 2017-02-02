@@ -70,8 +70,7 @@ class CONTENT_EXPORT DownloadRequestCore
   // URLRequest::Read(). Call OnReadCompleted() when the Read operation
   // completes.
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                  int* buf_size,
-                  int min_size);
+                  int* buf_size);
 
   // Used to notify DownloadRequestCore that the caller is about to abort the
   // outer request. |reason| will be used as the final interrupt reason when

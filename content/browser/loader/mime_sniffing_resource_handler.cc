@@ -216,19 +216,16 @@ void MimeSniffingResourceHandler::OnResponseStarted(
 }
 
 bool MimeSniffingResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                             int* buf_size,
-                                             int min_size) {
+                                             int* buf_size) {
   if (state_ == STATE_STREAMING)
-    return next_handler_->OnWillRead(buf, buf_size, min_size);
-
-  DCHECK_EQ(-1, min_size);
+    return next_handler_->OnWillRead(buf, buf_size);
 
   if (read_buffer_.get()) {
     CHECK_LT(bytes_read_, read_buffer_size_);
     *buf = new DependentIOBuffer(read_buffer_.get(), bytes_read_);
     *buf_size = read_buffer_size_ - bytes_read_;
   } else {
-    if (!next_handler_->OnWillRead(buf, buf_size, min_size))
+    if (!next_handler_->OnWillRead(buf, buf_size))
       return false;
 
     read_buffer_ = *buf;

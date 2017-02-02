@@ -71,12 +71,11 @@ void SaveFileResourceHandler::OnWillStart(
 }
 
 bool SaveFileResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                         int* buf_size,
-                                         int min_size) {
+                                         int* buf_size) {
   DCHECK_EQ(AuthorizationState::AUTHORIZED, authorization_state_);
   DCHECK(buf && buf_size);
   if (!read_buffer_.get()) {
-    *buf_size = min_size < 0 ? kReadBufSize : min_size;
+    *buf_size = kReadBufSize;
     read_buffer_ = new net::IOBuffer(*buf_size);
   }
   *buf = read_buffer_.get();

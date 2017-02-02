@@ -367,7 +367,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
 
   // Read some data to sniff the mime type. This will ask the next
   // ResourceHandler for a buffer.
-  mock_loader.OnWillRead(-1);
+  mock_loader.OnWillRead();
 
   if (!will_read) {
     EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader.status());
@@ -543,7 +543,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
 
   // The MimeSniffingResourceHandler should be acting as a pass-through
   // ResourceHandler.
-  mock_loader.OnWillRead(-1);
+  mock_loader.OnWillRead();
 
   if (!will_read) {
     EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader.status());

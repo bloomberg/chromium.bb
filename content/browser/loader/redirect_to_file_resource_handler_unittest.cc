@@ -335,7 +335,7 @@ class RedirectToFileResourceHandlerTest
     EXPECT_EQ(expected_total_bytes_downloaded,
               test_handler_->total_bytes_downloaded());
 
-    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
     ASSERT_EQ(MockResourceLoader::Status::IDLE,
               mock_loader_->OnReadCompleted(""));
     ASSERT_EQ(MockResourceLoader::Status::IDLE,
@@ -378,7 +378,7 @@ TEST_P(RedirectToFileResourceHandlerTest, SingleBodyRead) {
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(test_data));
   // Wait for the write to complete, in the async case.
@@ -399,7 +399,7 @@ TEST_P(RedirectToFileResourceHandlerTest, ManySequentialBodyReads) {
 
   for (size_t offset = 0; offset < test_data.length();
        offset += kBytesPerRead) {
-    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
     size_t length = std::min(kBytesPerRead, test_data.length() - offset);
     ASSERT_EQ(MockResourceLoader::Status::IDLE,
               mock_loader_->OnReadCompleted(
@@ -421,7 +421,7 @@ TEST_P(RedirectToFileResourceHandlerTest, PartialWrites) {
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(test_data));
   // Wait for the writes to complete, in the async case.
@@ -444,7 +444,7 @@ TEST_P(RedirectToFileResourceHandlerTest, PartialWrites2) {
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnReadCompleted(test_data));
   // Wait for the writes to complete.
@@ -469,12 +469,12 @@ TEST_P(RedirectToFileResourceHandlerTest, ReceiveDataWhileWritingBody) {
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(
       MockResourceLoader::Status::IDLE,
       mock_loader_->OnReadCompleted(test_data.substr(0, kFirstWriteSize)));
   // Next read completes before first write succeeds.
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(test_data.substr(
                 kFirstWriteSize, sizeof(test_data) - kFirstWriteSize)));
@@ -503,12 +503,12 @@ TEST_P(RedirectToFileResourceHandlerTest, ReceiveDataAndDeferWhileWritingBody) {
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(
       MockResourceLoader::Status::IDLE,
       mock_loader_->OnReadCompleted(test_data.substr(0, kFirstWriteSize)));
   // Next read completes before first write succeeds.
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnReadCompleted(test_data.substr(
                 kFirstWriteSize, sizeof(test_data) - kFirstWriteSize)));
@@ -555,7 +555,7 @@ TEST_P(RedirectToFileResourceHandlerTest,
 
   int offset = 0;
   for (int read_size : read_sizes) {
-    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
     ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
               mock_loader_->OnReadCompleted(
                   base::StringPiece(test_data.data() + offset, read_size)));
@@ -582,13 +582,13 @@ TEST_P(RedirectToFileResourceHandlerTest, CompletedWhileWritingBody) {
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(test_data));
   EXPECT_EQ(0, test_handler_->total_bytes_downloaded());
 
   // While data is being written to the disk, the request completes.
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(""));
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
@@ -621,19 +621,19 @@ TEST_P(RedirectToFileResourceHandlerTest,
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(
       MockResourceLoader::Status::IDLE,
       mock_loader_->OnReadCompleted(test_data.substr(0, kFirstWriteSize)));
   // Next read completes before first write succeeds.
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(test_data.substr(
                 kFirstWriteSize, sizeof(test_data) - kFirstWriteSize)));
   EXPECT_EQ(0, test_handler_->total_bytes_downloaded());
 
   // While the first write is still going on, the request completes.
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(""));
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
@@ -657,7 +657,7 @@ TEST_P(RedirectToFileResourceHandlerTest, SingleBodyReadAndFail) {
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(test_data));
 
@@ -667,7 +667,7 @@ TEST_P(RedirectToFileResourceHandlerTest, SingleBodyReadAndFail) {
             test_handler_->total_bytes_downloaded());
 
   // Next read fails and request is torn down synchronously.
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseCompleted(
                 net::URLRequestStatus::FromError(net::ERR_FAILED)));
@@ -688,7 +688,7 @@ TEST_P(RedirectToFileResourceHandlerTest, FailedWhileWritingBody) {
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(test_data));
   EXPECT_EQ(0, test_handler_->total_bytes_downloaded());
@@ -724,12 +724,12 @@ TEST_P(RedirectToFileResourceHandlerTest,
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(
       MockResourceLoader::Status::IDLE,
       mock_loader_->OnReadCompleted(test_data.substr(0, kFirstWriteSize)));
   // Next read completes before first write succeeds.
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(test_data.substr(
                 kFirstWriteSize, sizeof(test_data) - kFirstWriteSize)));
@@ -774,7 +774,7 @@ TEST_P(RedirectToFileResourceHandlerTest, FirstWriteFails) {
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   mock_loader_->OnReadCompleted(test_data);
   // Wait for the write to complete, in the async case.
   base::RunLoop().RunUntilIdle();
@@ -805,11 +805,11 @@ TEST_P(RedirectToFileResourceHandlerTest, SecondWriteFails) {
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             OnResponseStartedAndWaitForResult());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(
                 base::StringPiece(test_data.data(), kFirstWriteSize)));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   mock_loader_->OnReadCompleted(base::StringPiece(
       test_data.data() + kFirstWriteSize, test_data.size() - kFirstWriteSize));
   // Wait for the write to complete, in the async case.

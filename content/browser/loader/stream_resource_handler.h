@@ -47,8 +47,7 @@ class StreamResourceHandler : public ResourceHandler {
 
   // Create a new buffer to store received data.
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                  int* buf_size,
-                  int min_size) override;
+                  int* buf_size) override;
 
   // A read was completed, forward the data to the Stream.
   void OnReadCompleted(int bytes_read,

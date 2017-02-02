@@ -97,9 +97,7 @@ void SyncResourceHandler::OnWillStart(
 }
 
 bool SyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                     int* buf_size,
-                                     int min_size) {
-  DCHECK(min_size == -1);
+                                     int* buf_size) {
   *buf = read_buffer_.get();
   *buf_size = kReadBufSize;
   return true;

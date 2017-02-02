@@ -187,10 +187,7 @@ void RedirectToFileResourceHandler::OnWillStart(
 
 bool RedirectToFileResourceHandler::OnWillRead(
     scoped_refptr<net::IOBuffer>* buf,
-    int* buf_size,
-    int min_size) {
-  DCHECK_EQ(-1, min_size);
-
+    int* buf_size) {
   if (buf_->capacity() < next_buffer_size_)
     buf_->SetCapacity(next_buffer_size_);
 

@@ -142,8 +142,7 @@ void TestResourceHandler::OnWillStart(
 }
 
 bool TestResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                     int* buf_size,
-                                     int min_size) {
+                                     int* buf_size) {
   EXPECT_FALSE(canceled_);
   EXPECT_FALSE(expect_on_data_downloaded_);
   EXPECT_EQ(0, on_response_completed_called_);

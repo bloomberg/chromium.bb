@@ -368,10 +368,8 @@ void AsyncResourceHandler::OnWillStart(
 }
 
 bool AsyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                      int* buf_size,
-                                      int min_size) {
+                                      int* buf_size) {
   DCHECK(!has_controller());
-  DCHECK_EQ(-1, min_size);
 
   // TODO(mmenke):  Should fail with ERR_INSUFFICIENT_RESOURCES here.
   if (!CheckForSufficientResource())

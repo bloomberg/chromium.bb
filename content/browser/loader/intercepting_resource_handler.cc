@@ -93,15 +93,13 @@ void InterceptingResourceHandler::OnResponseStarted(
 }
 
 bool InterceptingResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                             int* buf_size,
-                                             int min_size) {
+                                             int* buf_size) {
   if (state_ == State::PASS_THROUGH)
-    return next_handler_->OnWillRead(buf, buf_size, min_size);
+    return next_handler_->OnWillRead(buf, buf_size);
 
   DCHECK_EQ(State::STARTING, state_);
-  DCHECK_EQ(-1, min_size);
 
-  if (!next_handler_->OnWillRead(buf, buf_size, min_size))
+  if (!next_handler_->OnWillRead(buf, buf_size))
     return false;
 
   first_read_buffer_ = *buf;
@@ -286,7 +284,7 @@ void InterceptingResourceHandler::SendPayloadToOldHandler() {
     first_read_buffer_ = nullptr;
     first_read_buffer_size_ = 0;
   } else {
-    if (!next_handler_->OnWillRead(&buffer, &size, -1)) {
+    if (!next_handler_->OnWillRead(&buffer, &size)) {
       Cancel();
       return;
     }
@@ -318,7 +316,7 @@ void InterceptingResourceHandler::SendFirstReadBufferToNewHandler() {
 
   scoped_refptr<net::IOBuffer> buf;
   int size = 0;
-  if (!next_handler_->OnWillRead(&buf, &size, -1)) {
+  if (!next_handler_->OnWillRead(&buf, &size)) {
     Cancel();
     return;
   }

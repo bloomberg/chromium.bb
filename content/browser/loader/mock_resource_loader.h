@@ -59,7 +59,7 @@ class MockResourceLoader : public ResourceHandler::Delegate {
   Status OnRequestRedirected(const net::RedirectInfo& redirect_info,
                              scoped_refptr<ResourceResponse> response);
   Status OnResponseStarted(scoped_refptr<ResourceResponse> response);
-  Status OnWillRead(int min_size);
+  Status OnWillRead();
   Status OnReadCompleted(base::StringPiece bytes);
   Status OnResponseCompleted(const net::URLRequestStatus& status);
 

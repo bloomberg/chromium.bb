@@ -172,9 +172,8 @@ void DownloadResourceHandler::OnWillStart(
 // Create a new buffer, which will be handed to the download thread for file
 // writing and deletion.
 bool DownloadResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                         int* buf_size,
-                                         int min_size) {
-  return core_.OnWillRead(buf, buf_size, min_size);
+                                         int* buf_size) {
+  return core_.OnWillRead(buf, buf_size);
 }
 
 // Pass the buffer to the download file writer.

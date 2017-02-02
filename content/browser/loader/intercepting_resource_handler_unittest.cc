@@ -103,7 +103,7 @@ TEST_F(InterceptingResourceHandlerTest, NoSwitching) {
   // Simulate the MimeSniffingResourceHandler buffering the data.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   ASSERT_NE(mock_loader_->io_buffer(), old_handler_->buffer());
 
@@ -119,7 +119,7 @@ TEST_F(InterceptingResourceHandlerTest, NoSwitching) {
   EXPECT_EQ(kData, old_handler_body_);
 
   // Make sure another read behaves as expected.
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(mock_loader_->io_buffer(), old_handler_->buffer());
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
@@ -136,7 +136,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchNoPayload) {
   // Simulate the MimeSniffingResourceHandler buffering the data.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   ASSERT_NE(mock_loader_->io_buffer(), old_handler_->buffer());
 
@@ -167,7 +167,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchNoPayload) {
   EXPECT_EQ(kData, new_handler_body);
 
   // Make sure another read behaves as expected.
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(mock_loader_->io_buffer(), new_test_handler->buffer());
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
@@ -192,7 +192,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchWithPayload) {
   // Simulate the MimeSniffingResourceHandler buffering the data.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   ASSERT_NE(mock_loader_->io_buffer(), old_buffer.get());
 
@@ -227,7 +227,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchWithPayload) {
   EXPECT_EQ(kData, new_handler_body);
 
   // Make sure another read behaves as expected.
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(mock_loader_->io_buffer(), new_test_handler->buffer());
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
@@ -243,7 +243,7 @@ TEST_F(InterceptingResourceHandlerTest, OldHandlerFailsWillRead) {
   // handler should tell the caller to fail.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->OnWillRead());
   EXPECT_EQ(net::ERR_ABORTED, mock_loader_->error_code());
 }
 
@@ -255,7 +255,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsOnWillStart) {
   // Simulate the MimeSniffingResourceHandler buffering the data.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   ASSERT_NE(mock_loader_->io_buffer(), old_buffer.get());
 
@@ -283,7 +283,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsResponseStarted) {
   // Simulate the MimeSniffingResourceHandler buffering the data.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   ASSERT_NE(mock_loader_->io_buffer(), old_buffer.get());
 
@@ -312,7 +312,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsWillRead) {
   // Simulate the MimeSniffingResourceHandler buffering the data.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   ASSERT_NE(mock_loader_->io_buffer(), old_buffer.get());
 
@@ -351,7 +351,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsReadCompleted) {
   // Simulate the MimeSniffingResourceHandler buffering the data.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   ASSERT_NE(mock_loader_->io_buffer(), old_buffer.get());
 
@@ -398,7 +398,7 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   // Simulate the MimeSniffingResourceHandler buffering the data.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   ASSERT_NE(mock_loader_->io_buffer(), old_buffer.get());
 
@@ -471,7 +471,7 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
   EXPECT_EQ(net::URLRequestStatus::IO_PENDING, new_handler_status.status());
 
   // Final EOF byte is read.
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted(""));
 
@@ -505,7 +505,7 @@ TEST_F(InterceptingResourceHandlerTest, CancelNewHandler) {
   // Simulate the MimeSniffingResourceHandler buffering the data.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   // Simulate the MimeSniffingResourceHandler asking the
   // InterceptingResourceHandler to switch to a new handler.
@@ -546,7 +546,7 @@ TEST_F(InterceptingResourceHandlerTest, CancelBothHandlers) {
   // Simulate the MimeSniffingResourceHandler buffering the data.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   // Simulate the MimeSniffingResourceHandler asking the
   // InterceptingResourceHandler to switch to a new handler.

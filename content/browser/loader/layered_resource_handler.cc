@@ -48,10 +48,9 @@ void LayeredResourceHandler::OnWillStart(
 }
 
 bool LayeredResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                        int* buf_size,
-                                        int min_size) {
+                                        int* buf_size) {
   DCHECK(next_handler_.get());
-  return next_handler_->OnWillRead(buf, buf_size, min_size);
+  return next_handler_->OnWillRead(buf, buf_size);
 }
 
 void LayeredResourceHandler::OnReadCompleted(

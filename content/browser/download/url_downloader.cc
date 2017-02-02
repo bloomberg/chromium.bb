@@ -143,7 +143,7 @@ void UrlDownloader::StartReading(bool is_continuation) {
   // doesn't use the buffer.
   scoped_refptr<net::IOBuffer> buf;
   int buf_size;
-  if (!core_.OnWillRead(&buf, &buf_size, -1)) {
+  if (!core_.OnWillRead(&buf, &buf_size)) {
     int result = request_->CancelWithError(net::ERR_ABORTED);
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&UrlDownloader::ResponseCompleted,

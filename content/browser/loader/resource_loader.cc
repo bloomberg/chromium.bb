@@ -662,7 +662,7 @@ void ResourceLoader::ReadMore(bool handle_result_async) {
     tracked_objects::ScopedTracker tracking_profile2(
         FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnWillRead()"));
 
-    if (!handler_->OnWillRead(&buf, &buf_size, -1)) {
+    if (!handler_->OnWillRead(&buf, &buf_size)) {
       // Cancel the request, which will then call back into |this| to inform it
       // of a "read error".
       Cancel();

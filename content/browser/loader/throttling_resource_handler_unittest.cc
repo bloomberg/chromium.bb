@@ -201,7 +201,7 @@ class ThrottlingResourceHandlerTest : public testing::Test {
   void FinishRequestSuccessfully() {
     EXPECT_EQ(0, test_handler_->on_will_read_called());
 
-    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(1));
+    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
     EXPECT_EQ(1, test_handler_->on_will_read_called());
     EXPECT_EQ(0, test_handler_->on_read_completed_called());
 

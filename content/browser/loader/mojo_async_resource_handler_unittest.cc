@@ -533,7 +533,7 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseStarted) {
 TEST_F(MojoAsyncResourceHandlerTest, OnWillReadAndInFlightRequests) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
   EXPECT_EQ(0, rdh_.num_in_flight_requests_for_testing());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   EXPECT_EQ(1, rdh_.num_in_flight_requests_for_testing());
   handler_ = nullptr;
   EXPECT_EQ(0, rdh_.num_in_flight_requests_for_testing());
@@ -543,7 +543,7 @@ TEST_F(MojoAsyncResourceHandlerTest, OnWillReadWithInsufficientResource) {
   rdh_.set_max_num_in_flight_requests_per_process(0);
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
 
-  ASSERT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->OnWillRead());
   // TODO(mmenke): Make this fail with net::ERR_INSUFFICIENT_RESOURCES.
   EXPECT_EQ(net::ERR_ABORTED, mock_loader_->error_code());
   EXPECT_EQ(1, rdh_.num_in_flight_requests_for_testing());
@@ -553,7 +553,7 @@ TEST_F(MojoAsyncResourceHandlerTest, OnWillReadWithInsufficientResource) {
 
 TEST_F(MojoAsyncResourceHandlerTest, OnWillReadAndOnReadCompleted) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   // The buffer size that the mime sniffer requires implicitly.
   ASSERT_GE(mock_loader_->io_buffer_size(),
             kSizeMimeSnifferRequiresForFirstOnWillRead);
@@ -585,7 +585,7 @@ TEST_F(MojoAsyncResourceHandlerTest,
   MojoAsyncResourceHandler::SetAllocationSizeForTesting(2);
 
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   // The buffer size that the mime sniffer requires implicitly.
   ASSERT_GE(mock_loader_->io_buffer_size(),
             kSizeMimeSnifferRequiresForFirstOnWillRead);
@@ -619,7 +619,7 @@ TEST_F(MojoAsyncResourceHandlerTest,
 TEST_F(MojoAsyncResourceHandlerTest,
        IOBufferFromOnWillReadShouldRemainValidEvenIfHandlerIsGone) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   // The io_buffer size that the mime sniffer requires implicitly.
   ASSERT_GE(mock_loader_->io_buffer_size(),
             kSizeMimeSnifferRequiresForFirstOnWillRead);
@@ -719,7 +719,7 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompletedWithFailedTimedOut) {
 TEST_F(MojoAsyncResourceHandlerTest, ResponseCompletionShouldCloseDataPipe) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("AB"));
   url_loader_client_.RunUntilResponseBodyArrived();
@@ -748,7 +748,7 @@ TEST_F(MojoAsyncResourceHandlerTest, ResponseCompletionShouldCloseDataPipe) {
 TEST_F(MojoAsyncResourceHandlerTest, OutOfBandCancelDuringBodyTransmission) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   std::string data(mock_loader_->io_buffer_size(), 'a');
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnReadCompleted(data));
@@ -786,13 +786,13 @@ TEST_F(MojoAsyncResourceHandlerTest, OutOfBandCancelDuringBodyTransmission) {
 TEST_F(MojoAsyncResourceHandlerTest, BeginWriteFailsOnWillRead) {
   handler_->set_begin_write_expectation(MOJO_RESULT_UNKNOWN);
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->OnWillRead());
 }
 
 TEST_F(MojoAsyncResourceHandlerTest, BeginWriteReturnsShouldWaitOnWillRead) {
   handler_->set_begin_write_expectation(MOJO_RESULT_SHOULD_WAIT);
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 }
 
 TEST_F(MojoAsyncResourceHandlerTest,
@@ -801,7 +801,7 @@ TEST_F(MojoAsyncResourceHandlerTest,
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
   size_t written = 0;
   while (true) {
-    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
     MockResourceLoader::Status result = mock_loader_->OnReadCompleted(
         std::string(mock_loader_->io_buffer_size(), 'X'));
     written += mock_loader_->io_buffer_size();
@@ -837,12 +837,12 @@ TEST_F(MojoAsyncResourceHandlerTest,
   MojoAsyncResourceHandler::SetAllocationSizeForTesting(2);
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
   handler_->set_end_write_expectation(MOJO_RESULT_UNKNOWN);
-  ASSERT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->OnWillRead());
 }
 
 TEST_F(MojoAsyncResourceHandlerTest, EndWriteFailsOnReadCompleted) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   handler_->set_end_write_expectation(MOJO_RESULT_SHOULD_WAIT);
   ASSERT_EQ(MockResourceLoader::Status::CANCELED,
@@ -854,7 +854,7 @@ TEST_F(MojoAsyncResourceHandlerTest,
        EndWriteFailsOnReadCompletedWithInsufficientInitialCapacity) {
   MojoAsyncResourceHandler::SetAllocationSizeForTesting(2);
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   handler_->set_end_write_expectation(MOJO_RESULT_SHOULD_WAIT);
   ASSERT_EQ(MockResourceLoader::Status::CANCELED,
@@ -866,7 +866,7 @@ TEST_F(MojoAsyncResourceHandlerTest,
        EndWriteFailsOnResumeWithInsufficientInitialCapacity) {
   MojoAsyncResourceHandler::SetAllocationSizeForTesting(8);
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   while (true) {
     MockResourceLoader::Status result = mock_loader_->OnReadCompleted(
@@ -875,7 +875,7 @@ TEST_F(MojoAsyncResourceHandlerTest,
       break;
     ASSERT_EQ(MockResourceLoader::Status::IDLE, result);
 
-    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   }
 
   url_loader_client_.RunUntilResponseBodyArrived();
@@ -969,7 +969,7 @@ TEST_F(MojoAsyncResourceHandlerTest, SetPriority) {
 TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
        OnWillReadWithLongContents) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   std::string expected;
   for (int i = 0; i < 3 * mock_loader_->io_buffer_size() + 2; ++i)
     expected += ('A' + i % 26);
@@ -981,7 +981,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
   while (actual.size() < expected.size()) {
     while (written < expected.size() &&
            mock_loader_->status() == MockResourceLoader::Status::IDLE) {
-      ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+      ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
       const size_t to_be_written =
           std::min(static_cast<size_t>(mock_loader_->io_buffer_size()),
                    expected.size() - written);
@@ -1018,7 +1018,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
 TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
        BeginWriteFailsOnReadCompleted) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   handler_->set_begin_write_expectation(MOJO_RESULT_UNKNOWN);
   ASSERT_EQ(MockResourceLoader::Status::CANCELED,
@@ -1029,7 +1029,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
 TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
        BeginWriteReturnsShouldWaitOnReadCompleted) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   handler_->set_begin_write_expectation(MOJO_RESULT_SHOULD_WAIT);
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
@@ -1040,11 +1040,11 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
 TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
        BeginWriteFailsOnResume) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnReadCompleted(0));
 
   while (true) {
-    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
     MockResourceLoader::Status result = mock_loader_->OnReadCompleted(
         std::string(mock_loader_->io_buffer_size(), 'A'));
     if (result == MockResourceLoader::Status::CALLBACK_PENDING)
@@ -1074,7 +1074,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, CancelWhileWaiting) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
 
   while (true) {
-    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+    ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
     MockResourceLoader::Status result = mock_loader_->OnReadCompleted(
         std::string(mock_loader_->io_buffer_size(), 'A'));
     if (result == MockResourceLoader::Status::CALLBACK_PENDING)
@@ -1197,7 +1197,7 @@ TEST_P(
   ASSERT_FALSE(url_loader_client_.has_received_response());
   url_loader_client_.RunUntilResponseReceived();
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   ASSERT_FALSE(url_loader_client_.response_body().is_valid());
 
@@ -1242,7 +1242,7 @@ TEST_P(
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
 
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseStarted(

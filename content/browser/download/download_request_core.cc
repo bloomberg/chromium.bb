@@ -356,13 +356,12 @@ bool DownloadRequestCore::OnRequestRedirected() {
 // Create a new buffer, which will be handed to the download thread for file
 // writing and deletion.
 bool DownloadRequestCore::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                     int* buf_size,
-                                     int min_size) {
+                                     int* buf_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(buf && buf_size);
   DCHECK(!read_buffer_.get());
 
-  *buf_size = min_size < 0 ? kReadBufSize : min_size;
+  *buf_size = kReadBufSize;
   read_buffer_ = new net::IOBuffer(*buf_size);
   *buf = read_buffer_.get();
   return true;

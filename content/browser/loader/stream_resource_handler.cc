@@ -44,9 +44,8 @@ void StreamResourceHandler::OnWillStart(
 }
 
 bool StreamResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                       int* buf_size,
-                                       int min_size) {
-  writer_.OnWillRead(buf, buf_size, min_size);
+                                       int* buf_size) {
+  writer_.OnWillRead(buf, buf_size, -1);
   return true;
 }
 

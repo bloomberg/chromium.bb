@@ -93,13 +93,13 @@ MockResourceLoader::Status MockResourceLoader::OnResponseStarted(
   return status_;
 }
 
-MockResourceLoader::Status MockResourceLoader::OnWillRead(int min_size) {
+MockResourceLoader::Status MockResourceLoader::OnWillRead() {
   EXPECT_FALSE(weak_factory_.HasWeakPtrs());
   EXPECT_EQ(Status::IDLE, status_);
 
   status_ = Status::CALLING_HANDLER;
   bool result =
-      resource_handler_->OnWillRead(&io_buffer_, &io_buffer_size_, min_size);
+      resource_handler_->OnWillRead(&io_buffer_, &io_buffer_size_);
 
   // The second case isn't really allowed, but a number of classes do it
   // anyways.
@@ -113,7 +113,6 @@ MockResourceLoader::Status MockResourceLoader::OnWillRead(int min_size) {
     EXPECT_FALSE(io_buffer_);
     status_ = Status::CANCELED;
   } else {
-    EXPECT_LE(min_size, io_buffer_size_);
     EXPECT_LT(0, io_buffer_size_);
     EXPECT_TRUE(io_buffer_);
     status_ = Status::IDLE;

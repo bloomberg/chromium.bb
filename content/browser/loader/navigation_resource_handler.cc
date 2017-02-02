@@ -155,10 +155,9 @@ void NavigationResourceHandler::OnWillStart(
 }
 
 bool NavigationResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                                           int* buf_size,
-                                           int min_size) {
+                                           int* buf_size) {
   DCHECK(!has_controller());
-  writer_.OnWillRead(buf, buf_size, min_size);
+  writer_.OnWillRead(buf, buf_size, -1);
   return true;
 }
 

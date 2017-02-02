@@ -101,8 +101,7 @@ class CONTENT_EXPORT ResourceHandler
   // out-params.  This call will be followed by either OnReadCompleted (on
   // successful read or EOF) or OnResponseCompleted (on error).  If
   // OnReadCompleted is called, the buffer may be recycled.  Otherwise, it may
-  // not be recycled and may potentially outlive the handler.  If |min_size| is
-  // not -1, it is the minimum size of the returned buffer.
+  // not be recycled and may potentially outlive the handler.
   //
   // Unlike other methods, may be called synchronously on Resume, for
   // performance reasons.
@@ -112,8 +111,7 @@ class CONTENT_EXPORT ResourceHandler
   // TODO(mmenke):  Make this method use a ResourceController, and allow it to
   // succeed asynchronously.
   virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                          int* buf_size,
-                          int min_size) = 0;
+                          int* buf_size) = 0;
 
   // Data (*bytes_read bytes) was written into the buffer provided by
   // OnWillRead.  The request will not continue until one of |controller|'s
