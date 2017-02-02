@@ -990,8 +990,8 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #endif  // CONFIG_SUPERTX
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_GLOBAL_MOTION
             plane,
-#endif  // CONFIG_COMPOUND_SEGMENT
-#if CONFIG_GLOBAL_MOTION || CONFIG_GLOBAL_MOTION
+#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
             is_global[ref], (mi_x >> pd->subsampling_x) + x,
             (mi_y >> pd->subsampling_y) + y, ref,
 #endif  // CONFIG_GLOBAL_MOTION
@@ -1013,10 +1013,8 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 // TODO(angiebird): This part needs optimization
 #if CONFIG_AOM_HIGHBITDEPTH
     if (!(xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH))
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       av1_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride, w, h);
-#else
-    av1_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride, w, h);
-#endif
 #endif  // CONFIG_CONVOLVE_ROUND
   }
 }
@@ -1037,26 +1035,19 @@ void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i, int ir,
     const uint8_t *pre =
         &pd->pre[ref].buf[(ir * pd->pre[ref].stride + ic) << 2];
 #if CONFIG_AOM_HIGHBITDEPTH
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       av1_highbd_build_inter_predictor(
           pre, pd->pre[ref].stride, dst, pd->dst.stride,
           &mi->bmi[i].as_mv[ref].as_mv, &xd->block_refs[ref]->sf, width, height,
           ref, mi->mbmi.interp_filter, MV_PRECISION_Q3,
           mi_col * MI_SIZE + 4 * ic, mi_row * MI_SIZE + 4 * ir, xd->bd);
-    } else {
+    else
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       av1_build_inter_predictor(
           pre, pd->pre[ref].stride, dst, pd->dst.stride,
           &mi->bmi[i].as_mv[ref].as_mv, &xd->block_refs[ref]->sf, width, height,
           &conv_params, mi->mbmi.interp_filter, MV_PRECISION_Q3,
           mi_col * MI_SIZE + 4 * ic, mi_row * MI_SIZE + 4 * ir);
-    }
-#else
-    av1_build_inter_predictor(
-        pre, pd->pre[ref].stride, dst, pd->dst.stride,
-        &mi->bmi[i].as_mv[ref].as_mv, &xd->block_refs[ref]->sf, width, height,
-        &conv_params, mi->mbmi.interp_filter, MV_PRECISION_Q3,
-        mi_col * MI_SIZE + 4 * ic, mi_row * MI_SIZE + 4 * ir);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
   }
 }
 
