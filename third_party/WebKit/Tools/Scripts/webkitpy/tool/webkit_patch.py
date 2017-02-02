@@ -65,9 +65,6 @@ _log = logging.getLogger(__name__)
 
 
 class WebKitPatch(Host):
-    # FIXME: It might make more sense if this class had a Host attribute
-    # instead of being a Host subclass.
-
     global_options = [
         optparse.make_option(
             "-v", "--verbose", action="store_true", dest="verbose", default=False,
@@ -115,6 +112,7 @@ class WebKitPatch(Host):
 
         command.set_option_parser(option_parser)
         (options, args) = command.parse_args(args)
+        self.initialize_scm()
 
         (should_execute, failure_reason) = self._should_execute_command(command)
         if not should_execute:

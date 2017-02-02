@@ -28,11 +28,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+import sys
 
 from webkitpy.common.checkout.scm.git import Git
 from webkitpy.common.config.builders import BUILDERS
-from webkitpy.common.net import web
 from webkitpy.common.net.buildbot import BuildBot
+from webkitpy.common.net import web
 from webkitpy.common.system.system_host import SystemHost
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.port.factory import PortFactory
@@ -76,9 +77,58 @@ class Host(SystemHost):
         self.environ['LC_MESSAGES'] = 'en_US.UTF-8'
         self.environ['LC_ALL'] = ''
 
-    def scm(self, path=None):
-        if path:
-            return Git(cwd=path, executive=self.executive, filesystem=self.filesystem)
-        if not self._scm:
-            self._scm = Git(filesystem=self.filesystem, executive=self.executive)
+    # FIXME: This is a horrible, horrible hack for WinPort and should be removed.
+    # Maybe this belongs in Git in some more generic "find the git binary" codepath?
+    # Or possibly Executive should have a way to emulate shell path-lookups?
+    # FIXME: Unclear how to test this, since it currently mutates global state on Git.
+    def _engage_awesome_windows_hacks(self):
+        try:
+            self.executive.run_command(['git', 'help'])
+        except OSError:
+            try:
+                self.executive.run_command(['git.bat', 'help'])
+                # The Win port uses the depot_tools package, which contains a number
+                # of development tools, including Python and git. Instead of using a
+                # real git executable, depot_tools indirects via a batch file, called
+                # git.bat. This batch file allows depot_tools to auto-update the real
+                # git executable, which is contained in a subdirectory.
+                #
+                # That's all fine and good, except that subprocess.popen can detect
+                # the difference between a real git executable and batch file when we
+                # don't provide use shell=True. Rather than use shell=True on Windows,
+                # We hack the git.bat name into the SVN class.
+                _log.debug('Engaging git.bat Windows hack.')
+                Git.executable_name = 'git.bat'
+            except OSError:
+                _log.debug('Failed to engage git.bat Windows hack.')
+
+    def initialize_scm(self):
+        # TODO(qyearsley): Refactor this so that scm is initialized
+        # when self.scm() is called the first time; put any initialization
+        # code in the git module.
+        if sys.platform == 'win32':
+            self._engage_awesome_windows_hacks()
+
+        cwd = self.filesystem.abspath(self.filesystem.getcwd())
+        if Git.in_working_directory(cwd, executive=self.executive):
+            self._scm = Git(cwd=cwd, filesystem=self.filesystem, executive=self.executive)
+            return
+
+        script_directory = self.filesystem.abspath(
+            self.filesystem.dirname(self.filesystem.path_to_module(self.__module__)))
+        _log.info('The current directory (%s) is not in a git repo, trying script directory %s.', cwd, script_directory)
+        if Git.in_working_directory(script_directory, executive=self.executive):
+            self._scm = Git(cwd=script_directory, filesystem=self.filesystem, executive=self.executive)
+            return
+
+        raise Exception('FATAL: Failed to find Git repo for %s or %s' % (cwd, script_directory))
+
+    def scm(self,):
         return self._scm
+
+    def scm_for_path(self, path):
+        # FIXME: make scm() be a wrapper around this, and clean up the way
+        # callers call initialize_scm() (to remove patch_directories) and scm().
+        if sys.platform == "win32":
+            self._engage_awesome_windows_hacks()
+        return Git(cwd=path, executive=self.executive, filesystem=self.filesystem)

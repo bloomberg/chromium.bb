@@ -188,7 +188,7 @@ class InterpretTestFailuresTest(unittest.TestCase):
 class SummarizedResultsTest(unittest.TestCase):
 
     def setUp(self):
-        host = MockHost()
+        host = MockHost(initialize_scm_by_default=False)
         self.port = host.port_factory.get(port_name='test')
 
     def test_no_chromium_revision(self):

@@ -28,6 +28,7 @@ class WPTExpectationsUpdater(object):
 
     def __init__(self, host):
         self.host = host
+        self.host.initialize_scm()
         self.finder = WebKitFinder(self.host.filesystem)
 
     def run(self, args=None):
