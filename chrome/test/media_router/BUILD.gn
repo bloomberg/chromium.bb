@@ -4,23 +4,15 @@
 
 group("media_router_perf_tests") {
   testonly = true
-  data_deps = [
-    "//chrome:chrome",
-  ]
   data = [
-    "$root_out_dir/chrome_200_percent.pak",
     "$root_out_dir/media_router/test_extension/",
     "$root_out_dir/mr_extension/release/",
     "internal/",
     "telemetry/",
-    "../../../third_party/catapult/",
-    "../../../tools/json_comment_eater/",
-    "../../../tools/json_to_struct/",
-    "../../../tools/perf/",
-    "../../../tools/variations/",
   ]
   deps = [
     ":test_extension_resource_files",
+    "//tools/perf:perf",
   ]
 }
 
