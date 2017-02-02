@@ -76,8 +76,10 @@ function createTestAndRun(context, filterType, testParameters) {
         signal[k].start(timeStep * k);
     }
 
-    context.oncomplete = checkFilterResponse(filterType, testParameters);
-    context.startRendering();
+    return context.startRendering()
+        .then(buffer => {
+            checkFilterResponse(buffer, filterType, testParameters);
+        });
 }
 
 function addSignal(dest, src, destOffset) {
@@ -116,67 +118,51 @@ function generateReference(filterType, filterParameters) {
     return result;
 }
 
-function checkFilterResponse(filterType, testParameters) {
-    return function(event) {
-        var filterParameters = testParameters.filterParameters;
-        var maxAllowedError = testParameters.threshold;
-        renderedBuffer = event.renderedBuffer;
-        renderedData = renderedBuffer.getChannelData(0);
+function checkFilterResponse(renderedBuffer, filterType, testParameters) {
+    var filterParameters = testParameters.filterParameters;
+    var maxAllowedError = testParameters.threshold;
+    var should = testParameters.should;
 
-        reference = generateReference(filterType, filterParameters);
-        
-        var len = Math.min(renderedData.length, reference.length);
+    renderedData = renderedBuffer.getChannelData(0);
 
-        var success = true;
+    reference = generateReference(filterType, filterParameters);
 
-        // Maximum error between rendered data and expected data
-        var maxError = 0;
+    var len = Math.min(renderedData.length, reference.length);
 
-        // Sample offset where the maximum error occurred.
-        var maxPosition = 0;
+    var success = true;
 
-        // Number of infinities or NaNs that occurred in the rendered data.
-        var invalidNumberCount = 0;
+    // Maximum error between rendered data and expected data
+    var maxError = 0;
 
-        if (nFilters != filterParameters.length) {
-            testFailed("Test wanted " + filterParameters.length + " filters but only " + maxFilters + " allowed.");
-            success = false;
+    // Sample offset where the maximum error occurred.
+    var maxPosition = 0;
+
+    // Number of infinities or NaNs that occurred in the rendered data.
+    var invalidNumberCount = 0;
+
+    should(nFilters, "Number of filters tested")
+        .beEqualTo(filterParameters.length);
+
+    // Compare the rendered signal with our reference, keeping
+    // track of the maximum difference (and the offset of the max
+    // difference.)  Check for bad numbers in the rendered output
+    // too.  There shouldn't be any.
+    for (var k = 0; k < len; ++k) {
+        var err = Math.abs(renderedData[k] - reference[k]);
+        if (err > maxError) {
+            maxError = err;
+            maxPosition = k;
         }
-
-        // Compare the rendered signal with our reference, keeping
-        // track of the maximum difference (and the offset of the max
-        // difference.)  Check for bad numbers in the rendered output
-        // too.  There shouldn't be any.
-        for (var k = 0; k < len; ++k) {
-            var err = Math.abs(renderedData[k] - reference[k]);
-            if (err > maxError) {
-                maxError = err;
-                maxPosition = k;
-            }
-            if (!isValidNumber(renderedData[k])) {
-                ++invalidNumberCount;
-            }
+        if (!isValidNumber(renderedData[k])) {
+            ++invalidNumberCount;
         }
-
-        if (invalidNumberCount > 0) {
-            testFailed("Rendered output has " + invalidNumberCount + " infinities or NaNs.");
-            success = false;
-        } else {
-            testPassed("Rendered output did not have infinities or NaNs.");
-        }
-        
-        if (maxError <= maxAllowedError) {
-            testPassed(filterTypeName[filterType] + " response is correct.");
-        } else {
-            testFailed(filterTypeName[filterType] + " response is incorrect.  Max err = " + maxError + " at " + maxPosition + ".  Threshold = " + maxAllowedError);
-            success = false;
-        }
-        
-        if (success) {
-            testPassed("Test signal was correctly filtered.");
-        } else {
-            testFailed("Test signal was not correctly filtered.");
-        }
-        finishJSTest();
     }
+
+    should(invalidNumberCount,
+           "Number of non-finite values in the rendered output")
+        .beEqualTo(0);
+
+    should(maxError,
+           "Max error in " + filterTypeName[filterType] + " response")
+        .beLessThanOrEqualTo(maxAllowedError);
 }

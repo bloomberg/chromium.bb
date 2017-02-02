@@ -2,29 +2,21 @@
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 <script src="../resources/biquad-filters.js"></script>
 <script src="../resources/biquad-testing.js"></script>
 </head>
 
 <body>
-
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Tests Biquad notch filter.");
+let audit = Audit.createTaskRunner();
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-    
-    window.jsTestIsAsync = true;
-        
+audit.define("test", function (task, should) {
+    task.describe("Biquad notch filter");
+
     // Create offline audio context.
     var context = new OfflineAudioContext(2, sampleRate * renderLengthSeconds, sampleRate);
 
@@ -35,14 +27,13 @@ function runTest() {
                            ];
 
     createTestAndRun(context, "notch", {
+      should: should,
       threshold: 1.9669e-8,
       filterParameters: filterParameters
-    });
-}
+    }).then(task.done.bind(task));
+});
 
-runTest();
-successfullyParsed = true;
-
+audit.run();
 </script>
 
 </body>
