@@ -3899,7 +3899,7 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 	int ret;
 	unsigned int index = 0;
 	uint32_t devid;
-	int size = ctx->base_count * 4;
+	int size;
 	void *temp;
 
 	if (!ctx)
@@ -3909,6 +3909,7 @@ drm_intel_decode(struct drm_intel_decode *ctx)
 	 * the batchbuffer.  This lets us avoid a bunch of length
 	 * checking in statically sized packets.
 	 */
+	size = ctx->base_count * 4;
 	temp = malloc(size + 4096);
 	memcpy(temp, ctx->base_data, size);
 	memset((char *)temp + size, 0xd0, 4096);
