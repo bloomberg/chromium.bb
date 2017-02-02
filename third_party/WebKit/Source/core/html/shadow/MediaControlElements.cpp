@@ -32,6 +32,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/ClientRect.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
@@ -134,8 +135,10 @@ MediaControlPanelElement::MediaControlPanelElement(MediaControls& mediaControls)
     : MediaControlDivElement(mediaControls, MediaControlsPanel),
       m_isDisplayed(false),
       m_opaque(true),
-      m_transitionTimer(this, &MediaControlPanelElement::transitionTimerFired) {
-}
+      m_transitionTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer,
+                                              &mediaControls.document()),
+                        this,
+                        &MediaControlPanelElement::transitionTimerFired) {}
 
 MediaControlPanelElement* MediaControlPanelElement::create(
     MediaControls& mediaControls) {

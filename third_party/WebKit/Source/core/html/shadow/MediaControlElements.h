@@ -63,7 +63,7 @@ class MediaControlPanelElement final : public MediaControlDivElement {
   bool m_isDisplayed;
   bool m_opaque;
 
-  Timer<MediaControlPanelElement> m_transitionTimer;
+  TaskRunnerTimer<MediaControlPanelElement> m_transitionTimer;
 };
 
 // ----------------------------
