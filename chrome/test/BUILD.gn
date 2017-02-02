@@ -301,6 +301,8 @@ if (!is_android) {
     testonly = true
 
     sources = [
+      "../browser/permissions/permission_request_manager_test_api.cc",
+      "../browser/permissions/permission_request_manager_test_api.h",
       "base/in_process_browser_test.cc",
       "base/in_process_browser_test.h",
       "base/in_process_browser_test_mac.cc",
@@ -386,6 +388,7 @@ if (!is_android) {
       "../browser/ui/browser_focus_uitest.cc",
       "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_interactive_uitest.mm",
       "../browser/ui/cocoa/apps/quit_with_apps_controller_mac_interactive_uitest.mm",
+      "../browser/ui/cocoa/website_settings/permission_bubble_cocoa_interactive_uitest.mm",
       "../browser/ui/exclusive_access/flash_fullscreen_interactive_browsertest.cc",
       "../browser/ui/exclusive_access/fullscreen_controller_interactive_browsertest.cc",
       "../browser/ui/exclusive_access/fullscreen_controller_state_interactive_browsertest.cc",

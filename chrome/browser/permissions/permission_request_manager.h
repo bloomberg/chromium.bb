@@ -21,6 +21,10 @@ namespace safe_browsing {
 class PermissionReporterBrowserTest;
 }
 
+namespace test {
+class PermissionRequestManagerTestApi;
+}
+
 // Provides access to permissions bubbles. Allows clients to add a request
 // callback interface to the existing permission bubble configuration.
 // Depending on the situation and policy, that may add new UI to an existing
@@ -107,7 +111,10 @@ class PermissionRequestManager
   }
 
  private:
-  // TODO(felt): Update testing so that it doesn't involve a lot of friends.
+  friend class test::PermissionRequestManagerTestApi;
+
+  // TODO(felt): Update testing to use the TestApi so that it doesn't involve a
+  // lot of friends.
   friend class GeolocationBrowserTest;
   friend class GeolocationPermissionContextTests;
   friend class MockPermissionPrompt;

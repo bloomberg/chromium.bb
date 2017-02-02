@@ -32,6 +32,11 @@ UI_BASE_EXPORT @interface CommandDispatcher : NSObject
 // YES if the event is handled.
 - (BOOL)performKeyEquivalent:(NSEvent*)event;
 
+// Validate a user interface item (e.g. an NSMenuItem), consulting |handler| for
+// -commandDispatch: item actions.
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
+                       forHandler:(id<UserInterfaceItemCommandHandler>)handler;
+
 // Sends a key event to -[NSApp sendEvent:]. This is used to allow default
 // AppKit handling of an event that comes back from CommandDispatcherTarget,
 // e.g. key equivalents in the menu, or window manager commands like Cmd+`. Once
@@ -44,6 +49,13 @@ UI_BASE_EXPORT @interface CommandDispatcher : NSObject
 // this before a native -sendEvent:. Ensures that a redispatched event is not
 // reposted infinitely. Returns YES if the event is handled.
 - (BOOL)preSendEvent:(NSEvent*)event;
+
+// Dispatch a -commandDispatch: action either to |handler| or a parent window's
+// handler.
+- (void)dispatch:(id)sender
+      forHandler:(id<UserInterfaceItemCommandHandler>)handler;
+- (void)dispatchUsingKeyModifiers:(id)sender
+                       forHandler:(id<UserInterfaceItemCommandHandler>)handler;
 
 @end
 
@@ -94,6 +106,9 @@ UI_BASE_EXPORT @interface CommandDispatcher : NSObject
 // Short-circuit to the default -[NSResponder performKeyEquivalent:] which
 // CommandDispatcher calls as part of its -performKeyEquivalent: flow.
 - (BOOL)defaultPerformKeyEquivalent:(NSEvent*)event;
+
+// Short-circuit to the default -validateUserInterfaceItem: implementation.
+- (BOOL)defaultValidateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item;
 
 // AppKit will call -[NSUserInterfaceValidations validateUserInterfaceItem:] to
 // validate UI items. Any item whose target is FirstResponder, or nil, will

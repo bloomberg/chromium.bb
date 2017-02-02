@@ -142,37 +142,6 @@ const NSInteger kFullscreenLeftOffset = 40;
 
 @end
 
-// The window used for the permission bubble controller.
-// Subclassed to allow browser-handled keyboard events to be passed from the
-// permission bubble to its parent window, which is a browser window.
-@interface PermissionBubbleWindow : InfoBubbleWindow
-@end
-
-@implementation PermissionBubbleWindow
-- (BOOL)performKeyEquivalent:(NSEvent*)event {
-  // Before forwarding to parent, handle locally.
-  if ([super performKeyEquivalent:event])
-    return YES;
-
-  // Only handle events if they should be forwarded to the parent window.
-  if ([self allowShareParentKeyState]) {
-    content::NativeWebKeyboardEvent wrappedEvent(event);
-    if ([BrowserWindowUtils shouldHandleKeyboardEvent:wrappedEvent]) {
-      // Turn off sharing of key window state while the keyboard event is
-      // processed.  This avoids recursion - with the key window state shared,
-      // the parent window would just forward the event back to this class.
-      [self setAllowShareParentKeyState:NO];
-      BOOL eventHandled =
-          [BrowserWindowUtils handleKeyboardEvent:event
-                                         inWindow:[self parentWindow]];
-      [self setAllowShareParentKeyState:YES];
-      return eventHandled;
-    }
-  }
-  return NO;
-}
-@end
-
 @interface PermissionBubbleController ()
 
 // Determines if the bubble has an anchor in a corner or no anchor at all.
@@ -239,12 +208,12 @@ const NSInteger kFullscreenLeftOffset = 40;
   DCHECK(browser);
   DCHECK(bridge);
   browser_ = browser;
-  base::scoped_nsobject<PermissionBubbleWindow> window(
-      [[PermissionBubbleWindow alloc]
-          initWithContentRect:ui::kWindowSizeDeterminedLater
-                    styleMask:NSBorderlessWindowMask
-                      backing:NSBackingStoreBuffered
-                        defer:NO]);
+  base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
+      initWithContentRect:ui::kWindowSizeDeterminedLater
+                styleMask:NSBorderlessWindowMask
+                  backing:NSBackingStoreBuffered
+                    defer:NO]);
+
   [window setAllowedAnimations:info_bubble::kAnimateNone];
   [window setReleasedWhenClosed:NO];
   if ((self = [super initWithWindow:window

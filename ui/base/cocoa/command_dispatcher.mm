@@ -6,6 +6,19 @@
 
 #include "base/logging.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/base/cocoa/user_interface_item_command_handler.h"
+
+// Expose -[NSWindow hasKeyAppearance], which determines whether the traffic
+// lights on the window are "lit". CommandDispatcher uses this property on a
+// parent window to decide whether keys and commands should bubble up.
+@interface NSWindow (PrivateAPI)
+- (BOOL)hasKeyAppearance;
+@end
+
+@interface CommandDispatcher ()
+// The parent to bubble events to, or nil.
+- (NSWindow<CommandDispatchingWindow>*)bubbleParent;
+@end
 
 namespace {
 
@@ -73,10 +86,13 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 
   // Give a CommandDispatcherTarget (e.g. a web site) a chance to handle the
   // event. If it doesn't want to handle it, it will call us back with
-  // -redispatchKeyEvent:.
-  NSResponder* r = [owner_ firstResponder];
-  if ([r conformsToProtocol:@protocol(CommandDispatcherTarget)])
-    return [r performKeyEquivalent:event];
+  // -redispatchKeyEvent:. Only allow this behavior when dispatching key events
+  // on the key window.
+  if ([owner_ isKeyWindow]) {
+    NSResponder* r = [owner_ firstResponder];
+    if ([r conformsToProtocol:@protocol(CommandDispatcherTarget)])
+      return [r performKeyEquivalent:event];
+  }
 
   if ([delegate_ prePerformKeyEquivalent:event window:owner_])
     return YES;
@@ -84,7 +100,45 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   if ([owner_ defaultPerformKeyEquivalent:event])
     return YES;
 
-  return [delegate_ postPerformKeyEquivalent:event window:owner_];
+  if ([delegate_ postPerformKeyEquivalent:event window:owner_])
+    return YES;
+
+  // Allow commands to "bubble up" to CommandDispatchers in parent windows, if
+  // they were not handled here.
+  return [[self bubbleParent] performKeyEquivalent:event];
+}
+
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
+                       forHandler:(id<UserInterfaceItemCommandHandler>)handler {
+  // Since this class implements these selectors, |super| will always say they
+  // are enabled. Only use [super] to validate other selectors. If there is no
+  // command handler, defer to AppController.
+  if ([item action] == @selector(commandDispatch:) ||
+      [item action] == @selector(commandDispatchUsingKeyModifiers:)) {
+    if (handler) {
+      // -dispatch:.. can't later decide to bubble events because
+      // -commandDispatch:.. is assumed to always succeed. So, if there is a
+      // |handler|, only validate against that for -commandDispatch:.
+      return [handler validateUserInterfaceItem:item window:owner_];
+    }
+
+    id appController = [NSApp delegate];
+    DCHECK([appController
+        conformsToProtocol:@protocol(NSUserInterfaceValidations)]);
+    if ([appController validateUserInterfaceItem:item])
+      return YES;
+  }
+
+  // Note this may validate an action bubbled up from a child window. However,
+  // if the child window also -respondsToSelector: (but validated it `NO`), the
+  // action will be dispatched to the child only, which may NSBeep().
+  // TODO(tapted): Fix this. E.g. bubble up validation via the bubbleParent's
+  // CommandDispatcher rather than the NSUserInterfaceValidations protocol, so
+  // that this step can be skipped.
+  if ([owner_ defaultValidateUserInterfaceItem:item])
+    return YES;
+
+  return [[self bubbleParent] validateUserInterfaceItem:item];
 }
 
 - (BOOL)redispatchKeyEvent:(NSEvent*)event {
@@ -126,6 +180,30 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   }
 
   return NO;
+}
+
+- (void)dispatch:(id)sender
+      forHandler:(id<UserInterfaceItemCommandHandler>)handler {
+  if (handler)
+    [handler commandDispatch:sender window:owner_];
+  else
+    [[self bubbleParent] commandDispatch:sender];
+}
+
+- (void)dispatchUsingKeyModifiers:(id)sender
+                       forHandler:(id<UserInterfaceItemCommandHandler>)handler {
+  if (handler)
+    [handler commandDispatchUsingKeyModifiers:sender window:owner_];
+  else
+    [[self bubbleParent] commandDispatchUsingKeyModifiers:sender];
+}
+
+- (NSWindow<CommandDispatchingWindow>*)bubbleParent {
+  NSWindow* parent = [owner_ parentWindow];
+  if (parent && [parent hasKeyAppearance] &&
+      [parent conformsToProtocol:@protocol(CommandDispatchingWindow)])
+    return static_cast<NSWindow<CommandDispatchingWindow>*>(parent);
+  return nil;
 }
 
 @end
