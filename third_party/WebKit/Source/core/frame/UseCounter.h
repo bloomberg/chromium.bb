@@ -1447,6 +1447,7 @@ class CORE_EXPORT UseCounter {
     WebNFCCancelPush = 1794,
     WebNFCWatch = 1795,
     WebNFCCancelWatch = 1796,
+    AudioParamCancelAndHoldAtTime = 1797,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
