@@ -5,6 +5,8 @@ recordActionTaken:
     AnimationsPlaybackRateChanged : 11
     AuditsStarted : 7
     CommandEvaluatedInConsolePanel : 15
+    ConnectToNodeJSDirectly : 20
+    ConnectToNodeJSFromFrontend : 19
     ConsoleEvaluated : 8
     DOMPropertiesExpanded : 16
     DeviceModeEnabled : 10
