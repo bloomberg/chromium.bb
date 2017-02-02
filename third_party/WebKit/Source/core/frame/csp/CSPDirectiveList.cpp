@@ -464,11 +464,15 @@ bool CSPDirectiveList::checkSourceAndReportViolation(
   if (checkDynamic(directive))
     suffix =
         " 'strict-dynamic' is present, so host-based whitelisting is disabled.";
-  if (directive == m_defaultSrc)
-    suffix =
-        suffix + " Note that '" +
-        ContentSecurityPolicy::getDirectiveName(effectiveType) +
-        "' was not explicitly set, so 'default-src' is used as a fallback.";
+
+  String directiveName = directive->name();
+  String effectiveDirectiveName =
+      ContentSecurityPolicy::getDirectiveName(effectiveType);
+  if (directiveName != effectiveDirectiveName) {
+    suffix = suffix + " Note that '" + effectiveDirectiveName +
+             "' was not explicitly set, so '" + directiveName +
+             "' is used as a fallback.";
+  }
 
   reportViolation(directive->text(), effectiveType,
                   prefix + url.elidedString() +

@@ -25,6 +25,7 @@ class CORE_EXPORT CSPDirective
   virtual ~CSPDirective() {}
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_policy); }
 
+  const String& name() const { return m_name; }
   const String& text() const { return m_text; }
 
  protected:
