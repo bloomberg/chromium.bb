@@ -804,10 +804,21 @@ void SpellChecker::didEndEditingOnTextField(Element* e) {
     m_spellCheckRequester->cancelCheck();
   TextControlElement* textControlElement = toTextControlElement(e);
   HTMLElement* innerEditor = textControlElement->innerEditorElement();
+  removeSpellingAndGrammarMarkers(*innerEditor);
+}
+
+void SpellChecker::removeSpellingAndGrammarMarkers(const HTMLElement& element,
+                                                   ElementsType elementsType) {
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame().document()->updateStyleAndLayoutTreeForNode(&element);
+
   DocumentMarker::MarkerTypes markerTypes(DocumentMarker::Spelling);
   markerTypes.add(DocumentMarker::Grammar);
-  for (Node& node : NodeTraversal::inclusiveDescendantsOf(*innerEditor))
-    frame().document()->markers().removeMarkers(&node, markerTypes);
+  for (Node& node : NodeTraversal::inclusiveDescendantsOf(element)) {
+    if (elementsType == ElementsType::kAll || !hasEditableStyle(node))
+      frame().document()->markers().removeMarkers(&node, markerTypes);
+  }
 }
 
 void SpellChecker::replaceMisspelledRange(const String& text) {

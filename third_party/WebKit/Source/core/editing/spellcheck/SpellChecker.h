@@ -73,6 +73,9 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   void replaceMisspelledRange(const String&);
   void removeSpellingMarkers();
   void removeSpellingMarkersUnderWords(const Vector<String>& words);
+  enum class ElementsType { kAll, kOnlyNonEditable };
+  void removeSpellingAndGrammarMarkers(const HTMLElement&,
+                                       ElementsType = ElementsType::kAll);
   void spellCheckAfterBlur();
 
   void didEndEditingOnTextField(Element*);

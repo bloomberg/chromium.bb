@@ -46,6 +46,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/serializers/Serialization.h"
+#include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/EventListener.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/Settings.h"
@@ -436,6 +437,8 @@ void HTMLElement::attributeChanged(const AttributeModificationParams& params) {
     if (adjustedFocusedElementInTreeScope() == this)
       blur();
   } else if (params.name == contenteditableAttr) {
+    document().frame()->spellChecker().removeSpellingAndGrammarMarkers(
+        *this, SpellChecker::ElementsType::kOnlyNonEditable);
     if (adjustedFocusedElementInTreeScope() != this)
       return;
     // The attribute change may cause supportsFocus() to return false
