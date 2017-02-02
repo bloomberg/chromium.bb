@@ -70,6 +70,9 @@ test("device_unittests") {
     "generic_sensor/platform_sensor_provider_unittest.cc",
     "power_monitor/power_monitor_message_broadcaster_unittest.cc",
     "power_monitor/public/cpp/power_monitor_broadcast_source_unittest.cc",
+    "sensors/data_fetcher_shared_memory_base_unittest.cc",
+    "sensors/sensor_manager_android_unittest.cc",
+    "sensors/sensor_manager_chromeos_unittest.cc",
     "test/run_all_unittests.cc",
     "wake_lock/wake_lock_service_context_unittest.cc",
   ]
@@ -94,6 +97,9 @@ test("device_unittests") {
     "//device/power_monitor/public/cpp",
     "//device/power_monitor/public/interfaces",
     "//device/power_save_blocker",
+    "//device/sensors",
+    "//device/sensors/public/cpp",
+    "//device/sensors/public/interfaces",
     "//device/wake_lock",
     "//mojo/common",
     "//mojo/edk/system",
@@ -101,6 +107,7 @@ test("device_unittests") {
     "//net",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:blink_headers",
     "//tools/usb_gadget",
     "//url",
@@ -184,6 +191,7 @@ test("device_unittests") {
       ":bluetooth_test_jni_headers",
       "//device/geolocation:geolocation_java",
       "//device/geolocation:geolocation_java_test_support",
+      "//device/sensors:java",
       "//device/usb:java",
     ]
     deps -= [ "//device/battery" ]

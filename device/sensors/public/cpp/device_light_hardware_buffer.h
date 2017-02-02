@@ -8,11 +8,10 @@
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "device/sensors/public/cpp/device_light_data.h"
 
-namespace content {
+namespace device {
 
-typedef device::SharedMemorySeqLockBuffer<DeviceLightData>
-    DeviceLightHardwareBuffer;
+typedef SharedMemorySeqLockBuffer<DeviceLightData> DeviceLightHardwareBuffer;
 
-}  // namespace content
+}  // namespace device
 
 #endif  // DEVICE_SENSORS_PUBLIC_CPP_DEVICE_LIGHT_HARDWARE_BUFFER_H_

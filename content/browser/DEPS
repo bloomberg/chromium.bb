@@ -23,7 +23,7 @@ include_rules = [
   "+device/nfc",
   "+device/power_save_blocker",
   "+device/screen_orientation/public/interfaces",
-  "+device/sensors/public",
+  "+device/sensors",
   "+device/vibration",  # For Vibration API
   "+device/vr",  # For WebVR API
   "+device/wake_lock",

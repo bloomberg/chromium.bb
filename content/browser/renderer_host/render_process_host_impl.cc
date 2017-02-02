@@ -65,7 +65,6 @@
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/device_sensors/device_sensor_host.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_message_filter.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
@@ -166,6 +165,7 @@
 #include "content/public/common/url_constants.h"
 #include "device/battery/battery_monitor_impl.h"
 #include "device/gamepad/gamepad_monitor.h"
+#include "device/sensors/device_sensor_host.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -1281,19 +1281,23 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #if defined(OS_ANDROID)
   // On Android the device sensors implementations need to run on the UI thread
   // to communicate to Java.
-  AddUIThreadInterface(registry.get(), base::Bind(&DeviceLightHost::Create));
-  AddUIThreadInterface(registry.get(), base::Bind(&DeviceMotionHost::Create));
   AddUIThreadInterface(registry.get(),
-                       base::Bind(&DeviceOrientationHost::Create));
+                       base::Bind(&device::DeviceLightHost::Create));
   AddUIThreadInterface(registry.get(),
-                       base::Bind(&DeviceOrientationAbsoluteHost::Create));
+                       base::Bind(&device::DeviceMotionHost::Create));
+  AddUIThreadInterface(registry.get(),
+                       base::Bind(&device::DeviceOrientationHost::Create));
+  AddUIThreadInterface(
+      registry.get(),
+      base::Bind(&device::DeviceOrientationAbsoluteHost::Create));
 #else
   // On platforms other than Android the device sensors implementations run on
   // the IO thread.
-  registry->AddInterface(base::Bind(&DeviceLightHost::Create));
-  registry->AddInterface(base::Bind(&DeviceMotionHost::Create));
-  registry->AddInterface(base::Bind(&DeviceOrientationHost::Create));
-  registry->AddInterface(base::Bind(&DeviceOrientationAbsoluteHost::Create));
+  registry->AddInterface(base::Bind(&device::DeviceLightHost::Create));
+  registry->AddInterface(base::Bind(&device::DeviceMotionHost::Create));
+  registry->AddInterface(base::Bind(&device::DeviceOrientationHost::Create));
+  registry->AddInterface(
+      base::Bind(&device::DeviceOrientationAbsoluteHost::Create));
 #endif  // defined(OS_ANDROID)
 
   registry->AddInterface(base::Bind(&device::GamepadMonitor::Create));

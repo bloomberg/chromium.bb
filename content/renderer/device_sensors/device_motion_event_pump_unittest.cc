@@ -95,11 +95,11 @@ class DeviceMotionEventPumpTest : public testing::Test {
   void SetUp() override {
     listener_.reset(new MockDeviceMotionListener);
     motion_pump_.reset(new DeviceMotionEventPumpForTesting);
-    shared_memory_ =
-        mojo::SharedBufferHandle::Create(sizeof(DeviceMotionHardwareBuffer));
-    mapping_ = shared_memory_->Map(sizeof(DeviceMotionHardwareBuffer));
+    shared_memory_ = mojo::SharedBufferHandle::Create(
+        sizeof(device::DeviceMotionHardwareBuffer));
+    mapping_ = shared_memory_->Map(sizeof(device::DeviceMotionHardwareBuffer));
     ASSERT_TRUE(mapping_);
-    memset(buffer(), 0, sizeof(DeviceMotionHardwareBuffer));
+    memset(buffer(), 0, sizeof(device::DeviceMotionHardwareBuffer));
   }
 
   void InitBuffer(bool allAvailableSensorsActive) {
@@ -119,8 +119,9 @@ class DeviceMotionEventPumpTest : public testing::Test {
     return shared_memory_->Clone(
         mojo::SharedBufferHandle::AccessMode::READ_ONLY);
   }
-  DeviceMotionHardwareBuffer* buffer() {
-    return reinterpret_cast<DeviceMotionHardwareBuffer*>(mapping_.get());
+  device::DeviceMotionHardwareBuffer* buffer() {
+    return reinterpret_cast<device::DeviceMotionHardwareBuffer*>(
+        mapping_.get());
   }
 
  private:

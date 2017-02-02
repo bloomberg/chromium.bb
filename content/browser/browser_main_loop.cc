@@ -52,7 +52,6 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/audio_manager_thread.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/device_sensors/device_sensor_service.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
@@ -92,6 +91,7 @@
 #include "content/public/common/result_codes.h"
 #include "device/battery/battery_status_service.h"
 #include "device/gamepad/gamepad_service.h"
+#include "device/sensors/device_sensor_service.h"
 #include "media/base/media.h"
 #include "media/base/user_input_monitor.h"
 #include "media/midi/midi_service.h"
@@ -1372,7 +1372,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:SensorService");
-    DeviceSensorService::GetInstance()->Shutdown();
+    device::DeviceSensorService::GetInstance()->Shutdown();
   }
 #if !defined(OS_ANDROID)
   {

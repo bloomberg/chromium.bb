@@ -76,7 +76,7 @@ source_set("browser") {
     "//device/nfc:mojo_bindings",
     "//device/power_save_blocker",
     "//device/screen_orientation/public/interfaces",
-    "//device/sensors/public/cpp",
+    "//device/sensors",
     "//device/vibration",
     "//device/vr",
     "//device/wake_lock",
@@ -434,25 +434,6 @@ source_set("browser") {
     # needed on all platforms.
     "compositor/surface_utils.cc",
     "compositor/surface_utils.h",
-    "device_sensors/ambient_light_mac.cc",
-    "device_sensors/ambient_light_mac.h",
-    "device_sensors/data_fetcher_shared_memory.h",
-    "device_sensors/data_fetcher_shared_memory_android.cc",
-    "device_sensors/data_fetcher_shared_memory_base.cc",
-    "device_sensors/data_fetcher_shared_memory_base.h",
-    "device_sensors/data_fetcher_shared_memory_chromeos.cc",
-    "device_sensors/data_fetcher_shared_memory_default.cc",
-    "device_sensors/data_fetcher_shared_memory_mac.cc",
-    "device_sensors/data_fetcher_shared_memory_win.cc",
-    "device_sensors/device_sensor_host.cc",
-    "device_sensors/device_sensor_host.h",
-    "device_sensors/device_sensor_service.cc",
-    "device_sensors/device_sensor_service.h",
-    "device_sensors/device_sensors_consts.h",
-    "device_sensors/sensor_manager_android.cc",
-    "device_sensors/sensor_manager_android.h",
-    "device_sensors/sensor_manager_chromeos.cc",
-    "device_sensors/sensor_manager_chromeos.h",
     "devtools/browser_devtools_agent_host.cc",
     "devtools/browser_devtools_agent_host.h",
     "devtools/devtools_agent_host_impl.cc",
@@ -1571,7 +1552,6 @@ source_set("browser") {
   }
 
   if (is_win) {
-    sources -= [ "device_sensors/data_fetcher_shared_memory_default.cc" ]
     defines += [
       # This prevents the inclusion of atlhost.h which paired
       # with the windows 8 sdk it does the wrong thing.
@@ -1588,7 +1568,6 @@ source_set("browser") {
       "dxguid.lib",
       "imm32.lib",
       "oleacc.lib",
-      "sensorsapi.lib",
       "portabledeviceguids.lib",
     ]
   }
@@ -1812,7 +1791,6 @@ source_set("browser") {
     ]
     sources -= [
       "browser_ipc_logging.cc",
-      "device_sensors/data_fetcher_shared_memory_default.cc",
       "media/session/audio_focus_delegate_default.cc",
       "media/session/audio_focus_manager.cc",
       "media/session/audio_focus_manager.h",
@@ -1858,12 +1836,10 @@ source_set("browser") {
   }
 
   if (is_mac) {
-    sources -= [ "device_sensors/data_fetcher_shared_memory_default.cc" ]
     deps += [
       "//media",
       "//sandbox/mac:sandbox",
       "//third_party/mozilla",
-      "//third_party/sudden_motion_sensor",
       "//ui/accelerated_widget_mac",
     ]
     libs += [
@@ -1874,7 +1850,6 @@ source_set("browser") {
   }
 
   if (is_chromeos) {
-    sources -= [ "device_sensors/data_fetcher_shared_memory_default.cc" ]
     deps += [
       "//chromeos",
       "//chromeos:power_manager_proto",

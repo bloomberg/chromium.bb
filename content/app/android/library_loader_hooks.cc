@@ -30,6 +30,7 @@
 #include "device/gamepad/android/gamepad_jni_registrar.h"
 #include "device/generic_sensor/android/sensors_jni_registrar.h"
 #include "device/geolocation/android/geolocation_jni_registrar.h"
+#include "device/sensors/android/device_sensor_jni_registrar.h"
 #include "device/time_zone_monitor/android/time_zone_monitor_jni_registrar.h"
 #include "device/usb/android/usb_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
@@ -80,6 +81,9 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!device::android::RegisterBluetoothJni(env))
+      return false;
+
+    if (!device::android::RegisterDeviceSensorJni(env))
       return false;
 
     if (!device::android::RegisterGamepadJni(env))

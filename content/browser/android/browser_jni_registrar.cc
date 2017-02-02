@@ -23,7 +23,6 @@
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/android/web_contents_observer_proxy.h"
-#include "content/browser/device_sensors/sensor_manager_android.h"
 #include "content/browser/frame_host/navigation_controller_android.h"
 #include "content/browser/media/session/audio_focus_delegate_android.h"
 #include "content/browser/media/session/media_session_android.h"
@@ -61,7 +60,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"NavigationControllerAndroid",
      content::NavigationControllerAndroid::Register},
     {"RegisterImeAdapter", content::RegisterImeAdapter},
-    {"SensorManagerAndroid", content::SensorManagerAndroid::Register},
     {"SpeechRecognizerImplAndroid",
      content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer},
     {"TracingControllerAndroid", content::RegisterTracingControllerAndroid},

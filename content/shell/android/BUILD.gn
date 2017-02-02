@@ -158,6 +158,7 @@ instrumentation_test_apk("content_shell_test_apk") {
   deps = [
     "//base:base_javatests",
     "//content/public/android:content_javatests",
+    "//device/sensors:javatests",
     "//net/android:net_javatests",
     "//third_party/android_support_test_runner:runner_java",
   ]

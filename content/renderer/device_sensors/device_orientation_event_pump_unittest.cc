@@ -80,10 +80,11 @@ class DeviceOrientationEventPumpTest : public testing::Test {
     listener_.reset(new MockDeviceOrientationListener);
     orientation_pump_.reset(new DeviceOrientationEventPumpForTesting);
     shared_memory_ = mojo::SharedBufferHandle::Create(
-        sizeof(DeviceOrientationHardwareBuffer));
-    mapping_ = shared_memory_->Map(sizeof(DeviceOrientationHardwareBuffer));
+        sizeof(device::DeviceOrientationHardwareBuffer));
+    mapping_ =
+        shared_memory_->Map(sizeof(device::DeviceOrientationHardwareBuffer));
     ASSERT_TRUE(mapping_);
-    memset(buffer(), 0, sizeof(DeviceOrientationHardwareBuffer));
+    memset(buffer(), 0, sizeof(device::DeviceOrientationHardwareBuffer));
   }
 
   void InitBuffer() {
@@ -110,8 +111,9 @@ class DeviceOrientationEventPumpTest : public testing::Test {
     return shared_memory_->Clone(
         mojo::SharedBufferHandle::AccessMode::READ_ONLY);
   }
-  DeviceOrientationHardwareBuffer* buffer() {
-    return reinterpret_cast<DeviceOrientationHardwareBuffer*>(mapping_.get());
+  device::DeviceOrientationHardwareBuffer* buffer() {
+    return reinterpret_cast<device::DeviceOrientationHardwareBuffer*>(
+        mapping_.get());
   }
 
  private:

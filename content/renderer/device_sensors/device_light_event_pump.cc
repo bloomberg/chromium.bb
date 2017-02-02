@@ -31,7 +31,7 @@ DeviceLightEventPump::~DeviceLightEventPump() {
 
 void DeviceLightEventPump::FireEvent() {
   DCHECK(listener());
-  DeviceLightData data;
+  device::DeviceLightData data;
   if (reader_->GetLatestData(&data) && ShouldFireEvent(data.value)) {
     last_seen_data_ = data.value;
     listener()->didChangeDeviceLight(data.value);

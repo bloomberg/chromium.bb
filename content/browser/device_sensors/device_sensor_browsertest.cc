@@ -7,8 +7,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
-#include "content/browser/device_sensors/data_fetcher_shared_memory.h"
-#include "content/browser/device_sensors/device_sensor_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -18,6 +16,8 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
+#include "device/sensors/data_fetcher_shared_memory.h"
+#include "device/sensors/device_sensor_service.h"
 #include "device/sensors/public/cpp/device_light_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_motion_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_orientation_hardware_buffer.h"
@@ -26,7 +26,7 @@ namespace content {
 
 namespace {
 
-class FakeDataFetcher : public DataFetcherSharedMemory {
+class FakeDataFetcher : public device::DataFetcherSharedMemory {
  public:
   FakeDataFetcher() : sensor_data_available_(true) {}
   ~FakeDataFetcher() override {}
@@ -57,31 +57,31 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     orientation_stopped_callback_ = orientation_stopped_callback;
   }
 
-  bool Start(ConsumerType consumer_type, void* buffer) override {
+  bool Start(device::ConsumerType consumer_type, void* buffer) override {
     EXPECT_TRUE(buffer);
 
     switch (consumer_type) {
-      case CONSUMER_TYPE_MOTION: {
-        DeviceMotionHardwareBuffer* motion_buffer =
-            static_cast<DeviceMotionHardwareBuffer*>(buffer);
+      case device::CONSUMER_TYPE_MOTION: {
+        device::DeviceMotionHardwareBuffer* motion_buffer =
+            static_cast<device::DeviceMotionHardwareBuffer*>(buffer);
         if (sensor_data_available_)
           UpdateMotion(motion_buffer);
         SetMotionBufferReady(motion_buffer);
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                                 motion_started_callback_);
       } break;
-      case CONSUMER_TYPE_ORIENTATION: {
-        DeviceOrientationHardwareBuffer* orientation_buffer =
-            static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+      case device::CONSUMER_TYPE_ORIENTATION: {
+        device::DeviceOrientationHardwareBuffer* orientation_buffer =
+            static_cast<device::DeviceOrientationHardwareBuffer*>(buffer);
         if (sensor_data_available_)
           UpdateOrientation(orientation_buffer);
         SetOrientationBufferReady(orientation_buffer);
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                                 orientation_started_callback_);
       } break;
-      case CONSUMER_TYPE_LIGHT: {
-        DeviceLightHardwareBuffer* light_buffer =
-            static_cast<DeviceLightHardwareBuffer*>(buffer);
+      case device::CONSUMER_TYPE_LIGHT: {
+        device::DeviceLightHardwareBuffer* light_buffer =
+            static_cast<device::DeviceLightHardwareBuffer*>(buffer);
         UpdateLight(light_buffer,
                     sensor_data_available_
                         ? 100
@@ -95,17 +95,17 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     return true;
   }
 
-  bool Stop(ConsumerType consumer_type) override {
+  bool Stop(device::ConsumerType consumer_type) override {
     switch (consumer_type) {
-      case CONSUMER_TYPE_MOTION:
+      case device::CONSUMER_TYPE_MOTION:
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                                 motion_stopped_callback_);
         break;
-      case CONSUMER_TYPE_ORIENTATION:
+      case device::CONSUMER_TYPE_ORIENTATION:
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                                 orientation_stopped_callback_);
         break;
-      case CONSUMER_TYPE_LIGHT:
+      case device::CONSUMER_TYPE_LIGHT:
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                                 light_stopped_callback_);
         break;
@@ -125,19 +125,20 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     sensor_data_available_ = available;
   }
 
-  void SetMotionBufferReady(DeviceMotionHardwareBuffer* buffer) {
+  void SetMotionBufferReady(device::DeviceMotionHardwareBuffer* buffer) {
     buffer->seqlock.WriteBegin();
     buffer->data.allAvailableSensorsAreActive = true;
     buffer->seqlock.WriteEnd();
   }
 
-  void SetOrientationBufferReady(DeviceOrientationHardwareBuffer* buffer) {
+  void SetOrientationBufferReady(
+      device::DeviceOrientationHardwareBuffer* buffer) {
     buffer->seqlock.WriteBegin();
     buffer->data.allAvailableSensorsAreActive = true;
     buffer->seqlock.WriteEnd();
   }
 
-  void UpdateMotion(DeviceMotionHardwareBuffer* buffer) {
+  void UpdateMotion(device::DeviceMotionHardwareBuffer* buffer) {
     buffer->seqlock.WriteBegin();
     buffer->data.accelerationX = 1;
     buffer->data.hasAccelerationX = true;
@@ -165,7 +166,7 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     buffer->seqlock.WriteEnd();
   }
 
-  void UpdateOrientation(DeviceOrientationHardwareBuffer* buffer) {
+  void UpdateOrientation(device::DeviceOrientationHardwareBuffer* buffer) {
     buffer->seqlock.WriteBegin();
     buffer->data.alpha = 1;
     buffer->data.hasAlpha = true;
@@ -177,7 +178,7 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     buffer->seqlock.WriteEnd();
   }
 
-  void UpdateLight(DeviceLightHardwareBuffer* buffer, double lux) {
+  void UpdateLight(device::DeviceLightHardwareBuffer* buffer, double lux) {
     buffer->seqlock.WriteBegin();
     buffer->data.value = lux;
     buffer->seqlock.WriteEnd();
@@ -235,7 +236,8 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
         orientation_started_runloop_->QuitClosure());
     fetcher_->SetOrientationStoppedCallback(
         orientation_stopped_runloop_->QuitClosure());
-    DeviceSensorService::GetInstance()->SetDataFetcherForTesting(fetcher_);
+    device::DeviceSensorService::GetInstance()->SetDataFetcherForTesting(
+        fetcher_);
   }
 
   void SetUpOnIOThread() {

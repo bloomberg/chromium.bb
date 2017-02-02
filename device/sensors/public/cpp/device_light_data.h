@@ -5,7 +5,7 @@
 #ifndef DEVICE_SENSORS_PUBLIC_CPP_DEVICE_LIGHT_DATA_H_
 #define DEVICE_SENSORS_PUBLIC_CPP_DEVICE_LIGHT_DATA_H_
 
-namespace content {
+namespace device {
 
 // This struct is intentionally POD and fixed size so that it can be stored
 // in shared memory between the sensor interface impl and its clients.
@@ -16,6 +16,6 @@ struct DeviceLightData {
   double value;
 };
 
-}  // namespace content
+}  // namespace device
 
 #endif  // DEVICE_SENSORS_PUBLIC_CPP_DEVICE_LIGHT_DATA_H_

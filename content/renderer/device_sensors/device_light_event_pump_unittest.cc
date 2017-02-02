@@ -33,11 +33,11 @@ class MockDeviceLightListener : public blink::WebDeviceLightListener {
     did_change_device_light_ = value;
   }
 
-  const DeviceLightData& data() const { return data_; }
+  const device::DeviceLightData& data() const { return data_; }
 
  private:
   bool did_change_device_light_;
-  DeviceLightData data_;
+  device::DeviceLightData data_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDeviceLightListener);
 };
@@ -71,14 +71,14 @@ class DeviceLightEventPumpTest : public testing::Test {
   void SetUp() override {
     listener_.reset(new MockDeviceLightListener);
     light_pump_.reset(new DeviceLightEventPumpForTesting);
-    shared_memory_ =
-        mojo::SharedBufferHandle::Create(sizeof(DeviceLightHardwareBuffer));
-    mapping_ = shared_memory_->Map(sizeof(DeviceLightHardwareBuffer));
+    shared_memory_ = mojo::SharedBufferHandle::Create(
+        sizeof(device::DeviceLightHardwareBuffer));
+    mapping_ = shared_memory_->Map(sizeof(device::DeviceLightHardwareBuffer));
     ASSERT_TRUE(mapping_);
   }
 
   void InitBuffer() {
-    DeviceLightData& data = buffer()->data;
+    device::DeviceLightData& data = buffer()->data;
     data.value = 1.0;
   }
 
@@ -88,8 +88,8 @@ class DeviceLightEventPumpTest : public testing::Test {
     return shared_memory_->Clone(
         mojo::SharedBufferHandle::AccessMode::READ_ONLY);
   }
-  DeviceLightHardwareBuffer* buffer() {
-    return reinterpret_cast<DeviceLightHardwareBuffer*>(mapping_.get());
+  device::DeviceLightHardwareBuffer* buffer() {
+    return reinterpret_cast<device::DeviceLightHardwareBuffer*>(mapping_.get());
   }
 
  private:
@@ -110,7 +110,7 @@ TEST_F(DeviceLightEventPumpTest, DidStartPolling) {
 
   base::RunLoop().Run();
 
-  const DeviceLightData& received_data = listener()->data();
+  const device::DeviceLightData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_light());
   EXPECT_EQ(1, static_cast<double>(received_data.value));
 }
@@ -121,7 +121,7 @@ TEST_F(DeviceLightEventPumpTest, FireAllNullEvent) {
 
   base::RunLoop().Run();
 
-  const DeviceLightData& received_data = listener()->data();
+  const device::DeviceLightData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_light());
   EXPECT_FALSE(received_data.value);
 }
@@ -134,7 +134,7 @@ TEST_F(DeviceLightEventPumpTest, DidStartPollingValuesEqual) {
 
   base::RunLoop().Run();
 
-  const DeviceLightData& received_data = listener()->data();
+  const device::DeviceLightData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_light());
   EXPECT_EQ(1, static_cast<double>(received_data.value));
 

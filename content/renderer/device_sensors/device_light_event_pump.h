@@ -19,7 +19,7 @@ class WebDeviceLightListener;
 
 namespace content {
 
-typedef SharedMemorySeqLockReader<DeviceLightData>
+typedef SharedMemorySeqLockReader<device::DeviceLightData>
     DeviceLightSharedMemoryReader;
 
 class CONTENT_EXPORT DeviceLightEventPump
