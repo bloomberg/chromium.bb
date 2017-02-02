@@ -182,6 +182,12 @@ class MockHttpCache {
   MockHttpCache();
   explicit MockHttpCache(
       std::unique_ptr<HttpCache::BackendFactory> disk_cache_factory);
+  // |set_up_quic_server_info| if set, will set a quic server info factory
+  // adptor.
+  explicit MockHttpCache(bool set_up_quic_server_info);
+
+  MockHttpCache(std::unique_ptr<HttpCache::BackendFactory> disk_cache_factory,
+                bool set_up_quic_server_info);
 
   HttpCache* http_cache() { return &http_cache_; }
 
