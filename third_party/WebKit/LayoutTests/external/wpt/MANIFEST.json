@@ -3906,11 +3906,6 @@
      {}
     ]
    ],
-   "FileAPI/url/url_createobjecturl_blob-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "FileAPI/url/url_xmlhttprequest_img-ref.html": [
     [
      {}
@@ -34255,7 +34250,7 @@
    "testharness"
   ],
   "FileAPI/idlharness-expected.txt": [
-   "e57737f937070ac349c5a4d9932c487e62018def",
+   "9f32f6f1d0687255b179a4077fcd05c75448801b",
    "support"
   ],
   "FileAPI/idlharness.html": [
@@ -34320,10 +34315,6 @@
   ],
   "FileAPI/support/upload.txt": [
    "f7ff9e8b7bb2e09b70935a5d785e0cc5d9d0abf0",
-   "support"
-  ],
-  "FileAPI/url/url_createobjecturl_blob-expected.txt": [
-   "dc7768766da215a8ed6a95cf30610f1271738134",
    "support"
   ],
   "FileAPI/url/url_createobjecturl_blob.html": [
@@ -41571,7 +41562,7 @@
    "support"
   ],
   "html/dom/elements-misc.js": [
-   "84dcfeb32d9063daadd8cf4092b502130fd9a7da",
+   "c0d89d2884a9d27f2417f10f2ebc9c40192d1a5f",
    "support"
   ],
   "html/dom/elements-obsolete.js": [
