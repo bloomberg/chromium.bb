@@ -18,8 +18,8 @@
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
-#include "media/base/demuxer_stream_provider.h"
 #include "media/base/media_log.h"
+#include "media/base/media_resource.h"
 #include "media/base/renderer_client.h"
 
 namespace chromecast {
@@ -61,10 +61,9 @@ CastRenderer::~CastRenderer() {
     video_resolution_policy_->RemoveObserver(this);
 }
 
-void CastRenderer::Initialize(
-    ::media::DemuxerStreamProvider* demuxer_stream_provider,
-    ::media::RendererClient* client,
-    const ::media::PipelineStatusCB& init_cb) {
+void CastRenderer::Initialize(::media::MediaResource* media_resource,
+                              ::media::RendererClient* client,
+                              const ::media::PipelineStatusCB& init_cb) {
   CMALOG(kLogControl) << __FUNCTION__ << ": " << this;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -94,7 +93,7 @@ void CastRenderer::Initialize(
 
   // Initialize audio.
   ::media::DemuxerStream* audio_stream =
-      demuxer_stream_provider->GetStream(::media::DemuxerStream::AUDIO);
+      media_resource->GetStream(::media::DemuxerStream::AUDIO);
   if (audio_stream) {
     AvPipelineClient audio_client;
     audio_client.wait_for_key_cb = base::Bind(
@@ -120,7 +119,7 @@ void CastRenderer::Initialize(
 
   // Initialize video.
   ::media::DemuxerStream* video_stream =
-      demuxer_stream_provider->GetStream(::media::DemuxerStream::VIDEO);
+      media_resource->GetStream(::media::DemuxerStream::VIDEO);
   if (video_stream) {
     VideoPipelineClient video_client;
     video_client.av_pipeline_client.wait_for_key_cb = base::Bind(

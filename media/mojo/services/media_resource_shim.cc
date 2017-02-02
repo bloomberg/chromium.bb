@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/demuxer_stream_provider_shim.h"
+#include "media/mojo/services/media_resource_shim.h"
 
 #include <utility>
 
@@ -12,7 +12,7 @@
 
 namespace media {
 
-DemuxerStreamProviderShim::DemuxerStreamProviderShim(
+MediaResourceShim::MediaResourceShim(
     std::vector<mojom::DemuxerStreamPtr> streams,
     const base::Closure& demuxer_ready_cb)
     : demuxer_ready_cb_(demuxer_ready_cb),
@@ -23,17 +23,16 @@ DemuxerStreamProviderShim::DemuxerStreamProviderShim(
 
   for (auto& s : streams) {
     streams_.emplace_back(new MojoDemuxerStreamAdapter(
-        std::move(s), base::Bind(&DemuxerStreamProviderShim::OnStreamReady,
+        std::move(s), base::Bind(&MediaResourceShim::OnStreamReady,
                                  weak_factory_.GetWeakPtr())));
   }
 }
 
-DemuxerStreamProviderShim::~DemuxerStreamProviderShim() {
-}
+MediaResourceShim::~MediaResourceShim() {}
 
 // This function returns only the first stream of the given |type| for now.
 // TODO(servolk): Make this work with multiple streams.
-DemuxerStream* DemuxerStreamProviderShim::GetStream(DemuxerStream::Type type) {
+DemuxerStream* MediaResourceShim::GetStream(DemuxerStream::Type type) {
   DCHECK(demuxer_ready_cb_.is_null());
   for (auto& stream : streams_) {
     if (stream->type() == type)
@@ -43,7 +42,7 @@ DemuxerStream* DemuxerStreamProviderShim::GetStream(DemuxerStream::Type type) {
   return nullptr;
 }
 
-void DemuxerStreamProviderShim::OnStreamReady() {
+void MediaResourceShim::OnStreamReady() {
   if (++streams_ready_ == streams_.size())
     base::ResetAndReturn(&demuxer_ready_cb_).Run();
 }

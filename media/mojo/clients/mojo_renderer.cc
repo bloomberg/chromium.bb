@@ -10,7 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "media/base/demuxer_stream_provider.h"
+#include "media/base/media_resource.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer_client.h"
 #include "media/base/video_renderer_sink.h"
@@ -40,12 +40,12 @@ MojoRenderer::~MojoRenderer() {
   CancelPendingCallbacks();
 }
 
-void MojoRenderer::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
+void MojoRenderer::Initialize(MediaResource* media_resource,
                               media::RendererClient* client,
                               const PipelineStatusCB& init_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(demuxer_stream_provider);
+  DCHECK(media_resource);
 
   if (encountered_error_) {
     task_runner_->PostTask(
@@ -53,14 +53,14 @@ void MojoRenderer::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
     return;
   }
 
-  demuxer_stream_provider_ = demuxer_stream_provider;
+  media_resource_ = media_resource;
   init_cb_ = init_cb;
 
-  switch (demuxer_stream_provider_->GetType()) {
-    case DemuxerStreamProvider::Type::STREAM:
+  switch (media_resource_->GetType()) {
+    case MediaResource::Type::STREAM:
       InitializeRendererFromStreams(client);
       break;
-    case DemuxerStreamProvider::Type::URL:
+    case MediaResource::Type::URL:
       InitializeRendererFromUrl(client);
       break;
   }
@@ -73,10 +73,8 @@ void MojoRenderer::InitializeRendererFromStreams(
 
   // Create audio and video mojom::DemuxerStream and bind its lifetime to
   // the pipe.
-  DemuxerStream* const audio =
-      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
-  DemuxerStream* const video =
-      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
+  DemuxerStream* const audio = media_resource_->GetStream(DemuxerStream::AUDIO);
+  DemuxerStream* const video = media_resource_->GetStream(DemuxerStream::VIDEO);
 
   std::vector<mojom::DemuxerStreamPtr> streams;
   if (audio) {
@@ -130,7 +128,7 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
   mojom::RendererClientAssociatedPtrInfo client_ptr_info;
   client_binding_.Bind(&client_ptr_info, remote_renderer_.associated_group());
 
-  MediaUrlParams url_params = demuxer_stream_provider_->GetMediaUrlParams();
+  MediaUrlParams url_params = media_resource_->GetMediaUrlParams();
 
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if

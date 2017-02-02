@@ -40,19 +40,17 @@ MediaPlayerRenderer::~MediaPlayerRenderer() {
   CancelScopedSurfaceRequest();
 }
 
-void MediaPlayerRenderer::Initialize(
-    media::DemuxerStreamProvider* demuxer_stream_provider,
-    media::RendererClient* client,
-    const media::PipelineStatusCB& init_cb) {
+void MediaPlayerRenderer::Initialize(media::MediaResource* media_resource,
+                                     media::RendererClient* client,
+                                     const media::PipelineStatusCB& init_cb) {
   DVLOG(1) << __func__;
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   renderer_client_ = client;
 
-  if (demuxer_stream_provider->GetType() !=
-      media::DemuxerStreamProvider::Type::URL) {
-    DLOG(ERROR) << "DemuxerStreamProvider is not of Type URL";
+  if (media_resource->GetType() != media::MediaResource::Type::URL) {
+    DLOG(ERROR) << "MediaResource is not of Type URL";
     init_cb.Run(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
@@ -61,7 +59,7 @@ void MediaPlayerRenderer::Initialize(
       media::MediaServiceThrottler::GetInstance()->GetDelayForClientCreation();
 
   if (creation_delay.is_zero()) {
-    CreateMediaPlayer(demuxer_stream_provider->GetMediaUrlParams(), init_cb);
+    CreateMediaPlayer(media_resource->GetMediaUrlParams(), init_cb);
     return;
   }
 
@@ -69,7 +67,7 @@ void MediaPlayerRenderer::Initialize(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&MediaPlayerRenderer::CreateMediaPlayer,
                  weak_factory_.GetWeakPtr(),
-                 demuxer_stream_provider->GetMediaUrlParams(), init_cb),
+                 media_resource->GetMediaUrlParams(), init_cb),
       creation_delay);
 }
 

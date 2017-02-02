@@ -27,9 +27,9 @@ namespace media {
 // its implementation of the Demuxer are NOPs that return the default values and
 // fire any provided callbacks immediately.
 //
-// If Pipeline where to be refactored to use a DemuxerStreamProvider instead of
+// If Pipeline where to be refactored to use a MediaResource instead of
 // a Demuxer, MediaUrlDemuxer should be refactored to inherit directly from
-// DemuxerStreamProvider.
+// MediaResource.
 class MEDIA_EXPORT MediaUrlDemuxer : public Demuxer {
  public:
   MediaUrlDemuxer(
@@ -38,10 +38,10 @@ class MEDIA_EXPORT MediaUrlDemuxer : public Demuxer {
       const GURL& first_party_for_cookies);
   ~MediaUrlDemuxer() override;
 
-  // DemuxerStreamProvider interface.
+  // MediaResource interface.
   DemuxerStream* GetStream(DemuxerStream::Type type) override;
   MediaUrlParams GetMediaUrlParams() const override;
-  DemuxerStreamProvider::Type GetType() const override;
+  MediaResource::Type GetType() const override;
 
   // Demuxer interface.
   std::string GetDisplayName() const override;

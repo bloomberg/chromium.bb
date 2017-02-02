@@ -32,7 +32,7 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class AudioRenderer;
-class DemuxerStreamProvider;
+class MediaResource;
 class TimeSource;
 class VideoRenderer;
 class WallClockTimeSource;
@@ -50,7 +50,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   ~RendererImpl() final;
 
   // Renderer implementation.
-  void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
+  void Initialize(MediaResource* media_resource,
                   RendererClient* client,
                   const PipelineStatusCB& init_cb) final;
   void SetCdm(CdmContext* cdm_context,
@@ -154,7 +154,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // Task runner used to execute pipeline tasks.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  DemuxerStreamProvider* demuxer_stream_provider_;
+  MediaResource* media_resource_;
   RendererClient* client_;
 
   // Temporary callback used for Initialize() and Flush().

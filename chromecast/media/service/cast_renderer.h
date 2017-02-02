@@ -35,7 +35,7 @@ class CastRenderer : public ::media::Renderer,
   ~CastRenderer() final;
 
   // ::media::Renderer implementation.
-  void Initialize(::media::DemuxerStreamProvider* demuxer_stream_provider,
+  void Initialize(::media::MediaResource* media_resource,
                   ::media::RendererClient* client,
                   const ::media::PipelineStatusCB& init_cb) final;
   void SetCdm(::media::CdmContext* cdm_context,

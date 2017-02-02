@@ -13,8 +13,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_manager.h"
-#include "media/base/demuxer_stream_provider.h"
 #include "media/base/media_log.h"
+#include "media/base/media_resource.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
 #include "url/gurl.h"
@@ -47,7 +47,7 @@ class CONTENT_EXPORT MediaPlayerRenderer : public media::Renderer,
   ~MediaPlayerRenderer() override;
 
   // media::Renderer implementation
-  void Initialize(media::DemuxerStreamProvider* demuxer_stream_provider,
+  void Initialize(media::MediaResource* media_resource,
                   media::RendererClient* client,
                   const media::PipelineStatusCB& init_cb) override;
   void SetCdm(media::CdmContext* cdm_context,

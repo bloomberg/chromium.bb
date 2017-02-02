@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/demuxer_stream_provider.h"
+#include "media/base/media_resource.h"
 
 namespace media {
 
-DemuxerStreamProvider::DemuxerStreamProvider() {}
+MediaResource::MediaResource() {}
 
-DemuxerStreamProvider::~DemuxerStreamProvider() {}
+MediaResource::~MediaResource() {}
 
-MediaUrlParams DemuxerStreamProvider::GetMediaUrlParams() const {
+MediaUrlParams MediaResource::GetMediaUrlParams() const {
   NOTREACHED();
   return MediaUrlParams{GURL(), GURL()};
 }
 
-DemuxerStreamProvider::Type DemuxerStreamProvider::GetType() const {
+MediaResource::Type MediaResource::GetType() const {
   return STREAM;
 }
 

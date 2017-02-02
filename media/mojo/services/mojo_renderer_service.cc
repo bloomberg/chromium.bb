@@ -14,7 +14,7 @@
 #include "media/base/media_url_demuxer.h"
 #include "media/base/renderer.h"
 #include "media/base/video_renderer_sink.h"
-#include "media/mojo/services/demuxer_stream_provider_shim.h"
+#include "media/mojo/services/media_resource_shim.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 
 namespace media {
@@ -89,7 +89,7 @@ void MojoRendererService::Initialize(
 
   if (media_url == base::nullopt) {
     DCHECK(streams.has_value());
-    stream_provider_.reset(new DemuxerStreamProviderShim(
+    media_resource_.reset(new MediaResourceShim(
         std::move(*streams),
         base::Bind(&MojoRendererService::OnStreamReady, weak_this_, callback)));
     return;
@@ -97,10 +97,10 @@ void MojoRendererService::Initialize(
 
   DCHECK(!media_url.value().is_empty());
   DCHECK(first_party_for_cookies);
-  stream_provider_.reset(new MediaUrlDemuxer(nullptr, media_url.value(),
-                                             first_party_for_cookies.value()));
+  media_resource_.reset(new MediaUrlDemuxer(nullptr, media_url.value(),
+                                            first_party_for_cookies.value()));
   renderer_->Initialize(
-      stream_provider_.get(), this,
+      media_resource_.get(), this,
       base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,
                  callback));
 }
@@ -205,7 +205,7 @@ void MojoRendererService::OnStreamReady(
   DCHECK_EQ(state_, STATE_INITIALIZING);
 
   renderer_->Initialize(
-      stream_provider_.get(), this,
+      media_resource_.get(), this,
       base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,
                  callback));
 }

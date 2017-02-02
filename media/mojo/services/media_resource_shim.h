@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_DEMUXER_STREAM_PROVIDER_SHIM_H_
-#define MEDIA_MOJO_SERVICES_DEMUXER_STREAM_PROVIDER_SHIM_H_
+#ifndef MEDIA_MOJO_SERVICES_MEDIA_RESOURCE_SHIM_H_
+#define MEDIA_MOJO_SERVICES_MEDIA_RESOURCE_SHIM_H_
 
 #include <stddef.h>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "media/base/demuxer_stream_provider.h"
+#include "media/base/media_resource.h"
 #include "media/mojo/services/mojo_demuxer_stream_adapter.h"
 
 namespace media {
 
-// DemuxerStreamProvider shim for mojom::DemuxerStreams.
-class DemuxerStreamProviderShim : public DemuxerStreamProvider {
+// MediaResource shim for mojom::DemuxerStreams.
+class MediaResourceShim : public MediaResource {
  public:
   // Constructs the shim; at least a single audio or video stream must be
   // provided.  |demuxer_ready_cb| will be called once the streams have been
   // initialized.  Calling any method before then is an error.
-  DemuxerStreamProviderShim(std::vector<mojom::DemuxerStreamPtr> streams,
-                            const base::Closure& demuxer_ready_cb);
-  ~DemuxerStreamProviderShim() override;
+  MediaResourceShim(std::vector<mojom::DemuxerStreamPtr> streams,
+                    const base::Closure& demuxer_ready_cb);
+  ~MediaResourceShim() override;
 
-  // DemuxerStreamProvider interface.
+  // MediaResource interface.
   DemuxerStream* GetStream(DemuxerStream::Type type) override;
 
  private:
@@ -45,11 +45,11 @@ class DemuxerStreamProviderShim : public DemuxerStreamProvider {
   size_t streams_ready_;
 
   // WeakPtrFactorys must always be the last member variable.
-  base::WeakPtrFactory<DemuxerStreamProviderShim> weak_factory_;
+  base::WeakPtrFactory<MediaResourceShim> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DemuxerStreamProviderShim);
+  DISALLOW_COPY_AND_ASSIGN(MediaResourceShim);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_DEMUXER_STREAM_PROVIDER_SHIM_H_
+#endif  // MEDIA_MOJO_SERVICES_MEDIA_RESOURCE_SHIM_H_

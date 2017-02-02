@@ -215,19 +215,16 @@ void FakeDemuxerStream::DoRead() {
   base::ResetAndReturn(&read_cb_).Run(kOk, buffer);
 }
 
-FakeDemuxerStreamProvider::FakeDemuxerStreamProvider(
-    int num_video_configs,
-    int num_video_buffers_in_one_config,
-    bool is_video_encrypted)
+FakeMediaResource::FakeMediaResource(int num_video_configs,
+                                     int num_video_buffers_in_one_config,
+                                     bool is_video_encrypted)
     : fake_video_stream_(num_video_configs,
                          num_video_buffers_in_one_config,
-                         is_video_encrypted) {
-}
+                         is_video_encrypted) {}
 
-FakeDemuxerStreamProvider::~FakeDemuxerStreamProvider() {
-}
+FakeMediaResource::~FakeMediaResource() {}
 
-DemuxerStream* FakeDemuxerStreamProvider::GetStream(DemuxerStream::Type type) {
+DemuxerStream* FakeMediaResource::GetStream(DemuxerStream::Type type) {
   if (type == DemuxerStream::Type::AUDIO)
     return nullptr;
   return &fake_video_stream_;

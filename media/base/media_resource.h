@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_DEMUXER_STREAM_PROVIDER_H_
-#define MEDIA_BASE_DEMUXER_STREAM_PROVIDER_H_
+#ifndef MEDIA_BASE_MEDIA_RESOURCE_H_
+#define MEDIA_BASE_MEDIA_RESOURCE_H_
 
 #include "base/macros.h"
 #include "media/base/demuxer_stream.h"
@@ -13,34 +13,28 @@
 
 namespace media {
 
-// Abstract class that defines how to retrieve "media sources" in DemuxerStream
-// form (for most cases) or URL form (for the MediaPlayerRenderer case).
-//
-// The sub-classes do not stricly provide demuxer streams, but because all
-// sub-classes are for the moment Demuxers, this class has not been renamed to
-// "MediaProvider". This class would be a good candidate for renaming, if
-// ever Pipeline were to support this class directly, instead of the Demuxer
-// interface.
-// TODO(tguilbert): Rename this class. See crbug.com/658062.
+// Abstract class that defines how to retrieve "media resources" in
+// DemuxerStream form (for most cases) or URL form (for the MediaPlayerRenderer
+// case).
 //
 // The derived classes must return a non-null value for the getter method
 // associated with their type, and return a null/empty value for other getters.
-class MEDIA_EXPORT DemuxerStreamProvider {
+class MEDIA_EXPORT MediaResource {
  public:
   enum Type {
-    STREAM,  // Indicates GetStream() should be used
+    STREAM,  // Indicates GetStreams() should be used
     URL,     // Indicates GetUrl() should be used
   };
 
-  DemuxerStreamProvider();
-  virtual ~DemuxerStreamProvider();
+  MediaResource();
+  virtual ~MediaResource();
 
   // For Type::STREAM:
   //   Returns the first stream of the given stream type (which is not allowed
   //   to be DemuxerStream::TEXT), or NULL if that type of stream is not
   //   present.
   //   NOTE: Once a DemuxerStream pointer is returned from GetStream it is
-  //   guaranteed to stay valid for as long as the Demuxer/DemuxerStreamProvider
+  //   guaranteed to stay valid for as long as the Demuxer/MediaResource
   //   is alive. But make no assumption that once GetStream returned a non-null
   //   pointer for some stream type then all subsequent calls will also return
   //   non-null pointer for the same stream type. In MSE Javascript code can
@@ -57,12 +51,12 @@ class MEDIA_EXPORT DemuxerStreamProvider {
   //   Should not be called.
   virtual MediaUrlParams GetMediaUrlParams() const;
 
-  virtual DemuxerStreamProvider::Type GetType() const;
+  virtual MediaResource::Type GetType() const;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DemuxerStreamProvider);
+  DISALLOW_COPY_AND_ASSIGN(MediaResource);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_DEMUXER_STREAM_PROVIDER_H_
+#endif  // MEDIA_BASE_MEDIA_RESOURCE_H_

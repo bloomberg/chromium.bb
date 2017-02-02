@@ -17,7 +17,7 @@ MediaUrlDemuxer::MediaUrlDemuxer(
 
 MediaUrlDemuxer::~MediaUrlDemuxer() {}
 
-// Should never be called since DemuxerStreamProvider::Type is URL.
+// Should never be called since MediaResource::Type is URL.
 DemuxerStream* MediaUrlDemuxer::GetStream(DemuxerStream::Type type) {
   NOTREACHED();
   return nullptr;
@@ -27,8 +27,8 @@ MediaUrlParams MediaUrlDemuxer::GetMediaUrlParams() const {
   return params_;
 }
 
-DemuxerStreamProvider::Type MediaUrlDemuxer::GetType() const {
-  return DemuxerStreamProvider::Type::URL;
+MediaResource::Type MediaUrlDemuxer::GetType() const {
+  return MediaResource::Type::URL;
 }
 
 std::string MediaUrlDemuxer::GetDisplayName() const {

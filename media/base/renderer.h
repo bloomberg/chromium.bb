@@ -16,7 +16,7 @@
 
 namespace media {
 
-class DemuxerStreamProvider;
+class MediaResource;
 class RendererClient;
 
 class MEDIA_EXPORT Renderer {
@@ -26,12 +26,12 @@ class MEDIA_EXPORT Renderer {
   // Stops rendering and fires any pending callbacks.
   virtual ~Renderer();
 
-  // Initializes the Renderer with |demuxer_stream_provider|, executing
-  // |init_cb| upon completion. |demuxer_stream_provider| must be valid for
-  // the lifetime of the Renderer object.  |init_cb| must only be run after this
-  // method has returned.  Firing |init_cb| may result in the immediate
-  // destruction of the caller, so it must be run only prior to returning.
-  virtual void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
+  // Initializes the Renderer with |media_resource|, executing |init_cb| upon
+  // completion. |media_resource| must be valid for the lifetime of the Renderer
+  // object.  |init_cb| must only be run after this method has returned. Firing
+  // |init_cb| may result in the immediate destruction of the caller, so it must
+  // be run only prior to returning.
+  virtual void Initialize(MediaResource* media_resource,
                           RendererClient* client,
                           const PipelineStatusCB& init_cb) = 0;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/remoting/fake_demuxer_stream_provider.h"
+#include "media/remoting/fake_media_resource.h"
 
 #include <vector>
 
@@ -101,12 +101,12 @@ void FakeDemuxerStream::CreateFakeFrame(size_t size,
   }
 }
 
-FakeDemuxerStreamProvider::FakeDemuxerStreamProvider()
+FakeMediaResource::FakeMediaResource()
     : demuxer_stream_(new FakeDemuxerStream(true)) {}
 
-FakeDemuxerStreamProvider::~FakeDemuxerStreamProvider() {}
+FakeMediaResource::~FakeMediaResource() {}
 
-DemuxerStream* FakeDemuxerStreamProvider::GetStream(DemuxerStream::Type type) {
+DemuxerStream* FakeMediaResource::GetStream(DemuxerStream::Type type) {
   if (type == DemuxerStream::AUDIO)
     return reinterpret_cast<DemuxerStream*>(demuxer_stream_.get());
   return nullptr;

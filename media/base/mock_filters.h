@@ -285,7 +285,7 @@ class MockRenderer : public Renderer {
 
   // Renderer implementation.
   MOCK_METHOD3(Initialize,
-               void(DemuxerStreamProvider* demuxer_stream_provider,
+               void(MediaResource* media_resource,
                     RendererClient* client,
                     const PipelineStatusCB& init_cb));
   MOCK_METHOD1(Flush, void(const base::Closure& flush_cb));

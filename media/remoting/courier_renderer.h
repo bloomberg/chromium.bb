@@ -83,7 +83,7 @@ class CourierRenderer : public Renderer {
 
  public:
   // media::Renderer implementation.
-  void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
+  void Initialize(MediaResource* media_resource,
                   RendererClient* client,
                   const PipelineStatusCB& init_cb) final;
   void SetCdm(CdmContext* cdm_context,
@@ -169,7 +169,7 @@ class CourierRenderer : public Renderer {
   // lock because it can be accessed from both media and render main thread.
   base::Lock time_lock_;
 
-  DemuxerStreamProvider* demuxer_stream_provider_;
+  MediaResource* media_resource_;
   RendererClient* client_;
   std::unique_ptr<DemuxerStreamAdapter> audio_demuxer_stream_adapter_;
   std::unique_ptr<DemuxerStreamAdapter> video_demuxer_stream_adapter_;

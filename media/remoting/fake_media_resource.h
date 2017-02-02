@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_FAKE_DEMUXER_STREAM_PROVIDER_H_
-#define MEDIA_REMOTING_FAKE_DEMUXER_STREAM_PROVIDER_H_
+#ifndef MEDIA_REMOTING_FAKE_MEDIA_RESOURCE_H_
+#define MEDIA_REMOTING_FAKE_MEDIA_RESOURCE_H_
 
 #include <deque>
 
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
-#include "media/base/demuxer_stream_provider.h"
+#include "media/base/media_resource.h"
 #include "media/base/video_decoder_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -49,21 +49,21 @@ class FakeDemuxerStream : public DemuxerStream {
 };
 
 // Audio only demuxer stream provider
-class FakeDemuxerStreamProvider : public DemuxerStreamProvider {
+class FakeMediaResource : public MediaResource {
  public:
-  FakeDemuxerStreamProvider();
-  ~FakeDemuxerStreamProvider() final;
+  FakeMediaResource();
+  ~FakeMediaResource() final;
 
-  // DemuxerStreamProvider implementation.
+  // MediaResource implementation.
   DemuxerStream* GetStream(DemuxerStream::Type type) override;
 
  private:
   std::unique_ptr<FakeDemuxerStream> demuxer_stream_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeDemuxerStreamProvider);
+  DISALLOW_COPY_AND_ASSIGN(FakeMediaResource);
 };
 
 }  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_FAKE_DEMUXER_STREAM_PROVIDER_H_
+#endif  // MEDIA_REMOTING_FAKE_MEDIA_RESOURCE_H_

@@ -79,8 +79,8 @@ source_set("media_remoting_tests") {
   sources = [
     "courier_renderer_unittest.cc",
     "demuxer_stream_adapter_unittest.cc",
-    "fake_demuxer_stream_provider.cc",
-    "fake_demuxer_stream_provider.h",
+    "fake_media_resource.cc",
+    "fake_media_resource.h",
     "fake_remoter.cc",
     "fake_remoter.h",
     "proto_utils_unittest.cc",

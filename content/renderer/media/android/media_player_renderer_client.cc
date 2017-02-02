@@ -25,7 +25,7 @@ MediaPlayerRendererClient::MediaPlayerRendererClient(
 MediaPlayerRendererClient::~MediaPlayerRendererClient() {}
 
 void MediaPlayerRendererClient::Initialize(
-    media::DemuxerStreamProvider* demuxer_stream_provider,
+    media::MediaResource* media_resource,
     media::RendererClient* client,
     const media::PipelineStatusCB& init_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
@@ -46,11 +46,11 @@ void MediaPlayerRendererClient::Initialize(
                  base::Unretained(this)),
       gfx::Size(1, 1), compositor_task_runner_,
       base::Bind(&MediaPlayerRendererClient::OnStreamTextureWrapperInitialized,
-                 weak_factory_.GetWeakPtr(), demuxer_stream_provider));
+                 weak_factory_.GetWeakPtr(), media_resource));
 }
 
 void MediaPlayerRendererClient::OnStreamTextureWrapperInitialized(
-    media::DemuxerStreamProvider* demuxer_stream_provider,
+    media::MediaResource* media_resource,
     bool success) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (!success) {
@@ -60,7 +60,7 @@ void MediaPlayerRendererClient::OnStreamTextureWrapperInitialized(
   }
 
   mojo_renderer_->Initialize(
-      demuxer_stream_provider, this,
+      media_resource, this,
       base::Bind(&MediaPlayerRendererClient::OnRemoteRendererInitialized,
                  weak_factory_.GetWeakPtr()));
 }

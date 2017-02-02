@@ -11,7 +11,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer_client.h"
 #include "media/base/test_helpers.h"
-#include "media/remoting/fake_demuxer_stream_provider.h"
+#include "media/remoting/fake_media_resource.h"
 #include "media/remoting/fake_remoter.h"
 #include "media/remoting/renderer_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -229,14 +229,14 @@ class CourierRendererTest : public testing::Test {
   void InitializeRenderer() {
     // Register media::RendererClient implementation.
     render_client_.reset(new RendererClientImpl());
-    demuxer_stream_provider_.reset(new FakeDemuxerStreamProvider());
+    media_resource_.reset(new FakeMediaResource());
     EXPECT_CALL(*render_client_, OnPipelineStatus(_)).Times(1);
     DCHECK(renderer_);
     // Redirect RPC message for simulate receiver scenario
     controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
         &CourierRendererTest::RpcMessageResponseBot, base::Unretained(this)));
     RunPendingTasks();
-    renderer_->Initialize(demuxer_stream_provider_.get(), render_client_.get(),
+    renderer_->Initialize(media_resource_.get(), render_client_.get(),
                           base::Bind(&RendererClientImpl::OnPipelineStatus,
                                      base::Unretained(render_client_.get())));
     RunPendingTasks();
@@ -333,7 +333,7 @@ class CourierRendererTest : public testing::Test {
   base::MessageLoop message_loop_;
   std::unique_ptr<RendererController> controller_;
   std::unique_ptr<RendererClientImpl> render_client_;
-  std::unique_ptr<FakeDemuxerStreamProvider> demuxer_stream_provider_;
+  std::unique_ptr<FakeMediaResource> media_resource_;
   std::unique_ptr<CourierRenderer> renderer_;
   base::SimpleTestTickClock* clock_;  // Owned by |renderer_|;
 

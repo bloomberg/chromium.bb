@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "media/base/android/stream_texture_wrapper.h"
-#include "media/base/demuxer_stream_provider.h"
+#include "media/base/media_resource.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
 #include "media/base/video_renderer_sink.h"
@@ -45,7 +45,7 @@ class CONTENT_EXPORT MediaPlayerRendererClient : public media::Renderer,
   ~MediaPlayerRendererClient() override;
 
   // media::Renderer implementation.
-  void Initialize(media::DemuxerStreamProvider* demuxer_stream_provider,
+  void Initialize(media::MediaResource* media_resource,
                   media::RendererClient* client,
                   const media::PipelineStatusCB& init_cb) override;
   void SetCdm(media::CdmContext* cdm_context,
@@ -71,9 +71,8 @@ class CONTENT_EXPORT MediaPlayerRendererClient : public media::Renderer,
   void OnFrameAvailable();
 
  private:
-  void OnStreamTextureWrapperInitialized(
-      media::DemuxerStreamProvider* demuxer_stream_provider,
-      bool success);
+  void OnStreamTextureWrapperInitialized(media::MediaResource* media_resource,
+                                         bool success);
   void OnRemoteRendererInitialized(media::PipelineStatus status);
 
   void OnScopedSurfaceRequested(const base::UnguessableToken& request_token);

@@ -859,7 +859,7 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   switch (demuxer_->GetType()) {
-    case DemuxerStreamProvider::Type::STREAM:
+    case MediaResource::Type::STREAM:
       if (!demuxer_->GetStream(DemuxerStream::AUDIO) &&
           !demuxer_->GetStream(DemuxerStream::VIDEO)) {
         DVLOG(1) << "Error: demuxer does not have an audio or a video stream.";
@@ -868,7 +868,7 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
       }
       break;
 
-    case DemuxerStreamProvider::Type::URL:
+    case MediaResource::Type::URL:
       // NOTE: Empty GURL are not valid.
       if (!demuxer_->GetMediaUrlParams().media_url.is_valid()) {
         DVLOG(1) << "Error: demuxer does not have a valid URL.";
@@ -904,7 +904,7 @@ void PipelineImpl::RendererWrapper::ReportMetadata() {
   DemuxerStream* stream;
 
   switch (demuxer_->GetType()) {
-    case DemuxerStreamProvider::Type::STREAM:
+    case MediaResource::Type::STREAM:
       metadata.timeline_offset = demuxer_->GetTimelineOffset();
       stream = demuxer_->GetStream(DemuxerStream::VIDEO);
       if (stream) {
@@ -922,7 +922,7 @@ void PipelineImpl::RendererWrapper::ReportMetadata() {
       }
       break;
 
-    case DemuxerStreamProvider::Type::URL:
+    case MediaResource::Type::URL:
       // We don't know if the MediaPlayerRender has Audio/Video until we start
       // playing. Conservatively assume that they do.
       metadata.has_video = true;

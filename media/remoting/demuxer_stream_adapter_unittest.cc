@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
-#include "media/remoting/fake_demuxer_stream_provider.h"
+#include "media/remoting/fake_media_resource.h"
 #include "media/remoting/fake_remoter.h"
 #include "media/remoting/proto_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"

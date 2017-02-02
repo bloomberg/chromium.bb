@@ -17,8 +17,8 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/demuxer_stream_provider.h"
 #include "media/base/media_log.h"
+#include "media/base/media_resource.h"
 #include "media/base/media_switches.h"
 #include "media/base/renderer_client.h"
 #include "media/base/time_source.h"
@@ -129,7 +129,7 @@ RendererImpl::~RendererImpl() {
   }
 }
 
-void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
+void RendererImpl::Initialize(MediaResource* media_resource,
                               RendererClient* client,
                               const PipelineStatusCB& init_cb) {
   DVLOG(1) << __func__;
@@ -139,7 +139,7 @@ void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
   DCHECK(client);
 
   client_ = client;
-  demuxer_stream_provider_ = demuxer_stream_provider;
+  media_resource_ = media_resource;
   init_cb_ = init_cb;
 
   if (HasEncryptedStream() && !cdm_context_) {
@@ -351,12 +351,12 @@ bool RendererImpl::GetWallClockTimes(
 
 bool RendererImpl::HasEncryptedStream() {
   DemuxerStream* audio_stream =
-      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
+      media_resource_->GetStream(DemuxerStream::AUDIO);
   if (audio_stream && audio_stream->audio_decoder_config().is_encrypted())
     return true;
 
   DemuxerStream* video_stream =
-      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
+      media_resource_->GetStream(DemuxerStream::VIDEO);
   if (video_stream && video_stream->video_decoder_config().is_encrypted())
     return true;
 
@@ -382,7 +382,7 @@ void RendererImpl::InitializeAudioRenderer() {
       base::Bind(&RendererImpl::OnAudioRendererInitializeDone, weak_this_);
 
   DemuxerStream* audio_stream =
-      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
+      media_resource_->GetStream(DemuxerStream::AUDIO);
   if (!audio_stream) {
     audio_renderer_.reset();
     task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));
@@ -431,7 +431,7 @@ void RendererImpl::InitializeVideoRenderer() {
       base::Bind(&RendererImpl::OnVideoRendererInitializeDone, weak_this_);
 
   DemuxerStream* video_stream =
-      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
+      media_resource_->GetStream(DemuxerStream::VIDEO);
   if (!video_stream) {
     video_renderer_.reset();
     task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));

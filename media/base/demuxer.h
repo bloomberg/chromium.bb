@@ -14,9 +14,9 @@
 #include "base/time/time.h"
 #include "media/base/data_source.h"
 #include "media/base/demuxer_stream.h"
-#include "media/base/demuxer_stream_provider.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
+#include "media/base/media_resource.h"
 #include "media/base/media_track.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
@@ -58,7 +58,7 @@ class MEDIA_EXPORT DemuxerHost {
   virtual ~DemuxerHost();
 };
 
-class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
+class MEDIA_EXPORT Demuxer : public MediaResource {
  public:
   // A new potentially encrypted stream has been parsed.
   // First parameter - The type of initialization data.
