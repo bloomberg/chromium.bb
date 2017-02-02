@@ -23,6 +23,8 @@ EXTRA_DIST =					\
 	en-ueb-g2-dictionary_harness.yaml	\
 	en-ueb-math.yaml			\
 	en-ueb-symbols_harness.yaml		\
+	en-us-comp8-ext-back_harness.yaml	\
+	en-us-comp8-ext-for_harness.yaml	\
 	en-us-g2-dictionary_harness.yaml	\
 	en-us-g2-end-emphasis_harness.yaml	\
 	eo-g1_harness.yaml			\
