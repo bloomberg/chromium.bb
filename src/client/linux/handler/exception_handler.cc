@@ -586,15 +586,20 @@ void ExceptionHandler::WaitForContinueSignal() {
 // Runs on the cloned process.
 bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
                               size_t context_size) {
+  const bool may_skip_dump =
+      minidump_descriptor_.skip_dump_if_principal_mapping_not_referenced();
+  const uintptr_t principal_mapping_address =
+      minidump_descriptor_.address_within_principal_mapping();
+  const bool sanitize_stacks = minidump_descriptor_.sanitize_stacks();
   if (minidump_descriptor_.IsMicrodumpOnConsole()) {
     return google_breakpad::WriteMicrodump(
         crashing_process,
         context,
         context_size,
         mapping_list_,
-        minidump_descriptor_.skip_dump_if_principal_mapping_not_referenced(),
-        minidump_descriptor_.address_within_principal_mapping(),
-        minidump_descriptor_.sanitize_stacks(),
+        may_skip_dump,
+        principal_mapping_address,
+        sanitize_stacks,
         *minidump_descriptor_.microdump_extra_info());
   }
   if (minidump_descriptor_.IsFD()) {
@@ -604,7 +609,10 @@ bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
                                           context,
                                           context_size,
                                           mapping_list_,
-                                          app_memory_list_);
+                                          app_memory_list_,
+                                          may_skip_dump,
+                                          principal_mapping_address,
+                                          sanitize_stacks);
   }
   return google_breakpad::WriteMinidump(minidump_descriptor_.path(),
                                         minidump_descriptor_.size_limit(),
@@ -612,7 +620,10 @@ bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
                                         context,
                                         context_size,
                                         mapping_list_,
-                                        app_memory_list_);
+                                        app_memory_list_,
+                                        may_skip_dump,
+                                        principal_mapping_address,
+                                        sanitize_stacks);
 }
 
 // static

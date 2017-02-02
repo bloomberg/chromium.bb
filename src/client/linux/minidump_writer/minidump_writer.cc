@@ -129,6 +129,9 @@ class MinidumpWriter {
                  const ExceptionHandler::CrashContext* context,
                  const MappingList& mappings,
                  const AppMemoryList& appmem,
+                 bool skip_stacks_if_mapping_unreferenced,
+                 uintptr_t principal_mapping_address,
+                 bool sanitize_stacks,
                  LinuxDumper* dumper)
       : fd_(minidump_fd),
         path_(minidump_path),
@@ -140,7 +143,11 @@ class MinidumpWriter {
         minidump_size_limit_(-1),
         memory_blocks_(dumper_->allocator()),
         mapping_list_(mappings),
-        app_memory_list_(appmem) {
+        app_memory_list_(appmem),
+        skip_stacks_if_mapping_unreferenced_(
+            skip_stacks_if_mapping_unreferenced),
+        principal_mapping_address_(principal_mapping_address),
+    sanitize_stacks_(sanitize_stacks) {
     // Assert there should be either a valid fd or a valid path, not both.
     assert(fd_ != -1 || minidump_path);
     assert(fd_ == -1 || !minidump_path);
@@ -270,8 +277,12 @@ class MinidumpWriter {
     *stack_copy = NULL;
     const void* stack;
     size_t stack_len;
+
+    thread->stack.start_of_memory_range = stack_pointer;
+    thread->stack.memory.data_size = 0;
+    thread->stack.memory.rva = minidump_writer_.position();
+
     if (dumper_->GetStackInfo(&stack, &stack_len, stack_pointer)) {
-      UntypedMDRVA memory(&minidump_writer_);
       if (max_stack_len >= 0 &&
           stack_len > static_cast<unsigned int>(max_stack_len)) {
         stack_len = max_stack_len;
@@ -284,20 +295,41 @@ class MinidumpWriter {
         }
         stack = reinterpret_cast<const void*>(int_stack);
       }
-      if (!memory.Allocate(stack_len))
-        return false;
       *stack_copy = reinterpret_cast<uint8_t*>(Alloc(stack_len));
       dumper_->CopyFromProcess(*stack_copy, thread->thread_id, stack,
                                stack_len);
+
+      uintptr_t stack_pointer_offset =
+          stack_pointer - reinterpret_cast<uintptr_t>(stack);
+      if (skip_stacks_if_mapping_unreferenced_) {
+        const MappingInfo* principal_mapping =
+            dumper_->FindMappingNoBias(principal_mapping_address_);
+        if (!principal_mapping) {
+          return true;
+        }
+        uintptr_t low_addr = principal_mapping->system_mapping_info.start_addr;
+        uintptr_t high_addr = principal_mapping->system_mapping_info.end_addr;
+        uintptr_t pc = UContextReader::GetInstructionPointer(ucontext_);
+        if ((pc < low_addr || pc > high_addr) &&
+            !dumper_->StackHasPointerToMapping(*stack_copy, stack_len,
+                                               stack_pointer_offset,
+                                               *principal_mapping)) {
+          return true;
+        }
+      }
+
+      if (sanitize_stacks_) {
+        dumper_->SanitizeStackCopy(*stack_copy, stack_len, stack_pointer,
+                                   stack_pointer_offset);
+      }
+
+      UntypedMDRVA memory(&minidump_writer_);
+      if (!memory.Allocate(stack_len))
+        return false;
       memory.Copy(*stack_copy, stack_len);
-      thread->stack.start_of_memory_range =
-          reinterpret_cast<uintptr_t>(stack);
+      thread->stack.start_of_memory_range = reinterpret_cast<uintptr_t>(stack);
       thread->stack.memory = memory.location();
       memory_blocks_.push_back(thread->stack);
-    } else {
-      thread->stack.start_of_memory_range = stack_pointer;
-      thread->stack.memory.data_size = 0;
-      thread->stack.memory.rva = minidump_writer_.position();
     }
     return true;
   }
@@ -1265,6 +1297,12 @@ class MinidumpWriter {
   // Additional memory regions to be included in the dump,
   // provided by the caller.
   const AppMemoryList& app_memory_list_;
+  // If set, skip recording any threads that do not reference the
+  // mapping containing principal_mapping_address_.
+  bool skip_stacks_if_mapping_unreferenced_;
+  uintptr_t principal_mapping_address_;
+  // If true, apply stack sanitization to stored stack data.
+  bool sanitize_stacks_;
 };
 
 
@@ -1274,7 +1312,10 @@ bool WriteMinidumpImpl(const char* minidump_path,
                        pid_t crashing_process,
                        const void* blob, size_t blob_size,
                        const MappingList& mappings,
-                       const AppMemoryList& appmem) {
+                       const AppMemoryList& appmem,
+                       bool skip_stacks_if_mapping_unreferenced,
+                       uintptr_t principal_mapping_address,
+                       bool sanitize_stacks) {
   LinuxPtraceDumper dumper(crashing_process);
   const ExceptionHandler::CrashContext* context = NULL;
   if (blob) {
@@ -1287,7 +1328,8 @@ bool WriteMinidumpImpl(const char* minidump_path,
     dumper.set_crash_thread(context->tid);
   }
   MinidumpWriter writer(minidump_path, minidump_fd, context, mappings,
-                        appmem, &dumper);
+                        appmem, skip_stacks_if_mapping_unreferenced,
+                        principal_mapping_address, sanitize_stacks, &dumper);
   // Set desired limit for file size of minidump (-1 means no limit).
   writer.set_minidump_size_limit(minidump_size_limit);
   if (!writer.Init())
@@ -1300,17 +1342,29 @@ bool WriteMinidumpImpl(const char* minidump_path,
 namespace google_breakpad {
 
 bool WriteMinidump(const char* minidump_path, pid_t crashing_process,
-                   const void* blob, size_t blob_size) {
+                   const void* blob, size_t blob_size,
+                   bool skip_stacks_if_mapping_unreferenced,
+                   uintptr_t principal_mapping_address,
+                   bool sanitize_stacks) {
   return WriteMinidumpImpl(minidump_path, -1, -1,
                            crashing_process, blob, blob_size,
-                           MappingList(), AppMemoryList());
+                           MappingList(), AppMemoryList(),
+                           skip_stacks_if_mapping_unreferenced,
+                           principal_mapping_address,
+                           sanitize_stacks);
 }
 
 bool WriteMinidump(int minidump_fd, pid_t crashing_process,
-                   const void* blob, size_t blob_size) {
+                   const void* blob, size_t blob_size,
+                   bool skip_stacks_if_mapping_unreferenced,
+                   uintptr_t principal_mapping_address,
+                   bool sanitize_stacks) {
   return WriteMinidumpImpl(NULL, minidump_fd, -1,
                            crashing_process, blob, blob_size,
-                           MappingList(), AppMemoryList());
+                           MappingList(), AppMemoryList(),
+                           skip_stacks_if_mapping_unreferenced,
+                           principal_mapping_address,
+                           sanitize_stacks);
 }
 
 bool WriteMinidump(const char* minidump_path, pid_t process,
@@ -1320,7 +1374,7 @@ bool WriteMinidump(const char* minidump_path, pid_t process,
   dumper.set_crash_signal(MD_EXCEPTION_CODE_LIN_DUMP_REQUESTED);
   dumper.set_crash_thread(process_blamed_thread);
   MinidumpWriter writer(minidump_path, -1, NULL, MappingList(),
-                        AppMemoryList(), &dumper);
+                        AppMemoryList(), false, 0, false, &dumper);
   if (!writer.Init())
     return false;
   return writer.Dump();
@@ -1329,46 +1383,71 @@ bool WriteMinidump(const char* minidump_path, pid_t process,
 bool WriteMinidump(const char* minidump_path, pid_t crashing_process,
                    const void* blob, size_t blob_size,
                    const MappingList& mappings,
-                   const AppMemoryList& appmem) {
+                   const AppMemoryList& appmem,
+                   bool skip_stacks_if_mapping_unreferenced,
+                   uintptr_t principal_mapping_address,
+                   bool sanitize_stacks) {
   return WriteMinidumpImpl(minidump_path, -1, -1, crashing_process,
                            blob, blob_size,
-                           mappings, appmem);
+                           mappings, appmem,
+                           skip_stacks_if_mapping_unreferenced,
+                           principal_mapping_address,
+                           sanitize_stacks);
 }
 
 bool WriteMinidump(int minidump_fd, pid_t crashing_process,
                    const void* blob, size_t blob_size,
                    const MappingList& mappings,
-                   const AppMemoryList& appmem) {
+                   const AppMemoryList& appmem,
+                   bool skip_stacks_if_mapping_unreferenced,
+                   uintptr_t principal_mapping_address,
+                   bool sanitize_stacks) {
   return WriteMinidumpImpl(NULL, minidump_fd, -1, crashing_process,
                            blob, blob_size,
-                           mappings, appmem);
+                           mappings, appmem,
+                           skip_stacks_if_mapping_unreferenced,
+                           principal_mapping_address,
+                           sanitize_stacks);
 }
 
 bool WriteMinidump(const char* minidump_path, off_t minidump_size_limit,
                    pid_t crashing_process,
                    const void* blob, size_t blob_size,
                    const MappingList& mappings,
-                   const AppMemoryList& appmem) {
+                   const AppMemoryList& appmem,
+                   bool skip_stacks_if_mapping_unreferenced,
+                   uintptr_t principal_mapping_address,
+                   bool sanitize_stacks) {
   return WriteMinidumpImpl(minidump_path, -1, minidump_size_limit,
                            crashing_process, blob, blob_size,
-                           mappings, appmem);
+                           mappings, appmem,
+                           skip_stacks_if_mapping_unreferenced,
+                           principal_mapping_address,
+                           sanitize_stacks);
 }
 
 bool WriteMinidump(int minidump_fd, off_t minidump_size_limit,
                    pid_t crashing_process,
                    const void* blob, size_t blob_size,
                    const MappingList& mappings,
-                   const AppMemoryList& appmem) {
+                   const AppMemoryList& appmem,
+                   bool skip_stacks_if_mapping_unreferenced,
+                   uintptr_t principal_mapping_address,
+                   bool sanitize_stacks) {
   return WriteMinidumpImpl(NULL, minidump_fd, minidump_size_limit,
                            crashing_process, blob, blob_size,
-                           mappings, appmem);
+                           mappings, appmem,
+                           skip_stacks_if_mapping_unreferenced,
+                           principal_mapping_address,
+                           sanitize_stacks);
 }
 
 bool WriteMinidump(const char* filename,
                    const MappingList& mappings,
                    const AppMemoryList& appmem,
                    LinuxDumper* dumper) {
-  MinidumpWriter writer(filename, -1, NULL, mappings, appmem, dumper);
+  MinidumpWriter writer(filename, -1, NULL, mappings, appmem,
+                        false, 0, false, dumper);
   if (!writer.Init())
     return false;
   return writer.Dump();

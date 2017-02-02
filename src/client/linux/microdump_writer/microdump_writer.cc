@@ -265,8 +265,8 @@ class MicrodumpWriter {
         dumper_->FindMappingNoBias(address_within_principal_mapping_);
     if (!principal_mapping) return CAPTURE_UNINTERESTING;
 
-    uintptr_t low_addr = principal_mapping->start_addr;
-    uintptr_t high_addr = principal_mapping->start_addr + principal_mapping->size;
+    uintptr_t low_addr = principal_mapping->system_mapping_info.start_addr;
+    uintptr_t high_addr = principal_mapping->system_mapping_info.end_addr;
     uintptr_t pc = UContextReader::GetInstructionPointer(ucontext_);
     if (low_addr <= pc && pc <= high_addr) return CAPTURE_OK;
 
