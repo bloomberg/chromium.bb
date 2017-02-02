@@ -147,13 +147,13 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/ash_util.h"
+#endif  // defined(OS_CHROMEOS)
+
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
-#endif
-
-#if defined(USE_ASH)
-#include "chrome/browser/ui/ash/ash_util.h"
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 #if defined(USE_AURA)
 #include "ui/aura/client/window_parenting_client.h"
@@ -526,11 +526,6 @@ gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
 }
 
 bool BrowserView::IsTabStripVisible() const {
-  if (immersive_mode_controller_->ShouldHideTopViews() &&
-      immersive_mode_controller_->ShouldHideTabIndicators()) {
-    return false;
-  }
-
   // Return false if this window does not normally display a tabstrip.
   if (!browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
     return false;
@@ -593,10 +588,10 @@ WebContents* BrowserView::GetActiveWebContents() const {
 // BrowserView, BrowserWindow implementation:
 
 void BrowserView::Show() {
-#if !defined(OS_WIN) && !defined(USE_ASH)
+#if !defined(OS_WIN) && !defined(OS_CHROMEOS)
   // The Browser associated with this browser window must become the active
   // browser at the time |Show()| is called. This is the natural behavior under
-  // Windows and Ash, but other platforms will not trigger
+  // Windows and Chrome OS, but other platforms will not trigger
   // OnWidgetActivationChanged() until we return to the runloop. Therefore any
   // calls to Browser::GetLastActive() will return the wrong result if we do not
   // explicitly set it here.
@@ -992,12 +987,11 @@ LocationBar* BrowserView::GetLocationBar() const {
 }
 
 void BrowserView::SetFocusToLocationBar(bool select_all) {
-  // On Windows, changing focus to the location bar causes the browser
-  // window to become active. This can steal focus if the user has
-  // another window open already. On ChromeOS, changing focus makes a
-  // view believe it has a focus even if the widget doens't have a
-  // focus. Either cases, we need to ignore this when the browser
-  // window isn't active.
+  // On Windows, changing focus to the location bar causes the browser window to
+  // become active. This can steal focus if the user has another window open
+  // already. On Chrome OS, changing focus makes a view believe it has a focus
+  // even if the widget doens't have a focus. Either cases, we need to ignore
+  // this when the browser window isn't active.
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
   if (!force_location_bar_focus_ && !IsActive())
     return;
@@ -1658,12 +1652,12 @@ views::View* BrowserView::GetInitiallyFocusedView() {
 }
 
 bool BrowserView::ShouldShowWindowTitle() const {
-#if defined(USE_ASH)
-  // For Ash only, trusted windows (apps and settings) do not show a title,
-  // crbug.com/119411. Child windows (i.e. popups) do show a title.
+#if defined(OS_CHROMEOS)
+  // For Chrome OS only, trusted windows (apps and settings) do not show a
+  // title, crbug.com/119411. Child windows (i.e. popups) do show a title.
   if (browser_->is_trusted_source())
     return false;
-#endif  // USE_ASH
+#endif  // OS_CHROMEOS
 
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
 }
@@ -1692,12 +1686,12 @@ gfx::ImageSkia BrowserView::GetWindowIcon() {
 }
 
 bool BrowserView::ShouldShowWindowIcon() const {
-#if defined(USE_ASH)
-  // For Ash only, trusted windows (apps and settings) do not show an icon,
-  // crbug.com/119411. Child windows (i.e. popups) do show an icon.
+#if defined(OS_CHROMEOS)
+  // For Chrome OS only, trusted windows (apps and settings) do not show an
+  // icon, crbug.com/119411. Child windows (i.e. popups) do show an icon.
   if (browser_->is_trusted_source())
     return false;
-#endif  // USE_ASH
+#endif  // OS_CHROMEOS
 
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
 }
@@ -2352,16 +2346,16 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 }
 
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   // Kiosk mode needs the whole screen.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return false;
 
   return url.is_empty();
 #else
-  // No immersive except in Ash.
+  // No immersive except in Chrome OS.
   return false;
-#endif  // !USE_ASH
+#endif
 }
 
 void BrowserView::LoadAccelerators() {

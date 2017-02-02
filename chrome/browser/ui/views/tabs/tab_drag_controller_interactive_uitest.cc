@@ -63,6 +63,7 @@
 
 #if defined(USE_ASH)
 #include "ash/common/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
@@ -2098,9 +2099,15 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
           ->controller())
       .SetupForTest();
   chrome::ToggleFullscreenMode(browser2);
+  // For MD, the browser's top chrome is completely offscreen, with tabstrip
+  // visible.
   ASSERT_TRUE(immersive_controller2->IsEnabled());
   ASSERT_FALSE(immersive_controller2->IsRevealed());
-  ASSERT_TRUE(tab_strip2->IsImmersiveStyle());
+  ASSERT_TRUE(tab_strip2->visible());
+  bool is_using_material_design =
+      ash::MaterialDesignController::IsImmersiveModeMaterial();
+  if (!is_using_material_design)
+    ASSERT_TRUE(tab_strip2->IsImmersiveStyle());
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.
@@ -2121,6 +2128,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   // at normal height while user is tragging tabs_strip2's tabs.
   ASSERT_TRUE(immersive_controller2->IsRevealed());
   ASSERT_FALSE(tab_strip2->IsImmersiveStyle());
+  ASSERT_TRUE(tab_strip2->visible());
 
   // Release the mouse, stopping the drag session.
   ASSERT_TRUE(ReleaseInput());
@@ -2143,7 +2151,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 
   EXPECT_TRUE(immersive_controller2->IsEnabled());
   EXPECT_FALSE(immersive_controller2->IsRevealed());
-  EXPECT_TRUE(tab_strip2->IsImmersiveStyle());
+  EXPECT_TRUE(tab_strip2->visible());
+  if (!is_using_material_design)
+    EXPECT_TRUE(tab_strip2->IsImmersiveStyle());
 }
 
 // Subclass of DetachToBrowserTabDragControllerTest that

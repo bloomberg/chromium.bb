@@ -11,6 +11,7 @@
 #include "ash/common/frame/default_header_painter.h"
 #include "ash/common/frame/frame_border_hit_test.h"
 #include "ash/common/frame/header_painter_util.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -262,8 +263,15 @@ void BrowserNonClientFrameViewAsh::Layout() {
   header_painter_->LayoutHeader();
 
   int painted_height = GetTopInset(false);
-  if (browser_view()->IsTabStripVisible())
-    painted_height += browser_view()->tabstrip()->GetPreferredSize().height();
+  if (browser_view()->IsTabStripVisible()) {
+    const ImmersiveModeController* const immersive_controller =
+        browser_view()->immersive_mode_controller();
+    if (!immersive_controller->IsEnabled() ||
+        immersive_controller->IsRevealed() ||
+        !ash::MaterialDesignController::IsImmersiveModeMaterial()) {
+      painted_height += browser_view()->tabstrip()->GetPreferredSize().height();
+    }
+  }
 
   header_painter_->SetHeaderHeightForPainting(painted_height);
 
@@ -384,6 +392,9 @@ int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
 }
 
 bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {
+  if (ash::MaterialDesignController::IsImmersiveModeMaterial())
+    return false;
+
   const ImmersiveModeController* const immersive_controller =
       browser_view()->immersive_mode_controller();
   return immersive_controller->IsEnabled() &&
