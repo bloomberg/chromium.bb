@@ -36,7 +36,6 @@ class ExtensionAction;
 class GURL;
 class KeywordHintView;
 class LocationIconView;
-class OpenPDFInReaderView;
 class ManagePasswordsIconViews;
 class PageActionWithBadgeView;
 class PageActionImageView;
@@ -351,7 +350,6 @@ class LocationBarView : public LocationBar,
   void UpdateLocationBarVisibility(bool visible, bool animation) override;
   bool ShowPageActionPopup(const extensions::Extension* extension,
                            bool grant_active_tab) override;
-  void UpdateOpenPDFInReaderPrompt() override;
   void SaveStateToContents(content::WebContents* contents) override;
   const OmniboxView* GetOmniboxView() const override;
   LocationBarTesting* GetLocationBarForTesting() override;
@@ -430,9 +428,6 @@ class LocationBarView : public LocationBar,
 
   // The zoom icon.
   ZoomView* zoom_view_;
-
-  // The icon to open a PDF in Reader.
-  OpenPDFInReaderView* open_pdf_in_reader_view_;
 
   // The manage passwords icon.
   ManagePasswordsIconViews* manage_passwords_icon_view_;

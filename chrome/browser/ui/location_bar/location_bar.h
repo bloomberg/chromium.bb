@@ -76,9 +76,6 @@ class LocationBar {
   virtual bool ShowPageActionPopup(const extensions::Extension* extension,
                                    bool grant_active_tab) = 0;
 
-  // Updates the state of the button to open a PDF in Adobe Reader.
-  virtual void UpdateOpenPDFInReaderPrompt() = 0;
-
   // Saves the state of the location bar to the specified WebContents, so that
   // it can be restored later. (Done when switching tabs).
   virtual void SaveStateToContents(content::WebContents* contents) = 0;

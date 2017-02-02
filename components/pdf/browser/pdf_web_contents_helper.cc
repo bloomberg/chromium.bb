@@ -8,10 +8,8 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/pdf/browser/open_pdf_in_reader_prompt_client.h"
 #include "components/pdf/browser/pdf_web_contents_helper_client.h"
 #include "components/pdf/common/pdf_messages.h"
-#include "content/public/browser/navigation_details.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(pdf::PDFWebContentsHelper);
 
@@ -35,12 +33,6 @@ PDFWebContentsHelper::PDFWebContentsHelper(
 PDFWebContentsHelper::~PDFWebContentsHelper() {
 }
 
-void PDFWebContentsHelper::ShowOpenInReaderPrompt(
-    std::unique_ptr<OpenPDFInReaderPromptClient> prompt) {
-  open_in_reader_prompt_ = std::move(prompt);
-  UpdateLocationBar();
-}
-
 bool PDFWebContentsHelper::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
@@ -54,20 +46,6 @@ bool PDFWebContentsHelper::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void PDFWebContentsHelper::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (open_in_reader_prompt_.get() &&
-      open_in_reader_prompt_->ShouldExpire(details)) {
-    open_in_reader_prompt_.reset();
-    UpdateLocationBar();
-  }
-}
-
-void PDFWebContentsHelper::UpdateLocationBar() {
-  client_->UpdateLocationBar(web_contents());
 }
 
 void PDFWebContentsHelper::OnHasUnsupportedFeature() {

@@ -19,8 +19,6 @@ class PDFWebContentsHelperClient {
  public:
   virtual ~PDFWebContentsHelperClient() {}
 
-  virtual void UpdateLocationBar(content::WebContents* contents) = 0;
-
   virtual void UpdateContentRestrictions(content::WebContents* contents,
                                          int content_restrictions) = 0;
 

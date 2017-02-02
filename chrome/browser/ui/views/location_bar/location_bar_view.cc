@@ -40,7 +40,6 @@
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
@@ -131,7 +130,6 @@ LocationBarView::LocationBarView(Browser* browser,
       selected_keyword_view_(nullptr),
       keyword_hint_view_(nullptr),
       zoom_view_(nullptr),
-      open_pdf_in_reader_view_(nullptr),
       manage_passwords_icon_view_(nullptr),
       save_credit_card_icon_view_(nullptr),
       translate_icon_view_(nullptr),
@@ -250,9 +248,6 @@ void LocationBarView::Init() {
   zoom_view_ = new ZoomView(delegate_);
   zoom_view_->Init();
   AddChildView(zoom_view_);
-
-  open_pdf_in_reader_view_ = new OpenPDFInReaderView();
-  AddChildView(open_pdf_in_reader_view_);
 
   manage_passwords_icon_view_ = new ManagePasswordsIconViews(command_updater());
   manage_passwords_icon_view_->Init();
@@ -475,7 +470,6 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   int trailing_width = edge_thickness;
   trailing_width += IncrementalMinimumWidth(star_view_) +
                     IncrementalMinimumWidth(translate_icon_view_) +
-                    IncrementalMinimumWidth(open_pdf_in_reader_view_) +
                     IncrementalMinimumWidth(save_credit_card_icon_view_) +
                     IncrementalMinimumWidth(manage_passwords_icon_view_) +
                     IncrementalMinimumWidth(zoom_view_);
@@ -554,10 +548,6 @@ void LocationBarView::Layout() {
   if (translate_icon_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height,
                                        translate_icon_view_);
-  }
-  if (open_pdf_in_reader_view_->visible()) {
-    trailing_decorations.AddDecoration(vertical_padding, location_height,
-                                       open_pdf_in_reader_view_);
   }
   if (save_credit_card_icon_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height,
@@ -654,9 +644,6 @@ void LocationBarView::Update(const WebContents* contents) {
   RefreshTranslateIcon();
   RefreshSaveCreditCardIconView();
   RefreshManagePasswordsIconView();
-  WebContents* web_contents_for_sub_views =
-      GetToolbarModel()->input_in_progress() ? nullptr : GetWebContents();
-  open_pdf_in_reader_view_->Update(web_contents_for_sub_views);
 
   if (star_view_)
     UpdateBookmarkStarVisibility();
@@ -780,9 +767,7 @@ bool LocationBarView::RefreshPageActionViews() {
       page_action_views_.push_back(std::move(page_action_view));
     }
 
-    View* right_anchor = open_pdf_in_reader_view_;
-    if (!right_anchor)
-      right_anchor = star_view_;
+    View* right_anchor = star_view_;
     DCHECK(right_anchor);
 
     // |page_action_views_| are ordered right-to-left.  Add them as children in
@@ -1036,13 +1021,6 @@ bool LocationBarView::ShowPageActionPopup(
       page_action_image_view->view_controller();
   CHECK(extension_action_view_controller);
   return extension_action_view_controller->ExecuteAction(grant_tab_permissions);
-}
-
-void LocationBarView::UpdateOpenPDFInReaderPrompt() {
-  open_pdf_in_reader_view_->Update(
-      GetToolbarModel()->input_in_progress() ? nullptr : GetWebContents());
-  Layout();
-  SchedulePaint();
 }
 
 void LocationBarView::SaveStateToContents(WebContents* contents) {

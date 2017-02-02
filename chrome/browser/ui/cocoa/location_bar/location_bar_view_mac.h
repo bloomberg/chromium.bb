@@ -70,7 +70,6 @@ class LocationBarViewMac : public LocationBar,
   void UpdateLocationBarVisibility(bool visible, bool animate) override;
   bool ShowPageActionPopup(const extensions::Extension* extension,
                            bool grant_active_tab) override;
-  void UpdateOpenPDFInReaderPrompt() override;
   void SaveStateToContents(content::WebContents* contents) override;
   void Revert() override;
   const OmniboxView* GetOmniboxView() const override;
