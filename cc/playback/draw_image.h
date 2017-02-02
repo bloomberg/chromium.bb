@@ -29,7 +29,7 @@ class CC_EXPORT DrawImage {
 
   const sk_sp<const SkImage>& image() const { return image_; }
   const SkSize& scale() const { return scale_; }
-  const SkIRect src_rect() const { return src_rect_; }
+  const SkIRect& src_rect() const { return src_rect_; }
   SkFilterQuality filter_quality() const { return filter_quality_; }
   bool matrix_is_decomposable() const { return matrix_is_decomposable_; }
   const SkMatrix& matrix() const { return matrix_; }

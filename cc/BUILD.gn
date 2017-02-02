@@ -955,6 +955,7 @@ cc_test("cc_perftests") {
     "surfaces/surface_aggregator_perftest.cc",
     "test/cc_test_suite.cc",
     "test/run_all_perftests.cc",
+    "tiles/software_image_decode_cache_perftest.cc",
     "tiles/tile_manager_perftest.cc",
     "trees/layer_tree_host_common_perftest.cc",
     "trees/layer_tree_host_perftest.cc",

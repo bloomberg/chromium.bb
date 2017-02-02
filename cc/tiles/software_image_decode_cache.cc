@@ -51,7 +51,10 @@ const size_t kSuspendedMaxItemsInCache = 0;
 // The second part that much be true is that we cache only the needed subrect if
 // the total size needed for the subrect is at most kMemoryRatioToSubrect *
 // (size needed for the full original image).
+// Note that at least one of the dimensions has to be at least
+// kMinDimensionToSubrect before an image can breach the threshold.
 const size_t kMemoryThresholdToSubrect = 64 * 1024 * 1024;
+const int kMinDimensionToSubrect = 4 * 1024;
 const float kMemoryRatioToSubrect = 0.5f;
 
 class AutoRemoveKeyFromTaskMap {
@@ -174,6 +177,17 @@ void RecordLockExistingCachedImageHistogram(TilePriority::PriorityBin bin,
       UMA_HISTOGRAM_BOOLEAN(
           "Renderer4.LockExistingCachedImage.Software.EVENTUALLY", success);
   }
+}
+
+gfx::Rect GetSrcRect(const DrawImage& image) {
+  const SkIRect& src_rect = image.src_rect();
+  int x = std::max(0, src_rect.x());
+  int y = std::max(0, src_rect.y());
+  int right = std::min(image.image()->width(), src_rect.right());
+  int bottom = std::min(image.image()->height(), src_rect.bottom());
+  if (x >= right || y >= bottom)
+    return gfx::Rect();
+  return gfx::Rect(x, y, right - x, bottom - y);
 }
 
 }  // namespace
@@ -898,10 +912,7 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image) {
   // otherwise we might end up with uninitialized memory in the decode process.
   // Note that the scale is still unchanged and the target size is now a
   // function of the new src_rect.
-  gfx::Rect src_rect = gfx::IntersectRects(
-      gfx::SkIRectToRect(image.src_rect()),
-      gfx::Rect(image.image()->width(), image.image()->height()));
-
+  const gfx::Rect& src_rect = GetSrcRect(image);
   gfx::Size target_size(
       SkScalarRoundToInt(std::abs(src_rect.width() * scale.width())),
       SkScalarRoundToInt(std::abs(src_rect.height() * scale.height())));
@@ -950,7 +961,9 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image) {
   bool can_use_original_decode =
       quality == kLow_SkFilterQuality || quality == kNone_SkFilterQuality;
   bool should_use_subrect = false;
-  if (can_use_original_decode) {
+  if (can_use_original_decode &&
+      (image.image()->width() >= kMinDimensionToSubrect ||
+       image.image()->height() >= kMinDimensionToSubrect)) {
     base::CheckedNumeric<size_t> checked_original_size = 4u;
     checked_original_size *= image.image()->width();
     checked_original_size *= image.image()->height();
