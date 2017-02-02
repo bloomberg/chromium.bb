@@ -79,6 +79,9 @@ test("ios_net_unittests") {
   sources = [
     "cookies/cookie_cache_unittest.cc",
     "cookies/cookie_creation_time_manager_unittest.mm",
+    "cookies/cookie_store_ios_persistent_unittest.mm",
+    "cookies/cookie_store_ios_test_util.h",
+    "cookies/cookie_store_ios_test_util.mm",
     "cookies/cookie_store_ios_unittest.mm",
     "cookies/system_cookie_util_unittest.mm",
     "http_response_headers_util_unittest.mm",
