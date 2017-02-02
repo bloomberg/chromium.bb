@@ -642,9 +642,18 @@ void ResourceLoader::CompleteResponseStarted() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnResponseStarted()"));
 
   read_deferral_start_time_ = base::TimeTicks::Now();
-  ScopedDeferral scoped_deferral(this, DEFERRED_READ);
+  // Using a ScopedDeferral here would result in calling ReadMore(true) on sync
+  // success. Calling ReadMore(false) here instead allows small responses to be
+  // handled completely synchronously, if no ResourceHandler defers handling of
+  // the response.
+  deferred_stage_ = DEFERRED_SYNC;
   handler_->OnResponseStarted(response.get(),
                               base::MakeUnique<Controller>(this));
+  if (is_deferred()) {
+    deferred_stage_ = DEFERRED_READ;
+  } else {
+    ReadMore(false);
+  }
 }
 
 void ResourceLoader::ReadMore(bool handle_result_async) {
