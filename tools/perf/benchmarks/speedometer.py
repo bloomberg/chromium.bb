@@ -69,7 +69,7 @@ class SpeedometerMeasurement(legacy_page_test.LegacyPageTest):
         count=iterationCount)
     tab.WaitForJavaScriptCondition2(
         'benchmarkClient._finishedTestCount == benchmarkClient.testsCount',
-        timemout=600)
+        timeout=600)
     results.AddValue(list_of_scalar_values.ListOfScalarValues(
         page, 'Total', 'ms',
         tab.EvaluateJavaScript2('benchmarkClient._timeValues'),
