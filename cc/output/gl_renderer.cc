@@ -1280,17 +1280,18 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
   }
 
   if (params->filter_image) {
-    GLuint filter_image_id = skia::GrBackendObjectToGrGLTextureInfo(
-                                 params->filter_image->getTextureHandle(true))
-                                 ->fID;
+    GrSurfaceOrigin origin;
+    GLuint filter_image_id =
+        skia::GrBackendObjectToGrGLTextureInfo(
+            params->filter_image->getTextureHandle(true, &origin))
+            ->fID;
     DCHECK(filter_image_id);
     DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
     gl_->BindTexture(GL_TEXTURE_2D, filter_image_id);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    params->source_needs_flip = params->filter_image->getTexture()->origin() ==
-                                kBottomLeft_GrSurfaceOrigin;
+    params->source_needs_flip = kBottomLeft_GrSurfaceOrigin == origin;
   } else {
     params->contents_resource_lock =
         base::MakeUnique<ResourceProvider::ScopedSamplerGL>(
