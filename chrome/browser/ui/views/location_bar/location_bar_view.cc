@@ -104,7 +104,7 @@ using views::View;
 
 namespace {
 
-// The border color for MD windows, as well as non-MD popup windows.
+// The border color, drawn on top of the toolbar.
 const SkColor kBorderColor = SkColorSetA(SK_ColorBLACK, 0x4D);
 
 }  // namespace
@@ -160,12 +160,10 @@ LocationBarView::~LocationBarView() {
 // LocationBarView, public:
 
 // static
-SkColor LocationBarView::GetBorderColor(bool incognito) {
-  return color_utils::AlphaBlend(
-      SkColorSetA(kBorderColor, SK_AlphaOPAQUE),
-      ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_TOOLBAR,
-                                       incognito),
-      SkColorGetA(kBorderColor));
+SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) {
+  return color_utils::GetResultingPaintColor(
+      kBorderColor, ThemeProperties::GetDefaultColor(
+                        ThemeProperties::COLOR_TOOLBAR, incognito));
 }
 
 void LocationBarView::Init() {
@@ -630,11 +628,16 @@ void LocationBarView::Layout() {
 
 void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   RefreshLocationIcon();
-  if (!is_popup_mode_) {
+  if (is_popup_mode_) {
+    set_background(
+        views::Background::CreateSolidBackground(GetColor(BACKGROUND)));
+  } else {
+    // This border color will be blended on top of the toolbar (which may use an
+    // image in the case of themes).
     set_background(
         new BackgroundWith1PxBorder(GetColor(BACKGROUND), kBorderColor));
-    SchedulePaint();
   }
+  SchedulePaint();
 }
 
 void LocationBarView::Update(const WebContents* contents) {
@@ -1126,20 +1129,15 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawRoundRect(focus_rect,
                           BackgroundWith1PxBorder::kCornerRadius + 0.5f, paint);
   }
-  if (!is_popup_mode_)
-    return;  // The background and border are painted by our Background.
+}
 
-  // Fill the location bar background color behind the border.  Parts of the
-  // border images are meant to rest atop the toolbar background and parts atop
-  // the omnibox background, so we can't just blindly fill our entire bounds.
+void LocationBarView::OnPaintBorder(gfx::Canvas* canvas) {
+  if (!is_popup_mode_)
+    return;  // The border is painted by our Background.
+
   gfx::Rect bounds(GetContentsBounds());
-  bounds.Inset(GetHorizontalEdgeThickness(),
-               is_popup_mode_
-                   ? 0
-                   : BackgroundWith1PxBorder::kLocationBarBorderThicknessDip);
-  SkColor background_color(GetColor(BACKGROUND));
-  canvas->FillRect(bounds, background_color);
-  const SkColor border_color = GetBorderColor(profile()->IsOffTheRecord());
+  const SkColor border_color =
+      GetOpaqueBorderColor(profile()->IsOffTheRecord());
   BrowserView::Paint1pxHorizontalLine(canvas, border_color, bounds, false);
   BrowserView::Paint1pxHorizontalLine(canvas, border_color, bounds, true);
 }

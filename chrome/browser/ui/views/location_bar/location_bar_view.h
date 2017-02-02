@@ -126,9 +126,9 @@ class LocationBarView : public LocationBar,
 
   ~LocationBarView() override;
 
-  // Returns the color for the location bar border given the window's
-  // |incognito| state.
-  static SkColor GetBorderColor(bool incognito);
+  // Returns the location bar border color blended with the toolbar color.
+  // It's guaranteed to be opaque.
+  static SkColor GetOpaqueBorderColor(bool incognito);
 
   // Initializes the LocationBarView.
   void Init();
@@ -367,6 +367,7 @@ class LocationBarView : public LocationBar,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnFocus() override;
   void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaintBorder(gfx::Canvas* canvas) override;
 
   // views::DragController:
   void WriteDragDataForView(View* sender,
