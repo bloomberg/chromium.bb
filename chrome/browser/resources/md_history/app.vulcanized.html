@@ -2337,7 +2337,6 @@ paper-button {
 paper-tabs {
   --paper-tabs_-_font-size: apply-shim-inherit;;
         --paper-tabs-selection-bar-color: #fff;
-        -webkit-margin-start: 32px;
         height: calc(var(--toolbar-grouped-height) - var(--toolbar-height));
         min-width: 300px;
 }
@@ -2348,8 +2347,25 @@ paper-tab {
 }
 
 #grouped-buttons-container {
-  align-items: center;
+  margin: var(--card-sizing_-_margin); max-width: var(--card-sizing_-_max-width); min-width: var(--card-sizing_-_min-width); padding: var(--card-sizing_-_padding); width: var(--card-sizing_-_width);
+        align-items: center;
         display: flex;
+        max-height: 0;
+        opacity: 0;
+        transition: opacity 300ms, max-height 300ms;
+}
+
+:host([show-grouped-controls]) #grouped-buttons-container {
+  max-height: calc(var(--toolbar-grouped-height) - var(--toolbar-height));
+        opacity: 1;
+}
+
+#grouped-spacer {
+  -webkit-margin-start: var(--side-bar-width);
+}
+
+:host([has-drawer]) #grouped-spacer {
+  -webkit-margin-start: 0;
 }
 
 #grouped-nav-container {
@@ -2423,25 +2439,27 @@ paper-tab {
       </template>
     </div>
     <template is="dom-if" if="[[isGroupedMode]]">
-      <div id="grouped-buttons-container">
-        <paper-tabs attr-for-selected="value" selected="[[groupedRange]]" on-iron-select="onTabSelected_">
-          <paper-tab value="0">$i18n{rangeAllTime}</paper-tab>
-          <paper-tab value="1">$i18n{rangeWeek}</paper-tab>
-          <paper-tab value="2">$i18n{rangeMonth}</paper-tab>
-        </paper-tabs>
-        <div id="grouped-nav-container">
-          <span id="grouped-date">
-            [[getHistoryInterval_(queryInfo)]]
-          </span>
-          <button is="paper-icon-button-light" id="today-button" class="icon-button" title="$i18n{rangeToday}" on-click="onTodayTap_" disabled="[[isToday_(groupedOffset)]]">
-            <iron-icon icon="history:today"></iron-icon>
-          </button>
-          <button is="paper-icon-button-light" id="prev-button" title="$i18n{rangePrevious}" class="icon-button rtl-reversible" on-click="onPrevTap_" disabled="[[!hasMoreResults]]">
-            <iron-icon icon="history:chevron-left"></iron-icon>
-          </button>
-          <button is="paper-icon-button-light" id="next-button" title="$i18n{rangeNext}" class="icon-button rtl-reversible" on-click="onNextTap_" disabled="[[isToday_(groupedOffset)]]">
-            <iron-icon icon="cr:chevron-right"></iron-icon>
-          </button>
+      <div id="grouped-spacer">
+        <div id="grouped-buttons-container">
+          <paper-tabs attr-for-selected="value" selected="[[groupedRange]]" on-iron-select="onTabSelected_">
+            <paper-tab value="0">$i18n{rangeAllTime}</paper-tab>
+            <paper-tab value="1">$i18n{rangeWeek}</paper-tab>
+            <paper-tab value="2">$i18n{rangeMonth}</paper-tab>
+          </paper-tabs>
+          <div id="grouped-nav-container">
+            <span id="grouped-date">
+              [[getHistoryInterval_(queryInfo)]]
+            </span>
+            <button is="paper-icon-button-light" id="today-button" class="icon-button" title="$i18n{rangeToday}" on-click="onTodayTap_" disabled="[[isToday_(groupedOffset)]]">
+              <iron-icon icon="history:today"></iron-icon>
+            </button>
+            <button is="paper-icon-button-light" id="prev-button" title="$i18n{rangePrevious}" class="icon-button rtl-reversible" on-click="onPrevTap_" disabled="[[!hasMoreResults]]">
+              <iron-icon icon="history:chevron-left"></iron-icon>
+            </button>
+            <button is="paper-icon-button-light" id="next-button" title="$i18n{rangeNext}" class="icon-button rtl-reversible" on-click="onNextTap_" disabled="[[isToday_(groupedOffset)]]">
+              <iron-icon icon="cr:chevron-right"></iron-icon>
+            </button>
+          </div>
         </div>
       </div>
     </template>
@@ -3723,7 +3741,7 @@ history-toolbar {
     </history-query-manager>
     <history-router id="router" selected-page="{{selectedPage_}}" grouped="[[grouped_]]" query-state="[[queryState_]]">
     </history-router>
-    <history-toolbar id="toolbar" grouped-offset="[[queryState_.groupedOffset]]" grouped-range="[[queryState_.range]]" has-drawer="[[hasDrawer_]]" has-more-results="[[!queryResult_.info.finished]]" is-grouped-mode="[[grouped_]]" query-info="[[queryResult_.info]]" querying="[[queryState_.querying]]" search-term="[[queryState_.searchTerm]]" show-menu-promo="[[showMenuPromo_]]" show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]" spinner-active="[[shouldShowSpinner_(queryState_.querying,
+    <history-toolbar id="toolbar" grouped-offset="[[queryState_.groupedOffset]]" grouped-range="[[queryState_.range]]" has-drawer="[[hasDrawer_]]" has-more-results="[[!queryResult_.info.finished]]" is-grouped-mode="[[grouped_]]" query-info="[[queryResult_.info]]" querying="[[queryState_.querying]]" search-term="[[queryState_.searchTerm]]" show-grouped-controls="[[!syncedTabsSelected_(selectedPage_)]]" show-menu-promo="[[showMenuPromo_]]" show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]" spinner-active="[[shouldShowSpinner_(queryState_.querying,
                                              queryState_.incremental,
                                              queryState_.searchTerm)]]">
     </history-toolbar>

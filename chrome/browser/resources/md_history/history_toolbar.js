@@ -41,19 +41,16 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    // Whether domain-grouped history is enabled.
-    isGroupedMode: {
-      type: Boolean,
-      reflectToAttribute: true,
-    },
-
     // The period to search over. Matches BrowsingHistoryHandler::Range.
     groupedRange: {
       type: Number,
       reflectToAttribute: true,
     },
 
-    groupedOffset: Number,
+    showGroupedControls: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
 
     // Show an (i) button on the right of the toolbar to display a notice about
     // synced history.
@@ -65,10 +62,15 @@ Polymer({
     // Sync notice is currently visible.
     syncNoticeVisible_: {
       type: Boolean,
-      value: false
+      value: false,
     },
 
     hasMoreResults: Boolean,
+
+    groupedOffset: Number,
+
+    // Whether domain-grouped history is enabled.
+    isGroupedMode: Boolean,
 
     querying: Boolean,
 
