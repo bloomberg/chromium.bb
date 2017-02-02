@@ -18,8 +18,10 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/capture_client_observer.h"
+#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
@@ -1362,6 +1364,78 @@ TEST_F(WindowTreeClientWmTest, OnWindowTreeCaptureChanged) {
   EXPECT_EQ(child2_id, capture_recorder.last_gained_capture_window_id());
   EXPECT_EQ(0, capture_recorder.last_lost_capture_window_id());
   capture_recorder.reset_capture_captured_count();
+}
+
+TEST_F(WindowTreeClientClientTest, TwoWindowTreesRequestCapture) {
+  // Creating a WindowTreeHost so we can have two root windows: top_level
+  // and root_window().
+  std::unique_ptr<WindowTreeHostMus> window_tree_host =
+      base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl());
+  window_tree_host->InitHost();
+  Window* top_level = window_tree_host->window();
+  std::unique_ptr<client::DefaultCaptureClient> capture_client(
+      base::MakeUnique<client::DefaultCaptureClient>());
+  client::SetCaptureClient(top_level, capture_client.get());
+  window_tree_client_impl()->capture_synchronizer()->AttachToCaptureClient(
+      capture_client.get());
+  EXPECT_NE(server_id(top_level), server_id(root_window()));
+
+  // Ack the request to the windowtree to create the new window.
+  uint32_t change_id;
+  ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
+      WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
+  EXPECT_EQ(window_tree()->window_id(), server_id(top_level));
+
+  ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
+  data->window_id = server_id(top_level);
+  data->visible = true;
+  const int64_t display_id = 1;
+  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
+                                          display_id, true);
+  EXPECT_EQ(
+      0u, window_tree()->GetChangeCountForType(WindowTreeChangeType::VISIBLE));
+  EXPECT_TRUE(top_level->TargetVisibility());
+
+  std::unique_ptr<CaptureRecorder> capture_recorder1(
+      base::MakeUnique<CaptureRecorder>(root_window()));
+  std::unique_ptr<CaptureRecorder> capture_recorder2(
+      base::MakeUnique<CaptureRecorder>(top_level));
+  EXPECT_NE(client::GetCaptureClient(root_window()),
+            client::GetCaptureClient(top_level));
+
+  EXPECT_EQ(0, capture_recorder1->capture_changed_count());
+  EXPECT_EQ(0, capture_recorder2->capture_changed_count());
+  // Give capture to top_level and ensure everyone is notified correctly.
+  top_level->SetCapture();
+  ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
+      WindowTreeChangeType::CAPTURE, true));
+  EXPECT_EQ(0, capture_recorder1->capture_changed_count());
+  EXPECT_EQ(1, capture_recorder2->capture_changed_count());
+  EXPECT_EQ(top_level->id(),
+            capture_recorder2->last_gained_capture_window_id());
+  EXPECT_EQ(0, capture_recorder2->last_lost_capture_window_id());
+  top_level->ReleaseCapture();
+  capture_recorder1->reset_capture_captured_count();
+  capture_recorder2->reset_capture_captured_count();
+
+  // Release capture of top_level shouldn't affect the capture of root_window().
+  top_level->SetCapture();
+  root_window()->SetCapture();
+  top_level->ReleaseCapture();
+  EXPECT_EQ(1, capture_recorder1->capture_changed_count());
+  EXPECT_EQ(2, capture_recorder2->capture_changed_count());
+  EXPECT_EQ(root_window()->id(),
+            capture_recorder1->last_gained_capture_window_id());
+  EXPECT_EQ(0, capture_recorder1->last_lost_capture_window_id());
+  EXPECT_EQ(0, capture_recorder2->last_gained_capture_window_id());
+  EXPECT_EQ(top_level->id(), capture_recorder2->last_lost_capture_window_id());
+
+  capture_recorder1->reset_capture_captured_count();
+  capture_recorder2->reset_capture_captured_count();
+  capture_recorder1.reset();
+  capture_recorder2.reset();
+  window_tree_host.reset();
+  capture_client.reset();
 }
 
 TEST_F(WindowTreeClientClientTest, ModalFail) {

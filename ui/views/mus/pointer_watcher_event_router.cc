@@ -27,14 +27,11 @@ PointerWatcherEventRouter::PointerWatcherEventRouter(
     aura::WindowTreeClient* window_tree_client)
     : window_tree_client_(window_tree_client) {
   window_tree_client->AddObserver(this);
-  window_tree_client_->GetCaptureClient()->AddObserver(this);
 }
 
 PointerWatcherEventRouter::~PointerWatcherEventRouter() {
-  if (window_tree_client_) {
+  if (window_tree_client_)
     window_tree_client_->RemoveObserver(this);
-    window_tree_client_->GetCaptureClient()->RemoveObserver(this);
-  }
 }
 
 void PointerWatcherEventRouter::AddPointerWatcher(PointerWatcher* watcher,
@@ -132,6 +129,16 @@ void PointerWatcherEventRouter::OnPointerEventObserved(
   }
 }
 
+void PointerWatcherEventRouter::AttachToCaptureClient(
+    aura::client::CaptureClient* capture_client) {
+  capture_client->AddObserver(this);
+}
+
+void PointerWatcherEventRouter::DetachFromCaptureClient(
+    aura::client::CaptureClient* capture_client) {
+  capture_client->RemoveObserver(this);
+}
+
 PointerWatcherEventRouter::EventTypes
 PointerWatcherEventRouter::DetermineEventTypes() {
   if (HasPointerWatcher(&move_watchers_))
@@ -161,7 +168,6 @@ void PointerWatcherEventRouter::OnDidDestroyClient(
   // We expect that all observers have been removed by this time.
   DCHECK_EQ(event_types_, EventTypes::NONE);
   DCHECK_EQ(client, window_tree_client_);
-  window_tree_client_->GetCaptureClient()->RemoveObserver(this);
   window_tree_client_->RemoveObserver(this);
   window_tree_client_ = nullptr;
 }

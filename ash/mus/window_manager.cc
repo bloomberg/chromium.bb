@@ -41,6 +41,7 @@
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
@@ -114,6 +115,13 @@ void WindowManager::Init(
       std::move(frame_decoration_values));
 
   lookup_.reset(new WmLookupMus);
+
+  // Notify PointerWatcherEventRouter and CaptureSynchronizer that the capture
+  // client has been set.
+  aura::client::CaptureClient* capture_client = wm_state_->capture_controller();
+  pointer_watcher_event_router_->AttachToCaptureClient(capture_client);
+  window_tree_client_->capture_synchronizer()->AttachToCaptureClient(
+      capture_client);
 }
 
 void WindowManager::DeleteAllRootWindowControllers() {
@@ -237,6 +245,11 @@ void WindowManager::DestroyRootWindowController(
 void WindowManager::Shutdown() {
   if (!window_tree_client_)
     return;
+
+  aura::client::CaptureClient* capture_client = wm_state_->capture_controller();
+  pointer_watcher_event_router_->DetachFromCaptureClient(capture_client);
+  window_tree_client_->capture_synchronizer()->DetachFromCaptureClient(
+      capture_client);
 
   Shell::DeleteInstance();
 

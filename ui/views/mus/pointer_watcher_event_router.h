@@ -14,6 +14,10 @@
 
 namespace aura {
 class WindowTreeClient;
+
+namespace client {
+class CaptureClient;
+}
 }
 
 namespace ui {
@@ -55,6 +59,10 @@ class VIEWS_MUS_EXPORT PointerWatcherEventRouter
   // Called by WindowTreeClientDelegate to notify PointerWatchers appropriately.
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               aura::Window* target);
+
+  // Called when the |capture_client| has been set or will be unset.
+  void AttachToCaptureClient(aura::client::CaptureClient* capture_client);
+  void DetachFromCaptureClient(aura::client::CaptureClient* capture_client);
 
  private:
   friend class PointerWatcherEventRouterTest;

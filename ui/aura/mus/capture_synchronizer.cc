@@ -14,30 +14,38 @@
 namespace aura {
 
 CaptureSynchronizer::CaptureSynchronizer(CaptureSynchronizerDelegate* delegate,
-                                         ui::mojom::WindowTree* window_tree,
-                                         client::CaptureClient* capture_client)
-    : delegate_(delegate),
-      window_tree_(window_tree),
-      capture_client_(capture_client) {
-  capture_client_->AddObserver(this);
-}
+                                         ui::mojom::WindowTree* window_tree)
+    : delegate_(delegate), window_tree_(window_tree) {}
 
-CaptureSynchronizer::~CaptureSynchronizer() {
-  SetCaptureWindow(nullptr);
-  capture_client_->RemoveObserver(this);
-}
+CaptureSynchronizer::~CaptureSynchronizer() {}
 
 void CaptureSynchronizer::SetCaptureFromServer(WindowMus* window) {
   if (window == capture_window_)
     return;
 
   DCHECK(!setting_capture_);
-  // Don't immediately set |capture_client_|. It's possible the change will be
-  // rejected.
+  // Don't immediately set |capture_window_|. It's possible the change
+  // will be rejected. |capture_window_| is set in OnCaptureChanged() if
+  // capture succeeds.
   base::AutoReset<bool> capture_reset(&setting_capture_, true);
   base::AutoReset<WindowMus*> window_setting_capture_to_reset(
       &window_setting_capture_to_, window);
-  capture_client_->SetCapture(window ? window->GetWindow() : nullptr);
+  client::CaptureClient* capture_client =
+      window ? client::GetCaptureClient(window->GetWindow()->GetRootWindow())
+             : client::GetCaptureClient(
+                   capture_window_->GetWindow()->GetRootWindow());
+  capture_client->SetCapture(window ? window->GetWindow() : nullptr);
+}
+
+void CaptureSynchronizer::AttachToCaptureClient(
+    client::CaptureClient* capture_client) {
+  capture_client->AddObserver(this);
+}
+
+void CaptureSynchronizer::DetachFromCaptureClient(
+    client::CaptureClient* capture_client) {
+  SetCaptureWindow(nullptr);
+  capture_client->RemoveObserver(this);
 }
 
 void CaptureSynchronizer::SetCaptureWindow(WindowMus* window) {
@@ -61,6 +69,17 @@ void CaptureSynchronizer::OnCaptureChanged(Window* lost_capture,
                                            Window* gained_capture) {
   if (!gained_capture && !capture_window_)
     return;  // Happens if the window is deleted during notification.
+
+  // Happens if the window that just lost capture is not the most updated window
+  // that has capture to avoid setting the current |capture_window_| to null by
+  // accident. This can occur because CaptureSynchronizer can be the observer
+  // for multiple capture clients; after we set capture for one capture client
+  // and then set capture for another capture client, releasing capture on the
+  // first capture client could potentially reset the |capture_window_| to null
+  // while the correct |capture_window_| should be the capture window for the
+  // second capture client at that time.
+  if (!gained_capture && lost_capture != capture_window_->GetWindow())
+    return;
 
   WindowMus* gained_capture_mus = WindowMus::Get(gained_capture);
   if (setting_capture_ && gained_capture_mus == window_setting_capture_to_) {
