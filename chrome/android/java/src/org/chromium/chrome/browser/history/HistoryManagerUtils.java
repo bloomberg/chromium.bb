@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.PageTransition;
 
 /**
  * Utility methods for the browsing history manager.
@@ -37,10 +38,13 @@ public class HistoryManagerUtils {
     }
 
     /**
-    * @return Whether the Android-specific browsing history UI is was shown.
+    * Opens the browsing history manager.
     */
-    public static boolean showHistoryManager(Activity activity, Tab tab) {
-        if (!isAndroidHistoryManagerEnabled()) return false;
+    public static void showHistoryManager(Activity activity, Tab tab) {
+        if (!isAndroidHistoryManagerEnabled()) {
+            tab.loadUrl(new LoadUrlParams(UrlConstants.HISTORY_URL, PageTransition.AUTO_TOPLEVEL));
+            return;
+        }
 
         Context appContext = ContextUtils.getApplicationContext();
         if (DeviceFormFactor.isTablet(appContext)) {
@@ -53,6 +57,5 @@ public class HistoryManagerUtils {
             intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
             activity.startActivity(intent);
         }
-        return true;
     }
 }

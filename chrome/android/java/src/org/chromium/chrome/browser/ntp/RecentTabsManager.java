@@ -12,9 +12,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
+import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
-import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.Collections;
 import java.util.List;
@@ -203,7 +202,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void openHistoryPage() {
         if (mIsDestroyed) return;
-        mTab.loadUrl(new LoadUrlParams(UrlConstants.HISTORY_URL));
+        HistoryManagerUtils.showHistoryManager(mTab.getActivity(), mTab);
         StartupMetrics.getInstance().recordOpenedHistory();
     }
 
