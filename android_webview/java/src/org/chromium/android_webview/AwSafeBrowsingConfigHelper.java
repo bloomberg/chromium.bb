@@ -35,7 +35,7 @@ public class AwSafeBrowsingConfigHelper {
                 @Override
                 public void run() {
                     AwContentsStatics.setSafeBrowsingEnabled(
-                            isHarmfulAppDetectionEnabled(appContext));
+                            isScanDeviceForSecurityThreatsEnabled(appContext));
                 }
             });
         }
@@ -64,14 +64,11 @@ public class AwSafeBrowsingConfigHelper {
     }
 
     @SuppressLint("NewApi") // android.provider.Settings.Global#getInt requires API level 17
-    private static boolean isHarmfulAppDetectionEnabled(Context applicationContext) {
-        // Determine if the "Improve harmful app detection" functionality is enabled in
+    private static boolean isScanDeviceForSecurityThreatsEnabled(Context applicationContext) {
+        // Determine if the "Scan device for security threats" functionality is enabled in
         // Android->System->Google->Security settings.
         ContentResolver contentResolver = applicationContext.getContentResolver();
-        boolean user_consent =
-                Settings.Secure.getInt(contentResolver, "package_verifier_user_consent", 1) > 0;
-        boolean apk_upload = Settings.Global.getInt(contentResolver, "upload_apk_enable", 1) > 0;
-        return user_consent && apk_upload;
+        return Settings.Secure.getInt(contentResolver, "package_verifier_user_consent", 1) > 0;
     }
 
     // Not meant to be instantiated.
