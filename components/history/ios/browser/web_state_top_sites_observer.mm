@@ -9,6 +9,10 @@
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 DEFINE_WEB_STATE_USER_DATA_KEY(history::WebStateTopSitesObserver);
 
 namespace history {
