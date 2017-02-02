@@ -44,6 +44,7 @@ body {
 .physicalWebText .description {
   display: block;
   height: 2.5em;
+  line-height: 1.25;
   font-size: 90%;
   color: #444;
   overflow: hidden;
