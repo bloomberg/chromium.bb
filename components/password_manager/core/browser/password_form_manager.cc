@@ -234,7 +234,8 @@ PasswordFormManager::PasswordFormManager(
                                    PasswordStore::FormDigest(observed_form),
                                    client,
                                    /* should_migrate_http_passwords */ true)),
-      form_fetcher_(form_fetcher ? form_fetcher : form_fetcher_impl_.get()) {
+      form_fetcher_(form_fetcher ? form_fetcher : form_fetcher_impl_.get()),
+      is_main_frame_secure_(client->IsMainFrameSecure()) {
   if (form_fetcher_impl_)
     form_fetcher_impl_->Fetch();
   DCHECK_EQ(observed_form.scheme == PasswordForm::SCHEME_HTML,
@@ -247,6 +248,13 @@ PasswordFormManager::PasswordFormManager(
 PasswordFormManager::~PasswordFormManager() {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenV3", GetActionsTaken(),
                             kMaxNumActionsTaken);
+  // Use the visible main frame URL at the time the PasswordFormManager
+  // is created, in case a navigation has already started and the
+  // visible URL has changed.
+  if (!is_main_frame_secure_) {
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenOnNonSecureForm",
+                              GetActionsTaken(), kMaxNumActionsTaken);
+  }
   if (submit_result_ == kSubmitResultNotSubmitted) {
     if (has_generated_password_)
       metrics_util::LogPasswordGenerationSubmissionEvent(
@@ -258,6 +266,10 @@ PasswordFormManager::~PasswordFormManager() {
   if (form_type_ != kFormTypeUnspecified) {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedFormType", form_type_,
                               kFormTypeMax);
+    if (!is_main_frame_secure_) {
+      UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedNonSecureFormType",
+                                form_type_, kFormTypeMax);
+    }
   }
 }
 

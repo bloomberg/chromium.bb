@@ -561,6 +561,10 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // FormFetcher instance which owns the login data from PasswordStore.
   FormFetcher* const form_fetcher_;
 
+  // True if the main frame's visible URL, at the time this PasswordFormManager
+  // was created, is secure.
+  bool is_main_frame_secure_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };
 

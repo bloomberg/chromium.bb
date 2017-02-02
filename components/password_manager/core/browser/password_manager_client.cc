@@ -68,6 +68,10 @@ const GURL& PasswordManagerClient::GetMainFrameURL() const {
   return GURL::EmptyGURL();
 }
 
+bool PasswordManagerClient::IsMainFrameSecure() const {
+  return false;
+}
+
 const LogManager* PasswordManagerClient::GetLogManager() const {
   return nullptr;
 }

@@ -184,6 +184,9 @@ class PasswordManagerClient {
   // Returns the main frame URL.
   virtual const GURL& GetMainFrameURL() const;
 
+  // Returns true if the main frame URL has a secure origin.
+  virtual bool IsMainFrameSecure() const;
+
   virtual const GURL& GetLastCommittedEntryURL() const = 0;
 
   // Use this to filter credentials before handling them in password manager.
