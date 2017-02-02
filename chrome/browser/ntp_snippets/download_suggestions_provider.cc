@@ -319,7 +319,9 @@ void DownloadSuggestionsProvider::
 void DownloadSuggestionsProvider::OfflinePageModelLoaded(
     offline_pages::OfflinePageModel* model) {
   DCHECK_EQ(offline_page_model_, model);
-  AsynchronouslyFetchOfflinePagesDownloads(/*notify=*/true);
+  // Ignored. We issue a fetch in the constructor (or when Downloads Manager is
+  // loaded) and Offline Page model answers asynchronously once it has been
+  // loaded.
 }
 
 void DownloadSuggestionsProvider::OfflinePageAdded(

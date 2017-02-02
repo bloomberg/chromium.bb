@@ -810,8 +810,7 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldPruneAssetDownloadsDismissedIDs) {
   EXPECT_THAT(GetDismissedSuggestions(), SizeIs(1));
 }
 
-TEST_F(DownloadSuggestionsProviderTest,
-       ShouldFetchAssetDownloadsOnStartupButOnlyOnce) {
+TEST_F(DownloadSuggestionsProviderTest, ShouldFetchAssetDownloadsOnStartup) {
   IgnoreOnCategoryStatusChangedToAvailable();
 
   *(downloads_manager()->mutable_items()) = CreateDummyAssetDownloads({1, 2});
@@ -821,6 +820,20 @@ TEST_F(DownloadSuggestionsProviderTest,
                        UnorderedElementsAre(HasUrl("http://download.com/1"),
                                             HasUrl("http://download.com/2"))));
   CreateLoadedProvider(/*show_assets=*/true, /*show_offline_pages=*/true);
+}
+
+TEST_F(DownloadSuggestionsProviderTest,
+       ShouldFetchOfflinePageDownloadsOnStartup) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+
+  *(offline_pages_model()->mutable_items()) = CreateDummyOfflinePages({1, 2});
+  offline_pages_model()->set_is_loaded(true);
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(),
+                                            UnorderedElementsAre(
+                                                HasUrl("http://dummy.com/1"),
+                                                HasUrl("http://dummy.com/2"))));
+  CreateProvider(/*show_assets=*/false, /*show_offline_pages=*/true);
+  FireOfflinePageModelLoaded();
 }
 
 TEST_F(DownloadSuggestionsProviderTest,
@@ -894,38 +907,6 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldNotShowAssetsWhenTurnedOff) {
   // downloads data source is not provided. If it is and the provider reacts to
   // the notification, the test will fail because the observer is a strict mock.
   (*downloads_manager()->mutable_items())[0]->NotifyDownloadUpdated();
-}
-
-TEST_F(DownloadSuggestionsProviderTest, ShouldLoadOfflinePagesOnModelLoaded) {
-  IgnoreOnCategoryStatusChangedToAvailable();
-  IgnoreOnSuggestionInvalidated();
-
-  offline_pages_model()->set_is_loaded(false);
-  EXPECT_CALL(*observer(),
-              OnNewSuggestions(_, downloads_category(), IsEmpty()));
-  CreateProvider(/*show_assets=*/false, /*show_offline_pages=*/true);
-
-  *(offline_pages_model()->mutable_items()) = CreateDummyOfflinePages({1, 2});
-  offline_pages_model()->set_is_loaded(true);
-  EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(),
-                                            UnorderedElementsAre(
-                                                HasUrl("http://dummy.com/1"),
-                                                HasUrl("http://dummy.com/2"))));
-  FireOfflinePageModelLoaded();
-}
-
-TEST_F(DownloadSuggestionsProviderTest,
-       ShouldLoadOfflinePagesIfMissesOnModelLoaded) {
-  IgnoreOnCategoryStatusChangedToAvailable();
-  IgnoreOnSuggestionInvalidated();
-
-  *(offline_pages_model()->mutable_items()) = CreateDummyOfflinePages({1, 2});
-  offline_pages_model()->set_is_loaded(true);
-  EXPECT_CALL(*observer(), OnNewSuggestions(_, downloads_category(),
-                                            UnorderedElementsAre(
-                                                HasUrl("http://dummy.com/1"),
-                                                HasUrl("http://dummy.com/2"))));
-  CreateProvider(/*show_assets=*/false, /*show_offline_pages=*/true);
 }
 
 TEST_F(DownloadSuggestionsProviderTest,
