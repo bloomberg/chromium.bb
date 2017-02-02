@@ -16,6 +16,7 @@ import httplib
 import json
 import netrc
 import os
+import re
 import socket
 import sys
 import urllib
@@ -39,14 +40,29 @@ SLEEP = 0.5
 # git. This is parameterized primarily to enable cros_test_lib.GerritTestCase.
 GIT_PROTOCOL = 'https'
 
+# The GOB conflict errors which could be ignorable.
+GOB_CONFLICT_ERRORS = (
+    r'change is closed',
+    r'Cannot reduce vote on labels for closed change'
+)
+
+GOB_CONFLICT_ERRORS_RE = re.compile('|'.join(GOB_CONFLICT_ERRORS),
+                                    re.IGNORECASE)
+
+GOB_ERROR_REASON_CLOSED_CHANGE = 'CLOSED CHANGE'
+
 
 class GOBError(Exception):
   """Exception class for errors commuicating with the gerrit-on-borg service."""
-  def __init__(self, http_status, *args, **kwargs):
-    super(GOBError, self).__init__(*args, **kwargs)
-    self.http_status = http_status
-    self.message = '(%d) %s' % (self.http_status, self.message)
+  def __init__(self, *args, **kwargs):
+    super(GOBError, self).__init__(*args)
+    self.http_status = kwargs.pop('http_status', None)
+    self.reason = kwargs.pop('reason', None)
 
+    if self.http_status is not None:
+      self.message += '(http_status): %d' % self.http_status
+    if self.reason is not None:
+      self.message += '(reason): %s' % self.reason
 
 class InternalGOBError(GOBError):
   """Exception class for GOB errors with status >= 500"""
@@ -173,7 +189,7 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     response_body = response.read()
     if response.status == 204 and ignore_204:
       # This exception is used to confirm expected response status.
-      raise GOBError(response.status, response.reason)
+      raise GOBError(http_status=response.status, reason=response.reason)
     if response.status == 404 and ignore_404:
       return StringIO()
     elif response.status == 200:
@@ -191,7 +207,9 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     if response.status >= 500:
       # A status >=500 is assumed to be a possible transient error; retry.
       logging.warning('%s%s', err_prefix, msg)
-      raise InternalGOBError(response.status, response.reason)
+      raise InternalGOBError(
+          http_status=response.status,
+          reason=response.reason)
 
     # Ones we cannot retry.
     home = os.environ.get('HOME', '~')
@@ -218,7 +236,17 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
       logging.warning('conn.sock.getpeername(): %s', conn.sock.getpeername())
     except AttributeError:
       logging.warning('peer name unavailable')
-    raise GOBError(response.status, response.reason)
+
+    if response.status == httplib.CONFLICT:
+      # 409 conflict
+      if GOB_CONFLICT_ERRORS_RE.search(response_body):
+        raise GOBError(
+            http_status=response.status,
+            reason=GOB_ERROR_REASON_CLOSED_CHANGE)
+      else:
+        raise GOBError(http_status=response.status, reason=response.reason)
+    else:
+      raise GOBError(http_status=response.status, reason=response.reason)
 
   return retry_util.RetryException((socket.error, InternalGOBError), TRY_LIMIT,
                                    _FetchUrlHelper, sleep=SLEEP)
@@ -233,7 +261,7 @@ def FetchUrlJson(*args, **kwargs):
   # The first line of the response should always be: )]}'
   s = fh.readline()
   if s and s.rstrip() != ")]}'":
-    raise GOBError(200, 'Unexpected json output: %s' % s)
+    raise GOBError(http_status=200, reason='Unexpected json output: %s' % s)
   s = fh.read()
   if not s:
     return None
@@ -291,7 +319,7 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
     result = FetchUrlJson(host, path, ignore_404=False)
   except GOBError as e:
     msg = '%s:\n%s' % (e.message, path)
-    raise GOBError(e.http_status, msg)
+    raise GOBError(http_status=e.http_status, reason=msg)
   return result
 
 
@@ -378,8 +406,9 @@ def DeleteDraft(host, change):
       raise
   else:
     raise GOBError(
-        200, 'Unexpectedly received a 200 http status while deleting draft %r'
-        % change)
+        http_status=200,
+        reason='Unexpectedly received a 200 http status while deleting draft '
+               ' %r' % change)
 
 
 def SubmitChange(host, change, revision='current', wait_for_merge=True):
@@ -448,8 +477,9 @@ def RemoveReviewers(host, change, remove=None):
         raise
     else:
       raise GOBError(
-          200, 'Unexpectedly received a 200 http status while deleting'
-               ' reviewer "%s" from change %s' % (r, change))
+          http_status=200,
+          reason='Unexpectedly received a 200 http status while deleting'
+                 ' reviewer "%s" from change %s' % (r, change))
 
 
 def SetReview(host, change, revision='current', msg=None, labels=None,
@@ -467,13 +497,16 @@ def SetReview(host, change, revision='current', msg=None, labels=None,
     body['notify'] = notify
   response = FetchUrlJson(host, path, reqtype='POST', body=body)
   if not response:
-    raise GOBError(404, 'CL %s not found in %s' % (change, host))
+    raise GOBError(
+        http_status=404,
+        reason='CL %s not found in %s' % (change, host))
   if labels:
     for key, val in labels.iteritems():
       if ('labels' not in response or key not in response['labels'] or
           int(response['labels'][key] != int(val))):
-        raise GOBError(200, 'Unable to set "%s" label on change %s.' % (
-            key, change))
+        raise GOBError(
+            http_status=200,
+            reason='Unable to set "%s" label on change %s.' % (key, change))
 
 
 def SetTopic(host, change, topic):
@@ -513,16 +546,21 @@ def ResetReviewLabels(host, change, label, value='0', revision='current',
       response = FetchUrlJson(host, path, reqtype='POST', body=body)
       if str(response['labels'][label]) != value:
         username = review.get('email', jmsg.get('name', ''))
-        raise GOBError(200, 'Unable to set %s label for user "%s"'
-                       ' on change %s.' % (label, username, change))
+        raise GOBError(
+            http_status=200,
+            reason='Unable to set %s label for user "%s" on change %s.' % (
+                label, username, change))
   if current:
     new_revision = GetChangeCurrentRevision(host, change)
     if not new_revision:
       raise GOBError(
-          200, 'Could not get review information for change "%s"' % change)
+          http_status=200,
+          reason='Could not get review information for change "%s"' % change)
     elif new_revision != revision:
-      raise GOBError(200, 'While resetting labels on change "%s", '
-                     'a new patchset was uploaded.' % change)
+      raise GOBError(
+          http_status=200,
+          reason='While resetting labels on change "%s", a new patchset was '
+                 'uploaded.' % change)
 
 
 def GetTipOfTrunkRevision(git_url):
@@ -532,13 +570,13 @@ def GetTipOfTrunkRevision(git_url):
   j = FetchUrlJson(parsed_url[1], path, ignore_404=False)
   if not j:
     raise GOBError(
-        'Could not find revision information from %s' % git_url)
+        reason='Could not find revision information from %s' % git_url)
   try:
     return j['log'][0]['commit']
   except (IndexError, KeyError, TypeError):
     msg = ('The json returned by https://%s%s has an unfamiliar structure:\n'
            '%s\n' % (parsed_url[1], path, j))
-    raise GOBError(msg)
+    raise GOBError(reason=msg)
 
 
 def GetCommitDate(git_url, commit):
@@ -559,19 +597,19 @@ def GetCommitDate(git_url, commit):
   j = FetchUrlJson(parsed_url.netloc, path, ignore_404=False)
   if not j:
     raise GOBError(
-        'Could not find revision information from %s' % git_url)
+        reason='Could not find revision information from %s' % git_url)
   try:
     commit_timestr = j['log'][0]['committer']['time']
   except (IndexError, KeyError, TypeError):
     msg = ('The json returned by https://%s%s has an unfamiliar structure:\n'
            '%s\n' % (parsed_url.netloc, path, j))
-    raise GOBError(msg)
+    raise GOBError(reason=msg)
   try:
     # We're parsing a string of the form 'Tue Dec 02 17:48:06 2014'.
     return datetime.datetime.strptime(commit_timestr,
                                       constants.GOB_COMMIT_TIME_FORMAT)
   except ValueError:
-    raise GOBError('Failed parsing commit time "%s"' % commit_timestr)
+    raise GOBError(reason='Failed parsing commit time "%s"' % commit_timestr)
 
 
 def GetAccount(host):

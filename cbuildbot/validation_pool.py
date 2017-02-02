@@ -899,8 +899,9 @@ class ValidationPool(object):
           if success or self.dryrun:
             submitted.append(dep_change)
         except (gob_util.GOBError, gerrit.GerritException) as e:
-          if getattr(e, 'http_status', None) == httplib.CONFLICT:
-            if e.message.rstrip().endswith('change is merged'):
+          if (isinstance(e, gob_util.GOBError) and
+              e.http_status == httplib.CONFLICT):
+            if e.reason == gob_util.GOB_ERROR_REASON_CLOSED_CHANGE:
               submitted.append(dep_change)
             else:
               dep_error = PatchConflict(dep_change)
@@ -1345,7 +1346,16 @@ class ValidationPool(object):
 
   def RemoveReady(self, change, reason=None):
     """Remove the commit ready and trybot ready bits for |change|."""
-    self._helper_pool.ForChange(change).RemoveReady(change, dryrun=self.dryrun)
+    try:
+      self._helper_pool.ForChange(change).RemoveReady(
+          change, dryrun=self.dryrun)
+    except gob_util.GOBError as e:
+      if (e.http_status == httplib.CONFLICT and
+          e.reason == gob_util.GOB_ERROR_REASON_CLOSED_CHANGE):
+        logging.warning('The change is closed. Ignore the GOB CONFLICT error.')
+      else:
+        raise
+
     if self._run:
       metadata = self._run.attrs.metadata
       timestamp = int(time.time())

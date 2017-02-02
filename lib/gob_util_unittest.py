@@ -110,6 +110,17 @@ class NetworkGobTest(cros_test_lib.TestCase):
                             ignore_404=False)
     self.assertEqual(ex.exception.http_status, 404)
 
+  def test409Exception(self):
+    """Test FetchUrlJson raises 409 errors with response body message."""
+    with self.assertRaises(gob_util.GOBError) as ex:
+      gob_util.FetchUrlJson(
+          site_config.params.EXTERNAL_GERRIT_HOST,
+          'changes/422652/revisions/901b4ee349a9395ba23a7a1e8597a35050f741e4/'
+          'review', reqtype='POST', body={'labels': {'Trybot-Ready': '+1'}})
+
+    self.assertEqual(ex.exception.http_status, 409)
+    self.assertEqual(ex.exception.reason,
+                     gob_util.GOB_ERROR_REASON_CLOSED_CHANGE)
 
 def main(_argv):
   gob_util.TRY_LIMIT = 1

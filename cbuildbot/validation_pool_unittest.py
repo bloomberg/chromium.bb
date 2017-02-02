@@ -1293,7 +1293,7 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
 
   def testConflict(self):
     """Submit a change that conflicts with TOT."""
-    error = gob_util.GOBError(httplib.CONFLICT, 'Conflict')
+    error = gob_util.GOBError(http_status=httplib.CONFLICT, reason='Conflict')
     self.pool_mock.submit_results[self.patches[0]] = error
     self.SubmitPool(submitted=[self.patches[0]], rejected=self.patches[::-1])
     notify_error = validation_pool.PatchConflict(self.patches[0])
@@ -1301,7 +1301,8 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
 
   def testConflictAlreadyMerged(self):
     """Submit a change that conflicts with TOT because it was already merged."""
-    error = gob_util.GOBError(httplib.CONFLICT, 'change is merged\n')
+    error = gob_util.GOBError(http_status=httplib.CONFLICT,
+                              reason=gob_util.GOB_ERROR_REASON_CLOSED_CHANGE)
     self.pool_mock.submit_results[self.patches[0]] = error
     self.SubmitPool(submitted=self.patches, rejected=())
 
@@ -1434,3 +1435,35 @@ class LoadManifestTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(self.pool.candidates[0].fail_count, 2)
     self.assertEqual(self.pool.candidates[0].pass_count, 0)
     self.assertEqual(self.pool.candidates[0].total_fail_count, 3)
+
+
+class RemoveReadyTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for RemoveReady."""
+
+  def setUp(self):
+    """Sets up a pool."""
+    self.pool = MakePool()
+
+  def testRemoveReadyRaisesException(self):
+    """Test RemoveReady which raises exception."""
+    helper_mock = mock.Mock()
+    helper_mock.ForChange.return_value.RemoveReady.side_effect = (
+        gob_util.GOBError(http_status=409, reason="test"))
+    self.pool._helper_pool = helper_mock
+
+    self.assertRaises(gob_util.GOBError, self.pool.RemoveReady,
+                      mock.Mock)
+
+  def testRemoveReadyDoesNotRaiseException(self):
+    """Test RemoveReady which does not raise exception."""
+    helper_mock = mock.Mock()
+    helper_mock.ForChange.return_value.RemoveReady.side_effect = (
+        gob_util.GOBError(http_status=409,
+                          reason=gob_util.GOB_ERROR_REASON_CLOSED_CHANGE))
+    self.pool._helper_pool = helper_mock
+
+    self.pool._run = None
+    self.PatchObject(validation_pool.ValidationPool,
+                     '_InsertCLActionToDatabase')
+
+    self.pool.RemoveReady(mock.Mock())
