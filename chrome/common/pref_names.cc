@@ -2382,4 +2382,10 @@ const char kSearchGeolocationPostDisclosureMetricsRecorded[] =
 // default search engine, if it is the Google search engine.
 const char kGoogleDSEGeolocationSetting[] = "google_dse_geolocation_setting";
 
+// A dictionary of manifest URLs of Web Share Targets to a dictionary containing
+// attributes of its share_target field found in its manifest. Each key in the
+// dictionary is the name of the attribute, and the value is the corresponding
+// value.
+const char kWebShareVisitedTargets[] = "profile.web_share.visited_targets";
+
 }  // namespace prefs

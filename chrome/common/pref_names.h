@@ -876,6 +876,8 @@ extern const char kSearchGeolocationPostDisclosureMetricsRecorded[];
 
 extern const char kGoogleDSEGeolocationSetting[];
 
+extern const char kWebShareVisitedTargets[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_
