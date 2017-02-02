@@ -33,6 +33,7 @@
 #include "extensions/common/constants.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace {
 
@@ -43,6 +44,19 @@ void RestoreTabUsingProfile(Profile* profile) {
 }
 
 }  // namespace
+
+// static
+Browser* ChromeNewWindowClient::GetActiveBrowser() {
+  Browser* browser = BrowserList::GetInstance()->GetLastActive();
+  if (browser) {
+    aura::Window* window = browser->window()->GetNativeWindow();
+    aura::client::ActivationClient* client =
+        aura::client::GetActivationClient(window->GetRootWindow());
+    if (client->GetActiveWindow() == window)
+      return browser;
+  }
+  return nullptr;
+}
 
 ChromeNewWindowClient::ChromeNewWindowClient() : binding_(this) {
   service_manager::Connector* connector =
@@ -102,7 +116,7 @@ class ChromeNewWindowClient::TabRestoreHelper
 };
 
 void ChromeNewWindowClient::NewTab() {
-  Browser* browser = BrowserList::GetInstance()->GetLastActive();
+  Browser* browser = GetActiveBrowser();
   if (browser && browser->is_type_tabbed()) {
     chrome::NewTab(browser);
     return;
@@ -120,7 +134,7 @@ void ChromeNewWindowClient::NewTab() {
 }
 
 void ChromeNewWindowClient::NewWindow(bool is_incognito) {
-  Browser* browser = BrowserList::GetInstance()->GetLastActive();
+  Browser* browser = GetActiveBrowser();
   Profile* profile = (browser && browser->profile())
                          ? browser->profile()->GetOriginalProfile()
                          : ProfileManager::GetActiveUserProfile();
@@ -173,8 +187,8 @@ void ChromeNewWindowClient::RestoreTab() {
     return;
   }
 
-  Browser* browser = BrowserList::GetInstance()->GetLastActive();
-  Profile* profile = browser ? browser->profile() : NULL;
+  Browser* browser = GetActiveBrowser();
+  Profile* profile = browser ? browser->profile() : nullptr;
   if (!profile)
     profile = ProfileManager::GetActiveUserProfile();
   if (profile->IsOffTheRecord())
@@ -201,9 +215,9 @@ void ChromeNewWindowClient::ShowKeyboardOverlay() {
 }
 
 void ChromeNewWindowClient::ShowTaskManager() {
-  chrome::OpenTaskManager(NULL);
+  chrome::OpenTaskManager(nullptr);
 }
 
 void ChromeNewWindowClient::OpenFeedbackPage() {
-  chrome::OpenFeedbackDialog(BrowserList::GetInstance()->GetLastActive());
+  chrome::OpenFeedbackDialog(GetActiveBrowser());
 }

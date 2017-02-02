@@ -11,10 +11,15 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
+class Browser;
+
 class ChromeNewWindowClient : public ash::mojom::NewWindowClient {
  public:
   ChromeNewWindowClient();
   ~ChromeNewWindowClient() override;
+
+  // Returns the active browser that has active browser window, if any.
+  static Browser* GetActiveBrowser();
 
   // Overridden from ash::mojom::NewWindowClient:
   void NewTab() override;
