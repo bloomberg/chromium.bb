@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.support.test.filters.MediumTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -32,6 +33,7 @@ public class PlatformMediaCodecTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug.com/620890")
     public void testCanPlayPlatformMediaCodecs() throws Throwable {
         loadUrlSync(mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
                 "file:///android_asset/platform-media-codec-test.html");
