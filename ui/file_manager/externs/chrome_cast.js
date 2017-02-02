@@ -10,7 +10,7 @@ chrome.cast = {};
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.AutoJoinPolicy
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast#.AutoJoinPolicy
  */
 chrome.cast.AutoJoinPolicy = {
   TAB_AND_ORIGIN_SCOPED: 'tab_and_origin_scoped',
@@ -21,7 +21,7 @@ chrome.cast.AutoJoinPolicy = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.DefaultActionPolicy
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast#.DefaultActionPolicy
  */
 chrome.cast.DefaultActionPolicy = {
   CREATE_SESSION: 'create_session',
@@ -31,7 +31,7 @@ chrome.cast.DefaultActionPolicy = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.Capability
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast#.Capability
  */
 chrome.cast.Capability = {
   VIDEO_OUT: 'video_out',
@@ -43,7 +43,7 @@ chrome.cast.Capability = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.ErrorCode
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast#.ErrorCode
  */
 chrome.cast.ErrorCode = {
   CANCEL: 'cancel',
@@ -61,7 +61,7 @@ chrome.cast.ErrorCode = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.ReceiverAvailability
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast#.ReceiverAvailability
  */
 chrome.cast.ReceiverAvailability = {
   AVAILABLE: 'available',
@@ -71,7 +71,7 @@ chrome.cast.ReceiverAvailability = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.SenderPlatform
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast#.SenderPlatform
  */
 chrome.cast.SenderPlatform = {
   CHROME: 'chrome',
@@ -82,7 +82,7 @@ chrome.cast.SenderPlatform = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.ReceiverType
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast#.ReceiverType
  */
 chrome.cast.ReceiverType = {
   CAST: 'cast',
@@ -93,7 +93,7 @@ chrome.cast.ReceiverType = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.ReceiverAction
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast#.ReceiverAction
  */
 chrome.cast.ReceiverAction = {
   CAST: 'cast',
@@ -103,7 +103,7 @@ chrome.cast.ReceiverAction = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.SessionStatus
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast#.SessionStatus
  */
 chrome.cast.SessionStatus = {
   CONNECTED: 'connected',
@@ -120,7 +120,7 @@ chrome.cast.media = {};
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.MediaCommand
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.MediaCommand
  */
 chrome.cast.media.MediaCommand = {
   PAUSE: 'pause',
@@ -132,7 +132,7 @@ chrome.cast.media.MediaCommand = {
 
 /**
  * @enum {number}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.MetadataType
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.MetadataType
  */
 chrome.cast.media.MetadataType = {
   GENERIC: 0,
@@ -145,7 +145,7 @@ chrome.cast.media.MetadataType = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.PlayerState
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.PlayerState
  */
 chrome.cast.media.PlayerState = {
   IDLE: 'IDLE',
@@ -157,7 +157,7 @@ chrome.cast.media.PlayerState = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.ResumeState
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.ResumeState
  */
 chrome.cast.media.ResumeState = {
   PLAYBACK_START: 'PLAYBACK_START',
@@ -167,7 +167,7 @@ chrome.cast.media.ResumeState = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.StreamType
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.StreamType
  */
 chrome.cast.media.StreamType = {
   BUFFERED: 'BUFFERED',
@@ -178,7 +178,7 @@ chrome.cast.media.StreamType = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.IdleReason
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.IdleReason
  */
 chrome.cast.media.IdleReason = {
   CANCELLED: 'CANCELLED',
@@ -190,7 +190,7 @@ chrome.cast.media.IdleReason = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.TrackType
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.TrackType
  */
 chrome.cast.media.TrackType = {
   TEXT: 'TEXT',
@@ -201,7 +201,7 @@ chrome.cast.media.TrackType = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.TextTrackType
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.TextTrackType
  */
 chrome.cast.media.TextTrackType = {
   SUBTITLES: 'SUBTITLES',
@@ -214,7 +214,7 @@ chrome.cast.media.TextTrackType = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.TextTrackEdgeType
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.TextTrackEdgeType
  */
 chrome.cast.media.TextTrackEdgeType = {
   NONE: 'NONE',
@@ -227,7 +227,7 @@ chrome.cast.media.TextTrackEdgeType = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.TextTrackWindowType
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.TextTrackWindowType
  */
 chrome.cast.media.TextTrackWindowType = {
   NONE: 'NONE',
@@ -238,7 +238,7 @@ chrome.cast.media.TextTrackWindowType = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.TextTrackFontGenericFamily
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.TextTrackFontGenericFamily
  */
 chrome.cast.media.TextTrackFontGenericFamily = {
   SANS_SERIF: 'SANS_SERIF',
@@ -253,7 +253,7 @@ chrome.cast.media.TextTrackFontGenericFamily = {
 
 /**
  * @enum {string}
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.TextTrackFontStyle
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.TextTrackFontStyle
  */
 chrome.cast.media.TextTrackFontStyle = {
   NORMAL: 'NORMAL',
@@ -553,7 +553,7 @@ chrome.cast.Session.prototype.loadMedia =
 
 /**
  * @namespace
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.timeout
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast#.timeout
  */
 chrome.cast.timeout = {};
 
@@ -1143,7 +1143,7 @@ chrome.cast.media.Media.prototype.removeUpdateListener = function(listener) {};
 
 /**
  * @namespace
- * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.timeout
+ * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media#.timeout
  */
 chrome.cast.media.timeout = {};
 
