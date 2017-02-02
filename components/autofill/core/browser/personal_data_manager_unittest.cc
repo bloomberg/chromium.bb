@@ -28,6 +28,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -447,55 +448,6 @@ TEST_F(PersonalDataManagerTest, AddProfile_BasicInformation) {
   EXPECT_EQ(1U, results[0]->use_count());
   EXPECT_EQ(kArbitraryTime, results[0]->use_date());
   EXPECT_EQ(kArbitraryTime, results[0]->modification_date());
-}
-
-TEST_F(PersonalDataManagerTest, DontDuplicateServerProfile) {
-  EnableWalletCardImport();
-
-  std::vector<AutofillProfile> server_profiles;
-  server_profiles.push_back(
-      AutofillProfile(AutofillProfile::SERVER_PROFILE, "a123"));
-  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "",
-                       "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
-                       "77401", "US", "");
-  // Wallet only provides a full name, so the above first and last names
-  // will be ignored when the profile is written to the DB.
-  server_profiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
-  autofill_table_->SetServerProfiles(server_profiles);
-  personal_data_->Refresh();
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-      .WillOnce(QuitMainMessageLoop());
-  base::RunLoop().Run();
-  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
-
-  // Add profile with identical values.  Duplicates should not get saved.
-  AutofillProfile scraped_profile(base::GenerateGUID(),
-                                  "https://www.example.com");
-  test::SetProfileInfo(&scraped_profile, "John", "", "Doe", "", "ACME Corp",
-                       "500 Oak View", "Apt 8", "Houston", "TX", "77401", "US",
-                       "");
-  EXPECT_TRUE(scraped_profile.IsSubsetOf(server_profiles.back(), "en-US"));
-
-  // Create the test clock and set the time to a specific value.
-  TestAutofillClock test_clock;
-  test_clock.SetNow(kArbitraryTime);
-
-  std::string saved_guid = personal_data_->SaveImportedProfile(scraped_profile);
-  EXPECT_NE(scraped_profile.guid(), saved_guid);
-
-  personal_data_->Refresh();
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-      .WillOnce(QuitMainMessageLoop());
-  base::RunLoop().Run();
-
-  // Verify the non-addition.
-  EXPECT_EQ(0U, personal_data_->web_profiles().size());
-  ASSERT_EQ(1U, personal_data_->GetProfiles().size());
-
-  // Verify that the server profile's use date was updated with the specified
-  // value.
-  const AutofillProfile* server_profile = personal_data_->GetProfiles()[0];
-  EXPECT_EQ(kArbitraryTime, server_profile->use_date());
 }
 
 // Tests that SaveImportedProfile sets the modification date on new profiles.
@@ -4164,26 +4116,15 @@ TEST_F(PersonalDataManagerTest, ClearAllServerData) {
   // Need to set the google services username
   EnableWalletCardImport();
 
-  // Add a server profile.
-  std::vector<AutofillProfile> server_profiles;
-  server_profiles.push_back(
-      AutofillProfile(AutofillProfile::SERVER_PROFILE, "a123"));
-  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "",
-                       "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
-                       "77401", "US", "");
-  autofill_table_->SetServerProfiles(server_profiles);
-
   // The card and profile should be there.
   ResetPersonalDataManager(USER_MODE_NORMAL);
   EXPECT_FALSE(personal_data_->GetCreditCards().empty());
-  EXPECT_FALSE(personal_data_->GetProfiles().empty());
 
   personal_data_->ClearAllServerData();
 
   // Reload the database, everything should be gone.
   ResetPersonalDataManager(USER_MODE_NORMAL);
   EXPECT_TRUE(personal_data_->GetCreditCards().empty());
-  EXPECT_TRUE(personal_data_->GetProfiles().empty());
 }
 
 TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
@@ -5698,6 +5639,391 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_OncePerVersion) {
 
   // The two duplicate profiles should still be present.
   EXPECT_EQ(2U, personal_data_->GetProfiles().size());
+}
+
+// Tests that a new local profile is created if no existing one is a duplicate
+// of the server address. Also tests that the billing address relationship was
+// transferred to the converted address.
+TEST_F(PersonalDataManagerTest,
+       ConvertWalletAddressesToLocalProfiles_NewProfile) {
+  ///////////////////////////////////////////////////////////////////////
+  // Setup.
+  ///////////////////////////////////////////////////////////////////////
+  EnableWalletCardImport();
+  base::HistogramTester histogram_tester;
+  const std::string kServerAddressId("server_address1");
+
+  // Add two different profiles, a local and a server one. Set the use stats so
+  // the server profile has a higher frecency, to have a predictable ordering to
+  // validate results.
+  AutofillProfile local_profile(base::GenerateGUID(),
+                                "https://www.example.com");
+  test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+                       "Orlando", "FL", "32801", "US", "19482937549");
+  local_profile.set_use_count(1);
+  personal_data_->AddProfile(local_profile);
+
+  // Add a different server profile.
+  std::vector<AutofillProfile> GetServerProfiles;
+  GetServerProfiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
+  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe", "",
+                       "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
+                       "77401", "US", "");
+  // Wallet only provides a full name, so the above first and last names
+  // will be ignored when the profile is written to the DB.
+  GetServerProfiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  GetServerProfiles.back().set_use_count(100);
+  autofill_table_->SetServerProfiles(GetServerProfiles);
+
+  // Add a server and a local card that have the server address as billing
+  // address.
+  CreditCard local_card("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                        "https://www.example.com");
+  test::SetCreditCardInfo(&local_card, "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2999");
+  local_card.set_billing_address_id(kServerAddressId);
+  personal_data_->AddCreditCard(local_card);
+
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_card1"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "1111" /* Visa */, "01", "2999");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().set_billing_address_id(kServerAddressId);
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // Make sure everything is setup correctly.
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+
+  ///////////////////////////////////////////////////////////////////////
+  // Tested method.
+  ///////////////////////////////////////////////////////////////////////
+  personal_data_->ConvertWalletAddressesToLocalProfiles();
+
+  ///////////////////////////////////////////////////////////////////////
+  // Validation.
+  ///////////////////////////////////////////////////////////////////////
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // The Wallet address should have been added as a new local profile.
+  EXPECT_EQ(2U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
+  histogram_tester.ExpectUniqueSample("Autofill.WalletAddressConversionType",
+                                      AutofillMetrics::CONVERTED_ADDRESS_ADDED,
+                                      1);
+
+  // The conversion should be recorded in the Wallet address.
+  EXPECT_TRUE(personal_data_->GetServerProfiles().back()->has_converted());
+
+  // Get the profiles, sorted by frecency to have a deterministic order.
+  std::vector<AutofillProfile*> profiles =
+      personal_data_->GetProfilesToSuggest();
+
+  // Make sure that the two profiles have not merged.
+  ASSERT_EQ(2U, profiles.size());
+  EXPECT_EQ(UTF8ToUTF16("John"), profiles[0]->GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(local_profile, *profiles[1]);
+
+  // Make sure that the billing address id of the two cards now point to the
+  // converted profile.
+  EXPECT_EQ(profiles[0]->guid(),
+            personal_data_->GetCreditCards()[0]->billing_address_id());
+  EXPECT_EQ(profiles[0]->guid(),
+            personal_data_->GetCreditCards()[1]->billing_address_id());
+}
+
+// Tests that the converted wallet address is merged into an existing local
+// profile if they are considered equivalent. Also tests that the billing
+// address relationship was transferred to the converted address.
+TEST_F(PersonalDataManagerTest,
+       ConvertWalletAddressesToLocalProfiles_MergedProfile) {
+  ///////////////////////////////////////////////////////////////////////
+  // Setup.
+  ///////////////////////////////////////////////////////////////////////
+  EnableWalletCardImport();
+  base::HistogramTester histogram_tester;
+  const std::string kServerAddressId("server_address1");
+
+  // Add two similar profile, a local and a server one. Set the use stats so
+  // the server card has a higher frecency, to have a predicatble ordering to
+  // validate results.
+  // Add a local profile.
+  AutofillProfile local_profile(base::GenerateGUID(),
+                                "https://www.example.com");
+  test::SetProfileInfo(&local_profile, "John", "", "Doe", "john@doe.com", "",
+                       "1212 Center.", "Bld. 5", "Orlando", "FL", "32801", "US",
+                       "19482937549");
+  local_profile.set_use_count(1);
+  personal_data_->AddProfile(local_profile);
+
+  // Add a different server profile.
+  std::vector<AutofillProfile> GetServerProfiles;
+  GetServerProfiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
+  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe", "", "Fox",
+                       "1212 Center", "Bld. 5", "Orlando", "FL", "", "US", "");
+  // Wallet only provides a full name, so the above first and last names
+  // will be ignored when the profile is written to the DB.
+  GetServerProfiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  GetServerProfiles.back().set_use_count(100);
+  autofill_table_->SetServerProfiles(GetServerProfiles);
+
+  // Add a server and a local card that have the server address as billing
+  // address.
+  CreditCard local_card("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                        "https://www.example.com");
+  test::SetCreditCardInfo(&local_card, "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2999");
+  local_card.set_billing_address_id(kServerAddressId);
+  personal_data_->AddCreditCard(local_card);
+
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_card1"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "1111" /* Visa */, "01", "2999");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().set_billing_address_id(kServerAddressId);
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // Make sure everything is setup correctly.
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+
+  ///////////////////////////////////////////////////////////////////////
+  // Tested method.
+  ///////////////////////////////////////////////////////////////////////
+  personal_data_->ConvertWalletAddressesToLocalProfiles();
+
+  ///////////////////////////////////////////////////////////////////////
+  // Validation.
+  ///////////////////////////////////////////////////////////////////////
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // The Wallet address should have been merged with the existing local profile.
+  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
+  histogram_tester.ExpectUniqueSample("Autofill.WalletAddressConversionType",
+                                      AutofillMetrics::CONVERTED_ADDRESS_MERGED,
+                                      1);
+
+  // The conversion should be recorded in the Wallet address.
+  EXPECT_TRUE(personal_data_->GetServerProfiles().back()->has_converted());
+
+  // Get the profiles, sorted by frecency to have a deterministic order.
+  std::vector<AutofillProfile*> profiles =
+      personal_data_->GetProfilesToSuggest();
+
+  // Make sure that the two profiles have merged.
+  ASSERT_EQ(1U, profiles.size());
+
+  // Check that the values were merged.
+  EXPECT_EQ(UTF8ToUTF16("john@doe.com"),
+            profiles[0]->GetRawInfo(EMAIL_ADDRESS));
+  EXPECT_EQ(UTF8ToUTF16("Fox"), profiles[0]->GetRawInfo(COMPANY_NAME));
+  EXPECT_EQ(UTF8ToUTF16("32801"), profiles[0]->GetRawInfo(ADDRESS_HOME_ZIP));
+
+  // Make sure that the billing address id of the two cards now point to the
+  // converted profile.
+  EXPECT_EQ(profiles[0]->guid(),
+            personal_data_->GetCreditCards()[0]->billing_address_id());
+  EXPECT_EQ(profiles[0]->guid(),
+            personal_data_->GetCreditCards()[1]->billing_address_id());
+}
+
+// Tests that a Wallet address that has already converted does not get converted
+// a second time.
+TEST_F(PersonalDataManagerTest,
+       ConvertWalletAddressesToLocalProfiles_AlreadyConverted) {
+  ///////////////////////////////////////////////////////////////////////
+  // Setup.
+  ///////////////////////////////////////////////////////////////////////
+  EnableWalletCardImport();
+  base::HistogramTester histogram_tester;
+  const std::string kServerAddressId("server_address1");
+
+  // Add a server profile that has already been converted.
+  std::vector<AutofillProfile> GetServerProfiles;
+  GetServerProfiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
+  test::SetProfileInfo(&GetServerProfiles.back(), "John", "Ray", "Doe",
+                       "john@doe.com", "Fox", "1212 Center", "Bld. 5",
+                       "Orlando", "FL", "32801", "US", "");
+  GetServerProfiles.back().set_has_converted(true);
+  // Wallet only provides a full name, so the above first and last names
+  // will be ignored when the profile is written to the DB.
+  autofill_table_->SetServerProfiles(GetServerProfiles);
+
+  // Make sure everything is setup correctly.
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+  EXPECT_EQ(0U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
+
+  ///////////////////////////////////////////////////////////////////////
+  // Tested method.
+  ///////////////////////////////////////////////////////////////////////
+  personal_data_->ConvertWalletAddressesToLocalProfiles();
+
+  ///////////////////////////////////////////////////////////////////////
+  // Validation.
+  ///////////////////////////////////////////////////////////////////////
+  // Since there should be no change in data, OnPersonalDataChanged should not
+  // have been called.
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
+
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // There should be no local profiles added.
+  EXPECT_EQ(0U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
+}
+
+// Tests that when the user has multiple similar Wallet addresses, they get
+// merged into a single local profile, and that the billing address relationship
+// is merged too.
+TEST_F(PersonalDataManagerTest,
+       ConvertWalletAddressesToLocalProfiles_MultipleSimilarWalletAddresses) {
+  ///////////////////////////////////////////////////////////////////////
+  // Setup.
+  ///////////////////////////////////////////////////////////////////////
+  EnableWalletCardImport();
+  base::HistogramTester histogram_tester;
+  const std::string kServerAddressId("server_address1");
+  const std::string kServerAddressId2("server_address2");
+
+  // Add a unique local profile and two similar server profiles. Set the use
+  // stats to have a predicatble ordering to validate results.
+  // Add a local profile.
+  AutofillProfile local_profile(base::GenerateGUID(),
+                                "https://www.example.com");
+  test::SetProfileInfo(&local_profile, "Bob", "", "Doe", "", "Fox",
+                       "1212 Center.", "Bld. 5", "Orlando", "FL", "32801", "US",
+                       "19482937549");
+  local_profile.set_use_count(1);
+  personal_data_->AddProfile(local_profile);
+
+  // Add a server profile.
+  std::vector<AutofillProfile> GetServerProfiles;
+  GetServerProfiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId));
+  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe", "", "",
+                       "1212 Center", "Bld. 5", "Orlando", "FL", "32801", "US",
+                       "");
+  // Wallet only provides a full name, so the above first and last names
+  // will be ignored when the profile is written to the DB.
+  GetServerProfiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  GetServerProfiles.back().set_use_count(100);
+
+  // Add a similar server profile.
+  GetServerProfiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, kServerAddressId2));
+  test::SetProfileInfo(&GetServerProfiles.back(), "John", "", "Doe",
+                       "john@doe.com", "Fox", "1212 Center", "Bld. 5",
+                       "Orlando", "FL", "", "US", "");
+  // Wallet only provides a full name, so the above first and last names
+  // will be ignored when the profile is written to the DB.
+  GetServerProfiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  GetServerProfiles.back().set_use_count(200);
+  autofill_table_->SetServerProfiles(GetServerProfiles);
+
+  // Add a server and a local card that have the first and second Wallet address
+  // as a billing address.
+  CreditCard local_card("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                        "https://www.example.com");
+  test::SetCreditCardInfo(&local_card, "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2999");
+  local_card.set_billing_address_id(kServerAddressId);
+  personal_data_->AddCreditCard(local_card);
+
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_card1"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "1111" /* Visa */, "01", "2999");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().set_billing_address_id(kServerAddressId2);
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // Make sure everything is setup correctly.
+  personal_data_->Refresh();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(2U, personal_data_->GetServerProfiles().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+
+  ///////////////////////////////////////////////////////////////////////
+  // Tested method.
+  ///////////////////////////////////////////////////////////////////////
+  personal_data_->ConvertWalletAddressesToLocalProfiles();
+
+  ///////////////////////////////////////////////////////////////////////
+  // Validation.
+  ///////////////////////////////////////////////////////////////////////
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::RunLoop().Run();
+
+  // The first Wallet address should have been added as a new local profile and
+  // the second one should have merged with the first.
+  EXPECT_EQ(2U, personal_data_->web_profiles().size());
+  EXPECT_EQ(2U, personal_data_->GetServerProfiles().size());
+  histogram_tester.ExpectBucketCount("Autofill.WalletAddressConversionType",
+                                     AutofillMetrics::CONVERTED_ADDRESS_ADDED,
+                                     1);
+  histogram_tester.ExpectBucketCount("Autofill.WalletAddressConversionType",
+                                     AutofillMetrics::CONVERTED_ADDRESS_MERGED,
+                                     1);
+
+  // The conversion should be recorded in the Wallet addresses.
+  EXPECT_TRUE(personal_data_->GetServerProfiles()[0]->has_converted());
+  EXPECT_TRUE(personal_data_->GetServerProfiles()[1]->has_converted());
+
+  // Get the profiles, sorted by frecency to have a deterministic order.
+  std::vector<AutofillProfile*> profiles =
+      personal_data_->GetProfilesToSuggest();
+
+  // Make sure that the two Wallet addresses merged together and were added as
+  // a new local profile.
+  ASSERT_EQ(2U, profiles.size());
+  EXPECT_EQ(UTF8ToUTF16("John"), profiles[0]->GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(local_profile, *profiles[1]);
+
+  // Check that the values were merged.
+  EXPECT_EQ(UTF8ToUTF16("Fox"), profiles[0]->GetRawInfo(COMPANY_NAME));
+  EXPECT_EQ(UTF8ToUTF16("32801"), profiles[0]->GetRawInfo(ADDRESS_HOME_ZIP));
+
+  // Make sure that the billing address id of the two cards now point to the
+  // converted profile.
+  EXPECT_EQ(profiles[0]->guid(),
+            personal_data_->GetCreditCards()[0]->billing_address_id());
+  EXPECT_EQ(profiles[0]->guid(),
+            personal_data_->GetCreditCards()[1]->billing_address_id());
 }
 
 }  // namespace autofill

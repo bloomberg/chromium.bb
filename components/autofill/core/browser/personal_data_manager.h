@@ -183,17 +183,17 @@ class PersonalDataManager : public KeyedService,
 
   // This PersonalDataManager owns these profiles and credit cards.  Their
   // lifetime is until the web database is updated with new profile and credit
-  // card information, respectively.  |GetProfiles()| returns both web and
-  // auxiliary profiles.  |web_profiles()| returns only web profiles.
+  // card information, respectively.
+  // TODO(crbug.com/687352): Remove one of these since they do the same thing.
+  // |GetProfiles()| and |web_profiles()| returns only local profiles.
   virtual const std::vector<AutofillProfile*>& GetProfiles() const;
   virtual std::vector<AutofillProfile*> web_profiles() const;
+  // Returns just SERVER_PROFILES.
+  virtual std::vector<AutofillProfile*> GetServerProfiles() const;
   // Returns just LOCAL_CARD cards.
   virtual std::vector<CreditCard*> GetLocalCreditCards() const;
   // Returns all credit cards, server and local.
   virtual const std::vector<CreditCard*>& GetCreditCards() const;
-
-  // Returns true if there is some data synced from Wallet.
-  bool HasServerData() const;
 
   // Returns the profiles to suggest to the user, ordered by frecency.
   const std::vector<AutofillProfile*> GetProfilesToSuggest() const;
@@ -316,6 +316,16 @@ class PersonalDataManager : public KeyedService,
                            ApplyDedupingRoutine_OncePerVersion);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            ApplyDedupingRoutine_MultipleDedupes);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           ConvertWalletAddressesToLocalProfiles_NewProfile);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           ConvertWalletAddressesToLocalProfiles_MergedProfile);
+  FRIEND_TEST_ALL_PREFIXES(
+      PersonalDataManagerTest,
+      ConvertWalletAddressesToLocalProfiles_AlreadyConverted);
+  FRIEND_TEST_ALL_PREFIXES(
+      PersonalDataManagerTest,
+      ConvertWalletAddressesToLocalProfiles_MultipleSimilarWalletAddresses);
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -502,6 +512,20 @@ class PersonalDataManager : public KeyedService,
   void UpdateCardsBillingAddressReference(
       const std::unordered_map<std::string, std::string>& guids_merge_map);
 
+  // Converts the wallet addresses to local autofill profiles. This should be
+  // called after all the syncable data has been processed (local cards and
+  // profiles, wallet data and metadata).
+  void ConvertWalletAddressesToLocalProfiles();
+
+  // Tries to merge the |server_address| into the |existing_profiles| if
+  // possible. Adds it to the list if no match is found. The existing profiles
+  // should be sorted by decreasing frecency outside of this method, since this
+  // will be called multiple times in a row. Returns the guid of the new or
+  // updated profile.
+  std::string MergeServerAddressesIntoProfiles(
+      const AutofillProfile& server_address,
+      std::vector<AutofillProfile>* existing_profiles);
+
   const std::string app_locale_;
 
   // The default country code for new addresses.
@@ -540,6 +564,9 @@ class PersonalDataManager : public KeyedService,
 
   // True if autofill profile cleanup needs to be performed.
   bool is_autofill_profile_cleanup_pending_ = false;
+
+  // Whether new information was received from the sync server.
+  bool has_synced_new_data_ = false;
 
 #if defined(OS_ANDROID)
   // The context for the request to be used to fetch libaddressinput's address

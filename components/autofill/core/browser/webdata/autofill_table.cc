@@ -949,21 +949,22 @@ bool AutofillTable::GetServerProfiles(
 
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT "
-        "id,"
-        "use_count,"
-        "use_date,"
-        "recipient_name,"
-        "company_name,"
-        "street_address,"
-        "address_1,"  // ADDRESS_HOME_STATE
-        "address_2,"  // ADDRESS_HOME_CITY
-        "address_3,"  // ADDRESS_HOME_DEPENDENT_LOCALITY
-        "address_4,"  // Not supported in AutofillProfile yet.
-        "postal_code,"  // ADDRESS_HOME_ZIP
-        "sorting_code,"  // ADDRESS_HOME_SORTING_CODE
-        "country_code,"  // ADDRESS_HOME_COUNTRY
-        "phone_number,"  // PHONE_HOME_WHOLE_NUMBER
-        "language_code "
+      "id,"
+      "use_count,"
+      "use_date,"
+      "recipient_name,"
+      "company_name,"
+      "street_address,"
+      "address_1,"     // ADDRESS_HOME_STATE
+      "address_2,"     // ADDRESS_HOME_CITY
+      "address_3,"     // ADDRESS_HOME_DEPENDENT_LOCALITY
+      "address_4,"     // Not supported in AutofillProfile yet.
+      "postal_code,"   // ADDRESS_HOME_ZIP
+      "sorting_code,"  // ADDRESS_HOME_SORTING_CODE
+      "country_code,"  // ADDRESS_HOME_COUNTRY
+      "phone_number,"  // PHONE_HOME_WHOLE_NUMBER
+      "language_code, "
+      "has_converted "
       "FROM server_addresses addresses "
       "LEFT OUTER JOIN server_address_metadata USING (id)"));
 
@@ -991,6 +992,7 @@ bool AutofillTable::GetServerProfiles(
     profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(index++));
     base::string16 phone_number = s.ColumnString16(index++);
     profile->set_language_code(s.ColumnString(index++));
+    profile->set_has_converted(s.ColumnBool(index++));
 
     // SetInfo instead of SetRawInfo so the constituent pieces will be parsed
     // for these data types.
@@ -1054,6 +1056,9 @@ void AutofillTable::SetServerProfiles(
 
     insert.Run();
     insert.Reset(true);
+
+    // Save the use count and use date of the profile.
+    UpdateServerAddressMetadata(profile);
   }
 
   // Delete metadata that's no longer relevant.
@@ -1410,7 +1415,7 @@ bool AutofillTable::UpdateServerAddressMetadata(
                               "VALUES (?,?,?,?)"));
   s.BindInt64(0, profile.use_count());
   s.BindInt64(1, profile.use_date().ToInternalValue());
-  s.BindBool(2, false);
+  s.BindBool(2, profile.has_converted());
   s.BindString(3, profile.server_id());
   s.Run();
 

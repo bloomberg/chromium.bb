@@ -518,6 +518,15 @@ class AutofillMetrics {
     NUM_WALLET_REQUIRED_ACTIONS
   };
 
+  // For mesuring how wallet addresses are converted to local profiles.
+  enum WalletAddressConversionType : int {
+    // The converted wallet address was merged into an existing local profile.
+    CONVERTED_ADDRESS_MERGED,
+    // The converted wallet address was added as a new local profile.
+    CONVERTED_ADDRESS_ADDED,
+    NUM_CONVERTED_ADDRESS_CONVERSION_TYPES
+  };
+
   static void LogCardUploadDecisionMetric(CardUploadDecisionMetric metric);
   static void LogCreditCardInfoBarMetric(InfoBarMetric metric,
                                          bool is_uploading);
@@ -662,6 +671,10 @@ class AutofillMetrics {
   // Log whether the Autofill query on a credit card form is made in a secure
   // context.
   static void LogIsQueriedCreditCardFormSecure(bool is_secure);
+
+  // Log how the converted wallet address was added to the local autofill
+  // profiles.
+  static void LogWalletAddressConversionType(WalletAddressConversionType type);
 
   // Utility to autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.

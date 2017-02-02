@@ -374,21 +374,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       } else {
         ReceiveLoadedDbValues(h, result.get(), &pending_server_profiles_query_,
                               &server_profiles_);
-
-        if (!server_profiles_.empty()) {
-          std::string account_id = signin_manager_->GetAuthenticatedAccountId();
-          base::string16 email =
-              base::UTF8ToUTF16(
-                  account_tracker_->GetAccountInfo(account_id).email);
-
-          // User may have signed out during the fulfillment of the web data
-          // request, in which case there is no point updating
-          // |server_profiles_| as it will be cleared.
-          if (!email.empty()) {
-            for (auto& profile : server_profiles_)
-              profile->SetRawInfo(EMAIL_ADDRESS, email);
-          }
-        }
       }
       break;
     case AUTOFILL_CREDITCARDS_RESULT:
@@ -424,6 +409,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
 }
 
 void PersonalDataManager::AutofillMultipleChanged() {
+  has_synced_new_data_ = true;
   Refresh();
 }
 
@@ -753,6 +739,13 @@ std::vector<AutofillProfile*> PersonalDataManager::web_profiles() const {
   return result;
 }
 
+std::vector<AutofillProfile*> PersonalDataManager::GetServerProfiles() const {
+  std::vector<AutofillProfile*> result;
+  for (const auto& profile : server_profiles_)
+    result.push_back(profile.get());
+  return result;
+}
+
 std::vector<CreditCard*> PersonalDataManager::GetLocalCreditCards() const {
   std::vector<CreditCard*> result;
   for (const auto& card : local_credit_cards_)
@@ -769,10 +762,6 @@ const std::vector<CreditCard*>& PersonalDataManager::GetCreditCards() const {
       credit_cards_.push_back(card.get());
   }
   return credit_cards_;
-}
-
-bool PersonalDataManager::HasServerData() const {
-  return !server_credit_cards_.empty() || !server_profiles_.empty();
 }
 
 void PersonalDataManager::Refresh() {
@@ -1240,15 +1229,6 @@ std::string PersonalDataManager::SaveImportedProfile(
   if (is_off_the_record_)
     return std::string();
 
-  // Don't save a web profile if the data in the profile is a subset of a
-  // server profile, but do record the fact that it was used.
-  for (const auto& profile : server_profiles_) {
-    if (imported_profile.IsSubsetOf(*profile, app_locale_)) {
-      RecordUseOf(*profile);
-      return profile->guid();
-    }
-  }
-
   std::vector<AutofillProfile> profiles;
   std::string guid =
       MergeProfile(imported_profile, &web_profiles_, app_locale_, &profiles);
@@ -1259,6 +1239,12 @@ std::string PersonalDataManager::SaveImportedProfile(
 void PersonalDataManager::NotifyPersonalDataChanged() {
   for (PersonalDataManagerObserver& observer : observers_)
     observer.OnPersonalDataChanged();
+
+  // If new data was synced, try to convert new server profiles.
+  if (has_synced_new_data_) {
+    has_synced_new_data_ = false;
+    ConvertWalletAddressesToLocalProfiles();
+  }
 }
 
 std::string PersonalDataManager::SaveImportedCreditCard(
@@ -1576,10 +1562,6 @@ const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles(
   profiles_.clear();
   for (const auto& profile : web_profiles_)
     profiles_.push_back(profile.get());
-  if (pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
-    for (const auto& profile : server_profiles_)
-      profiles_.push_back(profile.get());
-  }
   return profiles_;
 }
 
@@ -1855,6 +1837,92 @@ void PersonalDataManager::UpdateCardsBillingAddressReference(
         database_->UpdateServerCardMetadata(*credit_card);
     }
   }
+}
+
+void PersonalDataManager::ConvertWalletAddressesToLocalProfiles() {
+  // Copy the local profiles into a vector<AutofillProfile>. Theses are the
+  // existing profiles. Get them sorted in decreasing order of frecency, so the
+  // "best" profiles are checked first. Put the verified profiles last so the
+  // server addresses have a chance to merge into the non-verified local
+  // profiles.
+  std::vector<AutofillProfile> local_profiles;
+  for (AutofillProfile* existing_profile : GetProfilesToSuggest()) {
+    local_profiles.push_back(*existing_profile);
+  }
+
+  // Create the map used to update credit card's billing addresses after the
+  // convertion/merge.
+  std::unordered_map<std::string, std::string> guids_merge_map;
+
+  bool has_converted_addresses = false;
+  for (std::unique_ptr<AutofillProfile>& wallet_address : server_profiles_) {
+    // If the address has not been converted yet, convert it.
+    if (!wallet_address->has_converted()) {
+      // Try to merge the server address into a similar local profile, or create
+      // a new local profile if no similar profile is found.
+      std::string address_guid =
+          MergeServerAddressesIntoProfiles(*wallet_address, &local_profiles);
+
+      // Update the map to transfer the billing address relationship from the
+      // server address to the converted/merged local profile.
+      guids_merge_map.insert(std::pair<std::string, std::string>(
+          wallet_address->server_id(), address_guid));
+
+      // Update the wallet addresses metadata to record the conversion.
+      wallet_address->set_has_converted(true);
+      database_->UpdateServerAddressMetadata(*wallet_address);
+
+      has_converted_addresses = true;
+    }
+  }
+
+  if (has_converted_addresses) {
+    // Save the local profiles to the DB.
+    SetProfiles(&local_profiles);
+
+    // Update the credit cards billing address relationship.
+    UpdateCardsBillingAddressReference(guids_merge_map);
+
+    // Force a reload of the profiles and cards.
+    Refresh();
+  }
+}
+
+// TODO(crbug.com/687975): Reuse MergeProfiles in this function.
+std::string PersonalDataManager::MergeServerAddressesIntoProfiles(
+    const AutofillProfile& server_address,
+    std::vector<AutofillProfile>* existing_profiles) {
+  // Set to true if |existing_profiles| already contains an equivalent profile.
+  bool matching_profile_found = false;
+  std::string guid = server_address.guid();
+
+  // If there is already a local profile that is very similar, merge in any
+  // missing values. Only merge with the first match.
+  AutofillProfileComparator comparator(app_locale_);
+  for (auto& local_profile : *existing_profiles) {
+    if (!matching_profile_found &&
+        comparator.AreMergeable(server_address, local_profile) &&
+        local_profile.SaveAdditionalInfo(server_address, app_locale_)) {
+      matching_profile_found = true;
+      local_profile.set_modification_date(AutofillClock::Now());
+      guid = local_profile.guid();
+      AutofillMetrics::LogWalletAddressConversionType(
+          AutofillMetrics::CONVERTED_ADDRESS_MERGED);
+    }
+  }
+
+  // If the server address was not merged with a local profile, add it to the
+  // list.
+  if (!matching_profile_found) {
+    existing_profiles->push_back(server_address);
+    // Set the profile as being local.
+    existing_profiles->back().set_record_type(AutofillProfile::LOCAL_PROFILE);
+    existing_profiles->back().set_modification_date(AutofillClock::Now());
+    AutofillMetrics::LogWalletAddressConversionType(
+        AutofillMetrics::CONVERTED_ADDRESS_ADDED);
+  }
+
+  return guid;
 }
 
 }  // namespace autofill
