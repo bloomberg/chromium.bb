@@ -36,7 +36,9 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -83,6 +85,7 @@ public class VrShellDelegate {
 
     private final ChromeTabbedActivity mActivity;
     private TabObserver mTabObserver;
+    private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private TabModelSelectorObserver mTabModelSelectorObserver;
     private Intent mEnterVRIntent;
 
@@ -116,11 +119,16 @@ public class VrShellDelegate {
      * at runtime.
      */
     // TODO(bshe): Find a place to call this function again, i.e. page refresh or onResume.
+    // TODO(mthiesse): Clean this function up, lots of duplicated code.
     private void updateVrSupportLevel() {
         if (mVrClassesWrapper == null || !isVrCoreCompatible()) {
             mVrSupportLevel = VR_NOT_AVAILABLE;
             mEnterVRIntent = null;
             mTabObserver = null;
+            if (mTabModelSelectorTabObserver != null) {
+                mTabModelSelectorTabObserver.destroy();
+                mTabModelSelectorTabObserver = null;
+            }
             mTabModelSelectorObserver = null;
             return;
         }
@@ -143,6 +151,10 @@ public class VrShellDelegate {
                     mVrSupportLevel = VR_NOT_AVAILABLE;
                     mEnterVRIntent = null;
                     mTabObserver = null;
+                    if (mTabModelSelectorTabObserver != null) {
+                        mTabModelSelectorTabObserver.destroy();
+                        mTabModelSelectorTabObserver = null;
+                    }
                     mTabModelSelectorObserver = null;
                     return;
                 }
@@ -167,8 +179,8 @@ public class VrShellDelegate {
                 @Override
                 public void onWebContentsSwapped(
                         Tab tab, boolean didStartLoad, boolean didFinishLoad) {
-                    // TODO(mthiesse): Update the native WebContents pointer and compositor.
-                    shutdownVR(false, mVrSupportLevel == VR_DAYDREAM /* showTransition */);
+                    // swapTab might be slightly overkill, but best to be on the safe side.
+                    mVrShell.swapTab(tab);
                 }
 
                 @Override
@@ -183,6 +195,11 @@ public class VrShellDelegate {
                 @Override
                 public void onChange() {
                     swapToForegroundTab();
+                }
+
+                @Override
+                public void onNewTabCreated(Tab tab) {
+                    mVrShell.onTabUpdated(tab.isIncognito(), tab.getId(), tab.getTitle());
                 }
             };
         }
@@ -301,7 +318,34 @@ public class VrShellDelegate {
         mVrShell.resume();
         mTab.updateFullscreenEnabledState();
         setEnterVRResult(true, requestedWebVR);
+        createTabList();
         mActivity.getTabModelSelector().addObserver(mTabModelSelectorObserver);
+        createTabModelSelectorTabObserver();
+    }
+
+    private void createTabModelSelectorTabObserver() {
+        assert mTabModelSelectorTabObserver == null;
+        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(
+                mActivity.getTabModelSelector()) {
+            @Override
+            public void onTitleUpdated(Tab tab) {
+                mVrShell.onTabUpdated(tab.isIncognito(), tab.getId(), tab.getTitle());
+            }
+
+            @Override
+            public void onClosingStateChanged(Tab tab, boolean closing) {
+                if (closing) {
+                    mVrShell.onTabRemoved(tab.isIncognito(), tab.getId());
+                } else {
+                    mVrShell.onTabUpdated(tab.isIncognito(), tab.getId(), tab.getTitle());
+                }
+            }
+
+            @Override
+            public void onDestroyed(Tab tab) {
+                mVrShell.onTabRemoved(tab.isIncognito(), tab.getId());
+            }
+        };
     }
 
     private void setEnterVRResult(boolean success, boolean requestedWebVR) {
@@ -326,6 +370,22 @@ public class VrShellDelegate {
         mTab = tab;
         mTab.addObserver(mTabObserver);
         mTab.updateFullscreenEnabledState();
+    }
+
+    private void createTabList() {
+        TabModel main = mActivity.getTabModelSelector().getModel(false);
+        int count = main.getCount();
+        Tab[] mainTabs = new Tab[count];
+        for (int i = 0; i < count; ++i) {
+            mainTabs[i] = main.getTabAt(i);
+        }
+        TabModel incognito = mActivity.getTabModelSelector().getModel(true);
+        count = incognito.getCount();
+        Tab[] incognitoTabs = new Tab[count];
+        for (int i = 0; i < count; ++i) {
+            incognitoTabs[i] = incognito.getTabAt(i);
+        }
+        mVrShell.onTabListCreated(mainTabs, incognitoTabs);
     }
 
     private boolean canEnterVR(Tab tab) {
@@ -571,6 +631,8 @@ public class VrShellDelegate {
             mLastVRExit = SystemClock.uptimeMillis();
         }
         mActivity.getTabModelSelector().removeObserver(mTabModelSelectorObserver);
+        mTabModelSelectorTabObserver.destroy();
+        mTabModelSelectorTabObserver = null;
         mActivity.setRequestedOrientation(mRestoreOrientation);
         mVrShell.pause();
         removeVrViews();

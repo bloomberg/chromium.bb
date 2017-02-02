@@ -74,8 +74,42 @@ void UiInterface::SetLoadProgress(double progress) {
   FlushUpdates();
 }
 
+void UiInterface::InitTabList() {
+  tab_list_ = base::MakeUnique<base::ListValue>();
+}
+
+void UiInterface::AppendToTabList(bool incognito,
+                                  int id,
+                                  const base::string16& title) {
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  dict->SetBoolean("incognito", incognito);
+  dict->SetInteger("id", id);
+  dict->SetString("title", title);
+  tab_list_->Append(std::move(dict));
+}
+
+void UiInterface::FlushTabList() {
+  updates_.Set("setTabs", std::move(tab_list_));
+  FlushUpdates();
+}
+
+void UiInterface::UpdateTab(bool incognito, int id, const std::string& title) {
+  auto details = base::MakeUnique<base::DictionaryValue>();
+  details->SetBoolean("incognito", incognito);
+  details->SetInteger("id", id);
+  details->SetString("title", title);
+  updates_.Set("updateTab", std::move(details));
+}
+
+void UiInterface::RemoveTab(bool incognito, int id) {
+  auto details = base::MakeUnique<base::DictionaryValue>();
+  details->SetBoolean("incognito", incognito);
+  details->SetInteger("id", id);
+  updates_.Set("removeTab", std::move(details));
+}
+
 void UiInterface::SetURL(const GURL& url) {
-  std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue);
+  auto details = base::MakeUnique<base::DictionaryValue>();
   details->SetString("host", url.host());
   details->SetString("path", url.path());
 

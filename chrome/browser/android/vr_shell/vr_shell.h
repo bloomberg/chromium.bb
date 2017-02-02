@@ -93,6 +93,15 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void OnLoadProgressChanged(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              double progress);
+  void OnTabListCreated(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        jobjectArray tabs, jobjectArray incognito_tabs);
+  void OnTabUpdated(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj,
+                    jboolean incognito, jint id, jstring jtitle);
+  void OnTabRemoved(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj,
+                    jboolean incognito, jint id);
 
   void ContentWebContentsDestroyed();
   // Called when our WebContents have been hidden. Usually a sign that something
@@ -169,6 +178,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id) override;
+
+  void ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito);
 
   std::unique_ptr<UiInterface> html_interface_;
 

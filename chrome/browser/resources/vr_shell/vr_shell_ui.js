@@ -642,6 +642,15 @@ var vrShellUi = (function() {
     if ('suggestions' in dict) {
       uiManager.omnibox.setSuggestions(dict['suggestions']);
     }
+    if ('setTabs' in dict) {
+      console.log(dict['setTabs']);
+    }
+    if ('updateTab' in dict) {
+      console.log(dict['updateTab']);
+    }
+    if ('removeTab' in dict) {
+      console.log(dict['removeTab']);
+    }
     ui.flush();
   }
 

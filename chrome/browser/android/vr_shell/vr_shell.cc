@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/platform_thread.h"
@@ -16,6 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_gl_thread.h"
@@ -235,11 +237,45 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   }
 }
 
-void VrShell::OnLoadProgressChanged(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    double progress) {
+void VrShell::OnLoadProgressChanged(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj,
+                                    double progress) {
   html_interface_->SetLoadProgress(progress);
+}
+
+void VrShell::OnTabListCreated(JNIEnv* env,
+                               const JavaParamRef<jobject>& obj,
+                               jobjectArray tabs,
+                               jobjectArray incognito_tabs) {
+  html_interface_->InitTabList();
+  ProcessTabArray(env, tabs, false);
+  ProcessTabArray(env, incognito_tabs, true);
+  html_interface_->FlushTabList();
+}
+
+void VrShell::ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito) {
+  size_t len = env->GetArrayLength(tabs);
+  for (size_t i = 0; i < len; ++i) {
+    jobject jtab = env->GetObjectArrayElement(tabs, i);
+    TabAndroid* tab =
+        TabAndroid::GetNativeTab(env, JavaParamRef<jobject>(env, jtab));
+    html_interface_->AppendToTabList(incognito, tab->GetAndroidId(),
+                                           tab->GetTitle());
+  }
+}
+
+void VrShell::OnTabUpdated(JNIEnv* env,
+                           const JavaParamRef<jobject>& obj,
+                           jboolean incognito, jint id, jstring jtitle) {
+  std::string title;
+  base::android::ConvertJavaStringToUTF8(env, jtitle, &title);
+  html_interface_->UpdateTab(incognito, id, title);
+}
+
+void VrShell::OnTabRemoved(JNIEnv* env,
+                           const JavaParamRef<jobject>& obj,
+                           jboolean incognito, jint id) {
+  html_interface_->RemoveTab(incognito, id);
 }
 
 void VrShell::SetWebVRSecureOrigin(bool secure_origin) {

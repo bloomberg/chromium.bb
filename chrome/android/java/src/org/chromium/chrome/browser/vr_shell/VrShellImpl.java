@@ -357,6 +357,21 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         // multiple times.
     }
 
+    @Override
+    public void onTabListCreated(Tab[] mainTabs, Tab[] incognitoTabs) {
+        nativeOnTabListCreated(mNativeVrShell, mainTabs, incognitoTabs);
+    }
+
+    @Override
+    public void onTabUpdated(boolean incognito, int id, String title) {
+        nativeOnTabUpdated(mNativeVrShell, incognito, id, title);
+    }
+
+    @Override
+    public void onTabRemoved(boolean incognito, int id) {
+        nativeOnTabRemoved(mNativeVrShell, incognito, id);
+    }
+
     private native long nativeInit(WebContents contentWebContents,
             long nativeContentWindowAndroid, WebContents uiWebContents, long nativeUiWindowAndroid,
             boolean forWebVR, VrShellDelegate delegate, long gvrApi, boolean reprojectedRendering);
@@ -373,4 +388,9 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private native void nativeUIPhysicalBoundsChanged(long nativeVrShell, int width, int height,
             float dpr);
     private native void nativeSetWebVrMode(long nativeVrShell, boolean enabled);
+    private native void nativeOnTabListCreated(long nativeVrShell, Tab[] mainTabs,
+            Tab[] incognitoTabs);
+    private native void nativeOnTabUpdated(long nativeVrShell, boolean incognito, int id,
+            String title);
+    private native void nativeOnTabRemoved(long nativeVrShell, boolean incognito, int id);
 }

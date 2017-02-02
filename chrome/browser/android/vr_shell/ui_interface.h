@@ -43,6 +43,11 @@ class UiInterface {
   void SetWebVRSecureOrigin(bool secure);
   void SetLoading(bool loading);
   void SetLoadProgress(double progress);
+  void InitTabList();
+  void AppendToTabList(bool incognito, int id, const base::string16& title);
+  void FlushTabList();
+  void UpdateTab(bool incognito, int id, const std::string& title);
+  void RemoveTab(bool incognito, int id);
   void SetURL(const GURL& url);
 
   // Omnibox input and output handling.
@@ -63,6 +68,7 @@ class UiInterface {
   UiCommandHandler* handler_;
   bool loaded_ = false;
   base::DictionaryValue updates_;
+  std::unique_ptr<base::ListValue> tab_list_;
 
   std::unique_ptr<VrOmnibox> omnibox_;
 
