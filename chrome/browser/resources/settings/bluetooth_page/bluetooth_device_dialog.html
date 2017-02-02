@@ -84,13 +84,14 @@
           <div id="dialogDeviceList"
               hidden$="[[!isDialogType_(dialogId, 'addDevice')]]"
               class="layout vertical flex start self-stretch">
-            <span class="no-devices" hidden$="[[haveUnpaired_(deviceList.*)]]">
+            <span class="no-devices"
+                hidden$="[[haveUnpaired_(unpairedDeviceList_)]]">
               $i18n{bluetoothNoDevices}
             </span>
             <div id="container" class="layout vertical flex self-stretch"
                 scrollable>
-              <iron-list items="[[getUnpaired_(deviceList.*)]]"
-                  selection-enabled selected-item="{{selectedItem}}"
+              <iron-list id="devices" items="[[unpairedDeviceList_]]"
+                  selection-enabled selected-item="{{selectedItem_}}"
                   scroll-target="container">
                 <template>
                   <bluetooth-device-list-item device="[[item]]"

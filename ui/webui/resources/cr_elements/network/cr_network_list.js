@@ -21,7 +21,7 @@ Polymer({
       type: Array,
       value: function() {
         return [];
-      }
+      },
     },
 
     /**
@@ -32,7 +32,7 @@ Polymer({
       type: Array,
       value: function() {
         return [];
-      }
+      },
     },
 
     /** True if action buttons should be shown for the itmes. */
@@ -49,29 +49,35 @@ Polymer({
     selectedItem: {
       type: Object,
       observer: 'selectedItemChanged_',
-    }
+    },
+
+    /**
+     * Contains |networks| + |customItems|.
+     * @private {!Array<!CrNetworkList.CrNetworkListItemType>}
+     */
+    listItems_: {
+      type: Array,
+      value: function() {
+        return [];
+      },
+    },
   },
 
   behaviors: [CrScrollableBehavior],
 
-  observers: ['listChanged_(networks, customItems)'],
+  observers: ['updateListItems_(networks, customItems)'],
 
   /** @private */
-  listChanged_: function() {
-    this.updateScrollableContents();
-  },
+  updateListItems_: function() {
+    this.saveScroll(this.$.networkList);
 
-  /**
-   * Returns a combined list of networks and custom items.
-   * @return {!Array<!CrNetworkList.CrNetworkListItemType>}
-   * @private
-   */
-  getItems_: function() {
     var customItems = this.customItems.slice();
-    // Flag the first custom item with isFirstCustomItem = true.
     if (customItems.length > 0)
       customItems[0].isFirstCustomItem = true;
-    return this.networks.concat(customItems);
+    this.listItems_ = this.networks.concat(customItems);
+
+    this.restoreScroll(this.$.networkList);
+    this.updateScrollableContents();
   },
 
   /**

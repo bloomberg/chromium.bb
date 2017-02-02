@@ -173,11 +173,12 @@ Polymer({
 
   /** @private */
   deviceListChanged_: function() {
-    var devices = this.$.devices;
+    this.saveScroll(this.$.devices);
     this.pairedDeviceList_ = this.deviceList_.filter(function(device) {
       return !!device.paired || !!device.connecting;
     });
     this.updateScrollableContents();
+    this.restoreScroll(this.$.devices);
   },
 
   /** @private */

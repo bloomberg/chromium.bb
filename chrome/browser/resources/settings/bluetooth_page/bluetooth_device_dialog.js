@@ -30,18 +30,30 @@ settings.BluetoothAddDeviceBehavior = {
       value: /** @return {Array} */ function() {
         return [];
       },
-      observer: 'deviceListChanged_',
+    },
+
+    /**
+     * The ordered list of unpaired bluetooth devices.
+     * @type {!Array<!chrome.bluetooth.Device>}
+     */
+    unpairedDeviceList_: {
+      type: Array,
+      value: /** @return {Array} */ function() {
+        return [];
+      },
     },
 
     /**
      * Reflects the iron-list selecteditem property.
      * @type {!chrome.bluetooth.Device}
      */
-    selectedItem: {
+    selectedItem_: {
       type: Object,
       observer: 'selectedItemChanged_',
     },
   },
+
+  observers: ['deviceListChanged_(deviceList.*)'],
 
   /** @type {boolean} */
   itemWasFocused_: false,
@@ -54,8 +66,14 @@ settings.BluetoothAddDeviceBehavior = {
 
   /** @private */
   deviceListChanged_: function() {
+    this.saveScroll(this.$.devices);
+    this.unpairedDeviceList_ = this.deviceList.filter(function(device) {
+      return !device.paired;
+    });
     this.updateScrollableContents();
-    if (this.itemWasFocused_ || !this.getUnpaired_().length)
+    this.restoreScroll(this.$.devices);
+
+    if (this.itemWasFocused_ || !this.unpairedDeviceList_.length)
       return;
     // If the iron-list is populated with at least one visible item then
     // focus it.
@@ -73,26 +91,17 @@ settings.BluetoothAddDeviceBehavior = {
 
   /** @private */
   selectedItemChanged_: function() {
-    if (this.selectedItem)
-      this.fire('device-event', {action: 'connect', device: this.selectedItem});
+    if (!this.selectedItem_)
+      return;
+    this.fire('device-event', {action: 'connect', device: this.selectedItem_});
   },
 
   /**
-   * @return {!Array<!chrome.bluetooth.Device>}
+   * @return {boolean}
    * @private
    */
-  getUnpaired_: function() {
-    return this.deviceList.filter(function(device) {
-      return !device.paired;
-    });
-  },
-
-  /**
-   * @return {boolean} True if deviceList contains any unpaired devices.
-   * @private
-   */
-  haveUnpaired_: function(deviceList) {
-    return this.getUnpaired_().length > 0;
+  haveUnpaired_: function() {
+    return this.unpairedDeviceList_.length > 0;
   },
 };
 

@@ -36,10 +36,9 @@
 
 /** @polymerBehavior */
 var CrScrollableBehavior = {
-  properties: {
-    /** @private {number|null} */
-    intervalId_: {type: Number, value: null}
-  },
+
+  /** @private {number|null} */
+  intervalId_: null,
 
   ready: function() {
     var scrollableElements = this.root.querySelectorAll('[scrollable]');
@@ -91,6 +90,26 @@ var CrScrollableBehavior = {
         nodeList = unreadyNodes;
       }
     }.bind(this), 10);
+  },
+
+  /** @param {!IronListElement} list */
+  saveScroll: function(list) {
+    // Store a FIFO of saved scroll positions so that multiple updates in a
+    // frame are applied correctly. Specifically we need to track when '0' is
+    // saved (but not apply it), and still handle patterns like [30, 0, 32].
+    list.savedScrollTops = list.savedScrollTops || [];
+    list.savedScrollTops.push(list.scrollTarget.scrollTop);
+  },
+
+  /** @param {!IronListElement} list */
+  restoreScroll: function(list) {
+    this.async(function() {
+      var scrollTop = list.savedScrollTops.shift();
+      // Ignore scrollTop of 0 in case it was intermittent (we do not need to
+      // explicity scroll to 0).
+      if (scrollTop != 0)
+        list.scroll(0, scrollTop);
+    });
   },
 
   /**
