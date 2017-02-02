@@ -12,15 +12,16 @@ import time
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import constants
+from chromite.lib import config_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 
 class ScheduleSlavesStage(generic_stages.BuilderStage):
   """Stage that schedules slaves for the master build."""
 
-  def __init__(self, builder_run, **kwargs):
+  def __init__(self, builder_run, sync_stage, **kwargs):
     super(ScheduleSlavesStage, self).__init__(builder_run, **kwargs)
-
+    self.sync_stage = sync_stage
     self.buildbucket_client = self.GetBuildbucketClient()
 
   def _GetBuildbucketBucket(self, build_name, build_config):
@@ -132,5 +133,11 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
+    if (config_lib.IsMasterCQ(self._run.config) and
+        not self.sync_stage.pool.applied):
+      logging.info('No CLs found to verify in this CQ run,'
+                   'do not schedule CQ slaves.')
+      return
+
     self.ScheduleSlaveBuildsViaBuildbucket(important_only=False,
                                            dryrun=self._run.options.debug)

@@ -41,6 +41,10 @@ BoardConfig = collections.namedtuple('BoardConfig', ['board', 'name'])
 class SimpleBuilder(generic_builders.Builder):
   """Builder that performs basic vetting operations."""
 
+  def __init__(self, *args, **kwargs):
+    super(SimpleBuilder, self).__init__(*args, **kwargs)
+    self.sync_stage = None
+
   def GetSyncInstance(self):
     """Sync to lkgm or TOT as necessary.
 
@@ -57,6 +61,7 @@ class SimpleBuilder(generic_builders.Builder):
     else:
       sync_stage = self._GetStageInstance(sync_stages.SyncStage)
 
+    self.sync_stage = sync_stage
     return sync_stage
 
   def GetVersionInfo(self):
@@ -234,7 +239,7 @@ class SimpleBuilder(generic_builders.Builder):
     # If this master build uses Buildbucket scheduler, run
     # scheduler_stages.ScheduleSlavesStage to schedule slaves.
     if config_lib.UseBuildbucketScheduler(self._run.config):
-      self._RunStage(scheduler_stages.ScheduleSlavesStage)
+      self._RunStage(scheduler_stages.ScheduleSlavesStage, self.sync_stage)
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
     # The CQ/Chrome PFQ master will not actually run the SyncChrome stage, but
@@ -253,7 +258,7 @@ class SimpleBuilder(generic_builders.Builder):
     # scheduler_stages.ScheduleSlavesStage to schedule slaves.
     if (config_lib.UseBuildbucketScheduler(self._run.config) and
         config_lib.IsMasterBuild(self._run.config)):
-      self._RunStage(scheduler_stages.ScheduleSlavesStage)
+      self._RunStage(scheduler_stages.ScheduleSlavesStage, self.sync_stage)
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(build_stages.RegenPortageCacheStage)

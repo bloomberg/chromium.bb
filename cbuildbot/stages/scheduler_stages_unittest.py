@@ -6,6 +6,8 @@
 
 from __future__ import print_function
 
+import mock
+
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -37,10 +39,11 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.fake_db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
 
+    self.sync_stage = mock.Mock()
     self._Prepare()
 
   def ConstructStage(self):
-    return scheduler_stages.ScheduleSlavesStage(self._run)
+    return scheduler_stages.ScheduleSlavesStage(self._run, self.sync_stage)
 
   def testPerformStage(self):
     """Test PerformStage."""
@@ -140,3 +143,14 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.assertEqual(len(scheduled_slaves), 1)
     unscheduled_slaves = self._run.attrs.metadata.GetValue('unscheduled_slaves')
     self.assertEqual(len(unscheduled_slaves), 0)
+
+  def testNoScheduledSlaveBuilds(self):
+    """Test no slave builds are scheduled."""
+    stage = self.ConstructStage()
+    schedule_mock = self.PatchObject(
+        scheduler_stages.ScheduleSlavesStage,
+        'ScheduleSlaveBuildsViaBuildbucket')
+    self.sync_stage.pool.return_value.applied = []
+
+    stage.PerformStage()
+    schedule_mock.assert_not_called()

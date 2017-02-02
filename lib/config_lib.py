@@ -96,11 +96,9 @@ def IsPFQType(b_type):
   return b_type in (constants.PFQ_TYPE, constants.PALADIN_TYPE,
                     constants.CHROME_PFQ_TYPE, constants.ANDROID_PFQ_TYPE)
 
-
 def IsCQType(b_type):
   """Returns True if this build type is a Commit Queue."""
   return b_type == constants.PALADIN_TYPE
-
 
 def IsCanaryType(b_type):
   """Returns True if this build type is a Canary."""
@@ -113,6 +111,10 @@ def IsMasterChromePFQ(config):
 def IsMasterAndroidPFQ(config):
   """Returns True if this build is master Android PFQ type."""
   return config.build_type == constants.ANDROID_PFQ_TYPE and config.master
+
+def IsMasterCQ(config):
+  """Returns True if this build is master CQ."""
+  return config.build_type == constants.PALADIN_TYPE and config.master
 
 def IsMasterBuild(config):
   """Returns True if this build is master."""
