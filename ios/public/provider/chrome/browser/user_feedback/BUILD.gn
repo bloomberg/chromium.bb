@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("user_feedback") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "user_feedback_provider.h",
     "user_feedback_provider.mm",
