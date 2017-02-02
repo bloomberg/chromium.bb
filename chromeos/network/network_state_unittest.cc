@@ -21,40 +21,6 @@ namespace chromeos {
 
 namespace {
 
-// StringValue that skips the DCHECK in the constructor for valid UTF8.
-class TestStringValue : public base::Value {
- public:
-  explicit TestStringValue(const std::string& in_value)
-      : base::Value(Type::STRING), value_(in_value) {}
-
-  ~TestStringValue() override {
-    // Ugly hack that prevents ~Value() from trying to destroy string_value_.
-    // TODO(crbug.com/646113): Clean this up when StringValue will be removed.
-    type_ = Type::NONE;
-  }
-
-  // Overridden from Value:
-  bool GetAsString(std::string* out_value) const override {
-    if (out_value)
-      *out_value = value_;
-    return true;
-  }
-
-  TestStringValue* DeepCopy() const override {
-    return new TestStringValue(value_);
-  }
-
-  bool Equals(const base::Value* other) const override {
-    if (other->GetType() != GetType())
-      return false;
-    std::string lhs, rhs;
-    return GetAsString(&lhs) && other->GetAsString(&rhs) && lhs == rhs;
-  }
-
- private:
-  std::string value_;
-};
-
 class NetworkStateTest : public testing::Test {
  public:
   NetworkStateTest() : network_state_("test_path") {
@@ -68,7 +34,7 @@ class NetworkStateTest : public testing::Test {
   }
 
   bool SetStringProperty(const std::string& key, const std::string& value) {
-    return SetProperty(key, base::MakeUnique<TestStringValue>(value));
+    return SetProperty(key, base::MakeUnique<base::Value>(value));
   }
 
   bool SignalInitialPropertiesReceived() {
@@ -106,7 +72,9 @@ TEST_F(NetworkStateTest, NameAsciiWithNull) {
   EXPECT_EQ(network_state_.name(), network_setname_result);
 }
 
-// Truncates invalid UTF-8
+// Truncates invalid UTF-8. base::Value has a DCHECK against invalid UTF-8
+// strings, which is why this is a release mode only test.
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 TEST_F(NetworkStateTest, NameTruncateInvalid) {
   EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeVPN));
 
@@ -116,6 +84,7 @@ TEST_F(NetworkStateTest, NameTruncateInvalid) {
   EXPECT_TRUE(SignalInitialPropertiesReceived());
   EXPECT_EQ(network_state_.name(), network_setname_result);
 }
+#endif
 
 // If HexSSID doesn't exist, fallback to NameProperty.
 TEST_F(NetworkStateTest, SsidFromName) {

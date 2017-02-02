@@ -353,11 +353,8 @@ bool Value::Equals(const Value* other) const {
       return int_value_ == other->int_value_;
     case Type::DOUBLE:
       return double_value_ == other->double_value_;
-    // TODO(crbug.com/646113): Simplify this once JSONStringValue is removed.
-    case Type::STRING: {
-      std::string lhs, rhs;
-      return GetAsString(&lhs) && other->GetAsString(&rhs) && lhs == rhs;
-    }
+    case Type::STRING:
+      return *string_value_ == *(other->string_value_);
     default:
       // This method should only be getting called for the above types -- all
       // subclasses need to provide their own implementation;.

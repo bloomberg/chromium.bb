@@ -152,10 +152,6 @@ class BASE_EXPORT Value {
   // NULLs are considered equal but different from Value::CreateNullValue().
   static bool Equals(const Value* a, const Value* b);
 
- protected:
-  // TODO(crbug.com/646113): Make this private once JSONStringValue is removed.
-  Type type_;
-
  private:
   void InternalCopyFundamentalValue(const Value& that);
   void InternalCopyConstructFrom(const Value& that);
@@ -163,6 +159,8 @@ class BASE_EXPORT Value {
   void InternalCopyAssignFrom(const Value& that);
   void InternalMoveAssignFrom(Value&& that);
   void InternalCleanup();
+
+  Type type_;
 
   union {
     bool bool_value_;
