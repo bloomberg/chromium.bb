@@ -131,7 +131,8 @@ class ObserverWaiter : public AddToHomescreenDataFetcher::Observer {
   }
 
   void OnDataAvailable(const ShortcutInfo& info,
-                       const SkBitmap& icon) override {
+                       const SkBitmap& primary_icon,
+                       const SkBitmap& badge_icon) override {
     data_available_ = true;
     if (!quit_closure_.is_null())
       quit_closure_.Run();
@@ -203,7 +204,7 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<AddToHomescreenDataFetcher> BuildFetcher(
       bool check_webapk_compatible,
       AddToHomescreenDataFetcher::Observer* observer) {
-    return new AddToHomescreenDataFetcher(web_contents(), 1, 1, 1, 1,
+    return new AddToHomescreenDataFetcher(web_contents(), 1, 1, 1, 1, 1,
                                           check_webapk_compatible, observer);
   }
 
