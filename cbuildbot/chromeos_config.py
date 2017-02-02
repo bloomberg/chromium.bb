@@ -432,6 +432,7 @@ _arm_internal_release_boards = frozenset([
     'nyan_big',
     'nyan_blaze',
     'nyan_kitty',
+    'loonix',
     'oak',
     'peach_pi',
     'peach_pit',
@@ -625,6 +626,10 @@ _lakitu_boards = frozenset([
     'lakitu_next',
 ])
 
+_loonix_boards = frozenset([
+    'loonix',
+])
+
 _moblab_boards = frozenset([
     'guado_moblab',
 ])
@@ -637,9 +642,9 @@ _toolchains_from_source = frozenset([
     'x32-generic',
 ])
 
-_noimagetest_boards = _lakitu_boards
+_noimagetest_boards = _lakitu_boards | _loonix_boards
 
-_nohwqual_boards = _lakitu_boards
+_nohwqual_boards = _lakitu_boards | _loonix_boards
 
 _norootfs_verification_boards = frozenset([
 ])
@@ -683,6 +688,7 @@ _waterfall_config_map = {
         'chell-paladin',
         'gale-paladin',
         'lakitu_next-paladin',
+        'loonix-paladin',
         'poppy-paladin',
 
         # Firmware Builders.
@@ -1072,6 +1078,17 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'lakitu',
+      sync_chrome=False,
+      chrome_sdk=False,
+      afdo_use=False,
+      dev_installer_prebuilts=False,
+      vm_tests=[],
+      vm_tests_override=None,
+      hw_tests=[],
+  )
+
+  site_config.AddTemplate(
+      'loonix',
       sync_chrome=False,
       chrome_sdk=False,
       afdo_use=False,
@@ -1556,6 +1573,8 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(site_config.templates.brillo)
     if board in _lakitu_boards:
       board_config.apply(site_config.templates.lakitu)
+    if board in _loonix_boards:
+      board_config.apply(site_config.templates.loonix)
     if board in _moblab_boards:
       board_config.apply(site_config.templates.moblab)
     if board in _nofactory_boards:
