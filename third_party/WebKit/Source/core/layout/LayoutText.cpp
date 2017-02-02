@@ -755,6 +755,9 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox,
   // Get caret height from a font of character.
   const ComputedStyle* styleToUse =
       caretBox->getLineLayoutItem().style(caretBox->isFirstLineStyle());
+  if (!styleToUse->font().primaryFont())
+    return LayoutRect();
+
   int height = styleToUse->font().primaryFont()->getFontMetrics().height();
   int top = caretBox->logicalTop().toInt();
 
