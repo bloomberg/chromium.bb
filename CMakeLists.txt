@@ -627,11 +627,6 @@ set(AOM_UNIT_TEST_SOURCES
     # requires CONFIG_ADAPT_SCAN
     #"${AOM_ROOT}/test/scan_test.cc"
     "${AOM_ROOT}/test/simd_cmp_impl.h"
-    # requires the obvious assembly flavor.
-    #"${AOM_ROOT}/test/simd_cmp_neon.cc"
-    #"${AOM_ROOT}/test/simd_cmp_sse2.cc"
-    #"${AOM_ROOT}/test/simd_cmp_sse4.cc"
-    #"${AOM_ROOT}/test/simd_cmp_ssse3.cc"
     "${AOM_ROOT}/test/subtract_test.cc"
     "${AOM_ROOT}/test/sum_squares_test.cc"
     "${AOM_ROOT}/test/superframe_test.cc"
@@ -648,6 +643,11 @@ set(AOM_UNIT_TEST_SOURCES
     "${AOM_ROOT}/test/y4m_test.cc"
     "${AOM_ROOT}/test/y4m_video_source.h"
     "${AOM_ROOT}/test/yuv_video_source.h")
+
+set(AOM_UNIT_TEST_INTRIN_NEON "${AOM_ROOT}/test/simd_cmp_neon.cc")
+set(AOM_UNIT_TEST_INTRIN_SSE2 "${AOM_ROOT}/test/simd_cmp_sse2.cc")
+set(AOM_UNIT_TEST_INTRIN_SSSE3 "${AOM_ROOT}/test/simd_cmp_ssse3.cc")
+set(AOM_UNIT_TEST_INTRIN_SSE4_1 "${AOM_ROOT}/test/simd_cmp_sse4.cc")
 
 set(AOM_GTEST_SOURCES
     "${AOM_ROOT}/third_party/googletest/src/src/gtest-all.cc"
@@ -898,6 +898,18 @@ if (CONFIG_UNIT_TESTS)
   if (CONFIG_WEBM_IO)
     target_sources(test_libaom PUBLIC ${AOM_UNIT_TEST_WEBM_SOURCES}
                    $<TARGET_OBJECTS:webm>)
+  endif ()
+  if (HAVE_SSE2)
+    add_intrinsics_source_to_target("-msse2" "test_libaom"
+                                    "AOM_UNIT_TEST_INTRIN_SSE2")
+  endif ()
+  if (HAVE_SSSE3)
+    add_intrinsics_source_to_target("-mssse3" "test_libaom"
+                                    "AOM_UNIT_TEST_INTRIN_SSSE3")
+  endif ()
+  if (HAVE_SSE4_1)
+    add_intrinsics_source_to_target("-msse4.1" "test_libaom"
+                                    "AOM_UNIT_TEST_INTRIN_SSE4_1")
   endif ()
 endif ()
 

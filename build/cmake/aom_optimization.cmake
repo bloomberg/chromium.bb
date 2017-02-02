@@ -32,6 +32,18 @@ function (add_intrinsics_object_library flag opt_name target_to_update sources)
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} PARENT_SCOPE)
 endfunction ()
 
+# Adds sources in list named by $sources to $target and adds $flag to the
+# compile flags for each source file.
+function (add_intrinsics_source_to_target flag target sources)
+  if (MSVC)
+    message(FATAL_ERROR "MSVC instrinics support not implemented.")
+  endif ()
+  target_sources(${target} PUBLIC ${${sources}})
+  foreach (source ${${sources}})
+    set_property(SOURCE ${source} APPEND PROPERTY COMPILE_FLAGS ${flag})
+  endforeach ()
+endfunction ()
+
 # Adds build commands for ASM files in $sources and uses $asm_build_name to
 # build an output directory path. Adds ASM objects to libaom directly. $sources
 # must be the name of a variable containing a list of sources.
