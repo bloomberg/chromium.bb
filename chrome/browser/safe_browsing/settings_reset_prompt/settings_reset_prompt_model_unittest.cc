@@ -12,7 +12,9 @@
 #include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h"
@@ -39,12 +41,18 @@ namespace {
 using testing::_;
 using testing::Bool;
 using testing::Combine;
+using testing::ElementsAre;
+using testing::IsEmpty;
 using testing::NiceMock;
 using testing::Return;
 using testing::StrictMock;
+using testing::UnorderedElementsAre;
 
 const char kHomepage[] = "http://myhomepage.com";
 const char kDefaultSearch[] = "http://testsearch.com/?q={searchTerms}";
+const char kStartupUrl1[] = "http://start1.com";
+const char kStartupUrl2[] = "http://start2.com";
+const char kStartupUrl3[] = "http://start3.com";
 
 // |ResettableSettingsSnapshot| needs to get a |TemplateURLService| for the
 // profile it takes a snapshot for. This will create one for the testing profile
@@ -64,10 +72,24 @@ std::unique_ptr<KeyedService> CreateTemplateURLService(
       base::Closure());
 }
 
+bool ListValueContainsUrl(const base::ListValue* list, const GURL& url) {
+  if (!list)
+    return false;
+
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    std::string url_text;
+    if (list->GetString(i, &url_text) && url == url_text)
+      return true;
+  }
+  return false;
+}
+
 class SettingsResetPromptModelTest
     : public extensions::ExtensionServiceTestBase {
  protected:
   using ModelPointer = std::unique_ptr<SettingsResetPromptModel>;
+
+  SettingsResetPromptModelTest() : startup_pref_(SessionStartupPref::DEFAULT) {}
 
   void SetUp() override {
     extensions::ExtensionServiceTestBase::SetUp();
@@ -76,6 +98,8 @@ class SettingsResetPromptModelTest
     profile_->CreateWebDataService();
     TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
         profile(), CreateTemplateURLService);
+
+    SessionStartupPref::SetStartupPref(profile(), startup_pref_);
 
     prefs_ = profile()->GetPrefs();
     ASSERT_TRUE(prefs_);
@@ -89,11 +113,11 @@ class SettingsResetPromptModelTest
     prefs_->SetBoolean(prefs::kHomePageIsNewTabPage, homepage_is_ntp);
   }
 
-  void SetHomepage(const std::string homepage) {
+  void SetHomepage(const std::string& homepage) {
     prefs_->SetString(prefs::kHomePage, homepage);
   }
 
-  void SetDefaultSearch(const std::string default_search) {
+  void SetDefaultSearch(const std::string& default_search) {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
     ASSERT_TRUE(template_url_service);
@@ -105,6 +129,30 @@ class SettingsResetPromptModelTest
     TemplateURL* template_url =
         template_url_service->Add(base::MakeUnique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
+  }
+
+  void SetStartupType(SessionStartupPref::Type startup_type) {
+    startup_pref_.type = startup_type;
+    SessionStartupPref::SetStartupPref(profile(), startup_pref_);
+    ASSERT_EQ(SessionStartupPref::PrefValueToType(
+                  prefs_->GetInteger(prefs::kRestoreOnStartup)),
+              startup_pref_.type);
+  }
+
+  void AddStartupUrl(const std::string& startup_url) {
+    GURL startup_gurl(startup_url);
+    ASSERT_TRUE(startup_gurl.is_valid());
+
+    startup_pref_.urls.push_back(startup_gurl);
+    SessionStartupPref::SetStartupPref(profile(), startup_pref_);
+    ASSERT_EQ(SessionStartupPref::PrefValueToType(
+                  prefs_->GetInteger(prefs::kRestoreOnStartup)),
+              startup_pref_.type);
+
+    // Also make sure that the |startup_url| is now in the list of URLs in the
+    // preferences.
+    ASSERT_TRUE(ListValueContainsUrl(
+        prefs_->GetList(prefs::kURLsToRestoreOnStartup), startup_gurl));
   }
 
   // Returns a model with a mock config that will return negative IDs for every
@@ -120,17 +168,20 @@ class SettingsResetPromptModelTest
   }
 
   PrefService* prefs_;
+  SessionStartupPref startup_pref_;
 };
 
 class ResetStatesTest
     : public SettingsResetPromptModelTest,
-      public testing::WithParamInterface<testing::tuple<bool, bool>> {
+      public testing::WithParamInterface<testing::tuple<bool, bool, bool>> {
  protected:
   void SetUp() override {
     SettingsResetPromptModelTest::SetUp();
     homepage_reset_enabled_ = testing::get<0>(GetParam());
     default_search_reset_enabled_ = testing::get<1>(GetParam());
-    should_prompt_ = homepage_reset_enabled_ || default_search_reset_enabled_;
+    startup_urls_reset_enabled_ = testing::get<2>(GetParam());
+    should_prompt_ = homepage_reset_enabled_ || default_search_reset_enabled_ ||
+                     startup_urls_reset_enabled_;
 
     if (homepage_reset_enabled_) {
       SetShowHomeButton(true);
@@ -140,10 +191,18 @@ class ResetStatesTest
 
     if (default_search_reset_enabled_)
       SetDefaultSearch(kDefaultSearch);
+
+    if (startup_urls_reset_enabled_) {
+      SetStartupType(SessionStartupPref::URLS);
+      AddStartupUrl(kStartupUrl1);
+      AddStartupUrl(kStartupUrl2);
+      AddStartupUrl(kStartupUrl3);
+    }
   }
 
   bool homepage_reset_enabled_;
   bool default_search_reset_enabled_;
+  bool startup_urls_reset_enabled_;
   bool should_prompt_;
 };
 
@@ -160,24 +219,26 @@ TEST_F(SettingsResetPromptModelTest, HomepageResetState) {
     for (bool show_home_button : {false, true}) {
       SetShowHomeButton(show_home_button);
       SetHomepageIsNTP(homepage_is_ntp);
-      // Should return |DISABLED_DUE_TO_DOMAIN_NOT_MATCHED| when
+      // Should return |NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED| when
       // |UrlToResetDomainId()| returns a negative integer.
       {
         ModelPointer model = CreateModel();
         EXPECT_EQ(model->homepage_reset_state(),
-                  SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
+                  SettingsResetPromptModel::
+                      NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
       }
 
-      // Should return |ENABLED| when |UrlToResetDomainId()| returns a positive
-      // integer and the home button is visible and homepage is not set to the
-      // New Tab page, and |DISABLED_DUE_TO_DOMAIN_NOT_MATCHED| otherwise.
+      // Should return |RESET_REQUIRED| when |UrlToResetDomainId()| returns a
+      // positive integer and the home button is visible and homepage is not set
+      // to the New Tab page, and |NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED|
+      // otherwise.
       {
         ModelPointer model = CreateModel({kHomepage});
-        EXPECT_EQ(
-            model->homepage_reset_state(),
-            show_home_button && !homepage_is_ntp
-                ? SettingsResetPromptModel::ENABLED
-                : SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
+        EXPECT_EQ(model->homepage_reset_state(),
+                  show_home_button && !homepage_is_ntp
+                      ? SettingsResetPromptModel::RESET_REQUIRED
+                      : SettingsResetPromptModel::
+                            NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
       }
     }
   }
@@ -192,19 +253,92 @@ TEST_F(SettingsResetPromptModelTest, DefaultSearch) {
 TEST_F(SettingsResetPromptModelTest, DefaultSearchResetState) {
   SetDefaultSearch(kDefaultSearch);
 
-  // Should return |DISABLED_DUE_TO_DOMAIN_NOT_MATCHED| when
+  // Should return |NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED| when
   // |UrlToResetDomainId()| is negative.
   {
     ModelPointer model = CreateModel();
-    EXPECT_EQ(model->default_search_reset_state(),
-              SettingsResetPromptModel::DISABLED_DUE_TO_DOMAIN_NOT_MATCHED);
+    EXPECT_EQ(
+        model->default_search_reset_state(),
+        SettingsResetPromptModel::NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED);
   }
 
-  // Should return |ENABLED| when |UrlToResetDomainId()| is non-negative.
+  // Should return |RESET_REQUIRED| when |UrlToResetDomainId()| is non-negative.
   {
     ModelPointer model = CreateModel({kDefaultSearch});
     EXPECT_EQ(model->default_search_reset_state(),
-              SettingsResetPromptModel::ENABLED);
+              SettingsResetPromptModel::RESET_REQUIRED);
+  }
+}
+
+TEST_F(SettingsResetPromptModelTest, StartupUrls) {
+  // Should return empty list of startup URLs if startup type is not set to
+  // |SessionStartupPref::URLS|.
+  SetStartupType(SessionStartupPref::DEFAULT);
+  {
+    ModelPointer model = CreateModel();
+    EXPECT_THAT(model->startup_urls(), IsEmpty());
+  }
+
+  AddStartupUrl(kStartupUrl1);
+  {
+    ModelPointer model = CreateModel();
+    EXPECT_THAT(model->startup_urls(), IsEmpty());
+  }
+
+  SetStartupType(SessionStartupPref::LAST);
+  {
+    ModelPointer model = CreateModel();
+    EXPECT_THAT(model->startup_urls(), IsEmpty());
+  }
+
+  // Should return the list of startup URLs if startup type is set to
+  // |SessionStartupPref::URLS|.
+  SetStartupType(SessionStartupPref::URLS);
+  {
+    ModelPointer model = CreateModel();
+    EXPECT_THAT(model->startup_urls(), ElementsAre(GURL(kStartupUrl1)));
+  }
+
+  AddStartupUrl(kStartupUrl2);
+  {
+    ModelPointer model = CreateModel();
+    EXPECT_THAT(model->startup_urls(),
+                UnorderedElementsAre(GURL(kStartupUrl1), GURL(kStartupUrl2)));
+  }
+}
+
+TEST_F(SettingsResetPromptModelTest, StartupUrlsToReset) {
+  AddStartupUrl(kStartupUrl1);
+  AddStartupUrl(kStartupUrl2);
+  AddStartupUrl(kStartupUrl3);
+
+  // Should return no URLs as long as startup type is not set to
+  // |SessionStartupPref::URLS|.
+  SetStartupType(SessionStartupPref::DEFAULT);
+  {
+    ModelPointer model = CreateModel({kStartupUrl2});
+    EXPECT_THAT(model->startup_urls_to_reset(), IsEmpty());
+  }
+
+  SetStartupType(SessionStartupPref::LAST);
+  {
+    ModelPointer model = CreateModel({kStartupUrl2});
+    EXPECT_THAT(model->startup_urls_to_reset(), IsEmpty());
+  }
+
+  // Should return the URLs that need to be reset when startup type is set to
+  // |SessionStartupPref::URLS|.
+  SetStartupType(SessionStartupPref::URLS);
+  {
+    ModelPointer model = CreateModel({kStartupUrl2});
+    EXPECT_THAT(model->startup_urls_to_reset(),
+                ElementsAre(GURL(kStartupUrl2)));
+  }
+
+  {
+    ModelPointer model = CreateModel({kStartupUrl1, kStartupUrl2});
+    EXPECT_THAT(model->startup_urls_to_reset(),
+                UnorderedElementsAre(GURL(kStartupUrl1), GURL(kStartupUrl2)));
   }
 }
 
@@ -214,19 +348,25 @@ TEST_P(ResetStatesTest, ShouldPromptForReset) {
     reset_urls.insert(kHomepage);
   if (default_search_reset_enabled_)
     reset_urls.insert(kDefaultSearch);
+  if (startup_urls_reset_enabled_)
+    reset_urls.insert(kStartupUrl2);
 
   ModelPointer model = CreateModel(reset_urls);
-  ASSERT_EQ(model->homepage_reset_state() == SettingsResetPromptModel::ENABLED,
-            homepage_reset_enabled_);
   ASSERT_EQ(
-      model->default_search_reset_state() == SettingsResetPromptModel::ENABLED,
-      default_search_reset_enabled_);
+      model->homepage_reset_state() == SettingsResetPromptModel::RESET_REQUIRED,
+      homepage_reset_enabled_);
+  ASSERT_EQ(model->default_search_reset_state() ==
+                SettingsResetPromptModel::RESET_REQUIRED,
+            default_search_reset_enabled_);
+  ASSERT_EQ(model->startup_urls_reset_state() ==
+                SettingsResetPromptModel::RESET_REQUIRED,
+            startup_urls_reset_enabled_);
   EXPECT_EQ(model->ShouldPromptForReset(), should_prompt_);
 }
 
 INSTANTIATE_TEST_CASE_P(SettingsResetPromptModel,
                         ResetStatesTest,
-                        Combine(Bool(), Bool()));
+                        Combine(Bool(), Bool(), Bool()));
 
 }  // namespace
 }  // namespace safe_browsing

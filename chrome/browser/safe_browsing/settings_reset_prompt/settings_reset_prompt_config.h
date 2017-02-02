@@ -47,7 +47,7 @@ class SettingsResetPromptConfig {
   SettingsResetPromptConfig();
 
  private:
-  typedef std::vector<uint8_t> SHA256Hash;
+  using SHA256Hash = std::vector<uint8_t>;
   struct SHA256HashHasher {
     size_t operator()(const SHA256Hash& key) const;
   };
