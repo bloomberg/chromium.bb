@@ -68,10 +68,6 @@ class WindowTreeClientObserver;
 class WindowTreeClientTestObserver;
 class WindowTreeHostMus;
 
-namespace client {
-class CaptureClient;
-}
-
 using EventResultCallback = base::Callback<void(ui::mojom::EventResult)>;
 
 // Manages the connection with mus.
@@ -114,8 +110,6 @@ class AURA_EXPORT WindowTreeClient
 
   bool connected() const { return tree_ != nullptr; }
   ClientSpecificId client_id() const { return client_id_; }
-
-  client::CaptureClient* GetCaptureClient();
 
   void SetCanFocus(Window* window, bool can_focus);
   void SetCanAcceptDrops(Id window_id, bool can_accept_drops);

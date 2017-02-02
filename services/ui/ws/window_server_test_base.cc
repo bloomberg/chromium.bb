@@ -143,10 +143,6 @@ void WindowServerTestBase::OnEmbedRootDestroyed(
 void WindowServerTestBase::OnPointerEventObserved(const ui::PointerEvent& event,
                                                   aura::Window* target) {}
 
-aura::client::CaptureClient* WindowServerTestBase::GetCaptureClient() {
-  return wm_state_.capture_controller();
-}
-
 aura::PropertyConverter* WindowServerTestBase::GetPropertyConverter() {
   return &property_converter_;
 }

@@ -33,7 +33,6 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/wm_state.h"
 
 // Widget::InitParams::Type must match that of ui::mojom::WindowType.
@@ -270,10 +269,6 @@ void MusClient::OnPointerEventObserved(const ui::PointerEvent& event,
 void MusClient::OnWindowManagerFrameValuesChanged() {
   for (auto& observer : observer_list_)
     observer.OnWindowManagerFrameValuesChanged();
-}
-
-aura::client::CaptureClient* MusClient::GetCaptureClient() {
-  return wm::CaptureController::Get();
 }
 
 aura::PropertyConverter* MusClient::GetPropertyConverter() {
