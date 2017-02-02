@@ -1331,6 +1331,8 @@ crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
 crbug.com/674225 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
 
+crbug.com/688167 inspector/console/console-tests.html [ NeedsManualRebaseline ]
+
 crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 crbug.com/400829 media/video-object-fit.html [ Failure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ Failure ]
