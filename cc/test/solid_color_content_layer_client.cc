@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_recorder.h"
 #include "cc/playback/drawing_display_item.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/skia_util.h"
@@ -23,23 +23,23 @@ gfx::Rect SolidColorContentLayerClient::PaintableRegion() {
 scoped_refptr<DisplayItemList>
 SolidColorContentLayerClient::PaintContentsToDisplayList(
     PaintingControlSetting painting_control) {
-  SkPictureRecorder recorder;
+  PaintRecorder recorder;
   gfx::Rect clip(PaintableRegion());
-  SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(clip));
+  PaintCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(clip));
 
   canvas->clear(SK_ColorTRANSPARENT);
 
   if (border_size_ != 0) {
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
+    PaintFlags paint;
+    paint.setStyle(PaintFlags::kFill_Style);
     paint.setColor(border_color_);
     canvas->drawRect(
         SkRect::MakeXYWH(clip.x(), clip.y(), clip.width(), clip.height()),
         paint);
   }
 
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
+  PaintFlags paint;
+  paint.setStyle(PaintFlags::kFill_Style);
   paint.setColor(color_);
   canvas->drawRect(
       SkRect::MakeXYWH(clip.x() + border_size_, clip.y() + border_size_,

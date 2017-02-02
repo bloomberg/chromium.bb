@@ -67,8 +67,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   bool parseColorOrCurrentColor(Color&, const String& colorString) const final;
 
-  SkCanvas* drawingCanvas() const final;
-  SkCanvas* existingDrawingCanvas() const final;
+  PaintCanvas* drawingCanvas() const final;
+  PaintCanvas* existingDrawingCanvas() const final;
   void disableDeferral(DisableDeferralReason) final;
 
   AffineTransform baseTransform() const final;

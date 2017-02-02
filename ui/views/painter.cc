@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -69,14 +70,14 @@ void SolidRoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   gfx::RectF border_rect_f(gfx::ScaleToEnclosingRect(gfx::Rect(size), scale));
   const SkScalar scaled_corner_radius = SkFloatToScalar(radius_ * scale);
 
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAntiAlias(true);
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setColor(bg_color_);
   canvas->DrawRoundRect(border_rect_f, scaled_corner_radius, paint);
 
   border_rect_f.Inset(gfx::InsetsF(0.5f));
-  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(1);
   paint.setColor(stroke_color_);
   canvas->DrawRoundRect(border_rect_f, scaled_corner_radius, paint);
@@ -204,7 +205,7 @@ gfx::Size GradientPainter::GetMinimumSize() const {
 }
 
 void GradientPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  SkPaint paint;
+  cc::PaintFlags paint;
   SkPoint p[2];
   p[0].iset(0, 0);
   if (horizontal_)
@@ -212,9 +213,9 @@ void GradientPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   else
     p[1].iset(0, size.height());
 
-  paint.setShader(SkGradientShader::MakeLinear(
-      p, colors_.get(), pos_.get(), count_, SkShader::kClamp_TileMode));
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
+      p, colors_.get(), pos_.get(), count_, SkShader::kClamp_TileMode)));
+  paint.setStyle(cc::PaintFlags::kFill_Style);
 
   canvas->sk_canvas()->drawRectCoords(SkIntToScalar(0), SkIntToScalar(0),
                                       SkIntToScalar(size.width()),

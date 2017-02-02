@@ -33,6 +33,8 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/graphics/paint/PaintFlags.h"
+#include "platform/graphics/paint/PaintShader.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -40,8 +42,6 @@
 #include "wtf/Vector.h"
 
 class SkMatrix;
-class SkPaint;
-class SkShader;
 
 namespace blink {
 
@@ -114,7 +114,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
     m_r1 = r;
   }
 
-  void applyToPaint(SkPaint&, const SkMatrix& localMatrix);
+  void applyToPaint(PaintFlags&, const SkMatrix& localMatrix);
 
   void setDrawsInPMColorSpace(bool drawInPMColorSpace);
 
@@ -129,7 +129,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
            float r1,
            float aspectRatio);
 
-  sk_sp<SkShader> createShader(const SkMatrix& localMatrix);
+  sk_sp<PaintShader> createShader(const SkMatrix& localMatrix);
 
   void sortStopsIfNecessary();
 
@@ -144,7 +144,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   bool m_drawInPMColorSpace;
   GradientSpreadMethod m_spreadMethod;
 
-  mutable sk_sp<SkShader> m_cachedShader;
+  mutable sk_sp<PaintShader> m_cachedShader;
 };
 
 }  // namespace blink

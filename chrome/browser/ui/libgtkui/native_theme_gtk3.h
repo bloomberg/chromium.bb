@@ -40,7 +40,7 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
                             State state,
                             const gfx::Rect& rect) const override;
   void PaintMenuPopupBackground(
-      SkCanvas* canvas,
+      cc::PaintCanvas* canvas,
       const gfx::Size& size,
       const MenuBackgroundExtraParams& menu_background) const override;
   void PaintMenuSeparator(
@@ -49,7 +49,7 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
       const gfx::Rect& rect,
       const MenuSeparatorExtraParams& menu_separator) const override;
   void PaintMenuItemBackground(
-      SkCanvas* canvas,
+      cc::PaintCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const MenuItemExtraParams& menu_item) const override;

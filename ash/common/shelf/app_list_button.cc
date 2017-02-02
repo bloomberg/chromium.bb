@@ -164,10 +164,10 @@ void AppListButton::PaintMd(gfx::Canvas* canvas) {
   gfx::PointF circle_center(GetCenterPoint());
 
   // Paint the circular background.
-  SkPaint bg_paint;
+  cc::PaintFlags bg_paint;
   bg_paint.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
-  bg_paint.setFlags(SkPaint::kAntiAlias_Flag);
-  bg_paint.setStyle(SkPaint::kFill_Style);
+  bg_paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+  bg_paint.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(circle_center, kAppListButtonRadius, bg_paint);
 
   // Paint a white ring as the foreground. The ceil/dsf math assures that the
@@ -178,9 +178,9 @@ void AppListButton::PaintMd(gfx::Canvas* canvas) {
   const float dsf = canvas->UndoDeviceScaleFactor();
   circle_center.Scale(dsf);
 
-  SkPaint fg_paint;
-  fg_paint.setFlags(SkPaint::kAntiAlias_Flag);
-  fg_paint.setStyle(SkPaint::kStroke_Style);
+  cc::PaintFlags fg_paint;
+  fg_paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+  fg_paint.setStyle(cc::PaintFlags::kStroke_Style);
   fg_paint.setColor(kShelfIconColor);
   const float thickness = std::ceil(kRingThicknessDp * dsf);
   const float radius = std::ceil(kRingOuterRadiusDp * dsf) - thickness / 2;

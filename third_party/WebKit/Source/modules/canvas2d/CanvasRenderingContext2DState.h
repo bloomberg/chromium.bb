@@ -8,6 +8,7 @@
 #include "core/css/CSSFontSelectorClient.h"
 #include "modules/canvas2d/ClipList.h"
 #include "platform/fonts/Font.h"
+#include "platform/graphics/paint/PaintFlags.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Vector.h"
@@ -74,7 +75,7 @@ class CanvasRenderingContext2DState final
   void clipPath(const SkPath&, AntiAliasingMode);
   bool hasClip() const { return m_hasClip; }
   bool hasComplexClip() const { return m_hasComplexClip; }
-  void playbackClips(SkCanvas* canvas) const { m_clipList.playback(canvas); }
+  void playbackClips(PaintCanvas* canvas) const { m_clipList.playback(canvas); }
   const SkPath& getCurrentClipPath() const {
     return m_clipList.getCurrentClipPath();
   }
@@ -125,14 +126,14 @@ class CanvasRenderingContext2DState final
   double lineWidth() const { return m_strokePaint.getStrokeWidth(); }
 
   void setLineCap(LineCap lineCap) {
-    m_strokePaint.setStrokeCap(static_cast<SkPaint::Cap>(lineCap));
+    m_strokePaint.setStrokeCap(static_cast<PaintFlags::Cap>(lineCap));
   }
   LineCap getLineCap() const {
     return static_cast<LineCap>(m_strokePaint.getStrokeCap());
   }
 
   void setLineJoin(LineJoin lineJoin) {
-    m_strokePaint.setStrokeJoin(static_cast<SkPaint::Join>(lineJoin));
+    m_strokePaint.setStrokeJoin(static_cast<PaintFlags::Join>(lineJoin));
   }
   LineJoin getLineJoin() const {
     return static_cast<LineJoin>(m_strokePaint.getStrokeJoin());
@@ -180,7 +181,7 @@ class CanvasRenderingContext2DState final
 
   // If paint will not be used for painting a bitmap, set bitmapOpacity to
   // Opaque.
-  const SkPaint* getPaint(PaintType, ShadowMode, ImageType = NoImage) const;
+  const PaintFlags* getPaint(PaintType, ShadowMode, ImageType = NoImage) const;
 
  private:
   CanvasRenderingContext2DState();
@@ -206,9 +207,9 @@ class CanvasRenderingContext2DState final
   Member<CanvasStyle> m_strokeStyle;
   Member<CanvasStyle> m_fillStyle;
 
-  mutable SkPaint m_strokePaint;
-  mutable SkPaint m_fillPaint;
-  mutable SkPaint m_imagePaint;
+  mutable PaintFlags m_strokePaint;
+  mutable PaintFlags m_fillPaint;
+  mutable PaintFlags m_imagePaint;
 
   FloatSize m_shadowOffset;
   double m_shadowBlur;

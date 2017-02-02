@@ -32,6 +32,8 @@
 #define AcceleratedImageBufferSurface_h
 
 #include "platform/graphics/ImageBufferSurface.h"
+#include "platform/graphics/paint/PaintCanvas.h"
+#include "platform/graphics/paint/PaintSurface.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -51,7 +53,7 @@ class PLATFORM_EXPORT AcceleratedImageBufferSurface
                                 SkColorType = kN32_SkColorType);
   ~AcceleratedImageBufferSurface() override {}
 
-  SkCanvas* canvas() override {
+  PaintCanvas* canvas() override {
     return m_surface ? m_surface->getCanvas() : nullptr;
   }
   bool isValid() const override;
@@ -61,7 +63,7 @@ class PLATFORM_EXPORT AcceleratedImageBufferSurface
 
  private:
   unsigned m_contextId;
-  sk_sp<SkSurface> m_surface;  // Uses m_contextProvider.
+  sk_sp<PaintSurface> m_surface;  // Uses m_contextProvider.
 };
 
 }  // namespace blink

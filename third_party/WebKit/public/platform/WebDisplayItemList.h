@@ -12,13 +12,13 @@
 #include "WebSize.h"
 #include "WebVector.h"
 
+#include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkColorFilter;
 class SkMatrix44;
 class SkPath;
-class SkPicture;
 struct SkRect;
 class SkRRect;
 
@@ -41,7 +41,7 @@ class WebDisplayItemList {
   virtual ~WebDisplayItemList() {}
 
   virtual void appendDrawingItem(const WebRect& visualRect,
-                                 sk_sp<const SkPicture>) {}
+                                 sk_sp<const cc::PaintRecord>) {}
 
   virtual void appendClipItem(const WebRect& clipRect,
                               const WebVector<SkRRect>& roundedClipRects) {}

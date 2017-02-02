@@ -67,7 +67,7 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo,
     ImagePainter(m_layoutVideo)
         .paintIntoRect(context, replacedRect, contentRect);
   } else {
-    SkPaint videoPaint = context.fillPaint();
+    PaintFlags videoPaint = context.fillPaint();
     videoPaint.setColor(SK_ColorBLACK);
     m_layoutVideo.videoElement()->paintCurrentFrame(
         context.canvas(), snappedReplacedRect, &videoPaint);

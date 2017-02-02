@@ -30,6 +30,7 @@
 #import "platform/graphics/GraphicsContextStateSaver.h"
 #import "platform/graphics/Image.h"
 #import "platform/graphics/ImageBuffer.h"
+#import "platform/graphics/paint/PaintCanvas.h"
 #import "platform/mac/BlockExceptions.h"
 #import "platform/mac/ColorMac.h"
 #import "platform/mac/LocalCurrentGraphicsContext.h"
@@ -292,7 +293,7 @@ bool ThemePainterMac::paintMenuListButton(const LayoutObject& o,
     return false;
 
   Color color = o.styleRef().visitedDependentColor(CSSPropertyColor);
-  SkPaint paint = paintInfo.context.fillPaint();
+  PaintFlags paint = paintInfo.context.fillPaint();
   paint.setAntiAlias(true);
   paint.setColor(color.rgb());
 
@@ -398,7 +399,7 @@ bool ThemePainterMac::paintSliderTrack(const LayoutObject& o,
   FloatRoundedRect borderRRect(borderRect, borderRadius, borderRadius,
                                borderRadius, borderRadius);
   paintInfo.context.setStrokeThickness(LayoutThemeMac::sliderTrackBorderWidth);
-  SkPaint borderPaint(paintInfo.context.strokePaint());
+  PaintFlags borderPaint(paintInfo.context.strokePaint());
   borderGradient->applyToPaint(borderPaint, SkMatrix::I());
   paintInfo.context.drawRRect(borderRRect, borderPaint);
 
@@ -469,7 +470,7 @@ bool ThemePainterMac::paintSliderThumb(const LayoutObject& o,
   fillGradient->addColorStop(0.52, fillGradientUpperMiddleColor);
   fillGradient->addColorStop(0.52, fillGradientLowerMiddleColor);
   fillGradient->addColorStop(1.0, fillGradientBottomColor);
-  SkPaint fillPaint(paintInfo.context.fillPaint());
+  PaintFlags fillPaint(paintInfo.context.fillPaint());
   fillGradient->applyToPaint(fillPaint, SkMatrix::I());
   paintInfo.context.drawOval(borderBounds, fillPaint);
 
@@ -478,7 +479,7 @@ bool ThemePainterMac::paintSliderThumb(const LayoutObject& o,
   borderGradient->addColorStop(0.0, borderGradientTopColor);
   borderGradient->addColorStop(1.0, borderGradientBottomColor);
   paintInfo.context.setStrokeThickness(LayoutThemeMac::sliderThumbBorderWidth);
-  SkPaint borderPaint(paintInfo.context.strokePaint());
+  PaintFlags borderPaint(paintInfo.context.strokePaint());
   borderGradient->applyToPaint(borderPaint, SkMatrix::I());
   paintInfo.context.drawOval(borderBounds, borderPaint);
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 
-#include "third_party/skia/include/core/SkPaint.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/gfx/canvas.h"
@@ -40,8 +40,8 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
   path.addRoundRect(gfx::RectFToSkRect(border_rect_f), scaled_corner_radius,
                     scaled_corner_radius);
 
-  SkPaint paint;
-  paint.setStyle(SkPaint::kStroke_Style);
+  cc::PaintFlags paint;
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(1);
   paint.setAntiAlias(true);
 
@@ -50,7 +50,7 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
 
   SkPath fill_path;
   Op(path, stroke_path, kDifference_SkPathOp, &fill_path);
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setColor(get_color());
   canvas->sk_canvas()->drawPath(fill_path, paint);
 

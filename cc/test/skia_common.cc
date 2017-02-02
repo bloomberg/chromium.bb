@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
+#include "cc/paint/paint_canvas.h"
 #include "cc/playback/display_item_list.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/gfx/geometry/rect.h"
@@ -47,7 +47,7 @@ void DrawDisplayList(unsigned char* buffer,
       SkImageInfo::MakeN32Premul(layer_rect.width(), layer_rect.height());
   SkBitmap bitmap;
   bitmap.installPixels(info, buffer, info.minRowBytes());
-  SkCanvas canvas(bitmap);
+  PaintCanvas canvas(bitmap);
   canvas.clipRect(gfx::RectToSkRect(layer_rect));
   list->Raster(&canvas, NULL, layer_rect, 1.0f);
 }

@@ -26,11 +26,11 @@
 #include "public/platform/WebScrollbarThemePainter.h"
 
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/WebRect.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 
 namespace blink {
 

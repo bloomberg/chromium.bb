@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "cc/paint/paint_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
@@ -188,9 +189,9 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
                  SkFloatToScalar(x + border_size - 0.5f),   // right
                  SkFloatToScalar(y + border_size - 0.5f));  // bottom
 
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setColor(border_color);
-    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStyle(cc::PaintFlags::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(1));
 
     canvas->DrawPath(path, paint);
@@ -200,8 +201,8 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
     SkColor shadow_color = SkColorSetARGB(83, 0, 0, 0);
     SkColor highlight_color = SkColorSetARGB(96, 255, 255, 255);
 
-    SkPaint paint;
-    paint.setStyle(SkPaint::kStroke_Style);
+    cc::PaintFlags paint;
+    paint.setStyle(cc::PaintFlags::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(1));
 
     SkPath path;

@@ -340,11 +340,11 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
 void CommonThemePaintMenuItemBackground(
     const NativeTheme* theme,
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     NativeTheme::State state,
     const gfx::Rect& rect,
     const NativeTheme::MenuItemExtraParams& menu_item) {
-  SkPaint paint;
+  cc::PaintFlags paint;
   switch (state) {
     case NativeTheme::kNormal:
     case NativeTheme::kDisabled:

@@ -30,15 +30,15 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/ImageFrameGenerator.h"
+#include "platform/graphics/paint/PaintCanvas.h"
+#include "platform/graphics/paint/PaintRecord.h"
+#include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PassRefPtr.h"
@@ -84,7 +84,7 @@ const unsigned char animatedGIF[] = {
 
 struct Rasterizer {
   SkCanvas* canvas;
-  SkPicture* picture;
+  PaintRecord* picture;
 };
 
 }  // namespace
@@ -151,10 +151,10 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture) {
   EXPECT_EQ(1, image->width());
   EXPECT_EQ(1, image->height());
 
-  SkPictureRecorder recorder;
-  SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
+  PaintRecorder recorder;
+  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
-  sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
+  sk_sp<PaintRecord> picture = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
 
   m_surface->getCanvas()->drawPicture(picture);
@@ -175,12 +175,12 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive) {
   m_lazyDecoder->setData(partialData, false);
   sk_sp<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
   ASSERT_TRUE(image);
-  SkPictureRecorder recorder;
-  SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
+  PaintRecorder recorder;
+  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
   m_surface->getCanvas()->drawPicture(recorder.finishRecordingAsPicture());
 
-  // Fully received the file and draw the SkPicture again.
+  // Fully received the file and draw the PaintRecord again.
   m_lazyDecoder->setData(m_data, true);
   image = m_lazyDecoder->createFrameAtIndex(0);
   ASSERT_TRUE(image);
@@ -195,7 +195,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive) {
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
 }
 
-static void rasterizeMain(SkCanvas* canvas, SkPicture* picture) {
+static void rasterizeMain(PaintCanvas* canvas, PaintRecord* picture) {
   canvas->drawPicture(picture);
 }
 
@@ -206,13 +206,13 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
   EXPECT_EQ(1, image->width());
   EXPECT_EQ(1, image->height());
 
-  SkPictureRecorder recorder;
-  SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
+  PaintRecorder recorder;
+  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
-  sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
+  sk_sp<PaintRecord> picture = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
 
-  // Create a thread to rasterize SkPicture.
+  // Create a thread to rasterize PaintRecord.
   std::unique_ptr<WebThread> thread =
       WTF::wrapUnique(Platform::current()->createThread("RasterThread"));
   thread->getWebTaskRunner()->postTask(
@@ -306,10 +306,10 @@ TEST_F(DeferredImageDecoderTest, decodedSize) {
   useMockImageDecoderFactory();
 
   // The following code should not fail any assert.
-  SkPictureRecorder recorder;
-  SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
+  PaintRecorder recorder;
+  PaintCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
   tempCanvas->drawImage(image.get(), 0, 0);
-  sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
+  sk_sp<PaintRecord> picture = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
   m_surface->getCanvas()->drawPicture(picture);
   EXPECT_EQ(1, m_decodeRequestCount);

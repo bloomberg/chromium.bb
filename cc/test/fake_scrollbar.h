@@ -34,7 +34,7 @@ class FakeScrollbar : public Scrollbar {
   gfx::Rect TrackRect() const override;
   float ThumbOpacity() const override;
   bool NeedsPaintPart(ScrollbarPart part) const override;
-  void PaintPart(SkCanvas* canvas,
+  void PaintPart(PaintCanvas* canvas,
                  ScrollbarPart part,
                  const gfx::Rect& content_rect) override;
 

@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_flags.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -401,7 +402,7 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
     canvas->sk_canvas()->clipPath(fill, SkClipOp::kDifference, true);
   // Now draw the stroke and shadow; the stroke will always be visible, while
   // the shadow will be affected by the clip we set above.
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAntiAlias(true);
   const SkColor stroke_color = tab_strip_->GetToolbarTopSeparatorColor();
   const float alpha = SkColorGetA(stroke_color);
@@ -471,7 +472,7 @@ void NewTabButton::PaintFill(bool pressed,
                              gfx::Canvas* canvas) const {
   gfx::ScopedCanvas scoped_canvas(canvas);
   canvas->UndoDeviceScaleFactor();
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAntiAlias(true);
 
   // For unpressed buttons, draw the fill and its shadow.
@@ -499,9 +500,9 @@ void NewTabButton::PaintFill(bool pressed,
       }
 
       const bool succeeded =
-          canvas->InitSkPaintForTiling(*tp->GetImageSkiaNamed(bg_id), x,
-                                       GetNewTabButtonTopOffset() + offset_y,
-                                       x_scale * scale, scale, 0, 0, &paint);
+          canvas->InitPaintFlagsForTiling(*tp->GetImageSkiaNamed(bg_id), x,
+                                          GetNewTabButtonTopOffset() + offset_y,
+                                          x_scale * scale, scale, 0, 0, &paint);
       DCHECK(succeeded);
     } else {
       paint.setColor(tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
@@ -509,7 +510,7 @@ void NewTabButton::PaintFill(bool pressed,
     const SkColor stroke_color = tab_strip_->GetToolbarTopSeparatorColor();
     const SkAlpha alpha = static_cast<SkAlpha>(
         std::round(SkColorGetA(stroke_color) * 0.59375f));
-    SkPaint shadow_paint = paint;
+    cc::PaintFlags shadow_paint = paint;
     shadow_paint.setLooper(
         CreateShadowDrawLooper(SkColorSetA(stroke_color, alpha)));
     canvas->DrawPath(fill, shadow_paint);

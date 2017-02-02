@@ -137,9 +137,9 @@ class CORE_EXPORT HTMLCanvasElement final
 
   void paint(GraphicsContext&, const LayoutRect&);
 
-  SkCanvas* drawingCanvas() const;
+  PaintCanvas* drawingCanvas() const;
   void disableDeferral(DisableDeferralReason) const;
-  SkCanvas* existingDrawingCanvas() const;
+  PaintCanvas* existingDrawingCanvas() const;
 
   CanvasRenderingContext* renderingContext() const { return m_context.get(); }
 
@@ -197,7 +197,7 @@ class CORE_EXPORT HTMLCanvasElement final
   bool isDirty() override { return !m_dirtyRect.isEmpty(); }
   void didDisableAcceleration() override;
   void didFinalizeFrame() override;
-  void restoreCanvasMatrixClipStack(SkCanvas*) const override;
+  void restoreCanvasMatrixClipStack(PaintCanvas*) const override;
 
   void doDeferredPaintInvalidation();
 

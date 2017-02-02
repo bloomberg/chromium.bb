@@ -31,13 +31,11 @@
 #ifndef WebCanvas_h
 #define WebCanvas_h
 
-#include "WebCommon.h"
-
-class SkCanvas;
+#include "cc/paint/paint_canvas.h"
 
 namespace blink {
 
-typedef SkCanvas WebCanvas;
+typedef cc::PaintCanvas WebCanvas;
 
 }  // namespace blink
 

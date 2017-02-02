@@ -13,6 +13,7 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/empty_content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/paint/paint_flags.h"
 #include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_picture_layer.h"
@@ -165,7 +166,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   FakeContentLayerClient client;
   client.set_bounds(layer_size);
   client.add_draw_image(CreateDiscardableImage(layer_size), gfx::Point(),
-                        SkPaint());
+                        PaintFlags());
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   layer->SetBounds(gfx::Size(10, 10));
 

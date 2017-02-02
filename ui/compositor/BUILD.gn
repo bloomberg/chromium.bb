@@ -79,6 +79,7 @@ component("compositor") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc/animation",
+    "//cc/paint",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//cc/surfaces:surfaces",

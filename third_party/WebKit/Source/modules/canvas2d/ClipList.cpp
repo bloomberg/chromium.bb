@@ -4,8 +4,8 @@
 
 #include "modules/canvas2d/ClipList.h"
 
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/transforms/AffineTransform.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 
 namespace blink {
@@ -27,7 +27,7 @@ void ClipList::clipPath(const SkPath& path,
   m_clipList.push_back(newClip);
 }
 
-void ClipList::playback(SkCanvas* canvas) const {
+void ClipList::playback(PaintCanvas* canvas) const {
   for (const ClipOp* it = m_clipList.begin(); it < m_clipList.end(); it++) {
     canvas->clipPath(it->m_path, SkClipOp::kIntersect,
                      it->m_antiAliasingMode == AntiAliased);

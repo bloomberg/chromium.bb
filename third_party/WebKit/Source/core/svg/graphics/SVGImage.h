@@ -119,14 +119,14 @@ class CORE_EXPORT SVGImage final : public Image {
     return false;
   }
 
-  void draw(SkCanvas*,
+  void draw(PaintCanvas*,
             const SkPaint&,
             const FloatRect& fromRect,
             const FloatRect& toRect,
             RespectImageOrientationEnum,
             ImageClampingMode,
             const ColorBehavior&) override;
-  void drawForContainer(SkCanvas*,
+  void drawForContainer(PaintCanvas*,
                         const SkPaint&,
                         const FloatSize,
                         float,
@@ -145,8 +145,8 @@ class CORE_EXPORT SVGImage final : public Image {
                                const KURL&);
   sk_sp<SkImage> imageForCurrentFrameForContainer(const KURL&,
                                                   const IntSize& containerSize);
-  void drawInternal(SkCanvas*,
-                    const SkPaint&,
+  void drawInternal(PaintCanvas*,
+                    const PaintFlags&,
                     const FloatRect& fromRect,
                     const FloatRect& toRect,
                     RespectImageOrientationEnum,

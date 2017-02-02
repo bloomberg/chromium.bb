@@ -35,13 +35,13 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/paint/PaintCanvas.h"
+#include "platform/graphics/paint/PaintFlags.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/Character.h"
 #include "platform/text/TextRun.h"
 #include "platform/text/TextRunIterator.h"
 #include "platform/transforms/AffineTransform.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CharacterNames.h"
@@ -121,11 +121,11 @@ float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo,
   return width;
 }
 
-bool Font::drawText(SkCanvas* canvas,
+bool Font::drawText(PaintCanvas* canvas,
                     const TextRunPaintInfo& runInfo,
                     const FloatPoint& point,
                     float deviceScaleFactor,
-                    const SkPaint& paint) const {
+                    const PaintFlags& paint) const {
   // Don't draw anything while we are using custom fonts that are in the process
   // of loading.
   if (shouldSkipDrawing())
@@ -146,12 +146,12 @@ bool Font::drawText(SkCanvas* canvas,
   return true;
 }
 
-bool Font::drawBidiText(SkCanvas* canvas,
+bool Font::drawBidiText(PaintCanvas* canvas,
                         const TextRunPaintInfo& runInfo,
                         const FloatPoint& point,
                         CustomFontNotReadyAction customFontNotReadyAction,
                         float deviceScaleFactor,
-                        const SkPaint& paint) const {
+                        const PaintFlags& paint) const {
   // Don't draw anything while we are using custom fonts that are in the process
   // of loading, except if the 'force' argument is set to true (in which case it
   // will use a fallback font).
@@ -201,12 +201,12 @@ bool Font::drawBidiText(SkCanvas* canvas,
   return true;
 }
 
-void Font::drawEmphasisMarks(SkCanvas* canvas,
+void Font::drawEmphasisMarks(PaintCanvas* canvas,
                              const TextRunPaintInfo& runInfo,
                              const AtomicString& mark,
                              const FloatPoint& point,
                              float deviceScaleFactor,
-                             const SkPaint& paint) const {
+                             const PaintFlags& paint) const {
   if (shouldSkipDrawing())
     return;
 
@@ -316,9 +316,9 @@ class GlyphBufferBloberizer {
   void appendRun(unsigned start,
                  unsigned count,
                  const SimpleFontData* fontData) {
-    SkPaint paint;
+    PaintFlags paint;
     fontData->platformData().setupPaint(&paint, m_deviceScaleFactor, m_font);
-    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+    paint.setTextEncoding(PaintFlags::kGlyphID_TextEncoding);
 
     const SkTextBlobBuilder::RunBuffer& buffer =
         m_hasVerticalOffsets ? m_builder.allocRunPos(paint, count)
@@ -361,8 +361,8 @@ class GlyphBufferBloberizer {
 
 }  // anonymous namespace
 
-void Font::drawGlyphBuffer(SkCanvas* canvas,
-                           const SkPaint& paint,
+void Font::drawGlyphBuffer(PaintCanvas* canvas,
+                           const PaintFlags& paint,
                            const TextRunPaintInfo& runInfo,
                            const GlyphBuffer& glyphBuffer,
                            const FloatPoint& point,
@@ -374,7 +374,7 @@ void Font::drawGlyphBuffer(SkCanvas* canvas,
     blob = bloberizer.next();
     ASSERT(blob.first);
 
-    SkAutoCanvasRestore autoRestore(canvas, false);
+    PaintCanvasAutoRestore autoRestore(canvas, false);
     if (blob.second == CCWRotation) {
       canvas->save();
 
@@ -400,7 +400,7 @@ void Font::drawGlyphBuffer(SkCanvas* canvas,
 
 static int getInterceptsFromBloberizer(const GlyphBuffer& glyphBuffer,
                                        const Font* font,
-                                       const SkPaint& paint,
+                                       const PaintFlags& paint,
                                        float deviceScaleFactor,
                                        const std::tuple<float, float>& bounds,
                                        SkScalar* interceptsBuffer) {
@@ -431,7 +431,7 @@ static int getInterceptsFromBloberizer(const GlyphBuffer& glyphBuffer,
 
 void Font::getTextIntercepts(const TextRunPaintInfo& runInfo,
                              float deviceScaleFactor,
-                             const SkPaint& paint,
+                             const PaintFlags& paint,
                              const std::tuple<float, float>& bounds,
                              Vector<TextIntercept>& intercepts) const {
   if (shouldSkipDrawing())

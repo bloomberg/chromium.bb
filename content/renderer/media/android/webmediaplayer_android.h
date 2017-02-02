@@ -125,7 +125,7 @@ class WebMediaPlayerAndroid
   // https://code.google.com/p/skia/issues/detail?id=1189
   void paint(blink::WebCanvas* canvas,
              const blink::WebRect& rect,
-             SkPaint&) override;
+             cc::PaintFlags&) override;
 
   bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
                                          unsigned int texture,

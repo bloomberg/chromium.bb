@@ -18,9 +18,8 @@
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/Optional.h"
 
 namespace blink {
@@ -76,7 +75,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo) {
       for (int i = 0; i < 3; i++) {
         switch (svgStyle.paintOrderType(i)) {
           case PT_FILL: {
-            SkPaint fillPaint;
+            PaintFlags fillPaint;
             if (!SVGPaintContext::paintForLayoutObject(
                     paintContext.paintInfo(), m_layoutSVGShape.styleRef(),
                     m_layoutSVGShape, ApplyToFillMode, fillPaint))
@@ -105,7 +104,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo) {
                 additionalPaintServerTransform = &nonScalingTransform;
               }
 
-              SkPaint strokePaint;
+              PaintFlags strokePaint;
               if (!SVGPaintContext::paintForLayoutObject(
                       paintContext.paintInfo(), m_layoutSVGShape.styleRef(),
                       m_layoutSVGShape, ApplyToStrokeMode, strokePaint,
@@ -158,7 +157,7 @@ class PathWithTemporaryWindingRule {
 };
 
 void SVGShapePainter::fillShape(GraphicsContext& context,
-                                const SkPaint& paint,
+                                const PaintFlags& paint,
                                 SkPath::FillType fillType) {
   switch (m_layoutSVGShape.geometryCodePath()) {
     case RectGeometryFastPath:
@@ -176,7 +175,7 @@ void SVGShapePainter::fillShape(GraphicsContext& context,
 }
 
 void SVGShapePainter::strokeShape(GraphicsContext& context,
-                                  const SkPaint& paint) {
+                                  const PaintFlags& paint) {
   if (!m_layoutSVGShape.style()->svgStyle().hasVisibleStroke())
     return;
 

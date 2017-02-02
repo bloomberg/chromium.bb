@@ -127,8 +127,8 @@ class TrayBackground : public views::Background {
   WmShelf* GetShelf() const { return tray_background_view_->shelf(); }
 
   void PaintMaterial(gfx::Canvas* canvas, views::View* view) const {
-    SkPaint background_paint;
-    background_paint.setFlags(SkPaint::kAntiAlias_Flag);
+    cc::PaintFlags background_paint;
+    background_paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
     background_paint.setColor(SkColorSetA(kShelfBaseColor, alpha_));
     gfx::Insets insets =
         GetMirroredBackgroundInsets(GetShelf()->GetAlignment());
@@ -137,8 +137,8 @@ class TrayBackground : public views::Background {
     canvas->DrawRoundRect(bounds, kTrayRoundedBorderRadius, background_paint);
 
     if (draws_active_ && tray_background_view_->is_active()) {
-      SkPaint highlight_paint;
-      highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
+      cc::PaintFlags highlight_paint;
+      highlight_paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
       highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
       canvas->DrawRoundRect(bounds, kTrayRoundedBorderRadius, highlight_paint);
     }
@@ -600,7 +600,7 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
   const int y = (GetShelfConstant(SHELF_SIZE) - kTrayItemSize) / 2;
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(kSeparatorColor);
   paint.setAntiAlias(true);
 

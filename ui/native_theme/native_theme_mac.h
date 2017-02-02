@@ -37,11 +37,11 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
 
   // Overridden from NativeThemeBase:
   void PaintMenuPopupBackground(
-      SkCanvas* canvas,
+      cc::PaintCanvas* canvas,
       const gfx::Size& size,
       const MenuBackgroundExtraParams& menu_background) const override;
   void PaintMenuItemBackground(
-      SkCanvas* canvas,
+      cc::PaintCanvas* canvas,
       State state,
       const gfx::Rect& rect,
       const MenuItemExtraParams& menu_item) const override;
@@ -59,7 +59,7 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   // style is used for dialog buttons, comboboxes, and tabbed pane tabs.
   // Depending on the control part being drawn, the left or the right side can
   // be given rounded corners.
-  static void PaintStyledGradientButton(SkCanvas* canvas,
+  static void PaintStyledGradientButton(cc::PaintCanvas* canvas,
                                         const gfx::Rect& bounds,
                                         ButtonBackgroundType type,
                                         bool round_left,

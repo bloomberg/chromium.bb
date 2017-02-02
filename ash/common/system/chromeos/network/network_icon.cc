@@ -395,9 +395,9 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
       return triangle;
     };
 
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kFill_Style);
+    paint.setStyle(cc::PaintFlags::kFill_Style);
     // Background. Skip drawing for full signal.
     if (signal_strength_ != kNumNetworkImages - 1) {
       paint.setColor(SkColorSetA(color_, kBgAlpha));

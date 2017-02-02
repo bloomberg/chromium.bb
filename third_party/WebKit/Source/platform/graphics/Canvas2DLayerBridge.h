@@ -31,11 +31,12 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBufferSurface.h"
+#include "platform/graphics/paint/PaintRecorder.h"
+#include "platform/graphics/paint/PaintSurface.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebThread.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/Allocator.h"
 #include "wtf/Deque.h"
 #include "wtf/RefCounted.h"
@@ -46,7 +47,6 @@
 
 class SkImage;
 struct SkImageInfo;
-class SkPictureRecorder;
 
 namespace gpu {
 namespace gles2 {
@@ -114,7 +114,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   void willWritePixels();
   void willOverwriteAllPixels();
   void willOverwriteCanvas();
-  SkCanvas* canvas();
+  PaintCanvas* canvas();
   void disableDeferral(DisableDeferralReason);
   bool checkSurfaceValid();
   bool restoreSurface();
@@ -209,7 +209,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   void willProcessTask() override;
   void didProcessTask() override;
 
-  SkSurface* getOrCreateSurface(AccelerationHint = PreferAcceleration);
+  PaintSurface* getOrCreateSurface(AccelerationHint = PreferAcceleration);
   bool shouldAccelerate(AccelerationHint) const;
 
   // Returns the GL filter associated with |m_filterQuality|.
@@ -245,8 +245,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   // changing texture bindings.
   void resetSkiaTextureBinding();
 
-  std::unique_ptr<SkPictureRecorder> m_recorder;
-  sk_sp<SkSurface> m_surface;
+  std::unique_ptr<PaintRecorder> m_recorder;
+  sk_sp<PaintSurface> m_surface;
   sk_sp<SkImage> m_hibernationImage;
   int m_initialSurfaceSaveCount;
   std::unique_ptr<WebExternalTextureLayer> m_layer;

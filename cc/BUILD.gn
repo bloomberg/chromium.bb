@@ -519,6 +519,7 @@ cc_component("cc") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//cc/paint",
     "//cc/surfaces:surface_id",
     "//gpu",
     "//gpu/command_buffer/client:gles2_implementation",
@@ -708,6 +709,7 @@ cc_static_library("test_support") {
     "//base",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
+    "//cc/paint",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//gpu/command_buffer/client:gles2_c_lib",
@@ -912,6 +914,7 @@ cc_test("cc_unittests") {
     "//base/test:test_support",
     "//cc/ipc",
     "//cc/ipc:test_interfaces",
+    "//cc/paint",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//cc/surfaces:surfaces",

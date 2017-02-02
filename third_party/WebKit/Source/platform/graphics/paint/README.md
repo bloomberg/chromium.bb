@@ -160,8 +160,8 @@ emit display items to a `PaintController` (using `GraphicsContext`).
 
 #### [DrawingDisplayItem](DrawingDisplayItem.h)
 
-Holds an `SkPicture` which contains the Skia commands required to draw some atom
-of content.
+Holds a `PaintRecord` which contains the paint operations required to draw some
+atom of content.
 
 #### [ForeignLayerDisplayItem](ForeignLayerDisplayItem.h)
 

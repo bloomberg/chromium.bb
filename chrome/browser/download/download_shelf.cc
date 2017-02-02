@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "cc/paint/paint_flags.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -74,8 +75,8 @@ void DownloadShelf::PaintDownloadProgress(
     const base::TimeDelta& progress_time,
     int percent_done) {
   // Draw background (light blue circle).
-  SkPaint bg_paint;
-  bg_paint.setStyle(SkPaint::kFill_Style);
+  cc::PaintFlags bg_paint;
+  bg_paint.setStyle(cc::PaintFlags::kFill_Style);
   SkColor indicator_color =
       theme_provider.GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING);
   bg_paint.setColor(SkColorSetA(indicator_color, 0x33));
@@ -103,9 +104,9 @@ void DownloadShelf::PaintDownloadProgress(
   progress.addArc(
       SkRect::MakeLTRB(0, 0, kProgressIndicatorSize, kProgressIndicatorSize),
       start_pos, sweep_angle);
-  SkPaint progress_paint;
+  cc::PaintFlags progress_paint;
   progress_paint.setColor(indicator_color);
-  progress_paint.setStyle(SkPaint::kStroke_Style);
+  progress_paint.setStyle(cc::PaintFlags::kStroke_Style);
   progress_paint.setStrokeWidth(1.7f);
   progress_paint.setAntiAlias(true);
   canvas->DrawPath(progress, progress_paint);

@@ -83,6 +83,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/paint/ClipRecorder.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
@@ -143,8 +144,8 @@ class DragImageBuilder {
     context().getPaintController().endItem<EndTransformDisplayItem>(
         *m_pictureBuilder);
     // TODO(fmalita): endRecording() should return a non-const SKP.
-    sk_sp<SkPicture> recording(
-        const_cast<SkPicture*>(m_pictureBuilder->endRecording().release()));
+    sk_sp<PaintRecord> recording(
+        const_cast<PaintRecord*>(m_pictureBuilder->endRecording().release()));
 
     // Rasterize upfront, since DragImage::create() is going to do it anyway
     // (SkImage::asLegacyBitmap).

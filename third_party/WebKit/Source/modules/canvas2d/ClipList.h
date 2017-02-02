@@ -6,10 +6,10 @@
 #define ClipList_h
 
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
-class SkCanvas;
 class SkPath;
 
 namespace blink {
@@ -23,7 +23,7 @@ class ClipList {
   ~ClipList() {}
 
   void clipPath(const SkPath&, AntiAliasingMode, const SkMatrix&);
-  void playback(SkCanvas*) const;
+  void playback(PaintCanvas*) const;
   const SkPath& getCurrentClipPath() const;
 
  private:

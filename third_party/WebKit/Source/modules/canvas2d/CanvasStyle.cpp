@@ -35,6 +35,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
+#include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "wtf/PassRefPtr.h"
@@ -107,7 +108,7 @@ CanvasStyle* CanvasStyle::createFromPattern(CanvasPattern* pattern) {
   return new CanvasStyle(pattern);
 }
 
-void CanvasStyle::applyToPaint(SkPaint& paint) const {
+void CanvasStyle::applyToPaint(PaintFlags& paint) const {
   switch (m_type) {
     case ColorRGBA:
       paint.setShader(nullptr);

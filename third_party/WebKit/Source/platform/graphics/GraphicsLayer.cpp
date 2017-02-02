@@ -40,6 +40,7 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/LinkHighlight.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -298,7 +299,7 @@ void GraphicsLayer::paint(const IntRect* interestRect,
     getPaintController().commitNewDisplayItems(
         offsetFromLayoutObjectWithSubpixelAccumulation());
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
-      sk_sp<SkPicture> newPicture = capturePicture();
+      sk_sp<PaintRecord> newPicture = capturePicture();
       checkPaintUnderInvalidations(*newPicture);
       RasterInvalidationTracking& tracking =
           rasterInvalidationTrackingMap().add(this);
@@ -1210,7 +1211,7 @@ void GraphicsLayer::setCompositorMutableProperties(uint32_t properties) {
     layer->setCompositorMutableProperties(properties);
 }
 
-sk_sp<SkPicture> GraphicsLayer::capturePicture() {
+sk_sp<PaintRecord> GraphicsLayer::capturePicture() {
   if (!drawsContent())
     return nullptr;
 
@@ -1238,7 +1239,8 @@ static bool pixelsDiffer(SkColor p1, SkColor p2) {
          pixelComponentsDiffer(SkColorGetB(p1), SkColorGetB(p2));
 }
 
-void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture) {
+void GraphicsLayer::checkPaintUnderInvalidations(
+    const PaintRecord& newPicture) {
   if (!drawsContent())
     return;
 
@@ -1258,7 +1260,8 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture) {
   oldBitmap.allocPixels(
       SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
   {
-    SkCanvas canvas(oldBitmap);
+    SkCanvas bitmapCanvas(oldBitmap);
+    PaintCanvasPassThrough canvas(&bitmapCanvas);
     canvas.clear(SK_ColorTRANSPARENT);
     canvas.translate(-rect.x(), -rect.y());
     canvas.drawPicture(tracking->lastPaintedPicture.get());
@@ -1268,7 +1271,8 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture) {
   newBitmap.allocPixels(
       SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
   {
-    SkCanvas canvas(newBitmap);
+    SkCanvas bitmapCanvas(newBitmap);
+    PaintCanvasPassThrough canvas(&bitmapCanvas);
     canvas.clear(SK_ColorTRANSPARENT);
     canvas.translate(-rect.x(), -rect.y());
     canvas.drawPicture(&newPicture);
@@ -1312,10 +1316,10 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture) {
   // Visualize under-invalidations by overlaying the new bitmap (containing red
   // pixels indicating under-invalidations, and transparent pixels otherwise)
   // onto the painting.
-  SkPictureRecorder recorder;
+  PaintRecorder recorder;
   recorder.beginRecording(rect);
   recorder.getRecordingCanvas()->drawBitmap(newBitmap, rect.x(), rect.y());
-  sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
+  sk_sp<PaintRecord> picture = recorder.finishRecordingAsPicture();
   getPaintController().appendDebugDrawingAfterCommit(
       *this, picture, offsetFromLayoutObjectWithSubpixelAccumulation());
 }

@@ -39,6 +39,7 @@ cc_component("blink") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc",
+    "//cc/paint",
     "//gpu",
     "//third_party/WebKit/public:blink",
     "//ui/gfx",

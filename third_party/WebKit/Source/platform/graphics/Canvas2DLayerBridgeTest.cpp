@@ -35,6 +35,8 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
+#include "platform/graphics/paint/PaintFlags.h"
+#include "platform/graphics/paint/PaintSurface.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
 #include "public/platform/Platform.h"
@@ -46,8 +48,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/platform/testing/TestingPlatformSupport.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
@@ -210,7 +210,7 @@ class Canvas2DLayerBridgeTest : public Test {
         Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
         kN32_SkColorType)));
     EXPECT_TRUE(bridge->checkSurfaceValid());
-    SkPaint paint;
+    PaintFlags paint;
     uint32_t genID = bridge->getOrCreateSurface()->generationID();
     bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
     EXPECT_EQ(genID, bridge->getOrCreateSurface()->generationID());
@@ -337,7 +337,7 @@ class Canvas2DLayerBridgeTest : public Test {
       Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
           std::move(contextProvider), IntSize(300, 300), 0, NonOpaque,
           Canvas2DLayerBridge::EnableAcceleration, nullptr, kN32_SkColorType)));
-      SkPaint paint;
+      PaintFlags paint;
       bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
       sk_sp<SkImage> image =
           bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnitTests);
@@ -352,7 +352,7 @@ class Canvas2DLayerBridgeTest : public Test {
       Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
           std::move(contextProvider), IntSize(300, 300), 0, NonOpaque,
           Canvas2DLayerBridge::EnableAcceleration, nullptr, kN32_SkColorType)));
-      SkPaint paint;
+      PaintFlags paint;
       bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
       sk_sp<SkImage> image = bridge->newImageSnapshot(PreferNoAcceleration,
                                                       SnapshotReasonUnitTests);
@@ -495,7 +495,7 @@ class MockImageBuffer : public ImageBuffer {
       : ImageBuffer(WTF::wrapUnique(
             new UnacceleratedImageBufferSurface(IntSize(1, 1)))) {}
 
-  MOCK_CONST_METHOD1(resetCanvas, void(SkCanvas*));
+  MOCK_CONST_METHOD1(resetCanvas, void(PaintCanvas*));
 
   virtual ~MockImageBuffer() {}
 };

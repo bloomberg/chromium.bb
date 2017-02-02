@@ -5,7 +5,7 @@
 #include "ui/views/controls/button/label_button_border.h"
 
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkPaint.h"
+#include "cc/paint/paint_flags.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
@@ -142,19 +142,19 @@ void LabelButtonAssetBorder::Paint(const View& view, gfx::Canvas* canvas) {
         static_cast<uint8_t>(animation->CurrentValueBetween(0, 255));
 
     const SkRect sk_rect = gfx::RectToSkRect(rect);
-    SkAutoCanvasRestore auto_restore(canvas->sk_canvas(), false);
+    cc::PaintCanvasAutoRestore auto_restore(canvas->sk_canvas(), false);
     canvas->sk_canvas()->saveLayer(&sk_rect, nullptr);
 
     {
       // First, modulate the background by 1 - alpha.
-      SkAutoCanvasRestore auto_restore(canvas->sk_canvas(), false);
+      cc::PaintCanvasAutoRestore auto_restore(canvas->sk_canvas(), false);
       canvas->sk_canvas()->saveLayerAlpha(&sk_rect, 255 - fg_alpha);
       state = native_theme_delegate->GetBackgroundThemeState(&extra);
       PaintHelper(this, canvas, state, rect, extra);
     }
 
     // Then modulate the foreground by alpha, and blend using kPlus_Mode.
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setAlpha(fg_alpha);
     paint.setBlendMode(SkBlendMode::kPlus);
     canvas->sk_canvas()->saveLayer(&sk_rect, &paint);

@@ -17,6 +17,8 @@
 #include "base/win/scoped_select_object.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_flags.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -58,7 +60,7 @@ const int kSystemColors[] = {
   COLOR_WINDOWTEXT,
 };
 
-void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
+void SetCheckerboardShader(cc::PaintFlags* paint, const RECT& align_rect) {
   // Create a 2x2 checkerboard pattern using the 3D face and highlight colors.
   const SkColor face = color_utils::GetSysSkColor(COLOR_3DFACE);
   const SkColor highlight = color_utils::GetSysSkColor(COLOR_3DHILIGHT);
@@ -251,7 +253,7 @@ gfx::Size NativeThemeWin::GetPartSize(Part part,
       gfx::Size(13, 13) : gfx::Size();
 }
 
-void NativeThemeWin::Paint(SkCanvas* canvas,
+void NativeThemeWin::Paint(cc::PaintCanvas* canvas,
                            Part part,
                            State state,
                            const gfx::Rect& rect,
@@ -376,7 +378,7 @@ void NativeThemeWin::UpdateSystemColors() {
 
 void NativeThemeWin::PaintMenuSeparator(SkCanvas* canvas,
                                         const gfx::Rect& rect) const {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor));
   int position_y = rect.y() + rect.height() / 2;
   canvas->drawLine(rect.x(), position_y, rect.right(), position_y, paint);
@@ -384,7 +386,7 @@ void NativeThemeWin::PaintMenuSeparator(SkCanvas* canvas,
 
 void NativeThemeWin::PaintMenuGutter(SkCanvas* canvas,
                                      const gfx::Rect& rect) const {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor));
   int position_x = rect.x() + rect.width() / 2;
   canvas->drawLine(position_x, rect.y(), position_x, rect.bottom(), paint);
@@ -392,7 +394,7 @@ void NativeThemeWin::PaintMenuGutter(SkCanvas* canvas,
 
 void NativeThemeWin::PaintMenuBackground(SkCanvas* canvas,
                                          const gfx::Rect& rect) const {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor));
   canvas->drawRect(gfx::RectToSkRect(rect), paint);
 }
@@ -1319,7 +1321,7 @@ HRESULT NativeThemeWin::PaintScrollbarTrack(
       (system_colors_[COLOR_SCROLLBAR] != system_colors_[COLOR_WINDOW])) {
     FillRect(hdc, &rect_win, reinterpret_cast<HBRUSH>(COLOR_SCROLLBAR + 1));
   } else {
-    SkPaint paint;
+    cc::PaintFlags paint;
     RECT align_rect = gfx::Rect(extra.track_x, extra.track_y, extra.track_width,
                                 extra.track_height).ToRECT();
     SetCheckerboardShader(&paint, align_rect);
@@ -1438,7 +1440,7 @@ HRESULT NativeThemeWin::PaintTrackbar(
 
     // If the button is pressed, draw hatching.
     if (extra.classic_state & DFCS_PUSHED) {
-      SkPaint paint;
+      cc::PaintFlags paint;
       SetCheckerboardShader(&paint, rect_win);
 
       // Fill all three pieces with the pattern.

@@ -24,8 +24,6 @@
 #include "core/svg/SVGClipPathElement.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-class SkPicture;
-
 namespace blink {
 
 class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
@@ -54,7 +52,7 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   }
 
   bool asPath(const AffineTransform&, const FloatRect& referenceBox, Path&);
-  sk_sp<const SkPicture> createContentPicture();
+  sk_sp<const PaintRecord> createContentPicture();
 
   bool hasCycle() { return m_inClipExpansion; }
   void beginClipExpansion() {
@@ -76,7 +74,7 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   Path m_clipContentPath;
 
   // Cache of the clip path picture when falling back to masking for clipping.
-  sk_sp<const SkPicture> m_clipContentPicture;
+  sk_sp<const PaintRecord> m_clipContentPicture;
 
   FloatRect m_localClipBounds;
 

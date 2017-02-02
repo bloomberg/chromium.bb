@@ -184,8 +184,8 @@ ToastOverlayView::ToastOverlayView(
 ToastOverlayView::~ToastOverlayView() {}
 
 void ToastOverlayView::OnPaint(gfx::Canvas* canvas) {
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
+  cc::PaintFlags paint;
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setColor(kButtonBackgroundColor);
   canvas->DrawRoundRect(GetLocalBounds(), 2, paint);
   views::View::OnPaint(canvas);

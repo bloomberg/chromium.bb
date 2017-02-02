@@ -23,9 +23,9 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/svg/SVGElement.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/transforms/AffineTransform.h"
-#include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
 
@@ -51,7 +51,7 @@ void LayoutSVGResourceMasker::removeClientFromCache(LayoutObject* client,
                                         : ParentOnlyInvalidation);
 }
 
-sk_sp<const SkPicture> LayoutSVGResourceMasker::createContentPicture(
+sk_sp<const PaintRecord> LayoutSVGResourceMasker::createContentPicture(
     AffineTransform& contentTransformation,
     const FloatRect& targetBoundingBox,
     GraphicsContext& context) {

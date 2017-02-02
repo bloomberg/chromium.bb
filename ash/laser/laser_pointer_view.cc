@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -219,8 +218,8 @@ void LaserPointerView::OnPaint(gfx::Canvas* canvas) {
   if (laser_points_.IsEmpty())
     return;
 
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
+  cc::PaintFlags paint;
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setAntiAlias(true);
 
   // Compute the offset of the current widget.
@@ -272,7 +271,7 @@ void LaserPointerView::OnPaint(gfx::Canvas* canvas) {
   }
   // Draw the last point as a circle.
   paint.setColor(SkColorSetA(kPointColor, current_opacity));
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(current_point.location, kPointInitialRadius, paint);
 }
 }  // namespace ash

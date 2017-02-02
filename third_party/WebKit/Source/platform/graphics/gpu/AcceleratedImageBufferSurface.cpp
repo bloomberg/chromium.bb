@@ -56,7 +56,7 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
   SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), colorType,
                                        alphaType, colorSpace);
   SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-  m_surface = SkSurface::MakeRenderTarget(
+  m_surface = PaintSurface::MakeRenderTarget(
       grContext, SkBudgeted::kYes, info, 0 /* sampleCount */,
       Opaque == opacityMode ? nullptr : &disableLCDProps);
   if (!m_surface)
@@ -83,7 +83,7 @@ GLuint AcceleratedImageBufferSurface::getBackingTextureHandleForOverwrite() {
     return 0;
   return skia::GrBackendObjectToGrGLTextureInfo(
              m_surface->getTextureHandle(
-                 SkSurface::kDiscardWrite_TextureHandleAccess))
+                 PaintSurface::kDiscardWrite_TextureHandleAccess))
       ->fID;
 }
 

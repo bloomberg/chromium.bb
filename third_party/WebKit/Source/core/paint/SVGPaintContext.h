@@ -126,7 +126,7 @@ class SVGPaintContext {
       const ComputedStyle&,
       const LayoutObject&,
       LayoutSVGResourceMode,
-      SkPaint&,
+      PaintFlags&,
       const AffineTransform* additionalPaintServerTransform = nullptr);
 
  private:

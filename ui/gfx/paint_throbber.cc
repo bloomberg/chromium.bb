@@ -5,6 +5,7 @@
 #include "ui/gfx/paint_throbber.h"
 
 #include "base/time/time.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
@@ -46,11 +47,11 @@ void PaintArc(Canvas* canvas,
   SkPath path;
   path.arcTo(RectToSkRect(oval), start_angle, sweep, true);
 
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(color);
-  paint.setStrokeCap(SkPaint::kRound_Cap);
+  paint.setStrokeCap(cc::PaintFlags::kRound_Cap);
   paint.setStrokeWidth(stroke_width);
-  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setAntiAlias(true);
   canvas->DrawPath(path, paint);
 }

@@ -23,8 +23,8 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   virtual ~StaticBitmapImage() {}
   bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) = 0;
   sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) = 0;
-  void draw(SkCanvas*,
-            const SkPaint&,
+  void draw(PaintCanvas*,
+            const PaintFlags&,
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
@@ -68,8 +68,8 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
 
  protected:
   // Helper for sub-classes
-  void drawHelper(SkCanvas*,
-                  const SkPaint&,
+  void drawHelper(PaintCanvas*,
+                  const PaintFlags&,
                   const FloatRect&,
                   const FloatRect&,
                   ImageClampingMode,

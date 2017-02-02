@@ -5,6 +5,7 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -47,28 +48,30 @@ void DrawingDisplayItem::dumpPropertiesAsDebugString(
 }
 #endif
 
-static bool picturesEqual(const SkPicture* picture1,
-                          const SkPicture* picture2) {
+static bool picturesEqual(const PaintRecord* picture1,
+                          const PaintRecord* picture2) {
   if (picture1->approximateOpCount() != picture2->approximateOpCount())
     return false;
 
-  sk_sp<SkData> data1 = picture1->serialize();
-  sk_sp<SkData> data2 = picture2->serialize();
+  sk_sp<SkData> data1 = ToSkPicture(picture1)->serialize();
+  sk_sp<SkData> data2 = ToSkPicture(picture2)->serialize();
   return data1->equals(data2.get());
 }
 
-static SkBitmap pictureToBitmap(const SkPicture* picture) {
+static SkBitmap pictureToBitmap(const PaintRecord* picture) {
   SkBitmap bitmap;
   SkRect rect = picture->cullRect();
   bitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
-  SkCanvas canvas(bitmap);
+  SkCanvas bitmapCanvas(bitmap);
+  PaintCanvasPassThrough canvas(&bitmapCanvas);
   canvas.clear(SK_ColorTRANSPARENT);
   canvas.translate(-rect.x(), -rect.y());
   canvas.drawPicture(picture);
   return bitmap;
 }
 
-static bool bitmapsEqual(const SkPicture* picture1, const SkPicture* picture2) {
+static bool bitmapsEqual(const PaintRecord* picture1,
+                         const PaintRecord* picture2) {
   SkRect rect = picture1->cullRect();
   if (rect != picture2->cullRect())
     return false;
@@ -99,8 +102,8 @@ bool DrawingDisplayItem::equals(const DisplayItem& other) const {
   if (!DisplayItem::equals(other))
     return false;
 
-  const SkPicture* picture = this->picture();
-  const SkPicture* otherPicture =
+  const PaintRecord* picture = this->picture();
+  const PaintRecord* otherPicture =
       static_cast<const DrawingDisplayItem&>(other).picture();
 
   if (!picture && !otherPicture)

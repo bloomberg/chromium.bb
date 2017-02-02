@@ -17,6 +17,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_shader.h"
 #include "third_party/icu/source/common/unicode/rbbi.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -172,16 +174,20 @@ sk_sp<SkShader> CreateFadeShader(const FontList& font_list,
 }
 
 // Converts a FontRenderParams::Hinting value to the corresponding
-// SkPaint::Hinting value.
-SkPaint::Hinting FontRenderParamsHintingToSkPaintHinting(
+// cc::PaintFlags::Hinting value.
+cc::PaintFlags::Hinting FontRenderParamsHintingToPaintFlagsHinting(
     FontRenderParams::Hinting params_hinting) {
   switch (params_hinting) {
-    case FontRenderParams::HINTING_NONE:   return SkPaint::kNo_Hinting;
-    case FontRenderParams::HINTING_SLIGHT: return SkPaint::kSlight_Hinting;
-    case FontRenderParams::HINTING_MEDIUM: return SkPaint::kNormal_Hinting;
-    case FontRenderParams::HINTING_FULL:   return SkPaint::kFull_Hinting;
+    case FontRenderParams::HINTING_NONE:
+      return cc::PaintFlags::kNo_Hinting;
+    case FontRenderParams::HINTING_SLIGHT:
+      return cc::PaintFlags::kSlight_Hinting;
+    case FontRenderParams::HINTING_MEDIUM:
+      return cc::PaintFlags::kNormal_Hinting;
+    case FontRenderParams::HINTING_FULL:
+      return cc::PaintFlags::kFull_Hinting;
   }
-  return SkPaint::kNo_Hinting;
+  return cc::PaintFlags::kNo_Hinting;
 }
 
 // Make sure ranges don't break text graphemes.  If a range in |break_list|
@@ -217,12 +223,12 @@ SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
       underline_thickness_(kUnderlineMetricsNotSet),
       underline_position_(0.0f) {
   DCHECK(canvas_skia_);
-  paint_.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-  paint_.setStyle(SkPaint::kFill_Style);
+  paint_.setTextEncoding(cc::PaintFlags::kGlyphID_TextEncoding);
+  paint_.setStyle(cc::PaintFlags::kFill_Style);
   paint_.setAntiAlias(true);
   paint_.setSubpixelText(true);
   paint_.setLCDRenderText(true);
-  paint_.setHinting(SkPaint::kNormal_Hinting);
+  paint_.setHinting(cc::PaintFlags::kNormal_Hinting);
 }
 
 SkiaTextRenderer::~SkiaTextRenderer() {
@@ -250,7 +256,7 @@ void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
 }
 
 void SkiaTextRenderer::SetShader(sk_sp<SkShader> shader) {
-  paint_.setShader(std::move(shader));
+  paint_.setShader(cc::WrapSkShader(std::move(shader)));
 }
 
 void SkiaTextRenderer::SetHaloEffect() {
@@ -317,12 +323,8 @@ void SkiaTextRenderer::DrawStrike(int x, int y, int width) const {
 
 SkiaTextRenderer::DiagonalStrike::DiagonalStrike(Canvas* canvas,
                                                  Point start,
-                                                 const SkPaint& paint)
-    : canvas_(canvas),
-      start_(start),
-      paint_(paint),
-      total_length_(0) {
-}
+                                                 const cc::PaintFlags& paint)
+    : canvas_(canvas), start_(start), paint_(paint), total_length_(0) {}
 
 SkiaTextRenderer::DiagonalStrike::~DiagonalStrike() {
 }
@@ -411,13 +413,13 @@ Line::~Line() {}
 
 void ApplyRenderParams(const FontRenderParams& params,
                        bool subpixel_rendering_suppressed,
-                       SkPaint* paint) {
+                       cc::PaintFlags* paint) {
   paint->setAntiAlias(params.antialiasing);
   paint->setLCDRenderText(!subpixel_rendering_suppressed &&
       params.subpixel_rendering != FontRenderParams::SUBPIXEL_RENDERING_NONE);
   paint->setSubpixelText(params.subpixel_positioning);
   paint->setAutohinted(params.autohinter);
-  paint->setHinting(FontRenderParamsHintingToSkPaintHinting(params.hinting));
+  paint->setHinting(FontRenderParamsHintingToPaintFlagsHinting(params.hinting));
 }
 
 }  // namespace internal

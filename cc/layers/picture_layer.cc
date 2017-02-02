@@ -8,10 +8,10 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/paint/paint_record.h"
 #include "cc/playback/recording_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -141,10 +141,10 @@ void PictureLayer::SetIsMask(bool is_mask) {
   is_mask_ = is_mask;
 }
 
-sk_sp<SkPicture> PictureLayer::GetPicture() const {
+sk_sp<PaintRecord> PictureLayer::GetPicture() const {
   // We could either flatten the RecordingSource into a single
-  // SkPicture, or paint a fresh one depending on what we intend to do with the
-  // picture. For now we just paint a fresh one to get consistent results.
+  // PaintRecord, or paint a fresh one depending on what we intend to do with
+  // the record. For now we just paint a fresh one to get consistent results.
   if (!DrawsContent())
     return nullptr;
 

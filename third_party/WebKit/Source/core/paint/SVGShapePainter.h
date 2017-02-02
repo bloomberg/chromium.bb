@@ -5,10 +5,9 @@
 #ifndef SVGShapePainter_h
 #define SVGShapePainter_h
 
+#include "platform/graphics/paint/PaintFlags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "wtf/Allocator.h"
-
-class SkPaint;
 
 namespace blink {
 
@@ -29,8 +28,8 @@ class SVGShapePainter {
   void paint(const PaintInfo&);
 
  private:
-  void fillShape(GraphicsContext&, const SkPaint&, SkPath::FillType);
-  void strokeShape(GraphicsContext&, const SkPaint&);
+  void fillShape(GraphicsContext&, const PaintFlags&, SkPath::FillType);
+  void strokeShape(GraphicsContext&, const PaintFlags&);
 
   void paintMarkers(const PaintInfo&, const FloatRect& boundingBox);
   void paintMarker(const PaintInfo&,

@@ -221,7 +221,7 @@ static gfx::Rect largeRect(-200000, -200000, 400000, 400000);
 static void appendDisplayItemToCcDisplayItemList(const DisplayItem& displayItem,
                                                  cc::DisplayItemList* list) {
   if (DisplayItem::isDrawingType(displayItem.getType())) {
-    const SkPicture* picture =
+    const PaintRecord* picture =
         static_cast<const DrawingDisplayItem&>(displayItem).picture();
     if (!picture)
       return;

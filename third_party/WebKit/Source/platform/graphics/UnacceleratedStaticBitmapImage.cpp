@@ -29,8 +29,8 @@ bool UnacceleratedStaticBitmapImage::currentFrameKnownToBeOpaque(MetadataMode) {
   return m_image->isOpaque();
 }
 
-void UnacceleratedStaticBitmapImage::draw(SkCanvas* canvas,
-                                          const SkPaint& paint,
+void UnacceleratedStaticBitmapImage::draw(PaintCanvas* canvas,
+                                          const PaintFlags& paint,
                                           const FloatRect& dstRect,
                                           const FloatRect& srcRect,
                                           RespectImageOrientationEnum,

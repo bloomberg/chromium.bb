@@ -28,8 +28,8 @@
 #include "core/paint/PaintInfo.h"
 #include "core/svg/SVGGeometryElement.h"
 #include "core/svg/SVGUseElement.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 
 namespace blink {
@@ -204,7 +204,7 @@ bool LayoutSVGResourceClipper::asPath(
   return true;
 }
 
-sk_sp<const SkPicture> LayoutSVGResourceClipper::createContentPicture() {
+sk_sp<const PaintRecord> LayoutSVGResourceClipper::createContentPicture() {
   ASSERT(frame());
   if (m_clipContentPicture)
     return m_clipContentPicture;

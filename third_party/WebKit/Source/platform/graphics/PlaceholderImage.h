@@ -13,9 +13,6 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/PassRefPtr.h"
 
-class SkCanvas;
-class SkPaint;
-
 namespace blink {
 
 class FloatRect;
@@ -35,8 +32,8 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
 
   sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
 
-  void draw(SkCanvas*,
-            const SkPaint&,
+  void draw(PaintCanvas*,
+            const PaintFlags&,
             const FloatRect& destRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,

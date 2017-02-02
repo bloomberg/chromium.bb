@@ -6,7 +6,7 @@
 #define BoxReflection_h
 
 #include "platform/PlatformExport.h"
-#include "third_party/skia/include/core/SkPicture.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkMatrix;
@@ -32,12 +32,12 @@ class PLATFORM_EXPORT BoxReflection {
 
   BoxReflection(ReflectionDirection direction,
                 float offset,
-                sk_sp<SkPicture> mask = nullptr)
+                sk_sp<PaintRecord> mask = nullptr)
       : m_direction(direction), m_offset(offset), m_mask(std::move(mask)) {}
 
   ReflectionDirection direction() const { return m_direction; }
   float offset() const { return m_offset; }
-  SkPicture* mask() const { return m_mask.get(); }
+  PaintRecord* mask() const { return m_mask.get(); }
 
   // Returns a matrix which maps points between the original content and its
   // reflection. Reflections are self-inverse, so this matrix can be used to
@@ -53,7 +53,7 @@ class PLATFORM_EXPORT BoxReflection {
  private:
   ReflectionDirection m_direction;
   float m_offset;
-  sk_sp<SkPicture> m_mask;
+  sk_sp<PaintRecord> m_mask;
 };
 
 inline bool operator==(const BoxReflection& a, const BoxReflection& b) {

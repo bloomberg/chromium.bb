@@ -86,7 +86,7 @@ bool Path::contains(const FloatPoint& point, WindRule rule) const {
 // FIXME: this method ignores the CTM and may yield inaccurate results for large
 // scales.
 SkPath Path::strokePath(const StrokeData& strokeData) const {
-  SkPaint paint;
+  PaintFlags paint;
   strokeData.setupPaint(&paint);
 
   // Skia stroke resolution scale. This is multiplied by 4 internally

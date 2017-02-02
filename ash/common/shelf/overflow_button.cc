@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -120,8 +119,8 @@ std::unique_ptr<views::InkDropMask> OverflowButton::CreateInkDropMask() const {
 void OverflowButton::PaintBackground(gfx::Canvas* canvas,
                                      const gfx::Rect& bounds) {
   if (MaterialDesignController::IsShelfMaterial()) {
-    SkPaint background_paint;
-    background_paint.setFlags(SkPaint::kAntiAlias_Flag);
+    cc::PaintFlags background_paint;
+    background_paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
     background_paint.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
     canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius,
                           background_paint);

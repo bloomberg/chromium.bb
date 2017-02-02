@@ -77,8 +77,8 @@ class TestImage : public Image {
     // Image pure virtual stub.
   }
 
-  void draw(SkCanvas*,
-            const SkPaint&,
+  void draw(PaintCanvas*,
+            const PaintFlags&,
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,

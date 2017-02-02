@@ -35,10 +35,12 @@
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsContextState.h"
 #include "platform/graphics/ImageOrientation.h"
+#include "platform/graphics/paint/PaintRecord.h"
+#include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkClipOp.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMetaData.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
@@ -46,9 +48,7 @@
 #include <memory>
 
 class SkBitmap;
-class SkPaint;
 class SkPath;
-class SkPicture;
 class SkRRect;
 struct SkRect;
 
@@ -79,8 +79,8 @@ class PLATFORM_EXPORT GraphicsContext {
 
   ~GraphicsContext();
 
-  SkCanvas* canvas() { return m_canvas; }
-  const SkCanvas* canvas() const { return m_canvas; }
+  PaintCanvas* canvas() { return m_canvas; }
+  const PaintCanvas* canvas() const { return m_canvas; }
 
   PaintController& getPaintController() { return m_paintController; }
   const ColorBehavior& getColorBehavior() const { return m_colorBehavior; }
@@ -182,8 +182,8 @@ class PLATFORM_EXPORT GraphicsContext {
 
   void strokeRect(const FloatRect&, float lineWidth);
 
-  void drawPicture(const SkPicture*);
-  void compositePicture(sk_sp<SkPicture>,
+  void drawPicture(const PaintRecord*);
+  void compositePicture(sk_sp<PaintRecord>,
                         const FloatRect& dest,
                         const FloatRect& src,
                         SkBlendMode);
@@ -216,10 +216,10 @@ class PLATFORM_EXPORT GraphicsContext {
   // These methods write to the canvas.
   // Also drawLine(const IntPoint& point1, const IntPoint& point2) and
   // fillRoundedRect().
-  void drawOval(const SkRect&, const SkPaint&);
-  void drawPath(const SkPath&, const SkPaint&);
-  void drawRect(const SkRect&, const SkPaint&);
-  void drawRRect(const SkRRect&, const SkPaint&);
+  void drawOval(const SkRect&, const PaintFlags&);
+  void drawPath(const SkPath&, const PaintFlags&);
+  void drawRect(const SkRect&, const PaintFlags&);
+  void drawRRect(const SkRRect&, const PaintFlags&);
 
   void clip(const IntRect& rect) { clipRect(rect); }
   void clip(const FloatRect& rect) { clipRect(rect); }
@@ -245,7 +245,7 @@ class PLATFORM_EXPORT GraphicsContext {
   void drawText(const Font&,
                 const TextRunPaintInfo&,
                 const FloatPoint&,
-                const SkPaint&);
+                const PaintFlags&);
   void drawEmphasisMarks(const Font&,
                          const TextRunPaintInfo&,
                          const AtomicString& mark,
@@ -290,7 +290,7 @@ class PLATFORM_EXPORT GraphicsContext {
   // Returns a picture with any recorded draw commands since the prerequisite
   // call to beginRecording().  The picture is guaranteed to be non-null (but
   // not necessarily non-empty), even when the context is disabled.
-  sk_sp<SkPicture> endRecording();
+  sk_sp<PaintRecord> endRecording();
 
   void setShadow(const FloatSize& offset,
                  float blur,
@@ -324,8 +324,10 @@ class PLATFORM_EXPORT GraphicsContext {
                        float shadowSpread,
                        Edges clippedEdges = NoEdge);
 
-  const SkPaint& fillPaint() const { return immutableState()->fillPaint(); }
-  const SkPaint& strokePaint() const { return immutableState()->strokePaint(); }
+  const PaintFlags& fillPaint() const { return immutableState()->fillPaint(); }
+  const PaintFlags& strokePaint() const {
+    return immutableState()->strokePaint();
+  }
 
   // ---------- Transformation methods -----------------
   void concatCTM(const AffineTransform&);
@@ -391,7 +393,7 @@ class PLATFORM_EXPORT GraphicsContext {
   static void draw2xMarker(SkBitmap*, int);
 #endif
 
-  void saveLayer(const SkRect* bounds, const SkPaint*);
+  void saveLayer(const SkRect* bounds, const PaintFlags*);
   void restoreLayer();
 
   // Helpers for drawing a focus ring (drawFocusRing)
@@ -431,7 +433,7 @@ class PLATFORM_EXPORT GraphicsContext {
   const SkMetaData& metaData() const { return m_metaData; }
 
   // null indicates painting is contextDisabled. Never delete this object.
-  SkCanvas* m_canvas;
+  PaintCanvas* m_canvas;
 
   PaintController& m_paintController;
 
@@ -446,7 +448,7 @@ class PLATFORM_EXPORT GraphicsContext {
   // Raw pointer to the current state.
   GraphicsContextState* m_paintState;
 
-  SkPictureRecorder m_pictureRecorder;
+  PaintRecorder m_pictureRecorder;
 
   SkMetaData m_metaData;
 

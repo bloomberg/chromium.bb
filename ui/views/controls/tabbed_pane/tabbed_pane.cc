@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "third_party/skia/include/core/SkPaint.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -340,7 +340,7 @@ const char* TabStrip::GetClassName() const {
 }
 
 void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(kTabBorderColor);
   paint.setStrokeWidth(kTabBorderThickness);
   SkScalar line_y = SkIntToScalar(height()) - (kTabBorderThickness / 2);
@@ -361,8 +361,8 @@ void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
     path.rLineTo(0, tab_height);
     path.lineTo(line_end, line_y);
 
-    SkPaint paint;
-    paint.setStyle(SkPaint::kStroke_Style);
+    cc::PaintFlags paint;
+    paint.setStyle(cc::PaintFlags::kStroke_Style);
     paint.setColor(kTabBorderColor);
     paint.setStrokeWidth(kTabBorderThickness);
     canvas->DrawPath(path, paint);

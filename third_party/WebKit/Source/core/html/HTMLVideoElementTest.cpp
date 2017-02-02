@@ -56,7 +56,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   unsigned droppedFrameCount() const override { return 0; };
   size_t audioDecodedByteCount() const override { return 0; };
   size_t videoDecodedByteCount() const override { return 0; };
-  void paint(WebCanvas*, const WebRect&, SkPaint&) override{};
+  void paint(WebCanvas*, const WebRect&, PaintFlags&) override{};
 };
 
 class MockWebMediaPlayer : public EmptyWebMediaPlayer {

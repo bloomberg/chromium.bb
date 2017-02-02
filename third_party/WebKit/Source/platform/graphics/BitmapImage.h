@@ -110,8 +110,8 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   BitmapImage(const SkBitmap&, ImageObserver* = 0);
   BitmapImage(ImageObserver* = 0);
 
-  void draw(SkCanvas*,
-            const SkPaint&,
+  void draw(PaintCanvas*,
+            const PaintFlags&,
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,

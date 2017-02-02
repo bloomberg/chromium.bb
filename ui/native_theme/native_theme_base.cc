@@ -9,7 +9,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkPaint.h"
+#include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/layout.h"
@@ -156,7 +157,7 @@ gfx::Size NativeThemeBase::GetPartSize(Part part,
   return gfx::Size();
 }
 
-void NativeThemeBase::Paint(SkCanvas* canvas,
+void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
                             Part part,
                             State state,
                             const gfx::Rect& rect,
@@ -258,10 +259,11 @@ NativeThemeBase::NativeThemeBase()
 NativeThemeBase::~NativeThemeBase() {
 }
 
-void NativeThemeBase::PaintArrowButton(
-    SkCanvas* canvas,
-    const gfx::Rect& rect, Part direction, State state) const {
-  SkPaint paint;
+void NativeThemeBase::PaintArrowButton(cc::PaintCanvas* canvas,
+                                       const gfx::Rect& rect,
+                                       Part direction,
+                                       State state) const {
+  cc::PaintFlags paint;
 
   // Calculate button color.
   SkScalar trackHSV[3];
@@ -325,12 +327,12 @@ void NativeThemeBase::PaintArrowButton(
   }
   outline.close();
 
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setColor(buttonColor);
   canvas->drawPath(outline, paint);
 
   paint.setAntiAlias(true);
-  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
   SkScalar thumbHSV[3];
   SkColorToHSV(thumb_inactive_color_, thumbHSV);
   paint.setColor(OutlineColor(trackHSV, thumbHSV));
@@ -339,11 +341,11 @@ void NativeThemeBase::PaintArrowButton(
   PaintArrow(canvas, rect, direction, GetArrowColor(state));
 }
 
-void NativeThemeBase::PaintArrow(SkCanvas* gc,
+void NativeThemeBase::PaintArrow(cc::PaintCanvas* gc,
                                  const gfx::Rect& rect,
                                  Part direction,
                                  SkColor color) const {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(color);
 
   SkPath path = PathForArrow(rect, direction);
@@ -396,12 +398,13 @@ gfx::Rect NativeThemeBase::BoundingRectForArrow(const gfx::Rect& rect) const {
                    side_length, side_length);
 }
 
-void NativeThemeBase::PaintScrollbarTrack(SkCanvas* canvas,
+void NativeThemeBase::PaintScrollbarTrack(
+    cc::PaintCanvas* canvas,
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
     const gfx::Rect& rect) const {
-  SkPaint paint;
+  cc::PaintFlags paint;
   SkIRect skrect;
 
   skrect.set(rect.x(), rect.y(), rect.right(), rect.bottom());
@@ -417,7 +420,7 @@ void NativeThemeBase::PaintScrollbarTrack(SkCanvas* canvas,
   DrawBox(canvas, rect, paint);
 }
 
-void NativeThemeBase::PaintScrollbarThumb(SkCanvas* canvas,
+void NativeThemeBase::PaintScrollbarThumb(cc::PaintCanvas* canvas,
                                           Part part,
                                           State state,
                                           const gfx::Rect& rect,
@@ -430,7 +433,7 @@ void NativeThemeBase::PaintScrollbarThumb(SkCanvas* canvas,
   SkScalar thumb[3];
   SkColorToHSV(hovered ? thumb_active_color_ : thumb_inactive_color_, thumb);
 
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(SaturateAndBrighten(thumb, 0, 0.02f));
 
   SkIRect skrect;
@@ -497,12 +500,11 @@ void NativeThemeBase::PaintScrollbarThumb(SkCanvas* canvas,
   }
 }
 
-void NativeThemeBase::PaintScrollbarCorner(SkCanvas* canvas,
+void NativeThemeBase::PaintScrollbarCorner(cc::PaintCanvas* canvas,
                                            State state,
-                                           const gfx::Rect& rect) const {
-}
+                                           const gfx::Rect& rect) const {}
 
-void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,
+void NativeThemeBase::PaintCheckbox(cc::PaintCanvas* canvas,
                                     State state,
                                     const gfx::Rect& rect,
                                     const ButtonExtraParams& button) const {
@@ -510,9 +512,9 @@ void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,
                                            SkIntToScalar(2));
   if (!skrect.isEmpty()) {
     // Draw the checkmark / dash.
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStyle(cc::PaintFlags::kStroke_Style);
     if (state == kDisabled)
       paint.setColor(kCheckboxStrokeDisabledColor);
     else
@@ -541,11 +543,10 @@ void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,
 // Returns the rectangle within which any additional decorations should be
 // drawn, or empty if none.
 SkRect NativeThemeBase::PaintCheckboxRadioCommon(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const SkScalar borderRadius) const {
-
   SkRect skrect = gfx::RectToSkRect(rect);
 
   // Use the largest square that fits inside the provided rectangle.
@@ -560,9 +561,9 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   // to have to worry about '- 1' and '+ 1' calculations below having overflow
   // or underflow.
   if (skrect.width() <= 2) {
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setColor(kCheckboxTinyColor);
-    paint.setStyle(SkPaint::kFill_Style);
+    paint.setStyle(cc::PaintFlags::kFill_Style);
     canvas->drawRect(skrect, paint);
     // Too small to draw anything more.
     return SkRect::MakeEmpty();
@@ -573,7 +574,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
 
   // Draw the drop shadow below the widget.
   if (state != kPressed) {
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setAntiAlias(true);
     SkRect shadowRect = skrect;
     shadowRect.offset(0, 1);
@@ -583,7 +584,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
       paint.setColor(kCheckboxShadowHoveredColor);
     else
       paint.setColor(kCheckboxShadowColor);
-    paint.setStyle(SkPaint::kFill_Style);
+    paint.setStyle(cc::PaintFlags::kFill_Style);
     canvas->drawRoundRect(shadowRect, borderRadius, borderRadius, paint);
   }
 
@@ -602,11 +603,11 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   else /* kNormal */
     startEndColors = kCheckboxGradientColors;
   SkColor colors[3] = {startEndColors[0], startEndColors[0], startEndColors[1]};
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAntiAlias(true);
-  paint.setShader(SkGradientShader::MakeLinear(gradient_bounds, colors, NULL, 3,
-                                               SkShader::kClamp_TileMode));
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
+      gradient_bounds, colors, NULL, 3, SkShader::kClamp_TileMode)));
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   canvas->drawRoundRect(skrect, borderRadius, borderRadius, paint);
   paint.setShader(NULL);
 
@@ -617,7 +618,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
     paint.setColor(kCheckboxBorderDisabledColor);
   else
     paint.setColor(kCheckboxBorderColor);
-  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(SkIntToScalar(1));
   skrect.inset(SkFloatToScalar(.5f), SkFloatToScalar(.5f));
   canvas->drawRoundRect(skrect, borderRadius, borderRadius, paint);
@@ -627,11 +628,10 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   return skrect;
 }
 
-void NativeThemeBase::PaintRadio(SkCanvas* canvas,
-                                  State state,
-                                  const gfx::Rect& rect,
-                                  const ButtonExtraParams& button) const {
-
+void NativeThemeBase::PaintRadio(cc::PaintCanvas* canvas,
+                                 State state,
+                                 const gfx::Rect& rect,
+                                 const ButtonExtraParams& button) const {
   // Most of a radio button is the same as a checkbox, except the the rounded
   // square is a circle (i.e. border radius >= 100%).
   const SkScalar radius = SkFloatToScalar(
@@ -639,9 +639,9 @@ void NativeThemeBase::PaintRadio(SkCanvas* canvas,
   SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, radius);
   if (!skrect.isEmpty() && button.checked) {
     // Draw the dot.
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kFill_Style);
+    paint.setStyle(cc::PaintFlags::kFill_Style);
     if (state == kDisabled)
       paint.setColor(kRadioDotDisabledColor);
     else
@@ -653,11 +653,11 @@ void NativeThemeBase::PaintRadio(SkCanvas* canvas,
   }
 }
 
-void NativeThemeBase::PaintButton(SkCanvas* canvas,
+void NativeThemeBase::PaintButton(cc::PaintCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
                                   const ButtonExtraParams& button) const {
-  SkPaint paint;
+  cc::PaintFlags paint;
   SkRect skrect = gfx::RectToSkRect(rect);
   SkColor base_color = button.background_color;
 
@@ -684,11 +684,10 @@ void NativeThemeBase::PaintButton(SkCanvas* canvas,
     std::swap(gradient_bounds[0], gradient_bounds[1]);
   SkColor colors[2] = { light_color, base_color };
 
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setAntiAlias(true);
-  paint.setShader(
-      SkGradientShader::MakeLinear(
-          gradient_bounds, colors, NULL, 2, SkShader::kClamp_TileMode));
+  paint.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
+      gradient_bounds, colors, NULL, 2, SkShader::kClamp_TileMode)));
 
   canvas->drawRoundRect(skrect, SkIntToScalar(1), SkIntToScalar(1), paint);
   paint.setShader(NULL);
@@ -699,7 +698,7 @@ void NativeThemeBase::PaintButton(SkCanvas* canvas,
       border_alpha = 0xff;
       paint.setColor(GetSystemColor(kColorId_FocusedBorderColor));
     }
-    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStyle(cc::PaintFlags::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(1));
     paint.setAlpha(border_alpha);
     skrect.inset(SkFloatToScalar(.5f), SkFloatToScalar(.5f));
@@ -707,28 +706,28 @@ void NativeThemeBase::PaintButton(SkCanvas* canvas,
   }
 }
 
-void NativeThemeBase::PaintTextField(SkCanvas* canvas,
+void NativeThemeBase::PaintTextField(cc::PaintCanvas* canvas,
                                      State state,
                                      const gfx::Rect& rect,
                                      const TextFieldExtraParams& text) const {
   SkRect bounds;
   bounds.set(rect.x(), rect.y(), rect.right() - 1, rect.bottom() - 1);
 
-  SkPaint fill_paint;
-  fill_paint.setStyle(SkPaint::kFill_Style);
+  cc::PaintFlags fill_paint;
+  fill_paint.setStyle(cc::PaintFlags::kFill_Style);
   fill_paint.setColor(text.background_color);
   canvas->drawRect(bounds, fill_paint);
 
   // Text INPUT, listbox SELECT, and TEXTAREA have consistent borders.
   // border: 1px solid #a9a9a9
-  SkPaint stroke_paint;
-  stroke_paint.setStyle(SkPaint::kStroke_Style);
+  cc::PaintFlags stroke_paint;
+  stroke_paint.setStyle(cc::PaintFlags::kStroke_Style);
   stroke_paint.setColor(kTextBorderColor);
   canvas->drawRect(bounds, stroke_paint);
 }
 
 void NativeThemeBase::PaintMenuList(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const MenuListExtraParams& menu_list) const {
@@ -741,10 +740,10 @@ void NativeThemeBase::PaintMenuList(
     PaintButton(canvas, state, rect, button);
   }
 
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(menu_list.arrow_color);
   paint.setAntiAlias(true);
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
 
   int arrow_size = menu_list.arrow_size;
   gfx::Rect arrow(
@@ -765,14 +764,14 @@ void NativeThemeBase::PaintMenuList(
 }
 
 void NativeThemeBase::PaintMenuPopupBackground(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
   canvas->drawColor(kMenuPopupBackgroundColor, SkBlendMode::kSrc);
 }
 
 void NativeThemeBase::PaintMenuItemBackground(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const MenuItemExtraParams& menu_item) const {
@@ -780,23 +779,23 @@ void NativeThemeBase::PaintMenuItemBackground(
 }
 
 void NativeThemeBase::PaintMenuSeparator(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const MenuSeparatorExtraParams& menu_separator) const {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(GetSystemColor(ui::NativeTheme::kColorId_MenuSeparatorColor));
   canvas->drawRect(gfx::RectToSkRect(*menu_separator.paint_rect), paint);
 }
 
-void NativeThemeBase::PaintSliderTrack(SkCanvas* canvas,
+void NativeThemeBase::PaintSliderTrack(cc::PaintCanvas* canvas,
                                        State state,
                                        const gfx::Rect& rect,
                                        const SliderExtraParams& slider) const {
   const int kMidX = rect.x() + rect.width() / 2;
   const int kMidY = rect.y() + rect.height() / 2;
 
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(kSliderTrackBackgroundColor);
 
   SkRect skrect;
@@ -814,7 +813,7 @@ void NativeThemeBase::PaintSliderTrack(SkCanvas* canvas,
   canvas->drawRect(skrect, paint);
 }
 
-void NativeThemeBase::PaintSliderThumb(SkCanvas* canvas,
+void NativeThemeBase::PaintSliderThumb(cc::PaintCanvas* canvas,
                                        State state,
                                        const gfx::Rect& rect,
                                        const SliderExtraParams& slider) const {
@@ -822,7 +821,7 @@ void NativeThemeBase::PaintSliderThumb(SkCanvas* canvas,
   const int kMidX = rect.x() + rect.width() / 2;
   const int kMidY = rect.y() + rect.height() / 2;
 
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(hovered ? SK_ColorWHITE : kSliderThumbLightGrey);
 
   SkIRect skrect;
@@ -852,7 +851,8 @@ void NativeThemeBase::PaintSliderThumb(SkCanvas* canvas,
   }
 }
 
-void NativeThemeBase::PaintInnerSpinButton(SkCanvas* canvas,
+void NativeThemeBase::PaintInnerSpinButton(
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const InnerSpinButtonExtraParams& spin_button) const {
@@ -875,7 +875,7 @@ void NativeThemeBase::PaintInnerSpinButton(SkCanvas* canvas,
 }
 
 void NativeThemeBase::PaintProgressBar(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const ProgressBarExtraParams& progress_bar) const {
@@ -894,9 +894,9 @@ void NativeThemeBase::PaintProgressBar(
     path.moveTo(rect.x() + i * tick_spacing, rect.y());
     path.rLineTo(0, rect.height());
   }
-  SkPaint stroke_paint;
+  cc::PaintFlags stroke_paint;
   stroke_paint.setColor(kProgressTickColor);
-  stroke_paint.setStyle(SkPaint::kStroke_Style);
+  stroke_paint.setStyle(cc::PaintFlags::kStroke_Style);
   stroke_paint.setStrokeWidth(stroke_width);
   canvas->drawPath(path, stroke_paint);
 
@@ -904,9 +904,9 @@ void NativeThemeBase::PaintProgressBar(
   gfx::Rect progress_rect(progress_bar.value_rect_x, progress_bar.value_rect_y,
                           progress_bar.value_rect_width,
                           progress_bar.value_rect_height);
-  SkPaint progress_paint;
+  cc::PaintFlags progress_paint;
   progress_paint.setColor(kProgressValueColor);
-  progress_paint.setStyle(SkPaint::kFill_Style);
+  progress_paint.setStyle(cc::PaintFlags::kFill_Style);
   canvas->drawRect(gfx::RectToSkRect(progress_rect), progress_paint);
 
   // Draw the border.
@@ -952,29 +952,29 @@ SkColor NativeThemeBase::GetArrowColor(State state) const {
   return OutlineColor(track_hsv, thumb_hsv);
 }
 
-void NativeThemeBase::DrawVertLine(SkCanvas* canvas,
+void NativeThemeBase::DrawVertLine(cc::PaintCanvas* canvas,
                                    int x,
                                    int y1,
                                    int y2,
-                                   const SkPaint& paint) const {
+                                   const cc::PaintFlags& paint) const {
   SkIRect skrect;
   skrect.set(x, y1, x + 1, y2 + 1);
   canvas->drawIRect(skrect, paint);
 }
 
-void NativeThemeBase::DrawHorizLine(SkCanvas* canvas,
+void NativeThemeBase::DrawHorizLine(cc::PaintCanvas* canvas,
                                     int x1,
                                     int x2,
                                     int y,
-                                    const SkPaint& paint) const {
+                                    const cc::PaintFlags& paint) const {
   SkIRect skrect;
   skrect.set(x1, y, x2 + 1, y + 1);
   canvas->drawIRect(skrect, paint);
 }
 
-void NativeThemeBase::DrawBox(SkCanvas* canvas,
+void NativeThemeBase::DrawBox(cc::PaintCanvas* canvas,
                               const gfx::Rect& rect,
-                              const SkPaint& paint) const {
+                              const cc::PaintFlags& paint) const {
   const int right = rect.x() + rect.width() - 1;
   const int bottom = rect.y() + rect.height() - 1;
   DrawHorizLine(canvas, rect.x(), right, rect.y(), paint);

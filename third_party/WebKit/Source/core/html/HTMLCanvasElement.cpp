@@ -70,6 +70,7 @@
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/image-encoders/ImageEncoderUtils.h"
 #include "platform/transforms/AffineTransform.h"
 #include "public/platform/Platform.h"
@@ -393,7 +394,8 @@ void HTMLCanvasElement::didDisableAcceleration() {
   didDraw(FloatRect(0, 0, size().width(), size().height()));
 }
 
-void HTMLCanvasElement::restoreCanvasMatrixClipStack(SkCanvas* canvas) const {
+void HTMLCanvasElement::restoreCanvasMatrixClipStack(
+    PaintCanvas* canvas) const {
   if (m_context)
     m_context->restoreCanvasMatrixClipStack(canvas);
 }
@@ -820,7 +822,7 @@ bool HTMLCanvasElement::shouldAccelerate(AccelerationCriteria criteria) const {
   if (RuntimeEnabledFeatures::displayList2dCanvasEnabled()) {
 #if 0
         // TODO(junov): re-enable this code once we solve the problem of recording
-        // GPU-backed images to an SkPicture for cross-context rendering crbug.com/490328
+        // GPU-backed images to a PaintRecord for cross-context rendering crbug.com/490328
 
         // If the compositor provides GPU acceleration to display list canvases, we
         // prefer that over direct acceleration.
@@ -1087,7 +1089,7 @@ void HTMLCanvasElement::updateExternallyAllocatedMemory() const {
   m_externallyAllocatedMemory = externallyAllocatedMemory;
 }
 
-SkCanvas* HTMLCanvasElement::drawingCanvas() const {
+PaintCanvas* HTMLCanvasElement::drawingCanvas() const {
   return buffer() ? m_imageBuffer->canvas() : nullptr;
 }
 
@@ -1096,7 +1098,7 @@ void HTMLCanvasElement::disableDeferral(DisableDeferralReason reason) const {
     m_imageBuffer->disableDeferral(reason);
 }
 
-SkCanvas* HTMLCanvasElement::existingDrawingCanvas() const {
+PaintCanvas* HTMLCanvasElement::existingDrawingCanvas() const {
   if (!hasImageBuffer())
     return nullptr;
 

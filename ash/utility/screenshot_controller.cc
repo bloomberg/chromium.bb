@@ -160,7 +160,7 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
     if (pseudo_cursor_point.y() == region_.y())
       pseudo_cursor_point.Offset(0, -1);
 
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setAntiAlias(false);
     paint.setStrokeWidth(1);
     paint.setColor(SK_ColorWHITE);

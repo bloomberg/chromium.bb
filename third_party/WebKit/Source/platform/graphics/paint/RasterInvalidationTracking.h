@@ -8,9 +8,9 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/Region.h"
 #include "platform/graphics/PaintInvalidationReason.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "platform/json/JSONValues.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
@@ -45,7 +45,7 @@ struct UnderPaintInvalidation {
 struct PLATFORM_EXPORT RasterInvalidationTracking {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   Vector<RasterInvalidationInfo> trackedRasterInvalidations;
-  sk_sp<SkPicture> lastPaintedPicture;
+  sk_sp<PaintRecord> lastPaintedPicture;
   IntRect lastInterestRect;
   Region rasterInvalidationRegionSinceLastPaint;
   Vector<UnderPaintInvalidation> underPaintInvalidations;

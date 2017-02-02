@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"
@@ -105,9 +105,9 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
         TableColumnAlignmentToCanvasAlignment(columns[i].column.alignment));
 
     if (paint_sort_indicator) {
-      SkPaint paint;
+      cc::PaintFlags paint;
       paint.setColor(text_color);
-      paint.setStyle(SkPaint::kFill_Style);
+      paint.setStyle(cc::PaintFlags::kFill_Style);
       paint.setAntiAlias(true);
 
       int indicator_x = 0;

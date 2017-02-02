@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "third_party/skia/include/core/SkPaint.h"
+#include "cc/paint/paint_flags.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
@@ -221,7 +221,7 @@ void ImageView::OnPaintImage(gfx::Canvas* canvas) {
 
   if (image_bounds.size() != gfx::Size(image_.width(), image_.height())) {
     // Resize case
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setFilterQuality(kLow_SkFilterQuality);
     canvas->DrawImageInt(image_, 0, 0, image_.width(), image_.height(),
         image_bounds.x(), image_bounds.y(), image_bounds.width(),

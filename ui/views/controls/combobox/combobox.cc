@@ -857,7 +857,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
     path.rLineTo(2 * kEpsilon, 0);
     path.rLineTo(height, -height);
     path.close();
-    SkPaint paint;
+    cc::PaintFlags paint;
     SkColor arrow_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_ButtonEnabledColor);
     if (!enabled())

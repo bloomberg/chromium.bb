@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/md_slider.h"
 
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -59,8 +60,8 @@ void MdSlider::OnPaint(gfx::Canvas* canvas) {
   // Extra space used to hide slider ends behind the thumb.
   const int extra_padding = 1;
 
-  SkPaint slider_paint;
-  slider_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  cc::PaintFlags slider_paint;
+  slider_paint.setAntiAlias(true);
   slider_paint.setColor(current_thumb_color);
   canvas->DrawRoundRect(
       gfx::Rect(content.x(), y, full + extra_padding, kLineThickness),
@@ -76,21 +77,21 @@ void MdSlider::OnPaint(gfx::Canvas* canvas) {
   const int thumb_highlight_radius =
       HasFocus() ? kThumbHighlightRadius : thumb_highlight_radius_;
   if (is_active_ && thumb_highlight_radius > kThumbRadius) {
-    SkPaint highlight;
+    cc::PaintFlags highlight;
     SkColor kHighlightColor = SkColorSetA(kActiveColor, kHighlightColorAlpha);
     highlight.setColor(kHighlightColor);
-    highlight.setFlags(SkPaint::kAntiAlias_Flag);
+    highlight.setFlags(cc::PaintFlags::kAntiAlias_Flag);
     canvas->DrawCircle(thumb_center, thumb_highlight_radius, highlight);
   }
 
   // Paint the thumb of the slider.
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(current_thumb_color);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
+  paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
 
   if (!is_active_) {
     paint.setStrokeWidth(kThumbStroke);
-    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStyle(cc::PaintFlags::kStroke_Style);
   }
   canvas->DrawCircle(
       thumb_center,

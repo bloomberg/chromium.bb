@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "grit/ash_resources.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
@@ -62,9 +61,9 @@ const int kIconPaddingVerticalMD = 8;
 
 // Paints an activity indicator on |canvas| whose |size| is specified in DIP.
 void PaintIndicatorOnCanvas(gfx::Canvas* canvas, const gfx::Size& size) {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(kIndicatorColor);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
+  paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
   canvas->DrawCircle(
       gfx::Point(size.width() / 2,
                  size.height() - kIndicatorOffsetFromBottom - kIndicatorRadius),

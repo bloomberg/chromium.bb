@@ -8,11 +8,9 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageObserver.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSize.h"
 
@@ -44,14 +42,14 @@ sk_sp<SkImage> PlaceholderImage::imageForCurrentFrame(
   context.fillRect(destRect);
 
   m_imageForCurrentFrame = SkImage::MakeFromPicture(
-      builder.endRecording(), SkISize::Make(m_size.width(), m_size.height()),
-      nullptr, nullptr);
+      ToSkPicture(builder.endRecording()),
+      SkISize::Make(m_size.width(), m_size.height()), nullptr, nullptr);
 
   return m_imageForCurrentFrame;
 }
 
-void PlaceholderImage::draw(SkCanvas* canvas,
-                            const SkPaint& basePaint,
+void PlaceholderImage::draw(PaintCanvas* canvas,
+                            const PaintFlags& basePaint,
                             const FloatRect& destRect,
                             const FloatRect& srcRect,
                             RespectImageOrientationEnum,
@@ -65,8 +63,8 @@ void PlaceholderImage::draw(SkCanvas* canvas,
     return;
   }
 
-  SkPaint paint(basePaint);
-  paint.setStyle(SkPaint::kFill_Style);
+  PaintFlags paint(basePaint);
+  paint.setStyle(PaintFlags::kFill_Style);
   paint.setColor(kFillColor);
   canvas->drawRect(destRect, paint);
 }

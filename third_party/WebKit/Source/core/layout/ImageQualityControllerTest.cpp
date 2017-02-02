@@ -55,8 +55,8 @@ class TestImageAnimated : public Image {
   }
   IntSize size() const override { return IntSize(); }
   void destroyDecodedData() override {}
-  void draw(SkCanvas*,
-            const SkPaint&,
+  void draw(PaintCanvas*,
+            const PaintFlags&,
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
@@ -86,8 +86,8 @@ class TestImageWithContrast : public Image {
   }
   IntSize size() const override { return IntSize(); }
   void destroyDecodedData() override {}
-  void draw(SkCanvas*,
-            const SkPaint&,
+  void draw(PaintCanvas*,
+            const PaintFlags&,
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
@@ -121,8 +121,8 @@ class TestImageLowQuality : public Image {
   }
   IntSize size() const override { return IntSize(1, 1); }
   void destroyDecodedData() override {}
-  void draw(SkCanvas*,
-            const SkPaint&,
+  void draw(PaintCanvas*,
+            const PaintFlags&,
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,

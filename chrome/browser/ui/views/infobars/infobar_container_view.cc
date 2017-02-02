@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 
+#include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_shader.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
@@ -35,7 +37,7 @@ class ContentShadow : public views::View {
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override {
     // The first shader (small shadow) blurs from 0 to kSmallShadowHeight.
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setShader(gfx::CreateGradientShader(
         0, kSmallShadowHeight, SkColorSetA(SK_ColorBLACK, kSmallShadowAlpha),
         SkColorSetA(SK_ColorBLACK, SK_AlphaTRANSPARENT)));

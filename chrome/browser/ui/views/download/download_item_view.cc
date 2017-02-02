@@ -730,7 +730,7 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
   // Draw the icon image.
   int icon_x = progress_x + DownloadShelf::kFiletypeIconOffset;
   int icon_y = progress_y + DownloadShelf::kFiletypeIconOffset;
-  SkPaint paint;
+  cc::PaintFlags paint;
   // Use an alpha to make the image look disabled.
   if (!enabled())
     paint.setAlpha(120);

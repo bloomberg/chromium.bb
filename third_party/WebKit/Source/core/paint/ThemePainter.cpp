@@ -37,6 +37,7 @@
 #include "core/style/ComputedStyle.h"
 #include "platform/Theme.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFallbackThemeEngine.h"
 #include "public/platform/WebRect.h"
@@ -363,7 +364,7 @@ bool ThemePainter::paintCheckboxUsingFallbackTheme(const LayoutObject& o,
                                                    const PaintInfo& i,
                                                    const IntRect& r) {
   WebFallbackThemeEngine::ExtraParams extraParams;
-  WebCanvas* canvas = i.context.canvas();
+  PaintCanvas* canvas = i.context.canvas();
   extraParams.button.checked = LayoutTheme::isChecked(o);
   extraParams.button.indeterminate = LayoutTheme::isIndeterminate(o);
 

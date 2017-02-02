@@ -9,14 +9,14 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
+#include "platform/graphics/paint/PaintCanvas.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include <memory>
@@ -53,7 +53,7 @@ class FakeImageBufferClient : public ImageBufferClient,
     m_imageBuffer->finalizeFrame(dirtyRect);
     ASSERT_FALSE(m_isDirty);
   }
-  void restoreCanvasMatrixClipStack(SkCanvas*) const override {}
+  void restoreCanvasMatrixClipStack(PaintCanvas*) const override {}
 
   void fakeDraw() {
     if (m_isDirty)
@@ -115,7 +115,7 @@ class RecordingImageBufferSurfaceTest : public Test {
  public:
   void testEmptyPicture() {
     m_testSurface->initializeCurrentFrame();
-    sk_sp<SkPicture> picture = m_testSurface->getPicture();
+    sk_sp<PaintRecord> picture = m_testSurface->getPicture();
     EXPECT_TRUE((bool)picture.get());
     EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
     expectDisplayListEnabled(true);
@@ -202,7 +202,7 @@ class RecordingImageBufferSurfaceTest : public Test {
   void testClearRect() {
     m_testSurface->initializeCurrentFrame();
     m_testSurface->getPicture();
-    SkPaint clearPaint;
+    PaintFlags clearPaint;
     clearPaint.setBlendMode(SkBlendMode::kClear);
     m_imageBuffer->canvas()->drawRect(
         SkRect::MakeWH(m_testSurface->size().width(),

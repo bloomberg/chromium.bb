@@ -34,18 +34,18 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/graphics/paint/PaintCanvas.h"
+#include "platform/graphics/paint/PaintFlags.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
-class SkCanvas;
 class SkColorSpace;
 class SkImage;
 struct SkImageInfo;
-class SkPicture;
 
 namespace blink {
 
@@ -61,7 +61,7 @@ class PLATFORM_EXPORT ImageBufferSurface {
  public:
   virtual ~ImageBufferSurface();
 
-  virtual SkCanvas* canvas() = 0;
+  virtual PaintCanvas* canvas() = 0;
   virtual void disableDeferral(DisableDeferralReason) {}
   virtual void willOverwriteCanvas() {}
   virtual void didDraw(const FloatRect& rect) {}
@@ -74,7 +74,7 @@ class PLATFORM_EXPORT ImageBufferSurface {
   virtual void setFilterQuality(SkFilterQuality) {}
   virtual void setIsHidden(bool) {}
   virtual void setImageBuffer(ImageBuffer*) {}
-  virtual sk_sp<SkPicture> getPicture();
+  virtual sk_sp<PaintRecord> getPicture();
   virtual void finalizeFrame(const FloatRect& dirtyRect) {}
   virtual void draw(GraphicsContext&,
                     const FloatRect& destRect,

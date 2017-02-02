@@ -43,7 +43,6 @@
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageDeserializer.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HexNumber.h"
@@ -54,7 +53,7 @@
 
 namespace blink {
 
-PictureSnapshot::PictureSnapshot(sk_sp<const SkPicture> picture)
+PictureSnapshot::PictureSnapshot(sk_sp<const PaintRecord> picture)
     : m_picture(std::move(picture)) {}
 
 class SkiaImageDecoder final : public SkImageDeserializer {
@@ -84,13 +83,13 @@ class SkiaImageDecoder final : public SkImageDeserializer {
 PassRefPtr<PictureSnapshot> PictureSnapshot::load(
     const Vector<RefPtr<TilePictureStream>>& tiles) {
   ASSERT(!tiles.isEmpty());
-  Vector<sk_sp<SkPicture>> pictures;
+  Vector<sk_sp<PaintRecord>> pictures;
   pictures.reserveCapacity(tiles.size());
   FloatRect unionRect;
   for (const auto& tileStream : tiles) {
     SkMemoryStream stream(tileStream->data.begin(), tileStream->data.size());
     SkiaImageDecoder factory;
-    sk_sp<SkPicture> picture = SkPicture::MakeFromStream(&stream, &factory);
+    sk_sp<PaintRecord> picture = PaintRecord::MakeFromStream(&stream, &factory);
     if (!picture)
       return nullptr;
     FloatRect cullRect(picture->cullRect());
@@ -100,8 +99,8 @@ PassRefPtr<PictureSnapshot> PictureSnapshot::load(
   }
   if (tiles.size() == 1)
     return adoptRef(new PictureSnapshot(std::move(pictures[0])));
-  SkPictureRecorder recorder;
-  SkCanvas* canvas =
+  PaintRecorder recorder;
+  PaintCanvas* canvas =
       recorder.beginRecording(unionRect.width(), unionRect.height(), 0, 0);
   for (size_t i = 0; i < pictures.size(); ++i) {
     canvas->save();
@@ -140,7 +139,10 @@ std::unique_ptr<Vector<char>> PictureSnapshot::replay(unsigned fromStep,
 
     canvas.scale(scale, scale);
     canvas.resetStepCount();
-    m_picture->playback(&canvas, &canvas);
+
+    // TODO(enne): Handle this abort callback in PaintRecord::playback.
+    PaintCanvasPassThrough passthrough(&canvas);
+    m_picture->playback(&passthrough, &canvas);
   }
   std::unique_ptr<Vector<char>> base64Data = WTF::makeUnique<Vector<char>>();
   Vector<char> encodedImage;
@@ -198,7 +200,8 @@ std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::profile(
 std::unique_ptr<JSONArray> PictureSnapshot::snapshotCommandLog() const {
   const SkIRect bounds = m_picture->cullRect().roundOut();
   LoggingCanvas canvas(bounds.width(), bounds.height());
-  m_picture->playback(&canvas);
+  PaintCanvasPassThrough passthrough(&canvas);
+  m_picture->playback(&passthrough);
   return canvas.log();
 }
 

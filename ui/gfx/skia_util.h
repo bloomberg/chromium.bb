@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"

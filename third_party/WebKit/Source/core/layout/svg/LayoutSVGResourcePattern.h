@@ -29,8 +29,6 @@
 #include "wtf/HashMap.h"
 #include <memory>
 
-class SkPicture;
-
 namespace blink {
 
 class AffineTransform;
@@ -55,8 +53,8 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
 
  private:
   std::unique_ptr<PatternData> buildPatternData(const LayoutObject&);
-  sk_sp<SkPicture> asPicture(const FloatRect& tile,
-                             const AffineTransform&) const;
+  sk_sp<PaintRecord> asPicture(const FloatRect& tile,
+                               const AffineTransform&) const;
   PatternData* patternForLayoutObject(const LayoutObject&);
 
   const LayoutSVGResourceContainer* resolveContentElement() const;

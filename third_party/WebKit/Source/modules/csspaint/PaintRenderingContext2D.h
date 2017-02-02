@@ -11,8 +11,6 @@
 #include "platform/graphics/ImageBuffer.h"
 #include <memory>
 
-class SkCanvas;
-
 namespace blink {
 
 class CanvasImageSource;
@@ -50,8 +48,8 @@ class MODULES_EXPORT PaintRenderingContext2D
 
   bool parseColorOrCurrentColor(Color&, const String& colorString) const final;
 
-  SkCanvas* drawingCanvas() const final;
-  SkCanvas* existingDrawingCanvas() const final;
+  PaintCanvas* drawingCanvas() const final;
+  PaintCanvas* existingDrawingCanvas() const final;
   void disableDeferral(DisableDeferralReason) final {}
 
   AffineTransform baseTransform() const final;

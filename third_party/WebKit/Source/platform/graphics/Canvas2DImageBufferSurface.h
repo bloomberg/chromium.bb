@@ -78,7 +78,7 @@ class Canvas2DImageBufferSurface final : public ImageBufferSurface {
     m_layerBridge->finalizeFrame(dirtyRect);
   }
   void willOverwriteCanvas() override { m_layerBridge->willOverwriteCanvas(); }
-  SkCanvas* canvas() override { return m_layerBridge->canvas(); }
+  PaintCanvas* canvas() override { return m_layerBridge->canvas(); }
   void disableDeferral(DisableDeferralReason reason) override {
     m_layerBridge->disableDeferral(reason);
   }

@@ -28,11 +28,10 @@
 #define CanvasStyle_h
 
 #include "platform/graphics/Color.h"
+#include "platform/graphics/paint/PaintFlags.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
-
-class SkPaint;
 
 namespace blink {
 
@@ -55,7 +54,7 @@ class CanvasStyle final : public GarbageCollected<CanvasStyle> {
   CanvasGradient* getCanvasGradient() const { return m_gradient.get(); }
   CanvasPattern* getCanvasPattern() const { return m_pattern; }
 
-  void applyToPaint(SkPaint&) const;
+  void applyToPaint(PaintFlags&) const;
   RGBA32 paintColor() const;
 
   bool isEquivalentRGBA(RGBA32 rgba) const {

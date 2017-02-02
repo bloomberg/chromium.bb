@@ -6,7 +6,6 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -64,7 +63,7 @@ void RoundedImageView::OnPaint(gfx::Canvas* canvas) {
       SkIntToScalar(corner_radius_[3]), SkIntToScalar(corner_radius_[3])};
   SkPath path;
   path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius);
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAntiAlias(true);
   const bool grayscale =
       !active_user_ && !MaterialDesignController::IsSystemTrayMenuMaterial();

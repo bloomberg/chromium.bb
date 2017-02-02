@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_shader.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -216,10 +217,10 @@ void DrawHighlight(gfx::Canvas* canvas,
                    SkScalar radius,
                    SkColor color) {
   const SkColor colors[2] = { color, SkColorSetA(color, 0) };
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAntiAlias(true);
-  paint.setShader(SkGradientShader::MakeRadial(p, radius, colors, nullptr, 2,
-                                               SkShader::kClamp_TileMode));
+  paint.setShader(cc::WrapSkShader(SkGradientShader::MakeRadial(
+      p, radius, colors, nullptr, 2, SkShader::kClamp_TileMode)));
   canvas->sk_canvas()->drawRect(
       SkRect::MakeXYWH(p.x() - radius, p.y() - radius, radius * 2, radius * 2),
       paint);
@@ -1285,7 +1286,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* fill_canvas,
                                         int fill_id,
                                         int y_offset) {
   gfx::Path fill;
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAntiAlias(true);
 
   // Draw the fill.
@@ -1357,7 +1358,7 @@ void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
     gfx::Canvas icon_canvas(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize),
                             canvas->image_scale(), false);
     icon_canvas.DrawImageInt(favicon_, 0, 0);
-    SkPaint clear_paint;
+    cc::PaintFlags clear_paint;
     clear_paint.setAntiAlias(true);
     clear_paint.setBlendMode(SkBlendMode::kClear);
     const int circle_x = base::i18n::IsRTL() ? 0 : gfx::kFaviconSize;
@@ -1372,7 +1373,7 @@ void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
 
   // Draws the actual pinned tab title changed indicator.
   const int kIndicatorRadius = 3;
-  SkPaint indicator_paint;
+  cc::PaintFlags indicator_paint;
   indicator_paint.setColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_ProminentButtonColor));
   indicator_paint.setAntiAlias(true);

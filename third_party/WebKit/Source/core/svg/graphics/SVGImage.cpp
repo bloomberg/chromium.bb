@@ -54,9 +54,9 @@
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -227,8 +227,8 @@ FloatSize SVGImage::concreteObjectSize(
   return defaultObjectSize;
 }
 
-void SVGImage::drawForContainer(SkCanvas* canvas,
-                                const SkPaint& paint,
+void SVGImage::drawForContainer(PaintCanvas* canvas,
+                                const PaintFlags& paint,
                                 const FloatSize containerSize,
                                 float zoom,
                                 const FloatRect& dstRect,
@@ -306,20 +306,20 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context,
     // spacing area.
     if (tile != spacedTile)
       patternPicture.context().clip(tile);
-    SkPaint paint;
+    PaintFlags paint;
     drawForContainer(patternPicture.context().canvas(), paint, containerSize,
                      zoom, tile, srcRect, url);
   }
-  sk_sp<SkPicture> tilePicture = patternPicture.endRecording();
+  sk_sp<PaintRecord> tilePicture = patternPicture.endRecording();
 
   SkMatrix patternTransform;
   patternTransform.setTranslate(phase.x() + spacedTile.x(),
                                 phase.y() + spacedTile.y());
 
-  SkPaint paint;
-  paint.setShader(SkShader::MakePictureShader(
-      std::move(tilePicture), SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, &patternTransform, nullptr));
+  PaintFlags paint;
+  paint.setShader(MakePaintShaderRecord(tilePicture, SkShader::kRepeat_TileMode,
+                                        SkShader::kRepeat_TileMode,
+                                        &patternTransform, nullptr));
   paint.setBlendMode(compositeOp);
   paint.setColorFilter(sk_ref_sp(context.getColorFilter()));
   context.drawRect(dstRect, paint);
@@ -333,25 +333,25 @@ sk_sp<SkImage> SVGImage::imageForCurrentFrameForContainer(
 
   const FloatRect containerRect((FloatPoint()), FloatSize(containerSize));
 
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(containerRect);
-  drawForContainer(canvas, SkPaint(), containerRect.size(), 1, containerRect,
+  PaintRecorder recorder;
+  PaintCanvas* canvas = recorder.beginRecording(containerRect);
+  drawForContainer(canvas, PaintFlags(), containerRect.size(), 1, containerRect,
                    containerRect, url);
 
   return SkImage::MakeFromPicture(
-      recorder.finishRecordingAsPicture(),
+      ToSkPicture(recorder.finishRecordingAsPicture()),
       SkISize::Make(containerSize.width(), containerSize.height()), nullptr,
       nullptr);
 }
 
-static bool drawNeedsLayer(const SkPaint& paint) {
+static bool drawNeedsLayer(const PaintFlags& paint) {
   if (SkColorGetA(paint.getColor()) < 255)
     return true;
   return !paint.isSrcOver();
 }
 
-void SVGImage::draw(SkCanvas* canvas,
-                    const SkPaint& paint,
+void SVGImage::draw(PaintCanvas* canvas,
+                    const PaintFlags& paint,
                     const FloatRect& dstRect,
                     const FloatRect& srcRect,
                     RespectImageOrientationEnum shouldRespectImageOrientation,
@@ -366,8 +366,8 @@ void SVGImage::draw(SkCanvas* canvas,
                clampMode, KURL());
 }
 
-void SVGImage::drawInternal(SkCanvas* canvas,
-                            const SkPaint& paint,
+void SVGImage::drawInternal(PaintCanvas* canvas,
+                            const PaintFlags& paint,
                             const FloatRect& dstRect,
                             const FloatRect& srcRect,
                             RespectImageOrientationEnum,
@@ -424,12 +424,12 @@ void SVGImage::drawInternal(SkCanvas* canvas,
   }
 
   {
-    SkAutoCanvasRestore ar(canvas, false);
+    PaintCanvasAutoRestore ar(canvas, false);
     if (drawNeedsLayer(paint)) {
       SkRect layerRect = dstRect;
       canvas->saveLayer(&layerRect, &paint);
     }
-    sk_sp<const SkPicture> recording = imagePicture.endRecording();
+    sk_sp<PaintRecord> recording = imagePicture.endRecording();
     canvas->drawPicture(recording.get());
   }
 

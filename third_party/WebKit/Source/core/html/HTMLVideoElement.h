@@ -33,8 +33,6 @@
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-class SkPaint;
-
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -69,7 +67,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   unsigned webkitDroppedFrameCount() const;
 
   // Used by canvas to gain raw pixel access
-  void paintCurrentFrame(SkCanvas*, const IntRect&, const SkPaint*) const;
+  void paintCurrentFrame(PaintCanvas*, const IntRect&, const PaintFlags*) const;
 
   // Used by WebGL to do GPU-GPU textures copy if possible.
   // The caller is responsible for allocating the destination texture.

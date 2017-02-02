@@ -109,10 +109,10 @@ class RuntimeFeatureChange {
   bool m_oldValue;
 };
 
-class MockCanvas : public SkCanvas {
+class MockCanvas : public PaintCanvas {
  public:
-  MockCanvas(int width, int height) : SkCanvas(width, height) {}
-  MOCK_METHOD2(onDrawRect, void(const SkRect&, const SkPaint&));
+  MockCanvas(int width, int height) : PaintCanvas(width, height) {}
+  MOCK_METHOD2(onDrawRect, void(const SkRect&, const PaintFlags&));
 };
 
 TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
@@ -130,8 +130,9 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
 
   MockCanvas canvas(viewportWidth, viewportHeight);
   EXPECT_CALL(canvas, onDrawRect(_, _)).Times(AtLeast(0));
-  EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(viewportWidth, viewportHeight),
-                                 Property(&SkPaint::getColor, SK_ColorYELLOW)));
+  EXPECT_CALL(canvas,
+              onDrawRect(SkRect::MakeWH(viewportWidth, viewportHeight),
+                         Property(&PaintFlags::getColor, SK_ColorYELLOW)));
 
   GraphicsLayer* graphicsLayer = pageOverlay->graphicsLayer();
   WebRect rect(0, 0, viewportWidth, viewportHeight);

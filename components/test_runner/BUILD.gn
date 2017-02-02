@@ -112,6 +112,7 @@ component("test_runner") {
     "//base:i18n",
     "//cc",
     "//cc/blink",
+    "//cc/paint",
     "//content/public/common",
     "//gin",
     "//gpu",

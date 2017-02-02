@@ -36,13 +36,13 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/PaintRecorder.h"
+#include "platform/graphics/paint/PaintShader.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/StdLibExtras.h"
 
 #include <math.h>
@@ -222,26 +222,26 @@ void Image::drawTiledBorder(GraphicsContext& ctxt,
 
 namespace {
 
-sk_sp<SkShader> createPatternShader(const SkImage* image,
-                                    const SkMatrix& shaderMatrix,
-                                    const SkPaint& paint,
-                                    const FloatSize& spacing,
-                                    SkShader::TileMode tmx,
-                                    SkShader::TileMode tmy) {
+sk_sp<PaintShader> createPatternShader(const SkImage* image,
+                                       const SkMatrix& shaderMatrix,
+                                       const SkPaint& paint,
+                                       const FloatSize& spacing,
+                                       SkShader::TileMode tmx,
+                                       SkShader::TileMode tmy) {
   if (spacing.isZero())
-    return image->makeShader(tmx, tmy, &shaderMatrix);
+    return MakePaintShaderImage(image, tmx, tmy, &shaderMatrix);
 
   // Arbitrary tiling is currently only supported for SkPictureShader, so we use
   // that instead of a plain bitmap shader to implement spacing.
   const SkRect tileRect = SkRect::MakeWH(image->width() + spacing.width(),
                                          image->height() + spacing.height());
 
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(tileRect);
+  PaintRecorder recorder;
+  PaintCanvas* canvas = recorder.beginRecording(tileRect);
   canvas->drawImage(image, 0, 0, &paint);
 
-  return SkShader::MakePictureShader(recorder.finishRecordingAsPicture(), tmx,
-                                     tmy, &shaderMatrix, nullptr);
+  return MakePaintShaderRecord(recorder.finishRecordingAsPicture(), tmx, tmy,
+                               &shaderMatrix, nullptr);
 }
 
 SkShader::TileMode computeTileMode(float left,
@@ -304,7 +304,7 @@ void Image::drawPattern(GraphicsContext& context,
                                    adjustedY + tileSize.height());
 
   {
-    SkPaint paint = context.fillPaint();
+    PaintFlags paint = context.fillPaint();
     paint.setColor(SK_ColorBLACK);
     paint.setBlendMode(compositeOp);
     paint.setFilterQuality(

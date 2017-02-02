@@ -27,6 +27,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform/graphics/StrokeData.h"
+#include "platform/graphics/paint/PaintFlags.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -56,8 +57,8 @@ void StrokeData::setLineDash(const DashArray& dashes, float dashOffset) {
   m_dash = SkDashPathEffect::Make(intervals.get(), count, dashOffset);
 }
 
-void StrokeData::setupPaint(SkPaint* paint, int length) const {
-  paint->setStyle(SkPaint::kStroke_Style);
+void StrokeData::setupPaint(PaintFlags* paint, int length) const {
+  paint->setStyle(PaintFlags::kStroke_Style);
   paint->setStrokeWidth(SkFloatToScalar(m_thickness));
   paint->setStrokeCap(m_lineCap);
   paint->setStrokeJoin(m_lineJoin);
@@ -66,7 +67,7 @@ void StrokeData::setupPaint(SkPaint* paint, int length) const {
   setupPaintDashPathEffect(paint, length);
 }
 
-void StrokeData::setupPaintDashPathEffect(SkPaint* paint, int length) const {
+void StrokeData::setupPaintDashPathEffect(PaintFlags* paint, int length) const {
   float width = m_thickness;
   if (m_dash) {
     paint->setPathEffect(m_dash);

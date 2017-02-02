@@ -4,6 +4,7 @@
 
 #include "ui/views/round_rect_painter.h"
 
+#include "cc/paint/paint_canvas.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
@@ -23,11 +24,11 @@ gfx::Size RoundRectPainter::GetMinimumSize() const {
 }
 
 void RoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(border_color_);
-  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(kBorderWidth);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
+  paint.setAntiAlias(true);
   gfx::Rect rect(size);
   rect.Inset(0, 0, kBorderWidth, kBorderWidth);
   SkRect skia_rect = gfx::RectToSkRect(rect);

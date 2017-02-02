@@ -38,8 +38,6 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/StringHash.h"
 
-class SkCanvas;
-
 namespace blink {
 
 class CanvasImageSource;
@@ -129,7 +127,7 @@ class CORE_EXPORT CanvasRenderingContext
 
   // Canvas2D-specific interface
   virtual bool is2d() const { return false; }
-  virtual void restoreCanvasMatrixClipStack(SkCanvas*) const {}
+  virtual void restoreCanvasMatrixClipStack(PaintCanvas*) const {}
   virtual void reset() {}
   virtual void clearRect(double x, double y, double width, double height) {}
   virtual void didSetSurfaceSize() {}

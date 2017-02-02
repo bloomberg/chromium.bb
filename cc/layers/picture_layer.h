@@ -35,7 +35,7 @@ class CC_EXPORT PictureLayer : public Layer {
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect) override;
   bool Update() override;
   void SetIsMask(bool is_mask) override;
-  sk_sp<SkPicture> GetPicture() const override;
+  sk_sp<PaintRecord> GetPicture() const override;
 
   bool IsSuitableForGpuRasterization() const override;
 

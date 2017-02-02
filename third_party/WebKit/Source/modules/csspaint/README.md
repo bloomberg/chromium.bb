@@ -41,13 +41,13 @@ registered the generator is notified so it can invalidate an display the correct
 
 ### Generating a [PaintGeneratedImage](../../platform/graphics/PaintGeneratedImage.h)
 
-`PaintGeneratedImage` is a `Image` which just paints a single `SkPicture`.
+`PaintGeneratedImage` is a `Image` which just paints a single `PaintRecord`.
 
 A `CSSPaintValue` can generate an image from the method `CSSPaintImageGenerator#paint`. This method
 calls through to `CSSPaintDefinition#paint` which actually invokes the javascript paint method.
 This method returns the `PaintGeneratedImage`.
 
-The `SkPicture` is produced from a `RecordingImageBufferSurface`.
+The `PaintRecord` is produced from a `RecordingImageBufferSurface`.
 
 ### Style Invalidation
 

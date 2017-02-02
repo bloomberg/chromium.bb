@@ -9,6 +9,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_surface.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
@@ -19,8 +21,6 @@
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/libyuv/include/libyuv.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkSurface.h"
 
 namespace {
 const float kMinFramesPerSecond = 1.0;
@@ -94,8 +94,8 @@ void HtmlVideoElementCapturerSource::StartCapture(
     return;
   }
   const blink::WebSize resolution = web_media_player_->naturalSize();
-  surface_ =
-      SkSurface::MakeRasterN32Premul(resolution.width, resolution.height);
+  surface_ = cc::PaintSurface::MakeRasterN32Premul(resolution.width,
+                                                   resolution.height);
   if (!surface_) {
     running_callback_.Run(false);
     return;
@@ -133,13 +133,12 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   const base::TimeTicks current_time = base::TimeTicks::Now();
   const blink::WebSize resolution = web_media_player_->naturalSize();
 
-  SkCanvas* canvas = surface_->getCanvas();
-  SkPaint paint;
+  cc::PaintCanvas* canvas = surface_->getCanvas();
+  cc::PaintFlags paint;
   paint.setBlendMode(SkBlendMode::kSrc);
   paint.setFilterQuality(kLow_SkFilterQuality);
   web_media_player_->paint(
-      canvas, blink::WebRect(0, 0, resolution.width, resolution.height),
-      paint);
+      canvas, blink::WebRect(0, 0, resolution.width, resolution.height), paint);
   DCHECK_NE(kUnknown_SkColorType, canvas->imageInfo().colorType());
   DCHECK_EQ(canvas->imageInfo().width(), resolution.width);
   DCHECK_EQ(canvas->imageInfo().height(), resolution.height);

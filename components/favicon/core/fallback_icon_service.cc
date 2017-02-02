@@ -58,8 +58,8 @@ void FallbackIconService::DrawFallbackIcon(
     gfx::Canvas* canvas) {
   const int kOffsetX = 0;
   const int kOffsetY = 0;
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
+  cc::PaintFlags paint;
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setAntiAlias(true);
 
   // Draw a filled, colored rounded square.

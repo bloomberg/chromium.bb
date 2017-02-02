@@ -34,6 +34,7 @@
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Pattern.h"
+#include "platform/graphics/paint/PaintFlags.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPathEffect.h"
 #include "wtf/Allocator.h"
@@ -51,8 +52,8 @@ class PLATFORM_EXPORT StrokeData final {
   StrokeData()
       : m_style(SolidStroke),
         m_thickness(0),
-        m_lineCap(SkPaint::kDefault_Cap),
-        m_lineJoin(SkPaint::kDefault_Join),
+        m_lineCap(PaintFlags::kDefault_Cap),
+        m_lineJoin(PaintFlags::kDefault_Join),
         m_miterLimit(4) {}
 
   StrokeStyle style() const { return m_style; }
@@ -61,9 +62,9 @@ class PLATFORM_EXPORT StrokeData final {
   float thickness() const { return m_thickness; }
   void setThickness(float thickness) { m_thickness = thickness; }
 
-  void setLineCap(LineCap cap) { m_lineCap = (SkPaint::Cap)cap; }
+  void setLineCap(LineCap cap) { m_lineCap = (PaintFlags::Cap)cap; }
 
-  void setLineJoin(LineJoin join) { m_lineJoin = (SkPaint::Join)join; }
+  void setLineJoin(LineJoin join) { m_lineJoin = (PaintFlags::Join)join; }
 
   float miterLimit() const { return m_miterLimit; }
   void setMiterLimit(float miterLimit) { m_miterLimit = miterLimit; }
@@ -74,18 +75,18 @@ class PLATFORM_EXPORT StrokeData final {
   // If a non-zero length is provided, the number of dashes/dots on a
   // dashed/dotted line will be adjusted to start and end that length with a
   // dash/dot.
-  void setupPaint(SkPaint*, int length = 0) const;
+  void setupPaint(PaintFlags*, int length = 0) const;
 
   // Setup any DashPathEffect on the paint. If a non-zero length is provided,
   // and no line dash has been set, the number of dashes/dots on a dashed/dotted
   // line will be adjusted to start and end that length with a dash/dot.
-  void setupPaintDashPathEffect(SkPaint*, int) const;
+  void setupPaintDashPathEffect(PaintFlags*, int) const;
 
  private:
   StrokeStyle m_style;
   float m_thickness;
-  SkPaint::Cap m_lineCap;
-  SkPaint::Join m_lineJoin;
+  PaintFlags::Cap m_lineCap;
+  PaintFlags::Join m_lineJoin;
   float m_miterLimit;
   sk_sp<SkPathEffect> m_dash;
 };

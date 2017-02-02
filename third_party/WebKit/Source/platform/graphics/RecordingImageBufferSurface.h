@@ -13,10 +13,6 @@
 #include "wtf/Noncopyable.h"
 #include <memory>
 
-class SkCanvas;
-class SkPicture;
-class SkPictureRecorder;
-
 namespace blink {
 
 class ImageBuffer;
@@ -56,9 +52,9 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   ~RecordingImageBufferSurface() override;
 
   // Implementation of ImageBufferSurface interfaces
-  SkCanvas* canvas() override;
+  PaintCanvas* canvas() override;
   void disableDeferral(DisableDeferralReason) override;
-  sk_sp<SkPicture> getPicture() override;
+  sk_sp<PaintRecord> getPicture() override;
   void flush(FlushReason) override;
   void didDraw(const FloatRect&) override;
   bool isValid() const override { return true; }
@@ -128,8 +124,8 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   bool finalizeFrameInternal(FallbackReason*);
   int approximateOpCount();
 
-  std::unique_ptr<SkPictureRecorder> m_currentFrame;
-  sk_sp<SkPicture> m_previousFrame;
+  std::unique_ptr<PaintRecorder> m_currentFrame;
+  sk_sp<PaintRecord> m_previousFrame;
   std::unique_ptr<ImageBufferSurface> m_fallbackSurface;
   ImageBuffer* m_imageBuffer;
   int m_initialSaveCount;

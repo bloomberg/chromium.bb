@@ -253,7 +253,7 @@ static void paintSliderRangeHighlight(const IntRect& rect,
 
   // Fill highlight rectangle with gradient, potentially rounded if on left or
   // right edge.
-  SkPaint gradientPaint(context.fillPaint());
+  PaintFlags gradientPaint(context.fillPaint());
   gradient->applyToPaint(gradientPaint, SkMatrix::I());
 
   if (startOffset < borderRadius && endOffset < borderRadius)

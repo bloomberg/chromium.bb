@@ -4559,7 +4559,7 @@ class TestNativeTheme : public ui::NativeTheme {
                         const ExtraParams& extra) const override {
     return gfx::Size();
   }
-  void Paint(SkCanvas* canvas,
+  void Paint(cc::PaintCanvas* canvas,
              Part part,
              State state,
              const gfx::Rect& rect,

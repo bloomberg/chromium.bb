@@ -126,8 +126,8 @@ class LoggingCanvas : public InterceptingCanvasBase {
 };
 
 #ifndef NDEBUG
-String pictureAsDebugString(const SkPicture*);
-void showSkPicture(const SkPicture*);
+String pictureAsDebugString(const PaintRecord*);
+void showSkPicture(const PaintRecord*);
 #endif
 
 }  // namespace blink

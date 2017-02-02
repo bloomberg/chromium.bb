@@ -140,7 +140,7 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
   }
   const gfx::Rect dock_bounds(
       shelf_widget_->shelf_layout_manager()->dock_bounds());
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAlpha(asset_background_alpha_);
   canvas->DrawImageInt(
       shelf_background, 0, 0, shelf_background.width(),

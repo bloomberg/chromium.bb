@@ -9,7 +9,6 @@
 
 #include "ui/native_theme/native_theme.h"
 
-class SkCanvas;
 
 namespace ui {
 
@@ -23,7 +22,7 @@ SkColor NATIVE_THEME_EXPORT GetAuraColor(NativeTheme::ColorId color_id,
 
 void NATIVE_THEME_EXPORT CommonThemePaintMenuItemBackground(
     const NativeTheme* theme,
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     NativeTheme::State state,
     const gfx::Rect& rect,
     const NativeTheme::MenuItemExtraParams& menu_item);

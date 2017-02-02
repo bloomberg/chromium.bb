@@ -7,13 +7,11 @@
 #include <stddef.h>
 
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_recorder.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -64,8 +62,8 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
 
   auto display_list = make_scoped_refptr(new DisplayItemList);
 
-  SkPictureRecorder recorder;
-  SkCanvas* canvas =
+  PaintRecorder recorder;
+  PaintCanvas* canvas =
       recorder.beginRecording(gfx::RectToSkRect(PaintableRegion()));
 
   SkScalar content_to_layer_scale_x =

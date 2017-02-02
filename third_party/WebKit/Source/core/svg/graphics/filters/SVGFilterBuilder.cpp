@@ -107,8 +107,8 @@ DEFINE_TRACE(SVGFilterGraphNodeMap) {
 
 SVGFilterBuilder::SVGFilterBuilder(FilterEffect* sourceGraphic,
                                    SVGFilterGraphNodeMap* nodeMap,
-                                   const SkPaint* fillPaint,
-                                   const SkPaint* strokePaint)
+                                   const PaintFlags* fillPaint,
+                                   const PaintFlags* strokePaint)
     : m_nodeMap(nodeMap) {
   FilterEffect* sourceGraphicRef = sourceGraphic;
   m_builtinEffects.add(FilterInputKeywords::getSourceGraphic(),

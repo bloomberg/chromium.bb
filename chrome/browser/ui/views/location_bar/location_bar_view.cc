@@ -1115,11 +1115,11 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
   if (show_focus_rect_ && omnibox_view_->HasFocus()) {
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setAntiAlias(true);
     paint.setColor(GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::NativeTheme::kColorId_FocusedBorderColor));
-    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStyle(cc::PaintFlags::kStroke_Style);
     paint.setStrokeWidth(1);
     gfx::RectF focus_rect(GetLocalBounds());
     focus_rect.Inset(gfx::InsetsF(0.5f));

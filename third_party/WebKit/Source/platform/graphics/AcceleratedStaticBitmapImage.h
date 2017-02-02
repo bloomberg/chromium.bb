@@ -41,8 +41,8 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
   bool isTextureBacked() const override { return true; }
 
-  void draw(SkCanvas*,
-            const SkPaint&,
+  void draw(PaintCanvas*,
+            const PaintFlags&,
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,

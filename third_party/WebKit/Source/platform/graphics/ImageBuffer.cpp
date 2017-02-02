@@ -45,6 +45,7 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/JPEGImageEncoder.h"
 #include "platform/image-encoders/PNGImageEncoder.h"
@@ -53,7 +54,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -130,7 +130,7 @@ bool ImageBuffer::canCreateImageBuffer(const IntSize& size) {
   return true;
 }
 
-SkCanvas* ImageBuffer::canvas() const {
+PaintCanvas* ImageBuffer::canvas() const {
   return m_surface->canvas();
 }
 
@@ -173,7 +173,7 @@ void ImageBuffer::notifySurfaceInvalid() {
     m_client->notifySurfaceInvalid();
 }
 
-void ImageBuffer::resetCanvas(SkCanvas* canvas) const {
+void ImageBuffer::resetCanvas(PaintCanvas* canvas) const {
   if (m_client)
     m_client->restoreCanvasMatrixClipStack(canvas);
 }

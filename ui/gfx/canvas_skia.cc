@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "cc/paint/paint_canvas.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/render_text.h"

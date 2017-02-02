@@ -73,7 +73,7 @@ bool ScrollbarImpl::NeedsPaintPart(cc::ScrollbarPart part) const {
   return painter_.trackNeedsRepaint();
 }
 
-void ScrollbarImpl::PaintPart(SkCanvas* canvas,
+void ScrollbarImpl::PaintPart(cc::PaintCanvas* canvas,
                               cc::ScrollbarPart part,
                               const gfx::Rect& content_rect) {
   if (part == cc::THUMB) {

@@ -19,12 +19,11 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "wtf/Noncopyable.h"
 
 OBJC_CLASS NSGraphicsContext;
-
-class SkCanvas;
 
 namespace blink {
 
@@ -37,14 +36,14 @@ class PLATFORM_EXPORT LocalCurrentGraphicsContext {
 
  public:
   LocalCurrentGraphicsContext(GraphicsContext&, const IntRect& dirtyRect);
-  LocalCurrentGraphicsContext(SkCanvas*,
+  LocalCurrentGraphicsContext(PaintCanvas*,
                               float deviceScaleFactor,
                               const IntRect& dirtyRect);
   ~LocalCurrentGraphicsContext();
   CGContextRef cgContext();
 
  private:
-  SkCanvas* m_savedCanvas;
+  PaintCanvas* m_savedCanvas;
   NSGraphicsContext* m_savedNSGraphicsContext;
   bool m_didSetGraphicsContext;
   IntRect m_inflatedDirtyRect;

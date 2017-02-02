@@ -5,10 +5,10 @@
 #include "apps/ui/views/app_window_frame_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "cc/paint/paint_flags.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/draggable_region.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -305,9 +305,9 @@ void AppWindowFrameView::OnPaint(gfx::Canvas* canvas) {
 
   SetButtonImagesForFrame();
   // TODO(benwells): different look for inactive by default.
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAntiAlias(false);
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setColor(CurrentFrameColor());
   gfx::Path path;
   path.moveTo(0, 0);

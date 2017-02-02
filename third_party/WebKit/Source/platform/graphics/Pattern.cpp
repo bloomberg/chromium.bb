@@ -29,9 +29,10 @@
 
 #include "platform/graphics/ImagePattern.h"
 #include "platform/graphics/PicturePattern.h"
+#include "platform/graphics/paint/PaintFlags.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include <v8.h>
 
@@ -42,7 +43,7 @@ PassRefPtr<Pattern> Pattern::createImagePattern(PassRefPtr<Image> tileImage,
   return ImagePattern::create(std::move(tileImage), repeatMode);
 }
 
-PassRefPtr<Pattern> Pattern::createPicturePattern(sk_sp<SkPicture> picture,
+PassRefPtr<Pattern> Pattern::createPicturePattern(sk_sp<PaintRecord> picture,
                                                   RepeatMode repeatMode) {
   return PicturePattern::create(std::move(picture), repeatMode);
 }
@@ -56,7 +57,7 @@ Pattern::~Pattern() {
   adjustExternalMemoryAllocated(-m_externalMemoryAllocated);
 }
 
-void Pattern::applyToPaint(SkPaint& paint, const SkMatrix& localMatrix) {
+void Pattern::applyToPaint(PaintFlags& paint, const SkMatrix& localMatrix) {
   if (!m_cachedShader || isLocalMatrixChanged(localMatrix))
     m_cachedShader = createShader(localMatrix);
 

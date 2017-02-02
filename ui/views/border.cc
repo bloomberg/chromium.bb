@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "third_party/skia/include/core/SkPaint.h"
+#include "cc/paint/paint_flags.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/painter.h"
@@ -88,10 +88,10 @@ RoundedRectBorder::RoundedRectBorder(int thickness,
     : thickness_(thickness), corner_radius_(corner_radius), color_(color) {}
 
 void RoundedRectBorder::Paint(const View& view, gfx::Canvas* canvas) {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setStrokeWidth(thickness_);
   paint.setColor(color_);
-  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setAntiAlias(true);
 
   float half_thickness = thickness_ / 2.0f;

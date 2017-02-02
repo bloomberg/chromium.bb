@@ -52,8 +52,8 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
   IntSize size() const override { return m_crossfadeSize; }
 
  protected:
-  void draw(SkCanvas*,
-            const SkPaint&,
+  void draw(PaintCanvas*,
+            const PaintFlags&,
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,
@@ -68,7 +68,7 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
                           const IntSize&);
 
  private:
-  void drawCrossfade(SkCanvas*,
+  void drawCrossfade(PaintCanvas*,
                      const SkPaint&,
                      ImageClampingMode,
                      const ColorBehavior&);

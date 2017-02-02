@@ -127,7 +127,7 @@ void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
 
   if (crossfade_icon_alpha > 0 && !crossfade_icon_image_.isNull()) {
     gfx::Canvas icon_canvas(icon_image_.size(), canvas->image_scale(), false);
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setAlpha(icon_alpha);
     icon_canvas.DrawImageInt(icon_image_, 0, 0, paint);
 
@@ -182,7 +182,7 @@ void FrameCaptionButton::PaintCentered(gfx::Canvas* canvas,
     alpha *= inactive_alpha;
   }
 
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAlpha(alpha);
   canvas->DrawImageInt(to_center, (width() - to_center.width()) / 2,
                        (height() - to_center.height()) / 2, paint);

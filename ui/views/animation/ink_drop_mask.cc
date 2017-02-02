@@ -4,7 +4,7 @@
 
 #include "ui/views/animation/ink_drop_mask.h"
 
-#include "third_party/skia/include/core/SkPaint.h"
+#include "cc/paint/paint_flags.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 
@@ -42,9 +42,9 @@ RoundRectInkDropMask::RoundRectInkDropMask(const gfx::Size& layer_size,
       corner_radius_(corner_radius) {}
 
 void RoundRectInkDropMask::OnPaintLayer(const ui::PaintContext& context) {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAlpha(255);
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setAntiAlias(true);
 
   ui::PaintRecorder recorder(context, layer()->size());
@@ -63,9 +63,9 @@ CircleInkDropMask::CircleInkDropMask(const gfx::Size& layer_size,
       mask_radius_(mask_radius) {}
 
 void CircleInkDropMask::OnPaintLayer(const ui::PaintContext& context) {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAlpha(255);
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setAntiAlias(true);
 
   ui::PaintRecorder recorder(context, layer()->size());

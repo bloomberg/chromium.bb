@@ -12,12 +12,13 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "skia/ext/platform_canvas.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkSurface.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_surface.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_constants.h"
+
 namespace gfx {
 
 class Rect;
@@ -29,11 +30,11 @@ class Size;
 class Transform;
 class Vector2d;
 
-// Canvas is a SkCanvas wrapper that provides a number of methods for
+// Canvas is a PaintCanvas wrapper that provides a number of methods for
 // common operations used throughout an application built using ui/gfx.
 //
 // All methods that take integer arguments (as is used throughout views)
-// end with Int. If you need to use methods provided by SkCanvas, you'll
+// end with Int. If you need to use methods provided by PaintCanvas, you'll
 // need to do a conversion. In particular you'll need to use |SkIntToScalar()|,
 // or if converting from a scalar to an integer |SkScalarRound()|.
 //
@@ -91,7 +92,7 @@ class GFX_EXPORT Canvas {
   // so no additional scaling is applied.
   // Note: the caller must ensure that sk_canvas outlives this object, or until
   // RecreateBackingCanvas is called.
-  Canvas(SkCanvas* sk_canvas, float image_scale);
+  Canvas(cc::PaintCanvas* sk_canvas, float image_scale);
 
   virtual ~Canvas();
 
@@ -260,18 +261,18 @@ class GFX_EXPORT Canvas {
   // Draws the given rectangle with the given |paint| parameters.
   // DEPRECATED in favor of the RectF version below.
   // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawRect(const Rect& rect, const SkPaint& paint);
+  void DrawRect(const Rect& rect, const cc::PaintFlags& paint);
 
   // Draws the given rectangle with the given |paint| parameters.
-  void DrawRect(const RectF& rect, const SkPaint& paint);
+  void DrawRect(const RectF& rect, const cc::PaintFlags& paint);
 
   // Draw the given point with the given |paint| parameters.
   // DEPRECATED in favor of the RectF version below.
   // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawPoint(const Point& p, const SkPaint& paint);
+  void DrawPoint(const Point& p, const cc::PaintFlags& paint);
 
   // Draw the given point with the given |paint| parameters.
-  void DrawPoint(const PointF& p, const SkPaint& paint);
+  void DrawPoint(const PointF& p, const cc::PaintFlags& paint);
 
   // Draws a single pixel line with the specified color.
   // DEPRECATED in favor of the RectF version below.
@@ -284,34 +285,38 @@ class GFX_EXPORT Canvas {
   // Draws a line with the given |paint| parameters.
   // DEPRECATED in favor of the RectF version below.
   // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawLine(const Point& p1, const Point& p2, const SkPaint& paint);
+  void DrawLine(const Point& p1, const Point& p2, const cc::PaintFlags& paint);
 
   // Draws a line with the given |paint| parameters.
-  void DrawLine(const PointF& p1, const PointF& p2, const SkPaint& paint);
+  void DrawLine(const PointF& p1,
+                const PointF& p2,
+                const cc::PaintFlags& paint);
 
   // Draws a circle with the given |paint| parameters.
   // DEPRECATED in favor of the RectF version below.
   // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawCircle(const Point& center_point,
                   int radius,
-                  const SkPaint& paint);
+                  const cc::PaintFlags& paint);
 
   // Draws a circle with the given |paint| parameters.
   void DrawCircle(const PointF& center_point,
                   float radius,
-                  const SkPaint& paint);
+                  const cc::PaintFlags& paint);
 
   // Draws the given rectangle with rounded corners of |radius| using the
   // given |paint| parameters. DEPRECATED in favor of the RectF version below.
   // TODO(mgiuca): Remove this (http://crbug.com/553726).
-  void DrawRoundRect(const Rect& rect, int radius, const SkPaint& paint);
+  void DrawRoundRect(const Rect& rect, int radius, const cc::PaintFlags& paint);
 
   // Draws the given rectangle with rounded corners of |radius| using the
   // given |paint| parameters.
-  void DrawRoundRect(const RectF& rect, float radius, const SkPaint& paint);
+  void DrawRoundRect(const RectF& rect,
+                     float radius,
+                     const cc::PaintFlags& paint);
 
   // Draws the given path using the given |paint| parameters.
-  void DrawPath(const SkPath& path, const SkPaint& paint);
+  void DrawPath(const SkPath& path, const cc::PaintFlags& paint);
 
   // Draws an image with the origin at the specified location. The upper left
   // corner of the bitmap is rendered at the specified location.
@@ -331,7 +336,7 @@ class GFX_EXPORT Canvas {
   void DrawImageInt(const ImageSkia& image,
                     int x,
                     int y,
-                    const SkPaint& paint);
+                    const cc::PaintFlags& paint);
 
   // Draws a portion of an image in the specified location. The src parameters
   // correspond to the region of the bitmap to draw in the region defined
@@ -342,7 +347,7 @@ class GFX_EXPORT Canvas {
   // Set |filter| to use filtering for images, otherwise the nearest-neighbor
   // algorithm is used for resampling.
   //
-  // An optional custom SkPaint can be provided.
+  // An optional custom cc::PaintFlags can be provided.
   // Parameters are specified relative to current canvas scale not in pixels.
   // Thus, |x| is 2 pixels if canvas scale = 2 & |x| = 1.
   void DrawImageInt(const ImageSkia& image,
@@ -365,7 +370,7 @@ class GFX_EXPORT Canvas {
                     int dest_w,
                     int dest_h,
                     bool filter,
-                    const SkPaint& paint);
+                    const cc::PaintFlags& paint);
 
   // Same as the DrawImageInt functions above. Difference being this does not
   // do any scaling, i.e. it does not scale the output by the device scale
@@ -378,7 +383,7 @@ class GFX_EXPORT Canvas {
                            int dest_w,
                            int dest_h,
                            bool filter,
-                           const SkPaint& paint);
+                           const cc::PaintFlags& paint);
 
   // Draws an |image| with the top left corner at |x| and |y|, clipped to
   // |path|.
@@ -388,7 +393,7 @@ class GFX_EXPORT Canvas {
                        int x,
                        int y,
                        const SkPath& path,
-                       const SkPaint& paint);
+                       const cc::PaintFlags& paint);
 
   // Draws text with the specified color, fonts and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the
@@ -447,14 +452,14 @@ class GFX_EXPORT Canvas {
   // Helper for TileImageInt().  Initializes |paint| for tiling |image| with the
   // given parameters.  Returns false if the provided image does not have a
   // representation for the current scale.
-  bool InitSkPaintForTiling(const ImageSkia& image,
-                            int src_x,
-                            int src_y,
-                            float tile_scale_x,
-                            float tile_scale_y,
-                            int dest_x,
-                            int dest_y,
-                            SkPaint* paint);
+  bool InitPaintFlagsForTiling(const ImageSkia& image,
+                               int src_x,
+                               int src_y,
+                               float tile_scale_x,
+                               float tile_scale_y,
+                               int dest_x,
+                               int dest_y,
+                               cc::PaintFlags* paint);
 
   // Apply transformation on the canvas.
   void Transform(const Transform& transform);
@@ -466,7 +471,8 @@ class GFX_EXPORT Canvas {
                        const Rect& display_rect,
                        int flags);
 
-  SkCanvas* sk_canvas() { return canvas_; }
+  // TODO(enne): rename sk_canvas members and interface.
+  cc::PaintCanvas* sk_canvas() { return canvas_; }
   float image_scale() const { return image_scale_; }
 
  private:
@@ -486,7 +492,7 @@ class GFX_EXPORT Canvas {
                           int dest_w,
                           int dest_h,
                           bool filter,
-                          const SkPaint& paint,
+                          const cc::PaintFlags& paint,
                           bool remove_image_scale);
 
   // The device scale factor at which drawing on this canvas occurs.
@@ -498,8 +504,8 @@ class GFX_EXPORT Canvas {
   // in which case surface_ will be set. Other times we are just
   // borrowing someone else's canvas, in which case canvas_ will point there
   // but surface_ will be null.
-  sk_sp<SkSurface> surface_;
-  SkCanvas* canvas_;
+  sk_sp<cc::PaintSurface> surface_;
+  cc::PaintCanvas* canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(Canvas);
 };

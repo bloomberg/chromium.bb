@@ -216,7 +216,7 @@ class ScrollContentsView : public views::View {
                   const gfx::Rect& shadowed_area) {
     ui::PaintRecorder recorder(context, size());
     gfx::Canvas* canvas = recorder.canvas();
-    SkPaint paint;
+    cc::PaintFlags paint;
     gfx::ShadowValues shadow;
     shadow.emplace_back(gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
                         kSeparatorColor);

@@ -24,11 +24,11 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilled(
   auto recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(size);
 
-  SkPaint red_paint;
+  PaintFlags red_paint;
   red_paint.setColor(SK_ColorRED);
   recording_source->add_draw_rect_with_paint(gfx::Rect(size), red_paint);
 
-  SkPaint salmon_pink_paint;
+  PaintFlags salmon_pink_paint;
   salmon_pink_paint.setColor(SK_ColorRED);
   salmon_pink_paint.setAlpha(128);
   recording_source->add_draw_rect_with_paint(gfx::Rect(size),
@@ -45,12 +45,12 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledLCD(
   auto recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(size);
 
-  SkPaint red_paint;
+  PaintFlags red_paint;
   red_paint.setColor(SK_ColorRED);
   recording_source->add_draw_rect_with_paint(gfx::Rect(size), red_paint);
 
   gfx::Size smaller_size(size.width() - 10, size.height() - 10);
-  SkPaint green_paint;
+  PaintFlags green_paint;
   green_paint.setColor(SK_ColorGREEN);
   recording_source->add_draw_rect_with_paint(gfx::Rect(smaller_size),
                                              green_paint);
@@ -65,7 +65,7 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledSolidColor(
   auto recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(size);
 
-  SkPaint red_paint;
+  PaintFlags red_paint;
   red_paint.setColor(SK_ColorRED);
   recording_source->add_draw_rect_with_paint(gfx::Rect(size), red_paint);
   recording_source->Rerecord();
@@ -84,12 +84,12 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreatePartiallyFilled(
   auto recording_source =
       FakeRecordingSource::CreateRecordingSource(recorded_viewport, size);
 
-  SkPaint red_paint;
+  PaintFlags red_paint;
   red_paint.setColor(SK_ColorRED);
   recording_source->add_draw_rect_with_paint(gfx::Rect(size), red_paint);
 
   gfx::Size smaller_size(size.width() - 10, size.height() - 10);
-  SkPaint green_paint;
+  PaintFlags green_paint;
   green_paint.setColor(SK_ColorGREEN);
   recording_source->add_draw_rect_with_paint(gfx::Rect(smaller_size),
                                              green_paint);
@@ -139,7 +139,7 @@ FakeRasterSource::FakeRasterSource(const RecordingSource* recording_source,
 FakeRasterSource::~FakeRasterSource() {}
 
 void FakeRasterSource::PlaybackToCanvas(
-    SkCanvas* canvas,
+    PaintCanvas* canvas,
     const PlaybackSettings& settings) const {
   if (playback_allowed_event_)
     playback_allowed_event_->Wait();

@@ -9,13 +9,14 @@
 #include "cc/layers/picture_image_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
+#include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_recorder.h"
+#include "cc/paint/paint_surface.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/solid_color_content_layer_client.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "third_party/skia/include/core/SkSurface.h"
 
 #if !defined(OS_ANDROID)
 
@@ -38,12 +39,12 @@ class MaskContentLayerClient : public ContentLayerClient {
 
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
-    SkPictureRecorder recorder;
-    SkCanvas* canvas =
+    PaintRecorder recorder;
+    PaintCanvas* canvas =
         recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_)));
 
-    SkPaint paint;
-    paint.setStyle(SkPaint::kStroke_Style);
+    PaintFlags paint;
+    paint.setStyle(PaintFlags::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(2));
     paint.setColor(SK_ColorWHITE);
 
@@ -102,7 +103,7 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   mask->SetBounds(mask_bounds);
 
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(200, 200);
-  SkCanvas* canvas = surface->getCanvas();
+  PaintCanvas* canvas = surface->getCanvas();
   canvas->scale(SkIntToScalar(4), SkIntToScalar(4));
   MaskContentLayerClient client(mask_bounds);
   scoped_refptr<DisplayItemList> mask_display_list =
@@ -160,12 +161,12 @@ class CheckerContentLayerClient : public ContentLayerClient {
   gfx::Rect PaintableRegion() override { return gfx::Rect(bounds_); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
-    SkPictureRecorder recorder;
-    SkCanvas* canvas =
+    PaintRecorder recorder;
+    PaintCanvas* canvas =
         recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_)));
 
-    SkPaint paint;
-    paint.setStyle(SkPaint::kStroke_Style);
+    PaintFlags paint;
+    paint.setStyle(PaintFlags::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(4));
     paint.setColor(color_);
     canvas->clear(SK_ColorTRANSPARENT);
@@ -203,12 +204,12 @@ class CircleContentLayerClient : public ContentLayerClient {
   gfx::Rect PaintableRegion() override { return gfx::Rect(bounds_); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
-    SkPictureRecorder recorder;
-    SkCanvas* canvas =
+    PaintRecorder recorder;
+    PaintCanvas* canvas =
         recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_)));
 
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
+    PaintFlags paint;
+    paint.setStyle(PaintFlags::kFill_Style);
     paint.setColor(SK_ColorWHITE);
     canvas->clear(SK_ColorTRANSPARENT);
     canvas->drawCircle(bounds_.width() / 2,

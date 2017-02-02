@@ -234,7 +234,7 @@ bool SVGPaintContext::paintForLayoutObject(
     const ComputedStyle& style,
     const LayoutObject& layoutObject,
     LayoutSVGResourceMode resourceMode,
-    SkPaint& paint,
+    PaintFlags& paint,
     const AffineTransform* additionalPaintServerTransform) {
   if (paintInfo.isRenderingClipPathAsMaskImage()) {
     if (resourceMode == ApplyToStrokeMode)

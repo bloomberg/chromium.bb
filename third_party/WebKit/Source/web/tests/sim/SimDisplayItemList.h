@@ -5,6 +5,7 @@
 #ifndef SimDisplayItemList_h
 #define SimDisplayItemList_h
 
+#include "platform/graphics/paint/PaintRecord.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "web/tests/sim/SimCanvas.h"
 #include "wtf/text/WTFString.h"
@@ -15,7 +16,7 @@ class SimDisplayItemList final : public WebDisplayItemList {
  public:
   SimDisplayItemList();
 
-  void appendDrawingItem(const WebRect&, sk_sp<const SkPicture>) override;
+  void appendDrawingItem(const WebRect&, sk_sp<const PaintRecord>) override;
 
   int drawCount() const { return m_commands.size(); }
 

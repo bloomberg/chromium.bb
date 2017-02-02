@@ -55,7 +55,7 @@ SkPictureBuilder::~SkPictureBuilder() {
 #endif
 }
 
-sk_sp<SkPicture> SkPictureBuilder::endRecording() {
+sk_sp<PaintRecord> SkPictureBuilder::endRecording() {
   m_context->beginRecording(m_bounds);
   m_paintController->commitNewDisplayItems();
   m_paintController->paintArtifact().replay(*m_context);

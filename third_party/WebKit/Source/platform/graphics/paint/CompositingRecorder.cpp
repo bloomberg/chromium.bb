@@ -60,7 +60,7 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext,
     const DisplayItemClient& displayItemClient = lastDisplayItem->client();
     DisplayItem::Type displayItemType = lastDisplayItem->getType();
 
-    // Re-record the last two DisplayItems into a new SkPicture.
+    // Re-record the last two DisplayItems into a new PaintRecord.
     SkPictureBuilder pictureBuilder(cullRect, nullptr, &graphicsContext);
     {
 #if DCHECK_IS_ON()

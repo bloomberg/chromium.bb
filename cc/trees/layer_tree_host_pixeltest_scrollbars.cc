@@ -9,6 +9,8 @@
 #include "cc/input/scrollbar.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/solid_color_layer.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_flags.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -48,11 +50,11 @@ class PaintedScrollbar : public Scrollbar {
   gfx::Rect TrackRect() const override { return rect_; }
   float ThumbOpacity() const override { return 1.f; }
   bool NeedsPaintPart(ScrollbarPart part) const override { return true; }
-  void PaintPart(SkCanvas* canvas,
+  void PaintPart(PaintCanvas* canvas,
                  ScrollbarPart part,
                  const gfx::Rect& content_rect) override {
-    SkPaint paint;
-    paint.setStyle(SkPaint::kStroke_Style);
+    PaintFlags paint;
+    paint.setStyle(PaintFlags::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(paint_scale_));
     paint.setColor(color_);
 

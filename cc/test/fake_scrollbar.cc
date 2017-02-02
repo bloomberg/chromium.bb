@@ -4,7 +4,6 @@
 
 #include "cc/test/fake_scrollbar.h"
 
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -71,9 +70,9 @@ bool FakeScrollbar::NeedsPaintPart(ScrollbarPart part) const {
   return needs_paint_track_;
 }
 
-void FakeScrollbar::PaintPart(SkCanvas* canvas,
-                             ScrollbarPart part,
-                             const gfx::Rect& content_rect) {
+void FakeScrollbar::PaintPart(PaintCanvas* canvas,
+                              ScrollbarPart part,
+                              const gfx::Rect& content_rect) {
   if (!paint_)
     return;
 

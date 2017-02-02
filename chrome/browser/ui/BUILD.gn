@@ -467,6 +467,7 @@ split_static_library("ui") {
     # NOTE: New dependencies should generally be added in the OS!="ios"
     # dependencies block below, rather than here.
     "//base",
+    "//cc/paint",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",

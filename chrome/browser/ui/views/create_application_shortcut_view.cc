@@ -184,7 +184,7 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
     SkIntToScalar(bounds.bottom())
   };
 
-  SkPaint border_paint;
+  cc::PaintFlags border_paint;
   border_paint.setAntiAlias(true);
   border_paint.setARGB(0xFF, 0xC8, 0xC8, 0xC8);
 
@@ -198,7 +198,7 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
     border_rect.fBottom - SkDoubleToScalar(0.5),
   };
 
-  SkPaint inner_paint;
+  cc::PaintFlags inner_paint;
   inner_paint.setAntiAlias(true);
   inner_paint.setARGB(0xFF, 0xF8, 0xF8, 0xF8);
   canvas->sk_canvas()->drawRoundRect(inner_rect, SkDoubleToScalar(1.5),

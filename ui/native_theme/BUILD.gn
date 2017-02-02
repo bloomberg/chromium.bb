@@ -38,6 +38,7 @@ component("native_theme") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//cc/paint",
     "//skia",
     "//ui/base",
     "//ui/display",
@@ -67,6 +68,7 @@ if (is_win) {
     deps = [
       ":native_theme",
       "//base",
+      "//cc/paint",
       "//ui/base",
       "//ui/display",
       "//ui/gfx",
@@ -92,7 +94,7 @@ test("native_theme_unittests") {
     ":native_theme",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//skia:skia",
+    "//skia",
     "//testing/gtest",
     "//ui/base",
     "//ui/gfx/geometry:geometry",

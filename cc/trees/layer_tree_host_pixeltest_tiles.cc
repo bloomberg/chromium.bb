@@ -7,13 +7,14 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_recorder.h"
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/test_compositor_frame_sink.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 
 #if !defined(OS_ANDROID)
 
@@ -112,8 +113,8 @@ class BlueYellowClient : public ContentLayerClient {
       PaintingControlSetting painting_status) override {
     auto display_list = make_scoped_refptr(new DisplayItemList);
 
-    SkPictureRecorder recorder;
-    SkCanvas* canvas =
+    PaintRecorder recorder;
+    PaintCanvas* canvas =
         recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(size_)));
     gfx::Rect top(0, 0, size_.width(), size_.height() / 2);
     gfx::Rect bottom(0, size_.height() / 2, size_.width(), size_.height() / 2);
@@ -121,8 +122,8 @@ class BlueYellowClient : public ContentLayerClient {
     gfx::Rect blue_rect = blue_top_ ? top : bottom;
     gfx::Rect yellow_rect = blue_top_ ? bottom : top;
 
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
+    PaintFlags paint;
+    paint.setStyle(PaintFlags::kFill_Style);
 
     paint.setColor(SK_ColorBLUE);
     canvas->drawRect(gfx::RectToSkRect(blue_rect), paint);

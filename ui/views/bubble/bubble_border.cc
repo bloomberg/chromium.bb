@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -510,8 +510,8 @@ void BubbleBorder::DrawArrow(gfx::Canvas* canvas,
   canvas->DrawImageInt(*GetArrowImage(), arrow_bounds.x(), arrow_bounds.y());
   SkPath path;
   GetArrowPathFromArrowBounds(arrow_bounds, &path);
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
+  cc::PaintFlags paint;
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setColor(background_color_);
 
   canvas->DrawPath(path, paint);
@@ -530,7 +530,7 @@ void BubbleBorder::PaintMd(const View& view, gfx::Canvas* canvas) {
 
   gfx::ScopedCanvas scoped(canvas);
 
-  SkPaint paint;
+  cc::PaintFlags paint;
   std::vector<gfx::ShadowValue> shadows;
   // gfx::ShadowValue counts blur pixels both inside and outside the shape,
   // whereas these blur values only describe the outside portion, hence they
@@ -570,9 +570,9 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
     canvas->DrawColor(border_->background_color());
 
   // Fill the contents with a round-rect region to match the border images.
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAntiAlias(true);
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setColor(border_->background_color());
   SkPath path;
   gfx::RectF bounds(view->GetLocalBounds());

@@ -413,7 +413,7 @@ class EditableProfilePhoto : public views::LabelButton {
       gfx::Point center_point = bounds.CenterPoint() + badge_offset_vector;
 
       // Paint the circular background.
-      SkPaint paint;
+      cc::PaintFlags paint;
       paint.setAntiAlias(true);
       paint.setColor(GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_BubbleBackground));

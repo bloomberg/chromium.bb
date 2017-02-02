@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_flags.h"
 #include "ui/base/layout.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/animation/tween.h"
@@ -95,14 +97,14 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
 }
 
 void NativeThemeAura::PaintMenuPopupBackground(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
   SkColor color = GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor);
   if (menu_background.corner_radius > 0) {
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    cc::PaintFlags paint;
+    paint.setStyle(cc::PaintFlags::kFill_Style);
+    paint.setAntiAlias(true);
     paint.setColor(color);
 
     gfx::Path path;
@@ -120,14 +122,14 @@ void NativeThemeAura::PaintMenuPopupBackground(
 }
 
 void NativeThemeAura::PaintMenuItemBackground(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const MenuItemExtraParams& menu_item) const {
   CommonThemePaintMenuItemBackground(this, canvas, state, rect, menu_item);
 }
 
-void NativeThemeAura::PaintArrowButton(SkCanvas* canvas,
+void NativeThemeAura::PaintArrowButton(cc::PaintCanvas* canvas,
                                        const gfx::Rect& rect,
                                        Part direction,
                                        State state) const {
@@ -153,7 +155,7 @@ void NativeThemeAura::PaintArrowButton(SkCanvas* canvas,
   }
   DCHECK_NE(arrow_color, gfx::kPlaceholderColor);
 
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(bg_color);
   canvas->drawIRect(gfx::RectToSkIRect(rect), paint);
 
@@ -161,20 +163,20 @@ void NativeThemeAura::PaintArrowButton(SkCanvas* canvas,
 }
 
 void NativeThemeAura::PaintScrollbarTrack(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
     const gfx::Rect& rect) const {
   // Overlay Scrollbar should never paint a scrollbar track.
   DCHECK(!use_overlay_scrollbars_);
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(kTrackColor);
   canvas->drawIRect(gfx::RectToSkIRect(rect), paint);
 }
 
 void NativeThemeAura::PaintScrollbarThumb(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     Part part,
     State state,
     const gfx::Rect& rect,
@@ -231,10 +233,10 @@ void NativeThemeAura::PaintScrollbarThumb(
 
     // In overlay mode, draw a stroke (border).
     constexpr int kStrokeWidth = kOverlayScrollbarStrokeWidth;
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setColor(
         SkColorSetA(kOverlayScrollbarStrokeColor[theme], stroke_alpha));
-    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStyle(cc::PaintFlags::kStroke_Style);
     paint.setStrokeWidth(kStrokeWidth);
 
     gfx::RectF stroke_rect(thumb_rect);
@@ -275,17 +277,17 @@ void NativeThemeAura::PaintScrollbarThumb(
     thumb_color = SK_ColorBLACK;
   }
 
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(SkColorSetA(thumb_color, thumb_alpha));
   canvas->drawIRect(gfx::RectToSkIRect(thumb_rect), paint);
 }
 
-void NativeThemeAura::PaintScrollbarCorner(SkCanvas* canvas,
+void NativeThemeAura::PaintScrollbarCorner(cc::PaintCanvas* canvas,
                                            State state,
                                            const gfx::Rect& rect) const {
   // Overlay Scrollbar should never paint a scrollbar corner.
   DCHECK(!use_overlay_scrollbars_);
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(SkColorSetRGB(0xDC, 0xDC, 0xDC));
   canvas->drawIRect(RectToSkIRect(rect), paint);
 }

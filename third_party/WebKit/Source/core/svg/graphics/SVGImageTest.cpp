@@ -8,6 +8,8 @@
 #include "platform/SharedBuffer.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/paint/PaintCanvas.h"
+#include "platform/graphics/paint/PaintFlags.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -28,9 +30,10 @@ class SVGImageTest : public ::testing::Test {
   void pumpFrame() {
     Image* image = m_image.get();
     std::unique_ptr<SkCanvas> nullCanvas = SkMakeNullCanvas();
-    SkPaint paint;
+    PaintCanvasPassThrough canvas(nullCanvas.get());
+    PaintFlags paint;
     FloatRect dummyRect(0, 0, 100, 100);
-    image->draw(nullCanvas.get(), paint, dummyRect, dummyRect,
+    image->draw(&canvas, paint, dummyRect, dummyRect,
                 DoNotRespectImageOrientation,
                 Image::DoNotClampImageToSourceRect,
                 ColorBehavior::transformToGlobalTarget());

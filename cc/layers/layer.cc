@@ -217,7 +217,7 @@ bool Layer::IsPropertyChangeAllowed() const {
   return !layer_tree_host_->in_paint_layer_contents();
 }
 
-sk_sp<SkPicture> Layer::GetPicture() const {
+sk_sp<PaintRecord> Layer::GetPicture() const {
   return nullptr;
 }
 

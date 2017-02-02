@@ -23,10 +23,10 @@ GraphicsContextState::GraphicsContextState()
       m_interpolationQuality(InterpolationDefault),
       m_saveCount(0),
       m_shouldAntialias(true) {
-  m_strokePaint.setStyle(SkPaint::kStroke_Style);
+  m_strokePaint.setStyle(PaintFlags::kStroke_Style);
   m_strokePaint.setStrokeWidth(SkFloatToScalar(m_strokeData.thickness()));
-  m_strokePaint.setStrokeCap(SkPaint::kDefault_Cap);
-  m_strokePaint.setStrokeJoin(SkPaint::kDefault_Join);
+  m_strokePaint.setStrokeCap(PaintFlags::kDefault_Cap);
+  m_strokePaint.setStrokeJoin(PaintFlags::kDefault_Join);
   m_strokePaint.setStrokeMiter(SkFloatToScalar(m_strokeData.miterLimit()));
   m_strokePaint.setFilterQuality(filterQualityForPaint(m_interpolationQuality));
   m_strokePaint.setAntiAlias(m_shouldAntialias);
@@ -48,7 +48,8 @@ void GraphicsContextState::copy(const GraphicsContextState& source) {
   new (this) GraphicsContextState(source);
 }
 
-const SkPaint& GraphicsContextState::strokePaint(int strokedPathLength) const {
+const PaintFlags& GraphicsContextState::strokePaint(
+    int strokedPathLength) const {
   m_strokeData.setupPaintDashPathEffect(&m_strokePaint, strokedPathLength);
   return m_strokePaint;
 }
@@ -69,12 +70,12 @@ void GraphicsContextState::setStrokeColor(const Color& color) {
 
 void GraphicsContextState::setLineCap(LineCap cap) {
   m_strokeData.setLineCap(cap);
-  m_strokePaint.setStrokeCap((SkPaint::Cap)cap);
+  m_strokePaint.setStrokeCap((PaintFlags::Cap)cap);
 }
 
 void GraphicsContextState::setLineJoin(LineJoin join) {
   m_strokeData.setLineJoin(join);
-  m_strokePaint.setStrokeJoin((SkPaint::Join)join);
+  m_strokePaint.setStrokeJoin((PaintFlags::Join)join);
 }
 
 void GraphicsContextState::setMiterLimit(float miterLimit) {

@@ -356,7 +356,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo,
     switch (svgDecorationStyle.paintOrderType(i)) {
       case PT_FILL:
         if (svgDecorationStyle.hasFill()) {
-          SkPaint fillPaint;
+          PaintFlags fillPaint;
           if (!SVGPaintContext::paintForLayoutObject(
                   paintInfo, decorationStyle, *decorationLayoutObject,
                   ApplyToFillMode, fillPaint))
@@ -367,7 +367,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo,
         break;
       case PT_STROKE:
         if (svgDecorationStyle.hasVisibleStroke()) {
-          SkPaint strokePaint;
+          PaintFlags strokePaint;
           if (!SVGPaintContext::paintForLayoutObject(
                   paintInfo, decorationStyle, *decorationLayoutObject,
                   ApplyToStrokeMode, strokePaint))
@@ -398,7 +398,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo,
 bool SVGInlineTextBoxPainter::setupTextPaint(const PaintInfo& paintInfo,
                                              const ComputedStyle& style,
                                              LayoutSVGResourceMode resourceMode,
-                                             SkPaint& paint) {
+                                             PaintFlags& paint) {
   LayoutSVGInlineText& textLayoutObject = inlineText();
 
   float scalingFactor = textLayoutObject.scalingFactor();
@@ -445,7 +445,7 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo,
                                         const SVGTextFragment& fragment,
                                         int startPosition,
                                         int endPosition,
-                                        const SkPaint& paint) {
+                                        const PaintFlags& paint) {
   LayoutSVGInlineText& textLayoutObject = inlineText();
   const Font& scaledFont = textLayoutObject.scaledFont();
 
@@ -498,7 +498,7 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo,
   // the regular style.
   TextRun textRun = m_svgInlineTextBox.constructTextRun(style, fragment);
   if (!shouldPaintSelection || startPosition >= endPosition) {
-    SkPaint paint;
+    PaintFlags paint;
     if (setupTextPaint(paintInfo, style, resourceMode, paint))
       paintText(paintInfo, textRun, fragment, 0, fragment.length, paint);
     return;
@@ -508,7 +508,7 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo,
   // selection.
   bool paintSelectedTextOnly = paintInfo.phase == PaintPhaseSelection;
   if (startPosition > 0 && !paintSelectedTextOnly) {
-    SkPaint paint;
+    PaintFlags paint;
     if (setupTextPaint(paintInfo, style, resourceMode, paint))
       paintText(paintInfo, textRun, fragment, 0, startPosition, paint);
   }
@@ -522,7 +522,7 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo,
                                           selectionStyle);
   }
 
-  SkPaint paint;
+  PaintFlags paint;
   if (setupTextPaint(paintInfo, selectionStyle, resourceMode, paint))
     paintText(paintInfo, textRun, fragment, startPosition, endPosition, paint);
 
@@ -537,7 +537,7 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo,
   // selection to the end of the current chunk part.
   if (endPosition < static_cast<int>(fragment.length) &&
       !paintSelectedTextOnly) {
-    SkPaint paint;
+    PaintFlags paint;
     if (setupTextPaint(paintInfo, style, resourceMode, paint))
       paintText(paintInfo, textRun, fragment, endPosition, fragment.length,
                 paint);
@@ -601,11 +601,11 @@ void SVGInlineTextBoxPainter::paintTextMatchMarkerForeground(
   Color textColor =
       LayoutTheme::theme().platformTextSearchColor(marker.activeMatch());
 
-  SkPaint fillPaint;
+  PaintFlags fillPaint;
   fillPaint.setColor(textColor.rgb());
   fillPaint.setAntiAlias(true);
 
-  SkPaint strokePaint;
+  PaintFlags strokePaint;
   bool shouldPaintStroke = false;
   if (setupTextPaint(paintInfo, style, ApplyToStrokeMode, strokePaint)) {
     shouldPaintStroke = true;

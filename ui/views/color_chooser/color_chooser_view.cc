@@ -11,7 +11,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "third_party/skia/include/core/SkPaint.h"
+#include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/events/event.h"
@@ -102,9 +103,9 @@ void DrawGradientRect(const gfx::Rect& rect, SkColor start_color,
     points[1].iset(rect.width() + 1, 0);
   else
     points[1].iset(0, rect.height() + 1);
-  SkPaint paint;
-  paint.setShader(SkGradientShader::MakeLinear(points, colors, NULL, 2,
-                                               SkShader::kClamp_TileMode));
+  cc::PaintFlags paint;
+  paint.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
+      points, colors, NULL, 2, SkShader::kClamp_TileMode)));
   canvas->DrawRect(rect, paint);
 }
 
@@ -210,9 +211,9 @@ void ColorChooserView::HueView::OnPaint(gfx::Canvas* canvas) {
       SkIntToScalar(width()) - SK_ScalarHalf,
       SkIntToScalar(level_ - kHueIndicatorSize));
 
-  SkPaint indicator_paint;
+  cc::PaintFlags indicator_paint;
   indicator_paint.setColor(SK_ColorBLACK);
-  indicator_paint.setStyle(SkPaint::kFill_Style);
+  indicator_paint.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawPath(left_indicator_path, indicator_paint);
   canvas->DrawPath(right_indicator_path, indicator_paint);
 }

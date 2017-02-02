@@ -9,8 +9,7 @@
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "platform/graphics/paint/PaintRecorder.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -39,8 +38,8 @@ RecordingImageBufferSurface::~RecordingImageBufferSurface() {}
 
 void RecordingImageBufferSurface::initializeCurrentFrame() {
   static SkRTreeFactory rTreeFactory;
-  m_currentFrame = WTF::wrapUnique(new SkPictureRecorder);
-  SkCanvas* canvas = m_currentFrame->beginRecording(
+  m_currentFrame = WTF::wrapUnique(new PaintRecorder);
+  PaintCanvas* canvas = m_currentFrame->beginRecording(
       size().width(), size().height(), &rTreeFactory);
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
@@ -180,7 +179,7 @@ sk_sp<SkImage> RecordingImageBufferSurface::newImageSnapshot(
   return m_fallbackSurface->newImageSnapshot(hint, reason);
 }
 
-SkCanvas* RecordingImageBufferSurface::canvas() {
+PaintCanvas* RecordingImageBufferSurface::canvas() {
   if (m_fallbackSurface)
     return m_fallbackSurface->canvas();
 
@@ -223,7 +222,7 @@ void RecordingImageBufferSurface::disableDeferral(
     fallBackToRasterCanvas(disableDeferralReasonToFallbackReason(reason));
 }
 
-sk_sp<SkPicture> RecordingImageBufferSurface::getPicture() {
+sk_sp<PaintRecord> RecordingImageBufferSurface::getPicture() {
   if (m_fallbackSurface)
     return nullptr;
 
@@ -342,7 +341,7 @@ void RecordingImageBufferSurface::draw(GraphicsContext& context,
     return;
   }
 
-  sk_sp<SkPicture> picture = getPicture();
+  sk_sp<PaintRecord> picture = getPicture();
   if (picture) {
     context.compositePicture(std::move(picture), destRect, srcRect, op);
   } else {

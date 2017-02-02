@@ -10,6 +10,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_flags.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -147,15 +148,15 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
                      ? (size().width() - badge_width) / 2
                      : size().width() - badge_width,
                  size().height() - kBadgeHeight, badge_width, kBadgeHeight);
-  SkPaint rect_paint;
-  rect_paint.setStyle(SkPaint::kFill_Style);
+  cc::PaintFlags rect_paint;
+  rect_paint.setStyle(cc::PaintFlags::kFill_Style);
   rect_paint.setAntiAlias(true);
   rect_paint.setColor(background_color);
 
   // Clear part of the background icon.
   gfx::Rect cutout_rect(rect);
   cutout_rect.Inset(-1, -1);
-  SkPaint cutout_paint = rect_paint;
+  cc::PaintFlags cutout_paint = rect_paint;
   cutout_paint.setBlendMode(SkBlendMode::kClear);
   canvas->DrawRoundRect(cutout_rect, 2, cutout_paint);
 
@@ -174,9 +175,9 @@ void IconWithBadgeImageSource::PaintPageActionDecoration(gfx::Canvas* canvas) {
   int major_radius = std::ceil(size().width() / 5.0);
   int minor_radius = std::ceil(major_radius / 2.0);
   gfx::Point center_point(major_radius + 1, size().height() - (major_radius)-1);
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAntiAlias(true);
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setColor(SK_ColorTRANSPARENT);
   paint.setBlendMode(SkBlendMode::kSrc);
   canvas->DrawCircle(center_point, major_radius, paint);

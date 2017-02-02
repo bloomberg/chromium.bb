@@ -26,8 +26,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-class SkPicture;
-
 namespace blink {
 
 class AffineTransform;
@@ -62,14 +60,14 @@ class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {
   static const LayoutSVGResourceType s_resourceType = MaskerResourceType;
   LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
-  sk_sp<const SkPicture> createContentPicture(AffineTransform&,
-                                              const FloatRect&,
-                                              GraphicsContext&);
+  sk_sp<const PaintRecord> createContentPicture(AffineTransform&,
+                                                const FloatRect&,
+                                                GraphicsContext&);
 
  private:
   void calculateMaskContentVisualRect();
 
-  sk_sp<const SkPicture> m_maskContentPicture;
+  sk_sp<const PaintRecord> m_maskContentPicture;
   FloatRect m_maskContentBoundaries;
 };
 

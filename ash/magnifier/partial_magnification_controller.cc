@@ -105,14 +105,15 @@ class PartialMagnificationController::ContentMask : public ui::LayerDelegate {
   void OnPaintLayer(const ui::PaintContext& context) override {
     ui::PaintRecorder recorder(context, layer()->size());
 
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setAlpha(255);
     paint.setAntiAlias(true);
     // Stroke is used for clipping the border which consists of the rendered
     // border |kBorderSize| and the magnifier shadow |kShadowThickness| and
     // |kShadowOffset|.
     paint.setStrokeWidth(kBorderSize + kShadowThickness + kShadowOffset);
-    paint.setStyle(is_border_ ? SkPaint::kStroke_Style : SkPaint::kFill_Style);
+    paint.setStyle(is_border_ ? cc::PaintFlags::kStroke_Style
+                              : cc::PaintFlags::kFill_Style);
 
     // If we want to clip the magnifier zone use the magnifiers radius.
     // Otherwise we want to clip the border, shadow and shadow offset so we
@@ -158,7 +159,7 @@ class PartialMagnificationController::BorderRenderer
     ui::PaintRecorder recorder(context, magnifier_window_bounds_.size());
 
     // Draw the shadow.
-    SkPaint shadow_paint;
+    cc::PaintFlags shadow_paint;
     shadow_paint.setAntiAlias(true);
     shadow_paint.setColor(SK_ColorTRANSPARENT);
     shadow_paint.setLooper(
@@ -169,9 +170,9 @@ class PartialMagnificationController::BorderRenderer
         shadow_bounds.width() / 2 - kShadowThickness - kShadowOffset,
         shadow_paint);
 
-    SkPaint border_paint;
+    cc::PaintFlags border_paint;
     border_paint.setAntiAlias(true);
-    border_paint.setStyle(SkPaint::kStroke_Style);
+    border_paint.setStyle(cc::PaintFlags::kStroke_Style);
 
     // The radius of the magnifier and its border.
     const int magnifier_radius = kMagnifierRadius + kBorderSize;

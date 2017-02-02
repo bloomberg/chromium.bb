@@ -71,18 +71,6 @@ namespace {
     EXPECT_FALSE(active_layer()->expression);  \
   } while (false)
 
-class MockCanvas : public SkCanvas {
- public:
-  explicit MockCanvas(int w, int h) : SkCanvas(w, h) {}
-
-  void onDrawRect(const SkRect& rect, const SkPaint& paint) override {
-    // Capture calls before SkCanvas quickReject() kicks in.
-    rects_.push_back(rect);
-  }
-
-  std::vector<SkRect> rects_;
-};
-
 class PictureLayerImplTest : public TestLayerTreeHostBase {
  public:
   void SetUp() override {

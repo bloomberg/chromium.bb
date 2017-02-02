@@ -346,6 +346,7 @@ void WebPluginContainerImpl::printPage(int pageNumber,
   LayoutObjectDrawingRecorder drawingRecorder(
       gc, *m_element->layoutObject(), DisplayItem::Type::kWebPlugin, printRect);
   gc.save();
+
   WebCanvas* canvas = gc.canvas();
   m_webPlugin->printPage(pageNumber, canvas);
   gc.restore();

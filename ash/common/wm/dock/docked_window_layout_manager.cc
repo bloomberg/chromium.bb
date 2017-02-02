@@ -24,7 +24,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -95,7 +94,7 @@ class DockedBackgroundWidget : public views::Widget,
       const gfx::ImageSkia& shelf_background(alignment_ == DOCKED_ALIGNMENT_LEFT
                                                  ? shelf_background_left_
                                                  : shelf_background_right_);
-      SkPaint paint;
+      cc::PaintFlags paint;
       paint.setAlpha(asset_background_alpha_);
       recorder.canvas()->DrawImageInt(
           shelf_background, 0, 0, shelf_background.width(),

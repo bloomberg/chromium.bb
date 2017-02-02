@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/blink/cc_blink_export.h"
+#include "cc/paint/paint_record.h"
 #include "cc/playback/display_item_list.h"
 #include "third_party/WebKit/public/platform/WebDisplayItemList.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -17,7 +18,6 @@
 class SkColorFilter;
 class SkMatrix44;
 class SkPath;
-class SkPicture;
 class SkRRect;
 
 namespace blink {
@@ -41,7 +41,7 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
 
   // blink::WebDisplayItemList implementation.
   void appendDrawingItem(const blink::WebRect& visual_rect,
-                         sk_sp<const SkPicture> picture) override;
+                         sk_sp<const cc::PaintRecord> picture) override;
   void appendClipItem(
       const blink::WebRect& clip_rect,
       const blink::WebVector<SkRRect>& rounded_clip_rects) override;

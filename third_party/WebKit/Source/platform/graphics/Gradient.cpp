@@ -29,6 +29,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/PaintShader.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -176,7 +177,7 @@ static void fillStops(const Gradient::ColorStop* stopData,
   }
 }
 
-sk_sp<SkShader> Gradient::createShader(const SkMatrix& localMatrix) {
+sk_sp<PaintShader> Gradient::createShader(const SkMatrix& localMatrix) {
   sortStopsIfNecessary();
   ASSERT(m_stopsSorted);
 
@@ -246,10 +247,10 @@ sk_sp<SkShader> Gradient::createShader(const SkMatrix& localMatrix) {
     shader = SkShader::MakeColorShader(colors[countUsed - 1]);
   }
 
-  return shader;
+  return WrapSkShader(shader);
 }
 
-void Gradient::applyToPaint(SkPaint& paint, const SkMatrix& localMatrix) {
+void Gradient::applyToPaint(PaintFlags& paint, const SkMatrix& localMatrix) {
   if (!m_cachedShader || localMatrix != m_cachedShader->getLocalMatrix())
     m_cachedShader = createShader(localMatrix);
 

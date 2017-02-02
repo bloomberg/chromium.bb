@@ -13,7 +13,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "third_party/skia/include/core/SkPaint.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -89,7 +90,7 @@ void PaintPath(Canvas* canvas,
 
   int canvas_size = kReferenceSizeDip;
   std::vector<SkPath> paths;
-  std::vector<SkPaint> paints;
+  std::vector<cc::PaintFlags> paints;
   SkRect clip_rect = SkRect::MakeEmpty();
   bool flips_in_rtl = false;
   CommandType previous_command_type = NEW_PATH;
@@ -99,14 +100,14 @@ void PaintPath(Canvas* canvas,
       paths.push_back(SkPath());
       paths.back().setFillType(SkPath::kEvenOdd_FillType);
 
-      paints.push_back(SkPaint());
+      paints.push_back(cc::PaintFlags());
       paints.back().setColor(color);
       paints.back().setAntiAlias(true);
-      paints.back().setStrokeCap(SkPaint::kRound_Cap);
+      paints.back().setStrokeCap(cc::PaintFlags::kRound_Cap);
     }
 
     SkPath& path = paths.back();
-    SkPaint& paint = paints.back();
+    cc::PaintFlags& paint = paints.back();
     CommandType command_type = path_elements[i].type;
     switch (command_type) {
       // Handled above.
@@ -128,14 +129,14 @@ void PaintPath(Canvas* canvas,
       };
 
       case STROKE: {
-        paint.setStyle(SkPaint::kStroke_Style);
+        paint.setStyle(cc::PaintFlags::kStroke_Style);
         SkScalar width = path_elements[++i].arg;
         paint.setStrokeWidth(width);
         break;
       }
 
       case CAP_SQUARE: {
-        paint.setStrokeCap(SkPaint::kSquare_Cap);
+        paint.setStrokeCap(cc::PaintFlags::kSquare_Cap);
         break;
       }
 

@@ -5,6 +5,7 @@
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 
 #include "base/macros.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
@@ -51,8 +52,8 @@ gfx::Size OverlayScrollBar::Thumb::GetPreferredSize() const {
 }
 
 void OverlayScrollBar::Thumb::OnPaint(gfx::Canvas* canvas) {
-  SkPaint fill_paint;
-  fill_paint.setStyle(SkPaint::kFill_Style);
+  cc::PaintFlags fill_paint;
+  fill_paint.setStyle(cc::PaintFlags::kFill_Style);
   fill_paint.setColor(SK_ColorBLACK);
   gfx::RectF fill_bounds(GetLocalBounds());
   fill_bounds.Inset(gfx::InsetsF(IsHorizontal() ? kThumbHoverOffset : 0,
@@ -62,8 +63,8 @@ void OverlayScrollBar::Thumb::OnPaint(gfx::Canvas* canvas) {
                                  IsHorizontal() ? kThumbStroke : 0));
   canvas->DrawRect(fill_bounds, fill_paint);
 
-  SkPaint stroke_paint;
-  stroke_paint.setStyle(SkPaint::kStroke_Style);
+  cc::PaintFlags stroke_paint;
+  stroke_paint.setStyle(cc::PaintFlags::kStroke_Style);
   stroke_paint.setColor(SK_ColorWHITE);
   stroke_paint.setStrokeWidth(kThumbStroke);
   gfx::RectF stroke_bounds(fill_bounds);

@@ -36,7 +36,6 @@
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 
-class SkPicture;
 
 namespace blink {
 
@@ -53,7 +52,7 @@ ImageBufferSurface::ImageBufferSurface(const IntSize& size,
 
 ImageBufferSurface::~ImageBufferSurface() {}
 
-sk_sp<SkPicture> ImageBufferSurface::getPicture() {
+sk_sp<PaintRecord> ImageBufferSurface::getPicture() {
   return nullptr;
 }
 

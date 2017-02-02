@@ -75,8 +75,8 @@ class SVGImageForContainer final : public Image {
   }
   bool hasRelativeSize() const override { return m_image->hasRelativeSize(); }
 
-  void draw(SkCanvas*,
-            const SkPaint&,
+  void draw(PaintCanvas*,
+            const PaintFlags&,
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,

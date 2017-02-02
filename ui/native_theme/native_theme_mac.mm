@@ -253,10 +253,10 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
 }
 
 void NativeThemeMac::PaintMenuPopupBackground(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAntiAlias(true);
   if (base::mac::IsOS10_9())
     paint.setColor(kMenuPopupBackgroundColorMavericks);
@@ -268,11 +268,11 @@ void NativeThemeMac::PaintMenuPopupBackground(
 }
 
 void NativeThemeMac::PaintMenuItemBackground(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const MenuItemExtraParams& menu_item) const {
-  SkPaint paint;
+  cc::PaintFlags paint;
   switch (state) {
     case NativeTheme::kNormal:
     case NativeTheme::kDisabled:
@@ -370,7 +370,7 @@ sk_sp<SkShader> NativeThemeMac::GetButtonBorderShader(ButtonBackgroundType type,
 }
 
 // static
-void NativeThemeMac::PaintStyledGradientButton(SkCanvas* canvas,
+void NativeThemeMac::PaintStyledGradientButton(cc::PaintCanvas* canvas,
                                                const gfx::Rect& integer_bounds,
                                                ButtonBackgroundType type,
                                                bool round_left,
@@ -409,20 +409,22 @@ void NativeThemeMac::PaintStyledGradientButton(SkCanvas* canvas,
   else
     shape.setRect(bounds);
 
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
+  cc::PaintFlags paint;
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setAntiAlias(true);
 
   // First draw the darker "outer" border, with its gradient and shadow. Inside
   // a tab strip, this will draw over the outer border and inner separator.
   paint.setLooper(gfx::CreateShadowDrawLooper(shadows));
-  paint.setShader(GetButtonBorderShader(type, shape.height()));
+  paint.setShader(
+      cc::WrapSkShader(GetButtonBorderShader(type, shape.height())));
   canvas->drawRRect(shape, paint);
 
   // Then, inset the rounded rect and draw over that with the inner gradient.
   shape.inset(kBorderThickness, kBorderThickness);
   paint.setLooper(nullptr);
-  paint.setShader(GetButtonBackgroundShader(type, shape.height()));
+  paint.setShader(
+      cc::WrapSkShader(GetButtonBackgroundShader(type, shape.height())));
   canvas->drawRRect(shape, paint);
 
   if (!focus)

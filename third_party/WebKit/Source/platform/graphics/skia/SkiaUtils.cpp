@@ -31,6 +31,7 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/PaintFlags.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
 
 namespace blink {
@@ -306,16 +307,16 @@ SkColor scaleAlpha(SkColor color, int alpha) {
 
 template <typename PrimitiveType>
 void drawFocusRingPrimitive(const PrimitiveType&,
-                            SkCanvas*,
-                            const SkPaint&,
+                            PaintCanvas*,
+                            const PaintFlags&,
                             float cornerRadius) {
   ASSERT_NOT_REACHED();  // Missing an explicit specialization?
 }
 
 template <>
 void drawFocusRingPrimitive<SkRect>(const SkRect& rect,
-                                    SkCanvas* canvas,
-                                    const SkPaint& paint,
+                                    PaintCanvas* canvas,
+                                    const PaintFlags& paint,
                                     float cornerRadius) {
   SkRRect rrect;
   rrect.setRectXY(rect, SkFloatToScalar(cornerRadius),
@@ -325,10 +326,10 @@ void drawFocusRingPrimitive<SkRect>(const SkRect& rect,
 
 template <>
 void drawFocusRingPrimitive<SkPath>(const SkPath& path,
-                                    SkCanvas* canvas,
-                                    const SkPaint& paint,
+                                    PaintCanvas* canvas,
+                                    const PaintFlags& paint,
                                     float cornerRadius) {
-  SkPaint pathPaint = paint;
+  PaintFlags pathPaint = paint;
   pathPaint.setPathEffect(
       SkCornerPathEffect::Make(SkFloatToScalar(cornerRadius)));
   canvas->drawPath(path, pathPaint);
@@ -336,12 +337,12 @@ void drawFocusRingPrimitive<SkPath>(const SkPath& path,
 
 template <typename PrimitiveType>
 void drawPlatformFocusRing(const PrimitiveType& primitive,
-                           SkCanvas* canvas,
+                           PaintCanvas* canvas,
                            SkColor color,
                            float width) {
-  SkPaint paint;
+  PaintFlags paint;
   paint.setAntiAlias(true);
-  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStyle(PaintFlags::kStroke_Style);
   paint.setColor(color);
   paint.setStrokeWidth(width);
 
@@ -363,11 +364,11 @@ void drawPlatformFocusRing(const PrimitiveType& primitive,
 }
 
 template void PLATFORM_EXPORT drawPlatformFocusRing<SkRect>(const SkRect&,
-                                                            SkCanvas*,
+                                                            PaintCanvas*,
                                                             SkColor,
                                                             float width);
 template void PLATFORM_EXPORT drawPlatformFocusRing<SkPath>(const SkPath&,
-                                                            SkCanvas*,
+                                                            PaintCanvas*,
                                                             SkColor,
                                                             float width);
 

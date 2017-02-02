@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "cc/paint/paint_surface.h"
 #include "content/common/content_export.h"
 #include "media/base/video_frame_pool.h"
 #include "media/base/video_types.h"
@@ -23,8 +24,6 @@ class SingleThreadTaskRunner;
 namespace blink {
 class WebMediaPlayer;
 }  // namespace blink
-
-class SkSurface;
 
 namespace content {
 
@@ -61,7 +60,7 @@ class CONTENT_EXPORT HtmlVideoElementCapturerSource final
   void sendNewFrame();
 
   media::VideoFramePool frame_pool_;
-  sk_sp<SkSurface> surface_;
+  sk_sp<cc::PaintSurface> surface_;
 
   const base::WeakPtr<blink::WebMediaPlayer> web_media_player_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

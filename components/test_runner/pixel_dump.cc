@@ -12,6 +12,8 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_flags.h"
 #include "components/test_runner/layout_test_runtime_flags.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
 #include "skia/ext/platform_canvas.h"
@@ -65,7 +67,7 @@ class CaptureCallback : public blink::WebCompositeAndReadbackAsyncCallback {
 };
 
 void DrawSelectionRect(const PixelsDumpRequest& dump_request,
-                       SkCanvas* canvas) {
+                       cc::PaintCanvas* canvas) {
   // See if we need to draw the selection bounds rect. Selection bounds
   // rect is the rect enclosing the (possibly transformed) selection.
   // The rect should be drawn after everything is laid out and painted.
@@ -76,10 +78,10 @@ void DrawSelectionRect(const PixelsDumpRequest& dump_request,
   if (wr.isEmpty())
     return;
   // Render a red rectangle bounding selection rect
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setColor(0xFFFF0000);  // Fully opaque red
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
+  paint.setAntiAlias(true);
   paint.setStrokeWidth(1.0f);
   SkIRect rect;  // Bounding rect
   rect.set(wr.x, wr.y, wr.x + wr.width, wr.y + wr.height);
@@ -96,19 +98,21 @@ void CapturePixelsForPrinting(std::unique_ptr<PixelsDumpRequest> dump_request) {
   int totalHeight = page_count * (page_size_in_pixels.height + 1) - 1;
 
   bool is_opaque = false;
-  std::unique_ptr<SkCanvas> canvas = skia::TryCreateBitmapCanvas(
-      page_size_in_pixels.width, totalHeight, is_opaque);
-  if (!canvas) {
-    LOG(ERROR) << "Failed to create canvas width="
-               << page_size_in_pixels.width << " height=" << totalHeight;
+
+  SkBitmap bitmap;
+  if (!bitmap.tryAllocN32Pixels(page_size_in_pixels.width, totalHeight,
+                                is_opaque)) {
+    LOG(ERROR) << "Failed to create bitmap width=" << page_size_in_pixels.width
+               << " height=" << totalHeight;
     dump_request->callback.Run(SkBitmap());
     return;
   }
-  web_frame->printPagesWithBoundaries(canvas.get(), page_size_in_pixels);
+
+  cc::PaintCanvas canvas(bitmap);
+  web_frame->printPagesWithBoundaries(&canvas, page_size_in_pixels);
   web_frame->printEnd();
 
-  DrawSelectionRect(*dump_request, canvas.get());
-  const SkBitmap bitmap = skia::ReadPixels(canvas.get());
+  DrawSelectionRect(*dump_request, &canvas);
   dump_request->callback.Run(bitmap);
 }
 
@@ -138,7 +142,7 @@ void CaptureCallback::didCompositeAndReadback(const SkBitmap& bitmap) {
 
 void DidCapturePixelsAsync(std::unique_ptr<PixelsDumpRequest> dump_request,
                            const SkBitmap& bitmap) {
-  SkCanvas canvas(bitmap);
+  cc::PaintCanvas canvas(bitmap);
   DrawSelectionRect(*dump_request, &canvas);
   if (!dump_request->callback.is_null())
     dump_request->callback.Run(bitmap);

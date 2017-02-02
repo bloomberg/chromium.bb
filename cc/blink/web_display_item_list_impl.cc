@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "cc/paint/paint_record.h"
 #include "cc/playback/clip_display_item.h"
 #include "cc/playback/clip_path_display_item.h"
 #include "cc/playback/compositing_display_item.h"
@@ -20,7 +21,6 @@
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform.h"
@@ -41,7 +41,7 @@ WebDisplayItemListImpl::WebDisplayItemListImpl(
 
 void WebDisplayItemListImpl::appendDrawingItem(
     const blink::WebRect& visual_rect,
-    sk_sp<const SkPicture> picture) {
+    sk_sp<const cc::PaintRecord> picture) {
   display_item_list_->CreateAndAppendDrawingItem<cc::DrawingDisplayItem>(
       visual_rect, std::move(picture));
 }

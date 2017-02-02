@@ -4,8 +4,8 @@
 
 #include "ui/views/controls/button/toggle_button.h"
 
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -78,7 +78,7 @@ class ToggleButton::ThumbView : public InkDropHostView {
                         ui::NativeTheme::kColorId_LabelEnabledColor),
                     0x99));
     shadows.push_back(shadow.Scale(dsf));
-    SkPaint thumb_paint;
+    cc::PaintFlags thumb_paint;
     thumb_paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadows));
     thumb_paint.setAntiAlias(true);
     const SkColor thumb_on_color = GetNativeTheme()->GetSystemColor(
@@ -197,7 +197,7 @@ void ToggleButton::OnPaint(gfx::Canvas* canvas) {
   gfx::RectF track_rect(GetTrackBounds());
   track_rect.Scale(dsf);
   track_rect = gfx::RectF(gfx::ToEnclosingRect(track_rect));
-  SkPaint track_paint;
+  cc::PaintFlags track_paint;
   track_paint.setAntiAlias(true);
   const double color_ratio = slide_animation_.GetCurrentValue();
   track_paint.setColor(color_utils::AlphaBlend(

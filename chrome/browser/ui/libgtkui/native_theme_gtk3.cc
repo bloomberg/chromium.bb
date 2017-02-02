@@ -53,7 +53,7 @@ SkBitmap GetWidgetBitmap(const gfx::Size& size,
   return bitmap;
 }
 
-void PaintWidget(SkCanvas* canvas,
+void PaintWidget(cc::PaintCanvas* canvas,
                  const gfx::Rect& rect,
                  GtkStyleContext* context,
                  BackgroundRenderMode bg_mode,
@@ -454,7 +454,7 @@ void NativeThemeGtk3::PaintScrollbarCorner(SkCanvas* canvas,
 }
 
 void NativeThemeGtk3::PaintMenuPopupBackground(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
   PaintWidget(canvas, gfx::Rect(size), GetStyleContextFromCss("GtkMenu#menu"),
@@ -462,7 +462,7 @@ void NativeThemeGtk3::PaintMenuPopupBackground(
 }
 
 void NativeThemeGtk3::PaintMenuItemBackground(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const MenuItemExtraParams& menu_item) const {
@@ -529,7 +529,7 @@ void NativeThemeGtk3::PaintMenuSeparator(
 }
 
 void NativeThemeGtk3::PaintFrameTopArea(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const FrameTopAreaExtraParams& frame_top_area) const {

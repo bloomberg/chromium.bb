@@ -42,7 +42,7 @@ CrossfadeGeneratedImage::CrossfadeGeneratedImage(PassRefPtr<Image> fromImage,
       m_crossfadeSize(crossfadeSize) {}
 
 void CrossfadeGeneratedImage::drawCrossfade(
-    SkCanvas* canvas,
+    PaintCanvas* canvas,
     const SkPaint& paint,
     ImageClampingMode clampMode,
     const ColorBehavior& colorBehavior) {
@@ -54,12 +54,12 @@ void CrossfadeGeneratedImage::drawCrossfade(
   // applied here instead of inside the layer.  This probably faulty behavior
   // was maintained in order to preserve pre-existing behavior while refactoring
   // this code.  This should be investigated further. crbug.com/472634
-  SkPaint layerPaint;
+  PaintFlags layerPaint;
   layerPaint.setBlendMode(paint.getBlendMode());
-  SkAutoCanvasRestore ar(canvas, false);
+  PaintCanvasAutoRestore ar(canvas, false);
   canvas->saveLayer(nullptr, &layerPaint);
 
-  SkPaint imagePaint(paint);
+  PaintFlags imagePaint(paint);
   imagePaint.setBlendMode(SkBlendMode::kSrcOver);
   int imageAlpha = clampedAlphaForBlending(1 - m_percentage);
   imagePaint.setAlpha(imageAlpha > 255 ? 255 : imageAlpha);
@@ -77,8 +77,8 @@ void CrossfadeGeneratedImage::drawCrossfade(
                   DoNotRespectImageOrientation, clampMode, colorBehavior);
 }
 
-void CrossfadeGeneratedImage::draw(SkCanvas* canvas,
-                                   const SkPaint& paint,
+void CrossfadeGeneratedImage::draw(PaintCanvas* canvas,
+                                   const PaintFlags& paint,
                                    const FloatRect& dstRect,
                                    const FloatRect& srcRect,
                                    RespectImageOrientationEnum,
@@ -88,7 +88,7 @@ void CrossfadeGeneratedImage::draw(SkCanvas* canvas,
   if (m_fromImage == Image::nullImage() || m_toImage == Image::nullImage())
     return;
 
-  SkAutoCanvasRestore ar(canvas, true);
+  PaintCanvasAutoRestore ar(canvas, true);
   canvas->clipRect(dstRect);
   canvas->translate(dstRect.x(), dstRect.y());
   if (dstRect.size() != srcRect.size())
@@ -105,7 +105,7 @@ void CrossfadeGeneratedImage::drawTile(GraphicsContext& context,
   if (m_fromImage == Image::nullImage() || m_toImage == Image::nullImage())
     return;
 
-  SkPaint paint = context.fillPaint();
+  PaintFlags paint = context.fillPaint();
   paint.setBlendMode(SkBlendMode::kSrcOver);
   paint.setAntiAlias(context.shouldAntialias());
   FloatRect destRect((FloatPoint()), FloatSize(m_crossfadeSize));

@@ -191,13 +191,13 @@ void HTMLVideoElement::updateDisplayState() {
     setDisplayMode(Poster);
 }
 
-void HTMLVideoElement::paintCurrentFrame(SkCanvas* canvas,
+void HTMLVideoElement::paintCurrentFrame(PaintCanvas* canvas,
                                          const IntRect& destRect,
-                                         const SkPaint* paint) const {
+                                         const PaintFlags* paint) const {
   if (!webMediaPlayer())
     return;
 
-  SkPaint mediaPaint;
+  PaintFlags mediaPaint;
   if (paint) {
     mediaPaint = *paint;
   } else {

@@ -31,8 +31,8 @@
 #ifndef InterceptingCanvas_h
 #define InterceptingCanvas_h
 
+#include "platform/graphics/paint/PaintRecord.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"

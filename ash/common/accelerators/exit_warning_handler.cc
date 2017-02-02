@@ -73,8 +73,8 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
   }
 
   void OnPaint(gfx::Canvas* canvas) override {
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
+    cc::PaintFlags paint;
+    paint.setStyle(cc::PaintFlags::kFill_Style);
     paint.setColor(kWindowBackgroundColor);
     canvas->DrawRoundRect(GetLocalBounds(), kWindowCornerRadius, paint);
     views::WidgetDelegateView::OnPaint(canvas);

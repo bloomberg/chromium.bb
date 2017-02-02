@@ -57,10 +57,11 @@
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StrokeData.h"
+#include "platform/graphics/paint/PaintCanvas.h"
+#include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/BidiTextRun.h"
 #include "public/platform/Platform.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
@@ -91,14 +92,14 @@ class CanvasRenderingContext2DAutoRestoreSkCanvas {
       CanvasRenderingContext2D* context)
       : m_context(context), m_saveCount(0) {
     DCHECK(m_context);
-    SkCanvas* c = m_context->drawingCanvas();
+    PaintCanvas* c = m_context->drawingCanvas();
     if (c) {
       m_saveCount = c->getSaveCount();
     }
   }
 
   ~CanvasRenderingContext2DAutoRestoreSkCanvas() {
-    SkCanvas* c = m_context->drawingCanvas();
+    PaintCanvas* c = m_context->drawingCanvas();
     if (c)
       c->restoreToCount(m_saveCount);
     m_context->validateStateStack();
@@ -148,7 +149,7 @@ void CanvasRenderingContext2D::dispose() {
 
 void CanvasRenderingContext2D::validateStateStack() const {
 #if DCHECK_IS_ON()
-  if (SkCanvas* skCanvas = canvas()->existingDrawingCanvas()) {
+  if (PaintCanvas* skCanvas = canvas()->existingDrawingCanvas()) {
     // The canvas should always have an initial save frame, to support
     // resetting the top level matrix and clip.
     DCHECK_GT(skCanvas->getSaveCount(), 1);
@@ -281,7 +282,8 @@ void CanvasRenderingContext2D::reset() {
   BaseRenderingContext2D::reset();
 }
 
-void CanvasRenderingContext2D::restoreCanvasMatrixClipStack(SkCanvas* c) const {
+void CanvasRenderingContext2D::restoreCanvasMatrixClipStack(
+    PaintCanvas* c) const {
   restoreMatrixClipStack(c);
 }
 
@@ -373,13 +375,13 @@ void CanvasRenderingContext2D::snapshotStateForFilter() {
   modifiableState().setFontForFilter(accessFont());
 }
 
-SkCanvas* CanvasRenderingContext2D::drawingCanvas() const {
+PaintCanvas* CanvasRenderingContext2D::drawingCanvas() const {
   if (isContextLost())
     return nullptr;
   return canvas()->drawingCanvas();
 }
 
-SkCanvas* CanvasRenderingContext2D::existingDrawingCanvas() const {
+PaintCanvas* CanvasRenderingContext2D::existingDrawingCanvas() const {
   return canvas()->existingDrawingCanvas();
 }
 
@@ -820,7 +822,7 @@ void CanvasRenderingContext2D::drawTextInternal(
   // to 0, for example), so update style before grabbing the drawingCanvas.
   canvas()->document().updateStyleAndLayoutTreeForNode(canvas());
 
-  SkCanvas* c = drawingCanvas();
+  PaintCanvas* c = drawingCanvas();
   if (!c)
     return;
 
@@ -904,7 +906,7 @@ void CanvasRenderingContext2D::drawTextInternal(
 
   draw(
       [&font, &textRunPaintInfo, &location](
-          SkCanvas* c, const SkPaint* paint)  // draw lambda
+          PaintCanvas* c, const PaintFlags* paint)  // draw lambda
       {
         font.drawBidiText(c, textRunPaintInfo, location,
                           Font::UseFallbackIfFontNotReady, cDeviceScaleFactor,
@@ -1082,7 +1084,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
 
   Path hitRegionPath = options.hasPath() ? options.path()->path() : m_path;
 
-  SkCanvas* c = drawingCanvas();
+  PaintCanvas* c = drawingCanvas();
 
   if (hitRegionPath.isEmpty() || !c || !state().isTransformInvertible() ||
       c->isClipEmpty()) {

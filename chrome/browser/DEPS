@@ -1,6 +1,7 @@
 include_rules = [
   "+apps",
   "+ash",
+  "+cc/paint",
   "+chrome/app",
   "+chrome/chrome_watcher",
   "+chrome/grit",

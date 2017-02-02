@@ -4,7 +4,6 @@
 
 #include "ui/compositor/paint_context.h"
 
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/canvas.h"
 
 namespace ui {
@@ -13,7 +12,7 @@ PaintContext::PaintContext(cc::DisplayItemList* list,
                            float device_scale_factor,
                            const gfx::Rect& invalidation)
     : list_(list),
-      owned_recorder_(new SkPictureRecorder),
+      owned_recorder_(new cc::PaintRecorder),
       recorder_(owned_recorder_.get()),
       device_scale_factor_(device_scale_factor),
       invalidation_(invalidation) {

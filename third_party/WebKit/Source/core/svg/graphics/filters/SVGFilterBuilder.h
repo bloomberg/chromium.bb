@@ -23,13 +23,12 @@
 
 #include "core/style/SVGComputedStyleDefs.h"
 #include "platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/paint/PaintFlags.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
-
-class SkPaint;
 
 namespace blink {
 
@@ -81,8 +80,8 @@ class SVGFilterBuilder {
  public:
   SVGFilterBuilder(FilterEffect* sourceGraphic,
                    SVGFilterGraphNodeMap* = nullptr,
-                   const SkPaint* fillPaint = nullptr,
-                   const SkPaint* strokePaint = nullptr);
+                   const PaintFlags* fillPaint = nullptr,
+                   const PaintFlags* strokePaint = nullptr);
 
   void buildGraph(Filter*, SVGFilterElement&, const FloatRect&);
 

@@ -347,7 +347,6 @@ bool ThemePainterDefault::paintSliderTrack(const LayoutObject& o,
   Platform::current()->themeEngine()->paint(
       canvas, WebThemeEngine::PartSliderTrack, getWebThemeState(o),
       WebRect(unzoomedRect), &extraParams);
-
   return false;
 }
 

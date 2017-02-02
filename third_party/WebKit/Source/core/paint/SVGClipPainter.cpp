@@ -163,7 +163,7 @@ bool SVGClipPainter::drawClipAsMask(GraphicsContext& context,
 
   LayoutObjectDrawingRecorder drawingRecorder(
       context, layoutObject, DisplayItem::kSVGClip, targetVisualRect);
-  sk_sp<SkPicture> maskPicture = maskPictureBuilder.endRecording();
+  sk_sp<PaintRecord> maskPicture = maskPictureBuilder.endRecording();
   context.drawPicture(maskPicture.get());
   return true;
 }

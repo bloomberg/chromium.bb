@@ -208,7 +208,7 @@ void fillQuad(GraphicsContext& context,
   path.lineTo(quad[1]);
   path.lineTo(quad[2]);
   path.lineTo(quad[3]);
-  SkPaint paint(context.fillPaint());
+  PaintFlags paint(context.fillPaint());
   paint.setAntiAlias(antialias);
   paint.setColor(color.rgb());
 

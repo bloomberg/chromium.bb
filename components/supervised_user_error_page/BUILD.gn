@@ -31,6 +31,7 @@ if (target_os == "android") {
       "gin_wrapper.h",
     ]
     deps = [
+      "//cc/paint",
       "//components/web_restrictions:interfaces",
       "//content/public/renderer",
       "//gin",

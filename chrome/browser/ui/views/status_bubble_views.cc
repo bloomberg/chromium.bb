@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_flags.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
@@ -456,8 +457,8 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   SkPath path;
   path.addRoundRect(gfx::RectFToSkRect(bubble_rect), rad);
 
-  SkPaint paint;
-  paint.setStyle(SkPaint::kStroke_Style);
+  cc::PaintFlags paint;
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(1);
   paint.setAntiAlias(true);
 
@@ -467,7 +468,7 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   // Get the fill path by subtracting the shadow so they align neatly.
   SkPath fill_path;
   Op(path, stroke_path, kDifference_SkPathOp, &fill_path);
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   const SkColor bubble_color =
       theme_provider_->GetColor(ThemeProperties::COLOR_TOOLBAR);
   paint.setColor(bubble_color);

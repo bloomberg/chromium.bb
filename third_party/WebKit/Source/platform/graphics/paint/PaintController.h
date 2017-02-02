@@ -27,8 +27,6 @@
 #include <memory>
 #include <utility>
 
-class SkPicture;
-
 namespace blink {
 
 static const size_t kInitialDisplayItemListCapacityBytes = 512;
@@ -172,7 +170,7 @@ class PLATFORM_EXPORT PaintController {
   DisplayItemList& newDisplayItemList() { return m_newDisplayItemList; }
 
   void appendDebugDrawingAfterCommit(const DisplayItemClient&,
-                                     sk_sp<SkPicture>,
+                                     sk_sp<PaintRecord>,
                                      const LayoutSize& offsetFromLayoutObject);
 
   void showDebugData() const { showDebugDataInternal(false); }

@@ -33,8 +33,8 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
 
@@ -52,7 +52,7 @@ void GeneratedImage::drawPattern(GraphicsContext& destContext,
   GraphicsContext context(*paintController);
   context.beginRecording(tileRect);
   drawTile(context, srcRect);
-  sk_sp<SkPicture> tilePicture = context.endRecording();
+  sk_sp<PaintRecord> tilePicture = context.endRecording();
 
   SkMatrix patternMatrix = SkMatrix::MakeTrans(phase.x(), phase.y());
   patternMatrix.preScale(scale.width(), scale.height());
@@ -61,7 +61,7 @@ void GeneratedImage::drawPattern(GraphicsContext& destContext,
   RefPtr<Pattern> picturePattern =
       Pattern::createPicturePattern(std::move(tilePicture));
 
-  SkPaint fillPaint = destContext.fillPaint();
+  PaintFlags fillPaint = destContext.fillPaint();
   picturePattern->applyToPaint(fillPaint, patternMatrix);
   fillPaint.setColor(SK_ColorBLACK);
   fillPaint.setBlendMode(compositeOp);

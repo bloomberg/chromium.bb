@@ -259,7 +259,7 @@ std::unique_ptr<DragImage> DragImage::create(const KURL& url,
   const float DragLabelRadius = 5;
 
   IntRect rect(IntPoint(), imageSize);
-  SkPaint backgroundPaint;
+  PaintFlags backgroundPaint;
   backgroundPaint.setColor(SkColorSetRGB(140, 140, 140));
   backgroundPaint.setAntiAlias(true);
   SkRRect rrect;
@@ -268,7 +268,7 @@ std::unique_ptr<DragImage> DragImage::create(const KURL& url,
   buffer->canvas()->drawRRect(rrect, backgroundPaint);
 
   // Draw the text
-  SkPaint textPaint;
+  PaintFlags textPaint;
   if (drawURLString) {
     if (clipURLString)
       urlString = StringTruncator::centerTruncate(

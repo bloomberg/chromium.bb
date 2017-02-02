@@ -41,6 +41,7 @@
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -61,7 +62,6 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebViewImpl.h"
@@ -259,7 +259,7 @@ TEST_F(WebPluginContainerTest, PrintOnePage) {
   printParams.printContentArea.height = 500;
 
   frame->printBegin(printParams);
-  SkPictureRecorder recorder;
+  PaintRecorder recorder;
   frame->printPage(0, recorder.beginRecording(IntRect()));
   frame->printEnd();
   DCHECK(pluginWebFrameClient.printedAtLeastOnePage());
@@ -284,7 +284,7 @@ TEST_F(WebPluginContainerTest, PrintAllPages) {
   printParams.printContentArea.height = 500;
 
   frame->printBegin(printParams);
-  SkPictureRecorder recorder;
+  PaintRecorder recorder;
   frame->printPagesWithBoundaries(recorder.beginRecording(IntRect()),
                                   WebSize());
   frame->printEnd();

@@ -31,6 +31,8 @@
 #include "platform/fonts/FontFallbackList.h"
 #include "platform/fonts/FontFallbackPriority.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/graphics/paint/PaintCanvas.h"
+#include "platform/graphics/paint/PaintFlags.h"
 #include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Allocator.h"
@@ -38,9 +40,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/CharacterNames.h"
-
-class SkCanvas;
-class SkPaint;
 
 namespace blink {
 
@@ -79,23 +78,23 @@ class PLATFORM_EXPORT Font {
     DoNotPaintIfFontNotReady,
     UseFallbackIfFontNotReady
   };
-  bool drawText(SkCanvas*,
+  bool drawText(PaintCanvas*,
                 const TextRunPaintInfo&,
                 const FloatPoint&,
                 float deviceScaleFactor,
-                const SkPaint&) const;
-  bool drawBidiText(SkCanvas*,
+                const PaintFlags&) const;
+  bool drawBidiText(PaintCanvas*,
                     const TextRunPaintInfo&,
                     const FloatPoint&,
                     CustomFontNotReadyAction,
                     float deviceScaleFactor,
-                    const SkPaint&) const;
-  void drawEmphasisMarks(SkCanvas*,
+                    const PaintFlags&) const;
+  void drawEmphasisMarks(PaintCanvas*,
                          const TextRunPaintInfo&,
                          const AtomicString& mark,
                          const FloatPoint&,
                          float deviceScaleFactor,
-                         const SkPaint&) const;
+                         const PaintFlags&) const;
 
   struct TextIntercept {
     float m_begin, m_end;
@@ -110,7 +109,7 @@ class PLATFORM_EXPORT Font {
   // upright in vertical.
   void getTextIntercepts(const TextRunPaintInfo&,
                          float deviceScaleFactor,
-                         const SkPaint&,
+                         const PaintFlags&,
                          const std::tuple<float, float>& bounds,
                          Vector<TextIntercept>&) const;
 
@@ -177,8 +176,8 @@ class PLATFORM_EXPORT Font {
   float buildGlyphBuffer(const TextRunPaintInfo&,
                          GlyphBuffer&,
                          const GlyphData* emphasisData = nullptr) const;
-  void drawGlyphBuffer(SkCanvas*,
-                       const SkPaint&,
+  void drawGlyphBuffer(PaintCanvas*,
+                       const PaintFlags&,
                        const TextRunPaintInfo&,
                        const GlyphBuffer&,
                        const FloatPoint&,

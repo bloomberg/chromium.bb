@@ -38,7 +38,7 @@
 #include "WebSetSinkIdCallbacks.h"
 #include "WebString.h"
 
-class SkPaint;
+#include "cc/paint/paint_flags.h"
 
 namespace gpu {
 namespace gles2 {
@@ -179,7 +179,7 @@ class WebMediaPlayer {
   virtual size_t audioDecodedByteCount() const = 0;
   virtual size_t videoDecodedByteCount() const = 0;
 
-  virtual void paint(WebCanvas*, const WebRect&, SkPaint&) = 0;
+  virtual void paint(WebCanvas*, const WebRect&, cc::PaintFlags&) = 0;
 
   // TODO(kbr): remove non-|target| version. crbug.com/349871
   //

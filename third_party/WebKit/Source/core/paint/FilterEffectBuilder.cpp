@@ -131,8 +131,8 @@ FilterEffectBuilder::FilterEffectBuilder(const FloatRect& zoomedReferenceBox,
 FilterEffectBuilder::FilterEffectBuilder(Node* target,
                                          const FloatRect& zoomedReferenceBox,
                                          float zoom,
-                                         const SkPaint* fillPaint,
-                                         const SkPaint* strokePaint)
+                                         const PaintFlags* fillPaint,
+                                         const PaintFlags* strokePaint)
     : m_targetContext(target),
       m_referenceBox(zoomedReferenceBox),
       m_zoom(zoom),

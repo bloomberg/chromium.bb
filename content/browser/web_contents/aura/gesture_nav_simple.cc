@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "cc/layers/layer.h"
+#include "cc/paint/paint_flags.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -89,9 +90,9 @@ class ArrowLayerDelegate : public ui::LayerDelegate {
  private:
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setColor(SkColorSetARGB(0xa0, 0, 0, 0));
-    paint.setStyle(SkPaint::kFill_Style);
+    paint.setStyle(cc::PaintFlags::kFill_Style);
     paint.setAntiAlias(true);
 
     // Set the recording size to be the size of the |arrow_| layer, and draw a

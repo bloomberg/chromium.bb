@@ -461,8 +461,10 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   // Set canvas background to red with alpha.
   SkBitmap bitmap;
   bitmap.allocN32Pixels(kWidth, kHeight);
-  SkCanvas canvas(bitmap);
-  canvas.clear(kAlphaRed);
+  SkCanvas bitmapCanvas(bitmap);
+  bitmapCanvas.clear(kAlphaRed);
+
+  PaintCanvasPassThrough canvas(&bitmapCanvas);
 
   SkPictureBuilder pictureBuilder(FloatRect(0, 0, kWidth, kHeight));
 
@@ -476,7 +478,6 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   PaintLayerPainter(*rootLayer)
       .paintLayerContents(pictureBuilder.context(), paintingInfo,
                           PaintLayerPaintingCompositingAllPhases);
-
   pictureBuilder.endRecording()->playback(&canvas);
 
   // The result should be a blend of red and green.

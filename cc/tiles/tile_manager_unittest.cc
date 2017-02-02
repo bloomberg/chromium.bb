@@ -1423,7 +1423,7 @@ TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
-  SkPaint solid_paint;
+  PaintFlags solid_paint;
   SkColor solid_color = SkColorSetARGB(255, 12, 23, 34);
   solid_paint.setColor(solid_color);
   recording_source->add_draw_rect_with_paint(gfx::Rect(layer_bounds),
@@ -1431,7 +1431,7 @@ TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
 
   // Create non solid tile as well, otherwise tilings wouldnt be created.
   SkColor non_solid_color = SkColorSetARGB(128, 45, 56, 67);
-  SkPaint non_solid_paint;
+  PaintFlags non_solid_paint;
   non_solid_paint.setColor(non_solid_color);
 
   recording_source->add_draw_rect_with_paint(gfx::Rect(0, 0, 10, 10),
@@ -1636,7 +1636,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     recording_source->SetBackgroundColor(SK_ColorTRANSPARENT);
     recording_source->SetRequiresClear(true);
     recording_source->SetClearCanvasWithDebugColor(false);
-    SkPaint paint;
+    PaintFlags paint;
     paint.setColor(SK_ColorGREEN);
     recording_source->add_draw_rect_with_paint(gfx::Rect(size), paint);
     recording_source->add_draw_image(std::move(blue_image), gfx::Point());
@@ -1728,7 +1728,7 @@ TEST_F(ActivationTasksDoNotBlockReadyToDrawTest,
   std::unique_ptr<FakeRecordingSource> active_tree_recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
-  SkPaint solid_paint;
+  PaintFlags solid_paint;
   SkColor solid_color = SkColorSetARGB(255, 12, 23, 34);
   solid_paint.setColor(solid_color);
   active_tree_recording_source->add_draw_rect_with_paint(
@@ -1740,7 +1740,7 @@ TEST_F(ActivationTasksDoNotBlockReadyToDrawTest,
   std::unique_ptr<FakeRecordingSource> pending_tree_recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   SkColor non_solid_color = SkColorSetARGB(128, 45, 56, 67);
-  SkPaint non_solid_paint;
+  PaintFlags non_solid_paint;
   non_solid_paint.setColor(non_solid_color);
 
   pending_tree_recording_source->add_draw_rect_with_paint(

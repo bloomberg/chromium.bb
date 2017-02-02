@@ -21,6 +21,7 @@
 
 #include <AppKit/NSGraphicsContext.h>
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/mac/ThemeMac.h"
 #include "platform_canvas.h"
 
@@ -43,7 +44,7 @@ static IntRect clampRect(int size, const IntRect& rect) {
 static const int kMaxDirtyRectPixelSize = 10000;
 
 LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(
-    SkCanvas* canvas,
+    PaintCanvas* canvas,
     float deviceScaleFactor,
     const IntRect& dirtyRect)
     : m_didSetGraphicsContext(false),

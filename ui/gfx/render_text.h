@@ -18,8 +18,9 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/font_list.h"
@@ -34,7 +35,6 @@
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/text_constants.h"
 
-class SkCanvas;
 class SkDrawLooper;
 struct SkPoint;
 class SkShader;
@@ -90,7 +90,7 @@ class GFX_EXPORT SkiaTextRenderer {
   // lengths and colors; to support text selection appearances.
   class DiagonalStrike {
    public:
-    DiagonalStrike(Canvas* canvas, Point start, const SkPaint& paint);
+    DiagonalStrike(Canvas* canvas, Point start, const cc::PaintFlags& paint);
     ~DiagonalStrike();
 
     void AddPiece(int length, SkColor color);
@@ -101,7 +101,7 @@ class GFX_EXPORT SkiaTextRenderer {
 
     Canvas* canvas_;
     const Point start_;
-    SkPaint paint_;
+    cc::PaintFlags paint_;
     int total_length_;
     std::vector<Piece> pieces_;
 
@@ -109,8 +109,8 @@ class GFX_EXPORT SkiaTextRenderer {
   };
 
   Canvas* canvas_;
-  SkCanvas* canvas_skia_;
-  SkPaint paint_;
+  cc::PaintCanvas* canvas_skia_;
+  cc::PaintFlags paint_;
   SkScalar underline_thickness_;
   SkScalar underline_position_;
   std::unique_ptr<DiagonalStrike> diagonal_;
@@ -199,7 +199,7 @@ sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
 // Applies the given FontRenderParams to a Skia |paint|.
 void ApplyRenderParams(const FontRenderParams& params,
                        bool subpixel_rendering_suppressed,
-                       SkPaint* paint);
+                       cc::PaintFlags* paint);
 
 }  // namespace internal
 

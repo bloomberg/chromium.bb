@@ -8,19 +8,20 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Noncopyable.h"
 #include <memory>
 
 class SkMetaData;
-class SkPicture;
 
 namespace blink {
 
 class GraphicsContext;
 class PaintController;
 
-// When slimming paint ships we can remove this SkPicture abstraction and
+// TODO(enne): rename this class to not be named SkPicture
+// When slimming paint ships we can remove this PaintRecord abstraction and
 // rely on PaintController here.
 class PLATFORM_EXPORT SkPictureBuilder final : public DisplayItemClient {
   WTF_MAKE_NONCOPYABLE(SkPictureBuilder);
@@ -45,7 +46,7 @@ class PLATFORM_EXPORT SkPictureBuilder final : public DisplayItemClient {
 
   // Returns a picture capturing all drawing performed on the builder's context
   // since construction.
-  sk_sp<SkPicture> endRecording();
+  sk_sp<PaintRecord> endRecording();
 
   // DisplayItemClient methods
   String debugName() const final { return "SkPictureBuilder"; }

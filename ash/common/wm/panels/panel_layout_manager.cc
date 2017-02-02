@@ -22,7 +22,6 @@
 #include "ash/root_window_controller.h"
 #include "base/auto_reset.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
@@ -78,8 +77,8 @@ class CalloutWidgetBackground : public views::Background {
         break;
     }
     // Hard code the arrow color for now.
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
+    cc::PaintFlags paint;
+    paint.setStyle(cc::PaintFlags::kFill_Style);
     paint.setColor(SkColorSetARGB(0xff, 0xe5, 0xe5, 0xe5));
     canvas->DrawPath(path, paint);
   }

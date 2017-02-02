@@ -33,9 +33,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/PaintRecord.h"
+#include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/json/JSONValues.h"
-#include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/RefCounted.h"
 #include <memory>
@@ -58,7 +58,7 @@ class PLATFORM_EXPORT PictureSnapshot : public RefCounted<PictureSnapshot> {
   static PassRefPtr<PictureSnapshot> load(
       const Vector<RefPtr<TilePictureStream>>&);
 
-  PictureSnapshot(sk_sp<const SkPicture>);
+  PictureSnapshot(sk_sp<const PaintRecord>);
 
   std::unique_ptr<Vector<char>> replay(unsigned fromStep = 0,
                                        unsigned toStep = 0,
@@ -72,7 +72,7 @@ class PLATFORM_EXPORT PictureSnapshot : public RefCounted<PictureSnapshot> {
  private:
   std::unique_ptr<SkBitmap> createBitmap() const;
 
-  sk_sp<const SkPicture> m_picture;
+  sk_sp<const PaintRecord> m_picture;
 };
 
 }  // namespace blink

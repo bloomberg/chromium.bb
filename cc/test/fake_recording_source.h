@@ -81,7 +81,8 @@ class FakeRecordingSource : public RecordingSource {
     client_.add_draw_rect(rect, default_paint_);
   }
 
-  void add_draw_rect_with_paint(const gfx::Rect& rect, const SkPaint& paint) {
+  void add_draw_rect_with_paint(const gfx::Rect& rect,
+                                const PaintFlags& paint) {
     client_.add_draw_rect(rect, paint);
   }
 
@@ -89,7 +90,8 @@ class FakeRecordingSource : public RecordingSource {
     client_.add_draw_rectf(rect, default_paint_);
   }
 
-  void add_draw_rectf_with_paint(const gfx::RectF& rect, const SkPaint& paint) {
+  void add_draw_rectf_with_paint(const gfx::RectF& rect,
+                                 const PaintFlags& paint) {
     client_.add_draw_rectf(rect, paint);
   }
 
@@ -105,11 +107,11 @@ class FakeRecordingSource : public RecordingSource {
 
   void add_draw_image_with_paint(sk_sp<const SkImage> image,
                                  const gfx::Point& point,
-                                 const SkPaint& paint) {
+                                 const PaintFlags& paint) {
     client_.add_draw_image(std::move(image), point, paint);
   }
 
-  void set_default_paint(const SkPaint& paint) { default_paint_ = paint; }
+  void set_default_paint(const PaintFlags& paint) { default_paint_ = paint; }
 
   void set_reported_memory_usage(size_t reported_memory_usage) {
     client_.set_reported_memory_usage(reported_memory_usage);
@@ -131,7 +133,7 @@ class FakeRecordingSource : public RecordingSource {
 
  private:
   FakeContentLayerClient client_;
-  SkPaint default_paint_;
+  PaintFlags default_paint_;
   base::WaitableEvent* playback_allowed_event_;
 };
 

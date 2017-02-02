@@ -25,7 +25,7 @@ void computeChunkBoundsAndOpaqueness(const DisplayItemList& displayItems,
       if (!item.isDrawing())
         continue;
       const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
-      if (const SkPicture* picture = drawing.picture()) {
+      if (const PaintRecord* picture = drawing.picture()) {
         if (drawing.knownToBeOpaque()) {
           // TODO(pdr): It may be too conservative to round in to the
           // enclosedIntRect.

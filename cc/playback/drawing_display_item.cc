@@ -14,10 +14,6 @@
 #include "base/values.h"
 #include "cc/debug/picture_debug_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkMatrix.h"
-#include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/skia_util.h"
 
@@ -25,7 +21,7 @@ namespace cc {
 
 DrawingDisplayItem::DrawingDisplayItem() : DisplayItem(DRAWING) {}
 
-DrawingDisplayItem::DrawingDisplayItem(sk_sp<const SkPicture> picture)
+DrawingDisplayItem::DrawingDisplayItem(sk_sp<const PaintRecord> picture)
     : DisplayItem(DRAWING) {
   SetNew(std::move(picture));
 }
@@ -38,7 +34,7 @@ DrawingDisplayItem::DrawingDisplayItem(const DrawingDisplayItem& item)
 DrawingDisplayItem::~DrawingDisplayItem() {
 }
 
-void DrawingDisplayItem::SetNew(sk_sp<const SkPicture> picture) {
+void DrawingDisplayItem::SetNew(sk_sp<const PaintRecord> picture) {
   picture_ = std::move(picture);
 }
 
@@ -87,7 +83,7 @@ void DrawingDisplayItem::CloneTo(DrawingDisplayItem* item) const {
 }
 
 size_t DrawingDisplayItem::ExternalMemoryUsage() const {
-  return SkPictureUtils::ApproximateBytesUsed(picture_.get());
+  return SkPictureUtils::ApproximateBytesUsed(ToSkPicture(picture_.get()));
 }
 
 DISABLE_CFI_PERF

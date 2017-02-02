@@ -5,7 +5,6 @@
 #include "ash/autoclick/common/autoclick_ring_handler.h"
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/aura/window.h"
@@ -46,8 +45,8 @@ const SkColor kAutoclickRingCircleColor = SkColorSetARGB(255, 0, 0, 255);
 void PaintAutoclickRingCircle(gfx::Canvas* canvas,
                               gfx::Point& center,
                               int radius) {
-  SkPaint paint;
-  paint.setStyle(SkPaint::kStroke_Style);
+  cc::PaintFlags paint;
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(2 * kAutoclickRingArcWidth);
   paint.setColor(kAutoclickRingCircleColor);
   paint.setAntiAlias(true);
@@ -60,8 +59,8 @@ void PaintAutoclickRingArc(gfx::Canvas* canvas,
                            int radius,
                            int start_angle,
                            int end_angle) {
-  SkPaint paint;
-  paint.setStyle(SkPaint::kStroke_Style);
+  cc::PaintFlags paint;
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(2 * kAutoclickRingArcWidth);
   paint.setColor(kAutoclickRingArcColor);
   paint.setAntiAlias(true);

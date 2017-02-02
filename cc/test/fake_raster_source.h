@@ -6,11 +6,10 @@
 #define CC_TEST_FAKE_RASTER_SOURCE_H_
 
 #include "base/memory/ref_counted.h"
+#include "cc/paint/paint_canvas.h"
 #include "cc/playback/raster_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-
-class SkCanvas;
 
 namespace base {
 class WaitableEvent;
@@ -39,7 +38,7 @@ class FakeRasterSource : public RasterSource {
       bool can_use_lcd,
       base::WaitableEvent* playback_allowed_event);
 
-  void PlaybackToCanvas(SkCanvas* canvas,
+  void PlaybackToCanvas(PaintCanvas* canvas,
                         const PlaybackSettings& settings) const override;
 
  protected:

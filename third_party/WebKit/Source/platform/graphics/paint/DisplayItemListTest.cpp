@@ -4,9 +4,10 @@
 
 #include "platform/graphics/paint/DisplayItemList.h"
 
-#include "SkPictureRecorder.h"
 #include "SkTypes.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "platform/graphics/paint/PaintFlags.h"
+#include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/graphics/paint/SubsequenceDisplayItem.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/testing/FakeDisplayItemClient.h"
@@ -34,12 +35,13 @@ class DisplayItemListTest : public ::testing::Test {
   FakeDisplayItemClient m_client;
 };
 
-static sk_sp<SkPicture> createRectPicture(const IntRect& bounds) {
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(bounds.width(), bounds.height());
+static sk_sp<PaintRecord> createRectPicture(const IntRect& bounds) {
+  PaintRecorder recorder;
+  PaintCanvas* canvas =
+      recorder.beginRecording(bounds.width(), bounds.height());
   canvas->drawRect(
       SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(), bounds.height()),
-      SkPaint());
+      PaintFlags());
   return recorder.finishRecordingAsPicture();
 }
 

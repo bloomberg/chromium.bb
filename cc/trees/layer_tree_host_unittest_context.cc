@@ -15,6 +15,7 @@
 #include "cc/layers/video_layer.h"
 #include "cc/layers/video_layer_impl.h"
 #include "cc/output/filter_operations.h"
+#include "cc/paint/paint_flags.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_content_layer_client.h"
@@ -609,7 +610,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
     root_->SetIsDrawable(true);
 
     // Paint non-solid color.
-    SkPaint paint;
+    PaintFlags paint;
     paint.setColor(SkColorSetARGB(100, 80, 200, 200));
     client_.add_draw_rect(gfx::Rect(5, 5), paint);
 
@@ -688,7 +689,7 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
 
   void SetupTree() override {
     // Paint non-solid color.
-    SkPaint paint;
+    PaintFlags paint;
     paint.setColor(SkColorSetARGB(100, 80, 200, 200));
     client_.add_draw_rect(gfx::Rect(5, 5), paint);
 
@@ -1602,7 +1603,7 @@ class LayerTreeHostContextTestLoseWorkerContextDuringPrepareTiles
     : public LayerTreeTest {
  protected:
   void SetupTree() override {
-    SkPaint paint;
+    PaintFlags paint;
     client_.set_fill_with_nonsolid_color(true);
     client_.add_draw_rect(gfx::Rect(5, 5), paint);
 

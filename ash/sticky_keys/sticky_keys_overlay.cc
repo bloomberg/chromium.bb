@@ -157,8 +157,8 @@ StickyKeysOverlayView::StickyKeysOverlayView() {
 StickyKeysOverlayView::~StickyKeysOverlayView() {}
 
 void StickyKeysOverlayView::OnPaint(gfx::Canvas* canvas) {
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
+  cc::PaintFlags paint;
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   paint.setColor(SkColorSetARGB(0xB3, 0x55, 0x55, 0x55));
   canvas->DrawRoundRect(GetLocalBounds(), 2, paint);
   views::View::OnPaint(canvas);

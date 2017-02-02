@@ -1,0 +1,27 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//cc/cc.gni")
+
+cc_component("paint") {
+  output_name = "cc_paint"
+  sources = [
+    "paint_canvas.cc",
+    "paint_canvas.h",
+    "paint_export.h",
+    "paint_flags.h",
+    "paint_record.h",
+    "paint_recorder.h",
+    "paint_shader.h",
+    "paint_surface.h",
+  ]
+
+  defines = [ "CC_PAINT_IMPLEMENTATION=1" ]
+
+  # cc/paint is intended to be a separate component from cc that can be
+  # included in Blink.  This component should never include //base.
+  public_deps = [
+    "//skia",
+  ]
+}

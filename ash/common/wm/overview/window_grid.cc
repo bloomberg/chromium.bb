@@ -119,7 +119,7 @@ class RoundedRectView : public views::View {
     bounds.set_height(bounds.height() + radius);
     path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
 
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setAntiAlias(true);
     canvas->ClipPath(path, true);
     canvas->DrawColor(background_);

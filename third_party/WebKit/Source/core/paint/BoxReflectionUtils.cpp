@@ -47,7 +47,7 @@ BoxReflection boxReflectionForPaintLayer(const PaintLayer& layer,
       break;
   }
 
-  sk_sp<SkPicture> mask;
+  sk_sp<PaintRecord> mask;
   const NinePieceImage& maskNinePiece = reflectStyle->mask();
   if (maskNinePiece.hasImage()) {
     LayoutRect maskRect(LayoutPoint(), frameLayoutRect.size());
@@ -56,8 +56,8 @@ BoxReflection boxReflectionForPaintLayer(const PaintLayer& layer,
     FloatRect maskBoundingFloatRect(maskBoundingRect);
 
     // TODO(jbroman): SkPictureBuilder + DrawingRecorder seems excessive.
-    // If NinePieceImagePainter operated on SkCanvas, we'd only need an
-    // SkPictureRecorder here.
+    // If NinePieceImagePainter operated on SkCanvas, we'd only need a
+    // PictureRecorder here.
     SkPictureBuilder recorder(maskBoundingFloatRect);
     {
       GraphicsContext& context = recorder.context();

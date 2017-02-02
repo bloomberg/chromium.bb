@@ -71,13 +71,13 @@ NativeThemeGtk2::NativeThemeGtk2() {}
 NativeThemeGtk2::~NativeThemeGtk2() {}
 
 void NativeThemeGtk2::PaintMenuPopupBackground(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
   if (menu_background.corner_radius > 0) {
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    cc::PaintFlags paint;
+    paint.setStyle(cc::PaintFlags::kFill_Style);
+    paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
     paint.setColor(GetSystemColor(kColorId_MenuBackgroundColor));
 
     gfx::Path path;
@@ -96,12 +96,12 @@ void NativeThemeGtk2::PaintMenuPopupBackground(
 }
 
 void NativeThemeGtk2::PaintMenuItemBackground(
-    SkCanvas* canvas,
+    cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const MenuItemExtraParams& menu_item) const {
   SkColor color;
-  SkPaint paint;
+  cc::PaintFlags paint;
   switch (state) {
     case NativeTheme::kNormal:
     case NativeTheme::kDisabled:

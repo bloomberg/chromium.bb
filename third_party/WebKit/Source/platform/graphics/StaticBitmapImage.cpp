@@ -23,8 +23,8 @@ PassRefPtr<StaticBitmapImage> StaticBitmapImage::create(sk_sp<SkImage> image) {
   return UnacceleratedStaticBitmapImage::create(std::move(image));
 }
 
-void StaticBitmapImage::drawHelper(SkCanvas* canvas,
-                                   const SkPaint& paint,
+void StaticBitmapImage::drawHelper(PaintCanvas* canvas,
+                                   const PaintFlags& paint,
                                    const FloatRect& dstRect,
                                    const FloatRect& srcRect,
                                    ImageClampingMode clampMode,

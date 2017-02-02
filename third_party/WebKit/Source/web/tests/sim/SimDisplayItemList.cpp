@@ -6,7 +6,7 @@
 
 #include "core/css/parser/CSSParser.h"
 #include "platform/graphics/LoggingCanvas.h"
-#include "third_party/skia/include/core/SkPicture.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "third_party/skia/include/core/SkRect.h"
 
 namespace blink {
@@ -14,7 +14,7 @@ namespace blink {
 SimDisplayItemList::SimDisplayItemList() {}
 
 void SimDisplayItemList::appendDrawingItem(const WebRect&,
-                                           sk_sp<const SkPicture> picture) {
+                                           sk_sp<const PaintRecord> picture) {
   SkIRect bounds = picture->cullRect().roundOut();
   SimCanvas canvas(bounds.width(), bounds.height());
   picture->playback(&canvas);

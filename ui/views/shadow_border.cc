@@ -35,12 +35,12 @@ ShadowBorder::~ShadowBorder() {
 // TODO(sidharthms): Re-painting a shadow looper on every paint call may yield
 // poor performance. Ideally we should be caching the border to bitmaps.
 void ShadowBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
-  SkPaint paint;
+  cc::PaintFlags paint;
   std::vector<gfx::ShadowValue> shadows;
   shadows.push_back(shadow_value_);
   paint.setLooper(gfx::CreateShadowDrawLooper(shadows));
   paint.setColor(SK_ColorTRANSPARENT);
-  paint.setStrokeJoin(SkPaint::kRound_Join);
+  paint.setStrokeJoin(cc::PaintFlags::kRound_Join);
   gfx::Rect bounds(view.size());
   bounds.Inset(-gfx::ShadowValue::GetMargin(shadows));
   canvas->DrawRect(bounds, paint);

@@ -587,7 +587,7 @@ size_t PaintController::approximateUnsharedMemoryUsage() const {
   // TODO(jbroman): If display items begin to have significant external memory
   // usage that's not shared with the embedder, we should account for it here.
   //
-  // External objects, shared with the embedder, such as SkPicture, should be
+  // External objects, shared with the embedder, such as PaintRecord, should be
   // excluded to avoid double counting. It is the embedder's responsibility to
   // count such objects.
   //
@@ -604,7 +604,7 @@ size_t PaintController::approximateUnsharedMemoryUsage() const {
 
 void PaintController::appendDebugDrawingAfterCommit(
     const DisplayItemClient& displayItemClient,
-    sk_sp<SkPicture> picture,
+    sk_sp<PaintRecord> picture,
     const LayoutSize& offsetFromLayoutObject) {
   DCHECK(m_newDisplayItemList.isEmpty());
   DrawingDisplayItem& displayItem =
@@ -767,11 +767,11 @@ void PaintController::showUnderInvalidationError(
   LOG(ERROR) << "See http://crbug.com/619103.";
 
 #ifndef NDEBUG
-  const SkPicture* newPicture =
+  const PaintRecord* newPicture =
       newItem.isDrawing()
           ? static_cast<const DrawingDisplayItem&>(newItem).picture()
           : nullptr;
-  const SkPicture* oldPicture =
+  const PaintRecord* oldPicture =
       oldItem && oldItem->isDrawing()
           ? static_cast<const DrawingDisplayItem*>(oldItem)->picture()
           : nullptr;

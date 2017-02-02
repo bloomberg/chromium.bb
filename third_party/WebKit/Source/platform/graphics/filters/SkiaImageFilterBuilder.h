@@ -28,10 +28,10 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/ColorSpace.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkImageFilter;
-class SkPicture;
 
 namespace blink {
 
@@ -52,7 +52,7 @@ PLATFORM_EXPORT void populateSourceGraphicImageFilters(
     FilterEffect* sourceGraphic,
     sk_sp<SkImageFilter> input,
     ColorSpace inputColorSpace);
-PLATFORM_EXPORT void buildSourceGraphic(FilterEffect*, sk_sp<SkPicture>);
+PLATFORM_EXPORT void buildSourceGraphic(FilterEffect*, sk_sp<PaintRecord>);
 
 PLATFORM_EXPORT sk_sp<SkImageFilter> buildBoxReflectFilter(
     const BoxReflection&,

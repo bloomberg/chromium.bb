@@ -267,7 +267,7 @@ class WindowSelectorItem::RoundedContainerView
     gfx::Rect bounds(size());
     path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
 
-    SkPaint paint;
+    cc::PaintFlags paint;
     paint.setAntiAlias(true);
     canvas->ClipPath(path, true);
 

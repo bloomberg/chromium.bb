@@ -315,6 +315,7 @@ component("gfx") {
     set_sources_assignment_filter(sources_assignment_filter)
   } else {
     deps += [
+      "//cc/paint",
       "//third_party:jpeg",
       "//third_party/harfbuzz-ng",
     ]

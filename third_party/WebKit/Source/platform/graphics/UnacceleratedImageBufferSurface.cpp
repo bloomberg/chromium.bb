@@ -31,10 +31,7 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PassRefPtr.h"
-
-class SkCanvas;
 
 namespace blink {
 
@@ -50,8 +47,8 @@ UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(
   SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), colorType,
                                        alphaType, colorSpace);
   SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-  m_surface =
-      SkSurface::MakeRaster(info, Opaque == opacityMode ? 0 : &disableLCDProps);
+  m_surface = PaintSurface::MakeRaster(
+      info, Opaque == opacityMode ? 0 : &disableLCDProps);
 
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
@@ -66,7 +63,7 @@ UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(
 
 UnacceleratedImageBufferSurface::~UnacceleratedImageBufferSurface() {}
 
-SkCanvas* UnacceleratedImageBufferSurface::canvas() {
+PaintCanvas* UnacceleratedImageBufferSurface::canvas() {
   return m_surface->getCanvas();
 }
 

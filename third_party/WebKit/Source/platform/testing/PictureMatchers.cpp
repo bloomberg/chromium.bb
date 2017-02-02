@@ -6,8 +6,9 @@
 
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPicture.h"
+#include "platform/graphics/paint/PaintCanvas.h"
+#include "platform/graphics/paint/PaintFlags.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <utility>
@@ -21,16 +22,16 @@ struct QuadWithColor {
   Color color;
 };
 
-class DrawsRectangleCanvas : public SkCanvas {
+class DrawsRectangleCanvas : public PaintCanvas {
  public:
   DrawsRectangleCanvas()
-      : SkCanvas(800, 600),
+      : PaintCanvas(800, 600),
         m_saveCount(0),
         m_alpha(255),
         m_alphaSaveLayerCount(-1) {}
   const Vector<QuadWithColor>& quadsWithColor() const { return m_quads; }
 
-  void onDrawRect(const SkRect& rect, const SkPaint& paint) override {
+  void onDrawRect(const SkRect& rect, const PaintFlags& paint) override {
     SkRect clippedRect(rect);
     for (Vector<ClipAndIndex>::const_reverse_iterator clip = m_clips.rbegin();
          clip != m_clips.rend(); clip++) {
@@ -43,14 +44,14 @@ class DrawsRectangleCanvas : public SkCanvas {
     quadWithColor.quad = FloatQuad(quad);
 
     unsigned paintAlpha = static_cast<unsigned>(paint.getAlpha());
-    SkPaint paintWithAlpha(paint);
+    PaintFlags paintWithAlpha(paint);
     paintWithAlpha.setAlpha(static_cast<U8CPU>(m_alpha * paintAlpha / 255));
     quadWithColor.color = Color(paintWithAlpha.getColor());
     m_quads.push_back(quadWithColor);
-    SkCanvas::onDrawRect(clippedRect, paint);
+    PaintCanvas::onDrawRect(clippedRect, paint);
   }
 
-  SkCanvas::SaveLayerStrategy getSaveLayerStrategy(
+  PaintCanvas::SaveLayerStrategy getSaveLayerStrategy(
       const SaveLayerRec& rec) override {
     m_saveCount++;
     unsigned layerAlpha = static_cast<unsigned>(rec.fPaint->getAlpha());
@@ -59,12 +60,12 @@ class DrawsRectangleCanvas : public SkCanvas {
       m_alphaSaveLayerCount = m_saveCount;
       m_alpha = layerAlpha;
     }
-    return SkCanvas::getSaveLayerStrategy(rec);
+    return PaintCanvas::getSaveLayerStrategy(rec);
   }
 
   void willSave() override {
     m_saveCount++;
-    SkCanvas::willSave();
+    PaintCanvas::willSave();
   }
 
   void willRestore() override {
@@ -76,7 +77,7 @@ class DrawsRectangleCanvas : public SkCanvas {
       m_alphaSaveLayerCount = -1;
     }
     m_saveCount--;
-    SkCanvas::willRestore();
+    PaintCanvas::willRestore();
   }
 
   void onClipRect(const SkRect& rect,
@@ -86,7 +87,7 @@ class DrawsRectangleCanvas : public SkCanvas {
     clipStruct.rect = rect;
     clipStruct.saveCount = m_saveCount;
     m_clips.push_back(clipStruct);
-    SkCanvas::onClipRect(rect, op, style);
+    PaintCanvas::onClipRect(rect, op, style);
   }
 
   struct ClipAndIndex {
@@ -103,13 +104,13 @@ class DrawsRectangleCanvas : public SkCanvas {
 };
 
 class DrawsRectanglesMatcher
-    : public ::testing::MatcherInterface<const SkPicture&> {
+    : public ::testing::MatcherInterface<const PaintRecord&> {
  public:
   DrawsRectanglesMatcher(const Vector<RectWithColor>& rectsWithColor)
       : m_rectsWithColor(rectsWithColor) {}
 
   bool MatchAndExplain(
-      const SkPicture& picture,
+      const PaintRecord& picture,
       ::testing::MatchResultListener* listener) const override {
     DrawsRectangleCanvas canvas;
     picture.playback(&canvas);
@@ -156,14 +157,14 @@ class DrawsRectanglesMatcher
 
 }  // namespace
 
-::testing::Matcher<const SkPicture&> drawsRectangle(const FloatRect& rect,
-                                                    Color color) {
+::testing::Matcher<const PaintRecord&> drawsRectangle(const FloatRect& rect,
+                                                      Color color) {
   Vector<RectWithColor> rectsWithColor;
   rectsWithColor.push_back(RectWithColor(rect, color));
   return ::testing::MakeMatcher(new DrawsRectanglesMatcher(rectsWithColor));
 }
 
-::testing::Matcher<const SkPicture&> drawsRectangles(
+::testing::Matcher<const PaintRecord&> drawsRectangles(
     const Vector<RectWithColor>& rectsWithColor) {
   return ::testing::MakeMatcher(new DrawsRectanglesMatcher(rectsWithColor));
 }

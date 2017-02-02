@@ -798,11 +798,11 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
                       TestDisplayItem(second, backgroundDrawingType));
   EXPECT_TRUE(getPaintController().clientCacheIsValid(first));
   EXPECT_TRUE(getPaintController().clientCacheIsValid(second));
-  const SkPicture* firstPicture =
+  const PaintRecord* firstPicture =
       static_cast<const DrawingDisplayItem&>(
           getPaintController().getDisplayItemList()[0])
           .picture();
-  const SkPicture* secondPicture =
+  const PaintRecord* secondPicture =
       static_cast<const DrawingDisplayItem&>(
           getPaintController().getDisplayItemList()[1])
           .picture();
@@ -1590,11 +1590,11 @@ TEST_P(PaintControllerTest, SkipCache) {
                       TestDisplayItem(multicol, backgroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType));
-  sk_sp<const SkPicture> picture1 =
+  sk_sp<const PaintRecord> picture1 =
       sk_ref_sp(static_cast<const DrawingDisplayItem&>(
                     getPaintController().getDisplayItemList()[1])
                     .picture());
-  sk_sp<const SkPicture> picture2 =
+  sk_sp<const PaintRecord> picture2 =
       sk_ref_sp(static_cast<const DrawingDisplayItem&>(
                     getPaintController().getDisplayItemList()[2])
                     .picture());
@@ -1713,15 +1713,15 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
                       TestDisplayItem(content, backgroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType));
-  sk_sp<const SkPicture> picture0 =
+  sk_sp<const PaintRecord> picture0 =
       sk_ref_sp(static_cast<const DrawingDisplayItem&>(
                     getPaintController().getDisplayItemList()[0])
                     .picture());
-  sk_sp<const SkPicture> picture1 =
+  sk_sp<const PaintRecord> picture1 =
       sk_ref_sp(static_cast<const DrawingDisplayItem&>(
                     getPaintController().getDisplayItemList()[1])
                     .picture());
-  sk_sp<const SkPicture> picture2 =
+  sk_sp<const PaintRecord> picture2 =
       sk_ref_sp(static_cast<const DrawingDisplayItem&>(
                     getPaintController().getDisplayItemList()[2])
                     .picture());
@@ -1864,7 +1864,7 @@ void drawPath(GraphicsContext& context,
   path.lineTo(100, 100);
   path.lineTo(100, 0);
   path.close();
-  SkPaint paint;
+  PaintFlags paint;
   paint.setAntiAlias(true);
   for (unsigned i = 0; i < count; i++)
     context.drawPath(path, paint);

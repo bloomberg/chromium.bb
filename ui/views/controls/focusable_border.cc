@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/focusable_border.h"
 
-#include "third_party/skia/include/core/SkPaint.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
@@ -39,8 +39,8 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
   if (ui::MaterialDesignController::IsSecondaryUiMaterial() && view.HasFocus())
     return;
 
-  SkPaint paint;
-  paint.setStyle(SkPaint::kStroke_Style);
+  cc::PaintFlags paint;
+  paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setColor(GetCurrentColor(view));
 
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {

@@ -35,9 +35,9 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferSurface.h"
+#include "platform/graphics/paint/PaintFlags.h"
+#include "platform/graphics/paint/PaintRecord.h"
 #include "platform/transforms/AffineTransform.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -109,9 +109,9 @@ class PLATFORM_EXPORT ImageBuffer {
 
   // Called by subclasses of ImageBufferSurface to install a new canvas object.
   // Virtual for mocking
-  virtual void resetCanvas(SkCanvas*) const;
+  virtual void resetCanvas(PaintCanvas*) const;
 
-  SkCanvas* canvas() const;
+  PaintCanvas* canvas() const;
   void disableDeferral(DisableDeferralReason) const;
 
   // Called at the end of a task that rendered a whole frame
@@ -169,7 +169,7 @@ class PLATFORM_EXPORT ImageBuffer {
       AccelerationHint = PreferNoAcceleration,
       SnapshotReason = SnapshotReasonUnknown) const;
 
-  sk_sp<SkPicture> getPicture() { return m_surface->getPicture(); }
+  sk_sp<PaintRecord> getPicture() { return m_surface->getPicture(); }
 
   void draw(GraphicsContext&, const FloatRect&, const FloatRect*, SkBlendMode);
 

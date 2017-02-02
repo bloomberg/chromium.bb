@@ -9,10 +9,10 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 #include "platform/graphics/paint/PaintArtifact.h"
+#include "platform/graphics/paint/PaintFlags.h"
+#include "platform/graphics/paint/PaintRecord.h"
+#include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/Assertions.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -27,17 +27,17 @@ class TestPaintArtifact::DummyRectClient : public DisplayItemClient {
       : m_rect(rect), m_color(color) {}
   String debugName() const final { return "<dummy>"; }
   LayoutRect visualRect() const final { return enclosingLayoutRect(m_rect); }
-  sk_sp<SkPicture> makePicture() const;
+  sk_sp<PaintRecord> makePicture() const;
 
  private:
   FloatRect m_rect;
   Color m_color;
 };
 
-sk_sp<SkPicture> TestPaintArtifact::DummyRectClient::makePicture() const {
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(m_rect);
-  SkPaint paint;
+sk_sp<PaintRecord> TestPaintArtifact::DummyRectClient::makePicture() const {
+  PaintRecorder recorder;
+  PaintCanvas* canvas = recorder.beginRecording(m_rect);
+  PaintFlags paint;
   paint.setColor(m_color.rgb());
   canvas->drawRect(m_rect, paint);
   return recorder.finishRecordingAsPicture();

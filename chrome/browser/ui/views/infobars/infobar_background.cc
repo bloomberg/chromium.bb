@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 
+#include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_flags.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "components/infobars/core/infobar.h"
@@ -63,13 +65,13 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
     }
   }
   fill_path.addRect(0, arrow_height, infobar_width, scale(infobar->height()));
-  SkPaint fill;
-  fill.setStyle(SkPaint::kFill_Style);
+  cc::PaintFlags fill;
+  fill.setStyle(cc::PaintFlags::kFill_Style);
   fill.setColor(get_color());
   canvas->DrawPath(fill_path, fill);
 
-  SkPaint stroke;
-  stroke.setStyle(SkPaint::kStroke_Style);
+  cc::PaintFlags stroke;
+  stroke.setStyle(cc::PaintFlags::kStroke_Style);
   const int kSeparatorThicknessPx = 1;
   stroke.setStrokeWidth(SkIntToScalar(kSeparatorThicknessPx));
   stroke.setColor(separator_color);

@@ -7,9 +7,9 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -113,9 +113,9 @@ TrayBubbleContentMask::~TrayBubbleContentMask() {
 
 void TrayBubbleContentMask::OnPaintLayer(const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer()->size());
-  SkPaint paint;
+  cc::PaintFlags paint;
   paint.setAlpha(255);
-  paint.setStyle(SkPaint::kFill_Style);
+  paint.setStyle(cc::PaintFlags::kFill_Style);
   gfx::Rect rect(layer()->bounds().size());
   recorder.canvas()->DrawRoundRect(rect, corner_radius_, paint);
 }

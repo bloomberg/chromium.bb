@@ -13,6 +13,7 @@
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 
@@ -202,14 +203,14 @@ bool OffscreenCanvasRenderingContext2D::parseColorOrCurrentColor(
   return ::blink::parseColorOrCurrentColor(color, colorString, nullptr);
 }
 
-SkCanvas* OffscreenCanvasRenderingContext2D::drawingCanvas() const {
+PaintCanvas* OffscreenCanvasRenderingContext2D::drawingCanvas() const {
   ImageBuffer* buffer = imageBuffer();
   if (!buffer)
     return nullptr;
   return imageBuffer()->canvas();
 }
 
-SkCanvas* OffscreenCanvasRenderingContext2D::existingDrawingCanvas() const {
+PaintCanvas* OffscreenCanvasRenderingContext2D::existingDrawingCanvas() const {
   if (!m_imageBuffer)
     return nullptr;
   return m_imageBuffer->canvas();
@@ -236,7 +237,7 @@ sk_sp<SkImageFilter> OffscreenCanvasRenderingContext2D::stateGetFilter() {
 
 void OffscreenCanvasRenderingContext2D::validateStateStack() const {
 #if DCHECK_IS_ON()
-  if (SkCanvas* skCanvas = existingDrawingCanvas()) {
+  if (PaintCanvas* skCanvas = existingDrawingCanvas()) {
     DCHECK_EQ(static_cast<size_t>(skCanvas->getSaveCount()),
               m_stateStack.size() + 1);
   }

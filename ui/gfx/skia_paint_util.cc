@@ -12,17 +12,18 @@
 
 namespace gfx {
 
-sk_sp<SkShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
-                                     SkShader::TileMode tile_mode,
-                                     const SkMatrix& local_matrix) {
-  return CreateImageRepShaderForScale(image_rep, tile_mode, local_matrix,
-                                      image_rep.scale());
+sk_sp<cc::PaintShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
+                                            cc::PaintShader::TileMode tile_mode,
+                                            const SkMatrix& local_matrix) {
+  return cc::WrapSkShader(CreateImageRepShaderForScale(
+      image_rep, tile_mode, local_matrix, image_rep.scale()));
 }
 
-sk_sp<SkShader> CreateImageRepShaderForScale(const gfx::ImageSkiaRep& image_rep,
-                                             SkShader::TileMode tile_mode,
-                                             const SkMatrix& local_matrix,
-                                             SkScalar scale) {
+sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
+    const gfx::ImageSkiaRep& image_rep,
+    cc::PaintShader::TileMode tile_mode,
+    const SkMatrix& local_matrix,
+    SkScalar scale) {
   // Unscale matrix by |scale| such that the bitmap is drawn at the
   // correct density.
   // Convert skew and translation to pixel coordinates.
@@ -35,21 +36,21 @@ sk_sp<SkShader> CreateImageRepShaderForScale(const gfx::ImageSkiaRep& image_rep,
   shader_scale.setScaleX(local_matrix.getScaleX() / scale);
   shader_scale.setScaleY(local_matrix.getScaleY() / scale);
 
-  return SkShader::MakeBitmapShader(image_rep.sk_bitmap(), tile_mode, tile_mode,
-                                    &shader_scale);
+  return cc::PaintShader::MakeBitmapShader(image_rep.sk_bitmap(), tile_mode,
+                                           tile_mode, &shader_scale);
 }
 
-sk_sp<SkShader> CreateGradientShader(int start_point,
-                                     int end_point,
-                                     SkColor start_color,
-                                     SkColor end_color) {
+sk_sp<cc::PaintShader> CreateGradientShader(int start_point,
+                                            int end_point,
+                                            SkColor start_color,
+                                            SkColor end_color) {
   SkColor grad_colors[2] = {start_color, end_color};
   SkPoint grad_points[2];
   grad_points[0].iset(0, start_point);
   grad_points[1].iset(0, end_point);
 
-  return SkGradientShader::MakeLinear(grad_points, grad_colors, NULL, 2,
-                                      SkShader::kClamp_TileMode);
+  return cc::WrapSkShader(SkGradientShader::MakeLinear(
+      grad_points, grad_colors, NULL, 2, cc::PaintShader::kClamp_TileMode));
 }
 
 // TODO(estade): remove. Only exists to support legacy CreateShadowDrawLooper.

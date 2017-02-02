@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "third_party/skia/include/core/SkPaint.h"
+#include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
@@ -101,8 +101,8 @@ class MenuScrollButton : public View {
     path.lineTo(SkIntToScalar(x_left), SkIntToScalar(y_bottom));
     path.lineTo(SkIntToScalar(x_right), SkIntToScalar(y_bottom));
     path.lineTo(SkIntToScalar(x), SkIntToScalar(y));
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
+    cc::PaintFlags paint;
+    paint.setStyle(cc::PaintFlags::kFill_Style);
     paint.setAntiAlias(true);
     paint.setColor(config.arrow_color);
     canvas->DrawPath(path, paint);
