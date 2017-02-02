@@ -154,7 +154,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
 
  private:
   class InterfaceEndpoint;
-  class IncomingMessageWrapper;
+  class MessageWrapper;
   struct Task;
 
   ~MultiplexRouter() override;
@@ -209,7 +209,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
       ClientCallBehavior client_call_behavior,
       base::SingleThreadTaskRunner* current_task_runner);
   bool ProcessIncomingMessage(
-      IncomingMessageWrapper* message_wrapper,
+      Message* message,
       ClientCallBehavior client_call_behavior,
       base::SingleThreadTaskRunner* current_task_runner);
 
@@ -226,6 +226,7 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   void RaiseErrorInNonTestingMode();
 
   InterfaceEndpoint* FindOrInsertEndpoint(InterfaceId id, bool* inserted);
+  InterfaceEndpoint* FindEndpoint(InterfaceId id);
 
   void AssertLockAcquired();
 
