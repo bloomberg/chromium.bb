@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "dbus/bus.h"
-#include "dbus/object_path.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
 #include "device/bluetooth/dbus/bluetooth_le_advertising_manager_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -71,7 +70,7 @@ namespace bluez {
 BluetoothAdvertisementBlueZ::BluetoothAdvertisementBlueZ(
     std::unique_ptr<device::BluetoothAdvertisement::Data> data,
     scoped_refptr<BluetoothAdapterBlueZ> adapter)
-    : adapter_(adapter) {
+    : adapter_path_(adapter->object_path()) {
   // Generate a new object path - make sure that we strip any -'s from the
   // generated GUID string since object paths can only contain alphanumeric
   // characters and _ characters.
@@ -99,7 +98,7 @@ void BluetoothAdvertisementBlueZ::Register(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothLEAdvertisingManagerClient()
       ->RegisterAdvertisement(
-          adapter_->object_path(), provider_->object_path(), success_callback,
+          adapter_path_, provider_->object_path(), success_callback,
           base::Bind(&RegisterErrorCallbackConnector, error_callback));
 }
 
@@ -122,9 +121,8 @@ void BluetoothAdvertisementBlueZ::Unregister(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothLEAdvertisingManagerClient()
       ->UnregisterAdvertisement(
-          adapter_->object_path(), provider_->object_path(), success_callback,
+          adapter_path_, provider_->object_path(), success_callback,
           base::Bind(&UnregisterErrorCallbackConnector, error_callback));
-  provider_.reset();
 }
 
 void BluetoothAdvertisementBlueZ::Released() {

@@ -75,6 +75,7 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
     observer_.reset();
     // The adapter should outlive the advertisement.
     advertisement_ = nullptr;
+    BluetoothAdapterFactory::Shutdown();
     adapter_ = nullptr;
     bluez::BluezDBusManager::Shutdown();
   }
@@ -264,6 +265,18 @@ TEST_F(BluetoothAdvertisementBlueZTest, UnregisterAfterReleasedFailed) {
 
   // Unregistering an advertisement that has been released should give us an
   // error.
+  UnregisterAdvertisement(advertisement);
+  ExpectError(BluetoothAdvertisement::ERROR_ADVERTISEMENT_DOES_NOT_EXIST);
+}
+
+TEST_F(BluetoothAdvertisementBlueZTest, UnregisterAfterAdapterShutdown) {
+  scoped_refptr<BluetoothAdvertisement> advertisement = CreateAdvertisement();
+  ExpectSuccess();
+  EXPECT_TRUE(advertisement);
+
+  // Shutdown the default adapter.
+  BluetoothAdapterFactory::Shutdown();
+
   UnregisterAdvertisement(advertisement);
   ExpectError(BluetoothAdvertisement::ERROR_ADVERTISEMENT_DOES_NOT_EXIST);
 }

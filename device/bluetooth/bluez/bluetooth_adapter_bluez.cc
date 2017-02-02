@@ -130,6 +130,8 @@ void OnRegisterationErrorCallback(
 
 void DoNothingOnError(
     device::BluetoothGattService::GattErrorCode /*error_code*/) {}
+void DoNothingOnAdvertisementError(
+    device::BluetoothAdvertisement::ErrorCode /*error_code*/) {}
 
 void SetIntervalErrorCallbackConnector(
     const device::BluetoothAdapter::AdvertisementErrorCallback& error_callback,
@@ -187,6 +189,16 @@ void BluetoothAdapterBlueZ::Shutdown() {
   for (auto& it : profile_queues_)
     delete it.second;
   profile_queues_.clear();
+
+  // This may call unregister on advertisements that have already been
+  // unregistered but that's fine. The advertisement object keeps a track of
+  // the fact that it has been already unregistered and will call our empty
+  // error callback with an "Already unregistered" error, which we'll ignore.
+  for (auto& it : advertisements_) {
+    it->Unregister(base::Bind(&base::DoNothing),
+                   base::Bind(&DoNothingOnAdvertisementError));
+  }
+  advertisements_.clear();
 
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->RemoveObserver(
       this);
@@ -478,6 +490,7 @@ void BluetoothAdapterBlueZ::RegisterAdvertisement(
   scoped_refptr<BluetoothAdvertisementBlueZ> advertisement(
       new BluetoothAdvertisementBlueZ(std::move(advertisement_data), this));
   advertisement->Register(base::Bind(callback, advertisement), error_callback);
+  advertisements_.emplace_back(advertisement);
 }
 
 void BluetoothAdapterBlueZ::SetAdvertisingInterval(
