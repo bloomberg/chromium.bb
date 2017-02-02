@@ -108,6 +108,12 @@ function FileBrowserBackgroundImpl() {
     this.stringData = strings;
     this.initContextMenu_();
 
+    volumeManagerFactory.getInstance().then(function(volumeManager) {
+      volumeManager.addEventListener(
+          VolumeManagerCommon.VOLUME_ALREADY_MOUNTED,
+          this.handleViewEvent_.bind(this));
+    }.bind(this));
+
     this.fileOperationManager = new FileOperationManager();
     this.fileOperationHandler_ = new FileOperationHandler(
         this.fileOperationManager, this.progressCenter);

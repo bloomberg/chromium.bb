@@ -123,48 +123,11 @@ base::File::Error Service::MountFileSystemInternal(
     MountContext context) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // If already exists a file system provided by the same extension with this
-  // id, then abort.
-  if (GetProvidedFileSystem(extension_id, options.file_system_id)) {
-    for (auto& observer : observers_) {
-      observer.OnProvidedFileSystemMount(ProvidedFileSystemInfo(), context,
-                                         base::File::FILE_ERROR_EXISTS);
-    }
-    return base::File::FILE_ERROR_EXISTS;
-  }
-
-  // Restrict number of file systems to prevent system abusing.
-  if (file_system_map_.size() + 1 > kMaxFileSystems) {
-    for (auto& observer : observers_) {
-      observer.OnProvidedFileSystemMount(
-          ProvidedFileSystemInfo(), context,
-          base::File::FILE_ERROR_TOO_MANY_OPENED);
-    }
-    return base::File::FILE_ERROR_TOO_MANY_OPENED;
-  }
-
-  storage::ExternalMountPoints* const mount_points =
-      storage::ExternalMountPoints::GetSystemInstance();
-  DCHECK(mount_points);
-
   // The mount point path and name are unique per system, since they are system
   // wide. This is necessary for copying between profiles.
   const base::FilePath& mount_path =
       util::GetMountPath(profile_, extension_id, options.file_system_id);
   const std::string mount_point_name = mount_path.BaseName().AsUTF8Unsafe();
-
-  if (!mount_points->RegisterFileSystem(
-          mount_point_name, storage::kFileSystemTypeProvided,
-          storage::FileSystemMountOption(
-              storage::FlushPolicy::FLUSH_ON_COMPLETION),
-          mount_path)) {
-    for (auto& observer : observers_) {
-      observer.OnProvidedFileSystemMount(
-          ProvidedFileSystemInfo(), context,
-          base::File::FILE_ERROR_INVALID_OPERATION);
-    }
-    return base::File::FILE_ERROR_INVALID_OPERATION;
-  }
 
   ProvidingExtensionInfo provider_info;
   // TODO(mtomasz): Set up a testing extension in unit tests.
@@ -185,6 +148,43 @@ base::File::Error Service::MountFileSystemInternal(
       provider_info.capabilities.configurable(),
       provider_info.capabilities.watchable(),
       provider_info.capabilities.source());
+
+  // If already exists a file system provided by the same extension with this
+  // id, then abort.
+  if (GetProvidedFileSystem(extension_id, options.file_system_id)) {
+    for (auto& observer : observers_) {
+      observer.OnProvidedFileSystemMount(file_system_info, context,
+                                         base::File::FILE_ERROR_EXISTS);
+    }
+    return base::File::FILE_ERROR_EXISTS;
+  }
+
+  // Restrict number of file systems to prevent system abusing.
+  if (file_system_map_.size() + 1 > kMaxFileSystems) {
+    for (auto& observer : observers_) {
+      observer.OnProvidedFileSystemMount(
+          ProvidedFileSystemInfo(), context,
+          base::File::FILE_ERROR_TOO_MANY_OPENED);
+    }
+    return base::File::FILE_ERROR_TOO_MANY_OPENED;
+  }
+
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  DCHECK(mount_points);
+
+  if (!mount_points->RegisterFileSystem(
+          mount_point_name, storage::kFileSystemTypeProvided,
+          storage::FileSystemMountOption(
+              storage::FlushPolicy::FLUSH_ON_COMPLETION),
+          mount_path)) {
+    for (auto& observer : observers_) {
+      observer.OnProvidedFileSystemMount(
+          ProvidedFileSystemInfo(), context,
+          base::File::FILE_ERROR_INVALID_OPERATION);
+    }
+    return base::File::FILE_ERROR_INVALID_OPERATION;
+  }
 
   std::unique_ptr<ProvidedFileSystemInterface> file_system =
       file_system_factory_.Run(profile_, file_system_info);

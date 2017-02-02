@@ -181,6 +181,14 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
                 this.finishRequest_(requestKey, event.status, volumeInfo);
                 callback();
               }.bind(this));
+        } else if (event.status ===
+            VolumeManagerCommon.VolumeError.ALREADY_MOUNTED) {
+          var navigation_event =
+              new Event(VolumeManagerCommon.VOLUME_ALREADY_MOUNTED);
+          navigation_event.volumeId = event.volumeMetadata.volumeId;
+          this.dispatchEvent(navigation_event);
+          this.finishRequest_(requestKey, event.status, volumeInfo);
+          callback();
         } else {
           console.warn('Failed to mount a volume: ' + event.status);
           this.finishRequest_(requestKey, event.status);
