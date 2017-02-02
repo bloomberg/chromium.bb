@@ -256,15 +256,14 @@ void VolumeView::UpdateDeviceTypeAndMore() {
   if (!show_more)
     return;
 
-  // Show output device icon if necessary.
-  device_type_->SetVisible(false);
+  bool target_visibility = false;
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
     const gfx::VectorIcon& device_icon =
         audio_delegate_->GetActiveOutputDeviceVectorIcon();
     if (!device_icon.is_empty()) {
       device_type_->SetImage(
           gfx::CreateVectorIcon(device_icon, kMenuIconColor));
-      device_type_->SetVisible(true);
+      target_visibility = true;
     }
   } else {
     int device_icon = audio_delegate_->GetActiveOutputDeviceIconId();
@@ -272,8 +271,12 @@ void VolumeView::UpdateDeviceTypeAndMore() {
       device_type_->SetImage(ui::ResourceBundle::GetSharedInstance()
                                  .GetImageNamed(device_icon)
                                  .ToImageSkia());
-      device_type_->SetVisible(true);
+      target_visibility = true;
     }
+  }
+  if (device_type_->visible() != target_visibility) {
+    device_type_->SetVisible(target_visibility);
+    device_type_->InvalidateLayout();
   }
 }
 
