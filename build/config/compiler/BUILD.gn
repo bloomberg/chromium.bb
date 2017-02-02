@@ -219,6 +219,26 @@ config("compiler") {
     }
   }
 
+  # Eliminate build metadata (__DATE__, __TIME__ and __TIMESTAMP__) for
+  # deterministic build.  See https://crbug.com/314403
+  if (!is_official_build) {
+    if (is_win && !is_clang) {
+      cflags += [
+        "/wd4117",  # Trying to define or undefine a predefined macro.
+        "/D__DATE__=",
+        "/D__TIME__=",
+        "/D__TIMESTAMP__=",
+      ]
+    } else {
+      cflags += [
+        "-Wno-builtin-macro-redefined",
+        "-D__DATE__=",
+        "-D__TIME__=",
+        "-D__TIMESTAMP__=",
+      ]
+    }
+  }
+
   if (is_clang && is_debug) {
     # Allow comparing the address of references and 'this' against 0
     # in debug builds. Technically, these can never be null in
