@@ -15,6 +15,9 @@
 
 // A node is essentially a frame.
 IPC_STRUCT_BEGIN(SafeBrowsingHostMsg_ThreatDOMDetails_Node)
+  // A unique ID for this node, unique to the current Render Frame.
+  IPC_STRUCT_MEMBER(int, node_id)
+
   // URL of this resource. Can be empty.
   IPC_STRUCT_MEMBER(GURL, url)
 
@@ -25,8 +28,14 @@ IPC_STRUCT_BEGIN(SafeBrowsingHostMsg_ThreatDOMDetails_Node)
   // URL of the parent node. Can be empty.
   IPC_STRUCT_MEMBER(GURL, parent)
 
+  // The unique ID of the parent node. Can be 0 if this is the top node.
+  IPC_STRUCT_MEMBER(int, parent_node_id)
+
   // children of this node. Can be emtpy.
   IPC_STRUCT_MEMBER(std::vector<GURL>, children)
+
+  // The unique IDs of the child nodes. Can be empty if there are no children.
+  IPC_STRUCT_MEMBER(std::vector<int>, child_node_ids)
 IPC_STRUCT_END()
 
 // SafeBrowsing client-side detection messages sent from the renderer to the

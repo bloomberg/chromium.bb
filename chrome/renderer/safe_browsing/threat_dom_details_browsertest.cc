@@ -34,7 +34,11 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
     details->ExtractResources(&params);
     ASSERT_EQ(1u, params.size());
-    EXPECT_EQ(GURL(urlprefix + html), params[0].url);
+    auto& param = params[0];
+    EXPECT_EQ(GURL(urlprefix + html), param.url);
+    EXPECT_EQ(0, param.node_id);
+    EXPECT_EQ(0, param.parent_node_id);
+    EXPECT_TRUE(param.child_node_ids.empty());
   }
 
   {
@@ -52,11 +56,25 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
     details->ExtractResources(&params);
     ASSERT_EQ(3u, params.size());
-    EXPECT_EQ(script1_url, params[0].url);
-    EXPECT_EQ("SCRIPT", params[0].tag_name);
-    EXPECT_EQ(script2_url, params[1].url);
-    EXPECT_EQ("SCRIPT", params[0].tag_name);
-    EXPECT_EQ(url, params[2].url);
+    auto& param = params[0];
+    EXPECT_EQ(script1_url, param.url);
+    EXPECT_EQ("SCRIPT", param.tag_name);
+    EXPECT_EQ(1, param.node_id);
+    EXPECT_EQ(0, param.parent_node_id);
+    EXPECT_TRUE(param.child_node_ids.empty());
+
+    param = params[1];
+    EXPECT_EQ(script2_url, param.url);
+    EXPECT_EQ("SCRIPT", param.tag_name);
+    EXPECT_EQ(2, param.node_id);
+    EXPECT_EQ(0, param.parent_node_id);
+    EXPECT_TRUE(param.child_node_ids.empty());
+
+    param = params[2];
+    EXPECT_EQ(url, param.url);
+    EXPECT_EQ(0, param.node_id);
+    EXPECT_EQ(0, param.parent_node_id);
+    EXPECT_TRUE(param.child_node_ids.empty());
   }
 
   {
@@ -86,19 +104,23 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
     details->ExtractResources(&params);
     ASSERT_EQ(2u, params.size());
-    std::sort(params.begin(), params.end(),
-              [](const SafeBrowsingHostMsg_ThreatDOMDetails_Node& a,
-                 const SafeBrowsingHostMsg_ThreatDOMDetails_Node& b) -> bool {
-                return a.parent < b.parent;
-              });
 
-    EXPECT_EQ(url, params[0].url);
-    EXPECT_EQ(GURL(), params[0].parent);
-    EXPECT_EQ(1u, params[0].children.size());
-    EXPECT_EQ(iframe1_url, params[0].children[0]);
-    EXPECT_EQ(iframe1_url, params[1].url);
-    EXPECT_EQ(url, params[1].parent);
-    EXPECT_EQ(0u, params[1].children.size());
+    auto& param = params[0];
+    EXPECT_EQ(iframe1_url, param.url);
+    EXPECT_EQ(url, param.parent);
+    EXPECT_EQ("IFRAME", param.tag_name);
+    EXPECT_EQ(0u, param.children.size());
+    EXPECT_EQ(1, param.node_id);
+    EXPECT_EQ(0, param.parent_node_id);
+    EXPECT_TRUE(param.child_node_ids.empty());
+
+    param = params[1];
+    EXPECT_EQ(url, param.url);
+    EXPECT_EQ(GURL(), param.parent);
+    EXPECT_EQ(1u, param.children.size());
+    EXPECT_EQ(0, param.node_id);
+    EXPECT_EQ(0, param.parent_node_id);
+    EXPECT_TRUE(param.child_node_ids.empty());
   }
 
   {
@@ -116,6 +138,15 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
     details->ExtractResources(&params);
     ASSERT_EQ(51u, params.size());
+
+    // The element nodes should all have node IDs.
+    for (size_t i = 0; i < params.size() - 1; ++i) {
+      auto& param = params[i];
+      const int expected_id = i + 1;
+      EXPECT_EQ(expected_id, param.node_id);
+      EXPECT_EQ(0, param.parent_node_id);
+      EXPECT_TRUE(param.child_node_ids.empty());
+    }
   }
 
   {
@@ -133,5 +164,14 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
     details->ExtractResources(&params);
     ASSERT_EQ(51u, params.size());
+
+    // The element nodes should all have node IDs.
+    for (size_t i = 0; i < params.size() - 1; ++i) {
+      auto& param = params[i];
+      const int expected_id = i + 1;
+      EXPECT_EQ(expected_id, param.node_id);
+      EXPECT_EQ(0, param.parent_node_id);
+      EXPECT_TRUE(param.child_node_ids.empty());
+    }
   }
 }
