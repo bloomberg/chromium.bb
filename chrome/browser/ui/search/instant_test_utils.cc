@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -14,17 +13,13 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/prefs/pref_service.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/variations/entropy_provider.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/result_codes.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace {
@@ -63,20 +58,6 @@ void InstantTestBase::SetupInstant(Browser* browser) {
     data.suggestions_url = instant_url_.spec() + "#q={searchTerms}";
   data.alternate_urls.push_back(instant_url_.spec() + "#q={searchTerms}");
   data.search_terms_replacement_key = "strk";
-
-  TemplateURL* template_url = service->Add(base::MakeUnique<TemplateURL>(data));
-  service->SetUserSelectedDefaultSearchProvider(template_url);
-}
-
-void InstantTestBase::SetInstantURL(const std::string& url) {
-  TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(browser_->profile());
-  search_test_utils::WaitForTemplateURLServiceToLoad(service);
-
-  TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16("name"));
-  data.SetURL(url);
-  data.instant_url = url;
 
   TemplateURL* template_url = service->Add(base::MakeUnique<TemplateURL>(data));
   service->SetUserSelectedDefaultSearchProvider(template_url);
@@ -144,15 +125,6 @@ bool InstantTestBase::GetStringFromJS(content::WebContents* contents,
       contents, WrapScript(script), result);
 }
 
-bool InstantTestBase::CheckVisibilityIs(content::WebContents* contents,
-                                        bool expected) {
-  bool actual = !expected;  // Purposely start with a mis-match.
-  // We can only use ASSERT_*() in a method that returns void, hence this
-  // convoluted check.
-  return GetBoolFromJS(contents, "!document.hidden", &actual) &&
-      actual == expected;
-}
-
 std::string InstantTestBase::GetOmniboxText() {
   return base::UTF16ToUTF8(omnibox()->GetText());
 }
@@ -166,12 +138,4 @@ bool InstantTestBase::LoadImage(content::RenderViewHost* rvh,
       "img.onload  = function() { domAutomationController.send(true); };"
       "img.src = '" + image + "';";
   return content::ExecuteScriptAndExtractBool(rvh, js_chrome, loaded);
-}
-
-base::string16 InstantTestBase::GetBlueText() {
-  size_t start = 0, end = 0;
-  omnibox()->GetSelectionBounds(&start, &end);
-  if (start > end)
-    std::swap(start, end);
-  return omnibox()->GetText().substr(start, end - start);
 }

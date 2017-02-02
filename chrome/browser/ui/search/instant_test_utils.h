@@ -7,22 +7,15 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
-#include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/search/instant_controller.h"
-#include "chrome/common/search/search_types.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
-class BrowserInstantController;
-class InstantController;
 class OmniboxView;
 
 namespace content {
@@ -41,18 +34,8 @@ class InstantTestBase {
   void Init(const GURL& instant_url, const GURL& ntp_url,
             bool init_suggestions_url);
 
-  void SetInstantURL(const std::string& url);
-
   void set_browser(Browser* browser) {
     browser_ = browser;
-  }
-
-  BrowserInstantController* browser_instant() {
-    return browser_->instant_controller();
-  }
-
-  InstantController* instant() {
-    return browser_->instant_controller()->instant();
   }
 
   OmniboxView* omnibox() {
@@ -64,8 +47,6 @@ class InstantTestBase {
   const GURL& ntp_url() const { return ntp_url_; }
 
   net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
-
-  void KillInstantRenderView();
 
   void FocusOmnibox();
 
@@ -83,8 +64,6 @@ class InstantTestBase {
   bool GetStringFromJS(content::WebContents* contents,
                        const std::string& script,
                        std::string* result) WARN_UNUSED_RESULT;
-  bool CheckVisibilityIs(content::WebContents* contents,
-                         bool expected) WARN_UNUSED_RESULT;
 
   std::string GetOmniboxText();
 
@@ -94,9 +73,6 @@ class InstantTestBase {
   bool LoadImage(content::RenderViewHost* rvh,
                  const std::string& image,
                  bool* loaded);
-
-  // Returns the omnibox's inline autocompletion (shown in blue highlight).
-  base::string16 GetBlueText();
 
  private:
   GURL instant_url_;
