@@ -23,11 +23,14 @@ import zipfile
 import zlib
 
 import devil_chromium
+from devil.android.sdk import build_tools
 from devil.utils import cmd_helper
+from devil.utils import lazy
 import method_count
 from pylib import constants
 from pylib.constants import host_paths
 
+_AAPT_PATH = lazy.WeakConstant(lambda: build_tools.GetPath('aapt'))
 _GRIT_PATH = os.path.join(host_paths.DIR_SOURCE_ROOT, 'tools', 'grit')
 
 # Prepend the grit module from the source tree so it takes precedence over other
@@ -79,10 +82,11 @@ def _PatchedDecodeExtra(self):
 zipfile.ZipInfo._decodeExtra = (  # pylint: disable=protected-access
     _PatchedDecodeExtra)
 
-# Static initializers expected in official builds. Note that this list is built
-# using 'nm' on libchrome.so which results from a GCC official build (i.e.
-# Clang is not supported currently).
-
+# Captures an entire config from aapt output.
+_AAPT_CONFIG_PATTERN = r'config %s:(.*?)config [a-zA-Z-]+:'
+# Matches string resource entries from aapt output.
+_AAPT_ENTRY_RE = re.compile(
+    r'resource (?P<id>\w{10}) [\w\.]+:string/.*?"(?P<val>.+?)"', re.DOTALL)
 _BASE_CHART = {
     'format_version': '0.1',
     'benchmark_name': 'resource_sizes',
@@ -98,6 +102,9 @@ _RC_HEADER_RE = re.compile(
 
 
 def CountStaticInitializers(so_path):
+  # Static initializers expected in official builds. Note that this list is
+  # built using 'nm' on libchrome.so which results from a GCC official build
+  # (i.e. Clang is not supported currently).
   def get_elf_section_size(readelf_stdout, section_name):
     # Matches: .ctors PROGBITS 000000000516add0 5169dd0 000010 00 WA 0 0 8
     match = re.search(r'\.%s.*$' % re.escape(section_name),
@@ -133,6 +140,51 @@ def GetStaticInitializers(so_path):
   output = cmd_helper.GetCmdOutput([_DUMP_STATIC_INITIALIZERS_PATH, '-d',
                                     so_path])
   return output.splitlines()
+
+
+def _NormalizeResourcesArsc(apk_path, num_supported_configs):
+  """Estimates the expected overhead of untranslated strings in resources.arsc.
+
+  See http://crbug.com/677966 for why this is necessary.
+  """
+  aapt_output = _RunAaptDumpResources(apk_path)
+
+  # en-rUS is in the default config and may be cluttered with non-translatable
+  # strings, so en-rGB is a better baseline for finding missing translations.
+  en_strings = _CreateResourceIdValueMap(aapt_output, 'en-rGB')
+  fr_strings = _CreateResourceIdValueMap(aapt_output, 'fr')
+
+  # en-US and en-GB configs will never be translated.
+  config_count = num_supported_configs - 2
+
+  size = 0
+  for res_id, string_val in en_strings.iteritems():
+    if string_val == fr_strings[res_id]:
+      string_size = len(string_val)
+      # 7 bytes is the per-entry overhead (not specific to any string). See
+      # https://android.googlesource.com/platform/frameworks/base.git/+/android-4.2.2_r1/tools/aapt/StringPool.cpp#414.
+      # The 1.5 factor was determined experimentally and is meant to account for
+      # other languages generally having longer strings than english.
+      size += config_count * (7 + string_size * 1.5)
+
+  return size
+
+
+def _CreateResourceIdValueMap(aapt_output, lang):
+  """Return a map of resource ids to string values for the given |lang|."""
+  config_re = _AAPT_CONFIG_PATTERN % lang
+  return {entry.group('id'): entry.group('val')
+          for config_section in re.finditer(config_re, aapt_output, re.DOTALL)
+          for entry in re.finditer(_AAPT_ENTRY_RE, config_section.group(0))}
+
+
+def _RunAaptDumpResources(apk_path):
+  cmd = [_AAPT_PATH.read(), 'dump', '--values', 'resources', apk_path]
+  status, output = cmd_helper.GetCmdStatusAndOutput(cmd)
+  if status != 0:
+    raise Exception('Failed running aapt command: "%s" with output "%s".' %
+                    (' '.join(cmd), output))
+  return output
 
 
 def ReportPerfResult(chart_data, graph_title, trace_title, value, units,
@@ -323,14 +375,15 @@ def PrintApkAnalysis(apk_filename, chartjson=None):
   # Avoid noise caused when strings change and translations haven't yet been
   # updated.
   english_pak = translations.FindByPattern(r'.*/en[-_][Uu][Ss]\.l?pak')
-  if english_pak:
-    # TODO(agrieve): This should also analyze .arsc file to remove non-en
-    # configs. http://crbug.com/677966
+  num_translations = translations.GetNumEntries()
+  if english_pak and num_translations > 1:
     normalized_apk_size -= translations.ComputeZippedSize()
     # 1.17 found by looking at Chrome.apk and seeing how much smaller en-US.pak
     # is relative to the average locale .pak.
     normalized_apk_size += int(
-        english_pak.compress_size * translations.GetNumEntries() * 1.17)
+        english_pak.compress_size * num_translations * 1.17)
+    normalized_apk_size += int(
+        _NormalizeResourcesArsc(apk_filename, num_translations))
 
   ReportPerfResult(chartjson, apk_basename + '_Specifics',
                    'normalized apk size', normalized_apk_size, 'bytes')
