@@ -58,6 +58,10 @@ public class CustomTabIntentDataProvider {
     public static final String EXTRA_IS_MEDIA_VIEWER =
             "org.chromium.chrome.browser.customtabs.IS_MEDIA_VIEWER";
 
+    /** URL that should be loaded in place of the URL passed along in the data. */
+    public static final String EXTRA_MEDIA_VIEWER_URL =
+            "org.chromium.chrome.browser.customtabs.MEDIA_VIEWER_URL";
+
     /** Indicates that the Custom Tab should style itself as an info page. */
     public static final String EXTRA_IS_INFO_PAGE =
             "org.chromium.chrome.browser.customtabs.IS_INFO_PAGE";
@@ -93,6 +97,7 @@ public class CustomTabIntentDataProvider {
     private final Intent mKeepAliveServiceIntent;
     private final int mTitleVisibilityState;
     private final boolean mIsMediaViewer;
+    private final String mMediaViewerUrl;
     private final boolean mIsInfoPage;
     private final int mInitialBackgroundColor;
     private final boolean mDisableStar;
@@ -178,6 +183,8 @@ public class CustomTabIntentDataProvider {
                 CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
         mIsMediaViewer = mIsTrustedIntent
                 && IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_MEDIA_VIEWER, false);
+        mMediaViewerUrl = mIsMediaViewer
+                ? IntentUtils.safeGetStringExtra(intent, EXTRA_MEDIA_VIEWER_URL) : null;
         mIsInfoPage = mIsTrustedIntent
                 && IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_INFO_PAGE, false);
         mDisableStar = IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_STAR_BUTTON, false);
@@ -482,6 +489,13 @@ public class CustomTabIntentDataProvider {
      */
     boolean isMediaViewer() {
         return mIsMediaViewer;
+    }
+
+    /**
+     * @return See {@link #EXTRA_MEDIA_VIEWER_URL}.
+     */
+    String getMediaViewerUrl() {
+        return mMediaViewerUrl;
     }
 
     /**

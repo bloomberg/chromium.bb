@@ -367,15 +367,16 @@ public class DownloadUtils {
 
     /**
      * Creates an Intent that allows viewing the given file in an internal media viewer.
-     * @param fileUri  URI pointing at the file, ideally in file:// form.
-     * @param shareUri URI pointing at the file, ideally in content:// form.
-     * @param mimeType MIME type of the file.
+     * @param fileUri    URI pointing at the file, ideally in file:// form.  Used only when
+     *                   the media viewer is trying to locate the file on disk.
+     * @param contentUri content:// URI pointing at the file.
+     * @param mimeType   MIME type of the file.
      * @return Intent that can be fired to open the file.
      */
     public static Intent getMediaViewerIntentForDownloadItem(
-            Uri fileUri, Uri shareUri, String mimeType) {
+            Uri fileUri, Uri contentUri, String mimeType) {
         Context context = ContextUtils.getApplicationContext();
-        Intent viewIntent = createViewIntentForDownloadItem(fileUri, mimeType);
+        Intent viewIntent = createViewIntentForDownloadItem(contentUri, mimeType);
 
         Bitmap closeIcon = BitmapFactory.decodeResource(
                 context.getResources(), R.drawable.ic_arrow_back_white_24dp);
@@ -399,7 +400,7 @@ public class DownloadUtils {
 
         // Create a PendingIntent that shares the file with external apps.
         PendingIntent pendingShareIntent = PendingIntent.getActivity(
-                context, 0, createShareIntent(shareUri, mimeType), 0);
+                context, 0, createShareIntent(contentUri, mimeType), 0);
         builder.setActionButton(
                 shareIcon, context.getString(R.string.share), pendingShareIntent, true);
 
@@ -415,8 +416,9 @@ public class DownloadUtils {
         // Build up the Intent further.
         Intent intent = builder.build().intent;
         intent.setPackage(context.getPackageName());
-        intent.setData(fileUri);
+        intent.setData(contentUri);
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_MEDIA_VIEWER, true);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MEDIA_VIEWER_URL, fileUri.toString());
         intent.putExtra(
                 CustomTabIntentDataProvider.EXTRA_INITIAL_BACKGROUND_COLOR, mediaColor);
         intent.putExtra(
@@ -466,7 +468,7 @@ public class DownloadUtils {
      */
     public static boolean openFile(File file, String mimeType, boolean isOffTheRecord) {
         Context context = ContextUtils.getApplicationContext();
-        Intent viewIntent = createViewIntentForDownloadItem(Uri.fromFile(file), mimeType);
+        Intent viewIntent = createViewIntentForDownloadItem(getUriForItem(file), mimeType);
         DownloadManagerService service = DownloadManagerService.getDownloadManagerService(context);
 
         // Check if Chrome should open the file itself.
@@ -474,11 +476,11 @@ public class DownloadUtils {
             // Share URIs use the content:// scheme when able, which looks bad when displayed
             // in the URL bar.
             Uri fileUri = Uri.fromFile(file);
-            Uri shareUri = getUriForItem(file);
+            Uri contentUri = getUriForItem(file);
             String normalizedMimeType = Intent.normalizeMimeType(mimeType);
 
             Intent intent =
-                    getMediaViewerIntentForDownloadItem(fileUri, shareUri, normalizedMimeType);
+                    getMediaViewerIntentForDownloadItem(fileUri, contentUri, normalizedMimeType);
             IntentHandler.startActivityForTrustedIntent(intent);
             return true;
         }

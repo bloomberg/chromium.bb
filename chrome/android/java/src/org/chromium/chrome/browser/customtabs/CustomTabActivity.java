@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
@@ -990,9 +991,23 @@ public class CustomTabActivity extends ChromeActivity {
      */
     private String getUrlToLoad() {
         String url = IntentHandler.getUrlFromIntent(getIntent());
+
+        // Intents fired for media viewers have an additional file:// URI passed along so that the
+        // tab can display the actual filename to the user when it is loaded.
+        if (mIntentDataProvider.isMediaViewer()) {
+            String mediaViewerUrl = mIntentDataProvider.getMediaViewerUrl();
+            if (!TextUtils.isEmpty(mediaViewerUrl)) {
+                Uri mediaViewerUri = Uri.parse(mediaViewerUrl);
+                if (UrlConstants.FILE_SCHEME.equals(mediaViewerUri.getScheme())) {
+                    url = mediaViewerUrl;
+                }
+            }
+        }
+
         if (!TextUtils.isEmpty(url)) {
             url = DataReductionProxySettings.getInstance().maybeRewriteWebliteUrl(url);
         }
+
         return url;
     }
 
