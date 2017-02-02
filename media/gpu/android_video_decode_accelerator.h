@@ -87,6 +87,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   enum State {
     NO_ERROR,
     ERROR,
+    // Initial state, before we've initialized the CDM, allocated the surface,
+    // and started codec allocation.  From here, we'll transition either to
+    // WAITING_FOR_CODEC or NO_ERROR (or, of course, ERROR).
+    BEFORE_SURFACE_ALLOC,
     // Set when we are asynchronously constructing the codec.  Will transition
     // to NO_ERROR or ERROR depending on success.
     WAITING_FOR_CODEC,
@@ -102,6 +106,11 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     DRAIN_FOR_RESET,
     DRAIN_FOR_DESTROY,
   };
+
+  // Start surface creation by trying to allocate the surface id.  Will either
+  // InitializePictureBufferManager if the surface is available immediately, or
+  // will wait for OnSurfaceAvailable to do it.
+  void StartSurfaceCreation();
 
   // Initialize of the picture buffer manager.  This is to be called when the
   // SurfaceView in |surface_id_|, if any, is no longer busy.  On failure, it
