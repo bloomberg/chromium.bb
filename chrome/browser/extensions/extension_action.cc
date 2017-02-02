@@ -15,7 +15,6 @@
 #include "extensions/browser/extension_icon_placeholder.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_icon_set.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
@@ -237,16 +236,13 @@ gfx::Image ExtensionAction::GetDefaultIconImage() const {
     return default_icon_image_->image();
 
   if (placeholder_icon_image_.IsEmpty()) {
-    // If the extension action redesign is enabled, we use a special placeholder
-    // icon (with the first letter of the extension name) rather than the
-    // default (puzzle piece).
-    if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
-      placeholder_icon_image_ =
-          extensions::ExtensionIconPlaceholder::CreateImage(ActionIconSize(),
-                                                            extension_name_);
-    } else {
-      placeholder_icon_image_ = FallbackIcon();
-    }
+    // For extension actions, we use a special placeholder icon (with the first
+    // letter of the extension name) rather than the default (puzzle piece).
+    // Note that this is only if we can't find any better image (e.g. a product
+    // icon).
+    placeholder_icon_image_ =
+        extensions::ExtensionIconPlaceholder::CreateImage(ActionIconSize(),
+                                                          extension_name_);
   }
 
   return placeholder_icon_image_;
@@ -320,6 +316,5 @@ int ExtensionAction::GetIconWidth(int tab_id) const {
 
   // If no icon has been set and there is no default icon, we need favicon
   // width.
-  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_EXTENSIONS_FAVICON).Width();
+  return FallbackIcon().Width();
 }
