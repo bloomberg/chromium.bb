@@ -43,6 +43,8 @@ class DeviceCloudPolicyStoreChromeOS
   ~DeviceCloudPolicyStoreChromeOS() override;
 
   // CloudPolicyStore:
+  // Note that Store() must not be called before the store gets initialized (by
+  // means of either Load() or InstallInitialPolicy()).
   void Store(const enterprise_management::PolicyFetchResponse& policy) override;
   void Load() override;
 

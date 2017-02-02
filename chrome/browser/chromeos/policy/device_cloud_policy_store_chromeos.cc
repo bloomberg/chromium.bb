@@ -45,6 +45,10 @@ DeviceCloudPolicyStoreChromeOS::~DeviceCloudPolicyStoreChromeOS() {
 
 void DeviceCloudPolicyStoreChromeOS::Store(
     const em::PolicyFetchResponse& policy) {
+  // The policy and the public key must have already been loaded by the device
+  // settings service.
+  DCHECK(is_initialized());
+
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
 
