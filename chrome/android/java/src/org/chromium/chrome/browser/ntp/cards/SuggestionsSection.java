@@ -114,7 +114,7 @@ public class SuggestionsSection extends InnerNode {
                 };
         mOfflinePageBridge.addObserver(mOfflinePageObserver);
 
-        refreshChildrenVisibility();
+        mStatus.setVisible(!hasSuggestions());
     }
 
     private static class SuggestionsList extends ChildNode implements Iterable<SnippetArticle> {
@@ -240,8 +240,15 @@ public class SuggestionsSection extends InnerNode {
         super.detach();
     }
 
-    private void refreshChildrenVisibility() {
-        mStatus.setVisible(!hasSuggestions());
+    private void onSuggestionsListCountChanged(int oldSuggestionsCount) {
+        int newSuggestionsCount = getSuggestionsCount();
+        if ((newSuggestionsCount == 0) == (oldSuggestionsCount == 0)) return;
+
+        mStatus.setVisible(newSuggestionsCount == 0);
+
+        // When the ActionItem stops being dismissable, it is possible that it was being interacted
+        // with. We need to reset the view's related property changes.
+        mMoreButton.notifyItemChanged(0, NewTabPageRecyclerView.RESET_FOR_DISMISS_CALLBACK);
     }
 
     @Override
@@ -258,7 +265,13 @@ public class SuggestionsSection extends InnerNode {
     @Override
     public void onItemRangeRemoved(TreeNode child, int index, int count) {
         super.onItemRangeRemoved(child, index, count);
-        if (child == mSuggestionsList) refreshChildrenVisibility();
+        if (child == mSuggestionsList) onSuggestionsListCountChanged(getSuggestionsCount() + count);
+    }
+
+    @Override
+    public void onItemRangeInserted(TreeNode child, int index, int count) {
+        super.onItemRangeInserted(child, index, count);
+        if (child == mSuggestionsList) onSuggestionsListCountChanged(getSuggestionsCount() - count);
     }
 
     @Override
@@ -407,8 +420,6 @@ public class SuggestionsSection extends InnerNode {
                 updateSnippetOfflineAvailability(article);
             }
         }
-
-        refreshChildrenVisibility();
     }
 
     private void updateSnippetOfflineAvailability(final SnippetArticle article) {
@@ -447,7 +458,6 @@ public class SuggestionsSection extends InnerNode {
     public void setStatus(@CategoryStatusEnum int status) {
         if (!SnippetsBridge.isCategoryStatusAvailable(status)) mSuggestionsList.clear();
         mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
-        refreshChildrenVisibility();
     }
 
     @CategoryInt

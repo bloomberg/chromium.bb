@@ -56,6 +56,14 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     private static final int PEEKING_CARD_ANIMATION_TIME_MS = 1000;
     private static final int PEEKING_CARD_ANIMATION_START_DELAY_MS = 300;
 
+    /**
+     * A single instance of {@link ResetForDismissCallback} that can be reused as it has no
+     * state.
+     */
+    public static final NewTabPageViewHolder.PartialBindCallback RESET_FOR_DISMISS_CALLBACK =
+            new ResetForDismissCallback();
+
+
     private final GestureDetector mGestureDetector;
     private final LinearLayoutManager mLayoutManager;
 
@@ -704,5 +712,16 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
             viewHolders.add(siblingViewHolder);
         }
         return viewHolders;
+    }
+
+    /**
+     * Callback to reset a card's properties affected by swipe to dismiss.
+     */
+    private static class ResetForDismissCallback extends NewTabPageViewHolder.PartialBindCallback {
+        @Override
+        public void onResult(NewTabPageViewHolder holder) {
+            assert holder instanceof CardViewHolder;
+            ((CardViewHolder) holder).getRecyclerView().updateViewStateForDismiss(0, holder);
+        }
     }
 }
