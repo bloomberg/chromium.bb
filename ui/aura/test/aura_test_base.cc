@@ -228,10 +228,6 @@ bool AuraTestBase::IsWindowActive(aura::Window* window) { return false; }
 
 void AuraTestBase::OnWmDeactivateWindow(Window* window) {}
 
-client::CaptureClient* AuraTestBase::GetCaptureClient() {
-  return helper_->capture_client();
-}
-
 PropertyConverter* AuraTestBase::GetPropertyConverter() {
   return &property_converter_;
 }

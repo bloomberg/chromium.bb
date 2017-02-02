@@ -234,10 +234,6 @@ void WindowTreeClient::ConnectAsWindowManager() {
   SetWindowTree(std::move(window_tree));
 }
 
-client::CaptureClient* WindowTreeClient::GetCaptureClient() {
-  return delegate_->GetCaptureClient();
-}
-
 void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
   DCHECK(tree_);
   DCHECK(window);

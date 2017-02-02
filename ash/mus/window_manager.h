@@ -132,7 +132,6 @@ class WindowManager : public aura::WindowManagerDelegate,
   void OnLostConnection(aura::WindowTreeClient* client) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               aura::Window* target) override;
-  aura::client::CaptureClient* GetCaptureClient() override;
   aura::PropertyConverter* GetPropertyConverter() override;
 
   // WindowManagerDelegate:

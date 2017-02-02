@@ -19,10 +19,6 @@ class Window;
 class WindowTreeClient;
 class WindowTreeHostMus;
 
-namespace client {
-class CaptureClient;
-}
-
 // Interface implemented by an application using mus.
 class AURA_EXPORT WindowTreeClientDelegate {
  public:
@@ -61,10 +57,6 @@ class AURA_EXPORT WindowTreeClientDelegate {
   // windows owned by other processes.
   virtual void OnPointerEventObserved(const ui::PointerEvent& event,
                                       Window* target) = 0;
-
-  // Mus expects a single CaptureClient is used for all WindowTreeHosts. This
-  // returns it. GetCaptureClient() is called from the constructor.
-  virtual client::CaptureClient* GetCaptureClient() = 0;
 
   virtual PropertyConverter* GetPropertyConverter() = 0;
 

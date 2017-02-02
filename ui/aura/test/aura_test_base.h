@@ -126,7 +126,6 @@ class AuraTestBase : public testing::Test,
       const std::vector<gfx::Rect>& additional_client_areas) override;
   bool IsWindowActive(aura::Window* window) override;
   void OnWmDeactivateWindow(Window* window) override;
-  client::CaptureClient* GetCaptureClient() override;
   PropertyConverter* GetPropertyConverter() override;
 
  private:

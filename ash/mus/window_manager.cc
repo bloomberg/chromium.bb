@@ -293,10 +293,6 @@ void WindowManager::OnPointerEventObserved(const ui::PointerEvent& event,
   pointer_watcher_event_router_->OnPointerEventObserved(event, target);
 }
 
-aura::client::CaptureClient* WindowManager::GetCaptureClient() {
-  return wm_state_->capture_controller();
-}
-
 aura::PropertyConverter* WindowManager::GetPropertyConverter() {
   return property_converter_.get();
 }

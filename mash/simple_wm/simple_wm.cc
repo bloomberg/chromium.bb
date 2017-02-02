@@ -399,10 +399,6 @@ void SimpleWM::OnPointerEventObserved(const ui::PointerEvent& event,
   // Don't care.
 }
 
-aura::client::CaptureClient* SimpleWM::GetCaptureClient() {
-  return wm_state_.capture_controller();
-}
-
 aura::PropertyConverter* SimpleWM::GetPropertyConverter() {
   return &property_converter_;
 }

@@ -300,11 +300,6 @@ void ViewImpl::OnLostConnection(aura::WindowTreeClient* client) {
 void ViewImpl::OnPointerEventObserved(const ui::PointerEvent& event,
                                       aura::Window* target) {}
 
-aura::client::CaptureClient* ViewImpl::GetCaptureClient() {
-  // TODO: wire this up. This typically comes from WMState.
-  return nullptr;
-}
-
 aura::PropertyConverter* ViewImpl::GetPropertyConverter() {
   // TODO: wire this up.
   return nullptr;

@@ -129,7 +129,6 @@ class VIEWS_MUS_EXPORT MusClient
   void OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               aura::Window* target) override;
-  aura::client::CaptureClient* GetCaptureClient() override;
   aura::PropertyConverter* GetPropertyConverter() override;
 
   // ScreenMusDelegate:
