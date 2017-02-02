@@ -12,6 +12,10 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface SelectorCoordinator ()<SelectorViewControllerDelegate>
 // The view controller for the picker view the coordinator presents. Exposed for
 // testing.
@@ -23,8 +27,8 @@
 TEST(SelectorCoordinatorTest, StartAndStop) {
   UIWindow* keyWindow = [[UIApplication sharedApplication] keyWindow];
   UIViewController* rootViewController = keyWindow.rootViewController;
-  SelectorCoordinator* coordinator = [[[SelectorCoordinator alloc]
-      initWithBaseViewController:rootViewController] autorelease];
+  SelectorCoordinator* coordinator = [[SelectorCoordinator alloc]
+      initWithBaseViewController:rootViewController];
 
   void (^testSteps)(void) = ^{
     [coordinator start];
@@ -46,8 +50,8 @@ TEST(SelectorCoordinatorTest, StartAndStop) {
 TEST(SelectorCoordinatorTest, Delegate) {
   UIWindow* keyWindow = [[UIApplication sharedApplication] keyWindow];
   UIViewController* rootViewController = keyWindow.rootViewController;
-  SelectorCoordinator* coordinator = [[[SelectorCoordinator alloc]
-      initWithBaseViewController:rootViewController] autorelease];
+  SelectorCoordinator* coordinator = [[SelectorCoordinator alloc]
+      initWithBaseViewController:rootViewController];
   id delegate =
       [OCMockObject mockForProtocol:@protocol(SelectorCoordinatorDelegate)];
   coordinator.delegate = delegate;

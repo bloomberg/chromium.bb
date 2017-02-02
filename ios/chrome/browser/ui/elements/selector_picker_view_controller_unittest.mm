@@ -11,6 +11,10 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface SelectorPickerViewController ()
 // The displayed UINavigationBar. Exposed for testing.
 @property(nonatomic, retain) UINavigationBar* navigationBar;
@@ -26,9 +30,8 @@ TEST(SelectorPickerViewControllerTest, Done) {
   NSOrderedSet<NSString*>* options =
       [NSOrderedSet orderedSetWithArray:@[ option1, option2 ]];
   SelectorPickerViewController* selector_picker_view_controller =
-      [[[SelectorPickerViewController alloc] initWithOptions:options
-                                                     default:option1]
-          autorelease];
+      [[SelectorPickerViewController alloc] initWithOptions:options
+                                                    default:option1];
   id delegate =
       [OCMockObject mockForProtocol:@protocol(SelectorViewControllerDelegate)];
   [[delegate expect] selectorViewController:selector_picker_view_controller
@@ -42,7 +45,12 @@ TEST(SelectorPickerViewControllerTest, Done) {
                                                animated:NO];
   UIBarButtonItem* rightButton =
       selector_picker_view_controller.navigationBar.topItem.rightBarButtonItem;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   [selector_picker_view_controller performSelector:rightButton.action];
+#pragma clang diagnostic pop
+
   EXPECT_OCMOCK_VERIFY(delegate);
 }
 
@@ -54,9 +62,8 @@ TEST(SelectorPickerViewControllerTest, Cancel) {
   NSOrderedSet<NSString*>* options =
       [NSOrderedSet orderedSetWithArray:@[ option1, option2 ]];
   SelectorPickerViewController* selector_picker_view_controller =
-      [[[SelectorPickerViewController alloc] initWithOptions:options
-                                                     default:option2]
-          autorelease];
+      [[SelectorPickerViewController alloc] initWithOptions:options
+                                                    default:option2];
   id delegate =
       [OCMockObject mockForProtocol:@protocol(SelectorViewControllerDelegate)];
   [[delegate expect] selectorViewController:selector_picker_view_controller
@@ -70,7 +77,11 @@ TEST(SelectorPickerViewControllerTest, Cancel) {
                                                animated:NO];
   UIBarButtonItem* leftButton =
       selector_picker_view_controller.navigationBar.topItem.leftBarButtonItem;
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   [selector_picker_view_controller performSelector:leftButton.action];
+#pragma clang diagnostic pop
   EXPECT_OCMOCK_VERIFY(delegate);
 }
 
@@ -83,9 +94,8 @@ TEST(SelectorPickerViewControllerTest, DefaultStyling) {
   NSOrderedSet<NSString*>* options =
       [NSOrderedSet orderedSetWithArray:@[ option1, option2, option3 ]];
   SelectorPickerViewController* selector_picker_view_controller =
-      [[[SelectorPickerViewController alloc] initWithOptions:options
-                                                     default:option2]
-          autorelease];
+      [[SelectorPickerViewController alloc] initWithOptions:options
+                                                    default:option2];
   [selector_picker_view_controller loadView];
   [selector_picker_view_controller viewDidLoad];
 

@@ -20,6 +20,7 @@ source_set("elements") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "activity_overlay_coordinator_unittest.mm",
