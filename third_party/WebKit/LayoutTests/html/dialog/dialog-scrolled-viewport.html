@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+    margin: 0;
+}
+
+dialog {
+    padding : 0;
+}
+
+#console {
+    position: fixed;
+}
+</style>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body style="height: 10000px; width: 10000px">
+<div style="position: absolute; top: 5000px; left: 5000px; width: 20px;">
+    <dialog id="dialog" style="top: 1200px; left: 1200px; right: auto; height: 100px; width: 50%; background-color: yellow">
+    </dialog>
+</div>
+<script>
+debug("This tests that a modal dialog's containing block is the initial containing block.");
+debug('The dialog should be onscreen with a width of 50% of the viewport. It is the child of a ' +
+      'narrow element positioned off screen, but its containing block is the initial containing ' +
+      'block, so its position and percent lengths are relative to that.');
+
+function checkPosition(dialog) {
+    shouldBe('dialog.offsetParent', 'null');
+    shouldBe('dialog.offsetTop', '1200');
+    shouldBe('dialog.offsetLeft', '1200');
+    // Since dialog's 'width' is '50%', the expected width is half of the
+    // viewport width, but viewport width may be odd. It seems Blink rounds up for
+    // percentage lengths, so use Math.ceil here.
+    expectedWidth = Math.ceil(document.documentElement.clientWidth / 2);
+    shouldBe('dialog.clientWidth', 'expectedWidth');
+}
+
+window.scroll(1000, 1000);
+dialog = document.getElementById('dialog');
+dialog.showModal();
+checkPosition(dialog);
+dialog.close();
+</script>
+</body>
+</html>

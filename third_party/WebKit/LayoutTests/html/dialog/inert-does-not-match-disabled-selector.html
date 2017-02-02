@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<style>
+button {
+    color: green;
+}
+
+button:disabled {
+    color: red;
+}
+
+.trigger-style-recalc {
+    /* No change, we just need a new style recalculation. */
+}
+</style>
+</head>
+<body style="color: green">
+<button>The test passes if this is in green.</button>
+<dialog></dialog>
+<script>
+description('Tests that inert elements do not match the :disabled selector.');
+document.querySelector('dialog').showModal();
+button = document.querySelector('button');
+button.classList.add('trigger-style-recalc');
+color = document.defaultView.getComputedStyle(button).getPropertyValue('color');
+shouldBe('color', "'rgb(0, 128, 0)'");
+</script>
+</body>
+</html>

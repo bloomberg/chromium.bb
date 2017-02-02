@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<script src="../../fast/forms/resources/common.js"></script>
+<script>
+description('Tests autofocus when a modal dialog is opened.');
+
+function test() {
+    shouldBe('document.activeElement', 'document.getElementById("outer-button")');
+
+    var dialog = document.getElementById('dialog');
+    dialog.showModal();
+
+    autofocusButton = document.getElementById('autofocus-button');
+    shouldBe('document.activeElement', 'autofocusButton');
+
+    anotherButton = document.getElementById('another-button');
+    anotherButton.focus();
+    shouldBe('document.activeElement', 'anotherButton');
+
+    debug('Test that reattaching does not give focus back to a previously autofocused element.');
+    autofocusButton.style.display = 'none';
+    document.body.offsetHeight;
+    autofocusButton.style.display = 'block';
+    document.body.offsetHeight;
+    shouldBe('document.activeElement', 'anotherButton');
+
+    debug('Test that reinserting does not give focus back to a previously autofocused element.');
+    var parentNode = autofocusButton.parentNode;
+    parentNode.removeChild(autofocusButton);
+    document.body.offsetHeight;
+    parentNode.appendChild(autofocusButton);
+    document.body.offsetHeight;
+    shouldBe('document.activeElement', 'anotherButton');
+
+    dialog.close();
+    debug('Test that autofocus runs again when a dialog is reopened.');
+    dialog.showModal();
+    shouldBe('document.activeElement', 'autofocusButton');
+    dialog.close();
+
+    finishJSTest();
+}
+
+jsTestIsAsync = true;
+waitUntilLoadedAndAutofocused(test);
+</script>
+</head>
+<body>
+<button id="outer-button" autofocus></button>
+<dialog id="dialog">
+    <button></button>
+    <!-- Unfocusable elements with [autofocus] should be ignored. -->
+    <input autofocus disabled>
+    <textarea autofocus hidden></textarea>
+    <dialog>
+        <button autofocus></button>
+    </dialog>
+    <div>
+        <span>
+            <button id="autofocus-button" autofocus></button>
+        </span>
+    </div>
+    <button id="another-button" autofocus></button>
+</dialog>
+</body>
+</html>

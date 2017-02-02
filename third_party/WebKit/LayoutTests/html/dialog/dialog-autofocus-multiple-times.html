@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<script src="../../fast/forms/resources/common.js"></script>
+<script>
+description('Tests autofocus is run every time a dialog is opened.');
+
+function test() {
+    shouldBe('document.activeElement', 'document.getElementById("outer-button")');
+
+    var focusCount = 0;
+    input2.onfocus = function() { focusCount += 1 };
+
+    var expectedFocusCount = 3;
+    for (i = 0; i < expectedFocusCount; i++) {
+        dlg.show();
+        shouldBe('document.activeElement', 'document.getElementById("input2")');
+        input1.focus();
+        shouldBe('document.activeElement', 'document.getElementById("input1")');
+        dlg.close();
+    }
+
+    shouldBe(focusCount.toString(), expectedFocusCount.toString());
+
+    finishJSTest();
+}
+
+jsTestIsAsync = true;
+waitUntilLoadedAndAutofocused(test);
+</script>
+</head>
+<body>
+<button id="outer-button" autofocus></button>
+<dialog id="dlg">
+    <!-- Unfocusable elements with [autofocus] should be ignored. -->
+    <input autofocus disabled>
+    <textarea autofocus hidden></textarea>
+    <input id="input1"></input>
+    <input id="input2" autofocus></input>
+</dialog>
+</body>
+</html>
