@@ -859,7 +859,7 @@ component("ash") {
   ]
   deps = [
     "//ash/autoclick/common:autoclick",
-    "//ash/public/cpp",
+    "//ash/public/cpp:ash_public_cpp",
     "//ash/public/interfaces",
     "//ash/touch_hud",
     "//base",
@@ -985,7 +985,7 @@ component("ash_with_content") {
     ":ash",
   ]
   deps = [
-    "//ash/public/cpp",
+    "//ash/public/cpp:ash_public_cpp",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//content/public/browser",
@@ -1042,7 +1042,7 @@ static_library("ash_shell_lib") {
   deps = [
     ":ash",
     "//ash/common/test:test_support",
-    "//ash/public/cpp",
+    "//ash/public/cpp:ash_public_cpp",
     "//ash/test:test_support_without_content",
     "//base",
     "//base:i18n",
@@ -1078,7 +1078,7 @@ static_library("ash_shell_lib_with_content") {
   deps = [
     ":ash_shell_lib",
     ":ash_with_content",
-    "//ash/public/cpp",
+    "//ash/public/cpp:ash_public_cpp",
     "//ash/test:test_support_without_content",
     "//base:i18n",
     "//chrome:packed_resources",
@@ -1120,7 +1120,7 @@ test("ash_content_unittests") {
     ":ash",
     ":ash_with_content",
     "//ash/common/test:test_support",
-    "//ash/public/cpp",
+    "//ash/public/cpp:ash_public_cpp",
     "//ash/test:ash_with_aura_test_support",
     "//ash/test:test_support_with_content",
     "//base",
@@ -1334,7 +1334,7 @@ test("ash_unittests") {
     "//ash/common:unittests",
     "//ash/common/strings",
     "//ash/common/test:test_support",
-    "//ash/public/cpp",
+    "//ash/public/cpp:ash_public_cpp",
     "//ash/public/interfaces",
     "//ash/resources",
     "//ash/resources/vector_icons",

@@ -31,7 +31,7 @@ source_set("wayland") {
 
   deps = [
     "//ash",
-    "//ash/public/cpp",
+    "//ash/public/cpp:ash_public_cpp",
     "//base",
     "//components/exo",
     "//device/gamepad",

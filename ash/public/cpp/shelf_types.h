@@ -55,6 +55,47 @@ enum ShelfBackgroundType {
   SHELF_BACKGROUND_MAXIMIZED,
 };
 
+typedef int ShelfID;
+const int kInvalidShelfID = 0;
+
+// The type of a shelf item.
+enum ShelfItemType {
+  // Represents a running app panel.
+  TYPE_APP_PANEL,
+
+  // Represents a pinned shortcut to an app.
+  TYPE_APP_SHORTCUT,
+
+  // Toggles visiblity of the app list.
+  TYPE_APP_LIST,
+
+  // The browser shortcut button.
+  TYPE_BROWSER_SHORTCUT,
+
+  // Represents an app: Extension "V1" (legacy packaged and hosted) apps,
+  //                    Extension "V2" (platform) apps,
+  //                    Arc (App Runtime for Chrome - Android Play Store) apps.
+  TYPE_APP,
+
+  // Represents a dialog.
+  TYPE_DIALOG,
+
+  // Default value.
+  TYPE_UNDEFINED,
+};
+
+// Represents the status of applications in the shelf.
+enum ShelfItemStatus {
+  // A closed shelf item, i.e. has no live instance.
+  STATUS_CLOSED,
+  // A shelf item that has live instance.
+  STATUS_RUNNING,
+  // An active shelf item that has focus.
+  STATUS_ACTIVE,
+  // A shelf item that needs user's attention.
+  STATUS_ATTENTION,
+};
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_SHELF_TYPES_H_

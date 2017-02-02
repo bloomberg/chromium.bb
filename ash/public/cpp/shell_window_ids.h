@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "ash/public/cpp/ash_public_export.h"
+
 // Declarations of ids of special shell windows.
 
 namespace ash {
@@ -111,11 +113,11 @@ const int32_t kShellWindowId_Max = kShellWindowId_PowerButtonAnimationContainer;
 
 // These are the list of container ids of containers which may contain windows
 // that need to be activated.
-extern const int32_t kActivatableShellWindowIds[];
-extern const size_t kNumActivatableShellWindowIds;
+ASH_PUBLIC_EXPORT extern const int32_t kActivatableShellWindowIds[];
+ASH_PUBLIC_EXPORT extern const size_t kNumActivatableShellWindowIds;
 
 // Returns true if |id| is in |kActivatableShellWindowIds|.
-bool IsActivatableShellWindowId(int32_t id);
+ASH_PUBLIC_EXPORT bool IsActivatableShellWindowId(int32_t id);
 
 }  // namespace ash
 

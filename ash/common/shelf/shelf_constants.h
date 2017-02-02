@@ -43,8 +43,6 @@ ASH_EXPORT extern const int kShelfAutoHideSize;
 // the shelf items, notifications, status area etc.
 extern const int kShelfItemInset;
 
-const int kInvalidShelfID = 0;
-
 // Animation duration for switching black shelf and dock background on and off.
 ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
 

@@ -50,7 +50,7 @@ source_set("exo") {
 
   deps = [
     "//ash",
-    "//ash/public/cpp",
+    "//ash/public/cpp:ash_public_cpp",
     "//base",
     "//cc",
     "//cc/ipc:interfaces",
@@ -92,7 +92,7 @@ source_set("test_support") {
 
   deps = [
     ":exo",
-    "//ash/public/cpp",
+    "//ash/public/cpp:ash_public_cpp",
     "//ash/test:ash_with_aura_test_support",
     "//ash/test:test_support_without_content",
     "//base",
@@ -127,7 +127,7 @@ source_set("unit_tests") {
     ":exo",
     ":test_support",
     "//ash",
-    "//ash/public/cpp",
+    "//ash/public/cpp:ash_public_cpp",
     "//base",
     "//base/test:test_support",
     "//cc",
