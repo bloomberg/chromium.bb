@@ -226,7 +226,9 @@ void DetachableResourceHandler::OnResponseCompleted(
 
   is_finished_ = true;
 
-  next_handler_->OnResponseCompleted(status, std::move(controller));
+  HoldController(std::move(controller));
+  next_handler_->OnResponseCompleted(status,
+                                     base::MakeUnique<Controller>(this));
 }
 
 void DetachableResourceHandler::OnDataDownloaded(int bytes_downloaded) {
