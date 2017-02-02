@@ -78,7 +78,7 @@ config("media_dependent_config") {
       "/DELAYLOAD:mfreadwrite.dll",
     ]
   }
-  if (media_use_ffmpeg && is_android) {
+  if (disable_ffmpeg_video_decoders) {
     defines += [ "DISABLE_FFMPEG_VIDEO_DECODERS" ]
   }
 }
@@ -364,7 +364,7 @@ component("media") {
   if (is_android) {
     # On Android, FFmpeg is built without video decoders. We only
     # support hardware video decoding.
-    if (media_use_ffmpeg) {
+    if (disable_ffmpeg_video_decoders) {
       sources -= [
         "filters/ffmpeg_video_decoder.cc",
         "filters/ffmpeg_video_decoder.h",

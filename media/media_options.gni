@@ -81,6 +81,16 @@ declare_args() {
   }
 }
 
+# Use another declare_args() to pick up possible overrides of media_use_ffmpeg
+# from --args command line flags. See "gn help declare_args".
+declare_args() {
+  # On Android, FFMpeg is built without video decoders by default.
+  # This flag gives the option to override that decision in case there are no
+  # hardware decoders. To do so, you will also need to update ffmpeg build files
+  # in order to define which decoders to build in.
+  disable_ffmpeg_video_decoders = !media_use_ffmpeg || is_android
+}
+
 declare_args() {
   # Experiment to enable mojo media services (e.g. "renderer", "cdm", see
   # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
@@ -93,7 +103,7 @@ declare_args() {
   enable_test_mojo_media_client = false
 }
 
-# Use a second declare_args() to pick up possible overrides of enable_mojo_media
+# Use another declare_args() to pick up possible overrides of enable_mojo_media
 # from --args command line flags. See "gn help declare_args".
 declare_args() {
   # A list of mojo media services that should be used in the media pipeline.
