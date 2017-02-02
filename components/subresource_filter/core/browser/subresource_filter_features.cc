@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -34,6 +35,8 @@ const char kActivationListPhishingInterstitial[] = "phishing_interstitial";
 
 const char kPerformanceMeasurementRateParameterName[] =
     "performance_measurement_rate";
+
+const char kSuppressNotificationsParameterName[] = "suppress_notifications";
 
 ActivationLevel GetMaximumActivationLevel() {
   std::string activation_level = variations::GetVariationParamValueByFeature(
@@ -82,6 +85,12 @@ double GetPerformanceMeasurementRate() {
   if (!base::StringToDouble(rate, &value) || value < 0)
     return 0;
   return value < 1 ? value : 1;
+}
+
+bool ShouldSuppressNotifications() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kSafeBrowsingSubresourceFilter, kSuppressNotificationsParameterName,
+      false /* default value */);
 }
 
 }  // namespace subresource_filter

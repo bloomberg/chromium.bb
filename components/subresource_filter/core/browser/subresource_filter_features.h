@@ -32,6 +32,8 @@ extern const char kActivationListPhishingInterstitial[];
 
 extern const char kPerformanceMeasurementRateParameterName[];
 
+extern const char kSuppressNotificationsParameterName[];
+
 // Returns the maximum degree to which subresource filtering should be activated
 // on any RenderFrame. This will be ActivationLevel::DISABLED unless the feature
 // is enabled and variation parameters prescribe a higher activation level.
@@ -52,6 +54,10 @@ ActivationList GetCurrentActivationList();
 // that should have extended performance measurements enabled. The rate will be
 // 0 unless a greater frequency is specified by variation parameters.
 double GetPerformanceMeasurementRate();
+
+// Returns whether notifications indicating that a subresource was disallowed
+// should be suppressed in the UI.
+bool ShouldSuppressNotifications();
 
 }  // namespace subresource_filter
 

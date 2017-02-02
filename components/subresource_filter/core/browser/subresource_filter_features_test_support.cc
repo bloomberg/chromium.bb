@@ -25,14 +25,16 @@ ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
     const std::string& maximum_activation_level,
     const std::string& activation_scope,
     const std::string& activation_lists,
-    const std::string& performance_measurement_rate)
+    const std::string& performance_measurement_rate,
+    const std::string& suppress_notifications)
     : ScopedSubresourceFilterFeatureToggle(
           feature_state,
           {{kActivationLevelParameterName, maximum_activation_level},
            {kActivationScopeParameterName, activation_scope},
            {kActivationListsParameterName, activation_lists},
            {kPerformanceMeasurementRateParameterName,
-            performance_measurement_rate}}) {}
+            performance_measurement_rate},
+           {kSuppressNotificationsParameterName, suppress_notifications}}) {}
 
 ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
     base::FeatureList::OverrideState feature_state,

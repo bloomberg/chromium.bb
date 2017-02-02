@@ -219,4 +219,37 @@ TEST(SubresourceFilterFeaturesTest, PerfMeasurementRate) {
   }
 }
 
+TEST(SubresourceFilterFeaturesTest, SuppressNotifications) {
+  const struct {
+    bool feature_enabled;
+    const char* suppress_notifications_param;
+    bool expected_suppress_notifications_value;
+  } kTestCases[] = {{false, "", false},
+                    {false, "true", false},
+                    {false, "false", false},
+                    {false, "invalid value", false},
+                    {true, "", false},
+                    {true, "false", false},
+                    {true, "invalid value", false},
+                    {true, "True", false},
+                    {true, "TRUE", false},
+                    {true, "true", true}};
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(::testing::Message("Enabled = ") << test_case.feature_enabled);
+    SCOPED_TRACE(::testing::Message("SuppressNotificationsParam = \"")
+                 << test_case.suppress_notifications_param << "\"");
+
+    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+        test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+                                  : base::FeatureList::OVERRIDE_USE_DEFAULT,
+        {{kSuppressNotificationsParameterName,
+          test_case.suppress_notifications_param}});
+
+    EXPECT_EQ(test_case.expected_suppress_notifications_value,
+              ShouldSuppressNotifications());
+  }
+}
+
 }  // namespace subresource_filter

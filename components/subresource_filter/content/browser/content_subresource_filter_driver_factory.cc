@@ -88,6 +88,9 @@ void ContentSubresourceFilterDriverFactory::CreateDriverForFrameHostIfNeeded(
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
+  if (ShouldSuppressNotifications())
+    return;
+
   client_->ToggleNotificationVisibility(activation_level_ ==
                                         ActivationLevel::ENABLED);
 }
