@@ -35,7 +35,7 @@ function test()
 
     function uiLocation(script, line, column)
     {
-        var location = SDK.DebuggerModel.fromTarget(script.target()).createRawLocation(script, line, column);
+        var location = script.debuggerModel.createRawLocation(script, line, column);
         return Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location);
     }
 
@@ -203,6 +203,7 @@ function test()
             var script;
             var originalUISourceCode;
             var target = InspectorTest.mainTarget;
+            var debuggerModel = InspectorTest.debuggerModel;
 
             InspectorTest.addResult("Adding compiled.js");
             InspectorTest.waitForUISourceCode(originalUISourceCodeAdded, "resources/compiled.js");
@@ -212,7 +213,7 @@ function test()
             {
                 InspectorTest.addResult("compiled.js UISourceCode arrived");
                 originalUISourceCode = uiSourceCode;
-                for (var s of Object.values(InspectorTest.debuggerModel.scripts)) {
+                for (var s of Object.values(debuggerModel.scripts)) {
                     if (s.sourceURL.endsWith("compiled.js")) {
                         InspectorTest.addResult("compiled.js script found");
                         script = s;
@@ -238,9 +239,9 @@ function test()
                 InspectorTest.checkUILocation(uiSourceCode2, 7, 4, uiLocation(script, 1, 151));
                 InspectorTest.checkUILocation(originalUISourceCode, 1, 200, uiLocation(script, 1, 200));
 
-                InspectorTest.checkRawLocation(script, 0, 42, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode1, 3, 10));
-                InspectorTest.checkRawLocation(script, 1, 85, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 1, 0));
-                InspectorTest.checkRawLocation(script, 1, 110, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 5, 2));
+                InspectorTest.checkRawLocation(script, 0, 42, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(debuggerModel, uiSourceCode1, 3, 10));
+                InspectorTest.checkRawLocation(script, 1, 85, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(debuggerModel, uiSourceCode2, 1, 0));
+                InspectorTest.checkRawLocation(script, 1, 110, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(debuggerModel, uiSourceCode2, 5, 2));
 
                 InspectorTest.addResult("Location checks passed. Requesting content");
                 uiSourceCode1.requestContent().then(didRequestContent1);
@@ -277,12 +278,13 @@ function test()
             InspectorTest.evaluateInPage(scriptSource);
 
             var target = InspectorTest.mainTarget;
+            var debuggerModel = InspectorTest.debuggerModel;
             var script;
 
             function compiledUISourceCodeAdded(uiSourceCode)
             {
                 InspectorTest.addResult("compiled.js UISourceCode arrived");
-                for (var s of Object.values(InspectorTest.debuggerModel.scripts)) {
+                for (var s of Object.values(debuggerModel.scripts)) {
                     if (s.sourceMapURL && s.sourceMapURL.startsWith("data:application")) {
                         InspectorTest.addResult("compiled.js script found");
                         script = s;
@@ -295,7 +297,7 @@ function test()
             {
                 InspectorTest.addResult("source3.js UISourceCode arrived");
                 InspectorTest.checkUILocation(uiSourceCode, 2, 4, uiLocation(script, 0, 18));
-                InspectorTest.checkRawLocation(script, 0, 18, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode, 2, 4));
+                InspectorTest.checkRawLocation(script, 0, 18, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(debuggerModel, uiSourceCode, 2, 4));
 
                 InspectorTest.addResult("Location checks passed. Requesting content");
                 uiSourceCode.requestContent().then(didRequestContent);

@@ -59,7 +59,7 @@ function test()
                 uiSourceCode = sourceFrame._uiSourceCode;
                
                 InspectorTest.addResult("Setting breakpoint:");
-                InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
+                InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
 
@@ -84,7 +84,7 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Undoing source editing:");
-                InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
+                InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
                 InspectorTest.undoSourceEditing(javaScriptSourceFrame);
             }
 
@@ -111,7 +111,7 @@ function test()
                 uiSourceCode = sourceFrame._uiSourceCode;
                 
                 InspectorTest.addResult("Setting breakpoint:");
-                InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
+                InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
 
@@ -136,7 +136,7 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Committing edited source:");
-                InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
+                InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
                 InspectorTest.commitSource(javaScriptSourceFrame);
             }
 
@@ -163,7 +163,7 @@ function test()
                 uiSourceCode = sourceFrame._uiSourceCode;
                 
                 InspectorTest.addResult("Setting breakpoint:");
-                InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
+                InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
 
@@ -201,7 +201,7 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Committing edited source again:");
-                InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
+                InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
                 InspectorTest.commitSource(javaScriptSourceFrame);
             }
 
@@ -228,7 +228,7 @@ function test()
                 uiSourceCode = sourceFrame._uiSourceCode;
                 
                 InspectorTest.addResult("Setting breakpoint:");
-                InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
+                InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
 
@@ -266,7 +266,7 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Committing edited source again:");
-                InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
+                InspectorTest.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
                 InspectorTest.commitSource(javaScriptSourceFrame);
             }
 
