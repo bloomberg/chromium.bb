@@ -113,7 +113,7 @@ bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
     return false;
   }
   if (network_quality_estimator->GetEffectiveConnectionType() >
-      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G) {
+      params::EffectiveConnectionTypeThreshold()) {
     LogPreviewsEligibilityReason(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
                                  type);
     return false;

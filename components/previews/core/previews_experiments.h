@@ -6,6 +6,7 @@
 #define COMPONENTS_PREVIEWS_CORE_PREVIEWS_EXPERIMENTS_H_
 
 #include "base/time/time.h"
+#include "net/nqe/effective_connection_type.h"
 
 namespace previews {
 
@@ -42,6 +43,10 @@ base::TimeDelta SingleOptOutDuration();
 // The amount of time that an offline page is considered fresh enough to be
 // shown as a preview.
 base::TimeDelta OfflinePreviewFreshnessDuration();
+
+// The threshold of EffectiveConnectionType above which previews should not be
+// served.
+net::EffectiveConnectionType EffectiveConnectionTypeThreshold();
 
 }  // namespace params
 

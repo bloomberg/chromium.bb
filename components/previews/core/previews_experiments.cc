@@ -64,6 +64,12 @@ const char kSingleOptOutDurationInSeconds[] =
 const char kOfflinePreviewFreshnessDurationInDays[] =
     "offline_preview_freshness_duration_in_days";
 
+// The threshold of EffectiveConnectionType above which previews will not be
+// served.
+// See net/nqe/effective_connection_type.h for mapping from string to value.
+const char kEffectiveConnectionTypeThreshold[] =
+    "max_allowed_effective_connection_type";
+
 // The string that corresponds to enabled for the variation param experiments.
 const char kExperimentEnabled[] = "true";
 
@@ -156,6 +162,16 @@ base::TimeDelta OfflinePreviewFreshnessDuration() {
   if (!base::StringToInt(param_value, &duration))
     duration = 7;
   return base::TimeDelta::FromDays(duration);
+}
+
+net::EffectiveConnectionType EffectiveConnectionTypeThreshold() {
+  std::string param_value = ParamValue(kEffectiveConnectionTypeThreshold);
+  net::EffectiveConnectionType effective_connection_type;
+  if (!net::GetEffectiveConnectionTypeForName(param_value,
+                                              &effective_connection_type)) {
+    effective_connection_type = net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+  }
+  return effective_connection_type;
 }
 
 }  // namespace params
