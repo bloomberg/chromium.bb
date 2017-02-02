@@ -5019,12 +5019,6 @@ interface ReadableStream
     method pipeThrough
     method pipeTo
     method tee
-interface RelatedApplication
-    attribute @@toStringTag
-    getter id
-    getter platform
-    getter url
-    method constructor
 interface RelatedEvent : Event
     attribute @@toStringTag
     getter relatedTarget
