@@ -4254,14 +4254,7 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
 
 // Tests the SaveImportedProfile method with different profiles to make sure the
 // merge logic works correctly.
-// Flaky on TSan, see crbug.com/686226.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_SaveImportedProfile DISABLED_SaveImportedProfile
-#else
-#define MAYBE_SaveImportedProfile SaveImportedProfile
-#endif
-
-TEST_F(PersonalDataManagerTest, MAYBE_SaveImportedProfile) {
+TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
   typedef struct {
     autofill::ServerFieldType field_type;
     std::string field_value;
@@ -4523,7 +4516,13 @@ TEST_F(PersonalDataManagerTest, MAYBE_SaveImportedProfile) {
        {{COMPANY_NAME, "Stark Inc."}}},
   };
 
+  // Create the test clock.
+  TestAutofillClock test_clock;
+
   for (TestCase test_case : test_cases) {
+    // Set the time to a specific value.
+    test_clock.SetNow(kArbitraryTime);
+
     SetupReferenceProfile();
     const std::vector<AutofillProfile*>& initial_profiles =
         personal_data_->GetProfiles();
@@ -4533,6 +4532,9 @@ TEST_F(PersonalDataManagerTest, MAYBE_SaveImportedProfile) {
       initial_profiles.front()->SetRawInfo(
           change.field_type, base::UTF8ToUTF16(change.field_value));
     }
+
+    // Set the time to a bigger value.
+    test_clock.SetNow(kSomeLaterTime);
 
     AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
     test::SetProfileInfo(&profile2, "Marion", "Mitchell", "Morrison",
@@ -4565,11 +4567,8 @@ TEST_F(PersonalDataManagerTest, MAYBE_SaveImportedProfile) {
       // Verify that the merged profile's use count, use date and modification
       // date were properly updated.
       EXPECT_EQ(1U, saved_profiles.front()->use_count());
-      EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
-                AutofillClock::Now() - saved_profiles.front()->use_date());
-      EXPECT_GT(
-          base::TimeDelta::FromMilliseconds(500),
-          AutofillClock::Now() - saved_profiles.front()->modification_date());
+      EXPECT_EQ(kSomeLaterTime, saved_profiles.front()->use_date());
+      EXPECT_EQ(kSomeLaterTime, saved_profiles.front()->modification_date());
     }
 
     // Erase the profiles for the next test.
