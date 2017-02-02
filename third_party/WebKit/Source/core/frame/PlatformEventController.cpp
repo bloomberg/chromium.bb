@@ -12,7 +12,9 @@ PlatformEventController::PlatformEventController(LocalFrame* frame)
     : PageVisibilityObserver(frame ? frame->page() : nullptr),
       m_hasEventListener(false),
       m_isActive(false),
-      m_timer(this, &PlatformEventController::oneShotCallback) {}
+      m_timer(TaskRunnerHelper::get(TaskType::UnspecedTimer, frame),
+              this,
+              &PlatformEventController::oneShotCallback) {}
 
 PlatformEventController::~PlatformEventController() {}
 
