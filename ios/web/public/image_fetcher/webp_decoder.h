@@ -44,7 +44,7 @@ class WebpDecoder : public base::RefCountedThreadSafe<WebpDecoder> {
   static size_t GetHeaderSize();
 
   // Main entry point.
-  void OnDataReceived(const base::scoped_nsobject<NSData>& data);
+  void OnDataReceived(NSData* data);
 
   // Stops the decoding.
   void Stop();

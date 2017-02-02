@@ -24,14 +24,11 @@ class Image;
 
 namespace image_fetcher {
 class ImageFetcherDelegate;
+class IOSImageDataFetcherWrapper;
 }
 
 namespace net {
 class URLRequestContextGetter;
-}
-
-namespace web {
-class ImageDataFetcher;
 }
 
 namespace suggestions {
@@ -55,7 +52,7 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
       override;
 
  private:
-  std::unique_ptr<web::ImageDataFetcher> image_fetcher_;
+  std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> image_fetcher_;
 
   image_fetcher::ImageFetcherDelegate* delegate_;
 

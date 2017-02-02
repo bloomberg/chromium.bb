@@ -16,6 +16,7 @@ source_set("suggestions") {
     "//base",
     "//components/browser_sync",
     "//components/image_fetcher",
+    "//components/image_fetcher/ios",
     "//components/keyed_service/ios",
     "//components/leveldb_proto",
     "//components/signin/core/browser",

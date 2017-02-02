@@ -106,7 +106,7 @@ WebpDecoder::~WebpDecoder() {
   WebPFreeDecBuffer(&config_.output);
 }
 
-void WebpDecoder::OnDataReceived(const base::scoped_nsobject<NSData>& data) {
+void WebpDecoder::OnDataReceived(NSData* data) {
   DCHECK(data);
   switch (state_) {
     case READING_FEATURES:
