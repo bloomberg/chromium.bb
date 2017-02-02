@@ -370,7 +370,9 @@ void StoreFunctionsForDefaultZone(MallocZoneFunctions* functions) {
 void ReplaceFunctionsForDefaultZone(const MallocZoneFunctions* functions) {
   CHECK(!g_replaced_default_zone);
   g_replaced_default_zone = true;
+#if !defined(ADDRESS_SANITIZER)
   StoreFunctionsForDefaultZone(&g_old_zone);
+#endif
   ChromeMallocZone* default_zone = reinterpret_cast<ChromeMallocZone*>(
       malloc_default_zone());
   ReplaceZoneFunctions(default_zone, functions);
