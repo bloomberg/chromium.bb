@@ -241,6 +241,8 @@ bool ElementAnimations::TransformAnimationBoundsForBox(
   *bounds = gfx::BoxF();
 
   for (auto& player : players_list_) {
+    if (!player.HasTransformAnimationThatInflatesBounds())
+      continue;
     gfx::BoxF player_bounds;
     bool success = player.TransformAnimationBoundsForBox(box, &player_bounds);
     if (!success)
