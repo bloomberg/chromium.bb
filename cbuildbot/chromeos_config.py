@@ -440,7 +440,6 @@ _arm_internal_release_boards = frozenset([
     'scarlet',
     'smaug',
     'smaug-cheets',
-    'storm',
     'veyron_fievel',
     'veyron_jaq',
     'veyron_jerry',
@@ -568,7 +567,6 @@ _x86_external_boards = frozenset([
 _brillo_boards = frozenset([
     'arkham',
     'gale',
-    'storm',
     'whirlwind',
 ])
 
@@ -2922,7 +2920,6 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       'slippy',
       'smaug',
       'squawks',
-      'storm',
       'stout',
       'strago',
       'stumpy',
@@ -3273,12 +3270,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'beaglebone_servo-release': {
           'buildslave_type': constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-      },
-
-      # Hw Lab can't test storm, yet.
-      'storm-release': {
-          'paygen_skip_testing':True,
-          'signer_tests':False,
       },
 
       'whirlwind-release': {
