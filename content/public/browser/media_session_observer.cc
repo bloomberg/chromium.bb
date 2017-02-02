@@ -9,7 +9,7 @@
 namespace content {
 
 MediaSessionObserver::MediaSessionObserver(MediaSession* media_session)
-    : media_session_(static_cast<MediaSessionImpl*>(media_session)) {
+    : media_session_(media_session) {
   if (media_session_)
     media_session_->AddObserver(this);
 }

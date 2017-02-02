@@ -21,7 +21,6 @@ enum class MediaSessionAction;
 namespace content {
 
 class MediaSession;
-class MediaSessionImpl;
 
 // The observer for observing MediaSession events.
 class CONTENT_EXPORT MediaSessionObserver {
@@ -49,7 +48,7 @@ class CONTENT_EXPORT MediaSessionObserver {
 
  protected:
   // Create a MediaSessionObserver and start observing a session.
-  MediaSessionObserver(MediaSession* media_session);
+  explicit MediaSessionObserver(MediaSession* media_session);
   // Destruct a MediaSessionObserver and remove it from the session if it's
   // still observing.
   virtual ~MediaSessionObserver();
@@ -60,7 +59,7 @@ class CONTENT_EXPORT MediaSessionObserver {
   void StopObserving();
 
   // Weak pointer to MediaSession
-  MediaSessionImpl* media_session_;
+  MediaSession* media_session_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionObserver);
 };

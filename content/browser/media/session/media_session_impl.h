@@ -85,9 +85,6 @@ class MediaSessionImpl : public MediaSession,
   }
 #endif  // defined(OS_ANDROID)
 
-  void AddObserver(MediaSessionObserver* observer);
-  void RemoveObserver(MediaSessionObserver* observer);
-
   void NotifyMediaSessionMetadataChange(
       const base::Optional<MediaMetadata>& metadata);
   void NotifyMediaSessionActionsChange(
@@ -137,6 +134,9 @@ class MediaSessionImpl : public MediaSession,
   // Let the media session stop ducking such that the volume multiplier is
   // recovered.
   CONTENT_EXPORT void StopDucking() override;
+
+  void AddObserver(MediaSessionObserver* observer) override;
+  void RemoveObserver(MediaSessionObserver* observer) override;
 
   // Returns if the session can be controlled by Resume() and Suspend calls
   // above.
