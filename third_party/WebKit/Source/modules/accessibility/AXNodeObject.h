@@ -129,6 +129,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool isClickable() const final;
   bool isEnabled() const override;
   AccessibilityExpanded isExpanded() const override;
+  bool isModal() const final;
   bool isPressed() const final;
   bool isReadOnly() const override;
   bool isRequired() const final;

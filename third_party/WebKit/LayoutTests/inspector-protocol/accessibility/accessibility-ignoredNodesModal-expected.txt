@@ -48,7 +48,15 @@ Non-hidden element inside dialog
       }
     ]
   },
-  "properties": [],
+  "properties": [
+    {
+      "name": "modal",
+      "value": {
+        "type": "boolean",
+        "value": true
+      }
+    }
+  ],
   "domNode": "dialog"
 }
 {

@@ -138,6 +138,7 @@ class WebAXObject {
   BLINK_EXPORT bool isHovered() const;
   BLINK_EXPORT bool isLinked() const;
   BLINK_EXPORT bool isLoaded() const;
+  BLINK_EXPORT bool isModal() const;
   BLINK_EXPORT bool isMultiSelectable() const;
   BLINK_EXPORT bool isOffScreen() const;
   BLINK_EXPORT bool isPasswordField() const;

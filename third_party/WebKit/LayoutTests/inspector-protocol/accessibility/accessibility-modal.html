@@ -1,0 +1,34 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="./accessibility-dumpAccessibilityNodes.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.sendCommand("DOM.getDocument", {}, (msg) => {
+        InspectorTest.dumpAccessibilityNodesBySelectorAndCompleteTest("[data-dump]", false, msg);
+    });
+}
+
+</script>
+</head>
+<body onLoad="runTest();">
+  <dialog data-dump id="modal">
+    <div data-dump role="button" aria-modal="true">
+    </div>
+    <div data-dump role="dialog" aria-modal="false">
+    </div>
+    <div data-dump role="dialog" aria-modal="true">
+    </div>
+    <div data-dump role="alertdialog" aria-modal="true">
+    </div>
+    <dialog data-dump>Closed Dialog</dialog>
+    <dialog data-dump open>Open Dialog</dialog>
+  </dialog>
+  <script>
+    document.getElementById('modal').showModal();
+  </script>
+</body>
+</html>

@@ -682,6 +682,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool isHovered() const { return false; }
   virtual bool isLinked() const { return false; }
   virtual bool isLoaded() const { return false; }
+  virtual bool isModal() const { return false; }
   virtual bool isMultiSelectable() const { return false; }
   virtual bool isOffScreen() const { return false; }
   virtual bool isPressed() const { return false; }

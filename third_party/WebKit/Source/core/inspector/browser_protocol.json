@@ -4311,7 +4311,7 @@
             {
                 "id": "AXWidgetStates",
                 "type": "string",
-                "enum": [ "checked", "expanded", "pressed", "selected" ],
+                "enum": [ "checked", "expanded", "modal", "pressed", "selected" ],
                 "description": "States which apply to widgets."
             },
             {

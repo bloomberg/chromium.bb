@@ -115,6 +115,10 @@ void fillGlobalStates(AXObject& axObject,
   }
 }
 
+bool roleAllowsModal(AccessibilityRole role) {
+  return role == DialogRole || role == AlertDialogRole;
+}
+
 bool roleAllowsMultiselectable(AccessibilityRole role) {
   return role == GridRole || role == ListBoxRole || role == TabListRole ||
          role == TreeGridRole || role == TreeRole;
@@ -305,6 +309,11 @@ void fillWidgetStates(AXObject& axObject,
     properties.addItem(
         createProperty(AXWidgetStatesEnum::Selected,
                        createBooleanValue(axObject.isSelected())));
+  }
+
+  if (roleAllowsModal(role)) {
+    properties.addItem(createProperty(AXWidgetStatesEnum::Modal,
+                                      createBooleanValue(axObject.isModal())));
   }
 }
 

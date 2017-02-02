@@ -358,6 +358,13 @@ bool WebAXObject::isLoaded() const {
   return m_private->isLoaded();
 }
 
+bool WebAXObject::isModal() const {
+  if (isDetached())
+    return false;
+
+  return m_private->isModal();
+}
+
 bool WebAXObject::isMultiSelectable() const {
   if (isDetached())
     return false;
