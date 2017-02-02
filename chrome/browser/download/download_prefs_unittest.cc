@@ -117,18 +117,3 @@ TEST(DownloadPrefsTest, AutoOpenCheckIsCaseInsensitive) {
   EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(
       base::FilePath(FILE_PATH_LITERAL("x.Bar"))));
 }
-
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
-TEST(DownloadPrefsTest, AlwaysOpenPdfExternally) {
-  content::TestBrowserThreadBundle threads_are_required_for_testing_profile;
-  TestingProfile profile;
-  profile.GetPrefs()->SetBoolean(prefs::kOpenPdfDownloadInSystemReader, false);
-  profile.GetPrefs()->SetBoolean(prefs::kPluginsAlwaysOpenPdfExternally, true);
-  DownloadPrefs prefs(&profile);
-  prefs.DisableAdobeVersionCheckForTests();
-
-  EXPECT_TRUE(prefs.ShouldOpenPdfInSystemReader());
-  EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(
-      base::FilePath(FILE_PATH_LITERAL("doc.pdf"))));
-}
-#endif
