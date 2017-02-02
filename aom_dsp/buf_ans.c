@@ -50,7 +50,15 @@ void aom_buf_ans_flush(struct BufAnsCoder *const c) {
   if (c->offset == 0) return;
 #endif
   assert(c->offset > 0);
-  for (offset = c->offset - 1; offset >= 0; --offset) {
+  offset = c->offset - 1;
+  // Code the first symbol such that it brings the state to the smallest normal
+  // state from an initial state that would have been a subnormal/refill state.
+  if (c->buf[offset].method == ANS_METHOD_RANS) {
+    c->ans.state += c->buf[offset].val_start;
+  } else {
+    c->ans.state += c->buf[offset].val_start ? c->buf[offset].prob : 0;
+  }
+  for (offset = offset - 1; offset >= 0; --offset) {
     if (c->buf[offset].method == ANS_METHOD_RANS) {
       struct rans_sym sym;
       sym.prob = c->buf[offset].prob;

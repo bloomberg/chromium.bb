@@ -69,7 +69,7 @@ static INLINE int rabs_read(struct AnsDecoder *ans, AnsP8 p0) {
     ans->symbols_left--;
   }
 #endif
-  unsigned state = ans->state;
+  unsigned state = refill_state(ans, ans->state);
   const unsigned quotient = state / ANS_P8_PRECISION;
   const unsigned remainder = state % ANS_P8_PRECISION;
   const int value = remainder >= p0;
@@ -77,7 +77,7 @@ static INLINE int rabs_read(struct AnsDecoder *ans, AnsP8 p0) {
     state = quotient * (ANS_P8_PRECISION - p0) + remainder - p0;
   else
     state = quotient * p0 + remainder;
-  ans->state = refill_state(ans, state);
+  ans->state = state;
   return value;
 }
 
@@ -119,11 +119,11 @@ static INLINE int rans_read(struct AnsDecoder *ans, const aom_cdf_prob *tab) {
     ans->symbols_left--;
   }
 #endif
+  ans->state = refill_state(ans, ans->state);
   quo = ans->state / RANS_PRECISION;
   rem = ans->state % RANS_PRECISION;
   fetch_sym(&sym, tab, rem);
   ans->state = quo * sym.prob + rem - sym.cum_prob;
-  ans->state = refill_state(ans, ans->state);
   return sym.val;
 }
 
@@ -193,12 +193,12 @@ static INLINE int ans_read_reinit(struct AnsDecoder *const ans) {
 }
 #endif
 
-static INLINE int ans_read_end(struct AnsDecoder *const ans) {
-  return ans->state == L_BASE;
+static INLINE int ans_read_end(const struct AnsDecoder *const ans) {
+  return ans->buf_offset == 0 && ans->state < L_BASE;
 }
 
 static INLINE int ans_reader_has_error(const struct AnsDecoder *const ans) {
-  return ans->state < L_BASE && ans->buf_offset == 0;
+  return ans->state < L_BASE / RANS_PRECISION;
 }
 #ifdef __cplusplus
 }  // extern "C"
