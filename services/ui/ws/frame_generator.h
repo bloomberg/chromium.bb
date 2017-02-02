@@ -50,6 +50,8 @@ class FrameGenerator : public cc::mojom::MojoCompositorFrameSinkClient {
   // Updates the WindowManager's SurfaceInfo.
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info);
 
+  void OnWindowDamaged();
+
  private:
   friend class ui::ws::test::FrameGeneratorTest;
 

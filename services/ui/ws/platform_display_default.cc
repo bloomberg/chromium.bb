@@ -177,7 +177,9 @@ void PlatformDisplayDefault::OnBoundsChanged(const gfx::Rect& new_bounds) {
   // something but that isn't fully flushed out.
 }
 
-void PlatformDisplayDefault::OnDamageRect(const gfx::Rect& damaged_region) {}
+void PlatformDisplayDefault::OnDamageRect(const gfx::Rect& damaged_region) {
+  frame_generator_->OnWindowDamaged();
+}
 
 void PlatformDisplayDefault::DispatchEvent(ui::Event* event) {
   if (event->IsLocatedEvent())

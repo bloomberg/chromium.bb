@@ -71,6 +71,11 @@ void FrameGenerator::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
   }
 }
 
+void FrameGenerator::OnWindowDamaged() {
+  if (window_manager_surface_info_.id().is_valid())
+    compositor_frame_sink_->SetNeedsBeginFrame(true);
+}
+
 void FrameGenerator::DidReceiveCompositorFrameAck() {}
 
 void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_arags) {
