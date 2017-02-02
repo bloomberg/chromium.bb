@@ -97,5 +97,5 @@ resolve the conflict.
 
 It's still possible to make direct pull requests to web-platform-tests. The
 processes for getting new tests committed the W3C repos are at
-[http://testthewebforward.org/docs/]. Some specifics are at
-[http://testthewebforward.org/docs/github-101.html].
+http://testthewebforward.org/docs/. Some specifics are at
+http://testthewebforward.org/docs/github-101.html.
