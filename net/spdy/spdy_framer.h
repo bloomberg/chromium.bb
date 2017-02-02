@@ -483,8 +483,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // For debugging.
   static const char* StateToString(int state);
   static const char* SpdyFramerErrorToString(SpdyFramerError spdy_framer_error);
-  static const char* StatusCodeToString(int status_code);
-  static const char* FrameTypeToString(SpdyFrameType type);
 
   // Did the most recent frame header appear to be an HTTP/1.x (or earlier)
   // response (i.e. start with "HTTP/")?

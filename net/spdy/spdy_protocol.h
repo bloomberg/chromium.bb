@@ -240,6 +240,9 @@ NET_EXPORT_PRIVATE bool IsValidHTTP2FrameStreamId(
     SpdyStreamId current_frame_stream_id,
     SpdyFrameType frame_type_field);
 
+// Serialize |frame_type| to string for logging/debugging.
+const char* FrameTypeToString(SpdyFrameType frame_type);
+
 // If |wire_setting_id| is the on-the-wire representation of a defined SETTINGS
 // parameter, parse it to |*setting_id| and return true.
 NET_EXPORT_PRIVATE bool ParseSettingsId(int wire_setting_id,
@@ -260,6 +263,10 @@ ParseRstStreamStatus(int rst_stream_status_field);
 // Treat unrecognized error codes as INTERNAL_ERROR
 // as recommended by the HTTP/2 specification.
 NET_EXPORT_PRIVATE SpdyGoAwayStatus ParseGoAwayStatus(int goaway_status_field);
+
+// Serialize RST_STREAM or GOAWAY frame error code to string
+// for logging/debugging.
+const char* ErrorCodeToString(uint32_t error_code);
 
 // Frame type for non-control (i.e. data) frames.
 const int kDataFrameType = 0;

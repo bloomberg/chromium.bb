@@ -3496,47 +3496,6 @@ TEST_P(SpdyFramerTest, SpdyFramerErrorToStringTest) {
                                         SpdyFramer::LAST_ERROR + 1)));
 }
 
-TEST_P(SpdyFramerTest, StatusCodeToStringTest) {
-  EXPECT_STREQ("NO_ERROR", SpdyFramer::StatusCodeToString(RST_STREAM_NO_ERROR));
-  EXPECT_STREQ("PROTOCOL_ERROR",
-               SpdyFramer::StatusCodeToString(RST_STREAM_PROTOCOL_ERROR));
-  EXPECT_STREQ("INTERNAL_ERROR",
-               SpdyFramer::StatusCodeToString(RST_STREAM_INTERNAL_ERROR));
-  EXPECT_STREQ("FLOW_CONTROL_ERROR",
-               SpdyFramer::StatusCodeToString(RST_STREAM_FLOW_CONTROL_ERROR));
-  EXPECT_STREQ("SETTINGS_TIMEOUT",
-               SpdyFramer::StatusCodeToString(RST_STREAM_SETTINGS_TIMEOUT));
-  EXPECT_STREQ("STREAM_CLOSED",
-               SpdyFramer::StatusCodeToString(RST_STREAM_STREAM_CLOSED));
-  EXPECT_STREQ("FRAME_SIZE_ERROR",
-               SpdyFramer::StatusCodeToString(RST_STREAM_FRAME_SIZE_ERROR));
-  EXPECT_STREQ("REFUSED_STREAM",
-               SpdyFramer::StatusCodeToString(RST_STREAM_REFUSED_STREAM));
-  EXPECT_STREQ("CANCEL", SpdyFramer::StatusCodeToString(RST_STREAM_CANCEL));
-  EXPECT_STREQ("COMPRESSION_ERROR",
-               SpdyFramer::StatusCodeToString(RST_STREAM_COMPRESSION_ERROR));
-  EXPECT_STREQ("CONNECT_ERROR",
-               SpdyFramer::StatusCodeToString(RST_STREAM_CONNECT_ERROR));
-  EXPECT_STREQ("ENHANCE_YOUR_CALM",
-               SpdyFramer::StatusCodeToString(RST_STREAM_ENHANCE_YOUR_CALM));
-  EXPECT_STREQ("INADEQUATE_SECURITY",
-               SpdyFramer::StatusCodeToString(RST_STREAM_INADEQUATE_SECURITY));
-  EXPECT_STREQ("HTTP_1_1_REQUIRED",
-               SpdyFramer::StatusCodeToString(RST_STREAM_HTTP_1_1_REQUIRED));
-}
-
-TEST_P(SpdyFramerTest, FrameTypeToStringTest) {
-  EXPECT_STREQ("DATA", SpdyFramer::FrameTypeToString(DATA));
-  EXPECT_STREQ("RST_STREAM", SpdyFramer::FrameTypeToString(RST_STREAM));
-  EXPECT_STREQ("SETTINGS", SpdyFramer::FrameTypeToString(SETTINGS));
-  EXPECT_STREQ("PING", SpdyFramer::FrameTypeToString(PING));
-  EXPECT_STREQ("GOAWAY", SpdyFramer::FrameTypeToString(GOAWAY));
-  EXPECT_STREQ("HEADERS", SpdyFramer::FrameTypeToString(HEADERS));
-  EXPECT_STREQ("WINDOW_UPDATE", SpdyFramer::FrameTypeToString(WINDOW_UPDATE));
-  EXPECT_STREQ("PUSH_PROMISE", SpdyFramer::FrameTypeToString(PUSH_PROMISE));
-  EXPECT_STREQ("CONTINUATION", SpdyFramer::FrameTypeToString(CONTINUATION));
-}
-
 TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
   uint8_t valid_data_flags = DATA_FLAG_FIN | DATA_FLAG_PADDED;
 

@@ -87,6 +87,36 @@ bool IsValidHTTP2FrameStreamId(SpdyStreamId current_frame_stream_id,
   }
 }
 
+const char* FrameTypeToString(SpdyFrameType frame_type) {
+  switch (frame_type) {
+    case DATA:
+      return "DATA";
+    case RST_STREAM:
+      return "RST_STREAM";
+    case SETTINGS:
+      return "SETTINGS";
+    case PING:
+      return "PING";
+    case GOAWAY:
+      return "GOAWAY";
+    case HEADERS:
+      return "HEADERS";
+    case WINDOW_UPDATE:
+      return "WINDOW_UPDATE";
+    case PUSH_PROMISE:
+      return "PUSH_PROMISE";
+    case CONTINUATION:
+      return "CONTINUATION";
+    case PRIORITY:
+      return "PRIORITY";
+    case ALTSVC:
+      return "ALTSVC";
+    case BLOCKED:
+      return "BLOCKED";
+  }
+  return "UNKNOWN_FRAME_TYPE";
+}
+
 bool ParseSettingsId(int wire_setting_id, SpdySettingsIds* setting_id) {
   // HEADER_TABLE_SIZE is the first defined setting id.
   if (wire_setting_id < SETTINGS_MIN) {
@@ -143,6 +173,40 @@ SpdyGoAwayStatus ParseGoAwayStatus(int goaway_status_field) {
   }
 
   return static_cast<SpdyGoAwayStatus>(goaway_status_field);
+}
+
+const char* ErrorCodeToString(uint32_t error_code) {
+  switch (error_code) {
+    case RST_STREAM_NO_ERROR:
+      return "NO_ERROR";
+    case RST_STREAM_PROTOCOL_ERROR:
+      return "PROTOCOL_ERROR";
+    case RST_STREAM_INTERNAL_ERROR:
+      return "INTERNAL_ERROR";
+    case RST_STREAM_FLOW_CONTROL_ERROR:
+      return "FLOW_CONTROL_ERROR";
+    case RST_STREAM_SETTINGS_TIMEOUT:
+      return "SETTINGS_TIMEOUT";
+    case RST_STREAM_STREAM_CLOSED:
+      return "STREAM_CLOSED";
+    case RST_STREAM_FRAME_SIZE_ERROR:
+      return "FRAME_SIZE_ERROR";
+    case RST_STREAM_REFUSED_STREAM:
+      return "REFUSED_STREAM";
+    case RST_STREAM_CANCEL:
+      return "CANCEL";
+    case RST_STREAM_COMPRESSION_ERROR:
+      return "COMPRESSION_ERROR";
+    case RST_STREAM_CONNECT_ERROR:
+      return "CONNECT_ERROR";
+    case RST_STREAM_ENHANCE_YOUR_CALM:
+      return "ENHANCE_YOUR_CALM";
+    case RST_STREAM_INADEQUATE_SECURITY:
+      return "INADEQUATE_SECURITY";
+    case RST_STREAM_HTTP_1_1_REQUIRED:
+      return "HTTP_1_1_REQUIRED";
+  }
+  return "UNKNOWN_ERROR_CODE";
 }
 
 const char* const kHttp2Npn = "h2";
