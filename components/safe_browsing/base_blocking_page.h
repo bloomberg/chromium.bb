@@ -35,7 +35,7 @@ class BaseBlockingPage
   ~BaseBlockingPage() override;
 
   static const SafeBrowsingErrorUI::SBErrorDisplayOptions
-  CreateDefaultDisplayOptions(const UnsafeResourceList& unsafe_resources);
+  CreateDefaultDisplayOptions();
 
   // Shows a blocking page warning the user about phishing/malware for a
   // specific resource.

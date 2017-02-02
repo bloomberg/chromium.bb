@@ -62,10 +62,9 @@ BaseBlockingPage::~BaseBlockingPage() {}
 
 // static
 const SafeBrowsingErrorUI::SBErrorDisplayOptions
-BaseBlockingPage::CreateDefaultDisplayOptions(
-    const UnsafeResourceList& unsafe_resources) {
+BaseBlockingPage::CreateDefaultDisplayOptions() {
   return SafeBrowsingErrorUI::SBErrorDisplayOptions(
-      IsMainPageLoadBlocked(unsafe_resources),
+      true,    // IsMainPageLoadBlocked()
       false,   // kSafeBrowsingExtendedReportingOptInAllowed
       false,   // is_off_the_record
       false,   // is_extended_reporting
@@ -97,7 +96,7 @@ void BaseBlockingPage::ShowBlockingPage(
                 ui_manager->history_service(web_contents),
                 ui_manager->app_locale(),
                 ui_manager->default_safe_page()),
-                CreateDefaultDisplayOptions(resources));
+                CreateDefaultDisplayOptions());
     blocking_page->Show();
     return;
   }

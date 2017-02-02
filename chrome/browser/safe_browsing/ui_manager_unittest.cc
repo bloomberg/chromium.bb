@@ -12,6 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/security_interstitials/core/safe_browsing_error_ui.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -343,7 +344,13 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
             web_contents,
             main_frame_url,
             unsafe_resources,
-            BaseBlockingPage::CreateDefaultDisplayOptions(unsafe_resources)) {
+            SafeBrowsingErrorUI::SBErrorDisplayOptions(
+                BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
+                false,
+                false,
+                false,
+                false,
+                false)) {
     // Don't delay details at all for the unittest.
     threat_details_proceed_delay_ms_ = 0;
     DontCreateViewForTesting();
