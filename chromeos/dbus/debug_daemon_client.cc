@@ -498,7 +498,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     writer.AppendString(uri);
-    writer.AppendString(ppd_contents);
+    writer.AppendArrayOfBytes(
+        reinterpret_cast<const uint8_t*>(ppd_contents.data()),
+        ppd_contents.size());
 
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
