@@ -87,7 +87,7 @@ static const struct VideoQualityTestConfig {
 // FileVideoCaptureDevice and its sibling with kYuvFileExtension is used for
 // comparison.
 //
-// You must also compile the chromium_builder_webrtc target before you run this
+// You must also compile the frame_analyzer target before you run this
 // test to get all the tools built.
 //
 // The external compare_videos.py script also depends on two external
@@ -198,7 +198,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     if (!base::PathExists(path_to_analyzer)) {
       LOG(ERROR) << "Missing frame analyzer: should be in "
           << path_to_analyzer.value()
-          << ". Try building the chromium_builder_webrtc target.";
+          << ". Try building the frame_analyzer target.";
       return false;
     }
     if (!base::PathExists(path_to_compare_script)) {
