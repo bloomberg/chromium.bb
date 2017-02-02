@@ -122,7 +122,7 @@ static String initiatorFor(const StringImpl* tagImpl) {
   if (match(tagImpl, videoTag))
     return videoTag.localName();
   NOTREACHED();
-  return emptyString();
+  return emptyString;
 }
 
 static bool mediaAttributeMatches(const MediaValuesCached& mediaValues,
@@ -443,7 +443,7 @@ class TokenPreloadScanner::StartTagScanner {
     // FIXME: Its not clear that this if is needed, the loader probably ignores
     // charset for image requests anyway.
     if (match(m_tagImpl, imgTag) || match(m_tagImpl, videoTag))
-      return emptyString();
+      return emptyString;
     return m_charset;
   }
 

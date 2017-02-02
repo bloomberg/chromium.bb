@@ -286,7 +286,7 @@ TEST(StringBuilderTest, ToAtomicStringOnEmpty) {
   }
   {  // AtomicString constructed from an empty string.
     StringBuilder builder;
-    builder.append(emptyString());
+    builder.append(emptyString);
     AtomicString atomicString = builder.toAtomicString();
     EXPECT_EQ(emptyAtom, atomicString);
   }
@@ -316,7 +316,7 @@ TEST(StringBuilderTest, Substring) {
   {  // Default constructed.
     StringBuilder builder;
     String substring = builder.substring(0, 10);
-    EXPECT_EQ(emptyString(), substring);
+    EXPECT_EQ(emptyString, substring);
   }
   {  // With capacity.
     StringBuilder builder;

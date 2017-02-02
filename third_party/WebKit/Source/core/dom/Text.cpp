@@ -85,7 +85,7 @@ Node* Text::mergeNextSiblingNodesIfPossible() {
     document().didMergeTextNodes(*this, *nextText, offset);
 
     // Empty nextText for layout update.
-    nextText->setDataWithoutUpdate(emptyString());
+    nextText->setDataWithoutUpdate(emptyString);
     nextText->updateTextLayoutObject(0, nextTextData.length());
 
     // Restore nextText for mutation event.

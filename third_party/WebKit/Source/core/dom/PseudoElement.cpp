@@ -77,7 +77,7 @@ String PseudoElement::pseudoElementNameForEvents(PseudoId pseudoId) {
     case PseudoIdBefore:
       return before;
     default:
-      return emptyString();
+      return emptyString;
   }
 }
 

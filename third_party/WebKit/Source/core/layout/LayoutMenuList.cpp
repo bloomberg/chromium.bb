@@ -186,7 +186,7 @@ void LayoutMenuList::updateOptionsWidth() const {
 void LayoutMenuList::updateFromElement() {
   HTMLSelectElement* select = selectElement();
   HTMLOptionElement* option = select->optionToBeShown();
-  String text = emptyString();
+  String text = emptyString;
   m_optionStyle.clear();
 
   if (select->isMultiple()) {

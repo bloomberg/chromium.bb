@@ -79,7 +79,7 @@ Node::InsertionNotificationRequest TextControlElement::insertedInto(
   if (!insertionPoint->isConnected())
     return InsertionDone;
   String initialValue = value();
-  setTextAsOfLastFormControlChangeEvent(initialValue.isNull() ? emptyString()
+  setTextAsOfLastFormControlChangeEvent(initialValue.isNull() ? emptyString
                                                               : initialValue);
   return InsertionDone;
 }
@@ -773,7 +773,7 @@ String TextControlElement::innerEditorValue() const {
   DCHECK(!openShadowRoot());
   HTMLElement* innerEditor = innerEditorElement();
   if (!innerEditor || !isTextControl())
-    return emptyString();
+    return emptyString;
 
   StringBuilder result;
   for (Node& node : NodeTraversal::inclusiveDescendantsOf(*innerEditor)) {

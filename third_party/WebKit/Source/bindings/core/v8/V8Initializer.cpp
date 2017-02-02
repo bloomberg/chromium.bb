@@ -116,7 +116,7 @@ static String extractMessageForConsole(v8::Isolate* isolate,
         return exception->toStringForConsole();
     }
   }
-  return emptyString();
+  return emptyString;
 }
 
 namespace {

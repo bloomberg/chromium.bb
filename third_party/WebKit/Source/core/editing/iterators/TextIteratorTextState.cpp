@@ -63,7 +63,7 @@ String TextIteratorTextState::substring(unsigned position,
   SECURITY_DCHECK(position <= static_cast<unsigned>(this->length()));
   SECURITY_DCHECK(position + length <= static_cast<unsigned>(this->length()));
   if (!length)
-    return emptyString();
+    return emptyString;
   if (m_singleCharacterBuffer) {
     DCHECK_EQ(position, 0u);
     DCHECK_EQ(length, 1u);

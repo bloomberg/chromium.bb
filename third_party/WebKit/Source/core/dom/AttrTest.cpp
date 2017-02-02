@@ -34,8 +34,8 @@ Attr* AttrTest::createAttribute() {
 TEST_F(AttrTest, InitialValueState) {
   Attr* attr = createAttribute();
   EXPECT_EQ(emptyAtom, attr->value());
-  EXPECT_EQ(emptyString(), attr->toNode()->nodeValue());
-  EXPECT_EQ(emptyString(), attr->textContent());
+  EXPECT_EQ(emptyString, attr->toNode()->nodeValue());
+  EXPECT_EQ(emptyString, attr->textContent());
 }
 
 TEST_F(AttrTest, SetValue) {

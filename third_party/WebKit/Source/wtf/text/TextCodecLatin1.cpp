@@ -112,7 +112,7 @@ String TextCodecLatin1::decode(const char* bytes,
                                bool&) {
   LChar* characters;
   if (!length)
-    return emptyString();
+    return emptyString;
   String result = String::createUninitialized(length, characters);
 
   const uint8_t* source = reinterpret_cast<const uint8_t*>(bytes);

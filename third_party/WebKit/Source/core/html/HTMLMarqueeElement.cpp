@@ -304,7 +304,7 @@ void HTMLMarqueeElement::continueAnimation() {
   KeyframeEffect* keyframeEffect =
       KeyframeEffect::create(m_mover, effectModel, timing);
   Animation* player = m_mover->document().timeline().play(keyframeEffect);
-  player->setId(emptyString());
+  player->setId(emptyString);
   player->setOnfinish(new AnimationFinished(this));
 
   m_player = player;

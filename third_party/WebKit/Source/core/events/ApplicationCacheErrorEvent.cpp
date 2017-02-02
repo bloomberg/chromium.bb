@@ -36,7 +36,7 @@ static const String& errorReasonToString(
       return errorUnknown;
   }
   NOTREACHED();
-  return emptyString();
+  return emptyString;
 }
 
 ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(

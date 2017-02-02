@@ -801,7 +801,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
             nullAtom, toCSSCustomIdentValue(functionValue->item(0)).value(),
             nullAtom);
         const AtomicString& value = state.element()->getAttribute(attr);
-        string = value.isNull() ? emptyString() : value.getString();
+        string = value.isNull() ? emptyString : value.getString();
       } else {
         string = toCSSStringValue(*item).value();
       }

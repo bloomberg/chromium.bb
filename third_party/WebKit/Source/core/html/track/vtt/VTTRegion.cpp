@@ -84,7 +84,7 @@ static bool isNonPercentage(double value,
 }
 
 VTTRegion::VTTRegion()
-    : m_id(emptyString()),
+    : m_id(emptyString),
       m_width(defaultWidth),
       m_heightInLines(defaultHeightInLines),
       m_regionAnchor(FloatPoint(defaultAnchorPointX, defaultAnchorPointY)),
@@ -165,7 +165,7 @@ void VTTRegion::setScroll(const AtomicString& value,
                           ExceptionState& exceptionState) {
   DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up"));
 
-  if (value != emptyString() && value != upScrollValueKeyword) {
+  if (value != emptyString && value != upScrollValueKeyword) {
     exceptionState.throwDOMException(
         SyntaxError, "The value provided ('" + value +
                          "') is invalid. The 'scroll' property must be either "

@@ -600,7 +600,7 @@ String PositionTemplate<Strategy>::toAnchorTypeAndOffsetString() const {
       return "afterAnchor";
   }
   NOTREACHED();
-  return emptyString();
+  return emptyString;
 }
 
 #ifndef NDEBUG

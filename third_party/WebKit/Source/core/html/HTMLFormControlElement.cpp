@@ -84,7 +84,7 @@ void HTMLFormControlElement::setFormAction(const AtomicString& value) {
 String HTMLFormControlElement::formEnctype() const {
   const AtomicString& formEnctypeAttr = fastGetAttribute(formenctypeAttr);
   if (formEnctypeAttr.isNull())
-    return emptyString();
+    return emptyString;
   return FormSubmission::Attributes::parseEncodingType(formEnctypeAttr);
 }
 
@@ -95,7 +95,7 @@ void HTMLFormControlElement::setFormEnctype(const AtomicString& value) {
 String HTMLFormControlElement::formMethod() const {
   const AtomicString& formMethodAttr = fastGetAttribute(formmethodAttr);
   if (formMethodAttr.isNull())
-    return emptyString();
+    return emptyString;
   return FormSubmission::Attributes::methodString(
       FormSubmission::Attributes::parseMethodType(formMethodAttr));
 }

@@ -41,7 +41,7 @@ void CharacterData::atomize() {
 }
 
 void CharacterData::setData(const String& data) {
-  const String& nonNullData = !data.isNull() ? data : emptyString();
+  const String& nonNullData = !data.isNull() ? data : emptyString;
   if (m_data == nonNullData)
     return;
 

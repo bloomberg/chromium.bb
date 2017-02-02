@@ -312,7 +312,7 @@ bool V8ScriptValueSerializer::writeFile(File* file,
                                   file->type(), lastModified, size);
     writeUint32(static_cast<uint32_t>(index));
   } else {
-    writeUTF8String(file->hasBackingFile() ? file->path() : emptyString());
+    writeUTF8String(file->hasBackingFile() ? file->path() : emptyString);
     writeUTF8String(file->name());
     writeUTF8String(file->webkitRelativePath());
     writeUTF8String(file->uuid());

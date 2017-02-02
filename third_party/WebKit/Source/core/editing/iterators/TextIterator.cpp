@@ -1412,7 +1412,7 @@ template <typename Strategy>
 static String createPlainText(const EphemeralRangeTemplate<Strategy>& range,
                               const TextIteratorBehavior& behavior) {
   if (range.isNull())
-    return emptyString();
+    return emptyString;
 
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       range.startPosition().document()->lifecycle());
@@ -1421,7 +1421,7 @@ static String createPlainText(const EphemeralRangeTemplate<Strategy>& range,
                                      behavior);
 
   if (it.atEnd())
-    return emptyString();
+    return emptyString;
 
   // The initial buffer size can be critical for performance:
   // https://bugs.webkit.org/show_bug.cgi?id=81192
@@ -1434,7 +1434,7 @@ static String createPlainText(const EphemeralRangeTemplate<Strategy>& range,
     it.text().appendTextToStringBuilder(builder);
 
   if (builder.isEmpty())
-    return emptyString();
+    return emptyString;
 
   return builder.toString();
 }

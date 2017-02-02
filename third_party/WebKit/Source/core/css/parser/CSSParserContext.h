@@ -45,7 +45,7 @@ class CORE_EXPORT CSSParserContext
   static CSSParserContext* create(const Document&, UseCounter*);
   static CSSParserContext* create(const Document&,
                                   const KURL& baseURLOverride = KURL(),
-                                  const String& charset = emptyString(),
+                                  const String& charset = emptyString,
                                   SelectorProfile = DynamicProfile,
                                   UseCounter* = nullptr);
 

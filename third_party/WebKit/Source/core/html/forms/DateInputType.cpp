@@ -100,7 +100,7 @@ String DateInputType::formatDateTimeFieldsState(
     const DateTimeFieldsState& dateTimeFieldsState) const {
   if (!dateTimeFieldsState.hasDayOfMonth() || !dateTimeFieldsState.hasMonth() ||
       !dateTimeFieldsState.hasYear())
-    return emptyString();
+    return emptyString;
 
   return String::format("%04u-%02u-%02u", dateTimeFieldsState.year(),
                         dateTimeFieldsState.month(),

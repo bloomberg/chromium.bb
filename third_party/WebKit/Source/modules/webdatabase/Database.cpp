@@ -460,7 +460,7 @@ bool Database::performOpenAndVerify(bool shouldSetVersionInNewDatabase,
     if (entry != guidToVersionMap().end()) {
       // Map null string to empty string (see updateGuidVersionMap()).
       currentVersion =
-          entry->value.isNull() ? emptyString() : entry->value.isolatedCopy();
+          entry->value.isNull() ? emptyString : entry->value.isolatedCopy();
       STORAGE_DVLOG(1) << "Current cached version for guid " << m_guid << " is "
                        << currentVersion;
 

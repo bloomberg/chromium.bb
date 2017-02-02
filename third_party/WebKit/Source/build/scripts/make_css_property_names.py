@@ -156,7 +156,7 @@ String getJSPropertyName(CSSPropertyID id)
     const char* cssPropertyName = getPropertyName(id);
     const char* propertyNamePointer = cssPropertyName;
     if (!propertyNamePointer)
-        return emptyString();
+        return emptyString;
 
     char* resultPointer = result;
     while (char character = *propertyNamePointer++) {

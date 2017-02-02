@@ -81,11 +81,11 @@ String findMagicComment(const String& content, const String& name) {
   while (true) {
     pos = content.reverseFind(name, pos);
     if (pos == kNotFound)
-      return emptyString();
+      return emptyString;
 
     // Check for a /\/[\/*][@#][ \t]/ regexp (length of 4) before found name.
     if (pos < 4)
-      return emptyString();
+      return emptyString;
     pos -= 4;
     if (content[pos] != '/')
       continue;
@@ -102,7 +102,7 @@ String findMagicComment(const String& content, const String& name) {
     if (multiline) {
       closingCommentPos = content.find("*/", equalSignPos + 1);
       if (closingCommentPos == kNotFound)
-        return emptyString();
+        return emptyString;
     }
 
     break;
@@ -123,7 +123,7 @@ String findMagicComment(const String& content, const String& name) {
   String disallowedChars("\"' \t");
   for (unsigned i = 0; i < match.length(); ++i) {
     if (disallowedChars.find(match[i]) != kNotFound)
-      return emptyString();
+      return emptyString;
   }
 
   return match;
@@ -985,7 +985,7 @@ DEFINE_TRACE(InspectorStyleSheet) {
 static String styleSheetURL(CSSStyleSheet* pageStyleSheet) {
   if (pageStyleSheet && !pageStyleSheet->contents()->baseURL().isEmpty())
     return pageStyleSheet->contents()->baseURL().getString();
-  return emptyString();
+  return emptyString;
 }
 
 String InspectorStyleSheet::finalURL() {

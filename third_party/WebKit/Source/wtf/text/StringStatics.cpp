@@ -46,6 +46,9 @@ WTF_EXPORT DEFINE_GLOBAL(AtomicString, httpsAtom);
 // table.
 WTF_EXPORT DEFINE_GLOBAL(String, xmlnsWithColon);
 
+WTF_EXPORT DEFINE_GLOBAL(String, emptyString);
+WTF_EXPORT DEFINE_GLOBAL(String, emptyString16Bit);
+
 NEVER_INLINE unsigned StringImpl::hashSlowCase() const {
   if (is8Bit())
     setHash(StringHasher::computeHashAndMaskTop8Bits(characters8(), m_length));
@@ -74,6 +77,8 @@ void StringStatics::init() {
   DCHECK(isMainThread());
 
   StringImpl::initStatics();
+  new (NotNull, (void*)&emptyString) String(StringImpl::empty);
+  new (NotNull, (void*)&emptyString16Bit) String(StringImpl::empty16Bit);
 
   // FIXME: These should be allocated at compile time.
   new (NotNull, (void*)&starAtom) AtomicString("*");

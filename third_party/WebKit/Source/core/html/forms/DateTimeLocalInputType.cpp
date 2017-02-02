@@ -129,7 +129,7 @@ String DateTimeLocalInputType::formatDateTimeFieldsState(
   if (!dateTimeFieldsState.hasDayOfMonth() || !dateTimeFieldsState.hasMonth() ||
       !dateTimeFieldsState.hasYear() || !dateTimeFieldsState.hasHour() ||
       !dateTimeFieldsState.hasMinute() || !dateTimeFieldsState.hasAMPM())
-    return emptyString();
+    return emptyString;
 
   if (dateTimeFieldsState.hasMillisecond() &&
       dateTimeFieldsState.millisecond()) {

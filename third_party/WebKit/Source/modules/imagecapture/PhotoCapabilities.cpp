@@ -21,7 +21,7 @@ String meteringModeToString(media::mojom::blink::MeteringMode mode) {
     default:
       NOTREACHED();
   }
-  return emptyString();
+  return emptyString;
 }
 
 }  // anonymous namespace
@@ -58,7 +58,7 @@ String PhotoCapabilities::fillLightMode() const {
     default:
       NOTREACHED();
   }
-  return emptyString();
+  return emptyString;
 }
 
 DEFINE_TRACE(PhotoCapabilities) {

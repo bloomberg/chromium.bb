@@ -56,7 +56,7 @@ class KeyboardTest : public testing::Test {
   WebKeyboardEvent createFakeKeyboardEvent(char keyCode,
                                            int modifiers,
                                            WebInputEvent::Type type,
-                                           const String& key = emptyString()) {
+                                           const String& key = emptyString) {
     WebKeyboardEvent event(type, modifiers, WebInputEvent::TimeStampForTesting);
     event.text[0] = keyCode;
     event.windowsKeyCode = keyCode;

@@ -566,8 +566,8 @@ struct DefaultHash<String> {
 };
 
 // Shared global empty string.
-WTF_EXPORT const String& emptyString();
-WTF_EXPORT const String& emptyString16Bit();
+WTF_EXPORT extern const String& emptyString;
+WTF_EXPORT extern const String& emptyString16Bit;
 WTF_EXPORT extern const String& xmlnsWithColon;
 
 // Pretty printer for gtest and base/logging.*.  It prepends and appends

@@ -52,7 +52,7 @@ String SVGEnumerationBase::valueAsString() const {
   }
 
   ASSERT(m_value < maxInternalEnumValue());
-  return emptyString();
+  return emptyString;
 }
 
 void SVGEnumerationBase::setValue(unsigned short value) {

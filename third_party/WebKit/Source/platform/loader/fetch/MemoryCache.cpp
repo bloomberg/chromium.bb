@@ -117,7 +117,7 @@ KURL MemoryCache::removeFragmentIdentifierIfNeeded(const KURL& originalURL) {
 }
 
 String MemoryCache::defaultCacheIdentifier() {
-  return emptyString();
+  return emptyString;
 }
 
 MemoryCache::ResourceMap* MemoryCache::ensureResourceMap(

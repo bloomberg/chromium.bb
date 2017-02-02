@@ -434,7 +434,7 @@ String TextResourceDecoder::decode(const char* data, size_t len) {
     if (!m_checkedForBOM) {
       DCHECK_EQ(0u, lengthOfBOM);
       m_buffer.append(data, len);
-      return emptyString();
+      return emptyString;
     }
   }
   DCHECK_LE(lengthOfBOM, m_buffer.size() + len);
@@ -443,7 +443,7 @@ String TextResourceDecoder::decode(const char* data, size_t len) {
 
   if (m_contentType == CSSContent && !m_checkedForCSSCharset) {
     if (!checkForCSSCharset(data, len, movedDataToBuffer))
-      return emptyString();
+      return emptyString;
   }
 
   // We check XML declaration in HTML content only if there is enough data
@@ -452,7 +452,7 @@ String TextResourceDecoder::decode(const char* data, size_t len) {
        m_contentType == XMLContent) &&
       !m_checkedForXMLCharset) {
     if (!checkForXMLCharset(data, len, movedDataToBuffer))
-      return emptyString();
+      return emptyString;
   }
 
   const char* dataForDecode = data + lengthOfBOM;

@@ -138,7 +138,7 @@ void MonthInputType::warnIfValueIsInvalid(const String& value) const {
 String MonthInputType::formatDateTimeFieldsState(
     const DateTimeFieldsState& dateTimeFieldsState) const {
   if (!dateTimeFieldsState.hasMonth() || !dateTimeFieldsState.hasYear())
-    return emptyString();
+    return emptyString;
   return String::format("%04u-%02u", dateTimeFieldsState.year(),
                         dateTimeFieldsState.month());
 }

@@ -69,7 +69,7 @@ class GLStringQuery {
     GLint length = 0;
     Traits::LengthFunction(m_gl, id, &length);
     if (!length)
-      return WTF::emptyString();
+      return WTF::emptyString;
     LChar* logPtr;
     RefPtr<WTF::StringImpl> nameImpl =
         WTF::StringImpl::createUninitialized(length, logPtr);

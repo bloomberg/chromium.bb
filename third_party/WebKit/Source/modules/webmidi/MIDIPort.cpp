@@ -69,7 +69,7 @@ String MIDIPort::connection() const {
     case ConnectionStatePending:
       return "pending";
   }
-  return emptyString();
+  return emptyString;
 }
 
 String MIDIPort::state() const {
@@ -82,7 +82,7 @@ String MIDIPort::state() const {
       NOTREACHED();
       return "connected";
   }
-  return emptyString();
+  return emptyString;
 }
 
 String MIDIPort::type() const {
@@ -92,7 +92,7 @@ String MIDIPort::type() const {
     case TypeOutput:
       return "output";
   }
-  return emptyString();
+  return emptyString;
 }
 
 ScriptPromise MIDIPort::open(ScriptState* scriptState) {

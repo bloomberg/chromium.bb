@@ -42,7 +42,7 @@ IconURL IconURL::defaultFavicon(const KURL& documentURL) {
     url.setPort(documentURL.port());
   url.setPath("/favicon.ico");
 
-  IconURL result(url, Vector<IntSize>(), emptyString(), Favicon);
+  IconURL result(url, Vector<IntSize>(), emptyString, Favicon);
   result.m_isDefaultIcon = true;
   return result;
 }

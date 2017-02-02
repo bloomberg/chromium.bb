@@ -130,7 +130,7 @@ String Deprecation::deprecationMessage(CSSPropertyID unresolvedProperty) {
                                    "6390764217040896");
 
     default:
-      return emptyString();
+      return emptyString;
   }
 }
 

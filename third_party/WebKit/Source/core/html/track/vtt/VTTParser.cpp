@@ -385,7 +385,7 @@ void VTTParser::createNewCue() {
 
 void VTTParser::resetCueValues() {
   m_currentId = emptyAtom;
-  m_currentSettings = emptyString();
+  m_currentSettings = emptyString;
   m_currentStartTime = 0;
   m_currentEndTime = 0;
   m_currentContent.clear();

@@ -55,7 +55,7 @@ void V8XMLHttpRequest::responseTextAttributeGetterCustom(
                                 "responseText");
   ScriptString text = xmlHttpRequest->responseText(exceptionState);
   if (text.isEmpty()) {
-    v8SetReturnValueString(info, emptyString(), info.GetIsolate());
+    v8SetReturnValueString(info, emptyString, info.GetIsolate());
     return;
   }
   v8SetReturnValue(info, text.v8Value());

@@ -846,7 +846,7 @@ void DateTimeEditElement::updateUIState() {
 
 String DateTimeEditElement::value() const {
   if (!m_editControlOwner)
-    return emptyString();
+    return emptyString;
   return m_editControlOwner->formatDateTimeFieldsState(
       valueAsDateTimeFieldsState());
 }

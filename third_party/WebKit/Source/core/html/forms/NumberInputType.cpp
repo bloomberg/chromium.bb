@@ -238,7 +238,7 @@ String NumberInputType::sanitizeValue(const String& proposedValue) const {
     return proposedValue;
   return std::isfinite(parseToDoubleForNumberType(proposedValue))
              ? proposedValue
-             : emptyString();
+             : emptyString;
 }
 
 void NumberInputType::warnIfValueIsInvalid(const String& value) const {

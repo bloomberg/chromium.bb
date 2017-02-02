@@ -22,7 +22,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
       "<body><style>span::before { content: 'X' }</style><span></span></body>");
 
   CSSSelectorList selectorList = CSSParser::parseSelector(
-      CSSParserContext::create(*document, KURL(), emptyString(),
+      CSSParserContext::create(*document, KURL(), emptyString,
                                CSSParserContext::StaticProfile),
       nullptr, "span::before");
   std::unique_ptr<SelectorQuery> query =
@@ -31,7 +31,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   EXPECT_EQ(nullptr, elm);
 
   selectorList = CSSParser::parseSelector(
-      CSSParserContext::create(*document, KURL(), emptyString(),
+      CSSParserContext::create(*document, KURL(), emptyString,
                                CSSParserContext::StaticProfile),
       nullptr, "span");
   query = SelectorQuery::adopt(std::move(selectorList));
@@ -49,7 +49,7 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
   document->body()->beginParsingChildren();
 
   CSSSelectorList selectorList = CSSParser::parseSelector(
-      CSSParserContext::create(*document, KURL(), emptyString(),
+      CSSParserContext::create(*document, KURL(), emptyString,
                                CSSParserContext::StaticProfile),
       nullptr, "p:last-of-type");
   std::unique_ptr<SelectorQuery> query =

@@ -100,7 +100,7 @@ static const String& rightKeyword() {
 }
 
 static const String& horizontalKeyword() {
-  return emptyString();
+  return emptyString;
 }
 
 static const String& verticalGrowingLeftKeyword() {
@@ -273,7 +273,7 @@ const String& VTTCue::vertical() const {
       return verticalGrowingRightKeyword();
     default:
       NOTREACHED();
-      return emptyString();
+      return emptyString;
   }
 }
 
@@ -406,7 +406,7 @@ const String& VTTCue::align() const {
       return rightKeyword();
     default:
       NOTREACHED();
-      return emptyString();
+      return emptyString;
   }
 }
 
@@ -1103,7 +1103,7 @@ void VTTCue::parseSettings(const String& inputString) {
     return;
 
   if (!lineIsAuto() || m_cueSize != 100 || m_writingDirection != Horizontal)
-    m_regionId = emptyString();
+    m_regionId = emptyString;
 }
 
 void VTTCue::applyUserOverrideCSSProperties() {

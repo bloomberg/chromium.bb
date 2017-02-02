@@ -41,7 +41,7 @@ CSSParserContext* CSSParserContext::create(const CSSParserContext* other,
 CSSParserContext* CSSParserContext::create(CSSParserMode mode,
                                            SelectorProfile profile,
                                            UseCounter* useCounter) {
-  return new CSSParserContext(KURL(), emptyString(), mode, mode, profile,
+  return new CSSParserContext(KURL(), emptyString, mode, mode, profile,
                               Referrer(), false, false,
                               DoNotCheckContentSecurityPolicy, useCounter);
 }
@@ -49,8 +49,8 @@ CSSParserContext* CSSParserContext::create(CSSParserMode mode,
 // static
 CSSParserContext* CSSParserContext::create(const Document& document,
                                            UseCounter* useCounter) {
-  return CSSParserContext::create(document, KURL(), emptyString(),
-                                  DynamicProfile, useCounter);
+  return CSSParserContext::create(document, KURL(), emptyString, DynamicProfile,
+                                  useCounter);
 }
 
 // static

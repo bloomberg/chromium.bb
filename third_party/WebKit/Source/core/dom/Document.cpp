@@ -677,7 +677,7 @@ String getTypeExtension(Document* document,
                         const StringOrDictionary& stringOrOptions,
                         ExceptionState& exceptionState) {
   if (stringOrOptions.isNull())
-    return emptyString();
+    return emptyString;
 
   if (stringOrOptions.isString()) {
     UseCounter::count(document,
@@ -696,7 +696,7 @@ String getTypeExtension(Document* document,
     return toCoreString(dict.v8Value()->ToString());
   }
 
-  return emptyString();
+  return emptyString;
 }
 
 // https://dom.spec.whatwg.org/#dom-document-createelement
@@ -5386,7 +5386,7 @@ void Document::initSecurityContext(const DocumentInit& initializer) {
   if (!initializer.hasSecurityContext()) {
     // No source for a security context.
     // This can occur via document.implementation.createDocument().
-    m_cookieURL = KURL(ParsedURLString, emptyString());
+    m_cookieURL = KURL(ParsedURLString, emptyString);
     setSecurityOrigin(SecurityOrigin::createUnique());
     initContentSecurityPolicy();
     // Unique security origins cannot have a suborigin

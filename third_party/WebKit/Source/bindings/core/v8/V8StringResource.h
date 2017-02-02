@@ -280,7 +280,7 @@ inline bool V8StringResource<TreatNullAsEmptyString>::isValid() const {
 
 template <>
 inline String V8StringResource<TreatNullAsEmptyString>::fallbackString() const {
-  return emptyString();
+  return emptyString;
 }
 
 template <>

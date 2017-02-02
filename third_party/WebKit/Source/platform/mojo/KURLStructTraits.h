@@ -17,7 +17,7 @@ struct StructTraits<url::mojom::blink::Url::DataView, ::blink::KURL> {
   static WTF::String url(const ::blink::KURL& blinkUrl) {
     if (!blinkUrl.isValid() ||
         blinkUrl.getString().length() > url::kMaxURLChars) {
-      return emptyString();
+      return emptyString;
     }
 
     return blinkUrl.getString();

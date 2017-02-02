@@ -49,7 +49,7 @@ String EntryBase::toURL() const {
 
   // Some filesystem type may not support toURL.
   if (!m_fileSystem->supportsToURL())
-    m_cachedURL = emptyString();
+    m_cachedURL = emptyString;
   else
     m_cachedURL = m_fileSystem->createFileSystemURL(this).getString();
   return m_cachedURL;

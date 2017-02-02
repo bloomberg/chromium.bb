@@ -194,9 +194,9 @@ TEST(HTTPParsersTest, ExtractMIMETypeFromMediaType) {
   EXPECT_EQ("tExt/hTMl",
             extractMIMETypeFromMediaType(AtomicString("tExt/hTMl")));
 
-  EXPECT_EQ(emptyString(),
+  EXPECT_EQ(emptyString,
             extractMIMETypeFromMediaType(AtomicString(", text/html")));
-  EXPECT_EQ(emptyString(),
+  EXPECT_EQ(emptyString,
             extractMIMETypeFromMediaType(AtomicString("; text/html")));
 
   // If no normalization is required, the same AtomicString should be returned.

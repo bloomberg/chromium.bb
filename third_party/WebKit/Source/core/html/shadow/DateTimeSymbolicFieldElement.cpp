@@ -141,7 +141,7 @@ void DateTimeSymbolicFieldElement::stepUp() {
 }
 
 String DateTimeSymbolicFieldElement::value() const {
-  return hasValue() ? m_symbols[m_selectedIndex] : emptyString();
+  return hasValue() ? m_symbols[m_selectedIndex] : emptyString;
 }
 
 int DateTimeSymbolicFieldElement::valueAsInteger() const {

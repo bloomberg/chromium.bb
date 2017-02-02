@@ -947,12 +947,12 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
   underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
   editable->focus();
 
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   controller().setComposition("foo", underlines, 0, 3);
   EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;",
                document().title().utf8().data());
 
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   controller().finishComposingText(InputMethodController::KeepSelection);
   // Last pair of InputEvent should also be inside composition scope.
   EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;",
@@ -966,13 +966,13 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForReplace) {
   Vector<CompositionUnderline> underlines;
   underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   controller().setComposition("hell", underlines, 4, 4);
   EXPECT_STREQ("beforeinput.data:hell;input.data:hell;",
                document().title().utf8().data());
 
   // Replace the existing composition.
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   controller().setComposition("hello", underlines, 0, 0);
   EXPECT_STREQ("beforeinput.data:hello;input.data:hello;",
                document().title().utf8().data());
@@ -985,13 +985,13 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForConfirm) {
   Vector<CompositionUnderline> underlines;
   underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   controller().setComposition("hello", underlines, 5, 5);
   EXPECT_STREQ("beforeinput.data:hello;input.data:hello;",
                document().title().utf8().data());
 
   // Confirm the ongoing composition.
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   controller().finishComposingText(InputMethodController::KeepSelection);
   EXPECT_STREQ(
       "beforeinput.data:hello;input.data:hello;compositionend.data:hello;",
@@ -1005,13 +1005,13 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForDelete) {
   Vector<CompositionUnderline> underlines;
   underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   controller().setComposition("hello", underlines, 5, 5);
   EXPECT_STREQ("beforeinput.data:hello;input.data:hello;",
                document().title().utf8().data());
 
   // Delete the existing composition.
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   controller().setComposition("", underlines, 0, 0);
   EXPECT_STREQ("beforeinput.data:;compositionend.data:;",
                document().title().utf8().data());
@@ -1025,19 +1025,19 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsert) {
   underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
   // Insert new text without previous composition.
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   document().updateStyleAndLayout();
   controller().commitText("hello", underlines, 0);
   EXPECT_STREQ("beforeinput.data:hello;input.data:hello;",
                document().title().utf8().data());
 
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   controller().setComposition("n", underlines, 1, 1);
   EXPECT_STREQ("beforeinput.data:n;input.data:n;",
                document().title().utf8().data());
 
   // Insert new text with previous composition.
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   document().updateStyleAndLayout();
   controller().commitText("hello", underlines, 1);
   EXPECT_STREQ(
@@ -1053,18 +1053,18 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
   underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
   // Insert empty text without previous composition.
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   document().updateStyleAndLayout();
   controller().commitText("", underlines, 0);
   EXPECT_STREQ("", document().title().utf8().data());
 
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   controller().setComposition("n", underlines, 1, 1);
   EXPECT_STREQ("beforeinput.data:n;input.data:n;",
                document().title().utf8().data());
 
   // Insert empty text with previous composition.
-  document().setTitle(emptyString());
+  document().setTitle(emptyString);
   document().updateStyleAndLayout();
   controller().commitText("", underlines, 1);
   EXPECT_STREQ("beforeinput.data:;compositionend.data:;",

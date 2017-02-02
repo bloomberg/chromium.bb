@@ -302,7 +302,7 @@ bool SubresourceIntegrity::parseDigest(const UChar*& position,
   skipWhile<UChar, isIntegrityCharacter>(position, end);
 
   if (position == begin || (position != end && *position != '?')) {
-    digest = emptyString();
+    digest = emptyString;
     return false;
   }
 

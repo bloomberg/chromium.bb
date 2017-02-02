@@ -109,7 +109,7 @@ class MockScriptData : public ScriptData {
   }
 
   static String ToTestString(const std::string& input) {
-    String result(emptyString16Bit());
+    String result(emptyString16Bit);
     bool inSet = false;
     int seen = 0;
     int code = 0;
@@ -288,7 +288,7 @@ const int MockScriptData::kTable[] = {
 class ScriptRunIteratorTest : public testing::Test {
  protected:
   void CheckRuns(const Vector<TestRun>& runs) {
-    String text(emptyString16Bit());
+    String text(emptyString16Bit);
     Vector<ExpectedRun> expect;
     for (auto& run : runs) {
       text.append(String::fromUTF8(run.text.c_str()));
@@ -301,7 +301,7 @@ class ScriptRunIteratorTest : public testing::Test {
   // FIXME crbug.com/527329 - CheckMockRuns should be replaced by finding
   // suitable equivalent real codepoint sequences instead.
   void CheckMockRuns(const Vector<TestRun>& runs) {
-    String text(emptyString16Bit());
+    String text(emptyString16Bit);
     Vector<ExpectedRun> expect;
     for (const TestRun& run : runs) {
       text.append(MockScriptData::ToTestString(run.text));
@@ -329,7 +329,7 @@ class ScriptRunIteratorTest : public testing::Test {
 };
 
 TEST_F(ScriptRunIteratorTest, Empty) {
-  String empty(emptyString16Bit());
+  String empty(emptyString16Bit);
   ScriptRunIterator scriptRunIterator(empty.characters16(), empty.length());
   unsigned limit = 0;
   UScriptCode code = USCRIPT_INVALID_CODE;

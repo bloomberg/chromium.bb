@@ -129,7 +129,7 @@ String FormSubmission::Attributes::methodString(SubmitMethod method) {
       return "dialog";
   }
   NOTREACHED();
-  return emptyString();
+  return emptyString;
 }
 
 void FormSubmission::Attributes::copyFrom(const Attributes& other) {

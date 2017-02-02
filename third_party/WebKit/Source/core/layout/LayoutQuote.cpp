@@ -285,14 +285,14 @@ String LayoutQuote::computeText() const {
   switch (m_type) {
     case NO_OPEN_QUOTE:
     case NO_CLOSE_QUOTE:
-      return emptyString();
+      return emptyString;
     case CLOSE_QUOTE:
       return quotesData()->getCloseQuote(m_depth - 1).impl();
     case OPEN_QUOTE:
       return quotesData()->getOpenQuote(m_depth).impl();
   }
   ASSERT_NOT_REACHED();
-  return emptyString();
+  return emptyString;
 }
 
 const QuotesData* LayoutQuote::quotesData() const {

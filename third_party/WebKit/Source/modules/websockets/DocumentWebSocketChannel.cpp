@@ -560,7 +560,7 @@ void DocumentWebSocketChannel::didReceiveData(WebSocketHandle* handle,
       frame.payloadLength);
   if (m_receivingMessageTypeIsText) {
     String message = m_receivingMessageData.isEmpty()
-                         ? emptyString()
+                         ? emptyString
                          : String::fromUTF8(m_receivingMessageData.data(),
                                             m_receivingMessageData.size());
     m_receivingMessageData.clear();

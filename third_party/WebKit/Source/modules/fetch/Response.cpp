@@ -338,7 +338,7 @@ String Response::url() const {
   // flag set, otherwise."
   const KURL* responseURL = m_response->url();
   if (!responseURL)
-    return emptyString();
+    return emptyString;
   if (!responseURL->hasFragmentIdentifier())
     return *responseURL;
   KURL url(*responseURL);

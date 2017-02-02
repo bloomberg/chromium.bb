@@ -87,19 +87,18 @@ DateTimeFieldsState DateTimeFieldsState::restoreFormControlState(
 
 FormControlState DateTimeFieldsState::saveFormControlState() const {
   FormControlState state;
-  state.append(hasYear() ? String::number(m_year) : emptyString());
-  state.append(hasMonth() ? String::number(m_month) : emptyString());
-  state.append(hasDayOfMonth() ? String::number(m_dayOfMonth) : emptyString());
-  state.append(hasHour() ? String::number(m_hour) : emptyString());
-  state.append(hasMinute() ? String::number(m_minute) : emptyString());
-  state.append(hasSecond() ? String::number(m_second) : emptyString());
-  state.append(hasMillisecond() ? String::number(m_millisecond)
-                                : emptyString());
-  state.append(hasWeekOfYear() ? String::number(m_weekOfYear) : emptyString());
+  state.append(hasYear() ? String::number(m_year) : emptyString);
+  state.append(hasMonth() ? String::number(m_month) : emptyString);
+  state.append(hasDayOfMonth() ? String::number(m_dayOfMonth) : emptyString);
+  state.append(hasHour() ? String::number(m_hour) : emptyString);
+  state.append(hasMinute() ? String::number(m_minute) : emptyString);
+  state.append(hasSecond() ? String::number(m_second) : emptyString);
+  state.append(hasMillisecond() ? String::number(m_millisecond) : emptyString);
+  state.append(hasWeekOfYear() ? String::number(m_weekOfYear) : emptyString);
   if (hasAMPM())
     state.append(m_ampm == AMPMValueAM ? "A" : "P");
   else
-    state.append(emptyString());
+    state.append(emptyString);
   return state;
 }
 

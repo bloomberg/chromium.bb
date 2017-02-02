@@ -61,7 +61,7 @@ void FormControlState::serializeTo(Vector<String>& stateVector) const {
   DCHECK(!isFailure());
   stateVector.push_back(String::number(m_values.size()));
   for (const auto& value : m_values)
-    stateVector.push_back(value.isNull() ? emptyString() : value);
+    stateVector.push_back(value.isNull() ? emptyString : value);
 }
 
 FormControlState FormControlState::deserialize(

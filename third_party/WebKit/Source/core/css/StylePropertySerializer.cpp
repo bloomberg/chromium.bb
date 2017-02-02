@@ -351,7 +351,7 @@ String StylePropertySerializer::commonShorthandChecks(
   for (int i = 0; i < longhandCount; i++) {
     int index = m_propertySet.findPropertyIndex(shorthand.properties()[i]);
     if (index == -1)
-      return emptyString();
+      return emptyString;
     PropertyValueForSerializer value = m_propertySet.propertyAt(index);
 
     hasImportant |= value.isImportant();
@@ -360,14 +360,14 @@ String StylePropertySerializer::commonShorthandChecks(
   }
 
   if (hasImportant && hasNonImportant)
-    return emptyString();
+    return emptyString;
 
   if (longhands[0]->isCSSWideKeyword() ||
       longhands[0]->isPendingSubstitutionValue()) {
     bool success = true;
     for (int i = 1; i < longhandCount; i++) {
       if (!longhands[i]->equals(*longhands[0])) {
-        // This should just return emptyString() but some shorthands currently
+        // This should just return emptyString but some shorthands currently
         // allow 'initial' for their longhands.
         success = false;
         break;
@@ -386,12 +386,12 @@ String StylePropertySerializer::commonShorthandChecks(
   for (int i = 0; i < longhandCount; i++) {
     const CSSValue& value = *longhands[i];
     if (!allowInitial && value.isInitialValue())
-      return emptyString();
+      return emptyString;
     if (value.isInheritedValue() || value.isUnsetValue() ||
         value.isPendingSubstitutionValue())
-      return emptyString();
+      return emptyString;
     if (value.isVariableReferenceValue())
-      return emptyString();
+      return emptyString;
   }
 
   return String();
@@ -600,7 +600,7 @@ String StylePropertySerializer::fontValue() const {
       (numericValue->isIdentifierValue() &&
        toCSSIdentifierValue(numericValue)->getValueID() != CSSValueNormal) ||
       numericValue->isValueList())
-    return emptyString();
+    return emptyString;
 
   StringBuilder result;
   appendFontLonghandValueIfNotNormal(CSSPropertyFontStyle, result);
@@ -609,7 +609,7 @@ String StylePropertySerializer::fontValue() const {
   if (val->isIdentifierValue() &&
       (toCSSIdentifierValue(val)->getValueID() != CSSValueSmallCaps &&
        toCSSIdentifierValue(val)->getValueID() != CSSValueNormal))
-    return emptyString();
+    return emptyString;
   appendFontLonghandValueIfNotNormal(CSSPropertyFontVariantCaps, result);
 
   appendFontLonghandValueIfNotNormal(CSSPropertyFontWeight, result);

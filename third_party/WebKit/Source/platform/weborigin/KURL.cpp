@@ -416,7 +416,7 @@ String KURL::query() const {
   // which is right).
   // Returns a null if the query is not specified, instead of empty.
   if (m_parsed.query.is_valid())
-    return emptyString();
+    return emptyString;
   return String();
 }
 

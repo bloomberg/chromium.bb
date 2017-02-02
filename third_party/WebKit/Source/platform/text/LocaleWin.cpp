@@ -470,8 +470,8 @@ void LocaleWin::initializeLocaleData() {
   };
   DWORD negativeFormat = NegativeFormatSignPrefix;
   getLocaleInfo(LOCALE_INEGNUMBER, negativeFormat);
-  String negativePrefix = emptyString();
-  String negativeSuffix = emptyString();
+  String negativePrefix = emptyString;
+  String negativeSuffix = emptyString;
   switch (negativeFormat) {
     case NegativeFormatParenthesis:
       negativePrefix = "(";
@@ -492,7 +492,7 @@ void LocaleWin::initializeLocaleData() {
       break;
   }
   m_didInitializeNumberData = true;
-  setLocaleData(symbols, emptyString(), emptyString(), negativePrefix,
+  setLocaleData(symbols, emptyString, emptyString, negativePrefix,
                 negativeSuffix);
 }
 }

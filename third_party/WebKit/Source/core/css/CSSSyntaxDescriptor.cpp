@@ -100,7 +100,7 @@ CSSSyntaxDescriptor::CSSSyntaxDescriptor(String input) {
     if (offset != input.length())
       return;
     m_syntaxComponents.push_back(
-        CSSSyntaxComponent(CSSSyntaxType::TokenStream, emptyString(), false));
+        CSSSyntaxComponent(CSSSyntaxType::TokenStream, emptyString, false));
     return;
   }
 

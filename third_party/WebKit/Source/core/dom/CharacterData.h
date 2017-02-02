@@ -58,7 +58,7 @@ class CORE_EXPORT CharacterData : public Node {
 
  protected:
   CharacterData(TreeScope& treeScope, const String& text, ConstructionType type)
-      : Node(&treeScope, type), m_data(!text.isNull() ? text : emptyString()) {
+      : Node(&treeScope, type), m_data(!text.isNull() ? text : emptyString) {
     DCHECK(type == CreateOther || type == CreateText ||
            type == CreateEditingText);
   }

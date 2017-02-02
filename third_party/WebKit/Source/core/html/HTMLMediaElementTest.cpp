@@ -87,7 +87,7 @@ String srcSchemeToURL(TestURLScheme scheme) {
     default:
       NOTREACHED();
   }
-  return emptyString();
+  return emptyString;
 }
 
 TEST_P(HTMLMediaElementTest, preloadType) {

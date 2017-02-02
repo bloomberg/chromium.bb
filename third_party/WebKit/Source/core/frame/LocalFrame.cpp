@@ -746,7 +746,7 @@ String LocalFrame::selectedText() const {
 
 String LocalFrame::selectedTextForClipboard() const {
   if (!document())
-    return emptyString();
+    return emptyString;
   DCHECK(!document()->needsLayoutTreeUpdate());
   return selection().selectedTextForClipboard();
 }

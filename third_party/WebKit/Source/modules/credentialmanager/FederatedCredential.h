@@ -30,7 +30,7 @@ class MODULES_EXPORT FederatedCredential final : public SiteBoundCredential {
 
   // TODO(mkwst): This is a stub, as we don't yet have any support on the
   // Chromium-side.
-  const String& protocol() const { return emptyString(); }
+  const String& protocol() const { return emptyString; }
 
  private:
   FederatedCredential(WebFederatedCredential*);

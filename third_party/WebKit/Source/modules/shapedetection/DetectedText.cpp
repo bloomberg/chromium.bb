@@ -9,7 +9,7 @@
 namespace blink {
 
 DetectedText* DetectedText::create() {
-  return new DetectedText(emptyString(), DOMRect::create());
+  return new DetectedText(emptyString, DOMRect::create());
 }
 
 DetectedText* DetectedText::create(String rawValue, DOMRect* boundingBox) {

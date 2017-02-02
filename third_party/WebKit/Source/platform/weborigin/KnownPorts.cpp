@@ -71,7 +71,7 @@ bool isPortAllowedForScheme(const KURL& url) {
     return true;
   String protocol = url.protocol();
   if (protocol.isNull())
-    protocol = emptyString();
+    protocol = emptyString;
   unsigned short effectivePort = url.port();
   if (!effectivePort)
     effectivePort = defaultPortForProtocol(protocol);

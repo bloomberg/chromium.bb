@@ -17,7 +17,7 @@ NGLayoutInlineItemsBuilder::~NGLayoutInlineItemsBuilder() {
 
 String NGLayoutInlineItemsBuilder::ToString() {
   if (has_pending_newline_)
-    ProcessPendingNewline(emptyString(), nullptr);
+    ProcessPendingNewline(emptyString, nullptr);
   return text_.toString();
 }
 
@@ -167,7 +167,7 @@ void NGLayoutInlineItemsBuilder::Append(UChar character,
   DCHECK(character != spaceCharacter && character != tabulationCharacter &&
          character != newlineCharacter && character != zeroWidthSpaceCharacter);
   if (has_pending_newline_)
-    ProcessPendingNewline(emptyString(), nullptr);
+    ProcessPendingNewline(emptyString, nullptr);
 
   text_.append(character);
   unsigned end_offset = text_.length();
@@ -178,7 +178,7 @@ void NGLayoutInlineItemsBuilder::Append(UChar character,
 void NGLayoutInlineItemsBuilder::AppendAsOpaqueToSpaceCollapsing(
     UChar character) {
   if (has_pending_newline_)
-    ProcessPendingNewline(emptyString(), nullptr);
+    ProcessPendingNewline(emptyString, nullptr);
 
   text_.append(character);
   unsigned end_offset = text_.length();

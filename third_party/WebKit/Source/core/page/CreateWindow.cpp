@@ -185,7 +185,7 @@ DOMWindow* createWindow(const String& urlString,
   ASSERT(activeFrame);
 
   KURL completedURL = urlString.isEmpty()
-                          ? KURL(ParsedURLString, emptyString())
+                          ? KURL(ParsedURLString, emptyString)
                           : firstFrame.document()->completeURL(urlString);
   if (!completedURL.isEmpty() && !completedURL.isValid()) {
     // Don't expose client code to invalid URLs.

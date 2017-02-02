@@ -98,7 +98,7 @@ class XSLStyleSheet final : public StyleSheet {
   void setDisabled(bool b) override { m_isDisabled = b; }
   Node* ownerNode() const override { return m_ownerNode; }
   String href() const override { return m_originalURL; }
-  String title() const override { return emptyString(); }
+  String title() const override { return emptyString; }
 
   void clearOwnerNode() override { m_ownerNode = nullptr; }
   KURL baseURL() const override { return m_finalURL; }

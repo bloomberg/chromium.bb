@@ -988,7 +988,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void postTask(TaskType,
                 const WebTraceLocation&,
                 std::unique_ptr<ExecutionContextTask>,
-                const String& taskNameForInstrumentation = emptyString())
+                const String& taskNameForInstrumentation = emptyString)
       override;  // Executes the task on context's thread asynchronously.
 
   void tasksWereSuspended() final;

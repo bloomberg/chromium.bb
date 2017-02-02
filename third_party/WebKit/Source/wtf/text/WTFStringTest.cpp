@@ -48,7 +48,7 @@ TEST(StringTest, ASCII) {
   EXPECT_STREQ("", output.data());
 
   // Empty String.
-  output = emptyString().ascii();
+  output = emptyString.ascii();
   EXPECT_STREQ("", output.data());
 
   // Regular String.
@@ -489,7 +489,7 @@ TEST(StringTest, StringPrinter) {
       toCStringThroughPrinter(String("\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F", 8)));
   EXPECT_EQ(CString("\"\\u007F\\u0080\\u0081\""),
             toCStringThroughPrinter("\x7F\x80\x81"));
-  EXPECT_EQ(CString("\"\""), toCStringThroughPrinter(emptyString()));
+  EXPECT_EQ(CString("\"\""), toCStringThroughPrinter(emptyString));
   EXPECT_EQ(CString("<null>"), toCStringThroughPrinter(String()));
 
   static const UChar unicodeSample[] = {0x30C6, 0x30B9,

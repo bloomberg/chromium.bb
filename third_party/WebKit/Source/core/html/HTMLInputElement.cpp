@@ -1023,7 +1023,7 @@ String HTMLInputElement::value() const {
       return m_nonAttributeValue;
   }
   NOTREACHED();
-  return emptyString();
+  return emptyString;
 }
 
 String HTMLInputElement::valueOrDefaultLabel() const {

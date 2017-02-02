@@ -54,7 +54,7 @@ void AppBannerController::BannerPromptRequest(
                               m_frame->document()->outgoingReferrer())
                               .referrer;
 
-  callback.Run(reply, referrer.isNull() ? emptyString() : referrer);
+  callback.Run(reply, referrer.isNull() ? emptyString : referrer);
 }
 
 }  // namespace blink

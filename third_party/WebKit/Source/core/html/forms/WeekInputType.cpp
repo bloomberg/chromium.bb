@@ -97,7 +97,7 @@ void WeekInputType::warnIfValueIsInvalid(const String& value) const {
 String WeekInputType::formatDateTimeFieldsState(
     const DateTimeFieldsState& dateTimeFieldsState) const {
   if (!dateTimeFieldsState.hasYear() || !dateTimeFieldsState.hasWeekOfYear())
-    return emptyString();
+    return emptyString;
   return String::format("%04u-W%02u", dateTimeFieldsState.year(),
                         dateTimeFieldsState.weekOfYear());
 }

@@ -127,7 +127,7 @@ String TimeInputType::formatDateTimeFieldsState(
     const DateTimeFieldsState& dateTimeFieldsState) const {
   if (!dateTimeFieldsState.hasHour() || !dateTimeFieldsState.hasMinute() ||
       !dateTimeFieldsState.hasAMPM())
-    return emptyString();
+    return emptyString;
   if (dateTimeFieldsState.hasMillisecond() &&
       dateTimeFieldsState.millisecond()) {
     return String::format(

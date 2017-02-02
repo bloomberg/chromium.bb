@@ -33,7 +33,7 @@ WebSocketHandleImpl::~WebSocketHandleImpl() {
   NETWORK_DVLOG(1) << this << " deleted";
 
   if (m_websocket)
-    m_websocket->StartClosingHandshake(kAbnormalShutdownOpCode, emptyString());
+    m_websocket->StartClosingHandshake(kAbnormalShutdownOpCode, emptyString);
 }
 
 void WebSocketHandleImpl::initialize(InterfaceProvider* interfaceProvider) {
@@ -64,7 +64,7 @@ void WebSocketHandleImpl::connect(const KURL& url,
 
   m_websocket->AddChannelRequest(
       url, protocols, origin, firstPartyForCookies,
-      userAgentOverride.isNull() ? emptyString() : userAgentOverride,
+      userAgentOverride.isNull() ? emptyString : userAgentOverride,
       m_clientBinding.CreateInterfacePtrAndBind(
           Platform::current()
               ->currentThread()
@@ -119,7 +119,7 @@ void WebSocketHandleImpl::close(unsigned short code, const String& reason) {
   NETWORK_DVLOG(1) << this << " close(" << code << ", " << reason << ")";
 
   m_websocket->StartClosingHandshake(code,
-                                     reason.isNull() ? emptyString() : reason);
+                                     reason.isNull() ? emptyString : reason);
 }
 
 void WebSocketHandleImpl::disconnect() {

@@ -709,7 +709,7 @@ CString String::utf8(UTF8ConversionMode mode) const {
 
 String String::make8BitFrom16BitSource(const UChar* source, size_t length) {
   if (!length)
-    return emptyString();
+    return emptyString;
 
   LChar* destination;
   String result = String::createUninitialized(length, destination);
@@ -721,7 +721,7 @@ String String::make8BitFrom16BitSource(const UChar* source, size_t length) {
 
 String String::make16BitFrom8BitSource(const LChar* source, size_t length) {
   if (!length)
-    return emptyString16Bit();
+    return emptyString16Bit;
 
   UChar* destination;
   String result = String::createUninitialized(length, destination);
@@ -738,7 +738,7 @@ String String::fromUTF8(const LChar* stringStart, size_t length) {
     return String();
 
   if (!length)
-    return emptyString();
+    return emptyString;
 
   if (charactersAreAllASCII(stringStart, length))
     return StringImpl::create(stringStart, length);
@@ -773,16 +773,6 @@ String String::fromUTF8WithLatin1Fallback(const LChar* string, size_t size) {
   if (!utf8)
     return String(string, size);
   return utf8;
-}
-
-const String& emptyString() {
-  DEFINE_STATIC_LOCAL(String, emptyString, (StringImpl::empty));
-  return emptyString;
-}
-
-const String& emptyString16Bit() {
-  DEFINE_STATIC_LOCAL(String, emptyString, (StringImpl::empty16Bit));
-  return emptyString;
 }
 
 std::ostream& operator<<(std::ostream& out, const String& string) {

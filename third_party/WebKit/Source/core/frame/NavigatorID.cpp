@@ -68,7 +68,7 @@ String NavigatorID::platform() {
     *platformName = String(uname(&osname) >= 0
                                ? String(osname.sysname) + String(" ") +
                                      String(osname.machine)
-                               : emptyString());
+                               : emptyString);
   }
   return *platformName;
 #endif

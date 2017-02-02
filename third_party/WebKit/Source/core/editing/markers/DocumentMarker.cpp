@@ -184,7 +184,7 @@ const String& DocumentMarker::description() const {
   if (DocumentMarkerDescription* details =
           toDocumentMarkerDescription(m_details.get()))
     return details->description();
-  return emptyString();
+  return emptyString;
 }
 
 bool DocumentMarker::activeMatch() const {

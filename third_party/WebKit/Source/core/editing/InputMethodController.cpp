@@ -438,9 +438,9 @@ void InputMethodController::cancelComposition() {
       document().focusedElement(),
       InputEvent::InputType::DeleteComposedCharacterBackward, nullAtom,
       InputEvent::EventCancelable::NotCancelable);
-  dispatchCompositionUpdateEvent(frame(), emptyString());
+  dispatchCompositionUpdateEvent(frame(), emptyString);
   insertTextDuringCompositionWithEvents(
-      frame(), emptyString(), 0,
+      frame(), emptyString, 0,
       TypingCommand::TextCompositionType::TextCompositionCancel);
   // Event handler might destroy document.
   if (!isAvailable())
@@ -451,7 +451,7 @@ void InputMethodController::cancelComposition() {
   TypingCommand::closeTyping(m_frame);
 
   // No DOM update after 'compositionend'.
-  dispatchCompositionEndEvent(frame(), emptyString());
+  dispatchCompositionEndEvent(frame(), emptyString);
 }
 
 void InputMethodController::cancelCompositionIfSelectionIsInvalid() {
@@ -542,7 +542,7 @@ void InputMethodController::setComposition(
   if (text.isEmpty()) {
     if (hasComposition()) {
       Editor::RevealSelectionScope revealSelectionScope(&editor());
-      replaceComposition(emptyString());
+      replaceComposition(emptyString);
     } else {
       // It's weird to call |setComposition()| with empty text outside
       // composition, however some IME (e.g. Japanese IBus-Anthy) did this, so

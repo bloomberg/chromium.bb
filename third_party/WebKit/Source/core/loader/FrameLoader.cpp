@@ -212,7 +212,7 @@ DEFINE_TRACE(FrameLoader) {
 }
 
 void FrameLoader::init() {
-  ResourceRequest initialRequest(KURL(ParsedURLString, emptyString()));
+  ResourceRequest initialRequest(KURL(ParsedURLString, emptyString));
   initialRequest.setRequestContext(WebURLRequest::RequestContextInternal);
   initialRequest.setFrameType(m_frame->isMainFrame()
                                   ? WebURLRequest::FrameTypeTopLevel

@@ -7557,7 +7557,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*) {
 
 String WebGLRenderingContextBase::ensureNotNull(const String& text) const {
   if (text.isNull())
-    return WTF::emptyString();
+    return WTF::emptyString;
   return text;
 }
 

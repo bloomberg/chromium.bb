@@ -46,7 +46,7 @@ TEST(VTTScannerTest, Constructor) {
   VTTScanner scanner16(data16);
   EXPECT_FALSE(scanner16.isAtEnd());
 
-  VTTScanner scannerEmpty(emptyString());
+  VTTScanner scannerEmpty(emptyString);
   EXPECT_TRUE(scannerEmpty.isAtEnd());
 }
 

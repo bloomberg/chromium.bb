@@ -49,7 +49,7 @@ class CSSFontFaceSrcValue : public CSSValue {
   static CSSFontFaceSrcValue* createLocal(
       const String& absoluteResource,
       ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy) {
-    return new CSSFontFaceSrcValue(emptyString(), absoluteResource, true,
+    return new CSSFontFaceSrcValue(emptyString, absoluteResource, true,
                                    shouldCheckContentSecurityPolicy);
   }
 

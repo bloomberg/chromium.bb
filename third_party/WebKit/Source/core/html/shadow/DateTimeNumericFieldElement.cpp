@@ -198,7 +198,7 @@ void DateTimeNumericFieldElement::stepUp() {
 }
 
 String DateTimeNumericFieldElement::value() const {
-  return m_hasValue ? formatValue(m_value) : emptyString();
+  return m_hasValue ? formatValue(m_value) : emptyString;
 }
 
 int DateTimeNumericFieldElement::valueAsInteger() const {

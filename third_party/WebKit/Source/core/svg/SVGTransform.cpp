@@ -153,7 +153,7 @@ String SVGTransform::valueAsString() const {
   size_t argumentCount = 0;
   switch (m_transformType) {
     case kSvgTransformUnknown:
-      return emptyString();
+      return emptyString;
     case kSvgTransformMatrix: {
       arguments[argumentCount++] = m_matrix.a();
       arguments[argumentCount++] = m_matrix.b();

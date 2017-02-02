@@ -366,7 +366,7 @@ TEST(StringViewTest, IsEmpty) {
 }
 
 TEST(StringViewTest, ToString) {
-  EXPECT_EQ(emptyString().impl(), StringView("").toString().impl());
+  EXPECT_EQ(emptyString.impl(), StringView("").toString().impl());
   EXPECT_EQ(nullAtom.impl(), StringView().toString().impl());
   // NOTE: All the construction tests also check toString().
 }

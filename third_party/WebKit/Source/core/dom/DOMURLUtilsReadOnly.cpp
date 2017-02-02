@@ -56,18 +56,18 @@ String DOMURLUtilsReadOnly::port(const KURL& kurl) {
   if (kurl.hasPort())
     return String::number(kurl.port());
 
-  return emptyString();
+  return emptyString;
 }
 
 String DOMURLUtilsReadOnly::search(const KURL& kurl) {
   String query = kurl.query();
-  return query.isEmpty() ? emptyString() : "?" + query;
+  return query.isEmpty() ? emptyString : "?" + query;
 }
 
 String DOMURLUtilsReadOnly::hash(const KURL& kurl) {
   String fragmentIdentifier = kurl.fragmentIdentifier();
   if (fragmentIdentifier.isEmpty())
-    return emptyString();
+    return emptyString;
   return AtomicString(String("#" + fragmentIdentifier));
 }
 

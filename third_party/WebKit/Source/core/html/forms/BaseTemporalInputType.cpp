@@ -174,7 +174,7 @@ String BaseTemporalInputType::visibleValue() const {
 }
 
 String BaseTemporalInputType::sanitizeValue(const String& proposedValue) const {
-  return typeMismatchFor(proposedValue) ? emptyString() : proposedValue;
+  return typeMismatchFor(proposedValue) ? emptyString : proposedValue;
 }
 
 bool BaseTemporalInputType::supportsReadOnly() const {

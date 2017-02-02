@@ -173,12 +173,12 @@ String DictionaryTest::stringFromIterable(
   ExecutionContext* executionContext = scriptState->getExecutionContext();
   DictionaryIterator iterator = iterable.getIterator(executionContext);
   if (iterator.isNull())
-    return emptyString();
+    return emptyString;
 
   bool firstLoop = true;
   while (iterator.next(executionContext, exceptionState)) {
     if (exceptionState.hadException())
-      return emptyString();
+      return emptyString;
 
     if (firstLoop)
       firstLoop = false;

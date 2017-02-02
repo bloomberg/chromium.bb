@@ -35,7 +35,7 @@ namespace WTF {
 
 String StringBuilder::toString() {
   if (!m_length)
-    return emptyString();
+    return emptyString;
   if (m_string.isNull()) {
     if (m_is8Bit)
       m_string = String(characters8(), m_length);
@@ -61,7 +61,7 @@ AtomicString StringBuilder::toAtomicString() {
 
 String StringBuilder::substring(unsigned start, unsigned length) const {
   if (start >= m_length)
-    return emptyString();
+    return emptyString;
   if (!m_string.isNull())
     return m_string.substring(start, length);
   length = std::min(length, m_length - start);

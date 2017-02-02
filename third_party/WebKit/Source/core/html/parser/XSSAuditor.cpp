@@ -311,7 +311,7 @@ static String semicolonSeparatedValueContainingJavaScriptURL(
     if (protocolIsJavaScript(stripped))
       return stripped;
   }
-  return emptyString();
+  return emptyString;
 }
 
 XSSAuditor::XSSAuditor()

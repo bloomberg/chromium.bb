@@ -68,7 +68,7 @@ String convertInputTypeToString(InputEvent::InputType inputType) {
   if (it >= std::begin(kInputTypeStringNameMap) &&
       it < std::end(kInputTypeStringNameMap))
     return AtomicString(it->stringName);
-  return emptyString();
+  return emptyString;
 }
 
 InputEvent::InputType convertStringToInputType(const String& stringName) {

@@ -3066,12 +3066,12 @@ String Element::textFromChildren() {
       foundMultipleTextNodes = true;
     unsigned length = text->data().length();
     if (length > std::numeric_limits<unsigned>::max() - totalLength)
-      return emptyString();
+      return emptyString;
     totalLength += length;
   }
 
   if (!firstTextNode)
-    return emptyString();
+    return emptyString;
 
   if (firstTextNode && !foundMultipleTextNodes) {
     firstTextNode->atomize();

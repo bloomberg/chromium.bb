@@ -124,7 +124,7 @@ void ChooserOnlyTemporalInputTypeView::didChooseValue(const String& value) {
 void ChooserOnlyTemporalInputTypeView::didChooseValue(double value) {
   DCHECK(std::isfinite(value) || std::isnan(value));
   if (std::isnan(value))
-    element().setValue(emptyString(), DispatchInputAndChangeEvent);
+    element().setValue(emptyString, DispatchInputAndChangeEvent);
   else
     element().setValueAsNumber(value, ASSERT_NO_EXCEPTION,
                                DispatchInputAndChangeEvent);

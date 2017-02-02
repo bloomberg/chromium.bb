@@ -362,7 +362,7 @@ String FontFace::status() const {
     default:
       NOTREACHED();
   }
-  return emptyString();
+  return emptyString;
 }
 
 void FontFace::setLoadStatus(LoadStatusType status) {

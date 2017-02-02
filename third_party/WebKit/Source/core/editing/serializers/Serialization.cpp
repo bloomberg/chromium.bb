@@ -261,18 +261,18 @@ String CreateMarkupAlgorithm<Strategy>::createMarkup(
     EAbsoluteURLs shouldResolveURLs,
     Node* constrainingAncestor) {
   if (startPosition.isNull() || endPosition.isNull())
-    return emptyString();
+    return emptyString;
 
   RELEASE_ASSERT(startPosition.compareTo(endPosition) <= 0);
 
   bool collapsed = startPosition == endPosition;
   if (collapsed)
-    return emptyString();
+    return emptyString;
   Node* commonAncestor =
       Strategy::commonAncestor(*startPosition.computeContainerNode(),
                                *endPosition.computeContainerNode());
   if (!commonAncestor)
-    return emptyString();
+    return emptyString;
 
   Document* document = startPosition.document();
 

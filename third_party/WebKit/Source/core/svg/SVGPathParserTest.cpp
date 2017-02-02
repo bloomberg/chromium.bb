@@ -20,7 +20,7 @@ bool parsePath(const char* input, String& output) {
   output = builder.result();
   // Coerce a null result to empty.
   if (output.isNull())
-    output = emptyString();
+    output = emptyString;
   return hadError;
 }
 

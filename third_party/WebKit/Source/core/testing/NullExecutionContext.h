@@ -32,7 +32,7 @@ class NullExecutionContext final
       TaskType,
       const WebTraceLocation&,
       std::unique_ptr<ExecutionContextTask>,
-      const String& taskNameForInstrumentation = emptyString()) override;
+      const String& taskNameForInstrumentation = emptyString) override;
 
   EventTarget* errorEventTarget() override { return nullptr; }
   EventQueue* getEventQueue() const override { return m_queue.get(); }

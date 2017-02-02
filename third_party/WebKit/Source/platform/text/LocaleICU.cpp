@@ -166,17 +166,17 @@ UDateFormat* LocaleICU::openDateFormatForStandAloneMonthLabels(
 
 static String getDateFormatPattern(const UDateFormat* dateFormat) {
   if (!dateFormat)
-    return emptyString();
+    return emptyString;
 
   UErrorCode status = U_ZERO_ERROR;
   int32_t length = udat_toPattern(dateFormat, TRUE, 0, 0, &status);
   if (status != U_BUFFER_OVERFLOW_ERROR || !length)
-    return emptyString();
+    return emptyString;
   StringBuffer<UChar> buffer(length);
   status = U_ZERO_ERROR;
   udat_toPattern(dateFormat, TRUE, buffer.characters(), length, &status);
   if (U_FAILURE(status))
-    return emptyString();
+    return emptyString;
   return String::adopt(buffer);
 }
 

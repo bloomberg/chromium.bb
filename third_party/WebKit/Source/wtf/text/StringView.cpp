@@ -26,7 +26,7 @@ String StringView::toString() const {
   if (isNull())
     return String();
   if (isEmpty())
-    return emptyString();
+    return emptyString;
   if (StringImpl* impl = sharedImpl())
     return impl;
   if (is8Bit())

@@ -79,7 +79,7 @@ String PagePopupController::localizeNumberString(const String& numberString) {
 
 String PagePopupController::formatMonth(int year, int zeroBaseMonth) {
   if (!m_popupClient)
-    return emptyString();
+    return emptyString;
   DateComponents date;
   date.setMonthsSinceEpoch((year - 1970) * 12.0 + zeroBaseMonth);
   return m_popupClient->locale().formatDateTime(date, Locale::FormatTypeMedium);
@@ -87,7 +87,7 @@ String PagePopupController::formatMonth(int year, int zeroBaseMonth) {
 
 String PagePopupController::formatShortMonth(int year, int zeroBaseMonth) {
   if (!m_popupClient)
-    return emptyString();
+    return emptyString;
   DateComponents date;
   date.setMonthsSinceEpoch((year - 1970) * 12.0 + zeroBaseMonth);
   return m_popupClient->locale().formatDateTime(date, Locale::FormatTypeShort);
@@ -97,7 +97,7 @@ String PagePopupController::formatWeek(int year,
                                        int weekNumber,
                                        const String& localizedDateString) {
   if (!m_popupClient)
-    return emptyString();
+    return emptyString;
   DateComponents week;
   bool setWeekResult = week.setWeek(year, weekNumber);
   DCHECK(setWeekResult);

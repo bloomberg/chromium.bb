@@ -10,7 +10,7 @@ namespace blink {
 
 DetectedBarcode* DetectedBarcode::create() {
   HeapVector<Point2D> emptyList;
-  return new DetectedBarcode(emptyString(), DOMRect::create(0, 0, 0, 0),
+  return new DetectedBarcode(emptyString, DOMRect::create(0, 0, 0, 0),
                              emptyList);
 }
 

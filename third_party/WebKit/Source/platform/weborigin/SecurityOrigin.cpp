@@ -123,9 +123,9 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
       m_blockLocalAccessFromLocalOrigin(false),
       m_isUniqueOriginPotentiallyTrustworthy(false) {
   if (m_protocol.isNull())
-    m_protocol = emptyString();
+    m_protocol = emptyString;
   if (m_host.isNull())
-    m_host = emptyString();
+    m_host = emptyString;
 
   // Suborigins are serialized into the host, so extract it if necessary.
   String suboriginName;
@@ -148,9 +148,9 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
 }
 
 SecurityOrigin::SecurityOrigin()
-    : m_protocol(emptyString()),
-      m_host(emptyString()),
-      m_domain(emptyString()),
+    : m_protocol(emptyString),
+      m_host(emptyString),
+      m_domain(emptyString),
       m_port(InvalidPort),
       m_effectivePort(InvalidPort),
       m_isUnique(true),
