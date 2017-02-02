@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "ash/common/shelf/shelf_menu_model.h"
 #include "base/macros.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class ChromeLauncherAppMenuItem;
 class LauncherApplicationMenuItemModelTestAPI;
@@ -20,15 +20,12 @@ using ChromeLauncherAppMenuItems =
 
 // A menu model that builds the contents of a menu for a launcher item
 // containing a list of running applications.
-class LauncherApplicationMenuItemModel : public ash::ShelfMenuModel,
+class LauncherApplicationMenuItemModel : public ui::SimpleMenuModel,
                                          public ui::SimpleMenuModel::Delegate {
  public:
   explicit LauncherApplicationMenuItemModel(
       ChromeLauncherAppMenuItems item_list);
   ~LauncherApplicationMenuItemModel() override;
-
-  // Overridden from ash::ShelfMenuModel:
-  bool IsCommandActive(int command_id) const override;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;

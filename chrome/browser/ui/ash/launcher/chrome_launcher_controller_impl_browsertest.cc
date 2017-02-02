@@ -228,7 +228,7 @@ class LauncherPlatformAppBrowserTest
   // Returns the number of menu items, ignoring separators.
   int GetNumApplicationMenuItems(const ash::ShelfItem& item) {
     const int event_flags = 0;
-    std::unique_ptr<ash::ShelfMenuModel> menu(
+    std::unique_ptr<ui::SimpleMenuModel> menu(
         new LauncherApplicationMenuItemModel(
             controller_->GetApplicationList(item, event_flags)));
     int num_items = 0;

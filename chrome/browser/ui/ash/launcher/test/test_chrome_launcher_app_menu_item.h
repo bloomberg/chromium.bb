@@ -15,19 +15,14 @@ class TestChromeLauncherAppMenuItem : public ChromeLauncherAppMenuItem {
   TestChromeLauncherAppMenuItem();
   ~TestChromeLauncherAppMenuItem() override;
 
-  void set_is_active(bool is_active) { is_active_ = is_active; }
   void set_is_enabled(bool is_enabled) { is_enabled_ = is_enabled; }
   int execute_count() const { return execute_count_; }
 
   // ChromeLauncherAppMenuItem:
-  bool IsActive() const override;
   bool IsEnabled() const override;
   void Execute(int event_flags) override;
 
  private:
-  // Stub return value for the IsActive() function.
-  bool is_active_ = false;
-
   // Stub return value for the IsEnabled() function.
   bool is_enabled_ = false;
 

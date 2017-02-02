@@ -47,7 +47,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
-  ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
+  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override;
   void Close() override;
 
   // Get the refocus url pattern, which can be used to identify this application

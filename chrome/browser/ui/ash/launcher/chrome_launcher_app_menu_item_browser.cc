@@ -8,7 +8,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_service.h"
@@ -26,12 +25,8 @@ ChromeLauncherAppMenuItemBrowser::ChromeLauncherAppMenuItemBrowser(
                  chrome::NOTIFICATION_BROWSER_CLOSING,
                  content::Source<Browser>(browser));
 }
-ChromeLauncherAppMenuItemBrowser::~ChromeLauncherAppMenuItemBrowser() {
-}
 
-bool ChromeLauncherAppMenuItemBrowser::IsActive() const {
-  return browser_ == chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
-}
+ChromeLauncherAppMenuItemBrowser::~ChromeLauncherAppMenuItemBrowser() {}
 
 bool ChromeLauncherAppMenuItemBrowser::IsEnabled() const {
   return true;

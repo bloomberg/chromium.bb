@@ -25,7 +25,6 @@ class ChromeLauncherAppMenuItemTab
                                const gfx::Image* icon,
                                content::WebContents* content,
                                bool has_leading_separator);
-  bool IsActive() const override;
   bool IsEnabled() const override;
   void Execute(int event_flags) override;
 

@@ -23,18 +23,11 @@ const char kSelectedMenuItemIndexHistogramName[] =
 
 LauncherApplicationMenuItemModel::LauncherApplicationMenuItemModel(
     ChromeLauncherAppMenuItems item_list)
-    : ash::ShelfMenuModel(this), launcher_items_(std::move(item_list)) {
+    : ui::SimpleMenuModel(this), launcher_items_(std::move(item_list)) {
   Build();
 }
 
-LauncherApplicationMenuItemModel::~LauncherApplicationMenuItemModel() {
-}
-
-bool LauncherApplicationMenuItemModel::IsCommandActive(int command_id) const {
-  DCHECK(command_id >= 0);
-  DCHECK(static_cast<size_t>(command_id) < launcher_items_.size());
-  return launcher_items_[command_id]->IsActive();
-}
+LauncherApplicationMenuItemModel::~LauncherApplicationMenuItemModel() {}
 
 bool LauncherApplicationMenuItemModel::IsCommandIdChecked(
     int command_id) const {

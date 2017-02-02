@@ -25,7 +25,6 @@ class ChromeLauncherAppMenuItemBrowser : public content::NotificationObserver,
                                    bool has_leading_separator);
   ~ChromeLauncherAppMenuItemBrowser() override;
 
-  bool IsActive() const override;
   bool IsEnabled() const override;
   void Execute(int event_flags) override;
 

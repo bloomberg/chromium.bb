@@ -29,9 +29,6 @@ class ChromeLauncherAppMenuItem {
   // Returns true if a separator should be inserted before this item.
   bool HasLeadingSeparator() const { return has_leading_separator_; }
 
-  // Returns true if the item is active.
-  virtual bool IsActive() const;
-
   // Returns true if item is enabled.
   virtual bool IsEnabled() const;
 

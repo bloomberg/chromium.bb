@@ -757,12 +757,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   // only need the background when we want it to look different, as when we're
   // selected.
   ui::NativeTheme* native_theme = GetNativeTheme();
-  SkColor override_color;
-  if (delegate && delegate->GetBackgroundColor(GetCommand(),
-                                               render_selection,
-                                               &override_color)) {
-    canvas->DrawColor(override_color);
-  } else if (render_selection) {
+  if (render_selection) {
     gfx::Rect item_bounds(0, 0, width(), height());
     AdjustBoundsForRTLUI(&item_bounds);
 
@@ -792,12 +787,6 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                    : ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
   }
   SkColor fg_color = native_theme->GetSystemColor(color_id);
-  SkColor override_foreground_color;
-  if (delegate && delegate->GetForegroundColor(GetCommand(),
-                                               render_selection,
-                                               &override_foreground_color)) {
-    fg_color = override_foreground_color;
-  }
   SkColor icon_color = color_utils::DeriveDefaultIconColor(fg_color);
 
   // Render the check.

@@ -17,7 +17,6 @@
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -32,7 +31,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -63,33 +61,10 @@ const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT = 3;
 // Default amount content is inset on the left edge.
 const int kDefaultLeadingInset = 8;
 
-// Additional spacing for the left and right side of icons.
-const int kHorizontalIconSpacing = 2;
-
-// Inset for items which do not have an icon.
-const int kHorizontalNoIconInsetSpacing =
-    kHorizontalIconSpacing + kDefaultLeadingInset;
-
 // The proportion of the shelf space reserved for non-panel icons. Panels
 // may flow into this space but will be put into the overflow bubble if there
 // is contention for the space.
 const float kReservedNonPanelIconProportion = 0.67f;
-
-// This is the command id of the menu item which contains the name of the menu.
-const int kCommandIdOfMenuName = 0;
-
-// The background color of the active item in the list.
-const SkColor kActiveListItemBackgroundColor = SkColorSetRGB(203, 219, 241);
-
-// The background color of the active & hovered item in the list.
-const SkColor kFocusedActiveListItemBackgroundColor =
-    SkColorSetRGB(193, 211, 236);
-
-// The text color of the caption item in a list.
-const SkColor kCaptionItemForegroundColor = SK_ColorBLACK;
-
-// The maximum allowable length of a menu line of an application menu in pixels.
-const int kMaximumAppMenuItemLength = 350;
 
 // The distance of the cursor from the outer rim of the shelf before it
 // separates.
@@ -124,90 +99,6 @@ class BoundsAnimatorDisabler {
 
   DISALLOW_COPY_AND_ASSIGN(BoundsAnimatorDisabler);
 };
-
-// The MenuModelAdapter gets slightly changed to adapt the menu appearance to
-// our requirements.
-// TODO(bruthig): ShelfMenuModelAdapter does not appear to be used, remove it.
-class ShelfMenuModelAdapter : public views::MenuModelAdapter {
- public:
-  explicit ShelfMenuModelAdapter(ShelfMenuModel* menu_model);
-
-  // views::MenuModelAdapter:
-  const gfx::FontList* GetLabelFontList(int command_id) const override;
-  bool IsCommandEnabled(int id) const override;
-  void GetHorizontalIconMargins(int id,
-                                int icon_size,
-                                int* left_margin,
-                                int* right_margin) const override;
-  bool GetForegroundColor(int command_id,
-                          bool is_hovered,
-                          SkColor* override_color) const override;
-  bool GetBackgroundColor(int command_id,
-                          bool is_hovered,
-                          SkColor* override_color) const override;
-  int GetMaxWidthForMenu(views::MenuItemView* menu) override;
-  bool ShouldReserveSpaceForSubmenuIndicator() const override;
-
- private:
-  ShelfMenuModel* menu_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfMenuModelAdapter);
-};
-
-ShelfMenuModelAdapter::ShelfMenuModelAdapter(ShelfMenuModel* menu_model)
-    : MenuModelAdapter(menu_model), menu_model_(menu_model) {}
-
-const gfx::FontList* ShelfMenuModelAdapter::GetLabelFontList(
-    int command_id) const {
-  if (command_id != kCommandIdOfMenuName)
-    return MenuModelAdapter::GetLabelFontList(command_id);
-
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  return &rb->GetFontList(ui::ResourceBundle::BoldFont);
-}
-
-bool ShelfMenuModelAdapter::IsCommandEnabled(int id) const {
-  return id != kCommandIdOfMenuName;
-}
-
-bool ShelfMenuModelAdapter::GetForegroundColor(int command_id,
-                                               bool is_hovered,
-                                               SkColor* override_color) const {
-  if (command_id != kCommandIdOfMenuName)
-    return false;
-
-  *override_color = kCaptionItemForegroundColor;
-  return true;
-}
-
-bool ShelfMenuModelAdapter::GetBackgroundColor(int command_id,
-                                               bool is_hovered,
-                                               SkColor* override_color) const {
-  if (!menu_model_->IsCommandActive(command_id))
-    return false;
-
-  *override_color = is_hovered ? kFocusedActiveListItemBackgroundColor
-                               : kActiveListItemBackgroundColor;
-  return true;
-}
-
-void ShelfMenuModelAdapter::GetHorizontalIconMargins(int command_id,
-                                                     int icon_size,
-                                                     int* left_margin,
-                                                     int* right_margin) const {
-  *left_margin = kHorizontalIconSpacing;
-  *right_margin = (command_id != kCommandIdOfMenuName)
-                      ? kHorizontalIconSpacing
-                      : -(icon_size + kHorizontalNoIconInsetSpacing);
-}
-
-int ShelfMenuModelAdapter::GetMaxWidthForMenu(views::MenuItemView* menu) {
-  return kMaximumAppMenuItemLength;
-}
-
-bool ShelfMenuModelAdapter::ShouldReserveSpaceForSubmenuIndicator() const {
-  return false;
-}
 
 // Custom FocusSearch used to navigate the shelf in the order items are in
 // the ViewModel.

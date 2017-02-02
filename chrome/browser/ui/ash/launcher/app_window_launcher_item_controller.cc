@@ -84,7 +84,7 @@ AppWindowLauncherItemController::Activate(ash::LaunchSource source) {
   return kExistingWindowActivated;
 }
 
-ash::ShelfMenuModel* AppWindowLauncherItemController::CreateApplicationMenu(
+ui::SimpleMenuModel* AppWindowLauncherItemController::CreateApplicationMenu(
     int event_flags) {
   return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }

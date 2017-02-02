@@ -212,7 +212,7 @@ BrowserShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
   return Activate(ash::LAUNCH_FROM_UNKNOWN);
 }
 
-ash::ShelfMenuModel*
+ui::SimpleMenuModel*
 BrowserShortcutLauncherItemController::CreateApplicationMenu(int event_flags) {
   return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }

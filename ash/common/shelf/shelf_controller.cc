@@ -5,13 +5,13 @@
 #include "ash/common/shelf/shelf_controller.h"
 
 #include "ash/common/shelf/shelf_item_delegate.h"
-#include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -54,11 +54,11 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
 
  private:
   // This application menu model for ShelfItemDelegateMus lists open windows.
-  class ShelfMenuModelMus : public ShelfMenuModel,
+  class ShelfMenuModelMus : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
    public:
     explicit ShelfMenuModelMus(ShelfItemDelegateMus* item_delegate)
-        : ShelfMenuModel(this), item_delegate_(item_delegate) {
+        : ui::SimpleMenuModel(this), item_delegate_(item_delegate) {
       AddSeparator(ui::SPACING_SEPARATOR);
       AddItem(0, item_delegate_->title());
       AddSeparator(ui::SPACING_SEPARATOR);
@@ -67,9 +67,6 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
       AddSeparator(ui::SPACING_SEPARATOR);
     }
     ~ShelfMenuModelMus() override {}
-
-    // ShelfMenuModel:
-    bool IsCommandActive(int command_id) const override { return false; }
 
     // ui::SimpleMenuModel::Delegate:
     bool IsCommandIdChecked(int command_id) const override { return false; }
@@ -100,7 +97,7 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
     return kNoAction;
   }
 
-  ShelfMenuModel* CreateApplicationMenu(int event_flags) override {
+  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override {
     return new ShelfMenuModelMus(this);
   }
 

@@ -31,7 +31,7 @@ ShelfItemDelegate::PerformedAction WindowWatcherShelfItemDelegate::ItemSelected(
   return kExistingWindowActivated;
 }
 
-ShelfMenuModel* WindowWatcherShelfItemDelegate::CreateApplicationMenu(
+ui::SimpleMenuModel* WindowWatcherShelfItemDelegate::CreateApplicationMenu(
     int event_flags) {
   return nullptr;
 }

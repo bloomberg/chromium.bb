@@ -38,10 +38,10 @@ ShelfItemDelegate::PerformedAction AppListShelfItemDelegate::ItemSelected(
   return ShelfItemDelegate::kAppListMenuShown;
 }
 
-ShelfMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(
+ui::SimpleMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(
     int event_flags) {
   // AppList does not show an application menu.
-  return NULL;
+  return nullptr;
 }
 
 void AppListShelfItemDelegate::Close() {}

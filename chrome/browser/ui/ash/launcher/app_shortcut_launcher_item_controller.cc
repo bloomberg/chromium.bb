@@ -206,7 +206,7 @@ AppShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
   return Activate(ash::LAUNCH_FROM_UNKNOWN);
 }
 
-ash::ShelfMenuModel* AppShortcutLauncherItemController::CreateApplicationMenu(
+ui::SimpleMenuModel* AppShortcutLauncherItemController::CreateApplicationMenu(
     int event_flags) {
   return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }

@@ -24,7 +24,7 @@ class AppListShelfItemDelegate : public ShelfItemDelegate {
   // ShelfItemDelegate:
   ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
-  ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
+  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override;
   void Close() override;
 
  private:

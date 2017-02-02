@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_types.h"
@@ -76,26 +75,6 @@ class VIEWS_EXPORT MenuDelegate {
   // Whether this item should be displayed with the normal text color, even if
   // it's disabled.
   virtual bool GetShouldUseNormalForegroundColor(int command_id) const;
-
-  // Override the text color of a given menu item dependent on the
-  // |command_id| and its |is_hovered| state. Returns true if it chooses to
-  // override the color.
-  //
-  // TODO(erg): Remove this interface. Injecting raw colors into the menu
-  // circumvents the NativeTheme.
-  virtual bool GetForegroundColor(int command_id,
-                                  bool is_hovered,
-                                  SkColor* override_color) const;
-
-  // Override the background color of a given menu item dependent on the
-  // |command_id| and its |is_hovered| state. Returns true if it chooses to
-  // override the color.
-  //
-  // TODO(erg): Remove this interface. Injecting raw colors into the menu
-  // circumvents the NativeTheme.
-  virtual bool GetBackgroundColor(int command_id,
-                                  bool is_hovered,
-                                  SkColor* override_color) const;
 
   // The tooltip shown for the menu item. This is invoked when the user
   // hovers over the item, and no tooltip text has been set for that item.

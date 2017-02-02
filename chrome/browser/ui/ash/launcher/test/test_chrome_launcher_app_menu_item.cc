@@ -9,15 +9,9 @@
 TestChromeLauncherAppMenuItem::TestChromeLauncherAppMenuItem()
     : ChromeLauncherAppMenuItem(base::ASCIIToUTF16("DummyTitle"),
                                 nullptr,
-                                false) {
-}
+                                false) {}
 
-TestChromeLauncherAppMenuItem::~TestChromeLauncherAppMenuItem() {
-}
-
-bool TestChromeLauncherAppMenuItem::IsActive() const {
-  return is_active_;
-}
+TestChromeLauncherAppMenuItem::~TestChromeLauncherAppMenuItem() {}
 
 bool TestChromeLauncherAppMenuItem::IsEnabled() const {
   return is_enabled_;

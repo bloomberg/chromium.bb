@@ -171,7 +171,6 @@ component("ash") {
     "common/shelf/shelf_layout_manager_observer.h",
     "common/shelf/shelf_locking_manager.cc",
     "common/shelf/shelf_locking_manager.h",
-    "common/shelf/shelf_menu_model.h",
     "common/shelf/shelf_model.cc",
     "common/shelf/shelf_model.h",
     "common/shelf/shelf_model_observer.h",

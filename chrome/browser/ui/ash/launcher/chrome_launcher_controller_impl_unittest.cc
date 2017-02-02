@@ -278,7 +278,7 @@ class TestV2AppLauncherItemController : public LauncherItemController {
         base::string16(), nullptr, false));
     return items;
   }
-  ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override {
+  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override {
     return NULL;
   }
 
@@ -2805,7 +2805,7 @@ bool CheckMenuCreation(ChromeLauncherControllerImpl* controller,
       EXPECT_FALSE(items[i]->HasLeadingSeparator());
   }
 
-  std::unique_ptr<ash::ShelfMenuModel> menu(
+  std::unique_ptr<ui::SimpleMenuModel> menu(
       new LauncherApplicationMenuItemModel(
           controller->GetApplicationList(item, 0)));
   // The first element in the menu is a spacing separator. On some systems
@@ -3290,7 +3290,7 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuExecution) {
   // Execute the second item in the list (which shouldn't do anything since that
   // item is per definition already the active tab).
   {
-    std::unique_ptr<ash::ShelfMenuModel> menu(
+    std::unique_ptr<ui::SimpleMenuModel> menu(
         new LauncherApplicationMenuItemModel(
             launcher_controller_->GetApplicationList(item_gmail, 0)));
     // The first element in the menu is a spacing separator. On some systems
@@ -3304,7 +3304,7 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuExecution) {
 
   // Execute the first item.
   {
-    std::unique_ptr<ash::ShelfMenuModel> menu(
+    std::unique_ptr<ui::SimpleMenuModel> menu(
         new LauncherApplicationMenuItemModel(
             launcher_controller_->GetApplicationList(item_gmail, 0)));
     int first_item =

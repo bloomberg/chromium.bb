@@ -10,11 +10,10 @@
 
 namespace ui {
 class Event;
+class SimpleMenuModel;
 }
 
 namespace ash {
-
-class ShelfMenuModel;
 
 // Delegate for the ShelfItem.
 class ASH_EXPORT ShelfItemDelegate {
@@ -53,7 +52,7 @@ class ASH_EXPORT ShelfItemDelegate {
   //  - A list containing the title and the active list of items.
   // The caller takes ownership of the returned model.
   // |event_flags| specifies the flags of the event which triggered this menu.
-  virtual ShelfMenuModel* CreateApplicationMenu(int event_flags) = 0;
+  virtual ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) = 0;
 
   // Closes all windows associated with this item.
   virtual void Close() = 0;

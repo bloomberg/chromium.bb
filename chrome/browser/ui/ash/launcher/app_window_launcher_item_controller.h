@@ -50,7 +50,7 @@ class AppWindowLauncherItemController : public LauncherItemController,
   AppWindowLauncherItemController* AsAppWindowLauncherItemController() override;
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
-  ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
+  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override;
   void Close() override;
 
   // aura::WindowObserver overrides:

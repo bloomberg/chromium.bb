@@ -15,7 +15,6 @@
 #include "ash/common/shelf/overflow_button.h"
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_tooltip_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
@@ -52,6 +51,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -2006,10 +2006,10 @@ class InkDropSpy : public views::InkDrop {
 
 // A menu model that contains minimum number of items needed for a menu to be
 // shown on a shelf item.
-class TestShelfMenuModel : public ShelfMenuModel,
+class TestShelfMenuModel : public ui::SimpleMenuModel,
                            public ui::SimpleMenuModel::Delegate {
  public:
-  TestShelfMenuModel() : ShelfMenuModel(this) { Build(); }
+  TestShelfMenuModel() : ui::SimpleMenuModel(this) { Build(); }
   ~TestShelfMenuModel() override {}
 
  private:
@@ -2023,9 +2023,6 @@ class TestShelfMenuModel : public ShelfMenuModel,
     AddItem(2, base::ASCIIToUTF16("Item 2"));
     AddSeparator(ui::SPACING_SEPARATOR);
   }
-
-  // ShelfMenuModel:
-  bool IsCommandActive(int command_id) const override { return false; }
 
   // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override { return false; }
@@ -2045,7 +2042,7 @@ class ListMenuShelfItemDelegate : public TestShelfItemDelegate {
 
  private:
   // TestShelfItemDelegate:
-  ShelfMenuModel* CreateApplicationMenu(int event_flags) override {
+  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override {
     return new TestShelfMenuModel;
   }
 

@@ -37,7 +37,7 @@ ArcAppDeferredLauncherItemController::ItemSelected(const ui::Event& event) {
   return ash::ShelfItemDelegate::kNoAction;
 }
 
-ash::ShelfMenuModel*
+ui::SimpleMenuModel*
 ArcAppDeferredLauncherItemController::CreateApplicationMenu(int event_flags) {
   return nullptr;
 }

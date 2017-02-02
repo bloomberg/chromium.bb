@@ -23,7 +23,7 @@ class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
   // ShelfItemDelegate overrides:
   ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
-  ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
+  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override;
   void Close() override;
 
   ShelfID id_;

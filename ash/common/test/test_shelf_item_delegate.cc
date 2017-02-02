@@ -26,7 +26,8 @@ ShelfItemDelegate::PerformedAction TestShelfItemDelegate::ItemSelected(
   return kNoAction;
 }
 
-ShelfMenuModel* TestShelfItemDelegate::CreateApplicationMenu(int event_flags) {
+ui::SimpleMenuModel* TestShelfItemDelegate::CreateApplicationMenu(
+    int event_flags) {
   return nullptr;
 }
 
