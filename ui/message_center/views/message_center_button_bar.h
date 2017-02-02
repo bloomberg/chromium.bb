@@ -43,12 +43,16 @@ class MessageCenterButtonBar : public views::View,
   void SetCloseAllButtonEnabled(bool enabled);
 
   MESSAGE_CENTER_EXPORT views::Button* GetCloseAllButtonForTest() const;
+  MESSAGE_CENTER_EXPORT views::Button* GetSettingsButtonForTest() const;
+  MESSAGE_CENTER_EXPORT views::Button* GetQuietModeButtonForTest() const;
 
   // Sometimes we shouldn't see the back arrow (not in settings).
   void SetBackArrowVisible(bool visible);
 
   // Update the label of the title.
   void SetTitle(const base::string16& title);
+
+  void SetButtonsVisible(bool visible);
 
  private:
   // Updates the layout manager which can have differing configuration

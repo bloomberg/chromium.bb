@@ -129,8 +129,9 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   void StartRowWithPadding(float vertical_resize, int column_set_id,
                            float padding_resize, int padding);
 
-  // Starts a new row with the specified column set.
-  void StartRow(float vertical_resize, int column_set_id);
+  // Starts a new row with the specified column set and height (0 for
+  // unspecified height).
+  void StartRow(float vertical_resize, int column_set_id, int height = 0);
 
   // Advances past columns. Use this when the current column should not
   // contain any views.

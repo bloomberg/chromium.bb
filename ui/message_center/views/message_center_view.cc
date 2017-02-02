@@ -621,9 +621,14 @@ void MessageCenterView::UpdateButtonBarStatus() {
   }
 
   button_bar_->SetBackArrowVisible(mode_ == Mode::SETTINGS);
-  button_bar_->SetSettingsAndQuietModeButtonsEnabled(!is_locked_);
+  button_bar_->SetButtonsVisible(!is_locked_);
   button_bar_->SetTitle(GetButtonBarTitle());
 
+  if (!is_locked_)
+    EnableCloseAllIfAppropriate();
+}
+
+void MessageCenterView::EnableCloseAllIfAppropriate() {
   if (mode_ == Mode::NOTIFICATIONS) {
     bool no_closable_views = true;
     for (const auto& view : notification_views_) {

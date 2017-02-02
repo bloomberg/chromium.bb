@@ -107,6 +107,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView
   void Update(bool animate);
   void SetVisibilityMode(Mode mode, bool animate);
   void UpdateButtonBarStatus();
+  void EnableCloseAllIfAppropriate();
   void SetNotificationViewForTest(MessageView* view);
 
   MessageCenter* message_center_;  // Weak reference.

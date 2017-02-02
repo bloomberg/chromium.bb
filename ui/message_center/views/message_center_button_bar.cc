@@ -242,7 +242,7 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
                     0);
 #endif
 
-  layout->StartRow(0, 0);
+  layout->StartRow(0, 0, kButtonSize);
   if (title_arrow_->visible())
     layout->AddView(title_arrow_);
   layout->AddView(notification_label_);
@@ -269,6 +269,14 @@ views::Button* MessageCenterButtonBar::GetCloseAllButtonForTest() const {
   return close_all_button_;
 }
 
+views::Button* MessageCenterButtonBar::GetQuietModeButtonForTest() const {
+  return quiet_mode_button_;
+}
+
+views::Button* MessageCenterButtonBar::GetSettingsButtonForTest() const {
+  return settings_button_;
+}
+
 void MessageCenterButtonBar::SetBackArrowVisible(bool visible) {
   if (title_arrow_)
     title_arrow_->SetVisible(visible);
@@ -278,6 +286,17 @@ void MessageCenterButtonBar::SetBackArrowVisible(bool visible) {
 
 void MessageCenterButtonBar::SetTitle(const base::string16& title) {
   notification_label_->SetText(title);
+}
+
+void MessageCenterButtonBar::SetButtonsVisible(bool visible) {
+  settings_button_->SetVisible(visible);
+  quiet_mode_button_->SetVisible(visible);
+
+  if (close_all_button_)
+    close_all_button_->SetVisible(visible);
+
+  ViewVisibilityChanged();
+  Layout();
 }
 
 void MessageCenterButtonBar::ChildVisibilityChanged(views::View* child) {

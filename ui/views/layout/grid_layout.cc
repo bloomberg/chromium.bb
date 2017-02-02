@@ -684,10 +684,13 @@ void GridLayout::StartRowWithPadding(float vertical_resize, int column_set_id,
   StartRow(vertical_resize, column_set_id);
 }
 
-void GridLayout::StartRow(float vertical_resize, int column_set_id) {
+void GridLayout::StartRow(float vertical_resize,
+                          int column_set_id,
+                          int height) {
+  DCHECK_GE(height, 0);
   ColumnSet* column_set = GetColumnSet(column_set_id);
   DCHECK(column_set);
-  AddRow(base::MakeUnique<Row>(0, vertical_resize, column_set));
+  AddRow(base::MakeUnique<Row>(height, vertical_resize, column_set));
 }
 
 void GridLayout::AddPaddingRow(float vertical_resize, int pixel_count) {
