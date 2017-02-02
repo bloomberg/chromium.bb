@@ -2,15 +2,14 @@
 <html>
 
 <head>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
   <script src="../resources/audio-testing.js"></script>
 </head>
 
 <body>
   <script>
-    description("Test if ChannelMergerNode runs correctly in a cycle.");
-    window.jsTestIsAsync = true;
 
     // This specific sample rate is chosen to avoid the round/truncation error
     // in delay time. See: crbug.com/448801
@@ -60,6 +59,7 @@
         // the stereo channel will be summed to mono resulting in 0.5.
         var expected_left = [];
         var expected_right = [];
+        var success = true;
 
         for (var i = 0; i < renderLength; i++) {
           // Note that the delayed channel will be zero for the first 128 samples
@@ -69,35 +69,22 @@
           expected_right[i] = (i < renderingQuantum * 2) ? 0.0 : 0.5;
         }
 
-        for (i = 0; i < buffer.numberOfChannels; i++) {
-          var actual_left = buffer.getChannelData(0);
-          var actual_right = buffer.getChannelData(1);
-          for (var j = 0; j < renderLength; j++) {
-            if (expected_left[j] !== actual_left[j]) {
-              testFailed('The value ' + actual_left[j] + 
-                'in the left channel did not match the expected value ' + 
-                expected_left[j] + ' at the index ' + j + '.');
-              done();
-              return;
-            }
-            if (expected_right[j] !== actual_right[j]) {
-              testFailed('The value ' + actual_left[j] + 
-                'in the right channel did not match the expected value ' + 
-                expected_left[j] + ' at the index ' + j + '.');
-              done();
-              return;
-            }
-          }
-        }
+        var actual_left = buffer.getChannelData(0);
+        var actual_right = buffer.getChannelData(1);
+        success = Should("Left channel", actual_left)
+          .beEqualToArray(expected_left) && success;
+        success = Should("Right channel", actual_right)
+          .beEqualToArray(expected_right) && success;
 
-        testPassed("ChannerMergerNode passed cyclic audio graph test.");
+        Should("ChannelMergerNode cyclic audio graph test", success)
+          .summarize("passed", "failed");
+
         done();
       });
 
     });
 
     audit.defineTask('finish', function (done) {
-      finishJSTest();
       done();
     });
 
