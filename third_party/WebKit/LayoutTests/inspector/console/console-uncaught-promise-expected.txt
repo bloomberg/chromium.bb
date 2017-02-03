@@ -27,7 +27,7 @@ timeout @ console-uncaught-promise.html:16
 console-uncaught-promise.html:78 Uncaught (in promise) foo
 promiseTest6 @ console-uncaught-promise.html:78
 timeout @ console-uncaught-promise.html:16
-console-uncaught-promise.html:83 Uncaught (in promise) Object
+console-uncaught-promise.html:83 Uncaught (in promise) Object {foo: 42}
     foo: 42
     __proto__: Object
 promiseTest7 @ console-uncaught-promise.html:83

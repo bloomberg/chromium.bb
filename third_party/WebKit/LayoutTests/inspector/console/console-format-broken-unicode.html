@@ -41,7 +41,8 @@ function test()
     {
         var text = result.description;
         InspectorTest.assertEquals(15, text.length, "text length");
-        InspectorTest.assertEquals(6, countTextNodes(text), "nodes count");
+        InspectorTest.assertEquals(8, countTextNodes(text), "nodes count");
+        InspectorTest.assertEquals(1, countTextNodes("\"" + text + "\""), "nodes with quoted text count");
         InspectorTest.addResult("PASS: Found all nodes with the broken text");
         InspectorTest.completeTest();
     }

@@ -49,7 +49,7 @@ console-format-es6-2.html:12 [SetIterator]
 globals[7]
 SetIterator {Object {foo: 1}}
 Expanded all messages
-console-format-es6-2.html:11 MapIterator
+console-format-es6-2.html:11 MapIterator {41, Object {foo: 1}}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -58,12 +58,12 @@ console-format-es6-2.html:11 MapIterator
         0: 41
         1: Object
         length: 2
-console-format-es6-2.html:12 Array(1)
+console-format-es6-2.html:12 [MapIterator]
     0: MapIterator
     length: 1
     __proto__: Array(0)
 globals[0]
-MapIterator
+MapIterator {41, Object {foo: 1}}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -72,7 +72,7 @@ MapIterator
         0: 41
         1: Object
         length: 2
-console-format-es6-2.html:11 MapIterator
+console-format-es6-2.html:11 MapIterator {42, Object {foo: 2}}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -81,12 +81,12 @@ console-format-es6-2.html:11 MapIterator
         0: 42
         1: Object
         length: 2
-console-format-es6-2.html:12 Array(1)
+console-format-es6-2.html:12 [MapIterator]
     0: MapIterator
     length: 1
     __proto__: Array(0)
 globals[1]
-MapIterator
+MapIterator {42, Object {foo: 2}}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -95,7 +95,7 @@ MapIterator
         0: 42
         1: Object
         length: 2
-console-format-es6-2.html:11 MapIterator
+console-format-es6-2.html:11 MapIterator {[41, 42], [Object, Object]}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -104,12 +104,12 @@ console-format-es6-2.html:11 MapIterator
         0: Array(2)
         1: Array(2)
         length: 2
-console-format-es6-2.html:12 Array(1)
+console-format-es6-2.html:12 [MapIterator]
     0: MapIterator
     length: 1
     __proto__: Array(0)
 globals[2]
-MapIterator
+MapIterator {[41, 42], [Object, Object]}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -118,7 +118,7 @@ MapIterator
         0: Array(2)
         1: Array(2)
         length: 2
-console-format-es6-2.html:11 SetIterator
+console-format-es6-2.html:11 SetIterator {41, Object {foo: 1}}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -127,12 +127,12 @@ console-format-es6-2.html:11 SetIterator
         0: 41
         1: Object
         length: 2
-console-format-es6-2.html:12 Array(1)
+console-format-es6-2.html:12 [SetIterator]
     0: SetIterator
     length: 1
     __proto__: Array(0)
 globals[3]
-SetIterator
+SetIterator {41, Object {foo: 1}}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -141,7 +141,7 @@ SetIterator
         0: 41
         1: Object
         length: 2
-console-format-es6-2.html:11 SetIterator
+console-format-es6-2.html:11 SetIterator {41, Object {foo: 1}}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -150,12 +150,12 @@ console-format-es6-2.html:11 SetIterator
         0: 41
         1: Object
         length: 2
-console-format-es6-2.html:12 Array(1)
+console-format-es6-2.html:12 [SetIterator]
     0: SetIterator
     length: 1
     __proto__: Array(0)
 globals[4]
-SetIterator
+SetIterator {41, Object {foo: 1}}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -164,7 +164,7 @@ SetIterator
         0: 41
         1: Object
         length: 2
-console-format-es6-2.html:11 SetIterator
+console-format-es6-2.html:11 SetIterator {[41, 41], [Object, Object]}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -173,12 +173,12 @@ console-format-es6-2.html:11 SetIterator
         0: Array(2)
         1: Array(2)
         length: 2
-console-format-es6-2.html:12 Array(1)
+console-format-es6-2.html:12 [SetIterator]
     0: SetIterator
     length: 1
     __proto__: Array(0)
 globals[5]
-SetIterator
+SetIterator {[41, 41], [Object, Object]}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
@@ -187,7 +187,7 @@ SetIterator
         0: Array(2)
         1: Array(2)
         length: 2
-console-format-es6-2.html:11 MapIterator
+console-format-es6-2.html:11 MapIterator {Object {foo: 2}}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
@@ -195,12 +195,12 @@ console-format-es6-2.html:11 MapIterator
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-format-es6-2.html:12 Array(1)
+console-format-es6-2.html:12 [MapIterator]
     0: MapIterator
     length: 1
     __proto__: Array(0)
 globals[6]
-MapIterator
+MapIterator {Object {foo: 2}}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
@@ -208,7 +208,7 @@ MapIterator
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-format-es6-2.html:11 SetIterator
+console-format-es6-2.html:11 SetIterator {Object {foo: 1}}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
@@ -216,12 +216,12 @@ console-format-es6-2.html:11 SetIterator
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-format-es6-2.html:12 Array(1)
+console-format-es6-2.html:12 [SetIterator]
     0: SetIterator
     length: 1
     __proto__: Array(0)
 globals[7]
-SetIterator
+SetIterator {Object {foo: 1}}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
