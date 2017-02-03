@@ -41,7 +41,6 @@ class TokenizedChunkQueue : public ThreadSafeRefCounted<TokenizedChunkQueue> {
  private:
   TokenizedChunkQueue();
 
-  std::unique_ptr<Mutex> m_mutex;
   Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>> m_pendingChunks;
   size_t m_peakPendingChunkCount = 0;
   size_t m_peakPendingTokenCount = 0;

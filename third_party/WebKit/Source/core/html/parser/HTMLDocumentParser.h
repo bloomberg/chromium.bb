@@ -232,23 +232,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   void evaluateAndPreloadScriptForDocumentWrite(const String& source);
 
-  // Temporary enum for the ParseHTMLOnMainThread experiment. This is used to
-  // annotate whether a given task should post a task or not on the main thread
-  // if the lookahead parser is living on the main thread.
-  enum LookaheadParserTaskSynchrony {
-    Synchronous,
-    Asynchronous,
-  };
-
-  // Setting |synchronyPolicy| to Synchronous will just call the function with
-  // the given parameters. Note, this method is completely temporary as we need
-  // to maintain both threading implementations until the ParseHTMLOnMainThread
-  // experiment finishes.
-  template <typename FunctionType, typename... Ps>
-  void postTaskToLookaheadParser(LookaheadParserTaskSynchrony synchronyPolicy,
-                                 FunctionType,
-                                 Ps&&... parameters);
-
   HTMLToken& token() { return *m_token; }
 
   HTMLParserOptions m_options;

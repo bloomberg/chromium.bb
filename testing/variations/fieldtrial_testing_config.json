@@ -1367,29 +1367,6 @@
             ]
         }
     ],
-    "ParseHTMLOnMainThread": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "parseHTMLOnMainThreadCoalesceChunks": "false",
-                        "parseHTMLOnMainThreadSyncTokenize": "false"
-                    },
-                    "enable_features": [
-                        "ParseHTMLOnMainThread"
-                    ]
-                }
-            ]
-        }
-    ],
     "PassiveDocumentEventListeners": [
         {
             "platforms": [

@@ -854,20 +854,6 @@
       initial: false,
     },
 
-    // Variant of the ParseHTMLOnMainThread experiment. One experiment immediately
-    // tokenizes input bytes. The default is to tokenize with a post task.
-    {
-      name: "parseHTMLOnMainThreadSyncTokenize",
-      initial: false,
-    },
-
-    // Variant of the ParseHTMLOnMainThread experiment. This is designed to coalesce
-    // TokenizedChunks when the experiment is running in threaded mode.
-    {
-      name: "parseHTMLOnMainThreadCoalesceChunks",
-      initial: false,
-    },
-
     // Whether the CSSPreloadScanner is used for externally CSS preloads. NoPreload
     // indicates that the scanner will be used, but no preloads issued.
     {

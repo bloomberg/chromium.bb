@@ -10,38 +10,12 @@
 
 namespace blink {
 
-namespace {
-
-// TODO(csharrison): Remove this temporary class when the ParseHTMLOnMainThread
-// experiment ends.
-class MaybeLocker {
- public:
-  MaybeLocker(Mutex* mutex) : m_mutex(mutex) {
-    if (m_mutex)
-      m_mutex->lock();
-  }
-  ~MaybeLocker() {
-    if (m_mutex)
-      m_mutex->unlock();
-  }
-
- private:
-  Mutex* m_mutex;
-};
-
-}  // namespace
-
-TokenizedChunkQueue::TokenizedChunkQueue()
-    : m_mutex(RuntimeEnabledFeatures::parseHTMLOnMainThreadEnabled()
-                  ? nullptr
-                  : new Mutex) {}
+TokenizedChunkQueue::TokenizedChunkQueue() {}
 
 TokenizedChunkQueue::~TokenizedChunkQueue() {}
 
 bool TokenizedChunkQueue::enqueue(
     std::unique_ptr<HTMLDocumentParser::TokenizedChunk> chunk) {
-  MaybeLocker locker(m_mutex.get());
-
   m_pendingTokenCount += chunk->tokens->size();
   m_peakPendingTokenCount =
       std::max(m_peakPendingTokenCount, m_pendingTokenCount);
@@ -55,27 +29,21 @@ bool TokenizedChunkQueue::enqueue(
 }
 
 void TokenizedChunkQueue::clear() {
-  MaybeLocker locker(m_mutex.get());
-
   m_pendingTokenCount = 0;
   m_pendingChunks.clear();
 }
 
 void TokenizedChunkQueue::takeAll(
     Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>>& vector) {
-  MaybeLocker locker(m_mutex.get());
-
   DCHECK(vector.isEmpty());
   m_pendingChunks.swap(vector);
 }
 
 size_t TokenizedChunkQueue::peakPendingChunkCount() {
-  MaybeLocker locker(m_mutex.get());
   return m_peakPendingChunkCount;
 }
 
 size_t TokenizedChunkQueue::peakPendingTokenCount() {
-  MaybeLocker locker(m_mutex.get());
   return m_peakPendingTokenCount;
 }
 

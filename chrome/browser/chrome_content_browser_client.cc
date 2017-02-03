@@ -1511,10 +1511,6 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
       //       disallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G
       "DisallowFetchForDocWrittenScriptsInMainFrame",
 
-      // Keys: parseHTMLOnMainThreadSyncTokenize
-      //       parseHTMLOnMainThreadCoalesceChunks
-      "ParseHTMLOnMainThread",
-
       // Keys: cssExternalScannerNoPreload
       //       cssExternalScannerPreload
       "CSSExternalScanner",

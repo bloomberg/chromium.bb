@@ -287,16 +287,6 @@
     "args": ["--enable-features=TouchpadAndWheelScrollLatching"]
   },
   {
-    "prefix": "parsehtmlonmainthread_sync",
-    "base": "fast/parser",
-    "args": ["--blink-settings=parseHTMLOnMainThreadSyncTokenize=true"]
-  },
-  {
-    "prefix": "parsehtmlonmainthread_coalesce",
-    "base": "fast/parser",
-    "args": ["--disable-blink-features=ParseHTMLOnMainThread", "--blink-settings=parseHTMLOnMainThreadCoalesceChunks=true"]
-  },
-  {
     "prefix": "mojo-loading",
     "base": "webexposed",
     "args": ["--enable-blink-features=LoadingWithMojo"]

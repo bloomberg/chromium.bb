@@ -287,9 +287,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(
           features::kFramebustingNeedsSameOriginOrUserGesture));
 
-  if (base::FeatureList::IsEnabled(features::kParseHTMLOnMainThread))
-    WebRuntimeFeatures::enableFeatureFromString("ParseHTMLOnMainThread", true);
-
   if (command_line.HasSwitch(switches::kDisableBackgroundTimerThrottling))
     WebRuntimeFeatures::enableTimerThrottlingForBackgroundTabs(false);
 

@@ -141,10 +141,6 @@ void CoreInitializer::initialize() {
 
   StringImpl::freezeStaticStrings();
 
-  // Creates HTMLParserThread::shared and ScriptStreamerThread::shared, but
-  // does not start the threads.
-  if (!RuntimeEnabledFeatures::parseHTMLOnMainThreadEnabled())
-    HTMLParserThread::init();
   ScriptStreamerThread::init();
 }
 
@@ -153,11 +149,7 @@ void CoreInitializer::shutdown() {
   // that this will wait the thread to stop its operations.
   ScriptStreamerThread::shutdown();
 
-  // Make sure we stop the HTMLParserThread before Platform::current() is
-  // cleared.
   ASSERT(Platform::current());
-  if (!RuntimeEnabledFeatures::parseHTMLOnMainThreadEnabled())
-    HTMLParserThread::shutdown();
 
   WorkerThread::terminateAndWaitForAllWorkers();
 }

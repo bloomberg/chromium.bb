@@ -218,10 +218,6 @@ void WebRuntimeFeatures::enableMiddleClickAutoscroll(bool enable) {
   RuntimeEnabledFeatures::setMiddleClickAutoscrollEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableParseHTMLOnMainThread(bool enable) {
-  RuntimeEnabledFeatures::setParseHTMLOnMainThreadEnabled(enable);
-}
-
 void WebRuntimeFeatures::enablePassiveDocumentEventListeners(bool enable) {
   RuntimeEnabledFeatures::setPassiveDocumentEventListenersEnabled(enable);
 }

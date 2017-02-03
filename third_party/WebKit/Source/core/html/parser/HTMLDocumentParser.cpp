@@ -481,9 +481,10 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(
   m_input.current().clear();
 
   ASSERT(checkpoint->unparsedInput.isSafeToSendToAnotherThread());
-  postTaskToLookaheadParser(Asynchronous, &BackgroundHTMLParser::resumeFrom,
-                            m_backgroundParser,
-                            WTF::passed(std::move(checkpoint)));
+  m_loadingTaskRunner->postTask(
+      BLINK_FROM_HERE,
+      WTF::bind(&BackgroundHTMLParser::resumeFrom, m_backgroundParser,
+                WTF::passed(std::move(checkpoint))));
 }
 
 size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(
@@ -508,9 +509,10 @@ size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(
   std::unique_ptr<CompactHTMLTokenStream> tokens = std::move(chunk->tokens);
   size_t elementTokenCount = 0;
 
-  postTaskToLookaheadParser(Asynchronous,
-                            &BackgroundHTMLParser::startedChunkWithCheckpoint,
-                            m_backgroundParser, chunk->inputCheckpoint);
+  m_loadingTaskRunner->postTask(
+      BLINK_FROM_HERE,
+      WTF::bind(&BackgroundHTMLParser::startedChunkWithCheckpoint,
+                m_backgroundParser, chunk->inputCheckpoint));
 
   for (const auto& xssInfo : chunk->xssInfos) {
     m_textPosition = xssInfo->m_textPosition;
@@ -658,9 +660,7 @@ void HTMLDocumentParser::forcePlaintextForTextDocument() {
 
     // This task should be synchronous, because otherwise synchronous
     // tokenizing can happen before plaintext is forced.
-    postTaskToLookaheadParser(
-        Synchronous, &BackgroundHTMLParser::forcePlaintextForTextDocument,
-        m_backgroundParser);
+    m_backgroundParser->forcePlaintextForTextDocument();
   } else
     m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
 }
@@ -856,8 +856,6 @@ void HTMLDocumentParser::startBackgroundParser() {
       config->pendingTokenLimit =
           document()->settings()->getBackgroundHtmlParserPendingTokenLimit();
     }
-    config->shouldCoalesceChunks =
-        document()->settings()->getParseHTMLOnMainThreadCoalesceChunks();
   }
 
   ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
@@ -868,10 +866,8 @@ void HTMLDocumentParser::startBackgroundParser() {
       BackgroundHTMLParser::create(std::move(config), m_loadingTaskRunner);
   // TODO(csharrison): This is a hack to initialize MediaValuesCached on the
   // correct thread. We should get rid of it.
-  postTaskToLookaheadParser(
-      Synchronous, &BackgroundHTMLParser::init, m_backgroundParser,
-      document()->url(),
-      WTF::passed(CachedDocumentParameters::create(document())),
+  m_backgroundParser->init(
+      document()->url(), CachedDocumentParameters::create(document()),
       MediaValuesCached::MediaValuesCachedData(*document()));
 }
 
@@ -887,10 +883,8 @@ void HTMLDocumentParser::stopBackgroundParser() {
   m_haveBackgroundParser = false;
 
   // Make this sync, as lsan triggers on some unittests if the task runner is
-  // used. Note that these lifetimes will be much more concrete if
-  // ParseHTMLOnMainThread lands (the lookahead parser will be a member).
-  postTaskToLookaheadParser(Synchronous, &BackgroundHTMLParser::stop,
-                            m_backgroundParser);
+  // used.
+  m_backgroundParser->stop();
   m_weakFactory.revokeAll();
 }
 
@@ -1006,8 +1000,9 @@ void HTMLDocumentParser::finish() {
   if (m_haveBackgroundParser) {
     if (!m_input.haveSeenEndOfFile())
       m_input.closeWithoutMarkingEndOfFile();
-    postTaskToLookaheadParser(Asynchronous, &BackgroundHTMLParser::finish,
-                              m_backgroundParser);
+    m_loadingTaskRunner->postTask(
+        BLINK_FROM_HERE,
+        WTF::bind(&BackgroundHTMLParser::finish, m_backgroundParser));
     return;
   }
 
@@ -1206,14 +1201,11 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length) {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"),
                  "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
-    LookaheadParserTaskSynchrony policy =
-        document()->settings() &&
-                document()->settings()->getParseHTMLOnMainThreadSyncTokenize()
-            ? Synchronous
-            : Asynchronous;
-    postTaskToLookaheadParser(
-        policy, &BackgroundHTMLParser::appendRawBytesFromMainThread,
-        m_backgroundParser, WTF::passed(std::move(buffer)), bytesReceivedTime);
+    m_loadingTaskRunner->postTask(
+        BLINK_FROM_HERE,
+        WTF::bind(&BackgroundHTMLParser::appendRawBytesFromMainThread,
+                  m_backgroundParser, WTF::passed(std::move(buffer)),
+                  bytesReceivedTime));
     return;
   }
 
@@ -1236,8 +1228,9 @@ void HTMLDocumentParser::flush() {
       return;
     }
 
-    postTaskToLookaheadParser(Asynchronous, &BackgroundHTMLParser::flush,
-                              m_backgroundParser);
+    m_loadingTaskRunner->postTask(
+        BLINK_FROM_HERE,
+        WTF::bind(&BackgroundHTMLParser::flush, m_backgroundParser));
   } else {
     DecodedDataDocumentParser::flush();
   }
@@ -1249,8 +1242,10 @@ void HTMLDocumentParser::setDecoder(
   DecodedDataDocumentParser::setDecoder(std::move(decoder));
 
   if (m_haveBackgroundParser) {
-    postTaskToLookaheadParser(Asynchronous, &BackgroundHTMLParser::setDecoder,
-                              m_backgroundParser, WTF::passed(takeDecoder()));
+    m_loadingTaskRunner->postTask(
+        BLINK_FROM_HERE,
+        WTF::bind(&BackgroundHTMLParser::setDecoder, m_backgroundParser,
+                  WTF::passed(takeDecoder())));
   }
 }
 
@@ -1340,32 +1335,6 @@ void HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite(
         ("PreloadScanner.DocumentWrite.ExecutionTime.Failure", 1, 10000, 50));
     failureHistogram.count(duration);
   }
-}
-
-template <typename FunctionType, typename... Ps>
-void HTMLDocumentParser::postTaskToLookaheadParser(
-    LookaheadParserTaskSynchrony synchronyPolicy,
-    FunctionType function,
-    Ps&&... parameters) {
-  if (!RuntimeEnabledFeatures::parseHTMLOnMainThreadEnabled()) {
-    HTMLParserThread::shared()->postTask(
-        crossThreadBind(function, std::forward<Ps>(parameters)...));
-    return;
-  }
-
-  // Some messages to the lookahead parser should be synchronous. Otherwise,
-  // just post to the loading task runner.
-  switch (synchronyPolicy) {
-    case Synchronous:
-      (*WTF::bind(function, std::forward<Ps>(parameters)...))();
-      return;
-    case Asynchronous:
-      m_loadingTaskRunner->postTask(
-          BLINK_FROM_HERE,
-          WTF::bind(function, std::forward<Ps>(parameters)...));
-      return;
-  }
-  NOTREACHED();
 }
 
 }  // namespace blink
