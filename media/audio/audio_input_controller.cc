@@ -19,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "media/audio/audio_file_writer.h"
 #include "media/base/user_input_monitor.h"
 
 namespace media {
@@ -143,8 +142,8 @@ class AudioInputController::AudioCallback
     // that get returned to us somehow.
     // We should also avoid calling PostTask here since the implementation
     // of the debug writer will basically do a PostTask straight away anyway.
-    // Might require some modifications to AudioInputDebugWriter though since
-    // there are some threading concerns there and AudioInputDebugWriter's
+    // Might require some modifications to AudioFileWriter though since
+    // there are some threading concerns there and AudioFileWriter's
     // lifetime guarantees need to be longer than that of associated active
     // audio streams.
     std::unique_ptr<AudioBus> source_copy =
@@ -198,21 +197,14 @@ AudioInputController::AudioInputController(
     SyncWriter* sync_writer,
     std::unique_ptr<AudioFileWriter> debug_writer,
     UserInputMonitor* user_input_monitor,
-    const bool agc_is_enabled)
+    StreamType type)
     : creator_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       task_runner_(std::move(task_runner)),
       handler_(handler),
       stream_(nullptr),
       sync_writer_(sync_writer),
-      max_volume_(0.0),
+      type_(type),
       user_input_monitor_(user_input_monitor),
-      agc_is_enabled_(agc_is_enabled),
-#if defined(AUDIO_POWER_MONITORING)
-      power_measurement_is_enabled_(false),
-      log_silence_state_(false),
-      silence_state_(SILENCE_STATE_NO_MEASUREMENT),
-#endif
-      prev_key_down_count_(0),
       debug_writer_(std::move(debug_writer)),
       weak_ptr_factory_(this) {
   DCHECK(creator_task_runner_.get());
@@ -230,51 +222,11 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
     AudioManager* audio_manager,
     EventHandler* event_handler,
     SyncWriter* sync_writer,
-    const AudioParameters& params,
-    const std::string& device_id,
-    UserInputMonitor* user_input_monitor) {
-  DCHECK(audio_manager);
-  DCHECK(event_handler);
-  DCHECK(sync_writer);
-
-  if (!params.IsValid() || (params.channels() > kMaxInputChannels))
-    return nullptr;
-
-  if (factory_) {
-    return factory_->Create(audio_manager->GetTaskRunner(), sync_writer,
-                            audio_manager, event_handler, params,
-                            user_input_monitor);
-  }
-
-  scoped_refptr<AudioInputController> controller(new AudioInputController(
-      audio_manager->GetTaskRunner(), event_handler, sync_writer, nullptr,
-      user_input_monitor, false));
-
-  // Create and open a new audio input stream from the existing
-  // audio-device thread.
-  if (!controller->task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&AudioInputController::DoCreate,
-                     controller,
-                     base::Unretained(audio_manager),
-                     params,
-                     device_id))) {
-    controller = nullptr;
-  }
-
-  return controller;
-}
-
-// static
-scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
-    AudioManager* audio_manager,
-    EventHandler* event_handler,
-    const AudioParameters& params,
-    const std::string& device_id,
-    SyncWriter* sync_writer,
-    std::unique_ptr<AudioFileWriter> debug_writer,
     UserInputMonitor* user_input_monitor,
-    const bool agc_is_enabled) {
+    std::unique_ptr<AudioFileWriter> debug_writer,
+    const AudioParameters& params,
+    const std::string& device_id,
+    bool enable_agc) {
   DCHECK(audio_manager);
   DCHECK(sync_writer);
   DCHECK(event_handler);
@@ -285,24 +237,21 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
   if (factory_) {
     return factory_->Create(audio_manager->GetTaskRunner(), sync_writer,
                             audio_manager, event_handler, params,
-                            user_input_monitor);
+                            user_input_monitor, ParamsToStreamType(params));
   }
 
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.
   scoped_refptr<AudioInputController> controller(new AudioInputController(
       audio_manager->GetTaskRunner(), event_handler, sync_writer,
-      std::move(debug_writer), user_input_monitor, agc_is_enabled));
+      std::move(debug_writer), user_input_monitor, ParamsToStreamType(params)));
 
   // Create and open a new audio input stream from the existing
   // audio-device thread. Use the provided audio-input device.
   if (!controller->task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&AudioInputController::DoCreateForLowLatency,
-                     controller,
-                     base::Unretained(audio_manager),
-                     params,
-                     device_id))) {
+          FROM_HERE, base::Bind(&AudioInputController::DoCreate, controller,
+                                base::Unretained(audio_manager), params,
+                                device_id, enable_agc))) {
     controller = nullptr;
   }
 
@@ -322,20 +271,21 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
   DCHECK(event_handler);
 
   if (factory_) {
-    return factory_->Create(
-        task_runner, sync_writer, AudioManager::Get(), event_handler,
-        AudioParameters::UnavailableDeviceParams(), user_input_monitor);
+    return factory_->Create(task_runner, sync_writer, AudioManager::Get(),
+                            event_handler,
+                            AudioParameters::UnavailableDeviceParams(),
+                            user_input_monitor, VIRTUAL);
   }
 
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.
   scoped_refptr<AudioInputController> controller(new AudioInputController(
       task_runner, event_handler, sync_writer, std::move(debug_writer),
-      user_input_monitor, false));
+      user_input_monitor, VIRTUAL));
 
   if (!controller->task_runner_->PostTask(
           FROM_HERE, base::Bind(&AudioInputController::DoCreateForStream,
-                                controller, stream, false))) {
+                                controller, stream, /*enable_agc*/ false))) {
     controller = nullptr;
   }
 
@@ -364,80 +314,57 @@ void AudioInputController::SetVolume(double volume) {
 
 void AudioInputController::DoCreate(AudioManager* audio_manager,
                                     const AudioParameters& params,
-                                    const std::string& device_id) {
+                                    const std::string& device_id,
+                                    bool enable_agc) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!stream_);
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioInputController.CreateTime");
   handler_->OnLog(this, "AIC::DoCreate");
 
 #if defined(AUDIO_POWER_MONITORING)
-  // Disable power monitoring for streams that run without AGC enabled to
-  // avoid adding logs and UMA for non-WebRTC clients.
-  power_measurement_is_enabled_ = agc_is_enabled_;
+  // We only do power measurements for UMA stats for low latency streams, and
+  // only if agc is requested, to avoid adding logs and UMA for non-WebRTC
+  // clients.
+  power_measurement_is_enabled_ = (type_ == LOW_LATENCY && enable_agc);
   last_audio_level_log_time_ = base::TimeTicks::Now();
-  silence_state_ = SILENCE_STATE_NO_MEASUREMENT;
 #endif
 
   // MakeAudioInputStream might fail and return nullptr. If so,
   // DoCreateForStream will handle and report it.
   auto* stream = audio_manager->MakeAudioInputStream(
       params, device_id, base::Bind(&AudioInputController::LogMessage, this));
-  DoCreateForStream(stream,
-                    params.format() == AudioParameters::AUDIO_PCM_LOW_LATENCY);
-}
-
-void AudioInputController::DoCreateForLowLatency(AudioManager* audio_manager,
-                                                 const AudioParameters& params,
-                                                 const std::string& device_id) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-#if defined(AUDIO_POWER_MONITORING)
-  // We only log silence state UMA stats for low latency mode and if we use a
-  // real device.
-  if (params.format() != AudioParameters::AUDIO_FAKE)
-    log_silence_state_ = true;
-#endif
-
-  // Set the low latency timer to non-null. It'll be reset when capture starts.
-  low_latency_create_time_ = base::TimeTicks::Now();
-  DoCreate(audio_manager, params, device_id);
+  DoCreateForStream(stream, enable_agc);
 }
 
 void AudioInputController::DoCreateForStream(
     AudioInputStream* stream_to_control,
-    bool low_latency) {
+    bool enable_agc) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!stream_);
 
   if (!stream_to_control) {
-    LogCaptureStartupResult(
-        low_latency ? CAPTURE_STARTUP_CREATE_LOW_LATENCY_STREAM_FAILED
-                    : CAPTURE_STARTUP_CREATE_STREAM_FAILED);
+    LogCaptureStartupResult(CAPTURE_STARTUP_CREATE_STREAM_FAILED);
     handler_->OnError(this, STREAM_CREATE_ERROR);
     return;
   }
 
   if (!stream_to_control->Open()) {
     stream_to_control->Close();
-    LogCaptureStartupResult(low_latency
-                                ? CAPTURE_STARTUP_OPEN_LOW_LATENCY_STREAM_FAILED
-                                : CAPTURE_STARTUP_OPEN_STREAM_FAILED);
+    LogCaptureStartupResult(CAPTURE_STARTUP_OPEN_STREAM_FAILED);
     handler_->OnError(this, STREAM_OPEN_ERROR);
     return;
   }
 
-  // Set AGC state using mode in |agc_is_enabled_| which can only be enabled in
-  // CreateLowLatency().
 #if defined(AUDIO_POWER_MONITORING)
   bool agc_is_supported =
-      stream_to_control->SetAutomaticGainControl(agc_is_enabled_);
+      stream_to_control->SetAutomaticGainControl(enable_agc);
   // Disable power measurements on platforms that does not support AGC at a
   // lower level. AGC can fail on platforms where we don't support the
   // functionality to modify the input volume slider. One such example is
   // Windows XP.
   power_measurement_is_enabled_ &= agc_is_supported;
 #else
-  stream_to_control->SetAutomaticGainControl(agc_is_enabled_);
+  stream_to_control->SetAutomaticGainControl(enable_agc);
 #endif
 
   // Finally, keep the stream pointer around, update the state and notify.
@@ -459,8 +386,7 @@ void AudioInputController::DoRecord() {
     prev_key_down_count_ = user_input_monitor_->GetKeyPressCount();
   }
 
-  if (!low_latency_create_time_.is_null())
-    low_latency_create_time_ = base::TimeTicks::Now();
+  stream_create_time_ = base::TimeTicks::Now();
 
   audio_callback_.reset(new AudioCallback(this));
   stream_->Start(audio_callback_.get());
@@ -477,21 +403,20 @@ void AudioInputController::DoClose() {
   if (audio_callback_) {
     stream_->Stop();
 
-    if (!low_latency_create_time_.is_null()) {
-      // Since the usage pattern of getUserMedia commonly is that a stream
-      // (and accompanied audio track) is created and immediately closed or
-      // discarded, we collect stats separately for short lived audio streams
-      // (500ms or less) that we did not receive a callback for, as
-      // 'stopped early' and 'never got data'.
-      const base::TimeDelta duration =
-          base::TimeTicks::Now() - low_latency_create_time_;
-      LogCaptureStartupResult(audio_callback_->received_callback()
-                                  ? CAPTURE_STARTUP_OK
-                                  : (duration.InMilliseconds() < 500
-                                         ? CAPTURE_STARTUP_STOPPED_EARLY
-                                         : CAPTURE_STARTUP_NEVER_GOT_DATA));
-      UMA_HISTOGRAM_BOOLEAN("Media.Audio.Capture.CallbackError",
-                            audio_callback_->error_during_callback());
+    // Sometimes a stream (and accompanying audio track) is created and
+    // immediately closed or discarded. In this case they are registered as
+    // 'stopped early' rather than 'never got data'.
+    const base::TimeDelta duration =
+        base::TimeTicks::Now() - stream_create_time_;
+    CaptureStartupResult capture_startup_result =
+        audio_callback_->received_callback()
+            ? CAPTURE_STARTUP_OK
+            : (duration.InMilliseconds() < 500
+                   ? CAPTURE_STARTUP_STOPPED_EARLY
+                   : CAPTURE_STARTUP_NEVER_GOT_DATA);
+    LogCaptureStartupResult(capture_startup_result);
+    LogCallbackError();
+    if (type_ == LOW_LATENCY) {
       if (audio_callback_->received_callback()) {
         // Log the total duration (since DoCreate) and update the histogram.
         UMA_HISTOGRAM_LONG_TIMES("Media.InputStreamDuration", duration);
@@ -499,6 +424,9 @@ void AudioInputController::DoClose() {
             "AIC::DoClose: stream duration=%" PRId64 " seconds",
             duration.InSeconds());
         handler_->OnLog(this, log_string);
+      } else {
+        UMA_HISTOGRAM_LONG_TIMES("Media.InputStreamDurationWithoutCallback",
+                                 duration);
       }
     }
 
@@ -515,9 +443,8 @@ void AudioInputController::DoClose() {
 
 #if defined(AUDIO_POWER_MONITORING)
   // Send UMA stats if enabled.
-  if (log_silence_state_)
+  if (power_measurement_is_enabled_)
     LogSilenceState(silence_state_);
-  log_silence_state_ = false;
 #endif
 
   if (debug_writer_)
@@ -640,8 +567,42 @@ void AudioInputController::LogSilenceState(SilenceState value) {
 
 void AudioInputController::LogCaptureStartupResult(
     CaptureStartupResult result) {
-  UMA_HISTOGRAM_ENUMERATION("Media.AudioInputControllerCaptureStartupSuccess",
-                            result, CAPTURE_STARTUP_RESULT_MAX + 1);
+  switch (type_) {
+    case LOW_LATENCY:
+      UMA_HISTOGRAM_ENUMERATION("Media.LowLatencyAudioCaptureStartupSuccess",
+                                result, CAPTURE_STARTUP_RESULT_MAX + 1);
+      break;
+    case HIGH_LATENCY:
+      UMA_HISTOGRAM_ENUMERATION("Media.HighLatencyAudioCaptureStartupSuccess",
+                                result, CAPTURE_STARTUP_RESULT_MAX + 1);
+      break;
+    case VIRTUAL:
+      UMA_HISTOGRAM_ENUMERATION("Media.VirtualAudioCaptureStartupSuccess",
+                                result, CAPTURE_STARTUP_RESULT_MAX + 1);
+      break;
+    default:
+      break;
+  }
+}
+
+void AudioInputController::LogCallbackError() {
+  bool error_during_callback = audio_callback_->error_during_callback();
+  switch (type_) {
+    case LOW_LATENCY:
+      UMA_HISTOGRAM_BOOLEAN("Media.Audio.Capture.LowLatencyCallbackError",
+                            error_during_callback);
+      break;
+    case HIGH_LATENCY:
+      UMA_HISTOGRAM_BOOLEAN("Media.Audio.Capture.HighLatencyCallbackError",
+                            error_during_callback);
+      break;
+    case VIRTUAL:
+      UMA_HISTOGRAM_BOOLEAN("Media.Audio.Capture.VirtualCallbackError",
+                            error_during_callback);
+      break;
+    default:
+      break;
+  }
 }
 
 void AudioInputController::DoEnableDebugRecording(
@@ -708,6 +669,21 @@ bool AudioInputController::CheckAudioPower(const AudioBus* source,
 #else
   return false;
 #endif
+}
+
+// static
+AudioInputController::StreamType AudioInputController::ParamsToStreamType(
+    const AudioParameters& params) {
+  switch (params.format()) {
+    case AudioParameters::Format::AUDIO_PCM_LINEAR:
+      return AudioInputController::StreamType::HIGH_LATENCY;
+    case AudioParameters::Format::AUDIO_PCM_LOW_LATENCY:
+      return AudioInputController::StreamType::LOW_LATENCY;
+    default:
+      // Currently, the remaining supported type is fake. Reconsider if other
+      // formats become supported.
+      return AudioInputController::StreamType::FAKE;
+  }
 }
 
 }  // namespace media

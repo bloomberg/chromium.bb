@@ -7,6 +7,10 @@
 
 #include <memory>
 
+namespace base {
+class FilePath;
+}
+
 namespace media {
 
 class AudioBus;
@@ -36,6 +40,6 @@ class AudioFileWriter {
   virtual bool WillWrite() = 0;
 };
 
-}  // namspace media
+}  // namespace media
 
 #endif  // MEDIA_AUDIO_AUDIO_FILE_WRITER_H_

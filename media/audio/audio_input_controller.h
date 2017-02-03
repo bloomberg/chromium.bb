@@ -13,6 +13,7 @@
 
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
+#include "media/audio/audio_file_writer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_bus.h"
@@ -21,7 +22,7 @@
 // An AudioInputController controls an AudioInputStream and records data
 // from this input stream. The two main methods are Record() and Close() and
 // they are both executed on the audio thread which is injected by the two
-// alternative factory methods, Create() or CreateLowLatency().
+// alternative factory methods, Create() or CreateForStream().
 //
 // All public methods of AudioInputController are non-blocking.
 //
@@ -37,13 +38,13 @@
 //
 // * Initial state
 //
-// State sequences (assuming low-latency):
+// State sequences:
 //
 //  [Creating Thread]                     [Audio Thread]
 //
 //      User               AudioInputController               EventHandler
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// CrateLowLatency() ==>        DoCreate()
+// Create() ==>        DoCreate()
 //                   AudioManager::MakeAudioInputStream()
 //                        AudioInputStream::Open()
 //                                  .- - - - - - - - - - - - ->   OnError()
@@ -71,7 +72,6 @@ namespace media {
 #define AUDIO_POWER_MONITORING
 #endif
 
-class AudioFileWriter;
 class UserInputMonitor;
 
 class MEDIA_EXPORT AudioInputController
@@ -126,6 +126,14 @@ class MEDIA_EXPORT AudioInputController
     virtual void Close() = 0;
   };
 
+  // enum used for determining what UMA stats to report.
+  enum StreamType {
+    VIRTUAL = 0,
+    HIGH_LATENCY = 1,
+    LOW_LATENCY = 2,
+    FAKE = 3,
+  };
+
   // AudioInputController::Create() can use the currently registered Factory
   // to create the AudioInputController. Factory is intended for testing only.
   // |user_input_monitor| is used for typing detection and can be NULL.
@@ -137,24 +145,12 @@ class MEDIA_EXPORT AudioInputController
         AudioManager* audio_manager,
         EventHandler* event_handler,
         AudioParameters params,
-        UserInputMonitor* user_input_monitor) = 0;
+        UserInputMonitor* user_input_monitor,
+        StreamType type) = 0;
 
    protected:
     virtual ~Factory() {}
   };
-
-  // Factory method for creating an AudioInputController.
-  // The audio device will be created on the audio thread, and when that is
-  // done, the event handler will receive an OnCreated() call from that same
-  // thread. |device_id| is the unique ID of the audio device to be opened.
-  // |user_input_monitor| is used for typing detection and can be NULL.
-  static scoped_refptr<AudioInputController> Create(
-      AudioManager* audio_manager,
-      EventHandler* event_handler,
-      SyncWriter* sync_writer,
-      const AudioParameters& params,
-      const std::string& device_id,
-      UserInputMonitor* user_input_monitor);
 
   // Sets the factory used by the static method Create(). AudioInputController
   // does not take ownership of |factory|. A value of NULL results in an
@@ -162,26 +158,25 @@ class MEDIA_EXPORT AudioInputController
   static void set_factory_for_testing(Factory* factory) { factory_ = factory; }
   AudioInputStream* stream_for_testing() { return stream_; }
 
-  // Factory method for creating an AudioInputController for low-latency mode.
   // The audio device will be created on the audio thread, and when that is
   // done, the event handler will receive an OnCreated() call from that same
-  // thread. |user_input_monitor| is used for typing detection and can be NULL.
-  static scoped_refptr<AudioInputController> CreateLowLatency(
+  // thread. |user_input_monitor| is used for typing detection and can be NULL,
+  // and |debug_writer| can be null if debug recording is not required.
+  static scoped_refptr<AudioInputController> Create(
       AudioManager* audio_manager,
       EventHandler* event_handler,
+      SyncWriter* sync_writer,
+      UserInputMonitor* user_input_monitor,
+      std::unique_ptr<AudioFileWriter> debug_writer,
       const AudioParameters& params,
       const std::string& device_id,
       // External synchronous writer for audio controller.
-      SyncWriter* sync_writer,
-      std::unique_ptr<AudioFileWriter> debug_writer,
-      UserInputMonitor* user_input_monitor,
-      const bool agc_is_enabled);
+      bool agc_is_enabled);
 
   // Factory method for creating an AudioInputController with an existing
-  // |stream| for low-latency mode, taking ownership of |stream|. The stream
-  // will be opened on the audio thread, and when that is done, the event
-  // handler will receive an OnCreated() call from that same thread.
-  // |user_input_monitor| is used for typing detection and can be NULL.
+  // |stream|. The stream will be opened on the audio thread, and when that is
+  // done, the event  handler will receive an OnCreated() call from that same
+  // thread. |user_input_monitor| is used for typing detection and can be NULL.
   static scoped_refptr<AudioInputController> CreateForStream(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       EventHandler* event_handler,
@@ -230,16 +225,12 @@ class MEDIA_EXPORT AudioInputController
   // Media.Audio.InputStartupSuccessMac to cover issues similar
   // to the ones the NO_DATA_CALLBACK was intended for.
   enum CaptureStartupResult {
-    CAPTURE_STARTUP_NO_DATA_CALLBACK = 0,  // no longer used.
-    CAPTURE_STARTUP_OK = 1,
-    CAPTURE_STARTUP_CREATE_STREAM_FAILED = 2,
-    CAPTURE_STARTUP_OPEN_STREAM_FAILED = 3,
-    CAPTURE_STARTUP_NEVER_GOT_DATA = 4,
-    CAPTURE_STARTUP_STOPPED_EARLY = 5,
-    CAPTURE_STARTUP_CREATE_LOW_LATENCY_STREAM_FAILED = 6,
-    CAPTURE_STARTUP_OPEN_LOW_LATENCY_STREAM_FAILED = 7,
-    CAPTURE_STARTUP_RESULT_MAX =
-        CAPTURE_STARTUP_CREATE_LOW_LATENCY_STREAM_FAILED
+    CAPTURE_STARTUP_OK = 0,
+    CAPTURE_STARTUP_CREATE_STREAM_FAILED = 1,
+    CAPTURE_STARTUP_OPEN_STREAM_FAILED = 2,
+    CAPTURE_STARTUP_NEVER_GOT_DATA = 3,
+    CAPTURE_STARTUP_STOPPED_EARLY = 4,
+    CAPTURE_STARTUP_RESULT_MAX = CAPTURE_STARTUP_STOPPED_EARLY,
   };
 
 #if defined(AUDIO_POWER_MONITORING)
@@ -267,7 +258,7 @@ class MEDIA_EXPORT AudioInputController
                        SyncWriter* sync_writer,
                        std::unique_ptr<AudioFileWriter> debug_writer,
                        UserInputMonitor* user_input_monitor,
-                       const bool agc_is_enabled);
+                       StreamType type);
   virtual ~AudioInputController();
 
   const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunnerForTesting()
@@ -281,11 +272,9 @@ class MEDIA_EXPORT AudioInputController
   // Methods called on the audio thread (owned by the AudioManager).
   void DoCreate(AudioManager* audio_manager,
                 const AudioParameters& params,
-                const std::string& device_id);
-  void DoCreateForLowLatency(AudioManager* audio_manager,
-                             const AudioParameters& params,
-                             const std::string& device_id);
-  void DoCreateForStream(AudioInputStream* stream_to_control, bool low_latency);
+                const std::string& device_id,
+                bool enable_agc);
+  void DoCreateForStream(AudioInputStream* stream_to_control, bool enable_agc);
   void DoRecord();
   void DoClose();
   void DoReportError();
@@ -302,8 +291,10 @@ class MEDIA_EXPORT AudioInputController
 #endif
 
   // Logs the result of creating an AudioInputController.
-  // Only logs once, even if it is called several times.
   void LogCaptureStartupResult(CaptureStartupResult result);
+
+  // Logs whether an error was encountered suring the stream.
+  void LogCallbackError();
 
   // Enable and disable debug recording of audio input. Called on the audio
   // thread.
@@ -331,6 +322,8 @@ class MEDIA_EXPORT AudioInputController
                        float* average_power_dbfs,
                        int* mic_volume_percent);
 
+  static StreamType ParamsToStreamType(const AudioParameters& params);
+
   // Gives access to the task runner of the creating thread.
   scoped_refptr<base::SingleThreadTaskRunner> const creator_task_runner_;
 
@@ -343,38 +336,35 @@ class MEDIA_EXPORT AudioInputController
 
   // Pointer to the audio input stream object.
   // Only used on the audio thread.
-  AudioInputStream* stream_;
+  AudioInputStream* stream_ = nullptr;
 
   // SyncWriter is used only in low-latency mode for synchronous writing.
   SyncWriter* const sync_writer_;
 
+  StreamType type_;
+
   static Factory* factory_;
 
-  double max_volume_;
+  double max_volume_ = 0.0;
 
   UserInputMonitor* const user_input_monitor_;
 
-  const bool agc_is_enabled_;
-
 #if defined(AUDIO_POWER_MONITORING)
-  // Will be set to true if an AGC is supported and enabled (see DoCreate and
-  // DoCreateForStream). By default set to false.
-  bool power_measurement_is_enabled_;
+  // Whether the silence state and microphone levels should be checked and sent
+  // as UMA stats.
+  bool power_measurement_is_enabled_ = false;
 
   // Updated each time a power measurement is performed.
   base::TimeTicks last_audio_level_log_time_;
 
-  // Whether the silence state should sent as UMA stat.
-  bool log_silence_state_;
-
   // The silence report sent as UMA stat at the end of a session.
-  SilenceState silence_state_;
+  SilenceState silence_state_ = SILENCE_STATE_NO_MEASUREMENT;
 #endif
 
-  size_t prev_key_down_count_;
+  size_t prev_key_down_count_ = 0;
 
-  // Time when a low-latency stream is created.
-  base::TimeTicks low_latency_create_time_;
+  // Time when the stream started recording.
+  base::TimeTicks stream_create_time_;
 
   // Used for audio debug recordings. Accessed on audio thread.
   const std::unique_ptr<AudioFileWriter> debug_writer_;

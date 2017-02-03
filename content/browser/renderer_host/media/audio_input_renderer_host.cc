@@ -368,14 +368,9 @@ void AudioInputRendererHost::DoCreateStream(
     if (entry->controller.get() && type == MEDIA_DESKTOP_AUDIO_CAPTURE)
       IncrementDesktopCaptureCounter(TAB_AUDIO_CAPTURER_CREATED);
   } else {
-    // We call CreateLowLatency regardless of the value of
-    // |audio_params.format|. Low latency can currently mean different things in
-    // different parts of the stack.
-    // TODO(grunell): Clean up the low latency terminology so that it's less
-    // confusing.
-    entry->controller = media::AudioInputController::CreateLowLatency(
-        audio_manager_, this, audio_params, device_id, entry->writer.get(),
-        std::move(debug_writer), user_input_monitor_,
+    entry->controller = media::AudioInputController::Create(
+        audio_manager_, this, entry->writer.get(), user_input_monitor_,
+        std::move(debug_writer), audio_params, device_id,
         config.automatic_gain_control);
     oss << ", AGC=" << config.automatic_gain_control;
 

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "content/browser/speech/endpointer/endpointer.h"
