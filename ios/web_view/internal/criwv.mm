@@ -14,7 +14,7 @@
 #include "ios/web_view/internal/criwv_browser_state.h"
 #import "ios/web_view/internal/criwv_web_client.h"
 #import "ios/web_view/internal/criwv_web_main_delegate.h"
-#import "ios/web_view/internal/criwv_web_view_impl.h"
+#import "ios/web_view/internal/criwv_web_view_internal.h"
 #import "ios/web_view/public/criwv_delegate.h"
 
 namespace {
@@ -42,9 +42,10 @@ CRIWV* g_criwv = nil;
   g_criwv = nil;
 }
 
-+ (id<CRIWVWebView>)webView {
-  return [[[CRIWVWebViewImpl alloc] initWithBrowserState:[g_criwv browserState]]
-      autorelease];
++ (CRIWVWebView*)webViewWithFrame:(CGRect)frame {
+  return
+      [[[CRIWVWebView alloc] initWithFrame:frame
+                              browserState:[g_criwv browserState]] autorelease];
 }
 
 - (instancetype)initWithDelegate:(id<CRIWVDelegate>)delegate {

@@ -11,12 +11,12 @@ namespace ios_web_view {
 class CRIWVBrowserState;
 }
 
-@interface CRIWVWebViewImpl : NSObject<CRIWVWebView>
+@interface CRIWVWebView ()
 
-- (instancetype)init NS_UNAVAILABLE;
-
-- (instancetype)initWithBrowserState:
-    (ios_web_view::CRIWVBrowserState*)browserState NS_DESIGNATED_INITIALIZER;
+// |browserState| cannot be nil.
+- (instancetype)initWithFrame:(CGRect)frame
+                 browserState:(ios_web_view::CRIWVBrowserState*)browserState
+    NS_DESIGNATED_INITIALIZER;
 
 @end
 

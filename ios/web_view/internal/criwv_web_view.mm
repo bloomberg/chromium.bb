@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/internal/criwv_web_view_impl.h"
+#import "ios/web_view/internal/criwv_web_view_internal.h"
 
 #include <memory>
 #include <utility>
@@ -10,8 +10,8 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/web/public/referrer.h"
 #import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
@@ -23,7 +23,7 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-@interface CRIWVWebViewImpl ()<CRWWebStateDelegate, CRWWebStateObserver> {
+@interface CRIWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
   id<CRIWVWebViewDelegate> _delegate;
   ios_web_view::CRIWVBrowserState* _browserState;
   std::unique_ptr<web::WebState> _webState;
@@ -34,14 +34,14 @@
 
 @end
 
-@implementation CRIWVWebViewImpl
+@implementation CRIWVWebView
 
 @synthesize delegate = _delegate;
 @synthesize loadProgress = _loadProgress;
 
-- (instancetype)initWithBrowserState:
-    (ios_web_view::CRIWVBrowserState*)browserState {
-  self = [super init];
+- (instancetype)initWithFrame:(CGRect)frame
+                 browserState:(ios_web_view::CRIWVBrowserState*)browserState {
+  self = [super initWithFrame:frame];
   if (self) {
     _browserState = browserState;
 
@@ -58,6 +58,18 @@
     ios_web_view::CRIWVTranslateClient::CreateForWebState(_webState.get());
   }
   return self;
+}
+
+- (void)willMoveToSuperview:(UIView*)newSuperview {
+  [super willMoveToSuperview:newSuperview];
+  UIView* subview = _webState->GetView();
+  if (subview.superview == self) {
+    return;
+  }
+  subview.frame = self.frame;
+  subview.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  [self addSubview:subview];
 }
 
 - (UIView*)view {

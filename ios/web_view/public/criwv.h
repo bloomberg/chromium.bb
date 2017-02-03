@@ -5,10 +5,11 @@
 #ifndef IOS_WEB_VIEW_PUBLIC_CRIWV_H_
 #define IOS_WEB_VIEW_PUBLIC_CRIWV_H_
 
+#import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
 @protocol CRIWVDelegate;
-@protocol CRIWVWebView;
+@class CRIWVWebView;
 
 // Main interface for the CRIWV library.
 __attribute__((visibility("default")))
@@ -23,7 +24,7 @@ __attribute__((visibility("default")))
 + (void)shutDown;
 
 // Creates and returns a web view.
-+ (id<CRIWVWebView>)webView;
++ (CRIWVWebView*)webViewWithFrame:(CGRect)frame;
 
 @end
 

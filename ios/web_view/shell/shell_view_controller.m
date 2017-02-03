@@ -20,7 +20,7 @@
 // Toolbar containing navigation buttons and |field|.
 @property(nonatomic, strong) UIToolbar* toolbar;
 // CRIWV view which renders the web page.
-@property(nonatomic, strong) id<CRIWVWebView> webView;
+@property(nonatomic, strong) CRIWVWebView* webView;
 // Handles the translation of the content displayed in |webView|.
 @property(nonatomic, strong) TranslateController* translateController;
 
@@ -120,13 +120,11 @@
   [_toolbar addSubview:stop];
   [_toolbar addSubview:_field];
 
-  self.webView = [CRIWV webView];
+  self.webView = [CRIWV webViewWithFrame:[_containerView bounds]];
   [_webView setDelegate:self];
-  UIView* view = [_webView view];
-  [_containerView addSubview:view];
-  [view setFrame:[_containerView bounds]];
-  [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-                            UIViewAutoresizingFlexibleHeight];
+  [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                UIViewAutoresizingFlexibleHeight];
+  [_containerView addSubview:_webView];
 
   [_webView loadURL:[NSURL URLWithString:@"https://www.google.com/"]];
 }
@@ -172,7 +170,7 @@
 
 #pragma mark CRIWVWebViewDelegate methods
 
-- (void)webView:(id<CRIWVWebView>)webView
+- (void)webView:(CRIWVWebView*)webView
     didFinishLoadingWithURL:(NSURL*)url
                 loadSuccess:(BOOL)loadSuccess {
   // TODO(crbug.com/679895): Add some visual indication that the page load has
@@ -180,7 +178,7 @@
   [self updateToolbar];
 }
 
-- (void)webView:(id<CRIWVWebView>)webView
+- (void)webView:(CRIWVWebView*)webView
     didUpdateWithChanges:(CRIWVWebViewUpdateType)changes {
   if (changes & CRIWVWebViewUpdateTypeProgress) {
     // TODO(crbug.com/679895): Add a progress indicator.

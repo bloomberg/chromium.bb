@@ -22,8 +22,8 @@ source_set("internal") {
     "criwv_web_main_delegate.mm",
     "criwv_web_main_parts.h",
     "criwv_web_main_parts.mm",
-    "criwv_web_view_impl.h",
-    "criwv_web_view_impl.mm",
+    "criwv_web_view.mm",
+    "criwv_web_view_internal.h",
     "pref_names.cc",
     "pref_names.h",
   ]

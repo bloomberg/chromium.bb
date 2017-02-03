@@ -8,9 +8,14 @@
 
 @protocol CRIWVWebViewDelegate;
 
-// Primary objective-c interface for web/.  Just like a WKWebView, but better.
+// A web view component (like WKWebView) which uses iOS Chromium's web view
+// implementation.
+//
+// In addition to WKWebView features, it allows Translate, Find In Page,
+// Customizable Context Menus, and maybe more.
+//
 // Concrete instances can be created through CRIWV.
-@protocol CRIWVWebView<NSObject>
+@interface CRIWVWebView : UIView
 
 // The view used to display web content.
 @property(nonatomic, readonly) UIView* view;
@@ -34,6 +39,9 @@
 // The current load progress, as a fraction between 0 and 1.  This value is
 // undefined if the web view is not currently loading.
 @property(nonatomic, readonly) CGFloat loadProgress;
+
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
 // Navigates backwards or forwards by one page.  Does nothing if the
 // corresponding |canGoBack| or |canGoForward| method returns NO.
