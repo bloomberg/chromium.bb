@@ -83,20 +83,24 @@ Polymer({
     // currentRouteChanged is not called during the initial navigation. If the
     // user navigates directly to the lockScreen page, we still want to show the
     // password prompt page.
-    this.currentRouteChanged();
+    this.currentRouteChanged(settings.Route.LOCK_SCREEN,
+        settings.Route.LOCK_SCREEN);
   },
 
   /**
    * Overridden from settings.RouteObserverBehavior.
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
    * @protected
    */
-  currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.Route.LOCK_SCREEN &&
-        !this.setModes_) {
+  currentRouteChanged: function(newRoute, oldRoute) {
+    if (newRoute == settings.Route.LOCK_SCREEN && !this.setModes_) {
       this.$.passwordPrompt.open();
-    } else {
+    } else if (newRoute != settings.Route.FINGERPRINT &&
+        oldRoute != settings.Route.FINGERPRINT) {
       // If the user navigated away from the lock screen settings page they will
-      // have to re-enter their password.
+      // have to re-enter their password. An exception is if they are navigating
+      // to or from the fingerprint subpage.
       this.setModes_ = undefined;
     }
   },
@@ -162,5 +166,10 @@ Polymer({
     e.preventDefault();
     this.$.setupPin.open();
     this.writeUma_(LockScreenProgress.CHOOSE_PIN_OR_PASSWORD);
+  },
+
+  /** @private */
+  onEditFingerprints_: function() {
+    settings.navigateTo(settings.Route.FINGERPRINT);
   },
 });

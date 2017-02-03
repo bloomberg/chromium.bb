@@ -2148,6 +2148,15 @@
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SETUP_PIN_BUTTON" desc="Button that is used to setup a new PIN when the user does not have a PIN yet.">
       Set up PIN
     </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_EDIT_FINGERPRINTS" desc="Text on the lock screen which opens up the fingerprint subpage.">
+      Edit Fingerprints
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_EDIT_FINGERPRINTS_DESCRIPTION" desc="Secondary text on the lock screen which opens up the fingerprint subpage.">
+      Set up a faster way to unlock your device
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_SUBPAGE_TITLE" desc="Title of the fingerprint subpage.">
+      Fingerprint
+    </message>
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_REGISTERED_FINGERPRINTS_LABEL" desc="Text above fingerprint list that tells users their registered fingerprints.">
       Registered fingerprints:
     </message>

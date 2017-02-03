@@ -132,6 +132,7 @@ cr.define('settings', function() {
   r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture');
   r.ACCOUNTS = r.PEOPLE.createChild('/accounts');
   r.LOCK_SCREEN = r.PEOPLE.createChild('/lockScreen');
+  r.FINGERPRINT = r.LOCK_SCREEN.createChild('/lockScreen/fingerprint');
 
   r.DEVICE = r.BASIC.createSection('/device', 'device');
   r.POINTERS = r.DEVICE.createChild('/pointer-overlay');

@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="fingerprint_list.html">
@@ -48,8 +49,15 @@
         </div>
         <iron-collapse
             opened="[[prefs.settings.enable_quick_unlock_fingerprint.value]]">
-          <div class="settings-box continuation">
-            <settings-fingerprint-list></settings-fingerprint-list>
+          <div class="settings-box continuation" on-tap="onEditFingerprints_"
+              actionable>
+            <div class="start">
+              $i18n{lockScreenEditFingerprints}
+              <div class="secondary">
+                $i18n{lockScreenEditFingerprintsDescription}
+              </div>
+            </div>
+            <button class="subpage-arrow" is="paper-icon-button-light"></button>
           </div>
         </iron-collapse>
       </template>
