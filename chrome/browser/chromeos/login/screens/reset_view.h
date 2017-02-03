@@ -7,7 +7,7 @@
 
 namespace chromeos {
 
-class ResetModel;
+class ResetScreen;
 
 // Interface for dependency injection between ResetScreen and its actual
 // representation, either views based or WebUI.
@@ -15,7 +15,7 @@ class ResetView {
  public:
   virtual ~ResetView() {}
 
-  virtual void Bind(ResetModel& model) = 0;
+  virtual void Bind(ResetScreen* screen) = 0;
   virtual void Unbind() = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;

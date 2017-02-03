@@ -811,8 +811,6 @@ source_set("chromeos") {
     "login/screens/network_screen.cc",
     "login/screens/network_screen.h",
     "login/screens/network_view.h",
-    "login/screens/reset_model.cc",
-    "login/screens/reset_model.h",
     "login/screens/reset_screen.cc",
     "login/screens/reset_screen.h",
     "login/screens/reset_view.h",

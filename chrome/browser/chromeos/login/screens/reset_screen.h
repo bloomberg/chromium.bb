@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/login/screens/reset_model.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chromeos/dbus/update_engine_client.h"
 
 
@@ -22,25 +22,25 @@ class ErrorScreen;
 class ResetView;
 
 // Representation independent class that controls screen showing reset to users.
-class ResetScreen : public ResetModel,
-                    public UpdateEngineClient::Observer {
+class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
  public:
   ResetScreen(BaseScreenDelegate* base_screen_delegate,
               ResetView* view);
   ~ResetScreen() override;
 
-  // ResetModel implementation:
+  // Called when actor is destroyed so there's no dead reference to it.
+  void OnViewDestroyed(ResetView* view);
+
+ private:
+  // BaseScreen implementation:
   void Show() override;
   void Hide() override;
-  void OnViewDestroyed(ResetView* view) override;
   void OnUserAction(const std::string& action_id) override;
 
   // UpdateEngineClient::Observer implementation:
   void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
 
   void OnRollbackCheck(bool can_rollback);
-
- private:
 
   enum State {
     STATE_RESTART_REQUIRED = 0,

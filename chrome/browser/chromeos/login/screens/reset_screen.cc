@@ -24,15 +24,34 @@
 
 
 namespace chromeos {
+namespace {
+
+constexpr const char kUserActionCancelReset[] = "cancel-reset";
+constexpr const char kUserActionResetRestartPressed[] = "restart-pressed";
+constexpr const char kUserActionResetPowerwashPressed[] = "powerwash-pressed";
+constexpr const char kUserActionResetLearnMorePressed[] = "learn-more-link";
+constexpr const char kUserActionResetRollbackToggled[] = "rollback-toggled";
+constexpr const char kUserActionResetShowConfirmationPressed[] =
+    "show-confirmation";
+constexpr const char kUserActionResetResetConfirmationDismissed[] =
+    "reset-confirm-dismissed";
+
+constexpr const char kContextKeyIsRollbackAvailable[] = "rollback-available";
+constexpr const char kContextKeyIsRollbackChecked[] = "rollback-checked";
+constexpr const char kContextKeyIsConfirmational[] = "is-confirmational-view";
+constexpr const char kContextKeyIsOfficialBuild[] = "is-official-build";
+constexpr const char kContextKeyScreenState[] = "screen-state";
+
+}  // namespace
 
 ResetScreen::ResetScreen(BaseScreenDelegate* base_screen_delegate,
                          ResetView* view)
-    : ResetModel(base_screen_delegate),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_RESET),
       view_(view),
       weak_ptr_factory_(this) {
   DCHECK(view_);
   if (view_)
-    view_->Bind(*this);
+    view_->Bind(this);
   context_.SetInteger(kContextKeyScreenState, STATE_RESTART_REQUIRED);
   context_.SetBoolean(kContextKeyIsRollbackAvailable, false);
   context_.SetBoolean(kContextKeyIsRollbackChecked, false);
