@@ -68,6 +68,7 @@ api.Action = {
   'RELOAD_UI': 5,
   'LOAD_URL': 6,
   'OMNIBOX_CONTENT': 7,
+  'SET_CONTENT_PAUSED': 8,
 };
 
 /**

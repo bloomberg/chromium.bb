@@ -33,12 +33,9 @@ class UiInterface {
   explicit UiInterface(Mode initial_mode, bool fullscreen);
   virtual ~UiInterface();
 
+  // Set HTML UI state or pass events.
   void SetMode(Mode mode);
-  Mode GetMode() { return mode_; }
-  void SetMenuMode(bool enabled);
-  bool GetMenuMode() { return menu_mode_; }
   void SetFullscreen(bool enabled);
-  bool GetFullscreen() { return fullscreen_; }
   void SetSecurityLevel(int level);
   void SetWebVRSecureOrigin(bool secure);
   void SetLoading(bool loading);
@@ -49,13 +46,13 @@ class UiInterface {
   void UpdateTab(bool incognito, int id, const std::string& title);
   void RemoveTab(bool incognito, int id);
   void SetURL(const GURL& url);
-
-  // Omnibox input and output handling.
-  void HandleOmniboxInput(const base::DictionaryValue& input);
   void SetOmniboxSuggestions(std::unique_ptr<base::Value> suggestions);
+  void HandleAppButtonClicked();
 
-  // Called by WebUI when starting VR.
+  // Handlers for HTML UI commands and notifications.
   void OnDomContentsLoaded();
+  void HandleOmniboxInput(const base::DictionaryValue& input);
+
   void SetUiCommandHandler(UiCommandHandler* handler);
 
  private:
@@ -63,7 +60,6 @@ class UiInterface {
   void FlushModeState();
 
   Mode mode_;
-  bool menu_mode_ = false;
   bool fullscreen_ = false;
   UiCommandHandler* handler_;
   bool loaded_ = false;

@@ -27,11 +27,6 @@ void UiInterface::SetMode(Mode mode) {
   FlushModeState();
 }
 
-void UiInterface::SetMenuMode(bool enabled) {
-  menu_mode_ = enabled;
-  FlushModeState();
-}
-
 void UiInterface::SetFullscreen(bool enabled) {
   fullscreen_ = enabled;
   FlushModeState();
@@ -49,7 +44,6 @@ void UiInterface::SetOmniboxSuggestions(
 
 void UiInterface::FlushModeState() {
   updates_.SetInteger("mode", static_cast<int>(mode_));
-  updates_.SetBoolean("menuMode", menu_mode_);
   updates_.SetBoolean("fullscreen", fullscreen_);
   FlushUpdates();
 }
@@ -114,6 +108,11 @@ void UiInterface::SetURL(const GURL& url) {
   details->SetString("path", url.path());
 
   updates_.Set("url", std::move(details));
+  FlushUpdates();
+}
+
+void UiInterface::HandleAppButtonClicked() {
+  updates_.SetBoolean("appButtonClicked", true);
   FlushUpdates();
 }
 

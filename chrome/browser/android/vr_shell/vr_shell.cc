@@ -132,8 +132,7 @@ void VrShell::SwapContents(JNIEnv* env, const JavaParamRef<jobject>& obj,
   // tabs. crbug.com/684661
   metrics_helper_ = base::MakeUnique<VrMetricsHelper>(main_contents_);
   metrics_helper_->SetVRActive(true);
-  metrics_helper_->SetWebVREnabled(
-      html_interface_->GetMode() == UiInterface::Mode::WEB_VR);
+  metrics_helper_->SetWebVREnabled(webvr_mode_);
 }
 
 void VrShell::LoadUIContent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -172,6 +171,23 @@ void VrShell::PostToGlThreadWhenReady(const base::Closure& task) {
   // finished starting?
   gl_thread_->WaitUntilThreadStarted();
   gl_thread_->task_runner()->PostTask(FROM_HERE, task);
+}
+
+void VrShell::SetContentPaused(bool paused) {
+  if (content_paused_ == paused)
+    return;
+  content_paused_ = paused;
+
+  if (!delegate_provider_->device_provider())
+    return;
+
+  // TODO(mthiesse): The page is no longer visible when in menu mode. We
+  // should unfocus or otherwise let it know it's hidden.
+  if (paused) {
+    delegate_provider_->device_provider()->Device()->OnBlur();
+  } else {
+    delegate_provider_->device_provider()->Device()->OnFocus();
+  }
 }
 
 void VrShell::OnTriggerEvent(JNIEnv* env,
@@ -227,14 +243,12 @@ void VrShell::OnDomContentsLoaded() {
 void VrShell::SetWebVrMode(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            bool enabled) {
+  webvr_mode_ = enabled;
   metrics_helper_->SetWebVREnabled(enabled);
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::SetWebVrMode,
                                      gl_thread_->GetVrShellGl(), enabled));
-  if (enabled) {
-    html_interface_->SetMode(UiInterface::Mode::WEB_VR);
-  } else {
-    html_interface_->SetMode(UiInterface::Mode::STANDARD);
-  }
+  html_interface_->SetMode(
+      enabled ? UiInterface::Mode::WEB_VR : UiInterface::Mode::STANDARD);
 }
 
 void VrShell::OnLoadProgressChanged(JNIEnv* env,
@@ -321,19 +335,7 @@ void VrShell::GvrDelegateReady() {
 
 void VrShell::AppButtonPressed() {
 #if defined(ENABLE_VR_SHELL)
-  html_interface_->SetMenuMode(!html_interface_->GetMenuMode());
-
-  // TODO(mthiesse): The page is no longer visible when in menu mode. We
-  // should unfocus or otherwise let it know it's hidden.
-  if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
-    if (delegate_provider_->device_provider()) {
-      if (html_interface_->GetMenuMode()) {
-        delegate_provider_->device_provider()->Device()->OnBlur();
-      } else {
-        delegate_provider_->device_provider()->Device()->OnFocus();
-      }
-    }
-  }
+  html_interface_->HandleAppButtonClicked();
 #endif
 }
 
@@ -399,6 +401,12 @@ void VrShell::DoUiAction(const UiAction action,
     case OMNIBOX_CONTENT:
       html_interface_->HandleOmniboxInput(*arguments);
       break;
+    case SET_CONTENT_PAUSED: {
+      bool paused;
+      CHECK(arguments->GetBoolean("paused", &paused));
+      SetContentPaused(paused);
+      break;
+    }
 #if defined(ENABLE_VR_SHELL_UI_DEV)
     case RELOAD_UI:
       ui_contents_->GetController().Reload(content::ReloadType::NORMAL, false);

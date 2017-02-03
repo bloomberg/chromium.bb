@@ -55,6 +55,7 @@ enum UiAction {
   RELOAD_UI,
   LOAD_URL,
   OMNIBOX_CONTENT,
+  SET_CONTENT_PAUSED,
 };
 
 class VrMetricsHelper;
@@ -156,6 +157,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
  private:
   ~VrShell() override;
   void PostToGlThreadWhenReady(const base::Closure& task);
+  void SetContentPaused(bool paused);
 
   // content::WebContentsObserver implementation.
   void RenderViewHostChanged(content::RenderViewHost* old_host,
@@ -182,6 +184,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito);
 
   std::unique_ptr<UiInterface> html_interface_;
+  bool content_paused_ = false;
+  bool webvr_mode_ = false;
 
   content::WebContents* main_contents_;
   std::unique_ptr<VrCompositor> content_compositor_;

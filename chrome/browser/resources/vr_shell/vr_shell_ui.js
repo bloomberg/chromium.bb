@@ -573,27 +573,37 @@ var vrShellUi = (function() {
       this.reloadUiButton = new ReloadUiButton();
     }
 
-    setMode(mode, menuMode, fullscreen) {
+    setMode(mode, fullscreen) {
+      this.mode = mode;
+      this.fullscreen = fullscreen;
+      this.updateState();
+    }
+
+    handleAppButtonClicked() {
+      this.menuMode = !this.menuMode;
+      this.updateState();
+    }
+
+    updateState() {
       /** @const */ var URL_INDICATOR_VISIBILITY_TIMEOUT_MS = 5000;
 
-      this.mode = mode;
-      this.menuMode = menuMode;
-      this.fullscreen = fullscreen;
+      let mode = this.mode;
+      let menuMode = this.menuMode;
+
+      api.doAction(api.Action.SET_CONTENT_PAUSED, {'paused': menuMode});
+
+      this.contentQuad.setEnabled(mode == api.Mode.STANDARD && !menuMode);
+      this.contentQuad.setFullscreen(this.fullscreen);
+      // TODO(crbug/643815): Set aspect ratio on content quad when available.
+      this.controls.setEnabled(menuMode);
+      this.omnibox.setEnabled(menuMode);
+      this.urlIndicator.setEnabled(mode == api.Mode.STANDARD && !menuMode);
+      this.urlIndicator.setVisibilityTimeout(
+          URL_INDICATOR_VISIBILITY_TIMEOUT_MS);
+      this.secureOriginWarnings.setEnabled(
+          mode == api.Mode.WEB_VR && !menuMode);
 
       this.reloadUiButton.setEnabled(mode == api.Mode.STANDARD);
-      this.contentQuad.setEnabled(mode == api.Mode.STANDARD && !menuMode);
-      this.contentQuad.setFullscreen(fullscreen);
-      // TODO(crbug/643815): Set aspect ratio on content quad when available.
-      // TODO(amp): Don't show controls in fullscreen once MENU mode lands.
-      this.controls.setEnabled(mode == api.Mode.STANDARD && !menuMode);
-      this.urlIndicator.setEnabled(mode == api.Mode.STANDARD && !menuMode);
-      // TODO(amp): Don't show controls in CINEMA mode once MENU mode lands.
-      this.urlIndicator.setVisibilityTimeout(
-          mode == api.Mode.STANDARD && !menuMode ?
-              0 :
-              URL_INDICATOR_VISIBILITY_TIMEOUT_MS);
-      this.omnibox.setEnabled(false);
-      this.secureOriginWarnings.setEnabled(mode == api.Mode.WEB_VR);
 
       api.setUiCssSize(
           uiRootElement.clientWidth, uiRootElement.clientHeight, UI_DPR);
@@ -617,7 +627,10 @@ var vrShellUi = (function() {
 
   function command(dict) {
     if ('mode' in dict) {
-      uiManager.setMode(dict['mode'], dict['menuMode'], dict['fullscreen']);
+      uiManager.setMode(dict['mode'], dict['fullscreen']);
+    }
+    if ('appButtonClicked' in dict) {
+      uiManager.handleAppButtonClicked();
     }
     if ('securityLevel' in dict) {
       uiManager.setSecurityLevel(dict['securityLevel']);
