@@ -91,7 +91,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,  // tile_rows
 #endif  // CONFIG_EXT_TILE
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
-  0,              // loop_filter_across_tiles_enabled
+  1,              // loop_filter_across_tiles_enabled
 #endif            // CONFIG_LOOPFILTERING_ACROSS_TILES
   7,              // arnr_max_frames
   5,              // arnr_strength

@@ -296,7 +296,7 @@ enum aome_enc_control_id {
    *            0 = disable loop filter across tile boundary
    *            1 = enable loop filter across tile boundary
    *
-   * By default, the value is 0, i.e. disable loop filter across tile boundary.
+   * By default, the value is 1, i.e. enable loop filter across tile boundary.
    *
    * Supported in codecs: AV1
    */
