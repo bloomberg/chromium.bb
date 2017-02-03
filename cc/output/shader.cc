@@ -435,19 +435,15 @@ void FragmentShader::Init(GLES2Interface* context,
         uniforms.push_back("a_texture");
       uniforms.push_back("ya_clamp_rect");
       uniforms.push_back("uv_clamp_rect");
-      if (color_conversion_mode_ == COLOR_CONVERSION_MODE_LUT_FROM_YUV) {
-        uniforms.push_back("lut_texture");
-        uniforms.push_back("lut_size");
-        uniforms.push_back("resource_multiplier");
-        uniforms.push_back("resource_offset");
-      } else {
-        uniforms.push_back("yuv_matrix");
-        uniforms.push_back("yuv_adj");
-      }
+      uniforms.push_back("yuv_and_resource_matrix");
       break;
     case INPUT_COLOR_SOURCE_UNIFORM:
       uniforms.push_back("color");
       break;
+  }
+  if (color_conversion_mode_ == COLOR_CONVERSION_MODE_LUT) {
+    uniforms.push_back("lut_texture");
+    uniforms.push_back("lut_size");
   }
 
   locations.resize(uniforms.size());
@@ -492,19 +488,15 @@ void FragmentShader::Init(GLES2Interface* context,
         a_texture_location_ = locations[index++];
       ya_clamp_rect_location_ = locations[index++];
       uv_clamp_rect_location_ = locations[index++];
-      if (color_conversion_mode_ == COLOR_CONVERSION_MODE_LUT_FROM_YUV) {
-        lut_texture_location_ = locations[index++];
-        lut_size_location_ = locations[index++];
-        resource_multiplier_location_ = locations[index++];
-        resource_offset_location_ = locations[index++];
-      } else {
-        yuv_matrix_location_ = locations[index++];
-        yuv_adj_location_ = locations[index++];
-      }
+      yuv_and_resource_matrix_location_ = locations[index++];
       break;
     case INPUT_COLOR_SOURCE_UNIFORM:
       color_location_ = locations[index++];
       break;
+  }
+  if (color_conversion_mode_ == COLOR_CONVERSION_MODE_LUT) {
+    lut_texture_location_ = locations[index++];
+    lut_size_location_ = locations[index++];
   }
   DCHECK_EQ(index, locations.size());
 }
@@ -849,54 +841,27 @@ std::string FragmentShader::GetShaderSource() const {
       SRC("vec2 uv_clamped =");
       SRC("    max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));");
       // Read the Y and UV or U and V textures into |yuv|.
-      SRC("vec3 yuv;");
-      SRC("yuv.x = TextureLookup(y_texture, ya_clamped).x;");
+      SRC("vec4 texColor;");
+      SRC("texColor.w = 1.0;");
+      SRC("texColor.x = TextureLookup(y_texture, ya_clamped).x;");
       if (uv_texture_mode_ == UV_TEXTURE_MODE_UV) {
         HDR("uniform SamplerType uv_texture;");
-        SRC("yuv.yz = TextureLookup(uv_texture, uv_clamped).xy;");
+        SRC("texColor.yz = TextureLookup(uv_texture, uv_clamped).xy;");
       }
       if (uv_texture_mode_ == UV_TEXTURE_MODE_U_V) {
         HDR("uniform SamplerType u_texture;");
         HDR("uniform SamplerType v_texture;");
-        SRC("yuv.y = TextureLookup(u_texture, uv_clamped).x;");
-        SRC("yuv.z = TextureLookup(v_texture, uv_clamped).x;");
+        SRC("texColor.y = TextureLookup(u_texture, uv_clamped).x;");
+        SRC("texColor.z = TextureLookup(v_texture, uv_clamped).x;");
       }
       if (yuv_alpha_texture_mode_ == YUV_HAS_ALPHA_TEXTURE)
         HDR("uniform SamplerType a_texture;");
       HDR("uniform vec4 ya_clamp_rect;");
       HDR("uniform vec4 uv_clamp_rect;");
-      // Convert YUV to RGB.
-      if (color_conversion_mode_ == COLOR_CONVERSION_MODE_LUT_FROM_YUV) {
-        HDR("uniform sampler2D lut_texture;");
-        HDR("uniform float lut_size;");
-        HDR("uniform float resource_multiplier;");
-        HDR("uniform float resource_offset;");
-        HDR("vec4 LUT(sampler2D sampler, vec3 pos, float size) {");
-        HDR("  pos *= size - 1.0;");
-        HDR("  // Select layer");
-        HDR("  float layer = min(floor(pos.z), size - 2.0);");
-        HDR("  // Compress the xy coordinates so they stay within");
-        HDR("  // [0.5 .. 31.5] / N (assuming a LUT size of 17^3)");
-        HDR("  pos.xy = (pos.xy + vec2(0.5)) / size;");
-        HDR("  pos.y = (pos.y + layer) / size;");
-        HDR("  return mix(texture2D(sampler, pos.xy),");
-        HDR("             texture2D(sampler, pos.xy + vec2(0, 1.0 / size)),");
-        HDR("             pos.z - layer);");
-        HDR("}");
-        HDR("vec3 yuv2rgb(vec3 yuv) {");
-        HDR("  yuv = (yuv - vec3(resource_offset)) * resource_multiplier;");
-        HDR("  return LUT(lut_texture, yuv, lut_size).xyz;");
-        HDR("}");
-      } else {
-        HDR("uniform mat3 yuv_matrix;");
-        HDR("uniform vec3 yuv_adj;");
-        HDR("vec3 yuv2rgb(vec3 yuv) {");
-        HDR("  return yuv_matrix * (yuv + yuv_adj);");
-        HDR("}");
-      }
+      HDR("uniform mat4 yuv_and_resource_matrix;");
       HDR("varying TexCoordPrecision vec2 v_yaTexCoord;");
       HDR("varying TexCoordPrecision vec2 v_uvTexCoord;");
-      SRC("vec4 texColor = vec4(yuv2rgb(yuv), 1.0);");
+      SRC("texColor = yuv_and_resource_matrix * texColor;");
       break;
     case INPUT_COLOR_SOURCE_UNIFORM:
       DCHECK(!ignore_sampler_type_);
@@ -906,6 +871,26 @@ std::string FragmentShader::GetShaderSource() const {
       SRC("vec4 texColor = color;");
       break;
   }
+
+  // Apply LUT based color conversion.
+  if (color_conversion_mode_ == COLOR_CONVERSION_MODE_LUT) {
+    HDR("uniform sampler2D lut_texture;");
+    HDR("uniform float lut_size;");
+    HDR("vec4 LUT(sampler2D sampler, vec3 pos, float size) {");
+    HDR("  pos *= size - 1.0;");
+    HDR("  // Select layer");
+    HDR("  float layer = min(floor(pos.z), size - 2.0);");
+    HDR("  // Compress the xy coordinates so they stay within");
+    HDR("  // [0.5 .. 31.5] / N (assuming a LUT size of 17^3)");
+    HDR("  pos.xy = (pos.xy + vec2(0.5)) / size;");
+    HDR("  pos.y = (pos.y + layer) / size;");
+    HDR("  return mix(texture2D(sampler, pos.xy),");
+    HDR("             texture2D(sampler, pos.xy + vec2(0, 1.0 / size)),");
+    HDR("             pos.z - layer);");
+    HDR("}");
+    SRC("texColor.xyz = LUT(lut_texture, texColor.xyz, lut_size).xyz;");
+  }
+
   // Apply the color matrix to texColor.
   if (has_color_matrix_) {
     HDR("uniform mat4 colorMatrix;");

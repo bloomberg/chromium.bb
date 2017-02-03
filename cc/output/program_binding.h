@@ -266,21 +266,14 @@ class Program : public ProgramBindingBase {
     return fragment_shader_.lut_texture_location_;
   }
   int lut_size_location() const { return fragment_shader_.lut_size_location_; }
-  int yuv_matrix_location() const {
-    return fragment_shader_.yuv_matrix_location_;
+  int yuv_and_resource_matrix_location() const {
+    return fragment_shader_.yuv_and_resource_matrix_location_;
   }
-  int yuv_adj_location() const { return fragment_shader_.yuv_adj_location_; }
   int ya_clamp_rect_location() const {
     return fragment_shader_.ya_clamp_rect_location_;
   }
   int uv_clamp_rect_location() const {
     return fragment_shader_.uv_clamp_rect_location_;
-  }
-  int resource_multiplier_location() const {
-    return fragment_shader_.resource_multiplier_location_;
-  }
-  int resource_offset_location() const {
-    return fragment_shader_.resource_offset_location_;
   }
 
  private:

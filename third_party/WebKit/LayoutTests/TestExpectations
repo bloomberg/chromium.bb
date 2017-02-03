@@ -827,8 +827,6 @@ crbug.com/518993 external/wpt/user-timing/test_user_timing_measure_navigation_ti
 crbug.com/636053 [ Mac Win ] printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
 crbug.com/636053 [ Mac Win ] virtual/threaded/printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
 
-crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
-
 crbug.com/432129 html/marquee/marquee-scroll.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
@@ -1231,6 +1229,21 @@ crbug.com/443379 external/wpt/gamepad/idlharness.html [ Failure Timeout ]
 
 crbug.com/381684 [ Mac Win ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
+
+crbug.com/682416 virtual/android/fullscreen/video-controls-timeline.html [ NeedsRebaseline ]
+crbug.com/682416 compositing/geometry/video-opacity-overlay.html [ NeedsRebaseline ]
+crbug.com/682416 fast/borders/border-radius-mask-video-shadow.html [ NeedsRebaseline ]
+crbug.com/682416 fast/borders/border-radius-mask-video-ratio.html [ NeedsRebaseline ]
+crbug.com/682416 [ Android Mac Linux Win10 ] media/video-zoom-controls.html [ NeedsRebaseline ]
+crbug.com/682416 virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ NeedsRebaseline ]
+crbug.com/682416 media/video-overlay-cast-dark-rendering.html [ NeedsRebaseline ]
+crbug.com/682416 media/video-overlay-cast-light-rendering.html [ NeedsRebaseline ]
+crbug.com/682416 compositing/video-frame-size-change.html [ NeedsRebaseline ]
+crbug.com/682416 compositing/geometry/video-fixed-scrolling.html [ NeedsRebaseline ]
+crbug.com/682416 fast/borders/border-radius-mask-video.html [ NeedsRebaseline ]
+crbug.com/682416 virtual/android/fullscreen/video-scrolled-iframe.html [ NeedsRebaseline ]
+
+crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]

@@ -2113,8 +2113,11 @@ void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
                              uint32_t bits_per_channel,
                              float resource_multiplier,
                              float resource_offset,
-                             float* yuv_to_rgb_multiplied,
-                             float* yuv_adjust_with_offset) {
+                             ColorConversionMode color_conversion_mode,
+                             float* yuv_to_rgb_matrix) {
+  float yuv_to_rgb_multiplied[9];
+  float yuv_adjust_with_offset[3];
+
   // These values are magic numbers that are used in the transformation from YUV
   // to RGB color values.  They are taken from the following webpage:
   // http://www.fourcc.org/fccyvrgb.php
@@ -2172,10 +2175,19 @@ void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
   for (int i = 0; i < 9; ++i)
     yuv_to_rgb_multiplied[i] = yuv_to_rgb[i] * resource_multiplier;
 
+  float yuv_adjust_with_offset_untransformed[3];
   for (int i = 0; i < 3; ++i) {
-    yuv_adjust_with_offset[i] =
+    yuv_adjust_with_offset_untransformed[i] =
         yuv_adjust[i] * adjustment_multiplier / resource_multiplier -
         resource_offset;
+  }
+
+  for (int i = 0; i < 3; ++i) {
+    yuv_adjust_with_offset[i] = 0;
+    for (int j = 0; j < 3; ++j) {
+      yuv_adjust_with_offset[i] += yuv_to_rgb_multiplied[3 * j + i] *
+                                   yuv_adjust_with_offset_untransformed[j];
+    }
   }
 
   // TODO(ccameron): Delete the above code, and just the below code instead.
@@ -2188,6 +2200,13 @@ void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
                           resource_multiplier);
   full_transform.preTranslate(-resource_offset, -resource_offset,
                               -resource_offset);
+
+  // If we're using a LUT for conversion, we only need the resource adjust,
+  // so just return this matrix.
+  if (color_conversion_mode == COLOR_CONVERSION_MODE_LUT) {
+    full_transform.asColMajorf(yuv_to_rgb_matrix);
+    return;
+  }
 
   // Then apply the range adjust.
   {
@@ -2205,32 +2224,25 @@ void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
     full_transform.postConcat(yuv_to_rgb);
   }
 
-  // For the upcoming DCHECKs, convert from the form
-  //   rgb = A*yuv+b
-  // to the form
-  //   rgb = A*(yuv+b)
-  float adjust[4] = {0, 0, 0, 0};
-  {
-    SkMatrix44 full_transform_inverse;
-    full_transform.invert(&full_transform_inverse);
-    float adjust_preimage[4] = {full_transform.get(0, 3),
-                                full_transform.get(1, 3),
-                                full_transform.get(2, 3), 0};
-    full_transform_inverse.mapScalars(adjust_preimage, adjust);
-  }
+  SkMatrix44 full_transform_old;
+  full_transform_old.set3x3RowMajorf(yuv_to_rgb_multiplied);
+  full_transform_old.transpose();
+  full_transform_old.postTranslate(yuv_adjust_with_offset[0],
+                                   yuv_adjust_with_offset[1],
+                                   yuv_adjust_with_offset[2]);
 
   // TODO(ccameron): The gfx::ColorSpace-based approach produces some pixel
   // differences. For the initial checkin, DCHECK that the parameters are
   // very close. The subsequent checkins will delete the old path.
   const float kEpsilon = 1.f / 255.f;
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      DCHECK_LT(RelativeError(yuv_to_rgb_multiplied[3 * j + i],
-                              full_transform.get(i, j)),
-                kEpsilon);
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      DCHECK_LT(
+          RelativeError(full_transform_old.get(i, j), full_transform.get(i, j)),
+          kEpsilon);
     }
-    DCHECK_LT(RelativeError(yuv_adjust_with_offset[i], adjust[i]), kEpsilon);
   }
+  full_transform_old.asColMajorf(yuv_to_rgb_matrix);
 }
 
 void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
@@ -2250,7 +2262,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
           : UV_TEXTURE_MODE_U_V;
   ColorConversionMode color_conversion_mode =
       base::FeatureList::IsEnabled(media::kVideoColorManagement)
-          ? COLOR_CONVERSION_MODE_LUT_FROM_YUV
+          ? COLOR_CONVERSION_MODE_LUT
           : COLOR_CONVERSION_MODE_NONE;
   ResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_, quad->y_plane_resource_id(), GL_TEXTURE1, GL_LINEAR);
@@ -2346,7 +2358,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   if (alpha_texture_mode == YUV_HAS_ALPHA_TEXTURE)
     gl_->Uniform1i(program->a_texture_location(), 4);
 
-  if (color_conversion_mode == COLOR_CONVERSION_MODE_LUT_FROM_YUV) {
+  if (color_conversion_mode == COLOR_CONVERSION_MODE_LUT) {
     ColorLUTCache::LUT lut = color_lut_cache_.GetLUT(quad->video_color_space,
                                                      frame->device_color_space);
     gl_->ActiveTexture(GL_TEXTURE5);
@@ -2354,19 +2366,14 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     gl_->Uniform1i(program->lut_texture_location(), 5);
     gl_->Uniform1f(program->lut_size_location(), lut.size);
     gl_->ActiveTexture(GL_TEXTURE0);
-    gl_->Uniform1f(program->resource_multiplier_location(),
-                   quad->resource_multiplier);
-    gl_->Uniform1f(program->resource_offset_location(), quad->resource_offset);
-  } else {
-    float yuv_to_rgb_multiplied[9] = {0};
-    float yuv_adjust_with_offset[3] = {0};
-    ComputeYUVToRGBMatrices(quad->color_space, quad->bits_per_channel,
-                            quad->resource_multiplier, quad->resource_offset,
-                            yuv_to_rgb_multiplied, yuv_adjust_with_offset);
-    gl_->UniformMatrix3fv(program->yuv_matrix_location(), 1, 0,
-                          yuv_to_rgb_multiplied);
-    gl_->Uniform3fv(program->yuv_adj_location(), 1, yuv_adjust_with_offset);
   }
+  DCHECK_NE(program->yuv_and_resource_matrix_location(), -1);
+  float yuv_to_rgb_matrix[16] = {0};
+  ComputeYUVToRGBMatrices(quad->color_space, quad->bits_per_channel,
+                          quad->resource_multiplier, quad->resource_offset,
+                          color_conversion_mode, yuv_to_rgb_matrix);
+  gl_->UniformMatrix4fv(program->yuv_and_resource_matrix_location(), 1, 0,
+                        yuv_to_rgb_matrix);
 
   // The transform and vertex data are used to figure out the extents that the
   // un-antialiased quad should have and which vertex this is and the float
