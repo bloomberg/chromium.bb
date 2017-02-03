@@ -24,11 +24,11 @@
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
 
-class BrowsingDataFilterBuilder;
 class BrowsingDataRemoverFactory;
 
 namespace content {
 class BrowserContext;
+class BrowsingDataFilterBuilder;
 class StoragePartition;
 }
 
@@ -109,13 +109,14 @@ class BrowsingDataRemoverImpl :
       const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
-      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) override;
+      std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder)
+      override;
   void RemoveWithFilterAndReply(
       const base::Time& delete_begin,
       const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
-      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
+      std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder,
       Observer* observer) override;
 
   void AddObserver(Observer* observer) override;
@@ -142,7 +143,7 @@ class BrowsingDataRemoverImpl :
       const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
-      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
+      std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder,
       Observer* observer);
 
  private:
@@ -154,19 +155,20 @@ class BrowsingDataRemoverImpl :
   // Represents a single removal task. Contains all parameters needed to execute
   // it and a pointer to the observer that added it.
   struct RemovalTask {
-    RemovalTask(const base::Time& delete_begin,
-                const base::Time& delete_end,
-                int remove_mask,
-                int origin_type_mask,
-                std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
-                Observer* observer);
+    RemovalTask(
+        const base::Time& delete_begin,
+        const base::Time& delete_end,
+        int remove_mask,
+        int origin_type_mask,
+        std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder,
+        Observer* observer);
     ~RemovalTask();
 
     base::Time delete_begin;
     base::Time delete_end;
     int remove_mask;
     int origin_type_mask;
-    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder;
+    std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder;
     Observer* observer;
   };
 
@@ -191,7 +193,7 @@ class BrowsingDataRemoverImpl :
   void RemoveImpl(const base::Time& delete_begin,
                   const base::Time& delete_end,
                   int remove_mask,
-                  const BrowsingDataFilterBuilder& filter_builder,
+                  const content::BrowsingDataFilterBuilder& filter_builder,
                   int origin_type_mask);
 
   // Notifies observers and transitions to the idle state.

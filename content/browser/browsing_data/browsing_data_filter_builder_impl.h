@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_IMPL_H_
-#define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_IMPL_H_
+#ifndef CONTENT_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_IMPL_H_
+#define CONTENT_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_IMPL_H_
 
 #include <set>
 
 #include "base/macros.h"
-#include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 
-class BrowsingDataFilterBuilderImpl : public BrowsingDataFilterBuilder {
+namespace content {
+
+class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
+    : public BrowsingDataFilterBuilder {
  public:
   explicit BrowsingDataFilterBuilderImpl(Mode mode);
   ~BrowsingDataFilterBuilderImpl() override;
@@ -40,4 +43,6 @@ class BrowsingDataFilterBuilderImpl : public BrowsingDataFilterBuilder {
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataFilterBuilderImpl);
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_IMPL_H_
+}  // content
+
+#endif  // CONTENT_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_IMPL_H_

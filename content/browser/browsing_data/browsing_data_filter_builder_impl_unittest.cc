@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_filter_builder_impl.h"
+#include "content/browser/browsing_data/browsing_data_filter_builder_impl.h"
 
 #include <algorithm>
 #include <memory>
@@ -15,7 +15,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace content {
+
 namespace {
+
 const char kGoogleDomain[] = "google.com";
 // sp.nom.br is an eTLD, so this is a regular valid registrable domain, just
 // like google.com.
@@ -544,3 +547,5 @@ TEST(BrowsingDataFilterBuilderImplTest, CombinedBlacklist) {
   for (TestCase test_case : test_cases)
     RunTestCase(test_case, filter);
 }
+
+}  // namespace content

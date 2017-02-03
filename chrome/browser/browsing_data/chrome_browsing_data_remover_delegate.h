@@ -80,7 +80,7 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
       const base::Time& delete_begin,
       const base::Time& delete_end,
       int remove_mask,
-      const BrowsingDataFilterBuilder& filter_builder,
+      const content::BrowsingDataFilterBuilder& filter_builder,
       int origin_type_mask,
       const base::Closure& callback) override;
 

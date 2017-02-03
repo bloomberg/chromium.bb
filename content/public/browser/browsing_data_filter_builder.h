@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_H_
-#define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_BROWSING_DATA_FILTER_BUILDER_H_
+#define CONTENT_PUBLIC_BROWSER_BROWSING_DATA_FILTER_BUILDER_H_
 
 #include <memory>
 #include <ostream>
@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "content/common/content_export.h"
 
 class GURL;
 
@@ -23,6 +24,8 @@ namespace url {
 class Origin;
 }
 
+namespace content {
+
 // An class that builds GURL->bool predicates to filter browsing data.
 // These filters can be of two modes - a whitelist or a blacklist. The filter
 // entries can be origins or registrable domains.
@@ -31,7 +34,7 @@ class Origin;
 // data. |BuildGeneralFilter()| is useful for most browsing data storage
 // backends, but some backends, such as website settings and cookies, use
 // other formats of filter.
-class BrowsingDataFilterBuilder {
+class CONTENT_EXPORT BrowsingDataFilterBuilder {
  public:
   enum Mode {
     // This means that only the origins given will be deleted.
@@ -95,4 +98,6 @@ class BrowsingDataFilterBuilder {
   virtual bool operator==(const BrowsingDataFilterBuilder& other) const = 0;
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FILTER_BUILDER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_BROWSING_DATA_FILTER_BUILDER_H_

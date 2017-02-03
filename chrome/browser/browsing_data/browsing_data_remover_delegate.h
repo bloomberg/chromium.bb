@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_DELEGATE_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_DELEGATE_H_
 
+namespace content {
 class BrowsingDataFilterBuilder;
+}
 
 class BrowsingDataRemoverDelegate {
  public:
@@ -15,7 +17,7 @@ class BrowsingDataRemoverDelegate {
       const base::Time& delete_begin,
       const base::Time& delete_end,
       int remove_mask,
-      const BrowsingDataFilterBuilder& filter_builder,
+      const content::BrowsingDataFilterBuilder& filter_builder,
       int origin_type_mask,
       const base::Closure& callback) = 0;
 };

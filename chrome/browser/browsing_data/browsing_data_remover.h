@@ -11,6 +11,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
 
+namespace content {
+class BrowsingDataFilterBuilder;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowsingDataRemover is responsible for removing data related to browsing:
 // visits in url database, downloads, cookies ...
@@ -177,7 +181,7 @@ class BrowsingDataRemover {
       const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
-      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) = 0;
+      std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder) = 0;
 
   // A version of the above that in addition informs the |observer| when the
   // removal task is finished.
@@ -186,7 +190,7 @@ class BrowsingDataRemover {
       const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
-      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
+      std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder,
       Observer* observer) = 0;
 
   // Observers.

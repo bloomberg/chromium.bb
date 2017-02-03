@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_filter_builder_impl.h"
+#include "content/browser/browsing_data/browsing_data_filter_builder_impl.h"
 
 #include <string>
 #include <vector>
@@ -16,6 +16,8 @@
 
 using net::registry_controlled_domains::GetDomainAndRegistry;
 using net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
+
+namespace content {
 
 namespace {
 
@@ -214,3 +216,5 @@ bool BrowsingDataFilterBuilderImpl::operator==(
          domains_ == other_impl->domains_ &&
          mode_ == other_impl->mode_;
 }
+
+}  // namespace content

@@ -3098,7 +3098,6 @@ test("unit_tests") {
     "../browser/browsing_data/browsing_data_counter_utils_unittest.cc",
     "../browser/browsing_data/browsing_data_database_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_file_system_helper_unittest.cc",
-    "../browser/browsing_data/browsing_data_filter_builder_impl_unittest.cc",
     "../browser/browsing_data/browsing_data_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_indexed_db_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_local_storage_helper_unittest.cc",

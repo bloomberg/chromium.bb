@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
@@ -56,6 +55,7 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/translate/core/browser/language_model.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -84,6 +84,7 @@
 #include "chrome/browser/browsing_data/mock_browsing_data_flash_lso_helper.h"
 #endif
 
+using content::BrowsingDataFilterBuilder;
 using domain_reliability::CLEAR_BEACONS;
 using domain_reliability::CLEAR_CONTEXTS;
 using domain_reliability::DomainReliabilityClearMode;
