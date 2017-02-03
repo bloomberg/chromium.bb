@@ -1911,7 +1911,7 @@ crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/asyn
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_010.htm [ Timeout ]
 crbug.com/626703 [ Win ] external/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-001.xht [ Failure ]
 crbug.com/626703 [ Win ] external/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-003.xht [ Failure ]
-crbug.com/626703 [ Win10 ] external/csswg-test/css-flexbox-1/flexbox_flex-natural-mixed-basis-auto.html [ Failure ]
+crbug.com/626703 [ Win ] external/csswg-test/css-flexbox-1/flexbox_flex-natural-mixed-basis-auto.html [ Failure ]
 crbug.com/626703 external/wpt/selection/dir-manual.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/forms/constraints/tooShort-input-email-add-manual.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/forms/constraints/tooShort-input-search-add-manual.html [ Timeout ]
