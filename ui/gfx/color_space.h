@@ -178,6 +178,10 @@ class GFX_EXPORT ColorSpace {
   bool GetTransferFunction(SkColorSpaceTransferFn* fn) const;
   bool GetInverseTransferFunction(SkColorSpaceTransferFn* fn) const;
 
+  // For most formats, this is the RGB to YUV matrix.
+  void GetTransferMatrix(SkMatrix44* matrix) const;
+  void GetRangeAdjustMatrix(SkMatrix44* matrix) const;
+
  private:
   PrimaryID primaries_ = PrimaryID::UNSPECIFIED;
   TransferID transfer_ = TransferID::UNSPECIFIED;

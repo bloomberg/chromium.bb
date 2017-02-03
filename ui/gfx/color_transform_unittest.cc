@@ -172,18 +172,6 @@ TEST(SimpleColorSpace, UnknownToSRGB) {
   EXPECT_GT(tmp.z(), tmp.y());
 }
 
-class MatrixTest : public testing::TestWithParam<ColorSpace::MatrixID> {};
-
-TEST_P(MatrixTest, checkInvertible) {
-  EXPECT_EQ(GetTransferMatrix(GetParam()).matrix().get(3, 3), 1.0f);
-  // Check that all transfer matrices are invertable.
-  EXPECT_TRUE(GetTransferMatrix(GetParam()).IsInvertible());
-};
-
-INSTANTIATE_TEST_CASE_P(ColorSpace,
-                        MatrixTest,
-                        testing::ValuesIn(all_matrices));
-
 class TransferTest : public testing::TestWithParam<ColorSpace::TransferID> {};
 
 TEST_P(TransferTest, basicTest) {

@@ -10,6 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/gfx/icc_profile.h"
+#include "ui/gfx/transform.h"
 
 namespace gfx {
 
@@ -116,8 +117,10 @@ ColorSpace ColorSpace::CreateXYZD50() {
 
 // static
 ColorSpace ColorSpace::CreateJpeg() {
-  return ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1, MatrixID::BT709,
-                    RangeID::FULL);
+  // TODO(ccameron): Determine which primaries and transfer function were
+  // intended here.
+  return ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1,
+                    MatrixID::SMPTE170M, RangeID::FULL);
 }
 
 // static
@@ -478,6 +481,129 @@ bool ColorSpace::GetInverseTransferFunction(SkColorSpaceTransferFn* fn) const {
     return false;
   *fn = InvertTransferFn(*fn);
   return true;
+}
+
+void ColorSpace::GetTransferMatrix(SkMatrix44* matrix) const {
+  float Kr = 0;
+  float Kb = 0;
+  switch (matrix_) {
+    case ColorSpace::MatrixID::RGB:
+      matrix->setIdentity();
+      return;
+
+    case ColorSpace::MatrixID::BT709:
+    case ColorSpace::MatrixID::UNSPECIFIED:
+    case ColorSpace::MatrixID::RESERVED:
+    case ColorSpace::MatrixID::UNKNOWN:
+      Kr = 0.2126f;
+      Kb = 0.0722f;
+      break;
+
+    case ColorSpace::MatrixID::FCC:
+      Kr = 0.30f;
+      Kb = 0.11f;
+      break;
+
+    case ColorSpace::MatrixID::BT470BG:
+    case ColorSpace::MatrixID::SMPTE170M:
+      Kr = 0.299f;
+      Kb = 0.114f;
+      break;
+
+    case ColorSpace::MatrixID::SMPTE240M:
+      Kr = 0.212f;
+      Kb = 0.087f;
+      break;
+
+    case ColorSpace::MatrixID::YCOCG: {
+      float data[16] = {
+           0.25f, 0.5f,  0.25f, 0.5f,  // Y
+          -0.25f, 0.5f, -0.25f, 0.5f,  // Cg
+            0.5f, 0.0f,  -0.5f, 0.0f,  // Co
+            0.0f, 0.0f,   0.0f, 1.0f
+      };
+      matrix->setRowMajorf(data);
+      return;
+    }
+
+    // BT2020_CL is a special case.
+    // Basically we return a matrix that transforms RGB values
+    // to RYB values. (We replace the green component with the
+    // the luminance.) Later steps will compute the Cb & Cr values.
+    case ColorSpace::MatrixID::BT2020_CL: {
+      Kr = 0.2627f;
+      Kb = 0.0593f;
+      float data[16] = {
+          1.0f,           0.0f, 0.0f, 0.0f,  // R
+            Kr, 1.0f - Kr - Kb,   Kb, 0.0f,  // Y
+          0.0f,           0.0f, 1.0f, 0.0f,  // B
+          0.0f,           0.0f, 0.0f, 1.0f
+      };
+      matrix->setRowMajorf(data);
+      return;
+    }
+
+    case ColorSpace::MatrixID::BT2020_NCL:
+      Kr = 0.2627f;
+      Kb = 0.0593f;
+      break;
+
+    case ColorSpace::MatrixID::YDZDX: {
+      float data[16] = {
+          0.0f,              1.0f,             0.0f, 0.0f,  // Y
+          0.0f,             -0.5f, 0.986566f / 2.0f, 0.5f,  // DX or DZ
+          0.5f, -0.991902f / 2.0f,             0.0f, 0.5f,  // DZ or DX
+          0.0f,              0.0f,             0.0f, 1.0f,
+      };
+      matrix->setRowMajorf(data);
+      return;
+    }
+  }
+  float Kg = 1.0f - Kr - Kb;
+  float u_m = 0.5f / (1.0f - Kb);
+  float v_m = 0.5f / (1.0f - Kr);
+  float data[16] = {
+                     Kr,        Kg,                Kb, 0.0f,  // Y
+              u_m * -Kr, u_m * -Kg, u_m * (1.0f - Kb), 0.5f,  // U
+      v_m * (1.0f - Kr), v_m * -Kg,         v_m * -Kb, 0.5f,  // V
+                   0.0f,      0.0f,              0.0f, 1.0f,
+  };
+  matrix->setRowMajorf(data);
+}
+
+void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
+  switch (range_) {
+    case RangeID::FULL:
+    case RangeID::UNSPECIFIED:
+      matrix->setIdentity();
+      return;
+
+    case RangeID::DERIVED:
+    case RangeID::LIMITED:
+      break;
+  }
+  switch (matrix_) {
+    case MatrixID::RGB:
+    case MatrixID::YCOCG:
+      matrix->setScale(255.0f/219.0f, 255.0f/219.0f, 255.0f/219.0f);
+      matrix->postTranslate(-16.0f/219.0f, -16.0f/219.0f, -16.0f/219.0f);
+      break;
+
+    case MatrixID::BT709:
+    case MatrixID::UNSPECIFIED:
+    case MatrixID::RESERVED:
+    case MatrixID::FCC:
+    case MatrixID::BT470BG:
+    case MatrixID::SMPTE170M:
+    case MatrixID::SMPTE240M:
+    case MatrixID::BT2020_NCL:
+    case MatrixID::BT2020_CL:
+    case MatrixID::YDZDX:
+    case MatrixID::UNKNOWN:
+      matrix->setScale(255.0f/219.0f, 255.0f/224.0f, 255.0f/224.0f);
+      matrix->postTranslate(-16.0f/219.0f, -15.5f/224.0f, -15.5f/224.0f);
+      break;
+  }
 }
 
 }  // namespace gfx

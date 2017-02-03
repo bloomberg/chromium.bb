@@ -192,114 +192,16 @@ float ToLinear(ColorSpace::TransferID id, float v) {
   return 0;
 }
 
-GFX_EXPORT Transform GetTransferMatrix(ColorSpace::MatrixID id) {
-  // Default values for BT709;
-  float Kr = 0.2126f;
-  float Kb = 0.0722f;
-  switch (id) {
-    case ColorSpace::MatrixID::RGB:
-      return Transform();
-
-    case ColorSpace::MatrixID::BT709:
-    case ColorSpace::MatrixID::UNSPECIFIED:
-    case ColorSpace::MatrixID::RESERVED:
-    case ColorSpace::MatrixID::UNKNOWN:
-      // Default values are already set.
-      break;
-
-    case ColorSpace::MatrixID::FCC:
-      Kr = 0.30f;
-      Kb = 0.11f;
-      break;
-
-    case ColorSpace::MatrixID::BT470BG:
-    case ColorSpace::MatrixID::SMPTE170M:
-      Kr = 0.299f;
-      Kb = 0.144f;
-      break;
-
-    case ColorSpace::MatrixID::SMPTE240M:
-      Kr = 0.212f;
-      Kb = 0.087f;
-      break;
-
-    case ColorSpace::MatrixID::YCOCG:
-      return Transform(0.25f, 0.5f, 0.25f, 0.5f,    // 1
-                       -0.25f, 0.5f, -0.25f, 0.5f,  // 2
-                       0.5f, 0.0f, -0.5f, 0.0f,     // 3
-                       0.0f, 0.0f, 0.0f, 1.0f);     // 4
-
-    case ColorSpace::MatrixID::BT2020_NCL:
-      Kr = 0.2627f;
-      Kb = 0.0593f;
-      break;
-
-    // BT2020_CL is a special case.
-    // Basically we return a matrix that transforms RGB values
-    // to RYB values. (We replace the green component with the
-    // the luminance.) Later steps will compute the Cb & Cr values.
-    case ColorSpace::MatrixID::BT2020_CL:
-      Kr = 0.2627f;
-      Kb = 0.0593f;
-      return Transform(1.0f, 0.0f, 0.0f, 0.0f,        // R
-                       Kr, 1.0f - Kr - Kb, Kb, 0.0f,  // Y
-                       0.0f, 0.0f, 1.0f, 0.0f,        // B
-                       0.0f, 0.0f, 0.0f, 1.0f);
-
-    case ColorSpace::MatrixID::YDZDX:
-      return Transform(0.0f, 1.0f, 0.0f, 0.0f,               // 1
-                       0.0f, -0.5f, 0.986566f / 2.0f, 0.5f,  // 2
-                       0.5f, -0.991902f / 2.0f, 0.0f, 0.5f,  // 3
-                       0.0f, 0.0f, 0.0f, 1.0f);              // 4
-  }
-  float u_m = 0.5f / (1.0f - Kb);
-  float v_m = 0.5f / (1.0f - Kr);
-  return Transform(
-      Kr, 1.0f - Kr - Kb, Kb, 0.0f,                                 // 1
-      u_m * -Kr, u_m * -(1.0f - Kr - Kb), u_m * (1.0f - Kb), 0.5f,  // 2
-      v_m * (1.0f - Kr), v_m * -(1.0f - Kr - Kb), v_m * -Kb, 0.5f,  // 3
-      0.0f, 0.0f, 0.0f, 1.0f);                                      // 4
+Transform GetTransferMatrix(const gfx::ColorSpace& color_space) {
+  SkMatrix44 transfer_matrix;
+  color_space.GetTransferMatrix(&transfer_matrix);
+  return Transform(transfer_matrix);
 }
 
-Transform GetRangeAdjustMatrix(ColorSpace::RangeID range,
-                               ColorSpace::MatrixID matrix) {
-  switch (range) {
-    case ColorSpace::RangeID::FULL:
-    case ColorSpace::RangeID::UNSPECIFIED:
-      return Transform();
-
-    case ColorSpace::RangeID::DERIVED:
-    case ColorSpace::RangeID::LIMITED:
-      break;
-  }
-  switch (matrix) {
-    case ColorSpace::MatrixID::RGB:
-    case ColorSpace::MatrixID::YCOCG:
-      // TODO(hubbe): Use Transform:Scale3d / Transform::Translate3d here.
-      return Transform(255.0f / 219.0f, 0.0f, 0.0f, -16.0f / 219.0f,  // 1
-                       0.0f, 255.0f / 219.0f, 0.0f, -16.0f / 219.0f,  // 2
-                       0.0f, 0.0f, 255.0f / 219.0f, -16.0f / 219.0f,  // 3
-                       0.0f, 0.0f, 0.0f, 1.0f);                       // 4
-
-    case ColorSpace::MatrixID::BT709:
-    case ColorSpace::MatrixID::UNSPECIFIED:
-    case ColorSpace::MatrixID::RESERVED:
-    case ColorSpace::MatrixID::FCC:
-    case ColorSpace::MatrixID::BT470BG:
-    case ColorSpace::MatrixID::SMPTE170M:
-    case ColorSpace::MatrixID::SMPTE240M:
-    case ColorSpace::MatrixID::BT2020_NCL:
-    case ColorSpace::MatrixID::BT2020_CL:
-    case ColorSpace::MatrixID::YDZDX:
-    case ColorSpace::MatrixID::UNKNOWN:
-      // TODO(hubbe): Use Transform:Scale3d / Transform::Translate3d here.
-      return Transform(255.0f / 219.0f, 0.0f, 0.0f, -16.0f / 219.0f,  // 1
-                       0.0f, 255.0f / 224.0f, 0.0f, -15.5f / 224.0f,  // 2
-                       0.0f, 0.0f, 255.0f / 224.0f, -15.5f / 224.0f,  // 3
-                       0.0f, 0.0f, 0.0f, 1.0f);                       // 4
-  }
-  NOTREACHED();
-  return Transform();
+Transform GetRangeAdjustMatrix(const gfx::ColorSpace& color_space) {
+  SkMatrix44 range_adjust_matrix;
+  color_space.GetRangeAdjustMatrix(&range_adjust_matrix);
+  return Transform(range_adjust_matrix);
 }
 
 class ColorTransformMatrix;
@@ -705,10 +607,10 @@ class ColorSpaceToColorSpaceTransform {
     }
 
     builder->Append(base::MakeUnique<ColorTransformMatrix>(
-        GetRangeAdjustMatrix(from.range_, from.matrix_)));
+        GetRangeAdjustMatrix(from)));
 
     builder->Append(base::MakeUnique<ColorTransformMatrix>(
-        Invert(GetTransferMatrix(from.matrix_))));
+        Invert(GetTransferMatrix(from))));
 
     SkColorSpaceTransferFn to_linear_fn;
     bool to_linear_fn_valid = from.GetTransferFunction(&to_linear_fn);
@@ -735,10 +637,10 @@ class ColorSpaceToColorSpaceTransform {
         to.transfer_, from_linear_fn, from_linear_fn_valid));
 
     builder->Append(
-        base::MakeUnique<ColorTransformMatrix>(GetTransferMatrix(to.matrix_)));
+        base::MakeUnique<ColorTransformMatrix>(GetTransferMatrix(to)));
 
     builder->Append(base::MakeUnique<ColorTransformMatrix>(
-        Invert(GetRangeAdjustMatrix(to.range_, to.matrix_))));
+        Invert(GetRangeAdjustMatrix(to))));
   }
 };
 

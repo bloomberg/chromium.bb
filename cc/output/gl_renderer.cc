@@ -2099,6 +2099,14 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
 
+namespace {
+
+float RelativeError(float a, float b) {
+  return std::abs(a - b) / std::max(1.f, std::abs(a + b));
+}
+
+}  // namespace
+
 // TODO(ccameron): This has been replicated in ui/gfx/color_transform.cc. Delete
 // one of the instances.
 void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
@@ -2136,18 +2144,22 @@ void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
   float* yuv_to_rgb = NULL;
   float* yuv_adjust = NULL;
 
+  gfx::ColorSpace gfx_color_space;
   switch (color_space) {
     case YUVVideoDrawQuad::REC_601:
       yuv_to_rgb = yuv_to_rgb_rec601;
       yuv_adjust = yuv_adjust_constrained;
+      gfx_color_space = gfx::ColorSpace::CreateREC601();
       break;
     case YUVVideoDrawQuad::REC_709:
       yuv_to_rgb = yuv_to_rgb_rec709;
       yuv_adjust = yuv_adjust_constrained;
+      gfx_color_space = gfx::ColorSpace::CreateREC709();
       break;
     case YUVVideoDrawQuad::JPEG:
       yuv_to_rgb = yuv_to_rgb_jpeg;
       yuv_adjust = yuv_adjust_full;
+      gfx_color_space = gfx::ColorSpace::CreateJpeg();
       break;
   }
 
@@ -2164,6 +2176,60 @@ void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
     yuv_adjust_with_offset[i] =
         yuv_adjust[i] * adjustment_multiplier / resource_multiplier -
         resource_offset;
+  }
+
+  // TODO(ccameron): Delete the above code, and just the below code instead.
+  // Compute the matrix |full_transform| which converts input YUV values to RGB
+  // values.
+  SkMatrix44 full_transform;
+
+  // Start with the resource adjust.
+  full_transform.setScale(resource_multiplier, resource_multiplier,
+                          resource_multiplier);
+  full_transform.preTranslate(-resource_offset, -resource_offset,
+                              -resource_offset);
+
+  // Then apply the range adjust.
+  {
+    SkMatrix44 range_adjust;
+    gfx_color_space.GetRangeAdjustMatrix(&range_adjust);
+    full_transform.postConcat(range_adjust);
+  }
+
+  // Then apply the YUV to RGB full_transform.
+  {
+    SkMatrix44 rgb_to_yuv;
+    gfx_color_space.GetTransferMatrix(&rgb_to_yuv);
+    SkMatrix44 yuv_to_rgb;
+    rgb_to_yuv.invert(&yuv_to_rgb);
+    full_transform.postConcat(yuv_to_rgb);
+  }
+
+  // For the upcoming DCHECKs, convert from the form
+  //   rgb = A*yuv+b
+  // to the form
+  //   rgb = A*(yuv+b)
+  float adjust[4] = {0, 0, 0, 0};
+  {
+    SkMatrix44 full_transform_inverse;
+    full_transform.invert(&full_transform_inverse);
+    float adjust_preimage[4] = {full_transform.get(0, 3),
+                                full_transform.get(1, 3),
+                                full_transform.get(2, 3), 0};
+    full_transform_inverse.mapScalars(adjust_preimage, adjust);
+  }
+
+  // TODO(ccameron): The gfx::ColorSpace-based approach produces some pixel
+  // differences. For the initial checkin, DCHECK that the parameters are
+  // very close. The subsequent checkins will delete the old path.
+  const float kEpsilon = 1.f / 255.f;
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      DCHECK_LT(RelativeError(yuv_to_rgb_multiplied[3 * j + i],
+                              full_transform.get(i, j)),
+                kEpsilon);
+    }
+    DCHECK_LT(RelativeError(yuv_adjust_with_offset[i], adjust[i]), kEpsilon);
   }
 }
 
