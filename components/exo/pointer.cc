@@ -52,6 +52,7 @@ bool SameLocation(const ui::LocatedEvent* event, const gfx::PointF& location) {
 Pointer::Pointer(PointerDelegate* delegate)
     : delegate_(delegate),
       cursor_(ui::kCursorNull),
+      cursor_capture_source_id_(base::UnguessableToken::Create()),
       cursor_capture_weak_ptr_factory_(this) {
   auto* helper = WMHelper::GetInstance();
   helper->AddPreTargetHandler(this);
@@ -340,6 +341,7 @@ void Pointer::CaptureCursor() {
                          // |hotspot_| is in surface coordinate space so apply
                          // both device scale and UI scale.
                          cursor_scale_ * primary_device_scale_factor)));
+  request->set_source(cursor_capture_source_id_);
   surface_->window()->layer()->RequestCopyOfOutput(std::move(request));
 }
 

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/unguessable_token.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/wm_helper.h"
@@ -102,6 +103,9 @@ class Pointer : public ui::EventHandler,
 
   // The current cursor.
   ui::Cursor cursor_;
+
+  // Source used for cursor capture copy output requests.
+  const base::UnguessableToken cursor_capture_source_id_;
 
   // Weak pointer factory used for cursor capture callbacks.
   base::WeakPtrFactory<Pointer> cursor_capture_weak_ptr_factory_;
