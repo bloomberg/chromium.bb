@@ -71,8 +71,6 @@ fast/history/history-back-within-subframe-url.html
 fast/history/history-traversal-is-asynchronous.html
 fast/history/window-open.html
 fast/html/adjacent-html-context-element.html
-fast/html/article-element.html
-fast/html/body-offset-properties.html
 fast/html/crash-style-first-letter.html
 fast/html/empty-fragment-id-goto-top.html
 fast/html/font-face-empty-should-not-crash.html
@@ -161,6 +159,8 @@ fast/xsl/import-non-document-node.xhtml
 fast/xsl/xslt-doc-enc.xml
 fullscreen/full-screen-request-rejected.html
 html/details_summary/details-element-render-inline-crash.html
+html/sections/article-element.html
+html/sections/body-offset-properties.html
 http/tests/download/inherited-encoding-form-submission-result.html
 http/tests/security/no-javascript-refresh.php
 images/link-body-content-imageDimensionChanged-crash.html
