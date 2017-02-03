@@ -34,6 +34,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/FlexibleArrayBufferView.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -1039,26 +1040,32 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
     const CanvasContextCreationAttributes& requestedAttributes,
     unsigned version)
-    : WebGLRenderingContextBase(nullptr,
-                                passedOffscreenCanvas,
-                                std::move(contextProvider),
-                                requestedAttributes,
-                                version) {}
+    : WebGLRenderingContextBase(
+          nullptr,
+          passedOffscreenCanvas,
+          TaskRunnerHelper::get(TaskType::WebGL,
+                                passedOffscreenCanvas->getExecutionContext()),
+          std::move(contextProvider),
+          requestedAttributes,
+          version) {}
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(
     HTMLCanvasElement* passedCanvas,
     std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
     const CanvasContextCreationAttributes& requestedAttributes,
     unsigned version)
-    : WebGLRenderingContextBase(passedCanvas,
-                                nullptr,
-                                std::move(contextProvider),
-                                requestedAttributes,
-                                version) {}
+    : WebGLRenderingContextBase(
+          passedCanvas,
+          nullptr,
+          TaskRunnerHelper::get(TaskType::WebGL, &passedCanvas->document()),
+          std::move(contextProvider),
+          requestedAttributes,
+          version) {}
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(
     HTMLCanvasElement* passedCanvas,
     OffscreenCanvas* passedOffscreenCanvas,
+    RefPtr<WebTaskRunner> taskRunner,
     std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
     const CanvasContextCreationAttributes& requestedAttributes,
     unsigned version)
@@ -1070,10 +1077,13 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       m_contextLostMode(NotLostContext),
       m_autoRecoveryMethod(Manual),
       m_dispatchContextLostEventTimer(
+          taskRunner,
           this,
           &WebGLRenderingContextBase::dispatchContextLostEvent),
       m_restoreAllowed(false),
-      m_restoreTimer(this, &WebGLRenderingContextBase::maybeRestoreContext),
+      m_restoreTimer(taskRunner,
+                     this,
+                     &WebGLRenderingContextBase::maybeRestoreContext),
       m_boundArrayBuffer(this, nullptr),
       m_boundVertexArrayObject(this, nullptr),
       m_currentProgram(this, nullptr),

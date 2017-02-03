@@ -98,6 +98,10 @@ enum class TaskType : unsigned {
   // https://w3c.github.io/performance-timeline/#performance-timeline
   PerformanceTimeline,
 
+  // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15
+  // This task source is used for all tasks in the WebGL spec.
+  WebGL,
+
   // Use MiscPlatformAPI for a task that is defined in the spec but is not yet
   // associated with any specific task runner in the spec. MiscPlatformAPI is
   // not encouraged for stable and matured APIs. The spec should define the task

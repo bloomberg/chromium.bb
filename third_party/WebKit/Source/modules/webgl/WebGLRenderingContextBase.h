@@ -691,9 +691,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // real ones, it's likely that there's no JavaScript on the stack, but that
   // might be dependent on how exactly the platform discovers that the context
   // was lost. For better portability we always defer the dispatch of the event.
-  Timer<WebGLRenderingContextBase> m_dispatchContextLostEventTimer;
+  TaskRunnerTimer<WebGLRenderingContextBase> m_dispatchContextLostEventTimer;
   bool m_restoreAllowed;
-  Timer<WebGLRenderingContextBase> m_restoreTimer;
+  TaskRunnerTimer<WebGLRenderingContextBase> m_restoreTimer;
 
   bool m_markedCanvasDirty;
 
@@ -1636,6 +1636,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
  private:
   WebGLRenderingContextBase(HTMLCanvasElement*,
                             OffscreenCanvas*,
+                            RefPtr<WebTaskRunner>,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
                             const CanvasContextCreationAttributes&,
                             unsigned);
