@@ -50,6 +50,8 @@
     api_methods: {
       default: [],
       valid_type: "list",
+       // This list must be an ordered, complete list of methods whose names match those
+       // defined in CSSPropertyDescriptor.h.
       valid_values: ["parseSingleValue"],
     },
 

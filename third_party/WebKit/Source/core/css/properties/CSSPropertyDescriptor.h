@@ -15,13 +15,6 @@ struct CSSPropertyDescriptor {
   const CSSValue* (*parseSingleValue)(CSSParserTokenRange&,
                                       const CSSParserContext*);
 
-  // Stores whether or not this descriptor is for a valid property. Do not
-  // access the contents of this descriptor unless this value is true.
-  // TODO(aazzam): Remove this once the switch in
-  // CSSPropertyParser::parseSingleValue() has been completely replaced by
-  // CSSPropertyDescriptors.
-  bool temporaryCanReadValue;
-
   // Returns the corresponding CSSPropertyDescriptor for a given CSSPropertyID.
   // Use this function to access the API for a property. Returns a descriptor
   // with isValid set to false if no descriptor exists for this ID.

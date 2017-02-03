@@ -2061,7 +2061,7 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
   // statement.
   const CSSPropertyDescriptor& cssPropertyDesc =
       CSSPropertyDescriptor::get(property);
-  if (cssPropertyDesc.temporaryCanReadValue)
+  if (cssPropertyDesc.parseSingleValue)
     return cssPropertyDesc.parseSingleValue(m_range, m_context);
 
   switch (property) {

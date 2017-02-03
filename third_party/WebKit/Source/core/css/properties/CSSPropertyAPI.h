@@ -26,13 +26,8 @@ class CSSParserTokenRange;
 //
 // To add new functions to this API:
 // - Add the function to the struct below.
-// - Add the function to CSSPropertyAPIFiles.h.tmpl template file, surrounded
-//   with an {% if "methodName" in implementedMethods %} check.
-// - Add the function name to the valid_methods array in
-//   make_css_property_apis.py.
-// - Add function to the initializer list in the cssPropertyDescriptors array
-//   in CSSPropertyDescriptor.cpp.tmpl, and add a nullptr to the invalid
-//   CSSPropertyDescriptor.
+// - Add the function name to the valid_values field for api_methods in
+//   CSSProperties.json5.
 class CSSPropertyAPI {
   STATIC_ONLY(CSSPropertyAPI);
 
