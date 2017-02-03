@@ -143,10 +143,6 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += variance_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += error_block_test.cc
 #LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_quantize_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += subtract_test.cc
-
-ifeq ($(CONFIG_AV1_ENCODER)$(CONFIG_AV1_TEMPORAL_DENOISING),yesyes)
-#LIBAOM_TEST_SRCS-$(HAVE_SSE2) += denoiser_sse2_test.cc
-endif
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += arf_freq_test.cc
 
 

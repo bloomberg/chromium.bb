@@ -579,9 +579,6 @@ set(AOM_UNIT_TEST_SOURCES
     "${AOM_ROOT}/test/decode_api_test.cc"
     "${AOM_ROOT}/test/decode_test_driver.cc"
     "${AOM_ROOT}/test/decode_test_driver.h"
-    # commented out in test.mk, requires CONFIG_AV1_TEMPORAL_DENOISING and
-    # HAVE_SSE2
-    #"${AOM_ROOT}/test/denoiser_sse2_test.cc"
     "${AOM_ROOT}/test/divu_small_test.cc"
     "${AOM_ROOT}/test/encode_api_test.cc"
     "${AOM_ROOT}/test/encode_test_driver.cc"
