@@ -370,14 +370,6 @@ set(AOM_PORTS_ASM_X86 "${AOM_ROOT}/aom_ports/x86_abi_support.asm")
 set(AOM_PORTS_ASM_MMX "${AOM_ROOT}/aom_ports/emms.asm")
 
 set(AOM_DSP_ASM_SSE2
-    # Requires CONFIG_AOM_HIGHBITDEPTH
-    #"${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_sse2.asm"
-    #"${AOM_ROOT}/aom_dsp/x86/highbd_sad4d_sse2.asm"
-    #"${AOM_ROOT}/aom_dsp/x86/highbd_sad_sse2.asm"
-    #"${AOM_ROOT}/aom_dsp/x86/highbd_subpel_variance_impl_sse2.asm"
-    #"${AOM_ROOT}/aom_dsp/x86/highbd_variance_impl_sse2.asm"
-    #"${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_8t_sse2.asm"
-    #"${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_bilinear_sse2.asm"
     "${AOM_ROOT}/aom_dsp/x86/aom_convolve_copy_sse2.asm"
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_sse2.asm"
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_bilinear_sse2.asm"
@@ -390,11 +382,6 @@ set(AOM_DSP_ASM_SSE2
     "${AOM_ROOT}/aom_dsp/x86/subtract_sse2.asm")
 
 set(AOM_DSP_INTRIN_SSE2
-    # Requires CONFIG_AOM_HIGHBITDEPTH
-    #"${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_sse2.c"
-    #"${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c"
-    #"${AOM_ROOT}/aom_dsp/x86/highbd_subtract_sse2.c"
-    #"${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse2.c"
     "${AOM_ROOT}/aom_dsp/x86/aom_asm_stubs.c"
     "${AOM_ROOT}/aom_dsp/x86/avg_intrin_sse2.c"
     "${AOM_ROOT}/aom_dsp/x86/fwd_dct32_8cols_sse2.c"
@@ -433,8 +420,6 @@ set(AOM_DSP_INTRIN_SSE3 "${AOM_ROOT}/aom_dsp/x86/sad_sse3.asm")
 set(AOM_DSP_ASM_SSE4_1 "${AOM_ROOT}/aom_dsp/x86/sad_sse4.asm")
 
 set(AOM_DSP_INTRIN_SSE4_1
-    # Requires CONFIG_AOM_HIGHBITDEPTH
-    #"${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse4.c"
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_hmask_sse4.c"
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_mask_sse4.c"
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_vmask_sse4.c"
@@ -442,8 +427,6 @@ set(AOM_DSP_INTRIN_SSE4_1
     "${AOM_ROOT}/aom_dsp/x86/obmc_variance_sse4.c")
 set(AOM_DSP_AVX_ASM "${AOM_ROOT}/aom_dsp/x86/quantize_avx_x86_64.asm")
 set(AOM_DSP_AVX2_INTRIN
-    # Requires CONFIG_AOM_HIGHBITDEPTH
-    #"${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/loopfilter_avx2.c"
@@ -468,20 +451,14 @@ set(AOM_AV1_COMMON_SSSE3_INTRIN
 set(AOM_AV1_COMMON_SSE4_1_INTRIN
     # Requires CONFIG_CLPF
     #"${AOM_ROOT}/av1/common/clpf_sse4.c"
-    # Requires CONFIG_AOM_HIGHBITDEPTH
-    #"${AOM_ROOT}/av1/common/x86/av1_highbd_convolve_sse4.c"
     # Requires CONFIG_FILTER_INTRA
     #"${AOM_ROOT}/av1/common/x86/filterintra_sse4.c"
-    # Requires CONFIG_AOM_HIGHBITDEPTH
-    #"${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_sse4.c"
     # Requires CONFIG_DERING
     #"${AOM_ROOT}/av1/common/x86/od_dering_sse4.c"
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm1d_sse4.c"
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm2d_sse4.c")
 
 set(AOM_AV1_COMMON_AVX2_INTRIN
-    # Requires CONFIG_AOM_HIGHBITDEPTH
-    #"${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c"
     "${AOM_ROOT}/av1/common/x86/hybrid_inv_txfm_avx2.c")
 
 set(AOM_AV1_ENCODER_SSE2_ASM
@@ -505,14 +482,9 @@ set(AOM_AV1_ENCODER_SSSE3_INTRIN
     #"${AOM_ROOT}/av1/encoder/clpf_rdo_ssse3.c"
     "${AOM_ROOT}/av1/encoder/x86/dct_ssse3.c")
 
-#set(AOM_SSE4_1_INTRIN
+#set(AOM_AV1_ENCODER_SSE4_1_INTRIN
     # Requires CONFIG_CLPF
-    #"${AOM_ROOT}/av1/encoder/clpf_rdo_sse4.c"
-    # Requires CONFIG_AOM_HIGHBITDEPTH
-    #"${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_sse4.c"
-    # Requires CONFIG_AOM_HIGHBITDEPTH
-    #"${AOM_ROOT}/av1/encoder/x86/highbd_fwd_txfm_sse4.c")
-
+    #"${AOM_ROOT}/av1/encoder/clpf_rdo_sse4.c")
 set(AOM_AV1_ENCODER_AVX2_INTRIN
     "${AOM_ROOT}/av1/encoder/x86/error_intrin_avx2.c"
     "${AOM_ROOT}/av1/encoder/x86/hybrid_fwd_txfm_avx2.c")
@@ -551,13 +523,9 @@ set(AOM_UNIT_TEST_SOURCES
     "${AOM_ROOT}/test/av1_fht8x8_test.cc"
     "${AOM_ROOT}/test/av1_fwd_txfm1d_test.cc"
     "${AOM_ROOT}/test/av1_fwd_txfm2d_test.cc"
-    # requires CONFIG_AOM_HIGHBITDEPTH and HAVE_SSE4_1
-    "${AOM_ROOT}/test/av1_highbd_iht_test.cc"
     "${AOM_ROOT}/test/av1_inv_txfm1d_test.cc"
     "${AOM_ROOT}/test/av1_inv_txfm2d_test.cc"
     "${AOM_ROOT}/test/av1_inv_txfm_test.cc"
-    # requires CONFIG_AOM_HIGHBITDEPTH and HAVE_SSE4_1
-    #"${AOM_ROOT}/test/av1_quantize_test.cc"
     "${AOM_ROOT}/test/av1_txfm_test.cc"
     "${AOM_ROOT}/test/av1_txfm_test.h"
     # requires CONFIG_EXT_INTER
@@ -596,8 +564,6 @@ set(AOM_UNIT_TEST_SOURCES
     "${AOM_ROOT}/test/frame_size_tests.cc"
     "${AOM_ROOT}/test/function_equivalence_test.h"
     "${AOM_ROOT}/test/hadamard_test.cc"
-    # requires CONFIG_INTERNAL_STATS and CONFIG_AOM_HIGHBITDEPTH
-    #"${AOM_ROOT}/test/hbd_metrics_test.cc"
     "${AOM_ROOT}/test/i420_video_source.h"
     "${AOM_ROOT}/test/idct8x8_test.cc"
     # omitted from tests.mk, includes non-existing file: aom_rtcd.h.
@@ -646,6 +612,52 @@ set(AOM_UNIT_TEST_INTRIN_NEON "${AOM_ROOT}/test/simd_cmp_neon.cc")
 set(AOM_UNIT_TEST_INTRIN_SSE2 "${AOM_ROOT}/test/simd_cmp_sse2.cc")
 set(AOM_UNIT_TEST_INTRIN_SSSE3 "${AOM_ROOT}/test/simd_cmp_ssse3.cc")
 set(AOM_UNIT_TEST_INTRIN_SSE4_1 "${AOM_ROOT}/test/simd_cmp_sse4.cc")
+
+if (CONFIG_AOM_HIGHBITDEPTH)
+  set(AOM_DSP_ASM_SSE2
+      ${AOM_DSP_ASM_SSE2}
+      "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_sse2.asm"
+      "${AOM_ROOT}/aom_dsp/x86/highbd_sad4d_sse2.asm"
+      "${AOM_ROOT}/aom_dsp/x86/highbd_sad_sse2.asm"
+      "${AOM_ROOT}/aom_dsp/x86/highbd_subpel_variance_impl_sse2.asm"
+      "${AOM_ROOT}/aom_dsp/x86/highbd_variance_impl_sse2.asm"
+      "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_8t_sse2.asm"
+      "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_bilinear_sse2.asm")
+
+  set(AOM_DSP_INTRIN_SSE2
+      ${AOM_DSP_INTRIN_SSE2}
+      "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_sse2.c"
+      "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c"
+      "${AOM_ROOT}/aom_dsp/x86/highbd_subtract_sse2.c"
+      "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse2.c")
+
+  set(AOM_DSP_INTRIN_SSE4_1
+      ${AOM_DSP_INTRIN_SSE4_1}
+      "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse4.c")
+
+  set(AOM_DSP_AVX2_INTRIN
+      ${AOM_DSP_AVX2_INTRIN}
+      "${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c")
+
+  set(AOM_AV1_COMMON_SSE4_1_INTRIN
+      ${AOM_AV1_COMMON_SSE4_1_INTRIN}
+      "${AOM_ROOT}/av1/common/x86/av1_highbd_convolve_sse4.c"
+      "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_sse4.c")
+
+  set(AOM_AV1_COMMON_AVX2_INTRIN
+      ${AOM_AV1_COMMON_AVX2_INTRIN}
+      "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c")
+
+  set(AOM_AV1_ENCODER_SSE4_1_INTRIN
+      ${AOM_AV1_ENCODER_SSE4_1_INTRIN}
+      "${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_sse4.c"
+      "${AOM_ROOT}/av1/encoder/x86/highbd_fwd_txfm_sse4.c")
+
+  set(AOM_UNIT_TEST_INTRIN_SSE4_1
+      ${AOM_UNIT_TEST_INTRIN_SSE4_1}
+      "${AOM_ROOT}/test/av1_highbd_iht_test.cc"
+      "${AOM_ROOT}/test/av1_quantize_test.cc")
+endif ()
 
 set(AOM_GTEST_SOURCES
     "${AOM_ROOT}/third_party/googletest/src/src/gtest-all.cc"
@@ -748,7 +760,12 @@ if (HAVE_SSE4_1)
                                 "AOM_DSP_INTRIN_SSE4_1")
   add_intrinsics_object_library("-msse4.1" "sse4" "aom_av1_common"
                                 "AOM_AV1_COMMON_SSE4_1_INTRIN")
+  if (AOM_AV1_ENCODER_SSE4_1_INTRIN)
+    add_intrinsics_object_library("-msse4.1" "sse4" "aom_av1_encoder"
+                                  "AOM_AV1_ENCODER_SSE4_1_INTRIN")
+  endif ()
 endif ()
+
 if (HAVE_AVX)
   add_asm_build("aom_dsp" "AOM_DSP_AVX_ASM")
 endif ()
