@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/version.h"
@@ -54,9 +53,6 @@ const char kSwitchDisableDeltaUpdates[] = "disable-delta-updates";
 // Disables background downloads.
 const char kSwitchDisableBackgroundDownloads[] = "disable-background-downloads";
 #endif  // defined(OS_WIN)
-
-const base::Feature kAlternateComponentUrls{"AlternateComponentUrls",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Returns true if and only if |test| is contained in |vec|.
 bool HasSwitchValue(const std::vector<std::string>& vec, const char* test) {
@@ -152,14 +148,8 @@ std::vector<GURL> ConfiguratorImpl::UpdateUrl() const {
     return urls;
   }
 
-  if (base::FeatureList::IsEnabled(kAlternateComponentUrls)) {
-    urls.push_back(GURL(kUpdaterDefaultUrlAlt));
-    urls.push_back(GURL(kUpdaterFallbackUrlAlt));
-  } else {
-    urls.push_back(GURL(kUpdaterDefaultUrl));
-    urls.push_back(GURL(kUpdaterFallbackUrl));
-  }
-
+  urls.push_back(GURL(kUpdaterDefaultUrl));
+  urls.push_back(GURL(kUpdaterFallbackUrl));
   if (require_encryption_)
     update_client::RemoveUnsecureUrls(&urls);
 
