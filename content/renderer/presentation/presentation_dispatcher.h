@@ -19,6 +19,7 @@
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "content/public/common/presentation_session.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationClient.h"
@@ -70,12 +71,13 @@ class CONTENT_EXPORT PresentationDispatcher
 
   struct SendMessageRequest {
     SendMessageRequest(
-        blink::mojom::PresentationSessionInfoPtr session_info,
+        const PresentationSessionInfo& session_info,
         blink::mojom::ConnectionMessagePtr message,
         const blink::WebPresentationConnectionProxy* connection_proxy);
+
     ~SendMessageRequest();
 
-    blink::mojom::PresentationSessionInfoPtr session_info;
+    PresentationSessionInfo session_info;
     blink::mojom::ConnectionMessagePtr message;
     // Proxy of Blink connection object |connection| calling connection.send().
     // It does not take ownership of proxy object. Proxy object is owned by
@@ -146,27 +148,26 @@ class CONTENT_EXPORT PresentationDispatcher
   // blink::mojom::PresentationServiceClient
   void OnScreenAvailabilityNotSupported(const GURL& url) override;
   void OnScreenAvailabilityUpdated(const GURL& url, bool available) override;
-  void OnConnectionStateChanged(
-      blink::mojom::PresentationSessionInfoPtr session_info,
-      blink::mojom::PresentationConnectionState state) override;
-  void OnConnectionClosed(
-      blink::mojom::PresentationSessionInfoPtr session_info,
-      blink::mojom::PresentationConnectionCloseReason reason,
-      const std::string& message) override;
+  void OnConnectionStateChanged(const PresentationSessionInfo& session_info,
+                                PresentationConnectionState state) override;
+  void OnConnectionClosed(const PresentationSessionInfo& session_info,
+                          PresentationConnectionCloseReason reason,
+                          const std::string& message) override;
   void OnConnectionMessagesReceived(
-      blink::mojom::PresentationSessionInfoPtr session_info,
+      const PresentationSessionInfo& session_info,
       std::vector<blink::mojom::ConnectionMessagePtr> messages) override;
   void OnDefaultSessionStarted(
-      blink::mojom::PresentationSessionInfoPtr session_info) override;
+      const PresentationSessionInfo& session_info) override;
 
   void OnSessionCreated(
       std::unique_ptr<blink::WebPresentationConnectionCallbacks> callback,
-      blink::mojom::PresentationSessionInfoPtr session_info,
-      blink::mojom::PresentationErrorPtr error);
+      const base::Optional<PresentationSessionInfo>& session_info,
+      const base::Optional<PresentationError>& error);
   void OnReceiverConnectionAvailable(
-      blink::mojom::PresentationSessionInfoPtr,
-      blink::mojom::PresentationConnectionPtr,
-      blink::mojom::PresentationConnectionRequest) override;
+      const PresentationSessionInfo& session_info,
+      blink::mojom::PresentationConnectionPtr /*connection*/,
+      blink::mojom::PresentationConnectionRequest /*connection_request*/)
+      override;
 
   // Call to PresentationService to send the message in |request|.
   // |session_info| and |message| of |reuqest| will be consumed.

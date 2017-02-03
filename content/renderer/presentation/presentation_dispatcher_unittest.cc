@@ -31,13 +31,8 @@ using blink::WebString;
 using blink::WebURL;
 using blink::WebVector;
 using blink::mojom::PresentationConnection;
-using blink::mojom::PresentationError;
-using blink::mojom::PresentationErrorPtr;
-using blink::mojom::PresentationErrorType;
 using blink::mojom::PresentationService;
 using blink::mojom::PresentationServiceClientPtr;
-using blink::mojom::PresentationSessionInfo;
-using blink::mojom::PresentationSessionInfoPtr;
 using blink::mojom::ConnectionMessage;
 using blink::mojom::ConnectionMessagePtr;
 
@@ -83,14 +78,14 @@ class MockPresentationService : public PresentationService {
   // *Internal method is to work around lack of support for move-only types in
   // GMock.
   void SendConnectionMessage(
-      PresentationSessionInfoPtr session_info,
+      const PresentationSessionInfo& session_info,
       ConnectionMessagePtr message_request,
       const SendConnectionMessageCallback& callback) override {
-    SendConnectionMessageInternal(session_info.get(), message_request.get(),
+    SendConnectionMessageInternal(session_info, message_request.get(),
                                   callback);
   }
   MOCK_METHOD3(SendConnectionMessageInternal,
-               void(PresentationSessionInfo* session_info,
+               void(const PresentationSessionInfo& session_info,
                     ConnectionMessage* message_request,
                     const SendConnectionMessageCallback& callback));
 
@@ -101,24 +96,18 @@ class MockPresentationService : public PresentationService {
                void(const GURL& presentation_url,
                     const std::string& presentation_id));
 
-  // *Internal method is to work around lack of support for move-only types in
-  // GMock.
-  void ListenForConnectionMessages(
-      PresentationSessionInfoPtr session_info) override {
-    ListenForConnectionMessagesInternal(session_info.get());
-  }
-  MOCK_METHOD1(ListenForConnectionMessagesInternal,
-               void(PresentationSessionInfo* session_info));
+  MOCK_METHOD1(ListenForConnectionMessages,
+               void(const PresentationSessionInfo& session_info));
 
   void SetPresentationConnection(
-      blink::mojom::PresentationSessionInfoPtr session,
+      const PresentationSessionInfo& session_info,
       blink::mojom::PresentationConnectionPtr controller_conn_ptr,
       blink::mojom::PresentationConnectionRequest receiver_conn_request)
       override {
-    SetPresentationConnection(session.get(), controller_conn_ptr.get());
+    SetPresentationConnection(session_info, controller_conn_ptr.get());
   }
   MOCK_METHOD2(SetPresentationConnection,
-               void(PresentationSessionInfo* session_info,
+               void(const PresentationSessionInfo& session_info,
                     PresentationConnection* connection));
 };
 
@@ -312,10 +301,8 @@ TEST_F(PresentationDispatcherTest, TestStartSession) {
       .WillOnce(Invoke([this](
           const std::vector<GURL>& presentation_urls,
           const PresentationService::StartSessionCallback& callback) {
-        PresentationSessionInfoPtr session_info(PresentationSessionInfo::New());
-        session_info->url = gurl1_;
-        session_info->id = presentation_id_.utf8();
-        callback.Run(std::move(session_info), PresentationErrorPtr());
+        PresentationSessionInfo session_info(gurl1_, presentation_id_.utf8());
+        callback.Run(session_info, base::nullopt);
       }));
   client()->startSession(
       urls_, base::MakeUnique<TestWebPresentationConnectionCallback>(
@@ -331,10 +318,10 @@ TEST_F(PresentationDispatcherTest, TestStartSessionError) {
       .WillOnce(Invoke([&error_message](
           const std::vector<GURL>& presentation_urls,
           const PresentationService::StartSessionCallback& callback) {
-        PresentationErrorPtr error(PresentationError::New());
-        error->error_type = PresentationErrorType::NO_AVAILABLE_SCREENS;
-        error->message = error_message.utf8();
-        callback.Run(PresentationSessionInfoPtr(), std::move(error));
+        callback.Run(
+            base::nullopt,
+            PresentationError(content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+                              error_message.utf8()));
       }));
   client()->startSession(
       urls_,
@@ -354,10 +341,10 @@ TEST_F(PresentationDispatcherTest, TestJoinSessionError) {
           const PresentationService::JoinSessionCallback& callback) {
         EXPECT_TRUE(presentation_id.has_value());
         EXPECT_EQ(presentation_id_.utf8(), presentation_id.value());
-        PresentationErrorPtr error(PresentationError::New());
-        error->error_type = PresentationErrorType::NO_AVAILABLE_SCREENS;
-        error->message = error_message.utf8();
-        callback.Run(PresentationSessionInfoPtr(), std::move(error));
+        callback.Run(
+            base::nullopt,
+            PresentationError(content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+                              error_message.utf8()));
       }));
   dispatcher_.joinSession(
       urls_, presentation_id_,
@@ -376,10 +363,8 @@ TEST_F(PresentationDispatcherTest, TestJoinSession) {
           const PresentationService::JoinSessionCallback& callback) {
         EXPECT_TRUE(presentation_id.has_value());
         EXPECT_EQ(presentation_id_.utf8(), presentation_id.value());
-        PresentationSessionInfoPtr session_info(PresentationSessionInfo::New());
-        session_info->url = gurl1_;
-        session_info->id = presentation_id_.utf8();
-        callback.Run(std::move(session_info), PresentationErrorPtr());
+        callback.Run(PresentationSessionInfo(gurl1_, presentation_id_.utf8()),
+                     base::nullopt);
       }));
   dispatcher_.joinSession(
       urls_, presentation_id_,
@@ -393,11 +378,11 @@ TEST_F(PresentationDispatcherTest, TestSendString) {
   base::RunLoop run_loop;
   EXPECT_CALL(presentation_service_, SendConnectionMessageInternal(_, _, _))
       .WillOnce(Invoke([this, &message](
-          PresentationSessionInfo* session_info,
+          const PresentationSessionInfo& session_info,
           ConnectionMessage* message_request,
           const PresentationService::SendConnectionMessageCallback& callback) {
-        EXPECT_EQ(gurl1_, session_info->url);
-        EXPECT_EQ(presentation_id_.utf8(), session_info->id);
+        EXPECT_EQ(gurl1_, session_info.presentation_url);
+        EXPECT_EQ(presentation_id_.utf8(), session_info.presentation_id);
         EXPECT_TRUE(message_request->message.has_value());
         EXPECT_EQ(message.utf8(), message_request->message.value());
         callback.Run(true);
@@ -410,11 +395,11 @@ TEST_F(PresentationDispatcherTest, TestSendArrayBuffer) {
   base::RunLoop run_loop;
   EXPECT_CALL(presentation_service_, SendConnectionMessageInternal(_, _, _))
       .WillOnce(Invoke([this](
-          PresentationSessionInfo* session_info,
+          const PresentationSessionInfo& session_info,
           ConnectionMessage* message_request,
           const PresentationService::SendConnectionMessageCallback& callback) {
-        EXPECT_EQ(gurl1_, session_info->url);
-        EXPECT_EQ(presentation_id_.utf8(), session_info->id);
+        EXPECT_EQ(gurl1_, session_info.presentation_url);
+        EXPECT_EQ(presentation_id_.utf8(), session_info.presentation_id);
         std::vector<uint8_t> data(
             array_buffer_data(),
             array_buffer_data() + array_buffer_.byteLength());
@@ -431,11 +416,11 @@ TEST_F(PresentationDispatcherTest, TestSendBlobData) {
   base::RunLoop run_loop;
   EXPECT_CALL(presentation_service_, SendConnectionMessageInternal(_, _, _))
       .WillOnce(Invoke([this](
-          PresentationSessionInfo* session_info,
+          const PresentationSessionInfo& session_info,
           ConnectionMessage* message_request,
           const PresentationService::SendConnectionMessageCallback& callback) {
-        EXPECT_EQ(gurl1_, session_info->url);
-        EXPECT_EQ(presentation_id_.utf8(), session_info->id);
+        EXPECT_EQ(gurl1_, session_info.presentation_url);
+        EXPECT_EQ(presentation_id_.utf8(), session_info.presentation_id);
         std::vector<uint8_t> data(
             array_buffer_data(),
             array_buffer_data() + array_buffer_.byteLength());

@@ -9,7 +9,3 @@ imcheng@chromium.org
 mfoltz@chromium.org
 mlamouri@chromium.org
 
-# Make the security presubmit happy.
-per-file *_type_converter*.*=set noparent
-per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
-

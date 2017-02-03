@@ -5,6 +5,7 @@
 #include "content/renderer/presentation/presentation_connection_proxy.h"
 
 #include "base/logging.h"
+#include "content/public/common/presentation_session.h"
 #include "content/renderer/presentation/presentation_dispatcher.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnection.h"
@@ -61,8 +62,8 @@ void PresentationConnectionProxy::OnMessage(
 // TODO(crbug.com/588874): Ensure legal PresentationConnection state transitions
 // in a single place.
 void PresentationConnectionProxy::DidChangeState(
-    blink::mojom::PresentationConnectionState state) {
-  if (state != blink::mojom::PresentationConnectionState::CONNECTED) {
+    content::PresentationConnectionState state) {
+  if (state != content::PRESENTATION_CONNECTION_STATE_CONNECTED) {
     // |DidChangeState| should only handle state transition from connecting ->
     // connected. PresentationService and MRP handles other state transitions.
     NOTREACHED();
@@ -106,9 +107,9 @@ void ReceiverConnectionProxy::BindControllerConnection(
   DCHECK(!target_connection_ptr_);
   target_connection_ptr_ = std::move(controller_connection_ptr);
   target_connection_ptr_->DidChangeState(
-      blink::mojom::PresentationConnectionState::CONNECTED);
+      content::PRESENTATION_CONNECTION_STATE_CONNECTED);
 
-  DidChangeState(blink::mojom::PresentationConnectionState::CONNECTED);
+  DidChangeState(content::PRESENTATION_CONNECTION_STATE_CONNECTED);
 }
 
 }  // namespace content

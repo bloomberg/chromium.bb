@@ -81,7 +81,7 @@ class CONTENT_EXPORT PresentationConnectionProxy
   // blink::mojom::PresentationConnection implementation
   void OnMessage(blink::mojom::ConnectionMessagePtr message,
                  const OnMessageCallback& callback) override;
-  void DidChangeState(blink::mojom::PresentationConnectionState state) override;
+  void DidChangeState(content::PresentationConnectionState state) override;
 
  protected:
   explicit PresentationConnectionProxy(

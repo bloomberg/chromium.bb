@@ -50,11 +50,11 @@ class CONTENT_EXPORT PresentationServiceImpl
       public WebContentsObserver,
       public PresentationServiceDelegate::Observer {
  public:
-  using NewSessionCallback =
-      base::Callback<void(blink::mojom::PresentationSessionInfoPtr,
-                          blink::mojom::PresentationErrorPtr)>;
-
   ~PresentationServiceImpl() override;
+
+  using NewSessionCallback =
+      base::Callback<void(const base::Optional<PresentationSessionInfo>&,
+                          const base::Optional<PresentationError>&)>;
 
   // Static factory method to create an instance of PresentationServiceImpl.
   // |render_frame_host|: The RFH the instance is associated with.
@@ -136,8 +136,8 @@ class CONTENT_EXPORT PresentationServiceImpl
         const NewSessionCallback& callback);
     ~NewSessionCallbackWrapper();
 
-    void Run(blink::mojom::PresentationSessionInfoPtr session,
-             blink::mojom::PresentationErrorPtr error);
+    void Run(const base::Optional<PresentationSessionInfo>& session_info,
+             const base::Optional<PresentationError>& error);
 
    private:
     NewSessionCallback callback_;
@@ -171,7 +171,7 @@ class CONTENT_EXPORT PresentationServiceImpl
                    const base::Optional<std::string>& presentation_id,
                    const NewSessionCallback& callback) override;
   void SendConnectionMessage(
-      blink::mojom::PresentationSessionInfoPtr session_info,
+      const PresentationSessionInfo& session_info,
       blink::mojom::ConnectionMessagePtr connection_message,
       const SendConnectionMessageCallback& callback) override;
   void CloseConnection(const GURL& presentation_url,
@@ -179,9 +179,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   void Terminate(const GURL& presentation_url,
                  const std::string& presentation_id) override;
   void ListenForConnectionMessages(
-      blink::mojom::PresentationSessionInfoPtr session) override;
+      const PresentationSessionInfo& session_info) override;
   void SetPresentationConnection(
-      blink::mojom::PresentationSessionInfoPtr session,
+      const PresentationSessionInfo& session_info,
       blink::mojom::PresentationConnectionPtr controller_connection_ptr,
       blink::mojom::PresentationConnectionRequest receiver_connection_request)
       override;
@@ -207,13 +207,13 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   // Finds the callback from |pending_join_session_cbs_| using
   // |request_session_id|.
-  // If it exists, invoke it with |session| and |error|, then erase it from
+  // If it exists, invoke it with |session_info| and |error|, then erase it from
   // |pending_join_session_cbs_|.
   // Returns true if the callback was found.
   bool RunAndEraseJoinSessionMojoCallback(
       int request_session_id,
-      blink::mojom::PresentationSessionInfoPtr session,
-      blink::mojom::PresentationErrorPtr error);
+      const base::Optional<PresentationSessionInfo>& session_info,
+      const base::Optional<PresentationError>& error);
 
   // Removes all listeners and resets default presentation URL on this instance
   // and informs the PresentationServiceDelegate of such.
@@ -244,7 +244,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   // Passed to embedder's implementation of PresentationServiceDelegate for
   // later invocation when session messages arrive.
   void OnConnectionMessages(
-      const content::PresentationSessionInfo& session,
+      const content::PresentationSessionInfo& session_info,
       const std::vector<std::unique_ptr<PresentationConnectionMessage>>&
           messages,
       bool pass_ownership);

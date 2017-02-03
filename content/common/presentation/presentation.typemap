@@ -1,0 +1,18 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+mojom = "//third_party/WebKit/public/platform/modules/presentation/presentation.mojom"
+public_headers = [ "//content/public/common/presentation_session.h" ]
+traits_headers =
+    [ "//content/common/presentation/presentation_struct_traits.h" ]
+deps = [
+  "//url",
+]
+type_mappings = [
+  "blink.mojom.PresentationErrorType=content::PresentationErrorType",
+  "blink.mojom.PresentationConnectionState=content::PresentationConnectionState",
+  "blink.mojom.PresentationConnectionCloseReason=content::PresentationConnectionCloseReason",
+  "blink.mojom.PresentationSessionInfo=content::PresentationSessionInfo",
+  "blink.mojom.PresentationError=content::PresentationError",
+]
