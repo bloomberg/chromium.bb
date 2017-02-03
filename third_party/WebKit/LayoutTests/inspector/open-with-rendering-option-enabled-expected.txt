@@ -9,6 +9,7 @@ Loaded modules:
     extensions
     host
     main
+    network_conditions
     persistence
     platform
     protocol

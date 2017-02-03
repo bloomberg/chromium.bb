@@ -11,6 +11,7 @@ Loaded modules:
     extensions
     host
     main
+    network_conditions
     persistence
     platform
     protocol
@@ -32,6 +33,7 @@ Loaded modules:
     host
     inline_editor
     main
+    network_conditions
     persistence
     platform
     protocol
@@ -59,6 +61,7 @@ Loaded modules:
     inline_editor
     main
     network
+    network_conditions
     perf_ui
     persistence
     platform
@@ -89,6 +92,7 @@ Loaded modules:
     inline_editor
     main
     network
+    network_conditions
     perf_ui
     persistence
     platform
@@ -122,6 +126,7 @@ Loaded modules:
     inline_editor
     main
     network
+    network_conditions
     perf_ui
     persistence
     platform
