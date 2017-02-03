@@ -55,6 +55,8 @@ const char kHistogramMoreButtonShown[] =
     "NewTabPage.ContentSuggestions.MoreButtonShown";
 const char kHistogramMoreButtonClicked[] =
     "NewTabPage.ContentSuggestions.MoreButtonClicked";
+const char kHistogramMovedUpCategoryNewIndex[] =
+    "NewTabPage.ContentSuggestions.MovedUpCategoryNewIndex";
 const char kHistogramCategoryDismissed[] =
     "NewTabPage.ContentSuggestions.CategoryDismissed";
 const char kHistogramContentSuggestionsTimeSinceLastBackgroundFetch[] =
@@ -328,6 +330,11 @@ void OnSuggestionTargetVisited(Category category, base::TimeDelta visit_time) {
   std::string name =
       GetCategoryHistogramName(kHistogramVisitDuration, category);
   base::UmaHistogramLongTimes(name, visit_time);
+}
+
+void OnCategoryMovedUp(int new_index) {
+  UMA_HISTOGRAM_EXACT_LINEAR(kHistogramMovedUpCategoryNewIndex, new_index,
+                             kMaxCategories);
 }
 
 void OnMoreButtonShown(Category category, int position) {

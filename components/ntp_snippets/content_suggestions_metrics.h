@@ -49,6 +49,8 @@ void OnSuggestionDismissed(int global_position,
 
 void OnSuggestionTargetVisited(Category category, base::TimeDelta visit_time);
 
+void OnCategoryMovedUp(int new_index);
+
 // Should only be called once per NTP for each "more" button.
 void OnMoreButtonShown(Category category, int position);
 

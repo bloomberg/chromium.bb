@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -20,7 +21,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::ElementsAre;
+using testing::IsEmpty;
+
 namespace ntp_snippets {
+
+namespace {
+
+const char kHistogramMovedUpCategoryNewIndex[] =
+    "NewTabPage.ContentSuggestions.MovedUpCategoryNewIndex";
+
+}  // namespace
 
 class ClickBasedCategoryRankerTest : public testing::Test {
  public:
@@ -253,8 +264,7 @@ TEST_F(ClickBasedCategoryRankerTest, ShouldPersistOrderAndClicksWhenRestarted) {
   EXPECT_TRUE(CompareCategories(third, second));
 
   // Clicks must be preserved as well.
-  NotifyOnSuggestionOpened(
-      /*times=*/1, third);
+  NotifyOnSuggestionOpened(/*times=*/1, third);
   EXPECT_TRUE(CompareCategories(third, first));
 }
 
@@ -449,8 +459,7 @@ TEST_F(ClickBasedCategoryRankerTest,
 
   ASSERT_TRUE(CompareCategories(first, second));
 
-  NotifyOnSuggestionOpened(
-      /*times=*/1, second);
+  NotifyOnSuggestionOpened(/*times=*/1, second);
 
   // This should reduce the click count back to 0.
   NotifyOnCategoryDismissed(second);
@@ -462,8 +471,7 @@ TEST_F(ClickBasedCategoryRankerTest,
 
   EXPECT_TRUE(CompareCategories(first, second));
 
-  NotifyOnSuggestionOpened(
-      /*times=*/1, second);
+  NotifyOnSuggestionOpened(/*times=*/1, second);
   EXPECT_FALSE(CompareCategories(first, second));
 }
 
@@ -487,8 +495,7 @@ TEST_F(ClickBasedCategoryRankerTest,
   Category second = AddUnusedRemoteCategory();
   Category third = AddUnusedRemoteCategory();
 
-  NotifyOnSuggestionOpened(
-      /*times=*/1, second);
+  NotifyOnSuggestionOpened(/*times=*/1, second);
 
   // This should be ignored, because the penalty is set to 0.
   NotifyOnCategoryDismissed(second);
@@ -647,6 +654,96 @@ TEST_F(ClickBasedCategoryRankerTest,
   test_clock->SetNow(base::Time::Now() + base::TimeDelta::FromDays(15));
   ResetRanker(std::move(test_clock));
   EXPECT_TRUE(CompareCategories(recent_tabs, downloads));
+}
+
+TEST_F(ClickBasedCategoryRankerTest,
+       ShouldEmitNewIndexWhenCategoryMovedUpDueToClick) {
+  base::HistogramTester histogram_tester;
+
+  std::vector<KnownCategories> default_order =
+      ConstantCategoryRanker::GetKnownCategoriesDefaultOrder();
+  Category first = Category::FromKnownCategory(default_order[0]);
+  Category second = Category::FromKnownCategory(default_order[1]);
+
+  ASSERT_TRUE(CompareCategories(first, second));
+
+  // Increase the score of |second| until the order changes.
+  while (CompareCategories(first, second)) {
+    EXPECT_THAT(
+        histogram_tester.GetAllSamples(kHistogramMovedUpCategoryNewIndex),
+        IsEmpty());
+    ranker()->OnSuggestionOpened(second);
+  }
+  ASSERT_FALSE(CompareCategories(first, second));
+  EXPECT_THAT(histogram_tester.GetAllSamples(kHistogramMovedUpCategoryNewIndex),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
+}
+
+TEST_F(ClickBasedCategoryRankerTest,
+       ShouldNotEmitNewIndexWhenCategoryDismissed) {
+  base::HistogramTester histogram_tester;
+
+  std::vector<KnownCategories> default_order =
+      ConstantCategoryRanker::GetKnownCategoriesDefaultOrder();
+  Category category = Category::FromKnownCategory(default_order[0]);
+
+  ASSERT_THAT(histogram_tester.GetAllSamples(kHistogramMovedUpCategoryNewIndex),
+              IsEmpty());
+
+  NotifyOnCategoryDismissed(category);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(kHistogramMovedUpCategoryNewIndex),
+              IsEmpty());
+}
+
+TEST_F(ClickBasedCategoryRankerTest,
+       ShouldNotEmitNewIndexOfMovedUpCategoryWhenHistoryCleared) {
+  std::vector<KnownCategories> default_order =
+      ConstantCategoryRanker::GetKnownCategoriesDefaultOrder();
+  Category first = Category::FromKnownCategory(default_order[0]);
+  Category second = Category::FromKnownCategory(default_order[1]);
+
+  ASSERT_TRUE(CompareCategories(first, second));
+
+  // Increase the score of |second| until the order changes.
+  while (CompareCategories(first, second)) {
+    ranker()->OnSuggestionOpened(second);
+  }
+  ASSERT_FALSE(CompareCategories(first, second));
+
+  // The histogram tester is created here to ignore previous events.
+  base::HistogramTester histogram_tester;
+  ranker()->ClearHistory(/*begin=*/base::Time(),
+                         /*end=*/base::Time::Max());
+
+  // ClearHistory should restore the default order.
+  ASSERT_TRUE(CompareCategories(first, second));
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(kHistogramMovedUpCategoryNewIndex),
+              IsEmpty());
+}
+
+TEST_F(ClickBasedCategoryRankerTest,
+       ShouldNotEmitNewIndexWhenCategoryPromoted) {
+  base::HistogramTester histogram_tester;
+
+  std::vector<KnownCategories> default_order =
+      ConstantCategoryRanker::GetKnownCategoriesDefaultOrder();
+  Category first = Category::FromKnownCategory(default_order[0]);
+  Category second = Category::FromKnownCategory(default_order[1]);
+
+  ASSERT_TRUE(CompareCategories(first, second));
+
+  ASSERT_THAT(histogram_tester.GetAllSamples(kHistogramMovedUpCategoryNewIndex),
+              IsEmpty());
+
+  SetPromotedCategoryVariationParam(second.id());
+  ResetRanker(base::MakeUnique<base::DefaultClock>());
+
+  ASSERT_FALSE(CompareCategories(first, second));
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(kHistogramMovedUpCategoryNewIndex),
+              IsEmpty());
 }
 
 }  // namespace ntp_snippets

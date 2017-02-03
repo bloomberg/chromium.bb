@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
+#include "components/ntp_snippets/content_suggestions_metrics.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -229,6 +230,8 @@ void ClickBasedCategoryRanker::OnSuggestionOpened(Category category) {
     std::vector<RankedCategory>::iterator previous = current - 1;
     const int passing_margin = GetPositionPassingMargin(previous);
     if (current->clicks >= previous->clicks + passing_margin) {
+      const int new_index = previous - ordered_categories_.begin();
+      ntp_snippets::metrics::OnCategoryMovedUp(new_index);
       // It is intended to move only by one position per click in order to avoid
       // dramatic changes, which could confuse the user.
       std::swap(*current, *previous);
