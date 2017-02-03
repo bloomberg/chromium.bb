@@ -198,6 +198,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // inherit
   struct InheritedData {
     bool operator==(const InheritedData& other) const {
+      // Generated properties are compared in ComputedStyleBase
       return (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
              (m_cursorStyle == other.m_cursorStyle) &&
              (m_insideLink == other.m_insideLink);
@@ -220,13 +221,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // Compare computed styles, differences in inherited bits or other flags
     // should not cause an inequality.
     bool operator==(const NonInheritedData& other) const {
+      // Generated properties are compared in ComputedStyleBase
       return m_effectiveDisplay == other.m_effectiveDisplay &&
              m_originalDisplay == other.m_originalDisplay &&
              m_overflowX == other.m_overflowX &&
              m_overflowY == other.m_overflowY &&
              m_verticalAlign == other.m_verticalAlign &&
              m_position == other.m_position &&
-             m_tableLayout == other.m_tableLayout &&
              // hasViewportUnits
              m_breakBefore == other.m_breakBefore &&
              m_breakAfter == other.m_breakAfter &&
@@ -254,7 +255,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_overflowY : 3;         // EOverflow
     unsigned m_verticalAlign : 4;     // EVerticalAlign
     unsigned m_position : 3;          // EPosition
-    unsigned m_tableLayout : 1;       // ETableLayout
 
     // This is set if we used viewport units when resolving a length.
     // It is mutable so we can pass around const ComputedStyles to resolve
@@ -295,6 +295,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // !END SYNC!
 
   void setBitDefaults() {
+    // Generated properties are updated in ComputedStyleBase
     ComputedStyleBase::setBitDefaults();
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
@@ -309,8 +310,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_verticalAlign =
         static_cast<unsigned>(initialVerticalAlign());
     m_nonInheritedData.m_position = initialPosition();
-    m_nonInheritedData.m_tableLayout =
-        static_cast<unsigned>(initialTableLayout());
     m_nonInheritedData.m_breakBefore = initialBreakBefore();
     m_nonInheritedData.m_breakAfter = initialBreakAfter();
     m_nonInheritedData.m_breakInside = initialBreakInside();
@@ -1753,14 +1752,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setPageSizeType(PageSizeType t) {
     SET_VAR(m_rareNonInheritedData, m_pageSizeType, t);
-  }
-  // table-layout
-  static ETableLayout initialTableLayout() { return ETableLayout::kAuto; }
-  ETableLayout tableLayout() const {
-    return static_cast<ETableLayout>(m_nonInheritedData.m_tableLayout);
-  }
-  void setTableLayout(ETableLayout v) {
-    m_nonInheritedData.m_tableLayout = static_cast<unsigned>(v);
   }
 
   // Text decoration properties.

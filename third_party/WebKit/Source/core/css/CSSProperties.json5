@@ -1630,7 +1630,14 @@
       interpolable: true,
       svg: true,
     },
-    "table-layout",
+    {
+      name: "table-layout",
+      initial_keyword: "auto",
+      keyword_only: true,
+      keywords: [
+        "auto", "fixed"
+      ]
+    },
     {
       name: "tab-size",
       api_class: true,

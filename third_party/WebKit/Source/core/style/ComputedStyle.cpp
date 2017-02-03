@@ -371,7 +371,6 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   m_nonInheritedData.m_overflowY = other.m_nonInheritedData.m_overflowY;
   m_nonInheritedData.m_verticalAlign = other.m_nonInheritedData.m_verticalAlign;
   m_nonInheritedData.m_position = other.m_nonInheritedData.m_position;
-  m_nonInheritedData.m_tableLayout = other.m_nonInheritedData.m_tableLayout;
   m_nonInheritedData.m_hasViewportUnits =
       other.m_nonInheritedData.m_hasViewportUnits;
   m_nonInheritedData.m_breakBefore = other.m_nonInheritedData.m_breakBefore;
@@ -824,8 +823,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
     if (borderCollapse() != other.borderCollapse() ||
         emptyCells() != other.emptyCells() ||
         captionSide() != other.captionSide() ||
-        m_nonInheritedData.m_tableLayout !=
-            other.m_nonInheritedData.m_tableLayout)
+        tableLayout() != other.tableLayout())
       return true;
 
     // In the collapsing border model, 'hidden' suppresses other borders, while

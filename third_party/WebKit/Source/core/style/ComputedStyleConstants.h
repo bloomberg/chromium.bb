@@ -33,6 +33,8 @@
 
 namespace blink {
 
+// Some enums are automatically generated in ComputedStyleBaseConstants
+
 // TODO(sashab): Change these enums to enum classes with an unsigned underlying
 // type. Enum classes provide better type safety, and forcing an unsigned
 // underlying type prevents msvc from interpreting enums as negative numbers.
@@ -166,8 +168,6 @@ enum class EVerticalAlign : unsigned {
   kBaselineMiddle,
   kLength
 };
-
-enum class ETableLayout : unsigned { kAuto, kFixed };
 
 enum TextCombine { TextCombineNone, TextCombineAll };
 
