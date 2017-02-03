@@ -3028,7 +3028,6 @@ void FrameView::performScrollAnchoringAdjustments() {
 
 void FrameView::prePaint() {
   TRACE_EVENT0("blink", "FrameView::prePaint");
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PrePaint.UpdateTime");
 
   if (!m_paintController)
     m_paintController = PaintController::create();
@@ -3050,8 +3049,10 @@ void FrameView::prePaint() {
     }
   });
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PrePaint.UpdateTime");
     PrePaintTreeWalk(*m_geometryMapper).walk(*this);
+  }
 
   forAllNonThrottledFrameViews([](FrameView& frameView) {
     frameView.lifecycle().advanceTo(DocumentLifecycle::PrePaintClean);
