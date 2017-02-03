@@ -36,9 +36,7 @@ class PluginContentOriginWhitelist : public WebContentsObserver {
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
-  void DidNavigateMainFrame(
-      const LoadCommittedDetails& details,
-      const FrameNavigateParams& params) override;
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   void OnPluginContentOriginAllowed(const url::Origin& content_origin);
 
