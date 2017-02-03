@@ -39,6 +39,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -76,7 +77,7 @@ public class NewTabPageView extends FrameLayout
         implements MostVisitedURLsObserver, OnLayoutChangeListener {
 
     private static final long SNAP_SCROLL_DELAY_MS = 30;
-    private static final String TAG = "Ntp";
+    private static final String TAG = "NewTabPageView";
 
     private NewTabPageRecyclerView mRecyclerView;
 
@@ -198,6 +199,7 @@ public class NewTabPageView extends FrameLayout
      */
     public void initialize(
             NewTabPageManager manager, Tab tab, boolean searchProviderHasLogo, int scrollPosition) {
+        TraceEvent.begin(TAG + ".initialize()");
         mActivity = tab.getActivity();
         mManager = manager;
         mUiConfig = new UiConfig(this);
@@ -306,12 +308,14 @@ public class NewTabPageView extends FrameLayout
             }
         });
 
+        TraceEvent.end(TAG + ".initialize()");
     }
 
     /**
      * Sets up the hint text and event handlers for the search box text view.
      */
     private void initializeSearchBoxTextView() {
+        TraceEvent.begin(TAG + ".initializeSearchBoxTextView()");
         final TextView searchBoxTextView = (TextView) mSearchBoxView
                 .findViewById(R.id.search_box_text);
         String hintText = getResources().getString(R.string.search_or_type_url);
@@ -343,9 +347,11 @@ public class NewTabPageView extends FrameLayout
                 searchBoxTextView.setText("");
             }
         });
+        TraceEvent.end(TAG + ".initializeSearchBoxTextView()");
     }
 
     private void initializeVoiceSearchButton() {
+        TraceEvent.begin(TAG + ".initializeVoiceSearchButton()");
         mVoiceSearchButton = (ImageView) mNewTabPageLayout.findViewById(R.id.voice_search_button);
         mVoiceSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -353,6 +359,7 @@ public class NewTabPageView extends FrameLayout
                 mManager.focusSearchBox(true, null);
             }
         });
+        TraceEvent.end(TAG + ".initializeVoiceSearchButton()");
     }
 
     private void updateSearchBoxOnScroll() {
@@ -419,6 +426,7 @@ public class NewTabPageView extends FrameLayout
      * scroll.
      */
     private void setupScrollHandling() {
+        TraceEvent.begin(TAG + ".setupScrollHandling()");
         final Runnable mSnapScrollRunnable = new Runnable() {
             @Override
             public void run() {
@@ -458,6 +466,7 @@ public class NewTabPageView extends FrameLayout
                 return false;
             }
         });
+        TraceEvent.end(TAG + ".setupScrollHandling()");
     }
 
     /**
@@ -661,6 +670,7 @@ public class NewTabPageView extends FrameLayout
             loadTaskCompleted();
             mFirstShow = false;
             NewTabPageUma.recordSearchAvailableLoadTime(mActivity);
+            TraceEvent.instant("NewTabPageSearchAvailable)");
         } else {
             // Trigger a scroll update when reattaching the window to signal the toolbar that
             // it needs to reset the NTP state.
