@@ -28,9 +28,10 @@ static struct cros_gralloc_bo *cros_gralloc_bo_create(struct driver *drv,
 
 	if (!combo) {
 		cros_gralloc_error("Unsupported combination -- HAL format: %u, "
-				   "HAL flags: %u, drv_format: %u, "
+				   "HAL flags: %u, drv_format: %4.4s, "
 				   "drv_flags: %llu", format, usage,
-				    drv_format, drv_usage);
+				    reinterpret_cast<char*>(&drv_format),
+				    drv_usage);
 		return NULL;
 	}
 

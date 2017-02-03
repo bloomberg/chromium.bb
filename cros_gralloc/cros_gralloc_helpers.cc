@@ -51,7 +51,8 @@ uint64_t cros_gralloc_convert_flags(int flags)
 	if (flags & GRALLOC_USAGE_HW_CAMERA_ZSL)
 		usage |= BO_USE_HW_CAMERA_ZSL;
 	if (flags & GRALLOC_USAGE_RENDERSCRIPT)
-		usage |= BO_USE_RENDERSCRIPT;
+		/* We use CPU for compute. */
+		usage |= BO_USE_LINEAR;
 
 	return usage;
 }
