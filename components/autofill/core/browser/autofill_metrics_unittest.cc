@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -4214,6 +4215,15 @@ TEST_F(AutofillMetricsParseQueryResponseTest, PartialNoServerData) {
   // No RAPPOR metrics are logged in the case there is at least some server data
   // available for all forms.
   EXPECT_EQ(0, rappor_service_.GetReportsCount());
+}
+
+// Test that the Form-Not-Secure warning user action is recorded.
+TEST_F(AutofillMetricsTest, ShowHttpNotSecureExplanationUserAction) {
+  base::UserActionTester user_action_tester;
+  external_delegate_->DidAcceptSuggestion(
+      ASCIIToUTF16("Test"), POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE, 0);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Autofill_ShowedHttpNotSecureExplanation"));
 }
 
 }  // namespace autofill

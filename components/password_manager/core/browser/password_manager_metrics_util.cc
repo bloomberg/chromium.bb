@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -153,6 +154,11 @@ void LogPasswordReuse(int password_length,
       "PasswordManager.PasswordReuse.PasswordFieldDetected",
       password_field_detected ? HAS_PASSWORD_FIELD : NO_PASSWORD_FIELD,
       PASSWORD_REUSE_PASSWORD_FIELD_DETECTED_COUNT);
+}
+
+void LogShowedHttpNotSecureExplanation() {
+  base::RecordAction(base::UserMetricsAction(
+      "PasswordManager_ShowedHttpNotSecureExplanation"));
 }
 
 }  // namespace metrics_util

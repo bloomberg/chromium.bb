@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/user_action_tester.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion_test_helpers.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -786,6 +787,21 @@ TEST_F(PasswordAutofillManagerTest, SecurePasswordFieldHttpWarningMessage) {
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);
+}
+
+// Test that a user action is logged when the user selects the Form-Not-Secure
+// warning to receive more information about the warning.
+TEST_F(PasswordAutofillManagerTest, FormNotSecureUserAction) {
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  base::UserActionTester user_action_tester;
+  password_autofill_manager_->DidAcceptSuggestion(
+      test_username_, autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE,
+      0);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "PasswordManager_ShowedHttpNotSecureExplanation"));
 }
 
 }  // namespace password_manager

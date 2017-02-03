@@ -230,6 +230,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
     manager_->client()->StartSigninFlow();
   } else if (identifier == POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+    AutofillMetrics::LogShowedHttpNotSecureExplanation();
     manager_->client()->ShowHttpNotSecureExplanation();
   } else {
     if (identifier > 0)  // Denotes an Autofill suggestion.

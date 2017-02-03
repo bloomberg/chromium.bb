@@ -292,6 +292,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
                                                   int identifier,
                                                   int position) {
   if (identifier == autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+    metrics_util::LogShowedHttpNotSecureExplanation();
     autofill_client_->ShowHttpNotSecureExplanation();
   } else {
     bool success =
