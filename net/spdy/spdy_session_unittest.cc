@@ -1990,9 +1990,9 @@ TEST_F(SpdySessionTest, NetLogOnSessionGoaway) {
   log_.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
-  int pos = ExpectLogContainsSomewhere(entries, 0,
-                                       NetLogEventType::HTTP2_SESSION_GOAWAY,
-                                       NetLogEventPhase::NONE);
+  int pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::HTTP2_SESSION_RECV_GOAWAY,
+      NetLogEventPhase::NONE);
   TestNetLogEntry entry = entries[pos];
   int last_accepted_stream_id;
   ASSERT_TRUE(entry.GetIntegerValue("last_accepted_stream_id",

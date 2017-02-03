@@ -226,7 +226,17 @@ std::unique_ptr<base::Value> NetLogSpdyDataCallback(
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogSpdyRstCallback(
+std::unique_ptr<base::Value> NetLogSpdyRecvRstStreamCallback(
+    SpdyStreamId stream_id,
+    int error_code,
+    NetLogCaptureMode /* capture_mode */) {
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  dict->SetInteger("stream_id", static_cast<int>(stream_id));
+  dict->SetInteger("status", error_code);
+  return std::move(dict);
+}
+
+std::unique_ptr<base::Value> NetLogSpdySendRstStreamCallback(
     SpdyStreamId stream_id,
     int error_code,
     const std::string* description,
@@ -250,7 +260,7 @@ std::unique_ptr<base::Value> NetLogSpdyPingCallback(
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogSpdyGoAwayCallback(
+std::unique_ptr<base::Value> NetLogSpdyRecvGoAwayCallback(
     SpdyStreamId last_stream_id,
     int active_streams,
     int unclaimed_streams,
@@ -1343,9 +1353,9 @@ void SpdySession::EnqueueResetStreamFrame(SpdyStreamId stream_id,
                                           const std::string& description) {
   DCHECK_NE(stream_id, 0u);
 
-  net_log().AddEvent(
-      NetLogEventType::HTTP2_SESSION_SEND_RST_STREAM,
-      base::Bind(&NetLogSpdyRstCallback, stream_id, error_code, &description));
+  net_log().AddEvent(NetLogEventType::HTTP2_SESSION_SEND_RST_STREAM,
+                     base::Bind(&NetLogSpdySendRstStreamCallback, stream_id,
+                                error_code, &description));
 
   DCHECK(buffered_spdy_framer_.get());
   std::unique_ptr<SpdySerializedFrame> rst_frame(
@@ -2374,10 +2384,9 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id,
                               SpdyErrorCode error_code) {
   CHECK(in_io_loop_);
 
-  std::string description;
   net_log().AddEvent(
-      NetLogEventType::HTTP2_SESSION_RST_STREAM,
-      base::Bind(&NetLogSpdyRstCallback, stream_id, error_code, &description));
+      NetLogEventType::HTTP2_SESSION_RECV_RST_STREAM,
+      base::Bind(&NetLogSpdyRecvRstStreamCallback, stream_id, error_code));
 
   ActiveStreamMap::iterator it = active_streams_.find(stream_id);
   if (it == active_streams_.end()) {
@@ -2421,8 +2430,8 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
   // TODO(jgraettinger): UMA histogram on |error_code|.
 
   net_log_.AddEvent(
-      NetLogEventType::HTTP2_SESSION_GOAWAY,
-      base::Bind(&NetLogSpdyGoAwayCallback, last_accepted_stream_id,
+      NetLogEventType::HTTP2_SESSION_RECV_GOAWAY,
+      base::Bind(&NetLogSpdyRecvGoAwayCallback, last_accepted_stream_id,
                  active_streams_.size(), unclaimed_pushed_streams_.size(),
                  error_code, debug_data));
   MakeUnavailable();
@@ -2472,7 +2481,7 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
                                  int delta_window_size) {
   CHECK(in_io_loop_);
 
-  net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECEIVED_WINDOW_UPDATE_FRAME,
+  net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_WINDOW_UPDATE,
                     base::Bind(&NetLogSpdyWindowUpdateFrameCallback, stream_id,
                                delta_window_size));
 
@@ -2835,7 +2844,7 @@ void SpdySession::SendWindowUpdateFrame(SpdyStreamId stream_id,
     CHECK_EQ(stream_id, kSessionFlowControlStreamId);
   }
 
-  net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_SENT_WINDOW_UPDATE_FRAME,
+  net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_SEND_WINDOW_UPDATE,
                     base::Bind(&NetLogSpdyWindowUpdateFrameCallback, stream_id,
                                delta_window_size));
 
