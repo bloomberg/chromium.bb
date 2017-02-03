@@ -7,39 +7,45 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/syncable/read_node.h"
 #include "components/sync/syncable/read_transaction.h"
 
-// This file contains tests that exercise enabling and disabling data
-// types.
+using base::FeatureList;
+using syncer::ModelType;
+using syncer::ModelTypeSet;
+using syncer::ModelTypeToString;
+using syncer::ProxyTypes;
+using syncer::SyncPrefs;
+using syncer::UserSelectableTypes;
+using syncer::UserShare;
 
 namespace {
 
-using base::FeatureList;
-using syncer::ModelTypeSet;
+bool DoesTopLevelNodeExist(UserShare* user_share, ModelType type) {
+  syncer::ReadTransaction trans(FROM_HERE, user_share);
+  syncer::ReadNode node(&trans);
+  return node.InitTypeRoot(type) == syncer::BaseNode::INIT_OK;
+}
 
-class EnableDisableSingleClientTest : public SyncTest {
- public:
-  EnableDisableSingleClientTest() : SyncTest(SINGLE_CLIENT) {}
-  ~EnableDisableSingleClientTest() override {}
+void VerifyExistence(UserShare* user_share,
+                     bool should_root_node_exist,
+                     ModelType type) {
+  EXPECT_EQ(should_root_node_exist, DoesTopLevelNodeExist(user_share, type))
+      << ModelTypeToString(type);
+}
 
-  // Don't use self-notifications as they can trigger additional sync cycles.
-  bool TestUsesSelfNotifications() override { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnableDisableSingleClientTest);
-};
-
-bool DoesTopLevelNodeExist(syncer::UserShare* user_share,
-                           syncer::ModelType type) {
-    syncer::ReadTransaction trans(FROM_HERE, user_share);
-    syncer::ReadNode node(&trans);
-    return node.InitTypeRoot(type) == syncer::BaseNode::INIT_OK;
+void VerifyExistence(UserShare* user_share,
+                     bool should_root_node_exist,
+                     ModelType grouped,
+                     ModelType selectable) {
+  EXPECT_EQ(should_root_node_exist, DoesTopLevelNodeExist(user_share, grouped))
+      << ModelTypeToString(selectable) << "->" << ModelTypeToString(grouped);
 }
 
 bool IsUnready(const syncer::DataTypeStatusTable& data_type_status_table,
-               syncer::ModelType type) {
+               ModelType type) {
   return data_type_status_table.GetUnreadyErrorTypes().Has(type);
 }
 
@@ -53,134 +59,158 @@ ModelTypeSet UnifiedSyncServiceTypes() {
   if (FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
     set.Put(syncer::DEVICE_INFO);
   }
+  // PRINTERS was the first USS type, and should precede all other USS types.
+  // All new types should be USS. This logic is fragile to reordering ModelType.
+  for (int typeInt = syncer::PRINTERS; typeInt < syncer::FIRST_PROXY_TYPE;
+       typeInt++) {
+    set.Put(static_cast<ModelType>(typeInt));
+  }
   return set;
 }
 
+// Some types show up in multiple groups. This means that there are at least two
+// user selectable groups that will cause these types to become enabled. This
+// affects our tests because we cannot assume that before enabling a multi type
+// it will be disabled, because the other selectable type(s) could already be
+// enabling it. And vice versa for disabling.
+ModelTypeSet MultiGroupTypes(const SyncPrefs& sync_prefs,
+                             const ModelTypeSet& registered_types) {
+  const ModelTypeSet selectable_types = UserSelectableTypes();
+  ModelTypeSet seen;
+  ModelTypeSet multi;
+  for (ModelTypeSet::Iterator si = selectable_types.First(); si.Good();
+       si.Inc()) {
+    const ModelTypeSet grouped_types =
+        sync_prefs.ResolvePrefGroups(registered_types, ModelTypeSet(si.Get()));
+    for (ModelTypeSet::Iterator gi = grouped_types.First(); gi.Good();
+         gi.Inc()) {
+      if (seen.Has(gi.Get())) {
+        multi.Put(gi.Get());
+      } else {
+        seen.Put(gi.Get());
+      }
+    }
+  }
+  return multi;
+}
+
+// This test enables and disables types and verifies the type is sufficiently
+// affected by checking for existence of a root node.
+class EnableDisableSingleClientTest : public SyncTest {
+ public:
+  EnableDisableSingleClientTest() : SyncTest(SINGLE_CLIENT) {}
+  ~EnableDisableSingleClientTest() override {}
+
+  // Don't use self-notifications as they can trigger additional sync cycles.
+  bool TestUsesSelfNotifications() override { return false; }
+
+ protected:
+  void SetupTest(bool all_types_enabled) {
+    ASSERT_TRUE(SetupClients());
+    sync_prefs_ = base::MakeUnique<SyncPrefs>(GetProfile(0)->GetPrefs());
+    if (all_types_enabled) {
+      ASSERT_TRUE(GetClient(0)->SetupSync());
+    } else {
+      ASSERT_TRUE(GetClient(0)->SetupSync(ModelTypeSet()));
+    }
+    user_share_ = GetSyncService(0)->GetUserShare();
+    data_type_status_table_ = GetSyncService(0)->data_type_status_table();
+
+    registered_types_ = GetSyncService(0)->GetRegisteredDataTypes();
+    selectable_types_ = UserSelectableTypes();
+    multi_grouped_types_ = MultiGroupTypes(*sync_prefs_, registered_types_);
+    registered_directory_types_ = Difference(
+        Difference(registered_types_, UnifiedSyncServiceTypes()), ProxyTypes());
+    registered_selectable_types_ =
+        Intersection(registered_types_, UserSelectableTypes());
+  }
+
+  ModelTypeSet ResolveGroup(ModelType type) {
+    return Difference(Difference(sync_prefs_->ResolvePrefGroups(
+                                     registered_types_, ModelTypeSet(type)),
+                                 ProxyTypes()),
+                      UnifiedSyncServiceTypes());
+  }
+
+  ModelTypeSet WithoutMultiTypes(const ModelTypeSet& input) {
+    return Difference(input, multi_grouped_types_);
+  }
+
+  void TearDownOnMainThread() override {
+    // Has to be done before user prefs are destroyed.
+    sync_prefs_.reset();
+    SyncTest::TearDownOnMainThread();
+  }
+
+  std::unique_ptr<SyncPrefs> sync_prefs_;
+  UserShare* user_share_;
+  syncer::DataTypeStatusTable data_type_status_table_;
+  ModelTypeSet registered_types_;
+  ModelTypeSet selectable_types_;
+  ModelTypeSet multi_grouped_types_;
+  ModelTypeSet registered_directory_types_;
+  ModelTypeSet registered_selectable_types_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnableDisableSingleClientTest);
+};
+
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
-  ASSERT_TRUE(SetupClients());
-
   // Setup sync with no enabled types.
-  ASSERT_TRUE(GetClient(0)->SetupSync(ModelTypeSet()));
+  SetupTest(false);
 
-  syncer::UserShare* user_share = GetSyncService(0)->GetUserShare();
-  const syncer::DataTypeStatusTable& data_type_status_table =
-      GetSyncService(0)->data_type_status_table();
-
-  const ModelTypeSet registered_types =
-      GetSyncService(0)->GetRegisteredDataTypes();
-  const ModelTypeSet registered_directory_types =
-      Difference(registered_types, UnifiedSyncServiceTypes());
-  const ModelTypeSet registered_directory_user_types =
-      Intersection(registered_types, syncer::UserSelectableTypes());
-  for (ModelTypeSet::Iterator it = registered_directory_user_types.First();
-       it.Good(); it.Inc()) {
-    ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(it.Get()));
-
-    // AUTOFILL_PROFILE is lumped together with AUTOFILL.
-    // SESSIONS is lumped together with PROXY_TABS and
-    // HISTORY_DELETE_DIRECTIVES.
-    // Favicons are lumped together with PROXY_TABS and
-    // HISTORY_DELETE_DIRECTIVES.
-    if (it.Get() == syncer::AUTOFILL_PROFILE || it.Get() == syncer::SESSIONS) {
-      continue;
+  for (ModelTypeSet::Iterator si = selectable_types_.First(); si.Good();
+       si.Inc()) {
+    const ModelTypeSet grouped_types = ResolveGroup(si.Get());
+    const ModelTypeSet single_grouped_types = WithoutMultiTypes(grouped_types);
+    for (ModelTypeSet::Iterator sgi = single_grouped_types.First(); sgi.Good();
+         sgi.Inc()) {
+      VerifyExistence(user_share_, false, sgi.Get(), si.Get());
     }
 
-    if (!syncer::ProxyTypes().Has(it.Get())) {
-      ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()) ||
-                  IsUnready(data_type_status_table, it.Get()))
-          << syncer::ModelTypeToString(it.Get());
-    }
+    EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(si.Get()));
 
-    // AUTOFILL_PROFILE is lumped together with AUTOFILL.
-    if (it.Get() == syncer::AUTOFILL) {
-      ASSERT_TRUE(DoesTopLevelNodeExist(user_share,
-                                        syncer::AUTOFILL_PROFILE));
-    } else if (it.Get() == syncer::HISTORY_DELETE_DIRECTIVES ||
-               it.Get() == syncer::PROXY_TABS) {
-      ASSERT_TRUE(DoesTopLevelNodeExist(user_share,
-                                        syncer::SESSIONS));
+    for (ModelTypeSet::Iterator gi = grouped_types.First(); gi.Good();
+         gi.Inc()) {
+      VerifyExistence(user_share_, true, gi.Get(), si.Get());
     }
   }
 }
 
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
-  ASSERT_TRUE(SetupClients());
-
   // Setup sync with no disabled types.
-  ASSERT_TRUE(GetClient(0)->SetupSync());
-
-  const ModelTypeSet registered_types =
-      GetSyncService(0)->GetRegisteredDataTypes();
-  const ModelTypeSet registered_directory_types =
-      Difference(registered_types, UnifiedSyncServiceTypes());
-
-  syncer::UserShare* user_share = GetSyncService(0)->GetUserShare();
-
-  const syncer::DataTypeStatusTable& data_type_status_table =
-      GetSyncService(0)->data_type_status_table();
+  SetupTest(true);
 
   // Make sure all top-level nodes exist first.
-  for (ModelTypeSet::Iterator it = registered_directory_types.First();
-       it.Good(); it.Inc()) {
-    if (!syncer::ProxyTypes().Has(it.Get())) {
-      ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()) ||
-                  IsUnready(data_type_status_table, it.Get()));
+  for (ModelTypeSet::Iterator rdi = registered_directory_types_.First();
+       rdi.Good(); rdi.Inc()) {
+    EXPECT_TRUE(DoesTopLevelNodeExist(user_share_, rdi.Get()) ||
+                IsUnready(data_type_status_table_, rdi.Get()))
+        << ModelTypeToString(rdi.Get());
+  }
+
+  for (ModelTypeSet::Iterator si = selectable_types_.First(); si.Good();
+       si.Inc()) {
+    const ModelTypeSet grouped_types = ResolveGroup(si.Get());
+    for (ModelTypeSet::Iterator gi = grouped_types.First(); gi.Good();
+         gi.Inc()) {
+      VerifyExistence(user_share_, true, gi.Get(), si.Get());
+    }
+
+    EXPECT_TRUE(GetClient(0)->DisableSyncForDatatype(si.Get()));
+
+    const ModelTypeSet single_grouped_types = WithoutMultiTypes(grouped_types);
+    for (ModelTypeSet::Iterator sgi = single_grouped_types.First(); sgi.Good();
+         sgi.Inc()) {
+      VerifyExistence(user_share_, false, sgi.Get(), si.Get());
     }
   }
 
-  for (ModelTypeSet::Iterator it = registered_directory_types.First();
-       it.Good(); it.Inc()) {
-    // SUPERVISED_USERS and SUPERVISED_USER_SHARED_SETTINGS are always synced.
-    if (it.Get() == syncer::SUPERVISED_USERS ||
-        it.Get() == syncer::SUPERVISED_USER_SHARED_SETTINGS ||
-        it.Get() == syncer::SYNCED_NOTIFICATIONS ||
-        it.Get() == syncer::SYNCED_NOTIFICATION_APP_INFO)
-      continue;
-
-    // Device info cannot be disabled.
-    if (it.Get() == syncer::DEVICE_INFO)
-      continue;
-
-    ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(it.Get()));
-
-    // AUTOFILL_PROFILE is lumped together with AUTOFILL.
-    // SESSIONS is lumped together with PROXY_TABS and TYPED_URLS.
-    // HISTORY_DELETE_DIRECTIVES is lumped together with TYPED_URLS.
-    // PRIORITY_PREFERENCES is lumped together with PREFERENCES.
-    // Favicons are lumped together with PROXY_TABS and
-    // HISTORY_DELETE_DIRECTIVES.
-    if (it.Get() == syncer::AUTOFILL_PROFILE ||
-        it.Get() == syncer::SESSIONS ||
-        it.Get() == syncer::HISTORY_DELETE_DIRECTIVES ||
-        it.Get() == syncer::PRIORITY_PREFERENCES ||
-        it.Get() == syncer::FAVICON_IMAGES ||
-        it.Get() == syncer::FAVICON_TRACKING) {
-      continue;
-    }
-
-    syncer::UserShare* user_share =
-        GetSyncService(0)->GetUserShare();
-
-    ASSERT_FALSE(DoesTopLevelNodeExist(user_share, it.Get()))
-        << syncer::ModelTypeToString(it.Get());
-
-    if (it.Get() == syncer::AUTOFILL) {
-      // AUTOFILL_PROFILE is lumped together with AUTOFILL.
-      ASSERT_FALSE(DoesTopLevelNodeExist(user_share, syncer::AUTOFILL_PROFILE));
-    } else if (it.Get() == syncer::TYPED_URLS) {
-      ASSERT_FALSE(DoesTopLevelNodeExist(user_share,
-                                         syncer::HISTORY_DELETE_DIRECTIVES));
-      // SESSIONS should be enabled only if PROXY_TABS is.
-      ASSERT_EQ(GetClient(0)->IsTypePreferred(syncer::PROXY_TABS),
-                DoesTopLevelNodeExist(user_share, syncer::SESSIONS));
-    } else if (it.Get() == syncer::PROXY_TABS) {
-      // SESSIONS should be enabled only if TYPED_URLS is.
-      ASSERT_EQ(GetClient(0)->IsTypePreferred(syncer::TYPED_URLS),
-                DoesTopLevelNodeExist(user_share, syncer::SESSIONS));
-    } else if (it.Get() == syncer::PREFERENCES) {
-      ASSERT_FALSE(DoesTopLevelNodeExist(user_share,
-                                         syncer::PRIORITY_PREFERENCES));
-    }
+  // Lastly make sure that all the multi grouped times are all gone, since we
+  // did not check these after disabling inside the above loop.
+  for (ModelTypeSet::Iterator mgi = multi_grouped_types_.First(); mgi.Good();
+       mgi.Inc()) {
+    VerifyExistence(user_share_, false, mgi.Get());
   }
 }
 

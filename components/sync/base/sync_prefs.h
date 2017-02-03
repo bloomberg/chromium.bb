@@ -184,6 +184,11 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   bool IsLocalSyncEnabled() const;
   base::FilePath GetLocalSyncBackendDir() const;
 
+  // Returns a ModelTypeSet based on |types| expanded to include pref groups
+  // (see |pref_groups_|), but as a subset of |registered_types|.
+  ModelTypeSet ResolvePrefGroups(ModelTypeSet registered_types,
+                                 ModelTypeSet types) const;
+
  private:
   void RegisterPrefGroups();
 
@@ -193,11 +198,6 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
       bool is_preferred);
   bool GetDataTypePreferred(ModelType type) const;
   void SetDataTypePreferred(ModelType type, bool is_preferred);
-
-  // Returns a ModelTypeSet based on |types| expanded to include pref groups
-  // (see |pref_groups_|), but as a subset of |registered_types|.
-  ModelTypeSet ResolvePrefGroups(ModelTypeSet registered_types,
-                                 ModelTypeSet types) const;
 
   void OnSyncManagedPrefChanged();
 

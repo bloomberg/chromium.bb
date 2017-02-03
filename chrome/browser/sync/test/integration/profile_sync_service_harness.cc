@@ -329,6 +329,12 @@ bool ProfileSyncServiceHarness::EnableSyncForDatatype(
     return false;
   }
 
+  if (!syncer::UserSelectableTypes().Has(datatype)) {
+    LOG(ERROR) << "Can only enable user selectable types, requested "
+               << syncer::ModelTypeToString(datatype);
+    return false;
+  }
+
   syncer::ModelTypeSet synced_datatypes = service()->GetPreferredDataTypes();
   if (synced_datatypes.Has(datatype)) {
     DVLOG(1) << "EnableSyncForDatatype(): Sync already enabled for datatype "
@@ -359,6 +365,12 @@ bool ProfileSyncServiceHarness::DisableSyncForDatatype(
 
   if (service() == nullptr) {
     LOG(ERROR) << "DisableSyncForDatatype(): service() is null.";
+    return false;
+  }
+
+  if (!syncer::UserSelectableTypes().Has(datatype)) {
+    LOG(ERROR) << "Can only disable user selectable types, requested "
+               << syncer::ModelTypeToString(datatype);
     return false;
   }
 
