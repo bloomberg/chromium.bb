@@ -320,6 +320,12 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context,
   paint.setShader(MakePaintShaderRecord(tilePicture, SkShader::kRepeat_TileMode,
                                         SkShader::kRepeat_TileMode,
                                         &patternTransform, nullptr));
+  // If the shader could not be instantiated (e.g. non-invertible matrix),
+  // draw transparent.
+  // Note: we can't simply bail, because of arbitrary blend mode.
+  if (!paint.getShader())
+    paint.setColor(SK_ColorTRANSPARENT);
+
   paint.setBlendMode(compositeOp);
   paint.setColorFilter(sk_ref_sp(context.getColorFilter()));
   context.drawRect(dstRect, paint);
