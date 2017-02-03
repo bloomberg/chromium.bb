@@ -135,7 +135,9 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
       : ScriptWrappableVisitor(isolate),
         m_currentParent(nullptr),
         m_onlyTraceSingleLevel(false),
-        m_firstScriptWrappableTraced(false) {}
+        m_firstScriptWrappableTraced(false) {
+    DCHECK(isMainThread());
+  }
 
   // Collect interesting V8 roots for the heap snapshot. Currently these are
   // DOM nodes.
@@ -194,6 +196,14 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
 
   v8::HeapProfiler::RetainerEdges edges() { return std::move(m_edges); }
   v8::HeapProfiler::RetainerGroups groups() { return std::move(m_groups); }
+
+  void markWrappersInAllWorlds(
+      const ScriptWrappable* traceable) const override {
+    // Only mark the main thread wrapper as we cannot properly intercept
+    // DOMWrapperMap::markWrapper. This means that edges from the isolated
+    // worlds are missing in the snapshot.
+    traceable->markWrapper(this);
+  }
 
   void markWrapper(const v8::PersistentBase<v8::Value>* value) const override {
     if (m_currentParent && m_currentParent != value)
