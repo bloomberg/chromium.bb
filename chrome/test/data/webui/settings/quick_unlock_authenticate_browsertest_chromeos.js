@@ -324,11 +324,6 @@ cr.define('settings_people_page_quick_unlock', function() {
       var backButton = null;
       var continueButton = null;
 
-      suiteSetup(function() {
-        var urls = ['chrome://md-settings/i18n_setup.html'];
-        return Promise.all(urls.map(PolymerTest.importHtml));
-      });
-
       setup(function() {
         PolymerTest.clearBody();
 
