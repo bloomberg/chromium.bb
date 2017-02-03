@@ -133,8 +133,7 @@ class CourierRendererTest : public testing::Test {
         sender_audio_demuxer_handle_(RpcBroker::kInvalidHandle),
         sender_video_demuxer_handle_(RpcBroker::kInvalidHandle),
         received_audio_ds_init_cb_(false),
-        received_video_ds_init_cb_(false),
-        renderer_initialized_(false) {}
+        received_video_ds_init_cb_(false) {}
   ~CourierRendererTest() override = default;
 
   // Use this function to mimic receiver to handle RPC message for renderer
@@ -195,10 +194,9 @@ class CourierRendererTest : public testing::Test {
           std::unique_ptr<pb::RpcMessage> init_cb(new pb::RpcMessage());
           init_cb->set_handle(sender_renderer_callback_handle_);
           init_cb->set_proc(pb::RpcMessage::RPC_R_INITIALIZE_CALLBACK);
-          init_cb->set_boolean_value(true);
+          init_cb->set_boolean_value(is_successfully_initialized_);
           controller_->GetRpcBroker()->ProcessMessageFromRemote(
               std::move(init_cb));
-          renderer_initialized_ = true;
         }
 
       } break;
@@ -346,14 +344,15 @@ class CourierRendererTest : public testing::Test {
   int sender_audio_demuxer_handle_;
   int sender_video_demuxer_handle_;
 
-  // flag to indicate if RPC_DS_INITIALIZE_CALLBACK RPC messages are received.
+  // Indicate whether RPC_DS_INITIALIZE_CALLBACK RPC messages are received.
   bool received_audio_ds_init_cb_;
   bool received_video_ds_init_cb_;
 
-  // Check if |renderer_| is initialized successfully or not.
-  bool renderer_initialized_;
+  // Indicates whether the test wants to simulate successful initialization in
+  // the renderer on the receiver side.
+  bool is_successfully_initialized_ = true;
 
-  // vector to store received RPC message with proc value
+  // Stores RPC messages that are sending to remote sink.
   std::vector<std::unique_ptr<pb::RpcMessage>> received_rpc_;
 
  private:
@@ -366,6 +365,38 @@ TEST_F(CourierRendererTest, Initialize) {
 
   ASSERT_TRUE(IsRendererInitialized());
   ASSERT_EQ(render_client_->status(), PIPELINE_OK);
+}
+
+TEST_F(CourierRendererTest, InitializeFailed) {
+  is_successfully_initialized_ = false;
+  InitializeRenderer();
+  RunPendingTasks();
+  ASSERT_FALSE(IsRendererInitialized());
+  ASSERT_TRUE(DidEncounterFatalError());
+  // Don't report error to prevent breaking the pipeline.
+  ASSERT_EQ(render_client_->status(), PIPELINE_OK);
+
+  // The CourierRenderer should act as a no-op renderer from this point.
+
+  ResetReceivedRpcMessage();
+  EXPECT_CALL(*render_client_, OnFlushCallback()).Times(1);
+  renderer_->Flush(base::Bind(&RendererClientImpl::OnFlushCallback,
+                              base::Unretained(render_client_.get())));
+  RunPendingTasks();
+  ASSERT_EQ(0, ReceivedRpcMessageCount());
+
+  base::TimeDelta seek = base::TimeDelta::FromMicroseconds(100);
+  renderer_->StartPlayingFrom(seek);
+  RunPendingTasks();
+  ASSERT_EQ(0, ReceivedRpcMessageCount());
+
+  renderer_->SetVolume(3.0);
+  RunPendingTasks();
+  ASSERT_EQ(0, ReceivedRpcMessageCount());
+
+  renderer_->SetPlaybackRate(2.5);
+  RunPendingTasks();
+  ASSERT_EQ(0, ReceivedRpcMessageCount());
 }
 
 TEST_F(CourierRendererTest, Flush) {
@@ -432,8 +463,6 @@ TEST_F(CourierRendererTest, SetPlaybackRate) {
   RunPendingTasks();
   ASSERT_EQ(0, ReceivedRpcMessageCount());
 
-  controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
-      &CourierRendererTest::OnSendMessageToSink, base::Unretained(this)));
   renderer_->SetPlaybackRate(2.5);
   RunPendingTasks();
   ASSERT_EQ(1, ReceivedRpcMessageCount());

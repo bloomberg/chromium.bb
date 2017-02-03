@@ -320,11 +320,11 @@ void CourierRenderer::OnDataPipeCreated(
     int video_rpc_handle) {
   VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DCHECK(!init_workflow_done_callback_.is_null());
 
   if (state_ == STATE_ERROR)
     return;  // Abort because something went wrong in the meantime.
   DCHECK_EQ(state_, STATE_CREATE_PIPE);
+  DCHECK(!init_workflow_done_callback_.is_null());
 
   // Create audio demuxer stream adapter if audio is available.
   DemuxerStream* audio_demuxer_stream =
@@ -674,9 +674,10 @@ void CourierRenderer::OnFatalError(StopTrigger stop_trigger) {
 
   data_flow_poll_timer_.Stop();
 
+  // This renderer will be shut down shortly. To prevent breaking the pipeline,
+  // just run the callback without reporting error.
   if (!init_workflow_done_callback_.is_null()) {
-    base::ResetAndReturn(&init_workflow_done_callback_)
-        .Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
+    base::ResetAndReturn(&init_workflow_done_callback_).Run(PIPELINE_OK);
     return;
   }
 
