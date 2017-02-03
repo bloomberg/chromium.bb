@@ -113,10 +113,14 @@ void HeadlessContentMainDelegate::InitLogging(
     log_path = log_filename;
   }
 
+  const std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+
   settings.logging_dest = log_mode;
   settings.log_file = log_path.value().c_str();
   settings.lock_log = logging::DONT_LOCK_LOG_FILE;
-  settings.delete_old = logging::DELETE_OLD_LOG_FILE;
+  settings.delete_old = process_type.empty() ? logging::DELETE_OLD_LOG_FILE
+                                             : logging::APPEND_TO_OLD_LOG_FILE;
   bool success = logging::InitLogging(settings);
   DCHECK(success);
 }

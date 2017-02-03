@@ -23,9 +23,7 @@ extern const char kVirtualTimeBudget[];
 extern const char kWindowSize[];
 
 // Switches which are replicated from content.
-using ::switches::kEnableLogging;
 using ::switches::kHostResolverRules;
-using ::switches::kLoggingLevel;
 using ::switches::kRemoteDebuggingPort;
 
 }  // namespace switches
