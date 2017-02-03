@@ -479,7 +479,7 @@ int MotionEvents::Run() {
     // Number of files to look for when discovering DRM devices.
     const uint32_t kDrmMaxMinor = 15;
     const uint32_t kRenderNodeStart = 128;
-    const uint32_t kRenderNodeEnd = kRenderNodeStart + kDrmMaxMinor;
+    const uint32_t kRenderNodeEnd = kRenderNodeStart + kDrmMaxMinor + 1;
 
     for (uint32_t i = kRenderNodeStart; i < kRenderNodeEnd; i++) {
       std::string dri_render_node(
