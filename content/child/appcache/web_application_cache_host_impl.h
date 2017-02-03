@@ -57,11 +57,7 @@ class WebApplicationCacheHostImpl
   void getAssociatedCacheInfo(CacheInfo* info) override;
 
  private:
-  enum IsNewMasterEntry {
-    MAYBE,
-    YES,
-    NO
-  };
+  enum IsNewMasterEntry { MAYBE_NEW_ENTRY, NEW_ENTRY, OLD_ENTRY };
 
   blink::WebApplicationCacheHostClient* client_;
   AppCacheBackend* backend_;

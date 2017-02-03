@@ -65,7 +65,7 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
       status_(APPCACHE_STATUS_UNCACHED),
       is_scheme_supported_(false),
       is_get_method_(false),
-      is_new_master_entry_(MAYBE),
+      is_new_master_entry_(MAYBE_NEW_ENTRY),
       was_select_cache_called_(false) {
   DCHECK(client && backend);
   // PlzNavigate: The browser passes the ID to be used.
@@ -201,7 +201,7 @@ void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
 
   status_ = (document_response_.appCacheID() == kAppCacheNoCacheId) ?
       APPCACHE_STATUS_UNCACHED : APPCACHE_STATUS_CHECKING;
-  is_new_master_entry_ = NO;
+  is_new_master_entry_ = OLD_ENTRY;
   backend_->SelectCache(host_id_, document_url_,
                         document_response_.appCacheID(),
                         GURL());
@@ -221,10 +221,10 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
     if (is_scheme_supported_ && is_get_method_ &&
         (manifest_gurl.GetOrigin() == document_url_.GetOrigin())) {
       status_ = APPCACHE_STATUS_CHECKING;
-      is_new_master_entry_ = YES;
+      is_new_master_entry_ = NEW_ENTRY;
     } else {
       status_ = APPCACHE_STATUS_UNCACHED;
-      is_new_master_entry_ = NO;
+      is_new_master_entry_ = OLD_ENTRY;
       manifest_gurl = GURL();
     }
     backend_->SelectCache(
@@ -232,7 +232,7 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
     return true;
   }
 
-  DCHECK_EQ(NO, is_new_master_entry_);
+  DCHECK_EQ(OLD_ENTRY, is_new_master_entry_);
 
   // 6.9.6 The application cache selection algorithm
   // Check for 'foreign' entries.
@@ -264,18 +264,18 @@ void WebApplicationCacheHostImpl::didReceiveResponseForMainResource(
   is_scheme_supported_ =  IsSchemeSupportedForAppCache(document_url_);
   if ((document_response_.appCacheID() != kAppCacheNoCacheId) ||
       !is_scheme_supported_ || !is_get_method_)
-    is_new_master_entry_ = NO;
+    is_new_master_entry_ = OLD_ENTRY;
 }
 
 void WebApplicationCacheHostImpl::didReceiveDataForMainResource(
     const char* data, unsigned len) {
-  if (is_new_master_entry_ == NO)
+  if (is_new_master_entry_ == OLD_ENTRY)
     return;
   // TODO(michaeln): write me
 }
 
 void WebApplicationCacheHostImpl::didFinishLoadingMainResource(bool success) {
-  if (is_new_master_entry_ == NO)
+  if (is_new_master_entry_ == OLD_ENTRY)
     return;
   // TODO(michaeln): write me
 }
