@@ -1,0 +1,481 @@
+{
+  metadata: {
+    namespace: "HTML",
+    namespacePrefix: "xhtml",
+    namespaceURI: "http://www.w3.org/1999/xhtml",
+    fallbackInterfaceName: "HTMLUnknownElement",
+    export: "CORE_EXPORT",
+  },
+
+  data: [
+    {
+      name: "a",
+      interfaceName: "HTMLAnchorElement",
+    },
+    {
+      name: "abbr",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "acronym",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "address",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "applet",
+      interfaceName: "HTMLUnknownElement",
+    },
+    "area",
+    {
+      name: "article",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "aside",
+      interfaceName: "HTMLElement",
+    },
+    "audio",
+    {
+      name: "b",
+      interfaceName: "HTMLElement",
+    },
+    "base",
+    {
+      name: "basefont",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "bdi",
+      JSInterfaceName: "HTMLElement",
+      interfaceName: "HTMLBDIElement",
+    },
+    {
+      name: "bdo",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "bgsound",
+      interfaceName: "HTMLUnknownElement",
+    },
+    {
+      name: "big",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "blockquote",
+      interfaceName: "HTMLQuoteElement",
+    },
+    "body",
+    {
+      name: "br",
+      interfaceName: "HTMLBRElement",
+    },
+    "button",
+    "canvas",
+    {
+      name: "caption",
+      interfaceName: "HTMLTableCaptionElement",
+    },
+    {
+      name: "center",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "cite",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "code",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "col",
+      interfaceName: "HTMLTableColElement",
+    },
+    {
+      name: "colgroup",
+      interfaceName: "HTMLTableColElement",
+    },
+    {
+      name: "command",
+      interfaceName: "HTMLUnknownElement",
+    },
+    {
+      name: "content",
+      interfaceName: "HTMLContentElement",
+    },
+    {
+      name: "datalist",
+      interfaceName: "HTMLDataListElement",
+    },
+    {
+      name: "dd",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "del",
+      interfaceName: "HTMLModElement",
+    },
+    "details",
+    {
+      name: "dfn",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "dir",
+      interfaceName: "HTMLDirectoryElement",
+    },
+    "dialog",
+    "div",
+    {
+      name: "dl",
+      interfaceName: "HTMLDListElement",
+    },
+    {
+      name: "dt",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "em",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "embed",
+      constructorNeedsCreatedByParser: true,
+    },
+    {
+      name: "fieldset",
+      interfaceName: "HTMLFieldSetElement",
+    },
+    {
+      name: "figcaption",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "figure",
+      interfaceName: "HTMLElement",
+    },
+    "font",
+    {
+      name: "footer",
+      interfaceName: "HTMLElement",
+    },
+    "form",
+    "frame",
+    {
+      name: "frameset",
+      interfaceName: "HTMLFrameSetElement",
+    },
+    {
+      name: "h1",
+      interfaceName: "HTMLHeadingElement",
+    },
+    {
+      name: "h2",
+      interfaceName: "HTMLHeadingElement",
+    },
+    {
+      name: "h3",
+      interfaceName: "HTMLHeadingElement",
+    },
+    {
+      name: "h4",
+      interfaceName: "HTMLHeadingElement",
+    },
+    {
+      name: "h5",
+      interfaceName: "HTMLHeadingElement",
+    },
+    {
+      name: "h6",
+      interfaceName: "HTMLHeadingElement",
+    },
+    "head",
+    {
+      name: "header",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "hgroup",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "hr",
+      interfaceName: "HTMLHRElement",
+    },
+    "html",
+    {
+      name: "i",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "iframe",
+      interfaceName: "HTMLIFrameElement",
+    },
+    {
+      name: "image",
+      interfaceName: "HTMLUnknownElement",
+    },
+    {
+      name: "img",
+      constructorNeedsCreatedByParser: true,
+      interfaceName: "HTMLImageElement",
+    },
+    {
+      name: "input",
+      constructorNeedsCreatedByParser: true,
+    },
+    {
+      name: "ins",
+      interfaceName: "HTMLModElement",
+    },
+    {
+      name: "kbd",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "keygen",
+      interfaceName: "HTMLUnknownElement",
+    },
+    "label",
+    {
+      name: "layer",
+      interfaceName: "HTMLElement",
+    },
+    "legend",
+    {
+      name: "li",
+      interfaceName: "HTMLLIElement",
+    },
+    {
+      name: "link",
+      constructorNeedsCreatedByParser: true,
+    },
+    {
+      name: "listing",
+      interfaceName: "HTMLPreElement",
+    },
+    {
+      name: "main",
+      interfaceName: "HTMLElement",
+    },
+    "map",
+    {
+      name: "mark",
+      interfaceName: "HTMLElement",
+    },
+    "marquee",
+    "menu",
+    {
+      name: "menuitem",
+      interfaceName: "HTMLMenuItemElement",
+      runtimeEnabled: "contextMenu",
+    },
+    "meta",
+    {
+      name: "meter",
+      interfaceName: "HTMLMeterElement",
+    },
+    {
+      name: "nav",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "nobr",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "noembed",
+      JSInterfaceName: "HTMLElement",
+      interfaceName: "HTMLNoEmbedElement",
+    },
+    {
+      name: "noframes",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "nolayer",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "object",
+      constructorNeedsCreatedByParser: true,
+    },
+    {
+      name: "ol",
+      interfaceName: "HTMLOListElement",
+    },
+    {
+      name: "optgroup",
+      interfaceName: "HTMLOptGroupElement",
+    },
+    "option",
+    "output",
+    {
+      name: "shadow",
+      interfaceName: "HTMLShadowElement",
+    },
+    {
+      name: "p",
+      interfaceName: "HTMLParagraphElement",
+    },
+    "param",
+    {
+      name: "picture",
+      interfaceName: "HTMLPictureElement",
+    },
+    {
+      name: "plaintext",
+      interfaceName: "HTMLElement",
+    },
+    "pre",
+    {
+      name: "progress",
+      interfaceName: "HTMLProgressElement",
+    },
+    {
+      name: "q",
+      interfaceName: "HTMLQuoteElement",
+    },
+    {
+      name: "rb",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "rp",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "rt",
+      JSInterfaceName: "HTMLElement",
+      interfaceName: "HTMLRTElement",
+    },
+    {
+      name: "rtc",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "ruby",
+      JSInterfaceName: "HTMLElement",
+      interfaceName: "HTMLRubyElement",
+    },
+    {
+      name: "s",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "samp",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "script",
+      constructorNeedsCreatedByParser: true,
+    },
+    {
+      name: "section",
+      interfaceName: "HTMLElement",
+    },
+    "select",
+    {
+      name: "slot",
+      interfaceName: "HTMLSlotElement",
+    },
+    {
+      name: "small",
+      interfaceName: "HTMLElement",
+    },
+    "source",
+    "span",
+    {
+      name: "strike",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "strong",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "style",
+      constructorNeedsCreatedByParser: true,
+    },
+    {
+      name: "sub",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "summary",
+      JSInterfaceName: "HTMLElement",
+      interfaceName: "HTMLSummaryElement",
+    },
+    {
+      name: "sup",
+      interfaceName: "HTMLElement",
+    },
+    "table",
+    {
+      name: "tbody",
+      interfaceName: "HTMLTableSectionElement",
+    },
+    {
+      name: "td",
+      interfaceName: "HTMLTableCellElement",
+    },
+    "template",
+    {
+      name: "textarea",
+      interfaceName: "HTMLTextAreaElement",
+    },
+    {
+      name: "tfoot",
+      interfaceName: "HTMLTableSectionElement",
+    },
+    {
+      name: "th",
+      interfaceName: "HTMLTableCellElement",
+    },
+    {
+      name: "thead",
+      interfaceName: "HTMLTableSectionElement",
+    },
+    "title",
+    {
+      name: "tr",
+      interfaceName: "HTMLTableRowElement",
+    },
+    "track",
+    {
+      name: "tt",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "u",
+      interfaceName: "HTMLElement",
+    },
+    {
+      name: "ul",
+      interfaceName: "HTMLUListElement",
+    },
+    {
+      name: "var",
+      interfaceName: "HTMLElement",
+    },
+    "video",
+    {
+      name: "wbr",
+      JSInterfaceName: "HTMLElement",
+      interfaceName: "HTMLWBRElement",
+    },
+    {
+      name: "xmp",
+      interfaceName: "HTMLPreElement",
+    },
+    {
+      name: "noscript",
+      JSInterfaceName: "HTMLElement",
+      interfaceName: "HTMLNoScriptElement",
+    },
+  ],
+}
