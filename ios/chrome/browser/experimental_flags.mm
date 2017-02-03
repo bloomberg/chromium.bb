@@ -221,11 +221,6 @@ bool IsPhysicalWebEnabled() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
-bool IsQRCodeReaderEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kDisableQRScanner);
-}
-
 bool IsReaderModeEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableReaderModeToolbarIcon);

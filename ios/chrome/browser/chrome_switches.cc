@@ -40,9 +40,6 @@ const char kDisableOfflineAutoReload[] = "disable-offline-auto-reload";
 // Disable the Payment Request API.
 const char kDisablePaymentRequest[] = "disable-payment-request";
 
-// Disables the QR Code scanner.
-const char kDisableQRScanner[] = "disable-qr-scanner";
-
 // Disables the Spotlight actions.
 const char kDisableSpotlightActions[] = "disable-spotlight-actions";
 
@@ -89,9 +86,6 @@ const char kEnableOfflineAutoReload[] = "enable-offline-auto-reload";
 
 // Enable the Payment Request API.
 const char kEnablePaymentRequest[] = "enable-payment-request";
-
-// Enables the QR Code scanner.
-const char kEnableQRScanner[] = "enable-qr-scanner";
 
 // Enables context-sensitive reader mode button in the toolbar.
 const char kEnableReaderModeToolbarIcon[] = "enable-reader-mode-toolbar-icon";

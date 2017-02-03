@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/app_startup_parameters.h"
 
 #include "base/logging.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
 #include "url/gurl.h"
 
@@ -57,7 +56,7 @@
 #pragma mark Property implementation.
 
 - (BOOL)launchQRScanner {
-  return _launchQRScanner && experimental_flags::IsQRCodeReaderEnabled();
+  return _launchQRScanner;
 }
 
 - (void)setLaunchQRScanner:(BOOL)launch {

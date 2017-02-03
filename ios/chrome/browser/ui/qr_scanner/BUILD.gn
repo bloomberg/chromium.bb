@@ -13,9 +13,6 @@ bundle_data("assets") {
     "resources/QRScanner.xcassets/qr_scanner_torch_on.imageset/torch_on.png",
     "resources/QRScanner.xcassets/qr_scanner_torch_on.imageset/torch_on@2x.png",
     "resources/QRScanner.xcassets/qr_scanner_torch_on.imageset/torch_on@3x.png",
-    "resources/QRScanner.xcassets/quick_action_qr_scanner.imageset/Contents.json",
-    "resources/QRScanner.xcassets/quick_action_qr_scanner.imageset/quick_action_qr_scanner@2x.png",
-    "resources/QRScanner.xcassets/quick_action_qr_scanner.imageset/quick_action_qr_scanner@3x.png",
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",

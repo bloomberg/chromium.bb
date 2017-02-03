@@ -125,7 +125,6 @@
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #include "ios/chrome/browser/xcallback_parameters.h"
-#include "ios/chrome/grit/ios_strings.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/crn_http_protocol_handler.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -147,7 +146,6 @@
 #include "mojo/edk/embedder/embedder.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/url_request/url_request_context.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -194,9 +192,6 @@ NSString* const kPurgeSnapshots = @"PurgeSnapshots";
 // Constants for deferring startup Spotlight bookmark indexing.
 NSString* const kStartSpotlightBookmarksIndexing =
     @"StartSpotlightBookmarksIndexing";
-
-// Constants for deferred initialization of dynamic application shortcut items.
-NSString* const kAddApplicationShortcutItems = @"AddApplicationShortcutItems";
 
 // Constants for deferred promo display.
 const NSTimeInterval kDisplayPromoDelay = 0.1;
@@ -946,8 +941,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 }
 
 - (BOOL)startQRScannerAfterTabSwitcherDismissal {
-  return (experimental_flags::IsQRCodeReaderEnabled() &&
-          _startQRScannerAfterTabSwitcherDismissal);
+  return _startQRScannerAfterTabSwitcherDismissal;
 }
 
 - (void)setStartQRScannerAfterTabSwitcherDismissal:(BOOL)startQRScanner {
@@ -1212,7 +1206,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [self scheduleDeleteDownloadsDirectory];
   [self scheduleStartupAttemptReset];
   [self scheduleFreeMemoryMonitoring];
-  [self scheduleAddApplicationShortcutItems];
   [self scheduleAppDistributionPings];
   [self scheduleCheckNativeApps];
 }
@@ -1241,34 +1234,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   };
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kStartSpotlightBookmarksIndexing
-                  block:block];
-}
-
-- (void)scheduleAddApplicationShortcutItems {
-  ProceduralBlock block = ^{
-    if (experimental_flags::IsQRCodeReaderEnabled()) {
-      UIApplicationShortcutItem* qrScannerShortcutItem = [[
-          [UIApplicationShortcutItem alloc]
-               initWithType:@"OpenQRScanner"
-             localizedTitle:l10n_util::GetNSString(
-                                IDS_IOS_APPLICATION_SHORTCUT_QR_SCANNER_TITLE)
-          localizedSubtitle:nil
-                       icon:[UIApplicationShortcutIcon
-                                iconWithTemplateImageName:
-                                    @"quick_action_qr_scanner"]
-                   userInfo:nil] autorelease];
-      // Note: The following only affects dynamic shortcut items defined
-      // programmatically, and not static shortcut items set in the Info.plist
-      // file.
-      [[UIApplication sharedApplication]
-          setShortcutItems:@[ qrScannerShortcutItem ]];
-    } else {
-      [[UIApplication sharedApplication] setShortcutItems:nil];
-    }
-  };
-
-  [[DeferredInitializationRunner sharedInstance]
-      enqueueBlockNamed:kAddApplicationShortcutItems
                   block:block];
 }
 

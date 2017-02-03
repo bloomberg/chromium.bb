@@ -8,7 +8,6 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_command_line.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #import "ios/chrome/app/main_controller.h"
@@ -145,8 +144,6 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 @end
 
 @implementation QRScannerViewControllerTestCase {
-  // A scoped command line to enable the QR Scanner experiment.
-  std::unique_ptr<base::test::ScopedCommandLine> scoped_command_line_;
   // A swizzler for the CameraController method cameraControllerWithDelegate:.
   std::unique_ptr<ScopedBlockSwizzler> camera_controller_swizzler_;
   // A swizzler for the WebToolbarController method
@@ -172,11 +169,6 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   _testURLEdited = web::test::HttpServer::MakeUrl(kTestURLEdited);
   _testQuery = web::test::HttpServer::MakeUrl(kTestQueryURL);
   _testQueryEdited = web::test::HttpServer::MakeUrl(kTestQueryEditedURL);
-
-  // Enable the QR Scanner experiment.
-  scoped_command_line_.reset(new base::test::ScopedCommandLine);
-  scoped_command_line_->GetProcessCommandLine()->AppendSwitch(
-      switches::kEnableQRScanner);
 }
 
 - (void)tearDown {

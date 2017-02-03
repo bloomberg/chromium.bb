@@ -160,25 +160,18 @@ BOOL SetStartupParametersForSpotlightAction(
           NSString* incognitoAction = base::SysUTF8ToNSString(
               spotlight::kSpotlightActionNewIncognitoTab);
 
-          NSMutableArray* spotlightItems = [NSMutableArray
-              arrayWithObjects:[strongSelf getItemForAction:voiceSearchAction
-                                                      title:voiceSearchTitle],
-                               [strongSelf getItemForAction:newTabAction
-                                                      title:newTabTitle],
-                               [strongSelf getItemForAction:incognitoAction
-                                                      title:incognitoTitle],
-                               nil];
+          NSString* qrScannerTitle = l10n_util::GetNSString(
+              IDS_IOS_APPLICATION_SHORTCUT_QR_SCANNER_TITLE);
+          NSString* qrScannerAction =
+              base::SysUTF8ToNSString(spotlight::kSpotlightActionQRScanner);
 
-          if (experimental_flags::IsQRCodeReaderEnabled()) {
-            NSString* qrScannerTitle = l10n_util::GetNSString(
-                IDS_IOS_APPLICATION_SHORTCUT_QR_SCANNER_TITLE);
-            NSString* qrScannerAction =
-                base::SysUTF8ToNSString(spotlight::kSpotlightActionQRScanner);
-
-            [spotlightItems
-                addObject:[strongSelf getItemForAction:qrScannerAction
-                                                 title:qrScannerTitle]];
-          }
+          NSArray* spotlightItems = @[
+            [strongSelf getItemForAction:voiceSearchAction
+                                   title:voiceSearchTitle],
+            [strongSelf getItemForAction:newTabAction title:newTabTitle],
+            [strongSelf getItemForAction:incognitoAction title:incognitoTitle],
+            [strongSelf getItemForAction:qrScannerAction title:qrScannerTitle],
+          ];
 
           [[CSSearchableIndex defaultSearchableIndex]
               indexSearchableItems:spotlightItems

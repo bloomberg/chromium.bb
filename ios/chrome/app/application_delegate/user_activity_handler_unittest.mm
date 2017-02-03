@@ -416,10 +416,8 @@ TEST_F(UserActivityHandlerTest, continueUserActivityShortcutActions) {
     ]
   ];
 
-  // Enable the QR Scanner and Spotlight Actions experiments.
+  // Enable the Spotlight Actions experiment.
   base::test::ScopedCommandLine scoped_command_line;
-  scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-      switches::kEnableQRScanner);
   scoped_command_line.GetProcessCommandLine()->AppendSwitch(
       switches::kEnableSpotlightActions);
 
@@ -549,11 +547,6 @@ TEST_F(UserActivityHandlerTest, performActionForShortcutItemWithRealShortcut) {
     @[ @"OpenVoiceSearch", @NO, @YES, @NO ],
     @[ @"OpenQRScanner", @NO, @NO, @YES ]
   ];
-
-  // Enable the QR Scanner experiment.
-  base::test::ScopedCommandLine scoped_command_line;
-  scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-      switches::kEnableQRScanner);
 
   swizzleHandleStartupParameters();
 

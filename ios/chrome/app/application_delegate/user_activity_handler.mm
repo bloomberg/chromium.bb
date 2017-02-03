@@ -281,11 +281,9 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     return YES;
 
   } else if ([shortcutItem.type isEqualToString:kShortcutQRScanner]) {
-    if (experimental_flags::IsQRCodeReaderEnabled()) {
-      base::RecordAction(
-          UserMetricsAction("ApplicationShortcut.ScanQRCodePressed"));
-      [startupParams setLaunchQRScanner:YES];
-    }
+    base::RecordAction(
+        UserMetricsAction("ApplicationShortcut.ScanQRCodePressed"));
+    [startupParams setLaunchQRScanner:YES];
     [startupInformation setStartupParameters:startupParams];
     return YES;
   }

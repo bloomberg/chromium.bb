@@ -97,6 +97,8 @@ bundle_data("quick_action_icons") {
     "quick_action_new_incognito_tab@3x.png",
     "quick_action_new_tab@2x.png",
     "quick_action_new_tab@3x.png",
+    "quick_action_qr_scanner@2x.png",
+    "quick_action_qr_scanner@3x.png",
     "quick_action_voice_search@2x.png",
     "quick_action_voice_search@3x.png",
   ]

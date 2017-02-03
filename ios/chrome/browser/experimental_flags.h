@@ -82,9 +82,6 @@ bool IsPendingIndexNavigationEnabled();
 // Whether the Physical Web feature is enabled.
 bool IsPhysicalWebEnabled();
 
-// Whether the QR Code Reader is enabled.
-bool IsQRCodeReaderEnabled();
-
 // Whether reader mode is enabled.
 bool IsReaderModeEnabled();
 
