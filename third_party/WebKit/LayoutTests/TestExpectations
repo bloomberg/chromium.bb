@@ -748,6 +748,13 @@ crbug.com/649558 virtual/mojo-loading/http/tests/serviceworker/navigation-preloa
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
+# This test fails under the feature "Stop creating layout objects for elements
+# inside display: none iframes" [crbug.com/650433]. The root cause is a
+# long-standing fullscreen bug. No one is going to fix the issue in the near
+# future, as foolip@ is in the process of performing a significant fullscreen
+# refactor. See [crbug.com/676432] for a minimized repro.
+crbug.com/676432 fullscreen/full-screen-iframe-zIndex.html [ Skip ]
+
 # TODO(xiaochengh): We should either convert the following tests with
 # spellcheck_test, or remove if they become redundant or inapplicable.
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [ Skip ]
