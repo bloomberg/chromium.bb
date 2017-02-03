@@ -4889,10 +4889,13 @@ void FrameView::updateSubFrameScrollOnMainReason(
   if (!frame.isLocalFrame())
     return;
 
-  if (!toLocalFrame(frame).view()->layerForScrolling())
+  FrameView& frameView = *toLocalFrame(frame).view();
+  if (frameView.shouldThrottleRendering())
+    return;
+  if (!frameView.layerForScrolling())
     return;
 
-  reasons |= toLocalFrame(frame).view()->mainThreadScrollingReasonsPerFrame();
+  reasons |= frameView.mainThreadScrollingReasonsPerFrame();
   if (GraphicsLayer* layerForScrolling = toLocalFrame(frame)
                                              .view()
                                              ->layoutViewportScrollableArea()
