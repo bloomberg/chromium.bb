@@ -123,13 +123,6 @@ void BlobURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
     *info = *response_info_;
 }
 
-int BlobURLRequestJob::GetResponseCode() const {
-  if (!response_info_)
-    return -1;
-
-  return response_info_->headers->response_code();
-}
-
 void BlobURLRequestJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
   std::string range_header;
