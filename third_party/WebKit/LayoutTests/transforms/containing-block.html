@@ -49,4 +49,18 @@ test(function() {
 test(function() {
     assert_true(generatesContainingBlock('will-change', 'rotate'));
 }, "will-change: rotate establishes containing block");
+
+test(function() {
+    assert_true(generatesContainingBlock('offset-position', '50% 50%'));
+}, "offset-position establishes containing block");
+test(function() {
+    assert_true(generatesContainingBlock('will-change', 'offset-position'));
+}, "will-change: offset-position establishes containing block");
+
+test(function() {
+    assert_true(generatesContainingBlock('offset-path', 'path("m 100 0")'));
+}, "offset-path establishes containing block");
+test(function() {
+    assert_true(generatesContainingBlock('will-change', 'offset-path'));
+}, "will-change: offset-path establishes containing block");
 </script>

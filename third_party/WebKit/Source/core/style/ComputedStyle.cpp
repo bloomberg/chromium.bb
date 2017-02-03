@@ -1254,6 +1254,8 @@ bool ComputedStyle::hasWillChangeTransformHint() const {
       case CSSPropertyTranslate:
       case CSSPropertyScale:
       case CSSPropertyRotate:
+      case CSSPropertyOffsetPath:
+      case CSSPropertyOffsetPosition:
         return true;
       default:
         break;
