@@ -3377,6 +3377,7 @@ test("unit_tests") {
     "../browser/webshare/share_target_pref_helper_unittest.cc",
     "../browser/win/chrome_elf_init_unittest.cc",
     "../browser/win/enumerate_modules_model_unittest.cc",
+    "../common/chrome_constants_win_unittest.cc",
     "../common/chrome_content_client_unittest.cc",
     "../common/chrome_paths_unittest.cc",
     "../common/component_flash_hint_file_linux_unittest.cc",
@@ -3453,6 +3454,12 @@ test("unit_tests") {
   }
   if (is_linux || is_win) {
     data += [ "$root_out_dir/chrome_200_percent.pak" ]
+  }
+  if (is_win) {
+    data_deps = [
+      "//chrome:chrome_initial",
+    ]
+    data += [ "$root_out_dir/chrome.exe" ]
   }
 
   defines = []
