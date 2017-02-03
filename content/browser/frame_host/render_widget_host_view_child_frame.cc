@@ -303,14 +303,6 @@ void RenderWidgetHostViewChildFrame::SetTooltipText(
   frame_connector_->GetRootRenderWidgetHostView()->SetTooltipText(tooltip_text);
 }
 
-void RenderWidgetHostViewChildFrame::LockCompositingSurface() {
-  NOTIMPLEMENTED();
-}
-
-void RenderWidgetHostViewChildFrame::UnlockCompositingSurface() {
-  NOTIMPLEMENTED();
-}
-
 RenderWidgetHostViewBase* RenderWidgetHostViewChildFrame::GetParentView() {
   if (!frame_connector_)
     return nullptr;

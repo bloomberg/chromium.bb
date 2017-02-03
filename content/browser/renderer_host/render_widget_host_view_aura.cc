@@ -2274,14 +2274,6 @@ void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {
   ui::GestureRecognizer::Get()->CancelActiveTouches(window_);
 }
 
-void RenderWidgetHostViewAura::LockCompositingSurface() {
-  NOTIMPLEMENTED();
-}
-
-void RenderWidgetHostViewAura::UnlockCompositingSurface() {
-  NOTIMPLEMENTED();
-}
-
 cc::FrameSinkId RenderWidgetHostViewAura::GetFrameSinkId() {
   return delegated_frame_host_ ? delegated_frame_host_->GetFrameSinkId()
                                : cc::FrameSinkId();

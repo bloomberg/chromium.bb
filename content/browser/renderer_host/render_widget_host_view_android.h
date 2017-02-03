@@ -146,8 +146,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                const SkBitmap& zoomed_bitmap) override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
-  void LockCompositingSurface() override;
-  void UnlockCompositingSurface() override;
   void OnDidNavigateMainFrameToNewPage() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
@@ -279,11 +277,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                const ReadbackRequestCallback& callback,
                                const SkColorType color_type);
 
-  // If we have locks on a frame during a ContentViewCore swap or a context
-  // lost, the frame is no longer valid and we can safely release all the locks.
-  // Use this method to release all the locks.
-  void ReleaseLocksOnSurface();
-
   // Drop any incoming frames from the renderer when there are locks on the
   // current frame.
   void RetainFrame(uint32_t compositor_frame_sink_id,
@@ -381,18 +374,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   std::unique_ptr<DelegatedFrameEvictor> frame_evictor_;
 
-  size_t locks_on_frame_count_;
   bool observing_root_window_;
-
-  struct LastFrameInfo {
-    LastFrameInfo(uint32_t compositor_frame_sink_id,
-                  cc::CompositorFrame output_frame);
-    ~LastFrameInfo();
-    uint32_t compositor_frame_sink_id;
-    cc::CompositorFrame frame;
-  };
-
-  std::unique_ptr<LastFrameInfo> last_frame_info_;
 
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;

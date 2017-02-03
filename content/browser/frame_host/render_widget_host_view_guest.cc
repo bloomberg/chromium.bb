@@ -488,14 +488,6 @@ void RenderWidgetHostViewGuest::StopSpeaking() {
 }
 #endif  // defined(OS_MACOSX)
 
-void RenderWidgetHostViewGuest::LockCompositingSurface() {
-  NOTIMPLEMENTED();
-}
-
-void RenderWidgetHostViewGuest::UnlockCompositingSurface() {
-  NOTIMPLEMENTED();
-}
-
 RenderWidgetHostViewBase*
 RenderWidgetHostViewGuest::GetOwnerRenderWidgetHostView() const {
   return guest_ ? static_cast<RenderWidgetHostViewBase*>(

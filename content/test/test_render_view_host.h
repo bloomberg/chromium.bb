@@ -114,8 +114,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
   bool CanCopyToVideoFrame() const override;
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
-  void LockCompositingSurface() override {}
-  void UnlockCompositingSurface() override {}
   gfx::Rect GetBoundsInRootWindow() override;
   bool LockMouse() override;
   void UnlockMouse() override;

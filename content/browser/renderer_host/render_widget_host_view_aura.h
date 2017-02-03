@@ -171,8 +171,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void ClearCompositorFrame() override;
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
-  void LockCompositingSurface() override;
-  void UnlockCompositingSurface() override;
   cc::FrameSinkId GetFrameSinkId() override;
   cc::FrameSinkId FrameSinkIdAtPoint(cc::SurfaceHittestDelegate* delegate,
                                      const gfx::Point& point,

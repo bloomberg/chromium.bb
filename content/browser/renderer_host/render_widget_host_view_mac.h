@@ -310,8 +310,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   gfx::Rect GetBoundsInRootWindow() override;
-  void LockCompositingSurface() override;
-  void UnlockCompositingSurface() override;
 
   bool LockMouse() override;
   void UnlockMouse() override;

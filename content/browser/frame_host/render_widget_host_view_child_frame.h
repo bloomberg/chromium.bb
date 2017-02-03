@@ -156,10 +156,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void StopSpeaking() override;
 #endif  // defined(OS_MACOSX)
 
-  // RenderWidgetHostViewBase implementation.
-  void LockCompositingSurface() override;
-  void UnlockCompositingSurface() override;
-
   InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(

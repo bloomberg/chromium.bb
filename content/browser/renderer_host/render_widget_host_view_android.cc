@@ -402,14 +402,6 @@ void PrepareTextureCopyOutputResult(
 
 }  // namespace
 
-RenderWidgetHostViewAndroid::LastFrameInfo::LastFrameInfo(
-    uint32_t compositor_frame_sink_id,
-    cc::CompositorFrame output_frame)
-    : compositor_frame_sink_id(compositor_frame_sink_id),
-      frame(std::move(output_frame)) {}
-
-RenderWidgetHostViewAndroid::LastFrameInfo::~LastFrameInfo() {}
-
 void RenderWidgetHostViewAndroid::OnContextLost() {
   std::unique_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHostImpl::GetAllRenderWidgetHosts());
@@ -442,7 +434,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       using_browser_compositor_(CompositorImpl::IsInitialized()),
       synchronous_compositor_client_(nullptr),
       frame_evictor_(new DelegatedFrameEvictor(this)),
-      locks_on_frame_count_(0),
       observing_root_window_(false),
       weak_ptr_factory_(this) {
   // Set the layer which will hold the content layer for this view. The content
@@ -637,35 +628,6 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
   return is_showing_ && content_view_core_;
 }
 
-void RenderWidgetHostViewAndroid::LockCompositingSurface() {
-  DCHECK(HasValidFrame());
-  DCHECK(host_);
-  DCHECK(frame_evictor_->HasFrame());
-  frame_evictor_->LockFrame();
-  locks_on_frame_count_++;
-}
-
-void RenderWidgetHostViewAndroid::UnlockCompositingSurface() {
-  if (!frame_evictor_->HasFrame()) {
-    DCHECK_EQ(locks_on_frame_count_, 0u);
-    return;
-  }
-
-  DCHECK_GT(locks_on_frame_count_, 0u);
-  locks_on_frame_count_--;
-  frame_evictor_->UnlockFrame();
-
-  if (locks_on_frame_count_ == 0) {
-    if (last_frame_info_) {
-      InternalSwapCompositorFrame(last_frame_info_->compositor_frame_sink_id,
-                                  std::move(last_frame_info_->frame));
-      last_frame_info_.reset();
-    }
-
-    view_.GetLayer()->SetHideLayerAndSubtree(!is_showing_);
-  }
-}
-
 void RenderWidgetHostViewAndroid::OnShowUnhandledTapUIIfNeeded(int x_dip,
                                                                int y_dip) {
   if (!content_view_core_)
@@ -676,17 +638,6 @@ void RenderWidgetHostViewAndroid::OnShowUnhandledTapUIIfNeeded(int x_dip,
       y_dip < 0 || y_dip > viewport_size.height())
     return;
   content_view_core_->OnShowUnhandledTapUIIfNeeded(x_dip, y_dip);
-}
-
-void RenderWidgetHostViewAndroid::ReleaseLocksOnSurface() {
-  if (!frame_evictor_->HasFrame()) {
-    DCHECK_EQ(locks_on_frame_count_, 0u);
-    return;
-  }
-  while (locks_on_frame_count_ > 0) {
-    UnlockCompositingSurface();
-  }
-  RunAckCallbacks();
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
@@ -1098,13 +1049,6 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     cc::CompositorFrame frame) {
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
   DCHECK(delegated_frame_host_);
-
-  if (locks_on_frame_count_ > 0) {
-    DCHECK(HasValidFrame());
-    RetainFrame(compositor_frame_sink_id, std::move(frame));
-    return;
-  }
-
   DCHECK(!frame.render_pass_list.empty());
 
   cc::RenderPass* root_pass = frame.render_pass_list.back().get();
@@ -1146,7 +1090,6 @@ void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
   DCHECK(!delegated_frame_host_ ||
          delegated_frame_host_->HasDelegatedContent() ==
              frame_evictor_->HasFrame());
-  DCHECK_EQ(locks_on_frame_count_, 0u);
 
   if (!delegated_frame_host_)
     return;
@@ -1166,27 +1109,6 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
   DestroyDelegatedContent();
-}
-
-void RenderWidgetHostViewAndroid::RetainFrame(uint32_t compositor_frame_sink_id,
-                                              cc::CompositorFrame frame) {
-  DCHECK(locks_on_frame_count_);
-
-  // Store the incoming frame so that it can be swapped when all the locks have
-  // been released. If there is already a stored frame, then replace and skip
-  // the previous one but make sure we still eventually send the ACK. Holding
-  // the ACK also blocks the renderer when its max_frames_pending is reached.
-  if (last_frame_info_) {
-    base::Closure ack_callback = base::Bind(
-        &RenderWidgetHostViewAndroid::SendReclaimCompositorResources,
-        weak_ptr_factory_.GetWeakPtr(),
-        last_frame_info_->compositor_frame_sink_id, true /* is_swap_ack */);
-
-    ack_callbacks_.push(ack_callback);
-  }
-
-  last_frame_info_.reset(
-      new LastFrameInfo(compositor_frame_sink_id, std::move(frame)));
 }
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
@@ -1416,9 +1338,7 @@ void RenderWidgetHostViewAndroid::HideInternal() {
   bool stop_observing_root_window = !is_showing_ && hide_frontbuffer;
 
   if (hide_frontbuffer) {
-    if (locks_on_frame_count_ == 0)
-      view_.GetLayer()->SetHideLayerAndSubtree(true);
-
+    view_.GetLayer()->SetHideLayerAndSubtree(true);
     frame_evictor_->SetVisible(false);
   }
 
@@ -1792,7 +1712,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   bool resize = false;
   if (content_view_core != content_view_core_) {
     selection_controller_.reset();
-    ReleaseLocksOnSurface();
+    RunAckCallbacks();
     // TODO(yusufo) : Get rid of the below conditions and have a better handling
     // for resizing after crbug.com/628302 is handled.
     bool is_size_initialized = !content_view_core
@@ -1981,7 +1901,6 @@ void RenderWidgetHostViewAndroid::OnActivityStarted() {
 }
 
 void RenderWidgetHostViewAndroid::OnLostResources() {
-  ReleaseLocksOnSurface();
   DestroyDelegatedContent();
   DCHECK(ack_callbacks_.empty());
 }

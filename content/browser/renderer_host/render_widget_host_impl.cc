@@ -833,16 +833,6 @@ bool RenderWidgetHostImpl::CanCopyFromBackingStore() {
   return false;
 }
 
-void RenderWidgetHostImpl::LockBackingStore() {
-  if (view_)
-    view_->LockCompositingSurface();
-}
-
-void RenderWidgetHostImpl::UnlockBackingStore() {
-  if (view_)
-    view_->UnlockCompositingSurface();
-}
-
 #if defined(OS_MACOSX)
 void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
   TRACE_EVENT0("browser",

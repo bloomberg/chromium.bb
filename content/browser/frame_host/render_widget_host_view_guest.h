@@ -116,9 +116,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void StopSpeaking() override;
 #endif  // defined(OS_MACOSX)
 
-  void LockCompositingSurface() override;
-  void UnlockCompositingSurface() override;
-
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      InputEventAckState ack_result) override;
 

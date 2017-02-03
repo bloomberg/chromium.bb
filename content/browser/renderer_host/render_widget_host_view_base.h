@@ -409,10 +409,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // main frame.
   virtual void OnDidNavigateMainFrameToNewPage();
 
-  // Instructs the view to not drop the surface even when the view is hidden.
-  virtual void LockCompositingSurface() = 0;
-  virtual void UnlockCompositingSurface() = 0;
-
   // Add and remove observers for lifetime event notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be
   // sure to remove the observer before they go away.
