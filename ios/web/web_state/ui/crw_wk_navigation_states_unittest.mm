@@ -41,19 +41,4 @@ TEST_F(CRWWKNavigationStatesTest, LastAddedNavigation) {
   EXPECT_EQ(navigation2_, [states_ lastAddedNavigation]);
 }
 
-// Tests |stateForNavigation:| method.
-TEST_F(CRWWKNavigationStatesTest, StateForNavigation) {
-  [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation1_];
-  EXPECT_EQ(WKNavigationState::REQUESTED,
-            [states_ stateForNavigation:navigation1_]);
-
-  [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation2_];
-  EXPECT_EQ(WKNavigationState::REQUESTED,
-            [states_ stateForNavigation:navigation2_]);
-
-  [states_ setState:WKNavigationState::STARTED forNavigation:navigation1_];
-  EXPECT_EQ(WKNavigationState::STARTED,
-            [states_ stateForNavigation:navigation1_]);
-}
-
 }  // namespace web

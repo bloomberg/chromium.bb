@@ -105,9 +105,4 @@
   return result;
 }
 
-- (web::WKNavigationState)stateForNavigation:(WKNavigation*)navigation {
-  CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
-  return record.state;
-}
-
 @end

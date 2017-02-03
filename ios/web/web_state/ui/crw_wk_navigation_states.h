@@ -54,10 +54,6 @@ enum class WKNavigationState : int {
 // last added navigation. Returns nil if there are no stored navigations.
 - (WKNavigation*)lastAddedNavigation;
 
-// Returns state of the given navigation or WKNavigationState::NONE if
-// navigation does not exist.
-- (web::WKNavigationState)stateForNavigation:(WKNavigation*)navigation;
-
 @end
 
 #endif  // IOS_WEB_WEB_STATE_UI_CRW_WK_NAVIGATION_STATES_H_
