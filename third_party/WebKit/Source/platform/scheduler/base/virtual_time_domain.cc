@@ -34,15 +34,11 @@ base::TimeTicks VirtualTimeDomain::Now() const {
   return now_;
 }
 
-void VirtualTimeDomain::RequestWakeupAt(LazyNow* lazy_now,
-                                        base::TimeTicks run_time) {
+void VirtualTimeDomain::RequestWakeup(base::TimeTicks now,
+                                      base::TimeDelta delay) {
   // We don't need to do anything here because the caller of AdvanceTo is
   // responsible for calling TaskQueueManager::MaybeScheduleImmediateWork if
   // needed.
-}
-
-void VirtualTimeDomain::CancelWakeupAt(base::TimeTicks run_time) {
-  // We ignore this because RequestWakeupAt is a NOP.
 }
 
 base::Optional<base::TimeDelta> VirtualTimeDomain::DelayTillNextTask(
