@@ -129,7 +129,6 @@ class CC_EXPORT CompositorFrameSink {
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   SharedBitmapManager* shared_bitmap_manager_;
-  base::ThreadChecker client_thread_checker_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSink);

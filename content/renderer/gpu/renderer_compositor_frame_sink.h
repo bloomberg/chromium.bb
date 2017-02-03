@@ -103,6 +103,7 @@ class RendererCompositorFrameSink
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   int routing_id_;
+  base::ThreadChecker thread_checker_;
 };
 
 }  // namespace content

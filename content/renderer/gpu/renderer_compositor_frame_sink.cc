@@ -50,6 +50,7 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
   DCHECK(begin_frame_source_);
+  thread_checker_.DetachFromThread();
 }
 
 RendererCompositorFrameSink::RendererCompositorFrameSink(
@@ -70,12 +71,14 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
   DCHECK(frame_swap_message_queue_);
   DCHECK(message_sender_);
   DCHECK(begin_frame_source_);
+  thread_checker_.DetachFromThread();
 }
 
 RendererCompositorFrameSink::~RendererCompositorFrameSink() = default;
 
 bool RendererCompositorFrameSink::BindToClient(
     cc::CompositorFrameSinkClient* client) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!cc::CompositorFrameSink::BindToClient(client))
     return false;
 
@@ -92,6 +95,7 @@ bool RendererCompositorFrameSink::BindToClient(
 }
 
 void RendererCompositorFrameSink::DetachFromClient() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   client_->SetBeginFrameSource(nullptr);
   // Destroy the begin frame source on the same thread it was bound on.
   // The CompositorFrameSink itself is destroyed on the main thread.
@@ -123,7 +127,7 @@ void RendererCompositorFrameSink::SubmitCompositorFrame(
 
 void RendererCompositorFrameSink::OnMessageReceived(
     const IPC::Message& message) {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   IPC_BEGIN_MESSAGE_MAP(RendererCompositorFrameSink, message)
     IPC_MESSAGE_HANDLER(ViewMsg_ReclaimCompositorResources,
                         OnReclaimCompositorResources);

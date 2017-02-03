@@ -27,7 +27,6 @@ CompositorFrameSink::CompositorFrameSink(
       worker_context_provider_(std::move(worker_context_provider)),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       shared_bitmap_manager_(shared_bitmap_manager) {
-  client_thread_checker_.DetachFromThread();
 }
 
 CompositorFrameSink::CompositorFrameSink(
@@ -35,7 +34,6 @@ CompositorFrameSink::CompositorFrameSink(
     : vulkan_context_provider_(vulkan_context_provider),
       gpu_memory_buffer_manager_(nullptr),
       shared_bitmap_manager_(nullptr) {
-  client_thread_checker_.DetachFromThread();
 }
 
 CompositorFrameSink::~CompositorFrameSink() {
@@ -44,7 +42,6 @@ CompositorFrameSink::~CompositorFrameSink() {
 }
 
 bool CompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;
@@ -69,7 +66,6 @@ bool CompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
 }
 
 void CompositorFrameSink::DetachFromClient() {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
   DCHECK(client_);
 
   if (context_provider_.get()) {
