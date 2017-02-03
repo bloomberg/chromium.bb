@@ -5,24 +5,18 @@
 #include "core/frame/DOMWindow.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/SecurityContext.h"
 #include "core/events/MessageEvent.h"
-#include "core/frame/External.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameClient.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Location.h"
-#include "core/frame/RemoteDOMWindow.h"
-#include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
-#include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
@@ -112,12 +106,6 @@ DOMWindow* DOMWindow::top() const {
   return frame()->tree().top()->domWindow();
 }
 
-External* DOMWindow::external() {
-  if (!m_external)
-    m_external = new External;
-  return m_external;
-}
-
 DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index) const {
   if (!frame())
     return nullptr;
@@ -165,14 +153,6 @@ void DOMWindow::resetLocation() {
     m_location->reset();
     m_location = nullptr;
   }
-}
-
-bool DOMWindow::isSecureContext() const {
-  if (!frame())
-    return false;
-
-  return document()->isSecureContext(
-      ExecutionContext::StandardSecureContextCheck);
 }
 
 void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message,
@@ -230,7 +210,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message,
 
   KURL targetUrl =
       isLocalDOMWindow()
-          ? document()->url()
+          ? blink::toLocalDOMWindow(this)->document()->url()
           : KURL(KURL(),
                  frame()->securityContext()->getSecurityOrigin()->toString());
   if (MixedContentChecker::isMixedContent(sourceDocument->getSecurityOrigin(),
@@ -313,8 +293,9 @@ String DOMWindow::crossDomainAccessErrorMessage(
   // aren't replicated.  For now, construct the URL using the replicated
   // origin for RemoteFrames. If the target frame is remote and sandboxed,
   // there isn't anything else to show other than "null" for its origin.
-  KURL targetURL = isLocalDOMWindow() ? document()->url()
-                                      : KURL(KURL(), targetOrigin->toString());
+  KURL targetURL = isLocalDOMWindow()
+                       ? blink::toLocalDOMWindow(this)->document()->url()
+                       : KURL(KURL(), targetOrigin->toString());
   if (frame()->securityContext()->isSandboxed(SandboxOrigin) ||
       callingWindow->document()->isSandboxed(SandboxOrigin)) {
     message = "Blocked a frame at \"" +
@@ -447,7 +428,6 @@ void DOMWindow::focus(ExecutionContext* context) {
 DEFINE_TRACE(DOMWindow) {
   visitor->trace(m_frame);
   visitor->trace(m_location);
-  visitor->trace(m_external);
   EventTargetWithInlineData::trace(visitor);
 }
 

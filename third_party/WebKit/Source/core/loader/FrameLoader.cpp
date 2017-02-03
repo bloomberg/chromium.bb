@@ -1376,7 +1376,7 @@ void FrameLoader::commitProvisionalLoad() {
   // setJSStatusBarText since it may cause clients to attempt to render the
   // frame.
   if (!m_stateMachine.creatingInitialEmptyDocument()) {
-    DOMWindow* window = m_frame->domWindow();
+    LocalDOMWindow* window = m_frame->domWindow();
     window->setStatus(String());
     window->setDefaultStatus(String());
   }

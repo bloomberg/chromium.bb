@@ -79,7 +79,7 @@ class CORE_EXPORT Performance final : public PerformanceBase,
   static std::pair<String, DOMWindow*> sanitizedAttribution(
       ExecutionContext*,
       bool hasMultipleContexts,
-      Frame* observerFrame);
+      LocalFrame* observerFrame);
 
   // PerformanceMonitor::Client implementation.
   void reportLongTask(double startTime,

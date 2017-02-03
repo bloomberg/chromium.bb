@@ -34,22 +34,43 @@
 #include "core/frame/LocalFrame.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
+#include "platform/scroll/ScrollableArea.h"
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
+
 #include <memory>
 
 namespace blink {
 
+class ApplicationCache;
+class BarProp;
+class CSSRuleList;
+class CSSStyleDeclaration;
 class CustomElementRegistry;
-class DOMWindowEventQueue;
+class Document;
 class DocumentInit;
-class EventQueue;
-class FrameConsole;
-class MessageEvent;
-class PostMessageTimer;
-class SecurityOrigin;
-class SourceLocation;
+class DOMSelection;
 class DOMVisualViewport;
+class DOMWindowEventQueue;
+class Element;
+class EventQueue;
+class External;
+class FrameConsole;
+class FrameRequestCallback;
+class History;
+class IdleRequestCallback;
+class IdleRequestOptions;
+class MediaQueryList;
+class MessageEvent;
+class Navigator;
+class PostMessageTimer;
+class Screen;
+class ScriptState;
+class ScrollToOptions;
+class SecurityOrigin;
+class SerializedScriptValue;
+class SourceLocation;
+class StyleMedia;
 
 enum PageshowEventPersistence {
   PageshowEventNotPersisted = 0,
@@ -95,81 +116,142 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   const LocalDOMWindow* toLocalDOMWindow() const override;
   LocalDOMWindow* toLocalDOMWindow() override;
 
-  // DOMWindow overrides:
-  Screen* screen() const override;
-  History* history() const override;
-  BarProp* locationbar() const override;
-  BarProp* menubar() const override;
-  BarProp* personalbar() const override;
-  BarProp* scrollbars() const override;
-  BarProp* statusbar() const override;
-  BarProp* toolbar() const override;
-  Navigator* navigator() const override;
-  bool offscreenBuffering() const override;
-  int outerHeight() const override;
-  int outerWidth() const override;
-  int innerHeight() const override;
-  int innerWidth() const override;
-  int screenX() const override;
-  int screenY() const override;
-  double scrollX() const override;
-  double scrollY() const override;
-  DOMVisualViewport* visualViewport() override;
-  const AtomicString& name() const override;
-  void setName(const AtomicString&) override;
-  String status() const override;
-  void setStatus(const String&) override;
-  String defaultStatus() const override;
-  void setDefaultStatus(const String&) override;
-  Document* document() const override;
-  StyleMedia* styleMedia() const override;
-  double devicePixelRatio() const override;
-  ApplicationCache* applicationCache() const override;
-  int orientation() const override;
-  DOMSelection* getSelection() override;
+  // Same-origin DOM Level 0
+  Screen* screen() const;
+  History* history() const;
+  BarProp* locationbar() const;
+  BarProp* menubar() const;
+  BarProp* personalbar() const;
+  BarProp* scrollbars() const;
+  BarProp* statusbar() const;
+  BarProp* toolbar() const;
+  Navigator* navigator() const;
+  Navigator* clientInformation() const { return navigator(); }
+
+  bool offscreenBuffering() const;
+
+  int outerHeight() const;
+  int outerWidth() const;
+  int innerHeight() const;
+  int innerWidth() const;
+  int screenX() const;
+  int screenY() const;
+  int screenLeft() const { return screenX(); }
+  int screenTop() const { return screenY(); }
+  double scrollX() const;
+  double scrollY() const;
+  double pageXOffset() const { return scrollX(); }
+  double pageYOffset() const { return scrollY(); }
+
+  DOMVisualViewport* visualViewport();
+
+  const AtomicString& name() const;
+  void setName(const AtomicString&);
+
+  String status() const;
+  void setStatus(const String&);
+  String defaultStatus() const;
+  void setDefaultStatus(const String&);
+
+  // DOM Level 2 AbstractView Interface
+  Document* document() const;
+
+  // CSSOM View Module
+  StyleMedia* styleMedia() const;
+
+  // WebKit extensions
+  double devicePixelRatio() const;
+
+  ApplicationCache* applicationCache() const;
+
+  // This is the interface orientation in degrees. Some examples are:
+  //  0 is straight up; -90 is when the device is rotated 90 clockwise;
+  //  90 is when rotated counter clockwise.
+  int orientation() const;
+
+  DOMSelection* getSelection();
+
   void blur() override;
-  void print(ScriptState*) override;
-  void stop() override;
-  void alert(ScriptState*, const String& message = String()) override;
-  bool confirm(ScriptState*, const String& message) override;
+  void print(ScriptState*);
+  void stop();
+
+  void alert(ScriptState*, const String& message = String());
+  bool confirm(ScriptState*, const String& message);
   String prompt(ScriptState*,
                 const String& message,
-                const String& defaultValue) override;
+                const String& defaultValue);
+
   bool find(const String&,
             bool caseSensitive,
             bool backwards,
             bool wrap,
             bool wholeWord,
             bool searchInFrames,
-            bool showDialog) const override;
+            bool showDialog) const;
 
   // FIXME: ScrollBehaviorSmooth is currently unsupported in VisualViewport.
   // crbug.com/434497
-  void scrollBy(double x,
-                double y,
-                ScrollBehavior = ScrollBehaviorAuto) const override;
-  void scrollBy(const ScrollToOptions&) const override;
-  void scrollTo(double x, double y) const override;
-  void scrollTo(const ScrollToOptions&) const override;
+  void scrollBy(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const;
+  void scrollBy(const ScrollToOptions&) const;
+  void scrollTo(double x, double y) const;
+  void scrollTo(const ScrollToOptions&) const;
+  void scroll(double x, double y) const { scrollTo(x, y); }
+  void scroll(const ScrollToOptions& scrollToOptions) const {
+    scrollTo(scrollToOptions);
+  }
+  void moveBy(int x, int y) const;
+  void moveTo(int x, int y) const;
 
-  void moveBy(int x, int y) const override;
-  void moveTo(int x, int y) const override;
-  void resizeBy(int x, int y) const override;
-  void resizeTo(int width, int height) const override;
-  MediaQueryList* matchMedia(const String&) override;
+  void resizeBy(int x, int y) const;
+  void resizeTo(int width, int height) const;
+
+  MediaQueryList* matchMedia(const String&);
+
+  // DOM Level 2 Style Interface
   CSSStyleDeclaration* getComputedStyle(Element*,
-                                        const String& pseudoElt) const override;
-  CSSRuleList* getMatchedCSSRules(Element*,
-                                  const String& pseudoElt) const override;
-  int requestAnimationFrame(FrameRequestCallback*) override;
-  int webkitRequestAnimationFrame(FrameRequestCallback*) override;
-  void cancelAnimationFrame(int id) override;
-  int requestIdleCallback(IdleRequestCallback*,
-                          const IdleRequestOptions&) override;
-  void cancelIdleCallback(int id) override;
-  CustomElementRegistry* customElements(ScriptState*) const override;
+                                        const String& pseudoElt) const;
+
+  // WebKit extension
+  CSSRuleList* getMatchedCSSRules(Element*, const String& pseudoElt) const;
+
+  // WebKit animation extensions
+  int requestAnimationFrame(FrameRequestCallback*);
+  int webkitRequestAnimationFrame(FrameRequestCallback*);
+  void cancelAnimationFrame(int id);
+
+  // Idle callback extensions
+  int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&);
+  void cancelIdleCallback(int id);
+
+  // Custom elements
+  CustomElementRegistry* customElements(ScriptState*) const;
   CustomElementRegistry* customElements() const;
   CustomElementRegistry* maybeCustomElements() const;
+
+  // Obsolete APIs
+  void captureEvents() {}
+  void releaseEvents() {}
+  External* external();
+
+  bool isSecureContext() const;
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(wheel);
+
+  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationstart,
+                                         webkitAnimationStart);
+  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationiteration,
+                                         webkitAnimationIteration);
+  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationend,
+                                         webkitAnimationEnd);
+  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkittransitionend,
+                                         webkitTransitionEnd);
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange);
 
   void registerEventListenerObserver(EventListenerObserver*);
 
@@ -274,6 +356,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   mutable Member<Navigator> m_navigator;
   mutable Member<StyleMedia> m_media;
   mutable TraceWrapperMember<CustomElementRegistry> m_customElements;
+  Member<External> m_external;
 
   String m_status;
   String m_defaultStatus;

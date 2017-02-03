@@ -532,7 +532,7 @@ void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow) {
 }
 
 Document* LocalFrame::document() const {
-  return m_domWindow ? m_domWindow->document() : nullptr;
+  return domWindow() ? domWindow()->document() : nullptr;
 }
 
 void LocalFrame::setPagePopupOwner(Element& owner) {

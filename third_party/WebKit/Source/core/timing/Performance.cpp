@@ -186,7 +186,7 @@ static bool canAccessOrigin(Frame* frame1, Frame* frame2) {
 std::pair<String, DOMWindow*> Performance::sanitizedAttribution(
     ExecutionContext* taskContext,
     bool hasMultipleContexts,
-    Frame* observerFrame) {
+    LocalFrame* observerFrame) {
   if (hasMultipleContexts) {
     // Unable to attribute, multiple script execution contents were involved.
     return std::make_pair(kAmbiguousAttribution, nullptr);
@@ -237,12 +237,13 @@ void Performance::reportLongTask(double startTime,
   std::pair<String, DOMWindow*> attribution = Performance::sanitizedAttribution(
       taskContext, hasMultipleContexts, frame());
   DOMWindow* culpritDomWindow = attribution.second;
-  if (!culpritDomWindow || !culpritDomWindow->document() ||
-      !culpritDomWindow->document()->localOwner()) {
-    addLongTaskTiming(startTime, endTime, attribution.first, "", "", "");
+  if (!culpritDomWindow || !culpritDomWindow->frame() ||
+      !culpritDomWindow->frame()->deprecatedLocalOwner()) {
+    addLongTaskTiming(startTime, endTime, attribution.first, emptyString,
+                      emptyString, emptyString);
   } else {
     HTMLFrameOwnerElement* frameOwner =
-        culpritDomWindow->document()->localOwner();
+        culpritDomWindow->frame()->deprecatedLocalOwner();
     addLongTaskTiming(startTime, endTime, attribution.first,
                       getFrameAttribute(frameOwner, HTMLNames::srcAttr, false),
                       getFrameAttribute(frameOwner, HTMLNames::idAttr, false),

@@ -50,7 +50,7 @@ class PerformanceTest : public ::testing::Test {
 
   String sanitizedAttribution(ExecutionContext* context,
                               bool hasMultipleContexts,
-                              Frame* observerFrame) {
+                              LocalFrame* observerFrame) {
     return Performance::sanitizedAttribution(context, hasMultipleContexts,
                                              observerFrame)
         .first;

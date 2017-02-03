@@ -216,10 +216,12 @@ bool BindingSecurity::shouldAllowAccessToDetachedWindow(
   CHECK(target && !target->frame())
       << "This version of shouldAllowAccessToFrame() must be used only for "
       << "detached windows.";
-  if (!target->document())
+  if (!target->isLocalDOMWindow())
     return false;
-  return canAccessFrame(accessingWindow,
-                        target->document()->getSecurityOrigin(), target,
+  Document* document = toLocalDOMWindow(target)->document();
+  if (!document)
+    return false;
+  return canAccessFrame(accessingWindow, document->getSecurityOrigin(), target,
                         exceptionState);
 }
 

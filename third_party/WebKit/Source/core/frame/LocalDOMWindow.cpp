@@ -53,6 +53,7 @@
 #include "core/frame/BarProp.h"
 #include "core/frame/DOMVisualViewport.h"
 #include "core/frame/EventHandlerRegistry.h"
+#include "core/frame/External.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/History.h"
@@ -86,6 +87,7 @@
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScreenInfo.h"
+
 #include <memory>
 
 namespace blink {
@@ -1380,6 +1382,20 @@ CustomElementRegistry* LocalDOMWindow::maybeCustomElements() const {
   return m_customElements;
 }
 
+External* LocalDOMWindow::external() {
+  if (!m_external)
+    m_external = new External;
+  return m_external;
+}
+
+bool LocalDOMWindow::isSecureContext() const {
+  if (!frame())
+    return false;
+
+  return document()->isSecureContext(
+      ExecutionContext::StandardSecureContextCheck);
+}
+
 void LocalDOMWindow::addedEventListener(
     const AtomicString& eventType,
     RegisteredEventListener& registeredListener) {
@@ -1607,6 +1623,7 @@ DEFINE_TRACE(LocalDOMWindow) {
   visitor->trace(m_navigator);
   visitor->trace(m_media);
   visitor->trace(m_customElements);
+  visitor->trace(m_external);
   visitor->trace(m_applicationCache);
   visitor->trace(m_eventQueue);
   visitor->trace(m_postMessageTimers);

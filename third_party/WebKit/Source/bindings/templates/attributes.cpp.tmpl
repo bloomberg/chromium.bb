@@ -43,7 +43,14 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if not attribute.is_static %}
+  {% if interface_name == 'Window' and not attribute.has_cross_origin_getter %}
+  // Same-origin attribute getters are never exposed via the cross-origin
+  // interceptors. Since same-origin access requires a LocalDOMWindow, it is
+  // safe to downcast here.
+  LocalDOMWindow* impl = toLocalDOMWindow({{v8_class}}::toImpl(holder));
+  {% else %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
+  {% endif %}
   {% endif %}
 
   {% if attribute.cached_attribute_validation_method %}
@@ -282,7 +289,14 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   if (!impl)
     return;
   {% else %}
+  {% if interface_name == 'Window' and not attribute.has_cross_origin_setter %}
+  // Same-origin attribute setters are never exposed via the cross-origin
+  // interceptors. Since same-origin access requires a LocalDOMWindow, it is
+  // safe to downcast here.
+  LocalDOMWindow* impl = toLocalDOMWindow({{v8_class}}::toImpl(holder));
+  {% else %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
+  {% endif %}
   {% endif %}
   {% endif %}
 
