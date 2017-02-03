@@ -111,9 +111,6 @@ if (symbol_level == -1) {
   } else {
     symbol_level = 0
   }
-} else if (symbol_level == 2) {
-  assert(is_win_fastlink || !use_goma,
-         "Goma builds that use symbol_level 2 must use is_win_fastlink.")
 }
 
 # Assert that the configuration isn't going to hit https://crbug.com/648948.
