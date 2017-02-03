@@ -30,8 +30,7 @@ class ScreenOrientation : public device::mojom::ScreenOrientation,
   void UnlockOrientation() override;
 
   // WebContentsObserver:
-  void DidNavigateMainFrame(const LoadCommittedDetails& details,
-                            const FrameNavigateParams& params) override;
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   std::unique_ptr<ScreenOrientationProvider> provider_;
   WebContentsFrameBindingSet<device::mojom::ScreenOrientation> bindings_;

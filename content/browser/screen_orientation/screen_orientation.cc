@@ -4,7 +4,7 @@
 
 #include "content/browser/screen_orientation/screen_orientation.h"
 
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/screen_orientation_provider.h"
 #include "content/public/browser/web_contents.h"
 
@@ -29,11 +29,13 @@ void ScreenOrientation::UnlockOrientation() {
   provider_->UnlockOrientation();
 }
 
-void ScreenOrientation::DidNavigateMainFrame(
-    const LoadCommittedDetails& details,
-    const FrameNavigateParams& params) {
-  if (details.is_in_page)
+void ScreenOrientation::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSamePage()) {
     return;
+  }
   provider_->UnlockOrientation();
 }
 
