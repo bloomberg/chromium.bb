@@ -762,7 +762,7 @@ static void update_supertx_probs(AV1_COMMON *cm, int probwt, aom_writer *w) {
 }
 #endif  // CONFIG_SUPERTX
 
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_NEW_TOKENSET
 static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                            const TOKENEXTRA *const stop,
                            aom_bit_depth_t bit_depth, const TX_SIZE tx_size,
@@ -862,11 +862,25 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   while (p < stop && p->token != EOSB_TOKEN) {
     const int token = p->token;
     aom_tree_index index = 0;
+#if !CONFIG_EC_MULTISYMBOL
     const struct av1_token *const coef_encoding = &av1_coef_encodings[token];
     int coef_value = coef_encoding->value;
     int coef_length = coef_encoding->len;
+#endif  // !CONFIG_EC_MULTISYMBOL
     const av1_extra_bit *const extra_bits = &extra_bits_table[token];
 
+#if CONFIG_EC_MULTISYMBOL
+    /* skip one or two nodes */
+    if (!p->skip_eob_node)
+      aom_write_record(w, token != EOB_TOKEN, p->context_tree[0], token_stats);
+    if (token != EOB_TOKEN) {
+      aom_write_record(w, token != ZERO_TOKEN, p->context_tree[1], token_stats);
+      if (token != ZERO_TOKEN) {
+        aom_write_symbol(w, token - ONE_TOKEN, *p->token_cdf,
+                         CATEGORY6_TOKEN - ONE_TOKEN + 1);
+      }
+    }
+#else
     /* skip one or two nodes */
     if (p->skip_eob_node)
       coef_length -= p->skip_eob_node;
@@ -889,6 +903,7 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
         }
       }
     }
+#endif  // CONFIG_EC_MULTISYMBOL
 
     if (extra_bits->base_val) {
       const int bit_string = p->extra;
@@ -2795,7 +2810,7 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 #endif
 }
 
-#if !CONFIG_PVQ && !CONFIG_EC_ADAPT
+#if !CONFIG_PVQ && !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
 static void build_tree_distribution(AV1_COMP *cpi, TX_SIZE tx_size,
                                     av1_coeff_stats *coef_branch_ct,
                                     av1_coeff_probs_model *coef_probs) {
@@ -2826,14 +2841,18 @@ static void build_tree_distribution(AV1_COMP *cpi, TX_SIZE tx_size,
   }
 }
 
-#if !CONFIG_EC_ADAPT
+#if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
 static void update_coef_probs_common(aom_writer *const bc, AV1_COMP *cpi,
                                      TX_SIZE tx_size,
                                      av1_coeff_stats *frame_branch_ct,
                                      av1_coeff_probs_model *new_coef_probs) {
   av1_coeff_probs_model *old_coef_probs = cpi->common.fc->coef_probs[tx_size];
   const aom_prob upd = DIFF_UPDATE_PROB;
+#if CONFIG_EC_ADAPT
+  const int entropy_nodes_update = UNCONSTRAINED_NODES - 1;
+#else
   const int entropy_nodes_update = UNCONSTRAINED_NODES;
+#endif
   int i, j, k, l, t;
   int stepsize = cpi->sf.coeff_prob_appx_step;
 #if CONFIG_TILE_GROUPS
@@ -3183,7 +3202,7 @@ static void update_coef_probs_subframe(
 }
 #endif  // CONFIG_ENTROPY
 
-#if !CONFIG_EC_ADAPT
+#if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
 static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
   const TX_MODE tx_mode = cpi->common.tx_mode;
   const TX_SIZE max_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
@@ -4550,9 +4569,9 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_LOOP_RESTORATION
   update_txfm_probs(cm, header_bc, counts);
 #if !CONFIG_PVQ
-#if !CONFIG_EC_ADAPT
+#if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
   update_coef_probs(cpi, header_bc);
-#endif  // CONFIG_EC_ADAPT
+#endif  // !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
 #endif  // CONFIG_PVQ
 #if CONFIG_VAR_TX
   update_txfm_partition_probs(cm, header_bc, counts, probwt);

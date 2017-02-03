@@ -93,25 +93,28 @@ def quantize_probs(p, save_first_bin, bits):
   return q
 
 
-def get_quantized_spareto(p, beta, bits):
+def get_quantized_spareto(p, beta, bits, first_token):
   parray = get_spareto(p, beta)
   parray = parray[1:] / (1 - parray[0])
-#if CONFIG_EC_MULTISYMBOL, truncate the array again
-  tarray = parray[1:] / (1 - parray[0])
-  qarray = quantize_probs(tarray, False, bits)
+  # CONFIG_NEW_TOKENSET
+  if first_token > 1:
+    parray = parray[1:] / (1 - parray[0])
+  qarray = quantize_probs(parray, first_token == 1, bits)
   return qarray.astype(np.int)
 
 
-def main(bits=15):
+def main(bits=15, first_token=1):
   beta = 8
   for q in range(1, 256):
-    parray = get_quantized_spareto(q / 256., beta, bits)
+    parray = get_quantized_spareto(q / 256., beta, bits, first_token)
     assert parray.sum() == 2**bits
     print '{', ', '.join('%d' % i for i in parray), '},'
 
 
 if __name__ == '__main__':
-  if len(sys.argv) > 1:
+  if len(sys.argv) > 2:
+    main(int(sys.argv[1]), int(sys.argv[2]))
+  elif len(sys.argv) > 1:
     main(int(sys.argv[1]))
   else:
     main()

@@ -2425,11 +2425,15 @@ static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
                        "Failed to allocate bool decoder %d", 1);
 }
 
-#if !CONFIG_PVQ && !CONFIG_EC_ADAPT
+#if !CONFIG_PVQ && !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
 static void read_coef_probs_common(av1_coeff_probs_model *coef_probs,
                                    aom_reader *r) {
   int i, j, k, l, m;
+#if CONFIG_EC_ADAPT
+  const int node_limit = UNCONSTRAINED_NODES - 1;
+#else
   const int node_limit = UNCONSTRAINED_NODES;
+#endif
 
   if (aom_read_bit(r, ACCT_STR))
     for (i = 0; i < PLANE_TYPES; ++i)
@@ -4493,7 +4497,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   if (cm->tx_mode == TX_MODE_SELECT) read_tx_size_probs(fc, &r);
 
 #if !CONFIG_PVQ
-#if !CONFIG_EC_ADAPT
+#if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
   read_coef_probs(fc, cm->tx_mode, &r);
 #endif
 

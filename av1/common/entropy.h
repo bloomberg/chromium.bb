@@ -45,7 +45,7 @@ extern "C" {
 #define CATEGORY5_TOKEN 9   // 35-66 Extra Bits 5+1
 #define CATEGORY6_TOKEN 10  // 67+   Extra Bits 14+1
 #define EOB_TOKEN 11        // EOB   Extra Bits 0+0
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_NEW_TOKENSET
 #define BLOCK_Z_TOKEN 255  // block zero
 #define ONE_TOKEN_EOB 1
 #define ONE_TOKEN_NEOB 2
