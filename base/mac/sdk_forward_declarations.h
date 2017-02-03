@@ -75,6 +75,7 @@ typedef NSUInteger NSSpringLoadingHighlight;
 extern "C" {
 #if !defined(MAC_OS_X_VERSION_10_10) || \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_10
+BASE_EXPORT extern NSString* const CIDetectorTypeQRCode;
 BASE_EXPORT extern NSString* const NSUserActivityTypeBrowsingWeb;
 BASE_EXPORT extern NSString* const NSAppearanceNameVibrantDark;
 BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;

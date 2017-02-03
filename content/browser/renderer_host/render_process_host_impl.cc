@@ -182,11 +182,13 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
+#include "services/shape_detection/public/interfaces/constants.mojom.h"
 #include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
 #include "services/shape_detection/public/interfaces/textdetection.mojom.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
@@ -219,7 +221,6 @@
 #if defined(OS_MACOSX)
 #include "content/browser/bootstrap_sandbox_manager_mac.h"
 #include "content/browser/mach_broker_mac.h"
-#include "content/browser/shapedetection/face_detection_service_dispatcher.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -454,6 +455,16 @@ void CreateMemoryCoordinatorHandle(
     mojom::MemoryCoordinatorHandleRequest request) {
   MemoryCoordinatorImpl::GetInstance()->CreateHandle(render_process_id,
                                                      std::move(request));
+}
+
+// Forwards service requests to Service Manager since the renderer cannot launch
+// out-of-process services on is own.
+template <typename R>
+void ForwardShapeDetectionRequest(R request) {
+  service_manager::Connector* connector =
+      ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(shape_detection::mojom::kServiceName,
+                           std::move(request));
 }
 
 }  // namespace
@@ -1197,12 +1208,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   channel_->AddAssociatedInterfaceForIOThread(
       base::Bind(&IndexedDBDispatcherHost::AddBinding, indexed_db_factory_));
 
-#if defined(OS_MACOSX)
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&FaceDetectionServiceDispatcher::CreateMojoService));
-#endif
-
 #if defined(OS_ANDROID)
   AddUIThreadInterface(registry.get(),
                        GetGlobalJavaInterfaces()
@@ -1222,6 +1227,14 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #else
   AddUIThreadInterface(
       registry.get(), base::Bind(&device::BatteryMonitorImpl::Create));
+  AddUIThreadInterface(
+      registry.get(),
+      base::Bind(&ForwardShapeDetectionRequest<
+                 shape_detection::mojom::BarcodeDetectionRequest>));
+  AddUIThreadInterface(
+      registry.get(),
+      base::Bind(&ForwardShapeDetectionRequest<
+                 shape_detection::mojom::FaceDetectionProviderRequest>));
 #endif
   AddUIThreadInterface(
       registry.get(),

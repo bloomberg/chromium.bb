@@ -12,7 +12,7 @@
 namespace content {
 
 // TODO(xianglu): Enable other platforms support. https://crbug.com/646083
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID)
 #define MAYBE_ShapeDetectionBrowserTest ShapeDetectionBrowserTest
 #else
 #define MAYBE_ShapeDetectionBrowserTest DISABLED_ShapeDetectionBrowserTest
@@ -80,14 +80,11 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ShapeDetectionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MAYBE_ShapeDetectionBrowserTest,
                        DetectFacesOnImageWithOneFace) {
   const std::string image_path = "/single_face.jpg";
-  std::vector<std::vector<float>> expected_results;
 #if defined(OS_ANDROID)
-  const std::vector<float> expected_result = {68.640625, 102.96875, 171.5625,
-                                              171.5625};
-  expected_results.push_back(expected_result);
-#elif defined(OS_MACOSX)
-  const std::vector<float> expected_result = {0, 93, 290, 290};
-  expected_results.push_back(expected_result);
+  const std::vector<std::vector<float>> expected_results{
+      {68.640625, 102.96875, 171.5625, 171.5625}};
+#else
+  const std::vector<std::vector<float>> expected_results;
 #endif
 
   RunDetectFacesOnImageUrl(image_path, expected_results);

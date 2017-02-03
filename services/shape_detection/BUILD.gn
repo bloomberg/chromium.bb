@@ -7,6 +7,7 @@ import("//services/service_manager/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
+    "barcode_detection_impl.h",
     "face_detection_provider_impl.h",
     "shape_detection_service.cc",
     "shape_detection_service.h",
@@ -14,11 +15,19 @@ source_set("lib") {
 
   if (is_mac) {
     sources += [
+      "barcode_detection_impl_mac.h",
+      "barcode_detection_impl_mac.mm",
+      "detection_utils_mac.h",
+      "detection_utils_mac.mm",
       "face_detection_impl_mac.h",
       "face_detection_impl_mac.mm",
     ]
+    libs = [ "QuartzCore.framework" ]
   } else {
-    sources += [ "face_detection_provider_impl.cc" ]
+    sources += [
+      "barcode_detection_impl.cc",
+      "face_detection_provider_impl.cc",
+    ]
   }
 
   deps = [

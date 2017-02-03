@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
+#include "services/shape_detection/barcode_detection_impl.h"
 #include "services/shape_detection/face_detection_provider_impl.h"
 
 namespace shape_detection {
@@ -42,6 +43,7 @@ bool ShapeDetectionService::OnConnect(
       ref_factory_->CreateRef();
   registry->AddConnectionLostClosure(
       base::Bind(&OnConnectionLost, base::Passed(&connection_ref)));
+  registry->AddInterface(base::Bind(&BarcodeDetectionImpl::Create));
   registry->AddInterface(base::Bind(&FaceDetectionProviderImpl::Create));
   return true;
 }

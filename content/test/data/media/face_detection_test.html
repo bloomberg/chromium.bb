@@ -26,8 +26,8 @@
           window.domAutomationController.send(results);
         })
         .catch(error => {
-          error = new Error("Error during detection:" + error);
-          window.domAutomationController.send(error.stack);
+          error = new Error("Error during detection:" + error.message);
+          window.domAutomationController.send(error.message);
         });
     }
   }
