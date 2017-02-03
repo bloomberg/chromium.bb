@@ -887,7 +887,7 @@ crbug.com/359838 virtual/mojo-loading/http/tests/ManualTests/ [ Skip ]
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 
 # Text::inDocument() returns false but should not.
-crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
+crbug.com/264138 dom/legacy_dom_conformance/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
 crbug.com/685851 [ Win ] fast/table/backgr_position-table-column-group.html [ Pass Failure ]
 crbug.com/685851 [ Win ] fast/table/backgr_position-table-column-group-collapsed-border.html [ Pass Failure ]
