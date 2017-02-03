@@ -208,6 +208,10 @@ MediaPipelineBackendAlsa::RenderingDelay StreamMixerAlsaInputImpl::QueueData(
     queued_frames_including_resampler_ += frames;
   }
 
+  if (is_underflowing_) {
+    return MediaPipelineBackendAlsa::RenderingDelay();
+  }
+
   MediaPipelineBackendAlsa::RenderingDelay delay = mixer_rendering_delay_;
   if (delay.timestamp_microseconds != kNoTimestamp) {
     delay.delay_microseconds += static_cast<int64_t>(

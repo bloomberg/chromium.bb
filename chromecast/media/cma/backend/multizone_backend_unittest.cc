@@ -268,7 +268,9 @@ void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
     MediaPipelineBackend::AudioDecoder::RenderingDelay delay =
         decoder_->GetRenderingDelay();
 
-    if (delay.timestamp_microseconds != kNoTimestamp) {
+    if (delay.timestamp_microseconds == kNoTimestamp) {
+      next_push_playback_timestamp_ = kNoTimestamp;
+    } else {
       if (next_push_playback_timestamp_ == kNoTimestamp) {
         next_push_playback_timestamp_ =
             delay.timestamp_microseconds + delay.delay_microseconds;
