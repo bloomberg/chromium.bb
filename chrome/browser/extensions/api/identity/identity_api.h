@@ -41,6 +41,7 @@ class BrowserContext;
 namespace extensions {
 
 class GetAuthTokenFunctionTest;
+class IdentityGetAuthTokenFunction;
 class MockGetAuthTokenFunction;
 
 class IdentityTokenCacheValue {
@@ -79,11 +80,6 @@ class IdentityAPI : public BrowserContextKeyedAPI,
  public:
   typedef std::map<ExtensionTokenKey, IdentityTokenCacheValue> CachedTokens;
 
-  class ShutdownObserver {
-   public:
-    virtual void OnShutdown() = 0;
-  };
-
   explicit IdentityAPI(content::BrowserContext* context);
   ~IdentityAPI() override;
 
@@ -114,10 +110,12 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   void OnAccountSignInChanged(const gaia::AccountIds& ids,
                               bool is_signed_in) override;
 
-  void AddShutdownObserver(ShutdownObserver* observer);
-  void RemoveShutdownObserver(ShutdownObserver* observer);
-
   void SetAccountStateForTest(gaia::AccountIds ids, bool is_signed_in);
+
+  void set_get_auth_token_function(
+      IdentityGetAuthTokenFunction* get_auth_token_function) {
+    get_auth_token_function_ = get_auth_token_function;
+  }
 
  private:
   friend class BrowserContextKeyedAPIFactory<IdentityAPI>;
@@ -131,7 +129,9 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   CachedTokens token_cache_;
   ProfileIdentityProvider profile_identity_provider_;
   gaia::AccountTracker account_tracker_;
-  base::ObserverList<ShutdownObserver> shutdown_observer_list_;
+
+  // May be null.
+  IdentityGetAuthTokenFunction* get_auth_token_function_;
 };
 
 template <>
@@ -173,8 +173,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                                      public IdentityMintRequestQueue::Request,
                                      public OAuth2MintTokenFlow::Delegate,
                                      public IdentitySigninFlow::Delegate,
-                                     public OAuth2TokenService::Consumer,
-                                     public IdentityAPI::ShutdownObserver {
+                                     public OAuth2TokenService::Consumer {
  public:
   DECLARE_EXTENSION_FUNCTION("identity.getAuthToken",
                              EXPERIMENTAL_IDENTITY_GETAUTHTOKEN);
@@ -184,6 +183,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   const ExtensionTokenKey* GetExtensionTokenKeyForTest() {
     return token_key_.get();
   }
+
+  void Shutdown();
 
  protected:
   ~IdentityGetAuthTokenFunction() override;
@@ -249,9 +250,6 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                           int time_to_live) override;
   void OnMintTokenFailure(const GoogleServiceAuthError& error) override;
   void OnIssueAdviceSuccess(const IssueAdviceInfo& issue_advice) override;
-
-  // IdentityAPI::ShutdownObserver implementation:
-  void OnShutdown() override;
 
 #if defined(OS_CHROMEOS)
   // Starts a login access token request for device robot account. This method

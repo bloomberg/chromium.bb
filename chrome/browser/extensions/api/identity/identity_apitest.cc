@@ -1194,7 +1194,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueueShutdown) {
   EXPECT_FALSE(func->scope_ui_shown());
 
   // After the request is canceled, the function will complete.
-  func->OnShutdown();
+  func->Shutdown();
   EXPECT_EQ(std::string(errors::kCanceled), WaitForError(func.get()));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
@@ -1212,7 +1212,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveShutdown) {
   RunFunctionAsync(func.get(), "[{\"interactive\": false}]");
 
   // After the request is canceled, the function will complete.
-  func->OnShutdown();
+  func->Shutdown();
   EXPECT_EQ(std::string(errors::kCanceled), WaitForError(func.get()));
 }
 

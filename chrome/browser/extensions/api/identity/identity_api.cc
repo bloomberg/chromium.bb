@@ -143,7 +143,8 @@ IdentityAPI::IdentityAPI(content::BrowserContext* context)
           LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(
               Profile::FromBrowserContext(context))),
       account_tracker_(&profile_identity_provider_,
-                       g_browser_process->system_request_context()) {
+                       g_browser_process->system_request_context()),
+      get_auth_token_function_(nullptr) {
   account_tracker_.AddObserver(this);
 }
 
@@ -207,8 +208,8 @@ std::string IdentityAPI::FindAccountKeyByGaiaId(const std::string& gaia_id) {
 }
 
 void IdentityAPI::Shutdown() {
-  for (auto& observer : shutdown_observer_list_)
-    observer.OnShutdown();
+  if (get_auth_token_function_)
+    get_auth_token_function_->Shutdown();
   account_tracker_.RemoveObserver(this);
   account_tracker_.Shutdown();
 }
@@ -240,14 +241,6 @@ void IdentityAPI::OnAccountSignInChanged(const gaia::AccountIds& ids,
                 browser_context_));
 
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
-}
-
-void IdentityAPI::AddShutdownObserver(ShutdownObserver* observer) {
-  shutdown_observer_list_.AddObserver(observer);
-}
-
-void IdentityAPI::RemoveShutdownObserver(ShutdownObserver* observer) {
-  shutdown_observer_list_.RemoveObserver(observer);
 }
 
 void IdentityAPI::SetAccountStateForTest(gaia::AccountIds ids,
@@ -408,13 +401,13 @@ void IdentityGetAuthTokenFunction::StartAsyncRun() {
   AddRef();
   extensions::IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
-      ->AddShutdownObserver(this);
+      ->set_get_auth_token_function(this);
 }
 
 void IdentityGetAuthTokenFunction::CompleteAsyncRun(bool success) {
   extensions::IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
-      ->RemoveShutdownObserver(this);
+      ->set_get_auth_token_function(nullptr);
 
   SendResponse(success);
   Release();  // Balanced in StartAsyncRun
@@ -746,7 +739,7 @@ void IdentityGetAuthTokenFunction::OnGetTokenFailure(
   OnGaiaFlowFailure(GaiaWebAuthFlow::SERVICE_AUTH_ERROR, error, std::string());
 }
 
-void IdentityGetAuthTokenFunction::OnShutdown() {
+void IdentityGetAuthTokenFunction::Shutdown() {
   gaia_web_auth_flow_.reset();
   signin_flow_.reset();
   login_token_request_.reset();
