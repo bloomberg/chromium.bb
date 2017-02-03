@@ -38,8 +38,7 @@ suite('Bluetooth', function() {
   ];
 
   suiteSetup(function() {
-    window.loadTimeData = new LoadTimeData;
-    loadTimeData.data = {
+    loadTimeData.overrideValues({
       bluetoothEnabled: 'bluetoothEnabled',
       bluetoothDisabled: 'bluetoothDisabled',
       bluetoothOn: 'bluetoothOn',
@@ -48,8 +47,7 @@ suite('Bluetooth', function() {
       bluetoothDisconnect: 'bluetoothDisconnect',
       bluetoothPair: 'bluetoothPair',
       bluetoothStartConnecting: 'bluetoothStartConnecting',
-
-    };
+    });
 
     bluetoothApi_ = new settings.FakeBluetooth();
     bluetoothPrivateApi_ = new settings.FakeBluetoothPrivate(bluetoothApi_);

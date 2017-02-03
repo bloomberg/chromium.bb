@@ -740,7 +740,6 @@ CrSettingsBluetoothPageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/assert.js',
-    ROOT_PATH + 'ui/webui/resources/js/load_time_data.js',
     '../fake_chrome_event.js',
     'fake_bluetooth.js',
     'fake_bluetooth_private.js',
