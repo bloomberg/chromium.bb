@@ -16,6 +16,7 @@
             android:required="false"/>
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application android:label="Android System WebView"
         android:icon="@drawable/icon_webview"

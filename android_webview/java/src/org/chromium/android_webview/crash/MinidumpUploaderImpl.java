@@ -5,6 +5,8 @@
 package org.chromium.android_webview.crash;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -25,6 +27,7 @@ import java.io.File;
 public class MinidumpUploaderImpl implements MinidumpUploader {
     private static final String TAG = "MinidumpUploaderImpl";
     private Thread mWorkerThread;
+    private final ConnectivityManager mConnectivityManager;
     private final CrashFileManager mFileManager;
 
     private Object mCancelLock = new Object();
@@ -56,6 +59,8 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
 
     @VisibleForTesting
     public MinidumpUploaderImpl(Context context, boolean cleanOutMinidumps) {
+        mConnectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         File webviewCrashDir = CrashReceiverService.createWebViewCrashDir(context);
         mFileManager = new CrashFileManager(webviewCrashDir);
         if (!mFileManager.ensureCrashDirExists()) {
@@ -89,7 +94,9 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
             public boolean isNetworkAvailableForCrashUploads() {
                 // JobScheduler will call onStopJob causing our upload to be interrupted when our
                 // network requirements no longer hold.
-                return true;
+                NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
+                if (networkInfo == null || !networkInfo.isConnected()) return false;
+                return !mConnectivityManager.isActiveNetworkMetered();
             }
             @Override
             public boolean isCrashUploadDisabledByCommandLine() {
