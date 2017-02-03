@@ -83,11 +83,11 @@ class HeapCompact::MovableObjectFixups final {
     // derive the raw BasePage address here and check if it is a member
     // of the compactable and relocatable page address set.
     Address slotAddress = reinterpret_cast<Address>(slot);
-    BasePage* slotPage = reinterpret_cast<BasePage*>(
-        blinkPageAddress(slotAddress) + blinkGuardPageSize);
-    if (LIKELY(!m_relocatablePages.contains(slotPage)))
+    void* slotPageAddress = blinkPageAddress(slotAddress) + blinkGuardPageSize;
+    if (LIKELY(!m_relocatablePages.contains(slotPageAddress)))
       return;
 #if DCHECK_IS_ON()
+    BasePage* slotPage = reinterpret_cast<BasePage*>(slotPageAddress);
     DCHECK(slotPage->contains(slotAddress));
 #endif
     // Unlikely case, the slot resides on a compacting arena's page.
@@ -244,8 +244,10 @@ class HeapCompact::MovableObjectFixups final {
   // Slot => relocated slot/final location.
   HashMap<MovableReference*, Address> m_interiorFixups;
 
-  // All pages that are being compacted.
-  HashSet<BasePage*> m_relocatablePages;
+  // All pages that are being compacted. The set keeps references to
+  // BasePage instances. The void* type was selected to allow to check
+  // arbitrary addresses.
+  HashSet<void*> m_relocatablePages;
 
   std::unique_ptr<SparseHeapBitmap> m_interiors;
 };
