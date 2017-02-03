@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
@@ -48,7 +49,6 @@ class NetworkCertMigratorTest : public testing::Test {
     test_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())),
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot()))));
-    test_nsscertdb_->SetSlowTaskRunnerForTest(message_loop_.task_runner());
 
     DBusThreadManager::Initialize();
     service_test_ =
@@ -188,7 +188,7 @@ class NetworkCertMigratorTest : public testing::Test {
   scoped_refptr<net::X509Certificate> test_client_cert_;
   std::string test_client_cert_pkcs11_id_;
   std::string test_client_cert_slot_id_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
 
  private:
   std::unique_ptr<NetworkStateHandler> network_state_handler_;

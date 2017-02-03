@@ -57,8 +57,7 @@ class ClientCertResolverTest : public testing::Test,
       : network_properties_changed_count_(0),
         service_test_(nullptr),
         profile_test_(nullptr),
-        cert_loader_(nullptr),
-        scoped_task_scheduler_(&message_loop_) {}
+        cert_loader_(nullptr) {}
   ~ClientCertResolverTest() override {}
 
   void SetUp() override {
@@ -68,7 +67,6 @@ class ClientCertResolverTest : public testing::Test,
     test_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())),
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot()))));
-    test_nsscertdb_->SetSlowTaskRunnerForTest(message_loop_.task_runner());
 
     DBusThreadManager::Initialize();
     service_test_ =
@@ -292,7 +290,6 @@ class ClientCertResolverTest : public testing::Test,
   std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;
   std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
       managed_config_handler_;
-  base::MessageLoop message_loop_;
   base::test::ScopedTaskScheduler scoped_task_scheduler_;
   scoped_refptr<net::X509Certificate> test_client_cert_;
   std::string test_ca_cert_pem_;
