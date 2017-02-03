@@ -226,8 +226,7 @@ InspectorTest.walkTimelineEventTreeUnderNode = function(callback, root, level)
     var event = root.event;
     if (event)
         callback(event, level)
-    var children = root.children ? root.children.values() : [];
-    for (var child of children)
+    for (var child of root.children().values())
         InspectorTest.walkTimelineEventTreeUnderNode(callback, child, (level || 0) + 1);
 }
 

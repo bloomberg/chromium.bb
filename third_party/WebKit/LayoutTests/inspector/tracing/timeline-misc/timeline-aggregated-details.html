@@ -635,7 +635,7 @@ function test()
                       : Timeline.TimelineUIUtils.eventTitle(node.event);
         }
         InspectorTest.addResult("  ".repeat(padding) + `${name}: ${node.selfTime.toFixed(3)}  ${node.totalTime.toFixed(3)}`);
-        (node.children || new Map()).forEach(printEventTree.bind(null, padding + 1));
+        node.children().forEach(printEventTree.bind(null, padding + 1));
     }
 }
 
