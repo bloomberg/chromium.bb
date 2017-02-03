@@ -35,6 +35,7 @@
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -80,6 +81,7 @@
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -125,6 +127,9 @@ const char kUserAddingURL[] = "chrome://oobe/user-adding";
 
 // URL which corresponds to the app launch splash WebUI.
 const char kAppLaunchSplashURL[] = "chrome://oobe/app-launch-splash";
+
+// URL which corresponds to the ARC kiosk splash WebUI.
+const char kArcKioskSplashURL[] = "chrome://oobe/arc-kiosk-splash";
 
 // Duration of sign-in transition animation.
 const int kLoginFadeoutTransitionDurationMs = 700;
@@ -782,6 +787,26 @@ void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id,
       app_id, diagnostic_mode, this, GetOobeUI()));
 
   app_launch_controller_->StartAppLaunch(auto_launch);
+}
+
+void LoginDisplayHostImpl::StartArcKiosk(const AccountId& account_id) {
+  VLOG(1) << "Login WebUI >> start ARC kiosk.";
+  SetStatusAreaVisible(false);
+
+  // Animation is not supported in Mash.
+  if (!chrome::IsRunningInMash())
+    finalize_animation_type_ = ANIMATION_FADE_OUT;
+  if (!login_window_) {
+    LoadURL(GURL(kAppLaunchSplashURL));
+    LoadURL(GURL(kArcKioskSplashURL));
+  }
+
+  login_view_->set_should_emit_login_prompt_visible(false);
+
+  arc_kiosk_controller_ =
+      base::MakeUnique<ArcKioskController>(this, GetOobeUI());
+
+  arc_kiosk_controller_->StartArcKiosk(account_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -33,10 +33,26 @@ class ArcKioskAppService
     : public KeyedService,
       public ArcAppListPrefs::Observer,
       public ArcKioskAppManager::ArcKioskAppManagerObserver,
-      public arc::ArcKioskBridge::Delegate {
+      public arc::ArcKioskBridge::Delegate,
+      public ArcKioskAppLauncher::Delegate {
  public:
+  class Delegate {
+   public:
+    Delegate() = default;
+    virtual void OnAppStarted() = 0;
+    virtual void OnAppWindowLaunched() = 0;
+
+   protected:
+    virtual ~Delegate() = default;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
   static ArcKioskAppService* Create(Profile* profile);
   static ArcKioskAppService* Get(content::BrowserContext* context);
+
+  void SetDelegate(Delegate* delegate);
 
   // KeyedService overrides
   void Shutdown() override;
@@ -59,6 +75,9 @@ class ArcKioskAppService
   void OnMaintenanceSessionCreated() override;
   void OnMaintenanceSessionFinished() override;
 
+  // ArcKioskAppLauncher::Delegate overrides
+  void OnAppWindowLaunched() override;
+
  private:
   explicit ArcKioskAppService(Profile* profile);
   ~ArcKioskAppService() override;
@@ -77,6 +96,8 @@ class ArcKioskAppService
   // Keeps track whether the app is already launched
   std::unique_ptr<ArcKioskAppLauncher> app_launcher_;
   std::unique_ptr<ArcKioskNotificationBlocker> notification_blocker_;
+  // Not owning the delegate, delegate removes itself in destructor
+  Delegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ArcKioskAppService);
 };

@@ -34,10 +34,12 @@
 #include "ui/views/widget/widget_removals_observer.h"
 #include "ui/wm/public/scoped_drag_drop_disabler.h"
 
+class AccountId;
 class ScopedKeepAlive;
 
 namespace chromeos {
 
+class ArcKioskController;
 class DemoAppLauncher;
 class FocusRingController;
 class KeyboardDrivenOobeKeyHandler;
@@ -84,6 +86,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
       bool diagnostic_mode,
       bool auto_launch) override;
   void StartDemoAppLaunch() override;
+  void StartArcKiosk(const AccountId& account_id) override;
 
   // Creates WizardController instance.
   WizardController* CreateWizardController();
@@ -216,6 +219,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Demo app launcher.
   std::unique_ptr<DemoAppLauncher> demo_app_launcher_;
+
+  // ARC kiosk controller.
+  std::unique_ptr<ArcKioskController> arc_kiosk_controller_;
 
   // Make sure chrome won't exit while we are at login/oobe screen.
   std::unique_ptr<ScopedKeepAlive> keep_alive_;

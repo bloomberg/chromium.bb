@@ -51,6 +51,10 @@ ArcKioskAppService* ArcKioskAppService::Get(content::BrowserContext* context) {
   return ArcKioskAppServiceFactory::GetForBrowserContext(context);
 }
 
+void ArcKioskAppService::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
+}
+
 void ArcKioskAppService::Shutdown() {
   ArcAppListPrefs::Get(profile_)->RemoveObserver(this);
   app_manager_->RemoveObserver(this);
@@ -59,10 +63,14 @@ void ArcKioskAppService::Shutdown() {
 void ArcKioskAppService::OnAppRegistered(
     const std::string& app_id,
     const ArcAppListPrefs::AppInfo& app_info) {
+  if (!app_id_.empty() && app_id != app_id_)
+    return;
   PreconditionsChanged();
 }
 
 void ArcKioskAppService::OnAppReadyChanged(const std::string& id, bool ready) {
+  if (!app_id_.empty() && id != app_id_)
+    return;
   PreconditionsChanged();
 }
 
@@ -83,6 +91,8 @@ void ArcKioskAppService::OnTaskCreated(int32_t task_id,
   if (app_info_ && package_name == app_info_->package_name &&
       activity == app_info_->activity) {
     task_id_ = task_id;
+    if (delegate_)
+      delegate_->OnAppStarted();
   }
 }
 
@@ -104,6 +114,11 @@ void ArcKioskAppService::OnMaintenanceSessionCreated() {
 void ArcKioskAppService::OnMaintenanceSessionFinished() {
   maintenance_session_running_ = false;
   PreconditionsChanged();
+}
+
+void ArcKioskAppService::OnAppWindowLaunched() {
+  if (delegate_)
+    delegate_->OnAppWindowLaunched();
 }
 
 ArcKioskAppService::ArcKioskAppService(Profile* profile) : profile_(profile) {
@@ -133,8 +148,8 @@ void ArcKioskAppService::PreconditionsChanged() {
       profile_->GetPrefs()->GetBoolean(prefs::kArcPolicyCompliant) &&
       !maintenance_session_running_) {
     if (!app_launcher_)
-      app_launcher_.reset(new ArcKioskAppLauncher(
-          profile_, ArcAppListPrefs::Get(profile_), app_id_));
+      app_launcher_ = base::MakeUnique<ArcKioskAppLauncher>(
+          profile_, ArcAppListPrefs::Get(profile_), app_id_, this);
   } else if (task_id_ != -1) {
     arc::CloseTask(task_id_);
   }

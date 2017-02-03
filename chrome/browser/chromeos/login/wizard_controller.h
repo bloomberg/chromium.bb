@@ -153,6 +153,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowWrongHWIDScreen();
   void ShowAutoEnrollmentCheckScreen();
   void ShowSupervisedUserCreationScreen();
+  void ShowArcKioskSplashScreen();
   void ShowHIDDetectionScreen();
   void ShowControllerPairingScreen();
   void ShowHostPairingScreen();

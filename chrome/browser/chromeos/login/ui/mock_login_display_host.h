@@ -39,6 +39,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(PrewarmAuthentication, void(void));
   MOCK_METHOD3(StartAppLaunch, void(const std::string&, bool, bool));
   MOCK_METHOD0(StartDemoAppLaunch, void(void));
+  MOCK_METHOD1(StartArcKiosk, void(const AccountId&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);

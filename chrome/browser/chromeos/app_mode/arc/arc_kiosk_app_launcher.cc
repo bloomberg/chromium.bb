@@ -17,8 +17,9 @@ namespace chromeos {
 
 ArcKioskAppLauncher::ArcKioskAppLauncher(content::BrowserContext* context,
                                          ArcAppListPrefs* prefs,
-                                         const std::string& app_id)
-    : app_id_(app_id), prefs_(prefs) {
+                                         const std::string& app_id,
+                                         Delegate* delegate)
+    : app_id_(app_id), prefs_(prefs), delegate_(delegate) {
   prefs_->AddObserver(this);
   aura::Env::GetInstance()->AddObserver(this);
   // Launching the app by app id in landscape mode and in non-touch mode.
@@ -78,6 +79,8 @@ bool ArcKioskAppLauncher::CheckAndPinWindow(aura::Window* const window) {
   // Stop observing as target window is already found.
   StopObserving();
   ash::wm::PinWindow(window, true /* trusted */);
+  if (delegate_)
+    delegate_->OnAppWindowLaunched();
   return true;
 }
 

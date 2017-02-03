@@ -104,6 +104,7 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
                       bool diagnostic_mode,
                       bool is_auto_launch) override {}
   void StartDemoAppLaunch() override {}
+  void StartArcKiosk(const AccountId& account_id) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeLoginDisplayHost);

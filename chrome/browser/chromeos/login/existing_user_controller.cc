@@ -23,6 +23,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/easy_unlock/bootstrap_user_context_initializer.h"
 #include "chrome/browser/chromeos/login/easy_unlock/bootstrap_user_flow.h"
@@ -945,9 +946,7 @@ void ExistingUserController::LoginAsKioskApp(const std::string& app_id,
 }
 
 void ExistingUserController::LoginAsArcKioskApp(const AccountId& account_id) {
-  login_performer_.reset(nullptr);
-  login_performer_.reset(new ChromeLoginPerformer(this));
-  login_performer_->LoginAsArcKioskAccount(account_id);
+  host_->StartArcKiosk(account_id);
 }
 
 void ExistingUserController::ConfigureAutoLogin() {

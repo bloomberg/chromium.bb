@@ -669,6 +669,8 @@ source_set("chromeos") {
     "login/app_launch_controller.h",
     "login/app_launch_signin_screen.cc",
     "login/app_launch_signin_screen.h",
+    "login/arc_kiosk_controller.cc",
+    "login/arc_kiosk_controller.h",
     "login/auth/auth_prewarmer.cc",
     "login/auth/auth_prewarmer.h",
     "login/auth/chrome_cryptohome_authenticator.cc",

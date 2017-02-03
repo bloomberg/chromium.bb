@@ -14,6 +14,8 @@
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "ui/gfx/native_widget_types.h"
 
+class AccountId;
+
 namespace chromeos {
 
 class AppLaunchController;
@@ -104,6 +106,9 @@ class LoginDisplayHost {
 
   // Starts the demo app launch.
   virtual void StartDemoAppLaunch() = 0;
+
+  // Starts ARC kiosk splash screen.
+  virtual void StartArcKiosk(const AccountId& account_id) = 0;
 
  protected:
   // Default LoginDisplayHost. Child class sets the reference.

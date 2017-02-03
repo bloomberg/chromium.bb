@@ -1286,8 +1286,10 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   // Kiosk apps has their own session initialization pipeline.
-  if (user_manager->IsLoggedInAsKioskApp())
+  if (user_manager->IsLoggedInAsKioskApp() ||
+      user_manager->IsLoggedInAsArcKioskApp()) {
     return false;
+  }
 
   if (start_session_type_ == PRIMARY_USER_SESSION) {
     UserFlow* user_flow = ChromeUserManager::Get()->GetCurrentUserFlow();

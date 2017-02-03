@@ -29,6 +29,7 @@ class DictionaryValue;
 
 namespace chromeos {
 class AppLaunchSplashScreenActor;
+class ArcKioskSplashScreenActor;
 class ArcTermsOfServiceScreenActor;
 class AutoEnrollmentCheckScreenActor;
 class BaseScreenHandler;
@@ -77,6 +78,7 @@ class OobeUI : public content::WebUIController,
   static const char kLockDisplay[];
   static const char kUserAddingDisplay[];
   static const char kAppLaunchSplashDisplay[];
+  static const char kArcKioskSplashDisplay[];
 
   class Observer {
    public:
@@ -109,6 +111,7 @@ class OobeUI : public content::WebUIController,
   AutoEnrollmentCheckScreenActor* GetAutoEnrollmentCheckScreenActor();
   SupervisedUserCreationScreenHandler* GetSupervisedUserCreationScreenActor();
   AppLaunchSplashScreenActor* GetAppLaunchSplashScreenActor();
+  ArcKioskSplashScreenActor* GetArcKioskSplashScreenActor();
   bool IsJSReady(const base::Closure& display_is_ready_callback);
   HIDDetectionView* GetHIDDetectionView();
   ControllerPairingScreenActor* GetControllerPairingScreenActor();
@@ -198,6 +201,7 @@ class OobeUI : public content::WebUIController,
   SupervisedUserCreationScreenHandler* supervised_user_creation_screen_actor_ =
       nullptr;
   AppLaunchSplashScreenActor* app_launch_splash_screen_actor_ = nullptr;
+  ArcKioskSplashScreenActor* arc_kiosk_splash_screen_actor_ = nullptr;
   ControllerPairingScreenActor* controller_pairing_screen_actor_ = nullptr;
   HostPairingScreenActor* host_pairing_screen_actor_ = nullptr;
   DeviceDisabledScreenActor* device_disabled_screen_actor_ = nullptr;

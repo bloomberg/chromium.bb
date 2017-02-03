@@ -34,6 +34,7 @@ const char* kScreenNames[] = {
     "wrong-hwid",                      // SCREEN_WRONG_HWID
     "auto-enrollment-check",           // SCREEN_AUTO_ENROLLMENT_CHECK
     "app-launch-splash",               // SCREEN_APP_LAUNCH_SPLASH
+    "arc-kiosk-splash",                // SCREEN_ARC_KIOSK_SPLASH
     "confirm-password",                // SCREEN_CONFIRM_PASSWORD
     "fatal-error",                     // SCREEN_FATAL_ERROR
     "controller-pairing",              // SCREEN_OOBE_CONTROLLER_PAIRING

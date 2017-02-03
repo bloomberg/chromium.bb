@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/arc_kiosk_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -81,13 +82,12 @@ namespace chromeos {
 
 namespace {
 
-const char* kKnownDisplayTypes[] = {
-  OobeUI::kOobeDisplay,
-  OobeUI::kLoginDisplay,
-  OobeUI::kLockDisplay,
-  OobeUI::kUserAddingDisplay,
-  OobeUI::kAppLaunchSplashDisplay
-};
+const char* kKnownDisplayTypes[] = {OobeUI::kOobeDisplay,
+                                    OobeUI::kLoginDisplay,
+                                    OobeUI::kLockDisplay,
+                                    OobeUI::kUserAddingDisplay,
+                                    OobeUI::kAppLaunchSplashDisplay,
+                                    OobeUI::kArcKioskSplashDisplay};
 
 OobeScreen kDimOverlayScreenIds[] = {
   OobeScreen::SCREEN_CONFIRM_PASSWORD,
@@ -201,6 +201,7 @@ const char OobeUI::kLoginDisplay[] = "login";
 const char OobeUI::kLockDisplay[] = "lock";
 const char OobeUI::kUserAddingDisplay[] = "user-adding";
 const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
+const char OobeUI::kArcKioskSplashDisplay[] = "arc-kiosk-splash";
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : WebUIController(web_ui) {
@@ -321,6 +322,11 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
                                                      error_screen);
   app_launch_splash_screen_actor_ = app_launch_splash_screen_handler.get();
   AddScreenHandler(std::move(app_launch_splash_screen_handler));
+
+  auto arc_kiosk_splash_screen_handler =
+      base::MakeUnique<ArcKioskSplashScreenHandler>();
+  arc_kiosk_splash_screen_actor_ = arc_kiosk_splash_screen_handler.get();
+  AddScreenHandler(std::move(arc_kiosk_splash_screen_handler));
 
   if (display_type_ == kOobeDisplay) {
     auto controller_pairing_handler =
@@ -479,6 +485,10 @@ void OobeUI::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
 AppLaunchSplashScreenActor*
       OobeUI::GetAppLaunchSplashScreenActor() {
   return app_launch_splash_screen_actor_;
+}
+
+ArcKioskSplashScreenActor* OobeUI::GetArcKioskSplashScreenActor() {
+  return arc_kiosk_splash_screen_actor_;
 }
 
 void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
