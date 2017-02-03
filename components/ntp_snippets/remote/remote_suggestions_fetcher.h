@@ -95,17 +95,11 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
   void FetchSnippets(const RequestParams& params,
                      SnippetsAvailableCallback callback);
 
-  std::string PersonalizationModeString() const;
-
   // Debug string representing the status/result of the last fetch attempt.
   const std::string& last_status() const { return last_status_; }
 
   // Returns the last JSON fetched from the server.
   const std::string& last_json() const { return last_fetch_json_; }
-
-  // Returns the personalization setting of the fetcher as used in tests.
-  // TODO(fhorschig): Reconsider these tests and remove this getter.
-  Personalization personalization() const { return personalization_; }
 
   // Returns the URL endpoint used by the fetcher.
   const GURL& fetch_url() const { return fetch_url_; }
@@ -168,9 +162,6 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
 
   bool DemandQuotaForRequest(bool interactive_request);
 
-  // Does the fetcher use authentication to get personalized results?
-  bool NeedsAuthentication() const;
-
   // Authentication for signed-in users.
   SigninManagerBase* signin_manager_;
   OAuth2TokenService* token_service_;
@@ -200,9 +191,6 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
 
   // API key to use for non-authenticated requests.
   const std::string api_key_;
-
-  // The variant of the fetching to use, loaded from variation parameters.
-  Personalization personalization_;
 
   // Allow for an injectable tick clock for testing.
   std::unique_ptr<base::TickClock> tick_clock_;

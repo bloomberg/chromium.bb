@@ -267,6 +267,8 @@ void ParseJsonDelayed(const std::string& json,
 
 }  // namespace
 
+// TODO(jkrcal): Add unit-tests with signin client being signed in (covering
+// sign-in / refresh tokens / access token code). crbug.com/688310
 class RemoteSuggestionsFetcherTestBase : public testing::Test {
  public:
   explicit RemoteSuggestionsFetcherTestBase(const GURL& gurl)
@@ -680,26 +682,6 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
   ASSERT_THAT(category.suggestions.size(), Eq(1u));
   EXPECT_THAT(category.suggestions[0]->url().spec(),
               Eq("http://localhost/foo2"));
-}
-
-// TODO(fhorschig): Check for behavioral changes instead of state.
-TEST_F(ChromeReaderSnippetsFetcherTest, PersonalizesDependingOnVariations) {
-  // Default setting should be both personalization options.
-  EXPECT_THAT(snippets_fetcher().personalization(), Eq(Personalization::kBoth));
-
-  SetVariationParam("fetching_personalization", "personal");
-  ResetSnippetsFetcher();
-  EXPECT_THAT(snippets_fetcher().personalization(),
-              Eq(Personalization::kPersonal));
-
-  SetVariationParam("fetching_personalization", "non_personal");
-  ResetSnippetsFetcher();
-  EXPECT_THAT(snippets_fetcher().personalization(),
-              Eq(Personalization::kNonPersonal));
-
-  SetVariationParam("fetching_personalization", "both");
-  ResetSnippetsFetcher();
-  EXPECT_THAT(snippets_fetcher().personalization(), Eq(Personalization::kBoth));
 }
 
 TEST_F(ChromeReaderSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {

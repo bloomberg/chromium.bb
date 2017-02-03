@@ -52,16 +52,8 @@ const char kContentSuggestionsApiScope[] =
 const char kSnippetsServerNonAuthorizedFormat[] = "%s?key=%s";
 const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 
-// Variation parameter for personalizing fetching of suggestions.
-const char kPersonalizationName[] = "fetching_personalization";
-
 // Variation parameter for chrome-content-suggestions backend.
 const char kContentSuggestionsBackend[] = "content_suggestions_backend";
-
-// Constants for possible values of the "fetching_personalization" parameter.
-const char kPersonalizationPersonalString[] = "personal";
-const char kPersonalizationNonPersonalString[] = "non_personal";
-const char kPersonalizationBothString[] = "both";  // the default value
 
 const int kFetchTimeHistogramResolution = 5;
 
@@ -119,8 +111,8 @@ Status FetchResultToStatus(FetchResult result) {
 }
 
 std::string GetFetchEndpoint() {
-  std::string endpoint = variations::GetVariationParamValue(
-      ntp_snippets::kStudyName, kContentSuggestionsBackend);
+  std::string endpoint = variations::GetVariationParamValueByFeature(
+      ntp_snippets::kArticleSuggestionsFeature, kContentSuggestionsBackend);
   return endpoint.empty() ? kContentSuggestionsServer : endpoint;
 }
 
@@ -133,7 +125,7 @@ bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
       endpoint != kContentSuggestionsStagingServer &&
       endpoint != kContentSuggestionsAlphaServer) {
     LOG(WARNING) << "Unknown value for " << kContentSuggestionsBackend << ": "
-                 << "assuming chromecontentsuggestions-style API";
+                 << endpoint << "; assuming chromecontentsuggestions-style API";
   }
   return true;
 }
@@ -277,21 +269,7 @@ RemoteSuggestionsFetcher::RemoteSuggestionsFetcher(
           pref_service,
           RequestThrottler::RequestType::
               CONTENT_SUGGESTION_FETCHER_ACTIVE_SUGGESTIONS_CONSUMER),
-      weak_ptr_factory_(this) {
-  std::string personalization = variations::GetVariationParamValue(
-      ntp_snippets::kStudyName, kPersonalizationName);
-  if (personalization == kPersonalizationNonPersonalString) {
-    personalization_ = Personalization::kNonPersonal;
-  } else if (personalization == kPersonalizationPersonalString) {
-    personalization_ = Personalization::kPersonal;
-  } else {
-    personalization_ = Personalization::kBoth;
-    LOG_IF(WARNING, !personalization.empty() &&
-                        personalization != kPersonalizationBothString)
-        << "Unknown value for " << kPersonalizationName << ": "
-        << personalization;
-  }
-}
+      weak_ptr_factory_(this) {}
 
 RemoteSuggestionsFetcher::~RemoteSuggestionsFetcher() {
   if (waiting_for_refresh_token_) {
@@ -326,17 +304,16 @@ void RemoteSuggestionsFetcher::FetchSnippets(
       .SetLanguageModel(language_model_)
       .SetParams(params)
       .SetParseJsonCallback(parse_json_callback_)
-      .SetPersonalization(personalization_)
       .SetTickClock(tick_clock_.get())
       .SetUrlRequestContextGetter(url_request_context_getter_)
       .SetUserClassifier(*user_classifier_);
 
-  if (NeedsAuthentication() && signin_manager_->IsAuthenticated()) {
+  if (signin_manager_->IsAuthenticated()) {
     // Signed-in: get OAuth token --> fetch suggestions.
     oauth_token_retried_ = false;
     pending_requests_.emplace(std::move(builder), std::move(callback));
     StartTokenRequest();
-  } else if (NeedsAuthentication() && signin_manager_->AuthInProgress()) {
+  } else if (signin_manager_->AuthInProgress()) {
     // Currently signing in: wait for auth to finish (the refresh token) -->
     //     get OAuth token --> fetch suggestions.
     pending_requests_.emplace(std::move(builder), std::move(callback));
@@ -598,27 +575,6 @@ bool RemoteSuggestionsFetcher::DemandQuotaForRequest(bool interactive_request) {
   }
   NOTREACHED();
   return false;
-}
-
-bool RemoteSuggestionsFetcher::NeedsAuthentication() const {
-  return (personalization_ == Personalization::kPersonal ||
-          personalization_ == Personalization::kBoth);
-}
-
-std::string RemoteSuggestionsFetcher::PersonalizationModeString() const {
-  switch (personalization_) {
-    case Personalization::kPersonal:
-      return "Only personalized";
-      break;
-    case Personalization::kBoth:
-      return "Both personalized and non-personalized";
-      break;
-    case Personalization::kNonPersonal:
-      return "Only non-personalized";
-      break;
-  }
-  NOTREACHED();
-  return std::string();
 }
 
 }  // namespace ntp_snippets

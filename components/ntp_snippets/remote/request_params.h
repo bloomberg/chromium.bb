@@ -16,9 +16,6 @@
 
 namespace ntp_snippets {
 
-// Enumeration listing all possible variants of dealing with personalization.
-enum class Personalization { kPersonal, kNonPersonal, kBoth };
-
 // Contains all parameters for fetching remote suggestions.
 struct RequestParams {
   RequestParams();

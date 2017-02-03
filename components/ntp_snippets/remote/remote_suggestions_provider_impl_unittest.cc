@@ -32,6 +32,7 @@
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/mock_category_ranker.h"
 #include "components/ntp_snippets/fake_content_suggestions_provider_observer.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
@@ -91,11 +92,11 @@ MATCHER_P(HasCode, code, "") {
 
 const base::Time::Exploded kDefaultCreationTime = {2015, 11, 4, 25, 13, 46, 45};
 const char kTestContentSuggestionsServerEndpoint[] =
-    "https://localunittest-chromecontentsuggestions-pa.googleapis.com/v1/"
+    "https://alpha-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/"
     "suggestions/fetch";
 const char kAPIKey[] = "fakeAPIkey";
 const char kTestContentSuggestionsServerWithAPIKey[] =
-    "https://localunittest-chromecontentsuggestions-pa.googleapis.com/v1/"
+    "https://alpha-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/"
     "suggestions/fetch?key=fakeAPIkey";
 
 const char kSuggestionUrl[] = "http://localhost/foobar";
@@ -368,8 +369,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   RemoteSuggestionsProviderImplTest()
       : params_manager_(ntp_snippets::kStudyName,
                         {{"content_suggestions_backend",
-                          kTestContentSuggestionsServerEndpoint},
-                         {"fetching_personalization", "non_personal"}}),
+                          kTestContentSuggestionsServerEndpoint}},
+                        {ntp_snippets::kArticleSuggestionsFeature.name}),
         fake_url_fetcher_factory_(
             /*default_factory=*/&failing_url_fetcher_factory_),
         test_url_(kTestContentSuggestionsServerWithAPIKey),
@@ -411,12 +412,10 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
 
     utils_.ResetSigninManager();
     auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
-        utils_.fake_signin_manager(), fake_token_service_.get(),
+        utils_.fake_signin_manager(), /*token_service=*/nullptr,
         std::move(request_context_getter), utils_.pref_service(), nullptr,
         base::Bind(&ParseJson), kAPIKey, &user_classifier_);
     suggestions_fetcher_ = suggestions_fetcher.get();
-
-    utils_.fake_signin_manager()->SignIn("foo@bar.com");
 
     auto image_fetcher = base::MakeUnique<NiceMock<MockImageFetcher>>();
 
@@ -539,7 +538,6 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   // Instantiation of factory automatically sets itself as URLFetcher's factory.
   net::FakeURLFetcherFactory fake_url_fetcher_factory_;
   const GURL test_url_;
-  std::unique_ptr<OAuth2TokenService> fake_token_service_;
   std::unique_ptr<CategoryRanker> category_ranker_;
   UserClassifier user_classifier_;
   std::unique_ptr<FakeContentSuggestionsProviderObserver> observer_;

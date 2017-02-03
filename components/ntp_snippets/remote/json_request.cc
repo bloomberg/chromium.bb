@@ -246,7 +246,6 @@ void JsonRequest::OnJsonError(const std::string& error) {
 
 JsonRequest::Builder::Builder()
     : fetch_api_(CHROME_READER_API),
-      personalization_(Personalization::kBoth),
       language_model_(nullptr) {}
 JsonRequest::Builder::Builder(JsonRequest::Builder&&) = default;
 JsonRequest::Builder::~Builder() = default;
@@ -300,12 +299,6 @@ JsonRequest::Builder& JsonRequest::Builder::SetParseJsonCallback(
   return *this;
 }
 
-JsonRequest::Builder& JsonRequest::Builder::SetPersonalization(
-    Personalization personalization) {
-  personalization_ = personalization;
-  return *this;
-}
-
 JsonRequest::Builder& JsonRequest::Builder::SetTickClock(
     base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
@@ -353,10 +346,6 @@ std::string JsonRequest::Builder::BuildBody() const {
   std::string user_locale = PosixLocaleFromBCP47Language(params_.language_code);
   switch (fetch_api_) {
     case CHROME_READER_API: {
-      auto content_params = base::MakeUnique<base::DictionaryValue>();
-      content_params->SetBoolean("only_return_personalized_results",
-                                 ReturnOnlyPersonalizedResults());
-
       auto content_restricts = base::MakeUnique<base::ListValue>();
       for (const auto* metadata : {"TITLE", "SNIPPET", "THUMBNAIL"}) {
         auto entry = base::MakeUnique<base::DictionaryValue>();
@@ -366,7 +355,6 @@ std::string JsonRequest::Builder::BuildBody() const {
       }
 
       auto local_scoring_params = base::MakeUnique<base::DictionaryValue>();
-      local_scoring_params->Set("content_params", std::move(content_params));
       local_scoring_params->Set("content_restricts",
                                 std::move(content_restricts));
 
@@ -429,7 +417,6 @@ std::string JsonRequest::Builder::BuildBody() const {
       }
       request->Set("topLanguages", std::move(language_list));
 
-      // TODO(sfiera): Support only_return_personalized_results.
       // TODO(sfiera): Support count_to_fetch.
       break;
     }

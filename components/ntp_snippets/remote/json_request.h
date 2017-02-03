@@ -24,7 +24,6 @@ class TickClock;
 }  // namespace base
 
 class FetchAPI;
-class Personalization;
 
 namespace ntp_snippets {
 class UserClassifier;
@@ -82,7 +81,6 @@ class JsonRequest : public net::URLFetcherDelegate {
     Builder& SetLanguageModel(const translate::LanguageModel* language_model);
     Builder& SetParams(const RequestParams& params);
     Builder& SetParseJsonCallback(ParseJSONCallback callback);
-    Builder& SetPersonalization(Personalization personalization);
     // The tick_clock borrowed from the fetcher will be injected into the
     // request. It will be used at build time and after the fetch returned.
     // It has to be alive until the request is destroyed.
@@ -111,11 +109,6 @@ class JsonRequest : public net::URLFetcherDelegate {
         const std::string& headers,
         const std::string& body) const;
 
-    bool ReturnOnlyPersonalizedResults() const {
-      return !obfuscated_gaia_id_.empty() &&
-             personalization_ == Personalization::kPersonal;
-    }
-
     void PrepareLanguages(
         translate::LanguageModel::LanguageInfo* ui_language,
         translate::LanguageModel::LanguageInfo* other_top_language) const;
@@ -126,7 +119,6 @@ class JsonRequest : public net::URLFetcherDelegate {
     FetchAPI fetch_api_;
     RequestParams params_;
     ParseJSONCallback parse_json_callback_;
-    Personalization personalization_;
     GURL url_;
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 

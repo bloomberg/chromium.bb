@@ -540,27 +540,15 @@ const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationServer[] = {
     {"content_suggestions_backend",
      ntp_snippets::kContentSuggestionsServer}};
 
-const FeatureEntry::FeatureParam
-    kNTPSnippetsFeatureVariationServerNonPersonalized[] = {
-        {"content_suggestions_backend",
-         ntp_snippets::kContentSuggestionsServer},
-        {"fetching_personalization", "non_personal"}};
-
 const FeatureEntry::FeatureVariation kNTPSnippetsFeatureVariations[] = {
     {"via ChromeReader", kNTPSnippetsFeatureVariationChromeReader,
      arraysize(kNTPSnippetsFeatureVariationChromeReader), nullptr},
     {"via content suggestion server (backed by ChromeReader)",
      kNTPSnippetsFeatureVariationServer,
      arraysize(kNTPSnippetsFeatureVariationServer), nullptr},
-    {"via content suggestion server (backed by ChromeReader, non-personalized)",
-     kNTPSnippetsFeatureVariationServerNonPersonalized,
-     arraysize(kNTPSnippetsFeatureVariationServerNonPersonalized), nullptr},
     {"via content suggestion server (backed by Google Now)",
      kNTPSnippetsFeatureVariationServer,
-     arraysize(kNTPSnippetsFeatureVariationServer), "3313279"},
-    {"via content suggestion server (backed by Google Now, non-personalized)",
-     kNTPSnippetsFeatureVariationServerNonPersonalized,
-     arraysize(kNTPSnippetsFeatureVariationServerNonPersonalized), "3313279"}};
+     arraysize(kNTPSnippetsFeatureVariationServer), "3313279"}};
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)

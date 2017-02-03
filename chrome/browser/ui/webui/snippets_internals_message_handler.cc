@@ -314,9 +314,6 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
   if (remote_suggestions_provider_) {
     const ntp_snippets::RemoteSuggestionsFetcher* fetcher =
         remote_suggestions_provider_->suggestions_fetcher_for_debugging();
-    // TODO(fhorschig): Read this string from variations directly.
-    SendString("switch-personalized", fetcher->PersonalizationModeString());
-
     SendString("switch-fetch-url", fetcher->fetch_url().spec());
     web_ui()->CallJavascriptFunctionUnsafe(
         "chrome.SnippetsInternals.receiveJson",
