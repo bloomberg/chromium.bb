@@ -165,7 +165,6 @@ views::View* HeaderView::avatar_icon() const {
 void HeaderView::OnImmersiveRevealStarted() {
   fullscreen_visible_fraction_ = 0;
   SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
   parent()->Layout();
 }
 

@@ -261,7 +261,6 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
 
   visible_fraction_ = 0;
   browser_view_->top_container()->SetPaintToLayer();
-  browser_view_->top_container()->layer()->SetFillsBoundsOpaquely(false);
   UpdateTabIndicators();
   LayoutBrowserRootView();
   CreateMashRevealWidget();
