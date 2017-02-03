@@ -2271,53 +2271,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
         self.assertEqual('Found header this file implements after other header.',
                          self.include_state.check_next_include_order(cpp_style._PRIMARY_HEADER, False, True))
 
-    def test_check_alphabetical_include_order(self):
-        self.assert_language_rules_check('foo.h',
-                                         '#include "a.h"\n'
-                                         '#include "c.h"\n'
-                                         '#include "b.h"\n',
-                                         'Alphabetical sorting problem.  [build/include_order] [4]')
-
-        self.assert_language_rules_check('foo.h',
-                                         '#include "a.h"\n'
-                                         '#include "b.h"\n'
-                                         '#include "c.h"\n',
-                                         '')
-
-        self.assert_language_rules_check('foo.h',
-                                         '#include <assert.h>\n'
-                                         '#include "bar.h"\n',
-                                         'Alphabetical sorting problem.  [build/include_order] [4]')
-
-        self.assert_language_rules_check('foo.h',
-                                         '#include "bar.h"\n'
-                                         '#include <assert.h>\n',
-                                         '')
-
-    def test_check_alphabetical_include_order_errors_reported_for_both_lines(self):
-        # If one of the two lines of out of order headers are filtered, the error should be
-        # reported on the other line.
-        self.assert_language_rules_check('foo.h',
-                                         '#include "a.h"\n'
-                                         '#include "c.h"\n'
-                                         '#include "b.h"\n',
-                                         'Alphabetical sorting problem.  [build/include_order] [4]',
-                                         lines_to_check=[2])
-
-        self.assert_language_rules_check('foo.h',
-                                         '#include "a.h"\n'
-                                         '#include "c.h"\n'
-                                         '#include "b.h"\n',
-                                         'Alphabetical sorting problem.  [build/include_order] [4]',
-                                         lines_to_check=[3])
-
-        # If no lines are filtered, the error should be reported only once.
-        self.assert_language_rules_check('foo.h',
-                                         '#include "a.h"\n'
-                                         '#include "c.h"\n'
-                                         '#include "b.h"\n',
-                                         'Alphabetical sorting problem.  [build/include_order] [4]')
-
     def test_check_line_break_after_own_header(self):
         self.assert_language_rules_check('foo.cpp',
                                          '#include "foo.h"\n'
@@ -2342,38 +2295,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
                                          '#endif"\n'
                                          '#include "bar.h"\n',  # No flag because previous is in preprocessor section
                                          '')
-
-        self.assert_language_rules_check('foo.cpp',
-                                         '#include "foo.h"\n'
-                                         '\n'
-                                         '#ifdef BAZ\n'
-                                         '#include "baz.h"\n'
-                                         '#endif"\n'
-                                         '#include "bar.h"\n'
-                                         '#include "a.h"\n',  # Should still flag this.
-                                         'Alphabetical sorting problem.  [build/include_order] [4]')
-
-        self.assert_language_rules_check('foo.cpp',
-                                         '#include "foo.h"\n'
-                                         '\n'
-                                         '#ifdef BAZ\n'
-                                         '#include "baz.h"\n'
-                                         '#include "bar.h"\n'  # Should still flag this
-                                         '#endif"\n',
-                                         'Alphabetical sorting problem.  [build/include_order] [4]')
-
-        self.assert_language_rules_check('foo.cpp',
-                                         '#include "foo.h"\n'
-                                         '\n'
-                                         '#ifdef BAZ\n'
-                                         '#include "baz.h"\n'
-                                         '#endif"\n'
-                                         '#ifdef FOOBAR\n'
-                                         '#include "foobar.h"\n'
-                                         '#endif"\n'
-                                         '#include "bar.h"\n'
-                                         '#include "a.h"\n',  # Should still flag this.
-                                         'Alphabetical sorting problem.  [build/include_order] [4]')
 
         # Check that after an already included error, the sorting rules still work.
         self.assert_language_rules_check('foo.cpp',
@@ -2417,30 +2338,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
                                          '')
 
         os.path.isfile = self.os_path_isfile_orig
-
-    def test_public_primary_header(self):
-        # System header is not considered a primary header.
-        self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
-                                         '#include <other/foo.h>\n'
-                                         '\n'
-                                         '#include "a.h"\n',
-                                         'Alphabetical sorting problem.  [build/include_order] [4]')
-
-        # ...except that it starts with public/.
-        self.assert_language_rules_check('foo.cpp',
-                                         '#include <public/foo.h>\n'
-                                         '\n'
-                                         '#include "a.h"\n',
-                                         '')
-
-        # Even if it starts with public/ its base part must match with the source file name.
-        self.assert_language_rules_check('foo.cpp',
-                                         '#include "config.h"\n'
-                                         '#include <public/foop.h>\n'
-                                         '\n'
-                                         '#include "a.h"\n',
-                                         'Alphabetical sorting problem.  [build/include_order] [4]')
 
     def test_check_wtf_includes(self):
         self.assert_language_rules_check('foo.cpp',
@@ -2494,14 +2391,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
                          classify_include('PrefixFooCustom.cpp',
                                           'Foo.h',
                                           False, include_state))
-        self.assertEqual(cpp_style._MOC_HEADER,
-                         classify_include('foo.cpp',
-                                          'foo.moc',
-                                          False, include_state))
-        self.assertEqual(cpp_style._MOC_HEADER,
-                         classify_include('foo.cpp',
-                                          'moc_foo.cpp',
-                                          False, include_state))
         # <public/foo.h> must be considered as primary even if is_system is True.
         self.assertEqual(cpp_style._PRIMARY_HEADER,
                          classify_include('foo/foo.cpp',
@@ -2515,11 +2404,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
                          classify_include('foo.cpp',
                                           'public/foop.h',
                                           True, include_state))
-        # Qt private APIs use _p.h suffix.
-        self.assertEqual(cpp_style._PRIMARY_HEADER,
-                         classify_include('foo.cpp',
-                                          'foo_p.h',
-                                          False, include_state))
         # Tricky example where both includes might be classified as primary.
         self.assert_language_rules_check('ScrollbarThemeWince.cpp',
                                          '#include "ScrollbarThemeWince.h"\n'
@@ -2533,11 +2417,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
                                          'Found header this file implements after a header this file implements.'
                                          ' Should be: primary header, blank line, and then alphabetically sorted.'
                                          '  [build/include_order] [4]')
-        self.assert_language_rules_check('ResourceHandleWin.cpp',
-                                         '#include "ResourceHandle.h"\n'
-                                         '\n'
-                                         '#include "ResourceHandleWin.h"\n',
-                                         '')
 
     def test_try_drop_common_suffixes(self):
         self.assertEqual('foo/foo', cpp_style._drop_common_suffixes('foo/foo-inl.h'))

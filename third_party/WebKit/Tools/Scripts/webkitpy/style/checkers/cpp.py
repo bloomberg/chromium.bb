@@ -118,7 +118,6 @@ _DEPRECATED_MACROS = [
 # _IncludeState.check_next_include_order().
 _PRIMARY_HEADER = 0
 _OTHER_HEADER = 1
-_MOC_HEADER = 2
 
 
 # The regexp compilation caching is inlined in all regexp functions for
@@ -307,7 +306,6 @@ class _IncludeState(dict):
     _TYPE_NAMES = {
         _PRIMARY_HEADER: 'header this file implements',
         _OTHER_HEADER: 'other header',
-        _MOC_HEADER: 'moc file',
     }
     _SECTION_NAMES = {
         _INITIAL_SECTION: "... nothing.",
@@ -340,8 +338,6 @@ class _IncludeState(dict):
         """
         if header_type == _PRIMARY_HEADER and file_is_header:
             return 'Header file should not contain itself.'
-        if header_type == _MOC_HEADER:
-            return ''
 
         error_message = ''
         if self._section != self._OTHER_SECTION:
@@ -2439,7 +2435,6 @@ def check_style(clean_lines, line_number, file_extension, class_state, file_stat
     check_enum_casing(clean_lines, line_number, enum_state, error)
 
 
-_RE_PATTERN_INCLUDE_NEW_STYLE = re.compile(r'#include +"[^/]+\.h"')
 _RE_PATTERN_INCLUDE = re.compile(r'^\s*#\s*include\s*([<"])([^>"]*)[>"].*$')
 # Matches the first component of a filename delimited by -s and _s. That is:
 #  _RE_FIRST_COMPONENT.match('foo').group(0) == 'foo'
@@ -2505,13 +2500,6 @@ def _classify_include(filename, include, is_system, include_state):
     if filename.endswith('.h') and filename != include:
         return _OTHER_HEADER
 
-    # Qt's moc files do not follow the naming and ordering rules, so they should be skipped
-    if include.startswith('moc_') and include.endswith('.cpp'):
-        return _MOC_HEADER
-
-    if include.endswith('.moc'):
-        return _MOC_HEADER
-
     # If the target file basename starts with the include we're checking
     # then we consider it the primary header.
     target_base = FileInfo(filename).base_name()
@@ -2521,19 +2509,11 @@ def _classify_include(filename, include, is_system, include_state):
     if not include_state.visited_primary_section():
         if target_base.find(include_base) != -1:
             return _PRIMARY_HEADER
-        # Qt private APIs use _p.h suffix.
-        if include_base.find(target_base) != -1 and include_base.endswith('_p'):
-            return _PRIMARY_HEADER
 
     # If we already encountered a primary header, perform a strict comparison.
     # In case the two filename bases are the same then the above lenient check
     # probably was a false positive.
     elif include_state.visited_primary_section() and target_base == include_base:
-        if include == "ResourceHandleWin.h":
-            # FIXME: Thus far, we've only seen one example of these, but if we
-            # start to see more, please consider generalizing this check
-            # somehow.
-            return _OTHER_HEADER
         return _PRIMARY_HEADER
 
     return _OTHER_HEADER
@@ -2625,26 +2605,6 @@ def check_include_line(filename, file_extension, clean_lines, line_number, inclu
         if not is_blank_line(next_line):
             error(line_number, 'build/include_order', 4,
                   'You should add a blank line after implementation file\'s own header.')
-
-    # Check to make sure all headers besides the primary header are
-    # alphabetically sorted. Skip Qt's moc files.
-    if not error_message and header_type == _OTHER_HEADER:
-        previous_line_number = line_number - 1
-        previous_line = clean_lines.lines[previous_line_number]
-        previous_match = _RE_PATTERN_INCLUDE.search(previous_line)
-        while (not previous_match and previous_line_number > 0
-               and not search(r'\A(#if|#ifdef|#ifndef|#else|#elif|#endif)', previous_line)):
-            previous_line_number -= 1
-            previous_line = clean_lines.lines[previous_line_number]
-            previous_match = _RE_PATTERN_INCLUDE.search(previous_line)
-        if previous_match:
-            previous_header_type = include_state.header_types[previous_line_number]
-            if previous_header_type == _OTHER_HEADER and previous_line.strip() > line.strip():
-                # This type of error is potentially a problem with this line or the previous one,
-                # so if the error is filtered for one line, report it for the next. This is so that
-                # we properly handle patches, for which only modified lines produce errors.
-                if not error(line_number - 1, 'build/include_order', 4, 'Alphabetical sorting problem.'):
-                    error(line_number, 'build/include_order', 4, 'Alphabetical sorting problem.')
 
     if error_message:
         if file_extension == 'h':
