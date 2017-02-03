@@ -74,12 +74,12 @@ class CIPDApi(recipe_api.RecipeApi):
         [
           self._cipd_executable,
           'pkg-build',
-          '--in', input_dir,
-          '--name', package_name,
-          '--out', output_package,
-          '--json-output', self.m.json.output(),
+          '-in', input_dir,
+          '-name', package_name,
+          '-out', output_package,
+          '-json-output', self.m.json.output(),
         ] + (
-          ['--install-mode', install_mode] if install_mode else []
+          ['-install-mode', install_mode] if install_mode else []
         ),
         step_test_data=lambda: self.test_api.example_build(package_name)
     )
@@ -90,16 +90,16 @@ class CIPDApi(recipe_api.RecipeApi):
     cmd = [
       self._cipd_executable,
       'pkg-register', package_path,
-      '--json-output', self.m.json.output(),
+      '-json-output', self.m.json.output(),
     ]
     if self._cipd_credentials:
-      cmd.extend(['--service-account-json', self._cipd_credentials])
+      cmd.extend(['-service-account-json', self._cipd_credentials])
     if refs:
       for ref in refs:
-        cmd.extend(['--ref', ref])
+        cmd.extend(['-ref', ref])
     if tags:
       for tag, value in sorted(tags.items()):
-        cmd.extend(['--tag', '%s:%s' % (tag, value)])
+        cmd.extend(['-tag', '%s:%s' % (tag, value)])
     return self.m.step(
         'register %s' % package_name,
         cmd,
@@ -115,17 +115,17 @@ class CIPDApi(recipe_api.RecipeApi):
     cmd = [
       self._cipd_executable,
       'create',
-      '--pkg-def', pkg_def,
-      '--json-output', self.m.json.output(),
+      '-pkg-def', pkg_def,
+      '-json-output', self.m.json.output(),
     ]
     if self._cipd_credentials:
-      cmd.extend(['--service-account-json', self._cipd_credentials])
+      cmd.extend(['-service-account-json', self._cipd_credentials])
     if refs:
       for ref in refs:
-        cmd.extend(['--ref', ref])
+        cmd.extend(['-ref', ref])
     if tags:
       for tag, value in sorted(tags.items()):
-        cmd.extend(['--tag', '%s:%s' % (tag, value)])
+        cmd.extend(['-tag', '%s:%s' % (tag, value)])
     return self.m.step('create %s' % self.m.path.basename(pkg_def), cmd)
 
   def ensure(self, root, packages):
@@ -142,17 +142,17 @@ class CIPDApi(recipe_api.RecipeApi):
 
     package_list = ['%s %s' % (name, version)
                     for name, version in sorted(packages.items())]
-    list_data = self.m.raw_io.input('\n'.join(package_list))
+    ensure_file = self.m.raw_io.input('\n'.join(package_list))
     cmd = [
       self._cipd_executable,
       'ensure',
-      '--root', root,
-      '--list', list_data,
-      '--json-output', self.m.json.output(),
+      '-root', root,
+      '-ensure-file', ensure_file,
+      '-json-output', self.m.json.output(),
     ]
     if self._cipd_credentials:
-      cmd.extend(['--service-account-json', self._cipd_credentials])
-    return self.m.step(
+      cmd.extend(['-service-account-json', self._cipd_credentials])
+    self.m.step(
         'ensure_installed', cmd,
         step_test_data=lambda: self.test_api.example_ensure(packages)
     )
@@ -163,13 +163,13 @@ class CIPDApi(recipe_api.RecipeApi):
     cmd = [
       self._cipd_executable,
       'set-tag', package_name,
-      '--version', version,
-      '--json-output', self.m.json.output(),
+      '-version', version,
+      '-json-output', self.m.json.output(),
     ]
     if self._cipd_credentials:
-      cmd.extend(['--service-account-json', self._cipd_credentials])
+      cmd.extend(['-service-account-json', self._cipd_credentials])
     for tag, value in sorted(tags.items()):
-      cmd.extend(['--tag', '%s:%s' % (tag, value)])
+      cmd.extend(['-tag', '%s:%s' % (tag, value)])
 
     return self.m.step(
       'cipd set-tag %s' % package_name,
@@ -185,13 +185,13 @@ class CIPDApi(recipe_api.RecipeApi):
     cmd = [
       self._cipd_executable,
       'set-ref', package_name,
-      '--version', version,
-      '--json-output', self.m.json.output(),
+      '-version', version,
+      '-json-output', self.m.json.output(),
     ]
     if self._cipd_credentials:
-      cmd.extend(['--service-account-json', self._cipd_credentials])
+      cmd.extend(['-service-account-json', self._cipd_credentials])
     for r in refs:
-      cmd.extend(['--ref', r])
+      cmd.extend(['-ref', r])
 
     return self.m.step(
       'cipd set-ref %s' % package_name,
@@ -208,11 +208,11 @@ class CIPDApi(recipe_api.RecipeApi):
     cmd = [
       self._cipd_executable,
       'search', package_name,
-      '--tag', tag,
-      '--json-output', self.m.json.output(),
+      '-tag', tag,
+      '-json-output', self.m.json.output(),
     ]
     if self._cipd_credentials:
-      cmd.extend(['--service-account-json', self._cipd_credentials])
+      cmd.extend(['-service-account-json', self._cipd_credentials])
 
     return self.m.step(
       'cipd search %s %s' % (package_name, tag),
@@ -227,11 +227,11 @@ class CIPDApi(recipe_api.RecipeApi):
     cmd = [
       self._cipd_executable,
       'describe', package_name,
-      '--version', version,
-      '--json-output', self.m.json.output(),
+      '-version', version,
+      '-json-output', self.m.json.output(),
     ]
     if self._cipd_credentials:
-      cmd.extend(['--service-account-json', self._cipd_credentials])
+      cmd.extend(['-service-account-json', self._cipd_credentials])
 
     return self.m.step(
       'cipd describe %s' % package_name,
