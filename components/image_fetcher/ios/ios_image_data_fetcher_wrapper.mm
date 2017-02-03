@@ -86,33 +86,49 @@ IOSImageDataFetcherWrapper::~IOSImageDataFetcherWrapper() {}
 void IOSImageDataFetcherWrapper::FetchImageDataWebpDecoded(
     const GURL& image_url,
     IOSImageDataFetcherCallback callback) {
+  image_data_fetcher_.FetchImageData(image_url,
+                                     CallbackForImageDataFetcher(callback));
+}
+
+void IOSImageDataFetcherWrapper::FetchImageDataWebpDecoded(
+    const GURL& image_url,
+    IOSImageDataFetcherCallback callback,
+    const std::string& referrer,
+    net::URLRequest::ReferrerPolicy referrer_policy) {
   DCHECK(callback);
 
-  scoped_refptr<base::TaskRunner> task_runner = task_runner_;
-  ImageDataFetcher::ImageDataFetcherCallback local_callback =
-      base::BindBlockArc(^(const std::string& image_data) {
-        // Create a NSData from the returned data and notify the callback.
-        NSData* data =
-            [NSData dataWithBytes:image_data.data() length:image_data.size()];
-
-        if (data.length < 12 ||
-            image_data.compare(0, 4, kWEBPFirstMagicPattern) != 0 ||
-            image_data.compare(8, 4, kWEBPSecondMagicPattern) != 0) {
-          callback(data);
-          return;
-        }
-
-        // The image is a webp image.
-        base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE,
-                                         base::Bind(&DecodeWebpImage, data),
-                                         base::BindBlockArc(callback));
-      });
-  image_data_fetcher_.FetchImageData(image_url, local_callback);
+  image_data_fetcher_.FetchImageData(image_url,
+                                     CallbackForImageDataFetcher(callback),
+                                     referrer, referrer_policy);
 }
 
 void IOSImageDataFetcherWrapper::SetDataUseServiceName(
     DataUseServiceName data_use_service_name) {
   image_data_fetcher_.SetDataUseServiceName(data_use_service_name);
+}
+
+ImageDataFetcher::ImageDataFetcherCallback
+IOSImageDataFetcherWrapper::CallbackForImageDataFetcher(
+    IOSImageDataFetcherCallback callback) {
+  scoped_refptr<base::TaskRunner> task_runner = task_runner_;
+
+  return base::BindBlockArc(^(const std::string& image_data) {
+    // Create a NSData from the returned data and notify the callback.
+    NSData* data =
+        [NSData dataWithBytes:image_data.data() length:image_data.size()];
+
+    if (data.length < 12 ||
+        image_data.compare(0, 4, kWEBPFirstMagicPattern) != 0 ||
+        image_data.compare(8, 4, kWEBPSecondMagicPattern) != 0) {
+      callback(data);
+      return;
+    }
+
+    // The image is a webp image.
+    base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE,
+                                     base::Bind(&DecodeWebpImage, data),
+                                     base::BindBlockArc(callback));
+  });
 }
 
 }  // namespace image_fetcher

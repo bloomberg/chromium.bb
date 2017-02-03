@@ -36,6 +36,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_switches.h"
@@ -169,7 +170,6 @@
 #import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/active_state_manager.h"
-#include "ios/web/public/image_fetcher/image_data_fetcher.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer_util.h"
@@ -447,7 +447,7 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
   base::scoped_nsprotocol<UIView<VoiceSearchBar>*> _voiceSearchBar;
 
   // The image fetcher used to save images and perform image-based searches.
-  std::unique_ptr<web::ImageDataFetcher> _imageFetcher;
+  std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> _imageFetcher;
 
   // Card side swipe view.
   base::scoped_nsobject<CardSideSwipeView> _sideSwipeView;
@@ -905,8 +905,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     DCHECK(factory);
     _propertyReleaser_BrowserViewController.Init(self,
                                                  [BrowserViewController class]);
-    _imageFetcher = base::MakeUnique<web::ImageDataFetcher>(
-        web::WebThread::GetBlockingPool());
     _dependencyFactory.reset([factory retain]);
     _nativeControllersForTabIDs.reset(
         [[NSMapTable strongToWeakObjectsMapTable] retain]);
@@ -1658,7 +1656,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   [self registerForNotifications];
 
-  _imageFetcher->SetRequestContextGetter(_browserState->GetRequestContext());
+  _imageFetcher = base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
+      _browserState->GetRequestContext(), web::WebThread::GetBlockingPool());
   _dominantColorCache.reset([[NSMutableDictionary alloc] init]);
 
   // Register for bookmark changed notification (BookmarkModel may be null
@@ -3054,15 +3053,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                   referrer:(const web::Referrer)referrer {
   DCHECK(url.is_valid());
   base::WeakNSObject<BrowserViewController> weakSelf(self);
-  web::ImageFetchedCallback callback =
-      ^(const GURL& original_url, int response_code, NSData* data) {
-        GURL originalURL(original_url.spec());
-        DCHECK(data);
-        dispatch_async(dispatch_get_main_queue(), ^{
-          [weakSelf searchByImageData:data atURL:originalURL];
-        });
-      };
-  _imageFetcher->StartDownload(
+  const GURL image_source_url = url;
+  image_fetcher::IOSImageDataFetcherCallback callback = ^(NSData* data) {
+    DCHECK(data);
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf searchByImageData:data atURL:image_source_url];
+    });
+  };
+  _imageFetcher->FetchImageDataWebpDecoded(
       url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
       web::PolicyForNavigation(url, referrer));
 }
@@ -3112,13 +3110,12 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
               referrer:(const web::Referrer&)referrer {
   DCHECK(url.is_valid());
 
-  web::ImageFetchedCallback callback =
-      ^(const GURL& original_url, int response_code, NSData* data) {
-        DCHECK(data);
+  image_fetcher::IOSImageDataFetcherCallback callback = ^(NSData* data) {
+    DCHECK(data);
 
-        [self managePermissionAndSaveImage:data];
-      };
-  _imageFetcher->StartDownload(
+    [self managePermissionAndSaveImage:data];
+  };
+  _imageFetcher->FetchImageDataWebpDecoded(
       url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
       web::PolicyForNavigation(url, referrer));
 }

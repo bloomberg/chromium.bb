@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -42,6 +43,12 @@ class ImageDataFetcher : public net::URLFetcherDelegate {
   // of an error an empty string is passed to the callback.
   void FetchImageData(const GURL& image_url,
                       const ImageDataFetcherCallback& callback);
+
+  // Like above, but lets the caller set a referrer.
+  void FetchImageData(const GURL& image_url,
+                      const ImageDataFetcherCallback& callback,
+                      const std::string& referrer,
+                      net::URLRequest::ReferrerPolicy referrer_policy);
 
  private:
   struct ImageDataFetcherRequest;

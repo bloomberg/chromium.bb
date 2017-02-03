@@ -46,16 +46,28 @@ void ImageDataFetcher::SetDataUseServiceName(
 }
 
 void ImageDataFetcher::FetchImageData(
-    const GURL& url, const ImageDataFetcherCallback& callback) {
-  std::unique_ptr<net::URLFetcher> url_fetcher =
-      net::URLFetcher::Create(
-          next_url_fetcher_id_++, url, net::URLFetcher::GET, this);
+    const GURL& image_url,
+    const ImageDataFetcherCallback& callback) {
+  FetchImageData(
+      image_url, callback, /*referrer=*/std::string(),
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
+}
+
+void ImageDataFetcher::FetchImageData(
+    const GURL& image_url,
+    const ImageDataFetcherCallback& callback,
+    const std::string& referrer,
+    net::URLRequest::ReferrerPolicy referrer_policy) {
+  std::unique_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
+      next_url_fetcher_id_++, image_url, net::URLFetcher::GET, this);
 
   DataUseUserData::AttachToFetcher(url_fetcher.get(), data_use_service_name_);
 
   std::unique_ptr<ImageDataFetcherRequest> request(
       new ImageDataFetcherRequest(callback, std::move(url_fetcher)));
   request->url_fetcher->SetRequestContext(url_request_context_getter_.get());
+  request->url_fetcher->SetReferrer(referrer);
+  request->url_fetcher->SetReferrerPolicy(referrer_policy);
   request->url_fetcher->Start();
 
   pending_requests_[request->url_fetcher.get()] = std::move(request);
