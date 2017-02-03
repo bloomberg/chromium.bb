@@ -10833,7 +10833,8 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
 }
 
 // Makes sure that mouse hover over an overlay scrollbar doesn't activate
-// elements below unless the scrollbar is faded out.
+// elements below(except the Element that owns the scrollbar) unless the
+// scrollbar is faded out.
 TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initialize(true, nullptr, nullptr, nullptr,
@@ -10993,6 +10994,91 @@ TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
   // Custom not change the DIV :hover
   EXPECT_EQ(document->hoverNode(), scrollbarDiv);
   EXPECT_EQ(hitTestResult.scrollbar()->hoveredPart(), ScrollbarPart::ThumbPart);
+}
+
+// Makes sure that mouse hover over a scrollbar also hover the element owns the
+// scrollbar.
+TEST_F(WebFrameTest, MouseOverScrollbarAndParentElement) {
+  registerMockedHttpURLLoad("scrollbar-and-element-hover.html");
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
+  WebViewImpl* webView = webViewHelper.initializeAndLoad(
+      m_baseURL + "scrollbar-and-element-hover.html");
+
+  webViewHelper.resize(WebSize(200, 200));
+
+  webView->updateAllLifecyclePhases();
+
+  Document* document = toLocalFrame(webView->page()->mainFrame())->document();
+
+  Element* parentDiv = document->getElementById("parent");
+  Element* childDiv = document->getElementById("child");
+  EXPECT_TRUE(parentDiv);
+  EXPECT_TRUE(childDiv);
+
+  ScrollableArea* scrollableArea =
+      toLayoutBox(parentDiv->layoutObject())->getScrollableArea();
+
+  EXPECT_TRUE(scrollableArea->verticalScrollbar());
+  EXPECT_FALSE(scrollableArea->verticalScrollbar()->isOverlayScrollbar());
+  EXPECT_TRUE(scrollableArea->verticalScrollbar()->theme().isMockTheme());
+
+  // Ensure hittest only has DIV.
+  HitTestResult hitTestResult = webView->coreHitTestResultAt(WebPoint(1, 1));
+
+  EXPECT_TRUE(hitTestResult.innerElement());
+  EXPECT_FALSE(hitTestResult.scrollbar());
+
+  // Mouse over DIV.
+  WebMouseEvent mouseMoveOverDiv(
+      WebInputEvent::MouseMove, WebFloatPoint(1, 1), WebFloatPoint(1, 1),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveOverDiv.setFrameScale(1);
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveOverDiv, Vector<WebMouseEvent>());
+
+  // DIV :hover.
+  EXPECT_EQ(document->hoverNode(), parentDiv);
+
+  // Ensure hittest has DIV and scrollbar.
+  hitTestResult = webView->coreHitTestResultAt(WebPoint(175, 5));
+
+  EXPECT_TRUE(hitTestResult.innerElement());
+  EXPECT_TRUE(hitTestResult.scrollbar());
+  EXPECT_FALSE(hitTestResult.scrollbar()->isCustomScrollbar());
+  EXPECT_TRUE(hitTestResult.scrollbar()->enabled());
+
+  // Mouse over scrollbar.
+  WebMouseEvent mouseMoveOverDivAndScrollbar(
+      WebInputEvent::MouseMove, WebFloatPoint(175, 5), WebFloatPoint(175, 5),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveOverDivAndScrollbar.setFrameScale(1);
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveOverDivAndScrollbar, Vector<WebMouseEvent>());
+
+  // Not change the DIV :hover.
+  EXPECT_EQ(document->hoverNode(), parentDiv);
+
+  // Disable the Scrollbar by remove the childDiv.
+  childDiv->remove();
+  webView->updateAllLifecyclePhases();
+
+  // Ensure hittest has DIV and no scrollbar.
+  hitTestResult = webView->coreHitTestResultAt(WebPoint(175, 5));
+
+  EXPECT_TRUE(hitTestResult.innerElement());
+  EXPECT_TRUE(hitTestResult.scrollbar());
+  EXPECT_FALSE(hitTestResult.scrollbar()->enabled());
+  EXPECT_LT(hitTestResult.innerElement()->clientWidth(), 180);
+
+  // Mouse over disabled scrollbar.
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveOverDivAndScrollbar, Vector<WebMouseEvent>());
+
+  // Not change the DIV :hover.
+  EXPECT_EQ(document->hoverNode(), parentDiv);
 }
 
 TEST_F(WebFrameTest, MouseReleaseUpdatesScrollbarHoveredPart) {
