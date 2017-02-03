@@ -9,6 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/message_center/notification.h"
@@ -68,7 +71,7 @@ class TestCustomView : public views::View {
   }
   bool OnKeyPressed(const ui::KeyEvent& event) override {
     ++keyboard_event_count_;
-    return true;
+    return false;
   }
 
   int mouse_event_count() const { return mouse_event_count_; }
@@ -153,6 +156,20 @@ class TestMessageCenterController : public MessageCenterController {
   DISALLOW_COPY_AND_ASSIGN(TestMessageCenterController);
 };
 
+class TestTextInputClient : public ui::DummyTextInputClient {
+ public:
+  TestTextInputClient() : ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT) {}
+
+  ui::TextInputType GetTextInputType() const override { return type_; }
+
+  void set_text_input_type(ui::TextInputType type) { type_ = type; }
+
+ private:
+  ui::TextInputType type_ = ui::TEXT_INPUT_TYPE_NONE;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
+};
+
 }  // namespace
 
 class CustomNotificationViewTest : public views::ViewsTestBase {
@@ -204,6 +221,13 @@ class CustomNotificationViewTest : public views::ViewsTestBase {
         ui::ET_MOUSE_RELEASED, point, point, ui::EventTimeForNow(),
         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     widget()->OnMouseEvent(&released_event);
+  }
+
+  void PerformKeyEvents(ui::KeyboardCode code) {
+    ui::KeyEvent event1 = ui::KeyEvent(ui::ET_KEY_PRESSED, code, ui::EF_NONE);
+    widget()->OnKeyEvent(&event1);
+    ui::KeyEvent event2 = ui::KeyEvent(ui::ET_KEY_RELEASED, code, ui::EF_NONE);
+    widget()->OnKeyEvent(&event2);
   }
 
   void KeyPress(ui::KeyboardCode key_code) {
@@ -308,5 +332,41 @@ TEST_F(CustomNotificationViewTest, SlideOutPinned) {
 }
 
 #endif // defined(OS_CHROMEOS)
+
+TEST_F(CustomNotificationViewTest, PressBackspaceKey) {
+  std::string notification_id = notification()->id();
+  custom_view()->RequestFocus();
+
+  ui::InputMethod* input_method = custom_view()->GetInputMethod();
+  ASSERT_TRUE(input_method);
+  TestTextInputClient text_input_client;
+  input_method->SetFocusedTextInputClient(&text_input_client);
+  ASSERT_EQ(&text_input_client, input_method->GetTextInputClient());
+
+  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  PerformKeyEvents(ui::VKEY_BACK);
+  EXPECT_TRUE(controller()->IsRemoved(notification_id));
+
+  input_method->SetFocusedTextInputClient(nullptr);
+}
+
+TEST_F(CustomNotificationViewTest, PressBackspaceKeyOnEditBox) {
+  std::string notification_id = notification()->id();
+  custom_view()->RequestFocus();
+
+  ui::InputMethod* input_method = custom_view()->GetInputMethod();
+  ASSERT_TRUE(input_method);
+  TestTextInputClient text_input_client;
+  input_method->SetFocusedTextInputClient(&text_input_client);
+  ASSERT_EQ(&text_input_client, input_method->GetTextInputClient());
+
+  text_input_client.set_text_input_type(ui::TEXT_INPUT_TYPE_TEXT);
+
+  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  PerformKeyEvents(ui::VKEY_BACK);
+  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+
+  input_method->SetFocusedTextInputClient(nullptr);
+}
 
 }  // namespace message_center

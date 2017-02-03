@@ -40,6 +40,7 @@ class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
   bool HasFocus() const override;
   void RequestFocus() override;
   void OnPaint(gfx::Canvas* canvas) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
  private:
   friend class CustomNotificationViewTest;

@@ -6,6 +6,9 @@
 
 #include <algorithm>
 
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/views/background.h"
@@ -120,6 +123,25 @@ void CustomNotificationView::OnPaint(gfx::Canvas* canvas) {
   if (contents_view_ && contents_view_->IsFocusable())
     views::Painter::PaintFocusPainter(contents_view_, canvas,
                                       focus_painter_.get());
+}
+
+bool CustomNotificationView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (contents_view_) {
+    ui::InputMethod* input_method = contents_view_->GetInputMethod();
+    if (input_method) {
+      ui::TextInputClient* text_input_client =
+          input_method->GetTextInputClient();
+      if (text_input_client &&
+          text_input_client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
+        // If the focus is in an edit box, we skip the special key handling for
+        // back space and return keys. So that these key events are sent to the
+        // arc container correctly without being handled by the message center.
+        return false;
+      }
+    }
+  }
+
+  return MessageView::OnKeyPressed(event);
 }
 
 }  // namespace message_center
