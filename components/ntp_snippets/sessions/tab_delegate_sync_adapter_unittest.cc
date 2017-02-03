@@ -57,11 +57,12 @@ class MockOpenTabsUIDelegate : public OpenTabsUIDelegate {
 
 class TabDelegateSyncAdapterTest : public Test {
  public:
-  TabDelegateSyncAdapterTest() : adapter_(&service_) {
+  TabDelegateSyncAdapterTest() : adapter_(service()) {
     adapter_.SubscribeForForeignTabChange(base::Bind(
         &TabDelegateSyncAdapterTest::OnChange, base::Unretained(this)));
   }
 
+  syncer::SyncService* service() { return &service_; }
   SyncServiceObserver* observer() { return &adapter_; }
 
   void SetHasOpenTabs(bool is_enabled) {
@@ -85,28 +86,28 @@ class TabDelegateSyncAdapterTest : public Test {
 // having open tabs.
 TEST_F(TabDelegateSyncAdapterTest, CallbackCount) {
   ASSERT_EQ(0, CallbackCount());
-  observer()->OnStateChanged();
+  observer()->OnStateChanged(service());
   EXPECT_EQ(0, CallbackCount());
 
   SetHasOpenTabs(true);
-  observer()->OnStateChanged();
+  observer()->OnStateChanged(service());
   EXPECT_EQ(1, CallbackCount());
-  observer()->OnStateChanged();
+  observer()->OnStateChanged(service());
   EXPECT_EQ(1, CallbackCount());
 
   SetHasOpenTabs(false);
-  observer()->OnStateChanged();
+  observer()->OnStateChanged(service());
   EXPECT_EQ(2, CallbackCount());
-  observer()->OnStateChanged();
+  observer()->OnStateChanged(service());
   EXPECT_EQ(2, CallbackCount());
 
   // OnSyncCycleCompleted should behave like OnStateChanged.
-  observer()->OnSyncCycleCompleted();
+  observer()->OnSyncCycleCompleted(service());
   EXPECT_EQ(2, CallbackCount());
   SetHasOpenTabs(true);
-  observer()->OnSyncCycleCompleted();
+  observer()->OnSyncCycleCompleted(service());
   EXPECT_EQ(3, CallbackCount());
-  observer()->OnSyncCycleCompleted();
+  observer()->OnSyncCycleCompleted(service());
   EXPECT_EQ(3, CallbackCount());
 }
 
@@ -114,26 +115,26 @@ TEST_F(TabDelegateSyncAdapterTest, CallbackCount) {
 TEST_F(TabDelegateSyncAdapterTest, OnSyncConfigurationCompleted) {
   ASSERT_EQ(0, CallbackCount());
 
-  observer()->OnSyncConfigurationCompleted();
+  observer()->OnSyncConfigurationCompleted(service());
   EXPECT_EQ(0, CallbackCount());
 
   SetHasOpenTabs(true);
-  observer()->OnSyncConfigurationCompleted();
+  observer()->OnSyncConfigurationCompleted(service());
   EXPECT_EQ(0, CallbackCount());
 }
 
 // OnForeignSessionUpdated should always trigger a callback.
 TEST_F(TabDelegateSyncAdapterTest, OnForeignSessionUpdated) {
   ASSERT_EQ(0, CallbackCount());
-  observer()->OnForeignSessionUpdated();
+  observer()->OnForeignSessionUpdated(service());
   EXPECT_EQ(1, CallbackCount());
-  observer()->OnForeignSessionUpdated();
+  observer()->OnForeignSessionUpdated(service());
   EXPECT_EQ(2, CallbackCount());
 
   SetHasOpenTabs(true);
-  observer()->OnForeignSessionUpdated();
+  observer()->OnForeignSessionUpdated(service());
   EXPECT_EQ(3, CallbackCount());
-  observer()->OnForeignSessionUpdated();
+  observer()->OnForeignSessionUpdated(service());
   EXPECT_EQ(4, CallbackCount());
 }
 
@@ -141,10 +142,10 @@ TEST_F(TabDelegateSyncAdapterTest, OnForeignSessionUpdated) {
 // OnStateChanged should not trigger a callback.
 TEST_F(TabDelegateSyncAdapterTest, OnForeignSessionUpdatedUpdatesState) {
   SetHasOpenTabs(true);
-  observer()->OnForeignSessionUpdated();
+  observer()->OnForeignSessionUpdated(service());
   EXPECT_EQ(1, CallbackCount());
 
-  observer()->OnStateChanged();
+  observer()->OnStateChanged(service());
   EXPECT_EQ(1, CallbackCount());
 }
 

@@ -691,7 +691,7 @@ void PeopleHandler::GoogleSignedOut(const std::string& /* account_id */,
   UpdateSyncStatus();
 }
 
-void PeopleHandler::OnStateChanged() {
+void PeopleHandler::OnStateChanged(syncer::SyncService* sync) {
   UpdateSyncStatus();
 
   // When the SyncService changes its state, we should also push the updated

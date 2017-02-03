@@ -57,9 +57,8 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
 
  private:
   // syncer::SyncServiceObserver:
-  void OnStateChanged() override {}
-  void OnSyncConfigurationCompleted() override;
-  void OnForeignSessionUpdated() override;
+  void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
+  void OnForeignSessionUpdated(syncer::SyncService* sync) override;
 
   // Returns a string used to show the user when a session was last modified.
   base::string16 FormatSessionTime(const base::Time& time);

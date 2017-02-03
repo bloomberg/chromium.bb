@@ -92,7 +92,7 @@ void VerifySyncGlobalErrorResult(browser_sync::ProfileSyncServiceMock* service,
   GoogleServiceAuthError auth_error(error_state);
   EXPECT_CALL(*service, GetAuthError()).WillRepeatedly(ReturnRef(auth_error));
 
-  error->OnStateChanged();
+  error->OnStateChanged(service);
   EXPECT_EQ(is_error, error->HasError());
 
   // If there is an error then a menu item and bubble view should be shown.

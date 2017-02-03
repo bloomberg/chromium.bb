@@ -215,7 +215,7 @@ class SupervisedUserService : public KeyedService,
 
 #if !defined(OS_ANDROID)
   // syncer::SyncServiceObserver implementation:
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // chrome::BrowserListObserver implementation:
   void OnBrowserSetLastActive(Browser* browser) override;

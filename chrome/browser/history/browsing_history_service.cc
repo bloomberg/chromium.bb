@@ -152,7 +152,7 @@ BrowsingHistoryService::~BrowsingHistoryService() {
   web_history_request_.reset();
 }
 
-void BrowsingHistoryService::OnStateChanged() {
+void BrowsingHistoryService::OnStateChanged(syncer::SyncService* sync) {
   // If the history sync was enabled, start observing WebHistoryService.
   // This method should not be called after we already added the observer.
   history::WebHistoryService* web_history =

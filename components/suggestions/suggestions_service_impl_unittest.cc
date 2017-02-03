@@ -398,7 +398,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
 
   // Tell SuggestionsService that the sync state changed. The cache should be
   // cleared and empty data returned to the callback.
-  suggestions_service->OnStateChanged();
+  suggestions_service->OnStateChanged(mock_sync_service_.get());
 
   // Ensure that CheckCallback ran once with empty data.
   EXPECT_EQ(1, suggestions_data_callback_count_);

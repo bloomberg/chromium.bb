@@ -27,7 +27,7 @@ class DesktopPromotionSyncObserver : public syncer::SyncServiceObserver {
   ~DesktopPromotionSyncObserver() override;
 
   // ProfileSyncServiceObserver implementation.
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
   PrefService* pref_service_;

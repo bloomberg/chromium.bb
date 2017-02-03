@@ -37,7 +37,7 @@ class OneClickSigninSyncObserver : public content::WebContentsObserver,
   void WebContentsDestroyed() override;
 
   // syncer::SyncServiceObserver:
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // Loads the |continue_url_| in the |web_contents()|.
   void LoadContinueUrl();

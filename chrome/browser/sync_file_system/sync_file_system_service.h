@@ -148,7 +148,7 @@ class SyncFileSystemService
                          const extensions::Extension* extension) override;
 
   // syncer::SyncServiceObserver implementation.
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // SyncFileStatusObserver implementation.
   void OnFileStatusChanged(const storage::FileSystemURL& url,

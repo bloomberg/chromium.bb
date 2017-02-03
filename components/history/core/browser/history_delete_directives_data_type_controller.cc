@@ -43,7 +43,8 @@ void HistoryDeleteDirectivesDataTypeController::StopModels() {
     sync_client_->GetSyncService()->RemoveObserver(this);
 }
 
-void HistoryDeleteDirectivesDataTypeController::OnStateChanged() {
+void HistoryDeleteDirectivesDataTypeController::OnStateChanged(
+    syncer::SyncService* sync) {
   DisableTypeIfNecessary();
 }
 

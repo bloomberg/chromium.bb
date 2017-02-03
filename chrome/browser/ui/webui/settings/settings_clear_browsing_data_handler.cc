@@ -255,7 +255,7 @@ void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
   // Needed because WebUI doesn't handle renderer crashes. See crbug.com/610450.
   task_observer_.reset();
 
-  OnStateChanged();
+  UpdateSyncState();
   RefreshHistoryNotice();
 
   // Restart the counters each time the dialog is reopened.
@@ -267,7 +267,11 @@ void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
       *base::Value::CreateNullValue() /* Promise<void> */);
 }
 
-void ClearBrowsingDataHandler::OnStateChanged() {
+void ClearBrowsingDataHandler::OnStateChanged(syncer::SyncService* sync) {
+  UpdateSyncState();
+}
+
+void ClearBrowsingDataHandler::UpdateSyncState() {
   CallJavascriptFunction(
       "cr.webUIListenerCallback",
       base::StringValue("update-footer"),
@@ -300,7 +304,7 @@ void ClearBrowsingDataHandler::RefreshHistoryNotice() {
 
 void ClearBrowsingDataHandler::UpdateHistoryNotice(bool show) {
   show_history_footer_ = show;
-  OnStateChanged();
+  UpdateSyncState();
 
   UMA_HISTOGRAM_BOOLEAN(
       "History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated",

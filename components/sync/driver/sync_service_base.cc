@@ -87,7 +87,7 @@ bool SyncServiceBase::HasObserver(const SyncServiceObserver* observer) const {
 
 void SyncServiceBase::NotifyObservers() {
   for (auto& observer : observers_) {
-    observer.OnStateChanged();
+    observer.OnStateChanged(this);
   }
 }
 

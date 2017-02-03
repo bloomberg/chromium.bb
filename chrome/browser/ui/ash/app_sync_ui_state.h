@@ -71,7 +71,7 @@ class AppSyncUIState : public KeyedService,
   void OnMaxSyncingTimer();
 
   // syncer::SyncServiceObserver overrides:
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // extensions::ExtensionRegistryObserver overrides:
   void OnExtensionLoaded(content::BrowserContext* browser_context,

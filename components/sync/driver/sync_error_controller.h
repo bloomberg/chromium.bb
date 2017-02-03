@@ -35,7 +35,7 @@ class SyncErrorController : public SyncServiceObserver {
   void RemoveObserver(Observer* observer);
 
   // SyncServiceObserver:
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
   SyncService* service_;

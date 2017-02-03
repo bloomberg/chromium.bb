@@ -962,19 +962,19 @@ void BrowserOptionsHandler::Uninitialize() {
 #endif
 }
 
-void BrowserOptionsHandler::OnStateChanged() {
+void BrowserOptionsHandler::OnStateChanged(syncer::SyncService* sync) {
   UpdateSyncState();
 }
 
 void BrowserOptionsHandler::GoogleSigninSucceeded(const std::string& account_id,
                                                   const std::string& username,
                                                   const std::string& password) {
-  OnStateChanged();
+  UpdateSyncState();
 }
 
 void BrowserOptionsHandler::GoogleSignedOut(const std::string& account_id,
                                             const std::string& username) {
-  OnStateChanged();
+  UpdateSyncState();
 }
 
 void BrowserOptionsHandler::PageLoadStarted() {
@@ -1137,7 +1137,7 @@ void BrowserOptionsHandler::InitializePage() {
   OnTemplateURLServiceChanged();
 
   ObserveThemeChanged();
-  OnStateChanged();
+  UpdateSyncState();
 #if !defined(OS_CHROMEOS)
   UpdateDefaultBrowserState();
 #endif
@@ -1389,7 +1389,7 @@ void BrowserOptionsHandler::Observe(
       break;
     case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
       // Update our sync/signin status display.
-      OnStateChanged();
+      UpdateSyncState();
       break;
     default:
       NOTREACHED();

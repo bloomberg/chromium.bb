@@ -26,8 +26,7 @@ class P2PSyncRefresher : public syncer::SyncServiceObserver {
   ~P2PSyncRefresher() override;
 
   // Implementation of syncer::SyncServiceObserver
-  void OnStateChanged() override;
-  void OnSyncCycleCompleted() override;
+  void OnSyncCycleCompleted(syncer::SyncService* sync) override;
 
  private:
   Profile* const profile_;            // weak

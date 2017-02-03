@@ -38,7 +38,7 @@ DesktopPromotionSyncObserver::~DesktopPromotionSyncObserver() {
   sync_service_->RemoveObserver(this);
 }
 
-void DesktopPromotionSyncObserver::OnStateChanged() {
+void DesktopPromotionSyncObserver::OnStateChanged(syncer::SyncService* sync) {
   if (desktop_metrics_logger_initiated_ ||
       !sync_service_->GetActiveDataTypes().Has(syncer::PRIORITY_PREFERENCES)) {
     return;

@@ -26,7 +26,7 @@ SyncStartupTracker::~SyncStartupTracker() {
     service->RemoveObserver(this);
 }
 
-void SyncStartupTracker::OnStateChanged() {
+void SyncStartupTracker::OnStateChanged(syncer::SyncService* sync) {
   CheckServiceState();
 }
 

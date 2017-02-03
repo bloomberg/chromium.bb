@@ -57,9 +57,11 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   void UpdateCounterText(
       std::unique_ptr<browsing_data::BrowsingDataCounter::Result> result);
 
-  // Implementation of SyncServiceObserver. Updates the support string at the
-  // bottom of the dialog.
-  void OnStateChanged() override;
+  // Implementation of SyncServiceObserver.
+  void OnStateChanged(syncer::SyncService* sync) override;
+
+  // Updates the support string at the bottom of the dialog.
+  void UpdateSyncState();
 
   // Finds out whether we should show a notice informing the user about other
   // forms of browsing history. Responds with an asynchronous callback to

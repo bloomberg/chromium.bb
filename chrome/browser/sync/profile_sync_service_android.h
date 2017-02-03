@@ -46,7 +46,7 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
   bool Init();
 
   // syncer::SyncServiceObserver:
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // Pure ProfileSyncService calls.
   jboolean IsSyncRequested(JNIEnv* env,

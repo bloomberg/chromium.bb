@@ -227,7 +227,7 @@ void ManageProfileHandler::OnProfileAvatarChanged(
   SendProfileIconsAndNames(value);
 }
 
-void ManageProfileHandler::OnStateChanged() {
+void ManageProfileHandler::OnStateChanged(syncer::SyncService* sync) {
   RequestCreateProfileUpdate(NULL);
 }
 

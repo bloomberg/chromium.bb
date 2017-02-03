@@ -107,7 +107,7 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedInitialization) {
   // Now, mark the PSS as initialized.
   EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(true));
   EXPECT_CALL(observer_, SyncStartupCompleted());
-  tracker.OnStateChanged();
+  tracker.OnStateChanged(mock_pss_);
 }
 
 TEST_F(SyncStartupTrackerTest, SyncDelayedAuthError) {
@@ -126,7 +126,7 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedAuthError) {
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
   EXPECT_CALL(observer_, SyncStartupFailed());
-  tracker.OnStateChanged();
+  tracker.OnStateChanged(mock_pss_);
 }
 
 TEST_F(SyncStartupTrackerTest, SyncDelayedUnrecoverableError) {
@@ -145,7 +145,7 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedUnrecoverableError) {
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
   EXPECT_CALL(observer_, SyncStartupFailed());
-  tracker.OnStateChanged();
+  tracker.OnStateChanged(mock_pss_);
 }
 
 }  // namespace

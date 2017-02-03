@@ -54,9 +54,11 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   // Initializes the dialog UI. Called by JavaScript when the DOM is ready.
   void HandleInitialize(const base::ListValue* args);
 
-  // Implementation of SyncServiceObserver. Updates the footer of the dialog
-  // when the sync state changes.
-  void OnStateChanged() override;
+  // Implementation of SyncServiceObserver.
+  void OnStateChanged(syncer::SyncService* sync) override;
+
+  // Updates the footer of the dialog when the sync state changes.
+  void UpdateSyncState();
 
   // Finds out whether we should show notice about other forms of history stored
   // in user's account.

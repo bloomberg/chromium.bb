@@ -79,7 +79,7 @@ class ProgressMarkerWatcher : public syncer::SyncServiceObserver {
   ProgressMarkerWatcher(browser_sync::ProfileSyncService* service,
                         QuiesceStatusChangeChecker* quiesce_checker);
   ~ProgressMarkerWatcher() override;
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   bool HasLatestProgressMarkers();
   bool IsSyncDisabled();
@@ -107,7 +107,7 @@ ProgressMarkerWatcher::ProgressMarkerWatcher(
 
 ProgressMarkerWatcher::~ProgressMarkerWatcher() { }
 
-void ProgressMarkerWatcher::OnStateChanged() {
+void ProgressMarkerWatcher::OnStateChanged(syncer::SyncService* sync) {
   UpdateHasLatestProgressMarkers();
   quiesce_checker_->OnServiceStateChanged(service_);
 }

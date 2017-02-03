@@ -44,7 +44,7 @@ void TabDelegateSyncAdapter::SubscribeForForeignTabChange(
   change_callback_ = change_callback;
 }
 
-void TabDelegateSyncAdapter::OnStateChanged() {
+void TabDelegateSyncAdapter::OnStateChanged(syncer::SyncService* sync) {
   // OnStateChanged gets called very frequently, and usually is not important.
   // But there are some events, like disabling sync and signing out, that are
   // only captured through OnStateChange. In an attempt to send as few messages
@@ -62,14 +62,16 @@ void TabDelegateSyncAdapter::OnStateChanged() {
   }
 }
 
-void TabDelegateSyncAdapter::OnSyncConfigurationCompleted() {
+void TabDelegateSyncAdapter::OnSyncConfigurationCompleted(
+    syncer::SyncService* sync) {
   // Ignored. This event can let us know when the set of enabled data types
   // change. However, we want to avoid useless notifications as much as
   // possible, and all of the information captured in this event will also be
   // covered by OnStateChange.
 }
 
-void TabDelegateSyncAdapter::OnForeignSessionUpdated() {
+void TabDelegateSyncAdapter::OnForeignSessionUpdated(
+    syncer::SyncService* sync) {
   // Foreign tab data changed, always invoke the callback to generate new
   // suggestions. Interestingly, this is only triggered after sync model type
   // apply, not after merge. The merge case should always be handled by

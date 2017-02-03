@@ -112,7 +112,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
   static GURL BuildSuggestionsBlacklistClearURL();
 
   // syncer::SyncServiceObserver implementation.
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // Sets default timestamp for suggestions which do not have expiry timestamp.
   void SetDefaultExpiryTimestamp(SuggestionsProfile* suggestions,

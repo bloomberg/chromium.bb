@@ -61,7 +61,7 @@ class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
                           std::unique_ptr<base::ListValue> nodes);
 
   // syncer::SyncServiceObserver implementation.
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // ProtocolEventObserver implementation.
   void OnProtocolEvent(const syncer::ProtocolEvent& e) override;

@@ -33,7 +33,7 @@ class AuthSyncObserver : public KeyedService,
   void Shutdown() override;
 
   // syncer::SyncServiceObserver implementation.
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // Called on attempt to restore supervised user token.
   void OnSupervisedTokenLoaded(const std::string& token);

@@ -391,7 +391,11 @@ void ClearBrowserDataHandler::UpdateCounterText(
       base::StringValue(GetChromeCounterTextFromResult(result.get())));
 }
 
-void ClearBrowserDataHandler::OnStateChanged() {
+void ClearBrowserDataHandler::OnStateChanged(syncer::SyncService* sync) {
+  UpdateSyncState();
+}
+
+void ClearBrowserDataHandler::UpdateSyncState() {
   web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.updateSyncWarningAndHistoryFooter",
       base::FundamentalValue(sync_service_ && sync_service_->IsSyncActive()),
@@ -423,7 +427,7 @@ void ClearBrowserDataHandler::RefreshHistoryNotice() {
 
 void ClearBrowserDataHandler::UpdateHistoryNotice(bool show) {
   should_show_history_notice_ = show;
-  OnStateChanged();
+  UpdateSyncState();
 
   UMA_HISTOGRAM_BOOLEAN(
       "History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated",

@@ -7,6 +7,8 @@
 
 namespace syncer {
 
+class SyncService;
+
 // Various UI components such as the New Tab page can be driven by observing
 // the SyncService through this interface.
 class SyncServiceObserver {
@@ -20,18 +22,22 @@ class SyncServiceObserver {
   // - Sync shut down.
   // - Sync errors (passphrase, auth, unrecoverable, actionable, etc.).
   // - Encryption changes.
-  virtual void OnStateChanged() = 0;
+  virtual void OnStateChanged(SyncService* sync) {}
 
   // If a client wishes to handle sync cycle completed events in a special way,
   // they can use this function.  By default, it re-routes to OnStateChanged().
-  virtual void OnSyncCycleCompleted();
+  virtual void OnSyncCycleCompleted(SyncService* sync);
 
   // Called when the sync service has finished the datatype configuration
   // process.
-  virtual void OnSyncConfigurationCompleted() {}
+  virtual void OnSyncConfigurationCompleted(SyncService* sync) {}
 
   // Called when a foreign session has been updated.
-  virtual void OnForeignSessionUpdated() {}
+  virtual void OnForeignSessionUpdated(SyncService* sync) {}
+
+  // Called when the sync service is being shutdown permanently, so that
+  // longer-lived observers can drop references to it.
+  virtual void OnSyncShutdown(SyncService* sync) {}
 
  protected:
   virtual ~SyncServiceObserver() {}

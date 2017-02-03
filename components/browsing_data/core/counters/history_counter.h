@@ -58,7 +58,7 @@ class HistoryCounter : public browsing_data::BrowsingDataCounter,
   void MergeResults();
 
   // SyncServiceObserver implementation.
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   history::HistoryService* history_service_;
 

@@ -43,7 +43,7 @@ bool PasswordDataTypeController::StartModels() {
 
   sync_client_->GetSyncService()->AddObserver(this);
 
-  OnStateChanged();
+  OnStateChanged(sync_client_->GetSyncService());
 
   return !!password_store_.get();
 }
@@ -53,7 +53,7 @@ void PasswordDataTypeController::StopModels() {
   sync_client_->GetSyncService()->RemoveObserver(this);
 }
 
-void PasswordDataTypeController::OnStateChanged() {
+void PasswordDataTypeController::OnStateChanged(syncer::SyncService* sync) {
   DCHECK(CalledOnValidThread());
   state_changed_callback_.Run();
 }

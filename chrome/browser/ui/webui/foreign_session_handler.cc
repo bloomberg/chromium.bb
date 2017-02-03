@@ -229,11 +229,12 @@ void ForeignSessionHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ForeignSessionHandler::OnSyncConfigurationCompleted() {
+void ForeignSessionHandler::OnSyncConfigurationCompleted(
+    syncer::SyncService* sync) {
   HandleGetForeignSessions(nullptr);
 }
 
-void ForeignSessionHandler::OnForeignSessionUpdated() {
+void ForeignSessionHandler::OnForeignSessionUpdated(syncer::SyncService* sync) {
   HandleGetForeignSessions(nullptr);
 }
 

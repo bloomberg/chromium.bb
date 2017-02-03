@@ -32,7 +32,7 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
   void OnTimeout();
 
   // syncer::SyncServiceObserver implementation.
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // StatusChangeChecker implementations and stubs.
   bool IsExitConditionSatisfied() override = 0;

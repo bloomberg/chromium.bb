@@ -676,6 +676,7 @@ void ProfileSyncService::Shutdown() {
   UnregisterAuthNotifications();
 
   ShutdownImpl(syncer::BROWSER_SHUTDOWN);
+  NotifyShutdown();
   if (sync_error_controller_) {
     // Destroy the SyncErrorController when the service shuts down for good.
     RemoveObserver(sync_error_controller_.get());
@@ -797,12 +798,17 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 
 void ProfileSyncService::NotifySyncCycleCompleted() {
   for (auto& observer : observers_)
-    observer.OnSyncCycleCompleted();
+    observer.OnSyncCycleCompleted(this);
 }
 
 void ProfileSyncService::NotifyForeignSessionUpdated() {
   for (auto& observer : observers_)
-    observer.OnForeignSessionUpdated();
+    observer.OnForeignSessionUpdated(this);
+}
+
+void ProfileSyncService::NotifyShutdown() {
+  for (auto& observer : observers_)
+    observer.OnSyncShutdown(this);
 }
 
 void ProfileSyncService::ClearStaleErrors() {
@@ -1219,7 +1225,7 @@ void ProfileSyncService::OnConfigureDone(
 
   // Notify listeners that configuration is done.
   for (auto& observer : observers_)
-    observer.OnSyncConfigurationCompleted();
+    observer.OnSyncConfigurationCompleted(this);
 
   DVLOG(1) << "PSS OnConfigureDone called with status: " << configure_status_;
   // The possible status values:

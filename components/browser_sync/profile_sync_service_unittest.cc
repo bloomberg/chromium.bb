@@ -92,7 +92,7 @@ class TestSyncServiceObserver : public syncer::SyncServiceObserver {
  public:
   explicit TestSyncServiceObserver(ProfileSyncService* service)
       : service_(service), setup_in_progress_(false) {}
-  void OnStateChanged() override {
+  void OnStateChanged(syncer::SyncService* sync) override {
     setup_in_progress_ = service_->IsSetupInProgress();
   }
   bool setup_in_progress() const { return setup_in_progress_; }

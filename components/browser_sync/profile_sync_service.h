@@ -655,6 +655,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
 
   void NotifySyncCycleCompleted();
   void NotifyForeignSessionUpdated();
+  void NotifyShutdown();
 
   void ClearStaleErrors();
 

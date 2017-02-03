@@ -6,8 +6,8 @@
 
 namespace syncer {
 
-void SyncServiceObserver::OnSyncCycleCompleted() {
-  OnStateChanged();
+void SyncServiceObserver::OnSyncCycleCompleted(SyncService* sync) {
+  OnStateChanged(sync);
 }
 
 }  // namespace syncer

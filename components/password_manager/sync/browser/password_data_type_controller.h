@@ -41,7 +41,7 @@ class PasswordDataTypeController : public syncer::AsyncDirectoryTypeController,
   void StopModels() override;
 
   // syncer::SyncServiceObserver:
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
   syncer::SyncClient* const sync_client_;

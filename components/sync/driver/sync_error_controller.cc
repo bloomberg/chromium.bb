@@ -28,7 +28,7 @@ void SyncErrorController::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void SyncErrorController::OnStateChanged() {
+void SyncErrorController::OnStateChanged(syncer::SyncService* sync) {
   for (auto& observer : observer_list_)
     observer.OnErrorChanged();
 }

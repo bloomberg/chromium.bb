@@ -46,7 +46,7 @@ class SyncStartupTracker : public syncer::SyncServiceObserver {
   static SyncServiceState GetSyncServiceState(Profile* profile);
 
   // syncer::SyncServiceObserver implementation.
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
   // Checks the current service state and notifies |observer_| if the state

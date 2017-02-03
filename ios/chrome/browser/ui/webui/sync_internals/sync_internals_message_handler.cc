@@ -157,7 +157,7 @@ void SyncInternalsMessageHandler::OnReceivedAllNodes(
                                    id, *nodes);
 }
 
-void SyncInternalsMessageHandler::OnStateChanged() {
+void SyncInternalsMessageHandler::OnStateChanged(syncer::SyncService* sync) {
   SendAboutInfo();
 }
 

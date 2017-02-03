@@ -278,7 +278,7 @@ class SyncSetupHandlerTest : public testing::Test {
   // SyncStartupTracker.
   void NotifySyncListeners() {
     if (handler_->sync_startup_tracker_)
-      handler_->sync_startup_tracker_->OnStateChanged();
+      handler_->sync_startup_tracker_->OnStateChanged(mock_pss_);
   }
 
   virtual std::string GetTestUser() {

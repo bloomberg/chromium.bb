@@ -47,7 +47,7 @@ class ManageProfileHandler : public OptionsPageUIHandler,
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
   // syncer::SyncServiceObserver:
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
   // This function creates signed in user specific strings in loadTimeData.

@@ -158,7 +158,7 @@ HistoryCounter::HistoryResult::HistoryResult(const HistoryCounter* source,
 
 HistoryCounter::HistoryResult::~HistoryResult() {}
 
-void HistoryCounter::OnStateChanged() {
+void HistoryCounter::OnStateChanged(syncer::SyncService* sync) {
   bool history_sync_enabled_new_state = !!web_history_service_callback_.Run();
 
   // If the history sync was just enabled or disabled, restart the counter

@@ -119,7 +119,7 @@ class PeopleHandler : public SettingsPageUIHandler,
                        const std::string& username) override;
 
   // syncer::SyncServiceObserver implementation.
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.

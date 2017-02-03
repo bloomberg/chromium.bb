@@ -1257,17 +1257,15 @@ syncer::ModelTypeSet SupervisedUserService::GetPreferredDataTypes() const {
 }
 
 #if !defined(OS_ANDROID)
-void SupervisedUserService::OnStateChanged() {
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (waiting_for_sync_initialization_ && service->IsEngineInitialized()) {
+void SupervisedUserService::OnStateChanged(syncer::SyncService* sync) {
+  if (waiting_for_sync_initialization_ && sync->IsEngineInitialized()) {
     waiting_for_sync_initialization_ = false;
-    service->RemoveObserver(this);
+    sync->RemoveObserver(this);
     FinishSetupSync();
     return;
   }
 
-  DLOG_IF(ERROR, service->GetAuthError().state() ==
+  DLOG_IF(ERROR, sync->GetAuthError().state() ==
                      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)
       << "Credentials rejected";
 }

@@ -123,7 +123,7 @@ ProfileSyncServiceAndroid::~ProfileSyncServiceAndroid() {
   }
 }
 
-void ProfileSyncServiceAndroid::OnStateChanged() {
+void ProfileSyncServiceAndroid::OnStateChanged(syncer::SyncService* sync) {
   // Notify the java world that our sync state has changed.
   JNIEnv* env = AttachCurrentThread();
   Java_ProfileSyncService_syncStateChanged(

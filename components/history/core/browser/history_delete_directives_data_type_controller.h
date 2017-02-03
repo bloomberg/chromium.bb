@@ -29,7 +29,7 @@ class HistoryDeleteDirectivesDataTypeController
   void StopModels() override;
 
   // syncer::SyncServiceObserver implementation.
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
   // Triggers a SingleDataTypeUnrecoverable error and returns true if the

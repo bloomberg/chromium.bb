@@ -154,13 +154,9 @@ void ExternalPrefLoader::OnIsSyncingChanged() {
   PostLoadIfPrioritySyncReady();
 }
 
-void ExternalPrefLoader::OnStateChanged() {
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  DCHECK(service);
-  if (!service->CanSyncStart()) {
+void ExternalPrefLoader::OnStateChanged(syncer::SyncService* sync) {
+  if (!sync->CanSyncStart())
     PostLoadAndRemoveObservers();
-  }
 }
 
 bool ExternalPrefLoader::PostLoadIfPrioritySyncReady() {

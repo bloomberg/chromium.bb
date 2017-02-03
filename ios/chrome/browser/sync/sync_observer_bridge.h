@@ -32,8 +32,8 @@ class SyncObserverBridge : public syncer::SyncServiceObserver {
 
  private:
   // syncer::SyncServiceObserver implementation:
-  void OnStateChanged() override;
-  void OnSyncConfigurationCompleted() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
+  void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
 
   base::WeakNSProtocol<id<SyncObserverModelBridge>> delegate_;
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>

@@ -112,7 +112,7 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(SyncInternalsMessageHandlerTest, SendAboutInfoWithService) {
-  handler()->OnStateChanged();
+  handler()->OnStateChanged(nullptr);
   EXPECT_EQ(1, fake_extractor()->call_count());
   EXPECT_NE(nullptr, fake_extractor()->last_service());
   EXPECT_NE(nullptr, fake_extractor()->last_signin());
@@ -121,7 +121,7 @@ TEST_F(SyncInternalsMessageHandlerTest, SendAboutInfoWithService) {
 
 TEST_F(SyncInternalsMessageHandlerTest, SendAboutInfoWithoutService) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
-  handler()->OnStateChanged();
+  handler()->OnStateChanged(nullptr);
   EXPECT_EQ(1, fake_extractor()->call_count());
   EXPECT_EQ(nullptr, fake_extractor()->last_service());
   EXPECT_EQ(nullptr, fake_extractor()->last_signin());

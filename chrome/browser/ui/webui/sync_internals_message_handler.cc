@@ -174,7 +174,7 @@ void SyncInternalsMessageHandler::OnReceivedAllNodes(
       syncer::sync_ui_util::kGetAllNodesCallback, id, *nodes);
 }
 
-void SyncInternalsMessageHandler::OnStateChanged() {
+void SyncInternalsMessageHandler::OnStateChanged(syncer::SyncService* sync) {
   SendAboutInfo();
 }
 

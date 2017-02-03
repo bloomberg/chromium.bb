@@ -728,11 +728,8 @@ void SyncFileSystemService::OnExtensionLoaded(
   local_service_->SetOriginEnabled(app_origin, true);
 }
 
-void SyncFileSystemService::OnStateChanged() {
-  syncer::SyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
-  if (profile_sync_service)
-    UpdateSyncEnabledStatus(profile_sync_service);
+void SyncFileSystemService::OnStateChanged(syncer::SyncService* sync) {
+  UpdateSyncEnabledStatus(sync);
 }
 
 void SyncFileSystemService::OnFileStatusChanged(

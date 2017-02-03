@@ -32,8 +32,7 @@ class P2PInvalidationForwarder : public syncer::SyncServiceObserver {
   ~P2PInvalidationForwarder() override;
 
   // Implementation of syncer::SyncServiceObserver
-  void OnStateChanged() override;
-  void OnSyncCycleCompleted() override;
+  void OnSyncCycleCompleted(syncer::SyncService* sync) override;
 
  private:
   browser_sync::ProfileSyncService* sync_service_;

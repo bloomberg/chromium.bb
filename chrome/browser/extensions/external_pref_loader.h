@@ -75,7 +75,7 @@ class ExternalPrefLoader : public ExternalLoader,
   void OnIsSyncingChanged() override;
 
   // syncer::SyncServiceObserver
-  void OnStateChanged() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // If priority sync ready posts LoadOnFileThread and return true.
   bool PostLoadIfPrioritySyncReady();

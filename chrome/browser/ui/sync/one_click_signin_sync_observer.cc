@@ -63,7 +63,7 @@ void OneClickSigninSyncObserver::WebContentsDestroyed() {
   delete this;
 }
 
-void OneClickSigninSyncObserver::OnStateChanged() {
+void OneClickSigninSyncObserver::OnStateChanged(syncer::SyncService* sync) {
   browser_sync::ProfileSyncService* sync_service =
       GetSyncService(web_contents());
 

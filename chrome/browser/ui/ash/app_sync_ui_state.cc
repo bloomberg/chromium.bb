@@ -132,7 +132,7 @@ void AppSyncUIState::OnMaxSyncingTimer() {
   SetStatus(STATUS_TIMED_OUT);
 }
 
-void AppSyncUIState::OnStateChanged() {
+void AppSyncUIState::OnStateChanged(syncer::SyncService* sync) {
   DCHECK(sync_service_);
   CheckAppSync();
 }

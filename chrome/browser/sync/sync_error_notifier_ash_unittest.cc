@@ -143,7 +143,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
     EXPECT_CALL(*service_, GetAuthError()).WillRepeatedly(
         ReturnRef(auth_error));
 
-    error_controller_->OnStateChanged();
+    error_controller_->OnStateChanged(service_.get());
     EXPECT_EQ(is_error, error_controller_->HasError());
 
     // If there is an error we should see a notification.

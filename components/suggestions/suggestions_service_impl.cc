@@ -160,7 +160,7 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
     sync_service_observer_.Add(sync_service_);
   // Immediately get the current sync state, so we'll flush the cache if
   // necessary.
-  OnStateChanged();
+  OnStateChanged(sync_service_);
 }
 
 SuggestionsServiceImpl::~SuggestionsServiceImpl() {}
@@ -299,7 +299,7 @@ GURL SuggestionsServiceImpl::BuildSuggestionsBlacklistClearURL() {
                                  kDeviceType));
 }
 
-void SuggestionsServiceImpl::OnStateChanged() {
+void SuggestionsServiceImpl::OnStateChanged(syncer::SyncService* sync) {
   switch (GetSyncState(sync_service_)) {
     case SYNC_OR_HISTORY_SYNC_DISABLED:
       // Cancel any ongoing request, to stop interacting with the server.

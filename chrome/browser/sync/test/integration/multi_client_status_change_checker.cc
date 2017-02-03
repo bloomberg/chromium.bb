@@ -17,6 +17,6 @@ MultiClientStatusChangeChecker::MultiClientStatusChangeChecker(
 
 MultiClientStatusChangeChecker::~MultiClientStatusChangeChecker() {}
 
-void MultiClientStatusChangeChecker::OnStateChanged() {
+void MultiClientStatusChangeChecker::OnStateChanged(syncer::SyncService* sync) {
   CheckExitCondition();
 }

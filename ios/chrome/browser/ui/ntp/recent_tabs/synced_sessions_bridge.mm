@@ -36,23 +36,26 @@ SyncedSessionsObserverBridge::~SyncedSessionsObserverBridge() {}
 
 #pragma mark - SyncObserverBridge
 
-void SyncedSessionsObserverBridge::OnStateChanged() {
+void SyncedSessionsObserverBridge::OnStateChanged(syncer::SyncService* sync) {
   if (!signin_manager_->IsAuthenticated())
     first_sync_cycle_is_completed_ = false;
   [owner_ onSyncStateChanged];
 }
 
-void SyncedSessionsObserverBridge::OnSyncCycleCompleted() {
+void SyncedSessionsObserverBridge::OnSyncCycleCompleted(
+    syncer::SyncService* sync) {
   if (sync_service_->GetActiveDataTypes().Has(syncer::SESSIONS))
     first_sync_cycle_is_completed_ = true;
   [owner_ onSyncStateChanged];
 }
 
-void SyncedSessionsObserverBridge::OnSyncConfigurationCompleted() {
+void SyncedSessionsObserverBridge::OnSyncConfigurationCompleted(
+    syncer::SyncService* sync) {
   [owner_ reloadSessions];
 }
 
-void SyncedSessionsObserverBridge::OnForeignSessionUpdated() {
+void SyncedSessionsObserverBridge::OnForeignSessionUpdated(
+    syncer::SyncService* sync) {
   [owner_ reloadSessions];
 }
 

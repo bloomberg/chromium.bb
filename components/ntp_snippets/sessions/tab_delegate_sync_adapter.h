@@ -36,9 +36,9 @@ class TabDelegateSyncAdapter : public syncer::SyncServiceObserver,
 
  private:
   // syncer::SyncServiceObserver implementation.
-  void OnStateChanged() override;
-  void OnSyncConfigurationCompleted() override;
-  void OnForeignSessionUpdated() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
+  void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
+  void OnForeignSessionUpdated(syncer::SyncService* sync) override;
 
   void InvokeCallback();
 

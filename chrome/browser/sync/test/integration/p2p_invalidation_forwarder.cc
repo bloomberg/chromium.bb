@@ -20,9 +20,7 @@ P2PInvalidationForwarder::~P2PInvalidationForwarder() {
   sync_service_->RemoveObserver(this);
 }
 
-void P2PInvalidationForwarder::OnStateChanged() {}
-
-void P2PInvalidationForwarder::OnSyncCycleCompleted() {
+void P2PInvalidationForwarder::OnSyncCycleCompleted(syncer::SyncService* sync) {
   const syncer::SyncCycleSnapshot& snap = sync_service_->GetLastCycleSnapshot();
   bool is_notifiable_commit =
       (snap.model_neutral_state().num_successful_commits > 0);

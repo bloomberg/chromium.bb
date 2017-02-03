@@ -22,11 +22,12 @@ SyncObserverBridge::SyncObserverBridge(id<SyncObserverModelBridge> delegate,
 SyncObserverBridge::~SyncObserverBridge() {
 }
 
-void SyncObserverBridge::OnStateChanged() {
+void SyncObserverBridge::OnStateChanged(syncer::SyncService* sync) {
   [delegate_ onSyncStateChanged];
 }
 
-void SyncObserverBridge::OnSyncConfigurationCompleted() {
+void SyncObserverBridge::OnSyncConfigurationCompleted(
+    syncer::SyncService* sync) {
   if ([delegate_ respondsToSelector:@selector(onSyncConfigurationCompleted)])
     [delegate_ onSyncConfigurationCompleted];
 }

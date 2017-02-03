@@ -35,10 +35,10 @@ class SyncedSessionsObserverBridge : public SyncObserverBridge,
                                ios::ChromeBrowserState* browserState);
   ~SyncedSessionsObserverBridge() override;
   // SyncObserverBridge implementation.
-  void OnStateChanged() override;
-  void OnSyncCycleCompleted() override;
-  void OnSyncConfigurationCompleted() override;
-  void OnForeignSessionUpdated() override;
+  void OnStateChanged(syncer::SyncService* sync) override;
+  void OnSyncCycleCompleted(syncer::SyncService* sync) override;
+  void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
+  void OnForeignSessionUpdated(syncer::SyncService* sync) override;
   // SigninManagerBase::Observer implementation.
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;

@@ -47,15 +47,12 @@ void AuthSyncObserver::Shutdown() {
     sync_service->RemoveObserver(this);
 }
 
-void AuthSyncObserver::OnStateChanged() {
+void AuthSyncObserver::OnStateChanged(syncer::SyncService* sync) {
   DCHECK(user_manager::UserManager::Get()->IsLoggedInAsUserWithGaiaAccount() ||
          user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser());
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile_);
-  GoogleServiceAuthError::State state =
-      sync_service->GetAuthError().state();
+  GoogleServiceAuthError::State state = sync->GetAuthError().state();
   if (state != GoogleServiceAuthError::NONE &&
       state != GoogleServiceAuthError::CONNECTION_FAILED &&
       state != GoogleServiceAuthError::SERVICE_UNAVAILABLE &&
@@ -64,7 +61,7 @@ void AuthSyncObserver::OnStateChanged() {
     // needed because sign-out/sign-in solution is suggested to the user.
     // TODO(nkostylev): Remove after crosbug.com/25978 is implemented.
     LOG(WARNING) << "Invalidate OAuth token because of a sync error: "
-                 << sync_service->GetAuthError().ToString();
+                 << sync->GetAuthError().ToString();
     const AccountId& account_id = user->GetAccountId();
     DCHECK(account_id.is_valid());
     // TODO(nkostyelv): Change observer after active user has changed.
