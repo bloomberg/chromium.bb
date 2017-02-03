@@ -5741,6 +5741,11 @@ TEST_F(PersonalDataManagerTest,
             personal_data_->GetCreditCards()[0]->billing_address_id());
   EXPECT_EQ(profiles[0]->guid(),
             personal_data_->GetCreditCards()[1]->billing_address_id());
+
+  // Make sure that the added address has the email address of the currently
+  // signed-in user.
+  EXPECT_EQ(UTF8ToUTF16("syncuser@example.com"),
+            profiles[0]->GetRawInfo(EMAIL_ADDRESS));
 }
 
 // Tests that the converted wallet address is merged into an existing local

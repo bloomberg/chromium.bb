@@ -1918,6 +1918,15 @@ std::string PersonalDataManager::MergeServerAddressesIntoProfiles(
     // Set the profile as being local.
     existing_profiles->back().set_record_type(AutofillProfile::LOCAL_PROFILE);
     existing_profiles->back().set_modification_date(AutofillClock::Now());
+
+    // Wallet addresses don't have an email address, use the one from the
+    // currently signed-in account.
+    std::string account_id = signin_manager_->GetAuthenticatedAccountId();
+    base::string16 email =
+        base::UTF8ToUTF16(account_tracker_->GetAccountInfo(account_id).email);
+    if (!email.empty())
+      existing_profiles->back().SetRawInfo(EMAIL_ADDRESS, email);
+
     AutofillMetrics::LogWalletAddressConversionType(
         AutofillMetrics::CONVERTED_ADDRESS_ADDED);
   }
