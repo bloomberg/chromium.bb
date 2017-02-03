@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/find_bar/find_bar_view.h"
 
-#include "base/mac/scoped_nsobject.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -15,6 +14,10 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kFindInPageInputFieldId = @"kFindInPageInputFieldId";
 NSString* const kFindInPageNextButtonId = @"kFindInPageNextButtonId";
 NSString* const kFindInPagePreviousButtonId = @"kFindInPagePreviousButtonId";
@@ -23,8 +26,8 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
 @interface FindBarView ()
 
 // The overlay that shows number of results in format "1 of 13".
-@property(nonatomic, assign) UILabel* resultsLabel;
-@property(nonatomic, assign) UIView* separator;
+@property(nonatomic, weak) UILabel* resultsLabel;
+@property(nonatomic, weak) UIView* separator;
 
 // Initializes all subviews.
 - (void)setupSubviews;
@@ -65,8 +68,8 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
   [self setBackgroundColor:[UIColor clearColor]];
 
   // Input field.
-  base::scoped_nsobject<UITextField> inputFieldScoped(
-      [[UITextField alloc] initWithFrame:CGRectZero]);
+  UITextField* inputFieldScoped =
+      [[UITextField alloc] initWithFrame:CGRectZero];
   self.inputField = inputFieldScoped;
   self.inputField.backgroundColor = [UIColor clearColor];
   self.inputField.tag = IDC_FIND_UPDATE;
@@ -75,8 +78,7 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
       l10n_util::GetNSString(IDS_IOS_PLACEHOLDER_FIND_IN_PAGE);
 
   // Label containing number of found results.
-  base::scoped_nsobject<UILabel> resultsLabelScoped(
-      [[UILabel alloc] initWithFrame:CGRectZero]);
+  UILabel* resultsLabelScoped = [[UILabel alloc] initWithFrame:CGRectZero];
   self.resultsLabel = resultsLabelScoped;
   self.resultsLabel.textColor = [UIColor lightGrayColor];
   self.resultsLabel.font = [UIFont systemFontOfSize:14];
@@ -88,16 +90,15 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
                         forAxis:UILayoutConstraintAxisHorizontal];
 
   // Stack view that holds |inputField| and |resultsLabel|.
-  base::scoped_nsobject<UIStackView> inputStackView([[UIStackView alloc]
-      initWithArrangedSubviews:@[ inputFieldScoped, resultsLabelScoped ]]);
+  UIStackView* inputStackView = [[UIStackView alloc]
+      initWithArrangedSubviews:@[ inputFieldScoped, resultsLabelScoped ]];
   [inputStackView setLayoutMargins:UIEdgeInsetsMake(0, 12, 0, 12)];
   [inputStackView setLayoutMarginsRelativeArrangement:YES];
   [inputStackView setSpacing:12];
   [inputStackView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [self addSubview:inputStackView];
 
-  base::scoped_nsobject<NSMutableArray> constraints(
-      [[NSMutableArray alloc] init]);
+  NSMutableArray* constraints = [[NSMutableArray alloc] init];
   [constraints addObjectsFromArray:@[
     [[inputStackView leadingAnchor] constraintEqualToAnchor:self.leadingAnchor],
     [[inputStackView topAnchor] constraintEqualToAnchor:self.topAnchor],
@@ -108,8 +109,8 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
   // to |inputField|.
   // Unlike a gesture recognizer, forwarding all touch events allows for using
   // long press, pinch and other manipulatiosn on the target textfield.
-  base::scoped_nsobject<FindBarTouchForwardingView> forwarder(
-      [[FindBarTouchForwardingView alloc] init]);
+  FindBarTouchForwardingView* forwarder =
+      [[FindBarTouchForwardingView alloc] init];
   [forwarder setTargetView:self.inputField];
   [self addSubview:forwarder];
   [constraints addObjectsFromArray:@[
@@ -124,8 +125,7 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
   [forwarder setTranslatesAutoresizingMaskIntoConstraints:NO];
 
   // Thin line separator between buttons and input.
-  base::scoped_nsobject<UIView> separatorScoped(
-      [[UIView alloc] initWithFrame:CGRectZero]);
+  UIView* separatorScoped = [[UIView alloc] initWithFrame:CGRectZero];
   UIView* separator = separatorScoped;
   separator.backgroundColor = [UIColor colorWithWhite:0.83 alpha:1];
   [self addSubview:separator];
@@ -135,14 +135,13 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
                                            constant:-8],
     [separator.topAnchor constraintEqualToAnchor:self.topAnchor constant:8],
     [separator.leadingAnchor
-        constraintEqualToAnchor:inputStackView.get().trailingAnchor],
+        constraintEqualToAnchor:inputStackView.trailingAnchor],
   ]];
   separator.translatesAutoresizingMaskIntoConstraints = NO;
   self.separator = separator;
 
   // Previous button with an arrow.
-  base::scoped_nsobject<UIButton> previousButtonScoped(
-      [[UIButton alloc] initWithFrame:CGRectZero]);
+  UIButton* previousButtonScoped = [[UIButton alloc] initWithFrame:CGRectZero];
   self.previousButton = previousButtonScoped;
   [self addSubview:self.previousButton];
   [constraints addObjectsFromArray:@[
@@ -159,8 +158,7 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
   self.previousButton.translatesAutoresizingMaskIntoConstraints = NO;
 
   // Next button with an arrow.
-  base::scoped_nsobject<UIButton> nextButtonScoped(
-      [[UIButton alloc] initWithFrame:CGRectZero]);
+  UIButton* nextButtonScoped = [[UIButton alloc] initWithFrame:CGRectZero];
   self.nextButton = nextButtonScoped;
   [self addSubview:self.nextButton];
   [constraints addObjectsFromArray:@[
@@ -174,8 +172,7 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
   self.nextButton.translatesAutoresizingMaskIntoConstraints = NO;
 
   // Close button with a cross.
-  base::scoped_nsobject<UIButton> closeButtonScoped(
-      [[UIButton alloc] initWithFrame:CGRectZero]);
+  UIButton* closeButtonScoped = [[UIButton alloc] initWithFrame:CGRectZero];
   self.closeButton = closeButtonScoped;
   [self addSubview:self.closeButton];
   [constraints addObjectsFromArray:@[
@@ -253,10 +250,9 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
   NSString* placeholder = [self.inputField placeholder];
   UIColor* inputTextColor = [UIColor colorWithWhite:1 alpha:0.7];
   NSDictionary* attributes = @{NSForegroundColorAttributeName : inputTextColor};
-  [self.inputField
-      setAttributedPlaceholder:[[[NSAttributedString alloc]
-                                   initWithString:placeholder
-                                       attributes:attributes] autorelease]];
+  [self.inputField setAttributedPlaceholder:[[NSAttributedString alloc]
+                                                initWithString:placeholder
+                                                    attributes:attributes]];
   UIColor* resultTextColor = [UIColor colorWithWhite:1 alpha:0.3];
   [self.resultsLabel setTextColor:resultTextColor];
   UIColor* separatorColor = [UIColor colorWithWhite:0 alpha:0.1];

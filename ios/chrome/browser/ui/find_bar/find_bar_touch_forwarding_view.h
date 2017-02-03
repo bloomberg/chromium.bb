@@ -11,7 +11,7 @@
 @interface FindBarTouchForwardingView : UIView
 
 // View to forward touch events to.
-@property(nonatomic, assign) UIView* targetView;
+@property(nonatomic, weak) UIView* targetView;
 
 @end
 

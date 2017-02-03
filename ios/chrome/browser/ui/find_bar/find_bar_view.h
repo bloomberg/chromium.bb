@@ -38,13 +38,13 @@ extern NSString* const kFindInPageCloseButtonId;
 - (void)updateResultsLabelWithText:(NSString*)text;
 
 // The textfield with search term.
-@property(nonatomic, assign) UITextField* inputField;
+@property(nonatomic, weak) UITextField* inputField;
 // Button to go to previous search result.
-@property(nonatomic, assign) UIButton* previousButton;
+@property(nonatomic, weak) UIButton* previousButton;
 // Button to go to next search result.
-@property(nonatomic, assign) UIButton* nextButton;
+@property(nonatomic, weak) UIButton* nextButton;
 // Button to dismiss Find in Page.
-@property(nonatomic, assign) UIButton* closeButton;
+@property(nonatomic, weak) UIButton* closeButton;
 
 @end
 

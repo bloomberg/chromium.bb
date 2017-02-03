@@ -58,6 +58,7 @@ bundle_data("resources") {
 }
 
 source_set("find_bar") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "find_bar_controller_ios.h",
     "find_bar_controller_ios.mm",

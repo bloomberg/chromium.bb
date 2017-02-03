@@ -15,7 +15,7 @@ extern NSString* const kFindInPageContainerViewId;
 @interface FindBarControllerIOS : NSObject
 
 // The main view, for both iPhone or iPad.
-@property(nonatomic, readonly) IBOutlet UIView* view;
+@property(nonatomic, readonly, strong) IBOutlet UIView* view;
 
 // Init with incognito style.
 - (instancetype)initWithIncognito:(BOOL)isIncognito;

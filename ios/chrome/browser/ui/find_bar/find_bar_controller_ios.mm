@@ -9,8 +9,6 @@
 #include "base/ios/ios_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
@@ -21,6 +19,10 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 NSString* const kFindInPageContainerViewId = @"kFindInPageContainerViewId";
 
@@ -44,9 +46,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 
 #pragma mark - FindBarControllerIOS
 
-@interface FindBarControllerIOS ()<UITextFieldDelegate> {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_FindInPageController;
-}
+@interface FindBarControllerIOS ()<UITextFieldDelegate>
 
 // Set up iPad UI
 - (void)setUpIPad;
@@ -84,9 +84,9 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 @property(nonatomic, readwrite, strong) UIView* view;
 // The view containing all the buttons and textfields that is common between
 // iPhone and iPad.
-@property(nonatomic, retain) FindBarView* findBarView;
+@property(nonatomic, strong) FindBarView* findBarView;
 // Typing delay timer.
-@property(nonatomic, retain) NSTimer* delayTimer;
+@property(nonatomic, strong) NSTimer* delayTimer;
 // Yes if incognito.
 @property(nonatomic, assign) BOOL isIncognito;
 @end
@@ -103,8 +103,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 - (instancetype)initWithIncognito:(BOOL)isIncognito {
   self = [super init];
   if (self) {
-    _propertyReleaser_FindInPageController.Init(self,
-                                                [FindBarControllerIOS class]);
     _isIncognito = isIncognito;
   }
   return self;
@@ -112,7 +110,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 
 #pragma mark View Setup & Teardown
 
-- (UIView*)newFindBarView {
+- (UIView*)constructFindBarView {
   BOOL isIPad = IsIPadIdiom();
   UIView* findBarBackground = nil;
   if (isIPad) {
@@ -128,12 +126,11 @@ const NSTimeInterval kSearchShortDelay = 0.100;
     findBarBackground.backgroundColor = [UIColor whiteColor];
   }
 
-  self.findBarView = [[[FindBarView alloc]
-      initWithDarkAppearance:self.isIncognito && !IsIPadIdiom()] autorelease];
+  self.findBarView = [[FindBarView alloc]
+      initWithDarkAppearance:self.isIncognito && !IsIPadIdiom()];
   [findBarBackground addSubview:self.findBarView];
   self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;
-  base::scoped_nsobject<NSMutableArray> constraints(
-      [[NSMutableArray alloc] init]);
+  NSMutableArray* constraints = [[NSMutableArray alloc] init];
   [constraints addObjectsFromArray:@[
     [self.findBarView.trailingAnchor
         constraintEqualToAnchor:findBarBackground.trailingAnchor],
@@ -170,7 +167,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 }
 
 - (void)setupViewInView:(UIView*)view {
-  self.view = [[self newFindBarView] autorelease];
+  self.view = [self constructFindBarView];
 
   // Idiom specific setup.
   if ([self shouldShowCompactSearchBarInView:view])
