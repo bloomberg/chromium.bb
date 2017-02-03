@@ -11368,27 +11368,6 @@
           "can_use_on_swarming_builders": false
         },
         "test": "browser_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "media_service_unittests"
-      },
-      {
-        "args": [
-          "--ozone-platform=headless"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "mus_ws_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "views_mus_unittests"
       }
     ]
   },

@@ -248,6 +248,12 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "media_service_unittests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
@@ -271,9 +277,6 @@
         "test": "mus_demo_unittests"
       },
       {
-        "args": [
-          "--ozone-platform=headless"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
