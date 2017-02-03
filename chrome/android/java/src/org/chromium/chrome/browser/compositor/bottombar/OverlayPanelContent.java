@@ -316,12 +316,6 @@ public class OverlayPanelContent {
                                 !TextUtils.equals(url, mLoadedUrl),
                                 isHttpFailureCode(httpResultCode));
                     }
-
-                    @Override
-                    public void didFinishLoad(long frameId, String validatedUrl,
-                            boolean isMainFrame) {
-                        mContentDelegate.onContentLoadFinished();
-                    }
                 };
 
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();

@@ -36,11 +36,6 @@ public class OverlayContentDelegate {
     public void onContentLoadStarted(String url) {}
 
     /**
-     * Called when the panel content has finished loading.
-     */
-    public void onContentLoadFinished() {}
-
-    /**
      * Called when the navigation entry has been committed.
      */
     public void onNavigationEntryCommitted() {}

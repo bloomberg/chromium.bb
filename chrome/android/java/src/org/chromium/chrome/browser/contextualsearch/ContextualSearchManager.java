@@ -961,26 +961,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         }
 
         @Override
-        public void onContentLoadFinished() {
-            if (mSearchRequest == null) return;
-
-            mSearchPanel.onSearchResultsLoaded(mSearchRequest.wasPrefetch());
-
-            // Any time we place a page in a ContentViewCore, clear history if needed.
-            // This prevents error URLs from appearing in the Tab's history stack.
-            // Also please note that clearHistory() will not
-            // clear the current entry (search results page in this case),
-            // and it will not work properly if there are pending navigations.
-            // That's why we need to clear the history here, after the navigation
-            // is completed.
-            boolean shouldClearHistory = mSearchRequest.getHasFailed();
-            if (shouldClearHistory && mSearchPanel.getContentViewCore() != null) {
-                mSearchPanel.getContentViewCore().getWebContents().getNavigationController()
-                        .clearHistory();
-            }
-        }
-
-        @Override
         public void onVisibilityChanged(boolean isVisible) {
             if (isVisible) {
                 mWereSearchResultsSeen = true;
