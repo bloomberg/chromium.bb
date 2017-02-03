@@ -112,7 +112,7 @@ void LayoutBlock::removeFromGlobalMaps() {
     ASSERT(!descendants->isEmpty());
     for (LayoutBox* descendant : *descendants) {
       ASSERT(gPositionedContainerMap->get(descendant) == this);
-      gPositionedContainerMap->remove(descendant);
+      gPositionedContainerMap->erase(descendant);
     }
   }
   if (hasPercentHeightDescendants()) {
@@ -1012,7 +1012,7 @@ void LayoutBlock::removePositionedObject(LayoutBox* o) {
   ASSERT(positionedDescendants && positionedDescendants->contains(o));
   positionedDescendants->remove(o);
   if (positionedDescendants->isEmpty()) {
-    gPositionedDescendantsMap->remove(container);
+    gPositionedDescendantsMap->erase(container);
     container->m_hasPositionedObjects = false;
   }
 }
@@ -1072,10 +1072,10 @@ void LayoutBlock::removePositionedObjects(
   for (auto object : deadObjects) {
     ASSERT(gPositionedContainerMap->get(object) == this);
     positionedDescendants->remove(object);
-    gPositionedContainerMap->remove(object);
+    gPositionedContainerMap->erase(object);
   }
   if (positionedDescendants->isEmpty()) {
-    gPositionedDescendantsMap->remove(this);
+    gPositionedDescendantsMap->erase(this);
     m_hasPositionedObjects = false;
   }
 }
@@ -1108,7 +1108,7 @@ void LayoutBlock::removePercentHeightDescendant(LayoutBox* descendant) {
     descendants->remove(descendant);
     descendant->setPercentHeightContainer(nullptr);
     if (descendants->isEmpty()) {
-      gPercentHeightDescendantsMap->remove(this);
+      gPercentHeightDescendantsMap->erase(this);
       m_hasPercentHeightDescendants = false;
     }
   }

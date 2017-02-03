@@ -388,7 +388,7 @@ const ActiveStyleSheetVector StyleEngine::activeStyleSheetsForInspector() {
 }
 
 void StyleEngine::shadowRootRemovedFromDocument(ShadowRoot* shadowRoot) {
-  m_styleSheetCollectionMap.remove(shadowRoot);
+  m_styleSheetCollectionMap.erase(shadowRoot);
   m_activeTreeScopes.remove(shadowRoot);
   m_dirtyTreeScopes.remove(shadowRoot);
   resetAuthorStyle(*shadowRoot);

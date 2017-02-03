@@ -1113,7 +1113,7 @@ void LayoutBoxModelObject::setContinuation(LayoutBoxModelObject* continuation) {
     continuationMap->set(this, continuation);
   } else {
     if (continuationMap)
-      continuationMap->remove(this);
+      continuationMap->erase(this);
   }
 }
 

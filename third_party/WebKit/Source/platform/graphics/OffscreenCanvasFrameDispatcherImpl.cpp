@@ -425,9 +425,9 @@ void OffscreenCanvasFrameDispatcherImpl::reclaimResource(unsigned resourceId) {
     m_spareResourceLocks.remove(resourceId);
     return;
   }
-  m_cachedImages.remove(resourceId);
-  m_sharedBitmaps.remove(resourceId);
-  m_cachedTextureIds.remove(resourceId);
+  m_cachedImages.erase(resourceId);
+  m_sharedBitmaps.erase(resourceId);
+  m_cachedTextureIds.erase(resourceId);
 }
 
 bool OffscreenCanvasFrameDispatcherImpl::verifyImageSize(

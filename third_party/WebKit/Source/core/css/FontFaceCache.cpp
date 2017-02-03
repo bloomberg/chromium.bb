@@ -72,7 +72,7 @@ void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector,
   if (cssConnected)
     m_cssConnectedFontFaces.add(fontFace);
 
-  m_fonts.remove(fontFace->family());
+  m_fonts.erase(fontFace->family());
   incrementVersion();
 }
 
@@ -103,7 +103,7 @@ void FontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected) {
     if (familyFontFaces->isEmpty())
       m_fontFaces.remove(fontFacesIter);
   }
-  m_fonts.remove(fontFace->family());
+  m_fonts.erase(fontFace->family());
   if (cssConnected)
     m_cssConnectedFontFaces.remove(fontFace);
 

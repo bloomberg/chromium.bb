@@ -5573,7 +5573,7 @@ TEST(HeapTest, GCInHashMapOperations) {
   Map* map = new Map();
   IntWrapper* key = new IntWrapper(42);
   map->add(key, AllocatesOnAssignment(103));
-  map->remove(key);
+  map->erase(key);
   for (int i = 0; i < 10; i++)
     map->add(AllocatesOnAssignment(i), AllocatesOnAssignment(i));
   for (Map::iterator it = map->begin(); it != map->end(); ++it)

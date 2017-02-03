@@ -270,7 +270,7 @@ void IDBTransaction::objectStoreDeleted(const int64_t objectStoreId,
     m_deletedObjectStores.push_back(std::move(metadata));
   } else {
     IDBObjectStore* objectStore = it->value;
-    m_objectStoreMap.remove(name);
+    m_objectStoreMap.erase(name);
     objectStore->markDeleted();
     if (objectStore->id() > m_oldDatabaseMetadata.maxObjectStoreId) {
       // The store was created and deleted in this transaction, so it will

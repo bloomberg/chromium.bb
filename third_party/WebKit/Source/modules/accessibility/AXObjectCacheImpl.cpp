@@ -490,7 +490,7 @@ void AXObjectCacheImpl::remove(LayoutObject* layoutObject) {
 
   AXID axID = m_layoutObjectMapping.get(layoutObject);
   remove(axID);
-  m_layoutObjectMapping.remove(layoutObject);
+  m_layoutObjectMapping.erase(layoutObject);
 }
 
 void AXObjectCacheImpl::remove(Node* node) {
@@ -500,7 +500,7 @@ void AXObjectCacheImpl::remove(Node* node) {
   // This is all safe even if we didn't have a mapping.
   AXID axID = m_nodeObjectMapping.get(node);
   remove(axID);
-  m_nodeObjectMapping.remove(node);
+  m_nodeObjectMapping.erase(node);
 
   if (node->layoutObject()) {
     remove(node->layoutObject());
@@ -514,7 +514,7 @@ void AXObjectCacheImpl::remove(AbstractInlineTextBox* inlineTextBox) {
 
   AXID axID = m_inlineTextBoxObjectMapping.get(inlineTextBox);
   remove(axID);
-  m_inlineTextBoxObjectMapping.remove(inlineTextBox);
+  m_inlineTextBoxObjectMapping.erase(inlineTextBox);
 }
 
 AXID AXObjectCacheImpl::platformGenerateAXID() const {
@@ -563,12 +563,12 @@ void AXObjectCacheImpl::removeAXID(AXObject* object) {
   if (m_ariaOwnerToChildrenMapping.contains(objID)) {
     Vector<AXID> childAXIDs = m_ariaOwnerToChildrenMapping.get(objID);
     for (size_t i = 0; i < childAXIDs.size(); ++i)
-      m_ariaOwnedChildToOwnerMapping.remove(childAXIDs[i]);
-    m_ariaOwnerToChildrenMapping.remove(objID);
+      m_ariaOwnedChildToOwnerMapping.erase(childAXIDs[i]);
+    m_ariaOwnerToChildrenMapping.erase(objID);
   }
-  m_ariaOwnedChildToOwnerMapping.remove(objID);
-  m_ariaOwnedChildToRealParentMapping.remove(objID);
-  m_ariaOwnerToIdsMapping.remove(objID);
+  m_ariaOwnedChildToOwnerMapping.erase(objID);
+  m_ariaOwnedChildToRealParentMapping.erase(objID);
+  m_ariaOwnerToIdsMapping.erase(objID);
 }
 
 void AXObjectCacheImpl::selectionChanged(Node* node) {
@@ -730,7 +730,7 @@ void AXObjectCacheImpl::updateAriaOwns(
       if (owners) {
         owners->remove(owner->axObjectID());
         if (owners->isEmpty())
-          m_idToAriaOwnersMapping.remove(id);
+          m_idToAriaOwnersMapping.erase(id);
       }
     }
   }
@@ -812,7 +812,7 @@ void AXObjectCacheImpl::updateAriaOwns(
 
     // Remove it from the child -> owner mapping so it's not owned by this owner
     // anymore.
-    m_ariaOwnedChildToOwnerMapping.remove(removedChildID);
+    m_ariaOwnedChildToOwnerMapping.erase(removedChildID);
 
     if (removedChild) {
       // If the child still exists, find its "real" parent, and reparent it back
@@ -827,7 +827,7 @@ void AXObjectCacheImpl::updateAriaOwns(
 
     // Remove the child -> original parent mapping too since this object has now
     // been reparented back to its original parent.
-    m_ariaOwnedChildToRealParentMapping.remove(removedChildID);
+    m_ariaOwnedChildToRealParentMapping.erase(removedChildID);
   }
 
   for (size_t i = 0; i < newChildAXIDs.size(); ++i) {

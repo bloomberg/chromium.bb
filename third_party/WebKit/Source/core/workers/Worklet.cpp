@@ -45,7 +45,7 @@ void Worklet::notifyWorkletScriptLoadingFinished(
     const ScriptSourceCode& sourceCode) {
   DCHECK(isMainThread());
   ScriptPromiseResolver* resolver = m_loaderAndResolvers.get(scriptLoader);
-  m_loaderAndResolvers.remove(scriptLoader);
+  m_loaderAndResolvers.erase(scriptLoader);
 
   if (!scriptLoader->wasScriptLoadSuccessful()) {
     resolver->reject(DOMException::create(NetworkError));

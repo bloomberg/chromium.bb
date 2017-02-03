@@ -176,7 +176,7 @@ void InspectorResourceContentLoader::ensureResourcesContentLoaded(
 }
 
 void InspectorResourceContentLoader::cancel(int clientId) {
-  m_callbacks.remove(clientId);
+  m_callbacks.erase(clientId);
 }
 
 InspectorResourceContentLoader::~InspectorResourceContentLoader() {

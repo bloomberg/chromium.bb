@@ -86,7 +86,7 @@ static void saveToOriginMap(SecurityOrigin* origin, const KURL& url) {
 
 static void removeFromOriginMap(const KURL& url) {
   if (BlobURL::getOrigin(url) == "null")
-    originMap()->remove(url.getString());
+    originMap()->erase(url.getString());
 }
 
 void BlobRegistry::registerBlobData(const String& uuid,

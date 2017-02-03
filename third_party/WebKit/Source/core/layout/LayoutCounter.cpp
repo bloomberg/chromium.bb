@@ -505,7 +505,7 @@ static void destroyCounterNodeWithoutMapRemoval(const AtomicString& identifier,
     previous = child->previousInPreOrder();
     child->parent()->removeChild(child.get());
     ASSERT(counterMaps().get(&child->owner())->get(identifier) == child);
-    counterMaps().get(&child->owner())->remove(identifier);
+    counterMaps().get(&child->owner())->erase(identifier);
   }
   if (CounterNode* parent = node->parent())
     parent->removeChild(node);

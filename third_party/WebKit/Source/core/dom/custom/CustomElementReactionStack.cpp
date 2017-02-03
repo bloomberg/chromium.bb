@@ -57,7 +57,7 @@ void CustomElementReactionStack::invokeReactions(ElementQueue& queue) {
     if (CustomElementReactionQueue* reactions = m_map.get(element)) {
       reactions->invokeReactions(element);
       CHECK(reactions->isEmpty());
-      m_map.remove(element);
+      m_map.erase(element);
     }
   }
 }

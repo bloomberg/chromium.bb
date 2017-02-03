@@ -127,7 +127,7 @@ void SVGElementProxy::removeClient(SVGResourceClient* client) {
   // Unregister and drop the scope association, then drop the client.
   if (!observer->hasClients()) {
     observer->unregister();
-    m_observers.remove(observer->treeScope());
+    m_observers.erase(observer->treeScope());
   }
   m_clients.remove(entry);
 }

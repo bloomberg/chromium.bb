@@ -390,7 +390,7 @@ const AtomicString& FormKeyGenerator::formKey(
 
 void FormKeyGenerator::willDeleteForm(HTMLFormElement* form) {
   DCHECK(form);
-  m_formToKeyMap.remove(form);
+  m_formToKeyMap.erase(form);
 }
 
 // ----------------------------------------------------------------------------

@@ -690,7 +690,7 @@ ScriptPromise NFC::cancelWatch(ScriptState* scriptState, long id) {
     return promise;
 
   if (id) {
-    m_callbacks.remove(id);
+    m_callbacks.erase(id);
   } else {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(NotFoundError));

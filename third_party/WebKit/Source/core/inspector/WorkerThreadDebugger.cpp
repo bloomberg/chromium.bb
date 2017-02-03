@@ -105,7 +105,7 @@ void WorkerThreadDebugger::contextWillBeDestroyed(
     v8::Local<v8::Context> context) {
   int workerContextGroupId = contextGroupId(workerThread);
   DCHECK(m_workerThreads.contains(workerContextGroupId));
-  m_workerThreads.remove(workerContextGroupId);
+  m_workerThreads.erase(workerContextGroupId);
   v8Inspector()->contextDestroyed(context);
 }
 

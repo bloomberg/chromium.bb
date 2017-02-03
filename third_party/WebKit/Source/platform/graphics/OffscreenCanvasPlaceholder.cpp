@@ -57,7 +57,7 @@ void OffscreenCanvasPlaceholder::unregisterPlaceholder() {
   if (!isPlaceholderRegistered())
     return;
   DCHECK(placeholderRegistry().find(m_placeholderId)->value == this);
-  placeholderRegistry().remove(m_placeholderId);
+  placeholderRegistry().erase(m_placeholderId);
   m_placeholderId = kNoPlaceholderId;
 }
 

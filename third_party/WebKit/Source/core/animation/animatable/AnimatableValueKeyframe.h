@@ -22,7 +22,7 @@ class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
     m_propertyValues.set(property, std::move(value));
   }
   void clearPropertyValue(CSSPropertyID property) {
-    m_propertyValues.remove(property);
+    m_propertyValues.erase(property);
   }
   AnimatableValue* propertyValue(CSSPropertyID property) const {
     DCHECK(m_propertyValues.contains(property));

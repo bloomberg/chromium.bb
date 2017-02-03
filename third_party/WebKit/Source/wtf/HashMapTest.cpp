@@ -126,7 +126,7 @@ TEST(HashMapTest, OwnPtrAsValue) {
   EXPECT_FALSE(map.contains(1));
   EXPECT_EQ(0, destructNumber);
 
-  map.remove(2);
+  map.erase(2);
   EXPECT_FALSE(map.contains(2));
   EXPECT_EQ(0UL, map.size());
   EXPECT_EQ(1, destructNumber);
@@ -186,7 +186,7 @@ TEST(HashMapTest, RefPtrAsKey) {
   ptr.clear();
   EXPECT_FALSE(isDeleted);
 
-  map.remove(rawPtr);
+  map.erase(rawPtr);
   EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
   EXPECT_TRUE(isDeleted);
   EXPECT_TRUE(map.isEmpty());
@@ -210,7 +210,7 @@ TEST(HashMaptest, RemoveAdd) {
   ptr.clear();
   EXPECT_FALSE(isDeleted);
 
-  map.remove(1);
+  map.erase(1);
   EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
   EXPECT_TRUE(isDeleted);
   EXPECT_TRUE(map.isEmpty());
@@ -223,7 +223,7 @@ TEST(HashMaptest, RemoveAdd) {
     EXPECT_FALSE(isDeleted2);
     ptr2.clear();
     EXPECT_FALSE(isDeleted2);
-    map.remove(i);
+    map.erase(i);
     EXPECT_TRUE(isDeleted2);
   }
 }
@@ -399,7 +399,7 @@ TEST(HashMapTest, MoveOnlyValueType) {
     EXPECT_EQ(999, addResult.storedValue->value.value());
   }
 
-  map.remove(11);
+  map.erase(11);
   iter = map.find(11);
   EXPECT_TRUE(iter == map.end());
 
@@ -454,7 +454,7 @@ TEST(HashMapTest, MoveOnlyKeyType) {
     EXPECT_EQ(999, addResult.storedValue->value);
   }
 
-  map.remove(MoveOnly(11));
+  map.erase(MoveOnly(11));
   iter = map.find(MoveOnly(11));
   EXPECT_TRUE(iter == map.end());
 
@@ -641,7 +641,7 @@ TEST(HashMapTest, MoveOnlyPairKeyType) {
     EXPECT_EQ(999, addResult.storedValue->value);
   }
 
-  map.remove(Pair(MoveOnly(11), -11));
+  map.erase(Pair(MoveOnly(11), -11));
   iter = map.find(Pair(MoveOnly(11), -11));
   EXPECT_TRUE(iter == map.end());
 

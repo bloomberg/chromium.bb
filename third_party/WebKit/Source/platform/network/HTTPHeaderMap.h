@@ -74,7 +74,7 @@ class PLATFORM_EXPORT HTTPHeaderMap final {
   AddResult add(const AtomicString& k, const AtomicString& v) {
     return m_headers.add(k, v);
   }
-  void remove(const AtomicString& k) { m_headers.remove(k); }
+  void remove(const AtomicString& k) { m_headers.erase(k); }
   bool operator!=(const HTTPHeaderMap& rhs) const {
     return m_headers != rhs.m_headers;
   }

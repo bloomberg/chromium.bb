@@ -29,7 +29,7 @@ void ScrollCustomizationCallbacks::setApplyScroll(
 }
 
 void ScrollCustomizationCallbacks::removeApplyScroll(Element* element) {
-  m_applyScrollCallbacks.remove(element);
+  m_applyScrollCallbacks.erase(element);
 }
 
 ScrollStateCallback* ScrollCustomizationCallbacks::getApplyScroll(

@@ -220,7 +220,7 @@ void USB::OnDeviceRemoved(usb::DeviceInfoPtr deviceInfo) {
     device = USBDevice::create(std::move(deviceInfo), nullptr,
                                getExecutionContext());
   dispatchEvent(USBConnectionEvent::create(EventTypeNames::disconnect, device));
-  m_deviceCache.remove(guid);
+  m_deviceCache.erase(guid);
 }
 
 void USB::onDeviceManagerConnectionError() {

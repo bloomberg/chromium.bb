@@ -154,7 +154,7 @@ void StyleInvalidator::rescheduleSiblingInvalidationsAsDescendants(
 void StyleInvalidator::clearInvalidation(ContainerNode& node) {
   if (!node.needsStyleInvalidation())
     return;
-  m_pendingInvalidationMap.remove(&node);
+  m_pendingInvalidationMap.erase(&node);
   node.clearNeedsStyleInvalidation();
 }
 

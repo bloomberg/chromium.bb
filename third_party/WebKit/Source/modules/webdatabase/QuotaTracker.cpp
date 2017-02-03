@@ -86,7 +86,7 @@ void QuotaTracker::updateSpaceAvailableToOrigin(
 
 void QuotaTracker::resetSpaceAvailableToOrigin(SecurityOrigin* origin) {
   MutexLocker lockData(m_dataGuard);
-  m_spaceAvailableToOrigins.remove(origin->toRawString());
+  m_spaceAvailableToOrigins.erase(origin->toRawString());
 }
 
 }  // namespace blink

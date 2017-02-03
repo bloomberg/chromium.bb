@@ -393,7 +393,7 @@ void Database::closeDatabase() {
 
     ASSERT(guidCount().contains(m_guid));
     if (guidCount().remove(m_guid)) {
-      guidToVersionMap().remove(m_guid);
+      guidToVersionMap().erase(m_guid);
     }
   }
 }

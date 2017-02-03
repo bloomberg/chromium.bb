@@ -468,7 +468,7 @@ void WebGLFramebuffer::removeAttachmentInternal(GLenum target,
   WebGLAttachment* attachmentObject = getAttachment(attachment);
   if (attachmentObject) {
     attachmentObject->onDetached(context()->contextGL());
-    m_attachments.remove(attachment);
+    m_attachments.erase(attachment);
     drawBuffersIfNecessary(false);
   }
 }

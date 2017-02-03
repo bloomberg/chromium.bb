@@ -134,10 +134,10 @@ void DatabaseTracker::removeOpenDatabase(Database* database) {
 
     databaseSet->remove(found);
     if (databaseSet->isEmpty()) {
-      nameMap->remove(name);
+      nameMap->erase(name);
       delete databaseSet;
       if (nameMap->isEmpty()) {
-        m_openDatabaseMap->remove(originString);
+        m_openDatabaseMap->erase(originString);
         delete nameMap;
       }
     }

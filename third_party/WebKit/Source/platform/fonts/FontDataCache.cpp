@@ -146,7 +146,7 @@ bool FontDataCache::purgeLeastRecentlyUsed(int count) {
   ListHashSet<RefPtr<SimpleFontData>>::iterator it = m_inactiveFontData.begin();
   for (int i = 0; i < count && it != end; ++it, ++i) {
     RefPtr<SimpleFontData>& fontData = *it.get();
-    m_cache.remove(&(fontData->platformData()));
+    m_cache.erase(&(fontData->platformData()));
     // We should not delete SimpleFontData here because deletion can modify
     // m_inactiveFontData. See http://trac.webkit.org/changeset/44011
     fontDataToDelete.push_back(fontData);

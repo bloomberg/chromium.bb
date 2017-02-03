@@ -84,7 +84,7 @@ void WebURLLoaderMockFactoryImpl::serveAsynchronousRequests() {
     LoaderToRequestMap::iterator iter = pending_loaders_.begin();
     WeakPtr<WebURLLoaderMock> loader(iter->key->GetWeakPtr());
     const WebURLRequest request = iter->value;
-    pending_loaders_.remove(loader.get());
+    pending_loaders_.erase(loader.get());
 
     WebURLResponse response;
     WebURLError error;
@@ -113,7 +113,7 @@ bool WebURLLoaderMockFactoryImpl::IsMockedURL(const blink::WebURL& url) {
 }
 
 void WebURLLoaderMockFactoryImpl::CancelLoad(WebURLLoaderMock* loader) {
-  pending_loaders_.remove(loader);
+  pending_loaders_.erase(loader);
 }
 
 void WebURLLoaderMockFactoryImpl::LoadSynchronously(

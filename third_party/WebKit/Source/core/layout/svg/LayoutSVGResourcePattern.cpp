@@ -61,7 +61,7 @@ void LayoutSVGResourcePattern::removeAllClientsFromCache(
 void LayoutSVGResourcePattern::removeClientFromCache(LayoutObject* client,
                                                      bool markForInvalidation) {
   ASSERT(client);
-  m_patternMap.remove(client);
+  m_patternMap.erase(client);
   markClientForInvalidation(
       client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }

@@ -110,7 +110,7 @@ void ImageQualityController::removeLayer(const LayoutObject& object,
                                          LayerSizeMap* innerMap,
                                          const void* layer) {
   if (innerMap) {
-    innerMap->remove(layer);
+    innerMap->erase(layer);
     if (innerMap->isEmpty())
       objectDestroyed(object);
   }
@@ -133,7 +133,7 @@ void ImageQualityController::set(const LayoutObject& object,
 }
 
 void ImageQualityController::objectDestroyed(const LayoutObject& object) {
-  m_objectLayerSizeMap.remove(&object);
+  m_objectLayerSizeMap.erase(&object);
   if (m_objectLayerSizeMap.isEmpty()) {
     m_timer->stop();
   }

@@ -86,7 +86,7 @@ class WeakIdentifierMap final
   void objectDestroyed(T* object) {
     IdentifierType identifier = this->m_objectToIdentifier.take(object);
     if (!WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(identifier))
-      this->m_identifierToObject.remove(identifier);
+      this->m_identifierToObject.erase(identifier);
   }
 };
 

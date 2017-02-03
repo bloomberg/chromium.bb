@@ -164,7 +164,7 @@ void MediaSession::setActionHandler(const String& action,
     if (m_actionHandlers.find(action) == m_actionHandlers.end())
       return;
 
-    m_actionHandlers.remove(action);
+    m_actionHandlers.erase(action);
 
     notifyActionChange(action, ActionChangeType::ActionDisabled);
   }

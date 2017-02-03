@@ -162,7 +162,7 @@ HarfBuzzFace::~HarfBuzzFace() {
   ASSERT(result.get()->value->refCount() > 1);
   result.get()->value->deref();
   if (result.get()->value->refCount() == 1)
-    harfBuzzFontCache()->remove(m_uniqueID);
+    harfBuzzFontCache()->erase(m_uniqueID);
 }
 
 static hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value) {

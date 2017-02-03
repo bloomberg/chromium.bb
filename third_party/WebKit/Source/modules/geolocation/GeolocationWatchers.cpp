@@ -35,7 +35,7 @@ void GeolocationWatchers::remove(int id) {
   IdToNotifierMap::iterator iter = m_idToNotifierMap.find(id);
   if (iter == m_idToNotifierMap.end())
     return;
-  m_notifierToIdMap.remove(iter->value);
+  m_notifierToIdMap.erase(iter->value);
   m_idToNotifierMap.remove(iter);
 }
 
@@ -43,7 +43,7 @@ void GeolocationWatchers::remove(GeoNotifier* notifier) {
   NotifierToIdMap::iterator iter = m_notifierToIdMap.find(notifier);
   if (iter == m_notifierToIdMap.end())
     return;
-  m_idToNotifierMap.remove(iter->value);
+  m_idToNotifierMap.erase(iter->value);
   m_notifierToIdMap.remove(iter);
 }
 

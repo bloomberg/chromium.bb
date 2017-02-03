@@ -347,9 +347,9 @@ Response InspectorAnimationAgent::releaseAnimations(
     blink::Animation* clone = m_idToAnimationClone.get(animationId);
     if (clone)
       clone->cancel();
-    m_idToAnimationClone.remove(animationId);
-    m_idToAnimation.remove(animationId);
-    m_idToAnimationType.remove(animationId);
+    m_idToAnimationClone.erase(animationId);
+    m_idToAnimation.erase(animationId);
+    m_idToAnimationType.erase(animationId);
     m_clearedAnimations.insert(animationId);
   }
   return Response::OK();

@@ -38,7 +38,7 @@ NavigatorContentUtilsClientMock::isProtocolHandlerRegistered(
 void NavigatorContentUtilsClientMock::unregisterProtocolHandler(
     const String& scheme,
     const KURL& url) {
-  m_protocolMap.remove(scheme);
+  m_protocolMap.erase(scheme);
 }
 
 }  // namespace blink

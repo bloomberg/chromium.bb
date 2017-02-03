@@ -893,7 +893,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(
   if (!update.activeInterpolationsForAnimations().isEmpty() &&
       !activeInterpolationsForTransitions.isEmpty()) {
     for (const auto& entry : update.activeInterpolationsForAnimations())
-      activeInterpolationsForTransitions.remove(entry.key);
+      activeInterpolationsForTransitions.erase(entry.key);
   }
   update.adoptActiveInterpolationsForTransitions(
       activeInterpolationsForTransitions);

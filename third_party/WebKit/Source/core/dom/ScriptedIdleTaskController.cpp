@@ -130,7 +130,7 @@ void ScriptedIdleTaskController::cancelCallback(CallbackId id) {
   if (!isValidCallbackId(id))
     return;
 
-  m_callbacks.remove(id);
+  m_callbacks.erase(id);
 }
 
 void ScriptedIdleTaskController::callbackFired(

@@ -90,7 +90,7 @@ void CSSStyleRule::setSelectorText(const String& selectorText) {
   m_styleRule->wrapperAdoptSelectorList(std::move(selectorList));
 
   if (hasCachedSelectorText()) {
-    selectorTextCache().remove(this);
+    selectorTextCache().erase(this);
     setHasCachedSelectorText(false);
   }
 }

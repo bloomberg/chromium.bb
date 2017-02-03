@@ -65,7 +65,7 @@ void PublicURLManager::revoke(const KURL& url) {
   for (auto& registryUrl : m_registryToURL) {
     if (registryUrl.value.contains(url.getString())) {
       registryUrl.key->unregisterURL(url);
-      registryUrl.value.remove(url.getString());
+      registryUrl.value.erase(url.getString());
       break;
     }
   }
@@ -86,7 +86,7 @@ void PublicURLManager::revoke(const String& uuid) {
       }
     }
     for (const auto& url : urlsToRemove)
-      registeredURLs.remove(url);
+      registeredURLs.erase(url);
     urlsToRemove.clear();
   }
 }

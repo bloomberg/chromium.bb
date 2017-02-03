@@ -314,8 +314,8 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap) {
   if (!id)
     return;
 
-  m_idToNode.remove(id);
-  m_idToNodesMap.remove(id);
+  m_idToNode.erase(id);
+  m_idToNodesMap.erase(id);
 
   if (node->isFrameOwnerElement()) {
     Document* contentDocument =
@@ -344,7 +344,7 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap) {
     }
   }
 
-  nodesMap->remove(node);
+  nodesMap->erase(node);
   if (m_domListener)
     m_domListener->didRemoveDOMNode(node);
 
@@ -359,7 +359,7 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap) {
     }
   }
   if (nodesMap == m_documentNodeToIdMap.get())
-    m_cachedChildCount.remove(id);
+    m_cachedChildCount.erase(id);
 }
 
 Response InspectorDOMAgent::assertNode(int nodeId, Node*& node) {
@@ -1119,7 +1119,7 @@ Response InspectorDOMAgent::getSearchResults(
 }
 
 Response InspectorDOMAgent::discardSearchResults(const String& searchId) {
-  m_searchResults.remove(searchId);
+  m_searchResults.erase(searchId);
   return Response::OK();
 }
 

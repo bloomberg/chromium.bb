@@ -124,7 +124,7 @@ void InspectorWorkerAgent::workerTerminated(WorkerInspectorProxy* proxy) {
     return;
   frontend()->detachedFromTarget(proxy->inspectorId());
   proxy->disconnectFromInspector(this);
-  m_connectedProxies.remove(proxy->inspectorId());
+  m_connectedProxies.erase(proxy->inspectorId());
 }
 
 void InspectorWorkerAgent::connectToAllProxies() {

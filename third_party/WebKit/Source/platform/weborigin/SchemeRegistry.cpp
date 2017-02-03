@@ -334,7 +334,7 @@ void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(
 void SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
     const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.remove(
+  getMutableURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.erase(
       scheme);
 }
 

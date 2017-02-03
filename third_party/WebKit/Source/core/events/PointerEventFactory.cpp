@@ -465,8 +465,8 @@ bool PointerEventFactory::remove(const int mappedId) {
 
   IncomingId p = m_pointerIdMapping.get(mappedId).incomingId;
   int typeInt = p.pointerTypeInt();
-  m_pointerIdMapping.remove(mappedId);
-  m_pointerIncomingIdMapping.remove(p);
+  m_pointerIdMapping.erase(mappedId);
+  m_pointerIncomingIdMapping.erase(p);
   if (m_primaryId[typeInt] == mappedId)
     m_primaryId[typeInt] = PointerEventFactory::s_invalidId;
   m_idCount[typeInt]--;

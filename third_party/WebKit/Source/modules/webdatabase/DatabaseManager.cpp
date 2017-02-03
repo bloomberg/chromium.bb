@@ -106,7 +106,7 @@ void DatabaseManager::unregisterDatabaseContext(
 #if DCHECK_IS_ON()
   m_databaseContextRegisteredCount--;
 #endif
-  m_contextMap.remove(context);
+  m_contextMap.erase(context);
 }
 
 #if DCHECK_IS_ON()

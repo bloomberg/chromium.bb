@@ -239,7 +239,7 @@ void WebGLRenderingContextBase::addToEvictedList(
 
 void WebGLRenderingContextBase::removeFromEvictedList(
     WebGLRenderingContextBase* context) {
-  forciblyEvictedContexts().remove(context);
+  forciblyEvictedContexts().erase(context);
 }
 
 void WebGLRenderingContextBase::restoreEvictedContext(
@@ -255,7 +255,7 @@ void WebGLRenderingContextBase::restoreEvictedContext(
          forciblyEvictedContexts().size()) {
     WebGLRenderingContextBase* evictedContext = oldestEvictedContext();
     if (!evictedContext->m_restoreAllowed) {
-      forciblyEvictedContexts().remove(evictedContext);
+      forciblyEvictedContexts().erase(evictedContext);
       continue;
     }
 
@@ -265,7 +265,7 @@ void WebGLRenderingContextBase::restoreEvictedContext(
 
     // If there's room in the pixel budget for this context, restore it.
     if (!desiredSize.isEmpty()) {
-      forciblyEvictedContexts().remove(evictedContext);
+      forciblyEvictedContexts().erase(evictedContext);
       evictedContext->forceRestoreContext();
     }
     break;

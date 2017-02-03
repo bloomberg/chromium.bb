@@ -422,7 +422,7 @@ void DocumentMarkerController::removeMarkers(
   }
 
   if (emptyListsCount == DocumentMarker::MarkerTypeIndexesCount) {
-    m_markers.remove(node);
+    m_markers.erase(node);
     if (m_markers.isEmpty())
       m_possiblyExistingMarkerTypes = 0;
   }

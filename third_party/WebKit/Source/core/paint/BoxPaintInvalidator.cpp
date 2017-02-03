@@ -32,7 +32,7 @@ void BoxPaintInvalidator::boxWillBeDestroyed(const LayoutBox& box) {
   DCHECK(box.hasPreviousBoxGeometries() ==
          previousBoxGeometriesMap().contains(&box));
   if (box.hasPreviousBoxGeometries())
-    previousBoxGeometriesMap().remove(&box);
+    previousBoxGeometriesMap().erase(&box);
 }
 
 static LayoutRect computeRightDelta(const LayoutPoint& location,
@@ -346,7 +346,7 @@ void BoxPaintInvalidator::savePreviousBoxGeometriesIfNeeded() {
          previousBoxGeometriesMap().contains(&m_box));
   if (!needsToSavePreviousBoxGeometries()) {
     if (m_box.hasPreviousBoxGeometries()) {
-      previousBoxGeometriesMap().remove(&m_box);
+      previousBoxGeometriesMap().erase(&m_box);
       m_box.getMutableForPainting().setHasPreviousBoxGeometries(false);
     }
     return;

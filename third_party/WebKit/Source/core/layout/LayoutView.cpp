@@ -790,7 +790,7 @@ void LayoutView::setSelection(
         (m_selectionStart == obj && oldStartPos != m_selectionStartPos) ||
         (m_selectionEnd == obj && oldEndPos != m_selectionEndPos)) {
       obj->setShouldInvalidateSelection();
-      newSelectedObjects.remove(obj);
+      newSelectedObjects.erase(obj);
     }
   }
 
@@ -810,7 +810,7 @@ void LayoutView::setSelection(
     SelectionState oldSelectionState = i->value;
     if (newSelectionState != oldSelectionState) {
       block->setShouldInvalidateSelection();
-      newSelectedBlocks.remove(block);
+      newSelectedBlocks.erase(block);
     }
   }
 

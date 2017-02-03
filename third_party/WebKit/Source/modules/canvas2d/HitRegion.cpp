@@ -45,10 +45,10 @@ void HitRegionManager::removeHitRegion(HitRegion* hitRegion) {
     return;
 
   if (!hitRegion->id().isEmpty())
-    m_hitRegionIdMap.remove(hitRegion->id());
+    m_hitRegionIdMap.erase(hitRegion->id());
 
   if (hitRegion->control())
-    m_hitRegionControlMap.remove(hitRegion->control());
+    m_hitRegionControlMap.erase(hitRegion->control());
 
   m_hitRegionList.remove(hitRegion);
 }

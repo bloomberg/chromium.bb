@@ -1333,9 +1333,9 @@ void LayoutBox::setExtraBlockOffset(LayoutUnit blockOffest) {
 
 void LayoutBox::clearExtraInlineAndBlockOffests() {
   if (gExtraInlineOffsetMap)
-    gExtraInlineOffsetMap->remove(this);
+    gExtraInlineOffsetMap->erase(this);
   if (gExtraBlockOffsetMap)
-    gExtraBlockOffsetMap->remove(this);
+    gExtraBlockOffsetMap->erase(this);
 }
 
 LayoutUnit LayoutBox::adjustBorderBoxLogicalWidthForBoxSizing(

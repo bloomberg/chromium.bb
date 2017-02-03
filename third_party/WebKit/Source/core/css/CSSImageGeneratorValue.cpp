@@ -75,11 +75,11 @@ void CSSImageGeneratorValue::removeClient(const LayoutObject* layoutObject) {
   if (!size.isEmpty()) {
     m_sizes.remove(size);
     if (!m_sizes.contains(size))
-      m_images.remove(size);
+      m_images.erase(size);
   }
 
   if (!--sizeCount.count)
-    m_clients.remove(layoutObject);
+    m_clients.erase(layoutObject);
 
   if (m_clients.isEmpty()) {
     ASSERT(m_keepAlive);

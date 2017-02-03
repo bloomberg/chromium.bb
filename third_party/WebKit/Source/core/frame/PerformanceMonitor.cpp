@@ -196,7 +196,7 @@ void PerformanceMonitor::subscribe(Violation violation,
 
 void PerformanceMonitor::unsubscribeAll(Client* client) {
   for (const auto& it : m_subscriptions)
-    it.value->remove(client);
+    it.value->erase(client);
   updateInstrumentation();
 }
 

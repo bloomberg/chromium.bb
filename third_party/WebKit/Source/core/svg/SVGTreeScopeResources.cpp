@@ -33,7 +33,7 @@ void SVGTreeScopeResources::addResource(const AtomicString& id,
 void SVGTreeScopeResources::removeResource(const AtomicString& id) {
   if (id.isEmpty())
     return;
-  m_resources.remove(id);
+  m_resources.erase(id);
 }
 
 LayoutSVGResourceContainer* SVGTreeScopeResources::resourceById(

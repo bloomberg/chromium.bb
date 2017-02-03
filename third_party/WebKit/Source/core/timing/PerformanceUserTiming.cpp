@@ -100,7 +100,7 @@ static void clearPeformanceEntries(PerformanceEntryMap& performanceEntryMap,
   }
 
   if (performanceEntryMap.contains(name))
-    performanceEntryMap.remove(name);
+    performanceEntryMap.erase(name);
 }
 
 PerformanceEntry* UserTiming::mark(const String& markName,

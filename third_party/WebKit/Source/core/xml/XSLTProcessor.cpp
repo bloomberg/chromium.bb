@@ -156,7 +156,7 @@ String XSLTProcessor::getParameter(const String& /*namespaceURI*/,
 void XSLTProcessor::removeParameter(const String& /*namespaceURI*/,
                                     const String& localName) {
   // FIXME: namespace support?
-  m_parameters.remove(localName);
+  m_parameters.erase(localName);
 }
 
 void XSLTProcessor::reset() {

@@ -63,13 +63,13 @@ void DisplayItemClient::beginShouldKeepAlive(const void* owner) const {
 void DisplayItemClient::endShouldKeepAlive() const {
   if (displayItemClientsShouldKeepAlive) {
     for (auto& item : *displayItemClientsShouldKeepAlive)
-      item.value.remove(this);
+      item.value.erase(this);
   }
 }
 
 void DisplayItemClient::endShouldKeepAliveAllClients(const void* owner) {
   if (displayItemClientsShouldKeepAlive)
-    displayItemClientsShouldKeepAlive->remove(owner);
+    displayItemClientsShouldKeepAlive->erase(owner);
 }
 
 void DisplayItemClient::endShouldKeepAliveAllClients() {

@@ -30,7 +30,7 @@ static void setPreviousSelectionVisualRect(const LayoutObject& object,
          selectionVisualRectMap().contains(&object));
   if (rect.isEmpty()) {
     if (object.hasPreviousSelectionVisualRect()) {
-      selectionVisualRectMap().remove(&object);
+      selectionVisualRectMap().erase(&object);
       object.getMutableForPainting().setHasPreviousSelectionVisualRect(false);
     }
   } else {
@@ -49,12 +49,12 @@ void ObjectPaintInvalidator::objectWillBeDestroyed(const LayoutObject& object) {
   DCHECK(object.hasPreviousSelectionVisualRect() ==
          selectionVisualRectMap().contains(&object));
   if (object.hasPreviousSelectionVisualRect())
-    selectionVisualRectMap().remove(&object);
+    selectionVisualRectMap().erase(&object);
 
   DCHECK(object.hasPreviousLocationInBacking() ==
          locationInBackingMap().contains(&object));
   if (object.hasPreviousLocationInBacking())
-    locationInBackingMap().remove(&object);
+    locationInBackingMap().erase(&object);
 }
 
 using LayoutObjectTraversalFunctor = std::function<void(const LayoutObject&)>;
@@ -431,7 +431,7 @@ void ObjectPaintInvalidator::setPreviousLocationInBacking(
          locationInBackingMap().contains(&m_object));
   if (location == m_object.previousVisualRect().location()) {
     if (m_object.hasPreviousLocationInBacking()) {
-      locationInBackingMap().remove(&m_object);
+      locationInBackingMap().erase(&m_object);
       m_object.getMutableForPainting().setHasPreviousLocationInBacking(false);
     }
   } else {

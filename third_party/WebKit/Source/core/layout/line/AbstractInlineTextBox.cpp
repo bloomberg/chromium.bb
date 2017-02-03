@@ -67,7 +67,7 @@ void AbstractInlineTextBox::willDestroy(InlineTextBox* inlineTextBox) {
       gAbstractInlineTextBoxMap->find(inlineTextBox);
   if (it != gAbstractInlineTextBoxMap->end()) {
     it->value->detach();
-    gAbstractInlineTextBoxMap->remove(inlineTextBox);
+    gAbstractInlineTextBoxMap->erase(inlineTextBox);
   }
 }
 

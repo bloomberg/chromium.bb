@@ -197,7 +197,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
       }
     }
   }
-  m_pendingGenerators.remove(name);
+  m_pendingGenerators.erase(name);
 }
 
 CSSPaintDefinition* PaintWorkletGlobalScope::findDefinition(

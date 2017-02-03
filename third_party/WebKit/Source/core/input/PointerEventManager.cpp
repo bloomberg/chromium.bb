@@ -217,7 +217,7 @@ void PointerEventManager::setNodeUnderPointer(PointerEvent* pointerEvent,
     EventTargetAttributes node =
         m_nodeUnderPointer.get(pointerEvent->pointerId());
     if (!target) {
-      m_nodeUnderPointer.remove(pointerEvent->pointerId());
+      m_nodeUnderPointer.erase(pointerEvent->pointerId());
     } else if (target !=
                m_nodeUnderPointer.get(pointerEvent->pointerId()).target) {
       m_nodeUnderPointer.set(pointerEvent->pointerId(),
@@ -589,7 +589,7 @@ void PointerEventManager::processPendingPointerCapture(
                              pointerEvent, EventTypeNames::gotpointercapture));
     m_pointerCaptureTarget.set(pointerId, pendingPointerCaptureTarget);
   } else {
-    m_pointerCaptureTarget.remove(pointerId);
+    m_pointerCaptureTarget.erase(pointerId);
   }
 }
 
@@ -603,7 +603,7 @@ void PointerEventManager::removeTargetFromPointerCapturingMapping(
   PointerCapturingMap tmp = map;
   for (PointerCapturingMap::iterator it = tmp.begin(); it != tmp.end(); ++it) {
     if (it->value == target)
-      map.remove(it->key);
+      map.erase(it->key);
   }
 }
 
@@ -616,9 +616,9 @@ EventTarget* PointerEventManager::getCapturingNode(int pointerId) {
 void PointerEventManager::removePointer(PointerEvent* pointerEvent) {
   int pointerId = pointerEvent->pointerId();
   if (m_pointerEventFactory.remove(pointerId)) {
-    m_pendingPointerCaptureTarget.remove(pointerId);
-    m_pointerCaptureTarget.remove(pointerId);
-    m_nodeUnderPointer.remove(pointerId);
+    m_pendingPointerCaptureTarget.erase(pointerId);
+    m_pointerCaptureTarget.erase(pointerId);
+    m_nodeUnderPointer.erase(pointerId);
   }
 }
 
@@ -659,7 +659,7 @@ bool PointerEventManager::hasProcessedPointerCapture(
 }
 
 void PointerEventManager::releasePointerCapture(int pointerId) {
-  m_pendingPointerCaptureTarget.remove(pointerId);
+  m_pendingPointerCaptureTarget.erase(pointerId);
 }
 
 bool PointerEventManager::isActive(const int pointerId) const {

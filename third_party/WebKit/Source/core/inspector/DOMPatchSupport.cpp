@@ -215,7 +215,7 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest,
 
   bool result = innerPatchChildren(oldElement, oldDigest->m_children,
                                    newDigest->m_children, exceptionState);
-  m_unusedNodesMap.remove(newDigest->m_sha1);
+  m_unusedNodesMap.erase(newDigest->m_sha1);
   return result;
 }
 
@@ -541,7 +541,7 @@ void DOMPatchSupport::markNodeAsUsed(Digest* digest) {
   queue.append(digest);
   while (!queue.isEmpty()) {
     Digest* first = queue.takeFirst();
-    m_unusedNodesMap.remove(first->m_sha1);
+    m_unusedNodesMap.erase(first->m_sha1);
     for (size_t i = 0; i < first->m_children.size(); ++i)
       queue.append(first->m_children[i].get());
   }

@@ -846,12 +846,12 @@ void IDBObjectStore::deleteIndex(const String& name,
 
   backendDB()->deleteIndex(m_transaction->id(), id(), indexId);
 
-  m_metadata->indexes.remove(indexId);
+  m_metadata->indexes.erase(indexId);
   IDBIndexMap::iterator it = m_indexMap.find(name);
   if (it != m_indexMap.end()) {
     m_transaction->indexDeleted(it->value);
     it->value->markDeleted();
-    m_indexMap.remove(name);
+    m_indexMap.erase(name);
   }
 }
 

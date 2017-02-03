@@ -56,7 +56,7 @@ void InlineTextBox::destroy() {
   AbstractInlineTextBox::willDestroy(this);
 
   if (!knownToHaveNoOverflow() && gTextBoxesWithOverflow)
-    gTextBoxesWithOverflow->remove(this);
+    gTextBoxesWithOverflow->erase(this);
   InlineTextBoxPainter::removeFromTextBlobCache(*this);
   InlineBox::destroy();
 }

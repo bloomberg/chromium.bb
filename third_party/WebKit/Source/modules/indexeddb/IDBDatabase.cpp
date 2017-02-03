@@ -156,7 +156,7 @@ void IDBDatabase::transactionFinished(const IDBTransaction* transaction) {
   DCHECK(transaction);
   DCHECK(m_transactions.contains(transaction->id()));
   DCHECK_EQ(m_transactions.get(transaction->id()), transaction);
-  m_transactions.remove(transaction->id());
+  m_transactions.erase(transaction->id());
 
   if (transaction->isVersionChange()) {
     DCHECK_EQ(m_versionChangeTransaction, transaction);
@@ -348,7 +348,7 @@ void IDBDatabase::deleteObjectStore(const String& name,
 
   m_backend->deleteObjectStore(m_versionChangeTransaction->id(), objectStoreId);
   m_versionChangeTransaction->objectStoreDeleted(objectStoreId, name);
-  m_metadata.objectStores.remove(objectStoreId);
+  m_metadata.objectStores.erase(objectStoreId);
 }
 
 IDBTransaction* IDBDatabase::transaction(
@@ -553,7 +553,7 @@ void IDBDatabase::revertObjectStoreCreation(int64_t objectStoreId) {
       << "Object store metadata reverted when versionchange transaction is "
          "still active";
   DCHECK(m_metadata.objectStores.contains(objectStoreId));
-  m_metadata.objectStores.remove(objectStoreId);
+  m_metadata.objectStores.erase(objectStoreId);
 }
 
 void IDBDatabase::revertObjectStoreMetadata(

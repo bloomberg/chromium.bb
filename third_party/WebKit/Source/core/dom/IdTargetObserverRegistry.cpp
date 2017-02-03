@@ -79,7 +79,7 @@ void IdTargetObserverRegistry::notifyObserversInternal(const AtomicString& id) {
   }
 
   if (m_notifyingObserversInSet->isEmpty())
-    m_registry.remove(id.impl());
+    m_registry.erase(id.impl());
 
   m_notifyingObserversInSet = nullptr;
 }

@@ -205,7 +205,7 @@ void NetworkStateNotifier::collectZeroedObservers(ObserverList* list,
 
   if (list->observers.isEmpty()) {
     MutexLocker locker(m_mutex);
-    m_observers.remove(context);  // deletes list
+    m_observers.erase(context);  // deletes list
   }
 }
 

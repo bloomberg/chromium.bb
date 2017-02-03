@@ -1817,7 +1817,7 @@ String InspectorCSSAgent::unbindStyleSheet(
   String id = inspectorStyleSheet->id();
   m_idToInspectorStyleSheet.remove(id);
   if (inspectorStyleSheet->pageStyleSheet())
-    m_cssStyleSheetToInspectorStyleSheet.remove(
+    m_cssStyleSheetToInspectorStyleSheet.erase(
         inspectorStyleSheet->pageStyleSheet());
   return id;
 }

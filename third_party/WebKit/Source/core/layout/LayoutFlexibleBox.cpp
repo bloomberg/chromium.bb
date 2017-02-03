@@ -316,7 +316,7 @@ bool LayoutFlexibleBox::hasLeftOverflow() const {
 
 void LayoutFlexibleBox::removeChild(LayoutObject* child) {
   LayoutBlock::removeChild(child);
-  m_intrinsicSizeAlongMainAxis.remove(child);
+  m_intrinsicSizeAlongMainAxis.erase(child);
 }
 
 // TODO (lajava): Is this function still needed ? Every time the flex
@@ -888,7 +888,7 @@ void LayoutFlexibleBox::cacheChildMainSize(const LayoutBox& child) {
 }
 
 void LayoutFlexibleBox::clearCachedMainSizeForChild(const LayoutBox& child) {
-  m_intrinsicSizeAlongMainAxis.remove(&child);
+  m_intrinsicSizeAlongMainAxis.erase(&child);
 }
 
 DISABLE_CFI_PERF

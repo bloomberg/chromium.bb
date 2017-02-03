@@ -967,7 +967,7 @@ void InspectorNetworkAgent::didFinishXHRInternal(ExecutionContext* context,
         NetworkMessageSource, InfoMessageLevel, message, url, it->value);
     m_inspectedFrames->root()->console().addMessageToStorage(consoleMessage);
   }
-  m_knownRequestIdMap.remove(client);
+  m_knownRequestIdMap.erase(client);
 }
 
 void InspectorNetworkAgent::willStartFetch(ThreadableLoaderClient* client) {
@@ -977,7 +977,7 @@ void InspectorNetworkAgent::willStartFetch(ThreadableLoaderClient* client) {
 }
 
 void InspectorNetworkAgent::didFailFetch(ThreadableLoaderClient* client) {
-  m_knownRequestIdMap.remove(client);
+  m_knownRequestIdMap.erase(client);
 }
 
 void InspectorNetworkAgent::didFinishFetch(ExecutionContext* context,
@@ -995,7 +995,7 @@ void InspectorNetworkAgent::didFinishFetch(ExecutionContext* context,
         NetworkMessageSource, InfoMessageLevel, message, url, it->value);
     m_inspectedFrames->root()->console().addMessageToStorage(consoleMessage);
   }
-  m_knownRequestIdMap.remove(client);
+  m_knownRequestIdMap.erase(client);
 }
 
 void InspectorNetworkAgent::willSendEventSourceRequest(
@@ -1021,7 +1021,7 @@ void InspectorNetworkAgent::willDispatchEventSourceEvent(
 
 void InspectorNetworkAgent::didFinishEventSourceRequest(
     ThreadableLoaderClient* eventSource) {
-  m_knownRequestIdMap.remove(eventSource);
+  m_knownRequestIdMap.erase(eventSource);
   clearPendingRequestData();
 }
 
@@ -1036,7 +1036,7 @@ void InspectorNetworkAgent::detachClientRequest(
       m_pendingXHRReplayData.clear();
     }
   }
-  m_knownRequestIdMap.remove(client);
+  m_knownRequestIdMap.erase(client);
 }
 
 void InspectorNetworkAgent::applyUserAgentOverride(String* userAgent) {
@@ -1497,7 +1497,7 @@ void InspectorNetworkAgent::frameScheduledNavigation(LocalFrame* frame,
 }
 
 void InspectorNetworkAgent::frameClearedScheduledNavigation(LocalFrame* frame) {
-  m_frameNavigationInitiatorMap.remove(IdentifiersFactory::frameId(frame));
+  m_frameNavigationInitiatorMap.erase(IdentifiersFactory::frameId(frame));
 }
 
 void InspectorNetworkAgent::setHostId(const String& hostId) {

@@ -83,7 +83,7 @@ V0CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(
 
   for (const auto& candidate : *candidates) {
     unobserve(candidate);
-    m_upgradeCandidates.remove(candidate);
+    m_upgradeCandidates.erase(candidate);
   }
   return candidates;
 }

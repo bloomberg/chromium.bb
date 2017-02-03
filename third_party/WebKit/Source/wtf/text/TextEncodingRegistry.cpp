@@ -196,7 +196,7 @@ static void pruneBlacklistedCodecs() {
 
     textEncodingNameMap->removeAll(names);
 
-    textCodecMap->remove(atomicName);
+    textCodecMap->erase(atomicName);
   }
 }
 

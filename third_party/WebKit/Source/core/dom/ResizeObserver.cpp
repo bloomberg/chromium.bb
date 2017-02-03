@@ -58,7 +58,7 @@ void ResizeObserver::disconnect() {
   for (auto& observation : observations) {
     Element* target = (*observation).target();
     if (target)
-      target->ensureResizeObserverData().remove(this);
+      target->ensureResizeObserverData().erase(this);
   }
   clearObservations();
 }

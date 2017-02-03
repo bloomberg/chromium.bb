@@ -269,7 +269,7 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType,
     m_parts.set(partType, partLayoutObject);
     setNeedsPaintInvalidation(partType);
   } else if (partLayoutObject && !needLayoutObject) {
-    m_parts.remove(partType);
+    m_parts.erase(partType);
     partLayoutObject->destroy();
     partLayoutObject = nullptr;
     if (!destroy)

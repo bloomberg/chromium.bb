@@ -2407,7 +2407,7 @@ void LayoutObject::addLayerHitTestRects(LayerHitTestRects& layerRects,
       if (iterValue->size() > maxRectsPerLayer) {
         // Just mark the entire layer instead, and switch to walking the layer
         // tree instead of the layout tree.
-        layerRects.remove(currentLayer);
+        layerRects.erase(currentLayer);
         currentLayer->addLayerHitTestRects(layerRects);
         return;
       }

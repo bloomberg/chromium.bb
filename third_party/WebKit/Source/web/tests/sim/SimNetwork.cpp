@@ -84,7 +84,7 @@ void SimNetwork::addRequest(SimRequest& request) {
 }
 
 void SimNetwork::removeRequest(SimRequest& request) {
-  m_requests.remove(request.url());
+  m_requests.erase(request.url());
 }
 
 }  // namespace blink

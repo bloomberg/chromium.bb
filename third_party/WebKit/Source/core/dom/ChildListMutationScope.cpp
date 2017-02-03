@@ -63,7 +63,7 @@ void ChildListMutationAccumulator::leaveMutationScope() {
   if (!--m_mutationScopes) {
     if (!isEmpty())
       enqueueMutationRecord();
-    accumulatorMap().remove(m_target.get());
+    accumulatorMap().erase(m_target.get());
   }
 }
 

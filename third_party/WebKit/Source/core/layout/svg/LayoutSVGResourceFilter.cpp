@@ -77,7 +77,7 @@ void LayoutSVGResourceFilter::removeClientFromCache(LayoutObject* client,
 
   bool filterCached = m_filter.contains(client);
   if (filterCached)
-    m_filter.remove(client);
+    m_filter.erase(client);
 
   // If the filter has a cached subtree, invalidate the associated display item.
   if (markForInvalidation && filterCached)
