@@ -45,7 +45,7 @@ from infra_libs.ts_mon.protos.new import metrics_pb2 as new_metrics_pb2
 
 # The maximum number of MetricsData messages to include in each HTTP request.
 # MetricsCollections larger than this will be split into multiple requests.
-METRICS_DATA_LENGTH_LIMIT = 1000
+METRICS_DATA_LENGTH_LIMIT = 500
 
 
 class State(object):
@@ -256,7 +256,6 @@ class _FlushThread(threading.Thread):
 
     while True:
       if self.stop_event.wait(next_timeout):
-        self._flush_and_log_exceptions()
         return
 
       # Try to flush every N seconds exactly so rate calculations are more

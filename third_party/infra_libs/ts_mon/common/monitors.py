@@ -91,12 +91,12 @@ class HttpsMonitor(Monitor):
     'https://www.googleapis.com/auth/prodxmon'
   ]
 
-  def __init__(self, endpoint, credentials_file_path, http=None):
+  def __init__(self, endpoint, credentials_file_path, http=None, ca_certs=None):
     self._endpoint = endpoint
     credentials = self._load_credentials(credentials_file_path)
     if http is None:
       http = httplib2_utils.RetriableHttp(
-          httplib2_utils.InstrumentedHttp('acq-mon-api'))
+          httplib2_utils.InstrumentedHttp('acq-mon-api', ca_certs=ca_certs))
     self._http = credentials.authorize(http)
 
   def encodeToJson(self, metric_pb):
