@@ -654,7 +654,7 @@ NavigationManager* WebStateImpl::GetNavigationManager() {
 
 CRWNavigationManagerStorage* WebStateImpl::BuildSerializedNavigationManager() {
   NavigationManagerStorageBuilder session_storage_builder;
-  return session_storage_builder.BuildSerialization(navigation_manager_.get());
+  return session_storage_builder.BuildStorage(navigation_manager_.get());
 }
 
 CRWJSInjectionReceiver* WebStateImpl::GetJSInjectionReceiver() const {

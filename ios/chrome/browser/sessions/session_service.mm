@@ -20,8 +20,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/sessions/session_window.h"
 #import "ios/web/navigation/crw_session_certificate_policy_manager.h"
-#import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/navigation/crw_session_entry.h"
+#import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_navigation_manager_storage.h"
 #include "ios/web/public/web_thread.h"
 
@@ -216,8 +215,10 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
                        forClassName:@"SessionController"];
   [SessionWindowUnarchiver setClass:[CRWNavigationManagerStorage class]
                        forClassName:@"CRWSessionController"];
-  [SessionWindowUnarchiver setClass:[CRWSessionEntry class]
+  [SessionWindowUnarchiver setClass:[CRWNavigationItemStorage class]
                        forClassName:@"SessionEntry"];
+  [SessionWindowUnarchiver setClass:[CRWNavigationItemStorage class]
+                       forClassName:@"CRWSessionEntry"];
   // TODO(crbug.com/661633): Remove this hack.
   [SessionWindowUnarchiver setClass:[SessionWindowIOS class]
                        forClassName:@"SessionWindow"];

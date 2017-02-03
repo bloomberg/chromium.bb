@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/web_state/page_display_state.h"
+#import "ios/web/public/web_state/page_display_state.h"
 
 #include <cmath>
 
@@ -13,11 +13,23 @@
 namespace web {
 
 namespace {
+// Serialiation keys.
+NSString* const kXOffsetKey = @"scrollX";
+NSString* const kYOffsetKey = @"scrollY";
+NSString* const kMinZoomKey = @"minZoom";
+NSString* const kMaxZoomKey = @"maxZoom";
+NSString* const kZoomKey = @"zoom";
 // Returns true if:
 // - both |value1| and |value2| are NAN, or
 // - |value1| and |value2| are equal non-NAN values.
 inline bool StateValuesAreEqual(double value1, double value2) {
   return std::isnan(value1) ? std::isnan(value2) : value1 == value2;
+}
+// Returns the double stored under |key| in |serialization|, or NAN if it is not
+// set.
+inline double GetValue(NSString* key, NSDictionary* serialization) {
+  NSNumber* value = serialization[key];
+  return value ? [value doubleValue] : NAN;
 }
 }  // namespace
 
@@ -93,6 +105,13 @@ PageDisplayState::PageDisplayState(double offset_x,
       zoom_state_(minimum_zoom_scale, maximum_zoom_scale, zoom_scale) {
 }
 
+PageDisplayState::PageDisplayState(NSDictionary* serialization)
+    : PageDisplayState(GetValue(kXOffsetKey, serialization),
+                       GetValue(kYOffsetKey, serialization),
+                       GetValue(kMinZoomKey, serialization),
+                       GetValue(kMaxZoomKey, serialization),
+                       GetValue(kZoomKey, serialization)) {}
+
 PageDisplayState::~PageDisplayState() {
 }
 
@@ -107,6 +126,28 @@ bool PageDisplayState::operator==(const PageDisplayState& other) const {
 
 bool PageDisplayState::operator!=(const PageDisplayState& other) const {
   return !(*this == other);
+}
+
+NSDictionary* PageDisplayState::GetSerialization() const {
+  return @{
+    kXOffsetKey : @(scroll_state_.offset_x()),
+    kYOffsetKey : @(scroll_state_.offset_y()),
+    kMinZoomKey : @(zoom_state_.minimum_zoom_scale()),
+    kMaxZoomKey : @(zoom_state_.maximum_zoom_scale()),
+    kZoomKey : @(zoom_state_.zoom_scale())
+  };
+}
+
+NSString* PageDisplayState::GetDescription() const {
+  NSString* const kPageScrollStateDescriptionFormat =
+      @"{ scrollOffset:(%0.2f, %0.2f), zoomScaleRange:(%0.2f, %0.2f), "
+      @"zoomScale:%0.2f }";
+  return [NSString stringWithFormat:kPageScrollStateDescriptionFormat,
+                                    scroll_state_.offset_x(),
+                                    scroll_state_.offset_y(),
+                                    zoom_state_.minimum_zoom_scale(),
+                                    zoom_state_.maximum_zoom_scale(),
+                                    zoom_state_.zoom_scale()];
 }
 
 }  // namespace web

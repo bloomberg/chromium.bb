@@ -22,11 +22,7 @@
 @property(nonatomic, assign) NSInteger currentNavigationIndex;
 @property(nonatomic, assign) NSInteger previousNavigationIndex;
 @property(nonatomic, assign) NSTimeInterval lastVisitedTimestamp;
-// TODO(crbug.com/454984): |entries| currently contains CRWSessionEntries.  Once
-// NavigationItemImpls are encoded/decoded using CRWNavigationItemSerializations
-// (analogous to the approach taken with NavigationManager), this will
-// become an array of CRWNavigationItemSerializations.
-@property(nonatomic, copy) NSArray* entries;
+@property(nonatomic, copy) NSArray* itemStorages;
 @property(nonatomic, retain)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 

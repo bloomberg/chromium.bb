@@ -1,0 +1,51 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/web/navigation/navigation_item_storage_builder.h"
+
+#import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/public/crw_navigation_item_storage.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+namespace web {
+
+CRWNavigationItemStorage* NavigationItemStorageBuilder::BuildStorage(
+    NavigationItemImpl* navigation_item) const {
+  DCHECK(navigation_item);
+  CRWNavigationItemStorage* storage = [[CRWNavigationItemStorage alloc] init];
+  storage.virtualURL = navigation_item->GetVirtualURL();
+  storage.referrer = navigation_item->GetReferrer();
+  storage.timestamp = navigation_item->GetTimestamp();
+  storage.title = navigation_item->GetTitle();
+  storage.displayState = navigation_item->GetPageDisplayState();
+  storage.shouldSkipRepostFormConfirmation =
+      navigation_item->ShouldSkipRepostFormConfirmation();
+  storage.overridingUserAgent = navigation_item->IsOverridingUserAgent();
+  storage.POSTData = navigation_item->GetPostData();
+  storage.HTTPRequestHeaders = navigation_item->GetHttpRequestHeaders();
+  return storage;
+}
+
+std::unique_ptr<NavigationItemImpl>
+NavigationItemStorageBuilder::BuildNavigationItemImpl(
+    CRWNavigationItemStorage* navigation_item_storage) const {
+  std::unique_ptr<NavigationItemImpl> item(new web::NavigationItemImpl());
+  item->virtual_url_ = navigation_item_storage.virtualURL;
+  item->referrer_ = navigation_item_storage.referrer;
+  item->timestamp_ = navigation_item_storage.timestamp;
+  item->title_ = navigation_item_storage.title;
+  item->page_display_state_ = navigation_item_storage.displayState;
+  item->should_skip_repost_form_confirmation_ =
+      navigation_item_storage.shouldSkipRepostFormConfirmation;
+  item->is_overriding_user_agent_ = navigation_item_storage.overridingUserAgent;
+  item->post_data_.reset(navigation_item_storage.POSTData);
+  item->http_request_headers_.reset(
+      [navigation_item_storage.HTTPRequestHeaders mutableCopy]);
+  return item;
+}
+
+}  // namespace web

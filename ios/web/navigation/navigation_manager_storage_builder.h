@@ -17,7 +17,7 @@ class NavigationManagerImpl;
 class NavigationManagerStorageBuilder {
  public:
   // Creates a serialized NavigationManager from |navigation_manager|.
-  CRWNavigationManagerStorage* BuildSerialization(
+  CRWNavigationManagerStorage* BuildStorage(
       NavigationManagerImpl* navigation_manager) const;
   // Creates a NavigationManager from |navigation_manager_storage|.
   std::unique_ptr<NavigationManagerImpl> BuildNavigationManagerImpl(

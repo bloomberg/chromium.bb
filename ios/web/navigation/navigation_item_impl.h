@@ -21,6 +21,7 @@
 namespace web {
 
 class NavigationItemFacadeDelegate;
+class NavigationItemStorageBuilder;
 
 // Implementation of NavigationItem.
 class NavigationItemImpl : public web::NavigationItem {
@@ -120,6 +121,10 @@ class NavigationItemImpl : public web::NavigationItem {
   bool is_renderer_initiated() const { return is_renderer_initiated_; }
 
  private:
+  // The NavigationManItemStorageBuilder functions require access to
+  // private variables of NavigationItemImpl.
+  friend NavigationItemStorageBuilder;
+
   int unique_id_;
   GURL original_request_url_;
   GURL url_;

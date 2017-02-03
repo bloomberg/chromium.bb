@@ -10,7 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
-#include "ios/web/public/web_state/page_display_state.h"
+#import "ios/web/public/web_state/page_display_state.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;

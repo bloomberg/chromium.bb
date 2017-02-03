@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_PAGE_DISPLAY_STATE_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_PAGE_DISPLAY_STATE_H_
 
+#import <Foundation/Foundation.h>
+
 namespace web {
 
 // Class used to represent the scrolling offset of a webview.
@@ -96,6 +98,7 @@ class PageDisplayState {
                    double minimum_zoom_scale,
                    double maximum_zoom_scale,
                    double zoom_scale);
+  PageDisplayState(NSDictionary* serialization);
   ~PageDisplayState();
 
   // PageScrollStates cannot be applied until the scroll offset and zoom scale
@@ -117,6 +120,12 @@ class PageDisplayState {
   // Comparator operators.
   bool operator==(const PageDisplayState& other) const;
   bool operator!=(const PageDisplayState& other) const;
+
+  // Returns a serialized representation of the PageDisplayState.
+  NSDictionary* GetSerialization() const;
+
+  // Returns a description string for the PageDisplayState.
+  NSString* GetDescription() const;
 
  private:
   // The scroll state for the page's UIScrollView.

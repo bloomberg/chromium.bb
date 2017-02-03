@@ -8,6 +8,8 @@
 #include "base/mac/foundation_util.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
+#import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/navigation_item_storage_builder.h"
 #include "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/crw_navigation_manager_storage.h"
 
@@ -29,8 +31,7 @@
 
 namespace web {
 
-CRWNavigationManagerStorage*
-NavigationManagerStorageBuilder::BuildSerialization(
+CRWNavigationManagerStorage* NavigationManagerStorageBuilder::BuildStorage(
     NavigationManagerImpl* navigation_manager) const {
   DCHECK(navigation_manager);
   CRWNavigationManagerStorage* serialized_navigation_manager =
@@ -51,11 +52,13 @@ NavigationManagerStorageBuilder::BuildSerialization(
       session_controller.lastVisitedTimestamp;
   serialized_navigation_manager.sessionCertificatePolicyManager =
       session_controller.sessionCertificatePolicyManager;
-  NSMutableArray* entries = [[NSMutableArray alloc] init];
-  // Perform a deep copy of the NavigationItems.
-  for (CRWSessionEntry* entry in session_controller.entries)
-    [entries addObject:[entry copy]];
-  serialized_navigation_manager.entries = entries;
+  NSMutableArray* item_storages = [[NSMutableArray alloc] init];
+  NavigationItemStorageBuilder item_storage_builder;
+  for (CRWSessionEntry* entry in session_controller.entries) {
+    [item_storages
+        addObject:item_storage_builder.BuildStorage(entry.navigationItemImpl)];
+  }
+  serialized_navigation_manager.itemStorages = item_storages;
   return serialized_navigation_manager;
 }
 
@@ -80,10 +83,20 @@ NavigationManagerStorageBuilder::BuildNavigationManagerImpl(
                                      .previousNavigationIndex];
   [session_controller setLastVisitedTimestamp:navigation_manager_serialization
                                                   .lastVisitedTimestamp];
-  [session_controller setEntries:navigation_manager_serialization.entries];
   [session_controller
       setSessionCertificatePolicyManager:navigation_manager_serialization
                                              .sessionCertificatePolicyManager];
+  NavigationItemStorageBuilder item_storage_builder;
+  NSArray* item_storages = navigation_manager_serialization.itemStorages;
+  NSMutableArray* entries = [[NSMutableArray alloc] init];
+  for (CRWNavigationItemStorage* item_storage in item_storages) {
+    std::unique_ptr<NavigationItemImpl> item_impl =
+        item_storage_builder.BuildNavigationItemImpl(item_storage);
+    std::unique_ptr<NavigationItem> item(item_impl.release());
+    [entries addObject:[[CRWSessionEntry alloc]
+                           initWithNavigationItem:std::move(item)]];
+  }
+  [session_controller setEntries:entries];
   std::unique_ptr<NavigationManagerImpl> navigation_manager(
       new NavigationManagerImpl());
   navigation_manager->SetSessionController(session_controller);

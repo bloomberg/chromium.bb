@@ -14,7 +14,7 @@ namespace {
 // Serialization keys used in NSCoding functions.
 NSString* const kCertificatePolicyManagerKey = @"certificatePolicyManager";
 NSString* const kCurrentNavigationIndexKey = @"currentNavigationIndex";
-NSString* const kEntriesKey = @"entries";
+NSString* const kItemStoragesKey = @"entries";
 NSString* const kLastVisitedTimestampKey = @"lastVisitedTimestamp";
 NSString* const kOpenerIDKey = @"openerId";
 NSString* const kOpenedByDOMKey = @"openedByDOM";
@@ -34,7 +34,7 @@ NSString* const kWindowNameKey = @"windowName";
 @synthesize currentNavigationIndex = _currentNavigationIndex;
 @synthesize previousNavigationIndex = _previousNavigationIndex;
 @synthesize lastVisitedTimestamp = _lastVisitedTimestamp;
-@synthesize entries = _entries;
+@synthesize itemStorages = _itemStorages;
 @synthesize sessionCertificatePolicyManager = _sessionCertificatePolicyManager;
 
 - (instancetype)initWithCoder:(nonnull NSCoder*)decoder {
@@ -52,10 +52,10 @@ NSString* const kWindowNameKey = @"windowName";
         [decoder decodeIntForKey:kPreviousNavigationIndexKey];
     _lastVisitedTimestamp =
         [decoder decodeDoubleForKey:kLastVisitedTimestampKey];
-    _entries = [[NSMutableArray alloc]
-        initWithArray:[decoder decodeObjectForKey:kEntriesKey]];
+    _itemStorages = [[NSMutableArray alloc]
+        initWithArray:[decoder decodeObjectForKey:kItemStoragesKey]];
     // Prior to M34, 0 was used as "no index" instead of -1; adjust for that.
-    if (!_entries.count)
+    if (!_itemStorages.count)
       _currentNavigationIndex = -1;
     _sessionCertificatePolicyManager =
         [decoder decodeObjectForKey:kCertificatePolicyManagerKey];
@@ -79,7 +79,7 @@ NSString* const kWindowNameKey = @"windowName";
             forKey:kPreviousNavigationIndexKey];
   [coder encodeDouble:self.lastVisitedTimestamp
                forKey:kLastVisitedTimestampKey];
-  [coder encodeObject:self.entries forKey:kEntriesKey];
+  [coder encodeObject:self.itemStorages forKey:kItemStoragesKey];
   [coder encodeObject:self.sessionCertificatePolicyManager
                forKey:kCertificatePolicyManagerKey];
   // rendererInitiated is deliberately not preserved, as upstream.

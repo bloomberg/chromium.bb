@@ -2,8 +2,6 @@ specific_include_rules = {
   # TODO(crbug.com/619992): Remove this exception.
   "^session_service\.mm$": [
     "+ios/web/navigation/crw_session_certificate_policy_manager.h",
-    "+ios/web/navigation/crw_session_controller.h",
-    "+ios/web/navigation/crw_session_entry.h",
   ],
 
   # TODO(crbug.com/620045): Remove these exceptions.
