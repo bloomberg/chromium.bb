@@ -220,6 +220,7 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
       shelf_view_(nullptr),
       background_animator_(SHELF_BACKGROUND_DEFAULT, wm_shelf_),
       activating_as_fallback_(false) {
+  DCHECK(wm_shelf_);
   background_animator_.AddObserver(this);
   background_animator_.AddObserver(delegate_view_);
 
@@ -304,13 +305,10 @@ bool ShelfWidget::IsShelfHiddenBehindBlackBar() const {
   return delegate_view_->opaque_foreground()->GetTargetOpacity() != 0.0f;
 }
 
-ShelfAlignment ShelfWidget::GetAlignment() const {
-  return wm_shelf_->GetAlignment();
-}
-
 void ShelfWidget::OnShelfAlignmentChanged() {
   shelf_view_->OnShelfAlignmentChanged();
-  status_area_widget_->SetShelfAlignment(GetAlignment());
+  // TODO(jamescook): Status area should not cache alignment.
+  status_area_widget_->SetShelfAlignment(wm_shelf_->GetAlignment());
   delegate_view_->SchedulePaint();
 }
 

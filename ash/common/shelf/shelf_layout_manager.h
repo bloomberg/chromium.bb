@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/session/session_state_observer.h"
-#include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/background_animator.h"
 #include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
@@ -27,6 +27,7 @@
 
 namespace ui {
 class ImplicitAnimationObserver;
+class MouseEvent;
 }
 
 namespace ash {
@@ -149,14 +150,11 @@ class ASH_EXPORT ShelfLayoutManager
   // Overridden from SessionStateObserver:
   void SessionStateChanged(session_manager::SessionState state) override;
 
-  // TODO(msw): Remove these accessors, kept temporarily to simplify changes.
-  ShelfAlignment GetAlignment() const { return shelf_widget_->GetAlignment(); }
-
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
   template <typename T>
   T SelectValueForShelfAlignment(T bottom, T left, T right) const {
-    switch (GetAlignment()) {
+    switch (wm_shelf_->GetAlignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
       case SHELF_ALIGNMENT_BOTTOM_LOCKED:
         return bottom;
@@ -171,11 +169,8 @@ class ASH_EXPORT ShelfLayoutManager
 
   template <typename T>
   T PrimaryAxisValue(T horizontal, T vertical) const {
-    return IsHorizontalAlignment() ? horizontal : vertical;
+    return wm_shelf_->IsHorizontalAlignment() ? horizontal : vertical;
   }
-
-  // Is the shelf's alignment horizontal?
-  bool IsHorizontalAlignment() const;
 
   // Returns how the shelf background should be painted.
   ShelfBackgroundType GetShelfBackgroundType() const;

@@ -84,6 +84,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/views/widget/widget_observer.h"
 
 using content::BrowserThread;
 using extensions::api::braille_display_private::BrailleController;

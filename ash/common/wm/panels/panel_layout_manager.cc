@@ -601,7 +601,7 @@ void PanelLayoutManager::Relayout() {
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
   const ShelfAlignment alignment = shelf_->GetAlignment();
-  const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
+  const bool horizontal = shelf_->IsHorizontalAlignment();
   gfx::Rect shelf_bounds = panel_container_->ConvertRectFromScreen(
       shelf_->GetWindow()->GetBoundsInScreen());
   int panel_start_bounds = kPanelIdealSpacing;
@@ -764,7 +764,7 @@ void PanelLayoutManager::UpdateStacking(WmWindow* active_panel) {
   // the titlebar--even though it doesn't update the shelf icon positions, we
   // still want the visual effect.
   std::map<int, WmWindow*> window_ordering;
-  const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
+  const bool horizontal = shelf_->IsHorizontalAlignment();
   for (PanelList::const_iterator it = panel_windows_.begin();
        it != panel_windows_.end(); ++it) {
     gfx::Rect bounds = it->window->GetBounds();
@@ -803,7 +803,7 @@ void PanelLayoutManager::UpdateCallouts() {
   if (!shelf_)
     return;
 
-  const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
+  const bool horizontal = shelf_->IsHorizontalAlignment();
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
     WmWindow* panel = iter->window;

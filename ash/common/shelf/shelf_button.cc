@@ -12,7 +12,6 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/shelf/wm_shelf_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "grit/ash_resources.h"
@@ -208,7 +207,7 @@ class ShelfButton::BarView : public views::ImageView,
           animating_ ? ShelfButtonAnimation::GetInstance()->GetAnimation()
                      : 1.0;
       double scale = .35 + .65 * animation;
-      if (IsHorizontalAlignment(wm_shelf_->GetAlignment())) {
+      if (wm_shelf_->IsHorizontalAlignment()) {
         int width = base_bounds_.width() * scale;
         bounds.set_width(std::min(width, kIconSize));
         int x_offset = (base_bounds_.width() - bounds.width()) / 2;
@@ -403,8 +402,7 @@ void ShelfButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void ShelfButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
   WmShelf* wm_shelf = shelf_view_->wm_shelf();
-  const bool is_horizontal_shelf =
-      IsHorizontalAlignment(wm_shelf->GetAlignment());
+  const bool is_horizontal_shelf = wm_shelf->IsHorizontalAlignment();
   const int icon_pad = ash::MaterialDesignController::IsShelfMaterial()
                            ? (is_horizontal_shelf ? kIconPaddingHorizontalMD
                                                   : kIconPaddingVerticalMD)
@@ -536,7 +534,7 @@ void ShelfButton::NotifyClick(const ui::Event& event) {
 void ShelfButton::UpdateState() {
   UpdateBar();
   const bool is_horizontal_shelf =
-      IsHorizontalAlignment(shelf_view_->wm_shelf()->GetAlignment());
+      shelf_view_->wm_shelf()->IsHorizontalAlignment();
   icon_view_->SetHorizontalAlignment(is_horizontal_shelf
                                          ? views::ImageView::CENTER
                                          : views::ImageView::LEADING);
@@ -576,7 +574,7 @@ void ShelfButton::UpdateBar() {
       image = *rb->GetImageNamed(bar_id).ToImageSkia();
     }
     ShelfAlignment shelf_alignment = wm_shelf->GetAlignment();
-    if (!IsHorizontalAlignment(shelf_alignment)) {
+    if (!wm_shelf->IsHorizontalAlignment()) {
       image = gfx::ImageSkiaOperations::CreateRotatedImage(
           image, shelf_alignment == SHELF_ALIGNMENT_LEFT
                      ? SkBitmapOperations::ROTATION_90_CW

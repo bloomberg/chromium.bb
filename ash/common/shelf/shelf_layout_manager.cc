@@ -13,8 +13,8 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_layout_manager_observer.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/wm/fullscreen_window_finder.h"
 #include "ash/common/wm/mru_window_tracker.h"
@@ -435,10 +435,6 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
 
 void ShelfLayoutManager::OnKeyboardClosed() {}
 
-bool ShelfLayoutManager::IsHorizontalAlignment() const {
-  return ::ash::IsHorizontalAlignment(GetAlignment());
-}
-
 ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.pre_lock_screen_animation_active)
     return SHELF_BACKGROUND_DEFAULT;
@@ -612,7 +608,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     // For crbug.com/622431, when the shelf alignment is BOTTOM_LOCKED, we
     // don't set display work area, as it is not real user-set alignment.
     if (!state_.IsScreenLocked() &&
-        shelf_widget_->GetAlignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED &&
+        wm_shelf_->GetAlignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED &&
         change_work_area) {
       gfx::Insets insets;
       // If user session is blocked (login to new user session or add user to
@@ -677,7 +673,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
 
   gfx::Size status_size(
       shelf_widget_->status_area_widget()->GetWindowBoundsInScreen().size());
-  if (IsHorizontalAlignment())
+  if (wm_shelf_->IsHorizontalAlignment())
     status_size.set_height(GetShelfConstant(SHELF_SIZE));
   else
     status_size.set_width(GetShelfConstant(SHELF_SIZE));
@@ -686,7 +682,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
       gfx::Point(0, 0), gfx::Point(shelf_width - status_size.width(),
                                    shelf_height - status_size.height()),
       gfx::Point(0, shelf_height - status_size.height()));
-  if (IsHorizontalAlignment() && !base::i18n::IsRTL())
+  if (wm_shelf_->IsHorizontalAlignment() && !base::i18n::IsRTL())
     status_origin.set_x(shelf_width - status_size.width());
   target_bounds->status_bounds_in_shelf = gfx::Rect(status_origin, status_size);
 
@@ -750,7 +746,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
   CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
-  bool horizontal = IsHorizontalAlignment();
+  bool horizontal = wm_shelf_->IsHorizontalAlignment();
   WmWindow* window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
   gfx::Rect available_bounds = wm::GetDisplayBoundsWithShelf(window);
   int resistance_free_region = 0;
@@ -787,7 +783,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     int shelf_height = target_bounds->shelf_bounds_in_root.height() - translate;
     shelf_height = std::max(shelf_height, shelf_insets);
     target_bounds->shelf_bounds_in_root.set_height(shelf_height);
-    if (IsHorizontalAlignment()) {
+    if (wm_shelf_->IsHorizontalAlignment()) {
       target_bounds->shelf_bounds_in_root.set_y(available_bounds.bottom() -
                                                 shelf_height);
     }
@@ -796,7 +792,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   } else {
     // Move and size the shelf with the gesture.
     int shelf_width = target_bounds->shelf_bounds_in_root.width();
-    bool right_aligned = GetAlignment() == SHELF_ALIGNMENT_RIGHT;
+    bool right_aligned = wm_shelf_->GetAlignment() == SHELF_ALIGNMENT_RIGHT;
     if (right_aligned)
       shelf_width -= translate;
     else
@@ -851,7 +847,7 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
 
   gfx::Rect show_shelf_region_in_screen = shelf_bounds_in_screen;
   show_shelf_region_in_screen += offset;
-  if (IsHorizontalAlignment())
+  if (wm_shelf_->IsHorizontalAlignment())
     show_shelf_region_in_screen.set_height(kMaxAutoHideShowShelfRegionSize);
   else
     show_shelf_region_in_screen.set_width(kMaxAutoHideShowShelfRegionSize);
@@ -922,10 +918,10 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
       IsVisible()) {
     // Increase the the hit test area to prevent the shelf from disappearing
     // when the mouse is over the bubble gap.
-    ShelfAlignment alignment = GetAlignment();
+    ShelfAlignment alignment = wm_shelf_->GetAlignment();
     shelf_region.Inset(
         alignment == SHELF_ALIGNMENT_RIGHT ? -kNotificationBubbleGapHeight : 0,
-        IsHorizontalAlignment() ? -kNotificationBubbleGapHeight : 0,
+        wm_shelf_->IsHorizontalAlignment() ? -kNotificationBubbleGapHeight : 0,
         alignment == SHELF_ALIGNMENT_LEFT ? -kNotificationBubbleGapHeight : 0,
         0);
   }
@@ -1074,7 +1070,7 @@ void ShelfLayoutManager::UpdateGestureDrag(const ui::GestureEvent& gesture) {
 }
 
 void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
-  bool horizontal = IsHorizontalAlignment();
+  bool horizontal = wm_shelf_->IsHorizontalAlignment();
   bool should_change = false;
   if (gesture.type() == ui::ET_GESTURE_SCROLL_END) {
     // The visibility of the shelf changes only if the shelf was dragged X%
@@ -1088,7 +1084,7 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
       should_change = drag_ratio > kDragHideThreshold;
     } else {
       bool correct_direction = false;
-      switch (GetAlignment()) {
+      switch (wm_shelf_->GetAlignment()) {
         case SHELF_ALIGNMENT_BOTTOM:
         case SHELF_ALIGNMENT_BOTTOM_LOCKED:
         case SHELF_ALIGNMENT_RIGHT:

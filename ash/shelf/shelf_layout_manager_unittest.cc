@@ -156,17 +156,16 @@ class ShelfDragCallback {
     if (type == ui::ET_GESTURE_SCROLL_UPDATE)
       scroll_.Add(delta);
 
+    WmShelf* shelf = test::AshTestBase::GetPrimaryShelf();
     gfx::Rect shelf_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
-    if (GetShelfLayoutManager()->IsHorizontalAlignment()) {
+    if (shelf->IsHorizontalAlignment()) {
       EXPECT_EQ(auto_hidden_shelf_widget_bounds_.bottom(),
                 shelf_bounds.bottom());
       EXPECT_EQ(shelf_widget_bounds_.bottom(), shelf_bounds.bottom());
-    } else if (SHELF_ALIGNMENT_RIGHT ==
-               GetShelfLayoutManager()->GetAlignment()) {
+    } else if (SHELF_ALIGNMENT_RIGHT == shelf->GetAlignment()) {
       EXPECT_EQ(auto_hidden_shelf_widget_bounds_.right(), shelf_bounds.right());
       EXPECT_EQ(shelf_widget_bounds_.right(), shelf_bounds.right());
-    } else if (SHELF_ALIGNMENT_LEFT ==
-               GetShelfLayoutManager()->GetAlignment()) {
+    } else if (SHELF_ALIGNMENT_LEFT == shelf->GetAlignment()) {
       EXPECT_EQ(auto_hidden_shelf_widget_bounds_.x(), shelf_bounds.x());
       EXPECT_EQ(shelf_widget_bounds_.x(), shelf_bounds.x());
     }
@@ -174,7 +173,6 @@ class ShelfDragCallback {
     // Auto hidden shelf has a visible height of 0 in MD (where this inequality
     // does not apply); whereas auto hidden shelf has a visible height of 3 in
     // non-MD.
-    WmShelf* shelf = test::AshTestBase::GetPrimaryShelf();
     if (!ash::MaterialDesignController::IsImmersiveModeMaterial() ||
         shelf->GetAutoHideState() != ash::SHELF_AUTO_HIDE_HIDDEN) {
       EXPECT_GE(shelf_bounds.height(),
@@ -398,11 +396,11 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
                  base::Unretained(&handler)));
 
   // Swipe down very little. It shouldn't change any state.
-  if (GetShelfLayoutManager()->IsHorizontalAlignment())
+  if (shelf->IsHorizontalAlignment())
     end.set_y(start.y() + shelf_shown.height() * 3 / 10);
-  else if (SHELF_ALIGNMENT_LEFT == GetShelfLayoutManager()->GetAlignment())
+  else if (SHELF_ALIGNMENT_LEFT == shelf->GetAlignment())
     end.set_x(start.x() - shelf_shown.width() * 3 / 10);
-  else if (SHELF_ALIGNMENT_RIGHT == GetShelfLayoutManager()->GetAlignment())
+  else if (SHELF_ALIGNMENT_RIGHT == shelf->GetAlignment())
     end.set_x(start.x() + shelf_shown.width() * 3 / 10);
   generator.GestureScrollSequence(start, end, kTimeDelta, 5);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
@@ -426,12 +424,12 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
 
   // Swipe up in extended hit region to show it.
   gfx::Point extended_start = start;
-  if (GetShelfLayoutManager()->IsHorizontalAlignment())
+  if (shelf->IsHorizontalAlignment())
     extended_start.set_y(GetShelfWidget()->GetWindowBoundsInScreen().y() - 1);
-  else if (SHELF_ALIGNMENT_LEFT == GetShelfLayoutManager()->GetAlignment())
+  else if (SHELF_ALIGNMENT_LEFT == shelf->GetAlignment())
     extended_start.set_x(GetShelfWidget()->GetWindowBoundsInScreen().right() +
                          1);
-  else if (SHELF_ALIGNMENT_RIGHT == GetShelfLayoutManager()->GetAlignment())
+  else if (SHELF_ALIGNMENT_RIGHT == shelf->GetAlignment())
     extended_start.set_x(GetShelfWidget()->GetWindowBoundsInScreen().x() - 1);
   end = extended_start - delta;
   generator.GestureScrollSequenceWithCallback(
@@ -475,11 +473,11 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   // Swipe up from below the shelf where a bezel would be, this should show the
   // shelf.
   gfx::Point below_start = start;
-  if (GetShelfLayoutManager()->IsHorizontalAlignment())
+  if (shelf->IsHorizontalAlignment())
     below_start.set_y(GetShelfWidget()->GetWindowBoundsInScreen().bottom() + 1);
-  else if (SHELF_ALIGNMENT_LEFT == GetShelfLayoutManager()->GetAlignment())
+  else if (SHELF_ALIGNMENT_LEFT == shelf->GetAlignment())
     below_start.set_x(GetShelfWidget()->GetWindowBoundsInScreen().x() - 1);
-  else if (SHELF_ALIGNMENT_RIGHT == GetShelfLayoutManager()->GetAlignment())
+  else if (SHELF_ALIGNMENT_RIGHT == shelf->GetAlignment())
     below_start.set_x(GetShelfWidget()->GetWindowBoundsInScreen().right() + 1);
   end = below_start - delta;
   generator.GestureScrollSequence(below_start, end, kTimeDelta,

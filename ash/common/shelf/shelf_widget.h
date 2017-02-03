@@ -44,9 +44,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   void OnShelfAlignmentChanged();
 
-  // DEPRECATED: Prefer WmShelf::GetAlignment().
-  ShelfAlignment GetAlignment() const;
-
   // Sets the shelf's background type.
   void SetPaintsBackground(ShelfBackgroundType background_type,
                            BackgroundAnimatorChangeType change_type);

@@ -20,6 +20,7 @@ OverflowBubble::OverflowBubble(WmShelf* wm_shelf)
       bubble_(nullptr),
       overflow_button_(nullptr),
       shelf_view_(nullptr) {
+  DCHECK(wm_shelf_);
   WmShell::Get()->AddPointerWatcher(this,
                                     views::PointerWatcherEventTypes::BASIC);
 }
