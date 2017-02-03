@@ -73,7 +73,6 @@ fast/html/adjacent-html-context-element.html
 fast/html/article-element.html
 fast/html/body-offset-properties.html
 fast/html/crash-style-first-letter.html
-fast/html/details-element-render-inline-crash.html
 fast/html/empty-fragment-id-goto-top.html
 fast/html/font-face-empty-should-not-crash.html
 fast/html/imports/import-same-url.html
@@ -161,6 +160,7 @@ fast/writing-mode/percentage-padding.html
 fast/xsl/import-non-document-node.xhtml
 fast/xsl/xslt-doc-enc.xml
 fullscreen/full-screen-request-rejected.html
+html/details_summary/details-element-render-inline-crash.html
 http/tests/download/inherited-encoding-form-submission-result.html
 http/tests/security/no-javascript-refresh.php
 images/link-body-content-imageDimensionChanged-crash.html
