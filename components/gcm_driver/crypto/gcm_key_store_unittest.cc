@@ -12,10 +12,10 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/gtest_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
-#include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -514,8 +514,6 @@ TEST_F(GCMKeyStoreTest, SuccessiveCallsBeforeInitialization) {
   EXPECT_TRUE(pair.IsInitialized());
 }
 
-#if !defined(NDEBUG) && DCHECK_IS_ON()
-
 TEST_F(GCMKeyStoreTest, CannotShareAppIdFromGCMToInstanceID) {
   KeyPair pair_unused;
   std::string auth_secret_unused;
@@ -526,9 +524,7 @@ TEST_F(GCMKeyStoreTest, CannotShareAppIdFromGCMToInstanceID) {
 
   base::RunLoop().RunUntilIdle();
 
-  static_assert(logging::LOG_DCHECK == logging::LOG_DFATAL,
-                "Unless these are equal, EXPECT_DFATAL will miss the DCHECK");
-  EXPECT_DFATAL(
+  EXPECT_DCHECK_DEATH(
       {
         gcm_key_store()->CreateKeys(
             kFakeAppId, kFakeAuthorizedEntity,
@@ -536,9 +532,7 @@ TEST_F(GCMKeyStoreTest, CannotShareAppIdFromGCMToInstanceID) {
                        &pair_unused, &auth_secret_unused));
 
         base::RunLoop().RunUntilIdle();
-      },
-      "Instance ID tokens cannot share an app_id with a non-InstanceID GCM "
-      "registration");
+      });
 }
 
 TEST_F(GCMKeyStoreTest, CannotShareAppIdFromInstanceIDToGCM) {
@@ -558,9 +552,7 @@ TEST_F(GCMKeyStoreTest, CannotShareAppIdFromInstanceIDToGCM) {
 
   base::RunLoop().RunUntilIdle();
 
-  static_assert(logging::LOG_DCHECK == logging::LOG_DFATAL,
-                "Unless these are equal, EXPECT_DFATAL will miss the DCHECK");
-  EXPECT_DFATAL(
+  EXPECT_DCHECK_DEATH(
       {
         gcm_key_store()->CreateKeys(
             kFakeAppId, "" /* empty authorized entity for non-InstanceID */,
@@ -568,12 +560,8 @@ TEST_F(GCMKeyStoreTest, CannotShareAppIdFromInstanceIDToGCM) {
                        &pair_unused, &auth_secret_unused));
 
         base::RunLoop().RunUntilIdle();
-      },
-      "Instance ID tokens cannot share an app_id with a non-InstanceID GCM "
-      "registration");
+      });
 }
-
-#endif  // !defined(NDEBUG) && DCHECK_IS_ON()
 
 }  // namespace
 
