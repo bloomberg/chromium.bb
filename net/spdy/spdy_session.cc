@@ -406,10 +406,11 @@ SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
       return SPDY_ERROR_INVALID_CONTROL_FRAME_SIZE;
     case SpdyFramer::SPDY_OVERSIZED_PAYLOAD:
       return SPDY_ERROR_OVERSIZED_PAYLOAD;
-    default:
+    case SpdyFramer::LAST_ERROR:
       NOTREACHED();
-      return static_cast<SpdyProtocolErrorDetails>(-1);
   }
+  NOTREACHED();
+  return static_cast<SpdyProtocolErrorDetails>(-1);
 }
 
 Error MapFramerErrorToNetError(SpdyFramer::SpdyFramerError err) {
@@ -446,10 +447,13 @@ Error MapFramerErrorToNetError(SpdyFramer::SpdyFramerError err) {
       return ERR_SPDY_FRAME_SIZE_ERROR;
     case SpdyFramer::SPDY_INVALID_STREAM_ID:
       return ERR_SPDY_PROTOCOL_ERROR;
-    default:
+    case SpdyFramer::SPDY_OVERSIZED_PAYLOAD:
+      return ERR_SPDY_FRAME_SIZE_ERROR;
+    case SpdyFramer::LAST_ERROR:
       NOTREACHED();
-      return ERR_SPDY_PROTOCOL_ERROR;
   }
+  NOTREACHED();
+  return ERR_SPDY_PROTOCOL_ERROR;
 }
 
 SpdyProtocolErrorDetails MapRstStreamStatusToProtocolError(
@@ -483,10 +487,9 @@ SpdyProtocolErrorDetails MapRstStreamStatusToProtocolError(
       return STATUS_CODE_INADEQUATE_SECURITY;
     case ERROR_CODE_HTTP_1_1_REQUIRED:
       return STATUS_CODE_HTTP_1_1_REQUIRED;
-    default:
-      NOTREACHED();
-      return static_cast<SpdyProtocolErrorDetails>(-1);
   }
+  NOTREACHED();
+  return static_cast<SpdyProtocolErrorDetails>(-1);
 }
 
 SpdyErrorCode MapNetErrorToGoAwayStatus(Error err) {

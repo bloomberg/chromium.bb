@@ -5792,6 +5792,8 @@ TEST(MapFramerErrorToNetError, MapsValue) {
   CHECK_EQ(
       ERR_SPDY_FRAME_SIZE_ERROR,
       MapFramerErrorToNetError(SpdyFramer::SPDY_CONTROL_PAYLOAD_TOO_LARGE));
+  CHECK_EQ(ERR_SPDY_FRAME_SIZE_ERROR,
+           MapFramerErrorToNetError(SpdyFramer::SPDY_OVERSIZED_PAYLOAD));
 }
 
 TEST(MapRstStreamStatusToProtocolError, MapsValues) {
