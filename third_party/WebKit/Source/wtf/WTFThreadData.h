@@ -55,6 +55,9 @@ class WTF_EXPORT WTFThreadData {
 
   ThreadIdentifier threadId() const { return m_threadId; }
 
+  // Must be called on the main thread before any callers to wtfThreadData().
+  static void initialize();
+
 #if OS(WIN) && COMPILER(MSVC)
   static size_t threadStackSize();
 #endif
@@ -74,10 +77,7 @@ class WTF_EXPORT WTFThreadData {
 };
 
 inline WTFThreadData& wtfThreadData() {
-  // WTFThreadData is used on main thread before it could possibly be used
-  // on secondary ones, so there is no need for synchronization here.
-  if (!WTFThreadData::staticData)
-    WTFThreadData::staticData = new ThreadSpecific<WTFThreadData>;
+  DCHECK(WTFThreadData::staticData);
   return **WTFThreadData::staticData;
 }
 

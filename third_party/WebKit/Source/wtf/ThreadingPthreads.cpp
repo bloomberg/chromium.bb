@@ -81,8 +81,9 @@ void initializeThreading() {
   // This should only be called once.
   DCHECK(!atomicallyInitializedStaticMutex);
 
+  WTFThreadData::initialize();
+
   atomicallyInitializedStaticMutex = new Mutex;
-  wtfThreadData();
   initializeDates();
   // Force initialization of static DoubleToStringConverter converter variable
   // inside EcmaScriptConverter function while we are in single thread mode.

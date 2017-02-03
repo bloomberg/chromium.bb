@@ -41,6 +41,12 @@ WTFThreadData::WTFThreadData()
 
 WTFThreadData::~WTFThreadData() {}
 
+void WTFThreadData::initialize() {
+  DCHECK(!WTFThreadData::staticData);
+  WTFThreadData::staticData = new ThreadSpecific<WTFThreadData>;
+  wtfThreadData();
+}
+
 #if OS(WIN) && COMPILER(MSVC)
 size_t WTFThreadData::threadStackSize() {
   // Needed to bootstrap WTFThreadData on Windows, because this value is needed
