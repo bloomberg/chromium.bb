@@ -5,10 +5,10 @@
 #ifndef SERVICES_SHAPE_DETECTION_BARCODE_DETECTION_IMPL_MAC_H_
 #define SERVICES_SHAPE_DETECTION_BARCODE_DETECTION_IMPL_MAC_H_
 
-#import <QuartzCore/QuartzCore.h>
-
 #include "base/mac/scoped_nsobject.h"
 #include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
+
+@class CIDetector;
 
 namespace shape_detection {
 

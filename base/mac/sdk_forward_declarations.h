@@ -14,8 +14,9 @@
 #import <AppKit/AppKit.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 #import <CoreWLAN/CoreWLAN.h>
-#import <ImageCaptureCore/ImageCaptureCore.h>
 #import <IOBluetooth/IOBluetooth.h>
+#import <ImageCaptureCore/ImageCaptureCore.h>
+#import <QuartzCore/QuartzCore.h>
 #include <stdint.h>
 
 #include "base/base_export.h"
@@ -128,6 +129,17 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
 @end
 
 @class NSVisualEffectView;
+
+@interface CIQRCodeFeature (YosemiteSDK)
+@property(readonly) CGRect bounds;
+@property(readonly) CGPoint topLeft;
+@property(readonly) CGPoint topRight;
+@property(readonly) CGPoint bottomLeft;
+@property(readonly) CGPoint bottomRight;
+@property(readonly, copy) NSString* messageString;
+@end
+
+@class CIQRCodeFeature;
 
 #endif  // MAC_OS_X_VERSION_10_10
 

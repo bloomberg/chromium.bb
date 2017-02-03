@@ -4,6 +4,8 @@
 
 #include "services/shape_detection/face_detection_impl_mac.h"
 
+#import <QuartzCore/QuartzCore.h>
+
 #include "base/mac/scoped_cftyperef.h"
 #include "media/capture/video/scoped_result_callback.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
