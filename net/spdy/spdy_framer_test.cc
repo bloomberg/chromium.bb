@@ -149,14 +149,14 @@ class SpdyFramerTestUtil {
     }
 
     void OnRstStream(SpdyStreamId stream_id,
-                     SpdyRstStreamStatus status) override {
+                     SpdyErrorCode error_code) override {
       LOG(FATAL);
     }
     void OnSetting(SpdySettingsIds id, uint32_t value) override { LOG(FATAL); }
     void OnPing(SpdyPingId unique_id, bool is_ack) override { LOG(FATAL); }
     void OnSettingsEnd() override { LOG(FATAL); }
     void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                  SpdyGoAwayStatus status) override {
+                  SpdyErrorCode error_code) override {
       LOG(FATAL);
     }
 
@@ -358,9 +358,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     }
   }
 
-  void OnRstStream(SpdyStreamId stream_id,
-                   SpdyRstStreamStatus status) override {
-    VLOG(1) << "OnRstStream(" << stream_id << ", " << status << ")";
+  void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override {
+    VLOG(1) << "OnRstStream(" << stream_id << ", " << error_code << ")";
     ++fin_frame_count_;
   }
 
@@ -384,8 +383,9 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                SpdyGoAwayStatus status) override {
-    VLOG(1) << "OnGoAway(" << last_accepted_stream_id << ", " << status << ")";
+                SpdyErrorCode error_code) override {
+    VLOG(1) << "OnGoAway(" << last_accepted_stream_id << ", " << error_code
+            << ")";
     ++goaway_count_;
   }
 
@@ -1007,7 +1007,7 @@ TEST_P(SpdyFramerTest, RstStreamWithStreamIdZero) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   framer.set_visitor(&visitor);
 
-  SpdyRstStreamIR rst_stream_ir(0, RST_STREAM_PROTOCOL_ERROR);
+  SpdyRstStreamIR rst_stream_ir(0, ERROR_CODE_PROTOCOL_ERROR);
   SpdySerializedFrame frame(framer.SerializeRstStream(rst_stream_ir));
 
   // We shouldn't have to read the whole frame before we signal an error.
@@ -1632,7 +1632,7 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
         0x00, 0x00, 0x00, 0x01,  // Stream: 1
         0x00, 0x00, 0x00, 0x01,  //  Error: PROTOCOL_ERROR
     };
-    SpdyRstStreamIR rst_stream(1, RST_STREAM_PROTOCOL_ERROR);
+    SpdyRstStreamIR rst_stream(1, ERROR_CODE_PROTOCOL_ERROR);
     SpdySerializedFrame frame(framer.SerializeRstStream(rst_stream));
     CompareFrame(kDescription, frame, kH2FrameData, arraysize(kH2FrameData));
   }
@@ -1646,7 +1646,7 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
         0x7f, 0xff, 0xff, 0xff,  // Stream: 0x7fffffff
         0x00, 0x00, 0x00, 0x01,  //  Error: PROTOCOL_ERROR
     };
-    SpdyRstStreamIR rst_stream(0x7FFFFFFF, RST_STREAM_PROTOCOL_ERROR);
+    SpdyRstStreamIR rst_stream(0x7FFFFFFF, ERROR_CODE_PROTOCOL_ERROR);
     SpdySerializedFrame frame(framer.SerializeRstStream(rst_stream));
     CompareFrame(kDescription, frame, kH2FrameData, arraysize(kH2FrameData));
   }
@@ -1660,7 +1660,7 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
         0x7f, 0xff, 0xff, 0xff,  // Stream: 0x7fffffff
         0x00, 0x00, 0x00, 0x02,  //  Error: INTERNAL_ERROR
     };
-    SpdyRstStreamIR rst_stream(0x7FFFFFFF, RST_STREAM_INTERNAL_ERROR);
+    SpdyRstStreamIR rst_stream(0x7FFFFFFF, ERROR_CODE_INTERNAL_ERROR);
     SpdySerializedFrame frame(framer.SerializeRstStream(rst_stream));
     CompareFrame(kDescription, frame, kH2FrameData, arraysize(kH2FrameData));
   }
@@ -1787,7 +1787,7 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
         0x00, 0x00, 0x00, 0x00,  //  Error: NO_ERROR
         0x47, 0x41,              // Description
     };
-    SpdyGoAwayIR goaway_ir(0, GOAWAY_NO_ERROR, "GA");
+    SpdyGoAwayIR goaway_ir(0, ERROR_CODE_NO_ERROR, "GA");
     SpdySerializedFrame frame(framer.SerializeGoAway(goaway_ir));
     CompareFrame(kDescription, frame, kH2FrameData, arraysize(kH2FrameData));
   }
@@ -1803,7 +1803,7 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
         0x00, 0x00, 0x00, 0x02,  //  Error: INTERNAL_ERROR
         0x47, 0x41,              // Description
     };
-    SpdyGoAwayIR goaway_ir(0x7FFFFFFF, GOAWAY_INTERNAL_ERROR, "GA");
+    SpdyGoAwayIR goaway_ir(0x7FFFFFFF, ERROR_CODE_INTERNAL_ERROR, "GA");
     SpdySerializedFrame frame(framer.SerializeGoAway(goaway_ir));
     CompareFrame(kDescription, frame, kH2FrameData, arraysize(kH2FrameData));
   }
@@ -3558,11 +3558,11 @@ TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
     SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
     framer.set_visitor(&visitor);
 
-    SpdyRstStreamIR rst_stream(13, RST_STREAM_CANCEL);
+    SpdyRstStreamIR rst_stream(13, ERROR_CODE_CANCEL);
     SpdySerializedFrame frame(framer.SerializeRstStream(rst_stream));
     SetFrameFlags(&frame, flags);
 
-    EXPECT_CALL(visitor, OnRstStream(13, RST_STREAM_CANCEL));
+    EXPECT_CALL(visitor, OnRstStream(13, ERROR_CODE_CANCEL));
 
     framer.ProcessInput(frame.data(), frame.size());
 
@@ -3620,11 +3620,11 @@ TEST_P(SpdyFramerTest, GoawayFrameFlags) {
     SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
     framer.set_visitor(&visitor);
 
-    SpdyGoAwayIR goaway_ir(97, GOAWAY_NO_ERROR, "test");
+    SpdyGoAwayIR goaway_ir(97, ERROR_CODE_NO_ERROR, "test");
     SpdySerializedFrame frame(framer.SerializeGoAway(goaway_ir));
     SetFrameFlags(&frame, flags);
 
-    EXPECT_CALL(visitor, OnGoAway(97, GOAWAY_NO_ERROR));
+    EXPECT_CALL(visitor, OnGoAway(97, ERROR_CODE_NO_ERROR));
 
     framer.ProcessInput(frame.data(), frame.size());
     EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
@@ -3846,7 +3846,7 @@ TEST_P(SpdyFramerTest, RstStreamStatusBounds) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   framer.set_visitor(&visitor);
 
-  EXPECT_CALL(visitor, OnRstStream(1, RST_STREAM_NO_ERROR));
+  EXPECT_CALL(visitor, OnRstStream(1, ERROR_CODE_NO_ERROR));
   framer.ProcessInput(reinterpret_cast<const char*>(kH2RstStreamInvalid),
                       arraysize(kH2RstStreamInvalid));
   EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
@@ -3855,7 +3855,7 @@ TEST_P(SpdyFramerTest, RstStreamStatusBounds) {
 
   framer.Reset();
 
-  EXPECT_CALL(visitor, OnRstStream(1, RST_STREAM_INTERNAL_ERROR));
+  EXPECT_CALL(visitor, OnRstStream(1, ERROR_CODE_INTERNAL_ERROR));
   framer.ProcessInput(reinterpret_cast<const char*>(kH2RstStreamNumStatusCodes),
                       arraysize(kH2RstStreamNumStatusCodes));
   EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
@@ -3878,7 +3878,7 @@ TEST_P(SpdyFramerTest, GoAwayStatusBounds) {
   testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   framer.set_visitor(&visitor);
 
-  EXPECT_CALL(visitor, OnGoAway(1, GOAWAY_INTERNAL_ERROR));
+  EXPECT_CALL(visitor, OnGoAway(1, ERROR_CODE_INTERNAL_ERROR));
   framer.ProcessInput(reinterpret_cast<const char*>(kH2FrameData),
                       arraysize(kH2FrameData));
   EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
@@ -3901,7 +3901,7 @@ TEST_P(SpdyFramerTest, GoAwayStreamIdBounds) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   framer.set_visitor(&visitor);
 
-  EXPECT_CALL(visitor, OnGoAway(0x7fffffff, GOAWAY_NO_ERROR));
+  EXPECT_CALL(visitor, OnGoAway(0x7fffffff, ERROR_CODE_NO_ERROR));
   framer.ProcessInput(reinterpret_cast<const char*>(kH2FrameData),
                       arraysize(kH2FrameData));
   EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());

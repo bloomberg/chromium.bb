@@ -1297,12 +1297,12 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
     // Use frame-specific handlers.
     switch (current_frame_type_) {
       case RST_STREAM: {
-        uint32_t status_raw = RST_STREAM_NO_ERROR;
-        bool successful_read = reader.ReadUInt32(&status_raw);
+        uint32_t error_code = ERROR_CODE_NO_ERROR;
+        bool successful_read = reader.ReadUInt32(&error_code);
         DCHECK(successful_read);
         DCHECK(reader.IsDoneReading());
-        SpdyRstStreamStatus status = ParseRstStreamStatus(status_raw);
-        visitor_->OnRstStream(current_frame_stream_id_, status);
+        visitor_->OnRstStream(current_frame_stream_id_,
+                              ParseErrorCode(error_code));
       } break;
       case PING: {
         SpdyPingId id = 0;
@@ -1382,12 +1382,11 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
       DCHECK(successful_read);
 
       // Parse status code.
-      uint32_t status_raw = GOAWAY_NO_ERROR;
-      successful_read = reader.ReadUInt32(&status_raw);
+      uint32_t error_code = ERROR_CODE_NO_ERROR;
+      successful_read = reader.ReadUInt32(&error_code);
       DCHECK(successful_read);
-      SpdyGoAwayStatus status = ParseGoAwayStatus(status_raw);
       // Finished parsing the GOAWAY header, call frame handler.
-      visitor_->OnGoAway(current_frame_stream_id_, status);
+      visitor_->OnGoAway(current_frame_stream_id_, ParseErrorCode(error_code));
     }
   }
 
@@ -1739,7 +1738,7 @@ SpdySerializedFrame SpdyFramer::SerializeRstStream(
 
   builder.BeginNewFrame(*this, RST_STREAM, 0, rst_stream.stream_id());
 
-  builder.WriteUInt32(rst_stream.status());
+  builder.WriteUInt32(rst_stream.error_code());
 
   DCHECK_EQ(expected_length, builder.length());
   return builder.take();
@@ -1803,8 +1802,8 @@ SpdySerializedFrame SpdyFramer::SerializeGoAway(
   // GOAWAY frames specify the last good stream id.
   builder.WriteUInt32(goaway.last_good_stream_id());
 
-  // GOAWAY frames also specify the error status code.
-  builder.WriteUInt32(goaway.status());
+  // GOAWAY frames also specify the error code.
+  builder.WriteUInt32(goaway.error_code());
 
   // GOAWAY frames may also specify opaque data.
   if (!goaway.description().empty()) {

@@ -351,9 +351,9 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
                    Http2ErrorCode http2_error_code) override {
     DVLOG(1) << "OnRstStream: " << header << "; code=" << http2_error_code;
     if (IsOkToStartFrame(header) && HasRequiredStreamId(header)) {
-      SpdyRstStreamStatus status =
-          ParseRstStreamStatus(static_cast<int>(http2_error_code));
-      visitor()->OnRstStream(header.stream_id, status);
+      SpdyErrorCode error_code =
+          ParseErrorCode(static_cast<uint32_t>(http2_error_code));
+      visitor()->OnRstStream(header.stream_id, error_code);
     }
   }
 
@@ -436,9 +436,9 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
     if (IsOkToStartFrame(header) && HasRequiredStreamIdZero(header)) {
       frame_header_ = header;
       has_frame_header_ = true;
-      SpdyGoAwayStatus status =
-          ParseGoAwayStatus(static_cast<int>(goaway.error_code));
-      visitor()->OnGoAway(goaway.last_stream_id, status);
+      SpdyErrorCode error_code =
+          ParseErrorCode(static_cast<uint32_t>(goaway.error_code));
+      visitor()->OnGoAway(goaway.last_stream_id, error_code);
     }
   }
 

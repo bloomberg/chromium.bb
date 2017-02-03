@@ -151,7 +151,7 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
                          bool fin) override;
   void OnError(SpdyFramer* framer) override;
   void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                SpdyGoAwayStatus status) override;
+                SpdyErrorCode error_code) override;
   bool OnGoAwayFrameData(const char* goaway_data, size_t len) override;
   void OnHeaders(SpdyStreamId stream_id,
                  bool has_priority,
@@ -168,7 +168,7 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
                      bool end) override;
-  void OnRstStream(SpdyStreamId stream_id, SpdyRstStreamStatus status) override;
+  void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override;
   void OnSetting(SpdySettingsIds id, uint32_t value) override;
   void OnSettings(bool clear_persisted) override;
   void OnSettingsAck() override;
@@ -274,7 +274,7 @@ void SpdyTestDeframerImpl::AtGoAwayEnd() {
     listener_->OnGoAway(std::move(goaway_ir_));
   } else {
     listener_->OnGoAway(MakeUnique<SpdyGoAwayIR>(
-        goaway_ir_->last_good_stream_id(), goaway_ir_->status(),
+        goaway_ir_->last_good_stream_id(), goaway_ir_->error_code(),
         std::move(*goaway_description_)));
     CHECK_EQ(0u, goaway_description_->size());
   }
@@ -492,13 +492,13 @@ void SpdyTestDeframerImpl::OnError(SpdyFramer* framer) {
 // for any non-zero amount of data, and after that it will be called with len==0
 // to indicate the end of the GOAWAY frame.
 void SpdyTestDeframerImpl::OnGoAway(SpdyStreamId last_good_stream_id,
-                                    SpdyGoAwayStatus status) {
+                                    SpdyErrorCode error_code) {
   DVLOG(1) << "OnGoAway last_good_stream_id: " << last_good_stream_id
-           << "     status: " << status;
+           << "     error code: " << error_code;
   CHECK_EQ(frame_type_, UNSET) << "   frame_type_="
                                << Http2FrameTypeToString(frame_type_);
   frame_type_ = GOAWAY;
-  goaway_ir_ = MakeUnique<SpdyGoAwayIR>(last_good_stream_id, status, "");
+  goaway_ir_ = MakeUnique<SpdyGoAwayIR>(last_good_stream_id, error_code, "");
   goaway_description_.reset(new string());
 }
 
@@ -613,14 +613,14 @@ void SpdyTestDeframerImpl::OnPushPromise(SpdyStreamId stream_id,
 // Closes the specified stream. After this the sender may still send PRIORITY
 // frames for this stream, which we can ignore.
 void SpdyTestDeframerImpl::OnRstStream(SpdyStreamId stream_id,
-                                       SpdyRstStreamStatus status) {
+                                       SpdyErrorCode error_code) {
   DVLOG(1) << "OnRstStream stream_id: " << stream_id
-           << "     status: " << status;
+           << "     error code: " << error_code;
   CHECK_EQ(frame_type_, UNSET) << "   frame_type_="
                                << Http2FrameTypeToString(frame_type_);
   CHECK_GT(stream_id, 0u);
 
-  listener_->OnRstStream(MakeUnique<SpdyRstStreamIR>(stream_id, status));
+  listener_->OnRstStream(MakeUnique<SpdyRstStreamIR>(stream_id, error_code));
 }
 
 // Called for an individual setting. There is no negotiation, the sender is

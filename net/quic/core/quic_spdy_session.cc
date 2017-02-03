@@ -4,6 +4,7 @@
 
 #include "net/quic/core/quic_spdy_session.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -151,8 +152,7 @@ class QuicSpdySession::SpdyFramerVisitor
     CloseConnection("SPDY DATA frame received.");
   }
 
-  void OnRstStream(SpdyStreamId stream_id,
-                   SpdyRstStreamStatus status) override {
+  void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override {
     CloseConnection("SPDY RST_STREAM frame received.");
   }
 
@@ -210,7 +210,7 @@ class QuicSpdySession::SpdyFramerVisitor
   }
 
   void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                SpdyGoAwayStatus status) override {
+                SpdyErrorCode error_code) override {
     CloseConnection("SPDY GOAWAY frame received.");
   }
 

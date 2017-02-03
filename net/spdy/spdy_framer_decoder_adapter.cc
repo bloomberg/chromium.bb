@@ -87,8 +87,8 @@ void SpdyFramerVisitorAdapter::OnHeaderFrameEnd(SpdyStreamId stream_id,
 }
 
 void SpdyFramerVisitorAdapter::OnRstStream(SpdyStreamId stream_id,
-                                           SpdyRstStreamStatus status) {
-  visitor_->OnRstStream(stream_id, status);
+                                           SpdyErrorCode error_code) {
+  visitor_->OnRstStream(stream_id, error_code);
 }
 
 void SpdyFramerVisitorAdapter::OnSetting(SpdySettingsIds id,
@@ -113,8 +113,8 @@ void SpdyFramerVisitorAdapter::OnSettingsEnd() {
 }
 
 void SpdyFramerVisitorAdapter::OnGoAway(SpdyStreamId last_accepted_stream_id,
-                                        SpdyGoAwayStatus status) {
-  visitor_->OnGoAway(last_accepted_stream_id, status);
+                                        SpdyErrorCode error_code) {
+  visitor_->OnGoAway(last_accepted_stream_id, error_code);
 }
 
 void SpdyFramerVisitorAdapter::OnHeaders(SpdyStreamId stream_id,
