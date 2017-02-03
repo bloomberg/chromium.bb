@@ -21,6 +21,7 @@ source_set("libfuzzer") {
     "src/FuzzerMerge.cpp",
     "src/FuzzerMutate.cpp",
     "src/FuzzerSHA1.cpp",
+    "src/FuzzerShmemPosix.cpp",
     "src/FuzzerTracePC.cpp",
     "src/FuzzerTraceState.cpp",
     "src/FuzzerUtil.cpp",
