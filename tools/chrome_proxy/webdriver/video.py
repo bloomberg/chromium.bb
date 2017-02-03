@@ -18,5 +18,27 @@ class Video(IntegrationTest):
       for response in t.GetHTTPResponses():
         self.assertHasChromeProxyViaHeader(response)
 
+  # Videos fetched via an XHR request should not be proxied.
+  def testNoCompressionOnXHR(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      # The test will actually use Javascript, so use a site that won't have any
+      # resources on it that could interfere.
+      t.LoadURL('http://check.googlezip.net/connect')
+      t.ExecuteJavascript(
+        'var xhr = new XMLHttpRequest();'
+        'xhr.open("GET", "/cacheable/video/data/buck_bunny_tiny.mp4", false);'
+        'xhr.send();'
+        'return;'
+      )
+      saw_video_response = False
+      for response in t.GetHTTPResponses():
+        if 'video' in response.response_headers['content-type']:
+          self.assertNotHasChromeProxyViaHeader(response)
+          saw_video_response = True
+        else:
+          self.assertHasChromeProxyViaHeader(response)
+      self.assertTrue(saw_video_response, 'No video request seen in test!')
+
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
