@@ -23,7 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/sys_info.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -525,11 +525,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   WallpaperManager::Initialize();
   WallpaperManager::Get()->AddObservers();
 
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&version_loader::GetVersion,
-                 version_loader::VERSION_FULL),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&version_loader::GetVersion, version_loader::VERSION_FULL),
       base::Bind(&ChromeOSVersionCallback));
 
   // Make sure that wallpaper boot transition and other delays in OOBE
