@@ -83,10 +83,6 @@
                 sub-label="[[getHotwordSearchEnableSubLabel_(
                            hotwordInfo_.alwaysOn)]]"
                 on-change="onHotwordSearchEnableChange_">
-              <a href="$i18nRaw{hotwordLearnMoreUrl}" target="_blank"
-                  class="label-controls" on-tap="doNothing_">
-                $i18n{searchOkGoogleLearnMore}
-              </a>
             </settings-toggle-button>
             <div class="secondary-action"
                 hidden$="[[!getShowHotwordSearchRetrain_(hotwordInfo_.*)]]">

@@ -92,10 +92,8 @@ SettingsPasswordSectionBrowserTest.prototype = {
    * @private
    */
   getDomRepeatChildren_: function(element) {
-    var template = element.children[element.children.length - 1];
-    assertEquals('TEMPLATE', template.tagName);
-    // The template is at the end of the list of children and should be skipped.
-    return Array.prototype.slice.call(element.children, 0, -1);
+    var nodes = element.querySelectorAll('.list-item:not([id])');
+    return nodes;
   },
 
   /**

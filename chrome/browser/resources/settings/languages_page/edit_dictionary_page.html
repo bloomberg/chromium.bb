@@ -42,11 +42,11 @@
         <paper-input id="newWord" no-label-float
             label="$i18n{addDictionaryWordLabel}"></paper-input>
       </div>
-      <paper-button on-tap="onAddWordTap_">
+      <paper-button class="secondary-button" on-tap="onAddWordTap_">
         $i18n{addDictionaryWordButton}
       </paper-button>
     </div>
-    <div class="settings-box block">
+    <div class="settings-box continuation block">
       <h2>$i18n{customDictionaryWords}</h2>
       <div class="list-frame">
         <iron-list id="list" items="{{words_}}">
