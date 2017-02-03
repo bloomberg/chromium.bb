@@ -156,7 +156,8 @@ void MTPDeviceDelegateImplWinTest::CheckGalleryInfo(
     EXPECT_EQ(0UL, info.transient_device_id.size());
 }
 
-TEST_F(MTPDeviceDelegateImplWinTest, GalleryNameMTP) {
+// Crashes on chromium.win/Win7 bot. http://crbug.com/686803
+TEST_F(MTPDeviceDelegateImplWinTest, DISABLED_GalleryNameMTP) {
   base::FilePath location(
       PortableDeviceWatcherWin::GetStoragePathFromStorageId(
           TestPortableDeviceWatcherWin::kStorageUniqueIdA));
