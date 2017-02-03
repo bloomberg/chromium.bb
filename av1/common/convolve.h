@@ -23,11 +23,15 @@ typedef enum CONVOLVE_OPT {
   CONVOLVE_OPT_NO_ROUND,
 } CONVOLVE_OPT;
 
+typedef int32_t CONV_BUF_TYPE;
+
 typedef struct ConvolveParams {
   int ref;
   CONVOLVE_OPT round;
-  int32_t *dst;
+  CONV_BUF_TYPE *dst;
   int dst_stride;
+  int round_0;
+  int round_1;
 } ConvolveParams;
 
 static INLINE ConvolveParams get_conv_params(int ref) {
@@ -38,18 +42,33 @@ static INLINE ConvolveParams get_conv_params(int ref) {
 }
 
 #if CONFIG_CONVOLVE_ROUND
+void av1_convolve_2d(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
+                     int dst_stride, int w, int h,
+                     InterpFilterParams *filter_params_x,
+                     InterpFilterParams *filter_params_y, const int subpel_x_q4,
+                     const int subpel_y_q4, ConvolveParams *conv_params);
+
+void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
+                            int dst_stride, int w, int h,
+                            const InterpFilter *interp_filter,
+                            const int subpel_x_q4, int x_step_q4,
+                            const int subpel_y_q4, int y_step_q4,
+                            ConvolveParams *conv_params);
+
 static INLINE ConvolveParams get_conv_params_no_round(int ref, int32_t *dst,
                                                       int dst_stride) {
   ConvolveParams conv_params;
   conv_params.ref = ref;
   conv_params.round = CONVOLVE_OPT_NO_ROUND;
+  conv_params.round_0 = 5;
+  conv_params.round_1 = 1;
   conv_params.dst = dst;
   conv_params.dst_stride = dst_stride;
   return conv_params;
 }
 
 void av1_convolve_rounding(const int32_t *src, int src_stride, uint8_t *dst,
-                           int dst_stride, int w, int h);
+                           int dst_stride, int w, int h, int bits);
 #endif  // CONFIG_CONVOLVE_ROUND
 
 void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,

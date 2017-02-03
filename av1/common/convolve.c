@@ -199,15 +199,79 @@ void av1_convolve_vert_facade(const uint8_t *src, int src_stride, uint8_t *dst,
 
 #if CONFIG_CONVOLVE_ROUND
 void av1_convolve_rounding(const int32_t *src, int src_stride, uint8_t *dst,
-                           int dst_stride, int w, int h) {
+                           int dst_stride, int w, int h, int bits) {
   int r, c;
   for (r = 0; r < h; ++r) {
     for (c = 0; c < w; ++c) {
       dst[r * dst_stride + c] =
-          clip_pixel(ROUND_POWER_OF_TWO(src[r * src_stride + c], FILTER_BITS));
+          clip_pixel(ROUND_POWER_OF_TWO_SIGNED(src[r * src_stride + c], bits));
     }
   }
 }
+
+void av1_convolve_2d(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
+                     int dst_stride, int w, int h,
+                     InterpFilterParams *filter_params_x,
+                     InterpFilterParams *filter_params_y, const int subpel_x_q4,
+                     const int subpel_y_q4, ConvolveParams *conv_params) {
+  int x, y, k;
+  CONV_BUF_TYPE im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
+  int im_h = h + filter_params_y->taps - 1;
+  int im_stride = w;
+  const int fo_vert = filter_params_y->taps / 2 - 1;
+  const int fo_horiz = filter_params_x->taps / 2 - 1;
+  (void)conv_params;
+
+  // horizontal filter
+  const uint8_t *src_horiz = src - fo_vert * src_stride;
+  const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
+      *filter_params_x, subpel_x_q4 & SUBPEL_MASK);
+  for (y = 0; y < im_h; ++y) {
+    for (x = 0; x < w; ++x) {
+      CONV_BUF_TYPE sum = 0;
+      for (k = 0; k < filter_params_x->taps; ++k) {
+        sum += x_filter[k] * src_horiz[y * src_stride + x - fo_horiz + k];
+      }
+      im_block[y * im_stride + x] =
+          ROUND_POWER_OF_TWO_SIGNED(sum, conv_params->round_0);
+    }
+  }
+
+  // vertical filter
+  CONV_BUF_TYPE *src_vert = im_block + fo_vert * im_stride;
+  const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
+      *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
+  for (y = 0; y < h; ++y) {
+    for (x = 0; x < w; ++x) {
+      CONV_BUF_TYPE sum = 0;
+      for (k = 0; k < filter_params_y->taps; ++k) {
+        sum += y_filter[k] * src_vert[(y - fo_vert + k) * im_stride + x];
+      }
+      dst[y * dst_stride + x] +=
+          ROUND_POWER_OF_TWO_SIGNED(sum, conv_params->round_1);
+    }
+  }
+}
+
+void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
+                            int dst_stride, int w, int h,
+                            const InterpFilter *interp_filter,
+                            const int subpel_x_q4, int x_step_q4,
+                            const int subpel_y_q4, int y_step_q4,
+                            ConvolveParams *conv_params) {
+  (void)x_step_q4;
+  (void)y_step_q4;
+  (void)dst;
+  (void)dst_stride;
+  InterpFilterParams filter_params_x =
+      av1_get_interp_filter_params(interp_filter[1 + 2 * conv_params->ref]);
+  InterpFilterParams filter_params_y =
+      av1_get_interp_filter_params(interp_filter[0 + 2 * conv_params->ref]);
+  av1_convolve_2d(src, src_stride, conv_params->dst, conv_params->dst_stride, w,
+                  h, &filter_params_x, &filter_params_y, subpel_x_q4,
+                  subpel_y_q4, conv_params);
+}
+
 #endif  // CONFIG_CONVOLVE_ROUND
 
 void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
@@ -294,7 +358,6 @@ void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
 
       filter_params = filter_params_x;
       assert(filter_params.taps <= MAX_FILTER_TAP);
-
       av1_convolve_horiz_facade(temp + (filter_size / 2 - 1), temp_stride, dst,
                                 dst_stride, w, h, filter_params, subpel_x_q4,
                                 x_step_q4, conv_params);

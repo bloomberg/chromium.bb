@@ -918,7 +918,8 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
     MV32 scaled_mv[2];
     SubpelParams subpel_params[2];
 #if CONFIG_CONVOLVE_ROUND
-    int32_t tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE];
+    DECLARE_ALIGNED(16, int32_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
+    av1_zero(tmp_dst);
 #endif  // CONFIG_CONVOLVE_ROUND
 
     for (ref = 0; ref < 1 + is_compound; ++ref) {
@@ -968,15 +969,16 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
                   (scaled_mv[ref].col >> SUBPEL_BITS);
     }
 
+#if CONFIG_CONVOLVE_ROUND
+    ConvolveParams conv_params =
+        get_conv_params_no_round(ref, tmp_dst, MAX_SB_SIZE);
+#else
+    ConvolveParams conv_params = get_conv_params(ref);
+#endif  // CONFIG_CONVOLVE_ROUND
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
       struct buf_2d *const pre_buf = &pd->pre[ref];
-#if CONFIG_CONVOLVE_ROUND
-      ConvolveParams conv_params =
-          get_conv_params_no_round(ref, tmp_dst, MAX_SB_SIZE);
-#else
-      ConvolveParams conv_params = get_conv_params(ref);
-#endif  // CONFIG_CONVOLVE_ROUND
+      conv_params.ref = ref;
 #if CONFIG_EXT_INTER
       if (ref &&
           is_masked_compound_type(mi->mbmi.interinter_compound_data.type))
@@ -1014,7 +1016,9 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #if CONFIG_AOM_HIGHBITDEPTH
     if (!(xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH))
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-      av1_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride, w, h);
+      av1_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride, w, h,
+                            FILTER_BITS * 2 + is_compound -
+                                conv_params.round_0 - conv_params.round_1);
 #endif  // CONFIG_CONVOLVE_ROUND
   }
 }

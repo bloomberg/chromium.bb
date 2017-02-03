@@ -64,11 +64,18 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
     sf->predict[subpel_x != 0][subpel_y != 0][conv_params->ref](
         src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h);
   } else {
-    // ref_idx > 0 means this is the second reference frame
-    // first reference frame's prediction result is already in dst
-    // therefore we need to average the first and second results
-    av1_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
-                 subpel_x, xs, subpel_y, ys, conv_params);
+// ref_idx > 0 means this is the second reference frame
+// first reference frame's prediction result is already in dst
+// therefore we need to average the first and second results
+#if CONFIG_CONVOLVE_ROUND
+    if (conv_params->round == CONVOLVE_OPT_NO_ROUND)
+      av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
+                             interp_filter, subpel_x, xs, subpel_y, ys,
+                             conv_params);
+    else
+#endif
+      av1_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
+                   subpel_x, xs, subpel_y, ys, conv_params);
   }
 }
 
