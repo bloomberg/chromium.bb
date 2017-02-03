@@ -23,6 +23,9 @@ class LayoutDelegate {
     RELATED_CONTROL_HORIZONTAL_SPACING,
     // Vertical spacing between controls that are logically related.
     RELATED_CONTROL_VERTICAL_SPACING,
+    // Horizontal spacing between an item such as an icon or checkbox and a
+    // label related to it.
+    RELATED_LABEL_HORIZONTAL_SPACING,
     // Horizontal indent of a subsection relative to related items above, e.g.
     // checkboxes below explanatory text/headings.
     SUBSECTION_HORIZONTAL_INDENT,

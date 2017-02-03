@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_row.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_row_observer.h"
 #include "chrome/grit/generated_resources.h"
@@ -28,6 +29,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/views/background.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -42,9 +44,6 @@
 #include "ui/views/layout/layout_constants.h"
 
 namespace {
-
-// Spacing between major items should be 9px.
-const int kItemMajorSpacing = 9;
 
 // (Square) pixel size of icon.
 const int kIconSize = 18;
@@ -198,8 +197,12 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
 
   set_close_on_deactivate(false);
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
-                                        kItemMajorSpacing));
+  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+                           layout_delegate->GetMetric(
+                               LayoutDelegate::Metric::
+                                   RELATED_CONTROL_VERTICAL_SPACING)));
 
   display_origin_ = url_formatter::FormatUrlForSecurityDisplay(
       requests[0]->GetOrigin(),
@@ -222,9 +225,12 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     row_layout->StartRow(0, 0);
 
     views::View* label_container = new views::View();
+    int indent = layout_delegate->GetMetric(
+        LayoutDelegate::Metric::SUBSECTION_HORIZONTAL_INDENT);
     label_container->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, views::kCheckboxIndent, 0,
-        views::kItemLabelSpacing));
+        views::BoxLayout::kHorizontal, indent, 0,
+        layout_delegate->GetMetric(
+            LayoutDelegate::Metric::RELATED_LABEL_HORIZONTAL_SPACING)));
     views::ImageView* icon = new views::ImageView();
     gfx::VectorIconId vector_id = requests[index]->GetIconId();
     if (vector_id != gfx::VectorIconId::VECTOR_ICON_NONE) {

@@ -32,6 +32,8 @@ int LayoutDelegate::GetMetric(Metric metric) const {
       return views::kRelatedControlHorizontalSpacing;
     case Metric::RELATED_CONTROL_VERTICAL_SPACING:
       return views::kRelatedControlVerticalSpacing;
+    case Metric::RELATED_LABEL_HORIZONTAL_SPACING:
+      return views::kItemLabelSpacing;
     case Metric::SUBSECTION_HORIZONTAL_INDENT:
       return views::kCheckboxIndent;
     case Metric::UNRELATED_CONTROL_VERTICAL_SPACING:

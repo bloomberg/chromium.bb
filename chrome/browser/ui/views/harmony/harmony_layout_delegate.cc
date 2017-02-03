@@ -27,6 +27,8 @@ int HarmonyLayoutDelegate::GetMetric(Metric metric) const {
       return kHarmonyLayoutUnit;
     case Metric::RELATED_CONTROL_VERTICAL_SPACING:
       return kHarmonyLayoutUnit / 2;
+    case Metric::RELATED_LABEL_HORIZONTAL_SPACING:
+      return kHarmonyLayoutUnit;
     case Metric::SUBSECTION_HORIZONTAL_INDENT:
       return 0;
     case Metric::UNRELATED_CONTROL_VERTICAL_SPACING:
