@@ -54,15 +54,17 @@ void FullscreenToolbarAnimationController::AnimateToolbarForTabstripChanges() {
   if ([owner_ mustShowFullscreenToolbar])
     return;
 
-  AnimateToolbarIn();
+  if (animation_.IsShowing()) {
+    hide_toolbar_timer_.Reset();
+    return;
+  }
+
   should_hide_toolbar_after_delay_ = true;
+  AnimateToolbarIn();
 }
 
 void FullscreenToolbarAnimationController::AnimateToolbarIn() {
   if (![owner_ isInFullscreen])
-    return;
-
-  if (animation_.IsShowing())
     return;
 
   animation_.Reset(animation_start_value_);
