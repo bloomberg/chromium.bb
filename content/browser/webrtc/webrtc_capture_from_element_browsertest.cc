@@ -23,8 +23,9 @@
 
 namespace {
 
-static const char kCanvasTestHtmlPage[] = "/media/canvas_capture_color.html";
-
+static const char kCanvasCaptureTestHtmlFile[] = "/media/canvas_capture.html";
+static const char kCanvasCaptureColorTestHtmlFile[] =
+    "/media/canvas_capture_color.html";
 static const char kVideoAudioHtmlFile[] =
     "/media/video_audio_element_capture_test.html";
 
@@ -70,7 +71,18 @@ class WebRtcCaptureFromElementBrowserTest
 
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
                        VerifyCanvasCaptureColor) {
-  MakeTypicalCall("testCanvasCaptureColors();", kCanvasTestHtmlPage);
+  MakeTypicalCall("testCanvasCaptureColors();",
+                  kCanvasCaptureColorTestHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
+                       VerifyCanvasCaptureFrames) {
+  MakeTypicalCall("testCanvasCapture(draw2d);", kCanvasCaptureTestHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
+                       VerifyCanvasCaptureWebGLFrames) {
+  MakeTypicalCall("testCanvasCapture(drawWebGL);", kCanvasCaptureTestHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,
