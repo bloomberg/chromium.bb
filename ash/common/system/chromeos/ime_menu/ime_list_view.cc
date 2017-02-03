@@ -113,11 +113,14 @@ class ImeListItemView : public ActionableView {
     tri_view->AddView(TriView::Container::START, id_label);
 
     // The label shows the IME name.
-    label_ = TrayPopupUtils::CreateDefaultLabel();
-    label_->SetText(label);
-    UpdateStyle();
-    label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    tri_view->AddView(TriView::Container::CENTER, label_);
+    auto label_view = TrayPopupUtils::CreateDefaultLabel();
+    label_view->SetText(label);
+    TrayPopupItemStyle style(
+        TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+    style.SetupLabel(label_view);
+
+    label_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    tri_view->AddView(TriView::Container::CENTER, label_view);
 
     if (selected) {
       // The checked button indicates the IME is selected.
@@ -126,7 +129,7 @@ class ImeListItemView : public ActionableView {
           gfx::VectorIconId::CHECK_CIRCLE, kMenuIconSize, button_color));
       tri_view->AddView(TriView::Container::END, checked_image);
     }
-    SetAccessibleName(label_->text());
+    SetAccessibleName(label_view->text());
   }
 
   ~ImeListItemView() override {}
@@ -150,11 +153,6 @@ class ImeListItemView : public ActionableView {
       ime_list_view_->scroll_content()->ScrollRectToVisible(bounds());
   }
 
-  // views::View:
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
-    UpdateStyle();
-  }
-
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     ActionableView::GetAccessibleNodeData(node_data);
     node_data->role = ui::AX_ROLE_CHECK_BOX;
@@ -163,15 +161,6 @@ class ImeListItemView : public ActionableView {
   }
 
  private:
-  // Updates the style of |label_| based on the current native theme.
-  void UpdateStyle() {
-    TrayPopupItemStyle style(
-        GetNativeTheme(), TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
-    style.SetupLabel(label_);
-  }
-
-  // The label shows the IME name.
-  views::Label* label_;
   ImeListView* ime_list_view_;
   bool selected_;
 
@@ -184,7 +173,7 @@ class ImeListItemView : public ActionableView {
 class MaterialKeyboardStatusRowView : public views::View {
  public:
   MaterialKeyboardStatusRowView(views::ButtonListener* listener, bool enabled)
-      : listener_(listener), label_(nullptr), toggle_(nullptr) {
+      : listener_(listener), toggle_(nullptr) {
     Init();
     toggle_->SetIsOn(enabled, false);
   }
@@ -198,10 +187,6 @@ class MaterialKeyboardStatusRowView : public views::View {
   // views::View:
   int GetHeightForWidth(int w) const override {
     return GetPreferredSize().height();
-  }
-
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
-    UpdateStyle();
   }
 
  private:
@@ -218,12 +203,14 @@ class MaterialKeyboardStatusRowView : public views::View {
         kImeMenuOnScreenKeyboardIcon, kMenuIconSize, kMenuIconColor));
     tri_view->AddView(TriView::Container::START, keyboard_image);
 
-    // The on-screen keyboard label.
-    label_ = TrayPopupUtils::CreateDefaultLabel();
-    label_->SetText(ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+    // The on-screen keyboard label ('On-screen keyboard').
+    auto label = TrayPopupUtils::CreateDefaultLabel();
+    label->SetText(ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
         IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD));
-    UpdateStyle();
-    tri_view->AddView(TriView::Container::CENTER, label_);
+    TrayPopupItemStyle style(
+        TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+    style.SetupLabel(label);
+    tri_view->AddView(TriView::Container::CENTER, label);
 
     // The on-screen keyboard toggle button.
     toggle_ = TrayPopupUtils::CreateToggleButton(
@@ -231,18 +218,8 @@ class MaterialKeyboardStatusRowView : public views::View {
     tri_view->AddView(TriView::Container::END, toggle_);
   }
 
-  // Updates the style of |label_| based on the current native theme.
-  void UpdateStyle() {
-    TrayPopupItemStyle style(
-        GetNativeTheme(), TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
-    style.SetupLabel(label_);
-  }
-
   // ButtonListener to notify when |toggle_| is clicked.
   views::ButtonListener* listener_;
-
-  // Label to with text 'On-screen keyboard'.
-  views::Label* label_;
 
   // ToggleButton to toggle keyboard on or off.
   views::ToggleButton* toggle_;

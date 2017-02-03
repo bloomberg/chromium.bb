@@ -94,8 +94,7 @@ bool TrayUpdate::factory_reset_required_ = false;
 class TrayUpdate::UpdateView : public ActionableView {
  public:
   explicit UpdateView(TrayUpdate* owner)
-      : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
-        label_(nullptr) {
+      : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS) {
     SetLayoutManager(new views::FillLayout);
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
@@ -118,13 +117,14 @@ class TrayUpdate::UpdateView : public ActionableView {
             ? bundle.GetLocalizedString(
                   IDS_ASH_STATUS_TRAY_RESTART_AND_POWERWASH_TO_UPDATE)
             : bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE);
-    label_ = TrayPopupUtils::CreateDefaultLabel();
-    label_->SetText(label_text);
     SetAccessibleName(label_text);
-    tri_view->AddView(TriView::Container::CENTER, label_);
+    auto label = TrayPopupUtils::CreateDefaultLabel();
+    label->SetText(label_text);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
+    style.SetupLabel(label);
+    tri_view->AddView(TriView::Container::CENTER, label);
 
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      UpdateStyle();
       SetInkDropMode(InkDropHostView::InkDropMode::ON);
     }
   }
@@ -132,12 +132,6 @@ class TrayUpdate::UpdateView : public ActionableView {
   ~UpdateView() override {}
 
  private:
-  void UpdateStyle() {
-    TrayPopupItemStyle style(GetNativeTheme(),
-                             TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
-    style.SetupLabel(label_);
-  }
-
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override {
     WmShell::Get()->system_tray_controller()->RequestRestartForUpdate();
@@ -146,16 +140,6 @@ class TrayUpdate::UpdateView : public ActionableView {
     CloseSystemBubble();
     return true;
   }
-
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
-    ActionableView::OnNativeThemeChanged(theme);
-
-    if (!MaterialDesignController::IsSystemTrayMenuMaterial())
-      return;
-    UpdateStyle();
-  }
-
-  views::Label* label_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateView);
 };

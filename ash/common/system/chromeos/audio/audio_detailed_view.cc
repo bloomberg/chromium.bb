@@ -18,6 +18,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -90,15 +91,17 @@ void AudioDetailedView::AddScrollListInfoItem(int text_id,
                                               const gfx::VectorIcon& icon) {
   const base::string16 text = l10n_util::GetStringUTF16(text_id);
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
     TriView* header = TrayPopupUtils::CreateDefaultRowView();
     TrayPopupUtils::ConfigureAsStickyHeader(header);
     views::ImageView* image_view = TrayPopupUtils::CreateMainImageView();
-    image_view->SetImage(gfx::CreateVectorIcon(icon, style.GetIconColor()));
+    image_view->SetImage(gfx::CreateVectorIcon(
+        icon, GetNativeTheme()->GetSystemColor(
+                  ui::NativeTheme::kColorId_ProminentButtonColor)));
     header->AddView(TriView::Container::START, image_view);
 
     views::Label* label = TrayPopupUtils::CreateDefaultLabel();
     label->SetText(text);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
     style.SetupLabel(label);
     header->AddView(TriView::Container::CENTER, label);
 

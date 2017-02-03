@@ -87,9 +87,6 @@ class ASH_EXPORT DateView : public BaseDateTimeView {
   // Sets active rendering state and updates the color of |date_label_|.
   void SetActive(bool active);
 
-  // Updates the style of |date_label_| based on the current native theme.
-  void UpdateStyle();
-
   // BaseDateTimeView:
   void UpdateTextInternal(const base::Time& now) override;
 
@@ -100,7 +97,6 @@ class ASH_EXPORT DateView : public BaseDateTimeView {
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   views::Label* date_label_;
 

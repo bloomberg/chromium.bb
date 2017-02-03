@@ -22,7 +22,6 @@ class OneShotTimer;
 namespace views {
 class BoxLayout;
 class CustomButton;
-class Label;
 class ProgressBar;
 }  // namespace views
 
@@ -96,13 +95,6 @@ class ASH_EXPORT TrayDetailsView : public views::View,
  private:
   friend class test::TrayDetailsViewTest;
 
-  // views::View:
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
-
-  // Updates the style of |label_| based on the current native theme, if it
-  // exists. Only used for material design.
-  void UpdateStyle();
-
   // Overridden to handle clicks on subclass-specific views.
   virtual void HandleViewClicked(views::View* view);
 
@@ -140,9 +132,6 @@ class ASH_EXPORT TrayDetailsView : public views::View,
 
   // The container view for the top-most title row in material design.
   TriView* tri_view_;
-
-  // The label used in the top-most title row for material design.
-  views::Label* label_;
 
   // The back button that appears in the material design title row. Not owned.
   views::Button* back_button_;

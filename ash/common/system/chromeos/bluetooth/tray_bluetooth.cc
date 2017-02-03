@@ -413,8 +413,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     container->AddIconAndLabels(
         image, text, l10n_util::GetStringUTF16(
                          IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
-    TrayPopupItemStyle style(GetNativeTheme(),
-                             TrayPopupItemStyle::FontStyle::CAPTION);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::CAPTION);
     style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
     style.SetupLabel(container->sub_text_label());
   }
@@ -488,7 +487,6 @@ class BluetoothDetailedView : public TrayDetailsView {
           static_cast<HoverHighlightView*>(item_container);
       if (UseMd()) {
         TrayPopupItemStyle style(
-            GetNativeTheme(),
             TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
         gfx::ImageSkia icon_image = CreateVectorIcon(
             GetBluetoothDeviceIcon(device_type, false), style.GetIconColor());
@@ -651,7 +649,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     container->SetLayoutManager(box_layout);
 
     TrayPopupItemStyle style(
-        GetNativeTheme(), TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+        TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
     style.set_color_style(TrayPopupItemStyle::ColorStyle::DISABLED);
 
     views::ImageView* image_view = new views::ImageView;

@@ -208,7 +208,8 @@ class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
   }
 
   void AddExtraButtons(bool enabled) override {
-    const SkColor prominent_color = style()->GetIconColor();
+    const SkColor prominent_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_ProminentButtonColor);
     gfx::ImageSkia normal_image = network_icon::GetImageForNewWifiNetwork(
         SkColorSetA(prominent_color, kJoinIconAlpha),
         SkColorSetA(prominent_color, kJoinBadgeAlpha));

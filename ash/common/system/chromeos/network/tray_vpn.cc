@@ -118,7 +118,6 @@ class VpnDefaultView : public TrayItemMore,
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
       *image = gfx::CreateVectorIcon(
           kNetworkVpnIcon, TrayPopupItemStyle::GetIconColor(
-                               GetNativeTheme(),
                                vpn && vpn->IsConnectedState()
                                    ? TrayPopupItemStyle::ColorStyle::ACTIVE
                                    : TrayPopupItemStyle::ColorStyle::INACTIVE));

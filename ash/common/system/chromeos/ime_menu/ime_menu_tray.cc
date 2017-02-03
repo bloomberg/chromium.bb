@@ -150,14 +150,16 @@ class ImeTitleView : public views::View, public views::ButtonListener {
     box_layout->set_minimum_cross_axis_size(
         GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
     SetLayoutManager(box_layout);
-    title_label_ =
+    auto title_label =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
-    title_label_->SetBorder(views::CreateEmptyBorder(
+    title_label->SetBorder(views::CreateEmptyBorder(
         0, kMenuEdgeEffectivePadding, kTrayMenuBottomRowPadding, 0));
-    UpdateStyle();
-    title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    AddChildView(title_label_);
-    box_layout->SetFlexForView(title_label_, 1);
+    title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
+    style.SetupLabel(title_label);
+
+    AddChildView(title_label);
+    box_layout->SetFlexForView(title_label, 1);
 
     if (show_settings_button) {
       settings_button_ = CreateImeMenuButton(
@@ -166,21 +168,6 @@ class ImeTitleView : public views::View, public views::ButtonListener {
         settings_button_->SetEnabled(false);
       AddChildView(settings_button_);
     }
-  }
-
-  void UpdateStyle() {
-    if (!GetNativeTheme() || !title_label_) {
-      return;
-    }
-
-    TrayPopupItemStyle style(GetNativeTheme(),
-                             TrayPopupItemStyle::FontStyle::TITLE);
-    style.SetupLabel(title_label_);
-  }
-
-  // views::View:
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
-    UpdateStyle();
   }
 
   // views::ButtonListener:
@@ -192,8 +179,6 @@ class ImeTitleView : public views::View, public views::ButtonListener {
   ~ImeTitleView() override {}
 
  private:
-  views::Label* title_label_;
-
   // Settings button that is only used in material design, and only if the
   // emoji, handwriting and voice buttons are not available.
   SystemMenuButton* settings_button_;

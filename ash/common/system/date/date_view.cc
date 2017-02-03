@@ -183,6 +183,8 @@ DateView::DateView(SystemTrayItem* owner)
   if (!UseMd())
     date_label_->SetEnabledColor(kHeaderTextColorNormal);
   UpdateTextInternal(base::Time::Now());
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SYSTEM_INFO);
+  style.SetupLabel(date_label_);
   AddChildView(date_label_);
 }
 
@@ -228,12 +230,6 @@ void DateView::SetActive(bool active) {
   SchedulePaint();
 }
 
-void DateView::UpdateStyle() {
-  TrayPopupItemStyle style(GetNativeTheme(),
-                           TrayPopupItemStyle::FontStyle::SYSTEM_INFO);
-  style.SetupLabel(date_label_);
-}
-
 void DateView::UpdateTextInternal(const base::Time& now) {
   BaseDateTimeView::UpdateTextInternal(now);
   date_label_->SetText(l10n_util::GetStringFUTF16(
@@ -273,10 +269,6 @@ void DateView::OnGestureEvent(ui::GestureEvent* event) {
     SetActive(false);
   }
   BaseDateTimeView::OnGestureEvent(event);
-}
-
-void DateView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  UpdateStyle();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

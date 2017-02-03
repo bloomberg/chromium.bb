@@ -295,7 +295,6 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
       progress_bar_(nullptr),
       scroll_border_(nullptr),
       tri_view_(nullptr),
-      label_(nullptr),
       back_button_(nullptr) {
   SetLayoutManager(box_layout_);
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
@@ -333,10 +332,11 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
     tri_view_->AddView(TriView::Container::START, back_button_);
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    label_ = TrayPopupUtils::CreateDefaultLabel();
-    label_->SetText(rb.GetLocalizedString(string_id));
-    UpdateStyle();
-    tri_view_->AddView(TriView::Container::CENTER, label_);
+    auto label = TrayPopupUtils::CreateDefaultLabel();
+    label->SetText(rb.GetLocalizedString(string_id));
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
+    style.SetupLabel(label);
+    tri_view_->AddView(TriView::Container::CENTER, label);
 
     tri_view_->SetContainerVisible(TriView::Container::END, false);
 
@@ -399,7 +399,6 @@ void TrayDetailsView::Reset() {
   scroll_content_ = nullptr;
   progress_bar_ = nullptr;
   back_button_ = nullptr;
-  label_ = nullptr;
   tri_view_ = nullptr;
 }
 
@@ -435,20 +434,6 @@ views::CustomButton* TrayDetailsView::CreateHelpButton(LoginStatus status) {
   if (!TrayPopupUtils::CanOpenWebUISettings(status))
     button->SetEnabled(false);
   return button;
-}
-
-void TrayDetailsView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  if (UseMd())
-    UpdateStyle();
-}
-
-void TrayDetailsView::UpdateStyle() {
-  if (!GetNativeTheme() || !label_)
-    return;
-
-  TrayPopupItemStyle style(GetNativeTheme(),
-                           TrayPopupItemStyle::FontStyle::TITLE);
-  style.SetupLabel(label_);
 }
 
 void TrayDetailsView::HandleViewClicked(views::View* view) {

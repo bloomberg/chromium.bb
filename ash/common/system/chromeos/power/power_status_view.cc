@@ -139,16 +139,14 @@ void PowerStatusView::UpdateText() {
   time_status_label_->SetVisible(!battery_time_status.empty());
   time_status_label_->SetText(battery_time_status);
 
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
     accessible_name_ = PowerStatus::Get()->GetAccessibleNameString(true);
-}
 
-void PowerStatusView::UpdateStyle() {
-  TrayPopupItemStyle style(GetNativeTheme(),
-                           TrayPopupItemStyle::FontStyle::SYSTEM_INFO);
-  style.SetupLabel(percentage_label_);
-  style.SetupLabel(separator_label_);
-  style.SetupLabel(time_status_label_);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SYSTEM_INFO);
+    style.SetupLabel(percentage_label_);
+    style.SetupLabel(separator_label_);
+    style.SetupLabel(time_status_label_);
+  }
 }
 
 void PowerStatusView::ChildPreferredSizeChanged(views::View* child) {
@@ -165,10 +163,6 @@ void PowerStatusView::Layout() {
     separator_label_->SetX(percentage_label_->bounds().right() + 1);
     time_status_label_->SetX(separator_label_->bounds().right() + 1);
   }
-}
-
-void PowerStatusView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  UpdateStyle();
 }
 
 void PowerStatusView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

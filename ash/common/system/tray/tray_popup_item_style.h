@@ -8,10 +8,6 @@
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace ui {
-class NativeTheme;
-}  // namespace ui
-
 namespace views {
 class Label;
 }  // namespace views
@@ -21,25 +17,6 @@ namespace ash {
 // Central style provider for the system tray menu. Makes it easier to ensure
 // all visuals are consistent and easily updated in one spot instead of being
 // defined in multiple places throughout the code.
-//
-// Since the TrayPopupItemStyle is based on a NativeTheme you should ensure that
-// when a View's theme changes that a style is re-applied using the new theme.
-// Typically this is done by overriding View::OnNativeThemeChanged() as shown
-// below.
-//
-// It is also important to note that Views call through the virtual function
-// View::GetWidget() when obtaining the NativeTheme. Therefore, Views should not
-// be getting the theme in their own constructors. See https://crbug.com/647376.
-//
-// Example:
-//   void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
-//     UpdateStyle();
-//   }
-//
-//   void UpdateStyle() {
-//     TrayPopupItemStyle style(GetNativeTheme());
-//     style.SetupLabel(label_);
-//   }
 class TrayPopupItemStyle {
  public:
   // The different visual styles that a row can have.
@@ -52,8 +29,6 @@ class TrayPopupItemStyle {
     DISABLED,
     // Color for "Connected" labels.
     CONNECTED,
-    // Color for sub-section header rows in detailed views.
-    SUB_HEADER,
   };
 
   // The different font styles that row text can have.
@@ -75,17 +50,10 @@ class TrayPopupItemStyle {
     CAPTION,
   };
 
-  static SkColor GetIconColor(const ui::NativeTheme* theme,
-                              ColorStyle color_style);
   static SkColor GetIconColor(ColorStyle color_style);
 
-  TrayPopupItemStyle(const ui::NativeTheme* theme, FontStyle font_style);
   explicit TrayPopupItemStyle(FontStyle font_style);
   ~TrayPopupItemStyle();
-
-  const ui::NativeTheme* theme() const { return theme_; }
-
-  void set_theme(const ui::NativeTheme* theme) { theme_ = theme; }
 
   ColorStyle color_style() const { return color_style_; }
 
@@ -103,12 +71,6 @@ class TrayPopupItemStyle {
   void SetupLabel(views::Label* label) const;
 
  private:
-  // The theme that the styles are dervied from.
-  // NOTE the styles are not currently derived from |theme_| but see TODO below.
-  // TODO(bruthig|tdanderson): Determine if TrayPopupItemStyle should depend on
-  // a NativeTheme. See http://crbug.com/665891.
-  const ui::NativeTheme* theme_;
-
   FontStyle font_style_;
 
   ColorStyle color_style_;

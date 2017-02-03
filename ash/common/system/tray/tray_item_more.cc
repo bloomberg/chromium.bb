@@ -76,7 +76,7 @@ void TrayItemMore::SetAccessibleName(const base::string16& name) {
 
 std::unique_ptr<TrayPopupItemStyle> TrayItemMore::CreateStyle() const {
   return base::MakeUnique<TrayPopupItemStyle>(
-      GetNativeTheme(), TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
+      TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
 }
 
 void TrayItemMore::UpdateStyle() {
