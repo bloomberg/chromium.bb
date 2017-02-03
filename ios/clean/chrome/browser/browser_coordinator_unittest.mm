@@ -50,7 +50,7 @@
 
 namespace {
 
-TEST(BrowserCoordinatorTest, TestStopOnDealloc) {
+TEST(BrowserCoordinatorTest, TestDontStopOnDealloc) {
   __block BOOL called = NO;
 
   {
@@ -60,7 +60,7 @@ TEST(BrowserCoordinatorTest, TestStopOnDealloc) {
     };
   }
 
-  EXPECT_TRUE(called);
+  EXPECT_FALSE(called);
 }
 
 TEST(BrowserCoordinatorTest, TestChildren) {

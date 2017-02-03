@@ -39,7 +39,7 @@ class ChromeBrowserState;
 // it.
 - (void)start;
 
-// Stops the user interaction managed by the receiver. Called on dealloc.
+// Stops the user interaction managed by the receiver.
 - (void)stop;
 
 @end

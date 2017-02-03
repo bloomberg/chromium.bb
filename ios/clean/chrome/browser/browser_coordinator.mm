@@ -40,10 +40,6 @@
   return self;
 }
 
-- (void)dealloc {
-  [self stop];
-}
-
 #pragma mark - Public API
 
 - (void)start {
