@@ -1451,6 +1451,7 @@ class CORE_EXPORT UseCounter {
     CSSValueUserModifyReadOnly = 1798,
     CSSValueUserModifyReadWrite = 1799,
     CSSValueUserModifyReadWritePlaintextOnly = 1800,
+    V8TextDetector_Detect_Method = 1801,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
