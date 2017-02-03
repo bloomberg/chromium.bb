@@ -153,6 +153,8 @@ dist_yaml_TESTS =				\
 	yaml/en-ueb-g2-dictionary_harness.yaml	\
 	yaml/en-ueb-math.yaml			\
 	yaml/en-ueb-symbols_harness.yaml	\
+	yaml/en-us-comp8-ext-back_harness.yaml	\
+	yaml/en-us-comp8-ext-for_harness.yaml	\
 	yaml/en-us-g2-dictionary_harness.yaml	\
 	yaml/en-us-g2-end-emphasis_harness.yaml	\
 	yaml/eo-g1_harness.yaml			\

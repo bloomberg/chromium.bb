@@ -95,6 +95,7 @@ table_files = \
 	en-gb-g1.utb \
 	en-GB-g2.ctb \
 	en_GB.tbl \
+	en_US-comp8-ext.tbl \
 	en-in-g1.ctb \
 	en.tbl \
 	en-ueb-chardefs.uti \
@@ -104,6 +105,7 @@ table_files = \
 	en-us-brf.dis \
 	en-us-comp6.ctb \
 	en-us-comp8.ctb \
+	en-us-comp8-ext.utb \
 	en-us-compbrl.ctb \
 	en-us-g1.ctb \
 	en-us-g2.ctb \
