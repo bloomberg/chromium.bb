@@ -52,7 +52,7 @@ public class ContextualSearchPanelMetrics {
     private boolean mWasAnyHeuristicSatisfiedOnPanelShow;
     // Time when the panel was triggered (not reset by a chained search).
     // Panel transitions are animated so mPanelTriggerTimeNs will be less than mFirstPeekTimeNs.
-    private long mPanelTriggerTimeNs;
+    private long mPanelTriggerTimeFromTapNs;
     // Time when the panel peeks into view (not reset by a chained search).
     // Used to log total time the panel is showing (not closed).
     private long mFirstPeekTimeNs;
@@ -107,10 +107,10 @@ public class ContextualSearchPanelMetrics {
         // so a local copy is created before the reset.
         boolean isSearchPanelFullyPreloaded = mIsSearchPanelFullyPreloaded;
 
-        if (toState == PanelState.CLOSED && mPanelTriggerTimeNs != 0
+        if (toState == PanelState.CLOSED && mPanelTriggerTimeFromTapNs != 0
                 && reason == StateChangeReason.BASE_PAGE_SCROLL) {
             long durationMs =
-                    (System.nanoTime() - mPanelTriggerTimeNs) / MILLISECONDS_TO_NANOSECONDS;
+                    (System.nanoTime() - mPanelTriggerTimeFromTapNs) / MILLISECONDS_TO_NANOSECONDS;
             ContextualSearchUma.logDurationBetweenTriggerAndScroll(
                     durationMs, mWasSearchContentViewSeen);
             mTapSuppressionRankerLogger.log(
@@ -269,7 +269,7 @@ public class ContextualSearchPanelMetrics {
             mWasSelectionAllCaps = false;
             mDidSelectionStartWithCapital = false;
             mWasAnyHeuristicSatisfiedOnPanelShow = false;
-            mPanelTriggerTimeNs = 0;
+            mPanelTriggerTimeFromTapNs = 0;
         }
     }
 
@@ -343,10 +343,10 @@ public class ContextualSearchPanelMetrics {
     }
 
     /**
-     * Should be called when the panel first starts showing.
+     * Should be called when the panel first starts showing due to a tap.
      */
-    public void onPanelTriggered() {
-        mPanelTriggerTimeNs = System.nanoTime();
+    public void onPanelTriggeredFromTap() {
+        mPanelTriggerTimeFromTapNs = System.nanoTime();
     }
 
     /**

@@ -1044,8 +1044,8 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs the duration between the panel being triggered due to a tap or long-press and the
-     * panel being dismissed due to a scroll.
+     * Logs the duration between the panel being triggered due to a tap and the panel being
+     * dismissed due to a scroll.
      * @param durationSincePanelTriggerMs The amount of time between the panel getting triggered and
      *                                    the panel being dismissed due to a scroll.
      * @param wasSearchContentViewSeen If the panel was opened.

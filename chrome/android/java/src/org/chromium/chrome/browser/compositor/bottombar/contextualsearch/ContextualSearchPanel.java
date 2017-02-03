@@ -497,7 +497,10 @@ public class ContextualSearchPanel extends OverlayPanel {
             mHasContentBeenTouched = false;
         }
 
-        if (getPanelState() == PanelState.CLOSED) mPanelMetrics.onPanelTriggered();
+        if ((getPanelState() == PanelState.UNDEFINED || getPanelState() == PanelState.CLOSED)
+                && reason == StateChangeReason.TEXT_SELECT_TAP) {
+            mPanelMetrics.onPanelTriggeredFromTap();
+        }
     }
 
     @Override
