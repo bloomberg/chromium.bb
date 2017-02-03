@@ -437,8 +437,10 @@ void HTMLElement::attributeChanged(const AttributeModificationParams& params) {
     if (adjustedFocusedElementInTreeScope() == this)
       blur();
   } else if (params.name == contenteditableAttr) {
-    document().frame()->spellChecker().removeSpellingAndGrammarMarkers(
-        *this, SpellChecker::ElementsType::kOnlyNonEditable);
+    if (document().frame()) {
+      document().frame()->spellChecker().removeSpellingAndGrammarMarkers(
+          *this, SpellChecker::ElementsType::kOnlyNonEditable);
+    }
     if (adjustedFocusedElementInTreeScope() != this)
       return;
     // The attribute change may cause supportsFocus() to return false
