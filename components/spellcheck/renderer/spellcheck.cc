@@ -263,7 +263,7 @@ void SpellCheck::OnRequestDocumentMarkers() {
 // AddSpellcheckLanguage() is called.
 void SpellCheck::AddSpellcheckLanguage(base::File file,
                                        const std::string& language) {
-  languages_.push_back(new SpellcheckLanguage());
+  languages_.push_back(base::MakeUnique<SpellcheckLanguage>());
   languages_.back()->Init(std::move(file), language);
 }
 
@@ -307,9 +307,7 @@ bool SpellCheck::SpellCheckWord(
     *misspelling_len = 0;
     suggestions_list.clear();
 
-    for (ScopedVector<SpellcheckLanguage>::iterator language =
-             languages_.begin();
-         language != languages_.end();) {
+    for (auto language = languages_.begin(); language != languages_.end();) {
       language_suggestions.clear();
       SpellcheckLanguage::SpellcheckWordResult result =
           (*language)->SpellCheckWord(
@@ -439,7 +437,7 @@ bool SpellCheck::InitializeIfNeeded() {
     return true;
 
   bool initialize_if_needed = false;
-  for (SpellcheckLanguage* language : languages_)
+  for (auto& language : languages_)
     initialize_if_needed |= language->InitializeIfNeeded();
 
   return initialize_if_needed;
@@ -464,7 +462,7 @@ void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
 
   if (languages_.empty() ||
       std::find_if(languages_.begin(), languages_.end(),
-                   [](SpellcheckLanguage* language) {
+                   [](std::unique_ptr<SpellcheckLanguage>& language) {
                      return !language->IsEnabled();
                    }) != languages_.end()) {
     param->completion()->didCancelCheckingText();
