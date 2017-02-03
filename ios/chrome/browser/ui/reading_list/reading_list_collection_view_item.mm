@@ -64,6 +64,7 @@ const CGFloat kDistillationIndicatorSize = 18;
 @synthesize text = _text;
 @synthesize detailText = _detailText;
 @synthesize url = _url;
+@synthesize faviconPageURL = _faviconPageURL;
 @synthesize displayedCell = _displayedCell;
 @synthesize distillationState = _distillationState;
 
@@ -78,22 +79,27 @@ const CGFloat kDistillationIndicatorSize = 18;
   _faviconAttributesProvider = provider;
   _url = url;
   _distillationState = state;
+  return self;
+}
+
+- (void)setFaviconPageURL:(GURL)url {
+  _faviconPageURL = url;
   // |self| owns |provider|, |provider| owns the block, so a week self reference
   // is necessary.
   __weak ReadingListCollectionViewItem* weakSelf = self;
-  [provider
+  [_faviconAttributesProvider
       fetchFaviconAttributesForURL:url
                         completion:^(FaviconAttributes* _Nonnull attributes) {
                           ReadingListCollectionViewItem* strongSelf = weakSelf;
                           if (!strongSelf) {
                             return;
                           }
-                          strongSelf.attributes = attributes;
-                          [strongSelf.displayedCell.faviconView
-                              configureWithAttributes:attributes];
-                        }];
 
-  return self;
+                          strongSelf.attributes = attributes;
+
+                          [strongSelf.displayedCell.faviconView
+                              configureWithAttributes:strongSelf.attributes];
+                        }];
 }
 
 #pragma mark - property

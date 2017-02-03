@@ -21,6 +21,8 @@ class GURL;
 @property(nonatomic, copy) NSString* detailText;
 // The URL of the Reading List entry.
 @property(nonatomic, readonly) const GURL& url;
+// The URL of the page presenting the favicon to display.
+@property(nonatomic, assign) GURL faviconPageURL;
 // Status of the offline version.
 @property(nonatomic, assign)
     ReadingListEntry::DistillationState distillationState;

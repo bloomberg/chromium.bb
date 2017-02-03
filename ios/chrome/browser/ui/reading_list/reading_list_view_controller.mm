@@ -589,6 +589,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     if (oldItem.url == newItem.url) {
       oldItem.text = newItem.text;
       oldItem.distillationState = newItem.distillationState;
+      oldItem.faviconPageURL = newItem.faviconPageURL;
     }
     if (![oldItem isEqual:newItem]) {
       return YES;
@@ -609,6 +610,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   base::string16 urlString = url_formatter::FormatUrl(url);
   item.text = base::SysUTF8ToNSString(entry.Title());
   item.detailText = base::SysUTF16ToNSString(urlString);
+  item.faviconPageURL =
+      entry.DistilledURL().is_valid() ? entry.DistilledURL() : url;
   return item;
 }
 

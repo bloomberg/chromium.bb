@@ -54,15 +54,21 @@ void ReadingListDistillerPage::DistillPageImpl(const GURL& url,
   }
   std::unique_ptr<web::WebState> new_web_state =
       web_state_dispatcher_->RequestWebState();
-  if (new_web_state) {
-    favicon::WebFaviconDriver* favicon_driver =
-        favicon::WebFaviconDriver::FromWebState(new_web_state.get());
-    favicon_driver->FetchFavicon(url);
-  }
   AttachWebState(std::move(new_web_state));
   original_url_ = url;
+  FetchFavicon(url);
 
   DistillerPageIOS::DistillPageImpl(url, script);
+}
+
+void ReadingListDistillerPage::FetchFavicon(const GURL& page_url) {
+  if (!CurrentWebState() || !page_url.is_valid()) {
+    return;
+  }
+  favicon::WebFaviconDriver* favicon_driver =
+      favicon::WebFaviconDriver::FromWebState(CurrentWebState());
+  DCHECK(favicon_driver);
+  favicon_driver->FetchFavicon(page_url);
 }
 
 void ReadingListDistillerPage::OnDistillationDone(const GURL& page_url,
@@ -117,6 +123,8 @@ void ReadingListDistillerPage::OnLoadURLDone(
     DistillerPageIOS::OnLoadURLDone(load_completion_status);
     return;
   }
+  FetchFavicon(CurrentWebState()->GetVisibleURL());
+
   // Page is loaded but rendering may not be done yet. Give a delay to the page.
   base::WeakPtr<ReadingListDistillerPage> weak_this =
       weak_ptr_factory_.GetWeakPtr();
@@ -213,6 +221,7 @@ bool ReadingListDistillerPage::HandleGoogleCachedAMPPageJavaScriptResult(
   if (!new_gurl.is_valid()) {
     return false;
   }
+  FetchFavicon(new_gurl);
   web::NavigationManager::WebLoadParams params(new_gurl);
   CurrentWebState()->GetNavigationManager()->LoadURLWithParams(params);
   return true;
