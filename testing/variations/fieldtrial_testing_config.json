@@ -2671,7 +2671,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "TunedClippingLevelMin30"
+                        "TunedClippingLevelMin70"
                     ]
                 }
             ]
