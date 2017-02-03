@@ -18,10 +18,6 @@ namespace base {
 class FilePath;
 }
 
-namespace dom_distiller {
-class DomDistillerService;
-}
-
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
@@ -82,7 +78,7 @@ class URLDownloader : public net::URLFetcherDelegate,
   // and a boolean indicating success. For downloads, if distillation was
   // successful, it will also include the distilled url and extracted title.
   URLDownloader(
-      dom_distiller::DomDistillerService* distiller_service,
+      dom_distiller::DistillerFactory* distiller_factory,
       reading_list::ReadingListDistillerPageFactory* distiller_page_factory,
       PrefService* prefs,
       base::FilePath chrome_profile_path,
@@ -177,11 +173,12 @@ class URLDownloader : public net::URLFetcherDelegate,
   // Saves the file downloaded by |fetcher_|. Creates the directory if needed.
   SuccessState SavePDFFile(const base::FilePath& temporary_path);
 
-  dom_distiller::DomDistillerService* distiller_service_;
   reading_list::ReadingListDistillerPageFactory* distiller_page_factory_;
+  dom_distiller::DistillerFactory* distiller_factory_;
   PrefService* pref_service_;
   const DownloadCompletion download_completion_;
   const SuccessCompletion delete_completion_;
+
   std::deque<Task> tasks_;
   bool working_;
   base::FilePath base_directory_;

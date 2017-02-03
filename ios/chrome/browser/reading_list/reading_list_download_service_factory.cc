@@ -6,11 +6,12 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
+#include "components/dom_distiller/core/distiller.h"
+#include "components/dom_distiller/core/distiller_url_fetcher.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page_factory.h"
@@ -36,7 +37,6 @@ ReadingListDownloadServiceFactory::ReadingListDownloadServiceFactory()
           "ReadingListDownloadService",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ReadingListModelFactory::GetInstance());
-  DependsOn(dom_distiller::DomDistillerServiceFactory::GetInstance());
   DependsOn(ios::FaviconServiceFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());
   DependsOn(ios::BookmarkModelFactory::GetInstance());
@@ -55,15 +55,22 @@ ReadingListDownloadServiceFactory::BuildServiceInstanceFor(
           base::MakeUnique<reading_list::ReadingListDistillerPageFactory>(
               context);
 
-  std::unique_ptr<ReadingListDownloadService> reading_list_download_service(
-      new ReadingListDownloadService(
+  auto distiller_url_fetcher_factory =
+      base::MakeUnique<dom_distiller::DistillerURLFetcherFactory>(
+          context->GetRequestContext());
+
+  dom_distiller::proto::DomDistillerOptions options;
+  auto distiller_factory =
+      base::MakeUnique<dom_distiller::DistillerFactoryImpl>(
+          std::move(distiller_url_fetcher_factory), options);
+
+  auto reading_list_download_service =
+      base::MakeUnique<ReadingListDownloadService>(
           ReadingListModelFactory::GetForBrowserState(chrome_browser_state),
-          dom_distiller::DomDistillerServiceFactory::GetForBrowserState(
-              chrome_browser_state),
           chrome_browser_state->GetPrefs(),
           chrome_browser_state->GetStatePath(),
           chrome_browser_state->GetRequestContext(),
-          std::move(distiller_page_factory)));
+          std::move(distiller_factory), std::move(distiller_page_factory));
   return std::move(reading_list_download_service);
 }
 

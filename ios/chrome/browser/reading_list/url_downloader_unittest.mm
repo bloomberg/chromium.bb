@@ -29,7 +29,7 @@ class DistillerViewerTest : public dom_distiller::DistillerViewerInterface {
                       const std::string& html,
                       const GURL& redirect_url,
                       const std::string& mime_type)
-      : dom_distiller::DistillerViewerInterface(nil, nil) {
+      : dom_distiller::DistillerViewerInterface(nil) {
     std::vector<ImageInfo> images;
     if (redirect_url.is_valid()) {
       delegate->DistilledPageRedirectedToURL(url, redirect_url);

@@ -18,10 +18,6 @@ namespace base {
 class FilePath;
 }
 
-namespace dom_distiller {
-class DomDistillerService;
-}
-
 namespace reading_list {
 class ReadingListDistillerPageFactory;
 }
@@ -37,10 +33,10 @@ class ReadingListDownloadService
  public:
   ReadingListDownloadService(
       ReadingListModel* reading_list_model,
-      dom_distiller::DomDistillerService* distiller_service,
       PrefService* prefs,
       base::FilePath chrome_profile_path,
       net::URLRequestContextGetter* url_request_context_getter,
+      std::unique_ptr<dom_distiller::DistillerFactory> distiller_factory,
       std::unique_ptr<reading_list::ReadingListDistillerPageFactory>
           distiller_page_factory);
   ~ReadingListDownloadService() override;
@@ -111,6 +107,7 @@ class ReadingListDownloadService
   bool had_connection_;
   std::unique_ptr<reading_list::ReadingListDistillerPageFactory>
       distiller_page_factory_;
+  std::unique_ptr<dom_distiller::DistillerFactory> distiller_factory_;
 
   base::WeakPtrFactory<ReadingListDownloadService> weak_ptr_factory_;
 

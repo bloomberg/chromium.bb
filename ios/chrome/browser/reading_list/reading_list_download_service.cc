@@ -42,21 +42,22 @@ const int kNumberOfFailsBeforeStop = 7;
 
 ReadingListDownloadService::ReadingListDownloadService(
     ReadingListModel* reading_list_model,
-    dom_distiller::DomDistillerService* distiller_service,
     PrefService* prefs,
     base::FilePath chrome_profile_path,
     net::URLRequestContextGetter* url_request_context_getter,
+    std::unique_ptr<dom_distiller::DistillerFactory> distiller_factory,
     std::unique_ptr<reading_list::ReadingListDistillerPageFactory>
         distiller_page_factory)
     : reading_list_model_(reading_list_model),
       chrome_profile_path_(chrome_profile_path),
       had_connection_(!net::NetworkChangeNotifier::IsOffline()),
       distiller_page_factory_(std::move(distiller_page_factory)),
+      distiller_factory_(std::move(distiller_factory)),
       weak_ptr_factory_(this) {
   DCHECK(reading_list_model);
 
   url_downloader_ = base::MakeUnique<URLDownloader>(
-      distiller_service, distiller_page_factory_.get(), prefs,
+      distiller_factory_.get(), distiller_page_factory_.get(), prefs,
       chrome_profile_path, url_request_context_getter,
       base::Bind(&ReadingListDownloadService::OnDownloadEnd,
                  base::Unretained(this)),

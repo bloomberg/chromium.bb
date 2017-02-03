@@ -43,15 +43,15 @@ const char kDisableImageContextMenuScript[] =
 // URLDownloader
 
 URLDownloader::URLDownloader(
-    dom_distiller::DomDistillerService* distiller_service,
+    dom_distiller::DistillerFactory* distiller_factory,
     reading_list::ReadingListDistillerPageFactory* distiller_page_factory,
     PrefService* prefs,
     base::FilePath chrome_profile_path,
     net::URLRequestContextGetter* url_request_context_getter,
     const DownloadCompletion& download_completion,
     const SuccessCompletion& delete_completion)
-    : distiller_service_(distiller_service),
-      distiller_page_factory_(distiller_page_factory),
+    : distiller_page_factory_(distiller_page_factory),
+      distiller_factory_(distiller_factory),
       pref_service_(prefs),
       download_completion_(download_completion),
       delete_completion_(delete_completion),
@@ -174,9 +174,9 @@ void URLDownloader::DownloadURL(const GURL& url, bool offline_url_exists) {
           distiller_page_factory_->CreateReadingListDistillerPage(this);
 
   distiller_.reset(new dom_distiller::DistillerViewer(
-      distiller_service_, pref_service_, url,
-      base::Bind(&URLDownloader::DistillerCallback, base::Unretained(this)),
-      std::move(reading_list_distiller_page)));
+      distiller_factory_, std::move(reading_list_distiller_page), pref_service_,
+      url,
+      base::Bind(&URLDownloader::DistillerCallback, base::Unretained(this))));
 }
 
 void URLDownloader::DistilledPageRedirectedToURL(const GURL& page_url,
