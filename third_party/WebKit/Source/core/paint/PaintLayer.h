@@ -46,8 +46,8 @@
 #define PaintLayer_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ClipRectsCache.h"
 #include "core/layout/LayoutBox.h"
+#include "core/paint/ClipRectsCache.h"
 #include "core/paint/PaintLayerClipper.h"
 #include "core/paint/PaintLayerFragment.h"
 #include "core/paint/PaintLayerResourceInfo.h"

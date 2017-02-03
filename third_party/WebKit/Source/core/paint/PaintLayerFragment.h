@@ -26,7 +26,7 @@
 #ifndef PaintLayerFragment_h
 #define PaintLayerFragment_h
 
-#include "core/layout/ClipRect.h"
+#include "core/paint/ClipRect.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 

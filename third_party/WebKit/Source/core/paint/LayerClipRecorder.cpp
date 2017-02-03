@@ -4,8 +4,8 @@
 
 #include "core/paint/LayerClipRecorder.h"
 
-#include "core/layout/ClipRect.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/ClipRect.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"

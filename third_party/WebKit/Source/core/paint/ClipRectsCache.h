@@ -5,7 +5,7 @@
 #ifndef ClipRectsCache_h
 #define ClipRectsCache_h
 
-#include "core/layout/ClipRects.h"
+#include "core/paint/ClipRects.h"
 
 #if DCHECK_IS_ON()
 #include "platform/scroll/ScrollTypes.h"  // For OverlayScrollbarClipBehavior.

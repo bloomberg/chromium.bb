@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/ClipRect.h"
+#include "core/paint/ClipRect.h"
 
 #include "core/layout/HitTestLocation.h"
 

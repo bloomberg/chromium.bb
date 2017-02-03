@@ -46,7 +46,7 @@
 #define PaintLayerClipper_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ClipRectsCache.h"
+#include "core/paint/ClipRectsCache.h"
 
 #include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/scroll/ScrollTypes.h"
