@@ -111,6 +111,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsSamePage() override;
   bool HasCommitted() override;
   bool IsErrorPage() override;
+  net::HostPortPair GetSocketAddress() override;
   const net::HttpResponseHeaders* GetResponseHeaders() override;
   net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
   void Resume() override;
@@ -297,6 +298,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_ui_data_.get();
   }
 
+  const GURL& base_url() { return base_url_; }
+
   void set_searchable_form_url(const GURL& url) { searchable_form_url_ = url; }
   void set_searchable_form_encoding(const std::string& encoding) {
     searchable_form_encoding_ = encoding;
@@ -457,6 +460,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   GURL searchable_form_url_;
   std::string searchable_form_encoding_;
+
+  GURL base_url_;
+  net::HostPortPair socket_address_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 

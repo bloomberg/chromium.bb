@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/common/referrer.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_info.h"
 #include "ui/base/page_transition_types.h"
@@ -175,6 +176,9 @@ class CONTENT_EXPORT NavigationHandle {
   // Note that if an error page reloads, this will return true even though
   // GetNetErrorCode will be net::OK.
   virtual bool IsErrorPage() = 0;
+
+  // Returns the remote address of the socket which fetched this resource.
+  virtual net::HostPortPair GetSocketAddress() = 0;
 
   // Returns the response headers for the request, or nullptr if there aren't
   // any response headers or they have not been received yet. The response

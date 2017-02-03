@@ -277,6 +277,11 @@ bool NavigationHandleImpl::IsErrorPage() {
   return state_ == DID_COMMIT_ERROR_PAGE;
 }
 
+net::HostPortPair NavigationHandleImpl::GetSocketAddress() {
+  DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
+  return socket_address_;
+}
+
 void NavigationHandleImpl::Resume() {
   if (state_ != DEFERRING_START && state_ != DEFERRING_REDIRECT &&
       state_ != DEFERRING_RESPONSE) {
@@ -580,6 +585,8 @@ void NavigationHandleImpl::DidCommitNavigation(
   has_user_gesture_ = (params.gesture == NavigationGestureUser);
   transition_ = params.transition;
   render_frame_host_ = render_frame_host;
+  base_url_ = params.base_url;
+  socket_address_ = params.socket_address;
 
   // If an error page reloads, net_error_code might be 200 but we still want to
   // count it as an error page.
