@@ -930,3 +930,12 @@ class ConfigLibHelperTests(cros_test_lib.TestCase):
 
     self.assertFalse(config_lib.ScheduledByBuildbucket(
         pfq_master_config))
+
+class GEBuildConfigTests(cros_test_lib.TestCase):
+  """Test GE build config related methods."""
+
+  def testGetArchBoardDict(self):
+    """Test GetArchBoardDict."""
+    ge_build_config = config_lib.LoadGEBuildConfigFromFile()
+    arch_board_dict = config_lib.GetArchBoardDict(ge_build_config)
+    self.assertIsNotNone(arch_board_dict)

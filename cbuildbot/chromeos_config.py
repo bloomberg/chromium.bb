@@ -562,40 +562,6 @@ _x86_external_boards = frozenset([
     'x86-generic',
 ])
 
-# Every board should be in only 1 of the above sets.
-_distinct_board_sets = [
-    _arm_internal_release_boards,
-    _arm_external_boards,
-    _x86_internal_release_boards,
-    _x86_external_boards,
-]
-
-_arm_full_boards = (_arm_internal_release_boards |
-                    _arm_external_boards)
-_x86_full_boards = (_x86_internal_release_boards |
-                    _x86_external_boards)
-
-_arm_boards = _arm_full_boards
-_x86_boards = _x86_full_boards
-
-_all_release_boards = (
-    _arm_internal_release_boards |
-    _x86_internal_release_boards
-)
-_all_full_boards = (
-    _arm_full_boards |
-    _x86_full_boards
-)
-_all_boards = (
-    _x86_boards |
-    _arm_boards
-)
-
-_arm_release_boards = _arm_internal_release_boards
-_x86_release_boards = _x86_internal_release_boards
-
-_internal_boards = _all_release_boards
-
 # Board can appear in 1 or more of the following sets.
 _brillo_boards = frozenset([
     'arkham',
@@ -687,9 +653,6 @@ _cheets_vmtest_boards = frozenset([
     'cyan',
 ])
 
-_no_vmtest_boards = (_arm_boards | _brillo_boards |
-                     _cheets_x86_boards - _cheets_vmtest_boards)
-
 # List of boards that run VMTests but only the smoke tests, not the AU tests
 # until b/31341543 has been fixed.
 _smoke_only_vmtest_boards = frozenset([
@@ -734,6 +697,81 @@ _waterfall_config_map = {
         'chell-chrome-pfq',
     ]),
 }
+
+
+def GetBoardTypeToBoardsDict(ge_build_config):
+  """Get board type to board names dict.
+
+  Args:
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+
+  Returns:
+    A dict mapping board types to board name collections.
+    The dict contains board types including distinct_board_sets,
+    all_release_boards, all_full_boards, all_boards, internal_boards,
+    and no_vmtest_boards.
+  """
+  ge_arch_board_dict = config_lib.GetArchBoardDict(ge_build_config)
+
+  boards_dict = {}
+
+  arm_internal_release_boards = (
+      _arm_internal_release_boards |
+      ge_arch_board_dict.get(config_lib.CONFIG_ARM_INTERNAL, set())
+  )
+  arm_external_boards = (
+      _arm_external_boards |
+      ge_arch_board_dict.get(config_lib.CONFIG_ARM_EXTERNAL, set())
+  )
+
+  x86_internal_release_boards = (
+      _x86_internal_release_boards |
+      ge_arch_board_dict.get(config_lib.CONFIG_X86_INTERNAL, set())
+  )
+  x86_external_boards = (
+      _x86_external_boards |
+      ge_arch_board_dict.get(config_lib.CONFIG_X86_EXTERNAL, set())
+  )
+
+  # Every board should be in only 1 of the above sets.
+  boards_dict['distinct_board_sets'] = [
+      arm_internal_release_boards,
+      arm_external_boards,
+      x86_internal_release_boards,
+      x86_external_boards,
+  ]
+
+  arm_full_boards = (
+      arm_internal_release_boards |
+      arm_external_boards)
+  x86_full_boards = (
+      x86_internal_release_boards |
+      x86_external_boards)
+
+  arm_boards = arm_full_boards
+  x86_boards = x86_full_boards
+
+  boards_dict['all_release_boards'] = (
+      _arm_internal_release_boards |
+      _x86_internal_release_boards
+  )
+  boards_dict['all_full_boards'] = (
+      arm_full_boards |
+      x86_full_boards
+  )
+  boards_dict['all_boards'] = (
+      x86_boards |
+      arm_boards
+  )
+
+  boards_dict['internal_boards'] = boards_dict['all_release_boards']
+
+  boards_dict['no_vmtest_boards'] = (
+      arm_boards | _brillo_boards |
+      _cheets_x86_boards - _cheets_vmtest_boards
+  )
+
+  return boards_dict
 
 
 def SiteParameters():
@@ -1501,13 +1539,13 @@ def GeneralTemplates(site_config, ge_build_config):
   )
 
 
-def CreateBoardConfigs(site_config, ge_build_config):
+def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
   """Create mixin templates for each board."""
   # Extract the full list of board names from GE data.
   board_names = set(config_lib.GeBuildConfigAllBoards(ge_build_config))
 
   # TODO(crbug.com/648473): Remove these, after GE adds them to their data set.
-  board_names = board_names.union(_all_boards)
+  board_names = board_names.union(boards_dict['all_boards'])
 
   result = dict()
   for board in board_names:
@@ -1536,7 +1574,7 @@ def CreateBoardConfigs(site_config, ge_build_config):
       board_config.apply(disk_layout='base')
     if board in _no_unittest_boards:
       board_config.apply(site_config.templates.no_unittest_builder)
-    if board in _no_vmtest_boards:
+    if board in boards_dict['no_vmtest_boards']:
       board_config.apply(site_config.templates.no_vmtest_builder)
     if board in _smoke_only_vmtest_boards:
       board_config.apply(site_config.templates.smoke_only_vmtest_builder)
@@ -1547,11 +1585,11 @@ def CreateBoardConfigs(site_config, ge_build_config):
 
   return result
 
-def CreateInternalBoardConfigs(site_config, ge_build_config):
+def CreateInternalBoardConfigs(site_config, boards_dict, ge_build_config):
   """Create mixin templates for each board."""
-  result = CreateBoardConfigs(site_config, ge_build_config)
+  result = CreateBoardConfigs(site_config, boards_dict, ge_build_config)
 
-  for board in _internal_boards:
+  for board in boards_dict['internal_boards']:
     if board in result:
       result[board].apply(site_config.templates.internal,
                           site_config.templates.official_chrome,
@@ -1560,15 +1598,17 @@ def CreateInternalBoardConfigs(site_config, ge_build_config):
   return result
 
 
-def ToolchainBuilders(site_config, ge_build_config):
+def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   """Define templates used for toolchain builders.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
   hw_test_list = HWTestList(ge_build_config)
 
   site_config.AddTemplate(
@@ -1733,15 +1773,17 @@ def ToolchainBuilders(site_config, ge_build_config):
       site_config.templates.llvm_next_toolchain,
   )
 
-def PreCqBuilders(site_config, ge_build_config):
+def PreCqBuilders(site_config, boards_dict, ge_build_config):
   """Create all build configs associated with the PreCQ.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
   hw_test_list = HWTestList(ge_build_config)
 
   site_config.AddTemplate(
@@ -1818,19 +1860,19 @@ def PreCqBuilders(site_config, ge_build_config):
   # Add a pre-cq config for every board.
   site_config.AddForBoards(
       'pre-cq',
-      _all_boards,
+      boards_dict['all_boards'],
       board_configs,
       site_config.templates.pre_cq,
   )
   site_config.AddForBoards(
       'no-vmtest-pre-cq',
-      _all_boards,
+      boards_dict['all_boards'],
       board_configs,
       site_config.templates.no_vmtest_pre_cq,
   )
   site_config.AddForBoards(
       'compile-only-pre-cq',
-      _all_boards,
+      boards_dict['all_boards'],
       board_configs,
       site_config.templates.compile_only_pre_cq,
   )
@@ -1931,15 +1973,17 @@ def PreCqBuilders(site_config, ge_build_config):
   )
 
 
-def AndroidPfqBuilders(site_config, ge_build_config):
+def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   """Create all build configs associated with the Android PFQ.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
   hw_test_list = HWTestList(ge_build_config)
 
   site_config.AddTemplate(
@@ -1992,19 +2036,21 @@ def AndroidPfqBuilders(site_config, ge_build_config):
   )
 
 
-def FullBuilders(site_config, ge_build_config):
+def FullBuilders(site_config, boards_dict, ge_build_config):
   """Create all full builders.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  external_board_configs = CreateBoardConfigs(site_config, ge_build_config)
+  external_board_configs = CreateBoardConfigs(
+      site_config, boards_dict, ge_build_config)
 
   site_config.AddForBoards(
       config_lib.CONFIG_TYPE_FULL,
-      _all_full_boards,
+      boards_dict['all_full_boards'],
       external_board_configs,
       site_config.templates.full,
       site_config.templates.build_external_chrome,
@@ -2014,18 +2060,20 @@ def FullBuilders(site_config, ge_build_config):
       prebuilts=constants.PUBLIC)
 
 
-def CqBuilders(site_config, ge_build_config):
+def CqBuilders(site_config, boards_dict, ge_build_config):
   """Create all CQ build configs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
   hw_test_list = HWTestList(ge_build_config)
 
-  _paladin_boards = _all_boards
+  _paladin_boards = boards_dict['all_boards']
 
   # List of paladin boards where the regular paladin config is important.
   _paladin_important_boards = frozenset([
@@ -2225,7 +2273,7 @@ def CqBuilders(site_config, ge_build_config):
       customizations.update(important=False)
     if board in _paladin_chroot_replace_boards:
       customizations.update(chroot_replace=True)
-    if board in _internal_boards:
+    if board in boards_dict['internal_boards']:
       customizations = customizations.derive(
           site_config.templates.internal,
           site_config.templates.official_chrome,
@@ -2398,15 +2446,17 @@ def CqBuilders(site_config, ge_build_config):
   ShardHWTestsBetweenBuilders('elm-paladin', None)
 
 
-def IncrementalBuilders(site_config, ge_build_config):
+def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   """Create all incremental build configs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
 
   site_config.Add(
       'beaglebone-incremental',
@@ -2490,21 +2540,23 @@ def IncrementalBuilders(site_config, ge_build_config):
   )
 
 
-def ReleaseAfdoBuilders(site_config, ge_build_config):
+def ReleaseAfdoBuilders(site_config, boards_dict, ge_build_config):
   """Create AFDO Performance tryjobs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
 
   # Now generate generic release-afdo configs if we haven't created anything
   # more specific above already. release-afdo configs are builders that do AFDO
   # profile collection and optimization in the same builder. Used by developers
   # that want to measure performance changes caused by their changes.
-  for board in _all_release_boards:
+  for board in boards_dict['all_release_boards']:
     base = board_configs[board]
 
     config_name = '%s-%s' % (board, config_lib.CONFIG_TYPE_RELEASE_AFDO)
@@ -2538,7 +2590,7 @@ def ReleaseAfdoBuilders(site_config, ge_build_config):
     )
 
 
-def InformationalBuilders(site_config, ge_build_config):
+def InformationalBuilders(site_config, boards_dict, ge_build_config):
   """Create all informational builders.
 
   We have a number of informational builders that are built, but whose output is
@@ -2547,11 +2599,13 @@ def InformationalBuilders(site_config, ge_build_config):
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  external_board_configs = CreateBoardConfigs(site_config, ge_build_config)
+  external_board_configs = CreateBoardConfigs(
+      site_config, boards_dict, ge_build_config)
   internal_board_configs = CreateInternalBoardConfigs(
-      site_config, ge_build_config)
+      site_config, boards_dict, ge_build_config)
 
   hw_test_list = HWTestList(ge_build_config)
 
@@ -2573,7 +2627,8 @@ def InformationalBuilders(site_config, ge_build_config):
       hw_tests=hw_test_list.DefaultListPFQ(
           pool=constants.HWTEST_CONTINUOUS_POOL),
   )
-  informational_boards = set(_all_release_boards) - set(_cheets_boards)
+  informational_boards = set(
+      boards_dict['all_release_boards']) - set(_cheets_boards)
   site_config.AddForBoards(
       'tot-chrome-pfq-informational',
       informational_boards-_chrome_informational_hwtest_boards,
@@ -2639,7 +2694,7 @@ def InformationalBuilders(site_config, ge_build_config):
 
   site_config.AddForBoards(
       'tot-chromium-pfq-informational',
-      _all_full_boards,
+      boards_dict['all_full_boards'],
       external_board_configs,
       site_config.templates.chromium_pfq_informational,
       site_config.templates.build_external_chrome,
@@ -2650,7 +2705,7 @@ def InformationalBuilders(site_config, ge_build_config):
 
   site_config.AddForBoards(
       'tot-chromium-pfq-informational-gn',
-      _all_full_boards,
+      boards_dict['all_full_boards'],
       external_board_configs,
       site_config.templates.chromium_pfq_informational_gn,
       site_config.templates.build_external_chrome,
@@ -2685,17 +2740,19 @@ def InformationalBuilders(site_config, ge_build_config):
   )
 
 
-def ChromePfqBuilders(site_config, ge_build_config):
+def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   """Create all Chrome PFQ build configs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  external_board_configs = CreateBoardConfigs(site_config, ge_build_config)
+  external_board_configs = CreateBoardConfigs(
+      site_config, boards_dict, ge_build_config)
   internal_board_configs = CreateInternalBoardConfigs(
-      site_config, ge_build_config)
+      site_config, boards_dict, ge_build_config)
 
   _chromium_pfq_important_boards = frozenset([
       'arm-generic',
@@ -2728,7 +2785,7 @@ def ChromePfqBuilders(site_config, ge_build_config):
       site_config.templates.build_external_chrome)
   site_config.AddForBoards(
       'chromium-pfq',
-      _all_full_boards - _chromium_pfq_important_boards,
+      boards_dict['all_full_boards'] - _chromium_pfq_important_boards,
       external_board_configs,
       site_config.templates.chromium_pfq,
       site_config.templates.build_external_chrome,
@@ -2758,22 +2815,24 @@ def ChromePfqBuilders(site_config, ge_build_config):
   )
   site_config.AddForBoards(
       'chrome-pfq',
-      _all_release_boards - _chrome_pfq_important_boards,
+      boards_dict['all_release_boards'] - _chrome_pfq_important_boards,
       internal_board_configs,
       site_config.templates.chrome_pfq,
       important=False,
   )
 
 
-def FirmwareBuilders(site_config, ge_build_config):
+def FirmwareBuilders(site_config, boards_dict, ge_build_config):
   """Create all firmware build configs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
 
   _firmware_boards = frozenset([
       'asuka',
@@ -2898,18 +2957,20 @@ def FirmwareBuilders(site_config, ge_build_config):
     )
 
 
-def ReleaseBuilders(site_config, ge_build_config):
+def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   """Create all release builders.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
   # TODO: Use this to stop generating unnecessary configs for release branches.
   is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
 
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
 
   ### Master release config.
   site_config.Add(
@@ -2949,7 +3010,7 @@ def ReleaseBuilders(site_config, ge_build_config):
 
   site_config.AddForBoards(
       config_lib.CONFIG_TYPE_RELEASE,
-      ((_all_release_boards | _all_release_builder_boards) -
+      ((boards_dict['all_release_boards'] | _all_release_builder_boards) -
        _critical_for_chrome_boards),
       board_configs,
       site_config.templates.release,
@@ -3052,14 +3113,14 @@ def ReleaseBuilders(site_config, ge_build_config):
   _AdjustReleaseConfigs()
 
 
-def PayloadBuilders(site_config):
+def PayloadBuilders(site_config, boards_dict):
   """Create <board>-payloads configs for all payload generating boards.
 
   We create a config named 'board-payloads' for every board which has a
   config with 'paygen' True. The idea is that we have a build that generates
   payloads, we need to have a tryjob to re-attempt them on failure.
   """
-  for board in _all_release_boards:
+  for board in boards_dict['all_release_boards']:
     if site_config['%s-release' % board].paygen:
       site_config.Add(
           '%s-payloads' % board,
@@ -3276,15 +3337,17 @@ def ApplyCustomOverrides(site_config, ge_build_config):
     site_config[config_name].apply(**overrides)
 
 
-def SpecialtyBuilders(site_config, ge_build_config):
+def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   """Add a variety of specialized builders or tryjobs.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
   hw_test_list = HWTestList(ge_build_config)
 
   site_config.AddWithoutTemplate(
@@ -3356,7 +3419,7 @@ def SpecialtyBuilders(site_config, ge_build_config):
   # Create our unittest stress build configs (used for tryjobs only)
   site_config.AddForBoards(
       'unittest-stress',
-      _all_boards,
+      boards_dict['all_boards'],
       board_configs,
       site_config.templates.unittest_stress,
   )
@@ -3427,34 +3490,35 @@ def GetConfig():
   # site_config with no templates or build configurations.
   site_config = config_lib.SiteConfig(defaults=defaults,
                                       site_params=site_params)
+  boards_dict = GetBoardTypeToBoardsDict(ge_build_config)
 
   GeneralTemplates(site_config, ge_build_config)
 
-  ToolchainBuilders(site_config, ge_build_config)
+  ToolchainBuilders(site_config, boards_dict, ge_build_config)
 
-  ReleaseBuilders(site_config, ge_build_config)
+  ReleaseBuilders(site_config, boards_dict, ge_build_config)
 
-  PayloadBuilders(site_config)
+  PayloadBuilders(site_config, boards_dict)
 
-  SpecialtyBuilders(site_config, ge_build_config)
+  SpecialtyBuilders(site_config, boards_dict, ge_build_config)
 
-  PreCqBuilders(site_config, ge_build_config)
+  PreCqBuilders(site_config, boards_dict, ge_build_config)
 
-  CqBuilders(site_config, ge_build_config)
+  CqBuilders(site_config, boards_dict, ge_build_config)
 
-  IncrementalBuilders(site_config, ge_build_config)
+  IncrementalBuilders(site_config, boards_dict, ge_build_config)
 
-  ReleaseAfdoBuilders(site_config, ge_build_config)
+  ReleaseAfdoBuilders(site_config, boards_dict, ge_build_config)
 
-  InformationalBuilders(site_config, ge_build_config)
+  InformationalBuilders(site_config, boards_dict, ge_build_config)
 
-  FirmwareBuilders(site_config, ge_build_config)
+  FirmwareBuilders(site_config, boards_dict, ge_build_config)
 
-  AndroidPfqBuilders(site_config, ge_build_config)
+  AndroidPfqBuilders(site_config, boards_dict, ge_build_config)
 
-  ChromePfqBuilders(site_config, ge_build_config)
+  ChromePfqBuilders(site_config, boards_dict, ge_build_config)
 
-  FullBuilders(site_config, ge_build_config)
+  FullBuilders(site_config, boards_dict, ge_build_config)
 
   # Insert default HwTests for tryjobs.
   for build in site_config.itervalues():

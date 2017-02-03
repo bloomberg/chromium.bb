@@ -83,7 +83,13 @@ CONFIG_TEMPLATE_BOARD_GROUP = 'board_group'
 CONFIG_TEMPLATE_BUILDER = 'builder'
 CONFIG_TEMPLATE_RELEASE = 'RELEASE'
 CONFIG_TEMPLATE_CONFIGS = 'configs'
+CONFIG_TEMPLATE_ARCH = 'arch'
 CONFIG_TEMPLATE_RELEASE_BRANCH = 'release_branch'
+
+CONFIG_X86_INTERNAL = 'X86_INTERNAL'
+CONFIG_X86_EXTERNAL = 'X86_EXTERNAL'
+CONFIG_ARM_INTERNAL = 'ARM_INTERNAL'
+CONFIG_ARM_EXTERNAL = 'ARM_EXTERNAL'
 
 def IsPFQType(b_type):
   """Returns True if this build type is a PFQ."""
@@ -1514,7 +1520,24 @@ def GroupBoardsByBuilder(board_list):
 
   return builder_to_boards_dict
 
+def GetArchBoardDict(ge_build_config):
+  """Get a dict mapping arch types to board names.
 
+  Args:
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+
+  Returns:
+    A dict mapping arch types to board names.
+  """
+  arch_board_dict = {}
+
+  for b in ge_build_config[CONFIG_TEMPLATE_BOARDS]:
+    board_name = b[CONFIG_TEMPLATE_NAME]
+    for config in b[CONFIG_TEMPLATE_CONFIGS]:
+      arch = config[CONFIG_TEMPLATE_ARCH]
+      arch_board_dict.setdefault(arch, set()).add(board_name)
+
+  return arch_board_dict
 
 #
 # Methods related to loading/saving Json.

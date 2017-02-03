@@ -220,6 +220,15 @@ class ConfigClassTest(ChromeosConfigTestBase):
 class CBuildBotTest(ChromeosConfigTestBase):
   """General tests of chromeos_config."""
 
+  def _GetBoardTypeToBoardsDict(self):
+    """Get boards dict.
+
+    Returns:
+      A dict mapping a board type to a collections of board names.
+    """
+    ge_build_config = config_lib.LoadGEBuildConfigFromFile()
+    return chromeos_config.GetBoardTypeToBoardsDict(ge_build_config)
+
   def testConfigsKeysMismatch(self):
     """Verify that all configs contain exactly the default keys.
 
@@ -747,11 +756,12 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
   def testAllBoardsExist(self):
     """Verifies that all config boards are in _all_boards."""
+    boards_dict = self._GetBoardTypeToBoardsDict()
     for build_name, config in self.site_config.iteritems():
       self.assertIsNotNone(config['boards'],
                            'Config %s has boards = None' % build_name)
       for board in config['boards']:
-        self.assertIn(board, chromeos_config._all_boards,
+        self.assertIn(board, boards_dict['all_boards'],
                       'Config %s has unknown board %s.' %
                       (build_name, board))
 
@@ -887,10 +897,11 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
   def testDistinctBoardSets(self):
     """Verify that distinct board sets are distinct."""
+    boards_dict = self._GetBoardTypeToBoardsDict()
     # Every board should be in exactly one of the distinct board sets.
-    for board in chromeos_config._all_boards:
+    for board in boards_dict['all_boards']:
       found = False
-      for s in chromeos_config._distinct_board_sets:
+      for s in boards_dict['distinct_board_sets']:
         if board in s:
           if found:
             assert False, '%s in multiple board sets.' % board
@@ -898,9 +909,9 @@ class CBuildBotTest(ChromeosConfigTestBase):
             found = True
       if not found:
         assert False, '%s in no board sets' % board
-    for s in chromeos_config._distinct_board_sets:
-      for board in s - chromeos_config._all_boards:
-        assert False, ('%s in _distinct_board_sets but not in _all_boards' %
+    for s in boards_dict['distinct_board_sets']:
+      for board in s - boards_dict['all_boards']:
+        assert False, ('%s in distinct_board_sets but not in all_boards' %
                        board)
 
   def testBuildTimeouts(self):
