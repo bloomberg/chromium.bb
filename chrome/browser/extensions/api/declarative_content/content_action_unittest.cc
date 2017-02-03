@@ -11,6 +11,7 @@
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
@@ -21,7 +22,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/value_builder.h"
 #include "ipc/ipc_message_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -98,15 +98,25 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
 }
 
 TEST(DeclarativeContentActionTest, ShowPageActionWithoutPageAction) {
-  // Tests legacy behavior.
-  FeatureSwitch::ScopedOverride action_redesign_override(
-      FeatureSwitch::extension_action_redesign(), false);
   TestExtensionEnvironment env;
 
-  const Extension* extension = env.MakeExtension(base::DictionaryValue());
+  // We install a component extension because all other extensions have a
+  // required action.
+  DictionaryBuilder manifest;
+  manifest.Set("name", "extension")
+      .Set("version", "0.1")
+      .Set("manifest_version", 2)
+      .Set("description", "an extension");
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(manifest.Build())
+          .SetLocation(Manifest::COMPONENT)
+          .Build();
+  env.GetExtensionService()->AddExtension(extension.get());
+
   std::string error;
   std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      NULL, extension,
+      NULL, extension.get(),
       *ParseJson("{\n"
                  "  \"instanceType\": \"declarativeContent.ShowPageAction\",\n"
                  "}"),
