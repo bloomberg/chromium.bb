@@ -103,7 +103,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/java_exception_reporter.h"
+#include "base/android/java_exception_reporter.h"
 #include "chrome/common/descriptors_android.h"
 #else
 // Diagnostics is only available on non-android platforms.
@@ -890,7 +890,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #if defined(OS_ANDROID)
     if (process_type.empty()) {
       breakpad::InitCrashReporter(process_type);
-      chrome::android::InitJavaExceptionReporter();
+      base::android::InitJavaExceptionReporter();
     } else {
       breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
     }

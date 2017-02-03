@@ -13,6 +13,7 @@ import android.support.annotation.UiThread;
 
 import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
+import org.chromium.base.JavaExceptionReporter;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;

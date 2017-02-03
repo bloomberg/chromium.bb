@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/java_exception_reporter.h"
+#include "base/android/java_exception_reporter.h"
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
@@ -12,7 +12,7 @@
 
 using base::android::JavaParamRef;
 
-namespace chrome {
+namespace base {
 namespace android {
 
 void InitJavaExceptionReporter() {
@@ -43,8 +43,5 @@ bool RegisterJavaExceptionReporterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-
 }  // namespace android
-}  // namespace chrome
-
-
+}  // namespace base

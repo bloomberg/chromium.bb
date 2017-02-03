@@ -2,27 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.base;
 
 import android.support.annotation.UiThread;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 
 /**
  * This UncaughtExceptionHandler will create a breakpad minidump when there is an uncaught
  * exception.
  *
- * The exception's stack trace will be added to the minidump's data. This allows us to report
- * java-only crashes in the same way that we report all other Chrome crashes.
+ * The exception's stack trace will be added to the minidump's data. This allows java-only crashes
+ * to be reported in the same way as other native crashes.
  */
-@JNINamespace("chrome::android")
+@JNINamespace("base::android")
+@MainDex
 public class JavaExceptionReporter implements Thread.UncaughtExceptionHandler {
     private Thread.UncaughtExceptionHandler mParent;
     private boolean mHandlingException;
 
-    JavaExceptionReporter(Thread.UncaughtExceptionHandler parent) {
+    private JavaExceptionReporter(Thread.UncaughtExceptionHandler parent) {
         mParent = parent;
     }
 
