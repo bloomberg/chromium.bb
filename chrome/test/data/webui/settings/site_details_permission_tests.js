@@ -44,13 +44,6 @@ cr.define('site_details_permission', function() {
         }
       };
 
-      // Import necessary html before running suite.
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-            'chrome://md-settings/site_settings/site_details_permission.html'
-            );
-      });
-
       // Initialize a site-details-permission before each test.
       setup(function() {
         browserProxy = new TestSiteSettingsPrefsBrowserProxy();

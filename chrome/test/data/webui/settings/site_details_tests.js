@@ -108,13 +108,6 @@ cr.define('site_details', function() {
         }
       };
 
-      // Import necessary html before running suite.
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-            'chrome://md-settings/site_settings/site_details.html'
-            );
-      });
-
       // Initialize a site-details before each test.
       setup(function() {
         browserProxy = new TestSiteSettingsPrefsBrowserProxy();
