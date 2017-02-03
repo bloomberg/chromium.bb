@@ -19,6 +19,7 @@
 #include "modules/bluetooth/RequestDeviceOptions.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/Platform.h"
 #include <memory>
 #include <utility>
 
@@ -179,9 +180,8 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
 
   if (!m_service) {
     InterfaceProvider* interfaceProvider = nullptr;
-    ExecutionContext* executionContext = scriptState->getExecutionContext();
-    if (executionContext->isDocument()) {
-      Document* document = toDocument(executionContext);
+    if (context->isDocument()) {
+      Document* document = toDocument(context);
       if (document->frame())
         interfaceProvider = document->frame()->interfaceProvider();
     }
@@ -211,6 +211,11 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
 
   if (exceptionState.hadException())
     return exceptionState.reject(scriptState);
+
+  // Record the eTLD+1 of the frame using the API.
+  Document* document = toDocument(context);
+  Platform::current()->recordRapporURL("Bluetooth.APIUsage.Origin",
+                                       document->url());
 
   // Subsequent steps are handled in the browser process.
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
