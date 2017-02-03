@@ -55,7 +55,7 @@ void DisplayCompositor::OnClientConnectionLost(
     bool destroy_compositor_frame_sink) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (destroy_compositor_frame_sink)
-    compositor_frame_sinks_.erase(frame_sink_id);
+    DestroyCompositorFrameSink(frame_sink_id);
   // TODO(fsamuel): Tell the display compositor host that the client connection
   // has been lost so that it can drop its private connection and allow a new
   // client instance to create a new CompositorFrameSink.
@@ -66,7 +66,7 @@ void DisplayCompositor::OnPrivateConnectionLost(
     bool destroy_compositor_frame_sink) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (destroy_compositor_frame_sink)
-    compositor_frame_sinks_.erase(frame_sink_id);
+    DestroyCompositorFrameSink(frame_sink_id);
 }
 
 void DisplayCompositor::CreateDisplayCompositorFrameSink(
@@ -153,6 +153,10 @@ std::unique_ptr<cc::Display> DisplayCompositor::CreateDisplay(
       frame_sink_id, begin_frame_source, std::move(display_output_surface),
       std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
+}
+
+void DisplayCompositor::DestroyCompositorFrameSink(cc::FrameSinkId sink_id) {
+  compositor_frame_sinks_.erase(sink_id);
 }
 
 void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {

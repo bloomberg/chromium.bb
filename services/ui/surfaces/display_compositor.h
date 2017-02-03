@@ -99,6 +99,13 @@ class DisplayCompositor
       cc::mojom::MojoCompositorFrameSinkClientPtr client,
       cc::mojom::DisplayPrivateRequest display_private_request);
 
+  // It is necessary to pass |frame_sink_id| by value because the id
+  // is owned by the GpuCompositorFrameSink in the map. When the sink is
+  // removed from the map, |frame_sink_id| would also be destroyed if it were a
+  // reference. But the map can continue to iterate and try to use it. Passing
+  // by value avoids this.
+  void DestroyCompositorFrameSink(cc::FrameSinkId frame_sink_id);
+
   // cc::SurfaceObserver implementation.
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
   void OnSurfaceDamaged(const cc::SurfaceId& surface_id,
