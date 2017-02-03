@@ -21,7 +21,7 @@ class FakeResourceProvider : public ResourceProvider {
       ContextProvider* context_provider,
       SharedBitmapManager* shared_bitmap_manager) {
     return base::WrapUnique(new FakeResourceProvider(
-        context_provider, shared_bitmap_manager, nullptr, nullptr, 0, 1, true,
+        context_provider, shared_bitmap_manager, nullptr, nullptr, 1, true,
         false, false, DefaultBufferToTextureTargetMapForTesting()));
   }
 
@@ -31,7 +31,7 @@ class FakeResourceProvider : public ResourceProvider {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
     return base::WrapUnique(new FakeResourceProvider(
         context_provider, shared_bitmap_manager, gpu_memory_buffer_manager,
-        nullptr, 0, 1, true, false, false,
+        nullptr, 1, true, false, false,
         DefaultBufferToTextureTargetMapForTesting()));
   }
 
@@ -41,7 +41,6 @@ class FakeResourceProvider : public ResourceProvider {
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       BlockingTaskRunner* blocking_main_thread_task_runner,
-      int highp_threshold_min,
       size_t id_allocation_chunk_size,
       bool delegated_sync_points_required,
       bool use_gpu_memory_buffer_resources,
@@ -51,7 +50,6 @@ class FakeResourceProvider : public ResourceProvider {
                          shared_bitmap_manager,
                          gpu_memory_buffer_manager,
                          blocking_main_thread_task_runner,
-                         highp_threshold_min,
                          id_allocation_chunk_size,
                          delegated_sync_points_required,
                          use_gpu_memory_buffer_resources,

@@ -2327,7 +2327,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
       compositor_frame_sink_->shared_bitmap_manager(),
       compositor_frame_sink_->gpu_memory_buffer_manager(),
       task_runner_provider_->blocking_main_thread_task_runner(),
-      settings_.renderer_settings.highp_threshold_min,
       settings_.renderer_settings.texture_id_allocation_chunk_size,
       compositor_frame_sink_->capabilities().delegated_sync_points_required,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,

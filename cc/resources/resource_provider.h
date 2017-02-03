@@ -83,7 +83,6 @@ class CC_EXPORT ResourceProvider
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       BlockingTaskRunner* blocking_main_thread_task_runner,
-      int highp_threshold_min,
       size_t id_allocation_chunk_size,
       bool delegated_sync_points_required,
       bool use_gpu_memory_buffer_resources,
@@ -95,13 +94,15 @@ class CC_EXPORT ResourceProvider
 
   void DidLoseContextProvider() { lost_context_provider_ = true; }
 
-  int max_texture_size() const { return max_texture_size_; }
-  ResourceFormat best_texture_format() const { return best_texture_format_; }
+  int max_texture_size() const { return settings_.max_texture_size; }
+  ResourceFormat best_texture_format() const {
+    return settings_.best_texture_format;
+  }
   ResourceFormat best_render_buffer_format() const {
-    return best_render_buffer_format_;
+    return settings_.best_render_buffer_format;
   }
   ResourceFormat YuvResourceFormat(int bits) const;
-  bool use_sync_query() const { return use_sync_query_; }
+  bool use_sync_query() const { return settings_.use_sync_query; }
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() {
     return gpu_memory_buffer_manager_;
   }
@@ -119,7 +120,9 @@ class CC_EXPORT ResourceProvider
 
   // Producer interface.
 
-  ResourceType default_resource_type() const { return default_resource_type_; }
+  ResourceType default_resource_type() const {
+    return settings_.default_resource_type;
+  }
   ResourceType GetResourceType(ResourceId id);
   GLenum GetResourceTextureTarget(ResourceId id);
   bool IsImmutable(ResourceId id);
@@ -710,48 +713,50 @@ class CC_EXPORT ResourceProvider
   gpu::gles2::GLES2Interface* ContextGL() const;
   bool IsGLContextLost() const;
 
-  // Returns null if |enable_color_correct_rendering_| is false.
+  // Returns null if |settings_.enable_color_correct_rendering| is false.
   sk_sp<SkColorSpace> GetResourceSkColorSpace(const Resource* resource) const;
+
+  // Holds const settings for the ResourceProvider. Never changed after init.
+  struct Settings {
+    Settings(ContextProvider* compositor_context_provider,
+             bool delegated_sync_points_required,
+             bool use_gpu_memory_buffer_resources,
+             bool enable_color_correct_rendering);
+
+    int max_texture_size = 0;
+    bool use_texture_storage_ext = false;
+    bool use_texture_format_bgra = false;
+    bool use_texture_usage_hint = false;
+    bool use_sync_query = false;
+    ResourceType default_resource_type = RESOURCE_TYPE_GL_TEXTURE;
+    ResourceFormat yuv_resource_format = LUMINANCE_8;
+    ResourceFormat yuv_highbit_resource_format = LUMINANCE_8;
+    ResourceFormat best_texture_format = RGBA_8888;
+    ResourceFormat best_render_buffer_format = RGBA_8888;
+    bool enable_color_correct_rendering = false;
+    bool delegated_sync_points_required = false;
+  } const settings_;
 
   ContextProvider* compositor_context_provider_;
   SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   BlockingTaskRunner* blocking_main_thread_task_runner_;
   bool lost_context_provider_;
-  int highp_threshold_min_;
   ResourceId next_id_;
   ResourceMap resources_;
   int next_child_;
   ChildMap children_;
-
-  const bool delegated_sync_points_required_;
-
-  ResourceType default_resource_type_;
-  bool use_texture_storage_ext_;
-  bool use_texture_format_bgra_;
-  bool use_texture_usage_hint_;
-  bool use_compressed_texture_etc1_;
-  ResourceFormat yuv_resource_format_;
-  ResourceFormat yuv_highbit_resource_format_;
-  int max_texture_size_;
-  ResourceFormat best_texture_format_;
-  ResourceFormat best_render_buffer_format_;
-  const bool enable_color_correct_rendering_ = false;
-
-  base::ThreadChecker thread_checker_;
-
   scoped_refptr<Fence> current_read_lock_fence_;
-
-  const size_t id_allocation_chunk_size_;
   std::unique_ptr<IdAllocator> texture_id_allocator_;
   std::unique_ptr<IdAllocator> buffer_id_allocator_;
-
-  bool use_sync_query_;
   BufferToTextureTargetMap buffer_to_texture_target_map_;
+
+  base::ThreadChecker thread_checker_;
 
   // A process-unique ID used for disambiguating memory dumps from different
   // resource providers.
   int tracing_id_;
+
 #if defined(OS_ANDROID)
   // Set of resource Ids that would like to be notified about promotion hints.
   ResourceIdSet wants_promotion_hints_set_;
