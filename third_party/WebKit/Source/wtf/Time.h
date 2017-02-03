@@ -29,8 +29,6 @@ class TimeWrapper {
  public:
   TimeWrapper() {}
 
-  bool isNull() const { return m_value.is_null(); }
-
   static TimeWrapper Now() {
     if (WTF::getTimeFunctionForTesting()) {
       double seconds = (WTF::getTimeFunctionForTesting())();

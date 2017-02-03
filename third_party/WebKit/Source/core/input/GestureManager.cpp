@@ -35,7 +35,7 @@ GestureManager::GestureManager(LocalFrame& frame,
 void GestureManager::clear() {
   m_suppressMouseEventsFromGestures = false;
   m_longTapShouldInvokeContextMenu = false;
-  m_lastShowPressTimestamp = TimeTicks();
+  m_lastShowPressTimestamp.reset();
 }
 
 DEFINE_TRACE(GestureManager) {
@@ -426,7 +426,8 @@ FrameHost* GestureManager::frameHost() const {
   return &m_frame->page()->frameHost();
 }
 
-TimeTicks GestureManager::getLastShowPressTimestamp() const {
+WTF::Optional<WTF::TimeTicks> GestureManager::getLastShowPressTimestamp()
+    const {
   return m_lastShowPressTimestamp;
 }
 

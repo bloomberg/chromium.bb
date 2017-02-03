@@ -1664,15 +1664,14 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(
   bool shouldKeepActiveForMinInterval = false;
   if (readOnly) {
     hitType |= HitTestRequest::ReadOnly;
-  } else if (gestureEvent.type() == WebInputEvent::GestureTap) {
+  } else if (gestureEvent.type() == WebInputEvent::GestureTap &&
+             m_gestureManager->getLastShowPressTimestamp()) {
     // If the Tap is received very shortly after ShowPress, we want to
     // delay clearing of the active state so that it's visible to the user
     // for at least a couple of frames.
-    activeInterval =
-        TimeTicks::Now() - m_gestureManager->getLastShowPressTimestamp();
-    shouldKeepActiveForMinInterval =
-        !m_gestureManager->getLastShowPressTimestamp().isNull() &&
-        activeInterval < minimumActiveInterval;
+    activeInterval = TimeTicks::Now() -
+                     m_gestureManager->getLastShowPressTimestamp().value();
+    shouldKeepActiveForMinInterval = activeInterval < minimumActiveInterval;
     if (shouldKeepActiveForMinInterval)
       hitType |= HitTestRequest::ReadOnly;
   }
