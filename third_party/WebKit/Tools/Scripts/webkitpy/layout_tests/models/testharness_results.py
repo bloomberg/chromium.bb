@@ -34,47 +34,29 @@ def is_testharness_output(content_text):
 
 
 def is_testharness_output_passing(content_text):
-    """Returns whether |content_text| is a passing testharness output."""
+    """Checks whether |content_text| is a passing testharness output.
 
-    # Leading and trailing white spaces are accepted.
+    Under a relatively loose/accepting definition of passing
+    testharness output, we consider any output with at least one
+    PASS result and no FAIL result (or TIMEOUT or NOTRUN).
+    """
+    # Leading and trailing whitespace are ignored.
     lines = content_text.strip().splitlines()
     lines = [line.strip() for line in lines]
 
-    # The check is very conservative and rejects any unexpected content in the output.
-    previous_line_is_console_line = False
+    at_least_one_pass = False
+
     for line in lines:
-        # There should be no empty lines, unless the empty line follows a console message.
-        if len(line) == 0:
-            if previous_line_is_console_line:
-                continue
-            else:
-                return False
-
-        # Those lines are expected to be exactly equivalent.
-        if line == _TESTHARNESSREPORT_HEADER or line == _TESTHARNESSREPORT_FOOTER:
-            previous_line_is_console_line = False
-            continue
-
-        # Those are expected passing output.
-        if line.startswith('CONSOLE'):
-            previous_line_is_console_line = True
-            continue
-
         if line.startswith('PASS'):
-            previous_line_is_console_line = False
+            at_least_one_pass = True
             continue
-
-        # Those are expected failing output.
         if (line.startswith('FAIL') or
                 line.startswith('TIMEOUT') or
                 line.startswith('NOTRUN') or
                 line.startswith('Harness Error. harness_status = ')):
             return False
 
-        # Unexpected output should be considered as a failure.
-        return False
-
-    return True
+    return at_least_one_pass
 
 
 def has_console_errors_or_warnings(content_text):

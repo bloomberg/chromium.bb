@@ -9,15 +9,22 @@ from webkitpy.layout_tests.models import testharness_results
 
 class TestHarnessResultCheckerTest(unittest.TestCase):
 
-    def test_is_all_pass_testharness_result(self):
-        self.assertFalse(testharness_results.is_all_pass_testharness_result(
-            'This is a testharness.js-based test.\n'
-            'CONSOLE WARNING: This is a warning.\n'
-            'Test ran to completion.'))
+    def test_is_all_pass_testharness_result_positive_cases(self):
         self.assertTrue(testharness_results.is_all_pass_testharness_result(
             'This is a testharness.js-based test.\n'
             ' PASS: foo bar \n'
             ' Harness: the test ran to completion.'))
+        self.assertTrue(testharness_results.is_all_pass_testharness_result(
+            'This is a testharness.js-based test.\n'
+            'PASS \'grid\' with: grid-template-areas: "a b"\n'
+            '"c d";\n'
+            'Harness: the test ran to completion.\n'))
+
+    def test_is_all_pass_testharness_result_negative_cases(self):
+        self.assertFalse(testharness_results.is_all_pass_testharness_result(
+            'This is a testharness.js-based test.\n'
+            'CONSOLE WARNING: This is a warning.\n'
+            'Test ran to completion.'))
         self.assertFalse(testharness_results.is_all_pass_testharness_result(
             'This is a testharness.js-based test.\n'
             ' PASS: foo bar \n'
@@ -57,11 +64,12 @@ class TestHarnessResultCheckerTest(unittest.TestCase):
             'Harness: the test ran to completion.'))
 
     def test_is_testharness_output_passing_empty_content(self):
-        self.assertTrue(testharness_results.is_testharness_output_passing(
+        self.assertFalse(testharness_results.is_testharness_output_passing(
             'This is a testharness.js-based test.\n'
             '   Harness: the test ran to completion.'))
 
-    def test_is_testharness_output_passing_unexpected_content(self):
+    def test_is_testharness_output_passing_no_pass(self):
+        # If there are no PASS lines, then the test is not considered to pass.
         self.assertFalse(testharness_results.is_testharness_output_passing(
             'This is a testharness.js-based test.\n'
             '  \n'
@@ -70,11 +78,13 @@ class TestHarnessResultCheckerTest(unittest.TestCase):
             'This is a testharness.js-based test.\n'
             ' Foo bar \n'
             ' Harness: the test ran to completion.'))
-        self.assertFalse(testharness_results.is_testharness_output_passing(
+
+    def test_is_testharness_output_passing_with_pass_and_random_text(self):
+        self.assertTrue(testharness_results.is_testharness_output_passing(
             'RANDOM TEXT.\n'
             'This is a testharness.js-based test.\n'
             'PASS: things are fine.\n'
-            '.Harness: the test ran to completion.\n'
+            ' Harness: the test ran to completion.\n'
             '\n'))
 
     def test_is_testharness_output_passing_basic_examples(self):
@@ -97,13 +107,14 @@ class TestHarnessResultCheckerTest(unittest.TestCase):
             ' Harness: the test ran to completion.'))
 
     def test_is_testharness_output_passing_with_console_messages(self):
-        self.assertTrue(testharness_results.is_testharness_output_passing(
+        self.assertFalse(testharness_results.is_testharness_output_passing(
             'This is a testharness.js-based test.\n'
             ' CONSOLE ERROR: BLAH  \n'
             ' Harness: the test ran to completion.'))
         self.assertTrue(testharness_results.is_testharness_output_passing(
             'This is a testharness.js-based test.\n'
             ' CONSOLE WARNING: BLAH  \n'
+            'PASS: some passing method\n'
             ' Harness: the test ran to completion.'))
         self.assertTrue(testharness_results.is_testharness_output_passing(
             'CONSOLE LOG: error.\n'
