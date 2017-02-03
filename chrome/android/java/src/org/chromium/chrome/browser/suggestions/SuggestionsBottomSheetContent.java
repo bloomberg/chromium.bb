@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     private final ContextMenuManager mContextMenuManager;
     private final SuggestionsUiDelegateImpl mSuggestionsManager;
     private final SnippetsBridge mSnippetsBridge;
+    private final TileGroup.Delegate mTileGroupDelegate;
 
     public SuggestionsBottomSheetContent(
             final ChromeActivity activity, Tab tab, TabModelSelector tabModelSelector) {
@@ -58,8 +59,12 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             }
         });
 
-        NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsManager, null, uiConfig,
-                OfflinePageBridge.getForProfile(profile), mContextMenuManager);
+        mTileGroupDelegate =
+                new TileGroupDelegateImpl(activity, tab, tabModelSelector, navigationDelegate);
+
+        NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsManager,
+                /* aboveTheFoldView = */ null, uiConfig, OfflinePageBridge.getForProfile(profile),
+                mContextMenuManager, mTileGroupDelegate);
         mRecyclerView.setAdapter(adapter);
         mRecyclerView.setUpSwipeToDismiss();
     }
@@ -81,5 +86,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     public void destroy() {
         mSnippetsBridge.destroy();
         mSuggestionsManager.onDestroy();
+        mTileGroupDelegate.destroy();
     }
 }

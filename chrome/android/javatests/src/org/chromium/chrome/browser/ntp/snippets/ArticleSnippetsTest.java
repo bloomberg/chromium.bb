@@ -80,7 +80,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 mRecyclerView.setAboveTheFoldView(aboveTheFold);
                 mAdapter = new NewTabPageAdapter(mUiDelegate, aboveTheFold, mUiConfig,
                         OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
-                        /* contextMenuManager = */null);
+                        /* contextMenuManager = */ null, /* tileGroupDelegate = */ null);
                 mRecyclerView.setAdapter(mAdapter);
             }
         });

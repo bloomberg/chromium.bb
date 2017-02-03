@@ -18,7 +18,7 @@ public final class TitleUtil {
      * Returns a title suitable for display for a link. If |title| is non-empty, this simply returns
      * it. Otherwise, returns a shortened form of the URL.
      */
-    static String getTitleForDisplay(@Nullable String title, @Nullable String url) {
+    public static String getTitleForDisplay(@Nullable String title, @Nullable String url) {
         if (!TextUtils.isEmpty(title) || TextUtils.isEmpty(url)) {
             return title;
         }

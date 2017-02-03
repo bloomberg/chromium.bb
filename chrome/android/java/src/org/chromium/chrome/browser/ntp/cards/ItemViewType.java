@@ -17,6 +17,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 @IntDef({
     ItemViewType.ABOVE_THE_FOLD,
+    ItemViewType.TILE_GRID,
     ItemViewType.HEADER,
     ItemViewType.SNIPPET,
     ItemViewType.SPACING,
@@ -29,7 +30,6 @@ import java.lang.annotation.RetentionPolicy;
 })
 @Retention(RetentionPolicy.SOURCE)
 public @interface ItemViewType {
-
     /**
      * View type for the above the fold item
      *
@@ -37,57 +37,63 @@ public @interface ItemViewType {
      */
     int ABOVE_THE_FOLD = 1;
     /**
+     * View type for a {@code TileGrid}.
+     *
+     * @see Adapter#getItemViewType(int)
+     */
+    int TILE_GRID = 2;
+    /**
      * View type for card group headers
      *
      * @see Adapter#getItemViewType(int)
      */
-    int HEADER = 2;
+    int HEADER = 3;
     /**
      * View type for snippet cards
      *
      * @see Adapter#getItemViewType(int)
      */
-    int SNIPPET = 3;
+    int SNIPPET = 4;
     /**
      * View type for a {@link SpacingItem} used to provide spacing at the end of the list.
      *
      * @see Adapter#getItemViewType(int)
      */
-    int SPACING = 4;
+    int SPACING = 5;
     /**
      * View type for a {@link StatusItem}, the card displaying status information
      *
      * @see Adapter#getItemViewType(int)
      */
-    int STATUS = 5;
+    int STATUS = 6;
     /**
      * View type for a {@link ProgressItem}, the progress indicator.
      *
      * @see Adapter#getItemViewType(int)
      */
-    int PROGRESS = 6;
+    int PROGRESS = 7;
     /**
      * View type for a {@link ActionItem}, an action button.
      *
      * @see Adapter#getItemViewType(int)
      */
-    int ACTION = 7;
+    int ACTION = 8;
     /**
      * View type for a {@link Footer}.
      *
      * @see Adapter#getItemViewType(int)
      */
-    int FOOTER = 8;
+    int FOOTER = 9;
     /**
      * View type for a {@link SignInPromo}.
      *
      * @see Adapter#getItemViewType(int)
      */
-    int PROMO = 9;
+    int PROMO = 10;
     /**
      * View type for a {@link AllDismissedItem}.
      *
      * @see Adapter#getItemViewType(int)
      */
-    int ALL_DISMISSED = 10;
+    int ALL_DISMISSED = 11;
 }

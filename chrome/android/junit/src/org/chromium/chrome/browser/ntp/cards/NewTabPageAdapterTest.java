@@ -1001,7 +1001,7 @@ public class NewTabPageAdapterTest {
 
     private void reloadNtp() {
         mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), null, mOfflinePageBridge,
-                mock(ContextMenuManager.class));
+                mock(ContextMenuManager.class), /* tileGroupDelegate = */ null);
     }
 
     private void assertArticlesEqual(List<SnippetArticle> articles, int start, int end) {

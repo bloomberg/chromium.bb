@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.favicon;
 
 import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
 import android.util.LruCache;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -45,7 +46,8 @@ public class LargeIconBridge {
          * @param fallbackColor The fallback color to use if icon is null.
          */
         @CalledByNative("LargeIconCallback")
-        void onLargeIconAvailable(Bitmap icon, int fallbackColor, boolean isFallbackColorDefault);
+        void onLargeIconAvailable(
+                @Nullable Bitmap icon, int fallbackColor, boolean isFallbackColorDefault);
     }
 
     /**

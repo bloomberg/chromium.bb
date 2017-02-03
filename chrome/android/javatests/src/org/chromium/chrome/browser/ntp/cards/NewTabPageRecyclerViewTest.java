@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.suggestions.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -75,7 +76,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
     @Override
     protected void tearDown() throws Exception {
-        NewTabPage.setMostVisitedSitesForTests(null);
+        TileGroupDelegateImpl.setMostVisitedSitesForTests(null);
         NewTabPage.setSuggestionsSourceForTests(null);
         mTestServer.stopAndDestroyServer();
 
@@ -97,7 +98,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
                         FAKE_MOST_VISITED_WHITELIST_ICON_PATHS, FAKE_MOST_VISITED_SOURCES);
             }
         });
-        NewTabPage.setMostVisitedSitesForTests(mFakeMostVisitedSites);
+        TileGroupDelegateImpl.setMostVisitedSitesForTests(mFakeMostVisitedSites);
 
         loadUrl(UrlConstants.NTP_URL);
         NewTabPageTestUtils.waitForNtpLoaded(mTab);

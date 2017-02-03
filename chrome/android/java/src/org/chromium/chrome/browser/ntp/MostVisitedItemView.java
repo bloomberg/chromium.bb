@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -19,6 +20,7 @@ import org.chromium.chrome.R;
  * icon isn't available, displays a rounded rectangle with a single letter in its place.
  */
 public class MostVisitedItemView extends FrameLayout {
+    private String mUrl;
 
     /**
      * Constructor for inflating from XML.
@@ -35,11 +37,10 @@ public class MostVisitedItemView extends FrameLayout {
     }
 
     /**
-     * Sets the icon.
+     * Sets the icon, or null to clear it.
      */
-    public void setIcon(Drawable icon) {
-        ImageView iconView = (ImageView) findViewById(R.id.most_visited_icon);
-        iconView.setImageDrawable(icon);
+    public void setIcon(@Nullable Drawable icon) {
+        ((ImageView) findViewById(R.id.most_visited_icon)).setImageDrawable(icon);
     }
 
     /**
@@ -48,5 +49,19 @@ public class MostVisitedItemView extends FrameLayout {
     public void setOfflineAvailable(boolean offlineAvailable) {
         findViewById(R.id.offline_badge).setVisibility(
                 offlineAvailable ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    /**
+     * Sets the site URL. This is used to identify the view.
+     */
+    public void setUrl(String url) {
+        mUrl = url;
+    }
+
+    /**
+     * Gets the site URL. This is used to identify the view.
+     */
+    public String getUrl() {
+        return mUrl;
     }
 }

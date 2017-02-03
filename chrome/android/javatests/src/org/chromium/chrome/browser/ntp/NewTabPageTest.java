@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.suggestions.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -99,7 +100,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         } catch (Throwable t) {
             fail(t.getMessage());
         }
-        NewTabPage.setMostVisitedSitesForTests(mFakeMostVisitedSites);
+        TileGroupDelegateImpl.setMostVisitedSitesForTests(mFakeMostVisitedSites);
 
         loadUrl(UrlConstants.NTP_URL);
         NewTabPageTestUtils.waitForNtpLoaded(mTab);
@@ -420,7 +421,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private void waitForFakeboxFocusAnimationComplete(NewTabPage ntp) throws InterruptedException {
+    private void waitForFakeboxFocusAnimationComplete(NewTabPage ntp) {
         waitForUrlFocusPercent(ntp, 1f);
     }
 

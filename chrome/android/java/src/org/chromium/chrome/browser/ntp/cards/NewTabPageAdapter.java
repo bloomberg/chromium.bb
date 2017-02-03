@@ -19,6 +19,8 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.suggestions.TileGrid;
+import org.chromium.chrome.browser.suggestions.TileGroup;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 import java.util.List;
@@ -58,10 +60,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
      * @param uiConfig the NTP UI configuration, to be passed to created views.
      * @param offlinePageBridge used to determine if articles are available.
      * @param contextMenuManager used to build context menus.
+     * @param tileGroupDelegate if not null this is used to build a {@link TileGrid}.
      */
     public NewTabPageAdapter(SuggestionsUiDelegate uiDelegate, @Nullable View aboveTheFoldView,
             UiConfig uiConfig, OfflinePageBridge offlinePageBridge,
-            ContextMenuManager contextMenuManager) {
+            ContextMenuManager contextMenuManager, @Nullable TileGroup.Delegate tileGroupDelegate) {
         mUiDelegate = uiDelegate;
         mContextMenuManager = contextMenuManager;
 
@@ -79,6 +82,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         } else {
             mAboveTheFold = new AboveTheFoldItem();
             mRoot.addChild(mAboveTheFold);
+        }
+        if (tileGroupDelegate != null) {
+            mRoot.addChild(new TileGrid(uiDelegate, mContextMenuManager, tileGroupDelegate));
         }
         mRoot.addChildren(mSections, mSigninPromo, mAllDismissed, mFooter);
         if (mAboveTheFoldView == null) {
@@ -105,6 +111,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         switch (viewType) {
             case ItemViewType.ABOVE_THE_FOLD:
                 return new NewTabPageViewHolder(mAboveTheFoldView);
+
+            case ItemViewType.TILE_GRID:
+                return new TileGrid.ViewHolder(mRecyclerView);
 
             case ItemViewType.HEADER:
                 return new SectionHeaderViewHolder(mRecyclerView, mUiConfig);
