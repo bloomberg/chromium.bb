@@ -62,8 +62,10 @@
      */
     onAddressMenuTap_: function(e) {
       var menuEvent = /** @type {!{model: !{item: !Object}}} */(e);
+
+      // Copy item so dialog won't update model on cancel.
       this.activeAddress = /** @type {!chrome.autofillPrivate.AddressEntry} */(
-          menuEvent.model.item);
+          Object.assign({}, menuEvent.model.item));
 
       var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
       /** @type {!CrActionMenuElement} */ (
@@ -117,9 +119,11 @@
      */
     onCreditCardMenuTap_: function(e) {
       var menuEvent = /** @type {!{model: !{item: !Object}}} */(e);
+
+      // Copy item so dialog won't update model on cancel.
       this.activeCreditCard =
           /** @type {!chrome.autofillPrivate.CreditCardEntry} */(
-              menuEvent.model.item);
+              Object.assign({}, menuEvent.model.item));
 
       var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
       /** @type {!CrActionMenuElement} */ (
