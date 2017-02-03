@@ -1743,8 +1743,10 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   # Create toolchain tryjob builders.
   #
   toolchain_tryjob_boards = frozenset([
+      'caroline',
       'chell',
       'daisy',
+      'kevin',
       'link',
       'lulu',
       'nyan_big',

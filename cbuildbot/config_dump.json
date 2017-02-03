@@ -4879,6 +4879,24 @@
             "-chrome_internal"
         ]
     },
+    "caroline-gcc-toolchain": {
+        "_template": "gcc_toolchain",
+        "boards": [
+            "caroline"
+        ]
+    },
+    "caroline-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "caroline"
+        ]
+    },
+    "caroline-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "caroline"
+        ]
+    },
     "caroline-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -12261,6 +12279,24 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "kevin-gcc-toolchain": {
+        "_template": "gcc_toolchain",
+        "boards": [
+            "kevin"
+        ]
+    },
+    "kevin-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "kevin"
+        ]
+    },
+    "kevin-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "kevin"
+        ]
     },
     "kevin-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
