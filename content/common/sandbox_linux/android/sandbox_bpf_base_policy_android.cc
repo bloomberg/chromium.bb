@@ -181,8 +181,8 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
   }
 
   // https://crbug.com/682488
-  if (sysno == __NR_getsockopt || sysno == __NR_setsockopt) {
-    // The baseline policy applies other restrictions to these syscalls.
+  if (sysno == __NR_setsockopt) {
+    // The baseline policy applies other restrictions to setsockopt.
     const Arg<int> level(1);
     const Arg<int> option(2);
     return If(AllOf(level == SOL_SOCKET, option == SO_SNDTIMEO), Allow())
