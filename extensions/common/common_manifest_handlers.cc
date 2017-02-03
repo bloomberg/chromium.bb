@@ -28,10 +28,17 @@
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
 
+#if defined(OS_CHROMEOS)
+#include "extensions/common/manifest_handlers/action_handlers_handler.h"
+#endif
+
 namespace extensions {
 
 void RegisterCommonManifestHandlers() {
   DCHECK(!ManifestHandler::IsRegistrationFinalized());
+#if defined(OS_CHROMEOS)
+  (new ActionHandlersHandler)->Register();
+#endif
   (new BackgroundManifestHandler)->Register();
   (new BluetoothManifestHandler)->Register();
   (new ContentCapabilitiesHandler)->Register();

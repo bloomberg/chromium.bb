@@ -7,6 +7,11 @@
 // well as feature.h, simple_feature.h, and feature_provider.h.
 
 {
+  "action_handlers": {
+    "channel": "dev",
+    "extension_types": ["platform_app"],
+    "platforms": ["chromeos"]
+  },
   "app": {
     "channel": "stable",
     "extension_types": ["legacy_packaged_app", "hosted_app", "platform_app"]

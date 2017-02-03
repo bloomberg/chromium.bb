@@ -187,6 +187,7 @@ const char kWebviewName[] = "name";
 const char kWebviewPartitions[] = "partitions";
 const char kWhitelist[] = "whitelist";
 #if defined(OS_CHROMEOS)
+const char kActionHandlers[] = "action_handlers";
 const char kFileSystemProviderCapabilities[] =
     "file_system_provider_capabilities";
 #endif
@@ -738,6 +739,10 @@ const char kWebRequestConflictsWithLazyBackground[] =
 #if defined(OS_CHROMEOS)
 const char kIllegalPlugins[] =
     "Extensions cannot install plugins on Chrome OS.";
+const char kInvalidActionHandlersActionType[] =
+    "Invalid entry in 'action_handlers': \"*\".";
+const char kInvalidActionHandlersType[] =
+    "Invalid value for 'action_handlers'. Value must be a list of strings.";
 const char kInvalidFileSystemProviderMissingCapabilities[] =
     "The 'fileSystemProvider' permission requires the "
     "'file_system_provider_capabilities' section to be specified in the "

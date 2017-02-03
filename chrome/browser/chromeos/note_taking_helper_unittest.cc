@@ -29,6 +29,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/common/api/app_runtime.h"
@@ -192,6 +193,12 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   scoped_refptr<const extensions::Extension> CreateExtension(
       const extensions::ExtensionId& id,
       const std::string& name) {
+    return CreateExtension(id, name, nullptr);
+  }
+  scoped_refptr<const extensions::Extension> CreateExtension(
+      const extensions::ExtensionId& id,
+      const std::string& name,
+      std::unique_ptr<base::Value> action_handlers) {
     std::unique_ptr<base::DictionaryValue> manifest =
         extensions::DictionaryBuilder()
             .Set("name", name)
@@ -207,6 +214,10 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
                               .Build())
                      .Build())
             .Build();
+
+    if (action_handlers)
+      manifest->Set("action_handlers", std::move(action_handlers));
+
     return extensions::ExtensionBuilder()
         .SetManifest(std::move(manifest))
         .SetID(id)
@@ -321,7 +332,7 @@ TEST_F(NoteTakingHelperTest, ListChromeApps) {
       GetAppString(apps[1]));
 
   // Now install a random extension and check that it's ignored.
-  const extensions::ExtensionId kOtherId = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+  const extensions::ExtensionId kOtherId = crx_file::id_util::GenerateId("a");
   const std::string kOtherName = "Some Other App";
   auto other_extension = CreateExtension(kOtherId, kOtherName);
   InstallExtension(other_extension.get(), profile());
@@ -344,6 +355,54 @@ TEST_F(NoteTakingHelperTest, ListChromeApps) {
   EXPECT_EQ(
       GetAppString(NoteTakingHelper::kProdKeepExtensionId, kProdName, true),
       GetAppString(apps[1]));
+}
+
+// Verify the note helper detects apps with "new_note" "action_handler" manifest
+// entries.
+TEST_F(NoteTakingHelperTest, CustomChromeApps) {
+  Init(ENABLE_PALETTE);
+
+  const extensions::ExtensionId kNewNoteId = crx_file::id_util::GenerateId("a");
+  const extensions::ExtensionId kEmptyArrayId =
+      crx_file::id_util::GenerateId("b");
+  const extensions::ExtensionId kEmptyId = crx_file::id_util::GenerateId("c");
+  const std::string kName = "Some App";
+
+  // "action_handlers": ["new_note"]
+  auto has_new_note = CreateExtension(
+      kNewNoteId, kName,
+      extensions::ListBuilder()
+          .Append(app_runtime::ToString(app_runtime::ACTION_TYPE_NEW_NOTE))
+          .Build());
+  InstallExtension(has_new_note.get(), profile());
+  // "action_handlers": []
+  auto empty_array =
+      CreateExtension(kEmptyArrayId, kName, extensions::ListBuilder().Build());
+  InstallExtension(empty_array.get(), profile());
+  // (no action handler entry)
+  auto none = CreateExtension(kEmptyId, kName);
+  InstallExtension(none.get(), profile());
+
+  // Only the "new_note" extension is returned from GetAvailableApps.
+  std::vector<NoteTakingAppInfo> apps = helper()->GetAvailableApps(profile());
+  ASSERT_EQ(1u, apps.size());
+  EXPECT_EQ(GetAppString(kNewNoteId, kName, false), GetAppString(apps[0]));
+}
+
+TEST_F(NoteTakingHelperTest, WhitelistedAndCustomAppsShowOnlyOnce) {
+  Init(ENABLE_PALETTE);
+
+  auto extension = CreateExtension(
+      NoteTakingHelper::kProdKeepExtensionId, "Keep",
+      extensions::ListBuilder()
+          .Append(app_runtime::ToString(app_runtime::ACTION_TYPE_NEW_NOTE))
+          .Build());
+  InstallExtension(extension.get(), profile());
+
+  std::vector<NoteTakingAppInfo> apps = helper()->GetAvailableApps(profile());
+  ASSERT_EQ(1u, apps.size());
+  EXPECT_EQ(GetAppString(NoteTakingHelper::kProdKeepExtensionId, "Keep", false),
+            GetAppString(apps[0]));
 }
 
 TEST_F(NoteTakingHelperTest, LaunchChromeApp) {
@@ -615,7 +674,7 @@ TEST_F(NoteTakingHelperTest, NotifyObserverAboutChromeApps) {
 
   // Non-whitelisted apps shouldn't trigger notifications.
   auto other_extension =
-      CreateExtension("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Some Other App");
+      CreateExtension(crx_file::id_util::GenerateId("a"), "Some Other App");
   InstallExtension(other_extension.get(), profile());
   EXPECT_EQ(2, observer.num_updates());
   UninstallExtension(other_extension.get(), profile());

@@ -189,6 +189,7 @@ extern const char kWebviewAccessibleResources[];
 extern const char kWebviewPartitions[];
 extern const char kWhitelist[];
 #if defined(OS_CHROMEOS)
+extern const char kActionHandlers[];
 extern const char kFileSystemProviderCapabilities[];
 #endif
 }  // namespace manifest_keys
@@ -490,6 +491,8 @@ extern const char kUnrecognizedManifestProperty[];
 extern const char kWebRequestConflictsWithLazyBackground[];
 #if defined(OS_CHROMEOS)
 extern const char kIllegalPlugins[];
+extern const char kInvalidActionHandlersActionType[];
+extern const char kInvalidActionHandlersType[];
 extern const char kInvalidFileSystemProviderMissingCapabilities[];
 extern const char kInvalidFileSystemProviderMissingPermission[];
 #endif

@@ -296,6 +296,13 @@ if (enable_extensions) {
         "manifest_handlers/nacl_modules_handler.h",
       ]
     }
+
+    if (is_chromeos) {
+      sources += [
+        "manifest_handlers/action_handlers_handler.cc",
+        "manifest_handlers/action_handlers_handler.h",
+      ]
+    }
   }
 
   source_set("unit_tests") {
@@ -348,6 +355,7 @@ if (enable_extensions) {
       "//base:i18n",
       "//base/test:test_support",
       "//components/crx_file",
+      "//components/version_info:version_info",
       "//device/usb",
       "//device/usb:test_support",
       "//extensions:extensions_resources",
@@ -363,5 +371,9 @@ if (enable_extensions) {
       "//ui/gfx",
       "//url",
     ]
+
+    if (is_chromeos) {
+      sources += [ "manifest_handlers/action_handlers_handler_unittest.cc" ]
+    }
   }
 }  # enable_extensions

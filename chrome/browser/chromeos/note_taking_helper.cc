@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -34,6 +35,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/action_handlers_handler.h"
 #include "url/gurl.h"
 
 namespace app_runtime = extensions::api::app_runtime;
@@ -262,9 +264,7 @@ NoteTakingHelper::~NoteTakingHelper() {
 bool NoteTakingHelper::IsWhitelistedChromeApp(
     const extensions::Extension* extension) const {
   DCHECK(extension);
-  return std::find(whitelisted_chrome_app_ids_.begin(),
-                   whitelisted_chrome_app_ids_.end(),
-                   extension->id()) != whitelisted_chrome_app_ids_.end();
+  return base::ContainsValue(whitelisted_chrome_app_ids_, extension->id());
 }
 
 std::vector<const extensions::Extension*> NoteTakingHelper::GetChromeApps(
@@ -275,8 +275,6 @@ std::vector<const extensions::Extension*> NoteTakingHelper::GetChromeApps(
   const extensions::ExtensionSet& enabled_extensions =
       extension_registry->enabled_extensions();
 
-  // TODO(derat): Query for additional Chrome apps once http://crbug.com/657139
-  // is resolved.
   std::vector<const extensions::Extension*> extensions;
   for (const auto& id : whitelisted_chrome_app_ids_) {
     if (enabled_extensions.Contains(id)) {
@@ -284,6 +282,19 @@ std::vector<const extensions::Extension*> NoteTakingHelper::GetChromeApps(
           id, extensions::ExtensionRegistry::ENABLED));
     }
   }
+
+  // Add any extensions which have a "note" action in their manifest
+  // "action_handler" entry.
+  for (const auto& extension : enabled_extensions) {
+    if (base::ContainsValue(extensions, extension.get()))
+      continue;
+
+    if (extensions::ActionHandlersInfo::HasActionHandler(
+            extension.get(), app_runtime::ACTION_TYPE_NEW_NOTE)) {
+      extensions.push_back(extension.get());
+    }
+  }
+
   return extensions;
 }
 
@@ -384,7 +395,9 @@ void NoteTakingHelper::Observe(int type,
 void NoteTakingHelper::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
-  if (IsWhitelistedChromeApp(extension)) {
+  if (IsWhitelistedChromeApp(extension) ||
+      extensions::ActionHandlersInfo::HasActionHandler(
+          extension, app_runtime::ACTION_TYPE_NEW_NOTE)) {
     for (auto& observer : observers_)
       observer.OnAvailableNoteTakingAppsUpdated();
   }
@@ -394,7 +407,9 @@ void NoteTakingHelper::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionInfo::Reason reason) {
-  if (IsWhitelistedChromeApp(extension)) {
+  if (IsWhitelistedChromeApp(extension) ||
+      extensions::ActionHandlersInfo::HasActionHandler(
+          extension, app_runtime::ACTION_TYPE_NEW_NOTE)) {
     for (auto& observer : observers_)
       observer.OnAvailableNoteTakingAppsUpdated();
   }
