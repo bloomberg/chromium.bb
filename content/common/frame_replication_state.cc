@@ -9,14 +9,6 @@
 
 namespace content {
 
-ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration()
-    : matches_all_origins(false) {}
-
-ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
-    const ParsedFeaturePolicyDeclaration& rhs) = default;
-
-ParsedFeaturePolicyDeclaration::~ParsedFeaturePolicyDeclaration() {}
-
 FrameReplicationState::FrameReplicationState()
     : sandbox_flags(blink::WebSandboxFlags::None),
       scope(blink::WebTreeScopeType::Document),

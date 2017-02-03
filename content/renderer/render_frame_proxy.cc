@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "content/child/feature_policy/feature_policy_platform.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/content_security_policy_header.h"
@@ -48,23 +49,6 @@ static base::LazyInstance<RoutingIDProxyMap> g_routing_id_proxy_map =
 // Facilitates lookup of RenderFrameProxy by WebFrame.
 typedef std::map<blink::WebFrame*, RenderFrameProxy*> FrameMap;
 base::LazyInstance<FrameMap> g_frame_map = LAZY_INSTANCE_INITIALIZER;
-
-blink::WebParsedFeaturePolicyHeader ToWebParsedFeaturePolicyHeader(
-    const ParsedFeaturePolicyHeader& parsed_header) {
-  std::vector<blink::WebParsedFeaturePolicyDeclaration> result;
-  for (const ParsedFeaturePolicyDeclaration& declaration : parsed_header) {
-    blink::WebParsedFeaturePolicyDeclaration web_declaration;
-    web_declaration.featureName =
-        blink::WebString::fromUTF8(declaration.feature_name);
-    web_declaration.matchesAllOrigins = declaration.matches_all_origins;
-    std::vector<blink::WebSecurityOrigin> web_origins;
-    for (const url::Origin& origin : declaration.origins)
-      web_origins.push_back(origin);
-    web_declaration.origins = web_origins;
-    result.push_back(web_declaration);
-  }
-  return result;
-}
 
 }  // namespace
 
@@ -241,7 +225,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   web_frame_->setReplicatedPotentiallyTrustworthyUniqueOrigin(
       state.has_potentially_trustworthy_unique_origin);
   web_frame_->setReplicatedFeaturePolicyHeader(
-      ToWebParsedFeaturePolicyHeader(state.feature_policy_header));
+      FeaturePolicyHeaderToWeb(state.feature_policy_header));
   if (state.has_received_user_gesture)
     web_frame_->setHasReceivedUserGesture();
 

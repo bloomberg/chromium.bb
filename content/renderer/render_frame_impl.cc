@@ -36,6 +36,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/child/appcache/appcache_dispatcher.h"
+#include "content/child/feature_policy/feature_policy_platform.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
@@ -876,21 +877,6 @@ bool UseMojoCdm() {
 
 double ConvertToBlinkTime(const base::TimeTicks& time_ticks) {
   return (time_ticks - base::TimeTicks()).InSecondsF();
-}
-
-ParsedFeaturePolicyHeader ToParsedFeaturePolicyHeader(
-    const blink::WebParsedFeaturePolicyHeader& parsed_header) {
-  ParsedFeaturePolicyHeader result;
-  for (const blink::WebParsedFeaturePolicyDeclaration& web_declaration :
-       parsed_header) {
-    ParsedFeaturePolicyDeclaration declaration;
-    declaration.feature_name = web_declaration.featureName.utf8();
-    declaration.matches_all_origins = web_declaration.matchesAllOrigins;
-    for (const blink::WebSecurityOrigin& web_origin : web_declaration.origins)
-      declaration.origins.push_back(web_origin);
-    result.push_back(declaration);
-  }
-  return result;
 }
 
 }  // namespace
@@ -3216,7 +3202,7 @@ void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,
 void RenderFrameImpl::didSetFeaturePolicyHeader(
     const blink::WebParsedFeaturePolicyHeader& parsed_header) {
   Send(new FrameHostMsg_DidSetFeaturePolicyHeader(
-      routing_id_, ToParsedFeaturePolicyHeader(parsed_header)));
+      routing_id_, FeaturePolicyHeaderFromWeb(parsed_header)));
 }
 
 void RenderFrameImpl::didAddContentSecurityPolicy(

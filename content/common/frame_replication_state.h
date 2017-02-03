@@ -10,6 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy_header.h"
+#include "content/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "url/origin.h"
 
@@ -19,21 +20,6 @@ enum class WebSandboxFlags;
 }
 
 namespace content {
-
-// This struct holds feature policy whitelist data that needs to be replicated
-// between a RenderFrame and any of its associated RenderFrameProxies. A list of
-// these form part of the FrameReplicationState below (one entry per feature).
-struct CONTENT_EXPORT ParsedFeaturePolicyDeclaration {
-  ParsedFeaturePolicyDeclaration();
-  ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& fppw);
-  ~ParsedFeaturePolicyDeclaration();
-
-  std::string feature_name;
-  bool matches_all_origins;
-  std::vector<url::Origin> origins;
-};
-
-using ParsedFeaturePolicyHeader = std::vector<ParsedFeaturePolicyDeclaration>;
 
 // This structure holds information that needs to be replicated between a
 // RenderFrame and any of its associated RenderFrameProxies.

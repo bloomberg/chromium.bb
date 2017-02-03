@@ -107,6 +107,8 @@ source_set("common") {
     "edit_command.h",
     "establish_channel_params.cc",
     "establish_channel_params.h",
+    "feature_policy/feature_policy.cc",
+    "feature_policy/feature_policy.h",
     "file_utilities_messages.h",
     "fileapi/file_system_messages.h",
     "font_cache_dispatcher_win.cc",
