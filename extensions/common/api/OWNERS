@@ -4,3 +4,5 @@ per-file *view*.json=hanxi@chromium.org
 per-file *view*.json=wjmaclean@chromium.org
 per-file *view*.json=lfg@chromium.org
 per-file *view*.json=paulmeyer@chromium.org
+
+# COMPONENT: Platform>Extensions>API
