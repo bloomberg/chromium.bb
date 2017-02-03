@@ -183,6 +183,7 @@ TEST_P(ObmcVarianceHBDTest, ExtremeValues) {
 }
 
 #if HAVE_SSE4_1
+#if CONFIG_MOTION_VAR
 ObmcVarianceHBDTest::ParamType sse4_functions_hbd[] = {
 #if CONFIG_EXT_PARTITION
   TestFuncs(aom_highbd_obmc_variance128x128_c,
@@ -290,6 +291,7 @@ ObmcVarianceHBDTest::ParamType sse4_functions_hbd[] = {
 
 INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcVarianceHBDTest,
                         ::testing::ValuesIn(sse4_functions_hbd));
+#endif  // CONFIG_MOTION_VAR
 #endif  // HAVE_SSE4_1
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 }  // namespace

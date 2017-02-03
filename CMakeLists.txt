@@ -612,8 +612,9 @@ set(AOM_UNIT_TEST_SOURCES
     #"${AOM_ROOT}/test/masked_variance_test.cc"
     "${AOM_ROOT}/test/md5_helper.h"
     "${AOM_ROOT}/test/minmax_test.cc"
-    "${AOM_ROOT}/test/obmc_sad_test.cc"
-    "${AOM_ROOT}/test/obmc_variance_test.cc"
+    # requires CONFIG_MOTION_VAR
+    #"${AOM_ROOT}/test/obmc_sad_test.cc"
+    #"${AOM_ROOT}/test/obmc_variance_test.cc"
     "${AOM_ROOT}/test/partial_idct_test.cc"
     # omitted from tests.mk, includes vp8 file.
     #"${AOM_ROOT}/test/quantize_test.cc"
