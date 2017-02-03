@@ -57,7 +57,6 @@ void Configuration::Clear() {
   operation_ = INSTALL_PRODUCT;
   argument_count_ = 0;
   is_system_level_ = false;
-  is_side_by_side_ = false;
   is_updating_multi_chrome_ = false;
   has_invalid_switch_ = false;
   previous_version_ = NULL;
@@ -73,18 +72,16 @@ bool Configuration::ParseCommandLine(const wchar_t* command_line) {
     return false;
 
   for (int i = 1; i < argument_count_; ++i) {
-    if (0 == ::lstrcmpi(args_[i], L"--system-level")) {
+    if (0 == ::lstrcmpi(args_[i], L"--system-level"))
       is_system_level_ = true;
 #if defined(GOOGLE_CHROME_BUILD)
-    } else if (0 == ::lstrcmpi(args_[i], L"--chrome-sxs")) {
-      is_side_by_side_ = true;
+    else if (0 == ::lstrcmpi(args_[i], L"--chrome-sxs"))
       chrome_app_guid_ = google_update::kSxSAppGuid;
 #endif
-    } else if (0 == ::lstrcmpi(args_[i], L"--cleanup")) {
+    else if (0 == ::lstrcmpi(args_[i], L"--cleanup"))
       operation_ = CLEANUP;
-    } else if (0 == ::lstrcmpi(args_[i], L"--chrome-frame")) {
+    else if (0 == ::lstrcmpi(args_[i], L"--chrome-frame"))
       has_invalid_switch_ = true;
-    }
   }
 
   if (!is_system_level_)
@@ -126,21 +123,21 @@ void Configuration::ReadResources(HMODULE module) {
 
 bool Configuration::IsUpdatingMultiChrome() const {
 #if defined(GOOGLE_CHROME_BUILD)
-  // SxS/canary does not support multi-install.
-  if (is_side_by_side_)
+  // Only primary Chrome installs supported multi-install (not canary/SxS).
+  if (chrome_app_guid_ != google_update::kAppGuid)
     return false;
 
   // Is Chrome already installed as multi-install?
   const HKEY root = is_system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   StackString<128> value;
   RegKey key;
-  return (OpenClientsKey(root, google_update::kAppGuid, KEY_QUERY_VALUE,
-                         &key) == ERROR_SUCCESS &&
+  return (OpenClientsKey(root, chrome_app_guid_, KEY_QUERY_VALUE, &key) ==
+              ERROR_SUCCESS &&
           key.ReadSZValue(kPvRegistryValue, value.get(), value.capacity()) ==
               ERROR_SUCCESS &&
           value.length() != 0 &&
-          OpenClientStateKey(root, google_update::kAppGuid, KEY_QUERY_VALUE,
-                             &key) == ERROR_SUCCESS &&
+          OpenClientStateKey(root, chrome_app_guid_, KEY_QUERY_VALUE, &key) ==
+              ERROR_SUCCESS &&
           key.ReadSZValue(kUninstallArgumentsRegistryValue, value.get(),
                           value.capacity()) == ERROR_SUCCESS &&
           value.findi(L"--multi-install") != nullptr);

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/environment.h"
+#include "base/macros.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/installer/mini_installer/appid.h"
@@ -66,27 +67,27 @@ class MiniInstallerConfigurationTest : public ::testing::Test {
     static constexpr wchar_t kClientStatePath[] =
         L"SOFTWARE\\Google\\Update\\ClientState\\"
         L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
-#else
+#else   // GOOGLE_CHROME_BUILD
     static constexpr wchar_t kClientsPath[] = L"SOFTWARE\\Chromium";
     static constexpr wchar_t kClientStatePath[] = L"SOFTWARE\\Chromium";
-#endif
-    static constexpr const wchar_t* kUninstallArguments[] = {
-        L"--uninstall", L"--uninstall --multi-install --chrome",
-        L"--uninstall --system-level",
-        L"--uninstall --system-level --multi-install --chrome",
-    };
-    const int uninstall_index =
-        ((system_level ? 0x02 : 0) | (multi_install ? 0x01 : 0));
+#endif  // GOOGLE_CHROME_BUILD
+    base::string16 uninstall_arguments(L"--uninstall");
+    if (system_level)
+      uninstall_arguments += L" --system_level";
+    if (multi_install)
+      uninstall_arguments += L" --multi-install --chrome";
     const HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+    // Use base::win::RegKey rather than mini_installer's since it's more
+    // prevalent in the codebase and more likely to be easy to understand.
     base::win::RegKey key;
     ASSERT_EQ(ERROR_SUCCESS,
               key.Create(root, kClientsPath, KEY_WOW64_32KEY | KEY_SET_VALUE));
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"pv", L"4.3.2.1"));
     ASSERT_EQ(ERROR_SUCCESS, key.Create(root, kClientStatePath,
                                         KEY_WOW64_32KEY | KEY_SET_VALUE));
-    ASSERT_EQ(ERROR_SUCCESS,
-              key.WriteValue(L"UninstallArguments",
-                             kUninstallArguments[uninstall_index]));
+    ASSERT_EQ(
+        ERROR_SUCCESS,
+        key.WriteValue(L"UninstallArguments", uninstall_arguments.c_str()));
   }
 
  private:
@@ -169,14 +170,14 @@ TEST_F(MiniInstallerConfigurationTest, IsUpdatingSystemMulti) {
 #endif
 }
 
-TEST_F(MiniInstallerConfigurationTest, ChromeAppGuid) {
 #if defined(GOOGLE_CHROME_BUILD)
+TEST_F(MiniInstallerConfigurationTest, ChromeAppGuid) {
   EXPECT_STREQ(google_update::kAppGuid,
                TestConfiguration(L"spam.exe").chrome_app_guid());
   EXPECT_STREQ(google_update::kSxSAppGuid,
                TestConfiguration(L"spam.exe --chrome-sxs").chrome_app_guid());
-#endif
 }
+#endif
 
 TEST_F(MiniInstallerConfigurationTest, IsSystemLevel) {
   EXPECT_FALSE(TestConfiguration(L"spam.exe").is_system_level());
@@ -192,15 +193,6 @@ TEST_F(MiniInstallerConfigurationTest, IsSystemLevel) {
     ScopedGoogleUpdateIsMachine env_setter(true);
     EXPECT_TRUE(TestConfiguration(L"spam.exe").is_system_level());
   }
-}
-
-TEST_F(MiniInstallerConfigurationTest, IsSideBySide) {
-  EXPECT_FALSE(TestConfiguration(L"spam.exe").is_side_by_side());
-#if defined(GOOGLE_CHROME_BUILD)
-  EXPECT_TRUE(TestConfiguration(L"spam.exe --chrome-sxs").is_side_by_side());
-#else
-  EXPECT_FALSE(TestConfiguration(L"spam.exe --chrome-sxs").is_side_by_side());
-#endif
 }
 
 TEST_F(MiniInstallerConfigurationTest, HasInvalidSwitch) {

@@ -37,6 +37,8 @@
 #include <stdlib.h>
 #include <stddef.h>
 
+#include <initializer_list>
+
 #include "chrome/installer/mini_installer/appid.h"
 #include "chrome/installer/mini_installer/configuration.h"
 #include "chrome/installer/mini_installer/decompress.h"
@@ -59,11 +61,14 @@ struct Context {
   PathString* setup_resource_path;
 };
 
+// TODO(grt): Frame this in terms of whether or not the brand supports
+// integation with Omaha, where Google Update is the Google-specific fork of
+// the open-source Omaha project.
 #if defined(GOOGLE_CHROME_BUILD)
 // Opens the Google Update ClientState key. If |binaries| is false, opens the
 // key for Google Chrome or Chrome SxS (canary). If |binaries| is true and an
 // existing multi-install Chrome is being updated, opens the key for the
-// binaries; otherwise, returns false.
+// multi-install binaries; otherwise, returns false.
 bool OpenInstallStateKey(const Configuration& configuration,
                          bool binaries,
                          RegKey* key) {
@@ -91,10 +96,10 @@ void WriteInstallResults(const Configuration& configuration,
 
   // Write the value in Chrome ClientState key and in the binaries' if an
   // existing multi-install Chrome is being updated.
-  for (int i = 0; i < 2; ++i) {
+  for (bool binaries : {false, true}) {
     RegKey key;
     DWORD value;
-    if (OpenInstallStateKey(configuration, i != 0, &key)) {
+    if (OpenInstallStateKey(configuration, binaries, &key)) {
       if (key.ReadDWValue(kInstallerResultRegistryValue, &value) !=
               ERROR_SUCCESS ||
           value == 0) {
@@ -115,9 +120,9 @@ void WriteInstallResults(const Configuration& configuration,
 void SetInstallerFlags(const Configuration& configuration) {
   StackString<128> value;
 
-  for (int i = 0; i < 2; ++i) {
+  for (bool binaries : {false, true}) {
     RegKey key;
-    if (!OpenInstallStateKey(configuration, i != 0, &key))
+    if (!OpenInstallStateKey(configuration, binaries, &key))
       continue;
 
     LONG ret = key.ReadSZValue(kApRegistryValue, value.get(), value.capacity());

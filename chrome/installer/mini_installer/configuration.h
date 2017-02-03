@@ -46,9 +46,6 @@ class Configuration {
   // GoogleUpdateIsMachine=1 is set in the process's environment.
   bool is_system_level() const { return is_system_level_; }
 
-  // Retuns true if --chrome-sxs is on the command line (Google Chrome only).
-  bool is_side_by_side() const { return is_side_by_side_; }
-
   // Returns true if an existing multi-install Chrome is being updated (Google
   // Chrome only).
   bool is_updating_multi_chrome() const { return is_updating_multi_chrome_; }
@@ -70,7 +67,6 @@ class Configuration {
   int argument_count_;
   Operation operation_;
   bool is_system_level_;
-  bool is_side_by_side_;
   bool is_updating_multi_chrome_;
   bool has_invalid_switch_;
   const wchar_t* previous_version_;

@@ -25,7 +25,7 @@ LONG RegKey::ReadSZValue(const wchar_t* value_name,
   if (result == ERROR_SUCCESS) {
     if (type != REG_SZ) {
       result = ERROR_NOT_SUPPORTED;
-    } else if (byte_length == 0) {
+    } else if (byte_length < 2) {
       *value = L'\0';
     } else if (value[byte_length/sizeof(wchar_t) - 1] != L'\0') {
       if ((byte_length / sizeof(wchar_t)) < value_size)
