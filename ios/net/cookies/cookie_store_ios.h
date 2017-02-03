@@ -58,11 +58,6 @@ class CookieStoreIOS : public net::CookieStore,
   // so callers should not expect these values to be populated.
   explicit CookieStoreIOS(NSHTTPCookieStorage* cookie_storage);
 
-  // Creates a CookieStoreIOS with NSHTTPCookieStorage backend.
-  // TODO(crbug.com/683964): Remove this method.
-  static std::unique_ptr<CookieStoreIOS> CreateCookieStore(
-      NSHTTPCookieStorage* cookie_storage);
-
   ~CookieStoreIOS() override;
 
   enum CookiePolicy { ALLOW, BLOCK };

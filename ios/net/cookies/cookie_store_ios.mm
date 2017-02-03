@@ -282,21 +282,6 @@ CookieStoreIOS::~CookieStoreIOS() {
 }
 
 // static
-std::unique_ptr<CookieStoreIOS> CookieStoreIOS::CreateCookieStore(
-    NSHTTPCookieStorage* cookie_storage) {
-  DCHECK(cookie_storage);
-  // TODO(huey): Update this when CrNet supports multiple cookie jars.
-  [cookie_storage setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
-
-  // Create a cookie store with no persistent store backing. Then, populate
-  // it from the system's cookie jar.
-  std::unique_ptr<CookieStoreIOS> cookie_store(
-      new CookieStoreIOS(cookie_storage));
-  cookie_store->FlushStore(base::Closure());
-  return cookie_store;
-}
-
-// static
 void CookieStoreIOS::NotifySystemCookiesChanged() {
   NotificationTrampoline::GetInstance()->NotifyCookiesChanged();
 }
