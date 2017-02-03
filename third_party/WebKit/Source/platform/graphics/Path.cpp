@@ -109,14 +109,9 @@ bool Path::strokeContains(const FloatPoint& point,
 namespace {
 
 FloatRect pathBounds(const SkPath& path, Path::BoundsType boundsType) {
-  SkRect bounds;
-  if (boundsType == Path::BoundsType::Conservative ||
-      !TightBounds(path, &bounds)) {
-    return path.getBounds();
-  }
-
-  DCHECK_EQ(boundsType, Path::BoundsType::Exact);
-  return bounds;
+  return boundsType == Path::BoundsType::Conservative
+             ? path.getBounds()
+             : path.computeTightBounds();
 }
 
 }  // anonymous ns
