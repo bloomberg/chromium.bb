@@ -15,6 +15,7 @@
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -30,8 +31,10 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -54,11 +57,13 @@
 namespace {
 
 // Space between right edge of tabstrip and maximize button.
-const int kTabstripRightSpacing = 10;
+constexpr int kTabstripRightSpacing = 10;
 // Height of the shadow in the tab image, used to ensure clicks in the shadow
 // area still drag restored windows.  This keeps the clickable area large enough
 // to hit easily.
-const int kTabShadowHeight = 4;
+constexpr int kTabShadowHeight = 4;
+
+constexpr SkColor kMdWebUIFrameColor = SkColorSetRGB(0x25, 0x4f, 0xae);
 
 }  // namespace
 
@@ -100,6 +105,11 @@ void BrowserNonClientFrameViewAsh::Init() {
     header_painter->Init(frame(), this, caption_button_container_);
     if (window_icon_)
       header_painter->UpdateLeftHeaderView(window_icon_);
+    if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {
+      // For non app (i.e. WebUI) windows (e.g. Settings) use MD frame color.
+      if (!browser_view()->browser()->is_app())
+        header_painter->SetFrameColors(kMdWebUIFrameColor, kMdWebUIFrameColor);
+    }
   } else {
     BrowserHeaderPainterAsh* header_painter = new BrowserHeaderPainterAsh;
     header_painter_.reset(header_painter);
