@@ -30,6 +30,7 @@ css3/device-adapt/viewport-insert-rule-before.html
 css3/filters/crash-hw-sw-switch.html
 css3/masking/clip-path-reference-of-fake-clipPath.html
 css3/style-zoomed-image.html
+dom/domparsing/xhtml-serialize.html
 editing/caret/caret-color.html
 editing/editability/empty-document-justify-right.html
 editing/input/set-value-on-input-and-type-input.html
@@ -79,7 +80,6 @@ fast/html/imports/import-same-url.html
 fast/html/imports/no-browsing-context.html
 fast/html/process-end-tag-for-inbody-crash.html
 fast/html/tabindex-removal.html
-fast/html/xhtml-serialize.html
 fast/inline-block/anonymous-block-crash.html
 fast/inline-block/inline-block-vertical-align-2.html
 fast/inline-block/overflow-clip.html
