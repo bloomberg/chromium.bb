@@ -42,21 +42,22 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   void ForgetIdentity(ChromeIdentity* identity,
                       ForgetIdentityCallback callback) override;
 
-  MOCK_METHOD5(GetAccessToken,
-               void(ChromeIdentity* identity,
-                    const std::string& client_id,
-                    const std::string& client_secret,
-                    const std::set<std::string>& scopes,
-                    const ios::AccessTokenCallback& callback));
+  virtual void GetAccessToken(
+      ChromeIdentity* identity,
+      const std::string& client_id,
+      const std::string& client_secret,
+      const std::set<std::string>& scopes,
+      const ios::AccessTokenCallback& callback) override;
 
-  MOCK_METHOD2(GetAvatarForIdentity,
-               void(ChromeIdentity* identity, GetAvatarCallback callback));
+  virtual void GetAvatarForIdentity(ChromeIdentity* identity,
+                                    GetAvatarCallback callback) override;
 
-  MOCK_METHOD1(GetCachedAvatarForIdentity, UIImage*(ChromeIdentity* identity));
+  virtual UIImage* GetCachedAvatarForIdentity(
+      ChromeIdentity* identity) override;
 
-  MOCK_METHOD2(GetHostedDomainForIdentity,
-               void(ChromeIdentity* identity,
-                    GetHostedDomainCallback callback));
+  virtual void GetHostedDomainForIdentity(
+      ChromeIdentity* identity,
+      GetHostedDomainCallback callback) override;
 
   MOCK_METHOD1(GetMDMDeviceStatus,
                ios::MDMDeviceStatus(NSDictionary* user_info));

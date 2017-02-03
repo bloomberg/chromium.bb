@@ -210,19 +210,33 @@ void FakeChromeIdentityService::ForgetIdentity(
   }
 }
 
-void FakeChromeIdentityService::SetUpForIntegrationTests() {
-  ON_CALL(*this, GetAccessToken(_, _, _, _, _))
-      .WillByDefault(Invoke(FakeGetAccessToken));
-
-  ON_CALL(*this, GetAvatarForIdentity(_, _))
-      .WillByDefault(Invoke(FakeGetAvatarForIdentity));
-
-  ON_CALL(*this, GetCachedAvatarForIdentity(_))
-      .WillByDefault(Invoke(FakeGetCachedAvatarForIdentity));
-
-  ON_CALL(*this, GetHostedDomainForIdentity(_, _))
-      .WillByDefault(Invoke(FakeGetHostedDomainForIdentity));
+void FakeChromeIdentityService::GetAccessToken(
+    ChromeIdentity* identity,
+    const std::string& client_id,
+    const std::string& client_secret,
+    const std::set<std::string>& scopes,
+    const ios::AccessTokenCallback& callback) {
+  FakeGetAccessToken(identity, client_id, client_secret, scopes, callback);
 }
+
+UIImage* FakeChromeIdentityService::GetCachedAvatarForIdentity(
+    ChromeIdentity* identity) {
+  return FakeGetCachedAvatarForIdentity(identity);
+}
+
+void FakeChromeIdentityService::GetAvatarForIdentity(
+    ChromeIdentity* identity,
+    GetAvatarCallback callback) {
+  FakeGetAvatarForIdentity(identity, callback);
+}
+
+void FakeChromeIdentityService::GetHostedDomainForIdentity(
+    ChromeIdentity* identity,
+    GetHostedDomainCallback callback) {
+  FakeGetHostedDomainForIdentity(identity, callback);
+}
+
+void FakeChromeIdentityService::SetUpForIntegrationTests() {}
 
 void FakeChromeIdentityService::AddIdentities(NSArray* identitiesNames) {
   for (NSString* name in identitiesNames) {
