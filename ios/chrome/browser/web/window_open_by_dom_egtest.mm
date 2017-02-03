@@ -60,6 +60,26 @@ const char kTestURL[] =
   AssertMainTabCount(1);
 }
 
+// Tests that |sessionStorage| content is available for windows opened by DOM
+// via |target="_blank"| links.
+// TODO(crbug.com/681434): Enable this test.
+- (void)DISABLED_testLinkWithBlankTargetSessionStorage {
+  using chrome_test_util::ExecuteJavaScript;
+
+  NSError* error = nil;
+  ExecuteJavaScript(@"sessionStorage.setItem('key', 'value');", &error);
+  GREYAssert(!error, @"Error during script execution: %@", error);
+
+  TapWebViewElementWithId("webScenarioWindowOpenSamePageWithBlankTarget");
+  AssertMainTabCount(2);
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText("Expected result")]
+      assertWithMatcher:grey_notNil()];
+
+  id value = ExecuteJavaScript(@"sessionStorage.getItem('key');", &error);
+  GREYAssert(!error, @"Error during script execution: %@", error);
+  GREYAssert([value isEqual:@"value"], @"sessionStorage is not shared");
+}
+
 // Tests a link with target="_blank".
 - (void)testLinkWithBlankTarget {
   TapWebViewElementWithId("webScenarioWindowOpenRegularLink");
