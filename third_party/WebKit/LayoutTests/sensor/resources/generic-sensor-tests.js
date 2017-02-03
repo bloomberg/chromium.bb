@@ -97,9 +97,11 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
   }, 'Test that frequency is capped to the maximum supported from frequency.');
 
   sensor_test(sensor => {
-  let sensorObject = new sensorType({frequency: 60});
-  sensorObject.start();
-  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+    let sensorObject = new sensorType({frequency: 60});
+    assert_equals(sensorObject.state, 'unconnected');
+    sensorObject.start();
+    assert_equals(sensorObject.state, 'activating');
+    let testPromise = sensor.mockSensorProvider.getCreatedSensor()
       .then((mockSensor) => {
         return new Promise((resolve, reject) => {
           let wrapper = new CallbackWrapper(() => {
@@ -113,8 +115,8 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         });
       })
       .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
-  return testPromise;
-  }, 'Test that sensor can be successfully created if sensor is supported.');
+    return testPromise;
+  }, 'Test that sensor can be successfully created and its states are correct.');
 
   sensor_test(sensor => {
     let sensorObject = new sensorType();

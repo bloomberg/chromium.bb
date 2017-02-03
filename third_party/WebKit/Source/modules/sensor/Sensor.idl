@@ -6,9 +6,10 @@
 // https://w3c.github.io/sensors/#sensor0
 
 enum SensorState {
-  "idle",
+  "unconnected",
   "activating",
-  "active",
+  "activated",
+  "idle",
   "errored"
 };
 

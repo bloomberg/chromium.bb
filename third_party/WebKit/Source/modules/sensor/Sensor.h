@@ -31,7 +31,7 @@ class Sensor : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum class SensorState { Idle, Activating, Activated, Errored };
+  enum class SensorState { Unconnected, Activating, Activated, Idle, Errored };
 
   ~Sensor() override;
 

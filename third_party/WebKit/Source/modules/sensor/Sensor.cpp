@@ -26,7 +26,7 @@ Sensor::Sensor(ExecutionContext* executionContext,
     : ContextLifecycleObserver(executionContext),
       m_sensorOptions(sensorOptions),
       m_type(type),
-      m_state(Sensor::SensorState::Idle),
+      m_state(Sensor::SensorState::Unconnected),
       m_lastUpdateTimestamp(0.0) {
   // Check secure context.
   String errorMessage;
@@ -63,7 +63,8 @@ Sensor::Sensor(ExecutionContext* executionContext,
 Sensor::~Sensor() = default;
 
 void Sensor::start(ScriptState* scriptState, ExceptionState& exceptionState) {
-  if (m_state != Sensor::SensorState::Idle &&
+  if (m_state != Sensor::SensorState::Unconnected &&
+      m_state != Sensor::SensorState::Idle &&
       m_state != Sensor::SensorState::Errored)
     return;
 
@@ -79,7 +80,8 @@ void Sensor::start(ScriptState* scriptState, ExceptionState& exceptionState) {
 }
 
 void Sensor::stop(ScriptState*, ExceptionState& exceptionState) {
-  if (m_state == Sensor::SensorState::Idle ||
+  if (m_state == Sensor::SensorState::Unconnected ||
+      m_state == Sensor::SensorState::Idle ||
       m_state == Sensor::SensorState::Errored)
     return;
 
@@ -88,12 +90,14 @@ void Sensor::stop(ScriptState*, ExceptionState& exceptionState) {
 
 static String ToString(Sensor::SensorState state) {
   switch (state) {
-    case Sensor::SensorState::Idle:
-      return "idle";
+    case Sensor::SensorState::Unconnected:
+      return "unconnected";
     case Sensor::SensorState::Activating:
       return "activating";
     case Sensor::SensorState::Activated:
       return "activated";
+    case Sensor::SensorState::Idle:
+      return "idle";
     case Sensor::SensorState::Errored:
       return "errored";
     default:
@@ -137,7 +141,8 @@ DEFINE_TRACE(Sensor) {
 }
 
 bool Sensor::hasPendingActivity() const {
-  if (m_state == Sensor::SensorState::Idle ||
+  if (m_state == Sensor::SensorState::Unconnected ||
+      m_state == Sensor::SensorState::Idle ||
       m_state == Sensor::SensorState::Errored)
     return false;
   return getExecutionContext() && hasEventListeners();
