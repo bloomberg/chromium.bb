@@ -6,10 +6,9 @@
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/proto/system_profile.pb.h"
-#include "content/public/browser/browser_thread.h"
 
 typedef metrics::SystemProfileProto::GoogleUpdate::ProductInfo ProductInfo;
 
@@ -57,14 +56,12 @@ void GoogleUpdateMetricsProviderWin::GetGoogleUpdateData(
 
   // Schedules a task on a blocking pool thread to gather Google Update
   // statistics (requires Registry reads).
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(
-          &GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataOnBlockingPool),
-      base::Bind(
-          &GoogleUpdateMetricsProviderWin::ReceiveGoogleUpdateData,
-          weak_ptr_factory_.GetWeakPtr(), done_callback));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataBlocking),
+      base::Bind(&GoogleUpdateMetricsProviderWin::ReceiveGoogleUpdateData,
+                 weak_ptr_factory_.GetWeakPtr(), done_callback));
 }
 
 void GoogleUpdateMetricsProviderWin::ProvideSystemProfileMetrics(
@@ -108,7 +105,7 @@ GoogleUpdateMetricsProviderWin::GoogleUpdateMetrics::~GoogleUpdateMetrics() {
 
 // static
 GoogleUpdateMetricsProviderWin::GoogleUpdateMetrics
-GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataOnBlockingPool() {
+GoogleUpdateMetricsProviderWin::GetGoogleUpdateDataBlocking() {
   GoogleUpdateMetrics google_update_metrics;
 
   if (!IsOfficialBuild())

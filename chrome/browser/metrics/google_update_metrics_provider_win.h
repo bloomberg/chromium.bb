@@ -50,7 +50,7 @@ class GoogleUpdateMetricsProviderWin : public metrics::MetricsProvider {
   };
 
   // Retrieve the Google Update data on the blocking pool.
-  static GoogleUpdateMetrics GetGoogleUpdateDataOnBlockingPool();
+  static GoogleUpdateMetrics GetGoogleUpdateDataBlocking();
 
   // Receives |google_update_metrics| from a blocking pool thread and runs
   // |done_callback|.
