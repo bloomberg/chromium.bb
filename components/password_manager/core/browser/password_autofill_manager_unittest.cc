@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/user_action_tester.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -802,6 +803,49 @@ TEST_F(PasswordAutofillManagerTest, FormNotSecureUserAction) {
       0);
   EXPECT_EQ(1, user_action_tester.GetActionCount(
                    "PasswordManager_ShowedHttpNotSecureExplanation"));
+}
+
+// Tests that the Form-Not-Secure warning is recorded in UMA, at most once per
+// navigation.
+TEST_F(PasswordAutofillManagerTest, ShowedFormNotSecureHistogram) {
+  const char kHistogram[] =
+      "PasswordManager.ShowedFormNotSecureWarningOnCurrentNavigation";
+  base::HistogramTester histograms;
+  SetHttpWarningEnabled();
+
+  auto client = base::MakeUnique<TestPasswordManagerClient>();
+  auto autofill_client = base::MakeUnique<MockAutofillClient>();
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  // Test that the standalone warning (with no autofill suggestions) records the
+  // histogram.
+  gfx::RectF element_bounds;
+  password_autofill_manager_->OnShowNotSecureWarning(base::i18n::RIGHT_TO_LEFT,
+                                                     element_bounds);
+  histograms.ExpectUniqueSample(kHistogram, true, 1);
+
+  // Simulate a navigation, because the histogram is recorded at most once per
+  // navigation.
+  password_autofill_manager_->DidNavigateMainFrame();
+
+  // Test that the warning, when included with the normal autofill dropdown,
+  // records the histogram.
+  int dummy_key = 0;
+  autofill::PasswordFormFillData data;
+  data.username_field.value = test_username_;
+  data.password_field.value = test_password_;
+  data.origin = GURL("http://foo.test");
+  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
+      autofill::IS_PASSWORD_FIELD, element_bounds);
+  histograms.ExpectUniqueSample(kHistogram, true, 2);
+
+  // The histogram should not be recorded again on the same navigation.
+  password_autofill_manager_->OnShowNotSecureWarning(base::i18n::RIGHT_TO_LEFT,
+                                                     element_bounds);
+  histograms.ExpectUniqueSample(kHistogram, true, 2);
 }
 
 }  // namespace password_manager

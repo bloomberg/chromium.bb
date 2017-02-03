@@ -249,6 +249,10 @@ void LogPasswordReuse(int password_length,
 // autofill dropdown to show more information about the warning.
 void LogShowedHttpNotSecureExplanation();
 
+// Log that the Form-Not-Secure warning was shown. Should be called at most once
+// per main-frame navigation.
+void LogShowedFormNotSecureWarningOnCurrentNavigation();
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

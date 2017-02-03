@@ -161,6 +161,14 @@ void LogShowedHttpNotSecureExplanation() {
       "PasswordManager_ShowedHttpNotSecureExplanation"));
 }
 
+void LogShowedFormNotSecureWarningOnCurrentNavigation() {
+  // Always record 'true': this is a counter of the number of times the warning
+  // is shown, to gather metrics such as the number of times the warning is
+  // shown per million page loads.
+  UMA_HISTOGRAM_BOOLEAN(
+      "PasswordManager.ShowedFormNotSecureWarningOnCurrentNavigation", true);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

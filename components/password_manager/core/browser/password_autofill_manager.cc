@@ -233,6 +233,11 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
       suggestions.front().frontend_id = autofill::POPUP_ITEM_ID_SEPARATOR;
 #endif
       suggestions.insert(suggestions.begin(), http_warning_suggestion);
+
+      if (!did_show_form_not_secure_warning_) {
+        did_show_form_not_secure_warning_ = true;
+        metrics_util::LogShowedFormNotSecureWarningOnCurrentNavigation();
+      }
   }
 
   autofill_client_->ShowAutofillPopup(bounds,
@@ -254,10 +259,16 @@ void PasswordAutofillManager::OnShowNotSecureWarning(
 
   autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
                                       weak_ptr_factory_.GetWeakPtr());
+
+  if (did_show_form_not_secure_warning_)
+    return;
+  did_show_form_not_secure_warning_ = true;
+  metrics_util::LogShowedFormNotSecureWarningOnCurrentNavigation();
 }
 
 void PasswordAutofillManager::DidNavigateMainFrame() {
   login_to_password_info_.clear();
+  did_show_form_not_secure_warning_ = false;
 }
 
 bool PasswordAutofillManager::FillSuggestionForTest(
