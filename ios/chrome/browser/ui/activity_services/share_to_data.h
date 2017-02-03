@@ -7,15 +7,17 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
 #include "url/gurl.h"
 
 @interface ShareToData : NSObject
 
 // Designated initializer.
 - (id)initWithURL:(const GURL&)url
-              title:(NSString*)title
-    isOriginalTitle:(BOOL)isOriginalTitle
-    isPagePrintable:(BOOL)isPagePrintable;
+                 title:(NSString*)title
+       isOriginalTitle:(BOOL)isOriginalTitle
+       isPagePrintable:(BOOL)isPagePrintable
+    thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator;
 
 @property(nonatomic, readonly) const GURL& url;
 // NSURL version of 'url'. Use only for passing to libraries that take NSURL.
@@ -24,6 +26,7 @@
 @property(nonatomic, readonly, assign) BOOL isOriginalTitle;
 @property(nonatomic, readonly, assign) BOOL isPagePrintable;
 @property(nonatomic, strong) UIImage* image;
+@property(nonatomic, copy) ThumbnailGeneratorBlock thumbnailGenerator;
 
 @end
 

@@ -14,55 +14,6 @@
 #error "This file requires ARC support."
 #endif
 
-#pragma mark - UIActivityURLSource
-
-@interface UIActivityURLSource () {
-  // The shared subject.
-  NSString* _subject;
-  // The shared url.
-  NSURL* _url;
-}
-
-@end
-
-@implementation UIActivityURLSource
-
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
-- (instancetype)initWithURL:(NSURL*)url subject:(NSString*)subject {
-  DCHECK(subject);
-  DCHECK(url);
-  self = [super init];
-  if (self) {
-    _subject = [subject copy];
-    _url = url;
-  }
-  return self;
-}
-
-#pragma mark - UIActivityItemSource
-
-- (id)activityViewController:(UIActivityViewController*)activityViewController
-         itemForActivityType:(NSString*)activityType {
-  return _url;
-}
-
-- (id)activityViewControllerPlaceholderItem:
-    (UIActivityViewController*)activityViewController {
-  return _url;
-}
-
-- (NSString*)activityViewController:
-                 (UIActivityViewController*)activityViewController
-             subjectForActivityType:(NSString*)activityType {
-  return _subject;
-}
-
-@end
-
 #pragma mark - UIActivityTextSource
 
 @interface UIActivityTextSource () {
@@ -157,6 +108,7 @@
 @interface UIActivityFindLoginActionSource () {
   NSString* _subject;
   NSURL* _url;
+  ThumbnailGeneratorBlock _thumbnailGenerator;
 }
 @end
 
@@ -167,13 +119,17 @@
   return nil;
 }
 
-- (instancetype)initWithURL:(NSURL*)url subject:(NSString*)subject {
+- (instancetype)initWithURL:(NSURL*)url
+                    subject:(NSString*)subject
+         thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator {
   DCHECK(url);
   DCHECK(subject);
+  DCHECK(thumbnailGenerator);
   self = [super init];
   if (self) {
     _url = url;
     _subject = [subject copy];
+    _thumbnailGenerator = thumbnailGenerator;
   }
   return self;
 }
@@ -237,6 +193,13 @@
     return findLoginType;
   }
   return (NSString*)kUTTypeURL;
+}
+
+- (UIImage*)activityViewController:
+                (UIActivityViewController*)activityViewController
+     thumbnailImageForActivityType:(UIActivityType)activityType
+                     suggestedSize:(CGSize)size {
+  return _thumbnailGenerator(size);
 }
 
 @end

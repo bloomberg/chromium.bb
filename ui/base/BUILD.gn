@@ -665,6 +665,8 @@ static_library("test_support") {
     sources += [
       "test/ios/keyboard_appearance_listener.h",
       "test/ios/keyboard_appearance_listener.mm",
+      "test/ios/ui_image_test_utils.h",
+      "test/ios/ui_image_test_utils.mm",
       "test/ios/ui_view_test_utils.h",
       "test/ios/ui_view_test_utils.mm",
     ]
@@ -782,7 +784,10 @@ test("ui_base_unittests") {
   if (is_ios) {
     # Compile this Mac file on iOS as well.
     set_sources_assignment_filter([])
-    sources += [ "l10n/l10n_util_mac_unittest.mm" ]
+    sources += [
+      "l10n/l10n_util_mac_unittest.mm",
+      "test/ios/ui_image_test_utils_unittest.mm",
+    ]
     set_sources_assignment_filter(sources_assignment_filter)
   } else {  # !is_ios
     sources += [

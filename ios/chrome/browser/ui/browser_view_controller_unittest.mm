@@ -66,6 +66,7 @@
 #include "third_party/ocmock/gtest_support.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/test/ios/ui_image_test_utils.h"
 
 using web::NavigationManagerImpl;
 using web::WebStateImpl;
@@ -408,18 +409,36 @@ TEST_F(BrowserViewControllerTest, TestSharePageCommandHandling) {
   NSString* expectedTitle = @"title";
   [(BVCTestTabMock*)tab_.get() setUrl:expectedUrl];
   OCMockObject* tabMock = (OCMockObject*)tab_.get();
+  ios::ChromeBrowserState* ptr = chrome_browser_state_.get();
+  [[[tabMock stub] andReturnValue:OCMOCK_VALUE(ptr)] browserState];
   [[[tabMock stub] andReturn:expectedTitle] title];
   [[[tabMock stub] andReturn:expectedTitle] originalTitle];
-  base::scoped_nsobject<ShareToData> expectedShareData([[ShareToData alloc]
-          initWithURL:expectedUrl
-                title:expectedTitle
-      isOriginalTitle:YES
-      isPagePrintable:YES]);
+
+  UIImage* tabSnapshot = ui::test::uiimage_utils::UIImageWithSizeAndSolidColor(
+      CGSizeMake(300, 400), [UIColor blueColor]);
+  [[[tabMock stub] andReturn:tabSnapshot] generateSnapshotWithOverlay:NO
+                                                     visibleFrameOnly:YES];
   OCMockObject* shareControllerMock = (OCMockObject*)shareController_.get();
   // Passing non zero/nil |fromRect| and |inView| parameters to satisfy protocol
   // requirements.
+  BOOL (^shareDataChecker)
+  (id value) = ^BOOL(id value) {
+    if (![value isMemberOfClass:ShareToData.class])
+      return NO;
+    ShareToData* shareToData = (ShareToData*)value;
+    CGSize size = CGSizeMake(40, 40);
+    BOOL thumbnailDataIsEqual = ui::test::uiimage_utils::UIImagesAreEqual(
+        shareToData.thumbnailGenerator(size),
+        ui::test::uiimage_utils::UIImageWithSizeAndSolidColor(
+            size, [UIColor blueColor]));
+    return shareToData.url == expectedUrl &&
+           [shareToData.title isEqual:expectedTitle] &&
+           shareToData.isOriginalTitle == YES &&
+           shareToData.isPagePrintable == NO && thumbnailDataIsEqual;
+  };
+
   [[shareControllerMock expect]
-        shareWithData:expectedShareData
+        shareWithData:[OCMArg checkWithBlock:shareDataChecker]
            controller:bvc_
          browserState:chrome_browser_state_.get()
       shareToDelegate:bvc_

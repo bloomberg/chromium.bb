@@ -74,12 +74,17 @@ enum class ProjectionMode {
   // |projectTo| and |revisedTargetSize| will be set to |targetSize|
   kFill,
 
-  // Scale to the target, maintaining aspect ratio, clipping the excess. Large
-  // original sizes are shrunk until they fit on one side, small original sizes
-  // are expanded.
+  // Scale to the target, maintaining aspect ratio, clipping the excess, while
+  // keeping the image centered.
+  // Large original sizes are shrunk until they fit on one side, small original
+  // sizes are expanded.
   // |projectTo| will be a subset of |originalSize|
   // |revisedTargetSize| will be set to |targetSize|
   kAspectFill,
+
+  // Same as kAspectFill, except that the bottom part of the image will be
+  // clipped. The image will still be horizontally centered.
+  kAspectFillAlignTop,
 
   // Fit the image in the target so it fits completely inside, preserving aspect
   // ratio. This will leave bands with with no data in the target.

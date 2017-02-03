@@ -38,6 +38,8 @@ source_set("activity_services") {
     "appex_constants.mm",
     "chrome_activity_item_source.h",
     "chrome_activity_item_source.mm",
+    "chrome_activity_item_thumbnail_generator.h",
+    "chrome_activity_item_thumbnail_generator.mm",
     "print_activity.h",
     "print_activity.mm",
     "reading_list_activity.h",
@@ -45,6 +47,8 @@ source_set("activity_services") {
     "share_protocol.h",
     "share_to_data.h",
     "share_to_data.mm",
+    "share_to_data_builder.h",
+    "share_to_data_builder.mm",
   ]
   deps = [
     ":assets",
@@ -53,6 +57,7 @@ source_set("activity_services") {
     "//components/reading_list/core",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
@@ -71,6 +76,7 @@ source_set("unit_tests") {
   sources = [
     "activity_service_controller_unittest.mm",
     "activity_type_util_unittest.mm",
+    "chrome_activity_item_thumbnail_generator_unittest.mm",
   ]
   deps = [
     ":activity_services",
@@ -78,10 +84,13 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/reading_list/core",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/tabs",
     "//ios/web:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",
+    "//ui/base:test_support",
   ]
 }
 

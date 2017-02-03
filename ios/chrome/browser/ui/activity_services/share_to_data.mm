@@ -38,6 +38,7 @@
 
 @synthesize title = title_;
 @synthesize image = image_;
+@synthesize thumbnailGenerator = thumbnailGenerator_;
 @synthesize isOriginalTitle = isOriginalTitle_;
 @synthesize isPagePrintable = isPagePrintable_;
 
@@ -47,17 +48,19 @@
 }
 
 - (id)initWithURL:(const GURL&)url
-              title:(NSString*)title
-    isOriginalTitle:(BOOL)isOriginalTitle
-    isPagePrintable:(BOOL)isPagePrintable {
+                 title:(NSString*)title
+       isOriginalTitle:(BOOL)isOriginalTitle
+       isPagePrintable:(BOOL)isPagePrintable
+    thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator {
   DCHECK(url.is_valid());
   DCHECK(title);
   self = [super init];
   if (self) {
     url_ = url;
-    self.title = title;
-    self.isOriginalTitle = isOriginalTitle;
-    self.isPagePrintable = isPagePrintable;
+    title_ = title;
+    isOriginalTitle_ = isOriginalTitle;
+    isPagePrintable_ = isPagePrintable;
+    thumbnailGenerator_ = thumbnailGenerator;
   }
   return self;
 }
@@ -68,27 +71,6 @@
 
 - (NSURL*)nsurl {
   return net::NSURLWithGURL(url_);
-}
-
-- (BOOL)isEqual:(id)object {
-  if (![object isMemberOfClass:self.class])
-    return NO;
-  DCHECK(self.url.is_valid());
-  DCHECK(self.title);
-  ShareToData* other = (ShareToData*)object;
-  return self.url == other.url && [self.title isEqual:other.title] &&
-         self.image == other.image &&
-         self.isOriginalTitle == other.isOriginalTitle;
-}
-
-- (NSUInteger)hash {
-  DCHECK(self.url.is_valid());
-  DCHECK(self.title);
-  const NSUInteger kPrime = 31;
-  NSString* urlString = base::SysUTF8ToNSString(self.url.spec());
-  return kPrime * kPrime * kPrime * urlString.hash +
-         kPrime * kPrime * self.title.hash + kPrime * self.image.hash +
-         (self.isOriginalTitle ? 0 : 1);
 }
 
 @end

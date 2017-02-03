@@ -110,6 +110,7 @@ void CalculateProjection(CGSize originalSize,
       break;
 
     case ProjectionMode::kAspectFill:
+    case ProjectionMode::kAspectFillAlignTop:
       if (targetAspectRatio < aspectRatio) {
         // Clip the x-axis.
         projectTo.size.width = targetSize.height * aspectRatio;
@@ -122,6 +123,9 @@ void CalculateProjection(CGSize originalSize,
         projectTo.size.height = targetSize.width / aspectRatio;
         projectTo.origin.x = 0;
         projectTo.origin.y = (targetSize.height - projectTo.size.height) / 2;
+      }
+      if (projectionMode == ProjectionMode::kAspectFillAlignTop) {
+        projectTo.origin.y = 0;
       }
       break;
 

@@ -197,8 +197,10 @@
   // App Extensions (e.g. 1Password) and also provide a public.url UTType
   // for Share Extensions (e.g. Facebook, Twitter).
   UIActivityFindLoginActionSource* loginActionProvider =
-      [[UIActivityFindLoginActionSource alloc] initWithURL:data.nsurl
-                                                   subject:data.title];
+      [[UIActivityFindLoginActionSource alloc]
+                 initWithURL:data.nsurl
+                     subject:data.title
+          thumbnailGenerator:data.thumbnailGenerator];
   [activityItems addObject:loginActionProvider];
 
   UIActivityTextSource* textProvider =

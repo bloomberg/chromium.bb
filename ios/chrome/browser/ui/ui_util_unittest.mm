@@ -204,6 +204,33 @@ TEST(UIUtilTest, TestProjectionAspectFill) {
   EXPECT_EQ_SIZE(expectedRevisedSize, revisedSize);
 }
 
+TEST(UIUtilTest, TestProjectionAspectFillAlignTop) {
+  CGSize originalSize, targetSize, expectedRevisedSize, revisedSize;
+  CGRect expectedProjection, projection;
+
+  // Landscape resize to 100x100
+  originalSize = CGSizeMake(400, 200);
+  targetSize = CGSizeMake(100, 100);
+  expectedRevisedSize = targetSize;
+  expectedProjection = CGRectMake(-50, 0, 200, 100);
+  CalculateProjection(originalSize, targetSize,
+                      ProjectionMode::kAspectFillAlignTop, revisedSize,
+                      projection);
+  EXPECT_EQ_RECT(expectedProjection, projection);
+  EXPECT_EQ_SIZE(expectedRevisedSize, revisedSize);
+
+  // Portrait resize to 100x100 and aligned to top
+  originalSize = CGSizeMake(200, 400);
+  targetSize = CGSizeMake(100, 100);
+  expectedRevisedSize = targetSize;
+  expectedProjection = CGRectMake(0, 0, 100, 200);
+  CalculateProjection(originalSize, targetSize,
+                      ProjectionMode::kAspectFillAlignTop, revisedSize,
+                      projection);
+  EXPECT_EQ_RECT(expectedProjection, projection);
+  EXPECT_EQ_SIZE(expectedRevisedSize, revisedSize);
+}
+
 TEST(UIUtilTest, TestProjectionAspectFillNoClipping) {
   CGSize originalSize, targetSize, expectedRevisedSize, revisedSize;
   CGRect expectedProjection, projection;

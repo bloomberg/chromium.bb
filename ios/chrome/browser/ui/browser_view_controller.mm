@@ -82,8 +82,10 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
+#import "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
 #import "ios/chrome/browser/ui/activity_services/share_protocol.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
+#import "ios/chrome/browser/ui/activity_services/share_to_data_builder.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/background_generator.h"
@@ -597,8 +599,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 - (void)installDelegatesForTab:(Tab*)tab;
 // Closes the current tab, with animation if applicable.
 - (void)closeCurrentTab;
-// Returns an autoreleased share to data for |tab|.
-- (ShareToData*)shareToDataForTab:(Tab*)tab;
 // Shows the menu to initiate sharing |data|.
 - (void)sharePageWithData:(ShareToData*)data;
 // Convenience method to share the current page.
@@ -4166,28 +4166,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
 }
 
-- (ShareToData*)shareToDataForTab:(Tab*)tab {
-  // For crash documented in crbug.com/503955, tab.url which is being passed
-  // as a reference parameter caused a crash due to invalid address which
-  // which suggests that |tab| may be deallocated along the way. Check that
-  // tab is still valid by checking webState which would be deallocated if
-  // tab is being closed.
-  if (!tab.webState)
-    return nil;
-  DCHECK(tab);
-  // If the original page title exists, it is expected to match the tab title.
-  // If this ever changes, then a decision has to be made on which one should
-  // be used for sharing.
-  DCHECK(!tab.originalTitle || [tab.originalTitle isEqualToString:tab.title]);
-  BOOL isPagePrintable = [tab viewForPrinting] != nil;
-  return [[[ShareToData alloc] initWithURL:tab.url
-                                     title:tab.title
-                           isOriginalTitle:(tab.originalTitle != nil)
-                           isPagePrintable:isPagePrintable] autorelease];
-}
-
 - (void)sharePage {
-  ShareToData* data = [self shareToDataForTab:[_model currentTab]];
+  ShareToData* data = activity_services::ShareToDataForTab([_model currentTab]);
   if (data)
     [self sharePageWithData:data];
 }

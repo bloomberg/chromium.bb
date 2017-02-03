@@ -8,14 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-// Provides an URL and a subject to UIActivities. The subject is used by the
-// Mail UIActivities to populate the subject field.
-@interface UIActivityURLSource : NSObject<UIActivityItemSource>
-
-// Default initializer. |subject| and |url| must not be nil.
-- (instancetype)initWithURL:(NSURL*)url subject:(NSString*)subject;
-
-@end
+#import "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
 
 // Returns a text to the UIActivities that can take advantage of it.
 @interface UIActivityTextSource : NSObject<UIActivityItemSource>
@@ -37,11 +30,16 @@
 // Management App Extensions by returning a NSDictionary with the URL of the
 // current page *and* also conforms to UTType public.url so it can be used
 // with other Social Sharing Extensions as well. The |subject| is used by
-// Mail applications to pre-fill in the subject line.
+// Mail applications to pre-fill in the subject line. The |thumbnailGenerator|
+// is used to provide thumbnails to extensions that request one.
+// TODO(crbug.com/685225): Rename UIActivityFindLoginActionSource.
 @interface UIActivityFindLoginActionSource : NSObject<UIActivityItemSource>
 
-// Default initializer. |subject| and |url| must not be nil.
-- (instancetype)initWithURL:(NSURL*)url subject:(NSString*)subject;
+// Default initializer. |subject|, |url|, and |thumbnailGenerator| must not be
+// nil.
+- (instancetype)initWithURL:(NSURL*)url
+                    subject:(NSString*)subject
+         thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator;
 
 @end
 

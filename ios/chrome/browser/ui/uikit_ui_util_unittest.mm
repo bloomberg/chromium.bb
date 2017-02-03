@@ -101,6 +101,9 @@ TEST(UIKitUIUtilTest, TestResizeImageInvalidInput) {
   actual =
       ResizeImage(image, CGSizeMake(-100, -100), ProjectionMode::kAspectFit);
   EXPECT_FALSE(actual);
+
+  actual = ResizeImage(nil, CGSizeMake(100, 100), ProjectionMode::kAspectFit);
+  EXPECT_FALSE(actual);
 }
 
 TEST(UIKitUIUtilTest, TintImageKeepsImageProperties) {

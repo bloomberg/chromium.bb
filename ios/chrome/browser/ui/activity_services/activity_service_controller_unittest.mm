@@ -44,15 +44,20 @@ class ActivityServiceControllerTest : public PlatformTest {
     shareToDelegate_.reset(
         [[OCMockObject mockForProtocol:@protocol(ShareToDelegate)] retain]);
     shareData_.reset([[ShareToData alloc]
-            initWithURL:GURL("https://chromium.org")
-                  title:@""
-        isOriginalTitle:YES
-        isPagePrintable:YES]);
+               initWithURL:GURL("https://chromium.org")
+                     title:@""
+           isOriginalTitle:YES
+           isPagePrintable:YES
+        thumbnailGenerator:DummyThumbnailGeneratorBlock()]);
   }
 
   void TearDown() override {
     [[UIApplication sharedApplication] keyWindow].rootViewController = nil;
     PlatformTest::TearDown();
+  }
+
+  ThumbnailGeneratorBlock DummyThumbnailGeneratorBlock() {
+    return ^UIImage*(CGSize const& size) { return nil; };
   }
 
   id<ShareToDelegate> GetShareToDelegate() {
@@ -235,10 +240,11 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForData) {
   // ShareToData does not contain an image, so the result items array will not
   // contain an image source.
   base::scoped_nsobject<ShareToData> data([[ShareToData alloc]
-          initWithURL:GURL("https://chromium.org")
-                title:@"foo"
-      isOriginalTitle:YES
-      isPagePrintable:YES]);
+             initWithURL:GURL("https://chromium.org")
+                   title:@"foo"
+         isOriginalTitle:YES
+         isPagePrintable:YES
+      thumbnailGenerator:DummyThumbnailGeneratorBlock()]);
   NSArray* items = [activityController activityItemsForData:data];
   EXPECT_FALSE(ArrayContainsImageSource(items));
 
@@ -255,10 +261,11 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForDataWithPasswordAppEx) {
   base::scoped_nsobject<ActivityServiceController> activityController(
       [[ActivityServiceController alloc] init]);
   base::scoped_nsobject<ShareToData> data([[ShareToData alloc]
-          initWithURL:GURL("https://chromium.org/login.html")
-                title:@"kung fu fighting"
-      isOriginalTitle:YES
-      isPagePrintable:YES]);
+             initWithURL:GURL("https://chromium.org/login.html")
+                   title:@"kung fu fighting"
+         isOriginalTitle:YES
+         isPagePrintable:YES
+      thumbnailGenerator:DummyThumbnailGeneratorBlock()]);
   NSArray* items = [activityController activityItemsForData:data];
   NSString* findLoginAction =
       (NSString*)activity_services::kUTTypeAppExtensionFindLoginAction;
@@ -316,10 +323,11 @@ TEST_F(ActivityServiceControllerTest,
   base::scoped_nsobject<ActivityServiceController> activityController(
       [[ActivityServiceController alloc] init]);
   base::scoped_nsobject<ShareToData> data([[ShareToData alloc]
-          initWithURL:GURL("https://chromium.org/login.html")
-                title:@"kung fu fighting"
-      isOriginalTitle:YES
-      isPagePrintable:YES]);
+             initWithURL:GURL("https://chromium.org/login.html")
+                   title:@"kung fu fighting"
+         isOriginalTitle:YES
+         isPagePrintable:YES
+      thumbnailGenerator:DummyThumbnailGeneratorBlock()]);
   NSArray* items = [activityController activityItemsForData:data];
   NSString* shareAction = @"com.apple.UIKit.activity.PostToFacebook";
   NSArray* urlItems =
@@ -426,10 +434,11 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
 
   // Verify printable data.
   base::scoped_nsobject<ShareToData> data([[ShareToData alloc]
-          initWithURL:GURL("https://chromium.org/printable")
-                title:@"bar"
-      isOriginalTitle:YES
-      isPagePrintable:YES]);
+             initWithURL:GURL("https://chromium.org/printable")
+                   title:@"bar"
+         isOriginalTitle:YES
+         isPagePrintable:YES
+      thumbnailGenerator:DummyThumbnailGeneratorBlock()]);
 
   NSArray* items =
       [activityController applicationActivitiesForData:data controller:nil];
@@ -440,10 +449,11 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
 
   // Verify non-printable data.
   data.reset([[ShareToData alloc]
-          initWithURL:GURL("https://chromium.org/unprintable")
-                title:@"baz"
-      isOriginalTitle:YES
-      isPagePrintable:NO]);
+             initWithURL:GURL("https://chromium.org/unprintable")
+                   title:@"baz"
+         isOriginalTitle:YES
+         isPagePrintable:NO
+      thumbnailGenerator:DummyThumbnailGeneratorBlock()]);
   items = [activityController applicationActivitiesForData:data controller:nil];
   EXPECT_EQ(expected_items_count - 1, [items count]);
 }
