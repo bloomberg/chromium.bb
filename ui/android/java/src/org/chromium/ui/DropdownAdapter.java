@@ -190,7 +190,18 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         if (TextUtils.isEmpty(sublabel)) {
             sublabelView.setVisibility(View.GONE);
         } else {
-            sublabelView.setLayoutParams(layoutParams);
+            if (item.isLabelAndSublabelOnSameLine()) {
+                // Use the layout params in |dropdown_item.xml| for the sublabel if it is on the
+                // same line as the label. We regenerate the layout params in case the view is
+                // reused and the label and sublabel are on the same line when the view is reused.
+                LinearLayout.LayoutParams subLabelLayoutParams = new LinearLayout.LayoutParams(
+                        LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                ApiCompatibilityUtils.setMarginStart(subLabelLayoutParams, mLabelHorizontalMargin);
+                ApiCompatibilityUtils.setMarginEnd(subLabelLayoutParams, mLabelHorizontalMargin);
+                sublabelView.setLayoutParams(subLabelLayoutParams);
+            } else {
+                sublabelView.setLayoutParams(layoutParams);
+            }
             sublabelView.setText(sublabel);
             sublabelView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                     mContext.getResources().getDimension(item.getSublabelFontSizeResId()));
