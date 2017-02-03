@@ -10,8 +10,8 @@ Before interstitial is shown:
         <STYLE type=text/css >
         </STYLE>
         <DIV class=tree-outline-disclosure >
-            <OL class=tree-outline tabindex=0 >
-                <LI class=security-main-view-sidebar-tree-item selected force-white-icons >
+            <OL class=tree-outline tabindex=-1 >
+                <LI class=security-main-view-sidebar-tree-item selected force-white-icons tabindex=0 >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -113,8 +113,8 @@ After interstitial is shown:
         <STYLE type=text/css >
         </STYLE>
         <DIV class=tree-outline-disclosure >
-            <OL class=tree-outline tabindex=0 >
-                <LI class=security-main-view-sidebar-tree-item selected force-white-icons >
+            <OL class=tree-outline tabindex=-1 >
+                <LI class=security-main-view-sidebar-tree-item selected force-white-icons tabindex=0 >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
@@ -216,8 +216,8 @@ After interstitial is hidden:
         <STYLE type=text/css >
         </STYLE>
         <DIV class=tree-outline-disclosure >
-            <OL class=tree-outline tabindex=0 >
-                <LI class=security-main-view-sidebar-tree-item selected force-white-icons >
+            <OL class=tree-outline tabindex=-1 >
+                <LI class=security-main-view-sidebar-tree-item selected force-white-icons tabindex=0 >
                     <DIV class=selection fill >
                     </DIV>
                     <SPAN class=tree-element-title >
