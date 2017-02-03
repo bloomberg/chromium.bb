@@ -60,8 +60,8 @@ void IDBObserverChanges::extractChanges(
   // TODO(dmurph): Avoid getting and setting repeated times.
   for (const auto& idx : observationIndices) {
     m_records
-        .add(observations[idx].objectStoreId,
-             HeapVector<Member<IDBObservation>>())
+        .insert(observations[idx].objectStoreId,
+                HeapVector<Member<IDBObservation>>())
         .storedValue->value.push_back(
             IDBObservation::create(observations[idx]));
   }

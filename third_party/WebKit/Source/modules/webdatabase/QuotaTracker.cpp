@@ -73,7 +73,7 @@ void QuotaTracker::updateDatabaseSize(SecurityOrigin* origin,
                                       unsigned long long databaseSize) {
   MutexLocker lockData(m_dataGuard);
   HashMap<String, SizeMap>::ValueType* it =
-      m_databaseSizes.add(origin->toRawString(), SizeMap()).storedValue;
+      m_databaseSizes.insert(origin->toRawString(), SizeMap()).storedValue;
   it->value.set(databaseName, databaseSize);
 }
 

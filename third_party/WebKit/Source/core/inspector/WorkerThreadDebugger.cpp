@@ -97,7 +97,7 @@ void WorkerThreadDebugger::contextCreated(WorkerThread* workerThread,
   v8Inspector()->contextCreated(contextInfo);
 
   DCHECK(!m_workerThreads.contains(workerContextGroupId));
-  m_workerThreads.add(workerContextGroupId, workerThread);
+  m_workerThreads.insert(workerContextGroupId, workerThread);
 }
 
 void WorkerThreadDebugger::contextWillBeDestroyed(

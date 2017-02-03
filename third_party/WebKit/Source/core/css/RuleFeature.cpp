@@ -229,7 +229,7 @@ InvalidationSet& ensureInvalidationSet(
     const AtomicString& key,
     InvalidationType type) {
   RefPtr<InvalidationSet>& invalidationSet =
-      map.add(key, nullptr).storedValue->value;
+      map.insert(key, nullptr).storedValue->value;
   return storedInvalidationSet(invalidationSet, type);
 }
 
@@ -241,7 +241,7 @@ InvalidationSet& ensureInvalidationSet(
     CSSSelector::PseudoType key,
     InvalidationType type) {
   RefPtr<InvalidationSet>& invalidationSet =
-      map.add(key, nullptr).storedValue->value;
+      map.insert(key, nullptr).storedValue->value;
   return storedInvalidationSet(invalidationSet, type);
 }
 

@@ -149,7 +149,7 @@ class CORE_EXPORT HTMLCollection
                                 const AtomicString& key,
                                 Element* element) {
       Member<HeapVector<Member<Element>>>& vector =
-          map.add(key.impl(), nullptr).storedValue->value;
+          map.insert(key.impl(), nullptr).storedValue->value;
       if (!vector)
         vector = new HeapVector<Member<Element>>;
       vector->push_back(element);

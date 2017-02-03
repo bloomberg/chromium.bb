@@ -21,7 +21,7 @@ ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
   for (auto type : {TaskType::UnspecedTimer, TaskType::UnspecedLoading,
                     TaskType::Networking, TaskType::PostedMessage,
                     TaskType::CanvasBlobSerialization, TaskType::Unthrottled}) {
-    m_taskRunners.add(type, TaskRunnerHelper::get(type, frame));
+    m_taskRunners.insert(type, TaskRunnerHelper::get(type, frame));
   }
 }
 

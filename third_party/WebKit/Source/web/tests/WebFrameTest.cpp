@@ -10480,8 +10480,8 @@ class TestResourcePriorityWebFrameClient
   }
 
   void addExpectedRequest(const KURL& url, WebURLRequest::Priority priority) {
-    m_expectedRequests.add(url,
-                           WTF::makeUnique<ExpectedRequest>(url, priority));
+    m_expectedRequests.insert(url,
+                              WTF::makeUnique<ExpectedRequest>(url, priority));
   }
 
   void verifyAllRequests() {

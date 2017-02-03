@@ -59,10 +59,10 @@ void WindowProxyManagerBase::clearForNavigation() {
 
 void WindowProxyManagerBase::releaseGlobals(
     HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>& map) {
-  map.add(&m_windowProxy->world(), m_windowProxy->releaseGlobal());
+  map.insert(&m_windowProxy->world(), m_windowProxy->releaseGlobal());
   for (auto& entry : m_isolatedWorlds)
-    map.add(&entry.value->world(),
-            windowProxy(entry.value->world())->releaseGlobal());
+    map.insert(&entry.value->world(),
+               windowProxy(entry.value->world())->releaseGlobal());
 }
 
 void WindowProxyManagerBase::setGlobals(

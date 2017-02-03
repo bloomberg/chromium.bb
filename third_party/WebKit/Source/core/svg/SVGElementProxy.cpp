@@ -84,11 +84,11 @@ void SVGElementProxy::addClient(SVGResourceClient* client) {
     return;
   // Ensure sure we have an observer registered for this tree scope.
   auto& scopeObserver =
-      m_observers.add(clientScope, nullptr).storedValue->value;
+      m_observers.insert(clientScope, nullptr).storedValue->value;
   if (!scopeObserver)
     scopeObserver = new IdObserver(*clientScope, *this);
 
-  auto& observer = m_clients.add(client, nullptr).storedValue->value;
+  auto& observer = m_clients.insert(client, nullptr).storedValue->value;
   if (!observer)
     observer = scopeObserver;
 

@@ -101,18 +101,18 @@ class CORE_EXPORT CSSValuePool
     // Just wipe out the cache and start rebuilding if it gets too big.
     if (m_colorValueCache.size() > maximumColorCacheSize)
       m_colorValueCache.clear();
-    return m_colorValueCache.add(rgbValue, nullptr);
+    return m_colorValueCache.insert(rgbValue, nullptr);
   }
   FontFamilyValueCache::AddResult getFontFamilyCacheEntry(
       const String& familyName) {
-    return m_fontFamilyValueCache.add(familyName, nullptr);
+    return m_fontFamilyValueCache.insert(familyName, nullptr);
   }
   FontFaceValueCache::AddResult getFontFaceCacheEntry(
       const AtomicString& string) {
     // Just wipe out the cache and start rebuilding if it gets too big.
     if (m_fontFaceValueCache.size() > maximumFontFaceCacheSize)
       m_fontFaceValueCache.clear();
-    return m_fontFaceValueCache.add(string, nullptr);
+    return m_fontFaceValueCache.insert(string, nullptr);
   }
 
   DECLARE_TRACE();

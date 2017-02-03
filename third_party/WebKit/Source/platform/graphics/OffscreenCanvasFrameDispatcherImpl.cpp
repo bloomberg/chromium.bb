@@ -85,7 +85,7 @@ void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceToSharedBitmap(
 
   // Hold ref to |bitmap|, to keep it alive until the browser ReclaimResources.
   // It guarantees that the shared bitmap is not re-used or deleted.
-  m_sharedBitmaps.add(m_nextResourceId, std::move(bitmap));
+  m_sharedBitmaps.insert(m_nextResourceId, std::move(bitmap));
 }
 
 void OffscreenCanvasFrameDispatcherImpl::
@@ -146,7 +146,7 @@ void OffscreenCanvasFrameDispatcherImpl::
 
   // Hold ref to |textureId| for the piece of GPU memory where the pixel data
   // is uploaded to, to keep it alive until the browser ReclaimResources.
-  m_cachedTextureIds.add(m_nextResourceId, textureId);
+  m_cachedTextureIds.insert(m_nextResourceId, textureId);
 }
 
 void OffscreenCanvasFrameDispatcherImpl::
@@ -161,7 +161,7 @@ void OffscreenCanvasFrameDispatcherImpl::
 
   // Hold ref to |image|, to keep it alive until the browser ReclaimResources.
   // It guarantees that the resource is not re-used or deleted.
-  m_cachedImages.add(m_nextResourceId, std::move(image));
+  m_cachedImages.insert(m_nextResourceId, std::move(image));
 }
 
 namespace {

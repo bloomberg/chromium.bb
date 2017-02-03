@@ -53,9 +53,9 @@ String PublicURLManager::registerURL(ExecutionContext* context,
 
   if (!m_isStopped) {
     RegistryURLMap::ValueType* found =
-        m_registryToURL.add(&registrable->registry(), URLMap()).storedValue;
+        m_registryToURL.insert(&registrable->registry(), URLMap()).storedValue;
     found->key->registerURL(origin, url, registrable);
-    found->value.add(urlString, uuid);
+    found->value.insert(urlString, uuid);
   }
 
   return urlString;

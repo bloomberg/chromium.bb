@@ -574,11 +574,11 @@ void SourceListDirective::addSourceHash(
 void SourceListDirective::addSourceToMap(
     HeapHashMap<String, Member<CSPSource>>& hashMap,
     CSPSource* source) {
-  hashMap.add(source->getScheme(), source);
+  hashMap.insert(source->getScheme(), source);
   if (source->getScheme() == "http")
-    hashMap.add("https", source);
+    hashMap.insert("https", source);
   else if (source->getScheme() == "ws")
-    hashMap.add("wss", source);
+    hashMap.insert("wss", source);
 }
 
 bool SourceListDirective::hasSourceMatchInList(
@@ -755,9 +755,9 @@ SourceListDirective::getIntersectSchemesOnly(
       if (schemesA.contains(sourceB->getScheme()))
         addSourceToMap(intersect, sourceB);
       else if (sourceB->getScheme() == "http" && schemesA.contains("https"))
-        intersect.add("https", schemesA.get("https"));
+        intersect.insert("https", schemesA.get("https"));
       else if (sourceB->getScheme() == "ws" && schemesA.contains("wss"))
-        intersect.add("wss", schemesA.get("wss"));
+        intersect.insert("wss", schemesA.get("wss"));
     }
   }
 

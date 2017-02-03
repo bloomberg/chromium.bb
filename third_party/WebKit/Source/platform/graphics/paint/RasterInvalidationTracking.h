@@ -69,7 +69,7 @@ class PLATFORM_EXPORT RasterInvalidationTrackingMap {
   }
 
   RasterInvalidationTracking& add(TargetClass* key) {
-    return m_invalidationTrackingMap.add(key, RasterInvalidationTracking())
+    return m_invalidationTrackingMap.insert(key, RasterInvalidationTracking())
         .storedValue->value;
   }
 

@@ -236,7 +236,7 @@ void DocumentMarkerController::addMarker(Node* node,
   m_possiblyExistingMarkerTypes.add(newMarker.type());
 
   Member<MarkerLists>& markers =
-      m_markers.add(node, nullptr).storedValue->value;
+      m_markers.insert(node, nullptr).storedValue->value;
   if (!markers) {
     markers = new MarkerLists;
     markers->grow(DocumentMarker::MarkerTypeIndexesCount);

@@ -710,7 +710,7 @@ void LayoutView::setSelection(
         LayoutBlock* cb = os->containingBlock();
         while (cb && !cb->isLayoutView()) {
           SelectedBlockMap::AddResult result =
-              oldSelectedBlocks.add(cb, cb->getSelectionState());
+              oldSelectedBlocks.insert(cb, cb->getSelectionState());
           if (!result.isNewEntry)
             break;
           cb = cb->containingBlock();
@@ -766,7 +766,7 @@ void LayoutView::setSelection(
       LayoutBlock* cb = o->containingBlock();
       while (cb && !cb->isLayoutView()) {
         SelectedBlockMap::AddResult result =
-            newSelectedBlocks.add(cb, cb->getSelectionState());
+            newSelectedBlocks.insert(cb, cb->getSelectionState());
         if (!result.isNewEntry)
           break;
         cb = cb->containingBlock();

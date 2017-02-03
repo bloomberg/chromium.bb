@@ -98,7 +98,7 @@ TreeScopeStyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(
     return &documentStyleSheetCollection();
 
   StyleSheetCollectionMap::AddResult result =
-      m_styleSheetCollectionMap.add(&treeScope, nullptr);
+      m_styleSheetCollectionMap.insert(&treeScope, nullptr);
   if (result.isNewEntry)
     result.storedValue->value =
         new ShadowTreeStyleSheetCollection(toShadowRoot(treeScope));
@@ -530,7 +530,7 @@ CSSStyleSheet* StyleEngine::createSheet(Element& element,
 
   AtomicString textContent(text);
 
-  auto result = m_textToSheetCache.add(textContent, nullptr);
+  auto result = m_textToSheetCache.insert(textContent, nullptr);
   StyleSheetContents* contents = result.storedValue->value;
   if (result.isNewEntry || !contents ||
       !contents->isCacheableForStyleElement()) {
@@ -538,7 +538,7 @@ CSSStyleSheet* StyleEngine::createSheet(Element& element,
     styleSheet = parseSheet(element, text, startPosition);
     if (styleSheet->contents()->isCacheableForStyleElement()) {
       result.storedValue->value = styleSheet->contents();
-      m_sheetToTextCache.add(styleSheet->contents(), textContent);
+      m_sheetToTextCache.insert(styleSheet->contents(), textContent);
     }
   } else {
     DCHECK(contents);

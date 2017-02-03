@@ -567,8 +567,8 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
         PersistentHeapHashMap<ThreadMarker, WeakMember<IntWrapper>> weakMap2;
 
         for (int i = 0; i < numberOfAllocations; i++) {
-          weakMap->add(static_cast<unsigned>(i), IntWrapper::create(0));
-          weakMap2.add(static_cast<unsigned>(i), IntWrapper::create(0));
+          weakMap->insert(static_cast<unsigned>(i), IntWrapper::create(0));
+          weakMap2.insert(static_cast<unsigned>(i), IntWrapper::create(0));
           SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
           testing::yieldCurrentThread();
         }
@@ -1179,7 +1179,7 @@ class FinalizationObserverWithHashMap {
 
   static ObserverMap& observe(Observable& target) {
     ObserverMap& map = observers();
-    ObserverMap::AddResult result = map.add(&target, nullptr);
+    ObserverMap::AddResult result = map.insert(&target, nullptr);
     if (result.isNewEntry) {
       result.storedValue->value =
           WTF::makeUnique<FinalizationObserverWithHashMap>(target);
@@ -2032,7 +2032,7 @@ TEST(HeapTest, HashMapOfMembers) {
     IntWrapper* one(IntWrapper::create(1));
     IntWrapper* anotherOne(IntWrapper::create(1));
 
-    map->add(one, one);
+    map->insert(one, one);
 
     size_t afterOneAdd = heap.objectPayloadSizeForTesting();
     EXPECT_TRUE(afterOneAdd > afterGC);
@@ -2042,7 +2042,7 @@ TEST(HeapTest, HashMapOfMembers) {
     ++it;
     ++it2;
 
-    map->add(anotherOne, one);
+    map->insert(anotherOne, one);
 
     // The addition above can cause an allocation of a new
     // backing store. We therefore garbage collect before
@@ -2072,7 +2072,7 @@ TEST(HeapTest, HashMapOfMembers) {
     for (int i = 1; i < 1000; i++) {  // 999 iterations.
       IntWrapper* iWrapper(IntWrapper::create(i));
       IntWrapper* iSquared(IntWrapper::create(i * i));
-      map->add(iWrapper, iSquared);
+      map->insert(iWrapper, iSquared);
       if (i == 12)
         dozen = iWrapper;
     }
@@ -2425,18 +2425,18 @@ TEST(HeapTest, HeapCollectionTypes) {
       IntWrapper* fiveF(IntWrapper::create(5));
 
       // Member Collections.
-      memberMember2->add(one, two);
-      memberMember2->add(two, three);
-      memberMember2->add(three, four);
-      memberMember2->add(four, one);
-      primitiveMember->add(1, two);
-      primitiveMember->add(2, three);
-      primitiveMember->add(3, four);
-      primitiveMember->add(4, one);
-      memberPrimitive->add(one, 2);
-      memberPrimitive->add(two, 3);
-      memberPrimitive->add(three, 4);
-      memberPrimitive->add(four, 1);
+      memberMember2->insert(one, two);
+      memberMember2->insert(two, three);
+      memberMember2->insert(three, four);
+      memberMember2->insert(four, one);
+      primitiveMember->insert(1, two);
+      primitiveMember->insert(2, three);
+      primitiveMember->insert(3, four);
+      primitiveMember->insert(4, one);
+      memberPrimitive->insert(one, 2);
+      memberPrimitive->insert(two, 3);
+      memberPrimitive->insert(three, 4);
+      memberPrimitive->insert(four, 1);
       set2->add(one);
       set2->add(two);
       set2->add(three);
@@ -2908,7 +2908,7 @@ TEST(HeapTest, HeapHashMapWithInlinedObject) {
   HeapHashMap<int, NonTrivialObject> map;
   for (int num = 1; num < 1000; num++) {
     NonTrivialObject object(num);
-    map.add(num, object);
+    map.insert(num, object);
   }
 }
 
@@ -2962,10 +2962,10 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
   keepNumbersAlive.push_back(IntWrapper::create(10));
 
   {
-    weakStrong->add(IntWrapper::create(1), two);
-    strongWeak->add(two, IntWrapper::create(1));
-    weakWeak->add(two, IntWrapper::create(42));
-    weakWeak->add(IntWrapper::create(42), two);
+    weakStrong->insert(IntWrapper::create(1), two);
+    strongWeak->insert(two, IntWrapper::create(1));
+    weakWeak->insert(two, IntWrapper::create(42));
+    weakWeak->insert(IntWrapper::create(42), two);
     weakSet->add(IntWrapper::create(0));
     weakSet->add(two);
     weakSet->add(keepNumbersAlive[0]);
@@ -3166,11 +3166,11 @@ static void heapMapDestructorHelper(bool clearMaps) {
     preciselyCollectGarbage();
     preciselyCollectGarbage();
 
-    stackMap.add(IntWrapper::create(42), ThingWithDestructor(1729));
-    stackMap.add(luck, ThingWithDestructor(8128));
-    stackRefMap.add(IntWrapper::create(42),
-                    RefCountedAndGarbageCollected::create());
-    stackRefMap.add(luck, RefCountedAndGarbageCollected::create());
+    stackMap.insert(IntWrapper::create(42), ThingWithDestructor(1729));
+    stackMap.insert(luck, ThingWithDestructor(8128));
+    stackRefMap.insert(IntWrapper::create(42),
+                       RefCountedAndGarbageCollected::create());
+    stackRefMap.insert(luck, RefCountedAndGarbageCollected::create());
 
     baseLine = ThingWithDestructor::s_liveThingsWithDestructor;
     refBaseLine = RefCountedAndGarbageCollected::s_destructorCalls;
@@ -3190,10 +3190,11 @@ static void heapMapDestructorHelper(bool clearMaps) {
   // Now use maps kept alive with persistents. Here we don't expect any
   // destructors to be called before there have been GCs.
 
-  map->add(IntWrapper::create(42), ThingWithDestructor(1729));
-  map->add(luck, ThingWithDestructor(8128));
-  refMap->add(IntWrapper::create(42), RefCountedAndGarbageCollected::create());
-  refMap->add(luck, RefCountedAndGarbageCollected::create());
+  map->insert(IntWrapper::create(42), ThingWithDestructor(1729));
+  map->insert(luck, ThingWithDestructor(8128));
+  refMap->insert(IntWrapper::create(42),
+                 RefCountedAndGarbageCollected::create());
+  refMap->insert(luck, RefCountedAndGarbageCollected::create());
 
   baseLine = ThingWithDestructor::s_liveThingsWithDestructor;
   refBaseLine = RefCountedAndGarbageCollected::s_destructorCalls;
@@ -3407,9 +3408,9 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
         IntWrapper* wrapped2 = IntWrapper::create(i + 1);
         keepNumbersAlive.push_back(wrapped);
         keepNumbersAlive.push_back(wrapped2);
-        weakStrong->add(wrapped, wrapped2);
-        strongWeak->add(wrapped2, wrapped);
-        weakWeak->add(wrapped, wrapped2);
+        weakStrong->insert(wrapped, wrapped2);
+        strongWeak->insert(wrapped2, wrapped);
+        weakWeak->insert(wrapped, wrapped2);
         weakSet->add(wrapped);
         weakOrderedSet->add(wrapped);
       }
@@ -3524,9 +3525,9 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
           for (int i = 1000; i < 1100; i++) {
             IntWrapper* wrapped = IntWrapper::create(i);
             keepNumbersAlive.push_back(wrapped);
-            weakStrong->add(wrapped, wrapped);
-            strongWeak->add(wrapped, wrapped);
-            weakWeak->add(wrapped, wrapped);
+            weakStrong->insert(wrapped, wrapped);
+            strongWeak->insert(wrapped, wrapped);
+            weakWeak->insert(wrapped, wrapped);
             weakSet->add(wrapped);
             weakOrderedSet->add(wrapped);
           }
@@ -3889,8 +3890,8 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     pSet.add(four);
     pListSet.add(eight);
     pLinkedSet.add(nine);
-    pMap.add(five, six);
-    wpMap.add(ten, eleven);
+    pMap.insert(five, six);
+    wpMap.insert(ten, eleven);
 
     // Collect |vec| and |one|.
     vec = 0;
@@ -3945,8 +3946,8 @@ TEST(HeapTest, CollectionNesting) {
   static_assert(WTF::IsTraceable<IntDeque>::value,
                 "Failed to recognize HeapDeque as traceable");
 
-  map->add(key, IntVector());
-  map2->add(key, IntDeque());
+  map->insert(key, IntVector());
+  map2->insert(key, IntDeque());
 
   HeapHashMap<void*, IntVector>::iterator it = map->find(key);
   EXPECT_EQ(0u, map->get(key).size());
@@ -3964,8 +3965,8 @@ TEST(HeapTest, CollectionNesting) {
   Persistent<HeapHashMap<void*, IntDeque>> keepAlive2(map2);
 
   for (int i = 0; i < 100; i++) {
-    map->add(key + 1 + i, IntVector());
-    map2->add(key + 1 + i, IntDeque());
+    map->insert(key + 1 + i, IntVector());
+    map2->insert(key + 1 + i, IntDeque());
   }
 
   preciselyCollectGarbage();
@@ -4005,7 +4006,7 @@ TEST(HeapTest, CollectionNesting2) {
   typedef HeapHashSet<Member<IntWrapper>> IntSet;
   HeapHashMap<void*, IntSet>* map = new HeapHashMap<void*, IntSet>();
 
-  map->add(key, IntSet());
+  map->insert(key, IntSet());
 
   HeapHashMap<void*, IntSet>::iterator it = map->find(key);
   EXPECT_EQ(0u, map->get(key).size());
@@ -4491,7 +4492,7 @@ TEST(HeapTest, DestructorsCalled) {
   HeapHashMap<Member<IntWrapper>, std::unique_ptr<SimpleClassWithDestructor>>
       map;
   SimpleClassWithDestructor* hasDestructor = new SimpleClassWithDestructor();
-  map.add(IntWrapper::create(1), WTF::wrapUnique(hasDestructor));
+  map.insert(IntWrapper::create(1), WTF::wrapUnique(hasDestructor));
   SimpleClassWithDestructor::s_wasDestructed = false;
   map.clear();
   EXPECT_TRUE(SimpleClassWithDestructor::s_wasDestructed);
@@ -4721,12 +4722,13 @@ TEST(HeapTest, MapWithCustomWeaknessHandling) {
   {
     Map map2;
     Map* map3 = new Map();
-    map2.add(PairWithWeakHandling(IntWrapper::create(0), IntWrapper::create(1)),
-             OffHeapInt::create(1001));
-    map3->add(
+    map2.insert(
+        PairWithWeakHandling(IntWrapper::create(0), IntWrapper::create(1)),
+        OffHeapInt::create(1001));
+    map3->insert(
         PairWithWeakHandling(IntWrapper::create(2), IntWrapper::create(3)),
         OffHeapInt::create(1002));
-    map1->add(
+    map1->insert(
         PairWithWeakHandling(IntWrapper::create(4), IntWrapper::create(5)),
         OffHeapInt::create(1003));
     EXPECT_EQ(0, OffHeapInt::s_destructorCalls);
@@ -4762,19 +4764,20 @@ TEST(HeapTest, MapWithCustomWeaknessHandling) {
 
   OffHeapInt::s_destructorCalls = 0;
 
-  map1->add(PairWithWeakHandling(IntWrapper::create(103), livingInt),
-            OffHeapInt::create(2000));
-  map1->add(PairWithWeakHandling(livingInt, IntWrapper::create(103)),
-            OffHeapInt::create(2001));  // This one gets zapped at GC time
-                                        // because nothing holds the 103 alive.
-  map1->add(
+  map1->insert(PairWithWeakHandling(IntWrapper::create(103), livingInt),
+               OffHeapInt::create(2000));
+  map1->insert(PairWithWeakHandling(livingInt, IntWrapper::create(103)),
+               OffHeapInt::create(2001));  // This one gets zapped at GC time
+  // because nothing holds the 103 alive.
+  map1->insert(
       PairWithWeakHandling(IntWrapper::create(103), IntWrapper::create(103)),
       OffHeapInt::create(2002));  // This one gets zapped too.
   RefPtr<OffHeapInt> dupeInt(OffHeapInt::create(2003));
-  map1->add(PairWithWeakHandling(livingInt, livingInt), dupeInt);
-  map1->add(PairWithWeakHandling(livingInt, livingInt),
-            dupeInt);  // This one is identical to the previous and doesn't add
-                       // anything.
+  map1->insert(PairWithWeakHandling(livingInt, livingInt), dupeInt);
+  map1->insert(
+      PairWithWeakHandling(livingInt, livingInt),
+      dupeInt);  // This one is identical to the previous and doesn't add
+                 // anything.
   dupeInt.clear();
 
   EXPECT_EQ(0, OffHeapInt::s_destructorCalls);
@@ -4802,13 +4805,13 @@ TEST(HeapTest, MapWithCustomWeaknessHandling2) {
   {
     Map map2;
     Map* map3 = new Map();
-    map2.add(
+    map2.insert(
         OffHeapInt::create(1001),
         PairWithWeakHandling(IntWrapper::create(0), IntWrapper::create(1)));
-    map3->add(
+    map3->insert(
         OffHeapInt::create(1002),
         PairWithWeakHandling(IntWrapper::create(2), IntWrapper::create(3)));
-    map1->add(
+    map1->insert(
         OffHeapInt::create(1003),
         PairWithWeakHandling(IntWrapper::create(4), IntWrapper::create(5)));
     EXPECT_EQ(0, OffHeapInt::s_destructorCalls);
@@ -4844,19 +4847,19 @@ TEST(HeapTest, MapWithCustomWeaknessHandling2) {
 
   OffHeapInt::s_destructorCalls = 0;
 
-  map1->add(OffHeapInt::create(2000),
-            PairWithWeakHandling(IntWrapper::create(103), livingInt));
+  map1->insert(OffHeapInt::create(2000),
+               PairWithWeakHandling(IntWrapper::create(103), livingInt));
   // This one gets zapped at GC time because nothing holds the 103 alive.
-  map1->add(OffHeapInt::create(2001),
-            PairWithWeakHandling(livingInt, IntWrapper::create(103)));
-  map1->add(OffHeapInt::create(2002),
-            PairWithWeakHandling(
-                IntWrapper::create(103),
-                IntWrapper::create(103)));  // This one gets zapped too.
+  map1->insert(OffHeapInt::create(2001),
+               PairWithWeakHandling(livingInt, IntWrapper::create(103)));
+  map1->insert(OffHeapInt::create(2002),
+               PairWithWeakHandling(
+                   IntWrapper::create(103),
+                   IntWrapper::create(103)));  // This one gets zapped too.
   RefPtr<OffHeapInt> dupeInt(OffHeapInt::create(2003));
-  map1->add(dupeInt, PairWithWeakHandling(livingInt, livingInt));
+  map1->insert(dupeInt, PairWithWeakHandling(livingInt, livingInt));
   // This one is identical to the previous and doesn't add anything.
-  map1->add(dupeInt, PairWithWeakHandling(livingInt, livingInt));
+  map1->insert(dupeInt, PairWithWeakHandling(livingInt, livingInt));
   dupeInt.clear();
 
   EXPECT_EQ(0, OffHeapInt::s_destructorCalls);
@@ -4876,7 +4879,7 @@ static void addElementsToWeakMap(
     HeapHashMap<int, WeakMember<IntWrapper>>* map) {
   // Key cannot be zero in hashmap.
   for (int i = 1; i < 11; i++)
-    map->add(i, IntWrapper::create(i));
+    map->insert(i, IntWrapper::create(i));
 }
 
 // crbug.com/402426
@@ -4886,7 +4889,7 @@ TEST(HeapTest, RegressNullIsStrongified) {
       new HeapHashMap<int, WeakMember<IntWrapper>>();
   addElementsToWeakMap(map);
   HeapHashMap<int, WeakMember<IntWrapper>>::AddResult result =
-      map->add(800, nullptr);
+      map->insert(800, nullptr);
   conservativelyCollectGarbage();
   result.storedValue->value = IntWrapper::create(42);
 }
@@ -4963,7 +4966,7 @@ TEST(HeapTest, RemoveEmptySets) {
                       HashTraits<Key>, EmptyClearingHashSetTraits>
       Map;
   Persistent<Map> map(new Map());
-  map->add(OffHeapInt::create(1), WeakSet());
+  map->insert(OffHeapInt::create(1), WeakSet());
   {
     WeakSet& set = map->begin()->value;
     set.add(IntWrapper::create(103));  // Weak set can't hold this long.
@@ -4973,7 +4976,7 @@ TEST(HeapTest, RemoveEmptySets) {
 
   // The set we add here is empty, so the entry will be removed from the map
   // at the next GC.
-  map->add(OffHeapInt::create(2), WeakSet());
+  map->insert(OffHeapInt::create(2), WeakSet());
   EXPECT_EQ(2u, map->size());
 
   preciselyCollectGarbage();
@@ -4998,8 +5001,8 @@ TEST(HeapTest, EphemeronsInEphemerons) {
       Persistent<OuterMap> outer = new OuterMap();
       Persistent<IntWrapper> one = IntWrapper::create(1);
       Persistent<IntWrapper> two = IntWrapper::create(2);
-      outer->add(one, InnerMap());
-      outer->begin()->value.add(two, IntWrapper::create(3));
+      outer->insert(one, InnerMap());
+      outer->begin()->value.insert(two, IntWrapper::create(3));
       EXPECT_EQ(1u, outer->get(one).size());
       if (!keepOuterAlive)
         one.clear();
@@ -5027,9 +5030,9 @@ TEST(HeapTest, EphemeronsInEphemerons) {
       for (int i = 0; i < 10000; i++) {
         IntWrapper* value = IntWrapper::create(i);
         keepAlive->push_back(value);
-        OuterMap::AddResult newEntry = outer->add(value, InnerMap());
-        newEntry.storedValue->value.add(deep, home);
-        newEntry.storedValue->value.add(composite, home);
+        OuterMap::AddResult newEntry = outer->insert(value, InnerMap());
+        newEntry.storedValue->value.insert(deep, home);
+        newEntry.storedValue->value.insert(composite, home);
       }
       composite.clear();
       preciselyCollectGarbage();
@@ -5067,10 +5070,10 @@ TEST(HeapTest, EphemeronsPointToEphemerons) {
     EphemeronWrapper* oldHead = chain;
     chain = new EphemeronWrapper();
     if (i == 50)
-      chain->getMap().add(key2, oldHead);
+      chain->getMap().insert(key2, oldHead);
     else
-      chain->getMap().add(key, oldHead);
-    chain->getMap().add(IntWrapper::create(103), new EphemeronWrapper());
+      chain->getMap().insert(key, oldHead);
+    chain->getMap().insert(IntWrapper::create(103), new EphemeronWrapper());
   }
 
   preciselyCollectGarbage();
@@ -5120,23 +5123,23 @@ TEST(HeapTest, Ephemeron) {
   Persistent<IntWrapper> pw1 = IntWrapper::create(3);
   Persistent<IntWrapper> pw2 = IntWrapper::create(4);
 
-  weakPairMap->add(wp1, PairWithWeakHandling(wp1, wp1));
-  weakPairMap->add(wp2, PairWithWeakHandling(wp1, wp1));
-  weakPairMap2->add(wp1, PairWithWeakHandling(wp1, wp2));
-  weakPairMap2->add(wp2, PairWithWeakHandling(wp1, wp2));
+  weakPairMap->insert(wp1, PairWithWeakHandling(wp1, wp1));
+  weakPairMap->insert(wp2, PairWithWeakHandling(wp1, wp1));
+  weakPairMap2->insert(wp1, PairWithWeakHandling(wp1, wp2));
+  weakPairMap2->insert(wp2, PairWithWeakHandling(wp1, wp2));
   // The map from wp1 to (wp2, wp1) would mark wp2 live, so we skip that.
-  weakPairMap3->add(wp2, PairWithWeakHandling(wp2, wp1));
-  weakPairMap4->add(wp1, PairWithWeakHandling(wp2, wp2));
-  weakPairMap4->add(wp2, PairWithWeakHandling(wp2, wp2));
+  weakPairMap3->insert(wp2, PairWithWeakHandling(wp2, wp1));
+  weakPairMap4->insert(wp1, PairWithWeakHandling(wp2, wp2));
+  weakPairMap4->insert(wp2, PairWithWeakHandling(wp2, wp2));
 
-  pairWeakMap->add(PairWithWeakHandling(pw1, pw1), pw1);
-  pairWeakMap->add(PairWithWeakHandling(pw1, pw2), pw1);
+  pairWeakMap->insert(PairWithWeakHandling(pw1, pw1), pw1);
+  pairWeakMap->insert(PairWithWeakHandling(pw1, pw2), pw1);
   // The map from (pw2, pw1) to pw1 would make pw2 live, so we skip that.
-  pairWeakMap->add(PairWithWeakHandling(pw2, pw2), pw1);
-  pairWeakMap2->add(PairWithWeakHandling(pw1, pw1), pw2);
-  pairWeakMap2->add(PairWithWeakHandling(pw1, pw2), pw2);
-  pairWeakMap2->add(PairWithWeakHandling(pw2, pw1), pw2);
-  pairWeakMap2->add(PairWithWeakHandling(pw2, pw2), pw2);
+  pairWeakMap->insert(PairWithWeakHandling(pw2, pw2), pw1);
+  pairWeakMap2->insert(PairWithWeakHandling(pw1, pw1), pw2);
+  pairWeakMap2->insert(PairWithWeakHandling(pw1, pw2), pw2);
+  pairWeakMap2->insert(PairWithWeakHandling(pw2, pw1), pw2);
+  pairWeakMap2->insert(PairWithWeakHandling(pw2, pw2), pw2);
 
   set->add(wp1);
   set->add(wp2);
@@ -5200,8 +5203,8 @@ TEST(HeapTest, IndirectStrongToWeak) {
   Persistent<IntWrapper> deadObject =
       IntWrapper::create(100);  // Named for "Drowning by Numbers" (1988).
   Persistent<IntWrapper> lifeObject = IntWrapper::create(42);
-  map->add(deadObject, new Link1(deadObject));
-  map->add(lifeObject, new Link1(lifeObject));
+  map->insert(deadObject, new Link1(deadObject));
+  map->insert(lifeObject, new Link1(lifeObject));
   EXPECT_EQ(2u, map->size());
   preciselyCollectGarbage();
   EXPECT_EQ(2u, map->size());
@@ -5307,12 +5310,12 @@ class ThreadedStrongificationTester {
     Persistent<IntWrapper> wrapper5 = IntWrapper::create(32);
     Persistent<IntWrapper> wrapper6 = IntWrapper::create(32);
     Persistent<WeakCollectionType> weakCollection = new WeakCollectionType;
-    weakCollection->add(wrapper1, wrapper1);
-    weakCollection->add(wrapper2, wrapper2);
-    weakCollection->add(wrapper3, wrapper3);
-    weakCollection->add(wrapper4, wrapper4);
-    weakCollection->add(wrapper5, wrapper5);
-    weakCollection->add(wrapper6, wrapper6);
+    weakCollection->insert(wrapper1, wrapper1);
+    weakCollection->insert(wrapper2, wrapper2);
+    weakCollection->insert(wrapper3, wrapper3);
+    weakCollection->insert(wrapper4, wrapper4);
+    weakCollection->insert(wrapper5, wrapper5);
+    weakCollection->insert(wrapper6, wrapper6);
 
     // Signal the main thread that the worker is done with its allocation.
     wakeMainThread();
@@ -5572,10 +5575,10 @@ TEST(HeapTest, GCInHashMapOperations) {
   typedef HeapHashMap<AllocatesOnAssignment, AllocatesOnAssignment> Map;
   Map* map = new Map();
   IntWrapper* key = new IntWrapper(42);
-  map->add(key, AllocatesOnAssignment(103));
+  map->insert(key, AllocatesOnAssignment(103));
   map->erase(key);
   for (int i = 0; i < 10; i++)
-    map->add(AllocatesOnAssignment(i), AllocatesOnAssignment(i));
+    map->insert(AllocatesOnAssignment(i), AllocatesOnAssignment(i));
   for (Map::iterator it = map->begin(); it != map->end(); ++it)
     EXPECT_EQ(it->key.value(), it->value.value());
 }

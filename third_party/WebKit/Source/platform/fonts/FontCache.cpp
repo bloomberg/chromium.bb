@@ -147,7 +147,7 @@ FontPlatformData* FontCache::getFontPlatformData(
     // addResult's scope must end before we recurse for alternate family names
     // below, to avoid trigering its dtor hash-changed asserts.
     SizedFontPlatformDataSet* sizedFonts =
-        &gFontPlatformDataCache->add(key, SizedFontPlatformDataSet())
+        &gFontPlatformDataCache->insert(key, SizedFontPlatformDataSet())
              .storedValue->value;
     bool wasEmpty = sizedFonts->isEmpty();
 
@@ -155,7 +155,7 @@ FontPlatformData* FontCache::getFontPlatformData(
     // |sizedFont|.
     FontPlatformData* anotherSize =
         wasEmpty ? nullptr : sizedFonts->begin()->value.get();
-    auto addResult = sizedFonts->add(roundedSize, nullptr);
+    auto addResult = sizedFonts->insert(roundedSize, nullptr);
     std::unique_ptr<FontPlatformData>* found = &addResult.storedValue->value;
     if (addResult.isNewEntry) {
       if (wasEmpty)
@@ -184,7 +184,7 @@ FontPlatformData* FontCache::getFontPlatformData(
     if (result) {
       // Cache the result under the old name.
       auto adding =
-          &gFontPlatformDataCache->add(key, SizedFontPlatformDataSet())
+          &gFontPlatformDataCache->insert(key, SizedFontPlatformDataSet())
                .storedValue->value;
       adding->set(roundedSize, WTF::wrapUnique(new FontPlatformData(*result)));
     }

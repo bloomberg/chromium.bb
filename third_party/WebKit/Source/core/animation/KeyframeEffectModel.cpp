@@ -195,8 +195,8 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const {
       PropertySpecificKeyframeGroup* group;
       if (groupIter == m_keyframeGroups->end()) {
         group = m_keyframeGroups
-                    ->add(property,
-                          WTF::wrapUnique(new PropertySpecificKeyframeGroup))
+                    ->insert(property,
+                             WTF::wrapUnique(new PropertySpecificKeyframeGroup))
                     .storedValue->value.get();
       } else {
         group = groupIter->value.get();

@@ -190,7 +190,7 @@ class ShapeCache {
       // as such use bit 32 to indicate direction.
       if (run.direction() == TextDirection::kRtl)
         key |= (1u << 31);
-      SingleCharMap::AddResult addResult = m_singleCharMap.add(key, entry);
+      SingleCharMap::AddResult addResult = m_singleCharMap.insert(key, entry);
       isNewEntry = addResult.isNewEntry;
       value = &addResult.storedValue->value;
     } else {
@@ -203,7 +203,7 @@ class ShapeCache {
             SmallStringKey(run.characters16(), length, run.direction());
 
       SmallStringMap::AddResult addResult =
-          m_shortStringMap.add(smallStringKey, entry);
+          m_shortStringMap.insert(smallStringKey, entry);
       isNewEntry = addResult.isNewEntry;
       value = &addResult.storedValue->value;
     }

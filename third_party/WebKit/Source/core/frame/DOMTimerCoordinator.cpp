@@ -23,7 +23,7 @@ int DOMTimerCoordinator::installNewTimeout(ExecutionContext* context,
   // FIXME: DOMTimers depends heavily on ExecutionContext. Decouple them.
   ASSERT(context->timers() == this);
   int timeoutID = nextID();
-  TimeoutMap::AddResult result = m_timers.add(
+  TimeoutMap::AddResult result = m_timers.insert(
       timeoutID,
       DOMTimer::create(context, action, timeout, singleShot, timeoutID));
   ASSERT(result.isNewEntry);

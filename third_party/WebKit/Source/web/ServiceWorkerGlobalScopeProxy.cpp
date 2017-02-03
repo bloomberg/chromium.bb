@@ -185,7 +185,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(
   if (navigationPreloadSent) {
     // Keep |fetchEvent| until onNavigationPreloadResponse() or
     // onNavigationPreloadError() will be called.
-    m_pendingPreloadFetchEvents.add(fetchEventID, fetchEvent);
+    m_pendingPreloadFetchEvents.insert(fetchEventID, fetchEvent);
   }
   waitUntilObserver->willDispatchEvent();
   respondWithObserver->willDispatchEvent();

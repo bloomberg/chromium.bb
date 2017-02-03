@@ -187,7 +187,7 @@ CustomElementDefinition* CustomElementRegistry::define(
   CHECK(!exceptionState.hadException());
   CHECK(definition->descriptor() == descriptor);
   DefinitionMap::AddResult result =
-      m_definitions.add(descriptor.name(), definition);
+      m_definitions.insert(descriptor.name(), definition);
   CHECK(result.isNewEntry);
 
   HeapVector<Member<Element>> candidates;
@@ -264,7 +264,7 @@ void CustomElementRegistry::addCandidate(Element* candidate) {
   if (it != m_upgradeCandidates->end()) {
     set = it->value;
   } else {
-    set = m_upgradeCandidates->add(name, new UpgradeCandidateSet())
+    set = m_upgradeCandidates->insert(name, new UpgradeCandidateSet())
               .storedValue->value;
   }
   set->insert(candidate);
@@ -285,7 +285,7 @@ ScriptPromise CustomElementRegistry::whenDefined(
     return resolver->promise();
   ScriptPromiseResolver* newResolver =
       ScriptPromiseResolver::create(scriptState);
-  m_whenDefinedPromiseMap.add(name, newResolver);
+  m_whenDefinedPromiseMap.insert(name, newResolver);
   return newResolver->promise();
 }
 

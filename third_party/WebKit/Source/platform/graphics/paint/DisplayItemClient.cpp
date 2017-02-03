@@ -53,9 +53,10 @@ void DisplayItemClient::beginShouldKeepAlive(const void* owner) const {
   if (!displayItemClientsShouldKeepAlive)
     displayItemClientsShouldKeepAlive =
         new HashMap<const void*, HashMap<const DisplayItemClient*, String>>();
-  auto addResult = displayItemClientsShouldKeepAlive
-                       ->add(owner, HashMap<const DisplayItemClient*, String>())
-                       .storedValue->value.add(this, "");
+  auto addResult =
+      displayItemClientsShouldKeepAlive
+          ->insert(owner, HashMap<const DisplayItemClient*, String>())
+          .storedValue->value.insert(this, "");
   if (addResult.isNewEntry)
     addResult.storedValue->value = debugName();
 }

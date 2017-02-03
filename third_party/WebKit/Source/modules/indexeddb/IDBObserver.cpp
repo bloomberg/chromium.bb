@@ -81,7 +81,7 @@ void IDBObserver::observe(IDBDatabase* database,
   int32_t observerId =
       database->addObserver(this, transaction->id(), options.transaction(),
                             options.noRecords(), options.values(), types);
-  m_observerIds.add(observerId, database);
+  m_observerIds.insert(observerId, database);
 }
 
 void IDBObserver::unobserve(IDBDatabase* database,

@@ -58,7 +58,7 @@ static ElementCallbackQueueMap& callbackQueues() {
 
 static V0CustomElementCallbackQueue& ensureCallbackQueue(Element* element) {
   ElementCallbackQueueMap::ValueType* it =
-      callbackQueues().add(element, nullptr).storedValue;
+      callbackQueues().insert(element, nullptr).storedValue;
   if (!it->value)
     it->value = V0CustomElementCallbackQueue::create(element);
   return *it->value.get();

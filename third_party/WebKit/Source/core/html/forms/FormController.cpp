@@ -376,7 +376,7 @@ const AtomicString& FormKeyGenerator::formKey(
   String signature = formSignature(*form);
   DCHECK(!signature.isNull());
   FormSignatureToNextIndexMap::AddResult result =
-      m_formSignatureToNextIndexMap.add(signature, 0);
+      m_formSignatureToNextIndexMap.insert(signature, 0);
   unsigned nextIndex = result.storedValue->value++;
 
   StringBuilder formKeyBuilder;
@@ -384,7 +384,7 @@ const AtomicString& FormKeyGenerator::formKey(
   formKeyBuilder.append(" #");
   formKeyBuilder.appendNumber(nextIndex);
   FormToKeyMap::AddResult addFormKeyresult =
-      m_formToKeyMap.add(form, formKeyBuilder.toAtomicString());
+      m_formToKeyMap.insert(form, formKeyBuilder.toAtomicString());
   return addFormKeyresult.storedValue->value;
 }
 
@@ -432,7 +432,7 @@ Vector<String> DocumentState::toStateVector() {
     if (!control->shouldSaveAndRestoreFormControlState())
       continue;
     SavedFormStateMap::AddResult result =
-        stateMap->add(keyGenerator->formKey(*control), nullptr);
+        stateMap->insert(keyGenerator->formKey(*control), nullptr);
     if (result.isNewEntry)
       result.storedValue->value = SavedFormState::create();
     result.storedValue->value->appendControlState(
@@ -510,7 +510,7 @@ void FormController::formStatesFromStateVector(
       i = 0;
       break;
     }
-    map.add(formKey, std::move(state));
+    map.insert(formKey, std::move(state));
   }
   if (i != stateVector.size())
     map.clear();

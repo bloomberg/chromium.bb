@@ -209,7 +209,7 @@ void PaintWorkletGlobalScope::addPendingGenerator(
     const String& name,
     CSSPaintImageGeneratorImpl* generator) {
   Member<GeneratorHashSet>& set =
-      m_pendingGenerators.add(name, nullptr).storedValue->value;
+      m_pendingGenerators.insert(name, nullptr).storedValue->value;
   if (!set)
     set = new GeneratorHashSet;
   set->insert(generator);

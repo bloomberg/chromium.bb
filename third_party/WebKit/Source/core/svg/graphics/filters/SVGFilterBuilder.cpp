@@ -64,7 +64,7 @@ class FilterInputKeywords {
 SVGFilterGraphNodeMap::SVGFilterGraphNodeMap() {}
 
 void SVGFilterGraphNodeMap::addBuiltinEffect(FilterEffect* effect) {
-  m_effectReferences.add(effect, FilterEffectSet());
+  m_effectReferences.insert(effect, FilterEffectSet());
 }
 
 void SVGFilterGraphNodeMap::addPrimitive(LayoutObject* object,
@@ -72,7 +72,7 @@ void SVGFilterGraphNodeMap::addPrimitive(LayoutObject* object,
   // The effect must be a newly created filter effect.
   ASSERT(!m_effectReferences.contains(effect));
   ASSERT(!object || !m_effectRenderer.contains(object));
-  m_effectReferences.add(effect, FilterEffectSet());
+  m_effectReferences.insert(effect, FilterEffectSet());
 
   unsigned numberOfInputEffects = effect->inputEffects().size();
 
@@ -86,7 +86,7 @@ void SVGFilterGraphNodeMap::addPrimitive(LayoutObject* object,
   // reason, which in turn mean that certain types of invalidation will not
   // work (the LayoutObject -> FilterEffect mapping will not be defined).
   if (object)
-    m_effectRenderer.add(object, effect);
+    m_effectRenderer.insert(object, effect);
 }
 
 void SVGFilterGraphNodeMap::invalidateDependentEffects(FilterEffect* effect) {
@@ -111,16 +111,16 @@ SVGFilterBuilder::SVGFilterBuilder(FilterEffect* sourceGraphic,
                                    const PaintFlags* strokePaint)
     : m_nodeMap(nodeMap) {
   FilterEffect* sourceGraphicRef = sourceGraphic;
-  m_builtinEffects.add(FilterInputKeywords::getSourceGraphic(),
-                       sourceGraphicRef);
-  m_builtinEffects.add(FilterInputKeywords::sourceAlpha(),
-                       SourceAlpha::create(sourceGraphicRef));
+  m_builtinEffects.insert(FilterInputKeywords::getSourceGraphic(),
+                          sourceGraphicRef);
+  m_builtinEffects.insert(FilterInputKeywords::sourceAlpha(),
+                          SourceAlpha::create(sourceGraphicRef));
   if (fillPaint)
-    m_builtinEffects.add(
+    m_builtinEffects.insert(
         FilterInputKeywords::fillPaint(),
         PaintFilterEffect::create(sourceGraphicRef->getFilter(), *fillPaint));
   if (strokePaint)
-    m_builtinEffects.add(
+    m_builtinEffects.insert(
         FilterInputKeywords::strokePaint(),
         PaintFilterEffect::create(sourceGraphicRef->getFilter(), *strokePaint));
   addBuiltinEffects();

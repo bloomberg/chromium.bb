@@ -49,7 +49,7 @@ OffscreenCanvasPlaceholder* OffscreenCanvasPlaceholder::getPlaceholderById(
 void OffscreenCanvasPlaceholder::registerPlaceholder(unsigned placeholderId) {
   DCHECK(!placeholderRegistry().contains(placeholderId));
   DCHECK(!isPlaceholderRegistered());
-  placeholderRegistry().add(placeholderId, this);
+  placeholderRegistry().insert(placeholderId, this);
   m_placeholderId = placeholderId;
 }
 

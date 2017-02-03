@@ -49,7 +49,7 @@ Vector<String> RTCLegacyStatsReport::names() const {
 
 void RTCLegacyStatsReport::addStatistic(const String& name,
                                         const String& value) {
-  m_stats.add(name, value);
+  m_stats.insert(name, value);
 }
 
 }  // namespace blink

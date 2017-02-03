@@ -81,7 +81,7 @@ static void saveToOriginMap(SecurityOrigin* origin, const KURL& url) {
   //
   // See the definition of the origin of a Blob URL in the File API spec.
   if (origin && BlobURL::getOrigin(url) == "null")
-    originMap()->add(url.getString(), origin);
+    originMap()->insert(url.getString(), origin);
 }
 
 static void removeFromOriginMap(const KURL& url) {

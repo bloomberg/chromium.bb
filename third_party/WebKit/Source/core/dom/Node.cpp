@@ -1961,7 +1961,7 @@ static inline void collectMatchingObserversForMutation(
           registration->deliveryOptions();
       HeapHashMap<Member<MutationObserver>,
                   MutationRecordDeliveryOptions>::AddResult result =
-          observers.add(&registration->observer(), deliveryOptions);
+          observers.insert(&registration->observer(), deliveryOptions);
       if (!result.isNewEntry)
         result.storedValue->value |= deliveryOptions;
     }

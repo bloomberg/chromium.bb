@@ -118,7 +118,7 @@ template <typename T, typename U, typename V, typename W>
 inline typename HashCountedSet<T, U, V, W>::AddResult
 HashCountedSet<T, U, V, W>::add(const ValueType& value, unsigned count) {
   DCHECK_GT(count, 0u);
-  AddResult result = m_impl.add(value, 0);
+  AddResult result = m_impl.insert(value, 0);
   result.storedValue->value += count;
   return result;
 }

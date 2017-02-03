@@ -639,7 +639,8 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors,
   if (m_entries.size() == maximumSelectorQueryCacheSize)
     m_entries.remove(m_entries.begin());
 
-  return m_entries.add(selectors, SelectorQuery::adopt(std::move(selectorList)))
+  return m_entries
+      .insert(selectors, SelectorQuery::adopt(std::move(selectorList)))
       .storedValue->value.get();
 }
 

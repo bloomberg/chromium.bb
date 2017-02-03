@@ -167,7 +167,7 @@ USBDevice* USB::getOrCreateDevice(usb::DeviceInfoPtr deviceInfo) {
     m_deviceManager->GetDevice(guid, mojo::MakeRequest(&pipe));
     device = USBDevice::create(std::move(deviceInfo), std::move(pipe),
                                getExecutionContext());
-    m_deviceCache.add(guid, device);
+    m_deviceCache.insert(guid, device);
   }
   return device;
 }

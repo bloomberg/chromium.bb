@@ -1977,7 +1977,7 @@ void LayoutText::momentarilyRevealLastTypedCharacter(
   SecureTextTimer* secureTextTimer = gSecureTextTimers->get(this);
   if (!secureTextTimer) {
     secureTextTimer = new SecureTextTimer(this);
-    gSecureTextTimers->add(this, secureTextTimer);
+    gSecureTextTimers->insert(this, secureTextTimer);
   }
   secureTextTimer->restartWithNewText(lastTypedCharacterOffset);
 }

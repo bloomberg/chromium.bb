@@ -16,7 +16,7 @@ DEFINE_TRACE(GeolocationWatchers) {
 
 bool GeolocationWatchers::add(int id, GeoNotifier* notifier) {
   DCHECK_GT(id, 0);
-  if (!m_idToNotifierMap.add(id, notifier).isNewEntry)
+  if (!m_idToNotifierMap.insert(id, notifier).isNewEntry)
     return false;
   m_notifierToIdMap.set(notifier, id);
   return true;

@@ -155,7 +155,7 @@ void NthIndexCache::cacheNthIndexDataForParent(Element& element) {
     m_parentMap = new ParentMap();
 
   ParentMap::AddResult addResult =
-      m_parentMap->add(element.parentNode(), nullptr);
+      m_parentMap->insert(element.parentNode(), nullptr);
   DCHECK(addResult.isNewEntry);
   addResult.storedValue->value = new NthIndexData(*element.parentNode());
 }
@@ -166,7 +166,7 @@ NthIndexCache::IndexByType& NthIndexCache::ensureTypeIndexMap(
     m_parentMapForType = new ParentMapForType();
 
   ParentMapForType::AddResult addResult =
-      m_parentMapForType->add(&parent, nullptr);
+      m_parentMapForType->insert(&parent, nullptr);
   if (addResult.isNewEntry)
     addResult.storedValue->value = new IndexByType();
 
@@ -176,8 +176,8 @@ NthIndexCache::IndexByType& NthIndexCache::ensureTypeIndexMap(
 
 void NthIndexCache::cacheNthOfTypeIndexDataForParent(Element& element) {
   DCHECK(element.parentNode());
-  IndexByType::AddResult addResult =
-      ensureTypeIndexMap(*element.parentNode()).add(element.tagName(), nullptr);
+  IndexByType::AddResult addResult = ensureTypeIndexMap(*element.parentNode())
+                                         .insert(element.tagName(), nullptr);
   DCHECK(addResult.isNewEntry);
   addResult.storedValue->value =
       new NthIndexData(*element.parentNode(), element.tagQName());
@@ -230,7 +230,7 @@ NthIndexData::NthIndexData(ContainerNode& parent) {
   for (Element* sibling = ElementTraversal::firstChild(parent); sibling;
        sibling = ElementTraversal::nextSibling(*sibling)) {
     if (!(++count % spread))
-      m_elementIndexMap.add(sibling, count);
+      m_elementIndexMap.insert(sibling, count);
   }
   DCHECK(count);
   m_count = count;
@@ -250,7 +250,7 @@ NthIndexData::NthIndexData(ContainerNode& parent, const QualifiedName& type) {
        sibling;
        sibling = ElementTraversal::nextSibling(*sibling, HasTagName(type))) {
     if (!(++count % spread))
-      m_elementIndexMap.add(sibling, count);
+      m_elementIndexMap.insert(sibling, count);
   }
   DCHECK(count);
   m_count = count;

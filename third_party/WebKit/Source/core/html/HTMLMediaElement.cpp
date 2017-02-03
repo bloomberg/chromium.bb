@@ -160,7 +160,7 @@ void addElementToDocumentMap(HTMLMediaElement* element, Document* document) {
   auto it = map.find(document);
   if (it == map.end()) {
     set = new WeakMediaElementSet;
-    map.add(document, set);
+    map.insert(document, set);
   } else {
     set = it->value;
   }

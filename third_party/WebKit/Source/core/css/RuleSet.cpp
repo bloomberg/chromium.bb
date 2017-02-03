@@ -139,7 +139,7 @@ void RuleSet::addToRuleSet(const AtomicString& key,
                            PendingRuleMap& map,
                            const RuleData& ruleData) {
   Member<HeapLinkedStack<RuleData>>& rules =
-      map.add(key, nullptr).storedValue->value;
+      map.insert(key, nullptr).storedValue->value;
   if (!rules)
     rules = new HeapLinkedStack<RuleData>;
   rules->push(ruleData);
@@ -351,7 +351,7 @@ void RuleSet::compactPendingRules(PendingRuleMap& pendingMap,
   for (auto& item : pendingMap) {
     HeapLinkedStack<RuleData>* pendingRules = item.value.release();
     CompactRuleMap::ValueType* compactRules =
-        compactMap.add(item.key, nullptr).storedValue;
+        compactMap.insert(item.key, nullptr).storedValue;
 
     HeapTerminatedArrayBuilder<RuleData> builder(compactRules->value.release());
     builder.grow(pendingRules->size());

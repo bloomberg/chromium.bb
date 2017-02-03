@@ -54,7 +54,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(
   FontCacheKey key = fontDescription.cacheKey(FontFaceCreationParams());
 
   RefPtr<SimpleFontData>& fontData =
-      m_fontDataTable.add(key, nullptr).storedValue->value;
+      m_fontDataTable.insert(key, nullptr).storedValue->value;
   if (!fontData)
     fontData = createFontData(fontDescription);
   // No release, because fontData is a reference to a RefPtr that is held in the

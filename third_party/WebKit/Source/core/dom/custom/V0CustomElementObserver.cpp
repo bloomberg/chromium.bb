@@ -52,7 +52,8 @@ void V0CustomElementObserver::notifyElementWasDestroyed(Element* element) {
 }
 
 void V0CustomElementObserver::observe(Element* element) {
-  ElementObserverMap::AddResult result = elementObservers().add(element, this);
+  ElementObserverMap::AddResult result =
+      elementObservers().insert(element, this);
   DCHECK(result.isNewEntry);
 }
 

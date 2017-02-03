@@ -376,7 +376,7 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layerId,
       adoptRef(new PictureSnapshot(ToSkPicture(context.endRecording())));
 
   *snapshotId = String::number(++s_lastSnapshotId);
-  bool newEntry = m_snapshotById.add(*snapshotId, snapshot).isNewEntry;
+  bool newEntry = m_snapshotById.insert(*snapshotId, snapshot).isNewEntry;
   DCHECK(newEntry);
   return Response::OK();
 }
@@ -402,7 +402,7 @@ Response InspectorLayerTreeAgent::loadSnapshot(
     return Response::Error("Empty snapshot");
 
   *snapshotId = String::number(++s_lastSnapshotId);
-  bool newEntry = m_snapshotById.add(*snapshotId, snapshot).isNewEntry;
+  bool newEntry = m_snapshotById.insert(*snapshotId, snapshot).isNewEntry;
   DCHECK(newEntry);
   return Response::OK();
 }

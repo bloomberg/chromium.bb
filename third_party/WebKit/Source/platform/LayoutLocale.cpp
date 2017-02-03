@@ -127,7 +127,7 @@ const LayoutLocale* LayoutLocale::get(const AtomicString& locale) {
   if (locale.isNull())
     return nullptr;
 
-  auto result = getLocaleMap().add(locale, nullptr);
+  auto result = getLocaleMap().insert(locale, nullptr);
   if (result.isNewEntry)
     result.storedValue->value = adoptRef(new LayoutLocale(locale));
   return result.storedValue->value.get();

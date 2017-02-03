@@ -142,7 +142,7 @@ static CSSPropertyID cssPropertyInfo(const AtomicString& name) {
   CSSPropertyID unresolvedProperty = parseCSSPropertyID(name);
   if (unresolvedProperty == CSSPropertyVariable)
     unresolvedProperty = CSSPropertyInvalid;
-  map.add(name, unresolvedProperty);
+  map.insert(name, unresolvedProperty);
   ASSERT(!unresolvedProperty ||
          CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
   return unresolvedProperty;

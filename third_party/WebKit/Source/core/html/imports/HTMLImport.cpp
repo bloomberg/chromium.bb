@@ -84,7 +84,7 @@ void HTMLImport::recalcTreeState(HTMLImport* root) {
   HeapVector<Member<HTMLImport>> updated;
 
   for (HTMLImport* i = root; i; i = traverseNext(i)) {
-    snapshot.add(i, i->state());
+    snapshot.insert(i, i->state());
     i->m_state = HTMLImportState::invalidState();
   }
 

@@ -161,7 +161,7 @@ void StyleInvalidator::clearInvalidation(ContainerNode& node) {
 PendingInvalidations& StyleInvalidator::ensurePendingInvalidations(
     ContainerNode& node) {
   PendingInvalidationMap::AddResult addResult =
-      m_pendingInvalidationMap.add(&node, nullptr);
+      m_pendingInvalidationMap.insert(&node, nullptr);
   if (addResult.isNewEntry)
     addResult.storedValue->value = WTF::makeUnique<PendingInvalidations>();
   return *addResult.storedValue->value;

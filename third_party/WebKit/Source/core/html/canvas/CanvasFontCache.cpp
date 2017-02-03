@@ -73,7 +73,7 @@ bool CanvasFontCache::getFontUsingDefaultStyle(const String& fontString,
   RefPtr<ComputedStyle> fontStyle =
       ComputedStyle::clone(*m_defaultFontStyle.get());
   m_document->ensureStyleResolver().computeFont(fontStyle.get(), *parsedStyle);
-  m_fontsResolvedUsingDefaultStyle.add(fontString, fontStyle->font());
+  m_fontsResolvedUsingDefaultStyle.insert(fontString, fontStyle->font());
   resolvedFont = m_fontsResolvedUsingDefaultStyle.find(fontString)->value;
   return true;
 }
@@ -99,7 +99,7 @@ MutableStylePropertySet* CanvasFontCache::parseFont(const String& fontString) {
     if (fontValue &&
         (fontValue->isInitialValue() || fontValue->isInheritedValue()))
       return nullptr;
-    m_fetchedFonts.add(fontString, parsedStyle);
+    m_fetchedFonts.insert(fontString, parsedStyle);
     m_fontLRUList.add(fontString);
     // Hard limit is applied here, on the fly, while the soft limit is
     // applied at the end of the task.

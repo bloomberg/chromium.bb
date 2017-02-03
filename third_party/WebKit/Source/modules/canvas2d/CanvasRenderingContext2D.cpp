@@ -479,7 +479,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont) {
       fontStyle->font().update(fontStyle->font().getFontSelector());
       canvas()->document().ensureStyleResolver().computeFont(fontStyle.get(),
                                                              *parsedStyle);
-      m_fontsResolvedUsingCurrentStyle.add(newFont, fontStyle->font());
+      m_fontsResolvedUsingCurrentStyle.insert(newFont, fontStyle->font());
       DCHECK(!m_fontLRUList.contains(newFont));
       m_fontLRUList.add(newFont);
       pruneLocalFontCache(canvasFontCache->hardMaxFonts());  // hard limit

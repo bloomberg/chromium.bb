@@ -250,7 +250,7 @@ void SecurityPolicy::addOriginAccessWhitelistEntry(
 
   String sourceString = sourceOrigin.toString();
   OriginAccessMap::AddResult result =
-      originAccessMap().add(sourceString, nullptr);
+      originAccessMap().insert(sourceString, nullptr);
   if (result.isNewEntry)
     result.storedValue->value = WTF::wrapUnique(new OriginAccessWhiteList);
 

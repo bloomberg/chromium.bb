@@ -327,7 +327,7 @@ void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(
     const String& scheme,
     PolicyAreas policyAreas) {
   DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.add(
+  getMutableURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.insert(
       scheme, policyAreas);
 }
 

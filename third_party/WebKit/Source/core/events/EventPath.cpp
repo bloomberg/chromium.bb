@@ -174,8 +174,8 @@ void EventPath::calculateTreeOrderAndSetNearestAncestorClosedTree() {
   HeapHashMap<Member<const TreeScope>, Member<TreeScopeEventContext>>
       treeScopeEventContextMap;
   for (const auto& treeScopeEventContext : m_treeScopeEventContexts)
-    treeScopeEventContextMap.add(&treeScopeEventContext->treeScope(),
-                                 treeScopeEventContext.get());
+    treeScopeEventContextMap.insert(&treeScopeEventContext->treeScope(),
+                                    treeScopeEventContext.get());
   TreeScopeEventContext* rootTree = nullptr;
   for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
     // Use olderShadowRootOrParentTreeScope here for parent-child relationships.
@@ -208,7 +208,7 @@ TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(
   bool isNewEntry;
   {
     TreeScopeEventContextMap::AddResult addResult =
-        treeScopeEventContextMap.add(treeScope, nullptr);
+        treeScopeEventContextMap.insert(treeScope, nullptr);
     isNewEntry = addResult.isNewEntry;
     if (isNewEntry)
       addResult.storedValue->value = TreeScopeEventContext::create(*treeScope);
@@ -260,8 +260,8 @@ void EventPath::buildRelatedNodeMap(const Node& relatedNode,
       new EventPath(const_cast<Node&>(relatedNode));
   for (const auto& treeScopeEventContext :
        relatedTargetEventPath->m_treeScopeEventContexts) {
-    relatedTargetMap.add(&treeScopeEventContext->treeScope(),
-                         treeScopeEventContext->target());
+    relatedTargetMap.insert(&treeScopeEventContext->treeScope(),
+                            treeScopeEventContext->target());
   }
   // Oilpan: It is important to explicitly clear the vectors to reuse
   // the memory in subsequent event dispatchings.
@@ -283,7 +283,7 @@ EventTarget* EventPath::findRelatedNode(TreeScope& scope,
   }
   DCHECK(relatedNode);
   for (const auto& entry : parentTreeScopes)
-    relatedTargetMap.add(entry, relatedNode);
+    relatedTargetMap.insert(entry, relatedNode);
 
   return relatedNode;
 }

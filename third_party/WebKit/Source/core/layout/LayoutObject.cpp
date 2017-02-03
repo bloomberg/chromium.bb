@@ -2397,8 +2397,8 @@ void LayoutObject::addLayerHitTestRects(LayerHitTestRects& layerRects,
   LayerHitTestRects::iterator iter = layerRects.find(currentLayer);
   Vector<LayoutRect>* iterValue;
   if (iter == layerRects.end())
-    iterValue =
-        &layerRects.add(currentLayer, Vector<LayoutRect>()).storedValue->value;
+    iterValue = &layerRects.insert(currentLayer, Vector<LayoutRect>())
+                     .storedValue->value;
   else
     iterValue = &iter->value;
   for (size_t i = 0; i < ownRects.size(); i++) {

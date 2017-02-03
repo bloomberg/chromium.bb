@@ -225,8 +225,8 @@ void PointerEventManager::setNodeUnderPointer(PointerEvent* pointerEvent,
     }
     sendBoundaryEvents(node.target, target, pointerEvent);
   } else if (target) {
-    m_nodeUnderPointer.add(pointerEvent->pointerId(),
-                           EventTargetAttributes(target, false));
+    m_nodeUnderPointer.insert(pointerEvent->pointerId(),
+                              EventTargetAttributes(target, false));
     sendBoundaryEvents(nullptr, target, pointerEvent);
   }
 }

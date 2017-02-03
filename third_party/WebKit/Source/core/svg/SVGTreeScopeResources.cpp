@@ -52,7 +52,7 @@ void SVGTreeScopeResources::addPendingResource(const AtomicString& id,
     return;
 
   HeapHashMap<AtomicString, Member<SVGPendingElements>>::AddResult result =
-      m_pendingResources.add(id, nullptr);
+      m_pendingResources.insert(id, nullptr);
   if (result.isNewEntry)
     result.storedValue->value = new SVGPendingElements;
   result.storedValue->value->insert(element);

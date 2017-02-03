@@ -98,7 +98,7 @@ inline void UserActionElementSet::setFlags(Element* element, unsigned flags) {
   }
 
   element->setUserActionElement(true);
-  m_elements.add(element, flags);
+  m_elements.insert(element, flags);
 }
 
 DEFINE_TRACE(UserActionElementSet) {

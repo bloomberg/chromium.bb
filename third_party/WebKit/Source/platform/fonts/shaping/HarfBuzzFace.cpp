@@ -146,7 +146,7 @@ static PassRefPtr<HbFontCacheEntry> createHbFontCacheEntry(hb_face_t*);
 HarfBuzzFace::HarfBuzzFace(FontPlatformData* platformData, uint64_t uniqueID)
     : m_platformData(platformData), m_uniqueID(uniqueID) {
   HarfBuzzFontCache::AddResult result =
-      harfBuzzFontCache()->add(m_uniqueID, nullptr);
+      harfBuzzFontCache()->insert(m_uniqueID, nullptr);
   if (result.isNewEntry) {
     HbFaceUniquePtr face(createFace());
     result.storedValue->value = createHbFontCacheEntry(face.get());

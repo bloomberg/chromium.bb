@@ -426,7 +426,7 @@ void PointerEventFactory::clear() {
   // No need to add it to m_pointerIncomingIdMapping as it is not going to be
   // used with the existing APIs
   m_primaryId[toInt(WebPointerProperties::PointerType::Mouse)] = s_mouseId;
-  m_pointerIdMapping.add(
+  m_pointerIdMapping.insert(
       s_mouseId,
       PointerAttributes(IncomingId(WebPointerProperties::PointerType::Mouse, 0),
                         0));
@@ -453,8 +453,8 @@ int PointerEventFactory::addIdAndActiveButtons(const IncomingId p,
   if (!m_idCount[typeInt])
     m_primaryId[typeInt] = mappedId;
   m_idCount[typeInt]++;
-  m_pointerIncomingIdMapping.add(p, mappedId);
-  m_pointerIdMapping.add(mappedId, PointerAttributes(p, isActiveButtons));
+  m_pointerIncomingIdMapping.insert(p, mappedId);
+  m_pointerIdMapping.insert(mappedId, PointerAttributes(p, isActiveButtons));
   return mappedId;
 }
 

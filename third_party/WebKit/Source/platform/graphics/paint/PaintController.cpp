@@ -313,7 +313,7 @@ void PaintController::addItemToIndexIfNeeded(
   Vector<size_t>& indices =
       it == displayItemIndicesByClient.end()
           ? displayItemIndicesByClient
-                .add(&displayItem.client(), Vector<size_t>())
+                .insert(&displayItem.client(), Vector<size_t>())
                 .storedValue->value
           : it->value;
   indices.push_back(index);
@@ -646,7 +646,7 @@ void PaintController::generateChunkRasterInvalidationRects(
       Vector<size_t>& indices =
           it == m_outOfOrderChunkIndices.end()
               ? m_outOfOrderChunkIndices
-                    .add(&oldChunk.id->client, Vector<size_t>())
+                    .insert(&oldChunk.id->client, Vector<size_t>())
                     .storedValue->value
               : it->value;
       indices.push_back(m_nextChunkToMatch);

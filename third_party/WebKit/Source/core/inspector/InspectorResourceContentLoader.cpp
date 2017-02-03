@@ -170,7 +170,7 @@ void InspectorResourceContentLoader::ensureResourcesContentLoaded(
     std::unique_ptr<WTF::Closure> callback) {
   if (!m_started)
     start();
-  m_callbacks.add(clientId, Callbacks())
+  m_callbacks.insert(clientId, Callbacks())
       .storedValue->value.push_back(std::move(callback));
   checkDone();
 }

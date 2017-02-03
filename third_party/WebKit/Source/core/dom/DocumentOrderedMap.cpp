@@ -79,7 +79,7 @@ void DocumentOrderedMap::add(const AtomicString& key, Element* element) {
   DCHECK(key);
   DCHECK(element);
 
-  Map::AddResult addResult = m_map.add(key, new MapEntry(element));
+  Map::AddResult addResult = m_map.insert(key, new MapEntry(element));
   if (addResult.isNewEntry)
     return;
 

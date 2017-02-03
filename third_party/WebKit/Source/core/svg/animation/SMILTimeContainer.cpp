@@ -77,7 +77,7 @@ void SMILTimeContainer::schedule(SVGSMILElement* animation,
 
   ElementAttributePair key(target, attributeName);
   Member<AnimationsLinkedHashSet>& scheduled =
-      m_scheduledAnimations.add(key, nullptr).storedValue->value;
+      m_scheduledAnimations.insert(key, nullptr).storedValue->value;
   if (!scheduled)
     scheduled = new AnimationsLinkedHashSet;
   ASSERT(!scheduled->contains(animation));

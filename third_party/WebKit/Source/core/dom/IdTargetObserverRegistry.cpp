@@ -43,7 +43,7 @@ void IdTargetObserverRegistry::addObserver(const AtomicString& id,
   if (id.isEmpty())
     return;
 
-  IdToObserverSetMap::AddResult result = m_registry.add(id.impl(), nullptr);
+  IdToObserverSetMap::AddResult result = m_registry.insert(id.impl(), nullptr);
   if (result.isNewEntry)
     result.storedValue->value = new ObserverSet();
 

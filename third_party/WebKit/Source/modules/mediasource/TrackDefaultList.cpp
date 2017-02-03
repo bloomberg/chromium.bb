@@ -35,7 +35,7 @@ TrackDefaultList* TrackDefaultList::create(
   for (const auto& trackDefault : trackDefaults) {
     TypeAndID key =
         TypeAndID(trackDefault->type(), trackDefault->byteStreamTrackID());
-    if (!typeAndIDToTrackDefaultMap.add(key, trackDefault).isNewEntry) {
+    if (!typeAndIDToTrackDefaultMap.insert(key, trackDefault).isNewEntry) {
       exceptionState.throwDOMException(
           InvalidAccessError, "Duplicate TrackDefault type (" + key.first +
                                   ") and byteStreamTrackID (" + key.second +

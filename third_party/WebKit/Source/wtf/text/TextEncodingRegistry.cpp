@@ -168,7 +168,7 @@ static void addToTextEncodingNameMap(const char* alias, const char* name) {
   if (!atomicName)
     atomicName = name;
   checkExistingName(alias, atomicName);
-  textEncodingNameMap->add(alias, atomicName);
+  textEncodingNameMap->insert(alias, atomicName);
 }
 
 static void addToTextCodecMap(const char* name,
@@ -176,7 +176,7 @@ static void addToTextCodecMap(const char* name,
                               const void* additionalData) {
   const char* atomicName = textEncodingNameMap->get(name);
   DCHECK(atomicName);
-  textCodecMap->add(atomicName, TextCodecFactory(function, additionalData));
+  textCodecMap->insert(atomicName, TextCodecFactory(function, additionalData));
 }
 
 static void pruneBlacklistedCodecs() {

@@ -69,7 +69,7 @@ void ChildListMutationAccumulator::leaveMutationScope() {
 
 ChildListMutationAccumulator* ChildListMutationAccumulator::getOrCreate(
     Node& target) {
-  AccumulatorMap::AddResult result = accumulatorMap().add(&target, nullptr);
+  AccumulatorMap::AddResult result = accumulatorMap().insert(&target, nullptr);
   ChildListMutationAccumulator* accumulator;
   if (!result.isNewEntry) {
     accumulator = result.storedValue->value;

@@ -147,8 +147,12 @@ class HashMap {
   // does nothing if key is already present return value is a pair of the
   // iterator to the key location, and a boolean that's true if a new value
   // was actually added
+  // TODO(pilgrim) remove deprecated add() method, use insert() instead
+  // https://crbug.com/662431
   template <typename IncomingKeyType, typename IncomingMappedType>
   AddResult add(IncomingKeyType&&, IncomingMappedType&&);
+  template <typename IncomingKeyType, typename IncomingMappedType>
+  AddResult insert(IncomingKeyType&&, IncomingMappedType&&);
 
   // TODO(pilgrim) remove remove() method once all references migrated to
   // erase()
@@ -183,10 +187,16 @@ class HashMap {
   //   static unsigned hash(const T&);
   //   static bool equal(const ValueType&, const T&);
   //   static translate(ValueType&, const T&, unsigned hashCode);
+  // TODO(pilgrim) remove deprecated add() method, use insert() instead
+  // https://crbug.com/662431
   template <typename HashTranslator,
             typename IncomingKeyType,
             typename IncomingMappedType>
   AddResult add(IncomingKeyType&&, IncomingMappedType&&);
+  template <typename HashTranslator,
+            typename IncomingKeyType,
+            typename IncomingMappedType>
+  AddResult insert(IncomingKeyType&&, IncomingMappedType&&);
 
   static bool isValidKey(KeyPeekInType);
 
@@ -355,7 +365,7 @@ HashMap<T, U, V, W, X, Y>::HashMap(std::initializer_list<ValueType> elements) {
   if (elements.size())
     m_impl.reserveCapacityForSize(elements.size());
   for (const ValueType& element : elements)
-    add(element.key, element.value);
+    insert(element.key, element.value);
 }
 
 template <typename T,
@@ -579,8 +589,40 @@ template <typename T,
           typename W,
           typename X,
           typename Y>
+template <typename HashTranslator,
+          typename IncomingKeyType,
+          typename IncomingMappedType>
+auto HashMap<T, U, V, W, X, Y>::insert(IncomingKeyType&& key,
+                                       IncomingMappedType&& mapped)
+    -> AddResult {
+  return m_impl.template addPassingHashCode<
+      HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(
+      std::forward<IncomingKeyType>(key),
+      std::forward<IncomingMappedType>(mapped));
+}
+
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
 template <typename IncomingKeyType, typename IncomingMappedType>
 typename HashMap<T, U, V, W, X, Y>::AddResult HashMap<T, U, V, W, X, Y>::add(
+    IncomingKeyType&& key,
+    IncomingMappedType&& mapped) {
+  return inlineAdd(std::forward<IncomingKeyType>(key),
+                   std::forward<IncomingMappedType>(mapped));
+}
+
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+template <typename IncomingKeyType, typename IncomingMappedType>
+typename HashMap<T, U, V, W, X, Y>::AddResult HashMap<T, U, V, W, X, Y>::insert(
     IncomingKeyType&& key,
     IncomingMappedType&& mapped) {
   return inlineAdd(std::forward<IncomingKeyType>(key),

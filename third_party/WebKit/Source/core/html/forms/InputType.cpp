@@ -87,27 +87,27 @@ using InputTypeFactoryMap =
 static std::unique_ptr<InputTypeFactoryMap> createInputTypeFactoryMap() {
   std::unique_ptr<InputTypeFactoryMap> map =
       WTF::wrapUnique(new InputTypeFactoryMap);
-  map->add(InputTypeNames::button, ButtonInputType::create);
-  map->add(InputTypeNames::checkbox, CheckboxInputType::create);
-  map->add(InputTypeNames::color, ColorInputType::create);
-  map->add(InputTypeNames::date, DateInputType::create);
-  map->add(InputTypeNames::datetime_local, DateTimeLocalInputType::create);
-  map->add(InputTypeNames::email, EmailInputType::create);
-  map->add(InputTypeNames::file, FileInputType::create);
-  map->add(InputTypeNames::hidden, HiddenInputType::create);
-  map->add(InputTypeNames::image, ImageInputType::create);
-  map->add(InputTypeNames::month, MonthInputType::create);
-  map->add(InputTypeNames::number, NumberInputType::create);
-  map->add(InputTypeNames::password, PasswordInputType::create);
-  map->add(InputTypeNames::radio, RadioInputType::create);
-  map->add(InputTypeNames::range, RangeInputType::create);
-  map->add(InputTypeNames::reset, ResetInputType::create);
-  map->add(InputTypeNames::search, SearchInputType::create);
-  map->add(InputTypeNames::submit, SubmitInputType::create);
-  map->add(InputTypeNames::tel, TelephoneInputType::create);
-  map->add(InputTypeNames::time, TimeInputType::create);
-  map->add(InputTypeNames::url, URLInputType::create);
-  map->add(InputTypeNames::week, WeekInputType::create);
+  map->insert(InputTypeNames::button, ButtonInputType::create);
+  map->insert(InputTypeNames::checkbox, CheckboxInputType::create);
+  map->insert(InputTypeNames::color, ColorInputType::create);
+  map->insert(InputTypeNames::date, DateInputType::create);
+  map->insert(InputTypeNames::datetime_local, DateTimeLocalInputType::create);
+  map->insert(InputTypeNames::email, EmailInputType::create);
+  map->insert(InputTypeNames::file, FileInputType::create);
+  map->insert(InputTypeNames::hidden, HiddenInputType::create);
+  map->insert(InputTypeNames::image, ImageInputType::create);
+  map->insert(InputTypeNames::month, MonthInputType::create);
+  map->insert(InputTypeNames::number, NumberInputType::create);
+  map->insert(InputTypeNames::password, PasswordInputType::create);
+  map->insert(InputTypeNames::radio, RadioInputType::create);
+  map->insert(InputTypeNames::range, RangeInputType::create);
+  map->insert(InputTypeNames::reset, ResetInputType::create);
+  map->insert(InputTypeNames::search, SearchInputType::create);
+  map->insert(InputTypeNames::submit, SubmitInputType::create);
+  map->insert(InputTypeNames::tel, TelephoneInputType::create);
+  map->insert(InputTypeNames::time, TimeInputType::create);
+  map->insert(InputTypeNames::url, URLInputType::create);
+  map->insert(InputTypeNames::week, WeekInputType::create);
   // No need to register "text" because it is the default type.
   return map;
 }

@@ -120,7 +120,7 @@ LayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,
 
   if (!gEllipsisBoxMap)
     gEllipsisBoxMap = new EllipsisBoxMap();
-  gEllipsisBoxMap->add(this, ellipsisBox);
+  gEllipsisBoxMap->insert(this, ellipsisBox);
   setHasEllipsisBox(true);
 
   // FIXME: Do we need an RTL version of this?

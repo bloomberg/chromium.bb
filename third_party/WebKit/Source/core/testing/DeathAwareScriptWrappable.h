@@ -71,7 +71,7 @@ class DeathAwareScriptWrappable
 
   void addWrappedHashMapDependency(DeathAwareScriptWrappable* key,
                                    DeathAwareScriptWrappable* value) {
-    m_wrappedHashMapDependency.add(Wrapper(this, key), Wrapper(this, value));
+    m_wrappedHashMapDependency.insert(Wrapper(this, key), Wrapper(this, value));
   }
 
  private:

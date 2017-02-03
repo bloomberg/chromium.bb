@@ -304,7 +304,7 @@ void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes,
     }
     // Insert the detected responder for all the visited nodes.
     for (unsigned j = 0; j < visitedNodes.size(); j++)
-      responderMap.add(visitedNodes[j], respondingNode);
+      responderMap.insert(visitedNodes[j], respondingNode);
 
     if (respondingNode)
       candidates.push_back(node);

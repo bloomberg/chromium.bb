@@ -65,7 +65,7 @@ void HostsUsingFeatures::Value::count(Feature feature) {
 }
 
 void HostsUsingFeatures::countName(Feature feature, const String& name) {
-  auto result = m_valueByName.add(name, Value());
+  auto result = m_valueByName.insert(name, Value());
   result.storedValue->value.count(feature);
 }
 
@@ -106,7 +106,7 @@ void HostsUsingFeatures::recordHostToRappor() {
   for (const auto& urlAndValue : m_urlAndValues) {
     DCHECK(!urlAndValue.first.isEmpty());
     auto result =
-        aggregatedByHost.add(urlAndValue.first.host(), urlAndValue.second);
+        aggregatedByHost.insert(urlAndValue.first.host(), urlAndValue.second);
     if (!result.isNewEntry)
       result.storedValue->value.aggregate(urlAndValue.second);
   }
@@ -123,7 +123,7 @@ void HostsUsingFeatures::recordETLDPlus1ToRappor() {
   HashMap<String, HostsUsingFeatures::Value> aggregatedByURL;
   for (const auto& urlAndValue : m_urlAndValues) {
     DCHECK(!urlAndValue.first.isEmpty());
-    auto result = aggregatedByURL.add(urlAndValue.first, urlAndValue.second);
+    auto result = aggregatedByURL.insert(urlAndValue.first, urlAndValue.second);
     if (!result.isNewEntry)
       result.storedValue->value.aggregate(urlAndValue.second);
   }

@@ -47,7 +47,7 @@ RefPtr<IDBObjectStoreMetadata> IDBObjectStoreMetadata::createCopy() const {
     RefPtr<IDBIndexMetadata> indexCopy =
         adoptRef(new IDBIndexMetadata(index->name, index->id, index->keyPath,
                                       index->unique, index->multiEntry));
-    copy->indexes.add(it.key, std::move(indexCopy));
+    copy->indexes.insert(it.key, std::move(indexCopy));
   }
   return copy;
 }

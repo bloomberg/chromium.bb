@@ -51,8 +51,8 @@ DOMFileSystem* DraggedIsolatedFileSystemImpl::getDOMFileSystem(
   if (it != draggedIsolatedFileSystem->m_filesystems.end())
     return it->value;
   return draggedIsolatedFileSystem->m_filesystems
-      .add(fileSystemId, DOMFileSystem::createIsolatedFileSystem(
-                             executionContext, fileSystemId))
+      .insert(fileSystemId, DOMFileSystem::createIsolatedFileSystem(
+                                executionContext, fileSystemId))
       .storedValue->value;
 }
 

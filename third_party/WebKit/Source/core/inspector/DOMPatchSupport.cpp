@@ -261,12 +261,12 @@ DOMPatchSupport::diff(const HeapVector<Member<Digest>>& oldList,
   DiffTable oldTable;
 
   for (size_t i = 0; i < newList.size(); ++i) {
-    newTable.add(newList[i]->m_sha1, Vector<size_t>())
+    newTable.insert(newList[i]->m_sha1, Vector<size_t>())
         .storedValue->value.push_back(i);
   }
 
   for (size_t i = 0; i < oldList.size(); ++i) {
-    oldTable.add(oldList[i]->m_sha1, Vector<size_t>())
+    oldTable.insert(oldList[i]->m_sha1, Vector<size_t>())
         .storedValue->value.push_back(i);
   }
 
@@ -489,7 +489,7 @@ DOMPatchSupport::Digest* DOMPatchSupport::createDigest(
       base64Encode(reinterpret_cast<const char*>(digestResult.data()), 10);
 
   if (unusedNodesMap)
-    unusedNodesMap->add(digest->m_sha1, digest);
+    unusedNodesMap->insert(digest->m_sha1, digest);
   return digest;
 }
 

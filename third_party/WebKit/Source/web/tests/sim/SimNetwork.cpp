@@ -80,7 +80,7 @@ void SimNetwork::didFinishLoading(WebURLLoaderClient* client,
 }
 
 void SimNetwork::addRequest(SimRequest& request) {
-  m_requests.add(request.url(), &request);
+  m_requests.insert(request.url(), &request);
 }
 
 void SimNetwork::removeRequest(SimRequest& request) {

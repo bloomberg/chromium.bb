@@ -47,7 +47,7 @@ class HeapCompact::MovableObjectFixups final {
       DCHECK(!it->value);
       return;
     }
-    m_interiorFixups.add(slot, nullptr);
+    m_interiorFixups.insert(slot, nullptr);
     LOG_HEAP_COMPACTION("Interior slot: %p\n", slot);
     Address slotAddress = reinterpret_cast<Address>(slot);
     if (!m_interiors) {
@@ -75,7 +75,7 @@ class HeapCompact::MovableObjectFixups final {
     // isCompactingArena() would be appropriate here, leaving early if
     // |refPage|'s arena isn't in the set.
 
-    m_fixups.add(reference, slot);
+    m_fixups.insert(reference, slot);
 
     // Note: |slot| will reside outside the Oilpan heap if it is a
     // PersistentHeapCollectionBase. Hence pageFromObject() cannot be
@@ -107,8 +107,8 @@ class HeapCompact::MovableObjectFixups final {
                         MovingObjectCallback callback,
                         void* callbackData) {
     DCHECK(!m_fixupCallbacks.contains(reference));
-    m_fixupCallbacks.add(reference, std::pair<void*, MovingObjectCallback>(
-                                        callbackData, callback));
+    m_fixupCallbacks.insert(reference, std::pair<void*, MovingObjectCallback>(
+                                           callbackData, callback));
   }
 
   void relocateInteriorFixups(Address from, Address to, size_t size) {

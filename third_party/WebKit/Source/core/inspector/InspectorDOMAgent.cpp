@@ -1089,7 +1089,7 @@ Response InspectorDOMAgent::performSearch(
 
   *searchId = IdentifiersFactory::createIdentifier();
   HeapVector<Member<Node>>* resultsIt =
-      &m_searchResults.add(*searchId, HeapVector<Member<Node>>())
+      &m_searchResults.insert(*searchId, HeapVector<Member<Node>>())
            .storedValue->value;
 
   for (auto& result : resultCollector)

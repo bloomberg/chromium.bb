@@ -83,10 +83,11 @@ ScriptPromise RemotePlayback::watchAvailability(
   int id;
   do {
     id = getExecutionContext()->circularSequentialID();
-  } while (!m_availabilityCallbacks
-                .add(id, TraceWrapperMember<RemotePlaybackAvailabilityCallback>(
-                             this, callback))
-                .isNewEntry);
+  } while (
+      !m_availabilityCallbacks
+           .insert(id, TraceWrapperMember<RemotePlaybackAvailabilityCallback>(
+                           this, callback))
+           .isNewEntry);
 
   // Report the current availability via the callback.
   getExecutionContext()->postTask(

@@ -886,7 +886,7 @@ TextAutosizer::FingerprintMapper::createSuperclusterIfNeeded(LayoutBlock* block,
     return nullptr;
 
   SuperclusterMap::AddResult addResult =
-      m_superclusters.add(fingerprint, std::unique_ptr<Supercluster>());
+      m_superclusters.insert(fingerprint, std::unique_ptr<Supercluster>());
   isNewEntry = addResult.isNewEntry;
   if (!addResult.isNewEntry)
     return addResult.storedValue->value.get();
@@ -1275,7 +1275,7 @@ void TextAutosizer::FingerprintMapper::addTentativeClusterRoot(
   add(block, fingerprint);
 
   ReverseFingerprintMap::AddResult addResult =
-      m_blocksForFingerprint.add(fingerprint, std::unique_ptr<BlockSet>());
+      m_blocksForFingerprint.insert(fingerprint, std::unique_ptr<BlockSet>());
   if (addResult.isNewEntry)
     addResult.storedValue->value = WTF::wrapUnique(new BlockSet);
   addResult.storedValue->value->insert(block);

@@ -86,7 +86,7 @@ void MatchedPropertiesCache::add(const ComputedStyle& style,
                                  unsigned hash,
                                  const MatchedPropertiesVector& properties) {
   ASSERT(hash);
-  Cache::AddResult addResult = m_cache.add(hash, nullptr);
+  Cache::AddResult addResult = m_cache.insert(hash, nullptr);
   if (addResult.isNewEntry)
     addResult.storedValue->value = new CachedMatchedProperties;
 

@@ -150,7 +150,7 @@ void SVGTextLayoutAttributesBuilder::buildCharacterDataMap(
 
   // Handle x/y default attributes.
   SVGCharacterData& data =
-      m_characterDataMap.add(1, SVGCharacterData()).storedValue->value;
+      m_characterDataMap.insert(1, SVGCharacterData()).storedValue->value;
   if (!data.hasX())
     data.x = 0;
   if (!data.hasY())
@@ -234,7 +234,7 @@ void SVGTextLayoutAttributesBuilder::fillCharacterDataMap(
   AttributeListsIterator attrLists(position.element);
   for (unsigned i = 0; attrLists.hasAttributes() && i < position.length; ++i) {
     SVGCharacterData& data =
-        m_characterDataMap.add(position.start + i + 1, SVGCharacterData())
+        m_characterDataMap.insert(position.start + i + 1, SVGCharacterData())
             .storedValue->value;
     attrLists.updateCharacterData(i, data);
   }

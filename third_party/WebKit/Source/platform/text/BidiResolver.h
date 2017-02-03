@@ -1210,7 +1210,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::setMidpointStateForIsolatedRun(
     Run& run,
     const MidpointState<Iterator>& midpoint) {
   ASSERT(!m_midpointStateForIsolatedRun.contains(&run));
-  m_midpointStateForIsolatedRun.add(&run, midpoint);
+  m_midpointStateForIsolatedRun.insert(&run, midpoint);
 }
 
 template <class Iterator, class Run, class IsolatedRun>

@@ -159,7 +159,8 @@ const InterpolationTypes& SVGInterpolationTypesMap::get(
   applicableTypes->push_back(
       WTF::makeUnique<SVGValueInterpolationType>(attribute));
 
-  auto addResult = applicableTypesMap.add(property, std::move(applicableTypes));
+  auto addResult =
+      applicableTypesMap.insert(property, std::move(applicableTypes));
   return *addResult.storedValue->value.get();
 }
 

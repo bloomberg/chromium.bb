@@ -135,7 +135,7 @@ class ShapeOutsideInfo final {
     if (ShapeOutsideInfo* info = infoMap.get(&key))
       return *info;
     InfoMap::AddResult result =
-        infoMap.add(&key, ShapeOutsideInfo::createInfo(key));
+        infoMap.insert(&key, ShapeOutsideInfo::createInfo(key));
     return *result.storedValue->value;
   }
   static void removeInfo(const LayoutBox& key) { infoMap().erase(&key); }

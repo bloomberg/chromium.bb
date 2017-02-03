@@ -124,7 +124,7 @@ MemoryCache::ResourceMap* MemoryCache::ensureResourceMap(
     const String& cacheIdentifier) {
   if (!m_resourceMaps.contains(cacheIdentifier)) {
     ResourceMapIndex::AddResult result =
-        m_resourceMaps.add(cacheIdentifier, new ResourceMap);
+        m_resourceMaps.insert(cacheIdentifier, new ResourceMap);
     CHECK(result.isNewEntry);
   }
   return m_resourceMaps.get(cacheIdentifier);

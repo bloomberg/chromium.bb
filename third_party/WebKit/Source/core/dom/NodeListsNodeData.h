@@ -89,8 +89,8 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
               CollectionType collectionType,
               const AtomicString& name) {
     DCHECK(ThreadState::current()->isGCForbidden());
-    NodeListAtomicNameCacheMap::AddResult result =
-        m_atomicNameCaches.add(namedNodeListKey(collectionType, name), nullptr);
+    NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.insert(
+        namedNodeListKey(collectionType, name), nullptr);
     if (!result.isNewEntry) {
       return static_cast<T*>(result.storedValue->value.get());
     }
@@ -103,7 +103,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   template <typename T>
   T* addCache(ContainerNode& node, CollectionType collectionType) {
     DCHECK(ThreadState::current()->isGCForbidden());
-    NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(
+    NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.insert(
         namedNodeListKey(collectionType, starAtom), nullptr);
     if (!result.isNewEntry) {
       return static_cast<T*>(result.storedValue->value.get());
@@ -126,7 +126,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     DCHECK(ThreadState::current()->isGCForbidden());
     QualifiedName name(nullAtom, localName, namespaceURI);
     TagCollectionCacheNS::AddResult result =
-        m_tagCollectionCacheNS.add(name, nullptr);
+        m_tagCollectionCacheNS.insert(name, nullptr);
     if (!result.isNewEntry)
       return result.storedValue->value;
 

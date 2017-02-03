@@ -629,9 +629,9 @@ static inline void setLogicalWidthForTextRun(
     ASSERT(run->m_box->isText());
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
         textBoxDataMap
-            .add(toInlineTextBox(run->m_box),
-                 std::make_pair(Vector<const SimpleFontData*>(),
-                                GlyphOverflow()))
+            .insert(toInlineTextBox(run->m_box),
+                    std::make_pair(Vector<const SimpleFontData*>(),
+                                   GlyphOverflow()))
             .storedValue;
     ASSERT(it->value.first.isEmpty());
     copyToVector(fallbackFonts, it->value.first);
@@ -641,9 +641,9 @@ static inline void setLogicalWidthForTextRun(
     ASSERT(run->m_box->isText());
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
         textBoxDataMap
-            .add(toInlineTextBox(run->m_box),
-                 std::make_pair(Vector<const SimpleFontData*>(),
-                                GlyphOverflow()))
+            .insert(toInlineTextBox(run->m_box),
+                    std::make_pair(Vector<const SimpleFontData*>(),
+                                   GlyphOverflow()))
             .storedValue;
     it->value.second = glyphOverflow;
     run->m_box->clearKnownToHaveNoOverflow();

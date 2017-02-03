@@ -50,7 +50,7 @@ void copyToActiveInterpolationsMap(
     if (propertyHandleFilter && !propertyHandleFilter(property))
       continue;
     ActiveInterpolationsMap::AddResult entry =
-        target.add(property, ActiveInterpolations(1));
+        target.insert(property, ActiveInterpolations(1));
     ActiveInterpolations& activeInterpolations = entry.storedValue->value;
     if (!entry.isNewEntry &&
         (RuntimeEnabledFeatures::stackedCSSPropertyAnimationsEnabled() ||

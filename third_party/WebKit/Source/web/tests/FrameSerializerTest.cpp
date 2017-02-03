@@ -107,7 +107,7 @@ class FrameSerializerTest : public testing::Test,
   }
 
   void registerRewriteURL(const char* fromURL, const char* toURL) {
-    m_rewriteURLs.add(fromURL, toURL);
+    m_rewriteURLs.insert(fromURL, toURL);
   }
 
   void registerSkipURL(const char* url) {

@@ -79,7 +79,7 @@ void SQLTransactionCoordinator::acquireLock(
   if (coordinationInfoIterator == m_coordinationInfoMap.end()) {
     // No pending transactions for this DB
     CoordinationInfo& info =
-        m_coordinationInfoMap.add(dbIdentifier, CoordinationInfo())
+        m_coordinationInfoMap.insert(dbIdentifier, CoordinationInfo())
             .storedValue->value;
     info.pendingTransactions.append(transaction);
     processPendingTransactions(info);

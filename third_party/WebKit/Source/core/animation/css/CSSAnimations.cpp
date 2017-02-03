@@ -502,7 +502,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
         m_pendingUpdate.newTransitions().find(id) !=
             m_pendingUpdate.newTransitions().end() &&
         !animation->limited())
-      retargetedCompositorTransitions.add(
+      retargetedCompositorTransitions.insert(
           id, std::pair<KeyframeEffectReadOnly*, double>(
                   effect, animation->startTimeInternal()));
     animation->cancel();

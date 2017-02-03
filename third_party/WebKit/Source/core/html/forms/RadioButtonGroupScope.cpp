@@ -95,7 +95,7 @@ void RadioButtonGroup::updateRequiredButton(MemberKeyValue& it,
 
 void RadioButtonGroup::add(HTMLInputElement* button) {
   DCHECK_EQ(button->type(), InputTypeNames::radio);
-  auto addResult = m_members.add(button, false);
+  auto addResult = m_members.insert(button, false);
   if (!addResult.isNewEntry)
     return;
   bool groupWasValid = isValid();
@@ -214,7 +214,8 @@ void RadioButtonGroupScope::addButton(HTMLInputElement* element) {
   if (!m_nameToGroupMap)
     m_nameToGroupMap = new NameToGroupMap;
 
-  auto keyValue = m_nameToGroupMap->add(element->name(), nullptr).storedValue;
+  auto keyValue =
+      m_nameToGroupMap->insert(element->name(), nullptr).storedValue;
   if (!keyValue->value)
     keyValue->value = RadioButtonGroup::create();
   keyValue->value->add(element);

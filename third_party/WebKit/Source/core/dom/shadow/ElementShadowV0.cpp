@@ -205,7 +205,7 @@ void ElementShadowV0::distribute() {
 void ElementShadowV0::didDistributeNode(const Node* node,
                                         InsertionPoint* insertionPoint) {
   NodeToDestinationInsertionPoints::AddResult result =
-      m_nodeToInsertionPoints.add(node, nullptr);
+      m_nodeToInsertionPoints.insert(node, nullptr);
   if (result.isNewEntry)
     result.storedValue->value = new DestinationInsertionPoints;
   result.storedValue->value->push_back(insertionPoint);

@@ -43,29 +43,30 @@ using RestrictedKeyMap = HashMap<String, NavigationTimingFunction>;
 
 RestrictedKeyMap* createRestrictedKeyMap() {
   RestrictedKeyMap* map = new RestrictedKeyMap();
-  map->add("navigationStart", &PerformanceTiming::navigationStart);
-  map->add("unloadEventStart", &PerformanceTiming::unloadEventStart);
-  map->add("unloadEventEnd", &PerformanceTiming::unloadEventEnd);
-  map->add("redirectStart", &PerformanceTiming::redirectStart);
-  map->add("redirectEnd", &PerformanceTiming::redirectEnd);
-  map->add("fetchStart", &PerformanceTiming::fetchStart);
-  map->add("domainLookupStart", &PerformanceTiming::domainLookupStart);
-  map->add("domainLookupEnd", &PerformanceTiming::domainLookupEnd);
-  map->add("connectStart", &PerformanceTiming::connectStart);
-  map->add("connectEnd", &PerformanceTiming::connectEnd);
-  map->add("secureConnectionStart", &PerformanceTiming::secureConnectionStart);
-  map->add("requestStart", &PerformanceTiming::requestStart);
-  map->add("responseStart", &PerformanceTiming::responseStart);
-  map->add("responseEnd", &PerformanceTiming::responseEnd);
-  map->add("domLoading", &PerformanceTiming::domLoading);
-  map->add("domInteractive", &PerformanceTiming::domInteractive);
-  map->add("domContentLoadedEventStart",
-           &PerformanceTiming::domContentLoadedEventStart);
-  map->add("domContentLoadedEventEnd",
-           &PerformanceTiming::domContentLoadedEventEnd);
-  map->add("domComplete", &PerformanceTiming::domComplete);
-  map->add("loadEventStart", &PerformanceTiming::loadEventStart);
-  map->add("loadEventEnd", &PerformanceTiming::loadEventEnd);
+  map->insert("navigationStart", &PerformanceTiming::navigationStart);
+  map->insert("unloadEventStart", &PerformanceTiming::unloadEventStart);
+  map->insert("unloadEventEnd", &PerformanceTiming::unloadEventEnd);
+  map->insert("redirectStart", &PerformanceTiming::redirectStart);
+  map->insert("redirectEnd", &PerformanceTiming::redirectEnd);
+  map->insert("fetchStart", &PerformanceTiming::fetchStart);
+  map->insert("domainLookupStart", &PerformanceTiming::domainLookupStart);
+  map->insert("domainLookupEnd", &PerformanceTiming::domainLookupEnd);
+  map->insert("connectStart", &PerformanceTiming::connectStart);
+  map->insert("connectEnd", &PerformanceTiming::connectEnd);
+  map->insert("secureConnectionStart",
+              &PerformanceTiming::secureConnectionStart);
+  map->insert("requestStart", &PerformanceTiming::requestStart);
+  map->insert("responseStart", &PerformanceTiming::responseStart);
+  map->insert("responseEnd", &PerformanceTiming::responseEnd);
+  map->insert("domLoading", &PerformanceTiming::domLoading);
+  map->insert("domInteractive", &PerformanceTiming::domInteractive);
+  map->insert("domContentLoadedEventStart",
+              &PerformanceTiming::domContentLoadedEventStart);
+  map->insert("domContentLoadedEventEnd",
+              &PerformanceTiming::domContentLoadedEventEnd);
+  map->insert("domComplete", &PerformanceTiming::domComplete);
+  map->insert("loadEventStart", &PerformanceTiming::loadEventStart);
+  map->insert("loadEventEnd", &PerformanceTiming::loadEventEnd);
   return map;
 }
 

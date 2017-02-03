@@ -47,14 +47,14 @@ void V0CustomElementUpgradeCandidateMap::add(
   observe(element);
 
   UpgradeCandidateMap::AddResult result =
-      m_upgradeCandidates.add(element, descriptor);
+      m_upgradeCandidates.insert(element, descriptor);
   DCHECK(result.isNewEntry);
 
   UnresolvedDefinitionMap::iterator it =
       m_unresolvedDefinitions.find(descriptor);
   ElementSet* elements;
   if (it == m_unresolvedDefinitions.end())
-    elements = m_unresolvedDefinitions.add(descriptor, new ElementSet())
+    elements = m_unresolvedDefinitions.insert(descriptor, new ElementSet())
                    .storedValue->value.get();
   else
     elements = it->value.get();

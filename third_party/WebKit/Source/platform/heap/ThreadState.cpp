@@ -1394,7 +1394,7 @@ void ThreadState::registerStaticPersistentNode(
 #endif
 
   ASSERT(!m_staticPersistents.contains(node));
-  m_staticPersistents.add(node, callback);
+  m_staticPersistents.insert(node, callback);
 }
 
 void ThreadState::releaseStaticPersistentNodes() {

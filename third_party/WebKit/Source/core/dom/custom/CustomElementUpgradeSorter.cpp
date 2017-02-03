@@ -26,7 +26,7 @@ static HTMLLinkElement* getLinkElementForImport(const Document& import) {
 
 CustomElementUpgradeSorter::AddResult
 CustomElementUpgradeSorter::addToParentChildMap(Node* parent, Node* child) {
-  ParentChildMap::AddResult result = m_parentChildMap->add(parent, nullptr);
+  ParentChildMap::AddResult result = m_parentChildMap->insert(parent, nullptr);
   if (!result.isNewEntry) {
     result.storedValue->value->insert(child);
     // The entry for the parent exists; so must its parents.

@@ -188,7 +188,7 @@ StylePropertySet* computePresentationAttributeStyle(Element& element) {
   PresentationAttributeCache::ValueType* cacheValue;
   if (cacheHash) {
     cacheValue =
-        presentationAttributeCache().add(cacheHash, nullptr).storedValue;
+        presentationAttributeCache().insert(cacheHash, nullptr).storedValue;
     if (cacheValue->value && cacheValue->value->key != cacheKey)
       cacheHash = 0;
   } else {

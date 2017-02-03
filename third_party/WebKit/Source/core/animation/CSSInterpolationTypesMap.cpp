@@ -313,7 +313,8 @@ const InterpolationTypes& CSSInterpolationTypesMap::get(
   applicableTypes->push_back(
       WTF::makeUnique<CSSValueInterpolationType>(usedProperty));
 
-  auto addResult = applicableTypesMap.add(property, std::move(applicableTypes));
+  auto addResult =
+      applicableTypesMap.insert(property, std::move(applicableTypes));
   return *addResult.storedValue->value;
 }
 

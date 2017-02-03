@@ -468,7 +468,7 @@ void FloatingObjects::moveAllToFloatInfoMap(LayoutBoxToFloatInfoMap& map) {
   while (!m_set.isEmpty()) {
     std::unique_ptr<FloatingObject> floatingObject = m_set.takeFirst();
     LayoutBox* layoutObject = floatingObject->layoutObject();
-    map.add(layoutObject, std::move(floatingObject));
+    map.insert(layoutObject, std::move(floatingObject));
   }
   clear();
 }

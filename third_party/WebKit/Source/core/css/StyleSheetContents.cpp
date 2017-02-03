@@ -312,7 +312,7 @@ void StyleSheetContents::parserAddNamespace(const AtomicString& prefix,
     m_defaultNamespace = uri;
     return;
   }
-  PrefixNamespaceURIMap::AddResult result = m_namespaces.add(prefix, uri);
+  PrefixNamespaceURIMap::AddResult result = m_namespaces.insert(prefix, uri);
   if (result.isNewEntry)
     return;
   result.storedValue->value = uri;

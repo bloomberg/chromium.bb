@@ -51,7 +51,7 @@ void CSSImageGeneratorValue::addClient(const LayoutObject* layoutObject,
 
   LayoutObjectSizeCountMap::iterator it = m_clients.find(layoutObject);
   if (it == m_clients.end()) {
-    m_clients.add(layoutObject, SizeAndCount(size, 1));
+    m_clients.insert(layoutObject, SizeAndCount(size, 1));
   } else {
     SizeAndCount& sizeCount = it->value;
     ++sizeCount.count;
@@ -109,7 +109,7 @@ Image* CSSImageGeneratorValue::getImage(const LayoutObject* layoutObject,
 
 void CSSImageGeneratorValue::putImage(const IntSize& size,
                                       PassRefPtr<Image> image) {
-  m_images.add(size, std::move(image));
+  m_images.insert(size, std::move(image));
 }
 
 PassRefPtr<Image> CSSImageGeneratorValue::image(

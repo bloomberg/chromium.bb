@@ -162,7 +162,7 @@ FloatRect GeometryMapper::ancestorToLocalRect(
 
 PrecomputedDataForAncestor& GeometryMapper::getPrecomputedDataForAncestor(
     const TransformPaintPropertyNode* ancestorTransformNode) {
-  auto addResult = m_data.add(ancestorTransformNode, nullptr);
+  auto addResult = m_data.insert(ancestorTransformNode, nullptr);
   if (addResult.isNewEntry)
     addResult.storedValue->value = PrecomputedDataForAncestor::create();
   return *addResult.storedValue->value;

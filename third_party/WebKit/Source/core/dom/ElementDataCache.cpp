@@ -49,7 +49,7 @@ ElementDataCache::cachedShareableElementDataWithAttributes(
   DCHECK(!attributes.isEmpty());
 
   ShareableElementDataCache::ValueType* it =
-      m_shareableElementDataCache.add(attributeHash(attributes), nullptr)
+      m_shareableElementDataCache.insert(attributeHash(attributes), nullptr)
           .storedValue;
 
   // FIXME: This prevents sharing when there's a hash collision.

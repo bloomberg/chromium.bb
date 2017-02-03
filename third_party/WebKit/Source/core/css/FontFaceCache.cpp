@@ -47,7 +47,7 @@ FontFaceCache::FontFaceCache() : m_version(0) {}
 void FontFaceCache::add(CSSFontSelector* cssFontSelector,
                         const StyleRuleFontFace* fontFaceRule,
                         FontFace* fontFace) {
-  if (!m_styleRuleToFontFace.add(fontFaceRule, fontFace).isNewEntry)
+  if (!m_styleRuleToFontFace.insert(fontFaceRule, fontFace).isNewEntry)
     return;
   addFontFace(cssFontSelector, fontFace, true);
 }
@@ -56,13 +56,13 @@ void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector,
                                 FontFace* fontFace,
                                 bool cssConnected) {
   FamilyToTraitsMap::AddResult traitsResult =
-      m_fontFaces.add(fontFace->family(), nullptr);
+      m_fontFaces.insert(fontFace->family(), nullptr);
   if (!traitsResult.storedValue->value)
     traitsResult.storedValue->value = new TraitsMap;
 
   TraitsMap::AddResult segmentedFontFaceResult =
-      traitsResult.storedValue->value->add(fontFace->traits().bitfield(),
-                                           nullptr);
+      traitsResult.storedValue->value->insert(fontFace->traits().bitfield(),
+                                              nullptr);
   if (!segmentedFontFaceResult.storedValue->value)
     segmentedFontFaceResult.storedValue->value =
         CSSSegmentedFontFace::create(cssFontSelector, fontFace->traits());
@@ -137,13 +137,13 @@ CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
   if (!familyFontFaces || familyFontFaces->isEmpty())
     return nullptr;
 
-  FamilyToTraitsMap::AddResult traitsResult = m_fonts.add(family, nullptr);
+  FamilyToTraitsMap::AddResult traitsResult = m_fonts.insert(family, nullptr);
   if (!traitsResult.storedValue->value)
     traitsResult.storedValue->value = new TraitsMap;
 
   FontTraits traits = fontDescription.traits();
   TraitsMap::AddResult faceResult =
-      traitsResult.storedValue->value->add(traits.bitfield(), nullptr);
+      traitsResult.storedValue->value->insert(traits.bitfield(), nullptr);
   if (!faceResult.storedValue->value) {
     for (const auto& item : *familyFontFaces) {
       CSSSegmentedFontFace* candidate = item.value.get();

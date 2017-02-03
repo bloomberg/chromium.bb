@@ -144,7 +144,7 @@ void IDBDatabase::setDatabaseMetadata(const IDBDatabaseMetadata& metadata) {
 void IDBDatabase::transactionCreated(IDBTransaction* transaction) {
   DCHECK(transaction);
   DCHECK(!m_transactions.contains(transaction->id()));
-  m_transactions.add(transaction->id(), transaction);
+  m_transactions.insert(transaction->id(), transaction);
 
   if (transaction->isVersionChange()) {
     DCHECK(!m_versionChangeTransaction);
