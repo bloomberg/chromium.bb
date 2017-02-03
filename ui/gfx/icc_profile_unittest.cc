@@ -17,17 +17,6 @@ TEST(ICCProfile, Conversions) {
   ICCProfile icc_profile_from_color_space =
       ICCProfile::FromColorSpace(color_space_from_icc_profile);
   EXPECT_TRUE(icc_profile == icc_profile_from_color_space);
-
-  sk_sp<SkColorSpace> sk_color_space_from_color_space =
-      color_space_from_icc_profile.ToSkColorSpace();
-
-  ColorSpace color_space_from_sk_color_space =
-      ColorSpace::FromSkColorSpace(sk_color_space_from_color_space);
-  EXPECT_TRUE(color_space_from_icc_profile == color_space_from_sk_color_space);
-
-  ICCProfile icc_profile_from_color_space_from_sk_color_space =
-      ICCProfile::FromColorSpace(color_space_from_sk_color_space);
-  EXPECT_TRUE(icc_profile == icc_profile_from_color_space_from_sk_color_space);
 }
 
 TEST(ICCProfile, SRGB) {
@@ -35,14 +24,8 @@ TEST(ICCProfile, SRGB) {
   sk_sp<SkColorSpace> sk_color_space =
       SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
 
-  ColorSpace color_space_from_sk_color_space =
-      ColorSpace::FromSkColorSpace(sk_color_space);
-  EXPECT_TRUE(color_space == color_space_from_sk_color_space);
-
-  sk_sp<SkColorSpace> sk_color_space_from_color_space =
-      color_space.ToSkColorSpace();
-  EXPECT_TRUE(SkColorSpace::Equals(sk_color_space.get(),
-                                   sk_color_space_from_color_space.get()));
+  // These should be the same pointer, not just equal.
+  EXPECT_EQ(color_space.ToSkColorSpace().get(), sk_color_space.get());
 }
 
 TEST(ICCProfile, Equality) {
@@ -64,6 +47,12 @@ TEST(ICCProfile, Equality) {
   EXPECT_FALSE(spin_profile != ICCProfile::FromColorSpace(spin_space));
   EXPECT_FALSE(spin_profile == ICCProfile::FromColorSpace(adobe_space));
   EXPECT_TRUE(spin_profile != ICCProfile::FromColorSpace(adobe_space));
+
+  EXPECT_TRUE(!!spin_space.ToSkColorSpace());
+  EXPECT_TRUE(!!adobe_space.ToSkColorSpace());
+  EXPECT_FALSE(SkColorSpace::Equals(
+      spin_space.ToSkColorSpace().get(),
+      adobe_space.ToSkColorSpace().get()));
 }
 
 }  // namespace gfx

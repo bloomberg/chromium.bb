@@ -84,8 +84,6 @@ class GFX_EXPORT ICCProfile {
                                    size_t size,
                                    uint64_t id);
 
-  // TODO(ccameron): Remove this function once its callerrs are gone.
-  static ICCProfile FromSkColorSpace(sk_sp<SkColorSpace> color_space);
   static bool IsValidProfileLength(size_t length);
   void ComputeColorSpaceAndCache();
 

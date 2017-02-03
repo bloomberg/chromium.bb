@@ -90,8 +90,8 @@ void ContentLayerDelegate::paintContents(
       webDisplayItemList);
 
   if (m_graphicsLayer->colorBehavior().isTransformToTargetColorSpace()) {
-    webDisplayItemList->setImpliedColorSpace(gfx::ColorSpace::FromSkColorSpace(
-        m_graphicsLayer->colorBehavior().targetColorSpace()));
+    webDisplayItemList->setImpliedColorSpace(
+        m_graphicsLayer->colorBehavior().targetColorSpace());
   }
   paintController.setDisplayItemConstructionIsDisabled(false);
   paintController.setSubsequenceCachingIsDisabled(false);

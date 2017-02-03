@@ -124,9 +124,9 @@ class Canvas2DLayerBridgeTest : public Test {
       std::unique_ptr<FakeWebGraphicsContext3DProvider> provider,
       const IntSize& size,
       Canvas2DLayerBridge::AccelerationMode accelerationMode) {
-    RefPtr<Canvas2DLayerBridge> bridge = adoptRef(
-        new Canvas2DLayerBridge(std::move(provider), size, 0, NonOpaque,
-                                accelerationMode, nullptr, kN32_SkColorType));
+    RefPtr<Canvas2DLayerBridge> bridge = adoptRef(new Canvas2DLayerBridge(
+        std::move(provider), size, 0, NonOpaque, accelerationMode,
+        gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType));
     bridge->dontUseIdleSchedulingForTesting();
     return bridge.release();
   }
@@ -139,7 +139,8 @@ class Canvas2DLayerBridgeTest : public Test {
 
     Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
         std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
-        Canvas2DLayerBridge::DisableAcceleration, nullptr, kN32_SkColorType)));
+        Canvas2DLayerBridge::DisableAcceleration, gfx::ColorSpace::CreateSRGB(),
+        false, kN32_SkColorType)));
 
     const GrGLTextureInfo* textureInfo = skia::GrBackendObjectToGrGLTextureInfo(
         bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnitTests)
@@ -156,7 +157,8 @@ class Canvas2DLayerBridgeTest : public Test {
     gl.setIsContextLost(true);
     Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
         std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
-        Canvas2DLayerBridge::EnableAcceleration, nullptr, kN32_SkColorType)));
+        Canvas2DLayerBridge::EnableAcceleration, gfx::ColorSpace::CreateSRGB(),
+        false, kN32_SkColorType)));
     EXPECT_TRUE(bridge->checkSurfaceValid());
     EXPECT_FALSE(bridge->isAccelerated());
   }
@@ -169,7 +171,8 @@ class Canvas2DLayerBridgeTest : public Test {
           WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
       Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
           std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
-          Canvas2DLayerBridge::EnableAcceleration, nullptr, kN32_SkColorType)));
+          Canvas2DLayerBridge::EnableAcceleration,
+          gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
       EXPECT_TRUE(bridge->checkSurfaceValid());
       EXPECT_TRUE(bridge->isAccelerated());
       sk_sp<SkImage> snapshot =
@@ -186,7 +189,8 @@ class Canvas2DLayerBridgeTest : public Test {
       GrContext* gr = contextProvider->grContext();
       Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
           std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
-          Canvas2DLayerBridge::EnableAcceleration, nullptr, kN32_SkColorType)));
+          Canvas2DLayerBridge::EnableAcceleration,
+          gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
       EXPECT_TRUE(bridge->checkSurfaceValid());
       EXPECT_TRUE(bridge->isAccelerated());  // We don't yet know that
                                              // allocation will fail.
@@ -207,8 +211,8 @@ class Canvas2DLayerBridgeTest : public Test {
 
     Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
         std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
-        Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
-        kN32_SkColorType)));
+        Canvas2DLayerBridge::ForceAccelerationForTesting,
+        gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
     EXPECT_TRUE(bridge->checkSurfaceValid());
     PaintFlags paint;
     uint32_t genID = bridge->getOrCreateSurface()->generationID();
@@ -233,8 +237,8 @@ class Canvas2DLayerBridgeTest : public Test {
         WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
     Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
         std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
-        Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
-        kN32_SkColorType)));
+        Canvas2DLayerBridge::ForceAccelerationForTesting,
+        gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
 
     // TODO(junov): The PrepareTextureMailbox() method will fail a DCHECK if we
     // don't do this before calling it the first time when the context is lost.
@@ -256,8 +260,8 @@ class Canvas2DLayerBridgeTest : public Test {
         WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
     Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
         std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
-        Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
-        kN32_SkColorType)));
+        Canvas2DLayerBridge::ForceAccelerationForTesting,
+        gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
 
     // TODO(junov): The PrepareTextureMailbox() method will fail a DCHECK if we
     // don't do this before calling it the first time when the context is lost.
@@ -289,8 +293,8 @@ class Canvas2DLayerBridgeTest : public Test {
           WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
       Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
           std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
-          Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
-          kN32_SkColorType)));
+          Canvas2DLayerBridge::ForceAccelerationForTesting,
+          gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
 
       cc::TextureMailbox textureMailbox;
       std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
@@ -313,8 +317,8 @@ class Canvas2DLayerBridgeTest : public Test {
       {
         Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
             std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
-            Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
-            kN32_SkColorType)));
+            Canvas2DLayerBridge::ForceAccelerationForTesting,
+            gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
         bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback);
         // |bridge| goes out of scope and would normally be destroyed, but
         // object is kept alive by self references.
@@ -336,7 +340,8 @@ class Canvas2DLayerBridgeTest : public Test {
           WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
       Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
           std::move(contextProvider), IntSize(300, 300), 0, NonOpaque,
-          Canvas2DLayerBridge::EnableAcceleration, nullptr, kN32_SkColorType)));
+          Canvas2DLayerBridge::EnableAcceleration,
+          gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
       PaintFlags paint;
       bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
       sk_sp<SkImage> image =
@@ -351,7 +356,8 @@ class Canvas2DLayerBridgeTest : public Test {
           WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
       Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
           std::move(contextProvider), IntSize(300, 300), 0, NonOpaque,
-          Canvas2DLayerBridge::EnableAcceleration, nullptr, kN32_SkColorType)));
+          Canvas2DLayerBridge::EnableAcceleration,
+          gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
       PaintFlags paint;
       bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
       sk_sp<SkImage> image = bridge->newImageSnapshot(PreferNoAcceleration,
@@ -1299,8 +1305,8 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_DeleteIOSurfaceAfterTeardown)
   {
     Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
         std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
-        Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
-        kN32_SkColorType)));
+        Canvas2DLayerBridge::ForceAccelerationForTesting,
+        gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
     bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback);
   }
 
@@ -1324,8 +1330,8 @@ TEST_F(Canvas2DLayerBridgeTest, NoUnnecessaryFlushes) {
   EXPECT_CALL(gl, Flush()).Times(0);
   Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
       std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
-      Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
-      kN32_SkColorType)));
+      Canvas2DLayerBridge::ForceAccelerationForTesting,
+      gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType)));
   EXPECT_FALSE(bridge->hasRecordedDrawCommands());
   ::testing::Mock::VerifyAndClearExpectations(&gl);
 

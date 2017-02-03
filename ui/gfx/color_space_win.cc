@@ -83,6 +83,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
     case gfx::ColorSpace::PrimaryID::SMPTEST432_1:
     case gfx::ColorSpace::PrimaryID::UNKNOWN:
     case gfx::ColorSpace::PrimaryID::XYZ_D50:
+    case gfx::ColorSpace::PrimaryID::ADOBE_RGB:
     case gfx::ColorSpace::PrimaryID::CUSTOM:
       // Not handled
       break;

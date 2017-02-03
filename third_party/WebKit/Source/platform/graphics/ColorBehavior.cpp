@@ -16,7 +16,7 @@ namespace {
 
 // The output device color space is global and shared across multiple threads.
 SpinLock gTargetColorSpaceLock;
-SkColorSpace* gTargetColorSpace = nullptr;
+gfx::ColorSpace* gTargetColorSpace = nullptr;
 
 }  // namespace
 
@@ -32,11 +32,10 @@ void ColorBehavior::setGlobalTargetColorProfile(
     return;
 
   // Attempt to convert the ICC profile to an SkColorSpace.
-  if (!(profile == gfx::ICCProfile())) {
-    sk_sp<SkColorSpace> space = profile.GetColorSpace().ToSkColorSpace();
-    gTargetColorSpace = space.release();
+  if (profile != gfx::ICCProfile()) {
+    gTargetColorSpace = new gfx::ColorSpace(profile.GetColorSpace());
 
-    const std::vector<char>& data = profile.GetData();
+    std::vector<char> data = profile.GetData();
     sk_sp<SkICC> skICC = SkICC::Make(data.data(), data.size());
     if (skICC) {
       SkMatrix44 toXYZD50;
@@ -52,41 +51,36 @@ void ColorBehavior::setGlobalTargetColorProfile(
   }
 
   // If we do not succeed, assume sRGB.
-  if (!gTargetColorSpace) {
-    gTargetColorSpace =
-        SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named).release();
-  }
+  if (!gTargetColorSpace)
+    gTargetColorSpace = new gfx::ColorSpace(gfx::ColorSpace::CreateSRGB());
 
   // UMA statistics.
-  BitmapImageMetrics::countOutputGammaAndGamut(gTargetColorSpace);
+  BitmapImageMetrics::countOutputGammaAndGamut(
+      gTargetColorSpace->ToSkColorSpace().get());
 }
 
 void ColorBehavior::setGlobalTargetColorSpaceForTesting(
-    const sk_sp<SkColorSpace>& colorSpace) {
+    const gfx::ColorSpace& colorSpace) {
   // Take a lock around initializing and accessing the global device color
   // profile.
   SpinLock::Guard guard(gTargetColorSpaceLock);
 
-  SkSafeUnref(gTargetColorSpace);
-  gTargetColorSpace = colorSpace.get();
-  SkSafeRef(gTargetColorSpace);
+  delete gTargetColorSpace;
+  gTargetColorSpace = new gfx::ColorSpace(colorSpace);
 }
 
 // static
-sk_sp<SkColorSpace> ColorBehavior::globalTargetColorSpace() {
+const gfx::ColorSpace& ColorBehavior::globalTargetColorSpace() {
   // Take a lock around initializing and accessing the global device color
   // profile.
   SpinLock::Guard guard(gTargetColorSpaceLock);
 
   // Initialize the output device profile to sRGB if it has not yet been
   // initialized.
-  if (!gTargetColorSpace) {
-    gTargetColorSpace =
-        SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named).release();
-  }
+  if (!gTargetColorSpace)
+    gTargetColorSpace = new gfx::ColorSpace(gfx::ColorSpace::CreateSRGB());
 
-  gTargetColorSpace->ref();
-  return sk_sp<SkColorSpace>(gTargetColorSpace);
+  return *gTargetColorSpace;
 }
 
 // static
@@ -104,7 +98,7 @@ bool ColorBehavior::operator==(const ColorBehavior& other) const {
     return false;
   if (m_type != Type::TransformTo)
     return true;
-  return SkColorSpace::Equals(m_target.get(), other.m_target.get());
+  return m_target == other.m_target;
 }
 
 bool ColorBehavior::operator!=(const ColorBehavior& other) const {

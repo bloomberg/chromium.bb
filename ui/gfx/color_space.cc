@@ -64,6 +64,13 @@ ColorSpace::MatrixID ColorSpace::MatrixIDFromInt(int matrix_id) {
 ColorSpace::ColorSpace() {}
 
 ColorSpace::ColorSpace(PrimaryID primaries,
+                       TransferID transfer)
+    : primaries_(primaries),
+      transfer_(transfer),
+      matrix_(MatrixID::RGB),
+      range_(RangeID::FULL) {}
+
+ColorSpace::ColorSpace(PrimaryID primaries,
                        TransferID transfer,
                        MatrixID matrix,
                        RangeID range)
@@ -96,6 +103,10 @@ ColorSpace::ColorSpace(const ColorSpace& other)
 }
 
 ColorSpace::~ColorSpace() = default;
+
+bool ColorSpace::IsValid() const {
+  return *this != gfx::ColorSpace();
+}
 
 // static
 ColorSpace ColorSpace::CreateSRGB() {
@@ -250,21 +261,6 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   return SkColorSpace::MakeRGB(fn, to_xyz_d50);
 }
 
-ColorSpace ColorSpace::FromSkColorSpace(
-    const sk_sp<SkColorSpace>& sk_color_space) {
-  if (!sk_color_space)
-    return gfx::ColorSpace();
-  if (SkColorSpace::Equals(
-          sk_color_space.get(),
-          SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named).get()))
-    return gfx::ColorSpace::CreateSRGB();
-
-  // TODO(crbug.com/634102): Add conversion to gfx::ColorSpace for
-  // non-ICC-profile based color spaces.
-  ICCProfile icc_profile = ICCProfile::FromSkColorSpace(sk_color_space);
-  return icc_profile.GetColorSpace();
-}
-
 void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
   SkColorSpacePrimaries primaries = {0};
   switch (primaries_) {
@@ -389,6 +385,17 @@ void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
       primaries.fBY = 0.0f;
       primaries.fWX = 0.34567f;
       primaries.fWY = 0.35850f;
+      break;
+
+    case ColorSpace::PrimaryID::ADOBE_RGB:
+      primaries.fRX = 0.6400f;
+      primaries.fRY = 0.3300f;
+      primaries.fGX = 0.2100f;
+      primaries.fGY = 0.7100f;
+      primaries.fBX = 0.1500f;
+      primaries.fBY = 0.0600f;
+      primaries.fWX = 0.3127f;
+      primaries.fWY = 0.3290f;
       break;
   }
   primaries.toXYZD50(to_XYZD50);

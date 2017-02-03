@@ -80,58 +80,38 @@ WTF::String CanvasRenderingContext::colorSpaceAsString() const {
   return "";
 }
 
-sk_sp<SkColorSpace> CanvasRenderingContext::skColorSpace() const {
-  if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ||
-      !RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-    return nullptr;
-  }
+gfx::ColorSpace CanvasRenderingContext::gfxColorSpace() const {
   switch (m_colorSpace) {
     case kLegacyCanvasColorSpace:
-      // Legacy colorspace ensures color matching with CSS is preserved.
-      // So if CSS is color corrected from sRGB to display space, then
-      // canvas must do the same
-      return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
     case kSRGBCanvasColorSpace:
-      return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+      return gfx::ColorSpace::CreateSRGB();
     case kLinearRGBCanvasColorSpace:
-      return SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
-    case kRec2020CanvasColorSpace: {
-      // TODO(zakerinasab): Replace this with proper constructor from Skia
-      // when it is provided.
-      // https://en.wikipedia.org/wiki/Rec._2020
-      SkColorSpacePrimaries kPrimaries = {0.708, 0.292, 0.170,  0.797,
-                                          0.131, 0.046, 0.3127, 0.3290};
-      SkMatrix44 kToXYZD50;
-      if (!kPrimaries.toXYZD50(&kToXYZD50))
-        return nullptr;
-      return SkColorSpace::MakeRGB(
-          SkColorSpace::RenderTargetGamma::kLinear_RenderTargetGamma,
-          kToXYZD50);
-    }
-    case kP3CanvasColorSpace: {
-      // TODO(zakerinasab): Replace this with proper constructor from Skia
-      // when it is provided.
-      // https://en.wikipedia.org/wiki/DCI-P3
-      SkColorSpacePrimaries kPrimaries = {0.680, 0.320, 0.265,  0.690,
-                                          0.150, 0.060, 0.3127, 0.3290};
-      SkMatrix44 kToXYZD50;
-      if (!kPrimaries.toXYZD50(&kToXYZD50))
-        return nullptr;
-      return SkColorSpace::MakeRGB(
-          SkColorSpace::RenderTargetGamma::kLinear_RenderTargetGamma,
-          kToXYZD50);
-    }
-  };
-  CHECK(false);
+      return gfx::ColorSpace::CreateSCRGBLinear();
+    case kRec2020CanvasColorSpace:
+      return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
+                             gfx::ColorSpace::TransferID::IEC61966_2_1);
+    case kP3CanvasColorSpace:
+      return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTEST432_1,
+                             gfx::ColorSpace::TransferID::IEC61966_2_1);
+  }
+  NOTREACHED();
+  return gfx::ColorSpace();
+}
+
+sk_sp<SkColorSpace> CanvasRenderingContext::skSurfaceColorSpace() const {
+  if (skSurfacesUseColorSpace())
+    return gfxColorSpace().ToSkColorSpace();
   return nullptr;
+}
+
+bool CanvasRenderingContext::skSurfacesUseColorSpace() const {
+  return m_colorSpace != kLegacyCanvasColorSpace;
 }
 
 ColorBehavior CanvasRenderingContext::colorBehaviorForMediaDrawnToCanvas()
     const {
-  sk_sp<SkColorSpace> colorSpace = skColorSpace();
-  if (colorSpace) {
-    return ColorBehavior::transformTo(std::move(colorSpace));
-  }
+  if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+    return ColorBehavior::transformTo(gfxColorSpace());
   return ColorBehavior::transformToGlobalTarget();
 }
 

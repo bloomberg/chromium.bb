@@ -127,7 +127,8 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(
     int msaaSampleCount,
     OpacityMode opacityMode,
     AccelerationMode accelerationMode,
-    sk_sp<SkColorSpace> colorSpace,
+    const gfx::ColorSpace& colorSpace,
+    bool skSurfacesUseColorSpace,
     SkColorType colorType)
     : m_contextProvider(std::move(contextProvider)),
       m_logger(WTF::wrapUnique(new Logger)),
@@ -149,9 +150,11 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(
       m_opacityMode(opacityMode),
       m_size(size),
       m_colorSpace(colorSpace),
+      m_skSurfacesUseColorSpace(skSurfacesUseColorSpace),
       m_colorType(colorType) {
   DCHECK(m_contextProvider);
   DCHECK(!m_contextProvider->isSoftwareRendering());
+  DCHECK(m_colorSpace.IsValid());
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
@@ -278,10 +281,8 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(
       cc::TextureMailbox(mailbox, syncToken, textureTarget, gfx::Size(m_size),
                          isOverlayCandidate, secureOutputOnly);
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-    gfx::ColorSpace colorSpace =
-        gfx::ColorSpace::FromSkColorSpace(m_colorSpace);
-    outMailbox->set_color_space(colorSpace);
-    imageInfo->m_gpuMemoryBuffer->SetColorSpaceForScanout(colorSpace);
+    outMailbox->set_color_space(m_colorSpace);
+    imageInfo->m_gpuMemoryBuffer->SetColorSpaceForScanout(m_colorSpace);
   }
 
   gl->BindTexture(GC3D_TEXTURE_RECTANGLE_ARB, 0);
@@ -525,6 +526,12 @@ void Canvas2DLayerBridge::hibernate() {
   m_logger->didStartHibernating();
 }
 
+sk_sp<SkColorSpace> Canvas2DLayerBridge::skSurfaceColorSpace() const {
+  if (m_skSurfacesUseColorSpace)
+    return m_colorSpace.ToSkColorSpace();
+  return nullptr;
+}
+
 void Canvas2DLayerBridge::reportSurfaceCreationFailure() {
   if (!m_surfaceCreationFailedAtLeastOnce) {
     // Only count the failure once per instance so that the histogram may
@@ -555,7 +562,7 @@ PaintSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint) {
   bool surfaceIsAccelerated;
   m_surface = createSkSurface(
       wantAcceleration ? m_contextProvider->grContext() : nullptr, m_size,
-      m_msaaSampleCount, m_opacityMode, m_colorSpace, m_colorType,
+      m_msaaSampleCount, m_opacityMode, skSurfaceColorSpace(), m_colorType,
       &surfaceIsAccelerated);
 
   if (m_surface) {
@@ -860,10 +867,9 @@ bool Canvas2DLayerBridge::restoreSurface() {
   if (sharedGL && sharedGL->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     GrContext* grCtx = m_contextProvider->grContext();
     bool surfaceIsAccelerated;
-    sk_sp<PaintSurface> surface(
-        createSkSurface(grCtx, m_size, m_msaaSampleCount, m_opacityMode,
-                        m_colorSpace, m_colorType, &surfaceIsAccelerated));
-
+    sk_sp<PaintSurface> surface(createSkSurface(
+        grCtx, m_size, m_msaaSampleCount, m_opacityMode, skSurfaceColorSpace(),
+        m_colorType, &surfaceIsAccelerated));
     if (!m_surface)
       reportSurfaceCreationFailure();
 
@@ -880,31 +886,6 @@ bool Canvas2DLayerBridge::restoreSurface() {
     m_imageBuffer->updateGPUMemoryUsage();
 
   return m_surface.get();
-}
-
-static gfx::ColorSpace SkColorSpaceToColorSpace(
-    const SkColorSpace* skColorSpace) {
-  // TODO(crbug.com/634102): Eliminate this clumsy conversion by unifying
-  // SkColorSpace and gfx::ColorSpace.
-  if (!skColorSpace)
-    return gfx::ColorSpace();
-
-  gfx::ColorSpace::TransferID transferID =
-      gfx::ColorSpace::TransferID::UNSPECIFIED;
-  if (skColorSpace->gammaCloseToSRGB()) {
-    transferID = gfx::ColorSpace::TransferID::IEC61966_2_1;
-  } else if (skColorSpace->gammaIsLinear()) {
-    transferID = gfx::ColorSpace::TransferID::LINEAR;
-  } else {
-    // TODO(crbug.com/634102): Not all curve type are supported
-    DCHECK(false);
-  }
-
-  // TODO(crbug.com/634102): No primary conversions are performed.
-  // Rec-709 is assumed.
-  return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT709, transferID,
-                         gfx::ColorSpace::MatrixID::RGB,
-                         gfx::ColorSpace::RangeID::FULL);
 }
 
 bool Canvas2DLayerBridge::PrepareTextureMailbox(
@@ -948,8 +929,7 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
   if (!prepareMailboxFromImage(std::move(image), outMailbox))
     return false;
   outMailbox->set_nearest_neighbor(getGLFilter() == GL_NEAREST);
-  gfx::ColorSpace colorSpace = SkColorSpaceToColorSpace(m_colorSpace.get());
-  outMailbox->set_color_space(colorSpace);
+  outMailbox->set_color_space(m_colorSpace);
 
   auto func =
       WTF::bind(&Canvas2DLayerBridge::mailboxReleased,

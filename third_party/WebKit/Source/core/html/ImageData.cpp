@@ -371,7 +371,7 @@ sk_sp<SkColorSpace> ImageData::imageDataColorSpaceToSkColorSpace(
     ImageDataColorSpace colorSpace) {
   switch (colorSpace) {
     case kLegacyImageDataColorSpace:
-      return ColorBehavior::globalTargetColorSpace();
+      return ColorBehavior::globalTargetColorSpace().ToSkColorSpace();
     case kSRGBImageDataColorSpace:
       return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
     case kLinearRGBImageDataColorSpace:

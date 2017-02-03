@@ -37,12 +37,14 @@
 #include "public/platform/WebThread.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/color_space.h"
 #include "wtf/Allocator.h"
 #include "wtf/Deque.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
+
 #include <memory>
 
 class SkImage;
@@ -94,7 +96,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
                       int msaaSampleCount,
                       OpacityMode,
                       AccelerationMode,
-                      sk_sp<SkColorSpace>,
+                      const gfx::ColorSpace&,
+                      bool skSurfacesUseColorSpace,
                       SkColorType);
 
   ~Canvas2DLayerBridge() override;
@@ -141,7 +144,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   void beginDestruction();
   void hibernate();
   bool isHibernating() const { return m_hibernationImage.get(); }
-  sk_sp<SkColorSpace> colorSpace() const { return m_colorSpace; }
+  sk_sp<SkColorSpace> skSurfaceColorSpace() const;
   SkColorType colorType() const { return m_colorType; }
 
   bool hasRecordedDrawCommands() { return m_haveRecordedDrawCommands; }
@@ -289,7 +292,10 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   AccelerationMode m_accelerationMode;
   OpacityMode m_opacityMode;
   const IntSize m_size;
-  sk_sp<SkColorSpace> m_colorSpace;
+  // The color space that the compositor is to use. This will always be
+  // defined.
+  gfx::ColorSpace m_colorSpace;
+  bool m_skSurfacesUseColorSpace = false;
   SkColorType m_colorType;
   int m_recordingPixelCount;
 

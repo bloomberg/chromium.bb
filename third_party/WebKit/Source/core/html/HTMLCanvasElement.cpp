@@ -899,7 +899,8 @@ HTMLCanvasElement::createWebGLImageBufferSurface(OpacityMode opacityMode) {
   // then make a non-accelerated ImageBuffer. This means copying the internal
   // Image will require a pixel readback, but that is unavoidable in this case.
   auto surface = WTF::wrapUnique(new AcceleratedImageBufferSurface(
-      size(), opacityMode, m_context->skColorSpace(), m_context->colorType()));
+      size(), opacityMode, m_context->skSurfaceColorSpace(),
+      m_context->colorType()));
   if (surface->isValid())
     return std::move(surface);
   return nullptr;
@@ -930,8 +931,8 @@ HTMLCanvasElement::createAcceleratedImageBufferSurface(
   std::unique_ptr<ImageBufferSurface> surface =
       WTF::wrapUnique(new Canvas2DImageBufferSurface(
           std::move(contextProvider), size(), *msaaSampleCount, opacityMode,
-          Canvas2DLayerBridge::EnableAcceleration, m_context->skColorSpace(),
-          m_context->colorType()));
+          Canvas2DLayerBridge::EnableAcceleration, m_context->gfxColorSpace(),
+          m_context->skSurfacesUseColorSpace(), m_context->colorType()));
   if (!surface->isValid()) {
     CanvasMetrics::countCanvasContextUsage(
         CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreationFailed);
@@ -949,7 +950,7 @@ HTMLCanvasElement::createUnacceleratedImageBufferSurface(
   if (shouldUseDisplayList()) {
     auto surface = WTF::wrapUnique(new RecordingImageBufferSurface(
         size(), WTF::wrapUnique(new UnacceleratedSurfaceFactory), opacityMode,
-        m_context->skColorSpace(), m_context->colorType()));
+        m_context->skSurfaceColorSpace(), m_context->colorType()));
     if (surface->isValid()) {
       CanvasMetrics::countCanvasContextUsage(
           CanvasMetrics::DisplayList2DCanvasImageBufferCreated);
@@ -960,8 +961,9 @@ HTMLCanvasElement::createUnacceleratedImageBufferSurface(
   }
 
   auto surfaceFactory = WTF::makeUnique<UnacceleratedSurfaceFactory>();
-  auto surface = surfaceFactory->createSurface(
-      size(), opacityMode, m_context->skColorSpace(), m_context->colorType());
+  auto surface = surfaceFactory->createSurface(size(), opacityMode,
+                                               m_context->skSurfaceColorSpace(),
+                                               m_context->colorType());
   if (surface->isValid()) {
     CanvasMetrics::countCanvasContextUsage(
         CanvasMetrics::Unaccelerated2DCanvasImageBufferCreated);

@@ -529,13 +529,15 @@ SkColorSpaceXform* ImageDecoder::colorTransform() {
       return nullptr;
   }
 
-  if (SkColorSpace::Equals(m_embeddedColorSpace.get(),
-                           m_colorBehavior.targetColorSpace().get())) {
+  sk_sp<SkColorSpace> dstColorSpace =
+      m_colorBehavior.targetColorSpace().ToSkColorSpace();
+
+  if (SkColorSpace::Equals(srcColorSpace.get(), dstColorSpace.get())) {
     return nullptr;
   }
 
-  m_sourceToTargetColorTransform = SkColorSpaceXform::New(
-      m_embeddedColorSpace.get(), m_colorBehavior.targetColorSpace().get());
+  m_sourceToTargetColorTransform =
+      SkColorSpaceXform::New(srcColorSpace.get(), dstColorSpace.get());
   return m_sourceToTargetColorTransform.get();
 }
 

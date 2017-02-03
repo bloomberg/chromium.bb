@@ -50,6 +50,7 @@ class GFX_EXPORT ColorSpace {
     // Chrome-specific values start at 1000.
     UNKNOWN = 1000,
     XYZ_D50,
+    ADOBE_RGB,
     CUSTOM,
     LAST = CUSTOM
   };
@@ -139,6 +140,7 @@ class GFX_EXPORT ColorSpace {
   };
 
   ColorSpace();
+  ColorSpace(PrimaryID primaries, TransferID transfer);
   ColorSpace(PrimaryID primaries,
              TransferID transfer,
              MatrixID matrix,
@@ -150,6 +152,9 @@ class GFX_EXPORT ColorSpace {
   static PrimaryID PrimaryIDFromInt(int primary_id);
   static TransferID TransferIDFromInt(int transfer_id);
   static MatrixID MatrixIDFromInt(int matrix_id);
+
+  // Returns true if this is not the default-constructor object.
+  bool IsValid() const;
 
   static ColorSpace CreateSRGB();
   static ColorSpace CreateCustom(const SkMatrix44& to_XYZD50,
@@ -170,9 +175,9 @@ class GFX_EXPORT ColorSpace {
 
   bool IsHDR() const;
 
-  // Note that this may return nullptr.
+  // This will return nullptr for non-RGB spaces, spaces with non-FULL
+  // range, and unspecified spaces.
   sk_sp<SkColorSpace> ToSkColorSpace() const;
-  static ColorSpace FromSkColorSpace(const sk_sp<SkColorSpace>& sk_color_space);
 
   void GetPrimaryMatrix(SkMatrix44* to_XYZD50) const;
   bool GetTransferFunction(SkColorSpaceTransferFn* fn) const;

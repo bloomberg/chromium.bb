@@ -86,9 +86,15 @@ class CORE_EXPORT CanvasRenderingContext
 
   CanvasColorSpace colorSpace() const { return m_colorSpace; };
   WTF::String colorSpaceAsString() const;
-  sk_sp<SkColorSpace> skColorSpace() const;
+  // The color space in which the the content should be interpreted by the
+  // compositor. This is always defined.
+  gfx::ColorSpace gfxColorSpace() const;
+  // The color space that should be used for SkSurface creation. This may
+  // be nullptr.
+  sk_sp<SkColorSpace> skSurfaceColorSpace() const;
   SkColorType colorType() const;
   ColorBehavior colorBehaviorForMediaDrawnToCanvas() const;
+  bool skSurfacesUseColorSpace() const;
 
   virtual PassRefPtr<Image> getImage(AccelerationHint,
                                      SnapshotReason) const = 0;

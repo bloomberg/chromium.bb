@@ -58,8 +58,8 @@ class HTMLCanvasPainterTestForSPv2 : public ::testing::Test,
   PassRefPtr<Canvas2DLayerBridge> makeCanvas2DLayerBridge(const IntSize& size) {
     return adoptRef(new Canvas2DLayerBridge(
         WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&m_gl)), size, 0,
-        NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
-        kN32_SkColorType));
+        NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting,
+        gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType));
   }
 
  private:

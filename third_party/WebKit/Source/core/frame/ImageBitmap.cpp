@@ -82,7 +82,8 @@ ParsedOptions parseOptions(const ImageBitmapOptions& options,
         !RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
       DCHECK_EQ(options.colorSpaceConversion(), kImageBitmapOptionDefault);
       if (RuntimeEnabledFeatures::colorCorrectRenderingDefaultModeEnabled()) {
-        parsedOptions.dstColorSpace = ColorBehavior::globalTargetColorSpace();
+        parsedOptions.dstColorSpace =
+            ColorBehavior::globalTargetColorSpace().ToSkColorSpace();
         parsedOptions.dstColorType = SkColorType::kN32_SkColorType;
       }
     } else {

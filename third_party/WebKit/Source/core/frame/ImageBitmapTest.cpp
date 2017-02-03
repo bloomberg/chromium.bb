@@ -301,7 +301,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
         NOTREACHED();
         break;
       case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
-        colorSpace = ColorBehavior::globalTargetColorSpace();
+        colorSpace = ColorBehavior::globalTargetColorSpace().ToSkColorSpace();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
@@ -401,7 +401,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
         NOTREACHED();
         break;
       case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
-        colorSpace = ColorBehavior::globalTargetColorSpace();
+        colorSpace = ColorBehavior::globalTargetColorSpace().ToSkColorSpace();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
@@ -492,7 +492,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
         NOTREACHED();
         break;
       case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
-        colorSpace = ColorBehavior::globalTargetColorSpace();
+        colorSpace = ColorBehavior::globalTargetColorSpace().ToSkColorSpace();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
