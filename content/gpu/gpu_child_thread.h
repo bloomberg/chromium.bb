@@ -116,6 +116,9 @@ class GpuChildThread : public ChildThreadImpl,
   void OnClean();
   void OnCrash();
   void OnHang();
+#if defined(OS_ANDROID)
+  void OnJavaCrash();
+#endif
   void OnGpuSwitched();
 
   void OnEstablishChannel(const EstablishChannelParams& params);

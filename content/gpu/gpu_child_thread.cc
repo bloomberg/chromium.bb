@@ -51,6 +51,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/android/throw_uncaught_exception.h"
 #include "media/base/android/media_client_android.h"
 #include "media/gpu/avda_codec_allocator.h"
 #endif
@@ -252,6 +253,9 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_Clean, OnClean)
     IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
     IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(GpuMsg_JavaCrash, OnJavaCrash)
+#endif
     IPC_MESSAGE_HANDLER(GpuMsg_GpuSwitched, OnGpuSwitched)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -445,6 +449,12 @@ void GpuChildThread::OnHang() {
     // time this thread is using and it doesn't use much while calling Sleep.
   }
 }
+
+#if defined(OS_ANDROID)
+void GpuChildThread::OnJavaCrash() {
+  base::android::ThrowUncaughtException();
+}
+#endif
 
 void GpuChildThread::OnGpuSwitched() {
   DVLOG(1) << "GPU: GPU has switched";

@@ -166,6 +166,12 @@ void GpuProcessHostUIShim::SimulateHang() {
   Send(new GpuMsg_Hang());
 }
 
+#if defined(OS_ANDROID)
+void GpuProcessHostUIShim::SimulateJavaCrash() {
+  Send(new GpuMsg_JavaCrash());
+}
+#endif
+
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
   if (!close_callback_.is_null())

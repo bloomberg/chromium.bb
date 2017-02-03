@@ -75,6 +75,9 @@ class GpuProcessHostUIShim : public IPC::Listener,
   CONTENT_EXPORT void SimulateRemoveAllContext();
   CONTENT_EXPORT void SimulateCrash();
   CONTENT_EXPORT void SimulateHang();
+#if defined(OS_ANDROID)
+  CONTENT_EXPORT void SimulateJavaCrash();
+#endif
 
  private:
   explicit GpuProcessHostUIShim(int host_id);

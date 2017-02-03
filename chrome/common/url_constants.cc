@@ -747,6 +747,7 @@ const char* const kChromeDebugURLs[] = {content::kChromeUIBadCastCrashURL,
                                         content::kChromeUIPpapiFlashCrashURL,
                                         content::kChromeUIPpapiFlashHangURL,
 #if defined(OS_ANDROID)
+                                        content::kChromeUIGpuJavaCrashURL,
                                         chrome::kChromeUIJavaCrashURL,
 #endif
                                         chrome::kChromeUIQuitURL,

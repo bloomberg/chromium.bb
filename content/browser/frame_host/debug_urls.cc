@@ -180,6 +180,15 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
     return true;
   }
 
+#if defined(OS_ANDROID)
+  if (url == kChromeUIGpuJavaCrashURL) {
+    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
+    if (shim)
+      shim->SimulateJavaCrash();
+    return true;
+  }
+#endif
+
   if (url == kChromeUIGpuHangURL) {
     GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
     if (shim)

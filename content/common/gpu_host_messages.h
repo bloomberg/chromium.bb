@@ -156,6 +156,11 @@ IPC_MESSAGE_CONTROL0(GpuMsg_Crash)
 // Tells the GPU process to hang.
 IPC_MESSAGE_CONTROL0(GpuMsg_Hang)
 
+#if defined(OS_ANDROID)
+// Tells the GPU process to throw a java exception
+IPC_MESSAGE_CONTROL0(GpuMsg_JavaCrash)
+#endif
+
 // Tells the GPU process that the browser has seen a GPU switch.
 IPC_MESSAGE_CONTROL0(GpuMsg_GpuSwitched)
 
