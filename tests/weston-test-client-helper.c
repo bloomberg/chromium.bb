@@ -864,6 +864,25 @@ create_client(void)
 	return client;
 }
 
+struct surface *
+create_test_surface(struct client *client)
+{
+	struct surface *surface;
+
+	surface = xzalloc(sizeof *surface);
+
+	surface->wl_surface =
+		wl_compositor_create_surface(client->wl_compositor);
+	assert(surface->wl_surface);
+
+	wl_surface_add_listener(surface->wl_surface, &surface_listener,
+				surface);
+
+	wl_surface_set_user_data(surface->wl_surface, surface);
+
+	return surface;
+}
+
 struct client *
 create_client_and_test_surface(int x, int y, int width, int height)
 {
@@ -875,16 +894,8 @@ create_client_and_test_surface(int x, int y, int width, int height)
 	client = create_client();
 
 	/* initialize the client surface */
-	surface = xzalloc(sizeof *surface);
-	surface->wl_surface =
-		wl_compositor_create_surface(client->wl_compositor);
-	assert(surface->wl_surface);
-
-	wl_surface_add_listener(surface->wl_surface, &surface_listener,
-				surface);
-
+	surface = create_test_surface(client);
 	client->surface = surface;
-	wl_surface_set_user_data(surface->wl_surface, surface);
 
 	surface->width = width;
 	surface->height = height;

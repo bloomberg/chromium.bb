@@ -155,6 +155,9 @@ struct rectangle {
 struct client *
 create_client(void);
 
+struct surface *
+create_test_surface(struct client *client);
+
 struct client *
 create_client_and_test_surface(int x, int y, int width, int height);
 
