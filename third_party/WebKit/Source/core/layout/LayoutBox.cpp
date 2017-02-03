@@ -4813,7 +4813,7 @@ void LayoutBox::addVisualEffectOverflow() {
   addSelfVisualOverflow(visualEffectOverflow);
 }
 
-LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() const {
+LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() {
   ASSERT(style()->hasVisualOverflowingEffect());
 
   LayoutUnit top;
@@ -4849,6 +4849,8 @@ LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() const {
     addOutlineRects(outlineRects, LayoutPoint(),
                     outlineRectsShouldIncludeBlockVisualOverflow());
     LayoutRect rect = unionRectEvenIfEmpty(outlineRects);
+    setOutlineMayBeAffectedByDescendants(rect.size() != size());
+
     int outlineOutset = style()->outlineOutsetExtent();
     top = std::max(top, -rect.y() + outlineOutset);
     right = std::max(right, rect.maxX() - size().width() + outlineOutset);

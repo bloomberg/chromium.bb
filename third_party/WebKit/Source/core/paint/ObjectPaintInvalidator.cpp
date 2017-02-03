@@ -488,14 +488,14 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
   if (m_object.paintedOutputOfObjectHasNoEffectRegardlessOfSize())
     return PaintInvalidationNone;
 
-  const ComputedStyle& style = m_object.styleRef();
-
-  // The outline may change shape because of position change of descendants. For
-  // simplicity, just force full paint invalidation if this object is marked for
-  // checking paint invalidation for any reason.
-  // TODO(wangxianzhu): Optimize this.
-  if (style.hasOutline())
+  // Force full paint invalidation if the outline may be affected by descendants
+  // and this object is marked for checking paint invalidation for any reason.
+  if (m_object.outlineMayBeAffectedByDescendants() ||
+      m_object.previousOutlineMayBeAffectedByDescendants()) {
+    m_object.getMutableForPainting()
+        .updatePreviousOutlineMayBeAffectedByDescendants();
     return PaintInvalidationOutline;
+  }
 
   // If the size is zero on one of our bounds then we know we're going to have
   // to do a full invalidation of either old bounds or new bounds.

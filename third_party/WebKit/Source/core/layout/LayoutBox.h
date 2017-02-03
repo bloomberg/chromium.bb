@@ -480,7 +480,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void addContentsVisualOverflow(const LayoutRect&);
 
   void addVisualEffectOverflow();
-  LayoutRectOutsets computeVisualEffectOverflowOutsets() const;
+  LayoutRectOutsets computeVisualEffectOverflowOutsets();
   void addOverflowFromChild(LayoutBox* child) {
     addOverflowFromChild(child, child->locationOffset());
   }

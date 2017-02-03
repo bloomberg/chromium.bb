@@ -1749,6 +1749,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void setPreviousBackgroundObscured(bool b) {
       m_layoutObject.setPreviousBackgroundObscured(b);
     }
+    void updatePreviousOutlineMayBeAffectedByDescendants() {
+      m_layoutObject.setPreviousOutlineMayBeAffectedByDescendants(
+          m_layoutObject.outlineMayBeAffectedByDescendants());
+    }
 
     void clearPreviousVisualRects() {
       m_layoutObject.clearPreviousVisualRects();
@@ -1756,6 +1760,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void setNeedsPaintPropertyUpdate() {
       m_layoutObject.setNeedsPaintPropertyUpdate();
     }
+
 #if DCHECK_IS_ON()
     // Same as setNeedsPaintPropertyUpdate() but does not mark ancestors as
     // having a descendant needing a paint property update.
@@ -1869,6 +1874,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void setBackgroundChangedSinceLastPaintInvalidation() {
     m_bitfields.setBackgroundChangedSinceLastPaintInvalidation(true);
+  }
+
+  bool outlineMayBeAffectedByDescendants() const {
+    return m_bitfields.outlineMayBeAffectedByDescendants();
+  }
+  bool previousOutlineMayBeAffectedByDescendants() const {
+    return m_bitfields.previousOutlineMayBeAffectedByDescendants();
   }
 
  protected:
@@ -2049,6 +2061,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     m_bitfields.setContainsInlineWithOutlineAndContinuation(b);
   }
 
+  void setOutlineMayBeAffectedByDescendants(bool b) {
+    m_bitfields.setOutlineMayBeAffectedByDescendants(b);
+  }
+  void setPreviousOutlineMayBeAffectedByDescendants(bool b) {
+    m_bitfields.setPreviousOutlineMayBeAffectedByDescendants(b);
+  }
+
  private:
   // Adjusts a visual rect in the space of |m_previousVisualRect| to be in the
   // space of the |paintInvalidationContainer|, if needed. They can be different
@@ -2215,6 +2234,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_subtreeNeedsPaintPropertyUpdate(true),
           m_descendantNeedsPaintPropertyUpdate(true),
           m_backgroundChangedSinceLastPaintInvalidation(false),
+          m_outlineMayBeAffectedByDescendants(false),
+          m_previousOutlineMayBeAffectedByDescendants(false),
           m_positionedState(IsStaticallyPositioned),
           m_selectionState(SelectionNone),
           m_backgroundObscurationState(BackgroundObscurationStatusInvalid),
@@ -2397,9 +2418,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(backgroundChangedSinceLastPaintInvalidation,
                          BackgroundChangedSinceLastPaintInvalidation);
 
+    // Whether shape of outline may be affected by any descendants. This is
+    // updated before paint invalidation, checked during paint invalidation.
+    ADD_BOOLEAN_BITFIELD(outlineMayBeAffectedByDescendants,
+                         OutlineMayBeAffectedByDescendants);
+    // The outlineMayBeAffectedByDescendants status of the last paint
+    // invalidation.
+    ADD_BOOLEAN_BITFIELD(previousOutlineMayBeAffectedByDescendants,
+                         PreviousOutlineMayBeAffectedByDescendants);
+
    protected:
     // Use protected to avoid warning about unused variable.
-    unsigned m_unusedBits : 6;
+    unsigned m_unusedBits : 4;
 
    private:
     // This is the cached 'position' value of this object

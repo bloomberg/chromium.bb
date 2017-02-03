@@ -7,17 +7,17 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [45, 45, 310, 310],
-          "reason": "border box change"
+          "object": "LayoutBlockFlow DIV id='child'",
+          "rect": [8, 8, 50, 50],
+          "reason": "style change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "border box change"
+      "object": "LayoutBlockFlow DIV id='child'",
+      "reason": "style change"
     }
   ]
 }

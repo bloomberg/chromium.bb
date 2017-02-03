@@ -1851,6 +1851,13 @@ void LayoutObject::setScrollAnchorDisablingStyleChangedOnAncestor() {
 
 void LayoutObject::styleDidChange(StyleDifference diff,
                                   const ComputedStyle* oldStyle) {
+  // First assume the outline will be affected. It may be updated when we know
+  // it's not affected.
+  bool hasOutline = m_style->hasOutline();
+  setOutlineMayBeAffectedByDescendants(hasOutline);
+  if (!hasOutline)
+    setPreviousOutlineMayBeAffectedByDescendants(false);
+
   if (s_affectsParentBlock)
     handleDynamicFloatPositionChange(this);
 

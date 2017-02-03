@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [7, 43, 786, 62],
-          "reason": "outline"
+          "reason": "border box change"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
@@ -50,7 +50,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "outline"
+      "reason": "border box change"
     },
     {
       "object": "LayoutBlockFlow DIV id='div'",
