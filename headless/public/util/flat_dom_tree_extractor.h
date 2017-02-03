@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,10 @@ class HeadlessDevToolsClient;
 // addition, it also extracts details of bounding boxes and layout text (NB the
 // exact layout should not be regarded as stable, it's subject to change without
 // notice).
-// TODO(alexclarke): Remove in favor of one using DOM.getFlattenedDocument.
-class DomTreeExtractor {
+class FlatDomTreeExtractor {
  public:
-  explicit DomTreeExtractor(HeadlessDevToolsClient* devtools_client);
-  ~DomTreeExtractor();
+  explicit FlatDomTreeExtractor(HeadlessDevToolsClient* devtools_client);
+  ~FlatDomTreeExtractor();
 
   using NodeId = int;
   using Index = size_t;
@@ -45,10 +44,10 @@ class DomTreeExtractor {
     std::vector<const css::ComputedStyle*> computed_styles_;
 
    private:
-    friend class DomTreeExtractor;
+    friend class FlatDomTreeExtractor;
 
     // Owns the raw pointers in |dom_nodes_|.
-    std::unique_ptr<dom::GetDocumentResult> document_result_;
+    std::unique_ptr<dom::GetFlattenedDocumentResult> document_result_;
 
     // Owns the raw pointers in |layout_tree_nodes_|.
     std::unique_ptr<css::GetLayoutTreeAndStylesResult>
@@ -65,7 +64,8 @@ class DomTreeExtractor {
                       DomResultCB callback);
 
  private:
-  void OnDocumentFetched(std::unique_ptr<dom::GetDocumentResult> result);
+  void OnDocumentFetched(
+      std::unique_ptr<dom::GetFlattenedDocumentResult> result);
 
   void OnLayoutTreeAndStylesFetched(
       std::unique_ptr<css::GetLayoutTreeAndStylesResult> result);
@@ -79,9 +79,9 @@ class DomTreeExtractor {
   DomTree dom_tree_;
   bool work_in_progress_;
   HeadlessDevToolsClient* devtools_client_;  // NOT OWNED
-  base::WeakPtrFactory<DomTreeExtractor> weak_factory_;
+  base::WeakPtrFactory<FlatDomTreeExtractor> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DomTreeExtractor);
+  DISALLOW_COPY_AND_ASSIGN(FlatDomTreeExtractor);
 };
 
 }  // namespace headless
