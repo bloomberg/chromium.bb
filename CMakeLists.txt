@@ -613,6 +613,20 @@ set(AOM_UNIT_TEST_INTRIN_SSE2 "${AOM_ROOT}/test/simd_cmp_sse2.cc")
 set(AOM_UNIT_TEST_INTRIN_SSSE3 "${AOM_ROOT}/test/simd_cmp_ssse3.cc")
 set(AOM_UNIT_TEST_INTRIN_SSE4_1 "${AOM_ROOT}/test/simd_cmp_sse4.cc")
 
+if (CONFIG_INTERNAL_STATS)
+  set(AOM_DSP_SOURCES
+      ${AOM_DSP_SOURCES}
+      "${AOM_ROOT}/aom_dsp/fastssim.c"
+      "${AOM_ROOT}/aom_dsp/psnr.h"
+      "${AOM_ROOT}/aom_dsp/psnrhvs.c"
+      "${AOM_ROOT}/aom_dsp/ssim.c"
+      "${AOM_ROOT}/aom_dsp/ssim.h")
+
+  set(AOM_AV1_ENCODER_SOURCES
+      ${AOM_AV1_ENCODER_SOURCES}
+      "${AOM_ROOT}/av1/encoder/blockiness.c")
+endif ()
+
 if (CONFIG_AOM_HIGHBITDEPTH)
   set(AOM_DSP_ASM_SSE2
       ${AOM_DSP_ASM_SSE2}
@@ -652,6 +666,12 @@ if (CONFIG_AOM_HIGHBITDEPTH)
       ${AOM_AV1_ENCODER_SSE4_1_INTRIN}
       "${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_sse4.c"
       "${AOM_ROOT}/av1/encoder/x86/highbd_fwd_txfm_sse4.c")
+
+  if (CONFIG_INTERNAL_STATS)
+    set(AOM_UNIT_TEST_SOURCES
+        ${AOM_UNIT_TEST_SOURCES}
+        "${AOM_ROOT}/test/hbd_metrics_test.cc")
+  endif ()
 
   set(AOM_UNIT_TEST_INTRIN_SSE4_1
       ${AOM_UNIT_TEST_INTRIN_SSE4_1}
