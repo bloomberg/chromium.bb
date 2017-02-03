@@ -25,8 +25,7 @@ const char kUUID[] = "UUID-UUID-UUID";
 
 // PpdReference test data
 const char kUserSuppliedPpdUrl[] = "/some/path/to/user.url";
-const char kEffectiveManufacturer[] = "Ehch Pea";
-const char kEffectiveModel[] = "PrintBlaster 2000";
+const char kEffectiveMakeAndModel[] = "PrintBlaster 2000";
 
 TEST(PrinterTranslatorTest, PrefToPrinterMissingId) {
   base::DictionaryValue value;
@@ -81,16 +80,13 @@ TEST(PrinterTranslatorTest, PrinterToPrefPpdReference) {
   Printer printer("UNIQUE_ID");
   auto* ppd = printer.mutable_ppd_reference();
   ppd->user_supplied_ppd_url = kUserSuppliedPpdUrl;
-  ppd->effective_manufacturer = kEffectiveManufacturer;
-  ppd->effective_model = kEffectiveModel;
+  ppd->effective_make_and_model = kEffectiveMakeAndModel;
 
   std::unique_ptr<base::DictionaryValue> actual = PrinterToPref(printer);
 
   base::ExpectDictStringValue(kUserSuppliedPpdUrl, *actual,
                               "ppd_reference.user_supplied_ppd_url");
-  base::ExpectDictStringValue(kEffectiveManufacturer, *actual,
-                              "ppd_reference.effective_manufacturer");
-  base::ExpectDictStringValue(kEffectiveModel, *actual,
+  base::ExpectDictStringValue(kEffectiveMakeAndModel, *actual,
                               "ppd_reference.effective_model");
 }
 
@@ -100,8 +96,7 @@ TEST(PrinterTranslatorTest, PrinterToPrefPpdReferenceLazy) {
   std::unique_ptr<base::DictionaryValue> actual = PrinterToPref(printer);
 
   EXPECT_FALSE(actual->HasKey("ppd_reference.user_supplied_ppd_url"));
-  EXPECT_FALSE(actual->HasKey("ppd_reference.effective_manufacturer"));
-  EXPECT_FALSE(actual->HasKey("ppd_reference.effective_model"));
+  EXPECT_FALSE(actual->HasKey("ppd_reference.ppd_server_key"));
 }
 
 TEST(PrinterTranslatorTest, PrefToPrinterRoundTrip) {
@@ -116,9 +111,7 @@ TEST(PrinterTranslatorTest, PrefToPrinterRoundTrip) {
 
   preference.SetString("ppd_reference.user_supplied_ppd_url",
                        kUserSuppliedPpdUrl);
-  preference.SetString("ppd_reference.effective_manufacturer",
-                       kEffectiveManufacturer);
-  preference.SetString("ppd_reference.effective_model", kEffectiveModel);
+  preference.SetString("ppd_reference.effective_model", kEffectiveMakeAndModel);
 
   std::unique_ptr<Printer> printer = PrefToPrinter(preference);
   std::unique_ptr<base::DictionaryValue> pref_copy = PrinterToPref(*printer);

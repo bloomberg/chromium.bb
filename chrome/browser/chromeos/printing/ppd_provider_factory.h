@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTING_PPD_PROVIDER_FACTORY_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTING_PPD_PROVIDER_FACTORY_H_
 
-#include <memory>
+#include "base/memory/ref_counted.h"
 
 class Profile;
 
@@ -14,7 +14,7 @@ namespace printing {
 
 class PpdProvider;
 
-std::unique_ptr<PpdProvider> CreateProvider(Profile* profile);
+scoped_refptr<PpdProvider> CreateProvider(Profile* profile);
 
 }  // namespace printing
 }  // namsepace chromeos

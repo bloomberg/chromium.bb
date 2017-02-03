@@ -18,9 +18,13 @@ message PrinterPPDReference {
   // Url for user provided file.  Overrides other fields.
   optional string user_supplied_ppd_url = 1;
 
-  // Make and model to reference into PPD Server.
-  optional string effective_manufacturer = 2;
-  optional string effective_model = 3;
+  // Retired fields
+  optional string effective_manufacturer = 2 [deprecated = true];
+  optional string effective_model = 3 [deprecated = true];
+
+  // String identifying the type of printer, used to look up a ppd to drive the
+  // printer.
+  optional string effective_make_and_model = 4;
 }
 
 message PrinterSpecifics {

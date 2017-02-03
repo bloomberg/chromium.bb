@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+#include <utility>
+
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -10,6 +14,8 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/test_message_loop.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/printing/ppd_cache.h"
@@ -20,245 +26,430 @@
 
 namespace chromeos {
 namespace printing {
+
 namespace {
 
-const char kTestQuirksServer[] = "bogusserver.bogus.com";
-const char kTestAPIKey[] = "BOGUSAPIKEY";
-const char kLocalPpdUrl[] = "/some/path";
-const char kTestManufacturer[] = "Bogus Printer Corp";
-const char kTestModel[] = "MegaPrint 9000";
-// The compressedPPD contents here comes from running the command
-// echo -n "This is the quirks ppd" | base64
-const char kQuirksResponse[] =
-    "{\n"
-    "  \"compressedPpd\": \"VGhpcyBpcyB0aGUgcXVpcmtzIHBwZA==\",\n"
-    "  \"lastUpdatedTime\": \"1\"\n"
-    "}\n";
-const char kQuirksPpd[] = "This is the quirks ppd";
-
-// A well-formatted response for a list of ppds from quirks server.  This
-// corresponds to the AvailablePrintersMap returned by QuirksPrinters() below.
-const char kQuirksListResponse[] =
-    "{\n"
-    "  \"manufacturers\": [\n"
-    "    {\n"
-    "      \"manufacturer\": \"manu_a\",\n"
-    "      \"models\": [\n"
-    "         \"model_1\",\n"
-    "         \"model_2\"\n"
-    "      ]\n"
-    "    },\n"
-    "    {\n"
-    "      \"manufacturer\": \"manu_b\",\n"
-    "      \"models\": [\n"
-    "         \"model_3\",\n"
-    "         \"model_1\"\n"
-    "      ]\n"
-    "    }\n"
-    "  ]\n"
-    "}\n";
-
-// Return an AvailablePrintersMap that matches what's in kQuirksListResponse.
-PpdProvider::AvailablePrintersMap QuirksPrinters() {
-  return {{"manu_a", {"model_1", "model_2"}},
-          {"manu_b", {"model_3", "model_1"}}};
-}
+// Name of the fake server we're resolving ppds from.
+const char kPpdServer[] = "bogus.google.com";
 
 class PpdProviderTest : public ::testing::Test {
  public:
   PpdProviderTest()
       : loop_(base::MessageLoop::TYPE_IO),
-        request_context_getter_(
-            new net::TestURLRequestContextGetter(loop_.task_runner().get())) {}
+        request_context_getter_(new net::TestURLRequestContextGetter(
+            base::MessageLoop::current()->task_runner())) {}
 
   void SetUp() override {
     ASSERT_TRUE(ppd_cache_temp_dir_.CreateUniqueTempDir());
-    auto provider_options = PpdProvider::Options();
-    provider_options.quirks_server = kTestQuirksServer;
-    ppd_provider_ = PpdProvider::Create(
-        kTestAPIKey, request_context_getter_.get(), loop_.task_runner().get(),
-        PpdCache::Create(ppd_cache_temp_dir_.GetPath()), provider_options);
   }
 
+  void TearDown() override { StopFakePpdServer(); }
+
+  // Create and return a provider for a test that uses the given |locale|.
+  scoped_refptr<PpdProvider> CreateProvider(const std::string& locale) {
+    auto provider_options = PpdProvider::Options();
+    provider_options.ppd_server_root = std::string("https://") + kPpdServer;
+
+    return PpdProvider::Create(
+        locale, request_context_getter_.get(),
+        PpdCache::Create(ppd_cache_temp_dir_.GetPath(),
+                         base::MessageLoop::current()->task_runner()),
+        loop_.task_runner().get(), provider_options);
+  }
+
+  // Create an interceptor that serves a small fileset of ppd server files.
+  void StartFakePpdServer() {
+    ASSERT_TRUE(interceptor_temp_dir_.CreateUniqueTempDir());
+    interceptor_ = base::MakeUnique<net::TestURLRequestInterceptor>(
+        "https", kPpdServer, base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get());
+    // Use brace initialization to express the desired server contents as "url",
+    // "contents" pairs.
+    std::vector<std::pair<std::string, std::string>> server_contents = {
+        {"metadata/locales.json",
+         R"(["en",
+             "es-mx",
+             "en-gb"])"},
+        {"metadata/index.json",
+         R"([
+             ["printer_a_ref", "printer_a.ppd"],
+             ["printer_b_ref", "printer_b.ppd"],
+             ["printer_c_ref", "printer_c.ppd"]
+            ])"},
+        {"metadata/manufacturers-en.json",
+         R"([
+            ["manufacturer_a_en", "manufacturer_a.json"],
+            ["manufacturer_b_en", "manufacturer_b.json"]
+            ])"},
+        {"metadata/manufacturers-en-gb.json",
+         R"([
+            ["manufacturer_a_en-gb", "manufacturer_a.json"],
+            ["manufacturer_b_en-gb", "manufacturer_b.json"]
+            ])"},
+        {"metadata/manufacturers-es-mx.json",
+         R"([
+            ["manufacturer_a_es-mx", "manufacturer_a.json"],
+            ["manufacturer_b_es-mx", "manufacturer_b.json"]
+            ])"},
+        {"metadata/manufacturer_a.json",
+         R"([
+            ["printer_a", "printer_a_ref"],
+            ["printer_b", "printer_b_ref"]
+            ])"},
+        {"metadata/manufacturer_b.json",
+         R"([
+            ["printer_c", "printer_c_ref"]
+            ])"},
+        {"ppds/printer_a.ppd", "a"},
+        {"ppds/printer_b.ppd", "b"},
+        {"ppds/printer_c.ppd", "c"},
+        {"user_supplied_ppd_directory/user_supplied.ppd", "u"}};
+    int next_file_num = 0;
+    for (const auto& entry : server_contents) {
+      base::FilePath filename = interceptor_temp_dir_.GetPath().Append(
+          base::StringPrintf("%d.json", next_file_num++));
+      ASSERT_EQ(
+          base::WriteFile(filename, entry.second.data(), entry.second.size()),
+          static_cast<int>(entry.second.size()))
+          << "Failed to write temp server file";
+      interceptor_->SetResponse(
+          GURL(base::StringPrintf("https://%s/%s", kPpdServer,
+                                  entry.first.c_str())),
+          filename);
+    }
+  }
+
+  // Interceptor posts a *task* during destruction that actually unregisters
+  // things.  So we have to run the message loop post-interceptor-destruction to
+  // actually unregister the URLs, otherwise they won't *actually* be
+  // unregistered until the next time we invoke the message loop.  Which may be
+  // in the middle of the next test.
+  //
+  // Note this is harmless to call if we haven't started a fake ppd server.
+  void StopFakePpdServer() {
+    interceptor_.reset();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Capture the result of a ResolveManufacturers() call.
+  void CaptureResolveManufacturers(PpdProvider::CallbackResultCode code,
+                                   const std::vector<std::string>& data) {
+    captured_resolve_manufacturers_.push_back({code, data});
+  }
+
+  // Capture the result of a ResolvePrinters() call.
+  void CaptureResolvePrinters(PpdProvider::CallbackResultCode code,
+                              const std::vector<std::string>& data) {
+    captured_resolve_printers_.push_back({code, data});
+  }
+
+  // Capture the result of a ResolvePpd() call.
+  void CaptureResolvePpd(PpdProvider::CallbackResultCode code,
+                         const std::string& contents) {
+    captured_resolve_ppd_.push_back({code, contents});
+  }
+
+  // Discard the result of a ResolvePpd() call.
+  void DiscardResolvePpd(PpdProvider::CallbackResultCode code,
+                         const std::string& contents) {}
+
  protected:
+  // Run a ResolveManufacturers run from the given locale, expect to get
+  // results in expected_used_locale.
+  void RunLocalizationTest(const std::string& browser_locale,
+                           const std::string& expected_used_locale) {
+    captured_resolve_manufacturers_.clear();
+    auto provider = CreateProvider(browser_locale);
+    provider->ResolveManufacturers(base::Bind(
+        &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
+    base::RunLoop().RunUntilIdle();
+    provider = nullptr;
+    ASSERT_EQ(captured_resolve_manufacturers_.size(), 1UL);
+    EXPECT_EQ(captured_resolve_manufacturers_[0].first, PpdProvider::SUCCESS);
+
+    const auto& result_vec = captured_resolve_manufacturers_[0].second;
+
+    // It's sufficient to check for one of the expected locale keys to make sure
+    // we got the right map.
+    EXPECT_FALSE(std::find(result_vec.begin(), result_vec.end(),
+                           "manufacturer_a_" + expected_used_locale) ==
+                 result_vec.end());
+  }
+
+  // Drain tasks both on the loop we use for network/disk activity and the
+  // top-level loop that we're using in the test itself.  Unfortunately, even
+  // thought the TestURLRequestContextGetter tells the url fetcher to run on the
+  // current message loop, some deep backend processes can get put into other
+  // loops, which means we can't just trust RunLoop::RunUntilIdle() to drain
+  // outstanding work.
+  void Drain(const PpdProvider& provider) {
+    do {
+      base::RunLoop().RunUntilIdle();
+    } while (!provider.Idle());
+  }
+
+  // Message loop that runs on the current thread.
+  base::TestMessageLoop loop_;
+
+  std::vector<
+      std::pair<PpdProvider::CallbackResultCode, std::vector<std::string>>>
+      captured_resolve_manufacturers_;
+
+  std::vector<
+      std::pair<PpdProvider::CallbackResultCode, std::vector<std::string>>>
+      captured_resolve_printers_;
+
+  std::vector<std::pair<PpdProvider::CallbackResultCode, std::string>>
+      captured_resolve_ppd_;
+
+  std::unique_ptr<net::TestURLRequestInterceptor> interceptor_;
+
   base::ScopedTempDir ppd_cache_temp_dir_;
+  base::ScopedTempDir interceptor_temp_dir_;
 
   // Provider to be used in the test.
-  std::unique_ptr<PpdProvider> ppd_provider_;
+  scoped_refptr<PpdProvider> ppd_provider_;
 
   // Misc extra stuff needed for the test environment to function.
-  base::MessageLoop loop_;
+  //  base::TestMessageLoop loop_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 };
 
-// Struct that just captures the callback result for a PpdProvider lookup and
-// saves it for inspection by the test.
-struct CapturedResolveResult {
-  bool initialized = false;
-  PpdProvider::CallbackResultCode result;
-  base::FilePath file;
-};
-
-// Callback for saving a resolve callback.
-void CaptureResolveResultCallback(CapturedResolveResult* capture,
-                                  PpdProvider::CallbackResultCode result,
-                                  base::FilePath file) {
-  capture->initialized = true;
-  capture->result = result;
-  capture->file = file;
+// Test that we get back manufacturer maps as expected.
+TEST_F(PpdProviderTest, ManufacturersFetch) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en");
+  // Issue two requests at the same time, both should be resolved properly.
+  provider->ResolveManufacturers(base::Bind(
+      &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
+  provider->ResolveManufacturers(base::Bind(
+      &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
+  Drain(*provider);
+  ASSERT_EQ(2UL, captured_resolve_manufacturers_.size());
+  std::vector<std::string> expected_result(
+      {"manufacturer_a_en", "manufacturer_b_en"});
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_manufacturers_[0].first);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_manufacturers_[1].first);
+  EXPECT_TRUE(captured_resolve_manufacturers_[0].second == expected_result);
+  EXPECT_TRUE(captured_resolve_manufacturers_[1].second == expected_result);
 }
 
-// For a resolve result that should end up successful, check that it is
-// successful and the contents are expected_contents.
-void CheckResolveSuccessful(const CapturedResolveResult& captured,
-                            const std::string& expected_contents) {
-  ASSERT_TRUE(captured.initialized);
-  EXPECT_EQ(PpdProvider::SUCCESS, captured.result);
-
-  std::string contents;
-  ASSERT_TRUE(base::ReadFileToString(captured.file, &contents));
-  EXPECT_EQ(expected_contents, contents);
+// Test that we get a reasonable error when we have no server to contact.  Tis
+// is almost exactly the same as the above test, we just don't bring up the fake
+// server first.
+TEST_F(PpdProviderTest, ManufacturersFetchNoServer) {
+  auto provider = CreateProvider("en");
+  // Issue two requests at the same time, both should be resolved properly.
+  provider->ResolveManufacturers(base::Bind(
+      &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
+  provider->ResolveManufacturers(base::Bind(
+      &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
+  Drain(*provider);
+  ASSERT_EQ(2UL, captured_resolve_manufacturers_.size());
+  EXPECT_EQ(PpdProvider::SERVER_ERROR,
+            captured_resolve_manufacturers_[0].first);
+  EXPECT_EQ(PpdProvider::SERVER_ERROR,
+            captured_resolve_manufacturers_[1].first);
+  EXPECT_TRUE(captured_resolve_manufacturers_[0].second.empty());
+  EXPECT_TRUE(captured_resolve_manufacturers_[1].second.empty());
 }
 
-// Resolve a PPD via the quirks server.
-TEST_F(PpdProviderTest, QuirksServerResolve) {
+// Test that we get things in the requested locale, and that fallbacks are sane.
+TEST_F(PpdProviderTest, LocalizationAndFallbacks) {
+  StartFakePpdServer();
+  RunLocalizationTest("en-gb", "en-gb");
+  RunLocalizationTest("en-blah", "en");
+  RunLocalizationTest("en-gb-foo", "en-gb");
+  RunLocalizationTest("es", "es-mx");
+  RunLocalizationTest("bogus", "en");
+}
+
+// For convenience a null ResolveManufacturers callback target.
+void ResolveManufacturersNop(PpdProvider::CallbackResultCode code,
+                             const std::vector<std::string>& v) {}
+
+// Test basic ResolvePrinters() functionality.  At the same time, make
+// sure we can get the PpdReference for each of the resolved printers.
+TEST_F(PpdProviderTest, ResolvePrinters) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en");
+
+  // Grab the manufacturer list, but don't bother to save it, we know what
+  // should be in it and we check that elsewhere.  We just need to run the
+  // resolve to populate the internal PpdProvider structures.
+  provider->ResolveManufacturers(base::Bind(&ResolveManufacturersNop));
+  Drain(*provider);
+
+  provider->ResolvePrinters("manufacturer_a_en",
+                            base::Bind(&PpdProviderTest::CaptureResolvePrinters,
+                                       base::Unretained(this)));
+  provider->ResolvePrinters("manufacturer_b_en",
+                            base::Bind(&PpdProviderTest::CaptureResolvePrinters,
+                                       base::Unretained(this)));
+  Drain(*provider);
+  ASSERT_EQ(2UL, captured_resolve_printers_.size());
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_printers_[0].first);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_printers_[1].first);
+  EXPECT_EQ(2UL, captured_resolve_printers_[0].second.size());
+  EXPECT_EQ(std::vector<std::string>({"printer_a", "printer_b"}),
+            captured_resolve_printers_[0].second);
+  EXPECT_EQ(std::vector<std::string>({"printer_c"}),
+            captured_resolve_printers_[1].second);
+
+  // We have manufacturers and models, we should be able to get a ppd out of
+  // this.
+  Printer::PpdReference ref;
+  ASSERT_TRUE(
+      provider->GetPpdReference("manufacturer_a_en", "printer_b", &ref));
+}
+
+// Test that if we give a bad reference to ResolvePrinters(), we get an
+// INTERNAL_ERROR.
+TEST_F(PpdProviderTest, ResolvePrintersBadReference) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en");
+  provider->ResolveManufacturers(base::Bind(&ResolveManufacturersNop));
+  Drain(*provider);
+
+  provider->ResolvePrinters("bogus_doesnt_exist",
+                            base::Bind(&PpdProviderTest::CaptureResolvePrinters,
+                                       base::Unretained(this)));
+  Drain(*provider);
+  ASSERT_EQ(1UL, captured_resolve_printers_.size());
+  EXPECT_EQ(PpdProvider::INTERNAL_ERROR, captured_resolve_printers_[0].first);
+}
+
+// Test that if the server is unavailable, we get SERVER_ERRORs back out.
+TEST_F(PpdProviderTest, ResolvePrintersNoServer) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en");
+  provider->ResolveManufacturers(base::Bind(&ResolveManufacturersNop));
+  Drain(*provider);
+
+  StopFakePpdServer();
+
+  provider->ResolvePrinters("manufacturer_a_en",
+                            base::Bind(&PpdProviderTest::CaptureResolvePrinters,
+                                       base::Unretained(this)));
+  provider->ResolvePrinters("manufacturer_b_en",
+                            base::Bind(&PpdProviderTest::CaptureResolvePrinters,
+                                       base::Unretained(this)));
+  Drain(*provider);
+  ASSERT_EQ(2UL, captured_resolve_printers_.size());
+  EXPECT_EQ(PpdProvider::SERVER_ERROR, captured_resolve_printers_[0].first);
+  EXPECT_EQ(PpdProvider::SERVER_ERROR, captured_resolve_printers_[1].first);
+}
+
+// Test a successful ppd resolution from an effective_make_and_model reference.
+TEST_F(PpdProviderTest, ResolveServerKeyPpd) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en");
+  Printer::PpdReference ref;
+  ref.effective_make_and_model = "printer_b_ref";
+  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
+                                       base::Unretained(this)));
+  ref.effective_make_and_model = "printer_c_ref";
+  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
+                                       base::Unretained(this)));
+  Drain(*provider);
+
+  ASSERT_EQ(2UL, captured_resolve_ppd_.size());
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].first);
+  EXPECT_EQ("b", captured_resolve_ppd_[0].second);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[1].first);
+  EXPECT_EQ("c", captured_resolve_ppd_[1].second);
+}
+
+// Test that we *don't* resolve a ppd URL over non-file schemes.  It's not clear
+// whether we'll want to do this in the long term, but for now this is
+// disallowed because we're not sure we completely understand the security
+// implications.
+TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromNetworkFails) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en");
+
+  Printer::PpdReference ref;
+  ref.user_supplied_ppd_url = base::StringPrintf(
+      "https://%s/user_supplied_ppd_directory/user_supplied.ppd", kPpdServer);
+  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
+                                       base::Unretained(this)));
+  Drain(*provider);
+
+  ASSERT_EQ(1UL, captured_resolve_ppd_.size());
+  EXPECT_EQ(PpdProvider::INTERNAL_ERROR, captured_resolve_ppd_[0].first);
+  EXPECT_TRUE(captured_resolve_ppd_[0].second.empty());
+}
+
+// Test a successful ppd resolution from a user_supplied_url field when
+// reading from a file.  Note we shouldn't need the server to be up
+// to do this successfully, as we should be able to do this offline.
+TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromFile) {
+  auto provider = CreateProvider("en");
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath filename = temp_dir.GetPath().Append("my_spiffy.ppd");
 
-  Printer::PpdReference ppd_reference;
-  ppd_reference.effective_manufacturer = kTestManufacturer;
-  ppd_reference.effective_model = kTestModel;
+  std::string user_ppd_contents = "Woohoo";
 
-  {
-    net::TestURLRequestInterceptor interceptor(
-        "https", kTestQuirksServer, base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get());
+  ASSERT_EQ(base::WriteFile(filename, user_ppd_contents.data(),
+                            user_ppd_contents.size()),
+            static_cast<int>(user_ppd_contents.size()));
 
-    GURL expected_url(base::StringPrintf(
-        "https://%s/v2/printer/manufacturers/%s/models/%s?key=%s",
-        kTestQuirksServer, kTestManufacturer, kTestModel, kTestAPIKey));
+  Printer::PpdReference ref;
+  ref.user_supplied_ppd_url =
+      base::StringPrintf("file://%s", filename.MaybeAsASCII().c_str());
+  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
+                                       base::Unretained(this)));
+  Drain(*provider);
 
-    base::FilePath contents_path = temp_dir.GetPath().Append("response");
-    std::string contents = kQuirksResponse;
-    int bytes_written =
-        base::WriteFile(contents_path, contents.data(), contents.size());
-    ASSERT_EQ(bytes_written, static_cast<int>(contents.size()));
-
-    interceptor.SetResponse(expected_url, contents_path);
-
-    CapturedResolveResult captured;
-    ppd_provider_->Resolve(ppd_reference,
-                           base::Bind(CaptureResolveResultCallback, &captured));
-    base::RunLoop().RunUntilIdle();
-    CheckResolveSuccessful(captured, kQuirksPpd);
-  }
-
-  // Now that the interceptor is out of scope, re-run the query.  We should
-  // hit in the cache, and thus *not* re-run the query.
-  CapturedResolveResult captured;
-  ppd_provider_->Resolve(ppd_reference,
-                         base::Bind(CaptureResolveResultCallback, &captured));
-  base::RunLoop().RunUntilIdle();
-  CheckResolveSuccessful(captured, kQuirksPpd);
+  ASSERT_EQ(1UL, captured_resolve_ppd_.size());
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].first);
+  EXPECT_EQ(user_ppd_contents, captured_resolve_ppd_[0].second);
 }
 
-// Test storage and retrieval of PPDs that are added manually.  Even though we
-// supply a manufacturer and model, we should *not* hit the network for this
-// resolution since we should find the stored version already cached.
-TEST_F(PpdProviderTest, LocalResolve) {
-  Printer::PpdReference ppd_reference;
-  ppd_reference.user_supplied_ppd_url = kLocalPpdUrl;
-  ppd_reference.effective_manufacturer = kTestManufacturer;
-  ppd_reference.effective_model = kTestModel;
-
-  // Initially, should not resolve.
-  {
-    CapturedResolveResult captured;
-    ppd_provider_->Resolve(ppd_reference,
-                           base::Bind(CaptureResolveResultCallback, &captured));
-    base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(captured.initialized);
-    EXPECT_EQ(PpdProvider::NOT_FOUND, captured.result);
-  }
-
-  // Store a local ppd.
-  const std::string kLocalPpdContents("My local ppd contents");
+// Test that we cache ppd resolutions when we fetch them and that we can resolve
+// from the cache without the server available.
+TEST_F(PpdProviderTest, ResolvedPpdsGetCached) {
+  auto provider = CreateProvider("en");
+  std::string user_ppd_contents = "Woohoo";
+  Printer::PpdReference ref;
   {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    base::FilePath filename = temp_dir.GetPath().Append("my_spiffy.ppd");
 
-    base::FilePath local_ppd_path = temp_dir.GetPath().Append("local_ppd");
-    ASSERT_EQ(base::WriteFile(local_ppd_path, kLocalPpdContents.data(),
-                              kLocalPpdContents.size()),
-              static_cast<int>(kLocalPpdContents.size()));
-    ASSERT_TRUE(ppd_provider_->CachePpd(ppd_reference, local_ppd_path));
+    ASSERT_EQ(base::WriteFile(filename, user_ppd_contents.data(),
+                              user_ppd_contents.size()),
+              static_cast<int>(user_ppd_contents.size()));
+
+    ref.user_supplied_ppd_url =
+        base::StringPrintf("file://%s", filename.MaybeAsASCII().c_str());
+    provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
+                                         base::Unretained(this)));
+    Drain(*provider);
+
+    ASSERT_EQ(1UL, captured_resolve_ppd_.size());
+    EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].first);
+    EXPECT_EQ(user_ppd_contents, captured_resolve_ppd_[0].second);
   }
-  // temp_dir should now be deleted, which helps make sure we actually latched a
-  // copy, not a reference.
+  // ScopedTempDir goes out of scope, so the source file should now be
+  // deleted.  But if we resolve again, we should hit the cache and
+  // still be successful.
 
-  // Retry the resove, should get the PPD back now.
-  {
-    CapturedResolveResult captured;
+  captured_resolve_ppd_.clear();
 
-    ppd_provider_->Resolve(ppd_reference,
-                           base::Bind(CaptureResolveResultCallback, &captured));
-    base::RunLoop().RunUntilIdle();
-    CheckResolveSuccessful(captured, kLocalPpdContents);
-  }
-}
+  // Recreate the provider to make sure we don't have any memory caches which
+  // would mask problems with disk persistence.
+  provider = CreateProvider("en");
 
-// Run a query for the list of available printers.
-TEST_F(PpdProviderTest, QueryAvailable) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  PpdProvider::CallbackResultCode result_code;
-  PpdProvider::AvailablePrintersMap available_printers;
+  // Re-resolve.
+  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
+                                       base::Unretained(this)));
+  Drain(*provider);
 
-  // Define a callback that sets the above variables with the callback results.
-  // This would be cleaner with capture groups, but Bind disallows them in
-  // lambdas.
-  PpdProvider::QueryAvailableCallback query_callback = base::Bind(
-      [](PpdProvider::CallbackResultCode* code_out,
-         PpdProvider::AvailablePrintersMap* query_result_out,
-         PpdProvider::CallbackResultCode code,
-         const PpdProvider::AvailablePrintersMap& query_result) {
-        *code_out = code;
-        *query_result_out = query_result;
-      },
-      &result_code, &available_printers);
-
-  {
-    net::TestURLRequestInterceptor interceptor(
-        "https", kTestQuirksServer, base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get());
-
-    GURL expected_url(base::StringPrintf("https://%s/v2/printer/list?key=%s",
-                                         kTestQuirksServer, kTestAPIKey));
-
-    base::FilePath contents_path = temp_dir.GetPath().Append("response");
-    std::string contents = kQuirksListResponse;
-    int bytes_written = base::WriteFile(contents_path, kQuirksListResponse,
-                                        strlen(kQuirksListResponse));
-    ASSERT_EQ(static_cast<int>(strlen(kQuirksListResponse)), bytes_written);
-
-    interceptor.SetResponse(expected_url, contents_path);
-
-    CapturedResolveResult captured;
-    ppd_provider_->QueryAvailable(query_callback);
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(PpdProvider::SUCCESS, result_code);
-    EXPECT_EQ(QuirksPrinters(), available_printers);
-  }
-
-  // Now that the interceptor is out of scope, re-run the query.  We should
-  // hit in the cache, and thus *not* re-run the query.  Reset the capture
-  // variables first.
-  result_code = PpdProvider::SERVER_ERROR;
-  available_printers.clear();
-  ppd_provider_->QueryAvailable(query_callback);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(PpdProvider::SUCCESS, result_code);
-  EXPECT_EQ(QuirksPrinters(), available_printers);
+  ASSERT_EQ(1UL, captured_resolve_ppd_.size());
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].first);
+  EXPECT_EQ(user_ppd_contents, captured_resolve_ppd_[0].second);
 }
 
 }  // namespace

@@ -49,7 +49,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleRemoveCupsPrinter(const base::ListValue* args);
 
   void HandleAddCupsPrinter(const base::ListValue* args);
-  void OnAddedPrinter(std::unique_ptr<Printer> printer, bool success);
+  void OnAddedPrinter(std::unique_ptr<Printer> printer, int32_t result);
   void OnAddPrinterError();
 
   // Get a list of all manufacturers for which we have at least one model of
@@ -67,15 +67,14 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleSelectPPDFile(const base::ListValue* args);
 
   // PpdProvider callback handlers.
-  void QueryAvailableManufacturersDone(
+  void ResolveManufacturersDone(
       const std::string& js_callback,
       chromeos::printing::PpdProvider::CallbackResultCode result_code,
-      const chromeos::printing::PpdProvider::AvailablePrintersMap& available);
-  void QueryAvailableModelsDone(
+      const std::vector<std::string>& available);
+  void ResolvePrintersDone(
       const std::string& js_callback,
-      const std::string& manufacturer,
       chromeos::printing::PpdProvider::CallbackResultCode result_code,
-      const chromeos::printing::PpdProvider::AvailablePrintersMap& available);
+      const std::vector<std::string>& available);
 
   // ui::SelectFileDialog::Listener override:
   void FileSelected(const base::FilePath& path,
@@ -99,12 +98,12 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                         bool ipp_everywhere);
 
   // Callback for PpdProvider::ResolveCallback.
-  void OnPPDResolved(std::unique_ptr<Printer> printer,
-                     printing::PpdProvider::CallbackResultCode result,
-                     base::FilePath ppd_path);
+  void ResolvePpdDone(std::unique_ptr<Printer> printer,
+                      printing::PpdProvider::CallbackResultCode result,
+                      const std::string& ppd_contents);
 
   std::unique_ptr<chromeos::PrinterDiscoverer> printer_discoverer_;
-  std::unique_ptr<chromeos::printing::PpdProvider> ppd_provider_;
+  scoped_refptr<chromeos::printing::PpdProvider> ppd_provider_;
 
   Profile* profile_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;

@@ -18,15 +18,20 @@
 namespace chromeos {
 namespace printing {
 
-std::unique_ptr<PpdProvider> CreateProvider(Profile* profile) {
+scoped_refptr<PpdProvider> CreateProvider(Profile* profile) {
   base::FilePath ppd_cache_path =
       profile->GetPath().Append(FILE_PATH_LITERAL("PPDCache"));
 
-  return PpdProvider::Create(google_apis::GetAPIKey(),
-                             g_browser_process->system_request_context(),
+  auto cache = PpdCache::Create(ppd_cache_path,
+                                content::BrowserThread::GetTaskRunnerForThread(
+                                    content::BrowserThread::CACHE)
+                                    .get());
+
+  return PpdProvider::Create(g_browser_process->GetApplicationLocale(),
+                             g_browser_process->system_request_context(), cache,
                              content::BrowserThread::GetTaskRunnerForThread(
-                                 content::BrowserThread::FILE),
-                             PpdCache::Create(ppd_cache_path));
+                                 content::BrowserThread::FILE)
+                                 .get());
 }
 
 }  // namespace printing

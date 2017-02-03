@@ -23,31 +23,11 @@ namespace chromeos {
 namespace printing {
 namespace {
 
-const char kTestManufacturer[] = "FooPrinters, Inc.";
-const char kTestModel[] = "Laser BarMatic 1000";
-const char kTestUserUrl[] = "/some/path/to/some/ppd/file";
-const char kTestPpdContents[] = "This is the ppd for the first printer";
-// Output of 'gzip -9' on a file with contents 'ppd contents'
-const char kTestGZippedPpdContents[] = {
-    0x1f, 0x8b, 0x08, 0x08, 0xe4, 0x2e, 0x00, 0x58, 0x02, 0x03, 0x70,
-    0x70, 0x64, 0x2e, 0x74, 0x78, 0x74, 0x00, 0x2b, 0x28, 0x48, 0x51,
-    0x48, 0xce, 0xcf, 0x2b, 0x49, 0xcd, 0x2b, 0x29, 0xe6, 0x02, 0x00,
-    0x2b, 0x51, 0x91, 0x24, 0x0d, 0x00, 0x00, 0x00};
-
-// Generate and return a PPDReference that has the fields set from the kTest
-// constants above.
-Printer::PpdReference TestReference() {
-  Printer::PpdReference ret;
-  ret.effective_manufacturer = kTestManufacturer;
-  ret.effective_model = kTestModel;
-  ret.user_supplied_ppd_url = kTestUserUrl;
-  return ret;
-}
-
 // This fixture just points the cache at a temporary directory for the life of
 // the test.
 class PpdCacheTest : public ::testing::Test {
  public:
+  PpdCacheTest() : loop_(base::MessageLoop::TYPE_IO) {}
   void SetUp() override {
     ASSERT_TRUE(ppd_cache_temp_dir_.CreateUniqueTempDir());
   }
@@ -56,139 +36,76 @@ class PpdCacheTest : public ::testing::Test {
   // which is cleaned up at the end of the test.  Note that we pass
   // a (nonexistant) subdirectory of temp_dir_ to the cache to exercise
   // the lazy-creation-of-the-cache-directory code.
-  std::unique_ptr<PpdCache> CreateTestCache(
-      const PpdCache::Options& options = PpdCache::Options()) {
+  scoped_refptr<PpdCache> CreateTestCache() {
     return PpdCache::Create(ppd_cache_temp_dir_.GetPath().Append("Cache"),
-                            options);
+                            loop_.task_runner().get());
   }
 
+  void CaptureFindResult(const PpdCache::FindResult& result) {
+    ++captured_find_results_;
+    find_result_ = result;
+  }
+
+  void CaptureStoreResult() { ++captured_store_results_; }
+
  protected:
+  // Number of find results we've captured.
+  int captured_find_results_ = 0;
+
+  // Most recent captured result.
+  PpdCache::FindResult find_result_;
+
+  // Number of store callbacks we've seen.
+  int captured_store_results_ = 0;
+
   // Overrider for DIR_CHROMEOS_PPD_CACHE that points it at a temporary
   // directory for the life of the test.
   base::ScopedTempDir ppd_cache_temp_dir_;
+  base::MessageLoop loop_;
 };
 
-// Check that path has a value, and the contents of the referenced file are
-// |expected_contents|.
-void CheckFileContentsAre(base::Optional<base::FilePath> result,
-                          const std::string& expected_contents) {
-  // Make sure we have a value.
-  ASSERT_TRUE(result);
-  // Make sure we get the ppd back that we stored.
-  std::string contents;
-  ASSERT_TRUE(base::ReadFileToString(result.value(), &contents));
-  EXPECT_EQ(expected_contents, contents);
-}
 
 // Test that we miss on an empty cache.
 TEST_F(PpdCacheTest, SimpleMiss) {
   auto cache = CreateTestCache();
-  EXPECT_FALSE(cache->Find(TestReference()));
+  cache->Find("foo", base::Bind(&PpdCacheTest::CaptureFindResult,
+                                base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(captured_find_results_, 1);
+  EXPECT_FALSE(find_result_.success);
 }
 
-// Test that when we store stuff, we get it back.
 TEST_F(PpdCacheTest, MissThenHit) {
   auto cache = CreateTestCache();
-  auto ref = TestReference();
-  EXPECT_FALSE(cache->Find(ref));
+  const char kTestKey[] = "My totally awesome key";
+  const char kTestKey2[] = "A different key";
+  const char kTestContents[] = "Like, totally awesome contents";
 
-  // Store should give us a reference to the file.
-  CheckFileContentsAre(cache->Store(ref, kTestPpdContents), kTestPpdContents);
+  cache->Find(kTestKey, base::Bind(&PpdCacheTest::CaptureFindResult,
+                                   base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(captured_find_results_, 1);
+  EXPECT_FALSE(find_result_.success);
 
-  // We should also get it back in response to a Find.
-  CheckFileContentsAre(cache->Find(ref), kTestPpdContents);
-}
+  cache->Store(
+      kTestKey, kTestContents,
+      base::Bind(&PpdCacheTest::CaptureStoreResult, base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(captured_store_results_, 1);
 
-// Test that mutating any field in the reference causes us to miss in the cache
-// when we change the highest priority resolve criteria.
-TEST_F(PpdCacheTest, FieldChangeMeansCacheMiss) {
-  auto cache = CreateTestCache();
-  auto ref = TestReference();
-  CheckFileContentsAre(cache->Store(ref, kTestPpdContents), kTestPpdContents);
+  cache->Find(kTestKey, base::Bind(&PpdCacheTest::CaptureFindResult,
+                                   base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(captured_find_results_, 2);
+  EXPECT_TRUE(find_result_.success);
+  EXPECT_EQ(find_result_.contents, kTestContents);
+  EXPECT_LT(find_result_.age, base::TimeDelta::FromMinutes(5));
 
-  // We have a user url, so should still cache hit on manufacturer change.
-  ref.effective_manufacturer = "Something else";
-  EXPECT_TRUE(cache->Find(ref));
-  ref = TestReference();
-
-  // We have a user url, so should still cache hit on model change.
-  ref.effective_model = "Something else";
-  EXPECT_TRUE(cache->Find(ref));
-  ref = TestReference();
-
-  // But if we change th user url, that's a cache miss.
-  ref.user_supplied_ppd_url = "Something else";
-  EXPECT_FALSE(cache->Find(ref));
-  ref = TestReference();
-  // Should still find the initial Store when ref *is* identical.
-  CheckFileContentsAre(cache->Find(ref), kTestPpdContents);
-
-  // Now store the reference with no test url.
-  ref.user_supplied_ppd_url.clear();
-  CheckFileContentsAre(cache->Store(ref, kTestPpdContents), kTestPpdContents);
-
-  // Now changing the model or manufacturer should cause a cache miss.
-  ref.effective_manufacturer = "Something else";
-  EXPECT_FALSE(cache->Find(ref));
-  ref = TestReference();
-  ref.user_supplied_ppd_url.clear();
-  ref.effective_model = "Something else";
-  EXPECT_FALSE(cache->Find(ref));
-}
-
-// Test that gzipped contents get stored as .ppd.gz, and non-gzipped
-// contents get stored as .ppd
-TEST_F(PpdCacheTest, StoredExtensions) {
-  auto cache = CreateTestCache();
-  auto ref = TestReference();
-
-  // Not compressed, so should store as .ppd
-  auto result = cache->Store(ref, kTestPpdContents);
-  EXPECT_EQ(".ppd", cache->Store(ref, kTestPpdContents).value().Extension());
-
-  // Compressed, so should identify this and store as .ppd.gz
-  std::string gzipped_contents(kTestGZippedPpdContents,
-                               sizeof(kTestGZippedPpdContents));
-  EXPECT_EQ(".ppd.gz", cache->Store(ref, gzipped_contents).value().Extension());
-}
-
-// Test that we get back what we stored when we store an available printers
-// list.
-TEST_F(PpdCacheTest, StoreAndRetrieveAvailablePrinters) {
-  auto cache = CreateTestCache();
-
-  // Nothing stored, so should miss in the cache.
-  auto result = cache->FindAvailablePrinters();
-  EXPECT_FALSE(result);
-
-  // Create something to store.
-  auto a = base::MakeUnique<PpdProvider::AvailablePrintersMap>();
-  (*a)["foo"] = {"bar", "baz", "sna"};
-  (*a)["bar"] = {"c", "d", "e"};
-  (*a)["baz"] = {"f", "g", "h"};
-  PpdProvider::AvailablePrintersMap original = *a;
-
-  // Store it, get it back.
-  cache->StoreAvailablePrinters(std::move(a));
-  result = cache->FindAvailablePrinters();
-  ASSERT_TRUE(result);
-
-  EXPECT_EQ(original, result.value());
-}
-
-// When an entry is too old, we shouldn't return it.
-TEST_F(PpdCacheTest, ExpireStaleAvailablePrinters) {
-  PpdCache::Options options;
-  // Expire stuff immediately by setting the staleness limit to 0.
-  options.max_available_list_staleness = base::TimeDelta();
-  auto cache = CreateTestCache(options);
-
-  // Store an empty map.  (Contents don't really matter for this test).
-  cache->StoreAvailablePrinters(
-      base::MakeUnique<PpdProvider::AvailablePrintersMap>());
-
-  // Should *miss* in the cache because the entry is already expired.
-  EXPECT_FALSE(cache->FindAvailablePrinters());
+  cache->Find(kTestKey2, base::Bind(&PpdCacheTest::CaptureFindResult,
+                                    base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(captured_find_results_, 3);
+  EXPECT_FALSE(find_result_.success);
 }
 
 }  // namespace

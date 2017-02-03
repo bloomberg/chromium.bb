@@ -20,7 +20,7 @@ const char model[] = "MODEL";
 const char uri[] = "ipps://notaprinter.chromium.org/ipp/print";
 const char uuid[] = "UUIDUUIDUUID";
 
-const char effective_model[] = "Manufacturer Model T1000";
+const char effective_make_and_model[] = "Manufacturer Model T1000";
 
 }  // namespace
 
@@ -38,7 +38,7 @@ TEST(SpecificsTranslationTest, SpecificsToPrinter) {
   specifics.set_uuid(uuid);
 
   sync_pb::PrinterPPDReference ppd;
-  ppd.set_effective_model(effective_model);
+  ppd.set_effective_make_and_model(effective_make_and_model);
   *specifics.mutable_ppd_reference() = ppd;
 
   std::unique_ptr<Printer> result = SpecificsToPrinter(specifics);
@@ -50,7 +50,8 @@ TEST(SpecificsTranslationTest, SpecificsToPrinter) {
   EXPECT_EQ(uri, result->uri());
   EXPECT_EQ(uuid, result->uuid());
 
-  EXPECT_EQ(effective_model, result->ppd_reference().effective_model);
+  EXPECT_EQ(effective_make_and_model,
+            result->ppd_reference().effective_make_and_model);
 }
 
 TEST(SpecificsTranslationTest, PrinterToSpecifics) {
@@ -64,7 +65,7 @@ TEST(SpecificsTranslationTest, PrinterToSpecifics) {
   printer.set_uuid(uuid);
 
   Printer::PpdReference ppd;
-  ppd.effective_model = effective_model;
+  ppd.effective_make_and_model = effective_make_and_model;
   *printer.mutable_ppd_reference() = ppd;
 
   std::unique_ptr<sync_pb::PrinterSpecifics> result =
@@ -77,7 +78,8 @@ TEST(SpecificsTranslationTest, PrinterToSpecifics) {
   EXPECT_EQ(uri, result->uri());
   EXPECT_EQ(uuid, result->uuid());
 
-  EXPECT_EQ(effective_model, result->ppd_reference().effective_model());
+  EXPECT_EQ(effective_make_and_model,
+            result->ppd_reference().effective_make_and_model());
 }
 
 TEST(SpecificsTranslationTest, SpecificsToPrinterRoundTrip) {
@@ -91,7 +93,7 @@ TEST(SpecificsTranslationTest, SpecificsToPrinterRoundTrip) {
   printer.set_uuid(uuid);
 
   Printer::PpdReference ppd;
-  ppd.effective_model = effective_model;
+  ppd.effective_make_and_model = effective_make_and_model;
   *printer.mutable_ppd_reference() = ppd;
 
   std::unique_ptr<sync_pb::PrinterSpecifics> temp = PrinterToSpecifics(printer);
@@ -105,7 +107,8 @@ TEST(SpecificsTranslationTest, SpecificsToPrinterRoundTrip) {
   EXPECT_EQ(uri, result->uri());
   EXPECT_EQ(uuid, result->uuid());
 
-  EXPECT_EQ(effective_model, result->ppd_reference().effective_model);
+  EXPECT_EQ(effective_make_and_model,
+            result->ppd_reference().effective_make_and_model);
 }
 
 }  // namespace printing

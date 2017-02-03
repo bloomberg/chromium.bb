@@ -205,8 +205,7 @@ VISIT_PROTO_FIELDS(const sync_pb::ArcPackageSpecifics& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::PrinterPPDReference& proto) {
   VISIT(user_supplied_ppd_url);
-  VISIT(effective_manufacturer);
-  VISIT(effective_model);
+  VISIT(effective_make_and_model);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ReadingListSpecifics& proto) {

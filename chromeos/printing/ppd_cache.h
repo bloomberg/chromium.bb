@@ -8,12 +8,12 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/optional.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/printing/ppd_provider.h"
-#include "chromeos/printing/printer_configuration.h"
 
 namespace chromeos {
 namespace printing {
@@ -27,66 +27,46 @@ namespace printing {
 // re-run the resolution logic if we have new meta-information about a printer.
 //
 // All cache functions must be called on a thread which is permitted to do I/O.
-class CHROMEOS_EXPORT PpdCache {
+class CHROMEOS_EXPORT PpdCache : public base::RefCounted<PpdCache> {
  public:
-  // Options that can be tweaked.  These should all have sane defaults.  This
-  // structure is copyable.
-  struct Options {
-    Options() {}
+  struct FindResult {
+    // Did we find something?  If this is false, none of the other fields are
+    // valid.
+    bool success = false;
 
-    // If the cached available printer data is older than this, we will consider
-    // it stale and won't return it.  A non-positive value here means we will
-    // always consider data stale (which is useful for tests).
-    // Default is 14 days.
-    base::TimeDelta max_available_list_staleness =
-        base::TimeDelta::FromDays(14);
+    // How old is this entry?
+    base::TimeDelta age;
 
-    // Size limit on the serialized cached available printer list, in bytes.
-    // This is just a check to make sure we don't consume ridiculous amounts of
-    // disk if we get bad data.
-    // Default is 10 MB
-    size_t max_available_list_cached_size = 10 * 1024 * 1024;
+    // Contents of the entry.
+    std::string contents;
   };
+
+  using FindCallback = base::Callback<void(const FindResult& result)>;
 
   // Create and return a Ppdcache that uses cache_dir to store state.  If
   // cache_base_dir does not exist, it will be lazily created the first time the
   // cache needs to store state.
-  static std::unique_ptr<PpdCache> Create(const base::FilePath& cache_base_dir,
-                                          const Options& options = Options());
+  static scoped_refptr<PpdCache> Create(
+      const base::FilePath& cache_base_dir,
+      scoped_refptr<base::SequencedTaskRunner> disk_task_runner);
+
+  // Start a Find, looking, for an entry with the given key that is at most
+  // |max_age| old.  |cb| will be invoked on the calling thread.
+  virtual void Find(const std::string& key, const FindCallback& cb) = 0;
+
+  // Store the given contents at the given key.  If cb is non-null, it will
+  // be invoked on completion.
+  virtual void Store(const std::string& key,
+                     const std::string& contents,
+                     const base::Callback<void()>& cb) = 0;
+
+  // Hook for testing.  Returns true if all outstanding cache operations
+  // are complete.
+  virtual bool Idle() const = 0;
+
+ protected:
+  friend class base::RefCounted<PpdCache>;
   virtual ~PpdCache() {}
-
-  // Find a PPD that was previously cached with the given reference.  Note that
-  // all fields of the reference must be the same, otherwise we'll miss in the
-  // cache and re-run resolution for the PPD.
-  //
-  // If a FilePath is returned, it is guaranteed to be non-empty and
-  // remain valid until the next Store() call.
-  virtual base::Optional<base::FilePath> Find(
-      const Printer::PpdReference& reference) const = 0;
-
-  // Take the contents of a PPD file, store it to the cache, and return the
-  // path to the stored file keyed on reference.
-  //
-  // If a different PPD was previously Stored for the given reference, it
-  // will be replaced.
-  //
-  // If a FilePath is returned, it is guaranteed to be non-empty and
-  // remain valid until the next Store() call.
-  virtual base::Optional<base::FilePath> Store(
-      const Printer::PpdReference& reference,
-      const std::string& ppd_contents) = 0;
-
-  // Return a map of available printers, if we have one available and it's
-  // not too stale.  Returns nullopt if no map is available.  Note that, if the
-  // number of printers gets extremely large this map copy could get expensive
-  // and need to be reworked.
-  virtual base::Optional<PpdProvider::AvailablePrintersMap>
-  FindAvailablePrinters() = 0;
-
-  // Store |available_printers|, replacing any existing entry.
-  virtual void StoreAvailablePrinters(
-      std::unique_ptr<PpdProvider::AvailablePrintersMap>
-          available_printers) = 0;
 };
 
 }  // namespace printing

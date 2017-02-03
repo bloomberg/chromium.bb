@@ -30,10 +30,10 @@ class PpdCache;
 // user previously identified for use, and falls back to querying quirksserver
 // based on manufacturer/model of the printer.
 //
-// This class can be accessed from any thread.
-class CHROMEOS_EXPORT PpdProvider {
+// All functions in this class must be called from a sequenced context.
+class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
  public:
-  // Possible result codes of a Resolve() or QueryAvailable() call.
+  // Possible result codes of a Resolve*() call.
   enum CallbackResultCode {
     SUCCESS,
 
@@ -48,73 +48,83 @@ class CHROMEOS_EXPORT PpdProvider {
     INTERNAL_ERROR,
   };
 
-  // Result of a Resolve().  If the result code is SUCCESS, then FilePath holds
-  // the path to a PPD file (that may or may not be gzipped).  Otherwise, the
-  // FilePath will be empty.
-  using ResolveCallback =
-      base::Callback<void(CallbackResultCode, base::FilePath)>;
-
-  // Available printers are represented as a map from manufacturer to
-  // list-of-printer-models.
-  using AvailablePrintersMap = std::map<std::string, std::vector<std::string>>;
-
-  // Result of a QueryAvailable.  If the result code is SUCCESS, then
-  // AvailablePrintersMap holds a map from manufacturer name to list of printer
-  // names.  Otherwise the map will be empty.
-  using QueryAvailableCallback =
-      base::Callback<void(CallbackResultCode, const AvailablePrintersMap&)>;
-
   // Construction-time options.  Everything in this structure should have
   // a sane default.
   struct Options {
     Options() {}
 
-    // hostname of quirks server to query.
-    std::string quirks_server = "chromeosquirksserver-pa.googleapis.com";
-
-    // Maximum size of the contents of a PPD file, in bytes.  Trying to use a
-    // PPD file bigger than this will cause INTERNAL_ERRORs at resolution time.
-    size_t max_ppd_contents_size_ = 100 * 1024;
+    // Root of the ppd serving hierarchy.
+    std::string ppd_server_root = "https://www.gstatic.com/chromeos_printing";
   };
 
+  // Result of a ResolvePpd() call.  If the result code is SUCCESS, then the
+  // string holds the contents of a PPD (that may or may not be gzipped).
+  // Otherwise, the string will be empty.
+  using ResolvePpdCallback =
+      base::Callback<void(CallbackResultCode, const std::string&)>;
+
+  // Result of a ResolveManufacturers() call.  If the result code is SUCCESS,
+  // then the vector contains a sorted list of manufacturers for which we have
+  // at least one printer driver.
+  using ResolveManufacturersCallback =
+      base::Callback<void(CallbackResultCode, const std::vector<std::string>&)>;
+
+  // Result of a ResolvePrinters() call.  If the result code is SUCCESS, then
+  // the vector contains a sorted list of all printer models from the given
+  // manufacturer for which we have a driver.
+  using ResolvePrintersCallback =
+      base::Callback<void(CallbackResultCode, const std::vector<std::string>&)>;
+
   // Create and return a new PpdProvider with the given cache and options.
-  // |io_task_runner| is used to run operations that are long latency and should
-  // not be on the UI thread.  References to |url_context_getter| and
-  // |io_task_runner| are taken.
-  static std::unique_ptr<PpdProvider> Create(
-      const std::string& api_key,
+  // A references to |url_context_getter| is taken.
+  static scoped_refptr<PpdProvider> Create(
+      const std::string& browser_locale,
       scoped_refptr<net::URLRequestContextGetter> url_context_getter,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-      std::unique_ptr<PpdCache> cache,
+      scoped_refptr<PpdCache> cache,
+      scoped_refptr<base::SequencedTaskRunner> disk_task_runner,
       const Options& options = Options());
 
+  // Get all manufacturers for which we have drivers.  Keys of the map will be
+  // localized in the default browser locale or the closest available fallback.
+  //
+  // |cb| will be called on the invoking thread, and will be sequenced.
+  virtual void ResolveManufacturers(const ResolveManufacturersCallback& cb) = 0;
+
+  // Get all models from a given manufacturer, localized in the default browser
+  // locale or the closest available fallback.  |manufacturer| must be a value
+  // returned from a successful ResolveManufacturers() call performed from this
+  // PpdProvider instance.
+  //
+  // |cb| will be called on the invoking thread, and will be sequenced.
+  virtual void ResolvePrinters(const std::string& manufacturer,
+                               const ResolvePrintersCallback& cb) = 0;
+
+  // Given a |manufacturer| from ResolveManufacturers() and a |printer| from
+  // a ResolvePrinters() call for that manufacturer, fill in |reference|
+  // with the information needed to resolve the Ppd for this printer.  Returns
+  // true on success and overwrites the contents of |reference|.  On failure,
+  // |reference| is unchanged.
+  //
+  // Note that, unlike the other functions in this class, |reference| can be
+  // saved and given to ResolvePpd() in a different PpdProvider instance without
+  // first resolving manufactuerers or printers.
+  virtual bool GetPpdReference(const std::string& manufacturer,
+                               const std::string& printer,
+                               Printer::PpdReference* reference) const = 0;
+
+  // Given a PpdReference, attempt to get the PPD for printing.
+  //
+  // |cb| will be called on the invoking thread, and will be sequenced.
+  virtual void ResolvePpd(const Printer::PpdReference& reference,
+                          const ResolvePpdCallback& cb) = 0;
+
+  // Hook for testing.  Returns true if there are no API calls that have not
+  // yet completed.
+  virtual bool Idle() const = 0;
+
+ protected:
+  friend class base::RefCounted<PpdProvider>;
   virtual ~PpdProvider() {}
-
-  // Given a PpdReference, attempt to resolve the PPD for printing.
-  //
-  // Must be called from a Sequenced Task context (i.e.
-  // base::SequencedTaskRunnerHandle::IsSet() must be true).
-  //
-  // |cb| will only be called after the task invoking Resolve() is finished.
-  virtual void Resolve(const Printer::PpdReference& ppd_reference,
-                       const ResolveCallback& cb) = 0;
-
-  // Get all the printer makes and models we can support.
-  //
-  // Must be called from a Sequenced Task context (i.e.
-  // base::SequencedTaskRunnerHandle::IsSet() must be true).
-  //
-  // |cb| will only be called after the task invoking QueryAvailable() is
-  // finished.
-  virtual void QueryAvailable(const QueryAvailableCallback& cb) = 0;
-
-  // Most of the time, the cache is just an invisible backend to the Provider,
-  // consulted at Resolve time, but in the case of the user doing "Add Printer"
-  // and "Select PPD" locally, then we get into a state where we want to put
-  // whatever they give us directly into the cache without doing a resolve.
-  // This hook lets is do that.
-  virtual bool CachePpd(const Printer::PpdReference& ppd_reference,
-                        const base::FilePath& ppd_path) = 0;
 };
 
 }  // namespace printing

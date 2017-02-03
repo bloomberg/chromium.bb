@@ -21,7 +21,8 @@ namespace {
 
 // PPD reference fields
 const char kUserSuppliedPpdUrl[] = "user_supplied_ppd_url";
-const char kEffectiveManufacturer[] = "effective_manufacturer";
+// TODO(justincarlson) -- This should be changed to effective_make_and_model to
+// match the implementation.
 const char kEffectiveModel[] = "effective_model";
 
 // printer fields
@@ -40,8 +41,7 @@ Printer::PpdReference DictionaryToPpdReference(
     const base::DictionaryValue* value) {
   Printer::PpdReference ppd;
   value->GetString(kUserSuppliedPpdUrl, &ppd.user_supplied_ppd_url);
-  value->GetString(kEffectiveManufacturer, &ppd.effective_manufacturer);
-  value->GetString(kEffectiveModel, &ppd.effective_model);
+  value->GetString(kEffectiveModel, &ppd.effective_make_and_model);
   return ppd;
 }
 
@@ -52,11 +52,8 @@ std::unique_ptr<base::DictionaryValue> PpdReferenceToDictionary(
   if (!ppd.user_supplied_ppd_url.empty()) {
     dictionary->SetString(kUserSuppliedPpdUrl, ppd.user_supplied_ppd_url);
   }
-  if (!ppd.effective_manufacturer.empty()) {
-    dictionary->SetString(kEffectiveManufacturer, ppd.effective_manufacturer);
-  }
-  if (!ppd.effective_model.empty()) {
-    dictionary->SetString(kEffectiveModel, ppd.effective_model);
+  if (!ppd.effective_make_and_model.empty()) {
+    dictionary->SetString(kEffectiveModel, ppd.effective_make_and_model);
   }
   return dictionary;
 }

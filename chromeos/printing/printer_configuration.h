@@ -20,27 +20,21 @@ class CHROMEOS_EXPORT Printer {
   // If you add fields to this struct, you almost certainly will
   // want to update PpdResolver and PpdCache::GetCachePath.
   //
+  // Exactly one of the fields below should be filled in.
+  //
   // At resolution time, we look for a cached PPD that used the same
   // PpdReference before.
   //
-  // If one is not found and user_supplied_ppd_url is set, we'll fail
-  // out with NOT FOUND
-  //
-  // Otherwise, we'll hit QuirksServer to see if we can resolve a Ppd
-  // using manufacturer/model
   struct PpdReference {
     // If non-empty, this is the url of a specific PPD the user has specified
-    // for use with this printer.
+    // for use with this printer.  The ppd can be gzipped or uncompressed.  This
+    // url must use a file:// scheme.
     std::string user_supplied_ppd_url;
 
-    // The *effective* manufacturer and model of this printer, in other words,
-    // the manufacturer and model of the printer for which we grab a PPD.  This
-    // doesn’t have to (but can) be the actual manufacturer/model of the
-    // printer.  We should always try to fill these fields in, even if we don’t
-    // think they’ll be needed, as they provide a fallback mechanism for
-    // finding a PPD.
-    std::string effective_manufacturer;
-    std::string effective_model;
+    // String that identifies which ppd to use from the ppd server.
+    // Where possible, this is the same as the ipp/ldap
+    // printer-make-and-model field.
+    std::string effective_make_and_model;
   };
 
   // The location where the printer is stored.

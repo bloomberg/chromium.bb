@@ -24,11 +24,8 @@ Printer::PpdReference SpecificsToPpd(
     ref.user_supplied_ppd_url = specifics.user_supplied_ppd_url();
   }
 
-  if (specifics.has_effective_model()) {
-    ref.effective_model = specifics.effective_model();
-
-    if (specifics.has_effective_manufacturer())
-      ref.effective_manufacturer = specifics.effective_manufacturer();
+  if (specifics.has_effective_make_and_model()) {
+    ref.effective_make_and_model = specifics.effective_make_and_model();
   }
 
   return ref;
@@ -41,11 +38,8 @@ sync_pb::PrinterPPDReference ReferenceToSpecifics(
     specifics.set_user_supplied_ppd_url(ref.user_supplied_ppd_url);
   }
 
-  if (!ref.effective_model.empty()) {
-    specifics.set_effective_model(ref.effective_model);
-
-    if (!ref.effective_manufacturer.empty())
-      specifics.set_effective_manufacturer(ref.effective_manufacturer);
+  if (!ref.effective_make_and_model.empty()) {
+    specifics.set_effective_make_and_model(ref.effective_make_and_model);
   }
 
   return specifics;
