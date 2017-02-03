@@ -738,7 +738,7 @@ bool DXVAVideoDecodeAccelerator::CreateVideoProcessor() {
     DXVA2_VideoProcessorCaps caps;
     hr = video_processor_service_->GetVideoProcessorCaps(
         guids[g], &inputDesc, D3DFMT_X8R8G8B8, &caps);
-    if (FAILED(hr))
+    if (hr)
       continue;
 
     if (!(caps.VideoProcessorOperations & DXVA2_VideoProcess_YUV2RGB))
@@ -748,7 +748,7 @@ bool DXVAVideoDecodeAccelerator::CreateVideoProcessor() {
     UINT format_count = 0;
     hr = video_processor_service_->GetVideoProcessorRenderTargets(
         guids[g], &inputDesc, &format_count, &formats);
-    if (FAILED(hr))
+    if (hr)
       continue;
 
     UINT f;
@@ -763,7 +763,7 @@ bool DXVAVideoDecodeAccelerator::CreateVideoProcessor() {
     // Create video processor
     hr = video_processor_service_->CreateVideoProcessor(
         guids[g], &inputDesc, D3DFMT_X8R8G8B8, 0, processor_.Receive());
-    if (FAILED(hr))
+    if (hr)
       continue;
 
     DXVA2_ValueRange range;
