@@ -12,6 +12,7 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "wtf/Allocator.h"
+#include "wtf/AutoReset.h"
 #include "wtf/Noncopyable.h"
 
 #ifndef NDEBUG
@@ -54,9 +55,23 @@ class PLATFORM_EXPORT DrawingRecorder final {
   bool m_knownToBeOpaque;
 
 #if DCHECK_IS_ON()
-  size_t m_displayItemPosition;
+  // Ensures the list size does not change during the recorder's scope.
+  size_t m_initialDisplayItemListSize;
 #endif
 };
+
+#if DCHECK_IS_ON()
+class DisableListModificationCheck {
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(DisableListModificationCheck);
+
+ public:
+  DisableListModificationCheck();
+
+ private:
+  AutoReset<bool> m_disabler;
+};
+#endif  // DCHECK_IS_ON()
 
 }  // namespace blink
 

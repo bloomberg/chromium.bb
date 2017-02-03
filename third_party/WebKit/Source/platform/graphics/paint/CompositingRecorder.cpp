@@ -9,7 +9,6 @@
 #include "platform/graphics/paint/CompositingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/SkPictureBuilder.h"
 
 namespace blink {
 
@@ -60,40 +59,29 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext,
     const DisplayItemClient& displayItemClient = lastDisplayItem->client();
     DisplayItem::Type displayItemType = lastDisplayItem->getType();
 
-    // Re-record the last two DisplayItems into a new PaintRecord.
-    SkPictureBuilder pictureBuilder(cullRect, nullptr, &graphicsContext);
-    {
-#if DCHECK_IS_ON()
-      // The picture builder creates an internal paint controller that has been
-      // initialized with null paint properties. Painting into this controller
-      // without properties will not cause problems because the display item
-      // from this internal paint controller is immediately reunited with the
-      // correct properties.
-      DisableNullPaintPropertyChecks disabler;
-#endif
-      DrawingRecorder newRecorder(pictureBuilder.context(), displayItemClient,
-                                  displayItemType, cullRect);
-      DCHECK(!DrawingRecorder::useCachedDrawingIfPossible(
-          pictureBuilder.context(), displayItemClient, displayItemType));
-
-      secondToLastDisplayItem->replay(pictureBuilder.context());
-      lastDisplayItem->replay(pictureBuilder.context());
-      EndCompositingDisplayItem(client).replay(pictureBuilder.context());
-    }
-
-    paintController.removeLastDisplayItem();  // Remove the DrawingDisplayItem.
-    paintController
-        .removeLastDisplayItem();  // Remove the BeginCompositingDisplayItem.
-
-    // The new item cannot be cached, because it is a mutation of the
-    // DisplayItem the client thought it was painting.
+    // Re-record the last two DisplayItems into a new drawing. The new item
+    // cannot be cached, because it is a mutation of the DisplayItem the client
+    // thought it was painting.
     paintController.beginSkippingCache();
     {
-      // Replay the new SKPicture into a new DrawingDisplayItem in the original
-      // DisplayItemList.
+#if DCHECK_IS_ON()
+      // In the recorder's scope we remove the last two display items which
+      // are combined into a new drawing.
+      DisableListModificationCheck disabler;
+#endif
       DrawingRecorder newRecorder(graphicsContext, displayItemClient,
                                   displayItemType, cullRect);
-      pictureBuilder.endRecording()->playback(graphicsContext.canvas());
+      DCHECK(!DrawingRecorder::useCachedDrawingIfPossible(
+          graphicsContext, displayItemClient, displayItemType));
+
+      secondToLastDisplayItem->replay(graphicsContext);
+      lastDisplayItem->replay(graphicsContext);
+      EndCompositingDisplayItem(client).replay(graphicsContext);
+
+      // Remove the DrawingDisplayItem.
+      paintController.removeLastDisplayItem();
+      // Remove the BeginCompositingDisplayItem.
+      paintController.removeLastDisplayItem();
     }
     paintController.endSkippingCache();
   } else {

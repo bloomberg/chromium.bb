@@ -12,6 +12,12 @@
 
 namespace blink {
 
+#if DCHECK_IS_ON()
+static bool gListModificationCheckDisabled = false;
+DisableListModificationCheck::DisableListModificationCheck()
+    : m_disabler(&gListModificationCheckDisabled, true) {}
+#endif
+
 DrawingRecorder::DrawingRecorder(GraphicsContext& context,
                                  const DisplayItemClient& displayItemClient,
                                  DisplayItem::Type displayItemType,
@@ -22,7 +28,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
       m_knownToBeOpaque(false)
 #if DCHECK_IS_ON()
       ,
-      m_displayItemPosition(
+      m_initialDisplayItemListSize(
           m_context.getPaintController().newDisplayItemList().size())
 #endif
 {
@@ -75,8 +81,11 @@ DrawingRecorder::~DrawingRecorder() {
     m_context.restore();
 
   m_context.setInDrawingRecorder(false);
-  DCHECK(m_displayItemPosition ==
-         m_context.getPaintController().newDisplayItemList().size());
+
+  if (!gListModificationCheckDisabled) {
+    DCHECK(m_initialDisplayItemListSize ==
+           m_context.getPaintController().newDisplayItemList().size());
+  }
 #endif
 
   sk_sp<const SkPicture> picture = m_context.endRecording();
