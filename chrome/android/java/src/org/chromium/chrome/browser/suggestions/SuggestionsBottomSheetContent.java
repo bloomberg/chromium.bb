@@ -11,6 +11,7 @@ import android.view.View;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
@@ -34,7 +35,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     private final SnippetsBridge mSnippetsBridge;
 
     public SuggestionsBottomSheetContent(
-            ChromeActivity activity, Tab tab, TabModelSelector tabModelSelector) {
+            final ChromeActivity activity, Tab tab, TabModelSelector tabModelSelector) {
         mRecyclerView = (NewTabPageRecyclerView) LayoutInflater.from(activity).inflate(
                 R.layout.new_tab_page_recycler_view, null, false);
 
@@ -47,7 +48,15 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
         mSuggestionsManager = new SuggestionsUiDelegateImpl(
                 mSnippetsBridge, mSnippetsBridge, navigationDelegate, profile, tab);
+
         mContextMenuManager = new ContextMenuManager(activity, navigationDelegate, mRecyclerView);
+        activity.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
+        mSuggestionsManager.addDestructionObserver(new DestructionObserver() {
+            @Override
+            public void onDestroy() {
+                activity.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
+            }
+        });
 
         NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsManager, null, uiConfig,
                 OfflinePageBridge.getForProfile(profile), mContextMenuManager);
