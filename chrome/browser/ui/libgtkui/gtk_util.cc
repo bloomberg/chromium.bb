@@ -513,7 +513,7 @@ SkColor GetBorderColor(const char* css_selector) {
   gfx::Size size = GetMinimumWidgetSize(context);
   CairoSurface surface(size);
   RenderBackground(size, surface.cairo(), context);
-  gtk_render_frame(context, surface.cairo(), 0, 0, 1, 1);
+  gtk_render_frame(context, surface.cairo(), 0, 0, size.width(), size.height());
   return surface.GetAveragePixelValue(true);
 }
 

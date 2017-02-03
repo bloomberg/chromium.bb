@@ -828,18 +828,18 @@ void GtkUi::LoadGtkValues() {
       colors_[ThemeProperties::COLOR_FRAME];
 #else
   SkColor toolbar_color = GetBgColor("GtkToolbar#toolbar");
+  SkColor toolbar_text_color = color_utils::GetReadableColor(
+      GetFgColor("GtkToolbar#toolbar GtkLabel#label"),
+      toolbar_color);
 
-  colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] =
-      GetFgColor("GtkToolbar#toolbar GtkLabel#label");
+  colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] = toolbar_text_color;
 
   // Tabs use the same background color as the toolbar, so use the
   // toolbar text color as the tab text color.
-  SkColor tab_text_color =
-      GetFgColor("GtkToolbar#toolbar.horizontal GtkLabel#label");
-  colors_[ThemeProperties::COLOR_TAB_TEXT] = tab_text_color;
-  colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = tab_text_color;
+  colors_[ThemeProperties::COLOR_TAB_TEXT] = toolbar_text_color;
+  colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = toolbar_text_color;
   colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-      color_utils::BlendTowardOppositeLuma(tab_text_color, 50);
+      color_utils::BlendTowardOppositeLuma(toolbar_text_color, 50);
 
   inactive_selection_bg_color_ =
       GetBgColor("GtkEntry#entry:backdrop #selection:selected");
@@ -853,7 +853,7 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND] =
       toolbar_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT] =
-      GetFgColor("GtkToolbar#toolbar GtkLabel#label");
+      toolbar_text_color;
   // Separates the toolbar from the bookmark bar or butter bars.
   colors_[ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR] =
       toolbar_separator_horizontal;
@@ -865,23 +865,27 @@ void GtkUi::LoadGtkValues() {
       toolbar_separator_horizontal;
 
   // These colors represent the border drawn around tabs and between
-  // the tabstrip and toolbar.  It's unclear if the selectors used are
-  // correct, but they seem to give reasonable results.
-  SkColor entry_border =
-      GetBorderColor("#headerbar.header-bar.titlebar GtkEntry#entry");
-  SkColor entry_inactive_border =
-      GetBorderColor("#headerbar.header-bar.titlebar:backdrop GtkEntry#entry");
+  // the tabstrip and toolbar.
+  SkColor header_button_border =
+      GetBorderColor("#headerbar.header-bar.titlebar GtkButton#button");
+  SkColor header_button_inactive_border = GetBorderColor(
+      "#headerbar.header-bar.titlebar:backdrop GtkButton#button");
   // Unlike with toolbars, we always want a border around tabs, so let
   // ThemeService choose the border color if the theme doesn't provide one.
-  if (SkColorGetA(entry_border) && SkColorGetA(entry_inactive_border)) {
-    colors_[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR] = entry_border;
+  if (SkColorGetA(header_button_border) &&
+      SkColorGetA(header_button_inactive_border)) {
+    colors_[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR] =
+        header_button_border;
     colors_[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE] =
-        entry_inactive_border;
+        header_button_inactive_border;
   }
 
-  colors_[ThemeProperties::COLOR_NTP_BACKGROUND] = GetBgColor("");
-  colors_[ThemeProperties::COLOR_NTP_TEXT] = GetFgColor("");
-  colors_[ThemeProperties::COLOR_NTP_HEADER] = GetBorderColor("GtkEntry#entry");
+  SkColor ntp_bg = GetBgColor("");
+  colors_[ThemeProperties::COLOR_NTP_BACKGROUND] = ntp_bg;
+  colors_[ThemeProperties::COLOR_NTP_TEXT] =
+      color_utils::GetReadableColor(GetFgColor("GtkLabel#label"), ntp_bg);
+  colors_[ThemeProperties::COLOR_NTP_HEADER] =
+      GetBorderColor("GtkButton#button");
 #endif
 
   colors_[ThemeProperties::COLOR_TOOLBAR] = toolbar_color;
