@@ -860,7 +860,8 @@ if (CONFIG_WEBM_IO)
 endif ()
 
 if (CONFIG_UNIT_TESTS)
-  include_directories("${AOM_ROOT}/third_party/googletest/src/include")
+  include_directories("${AOM_ROOT}/third_party/googletest/src/include"
+                      "${AOM_ROOT}/third_party/googletest/src")
 
   add_library(aom_gtest OBJECT ${AOM_GTEST_SOURCES})
 
