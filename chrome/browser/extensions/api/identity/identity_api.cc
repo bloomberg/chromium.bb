@@ -224,32 +224,4 @@ void BrowserContextKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies() {
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
-IdentityGetAccountsFunction::IdentityGetAccountsFunction() {
-}
-
-IdentityGetAccountsFunction::~IdentityGetAccountsFunction() {
-}
-
-ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
-  if (GetProfile()->IsOffTheRecord()) {
-    return RespondNow(Error(identity_constants::kOffTheRecord));
-  }
-
-  std::vector<std::string> gaia_ids =
-      IdentityAPI::GetFactoryInstance()->Get(GetProfile())->GetAccounts();
-  DCHECK(gaia_ids.size() < 2 || switches::IsExtensionsMultiAccount());
-
-  std::unique_ptr<base::ListValue> infos(new base::ListValue());
-
-  for (std::vector<std::string>::const_iterator it = gaia_ids.begin();
-       it != gaia_ids.end();
-       ++it) {
-    api::identity::AccountInfo account_info;
-    account_info.id = *it;
-    infos->Append(account_info.ToValue());
-  }
-
-  return RespondNow(OneArgument(std::move(infos)));
-}
-
 }  // namespace extensions
