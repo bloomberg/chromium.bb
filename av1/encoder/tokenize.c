@@ -474,13 +474,14 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 #if CONFIG_ENTROPY
   const aom_prob(*coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       cpi->subframe_stats.coef_probs_buf[cpi->common.coef_probs_update_idx]
+                                        [txsize_sqr_map[tx_size]][type][ref];
 #else
   aom_prob(*const coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       cpi->common.fc->coef_probs[txsize_sqr_map[tx_size]][type][ref];
 #endif  // CONFIG_ENTROPY
 #endif
 #if CONFIG_EC_ADAPT
-      FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 #elif CONFIG_EC_MULTISYMBOL
   FRAME_CONTEXT *ec_ctx = cpi->common.fc;
 #endif
