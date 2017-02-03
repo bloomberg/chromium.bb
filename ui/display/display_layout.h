@@ -69,6 +69,9 @@ struct DISPLAY_EXPORT DisplayPlacement {
 
   DisplayPlacement(const DisplayPlacement& placement);
 
+  bool operator==(const DisplayPlacement& other) const;
+  bool operator!=(const DisplayPlacement& other) const;
+
   DisplayPlacement& Swap();
 
   std::string ToString() const;

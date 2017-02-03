@@ -4,5 +4,6 @@
 
 typemaps = [
   "//ui/display/mojo/display.typemap",
+  "//ui/display/mojo/display_layout.typemap",
   "//ui/display/mojo/display_mode.typemap",
 ]

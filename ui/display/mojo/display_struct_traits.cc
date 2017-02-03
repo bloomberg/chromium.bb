@@ -76,7 +76,7 @@ bool EnumTraits<display::mojom::TouchSupport, display::Display::TouchSupport>::
       return true;
   }
   NOTREACHED();
-  return display::Display::TOUCH_SUPPORT_UNKNOWN;
+  return false;
 }
 
 bool StructTraits<display::mojom::DisplayDataView, display::Display>::Read(

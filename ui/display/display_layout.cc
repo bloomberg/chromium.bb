@@ -382,6 +382,18 @@ DisplayPlacement::DisplayPlacement(const DisplayPlacement& placement)
       offset(placement.offset),
       offset_reference(placement.offset_reference) {}
 
+bool DisplayPlacement::operator==(const DisplayPlacement& other) const {
+  return display_id == other.display_id &&
+         parent_display_id == other.parent_display_id &&
+         position == other.position &&
+         offset == other.offset &&
+         offset_reference == other.offset_reference;
+}
+
+bool DisplayPlacement::operator!=(const DisplayPlacement& other) const {
+  return !operator==(other);
+}
+
 DisplayPlacement& DisplayPlacement::Swap() {
   switch (position) {
     case TOP:
@@ -569,19 +581,7 @@ std::unique_ptr<DisplayLayout> DisplayLayout::Copy() const {
 }
 
 bool DisplayLayout::HasSamePlacementList(const DisplayLayout& layout) const {
-  if (placement_list.size() != layout.placement_list.size())
-    return false;
-  for (size_t index = 0; index < placement_list.size(); index++) {
-    const DisplayPlacement& placement1 = placement_list[index];
-    const DisplayPlacement& placement2 = layout.placement_list[index];
-    if (placement1.position != placement2.position ||
-        placement1.offset != placement2.offset ||
-        placement1.display_id != placement2.display_id ||
-        placement1.parent_display_id != placement2.parent_display_id) {
-      return false;
-    }
-  }
-  return true;
+  return placement_list == layout.placement_list;
 }
 
 std::string DisplayLayout::ToString() const {
