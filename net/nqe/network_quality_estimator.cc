@@ -626,32 +626,36 @@ void NetworkQualityEstimator::RecordCorrelationMetric(const URLRequest& request,
   if (now - last_main_frame_request_ > base::TimeDelta::FromSeconds(15))
     return;
 
+  if (last_connection_change_ >= last_main_frame_request_)
+    return;
+
   DCHECK_GE(now, load_timing_info.send_start);
 
   int32_t rtt = 0;
 
-  if (UseTransportRTT()) {
-    rtt = estimated_quality_at_last_main_frame_.transport_rtt() !=
-                  nqe::internal::InvalidRTT()
-              ? FitInKBitsPerMetricBits(
-                    estimated_quality_at_last_main_frame_.transport_rtt()
-                        .InMilliseconds())
-              : 0;
-  } else {
-    rtt = estimated_quality_at_last_main_frame_.http_rtt() !=
-                  nqe::internal::InvalidRTT()
-              ? FitInKBitsPerMetricBits(
-                    estimated_quality_at_last_main_frame_.http_rtt()
-                        .InMilliseconds())
-              : 0;
+  if (estimated_quality_at_last_main_frame_.downstream_throughput_kbps() ==
+      nqe::internal::kInvalidThroughput) {
+    return;
   }
 
-  const int32_t downstream_throughput =
-      estimated_quality_at_last_main_frame_.downstream_throughput_kbps() !=
-              nqe::internal::kInvalidThroughput
-          ? FitInKBitsPerMetricBits(estimated_quality_at_last_main_frame_
-                                        .downstream_throughput_kbps())
-          : 0;
+  if (UseTransportRTT()) {
+    if (estimated_quality_at_last_main_frame_.transport_rtt() ==
+        nqe::internal::InvalidRTT()) {
+      return;
+    }
+    rtt = FitInKBitsPerMetricBits(
+        estimated_quality_at_last_main_frame_.transport_rtt().InMilliseconds());
+  } else {
+    if (estimated_quality_at_last_main_frame_.http_rtt() ==
+        nqe::internal::InvalidRTT()) {
+      return;
+    }
+    rtt = FitInKBitsPerMetricBits(
+        estimated_quality_at_last_main_frame_.http_rtt().InMilliseconds());
+  }
+
+  const int32_t downstream_throughput = FitInKBitsPerMetricBits(
+      estimated_quality_at_last_main_frame_.downstream_throughput_kbps());
 
   const int32_t resource_load_time = FitInKBitsPerMetricBits(
       (now - load_timing_info.send_start).InMilliseconds());

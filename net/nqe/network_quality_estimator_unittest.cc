@@ -2325,6 +2325,27 @@ TEST(NetworkQualityEstimatorTest, CorrelationHistogram) {
           3000 >> kTrimBits,
       },
       {
+          // Verify that the metric is not recorded if the HTTP RTT is
+          // unavailable.
+          false, 0.3, 0.4, base::TimeDelta::FromSeconds(1), 1000 >> kTrimBits,
+          nqe::internal::InvalidRTT(), 2000 >> kTrimBits, 3000,
+          3000 >> kTrimBits,
+      },
+      {
+          // Verify that the metric is not recorded if the transport RTT is
+          // unavailable.
+          true, 0.3, 0.4, nqe::internal::InvalidRTT(), 1000 >> kTrimBits,
+          base::TimeDelta::FromSeconds(2), 2000 >> kTrimBits, 3000,
+          3000 >> kTrimBits,
+      },
+      {
+          // Verify that the metric is not recorded if the throughput is
+          // unavailable.
+          false, 0.3, 0.4, base::TimeDelta::FromSeconds(1), 1000 >> kTrimBits,
+          base::TimeDelta::FromSeconds(2), 2000 >> kTrimBits,
+          nqe::internal::kInvalidThroughput, 3000 >> kTrimBits,
+      },
+      {
           // Verify that the metric is recorded if the logging probability is
           // set to 1.0.
           false, 0.5, 1.0, base::TimeDelta::FromSeconds(1), 1000 >> kTrimBits,
@@ -2396,6 +2417,24 @@ TEST(NetworkQualityEstimatorTest, CorrelationHistogram) {
           "NQE.Correlation.ResourceLoadTime.0Kb_128Kb", 0);
       continue;
     }
+    if (!test.use_transport_rtt &&
+        test.http_rtt == nqe::internal::InvalidRTT()) {
+      histogram_tester.ExpectTotalCount(
+          "NQE.Correlation.ResourceLoadTime.0Kb_128Kb", 0);
+      continue;
+    }
+    if (test.use_transport_rtt &&
+        test.transport_rtt == nqe::internal::InvalidRTT()) {
+      histogram_tester.ExpectTotalCount(
+          "NQE.Correlation.ResourceLoadTime.0Kb_128Kb", 0);
+      continue;
+    }
+    if (test.downstream_throughput_kbps == nqe::internal::kInvalidThroughput) {
+      histogram_tester.ExpectTotalCount(
+          "NQE.Correlation.ResourceLoadTime.0Kb_128Kb", 0);
+      continue;
+    }
+
     histogram_tester.ExpectTotalCount(
         "NQE.Correlation.ResourceLoadTime.0Kb_128Kb", 1);
     std::vector<base::Bucket> buckets = histogram_tester.GetAllSamples(
