@@ -77,14 +77,16 @@ void NGLineBuilder::CreateLine() {
   }
   DCHECK_EQ(fragments_.size(), offsets_.size());
 
-  line_box_data_list_.grow(line_box_data_list_.size() + 1);
-  LineBoxData& line_box_data = line_box_data_list_.back();
-  line_box_data.fragment_end = fragments_.size();
-  line_box_data.inline_size = inline_offset;
+  if (!fragments_.isEmpty()) {
+    line_box_data_list_.grow(line_box_data_list_.size() + 1);
+    LineBoxData& line_box_data = line_box_data_list_.back();
+    line_box_data.fragment_end = fragments_.size();
+    line_box_data.inline_size = inline_offset;
 
-  max_inline_size_ = std::max(max_inline_size_, inline_offset);
-  // TODO(kojii): Implement block size when we support baseline alignment.
-  content_size_ += LayoutUnit(100);
+    max_inline_size_ = std::max(max_inline_size_, inline_offset);
+    // TODO(kojii): Implement block size when we support baseline alignment.
+    content_size_ += LayoutUnit(100);
+  }
 
   line_item_chunks_.clear();
 #if DCHECK_IS_ON()
