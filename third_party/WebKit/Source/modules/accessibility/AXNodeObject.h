@@ -237,7 +237,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                                NameSources*,
                                bool* foundTextAlternative) const;
   float stepValueForRange() const;
-  bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;
+  bool isDescendantOfElementType(HashSet<QualifiedName>& tagNames) const;
   String placeholderFromNativeAttribute() const;
 };
 

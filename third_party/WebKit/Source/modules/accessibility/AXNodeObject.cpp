@@ -420,14 +420,35 @@ const AXObject* AXNodeObject::inheritsPresentationalRoleFrom() const {
   return 0;
 }
 
+// There should only be one banner/contentInfo per page. If header/footer are
+// being used within an article, aside, nave, section, blockquote, details,
+// fieldset, figure, td, or main, then it should not be exposed as whole
+// page's banner/contentInfo.
+static HashSet<QualifiedName>& getLandmarkRolesNotAllowed() {
+  DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, landmarkRolesNotAllowed, ());
+  if (landmarkRolesNotAllowed.isEmpty()) {
+    landmarkRolesNotAllowed.add(articleTag);
+    landmarkRolesNotAllowed.add(asideTag);
+    landmarkRolesNotAllowed.add(navTag);
+    landmarkRolesNotAllowed.add(sectionTag);
+    landmarkRolesNotAllowed.add(blockquoteTag);
+    landmarkRolesNotAllowed.add(detailsTag);
+    landmarkRolesNotAllowed.add(fieldsetTag);
+    landmarkRolesNotAllowed.add(figureTag);
+    landmarkRolesNotAllowed.add(tdTag);
+    landmarkRolesNotAllowed.add(mainTag);
+  }
+  return landmarkRolesNotAllowed;
+}
+
 bool AXNodeObject::isDescendantOfElementType(
-    const HTMLQualifiedName& tagName) const {
+    HashSet<QualifiedName>& tagNames) const {
   if (!getNode())
     return false;
 
   for (Element* parent = getNode()->parentElement(); parent;
        parent = parent->parentElement()) {
-    if (parent->hasTagName(tagName))
+    if (tagNames.contains(parent->tagQName()))
       return true;
   }
   return false;
@@ -604,22 +625,14 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const {
   // being used within an article or section then it should not be exposed as
   // whole page's banner/contentInfo but as a group role.
   if (getNode()->hasTagName(headerTag)) {
-    if (isDescendantOfElementType(articleTag) ||
-        isDescendantOfElementType(sectionTag) ||
-        (getNode()->parentElement() &&
-         getNode()->parentElement()->hasTagName(mainTag))) {
+    if (isDescendantOfElementType(getLandmarkRolesNotAllowed()))
       return GroupRole;
-    }
     return BannerRole;
   }
 
   if (getNode()->hasTagName(footerTag)) {
-    if (isDescendantOfElementType(articleTag) ||
-        isDescendantOfElementType(sectionTag) ||
-        (getNode()->parentElement() &&
-         getNode()->parentElement()->hasTagName(mainTag))) {
+    if (isDescendantOfElementType(getLandmarkRolesNotAllowed()))
       return GroupRole;
-    }
     return FooterRole;
   }
 
