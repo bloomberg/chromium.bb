@@ -11,14 +11,11 @@ import android.os.StrictMode;
 import android.os.SystemClock;
 import android.provider.Browser;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
@@ -113,22 +110,6 @@ public class InstantAppsHandler {
     }
 
     /**
-     * Check the cached value to figure out if the feature is enabled. We have to use the cached
-     * value because native library hasn't yet been loaded.
-     * @param context The application context.
-     * @return Whether the feature is enabled.
-     */
-    protected boolean isEnabled(Context context) {
-        // Will go away once the feature is enabled for everyone by default.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            return ChromePreferenceManager.getInstance(context).getCachedInstantAppsEnabled();
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-    }
-
-    /**
      * Record how long the handleIntent() method took.
      * @param startTime The timestamp for handleIntent start time.
      */
@@ -178,33 +159,6 @@ public class InstantAppsHandler {
         }
     }
 
-    /**
-     * Cache whether the Instant Apps feature is enabled.
-     * This should only be called with the native library loaded.
-     */
-    public void cacheInstantAppsEnabled() {
-        Context context = ContextUtils.getApplicationContext();
-        boolean isEnabled = false;
-        boolean wasEnabled = isEnabled(context);
-        CommandLine instance = CommandLine.getInstance();
-        if (instance.hasSwitch(ChromeSwitches.DISABLE_APP_LINK)) {
-            isEnabled = false;
-        } else if (instance.hasSwitch(ChromeSwitches.ENABLE_APP_LINK)) {
-            isEnabled = true;
-        } else {
-            String experiment = FieldTrialList.findFullName(INSTANT_APPS_EXPERIMENT_NAME);
-            if (INSTANT_APPS_DISABLED_ARM.equals(experiment)) {
-                isEnabled = false;
-            } else if (INSTANT_APPS_ENABLED_ARM.equals(experiment)) {
-                isEnabled = true;
-            }
-        }
-
-        if (isEnabled != wasEnabled) {
-            ChromePreferenceManager.getInstance(context).setCachedInstantAppsEnabled(isEnabled);
-        }
-    }
-
     /** Handle incoming intent. */
     public boolean handleIncomingIntent(Context context, Intent intent,
             boolean isCustomTabsIntent) {
@@ -217,10 +171,9 @@ public class InstantAppsHandler {
 
     private boolean handleIncomingIntentInternal(
             Context context, Intent intent, boolean isCustomTabsIntent, long startTime) {
-        boolean isEnabled = isEnabled(context);
-        if (!isEnabled || (isCustomTabsIntent && !IntentUtils.safeGetBooleanExtra(
-                intent, CUSTOM_APPS_INSTANT_APP_EXTRA, false))) {
-            Log.i(TAG, "Not handling with Instant Apps. Enabled? " + isEnabled);
+        if (isCustomTabsIntent && !IntentUtils.safeGetBooleanExtra(
+                intent, CUSTOM_APPS_INSTANT_APP_EXTRA, false)) {
+            Log.i(TAG, "Not handling with Instant Apps (missing CUSTOM_APPS_INSTANT_APP_EXTRA)");
             return false;
         }
 
@@ -281,8 +234,6 @@ public class InstantAppsHandler {
      */
     public boolean handleNavigation(Context context, String url, Uri referrer,
             WebContents webContents) {
-        if (!isEnabled(context)) return false;
-
         if (InstantAppsSettings.isInstantAppDefault(webContents, url)) {
             return launchInstantAppForNavigation(context, url, referrer);
         }

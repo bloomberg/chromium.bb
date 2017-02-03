@@ -192,9 +192,6 @@ public abstract class ChromeSwitches {
     public static final String HERB_FLAVOR_DISABLED = "Disabled";
     public static final String HERB_FLAVOR_ELDERBERRY = "Elderberry";
 
-    public static final String DISABLE_APP_LINK = "disable-app-link";
-    public static final String ENABLE_APP_LINK = "enable-app-link";
-
     /**
      * Set the partner-defined homepage URL, for testing.
      */

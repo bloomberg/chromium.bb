@@ -1726,10 +1726,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"tab-management-experiment-type", IDS_FLAGS_HERB_PROTOTYPE_CHOICES_NAME,
      IDS_FLAGS_HERB_PROTOTYPE_CHOICES_DESCRIPTION, kOsAndroid,
      MULTI_VALUE_TYPE(kHerbPrototypeChoices)},
-    {"app-link", IDS_FLAGS_ENABLE_APP_LINK_NAME,
-     IDS_FLAGS_ENABLE_APP_LINK_DESCRIPTION, kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppLink,
-                               switches::kDisableAppLink)},
 #endif  // OS_ANDROID
     {"enable-md-bookmarks", IDS_FLAGS_ENABLE_MATERIAL_DESIGN_BOOKMARKS_NAME,
      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_BOOKMARKS_DESCRIPTION, kOsDesktop,

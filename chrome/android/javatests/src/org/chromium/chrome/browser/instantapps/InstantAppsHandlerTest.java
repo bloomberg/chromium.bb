@@ -62,17 +62,6 @@ public class InstantAppsHandlerTest extends ChromeActivityTestCaseBase<ChromeAct
     }
 
     @SmallTest
-    public void testInstantAppsDisabled_disabledByFlag() {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("applink.app_link_enabled", false);
-        editor.apply();
-
-        assertFalse(mHandler.handleIncomingIntent(mContext, createViewIntent(), false));
-        assertFalse(mHandler.handleIncomingIntent(mContext, createViewIntent(), true));
-    }
-
-    @SmallTest
     public void testInstantAppsDisabled_incognito() {
         Intent i = createViewIntent();
         i.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
@@ -150,18 +139,6 @@ public class InstantAppsHandlerTest extends ChromeActivityTestCaseBase<ChromeAct
         Intent i = new Intent(NfcAdapter.ACTION_NDEF_DISCOVERED);
         i.setData(Uri.parse("http://instantapp.com/"));
         assertTrue(mHandler.handleIncomingIntent(getInstrumentation().getContext(), i, false));
-    }
-
-    @SmallTest
-    public void testHandleNavigation_noExperiment() {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("applink.app_link_enabled", false);
-        editor.apply();
-
-        assertFalse(mHandler.handleNavigation(mContext, INSTANT_APP_URL, REFERRER_URI, null));
-        assertFalse(mHandler.mLaunchInstantApp);
-        assertFalse(mHandler.mStartedAsyncCall);
     }
 
     @SmallTest
