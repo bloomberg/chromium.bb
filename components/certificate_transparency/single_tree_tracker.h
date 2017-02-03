@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/hash_value.h"
+#include "net/base/network_change_notifier.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/cert/sth_observer.h"
@@ -113,6 +114,8 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
   struct EntryToAudit;
   struct EntryAuditState;
   struct EntryAuditResult {};
+  class NetworkObserver;
+  friend class NetworkObserver;
 
   // Less-than comparator that sorts EntryToAudits based on the SCT timestamp,
   // with smaller (older) SCTs appearing less than larger (newer) SCTs.
@@ -139,6 +142,12 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
   //   Future calls to GetLogEntryInclusionStatus() will indicate the entry
   //   has not been observed.
   void OnAuditProofObtained(const EntryToAudit& entry, int net_error);
+
+  // Discards all entries pending inclusion check on network change.
+  // That is done to prevent the client looking up inclusion proofs for
+  // certificates received from one network, on another network, thus
+  // leaking state between networks.
+  void ResetPendingQueue();
 
   // Clears entries to reduce memory overhead.
   void OnMemoryPressure(
@@ -172,6 +181,8 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   net::NetLogWithSource net_log_;
+
+  std::unique_ptr<NetworkObserver> network_observer_;
 
   base::WeakPtrFactory<SingleTreeTracker> weak_factory_;
 

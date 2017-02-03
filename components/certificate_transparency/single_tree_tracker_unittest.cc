@@ -720,4 +720,25 @@ TEST_F(SingleTreeTrackerTest,
   histograms.ExpectBucketCount(kInclusionCheckResultHistogramName, 3, 1);
 }
 
+// Test that entries are no longer pending after a network state
+// change.
+TEST_F(SingleTreeTrackerTest, DiscardsPendingEntriesAfterNetworkChange) {
+  CreateTreeTrackerWithDefaultDnsExpectation();
+
+  base::HistogramTester histograms;
+  tree_tracker_->OnSCTVerified(chain_.get(), cert_sct_.get());
+
+  EXPECT_EQ(
+      SingleTreeTracker::SCT_PENDING_NEWER_STH,
+      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+
+  net_change_notifier_->NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(
+      SingleTreeTracker::SCT_NOT_OBSERVED,
+      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+}
+
 }  // namespace certificate_transparency
