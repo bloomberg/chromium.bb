@@ -17,6 +17,11 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include <libgen.h>
+#include <mach-o/dyld.h>
+#endif
+
 namespace tracing {
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -268,5 +273,36 @@ TEST(ProcessMetricsMemoryDumpProviderTest, TestPollFastMemoryTotal) {
   mdp.SuspendFastMemoryPolling();
 #endif
 }
+
+#if defined(OS_MACOSX)
+TEST(ProcessMetricsMemoryDumpProviderTest, TestMachOReading) {
+  using VMRegion = base::trace_event::ProcessMemoryMaps::VMRegion;
+  ProcessMetricsMemoryDumpProvider mdp(base::kNullProcessId);
+  base::trace_event::MemoryDumpArgs args;
+  base::trace_event::ProcessMemoryDump dump(nullptr, args);
+  ASSERT_TRUE(mdp.DumpProcessMemoryMaps(args, &dump));
+  ASSERT_TRUE(dump.has_process_mmaps());
+  uint32_t size = 100;
+  char full_path[size];
+  int result = _NSGetExecutablePath(full_path, &size);
+  ASSERT_EQ(0, result);
+  std::string name = basename(full_path);
+
+  bool found_components_unittests = false;
+  for (const VMRegion& region : dump.process_mmaps()->vm_regions()) {
+    EXPECT_NE(0u, region.start_address);
+    EXPECT_NE(0u, region.size_in_bytes);
+
+    EXPECT_LT(region.size_in_bytes, 1ull << 32);
+    uint32_t required_protection_flags =
+        VMRegion::kProtectionFlagsRead | VMRegion::kProtectionFlagsExec;
+    if (region.mapped_file.find(name) != std::string::npos &&
+        region.protection_flags == required_protection_flags) {
+      found_components_unittests = true;
+    }
+  }
+  EXPECT_TRUE(found_components_unittests);
+}
+#endif  // defined(OS_MACOSX)
 
 }  // namespace tracing

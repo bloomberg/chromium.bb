@@ -24,6 +24,15 @@
 #include "base/trace_event/process_memory_totals.h"
 #include "build/build_config.h"
 
+#if defined(OS_MACOSX)
+#include <libproc.h>
+#include <mach/mach.h>
+#include <mach/mach_vm.h>
+#include <sys/param.h>
+
+#include "base/numerics/safe_math.h"
+#endif  // defined(OS_MACOSX)
+
 namespace tracing {
 
 namespace {
@@ -219,6 +228,93 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessMemoryMaps(
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
+#if defined(OS_MACOSX)
+bool ProcessMetricsMemoryDumpProvider::DumpProcessMemoryMaps(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  const int pid = getpid();
+  task_t task = mach_task_self();
+  using VMRegion = base::trace_event::ProcessMemoryMaps::VMRegion;
+  mach_vm_size_t size = 0;
+  vm_region_submap_info_64 info;
+  natural_t depth = 1;
+  mach_msg_type_number_t count = sizeof(info);
+  for (mach_vm_address_t address = MACH_VM_MIN_ADDRESS;; address += size) {
+    memset(&info, 0, sizeof(info));
+    kern_return_t kr = mach_vm_region_recurse(
+        task, &address, &size, &depth,
+        reinterpret_cast<vm_region_info_t>(&info), &count);
+    if (kr == KERN_INVALID_ADDRESS)  // nothing else left
+      break;
+    if (kr != KERN_SUCCESS)  // something bad
+      return false;
+    if (info.is_submap) {
+      size = 0;
+      ++depth;
+      continue;
+    }
+
+    if (info.share_mode == SM_COW && info.ref_count == 1)
+      info.share_mode = SM_PRIVATE;
+
+    VMRegion region;
+    uint64_t dirty_bytes = info.pages_dirtied * PAGE_SIZE;
+    uint64_t clean_bytes =
+        (info.pages_resident - info.pages_reusable - info.pages_dirtied) *
+        PAGE_SIZE;
+    switch (info.share_mode) {
+      case SM_LARGE_PAGE:
+      case SM_PRIVATE:
+        region.byte_stats_private_dirty_resident = dirty_bytes;
+        region.byte_stats_private_clean_resident = clean_bytes;
+        break;
+      case SM_COW:
+        region.byte_stats_private_dirty_resident = dirty_bytes;
+        region.byte_stats_shared_clean_resident = clean_bytes;
+        break;
+      case SM_SHARED:
+      case SM_PRIVATE_ALIASED:
+      case SM_TRUESHARED:
+      case SM_SHARED_ALIASED:
+        region.byte_stats_shared_dirty_resident = dirty_bytes;
+        region.byte_stats_shared_clean_resident = clean_bytes;
+        break;
+      case SM_EMPTY:
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    if (info.protection & VM_PROT_READ)
+      region.protection_flags |= VMRegion::kProtectionFlagsRead;
+    if (info.protection & VM_PROT_WRITE)
+      region.protection_flags |= VMRegion::kProtectionFlagsWrite;
+    if (info.protection & VM_PROT_EXECUTE)
+      region.protection_flags |= VMRegion::kProtectionFlagsExec;
+
+    char buffer[MAXPATHLEN];
+    int length = proc_regionfilename(pid, address, buffer, MAXPATHLEN);
+    if (length != 0)
+      region.mapped_file.assign(buffer, length);
+
+    region.byte_stats_swapped = info.pages_swapped_out * PAGE_SIZE;
+    region.start_address = address;
+    region.size_in_bytes = size;
+    pmd->process_mmaps()->AddVMRegion(region);
+
+    base::CheckedNumeric<mach_vm_address_t> numeric(address);
+    numeric += size;
+    if (!numeric.IsValid())
+      break;
+    address = numeric.ValueOrDie();
+  }
+
+  pmd->set_has_process_mmaps();
+  return true;
+}
+#endif  // defined(OS_MACOSX)
+
 // static
 void ProcessMetricsMemoryDumpProvider::RegisterForProcess(
     base::ProcessId process) {
@@ -267,11 +363,11 @@ bool ProcessMetricsMemoryDumpProvider::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
   bool res = DumpProcessTotals(args, pmd);
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX)
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED)
     res &= DumpProcessMemoryMaps(args, pmd);
-#endif
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX)
   return res;
 }
 

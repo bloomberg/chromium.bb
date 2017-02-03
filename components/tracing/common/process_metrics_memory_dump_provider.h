@@ -43,6 +43,10 @@ class TRACING_EXPORT ProcessMetricsMemoryDumpProvider
   FRIEND_TEST_ALL_PREFIXES(ProcessMetricsMemoryDumpProviderTest, DumpRSS);
   FRIEND_TEST_ALL_PREFIXES(ProcessMetricsMemoryDumpProviderTest,
                            TestPollFastMemoryTotal);
+#if defined(OS_MACOSX)
+  FRIEND_TEST_ALL_PREFIXES(ProcessMetricsMemoryDumpProviderTest,
+                           TestMachOReading);
+#endif  // defined(OS_MACOSX)
 
   ProcessMetricsMemoryDumpProvider(base::ProcessId process);
 
