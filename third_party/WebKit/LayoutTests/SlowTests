@@ -86,7 +86,7 @@ crbug.com/24182 fast/css/should-not-insert-stylesheet-into-detached-document.htm
 crbug.com/24182 fast/dom/shadow/svg-style-in-shadow-tree-crash.html [ Slow ]
 crbug.com/24182 fast/encoding/char-encoding.html [ Slow ]
 crbug.com/24182 fast/frames/sandboxed-iframe-navigation-targetlink.html [ Slow ]
-crbug.com/24182 fast/html/marquee-destroyed-without-removed-from-crash.html [ Slow ]
+crbug.com/24182 html/marquee/marquee-destroyed-without-removed-from-crash.html [ Slow ]
 crbug.com/24182 fast/js/regress/string-cons-tower.html [ Slow ]
 crbug.com/24182 fast/events/tabindex-focus-blur-all.html [ Slow ]
 crbug.com/24182 svg/hixie/perf/003.xml [ Slow ]
