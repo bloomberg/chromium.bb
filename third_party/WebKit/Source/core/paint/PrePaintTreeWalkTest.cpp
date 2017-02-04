@@ -6,6 +6,7 @@
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/ObjectPaintProperties.h"
+#include "core/paint/PaintLayer.h"
 #include "core/paint/PaintPropertyTreePrinter.h"
 #include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
@@ -150,6 +151,112 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithOpacityInvalidation) {
 
   // The opacity should have changed.
   EXPECT_EQ(0.4f, transparentProperties->effect()->opacity());
+}
+
+TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChange) {
+  setBodyInnerHTML(
+      "<style>"
+      "  .clip { overflow: hidden }"
+      "</style>"
+      "<div id='parent' style='transform: translateZ(0); width: 100px;"
+      "  height: 100px;'>"
+      "  <div id='child' style='isolation: isolate'>"
+      "    content"
+      "  </div>"
+      "</div>");
+
+  auto* parent = document().getElementById("parent");
+  auto* child = document().getElementById("child");
+  auto* childPaintLayer =
+      toLayoutBoxModelObject(child->layoutObject())->layer();
+  EXPECT_FALSE(childPaintLayer->needsRepaint());
+  EXPECT_FALSE(childPaintLayer->needsPaintPhaseFloat());
+
+  parent->setAttribute(HTMLNames::classAttr, "clip");
+  document().view()->updateAllLifecyclePhasesExceptPaint();
+
+  EXPECT_TRUE(childPaintLayer->needsRepaint());
+}
+
+TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChange2DTransform) {
+  setBodyInnerHTML(
+      "<style>"
+      "  .clip { overflow: hidden }"
+      "</style>"
+      "<div id='parent' style='transform: translateX(0); width: 100px;"
+      "  height: 100px;'>"
+      "  <div id='child' style='isolation: isolate'>"
+      "    content"
+      "  </div>"
+      "</div>");
+
+  auto* parent = document().getElementById("parent");
+  auto* child = document().getElementById("child");
+  auto* childPaintLayer =
+      toLayoutBoxModelObject(child->layoutObject())->layer();
+  EXPECT_FALSE(childPaintLayer->needsRepaint());
+  EXPECT_FALSE(childPaintLayer->needsPaintPhaseFloat());
+
+  parent->setAttribute(HTMLNames::classAttr, "clip");
+  document().view()->updateAllLifecyclePhasesExceptPaint();
+
+  EXPECT_TRUE(childPaintLayer->needsRepaint());
+}
+
+TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChangePosAbs) {
+  setBodyInnerHTML(
+      "<style>"
+      "  .clip { overflow: hidden }"
+      "</style>"
+      "<div id='parent' style='transform: translateZ(0); width: 100px;"
+      "  height: 100px; position: absolute'>"
+      "  <div id='child' style='overflow: hidden; z-index: 0; width: 50px;"
+      "      height: 50px'>"
+      "    content"
+      "  </div>"
+      "</div>");
+
+  auto* parent = document().getElementById("parent");
+  auto* child = document().getElementById("child");
+  auto* childPaintLayer =
+      toLayoutBoxModelObject(child->layoutObject())->layer();
+  EXPECT_FALSE(childPaintLayer->needsRepaint());
+  EXPECT_FALSE(childPaintLayer->needsPaintPhaseFloat());
+
+  // This changes clips for absolute-positioned descendants of "child" but not
+  // normal-position ones, which are already clipped to 50x50.
+  parent->setAttribute(HTMLNames::classAttr, "clip");
+  document().view()->updateAllLifecyclePhasesExceptPaint();
+
+  EXPECT_TRUE(childPaintLayer->needsRepaint());
+}
+
+TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChangePosFixed) {
+  setBodyInnerHTML(
+      "<style>"
+      "  .clip { overflow: hidden }"
+      "</style>"
+      "<div id='parent' style='transform: translateZ(0); width: 100px;"
+      "  height: 100px; trans'>"
+      "  <div id='child' style='overflow: hidden; z-index: 0;"
+      "      position: absolute; width: 50px; height: 50px'>"
+      "    content"
+      "  </div>"
+      "</div>");
+
+  auto* parent = document().getElementById("parent");
+  auto* child = document().getElementById("child");
+  auto* childPaintLayer =
+      toLayoutBoxModelObject(child->layoutObject())->layer();
+  EXPECT_FALSE(childPaintLayer->needsRepaint());
+  EXPECT_FALSE(childPaintLayer->needsPaintPhaseFloat());
+
+  // This changes clips for absolute-positioned descendants of "child" but not
+  // normal-position ones, which are already clipped to 50x50.
+  parent->setAttribute(HTMLNames::classAttr, "clip");
+  document().view()->updateAllLifecyclePhasesExceptPaint();
+
+  EXPECT_TRUE(childPaintLayer->needsRepaint());
 }
 
 }  // namespace blink

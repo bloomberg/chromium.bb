@@ -226,9 +226,7 @@ static bool shouldRepaintSubsequence(
     needsRepaint = true;
 
   // Repaint if layer's clip changes.
-  // TODO(chrishtr): implement detecting clipping changes in SPv2.
-  // crbug.com/645667
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     ClipRects& clipRects = paintLayer.clipper().paintingClipRects(
         paintingInfo.rootLayer, respectOverflowClip, subpixelAccumulation);
     ClipRects* previousClipRects = paintLayer.previousPaintingClipRects();
