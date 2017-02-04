@@ -347,7 +347,7 @@ static void inverse_transform_block(MACROBLOCKD *xd, int plane,
 }
 
 #if CONFIG_PVQ
-static int av1_pvq_decode_helper(od_dec_ctx *dec, tran_low_t *ref_coeff,
+static int av1_pvq_decode_helper(MACROBLOCKD *xd, tran_low_t *ref_coeff,
                                  tran_low_t *dqcoeff, int16_t *quant, int pli,
                                  int bs, TX_TYPE tx_type, int xdec,
                                  PVQ_SKIP_TYPE ac_dc_coded) {
@@ -355,8 +355,8 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, tran_low_t *ref_coeff,
   int off;
   const int is_keyframe = 0;
   const int has_dc_skip = 1;
-  /*TODO(tterribe): Handle CONFIG_AOM_HIGHBITDEPTH.*/
   int coeff_shift = 3 - get_tx_scale(bs);
+  int hbd_downshift = 0;
   int rounding_mask;
   // DC quantizer for PVQ
   int pvq_dc_quant;
@@ -364,6 +364,7 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, tran_low_t *ref_coeff,
   const int blk_size = tx_size_wide[bs];
   int eob = 0;
   int i;
+  od_dec_ctx *dec = &xd->daala_dec;
   int use_activity_masking = dec->use_activity_masking;
   DECLARE_ALIGNED(16, tran_low_t, dqcoeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
   DECLARE_ALIGNED(16, tran_low_t, ref_coeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
@@ -371,20 +372,25 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, tran_low_t *ref_coeff,
   od_coeff ref_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX];
   od_coeff out_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX];
 
+#if CONFIG_AOM_HIGHBITDEPTH
+  hbd_downshift = xd->bd - 8;
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+
   od_raster_to_coding_order(ref_coeff_pvq, blk_size, tx_type, ref_coeff,
                             blk_size);
 
-  assert(OD_COEFF_SHIFT >= 3);
+  assert(OD_COEFF_SHIFT >= 4);
   if (lossless)
     pvq_dc_quant = 1;
   else {
     if (use_activity_masking)
       pvq_dc_quant = OD_MAXI(
-          1, (quant[0] << (OD_COEFF_SHIFT - 3)) *
+          1, (quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift) *
                      dec->state.pvq_qm_q4[pli][od_qm_get_index(bs, 0)] >>
                  4);
     else
-      pvq_dc_quant = OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3));
+      pvq_dc_quant =
+          OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift);
   }
 
   off = od_qm_offset(bs, xdec);
@@ -392,10 +398,12 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, tran_low_t *ref_coeff,
   // copy int16 inputs to int32
   for (i = 0; i < blk_size * blk_size; i++) {
     ref_int32[i] =
-        AOM_SIGNED_SHL(ref_coeff_pvq[i], OD_COEFF_SHIFT - coeff_shift);
+        AOM_SIGNED_SHL(ref_coeff_pvq[i], OD_COEFF_SHIFT - coeff_shift) >>
+        hbd_downshift;
   }
 
-  od_pvq_decode(dec, ref_int32, out_int32, quant[1] << (OD_COEFF_SHIFT - 3),
+  od_pvq_decode(dec, ref_int32, out_int32,
+                OD_MAXI(1, quant[1] << (OD_COEFF_SHIFT - 3) >> hbd_downshift),
                 pli, bs, OD_PVQ_BETA[use_activity_masking][pli][bs],
                 OD_ROBUST_STREAM, is_keyframe, &flags, ac_dc_coded,
                 dec->state.qm + off, dec->state.qm_inv + off);
@@ -413,6 +421,7 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, tran_low_t *ref_coeff,
   assert(OD_COEFF_SHIFT > coeff_shift);
   rounding_mask = (1 << (OD_COEFF_SHIFT - coeff_shift - 1)) - 1;
   for (i = 0; i < blk_size * blk_size; i++) {
+    out_int32[i] = AOM_SIGNED_SHL(out_int32[i], hbd_downshift);
     dqcoeff_pvq[i] = (out_int32[i] + (out_int32[i] < 0) + rounding_mask) >>
                      (OD_COEFF_SHIFT - coeff_shift);
   }
@@ -466,28 +475,56 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
     FWD_TXFM_PARAM fwd_txfm_param;
     // ToDo(yaowu): correct this with optimal number from decoding process.
     const int max_scan_line = tx_size_2d[tx_size];
-
-    for (j = 0; j < tx_blk_size; j++)
-      for (i = 0; i < tx_blk_size; i++) {
-        pred[diff_stride * j + i] = dst[pd->dst.stride * j + i];
-      }
+#if CONFIG_AOM_HIGHBITDEPTH
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      for (j = 0; j < tx_blk_size; j++)
+        for (i = 0; i < tx_blk_size; i++)
+          pred[diff_stride * j + i] =
+              CONVERT_TO_SHORTPTR(dst)[pd->dst.stride * j + i];
+    } else {
+#endif
+      for (j = 0; j < tx_blk_size; j++)
+        for (i = 0; i < tx_blk_size; i++)
+          pred[diff_stride * j + i] = dst[pd->dst.stride * j + i];
+#if CONFIG_AOM_HIGHBITDEPTH
+    }
+#endif
 
     fwd_txfm_param.tx_type = tx_type;
     fwd_txfm_param.tx_size = tx_size;
     fwd_txfm_param.lossless = xd->lossless[seg_id];
 
-    fwd_txfm(pred, pvq_ref_coeff, diff_stride, &fwd_txfm_param);
+#if CONFIG_AOM_HIGHBITDEPTH
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      fwd_txfm_param.bd = xd->bd;
+      highbd_fwd_txfm(pred, pvq_ref_coeff, diff_stride, &fwd_txfm_param);
+    } else {
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+      fwd_txfm(pred, pvq_ref_coeff, diff_stride, &fwd_txfm_param);
+#if CONFIG_AOM_HIGHBITDEPTH
+    }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
     quant = &pd->seg_dequant[seg_id][0];  // aom's quantizer
 
-    eob = av1_pvq_decode_helper(&xd->daala_dec, pvq_ref_coeff, dqcoeff, quant,
-                                plane, tx_size, tx_type, xdec, ac_dc_coded);
+    eob = av1_pvq_decode_helper(xd, pvq_ref_coeff, dqcoeff, quant, plane,
+                                tx_size, tx_type, xdec, ac_dc_coded);
 
-    // Since av1 does not have separate inverse transform
-    // but also contains adding to predicted image,
-    // pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
-    for (j = 0; j < tx_blk_size; j++)
-      for (i = 0; i < tx_blk_size; i++) dst[j * pd->dst.stride + i] = 0;
+// Since av1 does not have separate inverse transform
+// but also contains adding to predicted image,
+// pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
+#if CONFIG_AOM_HIGHBITDEPTH
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      for (j = 0; j < tx_blk_size; j++)
+        for (i = 0; i < tx_blk_size; i++)
+          CONVERT_TO_SHORTPTR(dst)[j * pd->dst.stride + i] = 0;
+    } else {
+#endif
+      for (j = 0; j < tx_blk_size; j++)
+        for (i = 0; i < tx_blk_size; i++) dst[j * pd->dst.stride + i] = 0;
+#if CONFIG_AOM_HIGHBITDEPTH
+    }
+#endif
 
     inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
                             max_scan_line, eob);

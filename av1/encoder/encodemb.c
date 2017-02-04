@@ -453,6 +453,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   return final_eob;
 }
 
+#if !CONFIG_PVQ
 #if CONFIG_AOM_HIGHBITDEPTH
 typedef enum QUANT_FUNC {
   QUANT_FUNC_LOWBD = 0,
@@ -473,7 +474,7 @@ static AV1_QUANT_FACADE
       { NULL, NULL }
     };
 
-#elif !CONFIG_PVQ
+#else
 
 typedef enum QUANT_FUNC {
   QUANT_FUNC_LOWBD = 0,
@@ -492,7 +493,8 @@ static AV1_QUANT_FACADE quant_func_list[AV1_XFORM_QUANT_TYPES]
 #endif  // CONFIG_NEW_QUANT
                                          { NULL }
                                        };
-#endif
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_PVQ
 
 void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      int blk_row, int blk_col, BLOCK_SIZE plane_bsize,
@@ -570,10 +572,20 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   // transform block size in pixels
   tx_blk_size = tx_size_wide[tx_size];
-
-  for (j = 0; j < tx_blk_size; j++)
-    for (i = 0; i < tx_blk_size; i++)
-      src_int16[diff_stride * j + i] = src[src_stride * j + i];
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    for (j = 0; j < tx_blk_size; j++)
+      for (i = 0; i < tx_blk_size; i++)
+        src_int16[diff_stride * j + i] =
+            CONVERT_TO_SHORTPTR(src)[src_stride * j + i];
+  } else {
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+    for (j = 0; j < tx_blk_size; j++)
+      for (i = 0; i < tx_blk_size; i++)
+        src_int16[diff_stride * j + i] = src[src_stride * j + i];
+#if CONFIG_AOM_HIGHBITDEPTH
+  }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif
 
 #if CONFIG_PVQ || CONFIG_DAALA_DIST
@@ -583,12 +595,22 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   // transform block size in pixels
   tx_blk_size = tx_size_wide[tx_size];
 
-  // copy uint8 orig and predicted block to int16 buffer
-  // in order to use existing VP10 transform functions
-  for (j = 0; j < tx_blk_size; j++)
-    for (i = 0; i < tx_blk_size; i++) {
-      pred[diff_stride * j + i] = dst[dst_stride * j + i];
-    }
+// copy uint8 orig and predicted block to int16 buffer
+// in order to use existing VP10 transform functions
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    for (j = 0; j < tx_blk_size; j++)
+      for (i = 0; i < tx_blk_size; i++)
+        pred[diff_stride * j + i] =
+            CONVERT_TO_SHORTPTR(dst)[dst_stride * j + i];
+  } else {
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+    for (j = 0; j < tx_blk_size; j++)
+      for (i = 0; i < tx_blk_size; i++)
+        pred[diff_stride * j + i] = dst[dst_stride * j + i];
+#if CONFIG_AOM_HIGHBITDEPTH
+  }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif
 
   (void)ctx;
@@ -597,6 +619,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   fwd_txfm_param.tx_size = tx_size;
   fwd_txfm_param.lossless = xd->lossless[mbmi->segment_id];
 
+#if !CONFIG_PVQ
 #if CONFIG_AOM_HIGHBITDEPTH
   fwd_txfm_param.bd = xd->bd;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -612,8 +635,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
     return;
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-
-#if !CONFIG_PVQ
   fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
   if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
     if (LIKELY(!x->skip_block)) {
@@ -623,16 +644,25 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
       av1_quantize_skip(tx2d_size, qcoeff, dqcoeff, eob);
     }
   }
-#else   // #if !CONFIG_PVQ
-
+#else  // #if !CONFIG_PVQ
   (void)xform_quant_idx;
-  fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
-  fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
+#if CONFIG_AOM_HIGHBITDEPTH
+  fwd_txfm_param.bd = xd->bd;
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    highbd_fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
+    highbd_fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
+  } else {
+#endif
+    fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
+    fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
+#if CONFIG_AOM_HIGHBITDEPTH
+  }
+#endif
 
   // PVQ for inter mode block
   if (!x->skip_block) {
     PVQ_SKIP_TYPE ac_dc_coded =
-        av1_pvq_encode_helper(&x->daala_enc,
+        av1_pvq_encode_helper(x,
                               coeff,        // target original vector
                               ref_coeff,    // reference vector
                               dqcoeff,      // de-quantized vector
@@ -844,12 +874,22 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
       // transform block size in pixels
       tx_blk_size = tx_size_wide[tx_size];
 
-      // Since av1 does not have separate function which does inverse transform
-      // but av1_inv_txfm_add_*x*() also does addition of predicted image to
-      // inverse transformed image,
-      // pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
-      for (j = 0; j < tx_blk_size; j++)
-        for (i = 0; i < tx_blk_size; i++) dst[j * pd->dst.stride + i] = 0;
+// Since av1 does not have separate function which does inverse transform
+// but av1_inv_txfm_add_*x*() also does addition of predicted image to
+// inverse transformed image,
+// pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
+#if CONFIG_AOM_HIGHBITDEPTH
+      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+        for (j = 0; j < tx_blk_size; j++)
+          for (i = 0; i < tx_blk_size; i++)
+            CONVERT_TO_SHORTPTR(dst)[j * pd->dst.stride + i] = 0;
+      } else {
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+        for (j = 0; j < tx_blk_size; j++)
+          for (i = 0; i < tx_blk_size; i++) dst[j * pd->dst.stride + i] = 0;
+#if CONFIG_AOM_HIGHBITDEPTH
+      }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     }
 #endif  // !CONFIG_PVQ
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -1108,23 +1148,36 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   // transform block size in pixels
   tx_blk_size = tx_size_wide[tx_size];
 
-  // Since av1 does not have separate function which does inverse transform
-  // but av1_inv_txfm_add_*x*() also does addition of predicted image to
-  // inverse transformed image,
-  // pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
-
-  for (j = 0; j < tx_blk_size; j++)
-    for (i = 0; i < tx_blk_size; i++) dst[j * dst_stride + i] = 0;
+// Since av1 does not have separate function which does inverse transform
+// but av1_inv_txfm_add_*x*() also does addition of predicted image to
+// inverse transformed image,
+// pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    for (j = 0; j < tx_blk_size; j++)
+      for (i = 0; i < tx_blk_size; i++)
+        CONVERT_TO_SHORTPTR(dst)[j * dst_stride + i] = 0;
+  } else {
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+    for (j = 0; j < tx_blk_size; j++)
+      for (i = 0; i < tx_blk_size; i++) dst[j * dst_stride + i] = 0;
+#if CONFIG_AOM_HIGHBITDEPTH
+  }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
   inv_txfm_param.tx_type = tx_type;
   inv_txfm_param.tx_size = tx_size;
   inv_txfm_param.eob = *eob;
   inv_txfm_param.lossless = xd->lossless[mbmi->segment_id];
 #if CONFIG_AOM_HIGHBITDEPTH
-#error
-
-#else
-  av1_inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    inv_txfm_param.bd = xd->bd;
+    av1_highbd_inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
+  } else {
+#endif
+    av1_inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
+#if CONFIG_AOM_HIGHBITDEPTH
+  }
 #endif
 #endif  // #if !CONFIG_PVQ
 
@@ -1165,14 +1218,17 @@ void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
 }
 
 #if CONFIG_PVQ
-PVQ_SKIP_TYPE av1_pvq_encode_helper(
-    daala_enc_ctx *daala_enc, tran_low_t *const coeff, tran_low_t *ref_coeff,
-    tran_low_t *const dqcoeff, uint16_t *eob, const int16_t *quant, int plane,
-    int tx_size, TX_TYPE tx_type, int *rate, int speed, PVQ_INFO *pvq_info) {
+PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,
+                                    tran_low_t *ref_coeff,
+                                    tran_low_t *const dqcoeff, uint16_t *eob,
+                                    const int16_t *quant, int plane,
+                                    int tx_size, TX_TYPE tx_type, int *rate,
+                                    int speed, PVQ_INFO *pvq_info) {
   const int tx_blk_size = tx_size_wide[tx_size];
+  daala_enc_ctx *daala_enc = &x->daala_enc;
   PVQ_SKIP_TYPE ac_dc_coded;
-  /*TODO(tterribe): Handle CONFIG_AOM_HIGHBITDEPTH.*/
   int coeff_shift = 3 - get_tx_scale(tx_size);
+  int hbd_downshift = 0;
   int rounding_mask;
   int pvq_dc_quant;
   int use_activity_masking = daala_enc->use_activity_masking;
@@ -1189,16 +1245,21 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
   DECLARE_ALIGNED(16, int32_t, ref_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
   DECLARE_ALIGNED(16, int32_t, out_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
 
-  assert(OD_COEFF_SHIFT >= 3);
+#if CONFIG_AOM_HIGHBITDEPTH
+  hbd_downshift = x->e_mbd.bd - 8;
+#endif
+
+  assert(OD_COEFF_SHIFT >= 4);
   // DC quantizer for PVQ
   if (use_activity_masking)
     pvq_dc_quant =
-        OD_MAXI(1, (quant[0] << (OD_COEFF_SHIFT - 3)) *
+        OD_MAXI(1, (quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift) *
                            daala_enc->state
                                .pvq_qm_q4[plane][od_qm_get_index(tx_size, 0)] >>
                        4);
   else
-    pvq_dc_quant = OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3));
+    pvq_dc_quant =
+        OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift);
 
   *eob = 0;
 
@@ -1217,8 +1278,10 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
   // copy int16 inputs to int32
   for (i = 0; i < tx_blk_size * tx_blk_size; i++) {
     ref_int32[i] =
-        AOM_SIGNED_SHL(ref_coeff_pvq[i], OD_COEFF_SHIFT - coeff_shift);
-    in_int32[i] = AOM_SIGNED_SHL(coeff_pvq[i], OD_COEFF_SHIFT - coeff_shift);
+        AOM_SIGNED_SHL(ref_coeff_pvq[i], OD_COEFF_SHIFT - coeff_shift) >>
+        hbd_downshift;
+    in_int32[i] = AOM_SIGNED_SHL(coeff_pvq[i], OD_COEFF_SHIFT - coeff_shift) >>
+                  hbd_downshift;
   }
 
   if (abs(in_int32[0] - ref_int32[0]) < pvq_dc_quant * 141 / 256) { /* 0.55 */
@@ -1227,17 +1290,20 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
     out_int32[0] = OD_DIV_R0(in_int32[0] - ref_int32[0], pvq_dc_quant);
   }
 
-  ac_dc_coded = od_pvq_encode(
-      daala_enc, ref_int32, in_int32, out_int32,
-      quant[0] << (OD_COEFF_SHIFT - 3),  // scale/quantizer
-      quant[1] << (OD_COEFF_SHIFT - 3),  // scale/quantizer
-      plane, tx_size, OD_PVQ_BETA[use_activity_masking][plane][tx_size],
-      OD_ROBUST_STREAM,
-      0,        // is_keyframe,
-      0, 0, 0,  // q_scaling, bx, by,
-      daala_enc->state.qm + off, daala_enc->state.qm_inv + off,
-      speed,  // speed
-      pvq_info);
+  ac_dc_coded =
+      od_pvq_encode(daala_enc, ref_int32, in_int32, out_int32,
+                    OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3) >>
+                                   hbd_downshift),  // scale/quantizer
+                    OD_MAXI(1, quant[1] << (OD_COEFF_SHIFT - 3) >>
+                                   hbd_downshift),  // scale/quantizer
+                    plane,
+                    tx_size, OD_PVQ_BETA[use_activity_masking][plane][tx_size],
+                    OD_ROBUST_STREAM,
+                    0,        // is_keyframe,
+                    0, 0, 0,  // q_scaling, bx, by,
+                    daala_enc->state.qm + off, daala_enc->state.qm_inv + off,
+                    speed,  // speed
+                    pvq_info);
 
   // Encode residue of DC coeff, if required.
   if (!has_dc_skip || out_int32[0]) {
@@ -1260,6 +1326,7 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
   assert(OD_COEFF_SHIFT > coeff_shift);
   rounding_mask = (1 << (OD_COEFF_SHIFT - coeff_shift - 1)) - 1;
   for (i = 0; i < tx_blk_size * tx_blk_size; i++) {
+    out_int32[i] = AOM_SIGNED_SHL(out_int32[i], hbd_downshift);
     dqcoeff_pvq[i] = (out_int32[i] + (out_int32[i] < 0) + rounding_mask) >>
                      (OD_COEFF_SHIFT - coeff_shift);
   }

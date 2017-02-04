@@ -4895,8 +4895,15 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
     int segment_id = 0;
     int rdmult = set_segment_rdmult(cpi, &td->mb, segment_id);
     int qindex = av1_get_qindex(&cm->seg, segment_id, cm->base_qindex);
-    int64_t q_ac = av1_ac_quant(qindex, 0, cpi->common.bit_depth);
-    int64_t q_dc = av1_dc_quant(qindex, 0, cpi->common.bit_depth);
+#if CONFIG_AOM_HIGHBITDEPTH
+    const int quantizer_shift = td->mb.e_mbd.bd - 8;
+#else
+    const int quantizer_shift = 0;
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+    int64_t q_ac = OD_MAXI(
+        1, av1_ac_quant(qindex, 0, cpi->common.bit_depth) >> quantizer_shift);
+    int64_t q_dc = OD_MAXI(
+        1, av1_dc_quant(qindex, 0, cpi->common.bit_depth) >> quantizer_shift);
     /* td->mb.daala_enc.pvq_norm_lambda = OD_PVQ_LAMBDA; */
     td->mb.daala_enc.pvq_norm_lambda =
         (double)rdmult * (64 / 16) / (q_ac * q_ac * (1 << RDDIV_BITS));
