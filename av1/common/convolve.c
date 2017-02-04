@@ -252,6 +252,24 @@ void av1_convolve_2d(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
   }
 }
 
+static INLINE void transpose_uint8(uint8_t *dst, int dst_stride,
+                                   const uint8_t *src, int src_stride, int w,
+                                   int h) {
+  int r, c;
+  for (r = 0; r < h; ++r)
+    for (c = 0; c < w; ++c)
+      dst[c * (dst_stride) + r] = src[r * (src_stride) + c];
+}
+
+static INLINE void transpose_int32(int32_t *dst, int dst_stride,
+                                   const int32_t *src, int src_stride, int w,
+                                   int h) {
+  int r, c;
+  for (r = 0; r < h; ++r)
+    for (c = 0; c < w; ++c)
+      dst[c * (dst_stride) + r] = src[r * (src_stride) + c];
+}
+
 void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,
                             const InterpFilter *interp_filter,
@@ -272,9 +290,33 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
     // This will reduce hardware implementation cost.
     filter_params_y = av1_get_interp_filter_params(EIGHTTAP_SHARP);
   }
-  av1_convolve_2d(src, src_stride, conv_params->dst, conv_params->dst_stride, w,
-                  h, &filter_params_x, &filter_params_y, subpel_x_q4,
-                  subpel_y_q4, conv_params);
+
+  if (filter_params_y.taps < filter_params_x.taps) {
+    uint8_t tr_src[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) *
+                   (MAX_SB_SIZE + MAX_FILTER_TAP - 1)];
+    int tr_src_stride = MAX_SB_SIZE + MAX_FILTER_TAP - 1;
+    CONV_BUF_TYPE tr_dst[MAX_SB_SIZE * MAX_SB_SIZE];
+    int tr_dst_stride = MAX_SB_SIZE;
+    int fo_vert = filter_params_y.taps / 2 - 1;
+    int fo_horiz = filter_params_x.taps / 2 - 1;
+
+    transpose_uint8(tr_src, tr_src_stride,
+                    src - fo_vert * src_stride - fo_horiz, src_stride,
+                    w + filter_params_x.taps - 1, h + filter_params_y.taps - 1);
+    transpose_int32(tr_dst, tr_dst_stride, conv_params->dst,
+                    conv_params->dst_stride, w, h);
+
+    // horizontal and vertical parameters are swapped because of the transpose
+    av1_convolve_2d(tr_src + fo_horiz * tr_src_stride + fo_vert, tr_src_stride,
+                    tr_dst, tr_dst_stride, h, w, &filter_params_y,
+                    &filter_params_x, subpel_y_q4, subpel_x_q4, conv_params);
+    transpose_int32(conv_params->dst, conv_params->dst_stride, tr_dst,
+                    tr_dst_stride, h, w);
+  } else {
+    av1_convolve_2d(src, src_stride, conv_params->dst, conv_params->dst_stride,
+                    w, h, &filter_params_x, &filter_params_y, subpel_x_q4,
+                    subpel_y_q4, conv_params);
+  }
 }
 
 #endif  // CONFIG_CONVOLVE_ROUND
