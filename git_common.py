@@ -424,7 +424,7 @@ def freeze():
           depot_tools from freezing your in-progress changes.
 
           You should add untracked data that you want to ignore to your repo's
-            .git/info/excludes
+            .git/info/exclude
           file. See `git help ignore` for the format of this file.
 
           If this data is indended as part of your commit, you may adjust the
