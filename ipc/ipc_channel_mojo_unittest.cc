@@ -12,6 +12,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -1261,6 +1262,54 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(CreatePausedClient,
   RunProxy();
   base::RunLoop().Run();
   EXPECT_TRUE(expected_values.empty());
+  DestroyProxy();
+}
+
+TEST_F(IPCChannelProxyMojoTest, AssociatedRequestClose) {
+  Init("DropAssociatedRequest");
+
+  DummyListener listener;
+  CreateProxy(&listener);
+  RunProxy();
+
+  IPC::mojom::AssociatedInterfaceVendorAssociatedPtr vendor;
+  proxy()->GetRemoteAssociatedInterface(&vendor);
+  IPC::mojom::SimpleTestDriverAssociatedPtr tester;
+  vendor->GetTestInterface(
+      mojo::MakeRequest(&tester, vendor.associated_group()));
+  base::RunLoop run_loop;
+  tester.set_connection_error_handler(run_loop.QuitClosure());
+  run_loop.Run();
+
+  proxy()->GetRemoteAssociatedInterface(&tester);
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyProxy();
+}
+
+class AssociatedInterfaceDroppingListener : public IPC::Listener {
+ public:
+  AssociatedInterfaceDroppingListener(const base::Closure& callback)
+      : callback_(callback) {}
+  bool OnMessageReceived(const IPC::Message& message) override { return false; }
+
+  void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override {
+    if (interface_name == IPC::mojom::SimpleTestDriver::Name_)
+      base::ResetAndReturn(&callback_).Run();
+  }
+
+ private:
+  base::Closure callback_;
+};
+
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(DropAssociatedRequest,
+                                                        ChannelProxyClient) {
+  base::RunLoop run_loop;
+  AssociatedInterfaceDroppingListener listener(run_loop.QuitClosure());
+  CreateProxy(&listener);
+  RunProxy();
+  run_loop.Run();
   DestroyProxy();
 }
 

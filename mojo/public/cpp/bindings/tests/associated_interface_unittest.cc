@@ -1122,6 +1122,29 @@ TEST_F(AssociatedInterfaceTest, BindLaterThreadSafeAssociatedInterfacePtr) {
   thread_safe_ptr = nullptr;
 }
 
+class DiscardingAssociatedPingProviderProvider
+    : public AssociatedPingProviderProvider {
+ public:
+  void GetPingProvider(
+      AssociatedPingProviderAssociatedRequest request) override {}
+};
+
+TEST_F(AssociatedInterfaceTest, CloseWithoutBindingAssociatedRequest) {
+  DiscardingAssociatedPingProviderProvider ping_provider_provider;
+  mojo::Binding<AssociatedPingProviderProvider> binding(
+      &ping_provider_provider);
+  auto provider_provider = binding.CreateInterfacePtrAndBind();
+  AssociatedPingProviderAssociatedPtr provider;
+  provider_provider->GetPingProvider(
+      mojo::MakeRequest(&provider, provider_provider.associated_group()));
+  PingServiceAssociatedPtr ping;
+  provider->GetPing(
+      mojo::MakeRequest(&ping, provider.associated_group()));
+  base::RunLoop run_loop;
+  ping.set_connection_error_handler(run_loop.QuitClosure());
+  run_loop.Run();
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mojo

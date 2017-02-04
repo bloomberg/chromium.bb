@@ -33,3 +33,7 @@ interface Reflector {
   Ping(string value) => (string value);
   Quit();
 };
+
+interface AssociatedInterfaceVendor {
+  GetTestInterface(associated SimpleTestDriver& interface_reqest);
+};

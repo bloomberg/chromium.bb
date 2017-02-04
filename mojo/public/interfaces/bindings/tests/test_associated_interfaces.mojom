@@ -48,3 +48,7 @@ interface IntegerSenderConnection {
 interface AssociatedPingProvider {
   GetPing(associated PingService& request);
 };
+
+interface AssociatedPingProviderProvider {
+  GetPingProvider(associated AssociatedPingProvider& request);
+};
