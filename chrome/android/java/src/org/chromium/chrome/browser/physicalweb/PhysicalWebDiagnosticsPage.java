@@ -62,7 +62,7 @@ public class PhysicalWebDiagnosticsPage extends BasicNativePage {
         mLaunchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PhysicalWebUma.onActivityReferral(ListUrlsActivity.DIAGNOSTICS_REFERER);
+                PhysicalWebUma.onActivityReferral(PhysicalWebUma.DIAGNOSTICS_REFERER);
                 PhysicalWeb.showUrlList();
             }
         });

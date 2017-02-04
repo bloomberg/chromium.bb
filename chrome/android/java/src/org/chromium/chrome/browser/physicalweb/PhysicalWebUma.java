@@ -26,6 +26,11 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public class PhysicalWebUma {
+    // Obsolete; don't use:  NOTIFICATION_REFERER = 1;
+    // Obsolete; don't use: OPTIN_REFERER = 2;
+    public static final int PREFERENCE_REFERER = 3;
+    public static final int DIAGNOSTICS_REFERER = 4;
+
     private static final String TAG = "PhysicalWeb";
     private static final String HAS_DEFERRED_METRICS_KEY = "PhysicalWeb.HasDeferredMetrics";
     private static final String OPT_IN_DECLINE_BUTTON_PRESS_COUNT =
@@ -55,6 +60,7 @@ public class PhysicalWebUma {
     private static final String PREFERENCE = "Preference";
     private static final int BOOLEAN_BOUNDARY = 2;
     private static final int TRISTATE_BOUNDARY = 3;
+    private static final int REFERER_BOUNDARY = 5;
 
     /**
      * Records a URL selection.
@@ -163,12 +169,12 @@ public class PhysicalWebUma {
      *     histograms.xml.
      */
     public static void onActivityReferral(int referer) {
-        handleEnum(ACTIVITY_REFERRALS, referer, ListUrlsActivity.REFERER_BOUNDARY);
+        handleEnum(ACTIVITY_REFERRALS, referer, REFERER_BOUNDARY);
         switch (referer) {
-            case ListUrlsActivity.PREFERENCE_REFERER:
+            case PREFERENCE_REFERER:
                 recordPhysicalWebState(LAUNCH_FROM_PREFERENCES);
                 break;
-            case ListUrlsActivity.DIAGNOSTICS_REFERER:
+            case DIAGNOSTICS_REFERER:
                 recordPhysicalWebState(LAUNCH_FROM_DIAGNOSTICS);
                 break;
             default:
@@ -291,7 +297,7 @@ public class PhysicalWebUma {
             uploadTimes(PWS_REFRESH_RESOLVE_TIMES, TimeUnit.MILLISECONDS);
             uploadCounts(TOTAL_URLS_INITIAL_COUNTS);
             uploadCounts(TOTAL_URLS_REFRESH_COUNTS);
-            uploadEnums(ACTIVITY_REFERRALS, ListUrlsActivity.REFERER_BOUNDARY);
+            uploadEnums(ACTIVITY_REFERRALS, REFERER_BOUNDARY);
             uploadEnums(createStateString(LOCATION_SERVICES, LAUNCH_FROM_DIAGNOSTICS),
                     BOOLEAN_BOUNDARY);
             uploadEnums(createStateString(LOCATION_PERMISSION, LAUNCH_FROM_DIAGNOSTICS),

@@ -15,7 +15,6 @@ import android.preference.PreferenceFragment;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.physicalweb.ListUrlsActivity;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebUma;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
@@ -102,7 +101,7 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
         physicalWebLaunch.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                PhysicalWebUma.onActivityReferral(ListUrlsActivity.PREFERENCE_REFERER);
+                PhysicalWebUma.onActivityReferral(PhysicalWebUma.PREFERENCE_REFERER);
                 PhysicalWeb.showUrlList();
                 return true;
             }
