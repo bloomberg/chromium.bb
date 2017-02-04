@@ -238,7 +238,7 @@ NET_EXPORT_PRIVATE SpdyErrorCode ParseErrorCode(uint32_t wire_error_code);
 
 // Serialize RST_STREAM or GOAWAY frame error code to string
 // for logging/debugging.
-const char* ErrorCodeToString(uint32_t error_code);
+const char* ErrorCodeToString(SpdyErrorCode error_code);
 
 // Frame type for non-control (i.e. data) frames.
 const int kDataFrameType = 0;

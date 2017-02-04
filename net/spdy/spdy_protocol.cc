@@ -166,7 +166,7 @@ SpdyErrorCode ParseErrorCode(uint32_t wire_error_code) {
   return static_cast<SpdyErrorCode>(wire_error_code);
 }
 
-const char* ErrorCodeToString(uint32_t error_code) {
+const char* ErrorCodeToString(SpdyErrorCode error_code) {
   switch (error_code) {
     case ERROR_CODE_NO_ERROR:
       return "NO_ERROR";
