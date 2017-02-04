@@ -847,30 +847,6 @@ v8::Handle<v8::Value> V8XXX::callAsFunctionCallback(const v8::Arguments& args)
 }
 ```
 
-#### [Custom=VisitDOMWrapper] _(i)_
-
-
-Summary: Allows you to write custom code for visitDOMWrapper: like `[SetWrapperReferenceFrom]`, but with custom code. One use (Nodelist.idl).
-
-Usage:
-
-```webidl
-[
-    Custom=VisitDOMWrapper,
-] interface XXX {
-    ...
-};
-```
-
-And then in V8XXXCustom.cpp:
-
-```c++
-void V8XXX::visitDOMWrapperCustom(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, v8::Persistent<v8::Object> wrapper)
-{
-    ...
-}
-```
-
 ### [CustomElementCallbacks] _(m, a)_
 
 Summary: Wraps the method/accessor with a Custom Elements "callback delivery scope" which will dispatch Custom Element callbacks (createdCallback, attributeChangedCallback, etc.) before returning to script.

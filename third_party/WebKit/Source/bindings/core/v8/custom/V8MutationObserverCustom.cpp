@@ -70,18 +70,4 @@ void V8MutationObserver::constructorCustom(
                        info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));
 }
 
-void V8MutationObserver::visitDOMWrapperCustom(
-    v8::Isolate* isolate,
-    ScriptWrappable* scriptWrappable,
-    const v8::Persistent<v8::Object>& wrapper) {
-  MutationObserver* observer = scriptWrappable->toImpl<MutationObserver>();
-  HeapHashSet<Member<Node>> observedNodes = observer->getObservedNodes();
-  for (HeapHashSet<Member<Node>>::iterator it = observedNodes.begin();
-       it != observedNodes.end(); ++it) {
-    v8::UniqueId id(reinterpret_cast<intptr_t>(
-        V8GCController::opaqueRootForGC(isolate, *it)));
-    isolate->SetReferenceFromGroup(id, wrapper);
-  }
-}
-
 }  // namespace blink

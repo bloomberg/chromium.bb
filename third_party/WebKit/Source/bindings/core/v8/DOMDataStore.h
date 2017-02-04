@@ -117,23 +117,6 @@ class DOMDataStore {
     return current(isolate).get(ScriptWrappable::fromNode(node), isolate);
   }
 
-  static void setWrapperReference(const v8::Persistent<v8::Object>& parent,
-                                  ScriptWrappable* child,
-                                  v8::Isolate* isolate) {
-    current(isolate).setReference(parent, child, isolate);
-  }
-
-  static void setWrapperReference(const v8::Persistent<v8::Object>& parent,
-                                  Node* child,
-                                  v8::Isolate* isolate) {
-    if (canUseScriptWrappable(child)) {
-      ScriptWrappable::fromNode(child)->setReference(parent, isolate);
-      return;
-    }
-    current(isolate).setReference(parent, ScriptWrappable::fromNode(child),
-                                  isolate);
-  }
-
   // Associates the given |object| with the given |wrapper| if the object is
   // not yet associated with any wrapper.  Returns true if the given wrapper
   // is associated with the object, or false if the object is already
@@ -171,16 +154,6 @@ class DOMDataStore {
 
   void markWrapper(ScriptWrappable* scriptWrappable) {
     m_wrapperMap->markWrapper(scriptWrappable);
-  }
-
-  void setReference(const v8::Persistent<v8::Object>& parent,
-                    ScriptWrappable* child,
-                    v8::Isolate* isolate) {
-    if (m_isMainWorld) {
-      child->setReference(parent, isolate);
-      return;
-    }
-    m_wrapperMap->setReference(isolate, parent, child);
   }
 
   bool setReturnValueFrom(v8::ReturnValue<v8::Value> returnValue,

@@ -6305,53 +6305,6 @@ Extensions3DUtil* WebGLRenderingContextBase::extensionsUtil() {
   return m_extensionsUtil.get();
 }
 
-void WebGLRenderingContextBase::visitChildDOMWrappers(
-    v8::Isolate* isolate,
-    const v8::Persistent<v8::Object>& wrapper) {
-  if (isContextLost()) {
-    return;
-  }
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_boundArrayBuffer,
-                                                   isolate);
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_renderbufferBinding, isolate);
-
-  for (auto& unit : m_textureUnits) {
-    DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-        wrapper, unit.m_texture2DBinding, isolate);
-    DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-        wrapper, unit.m_textureCubeMapBinding, isolate);
-    DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-        wrapper, unit.m_texture3DBinding, isolate);
-    DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-        wrapper, unit.m_texture2DArrayBinding, isolate);
-  }
-
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_framebufferBinding, isolate);
-  if (m_framebufferBinding) {
-    m_framebufferBinding->visitChildDOMWrappers(isolate, wrapper);
-  }
-
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_currentProgram,
-                                                   isolate);
-  if (m_currentProgram) {
-    m_currentProgram->visitChildDOMWrappers(isolate, wrapper);
-  }
-
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_boundVertexArrayObject, isolate);
-  if (m_boundVertexArrayObject) {
-    m_boundVertexArrayObject->visitChildDOMWrappers(isolate, wrapper);
-  }
-
-  for (ExtensionTracker* tracker : m_extensions) {
-    WebGLExtension* extension = tracker->getExtensionObjectIfAlreadyEnabled();
-    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, extension,
-                                                     isolate);
-  }
-}
-
 void WebGLRenderingContextBase::stop() {
   if (!isContextLost()) {
     // Never attempt to restore the context because the page is being torn down.

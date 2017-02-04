@@ -4780,53 +4780,6 @@ void WebGL2RenderingContextBase::restoreCurrentFramebuffer() {
   bindFramebuffer(GL_READ_FRAMEBUFFER, m_readFramebufferBinding.get());
 }
 
-void WebGL2RenderingContextBase::visitChildDOMWrappers(
-    v8::Isolate* isolate,
-    const v8::Persistent<v8::Object>& wrapper) {
-  if (isContextLost()) {
-    return;
-  }
-
-  WebGLRenderingContextBase::visitChildDOMWrappers(isolate, wrapper);
-
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_transformFeedbackBinding, isolate);
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_readFramebufferBinding, isolate);
-
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_boundCopyReadBuffer, isolate);
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_boundCopyWriteBuffer, isolate);
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_boundPixelPackBuffer, isolate);
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_boundPixelUnpackBuffer, isolate);
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_boundTransformFeedbackBuffer, isolate);
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_boundUniformBuffer, isolate);
-
-  for (auto& buf : m_boundIndexedTransformFeedbackBuffers) {
-    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, buf, isolate);
-  }
-
-  for (auto& buf : m_boundIndexedUniformBuffers) {
-    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, buf, isolate);
-  }
-
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_currentBooleanOcclusionQuery, isolate);
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_currentTransformFeedbackPrimitivesWrittenQuery, isolate);
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(
-      wrapper, m_currentElapsedQuery, isolate);
-
-  for (auto& unit : m_samplerUnits) {
-    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, unit, isolate);
-  }
-}
-
 WebGLImageConversion::PixelStoreParams
 WebGL2RenderingContextBase::getPackPixelStoreParams() {
   WebGLImageConversion::PixelStoreParams params;

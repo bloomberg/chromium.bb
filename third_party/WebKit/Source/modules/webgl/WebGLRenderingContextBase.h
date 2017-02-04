@@ -603,8 +603,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class ScopedDrawingBufferBinder;
   friend class ScopedTexture2DRestorer;
   friend class ScopedFramebufferRestorer;
-  // To allow V8WebGL[2]RenderingContext to call visitChildDOMWrappers.
-  friend class V8WebGLRenderingContext;
   friend class ScopedUnpackParametersResetRestore;
 
   WebGLRenderingContextBase(HTMLCanvasElement*,
@@ -665,9 +663,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   virtual void resetUnpackParameters();
   // Restore the client unpack parameters.
   virtual void restoreUnpackParameters();
-
-  virtual void visitChildDOMWrappers(v8::Isolate*,
-                                     const v8::Persistent<v8::Object>&);
 
   PassRefPtr<Image> drawImageIntoBuffer(PassRefPtr<Image>,
                                         int width,

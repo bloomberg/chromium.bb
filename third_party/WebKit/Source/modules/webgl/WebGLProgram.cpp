@@ -132,15 +132,6 @@ bool WebGLProgram::detachShader(WebGLShader* shader) {
   }
 }
 
-void WebGLProgram::visitChildDOMWrappers(
-    v8::Isolate* isolate,
-    const v8::Persistent<v8::Object>& wrapper) {
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_vertexShader,
-                                                   isolate);
-  DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, m_fragmentShader,
-                                                   isolate);
-}
-
 void WebGLProgram::cacheInfoIfNeeded(WebGLRenderingContextBase* context) {
   if (m_infoValid)
     return;

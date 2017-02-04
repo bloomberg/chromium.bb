@@ -180,15 +180,6 @@ struct WrapperTypeInfo {
 
   EventTarget* toEventTarget(v8::Local<v8::Object>) const;
 
-  void visitDOMWrapper(v8::Isolate* isolate,
-                       ScriptWrappable* scriptWrappable,
-                       const v8::Persistent<v8::Object>& wrapper) const {
-    if (!visitDOMWrapperFunction)
-      setObjectGroup(isolate, scriptWrappable, wrapper);
-    else
-      visitDOMWrapperFunction(isolate, scriptWrappable, wrapper);
-  }
-
   // This field must be the first member of the struct WrapperTypeInfo.
   // See also static_assert() in .cpp file.
   const gin::GinEmbedder ginEmbedder;
@@ -196,7 +187,6 @@ struct WrapperTypeInfo {
   DomTemplateFunction domTemplateFunction;
   const TraceFunction traceFunction;
   const TraceWrappersFunction traceWrappersFunction;
-  const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
   PreparePrototypeAndInterfaceObjectFunction
       preparePrototypeAndInterfaceObjectFunction;
   const char* const interfaceName;

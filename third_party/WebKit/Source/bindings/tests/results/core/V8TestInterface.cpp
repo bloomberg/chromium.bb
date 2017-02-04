@@ -47,7 +47,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::domTemplate, V8TestInterface::trace, V8TestInterface::traceWrappers, V8TestInterface::visitDOMWrapper, V8TestInterface::preparePrototypeAndInterfaceObject, "TestInterface", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromActiveScriptWrappable, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent };
+WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::domTemplate, V8TestInterface::trace, V8TestInterface::traceWrappers, V8TestInterface::preparePrototypeAndInterfaceObject, "TestInterface", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromActiveScriptWrappable, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -2566,14 +2566,6 @@ void V8TestInterface::indexedPropertySetterCallback(uint32_t index, v8::Local<v8
 
 void V8TestInterface::indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   TestInterfaceImplementationV8Internal::indexedPropertyDeleter(index, info);
-}
-
-void V8TestInterface::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper) {
-  TestInterfaceImplementation* impl = scriptWrappable->toImpl<TestInterfaceImplementation>();
-  TestInterfaceImplementation* referencedName = impl->referencedName();
-  if (referencedName) {
-    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, referencedName, isolate);
-  }
 }
 
 // Suppress warning: global constructors, because AttributeConfiguration is trivial

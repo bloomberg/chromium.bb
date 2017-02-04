@@ -5,10 +5,10 @@
 // https://github.com/domenic/unhandled-rejections-browser-spec
 
 [
-    Custom=VisitDOMWrapper,
     Constructor(DOMString type, PromiseRejectionEventInit eventInitDict),
     ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker),
+    DependentLifetime,
 ] interface PromiseRejectionEvent : Event {
     [Custom=Getter] readonly attribute Promise<any> promise;
     [CallWith=ScriptState] readonly attribute any reason;

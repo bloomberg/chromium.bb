@@ -60,20 +60,4 @@ void V8IntersectionObserver::constructorCustom(
                        info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));
 }
 
-void V8IntersectionObserver::visitDOMWrapperCustom(
-    v8::Isolate* isolate,
-    ScriptWrappable* scriptWrappable,
-    const v8::Persistent<v8::Object>& wrapper) {
-  IntersectionObserver* observer =
-      scriptWrappable->toImpl<IntersectionObserver>();
-  for (auto& observation : observer->observations()) {
-    Element* target = observation->target();
-    if (!target)
-      continue;
-    v8::UniqueId id(reinterpret_cast<intptr_t>(
-        V8GCController::opaqueRootForGC(isolate, target)));
-    isolate->SetReferenceFromGroup(id, wrapper);
-  }
-}
-
 }  // namespace blink

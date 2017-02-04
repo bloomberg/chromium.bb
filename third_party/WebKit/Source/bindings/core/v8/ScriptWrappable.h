@@ -154,11 +154,6 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
     return containsWrapper();
   }
 
-  void setReference(const v8::Persistent<v8::Object>& parent,
-                    v8::Isolate* isolate) {
-    isolate->SetReference(parent, m_mainWorldWrapper);
-  }
-
   bool containsWrapper() const { return !m_mainWorldWrapper.IsEmpty(); }
 
   //  Mark wrapper of this ScriptWrappable as alive in V8. Only marks

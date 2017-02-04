@@ -97,10 +97,6 @@ class WebGLObject : public GarbageCollectedFinalized<WebGLObject>,
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
-  // To allow WebGL[2]RenderingContextBase to call visitChildDOMWrappers.
-  friend class WebGLRenderingContextBase;
-  friend class WebGL2RenderingContextBase;
-
   explicit WebGLObject(WebGLRenderingContextBase*);
 
   // deleteObjectImpl should be only called once to delete the OpenGL resource.
@@ -120,9 +116,6 @@ class WebGLObject : public GarbageCollectedFinalized<WebGLObject>,
   void detachAndDeleteObject();
 
   virtual gpu::gles2::GLES2Interface* getAGLInterface() const = 0;
-
-  virtual void visitChildDOMWrappers(v8::Isolate*,
-                                     const v8::Persistent<v8::Object>&) {}
 
   // Used by leaf subclasses to run the destruction sequence -- what would
   // be in the destructor of the base class, if it could be. Must be called

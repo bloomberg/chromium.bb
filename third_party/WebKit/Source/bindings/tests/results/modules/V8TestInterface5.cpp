@@ -36,7 +36,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterface5::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface5::domTemplate, V8TestInterface5::trace, V8TestInterface5::traceWrappers, V8TestInterface5::visitDOMWrapper, V8TestInterface5::preparePrototypeAndInterfaceObject, "TestInterface5", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromActiveScriptWrappable, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent };
+const WrapperTypeInfo V8TestInterface5::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface5::domTemplate, V8TestInterface5::trace, V8TestInterface5::traceWrappers, V8TestInterface5::preparePrototypeAndInterfaceObject, "TestInterface5", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromActiveScriptWrappable, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -846,14 +846,6 @@ void V8TestInterface5::indexedPropertySetterCallback(uint32_t index, v8::Local<v
 
 void V8TestInterface5::indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   TestInterface5ImplementationV8Internal::indexedPropertyDeleter(index, info);
-}
-
-void V8TestInterface5::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper) {
-  TestInterface5Implementation* impl = scriptWrappable->toImpl<TestInterface5Implementation>();
-  TestInterface5Implementation* referencedName = impl->referencedName();
-  if (referencedName) {
-    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, referencedName, isolate);
-  }
 }
 
 // Suppress warning: global constructors, because AttributeConfiguration is trivial

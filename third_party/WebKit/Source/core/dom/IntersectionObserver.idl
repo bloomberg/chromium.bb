@@ -10,9 +10,9 @@
 
 [
     CustomConstructor(IntersectionObserverCallback callback, optional IntersectionObserverInit options),
-    Custom=VisitDOMWrapper,
     MeasureAs=IntersectionObserver_Constructor,
     RuntimeEnabled=IntersectionObserver,
+    DependentLifetime,
 ] interface IntersectionObserver {
     readonly attribute Element? root;
     readonly attribute DOMString rootMargin;

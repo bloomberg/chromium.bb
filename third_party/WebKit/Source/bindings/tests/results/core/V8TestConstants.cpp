@@ -32,7 +32,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestConstants::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestConstants::domTemplate, V8TestConstants::trace, V8TestConstants::traceWrappers, 0, nullptr, "TestConstants", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8TestConstants::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestConstants::domTemplate, V8TestConstants::trace, V8TestConstants::traceWrappers, nullptr, "TestConstants", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif

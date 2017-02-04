@@ -34,7 +34,6 @@
 // The more *minor* extended attribute should be put in this file.
 
 [
-    Custom=VisitDOMWrapper, // Conflict with [SetWrapperReferenceTo] and [SetWrapperReferenceFrom]
     WebModuleAPI,
 ] interface TestInterface3 {
     [Custom] getter boolean (unsigned long index);

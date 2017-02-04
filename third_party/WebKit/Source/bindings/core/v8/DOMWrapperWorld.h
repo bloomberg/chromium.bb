@@ -70,10 +70,6 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   static void allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld>>& worlds);
   static void markWrappersInAllWorlds(ScriptWrappable*,
                                       const ScriptWrappableVisitor*);
-  static void setWrapperReferencesInAllWorlds(
-      const v8::Persistent<v8::Object>& parent,
-      ScriptWrappable*,
-      v8::Isolate*);
 
   static DOMWrapperWorld& world(v8::Local<v8::Context> context) {
     return ScriptState::from(context)->world();
