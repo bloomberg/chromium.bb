@@ -398,6 +398,8 @@ class NET_EXPORT NetworkQualityEstimator
                            UnknownEffectiveConnectionType);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            TypicalNetworkQualities);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
+                           OnPrefsReadWithReadingDisabled);
 
   // Value of round trip time observations is in base::TimeDelta.
   typedef nqe::internal::Observation<base::TimeDelta> RttObservation;
@@ -760,6 +762,9 @@ class NET_EXPORT NetworkQualityEstimator
   // |forced_effective_connection_type_|.
   const bool forced_effective_connection_type_set_;
   const EffectiveConnectionType forced_effective_connection_type_;
+
+  // Set to true if reading of the network quality prefs is enabled.
+  const bool persistent_cache_reading_enabled_;
 
   base::ThreadChecker thread_checker_;
 

@@ -59,15 +59,9 @@ class UINetworkQualityEstimatorServiceBrowserTest
   UINetworkQualityEstimatorServiceBrowserTest() {}
 
   // Verifies that the network quality prefs are written amd read correctly.
-  void VerifyWritingReadingPrefs(bool persistent_cache_writing_enabled,
-                                 bool persistent_cache_reading_enabled) {
+  void VerifyWritingReadingPrefs() {
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
-
-    variation_params["persistent_cache_writing_enabled"] =
-        persistent_cache_writing_enabled ? "true" : "false";
-    variation_params["persistent_cache_reading_enabled"] =
-        persistent_cache_reading_enabled ? "true" : "false";
 
     variations::AssociateVariationParams("NetworkQualityEstimator", "Enabled",
                                          variation_params);
@@ -104,7 +98,7 @@ class UINetworkQualityEstimatorServiceBrowserTest
 
       // Prefs are written only if the network id was available, and persistent
       // caching was enabled.
-      EXPECT_NE(network_id_available && persistent_cache_writing_enabled,
+      EXPECT_NE(network_id_available,
                 histogram_tester.GetAllSamples("NQE.Prefs.WriteCount").empty());
       histogram_tester.ExpectTotalCount("NQE.Prefs.ReadCount", 0);
 
@@ -120,9 +114,8 @@ class UINetworkQualityEstimatorServiceBrowserTest
       EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
                 nqe_service->GetEffectiveConnectionType());
 
-      // Prefs are written only if the network id was available, and persistent
-      // caching was enabled.
-      EXPECT_NE(network_id_available && persistent_cache_writing_enabled,
+      // Prefs are written only if the network id was available.
+      EXPECT_NE(network_id_available,
                 histogram_tester.GetAllSamples("NQE.Prefs.WriteCount").empty());
       histogram_tester.ExpectTotalCount("NQE.Prefs.ReadCount", 0);
 
@@ -134,13 +127,8 @@ class UINetworkQualityEstimatorServiceBrowserTest
     std::map<net::nqe::internal::NetworkID,
              net::nqe::internal::CachedNetworkQuality>
         read_prefs = nqe_service->ForceReadPrefsForTesting();
-    EXPECT_EQ(network_id_available && persistent_cache_writing_enabled &&
-                      persistent_cache_reading_enabled
-                  ? 1u
-                  : 0u,
-              read_prefs.size());
-    if (network_id_available && persistent_cache_writing_enabled &&
-        persistent_cache_reading_enabled) {
+    EXPECT_EQ(network_id_available ? 1u : 0u, read_prefs.size());
+    if (network_id_available) {
       // Verify that the cached network quality was written correctly.
       EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
                 read_prefs.begin()->second.effective_connection_type());
@@ -217,15 +205,8 @@ IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
             nqe_observer_3.effective_connection_type());
 }
 
-// Verify that prefs are not read when reading of the prefs is not enabled
-// via field trial.
-IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
-                       ReadingFromPrefsDisabled) {
-  VerifyWritingReadingPrefs(true, false);
-}
-
 // Verify that prefs are writen and read correctly.
 IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
                        WritingReadingToPrefsEnabled) {
-  VerifyWritingReadingPrefs(true, true);
+  VerifyWritingReadingPrefs();
 }

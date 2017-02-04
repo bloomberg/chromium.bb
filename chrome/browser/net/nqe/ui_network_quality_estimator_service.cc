@@ -24,41 +24,6 @@
 
 namespace {
 
-// Returns the variation value for |parameter_name|. If the value is
-// unavailable, |default_value| is returned.
-std::string GetStringValueForVariationParamWithDefaultValue(
-    const std::string& parameter_name,
-    const std::string& default_value) {
-  std::map<std::string, std::string> network_quality_estimator_params;
-  // Name of the network quality estimator field trial.
-  variations::GetVariationParams("NetworkQualityEstimator",
-                                 &network_quality_estimator_params);
-
-  const auto it = network_quality_estimator_params.find(parameter_name);
-  return it == network_quality_estimator_params.end() ? default_value
-                                                      : it->second;
-}
-
-// Returns true if writing to the persistent cache has been enabled via field
-// trial.
-bool persistent_cache_writing_enabled() {
-  return GetStringValueForVariationParamWithDefaultValue(
-             "persistent_cache_writing_enabled", "true") == "true";
-}
-
-// Returns true if reading from the persistent cache has been enabled via field
-// trial.
-bool persistent_cache_reading_enabled() {
-  if (GetStringValueForVariationParamWithDefaultValue(
-          "persistent_cache_reading_enabled", "false") != "true") {
-    return false;
-  }
-  // If reading from prefs is enabled, then writing to prefs must be enabled
-  // too.
-  DCHECK(persistent_cache_writing_enabled());
-  return true;
-}
-
 // PrefDelegateImpl writes the provided dictionary value to the network quality
 // estimator prefs on the disk.
 class PrefDelegateImpl
@@ -73,8 +38,6 @@ class PrefDelegateImpl
 
   void SetDictionaryValue(const base::DictionaryValue& value) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!persistent_cache_writing_enabled())
-      return;
 
     pref_service_->Set(path_, value);
     UMA_HISTOGRAM_EXACT_LINEAR("NQE.Prefs.WriteCount", 1, 2);
@@ -82,8 +45,6 @@ class PrefDelegateImpl
 
   std::unique_ptr<base::DictionaryValue> GetDictionaryValue() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!persistent_cache_reading_enabled())
-      return base::WrapUnique(new base::DictionaryValue());
     UMA_HISTOGRAM_EXACT_LINEAR("NQE.Prefs.ReadCount", 1, 2);
     return pref_service_->GetDictionary(path_)->CreateDeepCopy();
   }
