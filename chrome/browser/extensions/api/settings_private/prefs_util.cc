@@ -173,6 +173,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kPluginsAlwaysOpenPdfExternally] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kEnableDRM] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Clear browsing data settings.
   (*s_whitelist)[browsing_data::prefs::kDeleteBrowsingHistory] =

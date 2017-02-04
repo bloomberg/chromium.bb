@@ -174,6 +174,11 @@ cr.define('settings', function() {
   r.SITE_SETTINGS_ZOOM_LEVELS = r.SITE_SETTINGS.createChild('zoomLevels');
   r.SITE_SETTINGS_PDF_DOCUMENTS = r.SITE_SETTINGS.createChild('pdfDocuments');
 
+// <if expr="chromeos or is_win">
+  r.SITE_SETTINGS_PROTECTED_CONTENT =
+      r.SITE_SETTINGS.createChild('protectedContent');
+// </if>
+
 // <if expr="chromeos">
   r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');
 // </if>

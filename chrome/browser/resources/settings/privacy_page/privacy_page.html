@@ -438,6 +438,18 @@
           </site-data-details-subpage>
         </settings-subpage>
       </template>
+<if expr="chromeos or is_win">
+      <template is="dom-if" route-path="/content/protectedContent" no-search>
+        <settings-subpage page-title="$i18n{siteSettingsProtectedContent}">
+          <div class="settings-box first">
+            <settings-toggle-button class="start"
+                pref="{{prefs.settings.privacy.drm_enabled}}"
+                label="$i18n{siteSettingsProtectedContentEnable}">
+            </settings-toggle-button>
+          </div>
+        </settings-subpage>
+      </template>
+</if>
     </settings-animated-pages>
   </template>
   <script src="privacy_page.js"></script>

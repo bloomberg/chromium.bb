@@ -245,6 +245,14 @@
       <div class="middle">$i18n{siteSettingsPdfDocuments}</div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
+<if expr="chromeos or is_win">
+    <div class="settings-box" data-route="SITE_SETTINGS_PROTECTED_CONTENT"
+        on-tap="onTapNavigate_" actionable>
+      <iron-icon icon="settings:security"></iron-icon>
+      <div class="middle">$i18n{siteSettingsProtectedContent}</div>
+      <button class="subpage-arrow" is="paper-icon-button-light"></button>
+    </div>
+</if>
   </template>
   <script src="site_settings_page.js"></script>
 </dom-module>
