@@ -25,7 +25,7 @@ class FilterNonInterpolableValue : public NonInterpolableValue {
         type, std::move(typeNonInterpolableValue)));
   }
 
-  FilterOperation::OperationType type() const { return m_type; }
+  FilterOperation::OperationType operationType() const { return m_type; }
   const NonInterpolableValue* typeNonInterpolableValue() const {
     return m_typeNonInterpolableValue.get();
   }
@@ -210,8 +210,8 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertFilter(
 
 std::unique_ptr<InterpolableValue>
 FilterInterpolationFunctions::createNoneValue(
-    const NonInterpolableValue& untypedNonInterpolableValue) {
-  switch (toFilterNonInterpolableValue(untypedNonInterpolableValue).type()) {
+    const NonInterpolableValue& untypedValue) {
+  switch (toFilterNonInterpolableValue(untypedValue).operationType()) {
     case FilterOperation::GRAYSCALE:
     case FilterOperation::INVERT:
     case FilterOperation::SEPIA:
@@ -239,8 +239,8 @@ FilterInterpolationFunctions::createNoneValue(
 bool FilterInterpolationFunctions::filtersAreCompatible(
     const NonInterpolableValue& a,
     const NonInterpolableValue& b) {
-  return toFilterNonInterpolableValue(a).type() ==
-         toFilterNonInterpolableValue(b).type();
+  return toFilterNonInterpolableValue(a).operationType() ==
+         toFilterNonInterpolableValue(b).operationType();
 }
 
 FilterOperation* FilterInterpolationFunctions::createFilter(
@@ -249,7 +249,7 @@ FilterOperation* FilterInterpolationFunctions::createFilter(
     const StyleResolverState& state) {
   const FilterNonInterpolableValue& nonInterpolableValue =
       toFilterNonInterpolableValue(untypedNonInterpolableValue);
-  FilterOperation::OperationType type = nonInterpolableValue.type();
+  FilterOperation::OperationType type = nonInterpolableValue.operationType();
 
   switch (type) {
     case FilterOperation::GRAYSCALE:

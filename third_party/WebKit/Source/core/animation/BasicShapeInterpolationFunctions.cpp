@@ -23,21 +23,21 @@ class BasicShapeNonInterpolableValue : public NonInterpolableValue {
     return adoptRef(new BasicShapeNonInterpolableValue(windRule, size));
   }
 
-  BasicShape::ShapeType type() const { return m_type; }
+  BasicShape::ShapeType shapeType() const { return m_type; }
 
   WindRule windRule() const {
-    DCHECK_EQ(type(), BasicShape::BasicShapePolygonType);
+    DCHECK_EQ(shapeType(), BasicShape::BasicShapePolygonType);
     return m_windRule;
   }
   size_t size() const {
-    DCHECK_EQ(type(), BasicShape::BasicShapePolygonType);
+    DCHECK_EQ(shapeType(), BasicShape::BasicShapePolygonType);
     return m_size;
   }
 
   bool isCompatibleWith(const BasicShapeNonInterpolableValue& other) const {
-    if (type() != other.type())
+    if (shapeType() != other.shapeType())
       return false;
-    switch (type()) {
+    switch (shapeType()) {
       case BasicShape::BasicShapeCircleType:
       case BasicShape::BasicShapeEllipseType:
       case BasicShape::BasicShapeInsetType:
@@ -544,7 +544,7 @@ BasicShapeInterpolationFunctions::createNeutralValue(
     const NonInterpolableValue& untypedNonInterpolableValue) {
   const BasicShapeNonInterpolableValue& nonInterpolableValue =
       toBasicShapeNonInterpolableValue(untypedNonInterpolableValue);
-  switch (nonInterpolableValue.type()) {
+  switch (nonInterpolableValue.shapeType()) {
     case BasicShape::BasicShapeCircleType:
       return CircleFunctions::createNeutralValue();
     case BasicShape::BasicShapeEllipseType:
@@ -572,7 +572,7 @@ PassRefPtr<BasicShape> BasicShapeInterpolationFunctions::createBasicShape(
     const CSSToLengthConversionData& conversionData) {
   const BasicShapeNonInterpolableValue& nonInterpolableValue =
       toBasicShapeNonInterpolableValue(untypedNonInterpolableValue);
-  switch (nonInterpolableValue.type()) {
+  switch (nonInterpolableValue.shapeType()) {
     case BasicShape::BasicShapeCircleType:
       return CircleFunctions::createBasicShape(interpolableValue,
                                                conversionData);
