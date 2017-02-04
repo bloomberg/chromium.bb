@@ -429,6 +429,12 @@ bool GLRenderer::CanPartialSwap() {
   return context_provider->ContextCapabilities().post_sub_buffer;
 }
 
+ResourceFormat GLRenderer::BackbufferFormat() const {
+  // TODO(ccameron): If we are targeting high bit depth or HDR, we should use
+  // RGBA_F16 here.
+  return resource_provider_->best_texture_format();
+}
+
 void GLRenderer::DidChangeVisibility() {
   if (visible_) {
     output_surface_->EnsureBackbuffer();
@@ -907,7 +913,7 @@ std::unique_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
   // CopyTexImage2D fails when called on a texture having immutable storage.
   device_background_texture->Allocate(
       bounding_rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,
-      resource_provider_->best_texture_format(), frame->device_color_space);
+      BackbufferFormat(), frame->device_color_space);
   {
     ResourceProvider::ScopedWriteLockGL lock(
         resource_provider_, device_background_texture->id(), false);

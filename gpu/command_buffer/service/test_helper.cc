@@ -494,6 +494,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
 
   bool enable_es3 = context_type == CONTEXT_TYPE_WEBGL2 ||
       context_type == CONTEXT_TYPE_OPENGLES3;
+  bool allow_float_buffers = context_type != CONTEXT_TYPE_WEBGL1;
 
   EXPECT_CALL(*gl, GetString(GL_VERSION))
       .WillOnce(Return(reinterpret_cast<const uint8_t*>(gl_version)))
@@ -591,7 +592,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
           .RetiresOnSaturation();
     }
 
-    if (status_rgba == GL_FRAMEBUFFER_COMPLETE && enable_es3) {
+    if (status_rgba == GL_FRAMEBUFFER_COMPLETE && allow_float_buffers) {
       EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width,
           0, GL_RED, GL_FLOAT, _))
           .Times(1)

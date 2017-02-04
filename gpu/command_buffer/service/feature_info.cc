@@ -108,64 +108,7 @@ class ScopedPixelUnpackBufferOverride {
 
 }  // anonymous namespace.
 
-FeatureInfo::FeatureFlags::FeatureFlags()
-    : chromium_framebuffer_multisample(false),
-      chromium_sync_query(false),
-      use_core_framebuffer_multisample(false),
-      multisampled_render_to_texture(false),
-      use_img_for_multisampled_render_to_texture(false),
-      chromium_screen_space_antialiasing(false),
-      use_chromium_screen_space_antialiasing_via_shaders(false),
-      oes_standard_derivatives(false),
-      oes_egl_image_external(false),
-      nv_egl_stream_consumer_external(false),
-      oes_depth24(false),
-      oes_compressed_etc1_rgb8_texture(false),
-      packed_depth24_stencil8(false),
-      npot_ok(false),
-      enable_texture_float_linear(false),
-      enable_texture_half_float_linear(false),
-      angle_translated_shader_source(false),
-      angle_pack_reverse_row_order(false),
-      arb_texture_rectangle(false),
-      angle_instanced_arrays(false),
-      occlusion_query(false),
-      occlusion_query_boolean(false),
-      use_arb_occlusion_query2_for_occlusion_query_boolean(false),
-      use_arb_occlusion_query_for_occlusion_query_boolean(false),
-      native_vertex_array_object(false),
-      ext_texture_format_astc(false),
-      ext_texture_format_atc(false),
-      ext_texture_format_bgra8888(false),
-      ext_texture_format_dxt1(false),
-      ext_texture_format_dxt5(false),
-      enable_shader_name_hashing(false),
-      enable_samplers(false),
-      ext_draw_buffers(false),
-      nv_draw_buffers(false),
-      ext_frag_depth(false),
-      ext_shader_texture_lod(false),
-      use_async_readpixels(false),
-      map_buffer_range(false),
-      ext_discard_framebuffer(false),
-      angle_depth_texture(false),
-      is_swiftshader(false),
-      angle_texture_usage(false),
-      ext_texture_storage(false),
-      chromium_path_rendering(false),
-      chromium_framebuffer_mixed_samples(false),
-      blend_equation_advanced(false),
-      blend_equation_advanced_coherent(false),
-      ext_texture_rg(false),
-      chromium_image_ycbcr_420v(false),
-      chromium_image_ycbcr_422(false),
-      emulate_primitive_restart_fixed_index(false),
-      ext_render_buffer_format_bgra8888(false),
-      ext_multisample_compatibility(false),
-      ext_blend_func_extended(false),
-      ext_read_format_bgra(false),
-      desktop_srgb_support(false),
-      arb_es3_compatibility(false) {}
+FeatureInfo::FeatureFlags::FeatureFlags() {}
 
 FeatureInfo::FeatureInfo() {
   InitializeBasicState(base::CommandLine::InitializedForCurrentProcess()
@@ -289,6 +232,7 @@ void FeatureInfo::EnableEXTColorBufferFloat() {
       GL_RGBA32F);
   validators_.texture_sized_color_renderable_internal_format.AddValue(
       GL_R11F_G11F_B10F);
+  feature_flags_.enable_color_buffer_float = true;
 }
 
 void FeatureInfo::EnableCHROMIUMColorBufferFloatRGBA() {
@@ -786,6 +730,9 @@ void FeatureInfo::InitializeFeatures() {
   bool enable_texture_half_float_linear = false;
   bool enable_ext_color_buffer_float = false;
 
+  // Do not expose EXT_color_buffer_float to WebGL 1.
+  const bool allow_ext_color_buffer_float =
+      context_type_ != CONTEXT_TYPE_WEBGL1;
   bool may_enable_chromium_color_buffer_float = false;
 
   // This extension allows a variety of floating point formats to be
@@ -886,7 +833,8 @@ void FeatureInfo::InitializeFeatures() {
 
     // For desktop systems, check to see if we support rendering to the full
     // range of formats supported by EXT_color_buffer_float
-    if (status_rgba == GL_FRAMEBUFFER_COMPLETE && enable_es3) {
+    if (status_rgba == GL_FRAMEBUFFER_COMPLETE &&
+        allow_ext_color_buffer_float) {
       bool full_float_support = true;
 
       glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width, 0, GL_RED,
@@ -938,7 +886,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   // Enable the GL_EXT_color_buffer_float extension for WebGL 2.0
-  if (enable_ext_color_buffer_float && enable_es3) {
+  if (enable_ext_color_buffer_float && allow_ext_color_buffer_float) {
     ext_color_buffer_float_available_ = true;
     if (!disallowed_features_.ext_color_buffer_float)
       EnableEXTColorBufferFloat();

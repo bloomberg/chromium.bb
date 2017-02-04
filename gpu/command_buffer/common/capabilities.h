@@ -68,104 +68,105 @@ struct GPU_EXPORT Capabilities {
 
   PerStagePrecisions vertex_shader_precisions;
   PerStagePrecisions fragment_shader_precisions;
-  int max_combined_texture_image_units;
-  int max_cube_map_texture_size;
-  int max_fragment_uniform_vectors;
-  int max_renderbuffer_size;
-  int max_texture_image_units;
-  int max_texture_size;
-  int max_varying_vectors;
-  int max_vertex_attribs;
-  int max_vertex_texture_image_units;
-  int max_vertex_uniform_vectors;
+  int max_combined_texture_image_units = 0;
+  int max_cube_map_texture_size = 0;
+  int max_fragment_uniform_vectors = 0;
+  int max_renderbuffer_size = 0;
+  int max_texture_image_units = 0;
+  int max_texture_size = 0;
+  int max_varying_vectors = 0;
+  int max_vertex_attribs = 0;
+  int max_vertex_texture_image_units = 0;
+  int max_vertex_uniform_vectors = 0;
   // MAX_VIEWPORT_DIMS[2]
-  int max_viewport_width;
-  int max_viewport_height;
-  int num_compressed_texture_formats;
-  int num_shader_binary_formats;
-  int num_stencil_bits;  // For the default framebuffer.
-  int bind_generates_resource_chromium;
+  int max_viewport_width = 0;
+  int max_viewport_height = 0;
+  int num_compressed_texture_formats = 0;
+  int num_shader_binary_formats = 0;
+  int num_stencil_bits = 0;  // For the default framebuffer.
+  int bind_generates_resource_chromium = 0;
 
-  int max_3d_texture_size;
-  int max_array_texture_layers;
-  int max_color_attachments;
-  int64_t max_combined_fragment_uniform_components;
-  int max_combined_uniform_blocks;
-  int64_t max_combined_vertex_uniform_components;
-  int max_copy_texture_chromium_size;
-  int max_draw_buffers;
-  int64_t max_element_index;
-  int max_elements_indices;
-  int max_elements_vertices;
-  int max_fragment_input_components;
-  int max_fragment_uniform_blocks;
-  int max_fragment_uniform_components;
-  int max_program_texel_offset;
-  int max_samples;
-  int64_t max_server_wait_timeout;
-  float max_texture_lod_bias;
-  int max_transform_feedback_interleaved_components;
-  int max_transform_feedback_separate_attribs;
-  int max_transform_feedback_separate_components;
-  int64_t max_uniform_block_size;
-  int max_uniform_buffer_bindings;
-  int max_varying_components;
-  int max_vertex_output_components;
-  int max_vertex_uniform_blocks;
-  int max_vertex_uniform_components;
-  int min_program_texel_offset;
-  int num_extensions;
-  int num_program_binary_formats;
-  int uniform_buffer_offset_alignment;
+  int max_3d_texture_size = 0;
+  int max_array_texture_layers = 0;
+  int max_color_attachments = 0;
+  int64_t max_combined_fragment_uniform_components = 0;
+  int max_combined_uniform_blocks = 0;
+  int64_t max_combined_vertex_uniform_components = 0;
+  int max_copy_texture_chromium_size = 0;
+  int max_draw_buffers = 0;
+  int64_t max_element_index = 0;
+  int max_elements_indices = 0;
+  int max_elements_vertices = 0;
+  int max_fragment_input_components = 0;
+  int max_fragment_uniform_blocks = 0;
+  int max_fragment_uniform_components = 0;
+  int max_program_texel_offset = 0;
+  int max_samples = 0;
+  int64_t max_server_wait_timeout = 0;
+  float max_texture_lod_bias = 0.f;
+  int max_transform_feedback_interleaved_components = 0;
+  int max_transform_feedback_separate_attribs = 0;
+  int max_transform_feedback_separate_components = 0;
+  int64_t max_uniform_block_size = 0;
+  int max_uniform_buffer_bindings = 0;
+  int max_varying_components = 0;
+  int max_vertex_output_components = 0;
+  int max_vertex_uniform_blocks = 0;
+  int max_vertex_uniform_components = 0;
+  int min_program_texel_offset = 0;
+  int num_extensions = 0;
+  int num_program_binary_formats = 0;
+  int uniform_buffer_offset_alignment = 1;
 
-  bool post_sub_buffer;
-  bool swap_buffers_with_damage;
-  bool commit_overlay_planes;
-  bool egl_image_external;
-  bool texture_format_astc;
-  bool texture_format_atc;
-  bool texture_format_bgra8888;
-  bool texture_format_dxt1;
-  bool texture_format_dxt5;
-  bool texture_format_etc1;
-  bool texture_format_etc1_npot;
-  bool texture_rectangle;
-  bool iosurface;
-  bool texture_usage;
-  bool texture_storage;
-  bool discard_framebuffer;
-  bool sync_query;
-  bool future_sync_points;
-  bool blend_equation_advanced;
-  bool blend_equation_advanced_coherent;
-  bool texture_rg;
-  bool texture_half_float_linear;
-  bool image_ycbcr_422;
-  bool image_ycbcr_420v;
-  bool render_buffer_format_bgra8888;
-  bool occlusion_query;
-  bool occlusion_query_boolean;
-  bool timer_queries;
-  bool surfaceless;
-  bool flips_vertically;
-  bool msaa_is_slow;
-  bool disable_one_component_textures;
-  bool disable_multisampling_color_mask_usage;
-  bool disable_webgl_rgb_multisampling_usage;
+  bool post_sub_buffer = false;
+  bool swap_buffers_with_damage = false;
+  bool commit_overlay_planes = false;
+  bool egl_image_external = false;
+  bool texture_format_astc = false;
+  bool texture_format_atc = false;
+  bool texture_format_bgra8888 = false;
+  bool texture_format_dxt1 = false;
+  bool texture_format_dxt5 = false;
+  bool texture_format_etc1 = false;
+  bool texture_format_etc1_npot = false;
+  bool texture_rectangle = false;
+  bool iosurface = false;
+  bool texture_usage = false;
+  bool texture_storage = false;
+  bool discard_framebuffer = false;
+  bool sync_query = false;
+  bool future_sync_points = false;
+  bool blend_equation_advanced = false;
+  bool blend_equation_advanced_coherent = false;
+  bool texture_rg = false;
+  bool texture_half_float_linear = false;
+  bool color_buffer_float = false;
+  bool image_ycbcr_422 = false;
+  bool image_ycbcr_420v = false;
+  bool render_buffer_format_bgra8888 = false;
+  bool occlusion_query = false;
+  bool occlusion_query_boolean = false;
+  bool timer_queries = false;
+  bool surfaceless = false;
+  bool flips_vertically = false;
+  bool msaa_is_slow = false;
+  bool disable_one_component_textures = false;
+  bool disable_multisampling_color_mask_usage = false;
+  bool disable_webgl_rgb_multisampling_usage = false;
 
   // When this parameter is true, a CHROMIUM image created with RGB format will
   // actually have RGBA format. The client is responsible for handling most of
   // the complexities associated with this. See
   // gpu/GLES2/extensions/CHROMIUM/CHROMIUM_gpu_memory_buffer_image.txt for more
   // details.
-  bool chromium_image_rgb_emulation;
+  bool chromium_image_rgb_emulation = false;
 
   // When true, RGB framebuffer formats are unsupported. Emulate with RGBA to
   // work around this. See https://crbug.com/449150 for an example.
-  bool emulate_rgb_buffer_with_rgba;
+  bool emulate_rgb_buffer_with_rgba = false;
 
-  int major_version;
-  int minor_version;
+  int major_version = 2;
+  int minor_version = 0;
 };
 
 }  // namespace gpu
