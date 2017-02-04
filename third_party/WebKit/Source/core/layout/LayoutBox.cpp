@@ -2739,7 +2739,8 @@ bool LayoutBox::hasStretchedLogicalWidth() const {
 
 bool LayoutBox::sizesLogicalWidthToFitContent(
     const Length& logicalWidth) const {
-  if (isFloating() || isInlineBlockOrInlineTable())
+  if (isFloating() || isInlineBlockOrInlineTable() ||
+      styleRef().hasOutOfFlowPosition())
     return true;
 
   if (isGridItem())
