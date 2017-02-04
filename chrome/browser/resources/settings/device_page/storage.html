@@ -206,13 +206,16 @@
       </div>
       <button class="icon-external" is="paper-icon-button-light"></button>
     </div>
-    <div class="settings-box" on-tap="onOtherUsersTap_" actionable>
-      <div class="start">$i18n{storageItemOtherUsers}</div>
-      <div id="otherUsersSize" class="storage-size">
-        $i18n{storageSizeComputing}
+    <template is="dom-if" if="[[!isGuest_]]">
+      <div class="settings-box" on-tap="onOtherUsersTap_" actionable>
+        <div class="start">$i18n{storageItemOtherUsers}</div>
+        <div id="otherUsersSize" class="storage-size">
+          $i18n{storageSizeComputing}
+        </div>
+        <button class="subpage-arrow" is="paper-icon-button-light"></button>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"></button>
-    </div>
+    </template>
+
     <settings-drive-cache-dialog id="storageDriveCache">
     </settings-drive-cache-dialog>
   </template>

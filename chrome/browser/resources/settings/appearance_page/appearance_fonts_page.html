@@ -110,16 +110,18 @@
         </div>
       </div>
     </div>
-    <div class="settings-box two-line" id="advancedButton"
-        on-tap="openAdvancedExtension_" actionable>
-      <div class="start">
-        <div>$i18n{advancedFontSettings}</div>
-        <div class="secondary" id="advancedButtonSublabel">
-          [[advancedExtensionSublabel_]]
+    <template is="dom-if" if="[[!isGuest_]]">
+      <div class="settings-box two-line" id="advancedButton"
+          on-tap="openAdvancedExtension_" actionable>
+        <div class="start">
+          <div>$i18n{advancedFontSettings}</div>
+          <div class="secondary" id="advancedButtonSublabel">
+            [[advancedExtensionSublabel_]]
+          </div>
         </div>
+        <button class="icon-external" is="paper-icon-button-light"></button>
       </div>
-      <button class="icon-external" is="paper-icon-button-light"></button>
-    </div>
+    </template>
   </template>
   <script src="appearance_fonts_page.js"></script>
 </dom-module>

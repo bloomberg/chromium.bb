@@ -53,6 +53,12 @@
       /** @private {!DropdownMenuOptionList} */
       fontOptions_: Object,
 
+      /** @private */
+      isGuest_: {
+        type: Boolean,
+        value: function() { return loadTimeData.getBoolean('isGuest'); }
+      },
+
       /**
        * Common font sizes.
        * @private {!Array<number>}

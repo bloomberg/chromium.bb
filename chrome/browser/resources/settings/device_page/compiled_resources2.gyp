@@ -101,6 +101,7 @@
       'target_name': 'storage',
       'dependencies': [
         '../compiled_resources2.gyp:route',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
