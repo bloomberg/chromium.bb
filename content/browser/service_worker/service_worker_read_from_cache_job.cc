@@ -89,12 +89,6 @@ void ServiceWorkerReadFromCacheJob::GetResponseInfo(
   *info = *http_info();
 }
 
-int ServiceWorkerReadFromCacheJob::GetResponseCode() const {
-  if (!http_info())
-    return -1;
-  return http_info()->headers->response_code();
-}
-
 void ServiceWorkerReadFromCacheJob::SetExtraRequestHeaders(
       const net::HttpRequestHeaders& headers) {
   std::string value;

@@ -162,12 +162,6 @@ void ServiceWorkerWriteToCacheJob::GetResponseInfo(
   *info = *http_info();
 }
 
-int ServiceWorkerWriteToCacheJob::GetResponseCode() const {
-  if (!http_info())
-    return -1;
-  return http_info()->headers->response_code();
-}
-
 void ServiceWorkerWriteToCacheJob::SetExtraRequestHeaders(
       const net::HttpRequestHeaders& headers) {
   std::string value;

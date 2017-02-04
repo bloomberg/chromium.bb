@@ -55,7 +55,6 @@ class CONTENT_EXPORT ServiceWorkerReadFromCacheJob
   bool GetCharset(std::string* charset) override;
   bool GetMimeType(std::string* mime_type) const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
-  int GetResponseCode() const override;
   void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
   int ReadRawData(net::IOBuffer* buf, int buf_size) override;
 

@@ -347,12 +347,6 @@ void ServiceWorkerURLRequestJob::GetLoadTimingInfo(
   *load_timing_info = load_timing_info_;
 }
 
-int ServiceWorkerURLRequestJob::GetResponseCode() const {
-  if (!http_info())
-    return -1;
-  return http_info()->headers->response_code();
-}
-
 void ServiceWorkerURLRequestJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
   std::string range_header;
