@@ -39,6 +39,10 @@ CrElementsBrowserTest.prototype = {
 
 function CrElementsLazyRenderTest() {}
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 CrElementsLazyRenderTest.prototype = {
   __proto__: CrElementsBrowserTest.prototype,
 
@@ -56,6 +60,10 @@ TEST_F('CrElementsLazyRenderTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsProfileAvatarSelectorTest() {}
 
 CrElementsProfileAvatarSelectorTest.prototype = {
@@ -77,6 +85,10 @@ TEST_F('CrElementsProfileAvatarSelectorTest', 'All', function() {
   mocha.grep(cr_profile_avatar_selector.TestNames.Basic).run();
 });
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsToolbarSearchFieldTest() {}
 
 CrElementsToolbarSearchFieldTest.prototype = {
@@ -97,6 +109,10 @@ TEST_F('CrElementsToolbarSearchFieldTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsSliderTest() {}
 
 CrElementsSliderTest.prototype = {
@@ -116,6 +132,10 @@ TEST_F('CrElementsSliderTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsDrawerTest() {}
 
 CrElementsDrawerTest.prototype = {
@@ -130,5 +150,27 @@ CrElementsDrawerTest.prototype = {
 };
 
 TEST_F('CrElementsDrawerTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsScrollableBehaviorTest() {}
+
+CrElementsScrollableBehaviorTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_scrollable_behavior.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_scrollable_behavior_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsScrollableBehaviorTest', 'All', function() {
   mocha.run();
 });
