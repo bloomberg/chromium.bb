@@ -51,6 +51,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -391,8 +392,8 @@ public class WebsiteSettingsPopup implements OnClickListener {
         mUrlTitle.setText(urlBuilder);
 
         if (mParsedUrl == null || mParsedUrl.getScheme() == null
-                || !(mParsedUrl.getScheme().equals("http")
-                           || mParsedUrl.getScheme().equals("https"))) {
+                || !(mParsedUrl.getScheme().equals(UrlConstants.HTTP_SCHEME)
+                           || mParsedUrl.getScheme().equals(UrlConstants.HTTPS_SCHEME))) {
             mSiteSettingsButton.setVisibility(View.GONE);
         }
 
@@ -520,7 +521,8 @@ public class WebsiteSettingsPopup implements OnClickListener {
      */
     private boolean isConnectionDetailsLinkVisible() {
         return mContentPublisher == null && !isShowingOfflinePage() && mParsedUrl != null
-                && mParsedUrl.getScheme() != null && mParsedUrl.getScheme().equals("https");
+                && mParsedUrl.getScheme() != null
+                        && mParsedUrl.getScheme().equals(UrlConstants.HTTPS_SCHEME);
     }
 
     private boolean hasAndroidPermission(int contentSettingType) {

@@ -15,6 +15,7 @@ import android.webkit.MimeTypeMap;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
@@ -86,7 +87,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     private final ContextMenuItemDelegate mDelegate;
     private MenuInflater mMenuInflater;
-    private static final String BLANK_URL = "about:blank";
     private final int mMode;
 
     static class ContextMenuUma {
@@ -187,7 +187,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     @Override
     public void buildContextMenu(ContextMenu menu, Context context, ContextMenuParams params) {
-        if (!TextUtils.isEmpty(params.getLinkUrl()) && !params.getLinkUrl().equals(BLANK_URL)) {
+        if (!TextUtils.isEmpty(params.getLinkUrl())
+                && !params.getLinkUrl().equals(UrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
             setHeaderText(context, menu, params.getLinkUrl());
         } else if (!TextUtils.isEmpty(params.getTitleText())) {
             setHeaderText(context, menu, params.getTitleText());
