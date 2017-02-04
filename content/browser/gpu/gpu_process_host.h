@@ -209,24 +209,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 #if defined(OS_ANDROID)
   void OnDestroyingVideoSurfaceAck(int surface_id);
 #endif
-  void OnDidCreateOffscreenContext(const GURL& url);
-  void OnDidLoseContext(bool offscreen,
-                        gpu::error::ContextLostReason reason,
-                        const GURL& url);
-  void OnDidDestroyOffscreenContext(const GURL& url);
   void OnFieldTrialActivated(const std::string& trial_name);
 
-#if defined(OS_WIN)
-  void OnAcceleratedSurfaceCreatedChildWindow(
-      gpu::SurfaceHandle parent_handle,
-      gpu::SurfaceHandle window_handle);
-#endif
-
   void CreateChannelCache(int32_t client_id);
-  void OnDestroyChannel(int32_t client_id);
-  void OnCacheShader(int32_t client_id,
-                     const std::string& key,
-                     const std::string& shader);
 
   bool LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences);
 

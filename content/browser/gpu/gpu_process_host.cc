@@ -685,41 +685,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
-#if defined(OS_WIN)
-void GpuProcessHost::OnAcceleratedSurfaceCreatedChildWindow(
-    gpu::SurfaceHandle parent_handle,
-    gpu::SurfaceHandle window_handle) {
-  constexpr char kBadMessageError[] = "Bad parenting request from gpu process.";
-  if (!in_process_) {
-    DCHECK(process_);
-    {
-      DWORD process_id = 0;
-      DWORD thread_id = GetWindowThreadProcessId(parent_handle, &process_id);
-
-      if (!thread_id || process_id != ::GetCurrentProcessId()) {
-        process_->TerminateOnBadMessageReceived(kBadMessageError);
-        return;
-      }
-    }
-
-    {
-      DWORD process_id = 0;
-      DWORD thread_id = GetWindowThreadProcessId(window_handle, &process_id);
-
-      if (!thread_id || process_id != process_->GetProcess().Pid()) {
-        process_->TerminateOnBadMessageReceived(kBadMessageError);
-        return;
-      }
-    }
-  }
-
-  if (!gfx::RenderingWindowManager::GetInstance()->RegisterChild(
-          parent_handle, window_handle)) {
-    process_->TerminateOnBadMessageReceived(kBadMessageError);
-  }
-}
-#endif
-
 void GpuProcessHost::OnChannelConnected(int32_t peer_pid) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnChannelConnected");
 
@@ -879,20 +844,55 @@ void GpuProcessHost::OnDestroyingVideoSurfaceAck(int surface_id) {
 }
 #endif
 
-void GpuProcessHost::OnDidCreateOffscreenContext(const GURL& url) {
+void GpuProcessHost::OnFieldTrialActivated(const std::string& trial_name) {
+  // Activate the trial in the browser process to match its state in the
+  // GPU process. This is done by calling FindFullName which finalizes the group
+  // and activates the trial.
+  base::FieldTrialList::FindFullName(trial_name);
+}
+
+void GpuProcessHost::OnProcessLaunched() {
+  UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",
+                      base::TimeTicks::Now() - init_start_time_);
+}
+
+void GpuProcessHost::OnProcessLaunchFailed(int error_code) {
+  // TODO(wfh): do something more useful with this error code.
+  RecordProcessCrash();
+}
+
+void GpuProcessHost::OnProcessCrashed(int exit_code) {
+  SendOutstandingReplies();
+  RecordProcessCrash();
+  GpuDataManagerImpl::GetInstance()->ProcessCrashed(
+      process_->GetTerminationStatus(true /* known_dead */, NULL));
+}
+
+void GpuProcessHost::DidInitialize(const gpu::GPUInfo& gpu_info) {
+  // TODO(sad): This should call OnInitialized().
+}
+
+void GpuProcessHost::DidCreateOffscreenContext(const GURL& url) {
   urls_with_live_offscreen_contexts_.insert(url);
 }
 
-void GpuProcessHost::OnDidLoseContext(bool offscreen,
-                                      gpu::error::ContextLostReason reason,
-                                      const GURL& url) {
-  // TODO(kbr): would be nice to see the "offscreen" flag too.
-  TRACE_EVENT2("gpu", "GpuProcessHost::OnDidLoseContext",
-               "reason", reason,
-               "url",
-               url.possibly_invalid_spec());
+void GpuProcessHost::DidDestroyOffscreenContext(const GURL& url) {
+  urls_with_live_offscreen_contexts_.erase(url);
+}
 
-  if (!offscreen || url.is_empty()) {
+void GpuProcessHost::DidDestroyChannel(int32_t client_id) {
+  TRACE_EVENT0("gpu", "GpuProcessHost::DidDestroyChannel");
+  client_id_to_shader_cache_.erase(client_id);
+}
+
+void GpuProcessHost::DidLoseContext(bool offscreen,
+                                    gpu::error::ContextLostReason reason,
+                                    const GURL& active_url) {
+  // TODO(kbr): would be nice to see the "offscreen" flag too.
+  TRACE_EVENT2("gpu", "GpuProcessHost::DidLoseContext", "reason", reason, "url",
+               active_url.possibly_invalid_spec());
+
+  if (!offscreen || active_url.is_empty()) {
     // Assume that the loss of the compositor's or accelerated canvas'
     // context is a serious event and blame the loss on all live
     // offscreen contexts. This more robustly handles situations where
@@ -923,70 +923,53 @@ void GpuProcessHost::OnDidLoseContext(bool offscreen,
       return;
   }
 
-  GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(url, guilt);
+  GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(active_url, guilt);
 }
 
-void GpuProcessHost::OnDidDestroyOffscreenContext(const GURL& url) {
-  urls_with_live_offscreen_contexts_.erase(url);
-}
-
-void GpuProcessHost::OnFieldTrialActivated(const std::string& trial_name) {
-  // Activate the trial in the browser process to match its state in the
-  // GPU process. This is done by calling FindFullName which finalizes the group
-  // and activates the trial.
-  base::FieldTrialList::FindFullName(trial_name);
-}
-
-void GpuProcessHost::OnProcessLaunched() {
-  UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",
-                      base::TimeTicks::Now() - init_start_time_);
-}
-
-void GpuProcessHost::OnProcessLaunchFailed(int error_code) {
-  // TODO(wfh): do something more useful with this error code.
-  RecordProcessCrash();
-}
-
-void GpuProcessHost::OnProcessCrashed(int exit_code) {
-  SendOutstandingReplies();
-  RecordProcessCrash();
-  GpuDataManagerImpl::GetInstance()->ProcessCrashed(
-      process_->GetTerminationStatus(true /* known_dead */, NULL));
-}
-
-void GpuProcessHost::DidInitialize(const gpu::GPUInfo& gpu_info) {
-  // TODO(sad): This should call OnInitialized().
-}
-
-void GpuProcessHost::DidCreateOffscreenContext(const GURL& url) {
-  OnDidCreateOffscreenContext(url);
-}
-
-void GpuProcessHost::DidDestroyOffscreenContext(const GURL& url) {
-  OnDidDestroyOffscreenContext(url);
-}
-
-void GpuProcessHost::DidDestroyChannel(int32_t client_id) {
-  OnDestroyChannel(client_id);
-}
-
-void GpuProcessHost::DidLoseContext(bool offscreen,
-                                    gpu::error::ContextLostReason reason,
-                                    const GURL& active_url) {
-  OnDidLoseContext(offscreen, reason, active_url);
-}
-
-void GpuProcessHost::SetChildSurface(gpu::SurfaceHandle parent,
-                                     gpu::SurfaceHandle child) {
+void GpuProcessHost::SetChildSurface(gpu::SurfaceHandle parent_handle,
+                                     gpu::SurfaceHandle window_handle) {
 #if defined(OS_WIN)
-  OnAcceleratedSurfaceCreatedChildWindow(parent, child);
+  constexpr char kBadMessageError[] = "Bad parenting request from gpu process.";
+  if (!in_process_) {
+    DCHECK(process_);
+    {
+      DWORD process_id = 0;
+      DWORD thread_id = GetWindowThreadProcessId(parent_handle, &process_id);
+
+      if (!thread_id || process_id != ::GetCurrentProcessId()) {
+        process_->TerminateOnBadMessageReceived(kBadMessageError);
+        return;
+      }
+    }
+
+    {
+      DWORD process_id = 0;
+      DWORD thread_id = GetWindowThreadProcessId(window_handle, &process_id);
+
+      if (!thread_id || process_id != process_->GetProcess().Pid()) {
+        process_->TerminateOnBadMessageReceived(kBadMessageError);
+        return;
+      }
+    }
+  }
+
+  if (!gfx::RenderingWindowManager::GetInstance()->RegisterChild(
+          parent_handle, window_handle)) {
+    process_->TerminateOnBadMessageReceived(kBadMessageError);
+  }
 #endif
 }
 
 void GpuProcessHost::StoreShaderToDisk(int32_t client_id,
                                        const std::string& key,
                                        const std::string& shader) {
-  OnCacheShader(client_id, key, shader);
+  TRACE_EVENT0("gpu", "GpuProcessHost::StoreShaderToDisk");
+  ClientIdToShaderCacheMap::iterator iter =
+      client_id_to_shader_cache_.find(client_id);
+  // If the cache doesn't exist then this is an off the record profile.
+  if (iter == client_id_to_shader_cache_.end())
+    return;
+  iter->second->Cache(GetShaderPrefixKey(shader) + ":" + key, shader);
 }
 
 GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {
@@ -1223,23 +1206,6 @@ void GpuProcessHost::CreateChannelCache(int32_t client_id) {
   cache->set_shader_loaded_callback(base::Bind(&HostLoadedShader, host_id_));
 
   client_id_to_shader_cache_[client_id] = cache;
-}
-
-void GpuProcessHost::OnDestroyChannel(int32_t client_id) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::OnDestroyChannel");
-  client_id_to_shader_cache_.erase(client_id);
-}
-
-void GpuProcessHost::OnCacheShader(int32_t client_id,
-                                   const std::string& key,
-                                   const std::string& shader) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::OnCacheShader");
-  ClientIdToShaderCacheMap::iterator iter =
-      client_id_to_shader_cache_.find(client_id);
-  // If the cache doesn't exist then this is an off the record profile.
-  if (iter == client_id_to_shader_cache_.end())
-    return;
-  iter->second->Cache(GetShaderPrefixKey(shader) + ":" + key, shader);
 }
 
 }  // namespace content
