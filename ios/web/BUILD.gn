@@ -385,6 +385,8 @@ source_set("test_support") {
   sources = [
     "public/test/fakes/crw_test_js_injection_receiver.h",
     "public/test/fakes/crw_test_js_injection_receiver.mm",
+    "public/test/fakes/crw_test_web_state_observer.h",
+    "public/test/fakes/crw_test_web_state_observer.mm",
     "public/test/fakes/test_browser_state.cc",
     "public/test/fakes/test_browser_state.h",
     "public/test/fakes/test_java_script_dialog_presenter.h",
@@ -562,6 +564,7 @@ test("ios_web_unittests") {
     "web_state/ui/wk_web_view_configuration_provider_unittest.mm",
     "web_state/web_state_delegate_bridge_unittest.mm",
     "web_state/web_state_impl_unittest.mm",
+    "web_state/web_state_observer_bridge_unittest.mm",
     "web_state/web_view_internal_creation_util_unittest.mm",
     "web_state/wk_web_view_security_util_unittest.mm",
     "webui/crw_web_ui_manager_unittest.mm",
