@@ -394,9 +394,13 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
             break;
           case UpdateEngineClient::UPDATE_STATUS_ERROR:
           case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
-            Finish(is_checking_for_update_
-                       ? BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE
-                       : BaseScreenDelegate::UPDATE_ERROR_UPDATING);
+            if (is_checking_for_update_) {
+              Finish(BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE);
+            } else if (HasCriticalUpdate()) {
+              Finish(BaseScreenDelegate::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE);
+            } else {
+              Finish(BaseScreenDelegate::UPDATE_ERROR_UPDATING);
+            }
             break;
           default:
             NOTREACHED();

@@ -592,7 +592,11 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
                                   ->GetCurrentTimezoneID()));
 }
 
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
+// This test verifies that if WizardController fails to apply a non-critical
+// update before the OOBE is marked complete, it allows the user to proceed to
+// log in.
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
+                       ControlFlowErrorUpdateNonCriticalUpdate) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
@@ -621,6 +625,38 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
          BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
 
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
+}
+
+// This test verifies that if WizardController fails to apply a critical update
+// before the OOBE is marked complete, it goes back the network selection
+// screen and thus prevents the user from proceeding to log in.
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
+                       ControlFlowErrorUpdateCriticalUpdate) {
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  OnExit(*mock_network_screen_, BaseScreenDelegate::NETWORK_CONNECTED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  OnExit(*mock_eula_screen_, BaseScreenDelegate::EULA_ACCEPTED);
+
+  // Let update screen smooth time process (time = 0ms).
+  content::RunAllPendingInMessageLoop();
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(0);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(0);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(0);  // last transition
+  OnExit(*mock_update_screen_,
+         BaseScreenDelegate::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE);
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
@@ -712,6 +748,66 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
          BaseScreenDelegate::WRONG_HWID_WARNING_SKIPPED);
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
 }
+
+// This parameterized test class extends WizardControllerFlowTest to verify how
+// WizardController behaves if it fails to apply an update after the OOBE is
+// marked complete.
+class WizardControllerErrorUpdateAfterCompletedOobeTest
+    : public WizardControllerFlowTest,
+      public testing::WithParamInterface<BaseScreenDelegate::ExitCodes> {
+ protected:
+  WizardControllerErrorUpdateAfterCompletedOobeTest() = default;
+
+  void SetUpOnMainThread() override {
+    StartupUtils::MarkOobeCompleted();  // Pretend OOBE was complete.
+    WizardControllerFlowTest::SetUpOnMainThread();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerErrorUpdateAfterCompletedOobeTest);
+};
+
+// This test verifies that if WizardController fails to apply an update, either
+// critical or non-critical, after the OOBE is marked complete, it allows the
+// user to proceed to log in.
+IN_PROC_BROWSER_TEST_P(WizardControllerErrorUpdateAfterCompletedOobeTest,
+                       ControlFlowErrorUpdate) {
+  const BaseScreenDelegate::ExitCodes update_screen_exit_code = GetParam();
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  OnExit(*mock_network_screen_, BaseScreenDelegate::NETWORK_CONNECTED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  OnExit(*mock_eula_screen_, BaseScreenDelegate::EULA_ACCEPTED);
+
+  // Let update screen smooth time process (time = 0ms).
+  content::RunAllPendingInMessageLoop();
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
+  OnExit(*mock_update_screen_, update_screen_exit_code);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(0);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(0);
+  OnExit(*mock_auto_enrollment_check_screen_,
+         BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
+
+  EXPECT_NE(nullptr, ExistingUserController::current_controller());
+}
+
+INSTANTIATE_TEST_CASE_P(
+    WizardControllerErrorUpdateAfterCompletedOobe,
+    WizardControllerErrorUpdateAfterCompletedOobeTest,
+    testing::Values(BaseScreenDelegate::UPDATE_ERROR_UPDATING,
+                    BaseScreenDelegate::UPDATE_ERROR_UPDATING_CRITICAL_UPDATE));
 
 class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
  protected:
@@ -1217,7 +1313,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
 
 // TODO(khmel): Add tests for Arc OptIn flow.
 // http://crbug.com/651144
-static_assert(BaseScreenDelegate::EXIT_CODES_COUNT == 24,
+static_assert(BaseScreenDelegate::EXIT_CODES_COUNT == 25,
               "tests for new control flow are missing");
 
 }  // namespace chromeos

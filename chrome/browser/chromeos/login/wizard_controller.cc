@@ -740,13 +740,16 @@ void WizardController::OnUpdateErrorCheckingForUpdate() {
   OnUpdateCompleted();
 }
 
-void WizardController::OnUpdateErrorUpdating() {
-  // If there was an error while getting or applying the update,
-  // return to network selection screen.
-  // TODO(nkostylev): Show message to the user explaining update error.
-  // TODO(nkostylev): Update should be required during OOBE.
-  // Temporary fix, need to migrate to new API. http://crosbug.com/4321
-  OnUpdateCompleted();
+void WizardController::OnUpdateErrorUpdating(bool is_critical_update) {
+  // If there was an error while getting or applying the update, return to
+  // network selection screen if the OOBE isn't complete and the update is
+  // deemed critical. Otherwise, similar to OnUpdateErrorCheckingForUpdate(),
+  // we do not want to block users from being able to proceed to the login
+  // screen.
+  if (is_out_of_box_ && is_critical_update)
+    ShowNetworkScreen();
+  else
+    OnUpdateCompleted();
 }
 
 void WizardController::EnableUserImageScreenReturnToPreviousHack() {
@@ -1108,7 +1111,10 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       OnUpdateErrorCheckingForUpdate();
       break;
     case UPDATE_ERROR_UPDATING:
-      OnUpdateErrorUpdating();
+      OnUpdateErrorUpdating(false /* is_critical_update */);
+      break;
+    case UPDATE_ERROR_UPDATING_CRITICAL_UPDATE:
+      OnUpdateErrorUpdating(true /* is_critical_update */);
       break;
     case USER_IMAGE_SELECTED:
       OnUserImageSelected();

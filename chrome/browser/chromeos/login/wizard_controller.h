@@ -170,7 +170,7 @@ class WizardController : public BaseScreenDelegate,
   void OnUpdateCompleted();
   void OnEulaAccepted();
   void OnUpdateErrorCheckingForUpdate();
-  void OnUpdateErrorUpdating();
+  void OnUpdateErrorUpdating(bool is_critical_update);
   void OnUserImageSelected();
   void OnUserImageSkipped();
   void OnEnrollmentDone();
