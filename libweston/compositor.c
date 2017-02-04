@@ -2350,7 +2350,7 @@ output_repaint_timer_handler(void *data)
 
 	/* If repaint fails, we aren't going to get weston_output_finish_frame
 	 * to trigger a new repaint, so drop it from repaint and hope
-	 * something later schedules a successful repaint. */
+	 * something schedules a successful repaint later. */
 	ret = weston_output_repaint(output);
 	if (ret != 0)
 		goto err;
