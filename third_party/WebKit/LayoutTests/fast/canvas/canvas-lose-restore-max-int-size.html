@@ -1,71 +1,56 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-description("Tests to ensure correct behaviour of canvas loss and restoration when size is extremely large then, restored to a reasonable value.");
-
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
-
 var canvas = document.createElement('canvas')
-canvas.addEventListener('contextlost', contextLost);
-canvas.addEventListener('contextrestored', contextRestored);
 var ctx = canvas.getContext('2d');
-var lostEventHasFired = false;
-verifyContextLost(false);
 
-// WebIDL defines width and height as int. 2147483647 is int max.
-var extremelyLargeNumber = 2147483647;
-canvas.width = extremelyLargeNumber;
-canvas.height = extremelyLargeNumber;
-verifyContextLost(true);
-canvas.width = extremelyLargeNumber;
-verifyContextLost(true);
-canvas.width = 100;
-canvas.height = 100;
-verifyContextLost(true); // Restoration is async.
-// Restore a sane dimension
-
-function verifyContextLost(shouldBeLost) {
+function verifyContextLost(shouldBeLost, message) {
     // Verify context loss experimentally as well as isContextLost()
     ctx.fillStyle = '#0f0';
     ctx.fillRect(0, 0, 1, 1);
-    contextLostTest = ctx.getImageData(0, 0, 1, 1).data[1] == 0;
-    if (shouldBeLost) {
-        shouldBeTrue('contextLostTest');
-        shouldBeTrue('ctx.isContextLost()');
-    } else {
-        shouldBeFalse('contextLostTest');
-        shouldBeFalse('ctx.isContextLost()');
-    }
+    var contextLostTest = ctx.getImageData(0, 0, 1, 1).data[1] == 0;
+    assert_equals(contextLostTest, shouldBeLost, message + ': Ability to read a write to context');
+    assert_equals(ctx.isContextLost(), shouldBeLost, message + ': Context lost state');
 }
 
-function contextLost() {
-    if (lostEventHasFired) {
-        testFailed('Context lost event was dispatched more than once.');
-    } else {
-        testPassed('Graphics context lost event dispatched.');
-    }
-    lostEventHasFired = true;
-    verifyContextLost(true);
-}
+test(() => {
+    verifyContextLost(false, 'initial state');
+}, 'Context should initially not be lost');
 
-function contextRestored() {
-    if (lostEventHasFired) {
-        testPassed('Context restored event dispatched after context lost.');
-    } else {
-        testFailed('Context restored event was dispatched before a context lost event.');
-    }
-    verifyContextLost(false);
-	if (window.testRunner) {
-    	testRunner.notifyDone(); 
-    }
-}
+test(() => {
+    // WebIDL defines width and height as int. 2147483647 is int max.
+    var extremelyLargeNumber = 2147483647;
+    canvas.width = extremelyLargeNumber;
+    canvas.height = extremelyLargeNumber;
+    verifyContextLost(true, 'extremely large height set');
+    canvas.width = extremelyLargeNumber;
+    verifyContextLost(true, 'extremely large width set');
+    // Restore a sane dimension
+    canvas.width = 100;
+    canvas.height = 100;
+    // Restoration is async.
+    verifyContextLost(true, 'reasonable size set');
+}, 'Context should be lost when size is set to an extremely large number and then restored when set to a reasonable number');
+
+var lostEventHasFired = false;
+promise_test(() => {
+    return new Promise(resolve => {
+        canvas.addEventListener('contextlost', () => {
+            assert_false(lostEventHasFired, 'contextLost should only be fired once');
+            lostEventHasFired = true;
+            verifyContextLost(true);
+            resolve();
+        });
+    });
+}, 'contextlost event should fire after size is set to extremely large number');
+
+promise_test(() => {
+    return new Promise(resolve => {
+        canvas.addEventListener('contextrestored', () => {
+            assert_true(lostEventHasFired, 'Lost context event should fire before resorted context event');
+            verifyContextLost(false);
+            resolve();
+        });
+    });
+}, 'contextrestored event should fire after size is restored to a reasonable number');
 </script>
-</body>
-</html>
