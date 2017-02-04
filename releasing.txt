@@ -10,15 +10,16 @@ To make a release of Weston and/or Wayland, follow these steps.
       release with any needed protocol updates.
 
   2.  Update the first stanza of configure.ac to the intended versions
-      for weston and libweston.
+      for Weston and libweston.
 
       For Weston's x.y.0 releases, if libweston_major_version is greater than
       weston_major_version, bump the Weston version numbers (major, minor,
       micro) to match the libweston version numbers (major, minor, patch).
 
-      Additionally for all Weston releases, if libweston version
-      major.minor.patch is less than Weston version major.minor.micro, bump
-      libweston version numbers to match the Weston version numbers.
+      Additionally for all Weston releases, if libweston's
+      major.minor.patch version is less than Weston's major.minor.micro
+      version, bump libweston version numbers to match the Weston
+      version numbers.
 
       Weston releases are made with the Weston version number, not with the
       libweston version number.
@@ -61,11 +62,10 @@ To make a release of Weston and/or Wayland, follow these steps.
 
       $ release.sh .
 
-      For wayland, also publish the publican documentation to
+      For Wayland, also publish the publican documentation to
       wayland.freedesktop.org:
 
       $ ./publish-doc
-
 
   5.  Compose the release announcements.  The script will generate
       *.x.y.z.announce files with a list of changes and tags, one for
@@ -104,10 +104,10 @@ development early).
     $ git branch x.y [sha]
     $ git push origin x.y
 
-The master branch configure.ac version should always be (at least)
-x.y.90, with x.y being the most recent stable branch.  Stable branch
-configure version is just whatever was most recently released from
-that branch.
+The master branch's configure.ac version should always be (at least)
+x.y.90, with x.y being the most recent stable branch.  The stable
+branch's configure.ac version is just whatever was most recently
+released from that branch.
 
 For stable branches, we commit fixes to master first, then cherry-pick
 them back to the stable branch.
