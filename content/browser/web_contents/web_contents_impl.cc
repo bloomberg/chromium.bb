@@ -593,9 +593,12 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
 
   FrameTreeNode* new_root = new_contents->GetFrameTree()->root();
 
-  if (!params.opener_suppressed && opener) {
-    new_root->SetOpener(opener);
-    new_contents->created_with_opener_ = true;
+  if (opener) {
+    new_root->SetOriginalOpener(opener);
+    if (!params.opener_suppressed) {
+      new_root->SetOpener(opener);
+      new_contents->created_with_opener_ = true;
+    }
   }
 
   // If the opener is sandboxed, a new popup must inherit the opener's sandbox
@@ -3118,6 +3121,15 @@ bool WebContentsImpl::HasOpener() const {
 
 WebContentsImpl* WebContentsImpl::GetOpener() const {
   FrameTreeNode* opener_ftn = frame_tree_.root()->opener();
+  return opener_ftn ? FromFrameTreeNode(opener_ftn) : nullptr;
+}
+
+bool WebContentsImpl::HasOriginalOpener() const {
+  return GetOriginalOpener() != NULL;
+}
+
+WebContents* WebContentsImpl::GetOriginalOpener() const {
+  FrameTreeNode* opener_ftn = frame_tree_.root()->original_opener();
   return opener_ftn ? FromFrameTreeNode(opener_ftn) : nullptr;
 }
 

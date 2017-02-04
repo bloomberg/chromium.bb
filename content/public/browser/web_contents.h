@@ -632,11 +632,22 @@ class WebContents : public PageNavigator,
   // to see what it should do.
   virtual bool FocusLocationBarByDefault() = 0;
 
-  // Does this have an opener associated with it?
+  // Does this have an opener (corresponding to window.opener in JavaScript)
+  // associated with it?
   virtual bool HasOpener() const = 0;
 
   // Returns the opener if HasOpener() is true, or nullptr otherwise.
   virtual WebContents* GetOpener() const = 0;
+
+  // Returns true if this WebContents was opened by another WebContents, even
+  // if the opener was suppressed. In contrast to HasOpener/GetOpener, the
+  // original opener doesn't reflect window.opener which can be suppressed or
+  // updated.
+  virtual bool HasOriginalOpener() const = 0;
+
+  // Returns the original opener if HasOriginalOpener() is true, or nullptr
+  // otherwise.
+  virtual WebContents* GetOriginalOpener() const = 0;
 
   typedef base::Callback<void(
       int, /* id */

@@ -114,10 +114,18 @@ class CONTENT_EXPORT FrameTreeNode {
 
   FrameTreeNode* opener() const { return opener_; }
 
+  FrameTreeNode* original_opener() const { return original_opener_; }
+
   // Assigns a new opener for this node and, if |opener| is non-null, registers
   // an observer that will clear this node's opener if |opener| is ever
   // destroyed.
   void SetOpener(FrameTreeNode* opener);
+
+  // Assigns the initial opener for this node, and if |opener| is non-null,
+  // registers an observer that will clear this node's opener if |opener| is
+  // ever destroyed.
+  // It is not possible to change the opener once it was set.
+  void SetOriginalOpener(FrameTreeNode* opener);
 
   FrameTreeNode* child_at(size_t index) const {
     return children_[index].get();
@@ -340,6 +348,14 @@ class CONTENT_EXPORT FrameTreeNode {
   // changes or when this node is destroyed.  It is also cleared if |opener_|
   // is disowned.
   std::unique_ptr<OpenerDestroyedObserver> opener_observer_;
+
+  // The frame that opened this frame, if any. Contrary to opener_, this
+  // cannot be changed unless the original opener is destroyed.
+  FrameTreeNode* original_opener_;
+
+  // An observer that clears this node's |original_opener_| if the opener is
+  // destroyed.
+  std::unique_ptr<OpenerDestroyedObserver> original_opener_observer_;
 
   // The immediate children of this specific frame.
   std::vector<std::unique_ptr<FrameTreeNode>> children_;

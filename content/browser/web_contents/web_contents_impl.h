@@ -390,6 +390,8 @@ class CONTENT_EXPORT WebContentsImpl
   bool GotResponseToLockMouseRequest(bool allowed) override;
   bool HasOpener() const override;
   WebContentsImpl* GetOpener() const override;
+  bool HasOriginalOpener() const override;
+  WebContents* GetOriginalOpener() const override;
   void DidChooseColorInColorChooser(SkColor color) override;
   void DidEndColorChooser() override;
   int DownloadImage(const GURL& url,

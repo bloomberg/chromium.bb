@@ -798,12 +798,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DisownSubframeOpener) {
                             ->GetFrameTree()
                             ->root();
   EXPECT_EQ(root, root->child_at(0)->opener());
+  EXPECT_EQ(nullptr, root->child_at(0)->original_opener());
 
   // Now disown the frame's opener.  Shouldn't crash.
   EXPECT_TRUE(ExecuteScript(shell(), "window.frames[0].opener = null;"));
 
   // Check that the subframe's opener in the browser process is disowned.
   EXPECT_EQ(nullptr, root->child_at(0)->opener());
+  EXPECT_EQ(nullptr, root->child_at(0)->original_opener());
 }
 
 // Check that window.name is preserved for top frames when they navigate
@@ -2271,7 +2273,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, UpdateOpener) {
           ->GetFrameTree()
           ->root();
   EXPECT_EQ(root, foo_root->opener());
+  EXPECT_EQ(root, foo_root->original_opener());
   EXPECT_EQ(root, bar_root->opener());
+  EXPECT_EQ(root, bar_root->original_opener());
 
   // From the bar process, use window.open to update foo's opener to point to
   // bar. This is allowed since bar is same-origin with foo's opener.  Use
@@ -2288,6 +2292,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, UpdateOpener) {
 
   // Check that updated opener propagated to the browser process.
   EXPECT_EQ(bar_root, foo_root->opener());
+  EXPECT_EQ(root, foo_root->original_opener());
 
   // Check that foo's opener was updated in foo's process. Send a postMessage
   // to the opener and check that the right window (bar_shell) receives it.
@@ -2305,6 +2310,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, UpdateOpener) {
   // in the browser process.
   EXPECT_TRUE(ExecuteScript(foo_shell, "window.opener = window;"));
   EXPECT_EQ(bar_root, foo_root->opener());
+  EXPECT_EQ(root, foo_root->original_opener());
 }
 
 // Tests that when a popup is opened, which is then navigated cross-process and

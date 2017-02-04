@@ -534,8 +534,99 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   ASSERT_NE(popup_browser, browser());
 
   // Showing an alert will raise the tab over the popup.
+#if !defined(OS_MACOSX)
+  // Mac doesn't activate the browser during modal dialogs, see
+  // https://crbug.com/687732 for details.
+  ui_test_utils::BrowserActivationWaiter alert_waiter(browser());
+#endif
   tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
   app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+#if !defined(OS_MACOSX)
+  if (chrome::FindLastActive() != browser())
+    alert_waiter.WaitForActivation();
+#endif
+
+  // Verify that after the dialog is closed, the popup is in front again.
+  ASSERT_TRUE(dialog->IsJavaScriptModalDialog());
+  app_modal::JavaScriptAppModalDialog* js_dialog =
+      static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
+
+  ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+  js_dialog->native_dialog()->AcceptAppModalDialog();
+  waiter.WaitForActivation();
+  ASSERT_EQ(popup_browser, chrome::FindLastActive());
+}
+
+// Verify that setting the window.opener doesn't interfere with popup blocking.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderWindowOpener) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  GURL url(
+      embedded_test_server()->GetURL("/popup_blocker/popup-window-open.html"));
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingDefaultScope(url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                      std::string(), CONTENT_SETTING_ALLOW);
+
+  NavigateAndCheckPopupShown(url, ExpectPopup);
+
+  Browser* popup_browser = chrome::FindLastActive();
+  ASSERT_NE(popup_browser, browser());
+
+  // Modify window.opener in the popup.
+  WebContents* popup = popup_browser->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(popup_browser->is_type_popup());
+  content::ExecuteScriptAndGetValue(popup->GetMainFrame(),
+                                    "window.open('', 'mywindow')");
+
+  // Showing an alert will raise the tab over the popup.
+#if !defined(OS_MACOSX)
+  // Mac doesn't activate the browser during modal dialogs, see
+  // https://crbug.com/687732 for details.
+  ui_test_utils::BrowserActivationWaiter alert_waiter(browser());
+#endif
+  tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
+  app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+#if !defined(OS_MACOSX)
+  if (chrome::FindLastActive() != browser())
+    alert_waiter.WaitForActivation();
+#endif
+
+  // Verify that after the dialog is closed, the popup is in front again.
+  ASSERT_TRUE(dialog->IsJavaScriptModalDialog());
+  app_modal::JavaScriptAppModalDialog* js_dialog =
+      static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
+
+  ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+  js_dialog->native_dialog()->AcceptAppModalDialog();
+  waiter.WaitForActivation();
+  ASSERT_EQ(popup_browser, chrome::FindLastActive());
+}
+
+// Verify that popups without an opener don't interfere with popup blocking.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderNoOpener) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  GURL url(embedded_test_server()->GetURL(
+      "/popup_blocker/popup-window-open-noopener.html"));
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingDefaultScope(url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                      std::string(), CONTENT_SETTING_ALLOW);
+
+  NavigateAndCheckPopupShown(url, ExpectPopup);
+
+  Browser* popup_browser = chrome::FindLastActive();
+  ASSERT_NE(popup_browser, browser());
+
+  // Showing an alert will raise the tab over the popup.
+#if !defined(OS_MACOSX)
+  // Mac doesn't activate the browser during modal dialogs, see
+  // https://crbug.com/687732 for details.
+  ui_test_utils::BrowserActivationWaiter alert_waiter(browser());
+#endif
+  tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
+  app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+#if !defined(OS_MACOSX)
+  if (chrome::FindLastActive() != browser())
+    alert_waiter.WaitForActivation();
+#endif
 
   // Verify that after the dialog is closed, the popup is in front again.
   ASSERT_TRUE(dialog->IsJavaScriptModalDialog());
@@ -583,11 +674,20 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   ASSERT_NE(popup_browser, browser());
 
   // Showing an alert will raise the tab over the popup.
+#if !defined(OS_MACOSX)
+  // Mac doesn't activate the browser during modal dialogs, see
+  // https://crbug.com/687732 for details.
+  ui_test_utils::BrowserActivationWaiter alert_waiter(browser());
+#endif
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
   js_helper->SetDialogShownCallbackForTesting(runner->QuitClosure());
   tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
   runner->Run();
+#if !defined(OS_MACOSX)
+  if (chrome::FindLastActive() != browser())
+    alert_waiter.WaitForActivation();
+#endif
 
   // Verify that after the dialog is closed, the popup is in front again.
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
@@ -616,10 +716,19 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   ASSERT_NE(popup_browser, browser());
 
   // Showing an alert will raise the tab over the popup.
+#if !defined(OS_MACOSX)
+  // Mac doesn't activate the browser during modal dialogs, see
+  // https://crbug.com/687732 for details.
+  ui_test_utils::BrowserActivationWaiter alert_waiter(browser());
+#endif
   tab->GetMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16("var o = document.createElement('object'); o.data = "
                         "'/alert_dialog.pdf'; document.body.appendChild(o);"));
   app_modal::AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
+#if !defined(OS_MACOSX)
+  if (chrome::FindLastActive() != browser())
+    alert_waiter.WaitForActivation();
+#endif
 
   // Verify that after the dialog was closed, the popup is in front again.
   ASSERT_TRUE(dialog->IsJavaScriptModalDialog());
@@ -650,12 +759,21 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderViaHTTPAuth) {
   content::NavigationController* controller = &tab->GetController();
   observer.Register(content::Source<content::NavigationController>(controller));
   {
+#if !defined(OS_MACOSX)
+    // Mac doesn't activate the browser during modal dialogs, see
+    // https://crbug.com/687732 for details.
+    ui_test_utils::BrowserActivationWaiter raised_waiter(browser());
+#endif
     WindowedAuthNeededObserver auth_needed_observer(controller);
     tab->GetMainFrame()->ExecuteJavaScriptForTests(
         base::UTF8ToUTF16("var f = document.createElement('iframe'); f.src = "
                           "'/auth-basic'; document.body.appendChild(f);"));
     auth_needed_observer.Wait();
     ASSERT_FALSE(observer.handlers().empty());
+#if !defined(OS_MACOSX)
+    if (chrome::FindLastActive() != browser())
+      raised_waiter.WaitForActivation();
+#endif
   }
 
   {

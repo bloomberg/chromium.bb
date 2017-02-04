@@ -36,7 +36,7 @@ AppModalDialogHelper::AppModalDialogHelper(content::WebContents* dialog_host)
     content::WebContents* active_web_contents =
         active_browser->tab_strip_model()->GetActiveWebContents();
     if (active_browser->is_type_popup() && active_web_contents &&
-        active_web_contents->GetOpener() == actual_host) {
+        active_web_contents->GetOriginalOpener() == actual_host) {
       // It's indeed a popup from the dialog opening WebContents. Store it, so
       // we can focus it later.
       popup_ = active_web_contents;

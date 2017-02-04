@@ -52,16 +52,23 @@ void RecordUniqueNameLength(size_t length) {
 // owner's opener if the opener is destroyed.
 class FrameTreeNode::OpenerDestroyedObserver : public FrameTreeNode::Observer {
  public:
-  OpenerDestroyedObserver(FrameTreeNode* owner) : owner_(owner) {}
+  OpenerDestroyedObserver(FrameTreeNode* owner, bool observing_original_opener)
+      : owner_(owner), observing_original_opener_(observing_original_opener) {}
 
   // FrameTreeNode::Observer
   void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override {
-    CHECK_EQ(owner_->opener(), node);
-    owner_->SetOpener(nullptr);
+    if (observing_original_opener_) {
+      CHECK_EQ(owner_->original_opener(), node);
+      owner_->SetOriginalOpener(nullptr);
+    } else {
+      CHECK_EQ(owner_->opener(), node);
+      owner_->SetOpener(nullptr);
+    }
   }
 
  private:
   FrameTreeNode* owner_;
+  bool observing_original_opener_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenerDestroyedObserver);
 };
@@ -96,6 +103,8 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
       parent_(parent),
       opener_(nullptr),
       opener_observer_(nullptr),
+      original_opener_(nullptr),
+      original_opener_observer_(nullptr),
       has_committed_real_load_(false),
       replication_state_(
           scope,
@@ -128,6 +137,8 @@ FrameTreeNode::~FrameTreeNode() {
 
   if (opener_)
     opener_->RemoveObserver(opener_observer_.get());
+  if (original_opener_)
+    original_opener_->RemoveObserver(original_opener_observer_.get());
 
   g_frame_tree_node_id_map.Get().erase(frame_tree_node_id_);
 
@@ -209,8 +220,21 @@ void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
 
   if (opener_) {
     if (!opener_observer_)
-      opener_observer_ = base::MakeUnique<OpenerDestroyedObserver>(this);
+      opener_observer_ = base::MakeUnique<OpenerDestroyedObserver>(this, false);
     opener_->AddObserver(opener_observer_.get());
+  }
+}
+
+void FrameTreeNode::SetOriginalOpener(FrameTreeNode* opener) {
+  DCHECK(!original_opener_ || !opener);
+
+  original_opener_ = opener;
+
+  if (original_opener_) {
+    DCHECK(!original_opener_observer_);
+    original_opener_observer_ =
+        base::MakeUnique<OpenerDestroyedObserver>(this, true);
+    original_opener_->AddObserver(original_opener_observer_.get());
   }
 }
 
