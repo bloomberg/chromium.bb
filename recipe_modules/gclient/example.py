@@ -12,6 +12,7 @@ DEPS = [
 TEST_CONFIGS = [
   'android',
   'android_bare',
+  'android_vr_apks',
   'blink',
   'boringssl',
   'build_internal',
