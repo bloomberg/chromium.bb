@@ -75,27 +75,21 @@ const unsigned char OD_CHROMA_QM_Q4[2][OD_QM_SIZE] = {
 /* No interpolation, always use od_flat_qm_q4, but use a different scale for
    each plane.
    FIXME: Add interpolation and properly tune chroma. */
-const od_qm_entry OD_DEFAULT_QMS[2][3][OD_NPLANES_MAX] = {
- /* Masking disabled */
- {{{4, 256, OD_LUMA_QM_Q4[OD_MASKING_DISABLED]},
-   {4, 448, OD_CHROMA_QM_Q4[OD_MASKING_DISABLED]},
-   {4, 320, OD_CHROMA_QM_Q4[OD_MASKING_DISABLED]}},
-  {{318, 256, OD_LUMA_QM_Q4[OD_MASKING_DISABLED]},
-   {318, 140, OD_CHROMA_QM_Q4[OD_MASKING_DISABLED]},
-   {318, 100, OD_CHROMA_QM_Q4[OD_MASKING_DISABLED]}},
-  {{0, 0, NULL},
-   {0, 0, NULL},
-   {0, 0, NULL}}},
- /* Masking enabled */
- {{{4, 256, OD_LUMA_QM_Q4[OD_MASKING_ENABLED]},
-   {4, 448, OD_CHROMA_QM_Q4[OD_MASKING_ENABLED]},
-   {4, 320, OD_CHROMA_QM_Q4[OD_MASKING_ENABLED]}},
-  {{318, 256, OD_LUMA_QM_Q4[OD_MASKING_ENABLED]},
-   {318, 140, OD_CHROMA_QM_Q4[OD_MASKING_ENABLED]},
-   {318, 100, OD_CHROMA_QM_Q4[OD_MASKING_ENABLED]}},
-  {{0, 0, NULL},
-   {0, 0, NULL},
-   {0, 0, NULL}}}
+const od_qm_entry OD_DEFAULT_QMS[2][2][OD_NPLANES_MAX] = {
+  /* Masking disabled */
+  { { { 4, 256, OD_LUMA_QM_Q4[OD_MASKING_DISABLED] },
+      { 4, 256, OD_CHROMA_QM_Q4[OD_MASKING_DISABLED] },
+      { 4, 256, OD_CHROMA_QM_Q4[OD_MASKING_DISABLED] } },
+    { { 0, 0, NULL},
+      { 0, 0, NULL},
+      { 0, 0, NULL} } },
+  /* Masking enabled */
+  { { { 4, 256, OD_LUMA_QM_Q4[OD_MASKING_ENABLED] },
+      { 4, 256, OD_CHROMA_QM_Q4[OD_MASKING_ENABLED] },
+      { 4, 256, OD_CHROMA_QM_Q4[OD_MASKING_ENABLED] } },
+    { { 0, 0, NULL},
+      { 0, 0, NULL},
+      { 0, 0, NULL} } }
 };
 
 /* Constants for the beta parameter, which controls how activity masking is

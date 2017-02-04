@@ -145,7 +145,7 @@ typedef struct od_qm_entry {
   const unsigned char *qm_q4;
 } od_qm_entry;
 
-extern const od_qm_entry OD_DEFAULT_QMS[2][3][OD_NPLANES_MAX];
+extern const od_qm_entry OD_DEFAULT_QMS[2][2][OD_NPLANES_MAX];
 
 void od_adapt_pvq_ctx_reset(od_pvq_adapt_ctx *state, int is_keyframe);
 int od_pvq_size_ctx(int n);
