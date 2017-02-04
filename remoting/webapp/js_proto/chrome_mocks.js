@@ -76,6 +76,8 @@ chromeMocks.runtime.Port.prototype.postMessage = function(message) {};
 /** @type {chromeMocks.Event} */
 chromeMocks.runtime.onMessage = new chromeMocks.Event();
 
+/** @type {chromeMocks.Event} */
+chromeMocks.runtime.onMessageExternal = new chromeMocks.Event();
 
 /** @type {chromeMocks.Event} */
 chromeMocks.runtime.onSuspend = new chromeMocks.Event();

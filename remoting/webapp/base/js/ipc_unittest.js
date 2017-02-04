@@ -81,12 +81,25 @@ QUnit.test(
     var promise = base.Ipc.invoke('foo', 'hello', 'world').then(function() {
       assert.ok(false, 'Requests from another extension should fail.');
     }).catch(function(error) {
-      assert.equal(error, base.Ipc.Error.INVALID_REQUEST_ORIGIN);
+      assert.equal(error, base.Ipc.Error.UNAUTHORIZED_REQUEST_ORIGIN);
     });
     chrome.runtime.id = oldId;
     return promise;
 });
 
+QUnit.test(
+  'send() should not raise exceptions for externally-accessible methods',
+  function(assert) {
+    var handler = function(request) { return request; };
+    var oldId = chrome.runtime.id;
+    ipc_.register('foo', handler, true);
+    chrome.runtime.id = 'foreign-extension';
+    var promise = base.Ipc.invoke('foo', 'payload').then(function(response) {
+      assert.equal(response, 'payload');
+    });
+    chrome.runtime.id = oldId;
+    return promise;
+});
 
 QUnit.test(
   'send() should pass exceptions raised by the handler to the caller',
@@ -126,6 +139,31 @@ QUnit.test(
       assert.deepEqual(results[3], [1,2]);
       assert.deepEqual(results[4], {key1: 'value1', key2: 'value2'});
     });
+});
+
+QUnit.test(
+  'send() supports asynchronous handlers',
+  function(assert) {
+    var success = function() {
+      return new Promise(function(resolve) { resolve('result'); });
+    };
+    var failure = function() {
+      return new Promise(function() {
+        throw new Error('Whatever can go wrong, will go wrong.');
+      });
+    };
+    ipc_.register('foo', success);
+    ipc_.register('bar', failure);
+    var testCases = [];
+    testCases.push(base.Ipc.invoke('foo').then(function(response) {
+      assert.equal(response, 'result');
+    }));
+    testCases.push(base.Ipc.invoke('bar').then(function() {
+      assert.ok(false, 'bar method expected to fail.');
+    }).catch(function(error) {
+      assert.equal(error, 'Whatever can go wrong, will go wrong.');
+    }))
+    return Promise.all(testCases);
 });
 
 })();

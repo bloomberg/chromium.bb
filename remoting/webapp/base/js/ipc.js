@@ -49,17 +49,19 @@ var base = base || {};
  */
 base.Ipc = function() {
   console.assert(instance_ === null, 'Duplicate base.Ipc constructor.');
-  /** @private {!Object<Function>} */
+  /** @private {!Object<{allowExternal: boolean, method: Function>} */
   this.handlers_ = {};
   this.onMessageHandler_ =
       /** @type {function(*, MessageSender, function (*))} */ (
           this.onMessage_.bind(this));
   chrome.runtime.onMessage.addListener(this.onMessageHandler_);
+  chrome.runtime.onMessageExternal.addListener(this.onMessageHandler_);
 };
 
 /** @private */
 base.Ipc.prototype.dispose_ = function() {
   chrome.runtime.onMessage.removeListener(this.onMessageHandler_);
+  chrome.runtime.onMessageExternal.removeListener(this.onMessageHandler_);
 };
 
 /**
@@ -69,8 +71,7 @@ base.Ipc.prototype.dispose_ = function() {
  */
 base.Ipc.Error = {
   UNSUPPORTED_REQUEST_TYPE: 'Unsupported method name.',
-  INVALID_REQUEST_ORIGIN:
-      'base.Ipc only accept incoming requests from the same extension.'
+  UNAUTHORIZED_REQUEST_ORIGIN: 'Unauthorized origin.'
 };
 
 /**
@@ -90,15 +91,21 @@ base.Ipc.Request_ = function(methodName, params) {
  * @param {string} methodName
  * @param {Function} handler The handler can be invoked by calling
  *   base.Ipc.invoke(|methodName|, arg1, arg2, ...)
- * Async handlers that return promises are currently not supported.
+ * @param {boolean=} opt_allowExternal True if the message is permitted from
+ *   origins listed in externally_connectable; false or undefined if the
+ *   message is only permitted from the same app.
  * @return {boolean} Whether the handler is successfully registered.
  */
-base.Ipc.prototype.register = function(methodName, handler) {
+  base.Ipc.prototype.register = function(methodName, handler,
+                                         opt_allowExternal) {
   if (methodName in this.handlers_) {
     console.error('service ' + methodName + ' is already registered.');
     return false;
   }
-  this.handlers_[methodName] = handler;
+    this.handlers_[methodName] = {
+      allowExternal: Boolean(opt_allowExternal),
+      method: handler
+    };
   return true;
 };
 
@@ -113,6 +120,8 @@ base.Ipc.prototype.unregister = function(methodName) {
  * @param {base.Ipc.Request_} message
  * @param {!MessageSender} sender
  * @param {function(*): void} sendResponse
+ * @return {boolean} True if an asynchronous response is pending; false if the
+ *   response (if any) has already been sent.
  */
 base.Ipc.prototype.onMessage_ = function(message, sender, sendResponse) {
   var methodName = message.methodName;
@@ -120,27 +129,35 @@ base.Ipc.prototype.onMessage_ = function(message, sender, sendResponse) {
     return;
   }
 
-  if (sender.id !== chrome.runtime.id) {
-    sendResponse({error: base.Ipc.Error.INVALID_REQUEST_ORIGIN});
-    return;
-  }
-
-  var remoteMethod =
-      /** @type {function(*):void} */ (this.handlers_[methodName]);
-  if (!remoteMethod) {
+  var handler = this.handlers_[methodName];
+  if (!handler) {
     sendResponse({error: base.Ipc.Error.UNSUPPORTED_REQUEST_TYPE});
     return;
   }
 
+  if (!handler.allowExternal && sender.id !== chrome.runtime.id) {
+    sendResponse({error: base.Ipc.Error.UNAUTHORIZED_REQUEST_ORIGIN});
+    return;
+  }
+
   try {
-    sendResponse(remoteMethod.apply(null, message.params));
+    var result = handler.method.apply(null, message.params);
+    if (result instanceof Promise) {
+      result.
+          then(function(response) { sendResponse(response); }).
+          catch(function(e) { sendResponse({error: e.message}) });
+      return true;
+    } else {
+      sendResponse(result);
+    }
   } catch (/** @type {Error} */ e) {
     sendResponse({error: e.message});
   }
+  return false;
 };
 
 /**
- * Invokes a method on a remote page
+ * Invokes a method on another page within this extension.
  *
  * @param {string} methodName
  * @param {...} var_args

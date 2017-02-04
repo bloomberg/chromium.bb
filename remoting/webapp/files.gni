@@ -423,6 +423,7 @@ remoting_webapp_background_html_js_files = [
   "crd/js/activation_handler.js",
   "crd/js/app_launcher.js",
   "crd/js/background.js",
+  "crd/js/options_export.js",
 ]
 
 # All the JavaScript files required by background.html.
