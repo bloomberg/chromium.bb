@@ -95,7 +95,7 @@ function test()
             function suggestionsShown(words)
             {
                 InspectorTest.addResult("Suggestions displayed on ':' symbol typed in:");
-                InspectorTest.addResult("[" + words.map(item => item.title).join(", ") + "]");
+                InspectorTest.addResult("[" + words.map(item => item.text).join(", ") + "]");
                 next();
             }
         },

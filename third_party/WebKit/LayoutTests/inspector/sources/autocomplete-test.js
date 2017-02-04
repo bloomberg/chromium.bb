@@ -24,7 +24,7 @@ function initialize_AutocompleteTest()
             InspectorTest.addResult("========= Selection In Editor =========");
             InspectorTest.dumpTextWithSelection(textEditor);
             InspectorTest.addResult("======= Autocomplete Suggestions =======");
-            InspectorTest.addResult("[" + words.map(item => item.title).join(", ") + "]");
+            InspectorTest.addResult("[" + words.map(item => item.text).join(", ") + "]");
             resolve();
         }
         return promise;

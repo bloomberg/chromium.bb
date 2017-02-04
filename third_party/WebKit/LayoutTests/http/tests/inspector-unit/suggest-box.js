@@ -15,23 +15,23 @@ var suggestBox = new UI.SuggestBox(delegate);
 TestRunner.addResult("");
 TestRunner.addResult("Testing that the first item is selected.");
 suggestBox.updateSuggestions(new AnchorBox(50, 50, 400, 400), [
-    {title: "First"},
-    {title: "Hello"},
-    {title: "The best suggestion"}], true, true, "e");
+    {text: "First"},
+    {text: "Hello"},
+    {text: "The best suggestion"}], true, true, "e");
 
 TestRunner.addResult("");
 TestRunner.addResult("Testing that no item is selected.");
 suggestBox.updateSuggestions(new AnchorBox(50, 50, 400, 400), [
-    {title: "First"},
-    {title: "Hello", priority: 2},
-    {title: "The best suggestion", priority: 5}], false, true, "e");
+    {text: "First"},
+    {text: "Hello", priority: 2},
+    {text: "The best suggestion", priority: 5}], false, true, "e");
 
 TestRunner.addResult("");
 TestRunner.addResult("Testing that highest priority item is selected.");
 suggestBox.updateSuggestions(new AnchorBox(50, 50, 400, 400), [
-    {title: "First"},
-    {title: "Hello", priority: 2},
-    {title: "The best suggestion", priority: 5}], true, true, "e");
+    {text: "First"},
+    {text: "Hello", priority: 2},
+    {text: "The best suggestion", priority: 5}], true, true, "e");
 
 TestRunner.addResult("");
 TestRunner.addResult("Testing that arrow keys can be used for selection.");
@@ -48,8 +48,8 @@ suggestBox.keyPressed(TestRunner.createKeyEvent("Enter"));
 TestRunner.addResult("");
 TestRunner.addResult("Testing that highest priority item is selected.");
 suggestBox.updateSuggestions(new AnchorBox(50, 50, 400, 400), [
-    {title: "First"},
-    {title: "Hello", priority: 2},
-    {title: "The best suggestion", priority: 5}], true, true, "e");
+    {text: "First"},
+    {text: "Hello", priority: 2},
+    {text: "The best suggestion", priority: 5}], true, true, "e");
 
 TestRunner.completeTest();

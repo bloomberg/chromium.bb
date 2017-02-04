@@ -4,44 +4,44 @@ Completions:
 {
     priority : 2
     subtitle : "C"
-    title : "instanceMember"
+    text : "instanceMember"
 }
 {
     priority : 2
-    title : "member1"
+    text : "member1"
 }
 {
     priority : 3
-    title : "EPriorityMember"
+    text : "EPriorityMember"
 }
 {
     priority : 2
-    title : "cMember"
+    text : "cMember"
 }
 {
     priority : 2
-    title : "shadowedMember"
+    text : "shadowedMember"
 }
 {
     priority : 4
     subtitle : "B"
-    title : "ePriorityMember"
+    text : "ePriorityMember"
 }
 {
     priority : 2
-    title : "bMember"
+    text : "bMember"
 }
 {
     priority : 2
-    title : "shadowedMember"
+    text : "shadowedMember"
 }
 {
     priority : 2
     subtitle : "A"
-    title : "aMember"
+    text : "aMember"
 }
 {
     priority : 2
-    title : "shadowedMember"
+    text : "shadowedMember"
 }
 

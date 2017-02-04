@@ -1,6 +1,6 @@
 TestRunner.addResult("This tests if the TextPrompt autocomplete works properly.");
 
-var suggestions = ["heyoo", "hey it's a suggestion", "hey another suggestion"].map(s => ({title: s}));
+var suggestions = ["heyoo", "hey it's a suggestion", "hey another suggestion"].map(s => ({text: s}));
 var prompt = new UI.TextPrompt();
 prompt.initialize(() => Promise.resolve(suggestions));
 var div = document.createElement("div");

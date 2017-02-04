@@ -91,7 +91,7 @@ function test()
 
     function checkAgainstGolden(golden, antiGolden, continuation, completions)
     {
-        var suggestions = new Set(completions.map(s => s.title))
+        var suggestions = new Set(completions.map(s => s.text))
         var failed = false;
         for (var i = 0; i < golden.length; ++i) {
             if (!suggestions.has(golden[i])) {

@@ -57,12 +57,12 @@ function test()
             for (var i = 0; i < result.length; ++i) {
                 switch (inputCase) {
                 case Case.Upper:
-                    if (!isUpperCase(result[i].title))
-                        InspectorTest.addResult("Error: Suggestion " + result[i].title + " must be in UPPERCASE.");
+                    if (!isUpperCase(result[i].text))
+                        InspectorTest.addResult("Error: Suggestion " + result[i].text + " must be in UPPERCASE.");
                     break;
                 case Case.Lower:
-                    if (!isLowerCase(result[i].title))
-                        InspectorTest.addResult("Error: Suggestion " + result[i].title + " must be in lowercase.");
+                    if (!isLowerCase(result[i].text))
+                        InspectorTest.addResult("Error: Suggestion " + result[i].text + " must be in lowercase.");
                     break;
                 }
             }

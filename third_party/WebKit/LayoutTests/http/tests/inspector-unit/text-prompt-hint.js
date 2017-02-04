@@ -1,6 +1,6 @@
 TestRunner.addResult("Tests that the hint displays properly on a UI.TextPrompt with autocomplete.");
 
-var suggestions = [{title:"testTextPrompt"}];
+var suggestions = [{text:"testTextPrompt"}];
 var waitingForAutocomplete = null;
 var completionsDone = function () {
     console.error("completionsDone called too early!");
@@ -64,7 +64,7 @@ function completions(expression, query)
     var promise = new Promise(x => callback = x);
     TestRunner.addResult("Requesting completions");
     completionsDone = () => {
-        callback(suggestions.filter(s => s.title.startsWith(query.toString())))
+        callback(suggestions.filter(s => s.text.startsWith(query.toString())))
         return Promise.resolve();
     };
     var temp = waitingForAutocomplete;

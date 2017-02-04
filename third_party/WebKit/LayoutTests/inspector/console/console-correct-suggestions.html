@@ -32,13 +32,21 @@ function test()
 
         function checkExpected(suggestions)
         {
-            var completions = new Set(suggestions.map(suggestion => suggestion.title));
+            var completions = new Map(suggestions.map(suggestion => [suggestion.text, suggestion]));
             var message = "Checking '" + text.replace('\n', '\\n').replace('\r', '\\r') + "'";
             if (force)
                 message += " forcefully";
             InspectorTest.addResult(message);
-            for (var i = 0; i < expected.length; i++)
-                InspectorTest.addResult((completions.has(expected[i]) ? "Found" : "Not Found") + ": " + expected[i]);
+            for (var i = 0; i < expected.length; i++) {
+                if (completions.has(expected[i])) {
+                    if (completions.get(expected[i]).title)
+                        InspectorTest.addResult("Found: " + expected[i] + ", displayed as " + completions.get(expected[i]).title);
+                    else
+                        InspectorTest.addResult("Found: " + expected[i]);
+                } else {
+                    InspectorTest.addResult("Not Found: " + expected[i]);
+                }
+            }
             InspectorTest.addResult("");
         }
     }
