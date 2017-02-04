@@ -1315,7 +1315,7 @@ std::unique_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
   return base::MakeUnique<net::HttpCache>(
       base::WrapUnique(new DevToolsNetworkTransactionFactory(
           network_controller_handle_.GetController(), shared_session)),
-      std::move(backend), true /* set_up_quic_server_info */);
+      std::move(backend), false /* set_up_quic_server_info */);
 }
 
 void ProfileIOData::SetCookieSettingsForTesting(

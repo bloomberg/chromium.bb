@@ -7863,7 +7863,8 @@ TEST_F(URLRequestTestHTTP, NetworkSuspendTest) {
   network_layer->OnSuspend();
 
   HttpCache http_cache(std::move(network_layer),
-                       HttpCache::DefaultBackend::InMemory(0), true);
+                       HttpCache::DefaultBackend::InMemory(0),
+                       false /* set_up_quic_server_info_factory */);
 
   TestURLRequestContext context(true);
   context.set_http_transaction_factory(&http_cache);
