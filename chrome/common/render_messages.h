@@ -124,12 +124,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_WebUIJavaScript,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,
                     std::string /* identifier */)
 
-// Tells the renderer to create a FieldTrial, and by using a 100% probability
-// for the FieldTrial, forces the FieldTrial to have assigned group name.
-IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetFieldTrialGroup,
-                     std::string /* field trial name */,
-                     std::string /* group name that was assigned. */)
-
 // Sent to allow or forbid the running of insecure mixed-content.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
                     bool /* allowed */)

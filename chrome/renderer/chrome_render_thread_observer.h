@@ -53,7 +53,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
       content::AssociatedInterfaceRegistry* associated_interfaces) override;
   void UnregisterMojoInterfaces(
       content::AssociatedInterfaceRegistry* associated_interfaces) override;
-  bool OnControlMessageReceived(const IPC::Message& message) override;
   void OnRenderProcessShutdown() override;
 
   // base::FieldTrialList::Observer:
@@ -64,12 +63,11 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   void SetInitialConfiguration(bool is_incognito_process) override;
   void SetContentSettingRules(
       const RendererContentSettingRules& rules) override;
+  void SetFieldTrialGroup(const std::string& trial_name,
+                          const std::string& group_name) override;
 
   void OnRendererConfigurationAssociatedRequest(
       chrome::mojom::RendererConfigurationAssociatedRequest request);
-
-  void OnSetFieldTrialGroup(const std::string& trial_name,
-                            const std::string& group_name);
 
   static bool is_incognito_process_;
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;

@@ -288,16 +288,6 @@ void ChromeRenderThreadObserver::UnregisterMojoInterfaces(
       chrome::mojom::RendererConfiguration::Name_);
 }
 
-bool ChromeRenderThreadObserver::OnControlMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ChromeRenderThreadObserver, message)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void ChromeRenderThreadObserver::OnRenderProcessShutdown() {
   visited_link_slave_.reset();
 
@@ -324,15 +314,15 @@ void ChromeRenderThreadObserver::SetContentSettingRules(
   content_setting_rules_ = rules;
 }
 
-void ChromeRenderThreadObserver::OnRendererConfigurationAssociatedRequest(
-    chrome::mojom::RendererConfigurationAssociatedRequest request) {
-  renderer_configuration_bindings_.AddBinding(this, std::move(request));
-}
-
-void ChromeRenderThreadObserver::OnSetFieldTrialGroup(
+void ChromeRenderThreadObserver::SetFieldTrialGroup(
     const std::string& trial_name,
     const std::string& group_name) {
   field_trial_syncer_.OnSetFieldTrialGroup(trial_name, group_name);
+}
+
+void ChromeRenderThreadObserver::OnRendererConfigurationAssociatedRequest(
+    chrome::mojom::RendererConfigurationAssociatedRequest request) {
+  renderer_configuration_bindings_.AddBinding(this, std::move(request));
 }
 
 const RendererContentSettingRules*

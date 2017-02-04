@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/renderer_configuration.mojom.h"
 #include "components/variations/variations_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -42,8 +42,13 @@ void FieldTrialSynchronizer::NotifyAllRenderers(
   for (content::RenderProcessHost::iterator it(
           content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->Send(new ChromeViewMsg_SetFieldTrialGroup(
-        field_trial_name, group_name));
+    IPC::ChannelProxy* channel = it.GetCurrentValue()->GetChannel();
+    // channel might be null in tests.
+    if (channel) {
+      chrome::mojom::RendererConfigurationAssociatedPtr renderer_configuration;
+      channel->GetRemoteAssociatedInterface(&renderer_configuration);
+      renderer_configuration->SetFieldTrialGroup(field_trial_name, group_name);
+    }
   }
 }
 
