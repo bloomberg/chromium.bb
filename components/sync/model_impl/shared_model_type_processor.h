@@ -31,8 +31,10 @@ namespace syncer {
 class CommitQueue;
 class ProcessorEntityTracker;
 
-// A sync component embedded on the synced type's thread that helps to handle
-// communication between sync and model type threads.
+// A sync component embedded on the model type's thread that tracks entity
+// metadata in the model store and coordinates communication between sync and
+// model type threads. See //docs/sync/uss/shared_model_type_processor.md for a
+// more thorough description.
 class SharedModelTypeProcessor : public ModelTypeProcessor,
                                  public ModelTypeChangeProcessor,
                                  base::NonThreadSafe {
@@ -138,11 +140,26 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // Version of the above that generates a tag for |data|.
   ProcessorEntityTracker* CreateEntity(const EntityData& data);
 
+  /////////////////////
+  // Processor state //
+  /////////////////////
+
+  // The model type this object syncs.
   const ModelType type_;
+
+  // The model type metadata (progress marker, initial sync done, etc).
   sync_pb::ModelTypeState model_type_state_;
 
-  // Stores the start callback in between OnSyncStarting() and ReadyToConnect().
-  StartCallback start_callback_;
+  // ModelTypeSyncBridge linked to this processor. The bridge owns this
+  // processor instance so the pointer should never become invalid.
+  ModelTypeSyncBridge* const bridge_;
+
+  // Function to capture and upload a stack trace when an error occurs.
+  const base::RepeatingClosure dump_stack_;
+
+  /////////////////
+  // Model state //
+  /////////////////
 
   // The first model error that occurred, if any. Stored to track model state
   // and so it can be passed to sync if it happened prior to sync being ready.
@@ -155,12 +172,27 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // as false but will be set to true if we detect it's necessary to load data.
   bool waiting_for_pending_data_ = false;
 
+  ////////////////
+  // Sync state //
+  ////////////////
+
+  // Stores the start callback in between OnSyncStarting() and ReadyToConnect().
+  StartCallback start_callback_;
+
+  // The callback used for informing sync of errors; will be non-null after
+  // OnSyncStarting has been called.
+  ModelErrorHandler error_handler_;
+
   // Reference to the CommitQueue.
   //
   // The interface hides the posting of tasks across threads as well as the
   // CommitQueue's implementation.  Both of these features are
   // useful in tests.
   std::unique_ptr<CommitQueue> worker_;
+
+  //////////////////
+  // Entity state //
+  //////////////////
 
   // A map of client tag hash to sync entities known to this processor. This
   // should contain entries and metadata for most everything, although the
@@ -172,17 +204,6 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // use client tag hash. This mapping allows us to convert from storage key to
   // client tag hash. The other direction can use |entities_|.
   std::map<std::string, std::string> storage_key_to_tag_hash_;
-
-  // ModelTypeSyncBridge linked to this processor. The bridge owns this
-  // processor instance so the pointer should never become invalid.
-  ModelTypeSyncBridge* const bridge_;
-
-  // Function to capture and upload a stack trace when an error occurs.
-  const base::RepeatingClosure dump_stack_;
-
-  // The callback used for informing sync of errors; will be non-null after
-  // OnSyncStarting has been called.
-  ModelErrorHandler error_handler_;
 
   // WeakPtrFactory for this processor which will be sent to sync thread.
   base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_;
