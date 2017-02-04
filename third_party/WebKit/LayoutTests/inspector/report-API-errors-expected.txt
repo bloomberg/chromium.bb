@@ -4,5 +4,5 @@ Protocol Error: Invalid type of argument 'enabled' for method 'Network.setMonito
 Protocol Error: Invalid number of arguments for method 'Network.setMonitoringXHREnabled' call. It must have the following arguments '[{"name":"enabled","type":"boolean","optional":false}]'.
 Protocol Error: Optional callback argument for method 'Network.setMonitoringXHREnabled' call must be a function but its type is 'string'.
 Protocol Error: the message wrongDomain.something-strange is for non-existing domain 'wrongDomain': {"method":"wrongDomain.something-strange","params":{}}
-Protocol Error: Attempted to dispatch an unimplemented method 'Inspector.something-strange': {"method":"Inspector.something-strange","params":{}}
+Protocol Error: Attempted to dispatch an unspecified method 'Inspector.something-strange': {"method":"Inspector.something-strange","params":{}}
 

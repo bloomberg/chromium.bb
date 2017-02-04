@@ -11,7 +11,7 @@ function test()
     var partSize = sourceStringified.length >> 3;
 
     function injectMockProfile(callback) {
-        var dispatcher = InspectorTest.mainTarget._dispatchers["HeapProfiler"]._dispatcher;
+        var dispatcher = InspectorTest.mainTarget._dispatchers["HeapProfiler"]._dispatchers[0];
         var panel = UI.panels.heap_profiler;
         panel._reset();
 
