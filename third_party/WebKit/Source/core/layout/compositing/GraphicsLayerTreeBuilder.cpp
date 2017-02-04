@@ -49,7 +49,8 @@ static bool shouldAppendLayer(const PaintLayer& layer) {
   return true;
 }
 
-void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
+void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer,
+                                       GraphicsLayerVector& childLayers) {
   // Make the layer compositing if necessary, and set up clipping and content
   // layers.  Note that we can only do work here that is independent of whether
   // the descendant layers have been processed. computeCompositingRequirements()
@@ -64,12 +65,9 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
   // If this layer has a compositedLayerMapping, then that is where we place
   // subsequent children GraphicsLayers.  Otherwise children continue to append
   // to the child list of the enclosing layer.
-  GraphicsLayerVector layerChildren;
-  AncestorInfo infoForChildren(info);
-  if (hasCompositedLayerMapping) {
-    infoForChildren.childLayersOfEnclosingCompositedLayer = &layerChildren;
-    infoForChildren.enclosingCompositedLayer = &layer;
-  }
+  GraphicsLayerVector thisLayerChildren;
+  GraphicsLayerVector* layerVectorForChildren =
+      hasCompositedLayerMapping ? &thisLayerChildren : &childLayers;
 
 #if DCHECK_IS_ON()
   LayerListMutationDetector mutationChecker(layer.stackingNode());
@@ -79,20 +77,20 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
     PaintLayerStackingNodeIterator iterator(*layer.stackingNode(),
                                             NegativeZOrderChildren);
     while (PaintLayerStackingNode* curNode = iterator.next())
-      rebuild(*curNode->layer(), infoForChildren);
+      rebuild(*curNode->layer(), *layerVectorForChildren);
 
     // If a negative z-order child is compositing, we get a foreground layer
     // which needs to get parented.
     if (hasCompositedLayerMapping &&
         currentCompositedLayerMapping->foregroundLayer())
-      infoForChildren.childLayersOfEnclosingCompositedLayer->push_back(
+      layerVectorForChildren->push_back(
           currentCompositedLayerMapping->foregroundLayer());
   }
 
   PaintLayerStackingNodeIterator iterator(
       *layer.stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
   while (PaintLayerStackingNode* curNode = iterator.next())
-    rebuild(*curNode->layer(), infoForChildren);
+    rebuild(*curNode->layer(), *layerVectorForChildren);
 
   if (hasCompositedLayerMapping) {
     bool parented = false;
@@ -101,10 +99,10 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
           toLayoutPart(layer.layoutObject()));
 
     if (!parented)
-      currentCompositedLayerMapping->setSublayers(layerChildren);
+      currentCompositedLayerMapping->setSublayers(thisLayerChildren);
 
     if (shouldAppendLayer(layer))
-      info.childLayersOfEnclosingCompositedLayer->push_back(
+      childLayers.push_back(
           currentCompositedLayerMapping->childForSuperlayers());
   }
 
@@ -113,11 +111,12 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
       layer.scrollParent()
           ->compositedLayerMapping()
           ->needsToReparentOverflowControls() &&
-      layer.scrollParent()->getScrollableArea()->topmostScrollChild() == &layer)
-    info.childLayersOfEnclosingCompositedLayer->push_back(
-        layer.scrollParent()
-            ->compositedLayerMapping()
-            ->detachLayerForOverflowControls(*info.enclosingCompositedLayer));
+      layer.scrollParent()->getScrollableArea()->topmostScrollChild() ==
+          &layer) {
+    childLayers.push_back(layer.scrollParent()
+                              ->compositedLayerMapping()
+                              ->detachLayerForOverflowControls());
+  }
 }
 
 }  // namespace blink

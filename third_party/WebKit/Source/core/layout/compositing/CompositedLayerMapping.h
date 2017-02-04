@@ -242,8 +242,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // Removes the overflow controls host layer from its parent and positions it
   // so that it can be inserted as a sibling to this CLM without changing
   // position.
-  GraphicsLayer* detachLayerForOverflowControls(
-      const PaintLayer& enclosingLayer);
+  GraphicsLayer* detachLayerForOverflowControls();
 
   void updateFilters(const ComputedStyle&);
   void updateBackdropFilters(const ComputedStyle&);

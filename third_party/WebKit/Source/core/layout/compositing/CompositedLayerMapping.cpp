@@ -2666,8 +2666,7 @@ bool CompositedLayerMapping::needsToReparentOverflowControls() const {
          m_owningLayer.getScrollableArea()->topmostScrollChild();
 }
 
-GraphicsLayer* CompositedLayerMapping::detachLayerForOverflowControls(
-    const PaintLayer& enclosingLayer) {
+GraphicsLayer* CompositedLayerMapping::detachLayerForOverflowControls() {
   GraphicsLayer* host = m_overflowControlsAncestorClippingLayer.get();
   if (!host)
     host = m_overflowControlsHostLayer.get();

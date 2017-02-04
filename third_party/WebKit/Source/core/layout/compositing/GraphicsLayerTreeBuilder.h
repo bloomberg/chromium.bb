@@ -41,17 +41,7 @@ class GraphicsLayerTreeBuilder {
   GraphicsLayerTreeBuilder();
   ~GraphicsLayerTreeBuilder();
 
-  struct AncestorInfo {
-    STACK_ALLOCATED();
-    AncestorInfo()
-        : enclosingCompositedLayer(nullptr),
-          childLayersOfEnclosingCompositedLayer(nullptr) {}
-
-    PaintLayer* enclosingCompositedLayer;
-    GraphicsLayerVector* childLayersOfEnclosingCompositedLayer;
-  };
-
-  void rebuild(PaintLayer&, AncestorInfo);
+  void rebuild(PaintLayer&, GraphicsLayerVector&);
 };
 
 }  // namespace blink

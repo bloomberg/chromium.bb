@@ -436,12 +436,10 @@ void PaintLayerCompositor::updateIfNeeded() {
   }
 
   if (updateType >= CompositingUpdateRebuildTree) {
-    GraphicsLayerTreeBuilder::AncestorInfo ancestorInfo;
     GraphicsLayerVector childList;
-    ancestorInfo.childLayersOfEnclosingCompositedLayer = &childList;
     {
       TRACE_EVENT0("blink", "GraphicsLayerTreeBuilder::rebuild");
-      GraphicsLayerTreeBuilder().rebuild(*updateRoot, ancestorInfo);
+      GraphicsLayerTreeBuilder().rebuild(*updateRoot, childList);
     }
 
     if (!childList.isEmpty()) {
