@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/safe_browsing/zip_analyzer_results.h"
@@ -39,12 +40,13 @@ void SandboxedZipAnalyzer::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Starting the analyzer will block on opening the zip file, so run this
   // on a worker thread.  The task does not need to block shutdown.
-  if (!BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-          FROM_HERE,
-          base::Bind(&SandboxedZipAnalyzer::AnalyzeInSandbox, this),
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)) {
-    NOTREACHED();
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .MayBlock()
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::Bind(&SandboxedZipAnalyzer::AnalyzeInSandbox, this));
 }
 
 SandboxedZipAnalyzer::~SandboxedZipAnalyzer() {
@@ -58,13 +60,14 @@ void SandboxedZipAnalyzer::CloseTemporaryFile() {
     return;
   // Close the temporary file in the blocking pool since doing so will delete
   // the file.
-  if (!BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-          FROM_HERE,
-          base::Bind(&base::File::Close,
-                     base::Owned(new base::File(std::move(temp_file_)))),
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)) {
-    NOTREACHED();
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .MayBlock()
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::Bind(&base::File::Close,
+                 base::Owned(new base::File(std::move(temp_file_)))));
 }
 
 void SandboxedZipAnalyzer::AnalyzeInSandbox() {
