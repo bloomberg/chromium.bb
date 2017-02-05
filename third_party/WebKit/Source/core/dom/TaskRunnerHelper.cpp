@@ -16,6 +16,18 @@ namespace blink {
 RefPtr<WebTaskRunner> TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
+    case TaskType::Timer:
+      return frame ? frame->frameScheduler()->timerTaskRunner()
+                   : Platform::current()->currentThread()->getWebTaskRunner();
+    case TaskType::UnspecedLoading:
+    case TaskType::Networking:
+      return frame ? frame->frameScheduler()->loadingTaskRunner()
+                   : Platform::current()->currentThread()->getWebTaskRunner();
+    // Throttling following tasks may break existing web pages, so tentatively
+    // these are unthrottled.
+    // TODO(nhiroki): Throttle them again after we're convinced that it's safe
+    // or provide a mechanism that web pages can opt-out it if throttling is not
+    // desirable.
     case TaskType::DOMManipulation:
     case TaskType::UserInteraction:
     case TaskType::HistoryTraversal:
@@ -33,15 +45,8 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
     case TaskType::Sensor:
     case TaskType::PerformanceTimeline:
     case TaskType::WebGL:
-    case TaskType::Timer:
     case TaskType::UnspecedTimer:
     case TaskType::MiscPlatformAPI:
-      return frame ? frame->frameScheduler()->timerTaskRunner()
-                   : Platform::current()->currentThread()->getWebTaskRunner();
-    case TaskType::UnspecedLoading:
-    case TaskType::Networking:
-      return frame ? frame->frameScheduler()->loadingTaskRunner()
-                   : Platform::current()->currentThread()->getWebTaskRunner();
     case TaskType::Unthrottled:
       return frame ? frame->frameScheduler()->unthrottledTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();

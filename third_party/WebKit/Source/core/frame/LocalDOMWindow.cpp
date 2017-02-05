@@ -106,7 +106,7 @@ class PostMessageTimer final
                    PassRefPtr<SecurityOrigin> targetOrigin,
                    std::unique_ptr<SourceLocation> location,
                    UserGestureToken* userGestureToken)
-      : SuspendableTimer(window.document(), TaskType::Timer),
+      : SuspendableTimer(window.document(), TaskType::PostedMessage),
         m_event(event),
         m_window(&window),
         m_targetOrigin(targetOrigin),
