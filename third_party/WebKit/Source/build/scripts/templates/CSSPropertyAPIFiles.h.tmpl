@@ -19,7 +19,7 @@ class {{api_classname}} : public CSSPropertyAPI {
   static const CSSValue* parseSingleValue(CSSParserTokenRange&,
                                           const CSSParserContext*);
   {% endif %}
-  {% if "parseShorthand" in implemented_functions %}
+  {% if "parseShorthand" in api_methods %}
   static HeapVector<CSSProperty>* parseShorthand(bool,
                              CSSParserTokenRange&,
                              const CSSParserContext*);

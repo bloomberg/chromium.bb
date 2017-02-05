@@ -513,6 +513,7 @@
 
     {
       name: "align-content",
+      api_class: "CSSPropertyAPIAlignOrJustifyContent",
       converter: "convertContentAlignmentData",
       initial: "initialContentAlignment",
     },
@@ -536,6 +537,7 @@
     },
     {
       name: "backdrop-filter",
+      api_class: "CSSPropertyAPIFilter",
       converter: "convertFilterOperations",
       interpolable: true,
       runtime_flag: "CSSBackdropFilter",
@@ -629,6 +631,7 @@
     },
     {
       name: "border-bottom-width",
+      api_class: "CSSPropertyAPIBorderWidth",
       converter: "convertLineWidth<unsigned>",
       initial: "initialBorderWidth",
       interpolable: true,
@@ -643,15 +646,18 @@
     },
     {
       name: "border-image-outset",
+      api_class: "CSSPropertyAPIBorderImageOutset",
       custom_all: true,
       interpolable: true,
     },
     {
       name: "border-image-repeat",
+      api_class: "CSSPropertyAPIBorderImageRepeat",
       custom_all: true,
     },
     {
       name: "border-image-slice",
+      api_class: "CSSPropertyAPIBorderImageSlice",
       custom_all: true,
       interpolable: true,
     },
@@ -666,6 +672,7 @@
     },
     {
       name: "border-image-width",
+      api_class: "CSSPropertyAPIBorderImageWidth",
       custom_all: true,
       interpolable: true,
     },
@@ -681,6 +688,7 @@
     },
     {
       name: "border-left-width",
+      api_class: "CSSPropertyAPIBorderWidth",
       converter: "convertLineWidth<unsigned>",
       initial: "initialBorderWidth",
       interpolable: true,
@@ -697,6 +705,7 @@
     },
     {
       name: "border-right-width",
+      api_class: "CSSPropertyAPIBorderWidth",
       converter: "convertLineWidth<unsigned>",
       initial: "initialBorderWidth",
       interpolable: true,
@@ -729,6 +738,7 @@
     },
     {
       name: "border-top-width",
+      api_class: "CSSPropertyAPIBorderWidth",
       converter: "convertLineWidth<unsigned>",
       initial: "initialBorderWidth",
       interpolable: true,
@@ -849,10 +859,12 @@
     },
     {
       name: "counter-increment",
+      api_class: true,
       custom_all: true,
     },
     {
       name: "counter-reset",
+      api_class: true,
       custom_all: true,
     },
     {
@@ -864,12 +876,14 @@
     },
     {
       name: "cx",
+      api_class: "CSSPropertyAPIStrokeOrLength",
       converter: "convertLength",
       interpolable: true,
       svg: true,
     },
     {
       name: "cy",
+      api_class: "CSSPropertyAPIStrokeOrLength",
       converter: "convertLength",
       interpolable: true,
       svg: true,
@@ -922,6 +936,7 @@
     },
     {
       name: "filter",
+      api_class: "CSSPropertyAPIFilter",
       converter: "convertFilterOperations",
       interpolable: true,
     },
@@ -935,11 +950,13 @@
     "flex-direction",
     {
       name: "flex-grow",
+      api_class: "CSSPropertyAPIFlexGrowOrShrink",
       interpolable: true,
       type_name: "float",
     },
     {
       name: "flex-shrink",
+      api_class: "CSSPropertyAPIFlexGrowOrShrink",
       interpolable: true,
       type_name: "float",
     },
@@ -970,6 +987,7 @@
     },
     {
       name: "grid-auto-columns",
+      api_class: "CSSPropertyAPIGridAutoLine",
       converter: "convertGridTrackSizeList",
       runtime_flag: "CSSGridLayout",
     },
@@ -983,6 +1001,7 @@
     },
     {
       name: "grid-auto-rows",
+      api_class: "CSSPropertyAPIGridAutoLine",
       converter: "convertGridTrackSizeList",
       runtime_flag: "CSSGridLayout",
     },
@@ -990,6 +1009,7 @@
       name: "grid-column-end",
       converter: "convertGridPosition",
       runtime_flag: "CSSGridLayout",
+      api_class: "CSSPropertyAPIGridLine",
     },
     {
       name: "grid-column-gap",
@@ -998,11 +1018,13 @@
     },
     {
       name: "grid-column-start",
+      api_class: "CSSPropertyAPIGridLine",
       converter: "convertGridPosition",
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "grid-row-end",
+      api_class: "CSSPropertyAPIGridLine",
       converter: "convertGridPosition",
       runtime_flag: "CSSGridLayout",
     },
@@ -1013,26 +1035,31 @@
     },
     {
       name: "grid-row-start",
+      api_class: "CSSPropertyAPIGridLine",
       converter: "convertGridPosition",
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "grid-template-areas",
+      api_class: true,
       custom_all: true,
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "grid-template-columns",
+      api_class: "CSSPropertyAPIGridTemplateLine",
       custom_all: true,
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "grid-template-rows",
+      api_class: "CSSPropertyAPIGridTemplateLine",
       custom_all: true,
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "height",
+      api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "convertLengthSizing",
       initial: "initialSize",
       interpolable: true,
@@ -1062,6 +1089,7 @@
     "isolation",
     {
       name: "justify-content",
+      api_class: "CSSPropertyAPIAlignOrJustifyContent",
       converter: "convertContentAlignmentData",
       initial: "initialContentAlignment",
     },
@@ -1176,6 +1204,7 @@
     },
     {
       name: "marker-end",
+      api_class: "CSSPropertyAPIMarker",
       converter: "convertFragmentIdentifier",
       inherited: true,
       name_for_methods: "MarkerEndResource",
@@ -1183,6 +1212,7 @@
     },
     {
       name: "marker-mid",
+      api_class: "CSSPropertyAPIMarker",
       converter: "convertFragmentIdentifier",
       inherited: true,
       name_for_methods: "MarkerMidResource",
@@ -1190,6 +1220,7 @@
     },
     {
       name: "marker-start",
+      api_class: "CSSPropertyAPIMarker",
       converter: "convertFragmentIdentifier",
       inherited: true,
       name_for_methods: "MarkerStartResource",
@@ -1197,6 +1228,7 @@
     },
     {
       name: "mask",
+      api_class: "CSSPropertyAPIMarker",
       converter: "convertFragmentIdentifier",
       name_for_methods: "MaskerResource",
       svg: true,
@@ -1224,12 +1256,14 @@
     },
     {
       name: "min-height",
+      api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "convertLengthSizing",
       initial: "initialMinSize",
       interpolable: true,
     },
     {
       name: "min-width",
+      api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "convertLengthSizing",
       initial: "initialMinSize",
       interpolable: true,
@@ -1268,6 +1302,7 @@
     },
     {
       name: "offset-distance",
+      api_class: true,
       converter: "convertLength",
       interpolable: true,
     },
@@ -1285,12 +1320,14 @@
     },
     {
       name: "offset-rotate",
+      api_class: "CSSPropertyAPIOffsetRotate",
       converter: "convertOffsetRotate",
       interpolable: true,
       runtime_flag: "CSSOffsetRotate",
     },
     {
       name: "offset-rotation",
+      api_class: "CSSPropertyAPIOffsetRotate",
       converter: "convertOffsetRotate",
       interpolable: true,
       runtime_flag: "CSSOffsetRotation",
@@ -1403,6 +1440,7 @@
     },
     {
       name: "perspective",
+      api_class: "CSSPropertyAPIPerspective",
       converter: "convertPerspective",
       interpolable: true,
     },
@@ -1449,6 +1487,7 @@
     },
     {
       name: "r",
+      api_class: "CSSPropertyAPIStrokeOrLength",
       converter: "convertLength",
       interpolable: true,
       svg: true,
@@ -1584,6 +1623,7 @@
     },
     {
       name: "stroke-dashoffset",
+      api_class: "CSSPropertyAPIStrokeOrLength",
       converter: "convertLength",
       inherited: true,
       interpolable: true,
@@ -1625,6 +1665,7 @@
     },
     {
       name: "stroke-width",
+      api_class: "CSSPropertyAPIStrokeOrLength",
       converter: "convertUnzoomedLength",
       inherited: true,
       interpolable: true,
@@ -1675,6 +1716,7 @@
     // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
     {
       name: "text-decoration",
+      api_class: true,
       longhands: "text-decoration-line;text-decoration-style;text-decoration-color",
       use_handlers_for: "CSSPropertyTextDecorationLine",
     },
@@ -1688,6 +1730,7 @@
     },
     {
       name: "text-decoration-line",
+      api_class: "CSSPropertyAPITextDecorationLine",
       converter: "convertFlags<TextDecoration>",
       name_for_methods: "TextDecoration",
       runtime_flag: "CSS3TextDecorations",
@@ -1727,6 +1770,7 @@
     },
     {
       name: "text-shadow",
+      api_class: "CSSPropertyAPIShadow",
       converter: "convertShadowList",
       inherited: true,
       interpolable: true,
@@ -1848,12 +1892,14 @@
     },
     {
       name: "x",
+      api_class: "CSSPropertyAPIStrokeOrLength",
       converter: "convertLength",
       interpolable: true,
       svg: true,
     },
     {
       name: "y",
+      api_class: "CSSPropertyAPIStrokeOrLength",
       converter: "convertLength",
       interpolable: true,
       svg: true,
@@ -1876,6 +1922,7 @@
     },
     {
       name: "-webkit-border-horizontal-spacing",
+      api_class: "CSSPropertyAPIWebkitBorderSpacing",
       converter: "convertComputedLength<short>",
       inherited: true,
       interpolable: true,
@@ -1883,11 +1930,13 @@
     },
     {
       name: "-webkit-border-image",
+      api_class: true,
       custom_value: true,
       initial: "initialNinePieceImage",
     },
     {
       name: "-webkit-border-vertical-spacing",
+      api_class: "CSSPropertyAPIWebkitBorderSpacing",
       converter: "convertComputedLength<short>",
       inherited: true,
       interpolable: true,
@@ -1908,6 +1957,7 @@
     },
     {
       name: "-webkit-box-flex",
+      api_class: true,
       type_name: "float",
     },
     {
@@ -2020,15 +2070,18 @@
     },
     {
       name: "-webkit-mask-box-image-outset",
+      api_class: "CSSPropertyAPIBorderImageOutset",
       custom_all: true,
       interpolable: true,
     },
     {
       name: "-webkit-mask-box-image-repeat",
+      api_class: "CSSPropertyAPIBorderImageRepeat",
       custom_all: true,
     },
     {
       name: "-webkit-mask-box-image-slice",
+      api_class: "CSSPropertyAPIBorderImageSlice",
       custom_all: true,
       interpolable: true,
     },
@@ -2041,6 +2094,7 @@
     },
     {
       name: "-webkit-mask-box-image-width",
+      api_class: "CSSPropertyAPIBorderImageWidth",
       custom_all: true,
       interpolable: true,
     },
@@ -2073,10 +2127,12 @@
     },
     {
       name: "-webkit-mask-repeat-x",
+      api_class: "CSSPropertyAPIWebkitMaskRepeat",
       custom_all: true,
     },
     {
       name: "-webkit-mask-repeat-y",
+      api_class: "CSSPropertyAPIWebkitMaskRepeat",
       custom_all: true,
     },
     {
@@ -2086,11 +2142,13 @@
     },
     {
       name: "-webkit-perspective-origin-x",
+      api_class: "CSSPropertyAPIWebkitOriginX",
       converter: "convertLength",
       interpolable: true,
     },
     {
       name: "-webkit-perspective-origin-y",
+      api_class: "CSSPropertyAPIWebkitOriginY",
       converter: "convertLength",
       interpolable: true,
     },
@@ -2178,11 +2236,13 @@
     },
     {
       name: "-webkit-transform-origin-x",
+      api_class: "CSSPropertyAPIWebkitOriginX",
       converter: "convertLength",
       interpolable: true,
     },
     {
       name: "-webkit-transform-origin-y",
+      api_class: "CSSPropertyAPIWebkitOriginY",
       converter: "convertLength",
       interpolable: true,
     },
@@ -2218,6 +2278,7 @@
     },
     {
       name: "width",
+      api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "convertLengthSizing",
       initial: "initialSize",
       interpolable: true,
@@ -2303,6 +2364,7 @@
     },
     {
       name: "-webkit-border-end-width",
+      api_class: "CSSPropertyAPIWebkitBorderWidth",
       direction_aware: true,
     },
     {
@@ -2317,6 +2379,7 @@
     },
     {
       name: "-webkit-border-start-width",
+      api_class: "CSSPropertyAPIWebkitBorderWidth",
       direction_aware: true,
     },
     {
@@ -2331,6 +2394,7 @@
     },
     {
       name: "-webkit-border-before-width",
+      api_class: "CSSPropertyAPIWebkitBorderWidth",
       direction_aware: true,
     },
     {
@@ -2345,6 +2409,7 @@
     },
     {
       name: "-webkit-border-after-width",
+      api_class: "CSSPropertyAPIWebkitBorderWidth",
       direction_aware: true,
     },
     {
@@ -2397,18 +2462,22 @@
     },
     {
       name: "-webkit-logical-width",
+      api_class: "CSSPropertyAPIWebkitLogicalWidthOrHeight",
       direction_aware: true,
     },
     {
       name: "-webkit-logical-height",
+      api_class: "CSSPropertyAPIWebkitLogicalWidthOrHeight",
       direction_aware: true,
     },
     {
       name: "-webkit-min-logical-width",
+      api_class: "CSSPropertyAPIWebkitLogicalWidthOrHeight",
       direction_aware: true,
     },
     {
       name: "-webkit-min-logical-height",
+      api_class: "CSSPropertyAPIWebkitLogicalWidthOrHeight",
       direction_aware: true,
     },
     {
@@ -2445,6 +2514,7 @@
     },
     {
       name: "-webkit-text-decorations-in-effect",
+      api_class: "CSSPropertyAPITextDecorationLine",
       builder_skip: true,
       inherited: true,
     },
@@ -2820,6 +2890,7 @@
     },
     {
       name: "-webkit-box-shadow",
+      api_class: "CSSPropertyAPIShadow",
       alias_for: "box-shadow",
     },
     {

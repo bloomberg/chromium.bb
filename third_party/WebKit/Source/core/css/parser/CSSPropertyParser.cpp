@@ -4,6 +4,7 @@
 
 #include "core/css/parser/CSSPropertyParser.h"
 
+#include <memory>
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSBorderImage.h"
@@ -42,6 +43,7 @@
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/css/parser/FontVariantLigaturesParser.h"
 #include "core/css/parser/FontVariantNumericParser.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
 #include "core/css/properties/CSSPropertyColumnUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
@@ -53,7 +55,6 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 
@@ -3547,6 +3548,19 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty,
         addProperty(CSSPropertyWebkitMarginAfterCollapse,
                     CSSPropertyWebkitMarginCollapse, *beforeCollapse,
                     important);
+        if (m_range.atEnd()) {
+          addProperty(CSSPropertyWebkitMarginAfterCollapse,
+                      CSSPropertyWebkitMarginCollapse, *beforeCollapse,
+                      important);
+          return true;
+        }
+        id = m_range.consumeIncludingWhitespace().id();
+        if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(
+                CSSPropertyWebkitMarginAfterCollapse, id, m_context->mode()))
+          return false;
+        addProperty(CSSPropertyWebkitMarginAfterCollapse,
+                    CSSPropertyWebkitMarginCollapse, *beforeCollapse,
+                    important);
         return true;
       }
       id = m_range.consumeIncludingWhitespace().id();
@@ -3569,11 +3583,13 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty,
 
       CSSValue* overflowXValue = nullptr;
 
-      // FIXME: -webkit-paged-x or -webkit-paged-y only apply to overflow-y. If
+      // FIXME: -webkit-paged-x or -webkit-paged-y only apply to overflow-y.
+      // If
       // this value has been set using the shorthand, then for now overflow-x
       // will default to auto, but once we implement pagination controls, it
       // should default to hidden. If the overflow-y value is anything but
-      // paged-x or paged-y, then overflow-x and overflow-y should have the same
+      // paged-x or paged-y, then overflow-x and overflow-y should have the
+      // same
       // value.
       if (id == CSSValueWebkitPagedX || id == CSSValueWebkitPagedY)
         overflowXValue = CSSIdentifierValue::create(CSSValueAuto);

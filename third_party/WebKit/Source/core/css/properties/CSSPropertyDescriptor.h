@@ -10,6 +10,9 @@ class CSSValue;
 class CSSParserTokenRange;
 class CSSParserContext;
 
+#define FUNCTION_IMPLEMENTED_FOR_PROPERTY(function, descriptor) \
+  descriptor.function != CSSPropertyAPI::function
+
 // Stores function pointers matching those declared in CSSPropertyAPI.
 struct CSSPropertyDescriptor {
   const CSSValue* (*parseSingleValue)(CSSParserTokenRange&,
