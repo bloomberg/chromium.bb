@@ -52,7 +52,7 @@
       valid_type: "list",
        // This list must be an ordered, complete list of methods whose names match those
        // defined in CSSPropertyDescriptor.h.
-      valid_values: ["parseSingleValue"],
+      valid_values: ["parseSingleValue", "parseShorthand"],
     },
 
     // - keyword_only
@@ -522,7 +522,6 @@
       api_methods: ["parseSingleValue"],
       converter: "convertSelfOrDefaultAlignmentData",
       initial: "initialDefaultAlignment",
-      api_class: true,
     },
     {
       name: "alignment-baseline",
@@ -1073,7 +1072,6 @@
       converter: "convertSelfOrDefaultAlignmentData",
       initial: "initialSelfAlignment",
       runtime_flag: "CSSGridLayout",
-      api_class: true,
     },
     {
       name: "justify-self",

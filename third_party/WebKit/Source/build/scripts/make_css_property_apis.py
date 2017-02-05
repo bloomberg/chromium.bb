@@ -60,7 +60,7 @@ class CSSPropertyAPIWriter(make_style_builder.StyleBuilderWriter):
             'api_methods': self.json5_file.parameters['api_methods']['valid_values'],
         }
 
-    # Provides a function object given the classname of the property.
+    # This returned function generates a .h file for the specified property
     def generate_property_api_h_builder(self, api_classname, api_methods):
         @template_expander.use_jinja('CSSPropertyAPIFiles.h.tmpl')
         def generate_property_api_h():

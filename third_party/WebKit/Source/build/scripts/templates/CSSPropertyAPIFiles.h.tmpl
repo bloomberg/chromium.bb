@@ -19,6 +19,11 @@ class {{api_classname}} : public CSSPropertyAPI {
   static const CSSValue* parseSingleValue(CSSParserTokenRange&,
                                           const CSSParserContext*);
   {% endif %}
+  {% if "parseShorthand" in implemented_functions %}
+  static HeapVector<CSSProperty>* parseShorthand(bool,
+                             CSSParserTokenRange&,
+                             const CSSParserContext*);
+  {% endif %}
 };
 
 }  // namespace blink

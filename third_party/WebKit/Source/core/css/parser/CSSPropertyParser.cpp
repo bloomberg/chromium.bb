@@ -2054,8 +2054,8 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     return consumeIdent(m_range);
   }
 
-  // Gets the parsing function for our current property from the property API.
-  // If it has been implemented, we call this function, otherwise we manually
+  // Gets the parsing method for our current property from the property API.
+  // If it has been implemented, we call this method, otherwise we manually
   // parse this value in the switch statement below. As we implement APIs for
   // other properties, those properties will be taken out of the switch
   // statement.
@@ -3523,6 +3523,16 @@ bool CSSPropertyParser::consumeGridShorthand(bool important) {
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty,
                                        bool important) {
   CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
+
+  // Gets the parsing method for our current property from the property API.
+  // If it has been implemented, we call this method, otherwise we manually
+  // parse this value in the switch statement below. As we implement APIs for
+  // other properties, those properties will be taken out of the switch
+  // statement.
+  const CSSPropertyDescriptor& cssPropertyDesc =
+      CSSPropertyDescriptor::get(property);
+  if (cssPropertyDesc.parseShorthand)
+    return cssPropertyDesc.parseShorthand(important, m_range, m_context);
 
   switch (property) {
     case CSSPropertyWebkitMarginCollapse: {

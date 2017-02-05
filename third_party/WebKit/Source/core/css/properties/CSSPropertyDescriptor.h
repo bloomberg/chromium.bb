@@ -14,6 +14,7 @@ class CSSParserContext;
 struct CSSPropertyDescriptor {
   const CSSValue* (*parseSingleValue)(CSSParserTokenRange&,
                                       const CSSParserContext*);
+  bool (*parseShorthand)(bool, CSSParserTokenRange&, const CSSParserContext*);
 
   // Returns the corresponding CSSPropertyDescriptor for a given CSSPropertyID.
   // Use this function to access the API for a property. Returns a descriptor

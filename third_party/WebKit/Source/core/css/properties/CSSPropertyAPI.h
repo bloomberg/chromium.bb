@@ -41,6 +41,15 @@ class CSSPropertyAPI {
     NOTREACHED();
     return nullptr;
   }
+
+  static bool parseShorthand(bool,
+                             CSSParserTokenRange&,
+                             const CSSParserContext*) {
+    // No code should reach here, since properties either have their own
+    // implementations of this method or store nullptr in their descriptor.
+    NOTREACHED();
+    return false;
+  }
 };
 
 }  // namespace blink
