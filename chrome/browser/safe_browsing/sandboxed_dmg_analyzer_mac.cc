@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/grit/generated_resources.h"
@@ -30,16 +31,16 @@ SandboxedDMGAnalyzer::~SandboxedDMGAnalyzer() {}
 
 void SandboxedDMGAnalyzer::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-          FROM_HERE, base::Bind(&SandboxedDMGAnalyzer::OpenDMGFile, this),
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)) {
-    NOTREACHED();
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .MayBlock()
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::Bind(&SandboxedDMGAnalyzer::OpenDMGFile, this));
 }
 
 void SandboxedDMGAnalyzer::OpenDMGFile() {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   file_.Initialize(file_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file_.IsValid()) {
     DLOG(ERROR) << "Could not open DMG file at path " << file_path_.value();
