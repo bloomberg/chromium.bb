@@ -1443,9 +1443,6 @@ bool ChromeContentRendererClient::ShouldEnforceWebRTCRoutingPreferences() {
 }
 
 GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
-  if (!base::FeatureList::IsEnabled(features::kOverrideYouTubeFlashEmbed))
-    return GURL();
-
   if (!url.is_valid())
     return GURL();
 

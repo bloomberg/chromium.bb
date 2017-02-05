@@ -174,10 +174,6 @@ const base::Feature kNativeNotifications{"NativeNotifications",
 const base::Feature kOfflinePageDownloadSuggestionsFeature{
     "NTPOfflinePageDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables YouTube Flash videos to be overridden.
-const base::Feature kOverrideYouTubeFlashEmbed{
-    "OverrideYouTubeFlashEmbed", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kParallelDownloading{
     "ParallelDownloading", base::FEATURE_DISABLED_BY_DEFAULT};
 
