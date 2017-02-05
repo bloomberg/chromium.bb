@@ -188,6 +188,7 @@ KeyboardController::~KeyboardController() {
     if (container_->GetRootWindow())
       container_->GetRootWindow()->RemoveObserver(this);
     container_->RemoveObserver(this);
+    container_->RemovePreTargetHandler(&event_filter_);
   }
   if (input_method_)
     input_method_->RemoveObserver(this);
@@ -216,6 +217,7 @@ aura::Window* KeyboardController::GetContainerWindow() {
     container_->Init(ui::LAYER_NOT_DRAWN);
     container_->AddObserver(this);
     container_->SetLayoutManager(new KeyboardLayoutManager(this));
+    container_->AddPreTargetHandler(&event_filter_);
   }
   return container_.get();
 }

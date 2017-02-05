@@ -13,6 +13,8 @@ component("keyboard") {
     "keyboard_controller.cc",
     "keyboard_controller.h",
     "keyboard_controller_observer.h",
+    "keyboard_event_filter.cc",
+    "keyboard_event_filter.h",
     "keyboard_export.h",
     "keyboard_layout_delegate.h",
     "keyboard_layout_manager.cc",
@@ -147,6 +149,7 @@ mojom("mojom") {
 test("keyboard_unittests") {
   sources = [
     "keyboard_controller_unittest.cc",
+    "keyboard_event_filter_unittest.cc",
     "keyboard_util_unittest.cc",
     "test/run_all_unittests.cc",
   ]

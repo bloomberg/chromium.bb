@@ -14,6 +14,7 @@
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/keyboard/keyboard_event_filter.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/keyboard_layout_delegate.h"
 
@@ -177,6 +178,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   bool keyboard_locked_;
   KeyboardMode keyboard_mode_;
   ui::TextInputType type_;
+  KeyboardEventFilter event_filter_;
 
   base::ObserverList<KeyboardControllerObserver> observer_list_;
 
