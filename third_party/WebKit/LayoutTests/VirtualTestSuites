@@ -99,9 +99,9 @@
     "args": ["--stable-release-mode"]
   },
   {
-    "prefix": "stable",
+    "prefix": "disable-spinvalidation",
     "base": "paint/invalidation",
-    "args": ["--stable-release-mode"]
+    "args": ["--disable-slimming-paint-invalidation"]
   },
   {
     "prefix": "stable",
