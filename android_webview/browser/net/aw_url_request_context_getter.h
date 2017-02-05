@@ -47,6 +47,8 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   // threads (UI and IO).
   net::NetLog* GetNetLog();
 
+  static void set_check_cleartext_permitted(bool permitted);
+
  private:
   friend class AwBrowserContext;
   ~AwURLRequestContextGetter() override;

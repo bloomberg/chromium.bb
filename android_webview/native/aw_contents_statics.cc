@@ -99,6 +99,13 @@ void SetServiceWorkerIoThreadClient(
       io_thread_client, browser_context);
 }
 
+// static
+void SetCheckClearTextPermitted(JNIEnv* env,
+                                const JavaParamRef<jclass>&,
+                                jboolean permitted) {
+  AwURLRequestContextGetter::set_check_cleartext_permitted(permitted);
+}
+
 bool RegisterAwContentsStatics(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
