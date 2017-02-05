@@ -74,13 +74,6 @@ typedef void (*PreparePrototypeAndInterfaceObjectFunction)(
     v8::Local<v8::Function>,
     v8::Local<v8::FunctionTemplate>);
 
-inline void setObjectGroup(v8::Isolate* isolate,
-                           ScriptWrappable* scriptWrappable,
-                           const v8::Persistent<v8::Object>& wrapper) {
-  isolate->SetObjectGroupId(
-      wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(scriptWrappable)));
-}
-
 // This struct provides a way to store a bunch of information that is helpful
 // when unwrapping v8 objects. Each v8 bindings class has exactly one static
 // WrapperTypeInfo member, so comparing pointers is a safe way to determine if

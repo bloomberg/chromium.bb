@@ -38,11 +38,6 @@ class CORE_EXPORT StringSequenceCallbackFunctionLongSequenceArg final : public G
     return m_callback.newLocal(isolate);
   }
 
-  void setWrapperReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper) {
-    DCHECK(!m_callback.isEmpty());
-    m_callback.setReference(wrapper, isolate);
-  }
-
  private:
   StringSequenceCallbackFunctionLongSequenceArg(ScriptState*, v8::Local<v8::Function>);
 

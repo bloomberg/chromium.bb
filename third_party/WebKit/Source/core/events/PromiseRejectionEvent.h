@@ -31,8 +31,6 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
   ScriptValue reason(ScriptState*) const;
   ScriptPromise promise(ScriptState*) const;
 
-  void setWrapperReference(v8::Isolate*, const v8::Persistent<v8::Object>&);
-
   const AtomicString& interfaceName() const override;
 
   // PromiseRejectionEvents are similar to ErrorEvents in that they can't be

@@ -58,8 +58,7 @@ void V8PerformanceObserver::constructorCustom(
       currentExecutionContext(info.GetIsolate()), performance, callback);
 
   // TODO(bashi): Don't set private property (and remove this custom
-  // constructor) when we can call setWrapperReference() correctly.
-  // crbug.com/468240.
+  // constructor) when we can trace correctly. See crbug.com/468240.
   V8PrivateProperty::getPerformanceObserverCallback(info.GetIsolate())
       .set(info.GetIsolate()->GetCurrentContext(), wrapper, v8Callback);
   v8SetReturnValue(info,

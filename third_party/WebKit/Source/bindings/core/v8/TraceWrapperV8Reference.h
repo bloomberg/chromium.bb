@@ -54,11 +54,6 @@ class TraceWrapperV8Reference {
   void clear() { m_handle.Reset(); }
   ALWAYS_INLINE v8::Persistent<T>& get() { return m_handle; }
 
-  void setReference(const v8::Persistent<v8::Object>& parent,
-                    v8::Isolate* isolate) {
-    isolate->SetReference(parent, m_handle);
-  }
-
   template <typename S>
   const TraceWrapperV8Reference<S>& cast() const {
     return reinterpret_cast<const TraceWrapperV8Reference<S>&>(

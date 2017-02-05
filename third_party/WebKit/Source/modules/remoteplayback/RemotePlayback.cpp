@@ -293,13 +293,6 @@ void RemotePlayback::remotePlaybackDisabled() {
     m_mediaElement->requestRemotePlaybackStop();
 }
 
-void RemotePlayback::setV8ReferencesForCallbacks(
-    v8::Isolate* isolate,
-    const v8::Persistent<v8::Object>& wrapper) {
-  for (auto callback : m_availabilityCallbacks.values())
-    callback->setWrapperReference(isolate, wrapper);
-}
-
 DEFINE_TRACE(RemotePlayback) {
   visitor->trace(m_availabilityCallbacks);
   visitor->trace(m_promptPromiseResolver);

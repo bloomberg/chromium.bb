@@ -50,7 +50,7 @@ void V8IDBObserver::constructorCustom(
     return;
   DCHECK(observer);
   // TODO(bashi): Don't set private property (and remove this custom
-  // constructor) when we can call setWrapperReference() correctly.
+  // constructor) when we can trace correctly.
   V8PrivateProperty::getIDBObserverCallback(info.GetIsolate())
       .set(info.GetIsolate()->GetCurrentContext(), wrapper, v8Callback);
   v8SetReturnValue(info,

@@ -66,9 +66,6 @@ class MODULES_EXPORT MediaSession final
   // blink::mojom::blink::MediaSessionClient implementation.
   void DidReceiveAction(blink::mojom::blink::MediaSessionAction) override;
 
-  void setV8ReferencesForHandlers(v8::Isolate*,
-                                  const v8::Persistent<v8::Object>& wrapper);
-
   // Returns null when the ExecutionContext is not document.
   mojom::blink::MediaSessionService* getService();
 

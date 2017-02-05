@@ -230,13 +230,6 @@ void MediaSession::DidReceiveAction(
   iter->value->call(this);
 }
 
-void MediaSession::setV8ReferencesForHandlers(
-    v8::Isolate* isolate,
-    const v8::Persistent<v8::Object>& wrapper) {
-  for (auto handler : m_actionHandlers.values())
-    handler->setWrapperReference(isolate, wrapper);
-}
-
 DEFINE_TRACE(MediaSession) {
   visitor->trace(m_metadata);
   visitor->trace(m_actionHandlers);

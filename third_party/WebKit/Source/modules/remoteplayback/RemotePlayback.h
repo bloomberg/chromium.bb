@@ -89,12 +89,6 @@ class MODULES_EXPORT RemotePlayback final
   void promptCancelled() override;
   bool remotePlaybackAvailable() const override;
 
-  // Prevent v8 from garbage collecting the availability callbacks.
-  // TODO(avayvod): remove when crbug.com/468240 is fixed and the references
-  // are maintained automatically.
-  void setV8ReferencesForCallbacks(v8::Isolate*,
-                                   const v8::Persistent<v8::Object>& wrapper);
-
   WebRemotePlaybackState m_state;
   WebRemotePlaybackAvailability m_availability;
   HeapHashMap<int, TraceWrapperMember<RemotePlaybackAvailabilityCallback>>

@@ -38,11 +38,6 @@ class CORE_EXPORT VoidCallbackFunction final : public GarbageCollectedFinalized<
     return m_callback.newLocal(isolate);
   }
 
-  void setWrapperReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper) {
-    DCHECK(!m_callback.isEmpty());
-    m_callback.setReference(wrapper, isolate);
-  }
-
  private:
   VoidCallbackFunction(ScriptState*, v8::Local<v8::Function>);
 

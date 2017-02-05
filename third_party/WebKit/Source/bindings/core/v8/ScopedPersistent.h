@@ -87,11 +87,6 @@ class ScopedPersistent {
   // Note: This is clear in the std::unique_ptr sense, not the v8::Handle sense.
   void clear() { m_handle.Reset(); }
 
-  void setReference(const v8::Persistent<v8::Object>& parent,
-                    v8::Isolate* isolate) {
-    isolate->SetReference(parent, m_handle);
-  }
-
   bool operator==(const ScopedPersistent<T>& other) {
     return m_handle == other.m_handle;
   }
