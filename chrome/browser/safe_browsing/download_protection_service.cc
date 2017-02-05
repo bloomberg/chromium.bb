@@ -28,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -699,11 +700,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
     DCHECK(item_);  // Called directly from Start(), item should still exist.
     // Since we do blocking I/O, offload this to a worker thread.
     // The task does not need to block shutdown.
-    BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-        FROM_HERE,
-        base::Bind(&CheckClientDownloadRequest::ExtractFileFeatures,
-                   this, item_->GetFullPath()),
-        base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+    base::PostTaskWithTraits(
+        FROM_HERE, base::TaskTraits()
+                       .MayBlock()
+                       .WithPriority(base::TaskPriority::BACKGROUND)
+                       .WithShutdownBehavior(
+                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+        base::Bind(&CheckClientDownloadRequest::ExtractFileFeatures, this,
+                   item_->GetFullPath()));
   }
 
   void ExtractFileFeatures(const base::FilePath& file_path) {
