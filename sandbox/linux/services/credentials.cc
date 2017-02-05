@@ -292,8 +292,7 @@ bool Credentials::CanCreateProcessInNewUserNS() {
     // Ensure we have unprivileged use of CLONE_NEWUSER.  Debian
     // Jessie explicitly forbids this case.  See:
     // add-sysctl-to-disallow-unprivileged-CLONE_NEWUSER-by-default.patch
-    PCHECK(0 == sys_unshare(CLONE_NEWUSER));
-    _exit(kExitSuccess);
+    _exit(!!sys_unshare(CLONE_NEWUSER));
   }
 
   // Always reap the child.
