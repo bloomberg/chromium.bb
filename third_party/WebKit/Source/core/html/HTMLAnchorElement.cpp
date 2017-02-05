@@ -412,8 +412,9 @@ void HTMLAnchorElement::handleClick(Event* event) {
 
   ReferrerPolicy policy;
   if (hasAttribute(referrerpolicyAttr) &&
-      SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(
-          fastGetAttribute(referrerpolicyAttr), &policy) &&
+      SecurityPolicy::referrerPolicyFromString(
+          fastGetAttribute(referrerpolicyAttr),
+          SupportReferrerPolicyLegacyKeywords, &policy) &&
       !hasRel(RelationNoReferrer)) {
     UseCounter::count(document(),
                       UseCounter::HTMLAnchorElementReferrerPolicyAttribute);

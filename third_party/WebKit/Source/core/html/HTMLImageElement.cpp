@@ -265,8 +265,9 @@ void HTMLImageElement::parseAttribute(
   } else if (name == referrerpolicyAttr) {
     m_referrerPolicy = ReferrerPolicyDefault;
     if (!params.newValue.isNull()) {
-      SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(
-          params.newValue, &m_referrerPolicy);
+      SecurityPolicy::referrerPolicyFromString(
+          params.newValue, SupportReferrerPolicyLegacyKeywords,
+          &m_referrerPolicy);
       UseCounter::count(document(),
                         UseCounter::HTMLImageElementReferrerPolicyAttribute);
     }

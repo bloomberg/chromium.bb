@@ -83,7 +83,8 @@ void HTMLLinkElement::parseAttribute(
   } else if (name == referrerpolicyAttr) {
     m_referrerPolicy = ReferrerPolicyDefault;
     if (!value.isNull()) {
-      SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);
+      SecurityPolicy::referrerPolicyFromString(
+          value, DoNotSupportReferrerPolicyLegacyKeywords, &m_referrerPolicy);
       UseCounter::count(document(),
                         UseCounter::HTMLLinkElementReferrerPolicyAttribute);
     }

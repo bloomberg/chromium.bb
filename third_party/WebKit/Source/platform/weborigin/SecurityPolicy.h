@@ -40,6 +40,11 @@ namespace blink {
 class KURL;
 class SecurityOrigin;
 
+enum ReferrerPolicyLegacyKeywordsSupport {
+  SupportReferrerPolicyLegacyKeywords,
+  DoNotSupportReferrerPolicyLegacyKeywords,
+};
+
 class PLATFORM_EXPORT SecurityPolicy {
   STATIC_ONLY(SecurityPolicy);
 
@@ -81,10 +86,12 @@ class PLATFORM_EXPORT SecurityPolicy {
   static bool isUrlWhiteListedTrustworthy(const KURL&);
 
   static bool referrerPolicyFromString(const String& policy,
+                                       ReferrerPolicyLegacyKeywordsSupport,
                                        ReferrerPolicy* result);
-  static bool referrerPolicyFromStringWithLegacyKeywords(
-      const String& policy,
-      ReferrerPolicy* result);
+
+  static bool referrerPolicyFromHeaderValue(const String& headerValue,
+                                            ReferrerPolicyLegacyKeywordsSupport,
+                                            ReferrerPolicy* result);
 };
 
 }  // namespace blink
