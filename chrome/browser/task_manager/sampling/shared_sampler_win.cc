@@ -14,110 +14,28 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
+#include "chrome/browser/task_manager/sampling/shared_sampler_win_defines.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 
+// ntstatus.h conflicts with windows.h so define this locally.
+#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+#define STATUS_BUFFER_TOO_SMALL ((NTSTATUS)0xC0000023L)
+#define STATUS_INFO_LENGTH_MISMATCH ((NTSTATUS)0xC0000004L)
+
 namespace task_manager {
 
+static SharedSampler::QuerySystemInformationForTest
+    g_query_system_information_for_test = nullptr;
+
+// static
+void SharedSampler::SetQuerySystemInformationForTest(
+    QuerySystemInformationForTest query_system_information) {
+  g_query_system_information_for_test = query_system_information;
+}
+
 namespace {
-
-// From <wdm.h>
-typedef LONG KPRIORITY;
-typedef LONG KWAIT_REASON;  // Full definition is in wdm.h
-
-// From ntddk.h
-typedef struct _VM_COUNTERS {
-  SIZE_T PeakVirtualSize;
-  SIZE_T VirtualSize;
-  ULONG PageFaultCount;
-  // Padding here in 64-bit
-  SIZE_T PeakWorkingSetSize;
-  SIZE_T WorkingSetSize;
-  SIZE_T QuotaPeakPagedPoolUsage;
-  SIZE_T QuotaPagedPoolUsage;
-  SIZE_T QuotaPeakNonPagedPoolUsage;
-  SIZE_T QuotaNonPagedPoolUsage;
-  SIZE_T PagefileUsage;
-  SIZE_T PeakPagefileUsage;
-} VM_COUNTERS;
-
-// Two possibilities available from here:
-// http://stackoverflow.com/questions/28858849/where-is-system-information-class-defined
-
-typedef enum _SYSTEM_INFORMATION_CLASS {
-  SystemProcessInformation = 5,  // This is the number that we need.
-} SYSTEM_INFORMATION_CLASS;
-
-// https://msdn.microsoft.com/en-us/library/gg750647.aspx?f=255&MSPPError=-2147217396
-typedef struct {
-  HANDLE UniqueProcess;  // Actually process ID
-  HANDLE UniqueThread;   // Actually thread ID
-} CLIENT_ID;
-
-// From http://alax.info/blog/1182, with corrections and modifications
-// Originally from
-// http://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FSystem%20Information%2FStructures%2FSYSTEM_THREAD.html
-struct SYSTEM_THREAD_INFORMATION {
-  ULONGLONG KernelTime;
-  ULONGLONG UserTime;
-  ULONGLONG CreateTime;
-  ULONG WaitTime;
-  // Padding here in 64-bit
-  PVOID StartAddress;
-  CLIENT_ID ClientId;
-  KPRIORITY Priority;
-  LONG BasePriority;
-  ULONG ContextSwitchCount;
-  ULONG State;
-  KWAIT_REASON WaitReason;
-};
-#if _M_X64
-static_assert(sizeof(SYSTEM_THREAD_INFORMATION) == 80,
-              "Structure size mismatch");
-#else
-static_assert(sizeof(SYSTEM_THREAD_INFORMATION) == 64,
-              "Structure size mismatch");
-#endif
-
-// From http://alax.info/blog/1182, with corrections and modifications
-// Originally from
-// http://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FSystem%20Information%2FStructures%2FSYSTEM_THREAD.html
-struct SYSTEM_PROCESS_INFORMATION {
-  ULONG NextEntryOffset;
-  ULONG NumberOfThreads;
-  // http://processhacker.sourceforge.net/doc/struct___s_y_s_t_e_m___p_r_o_c_e_s_s___i_n_f_o_r_m_a_t_i_o_n.html
-  ULONGLONG WorkingSetPrivateSize;
-  ULONG HardFaultCount;
-  ULONG Reserved1;
-  ULONGLONG CycleTime;
-  ULONGLONG CreateTime;
-  ULONGLONG UserTime;
-  ULONGLONG KernelTime;
-  UNICODE_STRING ImageName;
-  KPRIORITY BasePriority;
-  HANDLE ProcessId;
-  HANDLE ParentProcessId;
-  ULONG HandleCount;
-  ULONG Reserved2[2];
-  // Padding here in 64-bit
-  VM_COUNTERS VirtualMemoryCounters;
-  size_t Reserved3;
-  IO_COUNTERS IoCounters;
-  SYSTEM_THREAD_INFORMATION Threads[1];
-};
-#if _M_X64
-static_assert(sizeof(SYSTEM_PROCESS_INFORMATION) == 336,
-              "Structure size mismatch");
-#else
-static_assert(sizeof(SYSTEM_PROCESS_INFORMATION) == 248,
-              "Structure size mismatch");
-#endif
-
-// ntstatus.h conflicts with windows.h so define this locally.
-#define STATUS_SUCCESS              ((NTSTATUS)0x00000000L)
-#define STATUS_BUFFER_TOO_SMALL     ((NTSTATUS)0xC0000023L)
-#define STATUS_INFO_LENGTH_MISMATCH ((NTSTATUS)0xC0000004L)
 
 // Simple memory buffer wrapper for passing the data out of
 // QuerySystemProcessInformation.
@@ -158,10 +76,6 @@ class ByteBuffer {
 
 // Wrapper for NtQuerySystemProcessInformation with buffer reallocation logic.
 bool QuerySystemProcessInformation(ByteBuffer* buffer) {
-  typedef NTSTATUS(WINAPI * NTQUERYSYSTEMINFORMATION)(
-      SYSTEM_INFORMATION_CLASS SystemInformationClass, PVOID SystemInformation,
-      ULONG SystemInformationLength, PULONG ReturnLength);
-
   HMODULE ntdll = ::GetModuleHandle(L"ntdll.dll");
   if (!ntdll) {
     NOTREACHED();
@@ -183,9 +97,16 @@ bool QuerySystemProcessInformation(ByteBuffer* buffer) {
   for (int i = 0; i < 10; i++) {
     ULONG data_size = 0;
     ULONG buffer_size = static_cast<ULONG>(buffer->capacity());
-    result = nt_query_system_information_ptr(
-        SystemProcessInformation,
-        buffer->data(), buffer_size, &data_size);
+
+    if (g_query_system_information_for_test) {
+      data_size =
+          g_query_system_information_for_test(buffer->data(), buffer_size);
+      result =
+          (data_size > buffer_size) ? STATUS_BUFFER_TOO_SMALL : STATUS_SUCCESS;
+    } else {
+      result = nt_query_system_information_ptr(
+          SystemProcessInformation, buffer->data(), buffer_size, &data_size);
+    }
 
     if (result == STATUS_SUCCESS) {
       buffer->set_size(data_size);
@@ -510,12 +431,9 @@ std::unique_ptr<ProcessDataSnapshot> SharedSampler::CaptureSnapshot() {
         // not count context switches for threads that are missing in the most
         // recent snapshot.
         ProcessData process_data;
-
         process_data.physical_bytes =
             static_cast<int64_t>(pi->WorkingSetPrivateSize);
-
         process_data.start_time = ConvertTicksToTime(pi->CreateTime);
-
         process_data.cpu_time =
             ConvertTicksToTimeDelta(pi->KernelTime + pi->UserTime);
 

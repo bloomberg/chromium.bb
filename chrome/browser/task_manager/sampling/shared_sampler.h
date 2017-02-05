@@ -62,6 +62,14 @@ class SharedSampler : public base::RefCountedThreadSafe<SharedSampler> {
   // second) on the worker thread.
   void Refresh(base::ProcessId process_id, int64_t refresh_flags);
 
+#if defined(OS_WIN)
+  // Specifies a function to use in place of NtQuerySystemInformation.
+  typedef int (*QuerySystemInformationForTest)(unsigned char* buffer,
+                                               int buffer_size);
+  static void SetQuerySystemInformationForTest(
+      QuerySystemInformationForTest query_system_information);
+#endif  // defined(OS_WIN)
+
  private:
   friend class base::RefCountedThreadSafe<SharedSampler>;
   ~SharedSampler();

@@ -11,9 +11,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/task_manager/sampling/shared_sampler_win_defines.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -26,8 +28,8 @@ namespace task_manager {
 class SharedSamplerTest : public testing::Test {
  public:
   SharedSamplerTest()
-    : blocking_pool_runner_(GetBlockingPoolRunner()),
-      shared_sampler_(new SharedSampler(blocking_pool_runner_)) {
+      : blocking_pool_runner_(GetBlockingPoolRunner()),
+        shared_sampler_(new SharedSampler(blocking_pool_runner_)) {
     shared_sampler_->RegisterCallbacks(
         base::GetCurrentProcId(),
         base::Bind(&SharedSamplerTest::OnIdleWakeupsRefreshDone,
@@ -38,7 +40,7 @@ class SharedSamplerTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&SharedSamplerTest::OnCpuTimeRefreshDone,
                    base::Unretained(this)));
-   }
+  }
 
   ~SharedSamplerTest() override {}
 
@@ -199,6 +201,57 @@ TEST_F(SharedSamplerTest, MultipleRefreshTypes) {
   EXPECT_EQ(REFRESH_TYPE_IDLE_WAKEUPS | REFRESH_TYPE_PHYSICAL_MEMORY |
                 REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME,
             finished_refresh_type());
+}
+
+static int ReturnZeroThreadProcessInformation(unsigned char* buffer,
+                                              int buffer_size) {
+  // Calculate the number of bytes required for the structure, and ImageName.
+  base::FilePath current_exe;
+  CHECK(PathService::Get(base::FILE_EXE, &current_exe));
+  base::string16 image_name = current_exe.BaseName().value();
+
+  const int kImageNameBytes = image_name.length() * sizeof(base::char16);
+  const int kRequiredBytes = sizeof(SYSTEM_PROCESS_INFORMATION) +
+                             kImageNameBytes + sizeof(base::char16);
+  if (kRequiredBytes > buffer_size)
+    return kRequiredBytes;
+
+  // Create a zero'd structure, so that fields such as thread count will be zero
+  // by default.
+  // Set process handle and image name, so the SharedSampler will match us.
+  memset(buffer, 0, kRequiredBytes);
+  SYSTEM_PROCESS_INFORMATION* process_info =
+      reinterpret_cast<SYSTEM_PROCESS_INFORMATION*>(buffer);
+  process_info->ProcessId = reinterpret_cast<HANDLE>(base::GetCurrentProcId());
+  process_info->ImageName.Length = process_info->ImageName.MaximumLength =
+      kImageNameBytes;
+  process_info->ImageName.Buffer = reinterpret_cast<LPWSTR>(process_info + 1);
+  process_info->NumberOfThreads = 0u;
+  process_info->WorkingSetPrivateSize = 1024ull;
+  buffer += sizeof(SYSTEM_PROCESS_INFORMATION);
+
+  // Copy the image name into place. The earlier memset() provides null
+  // termination.
+  memcpy(buffer, image_name.data(), kImageNameBytes);
+
+  return kRequiredBytes;
+}
+
+// Verifies that the SharedSampler copes with zero-thread processes.
+TEST_F(SharedSamplerTest, ZeroThreadProcess) {
+  SharedSampler::SetQuerySystemInformationForTest(
+      ReturnZeroThreadProcessInformation);
+
+  StartRefresh(REFRESH_TYPE_IDLE_WAKEUPS | REFRESH_TYPE_PHYSICAL_MEMORY |
+               REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME);
+  WaitUntilRefreshDone();
+  EXPECT_EQ(REFRESH_TYPE_IDLE_WAKEUPS | REFRESH_TYPE_PHYSICAL_MEMORY |
+                REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME,
+            finished_refresh_type());
+
+  EXPECT_EQ(1024ll, physical_bytes());
+
+  SharedSampler::SetQuerySystemInformationForTest(nullptr);
 }
 
 }  // namespace task_manager
