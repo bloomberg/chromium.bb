@@ -77,6 +77,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "media/midi/midi_switches.h"
+#include "net/cert/cert_verify_proc_android.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "ui/base/ui_base_switches.h"
@@ -1833,10 +1834,9 @@ const FeatureEntry kFeatureEntries[] = {
          ntp_snippets::kStudyName)},
     {"override-ntp-suggestions-source", IDS_FLAGS_OVERRIDE_SNIPPETS_SOURCE_NAME,
      IDS_FLAGS_OVERRIDE_SNIPPETS_SOURCE_DESCRIPTION, kOsAndroid,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
-         ntp_snippets::kContentSuggestionsSource,
-         kNTPSnippetsFeatureVariations,
-         ntp_snippets::kStudyName)},
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(ntp_snippets::kContentSuggestionsSource,
+                                        kNTPSnippetsFeatureVariations,
+                                        ntp_snippets::kStudyName)},
     {"enable-ntp-snippets-increased-visibility",
      IDS_FLAGS_ENABLE_NTP_SNIPPETS_VISIBILITY_NAME,
      IDS_FLAGS_ENABLE_NTP_SNIPPETS_VISIBILITY_DESCRIPTION, kOsAndroid,
@@ -2190,9 +2190,15 @@ const FeatureEntry kFeatureEntries[] = {
 
 #if defined(OS_CHROMEOS)
     {"show-arc-files-app", IDS_FLAGS_SHOW_ARC_FILES_APP_NAME,
-      IDS_FLAGS_SHOW_ARC_FILES_APP_DESCRIPTION, kOsCrOS,
-      FEATURE_VALUE_TYPE(arc::kShowArcFilesAppFeature)},
+     IDS_FLAGS_SHOW_ARC_FILES_APP_DESCRIPTION, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kShowArcFilesAppFeature)},
 #endif // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+    {"aia-fetching", IDS_FLAGS_AIA_FETCHING_NAME,
+     IDS_FLAGS_AIA_FETCHING_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(net::CertVerifyProcAndroid::kAIAFetchingFeature)},
+#endif
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
