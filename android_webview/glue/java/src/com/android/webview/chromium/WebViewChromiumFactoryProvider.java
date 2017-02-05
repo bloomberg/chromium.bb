@@ -344,18 +344,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         AwContents.setAwDrawGLFunctionTable(GraphicsUtils.getDrawGLFunctionTable());
     }
 
-    private void doNetworkInitializations(Context applicationContext) {
+    private void initNetworkChangeNotifier(Context applicationContext) {
         if (applicationContext.checkPermission(Manifest.permission.ACCESS_NETWORK_STATE,
                 Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED) {
             NetworkChangeNotifier.init(applicationContext);
             NetworkChangeNotifier.setAutoDetectConnectivityState(
                     new AwNetworkChangeNotifierRegistrationPolicy());
         }
-
-        int targetSdkVersion = applicationContext.getApplicationInfo().targetSdkVersion;
-        // TODO(sgurun) We need to change this to > N_MR1 when we roll N_MR1 sdk or
-        //  >= O when we roll O SDK to upstream. crbug/688556
-        AwContentsStatics.setCheckClearTextPermitted(targetSdkVersion > 25);
     }
 
     private void ensureChromiumStartedLocked(boolean onMainThread) {
@@ -427,7 +422,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         final Context context = ContextUtils.getApplicationContext();
         setUpResources(webViewPackageName, context);
         initPlatSupportLibrary();
-        doNetworkInitializations(context);
+        initNetworkChangeNotifier(context);
         final boolean isExternalService = true;
         AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, isExternalService);
         AwBrowserProcess.start();

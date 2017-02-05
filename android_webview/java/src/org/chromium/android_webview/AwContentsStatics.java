@@ -87,10 +87,6 @@ public class AwContentsStatics {
         nativeSetSafeBrowsingEnabled(enable);
     }
 
-    public static void setCheckClearTextPermitted(boolean permitted) {
-        nativeSetCheckClearTextPermitted(permitted);
-    }
-
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
@@ -102,5 +98,4 @@ public class AwContentsStatics {
             AwContentsIoThreadClient ioThreadClient, AwBrowserContext browserContext);
     private static native boolean nativeGetSafeBrowsingEnabled();
     private static native void nativeSetSafeBrowsingEnabled(boolean enable);
-    private static native void nativeSetCheckClearTextPermitted(boolean permitted);
 }
