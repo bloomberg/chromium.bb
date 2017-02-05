@@ -590,8 +590,7 @@ void LocalFrame::setPrinting(bool printing,
     if (LayoutView* layoutView = view()->layoutView()) {
       layoutView->setPreferredLogicalWidthsDirty();
       layoutView->setNeedsLayout(LayoutInvalidationReason::PrintingChanged);
-      if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-        layoutView->setShouldDoFullPaintInvalidationForViewAndAllDescendants();
+      layoutView->setShouldDoFullPaintInvalidationForViewAndAllDescendants();
     }
     view()->layout();
     view()->adjustViewSize();
