@@ -52,15 +52,15 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   }
 
   void EchoCopyOutputRequest(
-      const CopyOutputRequest& c,
+      std::unique_ptr<CopyOutputRequest> c,
       const EchoCopyOutputRequestCallback& callback) override {
     callback.Run(std::move(c));
   }
 
   void EchoCopyOutputResult(
-      const CopyOutputResult& c,
+      std::unique_ptr<CopyOutputResult> c,
       const EchoCopyOutputResultCallback& callback) override {
-    callback.Run(c);
+    callback.Run(std::move(c));
   }
 
   void EchoFilterOperation(
@@ -380,45 +380,47 @@ TEST_F(StructTraitsTest, CopyOutputRequest) {
   input->set_area(area);
   input->set_source(source);
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  CopyOutputRequest output;
-  proxy->EchoCopyOutputRequest(*input.get(), &output);
+  std::unique_ptr<CopyOutputRequest> output;
+  proxy->EchoCopyOutputRequest(std::move(input), &output);
 
-  EXPECT_TRUE(output.force_bitmap_result());
-  EXPECT_FALSE(output.has_texture_mailbox());
-  EXPECT_TRUE(output.has_area());
-  EXPECT_EQ(area, output.area());
-  EXPECT_EQ(source, output.source());
+  EXPECT_TRUE(output->force_bitmap_result());
+  EXPECT_FALSE(output->has_texture_mailbox());
+  EXPECT_TRUE(output->has_area());
+  EXPECT_EQ(area, output->area());
+  EXPECT_EQ(source, output->source());
 
   // Test with texture mailbox.
   input = CopyOutputRequest::CreateRequest(callback);
   input->SetTextureMailbox(texture_mailbox);
 
-  CopyOutputRequest output2;
-  proxy->EchoCopyOutputRequest(*input.get(), &output2);
+  std::unique_ptr<CopyOutputRequest> output2;
+  proxy->EchoCopyOutputRequest(std::move(input), &output2);
 
-  EXPECT_TRUE(output2.has_texture_mailbox());
-  EXPECT_FALSE(output2.has_area());
-  EXPECT_EQ(mailbox, output2.texture_mailbox().mailbox());
-  EXPECT_EQ(target, output2.texture_mailbox().target());
-  EXPECT_FALSE(output2.has_source());
+  EXPECT_TRUE(output2->has_texture_mailbox());
+  EXPECT_FALSE(output2->has_area());
+  EXPECT_EQ(mailbox, output2->texture_mailbox().mailbox());
+  EXPECT_EQ(target, output2->texture_mailbox().target());
+  EXPECT_FALSE(output2->has_source());
 }
 
 TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
   auto bitmap = base::MakeUnique<SkBitmap>();
   bitmap->allocN32Pixels(7, 8);
   bitmap->eraseARGB(123, 213, 77, 33);
+  auto in_bitmap = base::MakeUnique<SkBitmap>();
+  bitmap->deepCopyTo(in_bitmap.get());
   auto input = CopyOutputResult::CreateBitmapResult(std::move(bitmap));
+  auto size = input->size();
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  CopyOutputResult output;
-  proxy->EchoCopyOutputResult(*input, &output);
+  std::unique_ptr<CopyOutputResult> output;
+  proxy->EchoCopyOutputResult(std::move(input), &output);
 
-  EXPECT_TRUE(output.HasBitmap());
-  EXPECT_FALSE(output.HasTexture());
-  EXPECT_EQ(input->size(), output.size());
+  EXPECT_TRUE(output->HasBitmap());
+  EXPECT_FALSE(output->HasTexture());
+  EXPECT_EQ(size, output->size());
 
-  std::unique_ptr<SkBitmap> in_bitmap = input->TakeBitmap();
-  std::unique_ptr<SkBitmap> out_bitmap = output.TakeBitmap();
+  std::unique_ptr<SkBitmap> out_bitmap = output->TakeBitmap();
   EXPECT_EQ(in_bitmap->getSize(), out_bitmap->getSize());
   EXPECT_EQ(0, std::memcmp(in_bitmap->getPixels(), out_bitmap->getPixels(),
                            in_bitmap->getSize()));
@@ -439,16 +441,16 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
                                                      std::move(callback));
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  CopyOutputResult output;
-  proxy->EchoCopyOutputResult(*input, &output);
+  std::unique_ptr<CopyOutputResult> output;
+  proxy->EchoCopyOutputResult(std::move(input), &output);
 
-  EXPECT_FALSE(output.HasBitmap());
-  EXPECT_TRUE(output.HasTexture());
-  EXPECT_EQ(size, output.size());
+  EXPECT_FALSE(output->HasBitmap());
+  EXPECT_TRUE(output->HasTexture());
+  EXPECT_EQ(size, output->size());
 
   TextureMailbox out_mailbox;
   std::unique_ptr<SingleReleaseCallback> out_callback;
-  output.TakeTexture(&out_mailbox, &out_callback);
+  output->TakeTexture(&out_mailbox, &out_callback);
   EXPECT_EQ(mailbox, out_mailbox.mailbox());
 }
 

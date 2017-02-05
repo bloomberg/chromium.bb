@@ -6,38 +6,38 @@
 #define CC_IPC_COPY_OUTPUT_REQUEST_STRUCT_TRAITS_H_
 
 #include "cc/ipc/copy_output_request.mojom-shared.h"
+#include "cc/ipc/texture_mailbox_struct_traits.h"
 #include "cc/output/copy_output_request.h"
+#include "mojo/common/common_custom_types_struct_traits.h"
+#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {
 
 template <>
 struct StructTraits<cc::mojom::CopyOutputRequestDataView,
-                    cc::CopyOutputRequest> {
+                    std::unique_ptr<cc::CopyOutputRequest>> {
   static const base::Optional<base::UnguessableToken>& source(
-      const cc::CopyOutputRequest& request) {
-    return request.source_;
+      const std::unique_ptr<cc::CopyOutputRequest>& request) {
+    return request->source_;
   }
 
-  static bool force_bitmap_result(const cc::CopyOutputRequest& request) {
-    return request.force_bitmap_result_;
+  static bool force_bitmap_result(
+      const std::unique_ptr<cc::CopyOutputRequest>& request) {
+    return request->force_bitmap_result_;
   }
 
   static const base::Optional<gfx::Rect>& area(
-      const cc::CopyOutputRequest& request) {
-    return request.area_;
+      const std::unique_ptr<cc::CopyOutputRequest>& request) {
+    return request->area_;
   }
 
   static const base::Optional<cc::TextureMailbox>& texture_mailbox(
-      const cc::CopyOutputRequest& request) {
-    return request.texture_mailbox_;
+      const std::unique_ptr<cc::CopyOutputRequest>& request) {
+    return request->texture_mailbox_;
   }
 
   static bool Read(cc::mojom::CopyOutputRequestDataView data,
-                   cc::CopyOutputRequest* out) {
-    out->force_bitmap_result_ = data.force_bitmap_result();
-    return data.ReadSource(&out->source_) && data.ReadArea(&out->area_) &&
-           data.ReadTextureMailbox(&out->texture_mailbox_);
-  }
+                   std::unique_ptr<cc::CopyOutputRequest>* out_p);
 };
 
 }  // namespace mojo

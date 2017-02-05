@@ -8,4 +8,4 @@ traits_headers = [ "//cc/ipc/copy_output_request_struct_traits.h" ]
 sources = [
   "//cc/ipc:struct_traits",
 ]
-type_mappings = [ "cc.mojom.CopyOutputRequest=cc::CopyOutputRequest" ]
+type_mappings = [ "cc.mojom.CopyOutputRequest=std::unique_ptr<cc::CopyOutputRequest>[move_only]" ]

@@ -7,21 +7,35 @@
 namespace mojo {
 
 // static
-bool StructTraits<cc::mojom::CopyOutputResultDataView, cc::CopyOutputResult>::
-    Read(cc::mojom::CopyOutputResultDataView data, cc::CopyOutputResult* out) {
-  out->bitmap_ = base::MakeUnique<SkBitmap>();
-  return data.ReadSize(&out->size_) && data.ReadBitmap(out->bitmap_.get()) &&
-         data.ReadTextureMailbox(&out->texture_mailbox_);
+bool StructTraits<cc::mojom::CopyOutputResultDataView,
+                  std::unique_ptr<cc::CopyOutputResult>>::
+    Read(cc::mojom::CopyOutputResultDataView data,
+         std::unique_ptr<cc::CopyOutputResult>* out_p) {
+  auto result = cc::CopyOutputResult::CreateEmptyResult();
+
+  if (!data.ReadSize(&result->size_))
+    return false;
+
+  result->bitmap_ = base::MakeUnique<SkBitmap>();
+  if (!data.ReadBitmap(result->bitmap_.get()))
+    return false;
+
+  if (!data.ReadTextureMailbox(&result->texture_mailbox_))
+    return false;
+
+  *out_p = std::move(result);
+
+  return true;
 }
 
 // static
-const SkBitmap&
-StructTraits<cc::mojom::CopyOutputResultDataView, cc::CopyOutputResult>::bitmap(
-    const cc::CopyOutputResult& result) {
+const SkBitmap& StructTraits<cc::mojom::CopyOutputResultDataView,
+                             std::unique_ptr<cc::CopyOutputResult>>::
+    bitmap(const std::unique_ptr<cc::CopyOutputResult>& result) {
   static SkBitmap* null_bitmap = new SkBitmap();
-  if (!result.bitmap_)
+  if (!result->bitmap_)
     return *null_bitmap;
-  return *result.bitmap_;
+  return *result->bitmap_;
 }
 
 }  // namespace mojo

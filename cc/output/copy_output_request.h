@@ -47,8 +47,6 @@ class CC_EXPORT CopyOutputRequest {
       const CopyOutputRequest& original_request,
       const CopyOutputRequestCallback& result_callback);
 
-  CopyOutputRequest();
-
   ~CopyOutputRequest();
 
   bool IsEmpty() const { return result_callback_.is_null(); }
@@ -87,8 +85,9 @@ class CC_EXPORT CopyOutputRequest {
 
  private:
   friend struct mojo::StructTraits<mojom::CopyOutputRequestDataView,
-                                   CopyOutputRequest>;
+                                   std::unique_ptr<CopyOutputRequest>>;
 
+  CopyOutputRequest();
   CopyOutputRequest(bool force_bitmap_result,
                     const CopyOutputRequestCallback& result_callback);
 
@@ -97,6 +96,8 @@ class CC_EXPORT CopyOutputRequest {
   base::Optional<gfx::Rect> area_;
   base::Optional<TextureMailbox> texture_mailbox_;
   CopyOutputRequestCallback result_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(CopyOutputRequest);
 };
 
 }  // namespace cc

@@ -104,6 +104,8 @@ cc_source_set("struct_traits") {
     "compositor_frame_metadata_struct_traits.h",
     "compositor_frame_struct_traits.cc",
     "compositor_frame_struct_traits.h",
+    "copy_output_request_struct_traits.cc",
+    "copy_output_request_struct_traits.h",
     "copy_output_result_struct_traits.cc",
     "copy_output_result_struct_traits.h",
     "filter_operation_struct_traits.h",

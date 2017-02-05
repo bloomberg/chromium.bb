@@ -12,4 +12,4 @@ public_deps = [
 sources = [
   "//cc/ipc:struct_traits",
 ]
-type_mappings = [ "cc.mojom.CopyOutputResult=cc::CopyOutputResult" ]
+type_mappings = [ "cc.mojom.CopyOutputResult=std::unique_ptr<cc::CopyOutputResult>[move_only]" ]
