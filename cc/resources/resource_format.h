@@ -27,8 +27,7 @@ enum ResourceFormat {
   ETC1,
   RED_8,
   LUMINANCE_F16,
-  RGBA_F16,
-  RESOURCE_FORMAT_MAX = RGBA_F16,
+  RESOURCE_FORMAT_MAX = LUMINANCE_F16,
 };
 
 CC_EXPORT int BitsPerPixel(ResourceFormat format);

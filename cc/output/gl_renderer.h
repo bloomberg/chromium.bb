@@ -85,7 +85,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool blend_enabled() const { return blend_shadow_; }
 
   bool CanPartialSwap() override;
-  ResourceFormat BackbufferFormat() const override;
   void BindFramebufferToOutputSurface(DrawingFrame* frame) override;
   bool BindFramebufferToTexture(DrawingFrame* frame,
                                 const ScopedResource* resource) override;
