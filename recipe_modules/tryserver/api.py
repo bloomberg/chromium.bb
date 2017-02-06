@@ -11,7 +11,6 @@ from recipe_engine import recipe_api
 
 PATCH_STORAGE_RIETVELD = 'rietveld'
 PATCH_STORAGE_GIT = 'git'
-PATCH_STORAGE_SVN = 'svn'
 
 
 class TryserverApi(recipe_api.RecipeApi):
@@ -20,16 +19,10 @@ class TryserverApi(recipe_api.RecipeApi):
     self._failure_reasons = []
 
   @property
-  def patch_url(self):
-    """Reads patch_url property and corrects it if needed."""
-    url = self.m.properties.get('patch_url')
-    return url
-
-  @property
   def is_tryserver(self):
     """Returns true iff we can apply_issue or patch."""
-    return (self.can_apply_issue or self.is_patch_in_svn or
-            self.is_patch_in_git or self.is_gerrit_issue)
+    return (
+        self.can_apply_issue or self.is_patch_in_git or self.is_gerrit_issue)
 
   @property
   def can_apply_issue(self):
@@ -47,11 +40,6 @@ class TryserverApi(recipe_api.RecipeApi):
     return ('event.patchSet.ref' in self.m.properties and
             'event.change.url' in self.m.properties and
             'event.change.id' in self.m.properties)
-
-  @property
-  def is_patch_in_svn(self):
-    """Returns true iff the properties exist to patch from a patch URL."""
-    return self.patch_url
 
   @property
   def is_patch_in_git(self):
@@ -75,27 +63,6 @@ class TryserverApi(recipe_api.RecipeApi):
 
     self.m.step('apply patch', patch_cmd,
                       stdin=patch_content)
-
-  def apply_from_svn(self, cwd):
-    """Downloads patch from patch_url using svn-export and applies it"""
-    # TODO(nodir): accept these properties as parameters
-    patch_url = self.patch_url
-    root = cwd
-    if root is None:
-      issue_root = self.m.rietveld.calculate_issue_root()
-      root = self.m.path['checkout'].join(issue_root)
-
-    patch_file = self.m.raw_io.output('.diff')
-    ext = '.bat' if self.m.platform.is_win else ''
-    svn_cmd = ['svn' + ext, 'export', '--force', patch_url, patch_file]
-
-    result = self.m.step('download patch', svn_cmd,
-                         step_test_data=self.test_api.patch_content)
-    result.presentation.logs['patch.diff'] = (
-        result.raw_io.output.split('\n'))
-
-    patch_content = self.m.raw_io.input(result.raw_io.output)
-    self._apply_patch_step(patch_content=patch_content, root=root)
 
   def apply_from_git(self, cwd):
     """Downloads patch from given git repo and ref and applies it"""
@@ -134,8 +101,6 @@ class TryserverApi(recipe_api.RecipeApi):
 
     if self.can_apply_issue:
       return PATCH_STORAGE_RIETVELD
-    elif self.is_patch_in_svn:
-      return PATCH_STORAGE_SVN
 
   def maybe_apply_issue(self, cwd=None, authentication=None):
     """If we're a trybot, apply a codereview issue.
@@ -152,8 +117,6 @@ class TryserverApi(recipe_api.RecipeApi):
       return self.m.rietveld.apply_issue(
           self.m.rietveld.calculate_issue_root(),
           authentication=authentication)
-    elif storage == PATCH_STORAGE_SVN:
-      return self.apply_from_svn(cwd)
     elif storage == PATCH_STORAGE_GIT:
       return self.apply_from_git(cwd)
     else:
