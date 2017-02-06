@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/syslog_logging.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/device_info/local_device_info_provider.h"
@@ -149,8 +150,11 @@ bool SyncServiceBase::GetLocalSyncConfig(
   if (local_sync_backend_folder->empty()) {
     // TODO(pastarmovj): Add DIR_ROAMING_USER_DATA to PathService to simplify
     // this code and move the logic in its right place. See crbug/657810.
-    CHECK(
-        base::PathService::Get(base::DIR_APP_DATA, local_sync_backend_folder));
+    if (!base::PathService::Get(base::DIR_APP_DATA,
+                                local_sync_backend_folder)) {
+      SYSLOG(WARNING) << "Local sync can not get the roaming profile folder.";
+      return false;
+    }
     *local_sync_backend_folder = local_sync_backend_folder->Append(
         FILE_PATH_LITERAL("Chrome/User Data"));
   }
