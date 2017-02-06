@@ -1,19 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 <script src="../resources/biquad-filters.js"></script>
 <script src="../resources/biquad-testing.js"></script>
 </head>
 
 <body>
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Test Biquad getFrequencyResponse() functionality.");
+let audit = Audit.createTaskRunner();
 
 // Test the frequency response of a biquad filter.  We compute the frequency response for a simple
 // peaking biquad filter and compare it with the expected frequency response.  The actual filter
@@ -171,7 +169,7 @@ function absolutePhaseDifference(x, y)
 }
 
 // Compare the frequency response with our expected response.
-function compareResponses(filter, frequencies, magResponse, phaseResponse)
+function compareResponses(should, filter, frequencies, magResponse, phaseResponse)
 {
     var expectedResponse = frequencyResponseReference(filter, frequencies);
 
@@ -179,7 +177,6 @@ function compareResponses(filter, frequencies, magResponse, phaseResponse)
     expectedPhases = expectedResponse.phases;
 
     var n = magResponse.length;
-    var success = true;
     var badResponse = false;
 
     var maxMagError = -1;
@@ -189,42 +186,32 @@ function compareResponses(filter, frequencies, magResponse, phaseResponse)
     var hasBadNumber;
 
     hasBadNumber = findBadNumber(magResponse);
-    if (hasBadNumber >= 0) {
-        testFailed("Magnitude response has NaN or infinity at " + hasBadNumber);
-        success = false;
-        badResponse = true;
-    }
+    badResponse = !should(hasBadNumber >= 0 ? 1 : 0,
+      "Number of non-finite values in magnitude response")
+      .beEqualTo(0);
 
     hasBadNumber = findBadNumber(phaseResponse);
-    if (hasBadNumber >= 0) {
-        testFailed("Phase response has NaN or infinity at " + hasBadNumber);
-        success = false;
-        badResponse = true;
-    }
+    badResponse = !should(hasBadNumber >= 0 ? 1 : 0,
+      "Number of non-finte values in phase response")
+      .beEqualTo(0);
 
     // These aren't testing the implementation itself.  Instead, these are sanity checks on the
     // reference.  Failure here does not imply an error in the implementation.
     hasBadNumber = findBadNumber(expectedMagnitudes);
-    if (hasBadNumber >= 0) {
-        testFailed("Expected magnitude response has NaN or infinity at " + hasBadNumber);
-        success = false;
-        badResponse = true;
-    }
+    badResponse = !should(hasBadNumber >= 0 ? 1 : 0,
+      "Number of non-finite values in the expected magnitude response")
+      .beEqualTo(0);
 
     hasBadNumber = findBadNumber(expectedPhases);
-    if (hasBadNumber >= 0) {
-        testFailed("Expected phase response has NaN or infinity at " + hasBadNumber);
-        success = false;
-        badResponse = true;
-    }
+    badResponse = !should(hasBadNumber >= 0 ? 1 : 0,
+      "Number of non-finite values in expected phase response")
+      .beEqualTo(0);
 
     // If we found a NaN or infinity, the following tests aren't very helpful, especially for NaN.
     // We run them anyway, after printing a warning message.
-
-    if (badResponse) {
-        testFailed("NaN or infinity in the actual or expected results makes the following test results suspect.");
-        success = false;
-    }
+    should(!badResponse,
+      "Actual and expected results contained only finite values")
+      .beTrue();
 
     for (k = 0; k < n; ++k) {
         var error = Math.abs(linearToDecibels(magResponse[k]) - linearToDecibels(expectedMagnitudes[k]));
@@ -234,17 +221,12 @@ function compareResponses(filter, frequencies, magResponse, phaseResponse)
         }
     }
 
-    if (maxMagError > maxAllowedMagError) {
-        var message = "Magnitude error (" + maxMagError + " dB)";
-        message += " exceeded threshold at " + frequencies[maxMagErrorIndex];
-        message += " Hz.  Actual: " + linearToDecibels(magResponse[maxMagErrorIndex]);
-        message += " dB, expected: " + linearToDecibels(expectedMagnitudes[maxMagErrorIndex]) + " dB.";
-        testFailed(message);
-        success = false;
-    } else {
-        testPassed("Magnitude response within acceptable threshold.");
-    }
-
+    should(
+        linearToDecibels(maxMagError), 'Max error (' +
+            linearToDecibels(maxMagError) +
+            ' dB) of magnitude response at frequency ' +
+            frequencies[maxMagErrorIndex] + ' Hz')
+        .beLessThanOrEqualTo(linearToDecibels(maxAllowedMagError));
     var maxPhaseError = -1;
     var maxPhaseErrorIndex = -1;
 
@@ -256,30 +238,20 @@ function compareResponses(filter, frequencies, magResponse, phaseResponse)
         }
     }
 
-    if (maxPhaseError > maxAllowedPhaseError) {
-        var message = "Phase error (radians) (" + maxPhaseError;
-        message += ") exceeded threshold at " + frequencies[maxPhaseErrorIndex];
-        message += " Hz.  Actual: " + phaseResponse[maxPhaseErrorIndex];
-        message += " expected: " + expectedPhases[maxPhaseErrorIndex];
-        testFailed(message);
-        success = false;
-    } else {
-        testPassed("Phase response within acceptable threshold.");
-    }
-
-
-    return success;
+    should(
+        radToDegree(maxPhaseError), 'Max error (' + radToDegree(maxPhaseError) +
+            ' deg) in phase response at frequency ' +
+            frequencies[maxPhaseErrorIndex] + ' Hz')
+        .beLessThanOrEqualTo(radToDegree(maxAllowedPhaseError));
 }
 
-function runTest()
-{
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
+function radToDegree(rad) {
+    // Radians to degrees
+    return rad * 180 / Math.PI;
+}
 
-    window.jsTestIsAsync = true;
-
+audit.define("test", function (task, should) {
+    task.describe("Biquad frequency response");
     context = new AudioContext();
     
     filter = context.createBiquadFilter();
@@ -295,20 +267,12 @@ function runTest()
     phaseResponse = new Float32Array(numberOfFrequencies);
 
     filter.getFrequencyResponse(frequencies, magResponse, phaseResponse);
-    var success = compareResponses(filter, frequencies, magResponse, phaseResponse);
+    compareResponses(should, filter, frequencies, magResponse, phaseResponse);
 
-    if (success) {
-        testPassed("Frequency response was correct.");
-    } else {
-        testFailed("Frequency response was incorrect.");
-    }
+    task.done();
+});
 
-    finishJSTest();
-}
-
-runTest();
-successfullyParsed = true;
-
+audit.run();
 </script>
 
 </body>
