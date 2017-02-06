@@ -32,6 +32,8 @@
 #define WebMediaStreamSource_h
 
 #include "WebCommon.h"
+#include "WebMediaStreamTrack.h"
+
 #include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
 #include "WebVector.h"
@@ -54,7 +56,6 @@ class WebMediaStreamSource {
     virtual ~ExtraData() {}
 
     BLINK_PLATFORM_EXPORT WebMediaStreamSource owner();
-
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT void setOwner(MediaStreamSource*);
 #endif

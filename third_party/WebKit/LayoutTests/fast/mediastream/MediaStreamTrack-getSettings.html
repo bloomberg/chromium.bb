@@ -20,10 +20,22 @@ promise_test(function() {
 }, 'A video track returns settings');
 
 promise_test(function() {
+  return navigator.mediaDevices.getUserMedia({audio: true})
+      .then(function(s) {
+    settings = s.getAudioTracks()[0].getSettings();
+    assert_greater_than(Object.keys(settings).length, 0);
+    assert_true('deviceId' in settings,
+                'Device ID missing: ' + JSON.stringify(settings));
+  });
+}, 'An audio track returns the expected variables');
+
+promise_test(function() {
   return navigator.mediaDevices.getUserMedia({video: true})
       .then(function(s) {
     settings = s.getVideoTracks()[0].getSettings();
     assert_greater_than(Object.keys(settings).length, 0);
+    assert_true('deviceId' in settings,
+                'Device ID missing: ' + JSON.stringify(settings));
     assert_true('frameRate' in settings,
                 'Frame rate missing: ' + JSON.stringify(settings));
     assert_true('width' in settings,
@@ -31,7 +43,17 @@ promise_test(function() {
     assert_true('height' in settings,
                 'Height missing: ' + JSON.stringify(settings));
   });
-}, 'A video track returns frame rate');
+}, 'A video track returns the expected variables');
+
+promise_test(function() {
+  return navigator.mediaDevices.getUserMedia({audio: true, video: true})
+    .then(function(s) {
+      videoSettings = s.getVideoTracks()[0].getSettings();
+      audioSettings = s.getAudioTracks()[0].getSettings();
+      assert_not_equals(videoSettings.deviceId, audioSettings.deviceId,
+                        'video and audio device IDs should be different')
+    });
+}, 'Video and audio device IDs are different');
 
 promise_test(function() {
   return navigator.mediaDevices.getUserMedia(

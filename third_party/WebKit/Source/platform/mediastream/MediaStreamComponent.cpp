@@ -94,6 +94,7 @@ void MediaStreamComponent::AudioSourceProviderImpl::wrap(
 void MediaStreamComponent::getSettings(
     WebMediaStreamTrack::Settings& settings) {
   DCHECK(m_trackData);
+  m_source->getSettings(settings);
   m_trackData->getSettings(settings);
 }
 

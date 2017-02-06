@@ -90,6 +90,10 @@ bool MediaStreamSource::removeAudioConsumer(
   return true;
 }
 
+void MediaStreamSource::getSettings(WebMediaStreamTrack::Settings& settings) {
+  settings.deviceId = id();
+}
+
 void MediaStreamSource::setAudioFormat(size_t numberOfChannels,
                                        float sampleRate) {
   ASSERT(m_requiresConsumer);

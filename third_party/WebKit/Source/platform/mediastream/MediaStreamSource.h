@@ -35,6 +35,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioDestinationConsumer.h"
 #include "public/platform/WebMediaConstraints.h"
+#include "public/platform/WebMediaStreamTrack.h"
 #include "wtf/Allocator.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
@@ -93,6 +94,7 @@ class PLATFORM_EXPORT MediaStreamSource final
     m_constraints = constraints;
   }
   WebMediaConstraints constraints() { return m_constraints; }
+  void getSettings(WebMediaStreamTrack::Settings&);
 
   void setAudioFormat(size_t numberOfChannels, float sampleRate);
   void consumeAudio(AudioBus*, size_t numberOfFrames);
