@@ -29,12 +29,8 @@ void ReceiverMojoToMediaAdapter::OnLog(const std::string& message) {
   receiver_->OnLog(message);
 }
 
-void ReceiverMojoToMediaAdapter::OnBufferDestroyed(int buffer_id_to_drop) {
-  // Nothing to do here.
-  // This call is only needed for clients who need to explicitly share buffers
-  // with other processes and keep track of which buffers the buffer pool is
-  // no longer going to reuse/resurrect.
-  // In the world of Mojo, we do not need to share buffers explicitly.
+void ReceiverMojoToMediaAdapter::OnBufferRetired(int buffer_id) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace video_capture

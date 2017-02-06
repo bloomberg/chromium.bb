@@ -95,6 +95,9 @@ VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {
   // This should be on the platform auxiliary thread since
   // |external_jpeg_decoder_| need to be destructed on the same thread as
   // OnIncomingCapturedData.
+
+  for (int buffer_id : buffer_ids_known_by_receiver_)
+    receiver_->OnBufferRetired(buffer_id);
 }
 
 // static
@@ -293,6 +296,7 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
     media::VideoPixelFormat pixel_format,
     media::VideoPixelStorage pixel_storage,
     int frame_feedback_id) {
+  DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
   DCHECK_GT(frame_size.width(), 0);
   DCHECK_GT(frame_size.height(), 0);
   DCHECK(IsFormatSupported(pixel_format));
@@ -301,8 +305,17 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
   const int buffer_id =
       buffer_pool_->ReserveForProducer(frame_size, pixel_format, pixel_storage,
                                        frame_feedback_id, &buffer_id_to_drop);
-  if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId)
-    receiver_->OnBufferDestroyed(buffer_id_to_drop);
+  if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId) {
+    // |buffer_pool_| has decided to release a buffer. Notify receiver in case
+    // the buffer has already been shared with it.
+    auto entry_iter =
+        std::find(buffer_ids_known_by_receiver_.begin(),
+                  buffer_ids_known_by_receiver_.end(), buffer_id_to_drop);
+    if (entry_iter != buffer_ids_known_by_receiver_.end()) {
+      buffer_ids_known_by_receiver_.erase(entry_iter);
+      receiver_->OnBufferRetired(buffer_id_to_drop);
+    }
+  }
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return Buffer();
   return MakeBufferStruct(buffer_pool_, buffer_id, frame_feedback_id);
@@ -313,6 +326,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
     const VideoCaptureFormat& format,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
+  DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
   OnIncomingCapturedBufferExt(std::move(buffer), format, reference_time,
                               timestamp, gfx::Rect(format.frame_size),
                               VideoFrameMetadata());
@@ -325,6 +339,11 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
     base::TimeDelta timestamp,
     gfx::Rect visible_rect,
     const VideoFrameMetadata& additional_metadata) {
+  DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
+
+  if (!base::ContainsValue(buffer_ids_known_by_receiver_, buffer.id()))
+    buffer_ids_known_by_receiver_.push_back(buffer.id());
+
   auto buffer_access = buffer.handle_provider()->GetHandleForInProcessAccess();
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalSharedMemory(
@@ -352,6 +371,7 @@ VideoCaptureDeviceClient::ResurrectLastOutputBuffer(
     media::VideoPixelFormat format,
     media::VideoPixelStorage storage,
     int new_frame_feedback_id) {
+  DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
   const int buffer_id =
       buffer_pool_->ResurrectLastForProducer(dimensions, format, storage);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)

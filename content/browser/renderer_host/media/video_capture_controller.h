@@ -134,32 +134,43 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
       scoped_refptr<media::VideoFrame> frame) override;
   void OnError() override;
   void OnLog(const std::string& message) override;
-  void OnBufferDestroyed(int buffer_id_to_drop) override;
+  void OnBufferRetired(int buffer_id) override;
 
  private:
   struct ControllerClient;
   typedef std::list<std::unique_ptr<ControllerClient>> ControllerClients;
 
-  class BufferState {
+  class BufferContext {
    public:
-    explicit BufferState(
+    BufferContext(
+        int buffer_context_id,
         int buffer_id,
-        int frame_feedback_id,
         media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer,
         media::FrameBufferPool* frame_buffer_pool);
-    ~BufferState();
-    BufferState(const BufferState& other);
+    ~BufferContext();
+    BufferContext(const BufferContext& other);
+    BufferContext& operator=(const BufferContext& other);
+    int buffer_context_id() const { return buffer_context_id_; }
+    int buffer_id() const { return buffer_id_; }
+    bool is_retired() const { return is_retired_; }
+    void set_is_retired() { is_retired_ = true; }
+    void set_frame_feedback_id(int id) { frame_feedback_id_ = id; }
+    void set_consumer_feedback_observer(
+        media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer) {
+      consumer_feedback_observer_ = consumer_feedback_observer;
+    }
+    void set_frame_buffer_pool(media::FrameBufferPool* frame_buffer_pool) {
+      frame_buffer_pool_ = frame_buffer_pool;
+    }
     void RecordConsumerUtilization(double utilization);
     void IncreaseConsumerCount();
     void DecreaseConsumerCount();
     bool HasZeroConsumerHoldCount();
-    void SetFrameFeedbackId(int id);
-    void SetConsumerFeedbackObserver(
-        media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer);
-    void SetFrameBufferPool(media::FrameBufferPool* frame_buffer_pool);
 
    private:
-    const int buffer_id_;
+    int buffer_context_id_;
+    int buffer_id_;
+    bool is_retired_;
     int frame_feedback_id_;
     media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer_;
     media::FrameBufferPool* frame_buffer_pool_;
@@ -176,12 +187,23 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
   ControllerClient* FindClient(int session_id,
                                const ControllerClients& clients);
 
+  std::vector<BufferContext>::iterator FindBufferContextFromBufferContextId(
+      int buffer_context_id);
+  std::vector<BufferContext>::iterator FindUnretiredBufferContextFromBufferId(
+      int buffer_id);
+
+  void OnClientFinishedConsumingBuffer(ControllerClient* client,
+                                       int buffer_id,
+                                       double consumer_resource_utilization);
+  void ReleaseBufferContext(
+      const std::vector<BufferContext>::iterator& buffer_state_iter);
+
   std::unique_ptr<media::FrameBufferPool> frame_buffer_pool_;
 
   std::unique_ptr<media::VideoFrameConsumerFeedbackObserver>
       consumer_feedback_observer_;
 
-  std::map<int, BufferState> buffer_id_to_state_map_;
+  std::vector<BufferContext> buffer_contexts_;
 
   // All clients served by this controller.
   ControllerClients controller_clients_;
@@ -189,6 +211,8 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
   // Takes on only the states 'STARTED' and 'ERROR'. 'ERROR' is an absorbing
   // state which stops the flow of data to clients.
   VideoCaptureState state_;
+
+  int next_buffer_context_id_ = 0;
 
   // True if the controller has received a video frame from the device.
   bool has_received_frames_;

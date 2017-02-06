@@ -35,11 +35,10 @@ void VideoFrameReceiverOnIOThread::OnLog(const std::string& message) {
       base::Bind(&VideoFrameReceiver::OnLog, receiver_, message));
 }
 
-void VideoFrameReceiverOnIOThread::OnBufferDestroyed(int buffer_id_to_drop) {
+void VideoFrameReceiverOnIOThread::OnBufferRetired(int buffer_id) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&VideoFrameReceiver::OnBufferDestroyed, receiver_,
-                 buffer_id_to_drop));
+      base::Bind(&VideoFrameReceiver::OnBufferRetired, receiver_, buffer_id));
 }
 
 }  // namespace content

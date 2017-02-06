@@ -178,14 +178,12 @@ namespace content {
 // Phase 3: As soon as the creation of the VideoCaptureDevice is complete, this
 // newly created VideoCaptureDevice instance is connected to the
 // VideoCaptureController via SetConsumerFeedbackObserver(). Furthermore, the
-// |buffer_pool| is connected to the |video_capture_controller| as a
+// |buffer_pool| is moved to the |video_capture_controller| as a
 // FrameBufferPool via SetFrameBufferPool().
 // Phase 4: This phase can only be reached on Android. When the application goes
 // to the background, the |video_capture_device| is asynchronously stopped and
-// released on the Device Thread. The existing |buffer_pool| is kept alive, and
-// all clients of |video_capture_controller| stay connected. When the
-// application is resumed, we transition to Phase 2, except that the existing
-// |buffer_pool| get reused instead of creating a new one.
+// released on the Device Thread. When the application is resumed, we
+// transition to Phase 2.
 struct VideoCaptureManager::DeviceEntry {
  public:
   DeviceEntry(MediaStreamType stream_type,
@@ -283,11 +281,9 @@ VideoCaptureManager::DeviceEntry::CreateDeviceClient() {
   const int max_buffers = stream_type == MEDIA_TAB_VIDEO_CAPTURE
                               ? kMaxNumberOfBuffersForTabCapture
                               : kMaxNumberOfBuffers;
-  if (!buffer_pool) {
-    buffer_pool = new media::VideoCaptureBufferPoolImpl(
-        base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
-        max_buffers);
-  }
+  buffer_pool = new media::VideoCaptureBufferPoolImpl(
+      base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
+      max_buffers);
 
   return base::MakeUnique<media::VideoCaptureDeviceClient>(
       base::MakeUnique<VideoFrameReceiverOnIOThread>(
@@ -303,7 +299,7 @@ std::unique_ptr<media::FrameBufferPool>
 VideoCaptureManager::DeviceEntry::CreateFrameBufferPool() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(buffer_pool);
-  return base::MakeUnique<BufferPoolFrameBufferPool>(buffer_pool);
+  return base::MakeUnique<BufferPoolFrameBufferPool>(std::move(buffer_pool));
 }
 
 VideoCaptureManager::DeviceInfo::DeviceInfo() = default;

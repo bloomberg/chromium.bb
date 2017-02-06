@@ -42,7 +42,7 @@ class MockVideoCaptureController : public VideoCaptureController {
   MOCK_METHOD1(MockOnIncomingCapturedVideoFrame, void(const gfx::Size&));
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnLog, void(const std::string& message));
-  MOCK_METHOD1(OnBufferDestroyed, void(int buffer_id_to_drop));
+  MOCK_METHOD1(OnBufferRetired, void(int buffer_id));
 
   void OnIncomingCapturedVideoFrame(
       media::VideoCaptureDevice::Client::Buffer buffer,
@@ -56,11 +56,11 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
   return base::MakeUnique<content::VideoCaptureGpuJpegDecoder>(decode_done_cb);
 }
 
-// Note that this test does not exercise the class VideoCaptureDeviceClient
-// in isolation. The "unit under test" is an instance of
-// VideoCaptureDeviceClient with some context that is specific to
-// renderer_host/media, and therefore this test must live here and not in
-// media/capture/video.
+// Test fixture for testing a unit consisting of an instance of
+// VideoCaptureDeviceClient connected to a partly-mocked instance of
+// VideoCaptureController, and an instance of VideoCaptureBufferPoolImpl
+// as well as related threading glue that replicates how it is used in
+// production.
 class VideoCaptureDeviceClientTest : public ::testing::Test {
  public:
   VideoCaptureDeviceClientTest()

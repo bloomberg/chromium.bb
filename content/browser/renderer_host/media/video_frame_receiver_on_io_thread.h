@@ -26,7 +26,7 @@ class CONTENT_EXPORT VideoFrameReceiverOnIOThread
       scoped_refptr<media::VideoFrame> frame) override;
   void OnError() override;
   void OnLog(const std::string& message) override;
-  void OnBufferDestroyed(int buffer_id_to_drop) override;
+  void OnBufferRetired(int buffer_id) override;
 
  private:
   base::WeakPtr<VideoFrameReceiver> receiver_;

@@ -9,10 +9,12 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_collision_warner.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/video/video_capture_device.h"
 
@@ -34,11 +36,6 @@ using VideoCaptureJpegDecoderFactoryCB =
 // v4l2_thread on Linux, and the UI thread for tab capture.
 // The owner is responsible for making sure that the instance outlives these
 // calls.
-//
-// It has an internal ref counted TextureWrapHelper class used to wrap incoming
-// GpuMemoryBuffers into Texture backed VideoFrames. This class creates and
-// manages the necessary entities to interact with the GPU process, notably an
-// offscreen Context to avoid janking the UI thread.
 class CAPTURE_EXPORT VideoCaptureDeviceClient
     : public media::VideoCaptureDevice::Client,
       public base::SupportsWeakPtr<VideoCaptureDeviceClient> {
@@ -103,6 +100,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
 
   // The receiver to which we post events.
   const std::unique_ptr<VideoFrameReceiver> receiver_;
+  std::vector<int> buffer_ids_known_by_receiver_;
 
   const VideoCaptureJpegDecoderFactoryCB jpeg_decoder_factory_callback_;
   std::unique_ptr<VideoCaptureJpegDecoder> external_jpeg_decoder_;
@@ -122,6 +120,11 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
 #endif  // DCHECK_IS_ON()
 
   media::VideoPixelFormat last_captured_pixel_format_;
+
+  // Thread collision warner to ensure that producer-facing API is not called
+  // concurrently. Producers are allowed to call from multiple threads, but not
+  // concurrently.
+  DFAKE_MUTEX(call_from_producer_);
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceClient);
 };
