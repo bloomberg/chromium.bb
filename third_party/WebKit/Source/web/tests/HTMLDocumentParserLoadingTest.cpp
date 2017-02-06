@@ -5,6 +5,7 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 
 #include "core/dom/Document.h"
+#include "platform/testing/HistogramTester.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/tests/sim/SimRequest.h"
@@ -14,8 +15,16 @@ namespace blink {
 
 using namespace HTMLNames;
 
+class HTMLDocumentParserSimTest : public SimTest {
+ protected:
+  HTMLDocumentParserSimTest() {
+    Document::setThreadedParsingEnabledForTesting(true);
+  }
+  HistogramTester m_histogram;
+};
+
 class HTMLDocumentParserLoadingTest
-    : public SimTest,
+    : public HTMLDocumentParserSimTest,
       public ::testing::WithParamInterface<bool> {
  protected:
   HTMLDocumentParserLoadingTest() {
@@ -372,6 +381,94 @@ TEST_P(HTMLDocumentParserLoadingTest,
   EXPECT_TRUE(document().getElementById("after"));
 
   cssAsyncResource.complete("");
+}
+
+TEST_F(HTMLDocumentParserSimTest, NoRewindNoDocWrite) {
+  SimRequest mainResource("https://example.com/test.html", "text/html");
+  loadURL("https://example.com/test.html");
+
+  mainResource.complete(
+      "<!DOCTYPE html>"
+      "<html><body>no doc write"
+      "</body></html>");
+
+  testing::runPendingTasks();
+  m_histogram.expectTotalCount("Parser.DiscardedTokenCount", 0);
+}
+
+TEST_F(HTMLDocumentParserSimTest, RewindBrokenToken) {
+  SimRequest mainResource("https://example.com/test.html", "text/html");
+  loadURL("https://example.com/test.html");
+
+  mainResource.complete(
+      "<!DOCTYPE html>"
+      "<script>"
+      "document.write('<a');"
+      "</script>");
+
+  testing::runPendingTasks();
+  m_histogram.expectTotalCount("Parser.DiscardedTokenCount", 1);
+}
+
+TEST_F(HTMLDocumentParserSimTest, RewindDifferentNamespace) {
+  SimRequest mainResource("https://example.com/test.html", "text/html");
+  loadURL("https://example.com/test.html");
+
+  mainResource.complete(
+      "<!DOCTYPE html>"
+      "<script>"
+      "document.write('<svg>');"
+      "</script>");
+
+  testing::runPendingTasks();
+  m_histogram.expectTotalCount("Parser.DiscardedTokenCount", 1);
+}
+
+TEST_F(HTMLDocumentParserSimTest, NoRewindSaneDocWrite1) {
+  SimRequest mainResource("https://example.com/test.html", "text/html");
+  loadURL("https://example.com/test.html");
+
+  mainResource.complete(
+      "<!DOCTYPE html>"
+      "<script>"
+      "document.write('<script>console.log(\'hello world\');<\\/script>');"
+      "</script>");
+
+  testing::runPendingTasks();
+  m_histogram.expectTotalCount("Parser.DiscardedTokenCount", 0);
+}
+
+TEST_F(HTMLDocumentParserSimTest, NoRewindSaneDocWrite2) {
+  SimRequest mainResource("https://example.com/test.html", "text/html");
+  loadURL("https://example.com/test.html");
+
+  mainResource.complete(
+      "<!DOCTYPE html>"
+      "<script>"
+      "document.write('<p>hello world<\\/p><a>yo');"
+      "</script>");
+
+  testing::runPendingTasks();
+  m_histogram.expectTotalCount("Parser.DiscardedTokenCount", 0);
+}
+
+TEST_F(HTMLDocumentParserSimTest, NoRewindSaneDocWriteWithTitle) {
+  SimRequest mainResource("https://example.com/test.html", "text/html");
+  loadURL("https://example.com/test.html");
+
+  mainResource.complete(
+      "<!DOCTYPE html>"
+      "<html>"
+      "<head>"
+      "<title></title>"
+      "<script>document.write('<p>testing');</script>"
+      "</head>"
+      "<body>"
+      "</body>"
+      "</html>");
+
+  testing::runPendingTasks();
+  m_histogram.expectTotalCount("Parser.DiscardedTokenCount", 0);
 }
 
 }  // namespace blink
