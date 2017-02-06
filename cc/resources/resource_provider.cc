@@ -86,6 +86,9 @@ GLenum TextureToStorageFormat(ResourceFormat format) {
     case BGRA_8888:
       storage_format = GL_BGRA8_EXT;
       break;
+    case RGBA_F16:
+      storage_format = GL_RGBA16F_EXT;
+      break;
     case RGBA_4444:
     case ALPHA_8:
     case LUMINANCE_8:
@@ -103,6 +106,7 @@ GLenum TextureToStorageFormat(ResourceFormat format) {
 bool IsFormatSupportedForStorage(ResourceFormat format, bool use_bgra) {
   switch (format) {
     case RGBA_8888:
+    case RGBA_F16:
       return true;
     case BGRA_8888:
       return use_bgra;
@@ -126,6 +130,8 @@ GrPixelConfig ToGrPixelConfig(ResourceFormat format) {
       return kBGRA_8888_GrPixelConfig;
     case RGBA_4444:
       return kRGBA_4444_GrPixelConfig;
+    case RGBA_F16:
+      return kRGBA_half_GrPixelConfig;
     default:
       break;
   }
@@ -537,6 +543,11 @@ bool ResourceProvider::IsResourceFormatSupported(ResourceFormat format) const {
       return caps.texture_rg;
     case LUMINANCE_F16:
       return caps.texture_half_float_linear;
+    case RGBA_F16:
+      // TODO(ccameron): This will always return false on pixel tests, which
+      // makes it un-test-able until we upgrade Mesa.
+      // https://crbug.com/687720
+      return caps.texture_half_float_linear && caps.color_buffer_float;
   }
 
   NOTREACHED();
@@ -576,8 +587,8 @@ ResourceId ResourceProvider::CreateResource(
   DCHECK(!size.IsEmpty());
   switch (settings_.default_resource_type) {
     case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
-      // GPU memory buffers don't support LUMINANCE_F16.
-      if (format != LUMINANCE_F16) {
+      // GPU memory buffers don't support LUMINANCE_F16 or RGBA_F16 yet.
+      if (format != LUMINANCE_F16 && format != RGBA_F16) {
         return CreateGLTexture(
             size, hint, RESOURCE_TYPE_GPU_MEMORY_BUFFER, format,
             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, color_space);

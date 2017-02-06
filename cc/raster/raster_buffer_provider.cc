@@ -27,6 +27,7 @@ bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
     case RGBA_4444:
     case RGBA_8888:
     case BGRA_8888:
+    case RGBA_F16:
     case ETC1:
       return true;
     case ALPHA_8:
@@ -76,7 +77,8 @@ void RasterBufferProvider::PlaybackToMemory(
 
   switch (format) {
     case RGBA_8888:
-    case BGRA_8888: {
+    case BGRA_8888:
+    case RGBA_F16: {
       sk_sp<SkSurface> surface =
           SkSurface::MakeRasterDirect(info, memory, stride, &surface_props);
       raster_source->PlaybackToCanvas(surface->getCanvas(), canvas_bitmap_rect,
@@ -143,6 +145,7 @@ bool RasterBufferProvider::ResourceFormatRequiresSwizzle(
     case RGB_565:
     case RED_8:
     case LUMINANCE_F16:
+    case RGBA_F16:
       return false;
   }
   NOTREACHED();

@@ -65,6 +65,10 @@ bool SoftwareRenderer::CanPartialSwap() {
   return true;
 }
 
+ResourceFormat SoftwareRenderer::BackbufferFormat() const {
+  return resource_provider_->best_texture_format();
+}
+
 void SoftwareRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   TRACE_EVENT0("cc", "SoftwareRenderer::BeginDrawingFrame");
   root_canvas_ = output_device_->BeginPaint(frame->root_damage_rect);

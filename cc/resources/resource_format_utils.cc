@@ -24,6 +24,8 @@ SkColorType ResourceFormatToClosestSkColorType(ResourceFormat format) {
     case RED_8:
     case LUMINANCE_F16:
       return kN32_SkColorType;
+    case RGBA_F16:
+      return kRGBA_F16_SkColorType;
   }
   NOTREACHED();
   return kN32_SkColorType;

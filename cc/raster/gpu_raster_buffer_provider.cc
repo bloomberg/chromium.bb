@@ -49,8 +49,10 @@ static void RasterizeSource(
   SkSurface* sk_surface = scoped_surface.sk_surface();
   // Allocating an SkSurface will fail after a lost context.  Pretend we
   // rasterized, as the contents of the resource don't matter anymore.
-  if (!sk_surface)
+  if (!sk_surface) {
+    DLOG(ERROR) << "Failed to allocate raster surface";
     return;
+  }
 
   // Playback
   gfx::Rect playback_rect = raster_full_rect;

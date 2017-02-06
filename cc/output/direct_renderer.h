@@ -144,6 +144,7 @@ class CC_EXPORT DirectRenderer {
 
   // Private interface implemented by subclasses for use by DirectRenderer.
   virtual bool CanPartialSwap() = 0;
+  virtual ResourceFormat BackbufferFormat() const = 0;
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) = 0;
   virtual bool BindFramebufferToTexture(DrawingFrame* frame,
                                         const ScopedResource* resource) = 0;

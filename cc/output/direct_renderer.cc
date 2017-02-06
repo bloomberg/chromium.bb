@@ -609,9 +609,9 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   size.Enlarge(enlarge_pass_texture_amount_.width(),
                enlarge_pass_texture_amount_.height());
   if (!texture->id()) {
-    texture->Allocate(
-        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
-        resource_provider_->best_texture_format(), frame->device_color_space);
+    texture->Allocate(size,
+                      ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
+                      BackbufferFormat(), frame->device_color_space);
   }
   DCHECK(texture->id());
 

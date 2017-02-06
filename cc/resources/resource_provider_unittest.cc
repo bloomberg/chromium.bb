@@ -3473,7 +3473,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
 
   gfx::Size size(2, 2);
 
-  const ResourceFormat formats[2] = {RGBA_8888, BGRA_8888};
+  const ResourceFormat formats[3] = {RGBA_8888, BGRA_8888, RGBA_F16};
   const ResourceProvider::TextureHint hints[4] = {
       ResourceProvider::TEXTURE_HINT_DEFAULT,
       ResourceProvider::TEXTURE_HINT_IMMUTABLE,
@@ -3491,7 +3491,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
       bool is_immutable_hint =
           hints[texture_id - 1] & ResourceProvider::TEXTURE_HINT_IMMUTABLE;
       bool support_immutable_texture =
-          is_immutable_hint && formats[i] == RGBA_8888;
+          is_immutable_hint && formats[i] != BGRA_8888;
       EXPECT_CALL(*context, texStorage2DEXT(_, _, _, 2, 2))
           .Times(support_immutable_texture ? 1 : 0);
       EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _))

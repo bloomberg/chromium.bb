@@ -37,6 +37,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 
  protected:
   bool CanPartialSwap() override;
+  ResourceFormat BackbufferFormat() const override;
   void BindFramebufferToOutputSurface(DrawingFrame* frame) override;
   bool BindFramebufferToTexture(DrawingFrame* frame,
                                 const ScopedResource* texture) override;
