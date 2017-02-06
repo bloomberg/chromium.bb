@@ -40,6 +40,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 const char kTestUrl1[] =
@@ -332,11 +336,11 @@ void SelectTabUsingUI(NSString* title) {
   // Reload each tab.
   for (NSUInteger i = 0; i < numberOfTabs; i++) {
     chrome_test_util::SelectTabAtIndexInCurrentMode(i);
-    // Clear the page so that we can check when pade reload is complete.
+    // Clear the page so that we can check when page reload is complete.
     __block bool finished = false;
     chrome_test_util::GetCurrentWebState()->ExecuteJavaScript(
         base::UTF8ToUTF16(kClearPageScript),
-        base::BindBlock(^(const base::Value*) {
+        base::BindBlockArc(^(const base::Value*) {
           finished = true;
         }));
 

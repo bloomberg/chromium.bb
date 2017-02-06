@@ -134,6 +134,7 @@ source_set("unit_tests_internal") {
 }
 
 source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "tab_usage_recorder_egtest.mm",
