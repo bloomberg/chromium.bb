@@ -197,6 +197,12 @@ void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
   SendBannerPromptRequest();
 }
 
+void AppBannerManagerAndroid::ResetCurrentPageData() {
+  AppBannerManager::ResetCurrentPageData();
+  native_app_data_.Reset();
+  native_app_package_ = "";
+}
+
 void AppBannerManagerAndroid::ShowBanner() {
   content::WebContents* contents = web_contents();
   DCHECK(contents);

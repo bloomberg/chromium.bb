@@ -161,6 +161,9 @@ class AppBannerManager : public content::WebContentsObserver,
   void ReportStatus(content::WebContents* web_contents,
                     InstallableStatusCode code);
 
+  // Resets all fetched data for the current page.
+  virtual void ResetCurrentPageData();
+
   // Stops the banner pipeline, preventing any outstanding callbacks from
   // running and resetting the manager state. This method is virtual to allow
   // tests to intercept it and verify correct behaviour.

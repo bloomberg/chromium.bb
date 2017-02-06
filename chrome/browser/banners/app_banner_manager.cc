@@ -304,6 +304,14 @@ void AppBannerManager::ReportStatus(content::WebContents* web_contents,
   }
 }
 
+void AppBannerManager::ResetCurrentPageData() {
+  active_media_players_.clear();
+  manifest_ = content::Manifest();
+  manifest_url_ = GURL();
+  validated_url_ = GURL();
+  referrer_.erase();
+}
+
 void AppBannerManager::Stop() {
   if (was_canceled_by_page_ && !page_requested_prompt_) {
     TrackBeforeInstallEvent(
@@ -327,8 +335,6 @@ void AppBannerManager::Stop() {
   was_canceled_by_page_ = false;
   page_requested_prompt_ = false;
   need_to_log_status_ = false;
-  validated_url_ = GURL();
-  referrer_.erase();
 }
 
 void AppBannerManager::SendBannerPromptRequest() {
@@ -363,7 +369,7 @@ void AppBannerManager::DidStartNavigation(content::NavigationHandle* handle) {
 void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
   if (handle->IsInMainFrame() && handle->HasCommitted() &&
       !handle->IsSamePage()) {
-    active_media_players_.clear();
+    ResetCurrentPageData();
     if (is_active_)
       Stop();
   }

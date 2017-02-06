@@ -73,9 +73,9 @@ class AppBannerManagerAndroid
   bool IsWebAppInstalled(content::BrowserContext* browser_context,
                          const GURL& start_url,
                          const GURL& manifest_url) override;
-
   void PerformInstallableCheck() override;
   void OnAppIconFetched(const SkBitmap& bitmap) override;
+  void ResetCurrentPageData() override;
   void ShowBanner() override;
 
  private:
