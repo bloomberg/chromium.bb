@@ -218,7 +218,7 @@ function touchTapInTarget(targetSelector, targetFrame) {
   });
 }
 
-function touchScrollInTarget(targetSelector, direction) {
+function pointerDragInTarget(pointerType, targetSelector, direction) {
   return new Promise(function(resolve, reject) {
     if (window.chrome && chrome.gpuBenchmarking) {
       scrollPageIfNeeded(targetSelector, document);
@@ -229,18 +229,18 @@ function touchScrollInTarget(targetSelector, direction) {
       var newXPosition = xPosition;
       var newYPosition = yPosition;
       if (direction == "down")
-        newYPosition -= scrollOffset;
-      else if (direction == "up")
         newYPosition += scrollOffset;
+      else if (direction == "up")
+        newYPosition -= scrollOffset;
       else if (direction == "right")
-        newXPosition -= scrollOffset;
-      else if (direction == "left")
         newXPosition += scrollOffset;
+      else if (direction == "left")
+        newXPosition -= scrollOffset;
       else
-        throw("Scroll direction '" + direction + "' is not expected, we expecte 'down', 'up', 'left' or 'right'");
+        throw("drag direction '" + direction + "' is not expected, direction should be 'down', 'up', 'left' or 'right'");
 
       chrome.gpuBenchmarking.pointerActionSequence( [
-        {"source": "touch",
+        {"source": pointerType,
          "actions": [
             { "name": "pointerDown", "x": xPosition, "y": yPosition },
             { "name": "pointerMove", "x": newXPosition, "y": newYPosition },
@@ -251,6 +251,18 @@ function touchScrollInTarget(targetSelector, direction) {
       reject();
     }
   });
+}
+
+function touchScrollInTarget(targetSelector, direction) {
+  if (direction == "down")
+    direction = "up";
+  else if (direction == "up")
+    direction = "down";
+  else if (direction == "right")
+    direction = "left";
+  else if (direction == "left")
+    direction = "right";
+  return pointerDragInTarget('touch', targetSelector, direction);
 }
 
 function pinchZoomInTarget(targetSelector, scale) {

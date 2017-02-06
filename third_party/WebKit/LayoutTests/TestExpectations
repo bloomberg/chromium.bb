@@ -1464,13 +1464,6 @@ crbug.com/619539 [ Win ] virtual/mojo-loading/http/tests/workers/terminate-durin
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 
-# These are the failing because Chrome implements the latest changes proposed to the spec.
-crbug.com/630671 external/wpt/pointerevents/pointerevent_capture_suppressing_mouse-manual.html [ Skip ]
-crbug.com/630671 external/wpt/pointerevents/pointerevent_releasepointercapture_events_to_original_target-manual.html [ Skip ]
-crbug.com/630671 external/wpt/pointerevents/pointerevent_setpointercapture_relatedtarget-manual.html [ Skip ]
-crbug.com/629722 external/wpt/pointerevents/pointerevent_lostpointercapture_is_first-manual.html  [ Skip ]
-crbug.com/629722 external/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node-manual.html  [ Skip ]
-
 crbug.com/662010 [ Win7 ] csspaint/invalidation-background-image.html [ Skip ]
 
 # These tests are skipped as there is no touch support on Mac.
@@ -1479,6 +1472,7 @@ crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_attributes_noho
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_change-touch-action-onpointerdown_touch-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_pointerleave_after_pointercancel_touch-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_pointercancel_touch-manual.html [ Skip ]
+crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_releasepointercapture_events_to_original_target-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_releasepointercapture_onpointercancel_touch-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_pointerout_after_pointercancel_touch-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_touch-action-auto-css_touch-manual.html  [ Skip ]
