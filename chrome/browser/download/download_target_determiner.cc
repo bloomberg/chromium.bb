@@ -885,17 +885,6 @@ DownloadFileType::DangerLevel DownloadTargetDeterminer::GetDangerLevel(
     return DownloadFileType::NOT_DANGEROUS;
   }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Extensions that are not from the gallery are considered dangerous.
-  // When off-store install is disabled we skip this, since in this case, we
-  // will not offer to install the extension.
-  if (extensions::FeatureSwitch::easy_off_store_install()->IsEnabled() &&
-      is_extension_download &&
-      !extensions::WebstoreInstaller::GetAssociatedApproval(*download_)) {
-    return DownloadFileType::ALLOW_ON_USER_GESTURE;
-  }
-#endif
-
   // Anything the user has marked auto-open is OK if it's user-initiated.
   if (download_prefs_->IsAutoOpenEnabledBasedOnExtension(virtual_path_) &&
       download_->HasUserGesture())

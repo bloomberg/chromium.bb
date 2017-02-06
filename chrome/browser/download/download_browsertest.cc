@@ -98,7 +98,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/feature_switch.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -123,7 +122,6 @@ using content::DownloadManager;
 using content::DownloadUrlParameters;
 using content::WebContents;
 using extensions::Extension;
-using extensions::FeatureSwitch;
 using net::URLRequestMockHTTPJob;
 
 namespace {
@@ -2009,8 +2007,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
 // Download an extension. Expect a dangerous download warning.
 // Deny the download.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
-  FeatureSwitch::ScopedOverride enable_easy_off_store_install(
-      FeatureSwitch::easy_off_store_install(), true);
+  std::unique_ptr<base::AutoReset<bool>> allow_offstore_install =
+      download_crx_util::OverrideOffstoreInstallAllowedForTesting(true);
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
@@ -2034,8 +2032,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
 // Download an extension.  Expect a dangerous download warning.
 // Allow the download, deny the install.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
-  FeatureSwitch::ScopedOverride enable_easy_off_store_install(
-      FeatureSwitch::easy_off_store_install(), true);
+  std::unique_ptr<base::AutoReset<bool>> allow_offstore_install =
+      download_crx_util::OverrideOffstoreInstallAllowedForTesting(true);
   extensions::ScopedTestDialogAutoConfirm auto_confirm_install_prompt(
       extensions::ScopedTestDialogAutoConfirm::CANCEL);
 
@@ -2067,8 +2065,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
 // Download an extension.  Expect a dangerous download warning.
 // Allow the download, and the install.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
-  FeatureSwitch::ScopedOverride enable_easy_off_store_install(
-      FeatureSwitch::easy_off_store_install(), true);
+  std::unique_ptr<base::AutoReset<bool>> allow_offstore_install =
+      download_crx_util::OverrideOffstoreInstallAllowedForTesting(true);
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
@@ -2127,8 +2125,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
 
 // Install a large (100kb) theme.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
-  FeatureSwitch::ScopedOverride enable_easy_off_store_install(
-      FeatureSwitch::easy_off_store_install(), true);
+  std::unique_ptr<base::AutoReset<bool>> allow_offstore_install =
+      download_crx_util::OverrideOffstoreInstallAllowedForTesting(true);
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kLargeThemePath));
 
@@ -3790,8 +3788,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpenClosesShelf) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstallClosesShelf) {
-  FeatureSwitch::ScopedOverride enable_easy_off_store_install(
-      FeatureSwitch::easy_off_store_install(), true);
+  std::unique_ptr<base::AutoReset<bool>> allow_offstore_install =
+      download_crx_util::OverrideOffstoreInstallAllowedForTesting(true);
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 

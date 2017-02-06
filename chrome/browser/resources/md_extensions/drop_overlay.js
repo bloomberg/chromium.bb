@@ -9,8 +9,6 @@
     is: 'extensions-drop-overlay',
     created: function() {
       this.hidden = true;
-      if (loadTimeData.getBoolean('offStoreInstallEnabled'))
-        return;
       var dragTarget = document.documentElement;
       this.dragWrapperHandler_ =
           new extensions.DragAndDropHandler(true, dragTarget);

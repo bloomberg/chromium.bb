@@ -49,7 +49,6 @@
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_icon_set.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
@@ -327,41 +326,32 @@ CrxInstallError CrxInstaller::AllowInstall(const Extension* extension) {
   }
 
   if (install_cause_ == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD) {
-    if (FeatureSwitch::easy_off_store_install()->IsEnabled()) {
-      const char kHistogramName[] = "Extensions.OffStoreInstallDecisionEasy";
-      if (is_gallery_install()) {
-        UMA_HISTOGRAM_ENUMERATION(kHistogramName, OnStoreInstall,
-                                  NumOffStoreInstallDecision);
-      } else {
-        UMA_HISTOGRAM_ENUMERATION(kHistogramName, OffStoreInstallAllowed,
-                                  NumOffStoreInstallDecision);
-      }
+    // TODO(devlin): It appears that these histograms are never logged. We
+    // should either add them to histograms.xml or delete them.
+    const char kHistogramName[] = "Extensions.OffStoreInstallDecisionHard";
+    if (is_gallery_install()) {
+      UMA_HISTOGRAM_ENUMERATION(kHistogramName,
+                                OffStoreInstallDecision::OnStoreInstall,
+                                NumOffStoreInstallDecision);
+    } else if (off_store_install_allow_reason_ != OffStoreInstallDisallowed) {
+      UMA_HISTOGRAM_ENUMERATION(kHistogramName,
+                                OffStoreInstallDecision::OffStoreInstallAllowed,
+                                NumOffStoreInstallDecision);
+      UMA_HISTOGRAM_ENUMERATION("Extensions.OffStoreInstallAllowReason",
+                                off_store_install_allow_reason_,
+                                NumOffStoreInstallAllowReasons);
     } else {
-      const char kHistogramName[] = "Extensions.OffStoreInstallDecisionHard";
-      if (is_gallery_install()) {
-        UMA_HISTOGRAM_ENUMERATION(kHistogramName,
-                                  OffStoreInstallDecision::OnStoreInstall,
-                                  NumOffStoreInstallDecision);
-      } else if (off_store_install_allow_reason_ != OffStoreInstallDisallowed) {
-        UMA_HISTOGRAM_ENUMERATION(
-            kHistogramName, OffStoreInstallDecision::OffStoreInstallAllowed,
-            NumOffStoreInstallDecision);
-        UMA_HISTOGRAM_ENUMERATION("Extensions.OffStoreInstallAllowReason",
-                                  off_store_install_allow_reason_,
-                                  NumOffStoreInstallAllowReasons);
-      } else {
-        UMA_HISTOGRAM_ENUMERATION(
-            kHistogramName, OffStoreInstallDecision::OffStoreInstallDisallowed,
-            NumOffStoreInstallDecision);
-        // Don't delete source in this case so that the user can install
-        // manually if they want.
-        delete_source_ = false;
-        did_handle_successfully_ = false;
+      UMA_HISTOGRAM_ENUMERATION(
+          kHistogramName, OffStoreInstallDecision::OffStoreInstallDisallowed,
+          NumOffStoreInstallDecision);
+      // Don't delete source in this case so that the user can install
+      // manually if they want.
+      delete_source_ = false;
+      did_handle_successfully_ = false;
 
-        return CrxInstallError(CrxInstallError::ERROR_OFF_STORE,
-                               l10n_util::GetStringUTF16(
-                                   IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE));
-      }
+      return CrxInstallError(
+          CrxInstallError::ERROR_OFF_STORE,
+          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE));
     }
   }
 

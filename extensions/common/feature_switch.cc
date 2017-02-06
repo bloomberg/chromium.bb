@@ -23,8 +23,7 @@ const char kLoadMediaRouterComponentExtensionFlag[] =
 class CommonSwitches {
  public:
   CommonSwitches()
-      : easy_off_store_install(nullptr, FeatureSwitch::DEFAULT_DISABLED),
-        force_dev_mode_highlighting(switches::kForceDevModeHighlighting,
+      : force_dev_mode_highlighting(switches::kForceDevModeHighlighting,
                                     FeatureSwitch::DEFAULT_DISABLED),
         prompt_for_external_extensions(
 #if defined(CHROMIUM_BUILD)
@@ -58,10 +57,6 @@ class CommonSwitches {
                             FeatureSwitch::DEFAULT_DISABLED) {
   }
 
-  // Enables extensions to be easily installed from sites other than the web
-  // store.
-  FeatureSwitch easy_off_store_install;
-
   FeatureSwitch force_dev_mode_highlighting;
 
   // Should we prompt the user before allowing external extensions to install?
@@ -85,9 +80,6 @@ base::LazyInstance<CommonSwitches> g_common_switches =
 
 FeatureSwitch* FeatureSwitch::force_dev_mode_highlighting() {
   return &g_common_switches.Get().force_dev_mode_highlighting;
-}
-FeatureSwitch* FeatureSwitch::easy_off_store_install() {
-  return &g_common_switches.Get().easy_off_store_install;
 }
 FeatureSwitch* FeatureSwitch::prompt_for_external_extensions() {
   return &g_common_switches.Get().prompt_for_external_extensions;

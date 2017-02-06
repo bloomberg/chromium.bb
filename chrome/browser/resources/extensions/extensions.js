@@ -110,22 +110,20 @@ cr.define('extensions', function() {
       $('update-extensions-now').addEventListener('click',
           this.handleUpdateExtensionNow_.bind(this));
 
-      if (!loadTimeData.getBoolean('offStoreInstallEnabled')) {
-        var dragTarget = document.documentElement;
-        /** @private {extensions.DragAndDropHandler} */
-        this.dragWrapperHandler_ =
-            new extensions.DragAndDropHandler(true, dragTarget);
-        dragTarget.addEventListener('extension-drag-started', function() {
-          ExtensionSettings.showOverlay($('drop-target-overlay'));
-        });
-        dragTarget.addEventListener('extension-drag-ended', function() {
-          var overlay = ExtensionSettings.getCurrentOverlay();
-          if (overlay && overlay.id === 'drop-target-overlay')
-            ExtensionSettings.showOverlay(null);
-        });
-        this.dragWrapper_ =
-            new cr.ui.DragWrapper(dragTarget, this.dragWrapperHandler_);
-      }
+      var dragTarget = document.documentElement;
+      /** @private {extensions.DragAndDropHandler} */
+      this.dragWrapperHandler_ =
+          new extensions.DragAndDropHandler(true, dragTarget);
+      dragTarget.addEventListener('extension-drag-started', function() {
+        ExtensionSettings.showOverlay($('drop-target-overlay'));
+      });
+      dragTarget.addEventListener('extension-drag-ended', function() {
+        var overlay = ExtensionSettings.getCurrentOverlay();
+        if (overlay && overlay.id === 'drop-target-overlay')
+          ExtensionSettings.showOverlay(null);
+      });
+      this.dragWrapper_ =
+          new cr.ui.DragWrapper(dragTarget, this.dragWrapperHandler_);
 
       extensions.PackExtensionOverlay.getInstance().initializePage();
 

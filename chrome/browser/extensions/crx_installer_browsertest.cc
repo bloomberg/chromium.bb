@@ -380,13 +380,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, AllowedThemeFileTypes) {
   EXPECT_FALSE(base::PathExists(path.AppendASCII("non_images/test.css")));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
-  if (!FeatureSwitch::easy_off_store_install()->IsEnabled())
-    return;
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
+                       PackAndInstallExtensionFromDownload) {
+  std::unique_ptr<base::AutoReset<bool>> allow_offstore_install =
+      download_crx_util::OverrideOffstoreInstallAllowedForTesting(true);
 
   const int kNumDownloadsExpected = 1;
 
-  LOG(ERROR) << "PackAndInstallExtension: Packing extension";
   base::FilePath crx_path = PackExtension(
       test_data_dir_.AppendASCII("common/background_page"));
   ASSERT_FALSE(crx_path.empty());
@@ -398,24 +398,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
   download_crx_util::SetMockInstallPromptForTesting(
       mock_prompt->CreatePrompt());
 
-  LOG(ERROR) << "PackAndInstallExtension: Getting download manager";
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(browser()->profile());
 
-  LOG(ERROR) << "PackAndInstallExtension: Setting observer";
   std::unique_ptr<content::DownloadTestObserver> observer(
       new content::DownloadTestObserverTerminal(
           download_manager, kNumDownloadsExpected,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
-  LOG(ERROR) << "PackAndInstallExtension: Navigating to URL";
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
 
   EXPECT_TRUE(WaitForCrxInstallerDone());
-  LOG(ERROR) << "PackAndInstallExtension: Extension install";
   EXPECT_TRUE(mock_prompt->confirmation_requested());
-  LOG(ERROR) << "PackAndInstallExtension: Extension install confirmed";
 }
 
 // Tests that scopes are only granted if |record_oauth2_grant_| on the prompt is

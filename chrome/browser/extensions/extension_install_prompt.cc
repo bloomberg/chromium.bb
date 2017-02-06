@@ -667,16 +667,9 @@ void ExtensionInstallPrompt::ShowDialog(
   // We special-case themes to not show any confirm UI. Instead they are
   // immediately installed, and then we show an infobar (see OnInstallSuccess)
   // to allow the user to revert if they don't like it.
-  //
-  // We don't do this in the case where off-store extension installs are
-  // disabled because in that case, we don't show the dangerous download UI, so
-  // we need the UI confirmation.
-  if (extension->is_theme()) {
-    if (extension->from_webstore() ||
-        extensions::FeatureSwitch::easy_off_store_install()->IsEnabled()) {
-      base::ResetAndReturn(&done_callback_).Run(Result::ACCEPTED);
-      return;
-    }
+  if (extension->is_theme() && extension->from_webstore()) {
+    base::ResetAndReturn(&done_callback_).Run(Result::ACCEPTED);
+    return;
   }
 
   LoadImageIfNeeded();

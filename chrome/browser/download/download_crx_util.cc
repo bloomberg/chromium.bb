@@ -27,6 +27,8 @@ namespace download_crx_util {
 
 namespace {
 
+bool g_allow_offstore_install_for_testing = false;
+
 // Hold a mock ExtensionInstallPrompt object that will be used when the
 // download system opens a CRX.
 ExtensionInstallPrompt* mock_install_prompt_for_testing = NULL;
@@ -131,8 +133,15 @@ bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
   // TODO(aa): RefererURL is cleared in some cases, for example when going
   // between secure and non-secure URLs. It would be better if DownloadItem
   // tracked the initiating page explicitly.
-  return extensions::ExtensionManagementFactory::GetForBrowserContext(profile)
-      ->IsOffstoreInstallAllowed(item.GetURL(), item.GetReferrerUrl());
+  return g_allow_offstore_install_for_testing ||
+         extensions::ExtensionManagementFactory::GetForBrowserContext(profile)
+             ->IsOffstoreInstallAllowed(item.GetURL(), item.GetReferrerUrl());
+}
+
+std::unique_ptr<base::AutoReset<bool>> OverrideOffstoreInstallAllowedForTesting(
+    bool allowed) {
+  return base::MakeUnique<base::AutoReset<bool>>(
+      &g_allow_offstore_install_for_testing, allowed);
 }
 
 }  // namespace download_crx_util

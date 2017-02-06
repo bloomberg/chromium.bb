@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/auto_reset.h"
 #include "base/memory/ref_counted.h"
 
 class ExtensionInstallPrompt;
@@ -50,6 +51,11 @@ bool IsExtensionDownload(const content::DownloadItem& download_item);
 // installation site is whitelisted in prefs.
 bool OffStoreInstallAllowedByPrefs(Profile* profile,
                                    const content::DownloadItem& item);
+
+// Allows tests to override whether offstore extension installs are allowed
+// for testing purposes.
+std::unique_ptr<base::AutoReset<bool>> OverrideOffstoreInstallAllowedForTesting(
+    bool allowed);
 
 }  // namespace download_crx_util
 
