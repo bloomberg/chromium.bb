@@ -226,6 +226,10 @@ class WebStateImpl;
 // containing a password field.
 - (void)didShowPasswordInputOnHTTP;
 
+// Notifies the CRWWebController that the current page is an HTTP page
+// containing a credit card field.
+- (void)didShowCreditCardInputOnHTTP;
+
 // Notifies the CRWWebController that it has been hidden.
 - (void)wasHidden;
 

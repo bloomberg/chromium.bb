@@ -209,9 +209,15 @@ class WebState : public base::SupportsUserData {
   // Returns the currently visible WebInterstitial if one is shown.
   virtual WebInterstitial* GetWebInterstitial() const = 0;
 
-  // Tells the WebState that the current page is an HTTP page
-  // containing a password field.
+  // Called when the WebState has displayed a password field on an HTTP page.
+  // This method modifies the appropriate NavigationEntry's SSLStatus to record
+  // the sensitive input field, so that embedders can adjust the UI if desired.
   virtual void OnPasswordInputShownOnHttp() = 0;
+
+  // Called when the WebState has displayed a credit card field on an HTTP page.
+  // This method modifies the appropriate NavigationEntry's SSLStatus to record
+  // the sensitive input field, so that embedders can adjust the UI if desired.
+  virtual void OnCreditCardInputShownOnHttp() = 0;
 
   // Callback used to handle script commands.
   // The callback must return true if the command was handled, and false

@@ -702,6 +702,19 @@ TEST_F(CRWWebControllerNavigationTest, HTTPPassword) {
               web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
 }
 
+// Tests that didShowCreditCardInputOnHTTP updates the SSLStatus to indicate
+// that a credit card field has been displayed on an HTTP page.
+TEST_F(CRWWebControllerNavigationTest, HTTPCreditCard) {
+  LoadHtml(@"<html><body></body></html>", GURL("http://chromium.test"));
+  NavigationManagerImpl& nav_manager =
+      web_controller().webStateImpl->GetNavigationManagerImpl();
+  EXPECT_FALSE(nav_manager.GetLastCommittedItem()->GetSSL().content_status &
+               web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+  [web_controller() didShowCreditCardInputOnHTTP];
+  EXPECT_TRUE(nav_manager.GetLastCommittedItem()->GetSSL().content_status &
+              web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+}
+
 // Real WKWebView is required for CRWWebControllerFormActivityTest.
 typedef web::WebTestWithWebController CRWWebControllerFormActivityTest;
 

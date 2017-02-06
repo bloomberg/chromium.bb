@@ -62,6 +62,7 @@ class TestWebState : public WebState {
   bool IsShowingWebInterstitial() const override;
   WebInterstitial* GetWebInterstitial() const override;
   void OnPasswordInputShownOnHttp() override {}
+  void OnCreditCardInputShownOnHttp() override {}
 
   void AddObserver(WebStateObserver* observer) override;
 

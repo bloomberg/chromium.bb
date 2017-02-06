@@ -396,6 +396,10 @@ void WebStateImpl::OnPasswordInputShownOnHttp() {
   [web_controller_ didShowPasswordInputOnHTTP];
 }
 
+void WebStateImpl::OnCreditCardInputShownOnHttp() {
+  [web_controller_ didShowCreditCardInputOnHTTP];
+}
+
 net::HttpResponseHeaders* WebStateImpl::GetHttpResponseHeaders() const {
   return http_response_headers_.get();
 }

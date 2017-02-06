@@ -4269,6 +4269,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self didUpdateSSLStatusForCurrentNavigationItem];
 }
 
+- (void)didShowCreditCardInputOnHTTP {
+  DCHECK(!web::IsOriginSecure(self.webState->GetLastCommittedURL()));
+  web::NavigationItem* item =
+      self.webState->GetNavigationManager()->GetLastCommittedItem();
+  item->GetSSL().content_status |=
+      web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP;
+  [self didUpdateSSLStatusForCurrentNavigationItem];
+}
+
 - (void)handleSSLCertError:(NSError*)error {
   CHECK(web::IsWKWebViewSSLCertError(error));
 

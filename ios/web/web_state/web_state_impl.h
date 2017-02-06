@@ -223,6 +223,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   bool IsShowingWebInterstitial() const override;
   WebInterstitial* GetWebInterstitial() const override;
   void OnPasswordInputShownOnHttp() override;
+  void OnCreditCardInputShownOnHttp() override;
   void AddScriptCommandCallback(const ScriptCommandCallback& callback,
                                 const std::string& command_prefix) override;
   void RemoveScriptCommandCallback(const std::string& command_prefix) override;

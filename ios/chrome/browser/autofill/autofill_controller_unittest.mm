@@ -29,7 +29,10 @@
 #import "ios/chrome/browser/ui/autofill/autofill_client_ios.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/ssl_status.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/test/ios/ui_view_test_utils.h"
 
@@ -112,6 +115,15 @@ NSString* const kCreditCardFormHtml =
      "Expiry Year: <input type='text' name='CCExpiresYear'>"
      "<input type='submit' id='submit' value='Submit'>"
      "</form>";
+
+// An HTML page without a card-type form.
+static NSString* kNoCreditCardFormHtml =
+    @"<h2>The rain in Spain stays <i>mainly</i> in the plain.</h2>";
+
+// A credit card-type form with the autofocus attribute (which is detected at
+// page load).
+NSString* const kCreditCardAutofocusFormHtml =
+    @"<form><input type=\"text\" autofocus autocomplete=\"cc-number\"></form>";
 
 // Experiment preference key.
 NSString* const kAutofillVisible = @"AutofillVisible";
@@ -580,6 +592,50 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   EXPECT_EQ(
       base::UTF8ToUTF16("2999"),
       credit_card.GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), "en-US"));
+};
+
+// Checks that an HTTP page containing a credit card results in a navigation
+// entry with the "credit card displayed" bit set to true.
+TEST_F(AutofillControllerTest, HttpCreditCard) {
+  LoadHtml(kCreditCardAutofocusFormHtml, GURL("http://chromium.test"));
+
+  web::SSLStatus ssl_status =
+      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
+  EXPECT_TRUE(ssl_status.content_status &
+              web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+};
+
+// Checks that an HTTP page without a credit card form does not result in a
+// navigation entry with the "credit card displayed" bit set to true.
+TEST_F(AutofillControllerTest, HttpNoCreditCard) {
+  LoadHtml(kNoCreditCardFormHtml, GURL("http://chromium.test"));
+
+  web::SSLStatus ssl_status =
+      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
+  EXPECT_FALSE(ssl_status.content_status &
+               web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+};
+
+// Checks that an HTTPS page containing a credit card form does not result in a
+// navigation entry with the "credit card displayed" bit set to true.
+TEST_F(AutofillControllerTest, HttpsCreditCard) {
+  LoadHtml(kCreditCardAutofocusFormHtml, GURL("https://chromium.test"));
+
+  web::SSLStatus ssl_status =
+      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
+  EXPECT_FALSE(ssl_status.content_status &
+               web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+};
+
+// Checks that an HTTPS page without a credit card form does not result in a
+// navigation entry with the "credit card displayed" bit set to true.
+TEST_F(AutofillControllerTest, HttpsNoCreditCard) {
+  LoadHtml(kNoCreditCardFormHtml, GURL("https://chromium.test"));
+
+  web::SSLStatus ssl_status =
+      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
+  EXPECT_FALSE(ssl_status.content_status &
+               web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
 };
 
 }  // namespace
