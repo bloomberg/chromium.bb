@@ -736,9 +736,26 @@ void ScrollingCoordinator::setTouchEventTargetRects(
     LayerHitTestRects& layerRects) {
   TRACE_EVENT0("input", "ScrollingCoordinator::setTouchEventTargetRects");
 
-  // Update the list of layers with touch hit rects.
-  HashSet<const PaintLayer*> oldLayersWithTouchRects;
-  m_layersWithTouchRects.swap(oldLayersWithTouchRects);
+  // Ensure we have an entry for each composited layer that previously had rects
+  // (so that old ones will get cleared out). Note that ideally we'd track this
+  // on GraphicsLayer instead of Layer, but we have no good hook into the
+  // lifetime of a GraphicsLayer.
+  GraphicsLayerHitTestRects graphicsLayerRects;
+  for (const PaintLayer* layer : m_layersWithTouchRects) {
+    if (layer->layoutObject()->frameView() &&
+        layer->layoutObject()->frameView()->shouldThrottleRendering()) {
+      continue;
+    }
+    GraphicsLayer* mainGraphicsLayer =
+        layer->graphicsLayerBacking(layer->layoutObject());
+    if (mainGraphicsLayer)
+      graphicsLayerRects.add(mainGraphicsLayer, Vector<LayoutRect>());
+    GraphicsLayer* scrollingContentsLayer = layer->graphicsLayerBacking();
+    if (scrollingContentsLayer && scrollingContentsLayer != mainGraphicsLayer)
+      graphicsLayerRects.add(scrollingContentsLayer, Vector<LayoutRect>());
+  }
+
+  m_layersWithTouchRects.clear();
   for (const auto& layerRect : layerRects) {
     if (!layerRect.value.isEmpty()) {
       const PaintLayer* compositedLayer =
@@ -749,16 +766,7 @@ void ScrollingCoordinator::setTouchEventTargetRects(
     }
   }
 
-  // Ensure we have an entry for each composited layer that previously had rects
-  // (so that old ones will get cleared out). Note that ideally we'd track this
-  // on GraphicsLayer instead of Layer, but we have no good hook into the
-  // lifetime of a GraphicsLayer.
-  for (const PaintLayer* layer : oldLayersWithTouchRects) {
-    if (!layerRects.contains(layer))
-      layerRects.add(layer, Vector<LayoutRect>());
-  }
 
-  GraphicsLayerHitTestRects graphicsLayerRects;
   projectRectsToGraphicsLayerSpace(m_page->deprecatedLocalMainFrame(),
                                    layerRects, graphicsLayerRects);
 
