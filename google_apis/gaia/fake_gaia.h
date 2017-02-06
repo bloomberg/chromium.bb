@@ -15,7 +15,7 @@
 #include "url/gurl.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace net {
@@ -171,8 +171,8 @@ class FakeGaia {
   void SetOAuthCodeCookie(
       net::test_server::BasicHttpResponse* http_response) const;
 
-  // Formats a JSON response with the data in |response_dict|.
-  void FormatJSONResponse(const base::DictionaryValue& response_dict,
+  // Formats a JSON response with the data in |value|.
+  void FormatJSONResponse(const base::Value& value,
                           net::test_server::BasicHttpResponse* http_response);
 
   typedef base::Callback<void(
@@ -222,6 +222,9 @@ class FakeGaia {
                            net::test_server::BasicHttpResponse* http_response);
   void HandleSAMLRedirect(const net::test_server::HttpRequest& request,
                           net::test_server::BasicHttpResponse* http_response);
+  void HandleGetCheckConnectionInfo(
+      const net::test_server::HttpRequest& request,
+      net::test_server::BasicHttpResponse* http_response);
 
   // Returns the access token associated with |auth_token| that matches the
   // given |client_id| and |scope_string|. If |scope_string| is empty, the first

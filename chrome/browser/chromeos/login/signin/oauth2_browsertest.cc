@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -38,6 +39,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/process_manager.h"
@@ -140,6 +142,29 @@ class OAuth2LoginManagerStateWaiter : public OAuth2LoginManager::Observer {
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginManagerStateWaiter);
+};
+
+// Blocks a BrowserThread on construction and unblocks it on destruction.
+class BrowserThreadBlocker {
+ public:
+  explicit BrowserThreadBlocker(content::BrowserThread::ID identifier)
+      : unblock_event_(new base::WaitableEvent(
+            base::WaitableEvent::ResetPolicy::MANUAL,
+            base::WaitableEvent::InitialState::NOT_SIGNALED)) {
+    content::BrowserThread::PostTask(
+        identifier, FROM_HERE,
+        base::Bind(&BlockThreadOnThread, base::Owned(unblock_event_)));
+  }
+  ~BrowserThreadBlocker() { unblock_event_->Signal(); }
+
+ private:
+  // Blocks the target thread until |event| is signaled.
+  static void BlockThreadOnThread(base::WaitableEvent* event) { event->Wait(); }
+
+  // |unblock_event_| is deleted after BlockThreadOnThread returns.
+  base::WaitableEvent* const unblock_event_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserThreadBlocker);
 };
 
 }  // namespace
@@ -364,8 +389,15 @@ class OAuth2Test : public OobeBaseTest {
       // Wait for the session merge to finish.
       WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
     }
-}
+  }
 
+  OAuth2LoginManager::SessionRestoreStrategy GetSessionRestoreStrategy() {
+    OAuth2LoginManager* login_manager =
+        OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile());
+    return login_manager->restore_strategy_;
+  }
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(OAuth2Test);
 };
 
@@ -505,6 +537,56 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_MergeSession) {
             user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
 }
 
+// Sets up a new user with stored refresh token.
+IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_OverlappingContinueSessionRestore) {
+  StartNewUserSession(true);
+}
+
+// Tests that ContinueSessionRestore could be called multiple times.
+IN_PROC_BROWSER_TEST_F(OAuth2Test, OverlappingContinueSessionRestore) {
+  SetupGaiaServerForUnexpiredAccount();
+  SimulateNetworkOnline();
+
+  // Waits for login screen to be ready.
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+      content::NotificationService::AllSources())
+      .Wait();
+
+  // Blocks DB thread to control TokenService::LoadCredentials timing.
+  std::unique_ptr<BrowserThreadBlocker> db_blocker =
+      base::MakeUnique<BrowserThreadBlocker>(content::BrowserThread::DB);
+
+  // Signs in as the existing user created in pre test.
+  EXPECT_TRUE(
+      TryToLogin(AccountId::FromUserEmailGaiaId(kTestEmail, kTestGaiaId),
+                 kTestAccountPassword));
+
+  // Session restore should be using the saved tokens.
+  EXPECT_EQ(OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN,
+            GetSessionRestoreStrategy());
+
+  // Checks that refresh token is not yet loaded.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+  const std::string account_id =
+      PickAccountId(profile(), kTestGaiaId, kTestEmail);
+  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(account_id));
+
+  // Invokes ContinueSessionRestore multiple times and there should be
+  // no DCHECK failures.
+  OAuth2LoginManager* login_manager =
+      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile());
+  login_manager->ContinueSessionRestore();
+  login_manager->ContinueSessionRestore();
+
+  // Let go DB thread to finish TokenService::LoadCredentials.
+  db_blocker.reset();
+
+  // Session restore can finish normally and token is loaded.
+  WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
+  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
+}
 
 const char kGooglePageContent[] =
     "<html><title>Hello!</title><script>alert('hello');</script>"
@@ -648,12 +730,11 @@ class MergeSessionTest : public OAuth2Test {
     replace_non_google_host.SetHostStr("www.somethingelse.org");
     GURL non_google_url = server_url.ReplaceComponents(replace_non_google_host);
     non_google_page_url_ = non_google_url.Resolve(kRandomPagePath);
-}
+  }
 
-void SetUp() override {
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&FakeGoogle::HandleRequest,
-                   base::Unretained(&fake_google_)));
+  void SetUp() override {
+    embedded_test_server()->RegisterRequestHandler(base::Bind(
+        &FakeGoogle::HandleRequest, base::Unretained(&fake_google_)));
     OAuth2Test::SetUp();
   }
 
