@@ -240,20 +240,6 @@ class SizedContainer : public views::View {
   gfx::Size preferred_size_;
 };
 
-// NonInteractiveContainer -------------------------------------------------
-
-// A simple container view that does not process events within subtree.
-class NonInteractiveContainer : public views::View {
- public:
-  NonInteractiveContainer() {}
-
-  // views::CanProcessEventsWithinSubtree:
-  bool CanProcessEventsWithinSubtree() const override { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NonInteractiveContainer);
-};
-
 // A view to host the GAIA webview overlapped with a back button.  This class
 // is needed to reparent the back button inside a native view so that on
 // windows, user input can be be properly routed to the button.
@@ -1685,8 +1671,7 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
       ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
           1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM));
   current_profile_name->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  NonInteractiveContainer* profile_name_container =
-      new NonInteractiveContainer();
+  views::View* profile_name_container = new views::View();
   int name_container_v_spacing =
       (current_profile_photo->GetPreferredSize().height() -
        current_profile_name->GetPreferredSize().height()) / 2;
