@@ -220,7 +220,10 @@ class UrlManager {
                 return distance1.compareTo(distance2);
             }
         });
-        return urlInfos;
+
+        // Keep only the first UrlInfo with a given groupid. The list is already
+        // sorted by distance, so the first instance will be the closest.
+        return deduplicateByGroupId(urlInfos);
     }
 
     public UrlInfo getUrlInfoByUrl(String url) {
@@ -289,6 +292,28 @@ class UrlManager {
             result.add(mUrlInfoMap.get(url));
         }
         return result;
+    }
+
+    /**
+     * Given a list of UrlInfos, returns the list with only one UrlInfo for each unique group ID.
+     * When multiple UrlInfos have the same group ID, all but the first instance are discarded.
+     * @param urlInfos A list of UrlInfos, possibly containing duplicates.
+     * @return A list of deduplicated UrlInfos.
+     */
+    private List<UrlInfo> deduplicateByGroupId(List<UrlInfo> urlInfos) {
+        List<UrlInfo> deduplicatedUrlInfos = new ArrayList<>();
+        Set<String> groupIds = new HashSet<>();
+        for (UrlInfo urlInfo : urlInfos) {
+            PwsResult pwsResult = mPwsResultMap.get(urlInfo.getUrl());
+            if (pwsResult != null) {
+                if (pwsResult.groupId == null || groupIds.contains(pwsResult.groupId)) {
+                    continue;
+                }
+                groupIds.add(pwsResult.groupId);
+            }
+            deduplicatedUrlInfos.add(urlInfo);
+        }
+        return deduplicatedUrlInfos;
     }
 
     /**

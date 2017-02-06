@@ -31,6 +31,11 @@ public class UrlManagerTest extends InstrumentationTestCase {
     private static final String TITLE2 = "Google";
     private static final String DESC2 = "Search the Web";
     private static final String URL3 = "https://html5zombo.com/";
+    private static final String URL4 = "https://hooli.xyz/";
+    private static final String URL5 = "https://www.gmail.com/mail/help/paper/";
+    private static final String GROUP1 = "group1";
+    private static final String GROUP2 = "group2";
+    private static final String GROUP3 = "group3";
     private static final String PREF_PHYSICAL_WEB = "physical_web";
     private static final int PHYSICAL_WEB_OFF = 0;
     private static final int PHYSICAL_WEB_ON = 1;
@@ -52,13 +57,13 @@ public class UrlManagerTest extends InstrumentationTestCase {
 
     private void addPwsResult1() {
         ArrayList<PwsResult> results = new ArrayList<>();
-        results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1, null));
+        results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1, GROUP1));
         mMockPwsClient.addPwsResults(results);
     }
 
     private void addPwsResult2() {
         ArrayList<PwsResult> results = new ArrayList<>();
-        results.add(new PwsResult(URL2, URL2, null, TITLE2, DESC2, null));
+        results.add(new PwsResult(URL2, URL2, null, TITLE2, DESC2, GROUP2));
         mMockPwsClient.addPwsResults(results);
     }
 
@@ -219,28 +224,30 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    @RetryOnFailure
-    public void testGetUrlSorts() throws Exception {
-        addEmptyPwsResult();
-        addEmptyPwsResult();
-        addEmptyPwsResult();
-        UrlInfo urlInfo1 = new UrlInfo(URL1, 30.0, System.currentTimeMillis());
-        UrlInfo urlInfo2 = new UrlInfo(URL2, 10.0, System.currentTimeMillis());
-        UrlInfo urlInfo3 = new UrlInfo(URL3, 20.0, System.currentTimeMillis());
-        mUrlManager.addUrl(urlInfo1);
-        mUrlManager.addUrl(urlInfo2);
-        mUrlManager.addUrl(urlInfo3);
+    public void testGetUrlsSortsAndDedups() throws Exception {
+        // Construct results with matching group IDs and check that getUrls returns only the closest
+        // URL in each group. The list should be sorted by distance, closest first.
+        addPwsResult1(); // GROUP1
+        addPwsResult2(); // GROUP2
+        mMockPwsClient.addPwsResult(new PwsResult(URL3, URL2 + "#a", null, TITLE2, DESC2, GROUP2));
+        mMockPwsClient.addPwsResult(new PwsResult(URL4, URL1, null, TITLE1, DESC1, GROUP1));
+        mMockPwsClient.addPwsResult(new PwsResult(URL5, URL5, null, TITLE1, DESC1, GROUP3));
+        mUrlManager.addUrl(new UrlInfo(URL1, 30.0, System.currentTimeMillis()));
+        mUrlManager.addUrl(new UrlInfo(URL2, 20.0, System.currentTimeMillis()));
+        mUrlManager.addUrl(new UrlInfo(URL3, 10.0, System.currentTimeMillis()));
+        mUrlManager.addUrl(new UrlInfo(URL4, 40.0, System.currentTimeMillis()));
+        mUrlManager.addUrl(new UrlInfo(URL5, 50.0, System.currentTimeMillis()));
         getInstrumentation().waitForIdleSync();
 
-        // Make sure URLs are in order.
-        List<UrlInfo> urlInfos = mUrlManager.getUrls(true);
+        // Make sure URLs are in order and duplicates are omitted.
+        List<UrlInfo> urlInfos = mUrlManager.getUrls();
         assertEquals(3, urlInfos.size());
         assertEquals(10.0, urlInfos.get(0).getDistance());
-        assertEquals(URL2, urlInfos.get(0).getUrl());
-        assertEquals(20.0, urlInfos.get(1).getDistance());
-        assertEquals(URL3, urlInfos.get(1).getUrl());
-        assertEquals(30.0, urlInfos.get(2).getDistance());
-        assertEquals(URL1, urlInfos.get(2).getUrl());
+        assertEquals(URL3, urlInfos.get(0).getUrl());
+        assertEquals(30.0, urlInfos.get(1).getDistance());
+        assertEquals(URL1, urlInfos.get(1).getUrl());
+        assertEquals(50.0, urlInfos.get(2).getDistance());
+        assertEquals(URL5, urlInfos.get(2).getUrl());
     }
 
     /*
