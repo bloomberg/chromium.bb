@@ -1282,9 +1282,9 @@ bool Program::Link(ShaderManager* manager,
   TimeTicks before_time = TimeTicks::Now();
   bool link = true;
   ProgramCache* cache = manager_->program_cache_;
-  if (cache) {
-    DCHECK(!attached_shaders_[0]->last_compiled_source().empty() &&
-           !attached_shaders_[1]->last_compiled_source().empty());
+  if (cache &&
+      !attached_shaders_[0]->last_compiled_source().empty() &&
+      !attached_shaders_[1]->last_compiled_source().empty()) {
     ProgramCache::LinkedProgramStatus status = cache->GetLinkedProgramStatus(
         attached_shaders_[0]->last_compiled_signature(),
         attached_shaders_[1]->last_compiled_signature(),
