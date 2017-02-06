@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/geolocation-mock.js"></script>
+</head>
+<body>
+<script>
+description("This tests removing the watcher from an error callback does not causes assertions.");
+
+geolocationServiceMock.then(mock => {
+    mock.setGeolocationPermission(true);
+    mock.setGeolocationPositionUnavailableError("debug");
+
+    var watchId = navigator.geolocation.watchPosition(function() {
+        navigator.geolocation.clearWatch(watchId);
+        finishJSTest();
+    }, function(e) {
+        navigator.geolocation.clearWatch(watchId);
+        finishJSTest();
+    });
+});
+
+
+window.jsTestIsAsync = true;
+</script>
+</body>
+</html>

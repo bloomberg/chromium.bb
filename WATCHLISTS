@@ -1371,7 +1371,7 @@
                   '|third_party/WebKit/LayoutTests/fast/mediastream/'
     },
     'blink_geolocation': {
-      'filepath': 'third_party/WebKit/LayoutTests/fast/dom/Geolocation/' \
+      'filepath': 'third_party/WebKit/LayoutTests/geolocation-api/' \
                   '|third_party/WebKit/Source/modules/geolocation/' \
                   '|third_party/WebKit/Source/web/.*Geolocation' \
                   '|third_party/WebKit/public/web/.*Geolocation'

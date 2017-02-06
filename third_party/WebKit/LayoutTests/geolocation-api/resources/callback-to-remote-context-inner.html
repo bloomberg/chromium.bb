@@ -1,0 +1,19 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/mojo-helpers.js"></script>
+    <script src="geolocation-mock.js"></script>
+    <script>
+      function init() {
+          geolocationServiceMock.then(mock => {
+              mock.setGeolocationPermission(true);
+              mock.setGeolocationPosition(51.478, -0.166, 100);
+              window.parent.onIframeReady()
+          });
+      }
+    </script>
+  </head>
+  <body onload="init()">
+  </body>
+</html>

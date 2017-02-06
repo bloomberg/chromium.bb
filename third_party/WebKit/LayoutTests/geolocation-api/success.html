@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/geolocation-mock.js"></script>
+</head>
+<body>
+<script>
+description("Tests Geolocation success callback using the mock service.");
+
+var mockLatitude = 51.478;
+var mockLongitude = -0.166;
+var mockAccuracy = 100;
+
+var position;
+
+geolocationServiceMock.then(mock => {
+    mock.setGeolocationPermission(true);
+    mock.setGeolocationPosition(mockLatitude,
+                                mockLongitude,
+                                mockAccuracy);
+
+    navigator.geolocation.getCurrentPosition(function(p) {
+        position = p;
+        shouldBe('position.coords.latitude', 'mockLatitude');
+        shouldBe('position.coords.longitude', 'mockLongitude');
+        shouldBe('position.coords.accuracy', 'mockAccuracy');
+        finishJSTest();
+    }, function(e) {
+        testFailed('Error callback invoked unexpectedly');
+        finishJSTest();
+    });
+});
+
+window.jsTestIsAsync = true;
+</script>
+</body>
+</html>
