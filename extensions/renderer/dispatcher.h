@@ -134,7 +134,7 @@ class Dispatcher : public content::RenderThreadObserver,
 
   // Returns a list of (module name, resource id) pairs for the JS modules to
   // add to the source map.
-  static std::vector<std::pair<std::string, int> > GetJsResources();
+  static std::vector<std::pair<const char*, int>> GetJsResources();
   static void RegisterNativeHandlers(ModuleSystem* module_system,
                                      ScriptContext* context,
                                      Dispatcher* dispatcher,

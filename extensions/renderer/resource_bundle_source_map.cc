@@ -31,7 +31,7 @@ ResourceBundleSourceMap::ResourceBundleSourceMap(
 ResourceBundleSourceMap::~ResourceBundleSourceMap() {
 }
 
-void ResourceBundleSourceMap::RegisterSource(const std::string& name,
+void ResourceBundleSourceMap::RegisterSource(const char* const name,
                                              int resource_id) {
   resource_id_map_[name] = resource_id;
 }

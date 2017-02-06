@@ -27,7 +27,7 @@ class ResourceBundleSourceMap : public SourceMap {
                                   const std::string& name) const override;
   bool Contains(const std::string& name) const override;
 
-  void RegisterSource(const std::string& name, int resource_id);
+  void RegisterSource(const char* const name, int resource_id);
 
  private:
   const ui::ResourceBundle* resource_bundle_;
