@@ -251,7 +251,7 @@ void InsertTextCommand::doApply(EditingState* editingState) {
       rebalanceWhitespaceAt(endPosition);
       // Rebalancing on both sides isn't necessary if we've inserted only
       // spaces.
-      if (!shouldRebalanceLeadingWhitespaceFor(m_text))
+      if (!m_text.containsOnlyWhitespace())
         rebalanceWhitespaceAt(startPosition);
     } else {
       DCHECK_EQ(m_rebalanceType, RebalanceAllWhitespaces);

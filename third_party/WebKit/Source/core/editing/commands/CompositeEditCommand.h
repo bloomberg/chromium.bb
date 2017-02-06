@@ -136,7 +136,6 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   void replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(
       const VisiblePosition&);
   bool canRebalance(const Position&) const;
-  bool shouldRebalanceLeadingWhitespaceFor(const String&) const;
   void removeCSSProperty(Element*, CSSPropertyID);
   void removeElementAttribute(Element*, const QualifiedName& attribute);
   void removeChildrenInRange(Node*, unsigned from, unsigned to, EditingState*);

@@ -688,20 +688,6 @@ void CompositeEditCommand::setNodeAttribute(Element* element,
       ASSERT_NO_EDITING_ABORT);
 }
 
-static inline bool containsOnlyWhitespace(const String& text) {
-  for (unsigned i = 0; i < text.length(); ++i) {
-    if (!isWhitespace(text[i]))
-      return false;
-  }
-
-  return true;
-}
-
-bool CompositeEditCommand::shouldRebalanceLeadingWhitespaceFor(
-    const String& text) const {
-  return containsOnlyWhitespace(text);
-}
-
 bool CompositeEditCommand::canRebalance(const Position& position) const {
   Node* node = position.computeContainerNode();
   if (!position.isOffsetInAnchor() || !node || !node->isTextNode() ||
