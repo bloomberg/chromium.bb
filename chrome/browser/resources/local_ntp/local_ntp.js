@@ -33,7 +33,6 @@ function $(id) {
  *   of tiles.
  * fontFamily: Font family to use for title and thumbnail iframes.
  * fontSize: Font size to use for the iframes, in px.
- * mainClass: Class applied to #ntp-contents to control CSS.
  * numTitleLines: Number of lines to display in titles.
  * showFavicon: Whether to show favicon.
  * thumbnailTextColor: The 4-component color that thumbnail iframe may use to
@@ -55,7 +54,6 @@ function $(id) {
  *   fakeboxWingSize: number,
  *   fontFamily: string,
  *   fontSize: number,
- *   mainClass: string,
  *   numTitleLines: number,
  *   showFavicon: boolean,
  *   thumbnailTextColor: string,
@@ -72,7 +70,6 @@ var NTP_DESIGN = {
   fakeboxWingSize: 0,
   fontFamily: 'arial, sans-serif',
   fontSize: 12,
-  mainClass: 'thumb-ntp',
   numTitleLines: 1,
   showFavicon: true,
   thumbnailTextColor: [50, 50, 50, 255],
@@ -84,24 +81,6 @@ var NTP_DESIGN = {
   titleTextAlign: 'inherit',
   titleTextFade: 122 - 36  // 112px wide title with 32 pixel fade at end.
 };
-
-
-/**
- * Modifies NTP_DESIGN parameters for icon NTP.
- */
-function modifyNtpDesignForIcons() {
-  NTP_DESIGN.fakeboxWingSize = 132;
-  NTP_DESIGN.mainClass = 'icon-ntp';
-  NTP_DESIGN.numTitleLines = 2;
-  NTP_DESIGN.showFavicon = false;
-  NTP_DESIGN.thumbnailFallback = null;
-  NTP_DESIGN.tileWidth = 48 + 2 * 18;
-  NTP_DESIGN.tileMargin = 60 - 18 * 2;
-  NTP_DESIGN.titleColor = [120, 120, 120, 255];
-  NTP_DESIGN.titleColorAgainstDark = [210, 210, 210, 255];
-  NTP_DESIGN.titleTextAlign = 'center';
-  delete NTP_DESIGN.titleTextFade;
-}
 
 
 /**
@@ -731,6 +710,8 @@ function handlePostMessage(event) {
 
     ntpApiHandle.deleteMostVisitedItem(args.tid);
   }
+  // TODO(treib): Should we also handle the 'loaded' message from the iframe
+  // here? We could hide the page until it arrives, to avoid flicker.
 }
 
 
@@ -763,11 +744,6 @@ function init() {
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }
-
-  // Modify design for experimental icon NTP, if specified.
-  if (configData.useIcons)
-    modifyNtpDesignForIcons();
-  document.querySelector('#ntp-contents').classList.add(NTP_DESIGN.mainClass);
 
   // Hide notifications after fade out, so we can't focus on links via keyboard.
   notification.addEventListener('webkitTransitionEnd', hideNotification);
@@ -869,8 +845,6 @@ function init() {
 
   if (searchboxApiHandle.rtl)
     args.push('rtl=1');
-  if (window.configData.useIcons)
-    args.push('icons=1');
   if (NTP_DESIGN.numTitleLines > 1)
     args.push('ntl=' + NTP_DESIGN.numTitleLines);
 
