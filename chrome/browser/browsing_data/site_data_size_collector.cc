@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
 
 #include "base/files/file_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -12,7 +13,7 @@
 
 namespace {
 
-int64_t GetFileSizeOnBlockingPool(const base::FilePath& file_path) {
+int64_t GetFileSizeBlocking(const base::FilePath& file_path) {
   int64_t size = 0;
   bool success = base::GetFileSize(file_path, &size);
   return success ? size : -1;
@@ -145,10 +146,10 @@ void SiteDataSizeCollector::OnCookiesModelInfoLoaded(
   }
   base::FilePath cookie_file_path = default_storage_partition_path_
       .Append(chrome::kCookieFilename);
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&GetFileSizeOnBlockingPool, cookie_file_path),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&GetFileSizeBlocking, cookie_file_path),
       base::Bind(&SiteDataSizeCollector::OnStorageSizeFetched,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -201,10 +202,10 @@ void SiteDataSizeCollector::OnChannelIDModelInfoLoaded(
   }
   base::FilePath channel_id_file_path = default_storage_partition_path_
       .Append(chrome::kChannelIDFilename);
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&GetFileSizeOnBlockingPool, channel_id_file_path),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&GetFileSizeBlocking, channel_id_file_path),
       base::Bind(&SiteDataSizeCollector::OnStorageSizeFetched,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -239,9 +240,9 @@ void SiteDataSizeCollector::OnFlashLSOInfoLoaded(
   }
   base::FilePath pepper_data_dir_path = default_storage_partition_path_
       .Append(content::kPepperDataDirname);
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&base::ComputeDirectorySize, pepper_data_dir_path),
       base::Bind(&SiteDataSizeCollector::OnStorageSizeFetched,
                  weak_ptr_factory_.GetWeakPtr()));
