@@ -670,6 +670,7 @@ void NavigatorImpl::DidNavigate(
                                         params.url,
                                         transition_type);
     navigation_handle->DidCommitNavigation(params, is_navigation_within_page,
+                                           details.previous_url,
                                            render_frame_host);
     navigation_handle.reset();
   }

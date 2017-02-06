@@ -277,6 +277,11 @@ bool NavigationHandleImpl::IsErrorPage() {
   return state_ == DID_COMMIT_ERROR_PAGE;
 }
 
+const GURL& NavigationHandleImpl::GetPreviousURL() {
+  DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
+  return previous_url_;
+}
+
 net::HostPortPair NavigationHandleImpl::GetSocketAddress() {
   DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
   return socket_address_;
@@ -410,7 +415,7 @@ void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
   params.page_state = PageState::CreateFromURL(url);
   params.contents_mime_type = std::string("text/html");
 
-  DidCommitNavigation(params, false, render_frame_host_);
+  DidCommitNavigation(params, false, GURL(), render_frame_host_);
 }
 
 bool NavigationHandleImpl::WasStartedFromContextMenu() const {
@@ -576,6 +581,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
 void NavigationHandleImpl::DidCommitNavigation(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool same_page,
+    const GURL& previous_url,
     RenderFrameHostImpl* render_frame_host) {
   DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   DCHECK_EQ(frame_tree_node_, render_frame_host->frame_tree_node());
@@ -585,6 +591,7 @@ void NavigationHandleImpl::DidCommitNavigation(
   has_user_gesture_ = (params.gesture == NavigationGestureUser);
   transition_ = params.transition;
   render_frame_host_ = render_frame_host;
+  previous_url_ = previous_url;
   base_url_ = params.base_url;
   socket_address_ = params.socket_address;
 

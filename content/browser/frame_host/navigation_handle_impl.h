@@ -111,6 +111,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsSamePage() override;
   bool HasCommitted() override;
   bool IsErrorPage() override;
+  const GURL& GetPreviousURL() override;
   net::HostPortPair GetSocketAddress() override;
   const net::HttpResponseHeaders* GetResponseHeaders() override;
   net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
@@ -280,6 +281,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void DidCommitNavigation(
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool same_page,
+      const GURL& previous_url,
       RenderFrameHostImpl* render_frame_host);
 
   // Called during commit. Takes ownership of the embedder's NavigationData
@@ -461,6 +463,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   GURL searchable_form_url_;
   std::string searchable_form_encoding_;
 
+  GURL previous_url_;
   GURL base_url_;
   net::HostPortPair socket_address_;
 

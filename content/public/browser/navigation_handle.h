@@ -177,6 +177,10 @@ class CONTENT_EXPORT NavigationHandle {
   // GetNetErrorCode will be net::OK.
   virtual bool IsErrorPage() = 0;
 
+  // The previous main frame URL that the user was on. This may be empty if
+  // there was no last committed entry.
+  virtual const GURL& GetPreviousURL() = 0;
+
   // Returns the remote address of the socket which fetched this resource.
   virtual net::HostPortPair GetSocketAddress() = 0;
 

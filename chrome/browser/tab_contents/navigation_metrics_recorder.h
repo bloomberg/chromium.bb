@@ -38,9 +38,8 @@ class NavigationMetricsRecorder
   friend class content::WebContentsUserData<NavigationMetricsRecorder>;
 
   // content::WebContentsObserver overrides:
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   rappor::RapporServiceImpl* rappor_service_;
 
