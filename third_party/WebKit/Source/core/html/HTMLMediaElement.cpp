@@ -3872,7 +3872,7 @@ bool HTMLMediaElement::isAutoplayAllowedPerSettings() const {
   if (!frame)
     return false;
   FrameLoaderClient* frameLoaderClient = frame->loader().client();
-  return frameLoaderClient && frameLoaderClient->allowAutoplay(false);
+  return frameLoaderClient && frameLoaderClient->allowAutoplay(true);
 }
 
 void HTMLMediaElement::setNetworkState(NetworkState state) {
