@@ -43,18 +43,7 @@ AM_CXXFLAGS += -I$(top_srcdir)/src/common/android/include
 AM_CXXFLAGS += -I$(top_srcdir)/src/common/android/testing/include
 endif
 
-if GCC
-# These are good warnings to be treated as errors
-AM_CXXFLAGS += \
-	-Werror \
-	-Werror=missing-braces \
-	-Werror=non-virtual-dtor \
-	-Werror=overloaded-virtual \
-	-Werror=reorder \
-	-Werror=sign-compare \
-	-Werror=unused-variable \
-	-Werror=vla
-endif
+AM_CXXFLAGS += $(WARN_CXXFLAGS)
 
 if LINUX_HOST
 # Build as PIC on Linux, for linux_client_unittest_shlib

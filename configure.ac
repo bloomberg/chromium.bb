@@ -28,7 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-AC_PREREQ(2.57)
+AC_PREREQ(2.64)
 
 AC_INIT(breakpad, 0.1, google-breakpad-dev@googlegroups.com)
 dnl Sanity check: the argument is just a file that should exist.
@@ -48,7 +48,6 @@ AM_PROG_CC_C_O
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_RANLIB
-AM_CONDITIONAL(GCC, test "$GCC" = yes)   # let the Makefile know if we're gcc
 
 dnl This must come before all the feature tests below.
 AC_ARG_ENABLE(m32,
@@ -76,6 +75,29 @@ AX_PTHREAD
 AC_CHECK_HEADERS([a.out.h])
 
 AX_CXX_COMPILE_STDCXX(11, noext, mandatory)
+
+dnl Test supported warning flags.
+WARN_CXXFLAGS=
+dnl This warning flag is used by clang.  Its default behavior is to warn when
+dnl given an unknown flag rather than error out.
+AC_LANG_PUSH([C++])
+AX_CHECK_COMPILE_FLAG([-Werror=unknown-warning-option],[
+  ax_compiler_flags_test="-Werror=unknown-warning-option"
+],[
+  ax_compiler_flags_test=""
+])
+AX_APPEND_COMPILE_FLAGS(m4_flatten([
+  -Wmissing-braces
+  -Wnon-virtual-dtor
+  -Woverloaded-virtual
+  -Wreorder
+  -Wsign-compare
+  -Wunused-variable
+  -Wvla
+]), [WARN_CXXFLAGS], [${ax_compiler_flags_test}])
+AS_VAR_APPEND([WARN_CXXFLAGS], " -Werror")
+AC_LANG_POP([C++])
+AC_SUBST([WARN_CXXFLAGS])
 
 # Only build Linux client libs when compiling for Linux
 case $host in

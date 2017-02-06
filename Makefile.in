@@ -129,53 +129,41 @@ host_triplet = @host@
 @ANDROID_HOST_TRUE@	-I$(top_srcdir)/src/common/android/include \
 @ANDROID_HOST_TRUE@	-I$(top_srcdir)/src/common/android/testing/include
 
-# These are good warnings to be treated as errors
-@GCC_TRUE@am__append_2 = \
-@GCC_TRUE@	-Werror \
-@GCC_TRUE@	-Werror=missing-braces \
-@GCC_TRUE@	-Werror=non-virtual-dtor \
-@GCC_TRUE@	-Werror=overloaded-virtual \
-@GCC_TRUE@	-Werror=reorder \
-@GCC_TRUE@	-Werror=sign-compare \
-@GCC_TRUE@	-Werror=unused-variable \
-@GCC_TRUE@	-Werror=vla
-
-
 # Build as PIC on Linux, for linux_client_unittest_shlib
+@LINUX_HOST_TRUE@am__append_2 = -fPIC
 @LINUX_HOST_TRUE@am__append_3 = -fPIC
-@LINUX_HOST_TRUE@am__append_4 = -fPIC
 bin_PROGRAMS = $(am__EXEEXT_2) $(am__EXEEXT_3) $(am__EXEEXT_4)
 check_PROGRAMS = $(am__EXEEXT_5) $(am__EXEEXT_6) $(am__EXEEXT_7) \
 	$(am__EXEEXT_8) $(am__EXEEXT_9)
 EXTRA_PROGRAMS = $(am__EXEEXT_1)
-@DISABLE_PROCESSOR_FALSE@am__append_5 = src/libbreakpad.a
-@DISABLE_PROCESSOR_FALSE@am__append_6 = breakpad.pc
-@DISABLE_PROCESSOR_FALSE@am__append_7 = src/third_party/libdisasm/libdisasm.a
-@LINUX_HOST_TRUE@am__append_8 = src/client/linux/libbreakpad_client.a
-@LINUX_HOST_TRUE@am__append_9 = breakpad-client.pc
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_10 = \
+@DISABLE_PROCESSOR_FALSE@am__append_4 = src/libbreakpad.a
+@DISABLE_PROCESSOR_FALSE@am__append_5 = breakpad.pc
+@DISABLE_PROCESSOR_FALSE@am__append_6 = src/third_party/libdisasm/libdisasm.a
+@LINUX_HOST_TRUE@am__append_7 = src/client/linux/libbreakpad_client.a
+@LINUX_HOST_TRUE@am__append_8 = breakpad-client.pc
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_9 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext.S
 
-@DISABLE_PROCESSOR_FALSE@am__append_11 = \
+@DISABLE_PROCESSOR_FALSE@am__append_10 = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/microdump_stackwalk \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_dump \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk
 
+@LINUX_HOST_TRUE@am__append_11 = src/client/linux/linux_dumper_unittest_helper \
+@LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib
 @LINUX_HOST_TRUE@am__append_12 = src/client/linux/linux_dumper_unittest_helper \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib
-@LINUX_HOST_TRUE@am__append_13 = src/client/linux/linux_dumper_unittest_helper \
-@LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_14 = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_13 = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/core2md/core2md \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/dump_syms/dump_syms \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump-2-core \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/symupload/minidump_upload \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/symupload/sym_upload
 
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@@X86_HOST_TRUE@am__append_15 = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@@X86_HOST_TRUE@am__append_14 = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@@X86_HOST_TRUE@	src/tools/mac/dump_syms/dump_syms_mac
 
-@DISABLE_PROCESSOR_FALSE@am__append_16 = \
+@DISABLE_PROCESSOR_FALSE@am__append_15 = \
 @DISABLE_PROCESSOR_FALSE@	src/common/test_assembler_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/address_map_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver_unittest \
@@ -206,36 +194,41 @@ EXTRA_PROGRAMS = $(am__EXEEXT_1)
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/synth_minidump_unittest
 
-@LINUX_HOST_TRUE@am__append_17 = \
+@LINUX_HOST_TRUE@am__append_16 = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest
 
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_18 = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_17 = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dumper_unittest \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_2_core_unittest
 
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@@X86_HOST_TRUE@am__append_19 = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@@X86_HOST_TRUE@am__append_18 = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@@X86_HOST_TRUE@	src/common/mac/macho_reader_unittest
 
-@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_20 = \
+@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_19 = \
 @DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@	src/processor/stackwalker_selftest
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_21 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_20 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext.S
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_22 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_21 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext_unittest.cc
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_23 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_22 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	-llog -lm
 
-@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_24 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_23 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@        -llog
 
 noinst_PROGRAMS =
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx.m4 \
-	$(top_srcdir)/m4/ax_pthread.m4 $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
+	$(top_srcdir)/m4/ax_append_flag.m4 \
+	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
+	$(top_srcdir)/m4/ax_cxx_compile_stdcxx.m4 \
+	$(top_srcdir)/m4/ax_pthread.m4 \
+	$(top_srcdir)/m4/ax_require_defined.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
@@ -1963,6 +1956,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WARN_CXXFLAGS = @WARN_CXXFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -2019,8 +2013,8 @@ top_srcdir = @top_srcdir@
 
 # This allows #includes to be relative to src/
 AM_CPPFLAGS = -I$(top_srcdir)/src
-AM_CFLAGS = $(am__append_3)
-AM_CXXFLAGS = $(am__append_1) $(am__append_2) $(am__append_4)
+AM_CFLAGS = $(am__append_2)
+AM_CXXFLAGS = $(am__append_1) $(WARN_CXXFLAGS) $(am__append_3)
 
 # Specify include paths for ac macros
 ACLOCAL_AMFLAGS = -I m4
@@ -2054,7 +2048,7 @@ includec_HEADERS = $(top_srcdir)/src/common/*.h
 includepdir = $(includedir)/$(PACKAGE)/processor
 includep_HEADERS = $(top_srcdir)/src/processor/*.h
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = $(am__append_6) $(am__append_9)
+pkgconfig_DATA = $(am__append_5) $(am__append_8)
 @SYSTEM_TEST_LIBS_FALSE@TEST_CFLAGS = \
 @SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/include \
 @SYSTEM_TEST_LIBS_FALSE@	-I$(top_srcdir)/src/testing/googletest/include \
@@ -2069,9 +2063,9 @@ pkgconfig_DATA = $(am__append_6) $(am__append_9)
 @SYSTEM_TEST_LIBS_FALSE@TEST_DEPS = $(TEST_LIBS)
 @SYSTEM_TEST_LIBS_TRUE@TEST_DEPS = 
 check_LIBRARIES = src/testing/libtesting.a
-noinst_LIBRARIES = $(am__append_7)
-lib_LIBRARIES = $(am__append_5) $(am__append_8)
-CLEANFILES = $(am__append_13)
+noinst_LIBRARIES = $(am__append_6)
+lib_LIBRARIES = $(am__append_4) $(am__append_7)
+CLEANFILES = $(am__append_12)
 @SYSTEM_TEST_LIBS_FALSE@src_testing_libtesting_a_SOURCES = \
 @SYSTEM_TEST_LIBS_FALSE@	src/breakpad_googletest_includes.h \
 @SYSTEM_TEST_LIBS_FALSE@	src/testing/googletest/src/gtest-all.cc \
@@ -2115,7 +2109,7 @@ CLEANFILES = $(am__append_13)
 @LINUX_HOST_TRUE@	src/common/linux/linux_libc_support.cc \
 @LINUX_HOST_TRUE@	src/common/linux/memory_mapped_file.cc \
 @LINUX_HOST_TRUE@	src/common/linux/safe_readlink.cc \
-@LINUX_HOST_TRUE@	$(am__append_10)
+@LINUX_HOST_TRUE@	$(am__append_9)
 @DISABLE_PROCESSOR_FALSE@src_libbreakpad_a_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/common/breakpad_types.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/common/minidump_format.h \
@@ -2312,15 +2306,15 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/processor/minidump.cc \
 @LINUX_HOST_TRUE@	src/processor/pathname_stripper.cc \
 @LINUX_HOST_TRUE@	src/processor/proc_maps_linux.cc \
-@LINUX_HOST_TRUE@	$(am__append_21) \
+@LINUX_HOST_TRUE@	$(am__append_20) \
 @LINUX_HOST_TRUE@	src/client/linux/microdump_writer/microdump_writer_unittest.cc \
-@LINUX_HOST_TRUE@	$(am__append_22)
+@LINUX_HOST_TRUE@	$(am__append_21)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_CPPFLAGS = \
 @LINUX_HOST_TRUE@	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_LDFLAGS =  \
 @LINUX_HOST_TRUE@	-shared -Wl,-h,linux_client_unittest_shlib \
-@LINUX_HOST_TRUE@	$(am__append_23)
+@LINUX_HOST_TRUE@	$(am__append_22)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.o \
 @LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/thread_info.o \
@@ -2356,7 +2350,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDFLAGS =  \
 @LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN' \
 @LINUX_HOST_TRUE@	-Wl,--build-id=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f \
-@LINUX_HOST_TRUE@	$(am__append_24)
+@LINUX_HOST_TRUE@	$(am__append_23)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib \
 @LINUX_HOST_TRUE@	$(TEST_LIBS)
