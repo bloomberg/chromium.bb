@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/mojo/chrome_interface_registrar_android.h"
 #include "chrome/browser/android/seccomp_support_detector.h"
@@ -133,9 +134,10 @@ void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
 void ChromeBrowserMainPartsAndroid::PostBrowserStart() {
   ChromeBrowserMainParts::PostBrowserStart();
 
-  content::BrowserThread::GetBlockingPool()->PostDelayedTask(FROM_HERE,
-      base::Bind(&SeccompSupportDetector::StartDetection),
-      base::TimeDelta::FromMinutes(1));
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&ReportSeccompSupport), base::TimeDelta::FromMinutes(1));
 
   RegisterChromeJavaMojoInterfaces();
 }

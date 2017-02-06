@@ -9,14 +9,13 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "content/public/browser/browser_thread.h"
 #include "sandbox/sandbox_features.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #endif
 
-using content::BrowserThread;
+namespace {
 
 enum AndroidSeccompStatus {
   // DETECTION_FAILED was formerly used when probing for seccomp was done
@@ -30,27 +29,8 @@ enum AndroidSeccompStatus {
   LAST_STATUS
 };
 
-// static
-void SeccompSupportDetector::StartDetection() {
-  // This is instantiated here, and then ownership is maintained by the
-  // Closure objects when the object is being passed between threads. When
-  // the last Closure runs, it will delete this.
-  scoped_refptr<SeccompSupportDetector> detector(new SeccompSupportDetector());
-  BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(&SeccompSupportDetector::DetectKernelVersion, detector));
-  BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(&SeccompSupportDetector::DetectSeccomp, detector));
-}
-
-SeccompSupportDetector::SeccompSupportDetector() {
-}
-
-SeccompSupportDetector::~SeccompSupportDetector() {
-}
-
-void SeccompSupportDetector::DetectKernelVersion() {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
+// Reports the kernel version obtained from uname.
+void ReportKernelVersion() {
   // This method will report the kernel major and minor versions by
   // taking the lower 16 bits of each version number and combining
   // the two into a 32-bit number.
@@ -65,9 +45,8 @@ void SeccompSupportDetector::DetectKernelVersion() {
   }
 }
 
-void SeccompSupportDetector::DetectSeccomp() {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
+// Reports whether the system supports PR_SET_SECCOMP.
+void ReportSeccompStatus() {
 #if BUILDFLAG(USE_SECCOMP_BPF)
   bool prctl_supported = sandbox::SandboxBPF::SupportsSeccompSandbox(
       sandbox::SandboxBPF::SeccompLevel::SINGLE_THREADED);
@@ -82,4 +61,11 @@ void SeccompSupportDetector::DetectSeccomp() {
   // Probing for the seccomp syscall can provoke kernel panics in certain LGE
   // devices. For now, this data will not be collected. In the future, this
   // should detect SeccompLevel::MULTI_THREADED. http://crbug.com/478478
+}
+
+}  // namespace
+
+void ReportSeccompSupport() {
+  ReportKernelVersion();
+  ReportSeccompStatus();
 }
