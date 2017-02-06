@@ -9,7 +9,6 @@
 #include "base/ios/ios_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -17,8 +16,6 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "ios/chrome/browser/ui/animation_util.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_row.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
@@ -186,9 +183,6 @@ UIColor* BackgroundColorIncognito() {
                          action:@selector(appendButtonTapped:)
                forControlEvents:UIControlEventTouchUpInside];
     [row.appendButton setTag:i];
-    [row.physicalWebButton addTarget:self
-                              action:@selector(physicalWebButtonTapped:)
-                    forControlEvents:UIControlEventTouchUpInside];
     row.rowHeight = kRowHeight;
   }
   _rows.reset([rowsBuilder copy]);
@@ -378,25 +372,17 @@ UIColor* BackgroundColorIncognito() {
     [row updateLeadingImage:imageId];
   }
 
-  // Show append button for search history/search suggestions/voice search as
+  // Show append button for search history/search suggestions/Physical Web as
   // the right control element (aka an accessory element of a table view cell).
-  BOOL autocompleteSearchMatch =
-      match.type == AutocompleteMatchType::SEARCH_HISTORY ||
-      match.type == AutocompleteMatchType::SEARCH_SUGGEST;
-  row.appendButton.hidden = !autocompleteSearchMatch;
+  BOOL appendableMatch = match.type == AutocompleteMatchType::SEARCH_HISTORY ||
+                         match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
+                         match.type == AutocompleteMatchType::PHYSICAL_WEB;
+  row.appendButton.hidden = !appendableMatch;
   [row.appendButton cancelTrackingWithEvent:nil];
-
-  // Show the Physical Web logo as the right accessory image for Physical Web
-  // suggestions.
-  BOOL physicalWebMatch =
-      match.type == AutocompleteMatchType::PHYSICAL_WEB ||
-      match.type == AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW;
-  row.physicalWebButton.hidden = !physicalWebMatch;
-  [row.physicalWebButton cancelTrackingWithEvent:nil];
 
   // If a right accessory element is present or the text alignment is right
   // aligned, adjust the width to align with the accessory element.
-  if (autocompleteSearchMatch || physicalWebMatch || alignmentRight) {
+  if (appendableMatch || alignmentRight) {
     LayoutRect layout =
         LayoutRectForRectInBoundingRect(textLabel.frame, self.view.frame);
     layout.size.width -= kAppendButtonWidth;
@@ -651,16 +637,6 @@ UIColor* BackgroundColorIncognito() {
   // a new round of autocomplete and modify |_currentResult|.
   base::string16 contents(match.contents);
   _popupView->CopyToOmnibox(contents);
-}
-
-- (void)physicalWebButtonTapped:(id)sender {
-  base::scoped_nsobject<GenericChromeCommand> command([
-      [GenericChromeCommand alloc] initWithTag:IDC_SHOW_PHYSICAL_WEB_SETTINGS]);
-  [command executeOnMainWindow];
-
-  // Record when the user opens the Physical Web preference page from the
-  // omnibox suggestion.
-  base::RecordAction(base::UserMetricsAction("PhysicalWeb.Prefs.FromOmnibox"));
 }
 
 #pragma mark -

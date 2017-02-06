@@ -390,8 +390,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showSyncSettings;
 // Shows the Save Passwords settings.
 - (void)showSavePasswordsSettings;
-// Shows the Physical Web settings UI.
-- (void)showPhysicalWebSettings;
 // Invokes the sign in flow with the specified authentication operation and
 // invokes |callback| when finished.
 - (void)showSignInWithOperation:(AuthenticationOperation)operation
@@ -1481,9 +1479,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     case IDC_SHOW_SAVE_PASSWORDS_SETTINGS:
       [self showSavePasswordsSettings];
       break;
-    case IDC_SHOW_PHYSICAL_WEB_SETTINGS:
-      [self showPhysicalWebSettings];
-      break;
     case IDC_SHOW_HISTORY:
       [self showHistory];
       break;
@@ -2064,18 +2059,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   _settingsNavigationController.reset([SettingsNavigationController
       newSavePasswordsController:_mainBrowserState
                         delegate:self]);
-  [[self topPresentedViewController]
-      presentViewController:_settingsNavigationController
-                   animated:YES
-                 completion:nil];
-}
-
-- (void)showPhysicalWebSettings {
-  if (_settingsNavigationController)
-    return;
-  _settingsNavigationController.reset([SettingsNavigationController
-      newPhysicalWebController:_mainBrowserState
-                      delegate:self]);
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES

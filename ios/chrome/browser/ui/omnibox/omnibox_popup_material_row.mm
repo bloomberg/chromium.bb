@@ -35,7 +35,6 @@ const CGFloat kAppendButtonSize = 48.0;
 @synthesize textTruncatingLabel = _textTruncatingLabel;
 @synthesize detailTruncatingLabel = _detailTruncatingLabel;
 @synthesize appendButton = _appendButton;
-@synthesize physicalWebButton = _physicalWebButton;
 @synthesize answerImageView = _answerImageView;
 @synthesize imageView = _imageView;
 @synthesize rowHeight = _rowHeight;
@@ -73,11 +72,6 @@ const CGFloat kAppendButtonSize = 48.0;
     // TODO(justincohen): Consider using the UITableViewCell's accessory view.
     // The current implementation is from before using a UITableViewCell.
     [self addSubview:_appendButton];
-
-    _physicalWebButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
-    [_physicalWebButton setContentMode:UIViewContentModeRight];
-    [self updatePhysicalWebImage];
-    [self addSubview:_physicalWebButton];
 
     // Leading icon is only displayed on iPad.
     if (IsIPadIdiom()) {
@@ -117,7 +111,6 @@ const CGFloat kAppendButtonSize = 48.0;
       CGRectGetWidth(self.bounds), floor((_rowHeight - kAppendButtonSize) / 2),
       kAppendButtonSize, kAppendButtonSize);
   _appendButton.frame = LayoutRectGetRect(trailingAccessoryLayout);
-  _physicalWebButton.frame = LayoutRectGetRect(trailingAccessoryLayout);
 }
 
 - (void)updateLeadingImage:(int)imageID {
@@ -164,16 +157,6 @@ const CGFloat kAppendButtonSize = 48.0;
       NativeReversableImage(appendSelectedResourceID, YES);
   [_appendButton setImage:appendImageSelected
                  forState:UIControlStateHighlighted];
-}
-
-- (void)updatePhysicalWebImage {
-  UIImage* physicalWebImage = NativeImage(IDR_IOS_OMNIBOX_PHYSICAL_WEB);
-  [_physicalWebButton setImage:physicalWebImage forState:UIControlStateNormal];
-
-  UIImage* physicalWebImageSelected =
-      NativeImage(IDR_IOS_OMNIBOX_PHYSICAL_WEB_HIGHLIGHTED);
-  [_physicalWebButton setImage:physicalWebImageSelected
-                      forState:UIControlStateHighlighted];
 }
 
 - (NSString*)accessibilityLabel {
