@@ -437,20 +437,14 @@ set(AOM_DSP_AVX2_INTRIN
     "${AOM_ROOT}/aom_dsp/x86/variance_impl_avx2.c")
 
 set(AOM_AV1_COMMON_SSE2_INTRIN
-    # Requires CONFIG_CLPF
-    #"${AOM_ROOT}/av1/common/clpf_sse2.c"
     # Requires CONFIG_GLOBAL_MOTION or CONFIG_WARPED_MOTION
     #"${AOM_ROOT}/av1/common/x86/warp_plane_sse2.c"
     "${AOM_ROOT}/av1/common/x86/idct_intrin_sse2.c")
 
 set(AOM_AV1_COMMON_SSSE3_INTRIN
-    # Requires CONFIG_CLPF
-    #"${AOM_ROOT}/av1/common/clpf_ssse3.c"
     "${AOM_ROOT}/av1/common/x86/av1_convolve_ssse3.c")
 
 set(AOM_AV1_COMMON_SSE4_1_INTRIN
-    # Requires CONFIG_CLPF
-    #"${AOM_ROOT}/av1/common/clpf_sse4.c"
     # Requires CONFIG_FILTER_INTRA
     #"${AOM_ROOT}/av1/common/x86/filterintra_sse4.c"
     # Requires CONFIG_DERING
@@ -465,9 +459,8 @@ set(AOM_AV1_ENCODER_SSE2_ASM
     "${AOM_ROOT}/av1/encoder/x86/dct_sse2.asm"
     "${AOM_ROOT}/av1/encoder/x86/error_sse2.asm"
     "${AOM_ROOT}/av1/encoder/x86/temporal_filter_apply_sse2.asm")
+
 set(AOM_AV1_ENCODER_SSE2_INTRIN
-    # Requires CONFIG_CLPF
-    #"${AOM_ROOT}/av1/encoder/clpf_rdo_sse2.c"
     # Requires CONFIG_EXT_INTER
     #"${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c"
     "${AOM_ROOT}/av1/encoder/x86/dct_intrin_sse2.c"
@@ -478,13 +471,8 @@ set(AOM_AV1_ENCODER_SSSE3_ASM
     "${AOM_ROOT}/av1/encoder/x86/av1_quantize_ssse3_x86_64.asm")
 
 set(AOM_AV1_ENCODER_SSSE3_INTRIN
-    # Requires CONFIG_CLPF
-    #"${AOM_ROOT}/av1/encoder/clpf_rdo_ssse3.c"
     "${AOM_ROOT}/av1/encoder/x86/dct_ssse3.c")
 
-#set(AOM_AV1_ENCODER_SSE4_1_INTRIN
-    # Requires CONFIG_CLPF
-    #"${AOM_ROOT}/av1/encoder/clpf_rdo_sse4.c")
 set(AOM_AV1_ENCODER_AVX2_INTRIN
     "${AOM_ROOT}/av1/encoder/x86/error_intrin_avx2.c"
     "${AOM_ROOT}/av1/encoder/x86/hybrid_fwd_txfm_avx2.c")
@@ -536,8 +524,6 @@ set(AOM_UNIT_TEST_SOURCES
     "${AOM_ROOT}/test/boolcoder_test.cc"
     "${AOM_ROOT}/test/borders_test.cc"
     "${AOM_ROOT}/test/clear_system_state.h"
-    # requires CONFIG_CLPF
-    #"${AOM_ROOT}/test/clpf_test.cc"
     "${AOM_ROOT}/test/codec_factory.h"
     "${AOM_ROOT}/test/convolve_test.cc"
     "${AOM_ROOT}/test/cpu_speed_test.cc"
@@ -612,6 +598,46 @@ set(AOM_UNIT_TEST_INTRIN_NEON "${AOM_ROOT}/test/simd_cmp_neon.cc")
 set(AOM_UNIT_TEST_INTRIN_SSE2 "${AOM_ROOT}/test/simd_cmp_sse2.cc")
 set(AOM_UNIT_TEST_INTRIN_SSSE3 "${AOM_ROOT}/test/simd_cmp_ssse3.cc")
 set(AOM_UNIT_TEST_INTRIN_SSE4_1 "${AOM_ROOT}/test/simd_cmp_sse4.cc")
+
+if (CONFIG_CLPF)
+  set(AOM_AV1_COMMON_SOURCES
+      ${AOM_AV1_COMMON_SOURCES}
+      "${AOM_ROOT}/av1/common/clpf.c"
+      "${AOM_ROOT}/av1/common/clpf.h")
+
+  set(AOM_AV1_ENCODER_SOURCES
+      ${AOM_AV1_ENCODER_SOURCES}
+      "${AOM_ROOT}/av1/encoder/clpf_rdo.c"
+      "${AOM_ROOT}/av1/encoder/clpf_rdo.h")
+
+  set(AOM_AV1_COMMON_SSE2_INTRIN
+      ${AOM_AV1_COMMON_SSE2_INTRIN}
+      "${AOM_ROOT}/av1/common/clpf_sse2.c")
+
+  set(AOM_AV1_COMMON_SSSE3_INTRIN
+      ${AOM_AV1_COMMON_SSSE3_INTRIN}
+      "${AOM_ROOT}/av1/common/clpf_ssse3.c")
+
+  set(AOM_AV1_COMMON_SSE4_1_INTRIN
+      ${AOM_AV1_COMMON_SSE4_1_INTRIN}
+      "${AOM_ROOT}/av1/common/clpf_sse4.c")
+
+  set(AOM_AV1_ENCODER_SSE2_INTRIN
+      ${AOM_AV1_ENCODER_SSE2_INTRIN}
+      "${AOM_ROOT}/av1/encoder/clpf_rdo_sse2.c")
+
+  set(AOM_AV1_ENCODER_SSSE3_INTRIN
+      ${AOM_AV1_ENCODER_SSSE3_INTRIN}
+      "${AOM_ROOT}/av1/encoder/clpf_rdo_ssse3.c")
+
+  set(AOM_AV1_ENCODER_SSE4_1_INTRIN
+      ${AOM_AV1_ENCODER_SSE4_1_INTRIN}
+      "${AOM_ROOT}/av1/encoder/clpf_rdo_sse4.c")
+
+  set(AOM_UNIT_TEST_SOURCES
+      ${AOM_UNIT_TEST_SOURCES}
+      "${AOM_ROOT}/test/clpf_test.cc")
+endif ()
 
 if (CONFIG_INTERNAL_STATS)
   set(AOM_DSP_SOURCES
