@@ -14,7 +14,6 @@
 
 // TODO(dglazkov): Implement generating includes.
 #include "wtf/text/WTFString.h.h"
-#include "Iterator.h"
 
 namespace blink {
 namespace api {
@@ -28,7 +27,6 @@ namespace api {
 
 // TODO(dglazkov): Implement method generation
 // void CppTestInterface3::voidMethodDocument
-// Iterator CppTestInterface3::keys
 
 }  // namespace api
 }  // namespace blink

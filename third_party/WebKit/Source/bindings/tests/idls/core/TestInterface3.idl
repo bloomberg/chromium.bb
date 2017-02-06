@@ -47,7 +47,6 @@
     void voidMethodDocument(Document document);
 
     [RuntimeEnabled=FeatureName] iterable<any>;
-    [RuntimeEnabled=FeatureName, CallWith=ScriptState, RaisesException, ImplementedAs=iterableKeys] Iterator keys();
 
     stringifier readonly attribute DOMString readonlyStringifierAttribute;
 };

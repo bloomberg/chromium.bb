@@ -599,13 +599,13 @@ class V8TestObject {
   CORE_EXPORT static void voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void newObjectTestInterfaceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void serializerMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void getMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void deleteMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

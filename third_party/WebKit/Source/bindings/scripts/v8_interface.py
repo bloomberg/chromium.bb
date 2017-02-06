@@ -569,7 +569,10 @@ def methods_context(interface):
             iterator_method = generated_iterator_method('iterator', implemented_as='iterator')
 
         if interface.iterable or interface.maplike or interface.setlike:
-            implicit_methods = [
+            non_overridable_methods = []
+            overridable_methods = []
+
+            non_overridable_methods.extend([
                 generated_iterator_method('keys'),
                 generated_iterator_method('values'),
                 generated_iterator_method('entries'),
@@ -581,13 +584,13 @@ def methods_context(interface):
                                                                is_optional=True,
                                                                extended_attributes={'Default': 'Undefined'})],
                                  extended_attributes=forEach_extended_attributes),
-            ]
+            ])
 
             if interface.maplike:
                 key_argument = generated_argument(interface.maplike.key_type, 'key')
                 value_argument = generated_argument(interface.maplike.value_type, 'value')
 
-                implicit_methods.extend([
+                non_overridable_methods.extend([
                     generated_method(IdlType('boolean'), 'has',
                                      arguments=[key_argument],
                                      extended_attributes=used_extended_attributes),
@@ -597,7 +600,7 @@ def methods_context(interface):
                 ])
 
                 if not interface.maplike.is_read_only:
-                    implicit_methods.extend([
+                    overridable_methods.extend([
                         generated_method(IdlType('void'), 'clear',
                                          extended_attributes=used_extended_attributes),
                         generated_method(IdlType('boolean'), 'delete',
@@ -611,14 +614,14 @@ def methods_context(interface):
             if interface.setlike:
                 value_argument = generated_argument(interface.setlike.value_type, 'value')
 
-                implicit_methods.extend([
+                non_overridable_methods.extend([
                     generated_method(IdlType('boolean'), 'has',
                                      arguments=[value_argument],
                                      extended_attributes=used_extended_attributes),
                 ])
 
                 if not interface.setlike.is_read_only:
-                    implicit_methods.extend([
+                    overridable_methods.extend([
                         generated_method(IdlType(interface.name), 'add',
                                          arguments=[value_argument],
                                          extended_attributes=used_extended_attributes),
@@ -633,11 +636,19 @@ def methods_context(interface):
             for method in methods:
                 methods_by_name.setdefault(method['name'], []).append(method)
 
-            for implicit_method in implicit_methods:
-                if implicit_method['name'] in methods_by_name:
+            for non_overridable_method in non_overridable_methods:
+                if non_overridable_method['name'] in methods_by_name:
+                    raise ValueError(
+                        'An interface cannot define an operation called "%s()", it '
+                        'comes from the iterable, maplike or setlike declaration '
+                        'in the IDL.' % non_overridable_method['name'])
+                methods.append(non_overridable_method)
+
+            for overridable_method in overridable_methods:
+                if overridable_method['name'] in methods_by_name:
                     # FIXME: Check that the existing method is compatible.
                     continue
-                methods.append(implicit_method)
+                methods.append(overridable_method)
 
         # FIXME: maplike<> and setlike<> should also imply the presence of a
         # 'size' attribute.

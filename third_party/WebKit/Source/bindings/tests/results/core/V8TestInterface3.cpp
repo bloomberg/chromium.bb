@@ -92,7 +92,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   ScriptState* scriptState = ScriptState::forReceiverObject(info);
 
-  Iterator* result = impl->iterableKeys(scriptState, exceptionState);
+  Iterator* result = impl->keysForBinding(scriptState, exceptionState);
   if (exceptionState.hadException()) {
     return;
   }
