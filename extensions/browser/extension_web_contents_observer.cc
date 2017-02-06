@@ -5,7 +5,6 @@
 #include "extensions/browser/extension_web_contents_observer.h"
 
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -145,38 +144,18 @@ void ExtensionWebContentsObserver::DidFinishNavigation(
 
   content::RenderFrameHost* render_frame_host =
       navigation_handle->GetRenderFrameHost();
-  if (pm->IsRenderFrameHostRegistered(render_frame_host)) {
-    const Extension* frame_extension =
-        GetExtensionFromFrame(render_frame_host, true);
-
-    if (!frame_extension)
-      pm->UnregisterRenderFrameHost(render_frame_host);
-  }
-}
-
-void ExtensionWebContentsObserver::DidNavigateAnyFrame(
-    content::RenderFrameHost* render_frame_host,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (details.is_in_page)
-    return;
-
   const Extension* frame_extension =
       GetExtensionFromFrame(render_frame_host, true);
-  ProcessManager* pm = ProcessManager::Get(browser_context_);
-
-  if (!frame_extension) {
-    // Should have been unregistered by DidFinishNavigation.
-    DCHECK(!pm->IsRenderFrameHostRegistered(render_frame_host));
-    return;
-  }
-
   if (pm->IsRenderFrameHostRegistered(render_frame_host)) {
-    // Notify ProcessManager, because some clients do not just want to know
-    // whether the frame is in an extension process, but also whether the frame
-    // was navigated.
-    pm->DidNavigateRenderFrameHost(render_frame_host);
-  } else {
+    if (frame_extension && !navigation_handle->IsSamePage()) {
+      // Notify ProcessManager, because some clients do not just want to know
+      // whether the frame is in an extension process, but also whether the
+      // frame was navigated.
+      pm->DidNavigateRenderFrameHost(render_frame_host);
+    } else if (!frame_extension) {
+      pm->UnregisterRenderFrameHost(render_frame_host);
+    }
+  } else if (frame_extension) {
     pm->RegisterRenderFrameHost(web_contents(), render_frame_host,
                                 frame_extension);
   }
