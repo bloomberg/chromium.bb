@@ -12,19 +12,26 @@
 
 namespace blink {
 
-struct PrecomputedDataForAncestor {
-  // Maps from a transform node that is a descendant of the ancestor to the
-  // combined transform between the descendant's and the ancestor's coordinate
-  // space.
-  HashMap<const TransformPaintPropertyNode*, TransformationMatrix>
-      toAncestorTransforms;
+// Maps from a descendant clip node to its equivalent "clip visual rect" in
+// the space of the ancestor. The clip visual rect is defined as the
+// intersection of all clips between the descendant and the ancestor (*not*
+// including the ancestor) in the clip tree, individually transformed from
+// their localTransformSpace into the ancestor's localTransformSpace.
+typedef HashMap<const ClipPaintPropertyNode*, FloatRect> ClipCache;
 
-  // Maps from a descendant clip node to its equivalent "clip visual rect" in
-  // the space of the ancestor. The clip visual rect is defined as the
-  // intersection of all clips between the descendant and the ancestor (*not*
-  // including the ancestor) in the clip tree, individually transformed from
-  // their localTransformSpace into the ancestor's localTransformSpace.
-  HashMap<const ClipPaintPropertyNode*, FloatRect> toAncestorClipRects;
+// Maps from a transform node that is a descendant of the ancestor to the
+// combined transform between the descendant's and the ancestor's coordinate
+typedef HashMap<const TransformPaintPropertyNode*, TransformationMatrix>
+    TransformCache;
+
+struct PrecomputedDataForAncestor {
+  TransformCache toAncestorTransforms;
+
+  // There can be multiple clips within the same transform space. This
+  // maps from the desired destination clip within the same transform
+  // space to its corresponding ClipCache.
+  HashMap<const ClipPaintPropertyNode*, std::unique_ptr<ClipCache>>
+      precomputedClips;
 
   static std::unique_ptr<PrecomputedDataForAncestor> create() {
     return WTF::makeUnique<PrecomputedDataForAncestor>();
@@ -172,6 +179,13 @@ class PLATFORM_EXPORT GeometryMapper {
   // PrecomputedDataForAncestor otherwise.
   PrecomputedDataForAncestor& getPrecomputedDataForAncestor(
       const TransformPaintPropertyNode*);
+
+  // Returns the transform cache for the given ancestor transform node.
+  TransformCache& getTransformCache(const TransformPaintPropertyNode*);
+
+  // Returns the clip cache for the given ancestor clip node.
+  ClipCache& getClipCache(const TransformPaintPropertyNode*,
+                          const ClipPaintPropertyNode*);
 
   friend class GeometryMapperTest;
   friend class PaintLayerClipperTest;

@@ -161,10 +161,27 @@ FloatRect GeometryMapper::ancestorToLocalRect(
 }
 
 PrecomputedDataForAncestor& GeometryMapper::getPrecomputedDataForAncestor(
-    const TransformPaintPropertyNode* ancestorTransformNode) {
-  auto addResult = m_data.insert(ancestorTransformNode, nullptr);
+    const TransformPaintPropertyNode* transform) {
+  auto addResult = m_data.insert(transform, nullptr);
   if (addResult.isNewEntry)
     addResult.storedValue->value = PrecomputedDataForAncestor::create();
+  return *addResult.storedValue->value;
+}
+
+TransformCache& GeometryMapper::getTransformCache(
+    const TransformPaintPropertyNode* node) {
+  return getPrecomputedDataForAncestor(node).toAncestorTransforms;
+}
+
+ClipCache& GeometryMapper::getClipCache(
+    const TransformPaintPropertyNode* transform,
+    const ClipPaintPropertyNode* clip) {
+  PrecomputedDataForAncestor& precomputedData =
+      getPrecomputedDataForAncestor(transform);
+
+  auto addResult = precomputedData.precomputedClips.insert(clip, nullptr);
+  if (addResult.isNewEntry)
+    addResult.storedValue->value = WTF::makeUnique<ClipCache>();
   return *addResult.storedValue->value;
 }
 
@@ -188,16 +205,16 @@ FloatRect GeometryMapper::localToAncestorClipRectInternal(
     return clip;
   }
 
-  PrecomputedDataForAncestor& precomputedData =
-      getPrecomputedDataForAncestor(ancestorState.transform());
+  ClipCache& clipCache =
+      getClipCache(ancestorState.transform(), ancestorState.clip());
   const ClipPaintPropertyNode* clipNode = localState.clip();
   Vector<const ClipPaintPropertyNode*> intermediateNodes;
 
   // Iterate over the path from localState.clip to ancestorState.clip. Stop if
   // we've found a memoized (precomputed) clip for any particular node.
   while (clipNode && clipNode != ancestorState.clip()) {
-    auto it = precomputedData.toAncestorClipRects.find(clipNode);
-    if (it != precomputedData.toAncestorClipRects.end()) {
+    auto it = clipCache.find(clipNode);
+    if (it != clipCache.end()) {
       clip = it->value;
       break;
     }
@@ -220,11 +237,11 @@ FloatRect GeometryMapper::localToAncestorClipRectInternal(
       return clip;
     FloatRect mappedRect = transformMatrix.mapRect((*it)->clipRect().rect());
     clip.intersect(mappedRect);
-    precomputedData.toAncestorClipRects.set(*it, clip);
+    clipCache.set(*it, clip);
   }
 
   success = true;
-  return precomputedData.toAncestorClipRects.find(localState.clip())->value;
+  return clipCache.find(localState.clip())->value;
 }
 
 const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
@@ -246,8 +263,7 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
     return m_identity;
   }
 
-  PrecomputedDataForAncestor& precomputedData =
-      getPrecomputedDataForAncestor(ancestorTransformNode);
+  TransformCache& transformCache = getTransformCache(ancestorTransformNode);
 
   const TransformPaintPropertyNode* transformNode = localTransformNode;
   Vector<const TransformPaintPropertyNode*> intermediateNodes;
@@ -257,8 +273,8 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
   // Stop if we've found a memoized (precomputed) transform for any particular
   // node.
   while (transformNode && transformNode != ancestorTransformNode) {
-    auto it = precomputedData.toAncestorTransforms.find(transformNode);
-    if (it != precomputedData.toAncestorTransforms.end()) {
+    auto it = transformCache.find(transformNode);
+    if (it != transformCache.end()) {
       transformMatrix = it->value;
       break;
     }
@@ -277,10 +293,10 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
     TransformationMatrix localTransformMatrix = (*it)->matrix();
     localTransformMatrix.applyTransformOrigin((*it)->origin());
     transformMatrix = transformMatrix * localTransformMatrix;
-    precomputedData.toAncestorTransforms.set(*it, transformMatrix);
+    transformCache.set(*it, transformMatrix);
   }
   success = true;
-  return precomputedData.toAncestorTransforms.find(localTransformNode)->value;
+  return transformCache.find(localTransformNode)->value;
 }
 
 void GeometryMapper::clearCache() {

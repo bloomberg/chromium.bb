@@ -29,10 +29,14 @@ class GeometryMapperTest : public ::testing::Test,
     return state;
   }
 
-  PrecomputedDataForAncestor& getPrecomputedDataForAncestor(
+  TransformCache& getTransformCache(
       const PropertyTreeState& propertyTreeState) {
-    return geometryMapper->getPrecomputedDataForAncestor(
-        propertyTreeState.transform());
+    return geometryMapper->getTransformCache(propertyTreeState.transform());
+  }
+
+  ClipCache& getClipCache(const PropertyTreeState& propertyTreeState) {
+    return geometryMapper->getClipCache(propertyTreeState.transform(),
+                                        propertyTreeState.clip());
   }
 
   const TransformPaintPropertyNode* lowestCommonAncestor(
@@ -123,15 +127,14 @@ const static float kTestEpsilon = 1e-6;
                        ancestorPropertyTreeState.transform()));                \
     if (ancestorPropertyTreeState.transform() !=                               \
         localPropertyTreeState.transform()) {                                  \
-      EXPECT_EQ(                                                               \
-          expectedTransformToAncestor,                                         \
-          getPrecomputedDataForAncestor(ancestorPropertyTreeState)             \
-              .toAncestorTransforms.get(localPropertyTreeState.transform()));  \
+      EXPECT_EQ(expectedTransformToAncestor,                                   \
+                getTransformCache(ancestorPropertyTreeState)                   \
+                    .get(localPropertyTreeState.transform()));                 \
     }                                                                          \
     if (ancestorPropertyTreeState.clip() != localPropertyTreeState.clip()) {   \
       EXPECT_EQ(expectedClipInAncestorSpace,                                   \
-                getPrecomputedDataForAncestor(ancestorPropertyTreeState)       \
-                    .toAncestorClipRects.get(localPropertyTreeState.clip()));  \
+                getClipCache(ancestorPropertyTreeState)                        \
+                    .get(localPropertyTreeState.clip()));                      \
     }                                                                          \
   } while (false)
 
@@ -245,8 +248,7 @@ TEST_F(GeometryMapperTest, NestedTransforms) {
 
   // Check the cached matrix for the intermediate transform.
   EXPECT_EQ(rotateTransform,
-            getPrecomputedDataForAncestor(rootPropertyTreeState())
-                .toAncestorTransforms.get(transform1.get()));
+            getTransformCache(rootPropertyTreeState()).get(transform1.get()));
 }
 
 TEST_F(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
@@ -276,9 +278,9 @@ TEST_F(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
                  rootPropertyTreeState());
 
   // Check the cached matrix for the intermediate transform.
-  EXPECT_EQ(scaleTransform,
-            getPrecomputedDataForAncestor(rootPropertyTreeState())
-                .toAncestorTransforms.get(transform1.get()));
+  EXPECT_EQ(scaleTransform, getTransformCache(rootPropertyTreeState())
+
+                                .get(transform1.get()));
 }
 
 TEST_F(GeometryMapperTest, NestedTransformsIntermediateDestination) {
@@ -327,6 +329,44 @@ TEST_F(GeometryMapperTest, SimpleClip) {
                  clip->clipRect().rect(),  // Clip rect in ancestor space
                  localState,
                  rootPropertyTreeState());
+}
+
+TEST_F(GeometryMapperTest, TwoClips) {
+  RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
+      ClipPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      FloatRoundedRect(10, 10, 30, 40));
+
+  RefPtr<ClipPaintPropertyNode> clip2 =
+      ClipPaintPropertyNode::create(clip1, TransformPaintPropertyNode::root(),
+                                    FloatRoundedRect(10, 10, 50, 50));
+
+  PropertyTreeState localState = rootPropertyTreeState();
+  PropertyTreeState ancestorState = rootPropertyTreeState();
+  localState.setClip(clip2.get());
+
+  FloatRect input(0, 0, 100, 100);
+  FloatRect output1(10, 10, 30, 40);
+
+  CHECK_MAPPINGS(input,    // Input
+                 output1,  // Visual rect
+                 input,    // Transformed rect (not clipped).
+                 TransformPaintPropertyNode::root()
+                     ->matrix(),  // Transform matrix to ancestor space
+                 clip1->clipRect().rect(),  // Clip rect in ancestor space
+                 localState,
+                 ancestorState);
+
+  ancestorState.setClip(clip1.get());
+  FloatRect output2(10, 10, 50, 50);
+
+  CHECK_MAPPINGS(input,    // Input
+                 output2,  // Visual rect
+                 input,    // Transformed rect (not clipped).
+                 TransformPaintPropertyNode::root()
+                     ->matrix(),  // Transform matrix to ancestor space
+                 clip2->clipRect().rect(),  // Clip rect in ancestor space
+                 localState,
+                 ancestorState);
 }
 
 TEST_F(GeometryMapperTest, ClipBeforeTransform) {
