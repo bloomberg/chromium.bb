@@ -183,7 +183,9 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      * See {@link SelectionObserver}.
      */
     public void onSelectionStateChange(boolean selectionEnabled) {
-        mClearBrowsingDataButton.setEnabled(!selectionEnabled);
+        if (mClearBrowsingDataButton != null) {
+            mClearBrowsingDataButton.setEnabled(!selectionEnabled);
+        }
         for (HistoryItemView item : mItemViews) {
             item.setRemoveButtonVisible(!selectionEnabled);
         }
