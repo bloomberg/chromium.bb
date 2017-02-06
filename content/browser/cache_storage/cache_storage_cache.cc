@@ -1440,9 +1440,12 @@ void CacheStorageCache::InitGotCacheSize(const base::Closure& callback,
   // (which is why the size was calculated), or 2) it must match the current
   // size. If the sizes aren't equal then there is a bug in how the cache size
   // is saved in the store's index.
-  if (cache_size_ != CacheStorage::kSizeUnknown && cache_size_ != cache_size) {
-    // TODO(cmumford): Add UMA for this.
-    LOG(ERROR) << "Cache size/index mismatch";
+  if (cache_size_ != CacheStorage::kSizeUnknown) {
+    LOG_IF(ERROR, cache_size_ != cache_size)
+        << "Cache size: " << cache_size
+        << " does not match size from index: " << cache_size_;
+    UMA_HISTOGRAM_COUNTS_10M("ServiceWorkerCache.IndexSizeDifference",
+                             std::abs(cache_size_ - cache_size));
     // Disabled for crbug.com/681900.
     // DCHECK_EQ(cache_size_, cache_size);
   }
