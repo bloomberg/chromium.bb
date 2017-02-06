@@ -100,9 +100,8 @@ class WebContentsModalDialogManager
   void CloseAllDialogs();
 
   // Overridden from content::WebContentsObserver:
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidGetIgnoredUIEvent() override;
   void WasShown() override;
   void WasHidden() override;
