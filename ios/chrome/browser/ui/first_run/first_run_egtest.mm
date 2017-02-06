@@ -5,7 +5,6 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
@@ -29,6 +28,10 @@
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -85,8 +88,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
                         GetApplicationContext()->GetLocalState());
   defaultOptInPref.SetValue(metrics::EnableMetricsDefault::DEFAULT_UNKNOWN);
 
-  base::scoped_nsobject<TestLocationManager> locationManager(
-      [[TestLocationManager alloc] init]);
+  TestLocationManager* locationManager = [[TestLocationManager alloc] init];
   [locationManager setLocationServicesEnabled:NO];
   [[OmniboxGeolocationController sharedInstance]
       setLocationManager:locationManager];
