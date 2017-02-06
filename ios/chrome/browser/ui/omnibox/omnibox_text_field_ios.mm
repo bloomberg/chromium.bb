@@ -443,6 +443,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   [leftViewButton setNeedsLayout];
 
   [leftViewButton sizeToFit];
+  self.leftView.isAccessibilityElement =
+      self.attributedText.length != 0 && leftViewButton.isEnabled;
 
   // -sizeToFit doesn't take into account the left inset, so expand the width of
   // the button by |kChipTextLeftInset|.
