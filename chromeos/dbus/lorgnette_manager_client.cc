@@ -12,8 +12,7 @@
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -105,14 +104,12 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     CompletionCallback Start(const ScanImageToStringCallback& callback,
                              base::ScopedFD* fd) {
       CHECK(!pipe_reader_.get());
-      const bool kTasksAreSlow = true;
-      scoped_refptr<base::TaskRunner> task_runner =
-          base::WorkerPool::GetTaskRunner(kTasksAreSlow);
-      pipe_reader_.reset(
-          new chromeos::PipeReaderForString(
-              task_runner,
-              base::Bind(&ScanToStringCompletion::OnScanToStringDataCompleted,
-                       base::Unretained(this))));
+      pipe_reader_.reset(new chromeos::PipeReaderForString(
+          base::CreateTaskRunnerWithTraits(
+              base::TaskTraits().MayBlock().WithShutdownBehavior(
+                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)),
+          base::Bind(&ScanToStringCompletion::OnScanToStringDataCompleted,
+                     base::Unretained(this))));
       *fd = pipe_reader_->StartIO();
 
       return base::Bind(&ScanToStringCompletion::OnScanToStringCompleted,
