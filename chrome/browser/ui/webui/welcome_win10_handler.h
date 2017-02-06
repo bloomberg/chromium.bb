@@ -40,7 +40,7 @@ class WelcomeWin10Handler : public content::WebUIMessageHandler {
   // Sets the internal result and optionally call
   // SendPinnedToTaskbarStateResult() in the case that
   // |pinned_state_callback_id_| is not empty.
-  void OnIsPinnedToTaskbarDetermined(bool is_pinned_to_taskbar);
+  void OnIsPinnedToTaskbarDetermined(bool timed_out, bool is_pinned_to_taskbar);
 
   // Returns the result to the getPinnedToTaskbarState() javascript call via the
   // promise.

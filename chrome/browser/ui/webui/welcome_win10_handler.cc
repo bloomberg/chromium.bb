@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -110,7 +111,7 @@ void WelcomeWin10Handler::HandleGetPinnedToTaskbarState(
       base::TimeDelta::FromMilliseconds(200);
   timer_.Start(FROM_HERE, kPinnedToTaskbarTimeout,
                base::Bind(&WelcomeWin10Handler::OnIsPinnedToTaskbarDetermined,
-                          base::Unretained(this), true));
+                          base::Unretained(this), true, true));
 }
 
 void WelcomeWin10Handler::HandleSetDefaultBrowser(const base::ListValue* args) {
@@ -132,7 +133,7 @@ void WelcomeWin10Handler::StartIsPinnedToTaskbarCheck() {
   // Assume that Chrome is pinned to the taskbar if an error occurs.
   base::Closure error_callback =
       base::Bind(&WelcomeWin10Handler::OnIsPinnedToTaskbarDetermined,
-                 weak_ptr_factory_.GetWeakPtr(), true);
+                 weak_ptr_factory_.GetWeakPtr(), false, true);
 
   shell_integration::win::GetIsPinnedToTaskbarState(
       error_callback,
@@ -143,16 +144,19 @@ void WelcomeWin10Handler::StartIsPinnedToTaskbarCheck() {
 void WelcomeWin10Handler::OnIsPinnedToTaskbarResult(bool succeeded,
                                                     bool is_pinned_to_taskbar) {
   // Assume that Chrome is pinned to the taskbar if an error occured.
-  OnIsPinnedToTaskbarDetermined(!succeeded || is_pinned_to_taskbar);
+  OnIsPinnedToTaskbarDetermined(false, !succeeded || is_pinned_to_taskbar);
 }
 
 void WelcomeWin10Handler::OnIsPinnedToTaskbarDetermined(
+    bool timed_out,
     bool is_pinned_to_taskbar) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Early exit if the pinned_state was already determined.
   if (pinned_state_result_.has_value())
     return;
+
+  UMA_HISTOGRAM_BOOLEAN("Welcome.Win10.PinCheckTimedOut", timed_out);
 
   // Stop the timer if it's still running.
   timer_.Stop();
