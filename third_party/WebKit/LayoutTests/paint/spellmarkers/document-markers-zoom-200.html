@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  #editable { zoom: 200%; }
+</style>
+<script>
+if (window.testRunner) {
+    testRunner.setMockSpellCheckerEnabled(true);
+}
+
+function runTest() {
+    editable = document.getElementById("editable");
+    selection = document.getSelection();
+    selection.addRange(new Range);
+    range = selection.getRangeAt(0);
+    range.selectNodeContents(editable);
+}
+</script>
+</head>
+<body onload="runTest();">
+  <div id="editable" contenteditable="true">wellcome should be marked</div>
+</body>
+</html>

@@ -964,7 +964,8 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext& context,
   context.drawLineForDocumentMarker(
       FloatPoint((boxOrigin.x() + start).toFloat(),
                  (boxOrigin.y() + underlineOffset).toFloat()),
-      width.toFloat(), lineStyleForMarkerType(marker.type()));
+      width.toFloat(), lineStyleForMarkerType(marker.type()),
+      style.effectiveZoom());
 }
 
 template <InlineTextBoxPainter::PaintOptions options>

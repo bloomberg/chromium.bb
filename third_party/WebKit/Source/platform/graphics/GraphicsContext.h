@@ -270,7 +270,8 @@ class PLATFORM_EXPORT GraphicsContext {
   };
   void drawLineForDocumentMarker(const FloatPoint&,
                                  float width,
-                                 DocumentMarkerLineStyle);
+                                 DocumentMarkerLineStyle,
+                                 float zoom);
 
   // beginLayer()/endLayer() behave like save()/restore() for CTM and clip
   // states. Apply SkBlendMode when the layer is composited on the backdrop

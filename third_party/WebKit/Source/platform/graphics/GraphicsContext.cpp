@@ -511,12 +511,15 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2) {
 
 void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt,
                                                 float width,
-                                                DocumentMarkerLineStyle style) {
+                                                DocumentMarkerLineStyle style,
+                                                float zoom) {
   if (contextDisabled())
     return;
 
   // Use 2x resources for a device scale factor of 1.5 or above.
-  int deviceScaleFactor = m_deviceScaleFactor > 1.5f ? 2 : 1;
+  // This modifes the bitmaps used for the marker, not the overall
+  // scaling of the marker.
+  int deviceScaleFactor = m_deviceScaleFactor * zoom > 1.5f ? 2 : 1;
 
   // Create the pattern we'll use to draw the underline.
   int index = style == DocumentMarkerGrammarLineStyle ? 1 : 0;
@@ -586,7 +589,7 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt,
     misspellBitmap[index] = new SkBitmap(bitmap);
 #else
     // We use a 2-pixel-high misspelling indicator because that seems to be
-    // what WebKit is designed for, and how much room there is in a typical
+    // what Blink is designed for, and how much room there is in a typical
     // page for it.
     const int rowPixels =
         32 * deviceScaleFactor;  // Must be multiple of 4 for pattern below.
@@ -608,25 +611,24 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt,
   }
 
 #if OS(MACOSX)
-  SkScalar originX = WebCoreFloatToSkScalar(pt.x()) * deviceScaleFactor;
-  SkScalar originY = WebCoreFloatToSkScalar(pt.y()) * deviceScaleFactor;
+  // Position already includes zoom and device scale factor.
+  SkScalar originX = WebCoreFloatToSkScalar(pt.x());
+  SkScalar originY = WebCoreFloatToSkScalar(pt.y());
 
-  // Make sure to draw only complete dots.
-  int rowPixels = misspellBitmap[index]->width();
-  float widthMod = fmodf(width * deviceScaleFactor, rowPixels);
-  if (rowPixels - widthMod > deviceScaleFactor)
-    width -= widthMod / deviceScaleFactor;
+  // Make sure to draw only complete dots, and finish inside the marked text.
+  float rowPixels = misspellBitmap[index]->width() * zoom / deviceScaleFactor;
+  float dotCount = floorf(width / rowPixels);
+  width = dotCount * rowPixels;
 #else
   SkScalar originX = WebCoreFloatToSkScalar(pt.x());
 
   // Offset it vertically by 1 so that there's some space under the text.
   SkScalar originY = WebCoreFloatToSkScalar(pt.y()) + 1;
-  originX *= deviceScaleFactor;
-  originY *= deviceScaleFactor;
 #endif
 
   SkMatrix localMatrix;
-  localMatrix.setTranslate(originX, originY);
+  localMatrix.setScale(zoom / deviceScaleFactor, zoom / deviceScaleFactor);
+  localMatrix.postTranslate(originX, originY);
 
   PaintFlags paint;
   paint.setShader(WrapSkShader(SkShader::MakeBitmapShader(
@@ -634,17 +636,13 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt,
       SkShader::kRepeat_TileMode, &localMatrix)));
 
   SkRect rect;
-  rect.set(originX, originY,
-           originX + WebCoreFloatToSkScalar(width) * deviceScaleFactor,
-           originY + SkIntToScalar(misspellBitmap[index]->height()));
+  rect.set(
+      originX, originY, originX + WebCoreFloatToSkScalar(width),
+      originY +
+          SkIntToScalar(misspellBitmap[index]->height() / deviceScaleFactor) *
+              zoom);
 
-  if (deviceScaleFactor == 2) {
-    save();
-    scale(0.5, 0.5);
-  }
   drawRect(rect, paint);
-  if (deviceScaleFactor == 2)
-    restore();
 }
 
 void GraphicsContext::drawLineForText(const FloatPoint& pt, float width) {
