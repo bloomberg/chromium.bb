@@ -31,6 +31,7 @@ namespace {
 void BindMusConnectionOnMainThread(
     uint32_t routing_id,
     ui::mojom::WindowTreeClientRequest request) {
+  RendererWindowTreeClient::CreateIfNecessary(routing_id);
   RendererWindowTreeClient::Get(routing_id)->Bind(std::move(request));
 }
 

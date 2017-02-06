@@ -391,7 +391,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 #if defined(USE_AURA)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNoUseMusInRenderer)) {
-    RendererWindowTreeClient::Create(routing_id_);
+    RendererWindowTreeClient::CreateIfNecessary(routing_id_);
   }
 #endif
 }

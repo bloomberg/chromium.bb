@@ -30,9 +30,10 @@ namespace content {
 class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
  public:
   // Creates a RendererWindowTreeClient instance for the RenderWidget instance
-  // associated with |routing_id|. The instance self-destructs when the
-  // connection to mus is lost, or when the window is closed.
-  static void Create(int routing_id);
+  // associated with |routing_id| (if one doesn't already exist). The instance
+  // self-destructs when the connection to mus is lost, or when the window is
+  // closed.
+  static void CreateIfNecessary(int routing_id);
 
   // Destroys the client instance, if one exists. Otherwise, does nothing.
   static void Destroy(int routing_id);

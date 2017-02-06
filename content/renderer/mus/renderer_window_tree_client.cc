@@ -26,9 +26,9 @@ RendererWindowTreeClient* RendererWindowTreeClient::Get(int routing_id) {
 }
 
 // static
-void RendererWindowTreeClient::Create(int routing_id) {
-  DCHECK(g_connections.Get().find(routing_id) == g_connections.Get().end())
-      << routing_id;
+void RendererWindowTreeClient::CreateIfNecessary(int routing_id) {
+  if (Get(routing_id))
+    return;
   RendererWindowTreeClient* connection =
       new RendererWindowTreeClient(routing_id);
   g_connections.Get().insert(std::make_pair(routing_id, connection));
