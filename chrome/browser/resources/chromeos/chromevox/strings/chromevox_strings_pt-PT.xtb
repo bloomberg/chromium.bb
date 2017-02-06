@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, ligar</translation>
 <translation id="1692077714702418899">linha estrutural</translation>
 <translation id="1700517974991662022">Visitado</translation>
+<translation id="1714116687360794776">Contador</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Gráfico seguinte</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Controlo de hora e data</translation>
 <translation id="2347456970887948350">Um link</translation>
 <translation id="2359897517538099099">Não está no modo de tabela.</translation>
+<translation id="2390264819538553347">Para avançar, prima Enter. Para retroceder, prima a tecla de retrocesso.</translation>
 <translation id="241124561063364910">seguido de</translation>
 <translation id="2416512023405990736">Uma caixa de verificação desselecionada</translation>
 <translation id="2417569100218200841">Informações do conteúdo</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Grupo de botões de opção</translation>
 <translation id="2471138580042810658">Título 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisco}other{# asteriscos}}</translation>
+<translation id="2523609930580546572">Tutorial do ChromeVox</translation>
 <translation id="2525706221823668172">Atalhos de teclado do Chromebook</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> foi reposto.</translation>
 <translation id="2553108862507765288">erro gramatical</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Não existe nenhuma secção anterior.</translation>
 <translation id="3030432017085518523">Botão de opção de item de menu</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apóstrofo}other{# apóstrofos}}</translation>
+<translation id="3040901448410802366">Indicador de progresso</translation>
 <translation id="3046838483509668188">Opções do ChromeVox</translation>
 <translation id="3047143736589213134">Mapa de teclas experimental</translation>
 <translation id="3060756054951570867">menu <ph name="TITLE" /> aberto</translation>
@@ -230,6 +234,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="3321460131042519426">Ativar mudança de linha</translation>
 <translation id="3322936298410871309">Título de nível 1 anterior</translation>
 <translation id="3323447499041942178">Caixa de texto</translation>
+<translation id="3338224621010291843">Controlo de deslize de <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "árabe",
         "bg": "búlgaro",
         "ca": "catalão",
@@ -714,6 +719,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="7693840228159394336">Botão de opção anterior</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, caixa de texto da palavra-passe</translation>
+<translation id="7776293189010177726">Abrir menus do ChromeVox</translation>
 <translation id="7805247615045262757">navegação predefinida</translation>
 <translation id="7805768142964895445">Estado</translation>
 <translation id="7810781339813764006">Grupo seguinte</translation>

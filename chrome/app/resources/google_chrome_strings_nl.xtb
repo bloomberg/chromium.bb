@@ -65,7 +65,6 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="2664962310688259219">Open-sourcelicenties van Chrome OS</translation>
 <translation id="2665296953892887393">Help ons Google Chrome te verbeteren door crashrapporten en <ph name="UMA_LINK" /> naar Google te verzenden</translation>
 <translation id="2689103672227170538">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je Chrome start.</translation>
-<translation id="2748463065602559597">Je bekijkt een veilige Google Chrome-pagina.</translation>
 <translation id="2769762047821873045">Google Chrome is niet je standaardbrowser.</translation>
 <translation id="2770231113462710648">Standaardbrowser wijzigen in:</translation>
 <translation id="2799223571221894425">Opnieuw starten</translation>
@@ -205,6 +204,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6970811910055250180">Je apparaat bijwerken...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> vereist dat je de volgende Servicevoorwaarden leest en accepteert voordat je dit apparaat gebruikt. Met deze voorwaarden worden de Voorwaarden van Google Chrome OS niet uitgebreid, aangepast of beperkt.</translation>
 <translation id="6989339256997917931">Google Chrome is bijgewerkt, maar je hebt het programma minstens 30 dagen niet gebruikt.</translation>
+<translation id="7048801529101012374">Google Chrome is je standaardbrowser.</translation>
 <translation id="7098166902387133879">Google Chrome gebruikt je microfoon.</translation>
 <translation id="7106741999175697885">Taakbeheer - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome kan niet automatisch worden geüpdatet naar de nieuwste versie, waardoor je geweldige nieuwe functies en beveiligingsoplossingen misloopt. Je moet Chrome handmatig opnieuw installeren.</translation>

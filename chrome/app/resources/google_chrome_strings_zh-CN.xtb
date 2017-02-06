@@ -61,7 +61,6 @@
 <translation id="2664962310688259219">Chrome操作系统开放源代码许可</translation>
 <translation id="2665296953892887393">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Google Chrome。</translation>
 <translation id="2689103672227170538">此扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
-<translation id="2748463065602559597">您正在查看的是安全的 Google Chrome 浏览器网页。</translation>
 <translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="2799223571221894425">重新启动</translation>
@@ -200,6 +199,7 @@
 <translation id="6970811910055250180">正在更新设备...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> 要求您必须先阅读并接受以下服务条款，才能使用此设备。这些条款不会扩大、修改或限制 Google Chrome 操作系统条款。</translation>
 <translation id="6989339256997917931">Google Chrome 浏览器已更新，但您已经至少 30 天未使用它了。</translation>
+<translation id="7048801529101012374">Google Chrome 现已成为您的默认浏览器。大功告成！</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麦克风。</translation>
 <translation id="7106741999175697885">任务管理器 - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要手动重新安装Chrome。</translation>

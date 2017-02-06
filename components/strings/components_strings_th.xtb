@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">เมื่อเร็วๆ นี้ Google Safe Browsing <ph name="BEGIN_LINK" />ตรวจพบมัลแวร์<ph name="END_LINK" />บน <ph name="SITE" /> บางครั้งเว็บไซต์ที่โดยปกติแล้วจะปลอดภัยอาจติดมัลแวร์ได้ เนื้อหาที่เป็นอันตรายมาจาก <ph name="SUBRESOURCE_HOST" /> ซึ่งเป็นผู้เผยแพร่มัลแวร์ที่เป็นที่รู้จัก <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">คำขอหรือพารามิเตอร์คำขอไม่ถูกต้อง</translation>
 <translation id="1834321415901700177">เว็บไซต์นี้มีโปรแกรมอันตราย</translation>
-<translation id="1838667051080421715">คุณกำลังดูแหล่งที่มาของหน้าเว็บ</translation>
 <translation id="1871208020102129563">พร็อกซีถูกตั้งค่าให้ใช้พร็อกซีเซิร์ฟเวอร์แบบคงที่ ไม่ใช่ URL สคริปต์ .pac</translation>
+<translation id="187918866476621466">เปิดหน้าเริ่มต้นใช้งาน</translation>
 <translation id="1883255238294161206">ยุบรายการ</translation>
 <translation id="1898423065542865115">การกรอง</translation>
 <translation id="194030505837763158">ไปที่ <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">หากคุณเห็นข้อความนี้บ่อยๆ ให้ลองไปที่ <ph name="HELP_LINK" /></translation>
 <translation id="3658742229777143148">การแก้ไข</translation>
 <translation id="3678029195006412963">ไม่สามารถลงนามคำขอ</translation>
+<translation id="3679803492151881375">รายงานข้อขัดข้องเมื่อ <ph name="CRASH_TIME" /> อัปโหลดเมื่อ <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">ข้อมูลในใบรับรอง</translation>
 <translation id="3690164694835360974">การเข้าสู่ระบบไม่ปลอดภัย</translation>
 <translation id="3693415264595406141">รหัสผ่าน:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;เลิกทำการนำออก</translation>
 <translation id="4619615317237390068">แท็บจากอุปกรณ์อื่นๆ</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">คุณกำลังดูหน้าส่วนขยาย</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">การเชื่อมต่อของคุณขัดข้อง</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />เรียกใช้การวินิจฉัยเครือข่ายของ Windows<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">หน้าเว็บใน <ph name="URL" /> อาจหยุดให้บริการชั่วคราวหรืออาจถูกย้ายไปยังที่อยู่เว็บใหม่อย่างถาวร</translation>
 <translation id="4771973620359291008">มีข้อผิดพลาดที่ไม่ทราบเกิดขึ้น</translation>
 <translation id="4800132727771399293">ตรวจสอบวันหมดอายุและ CVC แล้วลองอีกครั้ง</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">ข้อผิดพลาดของเครือข่าย</translation>
 <translation id="4816492930507672669">พอดีกับหน้า</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">คุณต้องการออกจากเว็บไซต์นี้ใช่ไหม</translation>
 <translation id="5629630648637658800">ไม่สามารถโหลดการตั้งค่านโยบาย</translation>
 <translation id="5631439013527180824">โทเค็นการจัดการอุปกรณ์ไม่ถูกต้อง</translation>
+<translation id="5669703222995421982">รับเนื้อหาที่ปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="5675650730144413517">หน้านี้ใช้ไม่ได้</translation>
 <translation id="5677928146339483299">ถูกบล็อก</translation>
 <translation id="5694783966845939798">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่ลงนามด้วยอัลกอริทึมลายเซ็นที่ไม่รัดกุม (เช่น SHA-1) ซึ่งหมายความว่าข้อมูลรับรองด้านความปลอดภัยที่เซิร์ฟเวอร์แสดงอาจถูกปลอมแปลงขึ้น และเซิร์ฟเวอร์ดังกล่าวอาจไม่ใช่เซิร์ฟเวอร์ที่คุณคิด (คุณอาจกำลังติดต่อกับผู้โจมตี) <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">ค่านโยบาย</translation>
 <translation id="6757797048963528358">อุปกรณ์ของคุณเข้าสู่โหมดสลีปแล้ว</translation>
 <translation id="6778737459546443941">ผู้ปกครองยังไม่ได้อนุมัติเว็บไซต์นี้</translation>
+<translation id="6810899417690483278">รหัสการปรับแต่ง</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">หน้าเว็บที่ <ph name="URL" /> ไม่สามารถใช้งานได้ในขณะนี้ หน้าเว็บอาจกำลังถูกเรียกใช้งานมากเกินไปหรือถูกปิดเพื่อซ่อมบำรุง</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
@@ -709,6 +712,7 @@
 <translation id="8364627913115013041">ไม่ได้ตั้งค่า</translation>
 <translation id="8380941800586852976">อันตราย</translation>
 <translation id="8382348898565613901">บุ๊กมาร์กที่คุณเข้าชมล่าสุดจะปรากฏที่นี่</translation>
+<translation id="8398259832188219207">อัปโหลดรายงานข้อขัดข้องเมื่อ <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">ข้อขัดข้อง (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">คุณต้องป้อนข้อความรหัสผ่านที่เหมือนกันสองครั้ง</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>

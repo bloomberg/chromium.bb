@@ -63,7 +63,6 @@
 <translation id="2664962310688259219">Лицензи за отворен код за Chrome OS</translation>
 <translation id="2665296953892887393">Помогнете ни да подобрим Google Chrome, като ни изпращате <ph name="UMA_LINK" /> му и сигнали за сривове</translation>
 <translation id="2689103672227170538">Това разширение промени страницата, която се показва при стартиране на Chrome.</translation>
-<translation id="2748463065602559597">Преглеждате защитена страница в Google Chrome.</translation>
 <translation id="2769762047821873045">Google Chrome не е браузърът ви по подразбиране.</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
 <translation id="2799223571221894425">Стартиране отново</translation>
@@ -201,6 +200,7 @@
 <translation id="6970811910055250180">Устройството ви се актуализира...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> изисква да прочетете и приемете следните Общи условия, преди да използвате това устройство. Те не разширяват, не променят, нито ограничават Условията на Google Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome е актуализиран, но не сте го използвали от поне 30 дни.</translation>
+<translation id="7048801529101012374">Google Chrome е браузърът ви по подразбиране. Браво!</translation>
 <translation id="7098166902387133879">Google Chrome използва микрофона ви.</translation>
 <translation id="7106741999175697885">Диспечер на задачите - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome не можа да се актуализира до последната версия, така че пропускате невероятни нови функции и поправки за подобряване на сигурността. Налага се ръчно да инсталирате отново браузъра.</translation>

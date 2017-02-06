@@ -39,6 +39,7 @@
 <translation id="1923539912171292317">النقرات التلقائية</translation>
 <translation id="1957803754585243749">0 درجة</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">إيقاف إرسال <ph name="TAB_NAME" /> إلى <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">شاحن منخفض الطاقة</translation>
 <translation id="2204305834655267233">معلومات الشبكة</translation>
 <translation id="2208323208084708176">وضع سطح المكتب الموحد</translation>
@@ -148,6 +149,7 @@
 <translation id="5331975486040154427">‏جهاز USB-C (المنفذ الخلفي الأيسر)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">تمت إضافة كل المستخدمين المتوفرين لهذه الجلسة.</translation>
+<translation id="5504841533973703486">الميكروفون الأمامي</translation>
 <translation id="5507786745520522457">تثبيت بيانات الجوّال</translation>
 <translation id="5543001071567407895">‏الرسائل القصيرة SMS</translation>
 <translation id="5548285847212963613">يمكن أن تساعد الإضافة " <ph name="EXTENSION_NAME" /> "على الاتصال بهذه الشبكة.</translation>
@@ -159,6 +161,7 @@
 <translation id="57838592816432529">كتم الصوت</translation>
 <translation id="5825747213122829519">‏تم تغيير أسلوب الإدخال إلى <ph name="INPUT_METHOD_ID" />.
 اضغط على Shift + Alt للتبديل.</translation>
+<translation id="5830936593837877897">الميكروفون الخلفي</translation>
 <translation id="5871632337994001636">إدارة الأجهزة...</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -246,8 +249,10 @@
 <translation id="8000066093800657092">لا شبكة</translation>
 <translation id="8054466585765276473">يجري حساب وقت البطارية.</translation>
 <translation id="8077816382010018681">عنوان إشعار ميزة إلغاء القفل السريع هنا</translation>
+<translation id="8098591350844501178">إيقاف إرسال الشاشة إلى <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">‏الرسائل القصيرة SMS: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">تم الاتصال بالموقع <ph name="NAME" /></translation>
+<translation id="8180896103888046100">إيقاف الإرسال إلى مستلم غير معروف</translation>
 <translation id="8185286464235484130">يُرجى تقييم أدائنا من خلال الإجابة عن بعض الأسئلة.</translation>
 <translation id="8190698733819146287">تخصيص اللغات والإدخال...</translation>
 <translation id="8206859287963243715">خلوي</translation>

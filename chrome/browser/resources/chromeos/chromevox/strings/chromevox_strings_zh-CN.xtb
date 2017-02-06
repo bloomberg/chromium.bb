@@ -74,6 +74,7 @@
 <translation id="1680732992526857724">“<ph name="NAME" />”已开启</translation>
 <translation id="1692077714702418899">结构线</translation>
 <translation id="1700517974991662022">访问过</translation>
+<translation id="1714116687360794776">计量器</translation>
 <translation id="1722567105086139392">链接</translation>
 <translation id="1727806147743597030">页脚标记</translation>
 <translation id="174268867904053074">下一个图形</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">日期时间控件</translation>
 <translation id="2347456970887948350">链接</translation>
 <translation id="2359897517538099099">当前不是表格模式。</translation>
+<translation id="2390264819538553347">要前进，请按 Enter 键；要后退，请按退格键。</translation>
 <translation id="241124561063364910">然后按</translation>
 <translation id="2416512023405990736">未选中的复选框</translation>
 <translation id="2417569100218200841">内容信息</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">单选按钮组</translation>
 <translation id="2471138580042810658">6级标题标记</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{1个星号}other{#个星号}}</translation>
+<translation id="2523609930580546572">ChromeVox 教程</translation>
 <translation id="2525706221823668172">Chromebook 键盘快捷键</translation>
 <translation id="2549392850788122959">已重置“<ph name="KEY" />”。</translation>
 <translation id="2553108862507765288">grammatical mistake</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">不存在上一章节。</translation>
 <translation id="3030432017085518523">菜单项单选按钮</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{1个单引号}other{#个单引号}}</translation>
+<translation id="3040901448410802366">进度指示器</translation>
 <translation id="3046838483509668188">ChromeVox选项</translation>
 <translation id="3047143736589213134">实验性按键映射</translation>
 <translation id="3060756054951570867">已打开“<ph name="TITLE" />”菜单</translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">启用自动换行</translation>
 <translation id="3322936298410871309">上一个1级标题</translation>
 <translation id="3323447499041942178">文本框</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> 滑块</translation>
 <translation id="3353420241558113817">{"ar": "阿拉伯语",
         "bg": "保加利亚语",
         "ca": "加泰罗尼亚语",
@@ -714,6 +719,7 @@
 <translation id="7693840228159394336">上一个单选按钮</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />，<ph name="NAME" />，密码文本框</translation>
+<translation id="7776293189010177726">打开 ChromeVox 菜单</translation>
 <translation id="7805247615045262757">默认导航</translation>
 <translation id="7805768142964895445">状态</translation>
 <translation id="7810781339813764006">下一个群组</translation>

@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Bezpieczne przeglądanie Google ostatnio <ph name="BEGIN_LINK" />wykryło złośliwe oprogramowanie<ph name="END_LINK" /> na <ph name="SITE" />. Strony, które normalnie są bezpieczne, czasem zostają zainfekowane złośliwym oprogramowaniem. Złośliwa zawartość pochodzi z <ph name="SUBRESOURCE_HOST" /> – znanego dystrybutora złośliwego oprogramowania. <ph name="BEGIN_LEARN_MORE_LINK" />Dowiedz się więcej<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Nieprawidłowe żądanie lub jego parametry</translation>
 <translation id="1834321415901700177">Ta strona zawiera szkodliwe programy</translation>
-<translation id="1838667051080421715">Przeglądasz źródło strony internetowej.</translation>
 <translation id="1871208020102129563">Proxy skonfigurowano do używania stałych serwerów proxy, a nie URL-a skryptu PAC.</translation>
+<translation id="187918866476621466">Otwórz strony początkowe</translation>
 <translation id="1883255238294161206">Zwiń listę</translation>
 <translation id="1898423065542865115">Filtrowanie</translation>
 <translation id="194030505837763158">Wejdź na <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Jeśli często widzisz ten komunikat, przeczytaj <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Wersja</translation>
 <translation id="3678029195006412963">Nie udało się podpisać żądania</translation>
+<translation id="3679803492151881375">Raport o awarii zarejestrowano: <ph name="CRASH_TIME" />, przesłano: <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informacje o certyfikacie</translation>
 <translation id="3690164694835360974">Logowanie nie jest bezpieczne</translation>
 <translation id="3693415264595406141">Hasło:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Cofnij usunięcie</translation>
 <translation id="4619615317237390068">Karty z innych urządzeń</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Przeglądasz stronę rozszerzenia.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Połączenie zostało przerwane</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Uruchom Diagnostykę sieci systemu Windows<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Strona internetowa pod adresem <ph name="URL" /> może być tymczasowo niedostępna lub została na stałe przeniesiona pod nowy adres internetowy.</translation>
 <translation id="4771973620359291008">Wystąpił nieznany błąd.</translation>
 <translation id="4800132727771399293">Sprawdź datę ważności i kod CVC, a potem spróbuj ponownie</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Błąd sieci</translation>
 <translation id="4816492930507672669">Dopasuj do strony</translation>
 <translation id="4850886885716139402">Widok</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Chcesz opuścić tę stronę?</translation>
 <translation id="5629630648637658800">Ładowanie ustawień zasady nie powiodło się</translation>
 <translation id="5631439013527180824">Nieprawidłowy token zarządzania urządzeniem</translation>
+<translation id="5669703222995421982">Otrzymywanie spersonalizowanych treści</translation>
 <translation id="5675650730144413517">Ta strona nie działa</translation>
 <translation id="5677928146339483299">Zablokowane</translation>
 <translation id="5694783966845939798">Próbujesz połączyć się z domeną <ph name="DOMAIN" />, ale serwer przedstawił certyfikat podpisany słabym algorytmem (np. SHA-1). Oznacza to, że dane logowania podane przez serwer mogły zostać sfałszowane, a serwer może nie być tym, którego oczekujesz (możliwe, że komunikujesz się z intruzem). <ph name="BEGIN_LEARN_MORE_LINK" />Więcej informacji<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Wartość zasady</translation>
 <translation id="6757797048963528358">Twoje urządzenie przeszło w tryb uśpienia.</translation>
 <translation id="6778737459546443941">Twój rodzic jeszcze na to nie zezwolił</translation>
+<translation id="6810899417690483278">Identyfikator dostosowania</translation>
 <translation id="6820686453637990663">Kod CVC</translation>
 <translation id="6830600606572693159">Strona internetowa pod adresem <ph name="URL" /> jest obecnie niedostępna. Może być przeciążona lub wyłączona na czas konserwacji.</translation>
 <translation id="6831043979455480757">Tłumacz</translation>
@@ -709,6 +712,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8364627913115013041">Nie ustawiono.</translation>
 <translation id="8380941800586852976">Niebezpieczna</translation>
 <translation id="8382348898565613901">Tutaj wyświetlają się ostatnio otwierane zakładki</translation>
+<translation id="8398259832188219207">Raport o awarii przesłano: <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Awarie (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Musisz dwukrotnie wpisać to samo hasło.</translation>
 <translation id="8428213095426709021">Ustawienia</translation>

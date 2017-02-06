@@ -22,11 +22,14 @@
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2168039046890040389">Halaman Ke Atas</translation>
 <translation id="2190355936436201913">(kosong)</translation>
+<translation id="2289052229480071835">Ketik sasaran sentuhan pada skrin anda.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
 <translation id="2497284189126895209">Semua Fail</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2522350507219695259">Penentukuran telah selesai</translation>
 <translation id="252373100621549798">Paparan Tidak Diketahui</translation>
+<translation id="2662783295652680457">Tentukan skrin sentuh anda</translation>
 <translation id="2666092431469916601">Atas</translation>
 <translation id="2743387203779672305">Salin ke papan keratan</translation>
 <translation id="2803313416453193357">Buka folder</translation>
@@ -58,6 +61,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 saat}other{# saat}}</translation>
 <translation id="4971687151119236543">Lagu Media Sebelumnya</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5046499563572181734">Ketik di sini</translation>
 <translation id="5076340679995252485">&amp;Tampal</translation>
 <translation id="5120799197269191491">Carian+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>

@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google Beskyttet browsing har for nylig <ph name="BEGIN_LINK" />registreret malware<ph name="END_LINK" /> på <ph name="SITE" />. Websites, der normalt er sikre, bliver undertiden inficeret med malware. Det skadelige indhold kommer fra <ph name="SUBRESOURCE_HOST" />, som er en kendt malwaredistributør. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
 <translation id="1834321415901700177">Dette website indeholder skadelige programmer</translation>
-<translation id="1838667051080421715">Du får vist kilden for en webside.</translation>
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
+<translation id="187918866476621466">Åbn opstartssider</translation>
 <translation id="1883255238294161206">Skjul liste</translation>
 <translation id="1898423065542865115">Filtrering</translation>
 <translation id="194030505837763158">Gå til <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Hvis du ser dette jævnligt, kan du prøve <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revision</translation>
 <translation id="3678029195006412963">Anmodningen kunne ikke signeres</translation>
+<translation id="3679803492151881375">Nedbrud registreret <ph name="CRASH_TIME" />, uploadet <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Certifikatoplysninger</translation>
 <translation id="3690164694835360974">Login er ikke sikkert</translation>
 <translation id="3693415264595406141">Adgangskode:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Fortryd sletning</translation>
 <translation id="4619615317237390068">Faner fra andre enheder</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Du er i øjeblikket på en udvidelsesside.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Din forbindelse blev afbrudt</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Køre Windows Netværksdiagnosticering<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Websiden på <ph name="URL" /> kan være midlertidigt nede, eller også er den permanent flyttet til en ny webadresse.</translation>
 <translation id="4771973620359291008">Der er opstået en ukendt fejl.</translation>
 <translation id="4800132727771399293">Kontrollér, om din kontrolkode og udløbsdato er korrekte, og prøv igen.</translation>
+<translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4813512666221746211">Netværksfejl</translation>
 <translation id="4816492930507672669">Tilpas til siden</translation>
 <translation id="4850886885716139402">Vis</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Vil du forlade denne side?</translation>
 <translation id="5629630648637658800">Der kunne ikke indlæses indstillinger for politik</translation>
 <translation id="5631439013527180824">Ugyldigt token for enhedsadministration</translation>
+<translation id="5669703222995421982">Få tilpasset indhold</translation>
 <translation id="5675650730144413517">Denne side virker ikke</translation>
 <translation id="5677928146339483299">Blokeret</translation>
 <translation id="5694783966845939798">Du forsøgte at få forbindelse til <ph name="DOMAIN" />, men serveren har præsenteret et certifikat, der er signeret med en svag signaturalgoritme (f.eks. SHA-1). Det betyder, at sikkerhedsoplysningerne fra serveren kan være forfalskede, og at serveren muligvis ikke er den server, du forventede (du kommunikerer muligvis med en hacker). <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Politikkens værdi</translation>
 <translation id="6757797048963528358">Din enhed gik i dvale.</translation>
 <translation id="6778737459546443941">Din forælder har ikke godkendt det endnu</translation>
+<translation id="6810899417690483278">Tilpasnings-id</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Websiden på <ph name="URL" /> er ikke tilgængelig lige nu. Den kan enten være overbelastet eller under vedligeholdelse.</translation>
 <translation id="6831043979455480757">Oversæt</translation>
@@ -709,6 +712,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8364627913115013041">Ikke angivet.</translation>
 <translation id="8380941800586852976">Farlig</translation>
 <translation id="8382348898565613901">De bogmærker, du har besøgt for nylig, vises her</translation>
+<translation id="8398259832188219207">Nedbrudsrapporten blev uploadet <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Nedbrud (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Du skal angive den samme adgangssætning to gange.</translation>
 <translation id="8428213095426709021">Indstillinger</translation>

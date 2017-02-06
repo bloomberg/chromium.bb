@@ -39,6 +39,7 @@
 <translation id="1923539912171292317">Automatické kliknutia</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">Zastaviť prenos karty <ph name="TAB_NAME" /> do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>
 <translation id="2204305834655267233">Informácie o sieti</translation>
 <translation id="2208323208084708176">Režim zjednotenej pracovnej plochy</translation>
@@ -149,6 +150,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="5331975486040154427">Zariadenie USB-C (port vľavo vzadu)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Do tejto relácie už boli pridaní všetci dostupní používatelia</translation>
+<translation id="5504841533973703486">Predný mikrofón</translation>
 <translation id="5507786745520522457">Nastaviť mobilné dáta</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">Rozšírenie <ph name="EXTENSION_NAME" /> vám môže pomôcť pripojiť sa k tejto sieti.</translation>
@@ -160,6 +162,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="57838592816432529">Vypnúť zvuk</translation>
 <translation id="5825747213122829519">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID" />.
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
+<translation id="5830936593837877897">Zadný mikrofón</translation>
 <translation id="5871632337994001636">Spravovať zariadenia...</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -249,8 +252,10 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="8000066093800657092">Žiadna sieť</translation>
 <translation id="8054466585765276473">Výpočet času výdrže batérie.</translation>
 <translation id="8077816382010018681">Tu má byť nadpis upozornenia funkcie rýchleho odomknutia</translation>
+<translation id="8098591350844501178">Zastaviť prenos obrazovky do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">Správy SMS: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Pripojené k stránke <ph name="NAME" /></translation>
+<translation id="8180896103888046100">Zastaviť prenos do neznámeho zariadenia</translation>
 <translation id="8185286464235484130">Odpovedzte na niekoľko otázok a dajte nám tak vedieť, ako sa nám darí v našom úsilí.</translation>
 <translation id="8190698733819146287">Prebieha prispôsobenie jazykov a vstupu...</translation>
 <translation id="8206859287963243715">Mobilné</translation>

@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Άνοιγμα όλων</translation>
 <translation id="1430915738399379752">Εκτύπωση</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> στοιχεία</translation>
+<translation id="1491277525950327607">Πατήστε δύο φορές για εναλλαγή της ρύθμισης</translation>
 <translation id="1540800554400757039">Διεύθυνση 1</translation>
 <translation id="1545749641540134597">Σάρωση κωδικού QR</translation>
 <translation id="1580783302095112590">Το μήνυμα εστάλη.</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">Αυτή η σελίδα θα ανοίξει σε άλλη εφαρμογή.</translation>
 <translation id="4378154925671717803">Τηλέφωνο</translation>
 <translation id="441868831736628555">Σημείωση απορρήτου</translation>
-<translation id="4426508677408162512">Όλοι οι σελιδοδείκτες</translation>
 <translation id="4473991315115669931">Είσοδος στην κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="4526249700380860531">Προβολή και διαχείριση των αποθηκευμένων κωδικών πρόσβασης στη διεύθυνση <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Δοκιμάστε να συνδεθείτε ξανά.</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">Εμφάνιση</translation>
 <translation id="5317780077021120954">Αποθήκευση</translation>
 <translation id="5327248766486351172">Όνομα</translation>
+<translation id="5332219387342487447">Μέθοδος αποστολής</translation>
 <translation id="5388358297987318779">Άνοιγμα εικόνας</translation>
 <translation id="5409365236829784218">Δεν υπάρχουν εγκατεστ. εφαρμογές για το άνοιγμα του αρχείου</translation>
 <translation id="54401264925851789">Πληροφορίες ασφάλειας σελίδας</translation>
@@ -270,6 +271,7 @@
 <translation id="6255097610484507482">Επεξεργασία πιστωτικής κάρτας</translation>
 <translation id="6308436439357671616">Σας επιτρέπει να κάνετε λήψη και μεταφόρτωση φωτογραφιών.</translation>
 <translation id="6314335155547195432">Δημ.κωδ.πρόσβασης</translation>
+<translation id="6324528485781869530">Εναλλαγή λογαριασμού συγχρονισμού</translation>
 <translation id="6324669097367352121">Ρυθμίσεις σύνδεσης</translation>
 <translation id="6337234675334993532">Κρυπτογράφηση</translation>
 <translation id="633809752005859102">Κάτι δεν πήγε καλά. Θα προσπαθήσουμε να το επιδιορθώσουμε.</translation>

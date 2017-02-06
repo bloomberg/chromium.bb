@@ -22,11 +22,14 @@
 <translation id="2148716181193084225">Σήμερα</translation>
 <translation id="2168039046890040389">Προηγούμενη σελίδα</translation>
 <translation id="2190355936436201913">(κενό)</translation>
+<translation id="2289052229480071835">Πατήστε τους στόχους αφής στην οθόνη σας.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="2497284189126895209">Όλα τα αρχεία</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2522350507219695259">Η βαθμονόμηση ολοκληρώθηκε</translation>
 <translation id="252373100621549798">Άγνωστη οθόνη</translation>
+<translation id="2662783295652680457">Ορισμός της οθόνης αφής</translation>
 <translation id="2666092431469916601">Κορυφή</translation>
 <translation id="2743387203779672305">Αντιγραφή στο πρόχειρο</translation>
 <translation id="2803313416453193357">Άνοιγμα φακέλου</translation>
@@ -58,6 +61,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 δευτερόλεπτο}other{# δευτερόλεπτα}}</translation>
 <translation id="4971687151119236543">Προηγούμενο κομμάτι πολυμέσων</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5046499563572181734">Πατήστε εδώ</translation>
 <translation id="5076340679995252485">&amp;Επικόλληση</translation>
 <translation id="5120799197269191491">Αναζήτηση+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>

@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, укључено</translation>
 <translation id="1692077714702418899">линија структуре</translation>
 <translation id="1700517974991662022">Посећено</translation>
+<translation id="1714116687360794776">Мерач</translation>
 <translation id="1722567105086139392">Веза</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Следећа слика</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Контрола датума и времена</translation>
 <translation id="2347456970887948350">Линк</translation>
 <translation id="2359897517538099099">Не у режиму табеле.</translation>
+<translation id="2390264819538553347">Да бисте ишли унапред, притисните Enter. Да бисте ишли уназад, притисните тастер за назад.</translation>
 <translation id="241124561063364910">па</translation>
 <translation id="2416512023405990736">Неозначено поље за потврду</translation>
 <translation id="2417569100218200841">Информације о садржају</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Група дугмади за избор</translation>
 <translation id="2471138580042810658">Заглавље 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{звездица}one{# звездица}few{# звездице}other{# звездица}}</translation>
+<translation id="2523609930580546572">Водич за ChromeVox</translation>
 <translation id="2525706221823668172">Тастерске пречице за Chromebook</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> је ресетован.</translation>
 <translation id="2553108862507765288">граматичка грешка</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Нема претходног одељка.</translation>
 <translation id="3030432017085518523">Дугме за избор ставке менија</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{апостроф}one{# апостроф}few{# апострофа}other{# апострофа}}</translation>
+<translation id="3040901448410802366">Индикатор напретка</translation>
 <translation id="3046838483509668188">Опције за ChromeVox</translation>
 <translation id="3047143736589213134">Експериментална мапа тастера</translation>
 <translation id="3060756054951570867">Отворен је мени <ph name="TITLE" /></translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">Омогући прелом реда</translation>
 <translation id="3322936298410871309">Претходно заглавље 1. нивоа</translation>
 <translation id="3323447499041942178">Оквир за текст</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> клизач</translation>
 <translation id="3353420241558113817">{"ar": "арапски",
         "bg": "бугарски",
         "ca": "каталонски",
@@ -714,6 +719,7 @@
 <translation id="7693840228159394336">Претходно дугме за избор</translation>
 <translation id="7701196182766842984">аутоматско довршавање листе</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, оквир за лозинку</translation>
+<translation id="7776293189010177726">Отвара ChromeVox меније</translation>
 <translation id="7805247615045262757">подразумевана навигација</translation>
 <translation id="7805768142964895445">Статус</translation>
 <translation id="7810781339813764006">Следећа група</translation>

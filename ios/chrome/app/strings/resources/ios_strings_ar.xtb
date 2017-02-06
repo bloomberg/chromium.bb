@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">فتح الكل</translation>
 <translation id="1430915738399379752">طباعة</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> من العناصر</translation>
+<translation id="1491277525950327607">انقر نقرًا مزدوجًا لتبديل الإعداد</translation>
 <translation id="1540800554400757039">العنوان 1</translation>
 <translation id="1545749641540134597">فحص رمز الاستجابة السريعة</translation>
 <translation id="1580783302095112590">تم إرسال البريد.</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">ستفتح هذه الصفحة في تطبيق آخر.</translation>
 <translation id="4378154925671717803">الهاتف</translation>
 <translation id="441868831736628555">إشعار الخصوصية</translation>
-<translation id="4426508677408162512">كل الإشارات المرجعية</translation>
 <translation id="4473991315115669931">الدخول إلى وضع التصفح المتخفي</translation>
 <translation id="4526249700380860531">‏عرض كلمات المرور المحفوظة وإدارتها في <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">حاول تسجيل الدخول مرة أخرى.</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5327248766486351172">الاسم</translation>
+<translation id="5332219387342487447">طريقة الشحن</translation>
 <translation id="5388358297987318779">فتح الصورة</translation>
 <translation id="5409365236829784218">لا تتوفر تطبيقات مثبتة يمكن من خلالها فتح هذا الملف.</translation>
 <translation id="54401264925851789">معلومات أمان الصفحة</translation>
@@ -270,6 +271,7 @@
 <translation id="6255097610484507482">تعديل بطاقة الائتمان</translation>
 <translation id="6308436439357671616">هذا يتيح لك التقاط الصور وتحميلها.</translation>
 <translation id="6314335155547195432">إنشاء كلمة المرور</translation>
+<translation id="6324528485781869530">تبديل حساب المزامنة</translation>
 <translation id="6324669097367352121">إعدادات تسجيل الدخول</translation>
 <translation id="6337234675334993532">تشفير</translation>
 <translation id="633809752005859102">حدث خطأ ما، وسنحاول حل المشكلة.</translation>

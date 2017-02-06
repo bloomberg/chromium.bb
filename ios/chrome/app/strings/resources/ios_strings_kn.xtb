@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">ಎಲ್ಲವನ್ನೂ ತೆರೆಯಿರಿ</translation>
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> ಐಟಂಗಳು</translation>
+<translation id="1491277525950327607">ಟಾಗಲ್ ಸೆಟ್ಟಿಂಗ್‌ಗೆ ಡಬಲ್ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="1540800554400757039">ವಿಳಾಸ 1</translation>
 <translation id="1545749641540134597">QR ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ</translation>
 <translation id="1580783302095112590">ಮೇಲ್ ಕಳುಹಿಸಲಾಗಿದೆ.</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">ಈ ಪುಟವು ಇನ್ನೊಂದು ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ತೆರೆಯುತ್ತದೆ.</translation>
 <translation id="4378154925671717803">ಫೋನ್</translation>
 <translation id="441868831736628555">ಗೌಪ್ಯತೆಯ ಸೂಚನೆ</translation>
-<translation id="4426508677408162512">ಎಲ್ಲಾ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="4473991315115669931">ಅದೃಶ್ಯ ಮೋಡ್‌ಗೆ ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="4536418791685807335">ಮತ್ತೊಮ್ಮೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">ಪ್ರದರ್ಶಿಸಿ</translation>
 <translation id="5317780077021120954">ಉಳಿಸು</translation>
 <translation id="5327248766486351172">ಹೆಸರು</translation>
+<translation id="5332219387342487447">ಶಿಪ್ಪಿಂಗ್ ವಿಧಾನ</translation>
 <translation id="5388358297987318779">ಚಿತ್ರವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="5409365236829784218">ಈ ಫೈಲ್ ಅನ್ನು ತೆರೆಯಬಹುದಾದ ಯಾವುದೇ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಸ್ಥಾಪಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="54401264925851789">ಪುಟ ಭದ್ರತೆಯ ಮಾಹಿತಿ</translation>
@@ -270,6 +271,7 @@
 <translation id="6255097610484507482">ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="6308436439357671616">ಇದು ಫೋಟೋಗಳನ್ನು ತೆಗೆಯಲು ಮತ್ತು ಅಪ್‌ಲೋಡ್ ಮಾಡಲು ನಿಮ್ಮನ್ನು ಅನುಮತಿಸುತ್ತದೆ.</translation>
 <translation id="6314335155547195432">ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ</translation>
+<translation id="6324528485781869530">ಸಿಂಕ್ ಖಾತೆಯನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="6324669097367352121">ಸೈನ್ ಇನ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="6337234675334993532">ಎನ್‌ಕ್ರಿಪ್ಶನ್</translation>
 <translation id="633809752005859102">ನಿಜವಾಗಿಯೂ ಯಾವುದೋ ತಪ್ಪು ಸಂಭವಿಸಿದೆ. ನಾವು ಅದರ ಕುರಿತು ಕ್ರಮ ಕೈಗೊಳ್ಳುತ್ತೇವೆ.</translation>

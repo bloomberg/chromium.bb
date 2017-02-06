@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, uključi</translation>
 <translation id="1692077714702418899">strukturna crta</translation>
 <translation id="1700517974991662022">Posjećeno</translation>
+<translation id="1714116687360794776">Mjerač</translation>
 <translation id="1722567105086139392">Veza</translation>
 <translation id="1727806147743597030">podnžj</translation>
 <translation id="174268867904053074">Sljedeća slika</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Upravljanje datumom i vremenom</translation>
 <translation id="2347456970887948350">Veza</translation>
 <translation id="2359897517538099099">Niste u tabličnom načinu.</translation>
+<translation id="2390264819538553347">Za prelazak na sljedeću stranicu pritisnite Enter, a za povratak pritisnite Backspace.</translation>
 <translation id="241124561063364910">a zatim</translation>
 <translation id="2416512023405990736">Prazan potvrdni okvir</translation>
 <translation id="2417569100218200841">Informacije o sadržaju</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Grupa izbornog gumba</translation>
 <translation id="2471138580042810658">Naslov 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{zvjezdica}one{# zvjezdica}few{# zvjezdice}other{# zvjezdica}}</translation>
+<translation id="2523609930580546572">Vodič za ChromeVox</translation>
 <translation id="2525706221823668172">Tipkovni prečaci na Chromebooku</translation>
 <translation id="2549392850788122959">Tipka <ph name="KEY" /> poništena je.</translation>
 <translation id="2553108862507765288">gramatička pogreška</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Nema prethodnog odjeljka.</translation>
 <translation id="3030432017085518523">Izborni gumb stavke izbornika</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{izostavnik}one{# izostavnik}few{# izostavnika}other{# izostavnika}}</translation>
+<translation id="3040901448410802366">Pokazivač napretka</translation>
 <translation id="3046838483509668188">Opcije ChromeVoxa</translation>
 <translation id="3047143736589213134">Eksperimentalna karta tipkovnice</translation>
 <translation id="3060756054951570867">otvoren je izbornik <ph name="TITLE" /></translation>
@@ -230,6 +234,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="3321460131042519426">Omogući prelazak riječi u drugi redak</translation>
 <translation id="3322936298410871309">Prethodni naslov razine 1</translation>
 <translation id="3323447499041942178">Tekstni okvir</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> klizač</translation>
 <translation id="3353420241558113817">{"ar": "arapski",
         "bg": "bugarski",
         "ca": "katalonski",
@@ -714,6 +719,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="7693840228159394336">Prethodni izborni gumb</translation>
 <translation id="7701196182766842984">autopop</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, tekstualni okvir zaporke</translation>
+<translation id="7776293189010177726">Otvaranje ChromeVoxovih izbornika</translation>
 <translation id="7805247615045262757">zadana navigacija</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7810781339813764006">Sljedeća grupa</translation>

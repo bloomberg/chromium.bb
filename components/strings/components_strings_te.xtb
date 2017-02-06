@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google సురక్షిత బ్రౌజింగ్ ఇటీవల <ph name="SITE" />లో <ph name="BEGIN_LINK" />మాల్వేర్‌ని గుర్తించింది<ph name="END_LINK" />. సాధారణంగా సురక్షితమైన వెబ్‌సైట్‌‌లు కూడా కొన్నిసార్లు మాల్వేర్ బారినపడతాయి. మాల్వేర్‌ పంపిణీదారుగా పేరుగాంచిన <ph name="SUBRESOURCE_HOST" /> నుండి ఇతరులకు హాని తలపట్టే లాంటి కంటెంట్ సంక్రమిస్తుంది. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">చెల్లని అభ్యర్థన లేదా అభ్యర్థన పరామితులు</translation>
 <translation id="1834321415901700177">ఈ సైట్ హానికరమైన ప్రోగ్రామ్‌లను కలిగి ఉంది</translation>
-<translation id="1838667051080421715">మీరు వెబ్ పేజీ యొక్క సోర్స్‌ను వీక్షిస్తున్నారు.</translation>
 <translation id="1871208020102129563">ప్రాక్సీ స్థిరమైన ప్రాక్సీ సర్వర్‌లను ఉపయోగించడానికి సెట్ చేయబడింది, .pac స్క్రిప్ట్ URLను కాదు.</translation>
+<translation id="187918866476621466">ప్రారంభ పేజీలను తెరువు</translation>
 <translation id="1883255238294161206">జాబితాను కుదించు</translation>
 <translation id="1898423065542865115">ఫిల్టరింగ్</translation>
 <translation id="194030505837763158"><ph name="LINK" />కి వెళ్లండి</translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">మీరు దీన్ని తరచుగా చూస్తుంటే, ఈ <ph name="HELP_LINK" />ని ప్రయత్నించండి.</translation>
 <translation id="3658742229777143148">పునర్విమర్శ</translation>
 <translation id="3678029195006412963">అభ్యర్థనకు సంతకం అందించడం సాధ్యపడలేదు</translation>
+<translation id="3679803492151881375">క్రాష్ నివేదిక <ph name="CRASH_TIME" />కి సంగ్రహించబడింది, <ph name="UPLOAD_TIME" />కి అప్‌లోడ్ చేయబడింది</translation>
 <translation id="3681007416295224113">సర్టిఫికెట్ సమాచారం</translation>
 <translation id="3690164694835360974">లాగిన్ సురక్షితం కాదు</translation>
 <translation id="3693415264595406141">పాస్‌వర్డ్:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;తొలగించడాన్ని రద్దు చేయి</translation>
 <translation id="4619615317237390068">ఇతర పరికరాల్లోని ట్యాబ్‌లు</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">మీరు పొడిగింపు పేజీని వీక్షిస్తున్నారు.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">మీ కనెక్షన్‌కు అంతరాయం ఏర్పడింది</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows నెట్‌వర్క్ సమస్య విశ్లేషణలను అమలు చేయడం<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> వద్ద వెబ్‌పేజీ తాత్కాలికంగా తెరుచుకోవటం లేదు లేదా అది క్రొత్త వెబ్ చిరునామాకు శాశ్వతంగా తరలించబడి ఉండవచ్చు.</translation>
 <translation id="4771973620359291008">తెలియని లోపం ఒకటి ఏర్పడింది.</translation>
 <translation id="4800132727771399293">మీ గడువు ముగింపు తేదీ మరియు CVCని తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">నెట్‌వర్క్ లోపం</translation>
 <translation id="4816492930507672669">పేజీకి తగినట్లు అమర్చు</translation>
 <translation id="4850886885716139402">వీక్షణ</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">మీరు ఈ సైట్‌ నుండి నిష్క్రమించాలనుకుంటున్నారా?</translation>
 <translation id="5629630648637658800">విధాన సెట్టింగ్‌లను లోడ్ చేయడంలో విఫలమైంది</translation>
 <translation id="5631439013527180824">చెల్లని పరికర నిర్వహణ టోకెన్</translation>
+<translation id="5669703222995421982">వ్యక్తిగతీకరించిన కంటెంట్‌ను పొందండి</translation>
 <translation id="5675650730144413517">ఈ పేజీ పని చేయడం లేదు</translation>
 <translation id="5677928146339483299">బ్లాక్ చెయ్యబడింది</translation>
 <translation id="5694783966845939798">మీరు <ph name="DOMAIN" />కి కనెక్ట్ చేయడానికి ప్రయత్నించారు, కానీ సర్వర్ బలహీనమైన సంతకం అల్గారిథమ్‌ను (SHA-1 వంటిది) ఉపయోగించి సంతకం చేసిన ప్రమాణపత్రాన్ని అందించింది. దీని ప్రకారం, సర్వర్ అందించిన భద్రతా ఆధారాలు నకిలీవి కావచ్చు మరియు సర్వర్ మీరు ఊహించిన సర్వర్ కాకపోవచ్చు (మీరు దాడి చేసే వారితో కమ్యూనికేట్ చేస్తుండవచ్చు). <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">విధానం విలువ</translation>
 <translation id="6757797048963528358">మీ పరికరం నిద్రావస్థకి వెళ్లింది.</translation>
 <translation id="6778737459546443941">మీ తల్లి/తండ్రి దీన్ని ఇంకా ఆమోదించలేదు</translation>
+<translation id="6810899417690483278">అనుకూలీకరణ ID</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> వద్ద ఉన్న వెబ్‌పేజీ ప్రస్తుతానికి అందుబాటులో లేదు.  నిర్వహణ కోసం ఇది ఎక్కవ లేదా తక్కవ కావచ్చు.</translation>
 <translation id="6831043979455480757">అనువదించు</translation>
@@ -709,6 +712,7 @@
 <translation id="8364627913115013041">సెట్ చేయలేదు.</translation>
 <translation id="8380941800586852976">అపాయకరమైనది</translation>
 <translation id="8382348898565613901">మీరు ఇటీవల సందర్శించిన బుక్‌మార్క్‌లు ఇక్కడ కనిపిస్తాయి</translation>
+<translation id="8398259832188219207">క్రాష్ నివేదిక <ph name="UPLOAD_TIME" />కి అప్‌లోడ్ చేయబడింది</translation>
 <translation id="8412145213513410671">క్రాష్‌లు (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">మీరు అదే పాస్‌ఫ్రేజ్‌ని రెండుసార్లు ఖచ్చితంగా ఎంటర్ చెయ్యాలి.</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>

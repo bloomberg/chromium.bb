@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Atidaryti viską</translation>
 <translation id="1430915738399379752">Spausdinti</translation>
 <translation id="145015347812617860">Elementų: <ph name="COUNT" /></translation>
+<translation id="1491277525950327607">Dukart palieskite, kad perjungtumėte nustatymą</translation>
 <translation id="1540800554400757039">1 adreso eil.</translation>
 <translation id="1545749641540134597">Nuskaitykite QR kodą</translation>
 <translation id="1580783302095112590">El. laiškas išsiųstas.</translation>
@@ -178,7 +179,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4359125752503270327">Šis puslapis bus atidarytas kitoje programoje.</translation>
 <translation id="4378154925671717803">Telefonas</translation>
 <translation id="441868831736628555">Privatumo pranešimas</translation>
-<translation id="4426508677408162512">Visos žymės</translation>
 <translation id="4473991315115669931">Įjungti inkognito režimą.</translation>
 <translation id="4526249700380860531">Peržiūrėkite ir tvarkykite išsaugotus slaptažodžius apsilankę adresu <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Bandykite prisijungti dar kartą.</translation>
@@ -218,6 +218,7 @@ Duomenys užšifruoti naudojant slaptafrazę. Įveskite ją, kad pradėtumėte s
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5327248766486351172">Pavadinimas</translation>
+<translation id="5332219387342487447">Pristatymo metodas</translation>
 <translation id="5388358297987318779">Atidaryti vaizdą</translation>
 <translation id="5409365236829784218">Nėra įdiegtų pr., kurias naudojant galima atidaryti failą.</translation>
 <translation id="54401264925851789">Puslapio saugos informacija</translation>
@@ -270,6 +271,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6255097610484507482">Kredito kortelės informacijos redagavimas</translation>
 <translation id="6308436439357671616">Taip galite fotografuoti ir įkelti nuotraukas.</translation>
 <translation id="6314335155547195432">Generuoti slaptažodį</translation>
+<translation id="6324528485781869530">Sinchronizuojamos paskyros perjungimas</translation>
 <translation id="6324669097367352121">Prisijungimo nustat.</translation>
 <translation id="6337234675334993532">Šifruotė</translation>
 <translation id="633809752005859102">Kažkas tikrai nepavyko. Pasistengsime tai ištaisyti.</translation>

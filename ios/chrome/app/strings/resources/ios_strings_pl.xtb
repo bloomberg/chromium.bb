@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Otwórz wszystkie</translation>
 <translation id="1430915738399379752">Drukuj</translation>
 <translation id="145015347812617860">Elementy: <ph name="COUNT" /></translation>
+<translation id="1491277525950327607">Kliknij dwukrotnie, by zmienić ustawienie</translation>
 <translation id="1540800554400757039">Adres 1</translation>
 <translation id="1545749641540134597">Zeskanuj kod QR</translation>
 <translation id="1580783302095112590">E-mail wysłany.</translation>
@@ -178,7 +179,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4359125752503270327">Strona zostanie otwarta w innej aplikacji.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Informacje na temat ochrony prywatności</translation>
-<translation id="4426508677408162512">Wszystkie zakładki</translation>
 <translation id="4473991315115669931">Włącz tryb incognito</translation>
 <translation id="4526249700380860531">Wyświetlaj zapisane hasła i zarządzaj nimi na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Spróbuj zalogować się jeszcze raz.</translation>
@@ -218,6 +218,7 @@ Dane zostały zaszyfrowane z użyciem Twojego hasła synchronizacji. Wpisz je, 
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5327248766486351172">Nazwa</translation>
+<translation id="5332219387342487447">Metoda wysyłki</translation>
 <translation id="5388358297987318779">Otwórz obraz</translation>
 <translation id="5409365236829784218">Nie masz aplikacji, w których można otworzyć ten plik.</translation>
 <translation id="54401264925851789">Informacje o bezpieczeństwie strony</translation>
@@ -270,6 +271,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="6255097610484507482">Edytuj kartę kredytową</translation>
 <translation id="6308436439357671616">Umożliwia robienie i przesyłanie zdjęć.</translation>
 <translation id="6314335155547195432">Wygeneruj hasło</translation>
+<translation id="6324528485781869530">Zmień konto synchronizacji</translation>
 <translation id="6324669097367352121">Ustawienia logowania</translation>
 <translation id="6337234675334993532">Szyfrowanie</translation>
 <translation id="633809752005859102">Coś poszło nie tak. Zajmiemy się tym.</translation>

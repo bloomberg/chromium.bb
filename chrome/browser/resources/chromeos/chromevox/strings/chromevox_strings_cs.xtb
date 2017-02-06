@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, zapnuto</translation>
 <translation id="1692077714702418899">řádek struktury</translation>
 <translation id="1700517974991662022">Navštíveno</translation>
+<translation id="1714116687360794776">Měřič</translation>
 <translation id="1722567105086139392">Odkaz</translation>
 <translation id="1727806147743597030">zápatí</translation>
 <translation id="174268867904053074">Další obrázek</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Ovládací prvek času a data</translation>
 <translation id="2347456970887948350">Odkaz</translation>
 <translation id="2359897517538099099">Nejste v režimu tabulky.</translation>
+<translation id="2390264819538553347">Na další stránku přejdete stisknutím klávesy Enter. Na předchozí stránku přejdete stisknutím klávesy Backspace.</translation>
 <translation id="241124561063364910">a nakonec</translation>
 <translation id="2416512023405990736">Nezaškrtnuté zaškrtávací políčko</translation>
 <translation id="2417569100218200841">Informace o obsahu</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Skupina přepínačů</translation>
 <translation id="2471138580042810658">Nadpis 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{hvězdička}few{# hvězdičky}many{# asterisks}other{# hvězdiček}}</translation>
+<translation id="2523609930580546572">Výukový program funkce ChromeVox</translation>
 <translation id="2525706221823668172">Klávesové zkratky pro Chromebooky</translation>
 <translation id="2549392850788122959">Klávesa <ph name="KEY" /> byla resetována.</translation>
 <translation id="2553108862507765288">pravopisná chyba</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Žádná předchozí sekce není.</translation>
 <translation id="3030432017085518523">Položka nabídky – přepínač</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrof}few{# apostrofy}many{# apostrophes}other{# apostrofů}}</translation>
+<translation id="3040901448410802366">Ukazatel průběhu</translation>
 <translation id="3046838483509668188">Možnosti programu ChromeVox</translation>
 <translation id="3047143736589213134">Experimentální mapa kláves</translation>
 <translation id="3060756054951570867">otevřena nabídka <ph name="TITLE" /></translation>
@@ -230,6 +234,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="3321460131042519426">Povolit zalamování slov</translation>
 <translation id="3322936298410871309">Předchozí nadpis 1. úrovně</translation>
 <translation id="3323447499041942178">Textové pole</translation>
+<translation id="3338224621010291843">Posuvník <ph name="NAME" /> – <ph name="VALUE" /></translation>
 <translation id="3353420241558113817">{"ar": "arabština",
 "bg": "bulharština",
 "ca": "katalánština",
@@ -714,6 +719,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="7693840228159394336">Předchozí přepínač</translation>
 <translation id="7701196182766842984">auto sezn</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, textové pole pro heslo</translation>
+<translation id="7776293189010177726">Otevřít nabídky ChromeVox</translation>
 <translation id="7805247615045262757">výchozí navigace</translation>
 <translation id="7805768142964895445">Stav</translation>
 <translation id="7810781339813764006">Další skupina</translation>

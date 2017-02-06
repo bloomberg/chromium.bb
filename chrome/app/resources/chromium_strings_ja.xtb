@@ -82,7 +82,6 @@
 <translation id="358997566136285270">Chromium ロゴ</translation>
 <translation id="3645040538872234961">閲覧データがこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。</translation>
 <translation id="3738139272394829648">タップして検索</translation>
-<translation id="3748537968684000502">Chromium の安全なページを表示しています。</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Mozilla Firefox の設定は現在ブラウザが実行されているため使用できません。設定をインポートするには、作業内容を保存し、Firefox のウィンドウをすべて閉じてから、[続行] をクリックしてください。</translation>
@@ -136,6 +135,7 @@
 <translation id="5620765574781326016">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。</translation>
 <translation id="5634636535844844681">Chromium のご利用には Windows 7 以上が必要です。</translation>
 <translation id="5680901439334282664">Chromium にログイン</translation>
+<translation id="5684733627009686897">既定のブラウザは Chromium です。</translation>
 <translation id="5698481217667032250">Chromium をこの言語で表示</translation>
 <translation id="5726838626470692954">Chromium へのユーザーの削除と追加は管理者が行う必要があります。</translation>
 <translation id="5768914737813585044">Chromium OS をこの言語で表示</translation>

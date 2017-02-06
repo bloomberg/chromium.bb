@@ -52,6 +52,7 @@
 <translation id="1445680696957526815">คอมโพเนนต์ของ Chrome ไม่สามารถทำงานร่วมกันได้ Chrome อาจกำลังอัปเกรด โปรดรอสักครู่แล้วลองอีกครั้ง หากยังมีปัญหาอยู่ ให้ลองถอนการติดตั้งและติดตั้ง Chrome ใหม่อีกครั้ง</translation>
 <translation id="1446450296470737166">ควบคุมอุปกรณ์ MIDI ได้สมบูรณ์</translation>
 <translation id="145097072038377568">ปิดในการตั้งค่า Android</translation>
+<translation id="1455941322673536744">การป้อนอัตโนมัติและการชำระเงิน</translation>
 <translation id="147006957810816598">คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="1477626028522505441">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะเซิร์ฟเวอร์มีปัญหา</translation>
 <translation id="1506061864768559482">เครื่องมือค้นหา</translation>
@@ -195,6 +196,7 @@
 <translation id="2996291259634659425">สร้างรหัสผ่าน</translation>
 <translation id="2996809686854298943">ต้องระบุ URL</translation>
 <translation id="300526633675317032">การดำเนินการนี้จะล้างพื้นที่เก็บข้อมูลเว็บไซต์ทั้ง <ph name="SIZE_IN_KB" /></translation>
+<translation id="3029613699374795922">ดาวน์โหลดแล้ว <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">รหัสผ่านไม่ตรงกัน</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
@@ -262,6 +264,7 @@
 <translation id="3739899004075612870">บุ๊กมาร์กไว้ใน <ph name="PRODUCT_NAME" /> แล้ว</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB จากแอปอื่นๆ</translation>
 <translation id="3744111561329211289">ซิงค์ในแบ็กกราวด์</translation>
+<translation id="3773755127849930740"><ph name="BEGIN_LINK" />เปิดบลูทูธ<ph name="END_LINK" />เพื่อให้จับคู่ได้</translation>
 <translation id="3789841737615482174">ติดตั้ง</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{เลือกแล้ว 1 รายการ}other{เลือกแล้ว # รายการ}}</translation>
 <translation id="3810838688059735925">วิดีโอ</translation>
@@ -317,7 +320,6 @@
 <translation id="4300272766492248925">เปิดแอป</translation>
 <translation id="4307992518367153382">พื้นฐาน</translation>
 <translation id="4351244548802238354">ปิดหน้าต่างโต้ตอบ</translation>
-<translation id="4376501731284077108">ไม่มีการควบคุม</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
 <translation id="4384468725000734951">กำลังใช้ Sogou ในการค้นหา</translation>
 <translation id="4412992751769744546">อนุญาตคุกกี้ของบุคคลที่สาม</translation>
@@ -362,8 +364,10 @@
 <translation id="4837753911714442426">เปิดตัวเลือกในการพิมพ์หน้า</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4860895144060829044">โทร</translation>
+<translation id="4862624982077154323">ในบางเว็บไซต์ คุณสามารถชำระเงินด้วยแอปชำระเงินที่รองรับได้ เลือกแอปที่จะใช้ใน Chrome</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
+<translation id="4910889077668685004">แอปชำระเงิน</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />รับความช่วยเหลือ<ph name="END_LINK" />ระหว่างการค้นหาอุปกรณ์…</translation>
 <translation id="4923459931733593730">การชำระเงิน</translation>
 <translation id="4941291666397027948">* เป็นช่องที่ต้องกรอก</translation>
@@ -389,7 +393,7 @@
 <translation id="5131405117025179004">แก้ไขบัญชีที่บันทึก</translation>
 <translation id="5138299137310274655">หน้านี้อยู่ในภาษา<ph name="SOURCE_LANGUAGE" /> ต้องการแปลเป็นภาษา<ph name="TARGET_LANGUAGE" />ไหม</translation>
 <translation id="515227803646670480">ล้างข้อมูลที่เก็บไว้</translation>
-<translation id="5156656584247937086">นี่เป็นบัญชีของเด็ก</translation>
+<translation id="5152843274749979095">ไม่มีแอปที่รองรับติดตั้งอยู่</translation>
 <translation id="5161254044473106830">ต้องระบุชื่อ</translation>
 <translation id="5164482624172255778">คุณต้องการให้ Google Chrome เสนอการแปลหน้าเว็บภาษา<ph name="LANGUAGE" />จากไซต์นี้ในครั้งต่อไปไหม</translation>
 <translation id="5168917394043976756">เปิดลิ้นชักการนำทาง</translation>
@@ -448,6 +452,7 @@
 <translation id="5610807607761827392">คุณสามารถจัดการบัตรและที่อยู่ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="5626134646977739690">ชื่อ:</translation>
 <translation id="5646376287012673985">ตำแหน่ง</translation>
+<translation id="5655963694829536461">ค้นหาการดาวน์โหลด</translation>
 <translation id="5659593005791499971">อีเมล</translation>
 <translation id="5665379678064389456">สร้างกิจกรรมใน <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">แทนที่คำขอของเว็บไซต์เพื่อป้องกันการซูมเข้า</translation>
@@ -472,6 +477,7 @@
 <translation id="583281660410589416">ไม่รู้จัก</translation>
 <translation id="5832934273103296195">ขยาย - คลิกเพื่อยุบ</translation>
 <translation id="583891442612896534">Chrome ไม่สามารถเข้าถึงเซิร์ฟเวอร์ Google เพื่อบีบอัดข้อมูล การประหยัดอินเทอร์เน็ตของคุณอาจมีข้อจำกัด</translation>
+<translation id="5858741533101922242">Chrome ไม่สามารถเปิดอะแดปเตอร์บลูทูธ</translation>
 <translation id="5860033963881614850">ปิด</translation>
 <translation id="5867027562311576691">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามเช้า</translation>
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
@@ -503,6 +509,7 @@
 <translation id="6140912465461743537">ประเทศ/ภูมิภาค</translation>
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
+<translation id="6177111841848151710">ถูกบล็อกสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="6177390657002841081">เปิดโปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="6181444274883918285">เพิ่มข้อยกเว้นของเว็บไซต์</translation>
 <translation id="6192792657125177640">ข้อยกเว้น</translation>
@@ -515,6 +522,7 @@
 <translation id="6324034347079777476">ปิดใช้การซิงค์ระบบ Android อยู่</translation>
 <translation id="6333140779060797560">แชร์ผ่าน <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">การเข้ารหัส</translation>
+<translation id="6343192674172527289">ไม่พบการดาวน์โหลด</translation>
 <translation id="6364438453358674297">ต้องการนำคำแนะนำออกจากประวัติการเข้าชมใช่ไหม</translation>
 <translation id="6383961787135158834">ล้างที่เก็บข้อมูลไซต์…</translation>
 <translation id="6388207532828177975">ล้างข้อมูลและรีเซ็ต</translation>
@@ -522,6 +530,7 @@
 <translation id="6406506848690869874">การซิงค์ข้อมูล</translation>
 <translation id="6409731863280057959">ป๊อปอัป</translation>
 <translation id="641643625718530986">พิมพ์…</translation>
+<translation id="6416782512398055893">ดาวน์โหลดแล้ว <ph name="MBS" /> MB</translation>
 <translation id="6433490469411711332">แก้ไขข้อมูลติดต่อ</translation>
 <translation id="6443118737398455446">วันหมดอายุไม่ถูกต้อง</translation>
 <translation id="6446608382365791566">เพิ่มข้อมูลเพิ่มเติม</translation>
@@ -532,6 +541,7 @@
 <translation id="6477460825583319731">ที่อยู่อีเมลไม่ถูกต้อง</translation>
 <translation id="6482749332252372425">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะพื้นที่เก็บข้อมูลไม่เพียงพอ</translation>
 <translation id="6527303717912515753">แชร์</translation>
+<translation id="6538442820324228105">ดาวน์โหลดแล้ว <ph name="GBS" /> GB</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">เลือกแท็บที่จะบีม</translation>
 <translation id="6545017243486555795">ล้างข้อมูลทั้งหมด</translation>
@@ -587,6 +597,7 @@
 <translation id="699220179437400583">รายงานรายละเอียดของเหตุการณ์ด้านความปลอดภัยที่อาจจะเกิดขึ้นต่อ Google โดยอัตโนมัติ</translation>
 <translation id="6992289844737586249">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ใช้ไมโครโฟน (แนะนำ)</translation>
 <translation id="7001663382399377034">เพิ่มผู้รับ</translation>
+<translation id="7016516562562142042">อนุญาตสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="7021515813996758557">ดาวน์โหลด <ph name="FILE_NAME" /> แล้ว</translation>
 <translation id="7022756207310403729">เปิดในเบราว์เซอร์</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
@@ -713,7 +724,6 @@
 <translation id="8372893542064058268">อนุญาตให้ใช้การซิงค์ในแบ็กกราวด์สำหรับเว็บไซต์ที่เจาะจง</translation>
 <translation id="8374821112118309944">คุณต้องอัปเดต TalkBack เป็นเวอร์ชันใหม่</translation>
 <translation id="8393700583063109961">ส่งข้อความ</translation>
-<translation id="8396312449826231789">เฉพาะไซต์ที่อนุมัติ</translation>
 <translation id="8413126021676339697">แสดงประวัติการเข้าชมทั้งหมด</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8433057134996913067">วิธีนี้จะทำให้คุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
@@ -742,7 +752,6 @@
 <translation id="8660471606262461360">จาก Google Payments</translation>
 <translation id="8676374126336081632">ล้างข้อมูลที่ป้อน</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
-<translation id="8699799819461268362">ตัวกรอง Google SafeSites</translation>
 <translation id="8719023831149562936">ไม่สามารถบีมแท็บปัจจุบัน</translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>

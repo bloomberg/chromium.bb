@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google 세이프 브라우징이 최근 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />멀웨어를 감지<ph name="END_LINK" />했습니다. 안전하던 웹사이트도 멀웨어에 감염되는 경우가 있습니다. 악성 콘텐츠의 출처는 알려진 멀웨어 배포자인 <ph name="SUBRESOURCE_HOST" />입니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">잘못된 요청 또는 요청 매개변수</translation>
 <translation id="1834321415901700177">이 사이트에 유해한 프로그램이 있습니다.</translation>
-<translation id="1838667051080421715">지금 웹페이지의 소스를 보고 있습니다.</translation>
 <translation id="1871208020102129563">프록시가 .pac 스크립트 URL이 아닌 고정 프록시 서버를 사용하도록 설정됩니다.</translation>
+<translation id="187918866476621466">시작 페이지 열기</translation>
 <translation id="1883255238294161206">접기 목록</translation>
 <translation id="1898423065542865115">필터링</translation>
 <translation id="194030505837763158"><ph name="LINK" />(으)로 이동</translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">이 메시지가 자주 표시된다면 다음을 시도해 보세요. <ph name="HELP_LINK" /></translation>
 <translation id="3658742229777143148">개정</translation>
 <translation id="3678029195006412963">요청을 서명할 수 없음</translation>
+<translation id="3679803492151881375"><ph name="CRASH_TIME" />에 캡처된 비정상 종료 보고서가 <ph name="UPLOAD_TIME" />에 업로드됨</translation>
 <translation id="3681007416295224113">인증서 정보</translation>
 <translation id="3690164694835360974">로그인이 안전하지 않음</translation>
 <translation id="3693415264595406141">비밀번호:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">삭제 실행 취소(&amp;U)</translation>
 <translation id="4619615317237390068">다른 기기의 탭</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">지금 확장 프로그램 페이지를 보고 있습니다.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">연결이 끊김</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows 네트워크 진단 프로그램 실행<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478"><ph name="URL" />의 웹페이지가 일시적으로 다운되었거나 새 웹 주소로 완전히 이동했을 수 있습니다.</translation>
 <translation id="4771973620359291008">알 수 없는 오류가 발생했습니다.</translation>
 <translation id="4800132727771399293">유효기간과 CVC를 확인한 후 다시 시도해 주세요.</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">네트워크 오류</translation>
 <translation id="4816492930507672669">페이지 맞춤</translation>
 <translation id="4850886885716139402">보기</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">이 사이트에서 나가시겠습니까?</translation>
 <translation id="5629630648637658800">정책 설정 로드 실패</translation>
 <translation id="5631439013527180824">잘못된 기기 관리 토큰</translation>
+<translation id="5669703222995421982">맞춤설정 콘텐츠 받기</translation>
 <translation id="5675650730144413517">페이지가 작동하지 않습니다.</translation>
 <translation id="5677928146339483299">차단됨</translation>
 <translation id="5694783966845939798"><ph name="DOMAIN" />에 접속하려 했으나 서버에서 안전성이 낮은 서명 알고리즘을 사용하여 서명된 인증서를 제시했습니다. 이는 서버에서 제시한 보안 사용자 인증 정보가 위조되었을 수 있으며 서버를 가장한 공격자와 통신 중일 수 있음을 의미합니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">정책 값</translation>
 <translation id="6757797048963528358">기기가 절전 모드 상태입니다.</translation>
 <translation id="6778737459546443941">부모님이 아직 승인하지 않았습니다.</translation>
+<translation id="6810899417690483278">맞춤설정 ID</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" />의 웹페이지는 현재 사용할 수 없습니다.  웹페이지가 오버로드되었거나 유지보수를 위해 다운되었을 수 있습니다.</translation>
 <translation id="6831043979455480757">번역</translation>
@@ -709,6 +712,7 @@
 <translation id="8364627913115013041">설정 안됨</translation>
 <translation id="8380941800586852976">위험</translation>
 <translation id="8382348898565613901">최근에 방문한 북마크가 여기에 표시됩니다.</translation>
+<translation id="8398259832188219207"><ph name="UPLOAD_TIME" />에 업로드된 비정상 종료 보고서</translation>
 <translation id="8412145213513410671">비정상 종료(<ph name="CRASH_COUNT" />회)</translation>
 <translation id="8412392972487953978">동일한 암호를 두 번 입력해야 합니다.</translation>
 <translation id="8428213095426709021">설정</translation>

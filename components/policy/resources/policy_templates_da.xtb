@@ -363,11 +363,11 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis denne indstilling ikke er konfigureret, kan brugerne vælge, om stavekontrol skal aktiveres eller ej.</translation>
 <translation id="2294382669900758280">Videoafspilning i Android-apps tages ikke med i betragtning, selv hvis denne politik angives som <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Konfigurer standardsiden Ny fane i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Angiv en liste over aktiverede plugins</translation>
 <translation id="2309390639296060546">Standardindstilling for geoplacering</translation>
 <translation id="2312134445771258233">Giver dig mulighed for at konfigurere de sider, der indlæses ved opstart. Indholdet af listen "Webadresser, der skal åbnes ved opstart" ignoreres, medmindre du vælger "Åbn en liste over webadresser" i "Handling ved opstart".</translation>
 <translation id="2337466621458842053">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor billedvisning tillades. Hvis denne politik ikke er angivet, anvendes den globale standardværdi for alle websites, enten fra politikken "DefaultImagesSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
-<translation id="2366415278352956652">Aktiverer casting</translation>
 <translation id="2372547058085956601">Forsinkelse for automatisk login på offentlige sessioner.
 
       Hvis politikken |DeviceLocalAccountAutoLoginId| ikke er angivet, har den ingen effekt. Derudover:
@@ -868,6 +868,17 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3547954654003013442">Proxyindstillinger</translation>
 <translation id="3570008976476035109">Bloker plugins på disse websites</translation>
 <translation id="3591584750136265240">Konfigurer adfærden for logingodkendelse</translation>
+<translation id="3601614035698083789">Konfigurerer en liste over administrerede bogmærker.
+
+      Politikken består af en liste over bogmærker, hvor hvert bogmærke er en
+      ordbog med nøglerne <ph name="NAME" /> og <ph name="URL_LABEL" />, som indeholder bogmærkets navn og mål. En
+      undermappe kan konfigureres ved at definere et bogmærke uden en <ph name="URL_LABEL" />-nøgle, men med en ekstra <ph name="CHILDREN" />-nøgle, der selv indeholder en liste over
+      bogmærker som defineret ovenfor (nogle af disse kan også være mapper). <ph name="PRODUCT_NAME" /> ændrer ufuldstændige webadresser
+      på samme måde, som hvis de blev indsendt via omnifeltet. <ph name="GOOGLE_COM" /> bliver f.eks. <ph name="HTTPS_GOOGLE_COM" />.
+
+      Disse bogmærker placeres i mappen "Administrerede bogmærker", som ikke kan ændres af brugeren, men som brugeren kan vælge ikke at vise på bogmærkelinjen. Administrerede bogmærker synkroniseres ikke til brugerkontoen og kan ikke ændres af udvidelser.
+
+      Fra og med Chrome 51 kan mappenavnet for bogmærkerne tilpasses ved at tilføje listeelementet {"toplevel_name": "et eller andet navn"}.</translation>
 <translation id="3627678165642179114">Aktivér eller deaktiver webtjenesten stavekontrol</translation>
 <translation id="3646859102161347133">Indstil type af lup</translation>
 <translation id="3653237928288822292">Ikon for standardsøgemaskine</translation>
@@ -1080,6 +1091,17 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
       Hvis denne politik er angivet som falsk, kan brugerne ikke låse skærmen (de kan kun logge ud fra brugersessionen). Hvis indstillingen er angivet som sand eller ikke er angivet, kan brugere, der har godkendt med en adgangskode, låse skærmen.</translation>
 <translation id="4121350739760194865">Undgå, at appkampagner vises på ny fane-siden</translation>
+<translation id="4133301551755536858">Konfigurerer webadressen til standardsiden Ny fane i <ph name="PRODUCT_NAME" /> og forhindrer, at brugerne ændrer den.
+
+          Siden Ny fane er den side, der åbnes, når der oprettes nye faner (herunder den, der åbnes i nye vinduer).
+
+          Denne politik afgør ikke, hvilke sider der skal åbnes ved start. Disse kontrolleres af RestoreOnStartup-politikkerne, som dog godt kan angive åbning af siden Ny fane.
+
+          NewTabPageLocation kan indstilles til en webadresse, som du angiver her. Den påvirker også startsiden, hvis den er indstillet til både at åbne siden Ny fane og startsiden, hvis denne er indstillet til siden Ny fane.
+
+          Hvis politikken ikke er angivet eller efterlades tom, bruges standardsiden for nye faner.
+
+          Denne politik er ikke tilgængelig i Windows-forekomster, der ikke er knyttet til et Active Directory-domæne.</translation>
 <translation id="4147054660081653009">Klientcertifikat til at oprette forbindelse til RemoteAccessHostTokenValidationUrl.
 
           Hvis denne politik er indstillet, benytter hosten et klientcertifikat med det angivne udstederkaldenavn (CN) til godkendelse over for RemoteAccessHostTokenValidationUrl. Angiv det til "*" for at benytte et hvilket som helst tilgængeligt certifikat.
@@ -1157,9 +1179,9 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4467952432486360968">Bloker cookies fra tredjeparter</translation>
 <translation id="4474167089968829729">Aktivér lagring af adgangskoder i adgangskodeadministratoren</translation>
 <translation id="4476769083125004742">Hvis denne politik angives som <ph name="BLOCK_GEOLOCATION_SETTING" />, kan Android-apps ikke få adgang til placeringsoplysninger. Hvis du angiver denne politik til en anden værdi eller ikke angiver den, bliver brugeren bedt om at give sit samtykke, når en Android-app vil have adgang til placeringsoplysninger.</translation>
-<translation id="447686899376429408">Hvis politikken er angivet som Sand eller ikke er angivet, kan brugerne caste faner, websites eller skrivebordet fra browseren. Hvis politikken er angivet som Falsk, deaktiveres denne valgmulighed.</translation>
 <translation id="4480694116501920047">Gennemtving Beskyttet Søgning</translation>
 <translation id="4482640907922304445">Viser knappen Startside på værktøjslinjen i <ph name="PRODUCT_NAME" />. Hvis du aktiverer denne indstilling, vises knappen Startside altid. Hvis du deaktiverer denne indstilling, vises knappen Startside aldrig. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME" />. Hvis denne politik ikke angives, kan brugeren vælge, om knappen Startside skal vises.</translation>
+<translation id="4485425108474077672">Konfigurer webadressen for siden Ny fane</translation>
 <translation id="4492287494009043413">Deaktiver screenshots</translation>
 <translation id="450537894712826981">Konfigurerer cachestørrelsen, som <ph name="PRODUCT_NAME" /> vil bruge til at lagre cachelagrede filer på disken.
 
@@ -1549,6 +1571,12 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, oprettes der ingen proxyforbindelse for anmodninger om gnubby-godkendelse.</translation>
 <translation id="5898486742390981550">Når flere brugere er logget ind, er det kun den primære bruger, der kan bruge Android-apps.</translation>
+<translation id="5906199912611534122">Gør det muligt at aktivere eller deaktivere netværksbegrænsning.
+      Dette gælder for alle brugere og for alle grænseflader på enheden. Når denne indstilling er valgt,
+      beholdes begrænsningen, indtil politikken ændres for at deaktivere den.
+
+      Hvis den er angivet som falsk, er der ingen begrænsning.
+      Hvis den er angivet som sand, er systemet begrænset for at opnå de angivne upload- og downloadhastigheder (i kbits/s).</translation>
 <translation id="5921713479449475707">Tillad download af automatiske opdateringer via HTTP</translation>
 <translation id="5921888683953999946">Indstil standardtilstanden for hjælpefunktionen med den store markør på loginskærmen.
 
@@ -1661,6 +1689,46 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6282799760374509080">Tillad eller afvis lydoptagelse</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Aktivér autofuldførelse af domænenavn under brugers login</translation>
+<translation id="6312861131491040487">
+          Angiver en liste over apps og udvidelser, der er installeret. Dette foregår i baggrunden
+          uden brugerinteraktion og kan ikke afinstalleres af
+          brugeren. Alle tilladelser, som apps/udvidelser anmoder om, gives
+          implicit uden brugerinteraktion, herunder eventuelle ekstra
+          tilladelser, som fremtidige versioner af appen/udvidelsen anmoder om.
+          Derudover gives der tilladelser til udvidelses-API'erne
+          enterprise.deviceAttributes og enterprise.platformKeys.
+          (Disse to API'er er ikke tilgængelige for apps/udvidelser, der ikke
+          tvangsinstalleres).
+
+          Denne politik vejer tungest, hvis der skulle opstå en konflikt med en
+          ExtensionsInstallBlacklist-politik. Hvis en app eller udvidelse, som
+          tidligere er tvangsinstalleret, fjernes fra denne liste,
+          afinstalleres den automatisk af <ph name="PRODUCT_NAME" />.
+
+          I forbindelse med Windows-forekomster, som ikke er knyttet til et Active Directory-domæne,
+          er gennemtvunget installation begrænset til apps og udvidelser, som fås
+          i Chrome Webshop.
+
+          Bemærk, at kildekoden i alle udvidelser kan ændres af brugere via
+          Udviklerværktøjer (hvilket kan medføre, at udvidelsen
+          ikke fungerer). Hvis du vil undgå dette, skal politikken DeveloperToolsDisabled
+          indstilles.
+
+          Hvert listepunkt for politikken er en streng, som indeholder et udvidelses-id og en
+          "opdateringswebadresse" adskilt af et semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er den streng på 32 bogstaver,
+          som f.eks. kan findes i <ph name="CHROME_EXTENSIONS_LINK" />, når
+          udviklertilstanden bruges. "Opdateringswebadressen" skal pege på et Update Manifest
+          XML-dokument, som beskrevet på <ph name="LINK_TO_EXTENSION_DOC1" />. Bemærk,
+          at "opdateringswebadressen", der angives i denne politik, kun bruges til den første
+          installation. Efterfølgende opdateringer af udvidelsen anvender den opdateringswebadresse,
+          som er angivet i udvidelsens manifest.
+
+          <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer
+          f.eks. appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> fra "standardopdateringswebadressen" fra Chrome Webshop.
+          Du kan få flere oplysninger om hosting af udvidelser her: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Hvis denne politik ikke anvendes, installeres ingen apps eller udvidelser
+          automatisk, og brugeren kan afinstallere alle apps og udvidelser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome viser en advarselsside, når brugerne går til websites med SSL-fejl. Som standard, eller når denne politik er angivet til sand, kan brugerne klikke sig videre fra disse advarselssider.
       Hvis denne politik angives til falsk, kan brugerne ikke klikke sig videre fra nogen advarselssider.</translation>
 <translation id="6353901068939575220">Specificerer de anvendte parametre ved søgning efter en webadresse med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes de med rigtige søgetermdata.
@@ -1823,6 +1891,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hukommelsesoplysninger rapporteres dog stadigvæk til siden uanset indstillingsværdien, men de rapporterede
       størrelser er kvantiseret, og opdateringsfrekvensen er begrænset af sikkerhedsmæssige hensyn. Du kan få
       nøjagtige data i realtid ved at bruge værktøjer som f.eks. Telemetri.</translation>
+<translation id="6894178810167845842">Webadresse for siden Ny fane</translation>
 <translation id="6899705656741990703">Registrer proxyindstillinger automatisk</translation>
 <translation id="6903814433019432303">Denne politik er kun aktiv i detailtilstand.
 
@@ -1942,6 +2011,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7132877481099023201">Webadresser, der får adgang til videooptagelsesenheder, uden at du skal give tilladelse hertil.</translation>
 <translation id="7167436895080860385">Tillad, at brugerne kan se adgangskoder i adgangskodeadministratoren</translation>
 <translation id="7173856672248996428">Efemerisk profil</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Forbindelsestyper, der tillades til opdateringer</translation>
 <translation id="7194407337890404814">Standardsøgemaskinens navn</translation>
 <translation id="7195064223823777550">Angiv, hvad der skal ske, når brugeren slår skærmen ned.

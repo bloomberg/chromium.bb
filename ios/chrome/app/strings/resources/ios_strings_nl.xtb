@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Alles openen</translation>
 <translation id="1430915738399379752">Afdrukken</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> items</translation>
+<translation id="1491277525950327607">Dubbeltik om de instelling in of uit te schakelen</translation>
 <translation id="1540800554400757039">Adres 1</translation>
 <translation id="1545749641540134597">QR-code scannen</translation>
 <translation id="1580783302095112590">E-mail verzonden.</translation>
@@ -178,7 +179,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4359125752503270327">Deze pagina wordt geopend in een andere app.</translation>
 <translation id="4378154925671717803">Telefoon</translation>
 <translation id="441868831736628555">Privacybeleid</translation>
-<translation id="4426508677408162512">Alle bladwijzers</translation>
 <translation id="4473991315115669931">Incognitomodus starten</translation>
 <translation id="4526249700380860531">Opgeslagen wachtwoorden bekijken en beheren via <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Probeer opnieuw in te loggen.</translation>
@@ -218,6 +218,7 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5300589172476337783">Weergeven</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5327248766486351172">Naam</translation>
+<translation id="5332219387342487447">Verzendmethode</translation>
 <translation id="5388358297987318779">Afbeelding openen</translation>
 <translation id="5409365236829784218">Er zijn geen applicaties geïnstalleerd waarmee dit bestand kan worden geopend.</translation>
 <translation id="54401264925851789">Paginabeveiligingsinfo</translation>
@@ -270,6 +271,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6255097610484507482">Creditcard bewerken</translation>
 <translation id="6308436439357671616">Hiermee kun je foto's maken en uploaden.</translation>
 <translation id="6314335155547195432">Wachtwoord genereren</translation>
+<translation id="6324528485781869530">Synchronisatieaccount wisselen</translation>
 <translation id="6324669097367352121">Inloginstellingen</translation>
 <translation id="6337234675334993532">Codering</translation>
 <translation id="633809752005859102">Er is iets goed misgegaan. We gaan op zoek naar een oplossing.</translation>

@@ -379,6 +379,7 @@
 
       Als deze instelling niet is geconfigureerd, kunnen gebruikers kiezen of de service voor spellingcontrole moet worden gebruikt.</translation>
 <translation id="2294382669900758280">Er wordt geen rekening gehouden met het afspelen van video in Android-apps, zelfs niet wanneer dit beleid is ingesteld op <ph name="TRUE" /> (Waar).</translation>
+<translation id="2298647742290373702">De standaardpagina 'Nieuw tabblad' configureren in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Een lijst met ingeschakelde plug-ins specificeren</translation>
 <translation id="2309390639296060546">Standaardinstelling voor geolocatie</translation>
 <translation id="2312134445771258233">Hiermee kun he de pagina's configureren die bij het starten worden geladen.
@@ -387,7 +388,6 @@
 <translation id="2337466621458842053">Hiermee kun je een lijst URL-patronen instellen waarmee sites worden gespecificeerd waarop afbeeldingen kunnen worden weergegeven.
 
           Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultImagesSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
-<translation id="2366415278352956652">Maakt casten mogelijk</translation>
 <translation id="2372547058085956601">De vertraging voor automatisch inloggen bij de openbare sessie.
 
       Als het beleid |DeviceLocalAccountAutoLoginId| niet is ingesteld, heeft dit beleid geen effect. Anders:
@@ -903,6 +903,13 @@
 <translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="3570008976476035109">Plug-ins blokkeren op deze sites</translation>
 <translation id="3591584750136265240">Het verificatiegedrag voor inloggen configureren</translation>
+<translation id="3601614035698083789">Hiermee wordt een lijst met beheerde bladwijzers geconfigureerd.
+
+      Het beleid bestaat uit een lijst met bladwijzers waarbij elke bladwijzer een woordenboek is met daarin de sleutels <ph name="NAME" /> en <ph name="URL_LABEL" /> voor de naam en het doel van de bladwijzers. Er kan een submap worden geconfigureerd door een bladwijzer te definiëren zonder een <ph name="URL_LABEL" />-sleutel maar met een extra <ph name="CHILDREN" />-sleutel die zelf een lijst met bladwijzers bevat, zoals hierboven gedefinieerd (sommige hiervan kunnen ook weer mappen zijn). <ph name="PRODUCT_NAME" /> vult onvolledige URL's aan alsof ze via de omnibox zijn opgegeven. Voorbeeld: <ph name="GOOGLE_COM" /> wordt <ph name="HTTPS_GOOGLE_COM" />.
+
+      Deze bladwijzers worden in een map 'Beheerde bladwijzers' geplaatst die niet kan worden aangepast door de gebruiker. De gebruiker kan er wel voor kiezen de map te verbergen op de bladwijzerbalk. Beheerde bladwijzers worden niet gesynchroniseerd met het gebruikersaccount en kunnen niet worden aangepast door extensies.
+
+      Vanaf release 51 kan de mapnaam voor de bladwijzers worden aangepast door een lijstitem {"toplevel_name": "some name"} toe te voegen.</translation>
 <translation id="3627678165642179114">Webservice voor spellingcontrole in- of uitschakelen</translation>
 <translation id="3646859102161347133">Het type vergrootglas instellen</translation>
 <translation id="3653237928288822292">Pictogram voor standaardzoekprovider</translation>
@@ -1123,6 +1130,17 @@
 
       Als dit beleid wordt ingesteld op 'false' (onwaar), kunnen gebruikers het scherm niet vergrendelen (alleen afmelden bij de gebruikerssessie is mogelijk). Als deze instelling wordt ingesteld op 'true' (waar) of niet wordt ingesteld, kunnen gebruikers die verificatie met een wachtwoord hebben uitgevoerd, het scherm vergrendelen.</translation>
 <translation id="4121350739760194865">Voorkomen dat app-promoties worden weergegeven op de pagina 'Nieuw tabblad'</translation>
+<translation id="4133301551755536858">Hiermee wordt de standaard-URL voor de pagina 'Nieuw tabblad' geconfigureerd in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers deze wijzigen.
+
+          De pagina 'Nieuw tabblad' wordt geopend wanneer nieuwe tabbladen worden gemaakt (waaronder tabbladen die worden geopend in nieuwe vensters).
+
+          Op basis van dit beleid wordt niet bepaald welke pagina's worden geopend tijdens het starten. Deze pagina's worden beheerd door het beleid RestoreOnStartup, waarmee bijvoorbeeld kan worden aangegeven dat de pagina 'Nieuw tabblad' moet worden geopend.
+
+          NewTabPageLocation kan worden ingesteld op een URL die je hier opgeeft. Dit is ook van invloed op de homepage als hiervoor is ingesteld dat de pagina 'Nieuw tabblad' moet worden geopend, evenals voor de startpagina als deze is ingesteld op de pagina 'Nieuw tabblad'.
+
+          Als het beleid niet is ingesteld of leeg is gelaten, wordt de standaardpagina 'Nieuw tabblad' gebruikt.
+
+          Dit beleid is niet beschikbaar voor Windows-instanties die niet zijn gekoppeld aan een Active Directory-domein.</translation>
 <translation id="4147054660081653009">Clientcertificaat voor verbinding met RemoteAccessHostTokenValidationUrl.
 
            Als dit beleid is ingesteld, gebruikt de host een clientcertificaat met de gegeven algemene naam (CN) van de uitgever ter verificatie van RemoteAccessHostTokenValidationUrl. Stel dit in op '*' als je een willekeurig beschikbaar clientcertificaat wilt gebruiken.
@@ -1200,7 +1218,6 @@
 <translation id="4467952432486360968">Indirecte cookies blokkeren</translation>
 <translation id="4474167089968829729">Opslaan van wachtwoorden in wachtwoordbeheer inschakelen</translation>
 <translation id="4476769083125004742">Als dit beleid wordt ingesteld op <ph name="BLOCK_GEOLOCATION_SETTING" />, hebben de Android-apps geen toegang tot locatiegegevens. Als je een andere waarde voor dit beleid instelt of het beleid niet instelt, wordt de gebruiker om toestemming gevraagd wanneer een Android-app toegang tot locatiegegevens probeert te krijgen.</translation>
-<translation id="447686899376429408">Als dit is ingesteld op 'true' (waar) of niet is ingesteld, kunnen gebruikers tabbladen, sites of het bureaublad vanuit de browser casten. Als dit is ingesteld op 'false' (onwaar), is deze optie uitgeschakeld.</translation>
 <translation id="4480694116501920047">SafeSearch afdwingen</translation>
 <translation id="4482640907922304445">Hiermee wordt de knop 'Homepage' weergegeven in de werkbalk van <ph name="PRODUCT_NAME" />.
 
@@ -1211,6 +1228,7 @@
       Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME" />.
 
       Als dit beleid niet wordt ingesteld, kan de gebruiker kiezen of de knop 'Homepage' wel of niet wordt weergegeven.</translation>
+<translation id="4485425108474077672">De URL van de pagina 'Nieuw tabblad' configureren</translation>
 <translation id="4492287494009043413">Het maken van screenshots uitschakelen</translation>
 <translation id="450537894712826981">Configureert de cachegrootte die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gecachte bestanden op de schijf.
 
@@ -1630,6 +1648,12 @@
 
           Als deze instelling uitgeschakeld of niet geconfigureerd is, worden gnubby-verificatieverzoeken niet via een proxy verzonden.</translation>
 <translation id="5898486742390981550">Wanneer meerdere gebruikers zijn ingelogd, kunnen Android-apps alleen worden gebruikt door de primaire gebruiker.</translation>
+<translation id="5906199912611534122">Hiermee kan netwerkbeperking worden in- of uitgeschakeld.
+      Dit is van toepassing op alle gebruikers en op alle interfaces op het apparaat. Zodra de beperking is ingesteld,
+      wordt deze gehandhaafd totdat het beleid wordt gewijzigd en de instelling wordt uitgeschakeld.
+
+      Als het beleid is ingesteld op false (onwaar), geldt er geen beperking.
+      Als het beleid is ingesteld op true (waar), wordt het systeem beperkt om de opgegeven upload- en downloadsnelheid (in kbits/s) te bereiken.</translation>
 <translation id="5921713479449475707">Downloads voor automatische updates via HTTP toestaan</translation>
 <translation id="5921888683953999946">De standaardstatus van de toegankelijkheidsfunctie 'Grote muisaanwijzer' op het inlogscherm instellen.
 
@@ -1750,6 +1774,21 @@
 <translation id="6282799760374509080">Het opnemen van audio toestaan of weigeren</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Automatisch aanvullen van domeinnaam bij inloggen van gebruiker inschakelen</translation>
+<translation id="6312861131491040487">
+          Hiermee wordt een lijst gespecificeerd met apps en extensies die zonder gebruikersinteractie op de achtergrond worden geïnstalleerd en die niet kunnen worden verwijderd door de gebruiker. Alle rechten die worden aangevraagd dor de apps/extensies, worden impliciet zonder gebruikersinteractie verleend, inclusief aanvullende rechten die worden aangevraagd door toekomstige versies van de app/extensie.
+          Bovendien worden rechten verleend voor de API's van de enterprise.deviceAttributes- en enterprise.platformKeys-extensie. (Deze twee API's zijn niet beschikbaar voor apps/extensies die niet gedwongen zijn geïnstalleerd.)
+
+          Dit beleid krijgt voorrang boven een potentieel conflicterend ExtensionsInstallBlacklist-beleid. Als een app of extensie die eerder gedwongen is geïnstalleerd, wordt verwijderd uit deze lijst, wordt de app of extensie automatisch verwijderd door <ph name="PRODUCT_NAME" />.
+
+          Voor Windows-instanties die niet zijn gekoppeld aan een Active Directory-domein, is gedwongen installatie beperkt tot apps en extensies die worden vermeld in de Chrome Web Store.
+
+          Houd er rekening mee dat gebruikers de broncode van een extensie kunnen wijzigen via de ontwikkelaarstools (waardoor de extensie mogelijk niet meer functioneert). Als je je hierover zorgen maakt, moet het DeveloperToolsDisabled-beleid worden ingesteld.
+
+          Elk lijstitem van het beleid is een tekenreeks die een extensie-ID en een update-URL bevat, gescheiden door een puntkomma (<ph name="SEMICOLON" />). De extensie-ID is de tekenreeks van 32 letters die bijvoorbeeld kan worden gevonden op <ph name="CHROME_EXTENSIONS_LINK" /> wanneer de ontwikkelaarsmodus actief is. De update-URL moet verwijzen naar een XML-document voor het updaten van het manifest, zoals beschreven op <ph name="LINK_TO_EXTENSION_DOC1" />. Houd er rekening mee dat de update-URL die is ingesteld in dit beleid, alleen wordt gebruikt voor de eerste installatie. Daaropvolgende updates van de extensie gebruiken de update-URL die wordt aangegeven in het manifest van de extensie.
+
+          Met <ph name="EXTENSION_POLICY_EXAMPLE" /> wordt de app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> bijvoorbeeld geïnstalleerd via de standaard update-URL van de Chrome Web Store. Ga voor meer informatie over het hosten van extensies naar <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Als dit beleid niet wordt ingesteld, worden apps en extensies net automatisch geïnstalleerd en kan de gebruiker elke app of extensie in <ph name="PRODUCT_NAME" /> verwijderen.</translation>
 <translation id="6315673513957120120">Chrome toont een waarschuwingspagina wanneer gebruikers naar sites met SSL-fouten navigeren. Gebruikers kunnen standaard, of wanneer dit beleid is ingesteld op 'waar', door deze waarschuwingspagina's klikken.
       Als dit beleid wordt ingesteld op 'onwaar', kunnen gebruikers niet door waarschuwingspagina's klikken.</translation>
 <translation id="6353901068939575220">Specificeert de parameters die worden gebruikt wanneer een URL wordt gezocht met POST. Het bestaat uit door komma's gescheiden naam/waarde-paren. Als een waarde een sjabloonparameter, zoals {searchTerms} in het bovenstaande voorbeeld, is, wordt de waarde vervangen door echte zoektermgegevens.
@@ -1919,6 +1958,7 @@
 <translation id="687046793986382807">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 35.
 
 Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien van de optiewaarde, maar de gerapporteerde grootten zijn gekwantiseerd en de snelheid van updates is om veiligheidsredenen beperkt. Om nauwkeurige realtime gegevens te verkrijgen, gebruik je tools zoals Telemetry.</translation>
+<translation id="6894178810167845842">URL van pagina 'Nieuw tabblad'</translation>
 <translation id="6899705656741990703">Proxyinstellingen automatisch detecteren</translation>
 <translation id="6903814433019432303">Dit beleid is alleen ingeschakeld in de winkelmodus.
 
@@ -2051,6 +2091,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7132877481099023201">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van video</translation>
 <translation id="7167436895080860385">Gebruikers toestaan wachtwoorden weer te geven in Wachtwoordbeheer (beëindigd)</translation>
 <translation id="7173856672248996428">Kort geldig profiel</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Verbindingstypen die zijn toegestaan voor updates</translation>
 <translation id="7194407337890404814">Naam van standaardzoekprovider</translation>
 <translation id="7195064223823777550">Specificeer de actie die moet worden ondernomen wanneer de gebruiker de klep sluit.

@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, activa</translation>
 <translation id="1692077714702418899">línia estructural</translation>
 <translation id="1700517974991662022">Visitat</translation>
+<translation id="1714116687360794776">Meter</translation>
 <translation id="1722567105086139392">Enllaç</translation>
 <translation id="1727806147743597030">peu</translation>
 <translation id="174268867904053074">Gràfic següent</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Control de data i hora</translation>
 <translation id="2347456970887948350">Un enllaç</translation>
 <translation id="2359897517538099099">No teniu activat el mode de taula.</translation>
+<translation id="2390264819538553347">Prem Retorn per avançar i Retrocés per tornar enrere.</translation>
 <translation id="241124561063364910">i, tot seguit,</translation>
 <translation id="2416512023405990736">Una casella de selecció desmarcada</translation>
 <translation id="2417569100218200841">Informació sobre el contingut</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Grup de botons d'opció</translation>
 <translation id="2471138580042810658">Capçalera 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisc}other{# asteriscos}}</translation>
+<translation id="2523609930580546572">Tutorial de ChromeVox</translation>
 <translation id="2525706221823668172">Tecles de drecera de Chromebook</translation>
 <translation id="2549392850788122959">S'ha restablert <ph name="KEY" />.</translation>
 <translation id="2553108862507765288">error gramatical</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">No hi ha cap secció anterior.</translation>
 <translation id="3030432017085518523">Botó d'opció de l'element del menú</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apòstrof}other{# apòstrofs}}</translation>
+<translation id="3040901448410802366">Indicador de progrés</translation>
 <translation id="3046838483509668188">Opcions de ChromeVox</translation>
 <translation id="3047143736589213134">Teclat experimental</translation>
 <translation id="3060756054951570867">S'ha obert el menú <ph name="TITLE" />.</translation>
@@ -230,6 +234,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3321460131042519426">Activa l'ajust de la paraula a la línia</translation>
 <translation id="3322936298410871309">Capçalera del nivell 1 anterior</translation>
 <translation id="3323447499041942178">Quadre de text</translation>
+<translation id="3338224621010291843">Control lliscant <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "Àrab",
         "bg": "Búlgar",
         "ca": "Català",
@@ -714,6 +719,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="7693840228159394336">Botó d'opció anterior</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, quadre de text de la contrasenya</translation>
+<translation id="7776293189010177726">Obre els menús de ChromeVox</translation>
 <translation id="7805247615045262757">navegació predeterminada</translation>
 <translation id="7805768142964895445">Estat</translation>
 <translation id="7810781339813764006">Grup següent</translation>

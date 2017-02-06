@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Open all</translation>
 <translation id="1430915738399379752">Print</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> items</translation>
+<translation id="1491277525950327607">Double tap to toggle setting</translation>
 <translation id="1540800554400757039">Address 1</translation>
 <translation id="1545749641540134597">Scan QR Code</translation>
 <translation id="1580783302095112590">Mail sent.</translation>
@@ -178,7 +179,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4359125752503270327">This page will open in another application.</translation>
 <translation id="4378154925671717803">Phone</translation>
 <translation id="441868831736628555">Privacy Notice</translation>
-<translation id="4426508677408162512">All Bookmarks</translation>
 <translation id="4473991315115669931">Enter incognito mode</translation>
 <translation id="4526249700380860531">View and manage saved passwords at <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
@@ -218,6 +218,7 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="5300589172476337783">Show</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5327248766486351172">Name</translation>
+<translation id="5332219387342487447">Delivery Method</translation>
 <translation id="5388358297987318779">Open Image</translation>
 <translation id="5409365236829784218">There are no applications installed that can open this file.</translation>
 <translation id="54401264925851789">Page Security Info</translation>
@@ -270,6 +271,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6255097610484507482">Edit Credit Card</translation>
 <translation id="6308436439357671616">This lets you take and upload photos.</translation>
 <translation id="6314335155547195432">Generate Password</translation>
+<translation id="6324528485781869530">Switch Sync Account</translation>
 <translation id="6324669097367352121">Sign in settings</translation>
 <translation id="6337234675334993532">Encryption</translation>
 <translation id="633809752005859102">Something went really wrong. We'll work on that.</translation>

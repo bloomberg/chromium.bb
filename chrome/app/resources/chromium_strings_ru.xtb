@@ -80,7 +80,6 @@
 <translation id="358997566136285270">Логотип Chromium</translation>
 <translation id="3645040538872234961">Все данные о работе в браузере будут удалены с устройства. Чтобы впоследствии загрузить их, войдите в Chromium как $2.</translation>
 <translation id="3738139272394829648">Быстрый поиск</translation>
-<translation id="3748537968684000502">Вы находитесь на защищенной странице Chromium.</translation>
 <translation id="378917192836375108">В Chromium вы можете нажать на любой номер телефона и позвонить на него через Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">К сожалению, настройки браузера Mozilla Firefox недоступны, пока этот браузер работает. Чтобы импортировать настройки Firefox в Chromium, закройте все окна браузера Firefox. Затем нажмите "Продолжить".</translation>
@@ -134,6 +133,7 @@
 <translation id="5620765574781326016">Теперь искать информацию в Интернете можно с любой страницы.</translation>
 <translation id="5634636535844844681">Для работы Chromium необходима ОС Windows 7 или более поздней версии.</translation>
 <translation id="5680901439334282664">войдите в Chromium</translation>
+<translation id="5684733627009686897">Chromium используется как браузер по умолчанию.</translation>
 <translation id="5698481217667032250">Отображать Chromium на этом языке</translation>
 <translation id="5726838626470692954">Администратор устройства должен удалить ваш аккаунт из Chromium и добавить его снова</translation>
 <translation id="5768914737813585044">Отображать Chromium OS на этом языке</translation>

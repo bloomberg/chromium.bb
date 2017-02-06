@@ -82,7 +82,6 @@
 <translation id="358997566136285270">Chromium 標誌</translation>
 <translation id="3645040538872234961">這會將您的瀏覽資料從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
-<translation id="3748537968684000502">您正在瀏覽安全型 Chromium 網頁。</translation>
 <translation id="378917192836375108">透過 Chromium，您只要按一下網路上的電話號碼，即可用 Skype 打電話！</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">抱歉，我們無法在 Mozilla Firefox 執行時取得瀏覽器設定。如要將這些設定匯入 Chromium，請儲存您的工作並關閉所有 Firefox 視窗，然後按一下 [繼續]。</translation>
@@ -136,6 +135,7 @@
 <translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
 <translation id="5634636535844844681">Chromium 僅支援 Windows 7 以上版本的作業系統。</translation>
 <translation id="5680901439334282664">登入 Chromium</translation>
+<translation id="5684733627009686897">太好了！Chromium 現已成為你的預設瀏覽器。</translation>
 <translation id="5698481217667032250">將 Chromium 的介面文字設為這種語言</translation>
 <translation id="5726838626470692954">管理員必須先將你移除，再重新加入 Chromium 中。</translation>
 <translation id="5768914737813585044">將 Chromium 作業系統的介面文字設為這種語言</translation>

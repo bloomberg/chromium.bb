@@ -350,11 +350,11 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 
       Si no configureu aquest paràmetre, els usuaris podran triar si volen utilitzar el servei de correcció automàtica o no.</translation>
 <translation id="2294382669900758280">La reproducció de vídeo en aplicacions per a Android no es té en compte encara que aquesta política s'estableixi en "<ph name="TRUE" />".</translation>
+<translation id="2298647742290373702">Configura la pàgina Pestanya nova predeterminada a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especifica una llista de connectors activats</translation>
 <translation id="2309390639296060546">Configuració d'ubicació geogràfica predeterminada</translation>
 <translation id="2312134445771258233">Us permet configurar les pàgines que es carreguen en iniciar. El contingut de la llista "URL que s'han d'obrir en iniciar" s'ignora tret que seleccioneu "Obre una llista d'URL" a "Acció a l'inici".</translation>
 <translation id="2337466621458842053">Us permet definir una llista de patrons d'URL que especifiquen els llocs que poden mostrar imatges. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultImagesSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
-<translation id="2366415278352956652">Activa l'emissió</translation>
 <translation id="2372547058085956601">Retard d'inici de sessió automàtic de la sessió pública.
 
       Si no es defineix la política |DeviceLocalAccountAutoLoginId|, aquesta política no té cap efecte. En cas contrari:
@@ -850,6 +850,17 @@ El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estab
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="3570008976476035109">Bloqueja els connectors en aquests llocs</translation>
 <translation id="3591584750136265240">Configura el comportament de l'autenticació d'inici de sessió</translation>
+<translation id="3601614035698083789">Configura una llista d'adreces d'interès gestionades.
+
+      La política és una llista d'adreces d'interès, cadascuna de les quals és un
+      diccionari que conté les claus <ph name="NAME" /> i <ph name="URL_LABEL" /> que indiquen el nom i l'objectiu de l'adreça d'interès. Es
+      pot configurar una subcarpeta. Per fer-ho, cal definir una adreça d'interès sense la clau <ph name="URL_LABEL" /> però amb una clau <ph name="CHILDREN" /> addicional que contingui una llista
+      d'adreces d'interès, tal com s'ha definit més amunt (algunes d'aquestes adreces d'interès poden ser carpetes). <ph name="PRODUCT_NAME" /> esmena els URL incomplets
+      com si s'enviessin des de l'omnibox. Per exemple, <ph name="GOOGLE_COM" /> esdevé <ph name="HTTPS_GOOGLE_COM" />.
+
+      Aquestes adreces d'interès se situen en una carpeta d'adreces d'interès gestionades que l'usuari no pot modificar, però sí que pot treure-la de la barra d'adreces d'interès. Les adreces d'interès gestionades no se sincronitzen amb el compte de l'usuari i no es poden modificar amb extensions.
+
+      A partir de la versió 51, el nom de la carpeta d'adreces d'interès es pot personalitzar afegint-hi un element de llista {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Activació o desactivació del servei web de correcció ortogràfica</translation>
 <translation id="3646859102161347133">Defineix el tipus de lupa</translation>
 <translation id="3653237928288822292">Icona del proveïdor de cerca predeterminat</translation>
@@ -1053,6 +1064,17 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
       Si aquesta política s'estableix en "false", els usuaris no poden bloquejar la pantalla (només poden tancar la sessió d'usuari). Si s'estableix en "true" o no s'estableix, els usuaris que s'han autenticat amb una contrasenya poden bloquejar la pantalla.</translation>
 <translation id="4121350739760194865">Impedeix que les promocions d'aplicacions apareguin a la pestanya nova</translation>
+<translation id="4133301551755536858">Configura l'URL de la pàgina Pestanya nova predeterminada a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin.
+
+          La pàgina Pestanya nova és la pàgina que s'obre quan es creen pestanyes noves, encara que s'obrin en una altra finestra.
+
+          Aquesta política no estableix les pàgines que s'obren en iniciar el dispositiu. Això ho controlen les polítiques RestoreOnStartup, que es poden utilitzar per obrir la pàgina Pestanya nova.
+
+          La política NewTabPageLocation es pot establir en un URL que especifiquis aquí. També afectarà la pàgina d'inici i la pàgina que s'obre en iniciar el dispositiu si s'han configurat perquè obrin la pàgina Pestanya nova.
+
+          Si no estableixes aquesta política o la deixes buida, s'utilitzarà la pàgina Pestanya nova predeterminada.
+
+          Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini d'Active Directory.</translation>
 <translation id="4147054660081653009">Certificat de client per connectar-se a RemoteAccessHostTokenValidationUrl.
 
           Si aquesta política s'estableix, l'amfitrió utilitzarà un certificat de client amb el nom d'emissor determinat per autenticar-se a RemoteAccessHostTokenValidationUrl. Establiu-la en * per utilitzar qualsevol certificat de client.
@@ -1131,9 +1153,9 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="4467952432486360968">Bloqueja les galetes de tercers</translation>
 <translation id="4474167089968829729">Permet que el gestor de contrasenyes desi contrasenyes</translation>
 <translation id="4476769083125004742">Si aquesta política s'estableix en <ph name="BLOCK_GEOLOCATION_SETTING" />, les aplicacions per a Android no poden accedir a la informació d'ubicació. Si s'estableix en un altre valor o la deixes sense establir, es demana a l'usuari que doni permís quan l'aplicació per a Android vulgui accedir a la informació d'ubicació.</translation>
-<translation id="447686899376429408">Si s'estableix com a "true" o no s'estableix, els usuaris poden emetre pestanyes, llocs o l'escriptori des del navegador. Si s'estableix com a "false", l'opció es desactiva.</translation>
 <translation id="4480694116501920047">Força SafeSearch</translation>
 <translation id="4482640907922304445">Mostra el botó d'inici a la barra d'eines de <ph name="PRODUCT_NAME" />. Si activeu aquest paràmetre, el botó d'inici es mostrarà sempre. Si el desactiveu, el botó d'inici no es mostrarà mai. Si l'activeu o el desactiveu, els usuaris no podran canviar ni substituir aquesta configuració a <ph name="PRODUCT_NAME" />. Si no definiu aquesta política, l'usuari podrà decidir si vol que es mostri el botó d'inici.</translation>
+<translation id="4485425108474077672">Configura l'URL de la pàgina Pestanya nova</translation>
 <translation id="4492287494009043413">Desactivació de les captures de pantalla</translation>
 <translation id="450537894712826981">Defineix la mida de memòria cau que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers multimèdia de la memòria cau al disc.
 
@@ -1513,6 +1535,11 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 
           Si es desactiva o no es configura aquesta opció, les sol·licituds d'autenticació Gnubby s'enviaran per un servidor intermediari.</translation>
 <translation id="5898486742390981550">Quan diversos usuaris tenen la sessió iniciada, només el principal pot utilitzar les aplicacions per a Android.</translation>
+<translation id="5906199912611534122">Permet activar o desactivar l'acceleració de la xarxa.
+      S'aplica a tots els usuaris i a totes les interfícies del dispositiu. Un cop establerta, l'acceleració continua fins que la política es canvia per desactivar-la.
+
+      Si s'estableix en "false", no hi ha acceleració.
+      Si s'estableix en "true", el sistema s'accelera per aconseguir les velocitats de càrrega i baixada proporcionades (en kb/s).</translation>
 <translation id="5921713479449475707">Permet les baixades d'actualització automàtica mitjançant HTTP</translation>
 <translation id="5921888683953999946">Establiu l'estat predeterminat de la funció d'accessibilitat del cursor gran a la pantalla d'inici de sessió.
 
@@ -1630,6 +1657,45 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6282799760374509080">Permet o bloqueja la captura d'àudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Activa la funció de compleció automàtica del nom de domini durant l'inici de sessió de l'usuari</translation>
+<translation id="6312861131491040487">
+          Especifica una llista d'aplicacions i d'extensions que s'instal·len en silenci,
+          sense cap interacció de l'usuari, i que l'usuari no pot desinstal·lar.
+          Tots els permisos que les aplicacions i les extensions sol·liciten es concedeixen
+          de manera implícita, sense cap interacció de l'usuari, inclosos els permisos
+          addicionals que se sol·licitin per a versions futures de l'aplicació o l'extensió.
+          A més, els permisos es concedeixen per a les
+          API d'extensions enterprise.deviceAttributes i enterprise.platformKeys
+          (aquestes dues API no estan disponibles per a les aplicacions o extensions que
+          no s'han instal·lat per la força).
+
+          Aquesta política té prioritat sobre una
+          política ExtensionsInstallBlacklist amb què pugui entrar en conflicte. Si se suprimeix d'aquesta llista
+          una aplicació o una extensió que s'havia instal·lat per força prèviament,
+          <ph name="PRODUCT_NAME" /> la desinstal·larà automàticament.
+
+          En el cas de les instàncies de Windows que no formin part d'un domini d'Active Directory,
+          la instal·lació forçosa està limitada a les aplicacions i a les extensions que figuren
+          a Chrome Web Store.
+
+          Tingues en compte que és possible que els usuaris modifiquin el codi font de les extensions mitjançant les
+          Eines per a desenvolupadors (pot ser que l'extensió deixi de funcionar). Si et preocupa que això passi,
+          estableix la política DeveloperToolsDisabled.
+
+          Cada element de la llista de la política és una cadena que conté un identificador d'extensió
+          i un URL d'actualització separats per un punt i coma (<ph name="SEMICOLON" />). L'identificador d'extensió és la cadena de 32 lletres que,
+          per exemple, es troba a <ph name="CHROME_EXTENSIONS_LINK" /> quan el
+          mode desenvolupador està activat. L'URL d'actualització ha de dirigir a un document XML de manifest
+          d'actualització, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />. Tingues en compte
+          que l'URL d'actualització definit en aquesta política només s'utilitza per a la instal·lació
+          inicial; les properes actualitzacions de l'extensió faran servir
+          l'URL d'actualització indicat al manifest de l'extensió.
+
+          Per exemple, <ph name="EXTENSION_POLICY_EXAMPLE" />
+          instal·la l'aplicació <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> des de l'URL d'actualització estàndard de
+          Chrome Web Store. Per obtenir més informació sobre com allotjar extensions, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Si no s'estableix aquesta política, no s'instal·la automàticament cap aplicació
+          ni cap extensió i l'usuari pot desinstal·lar qualsevol aplicació o extensió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome mostra una pàgina d'advertiment quan els usuaris accedeixen a llocs que tenen errors de SSL. De manera predeterminada o quan aquesta política s'estableix en "true", els usuaris poden fer clic per tancar aquestes pàgines d'advertiment.
       Si aquesta política s'estableix en "false", els usuaris no poden fer clic per tancar les pàgines d'advertiment.</translation>
 <translation id="6353901068939575220">Especifica els paràmetres utilitzats en cercar un URL amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {searchTerms} a l'exemple anterior, se substituirà per dades de termes de cerca reals.
@@ -1791,6 +1857,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       De tota manera, la informació de la memòria es notifica sense importar el valor de l'opció, però les mides de les quals s'envia la notificació es
       quantifiquen i el percentatge d'actualitzacions es limita per motius de seguretat. Per obtenir dades precises en temps real,
       utilitzeu eines com ara Telemetry.</translation>
+<translation id="6894178810167845842">URL de la pàgina Pestanya nova</translation>
 <translation id="6899705656741990703">Configuració de la detecció automàtica de servidors intermediaris</translation>
 <translation id="6903814433019432303">Aquesta política només està activa al mode de venta.
 
@@ -1907,6 +1974,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7132877481099023201">URL als quals els dispositius de captura de vídeo podran accedir sense confirmació.</translation>
 <translation id="7167436895080860385">Permet que els usuaris mostrin les contrasenyes al gestor de contrasenyes (política obsoleta)</translation>
 <translation id="7173856672248996428">Perfil efímer</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipus de connexions permesos per a actualitzacions</translation>
 <translation id="7194407337890404814">Nom del proveïdor de cerca predeterminat</translation>
 <translation id="7195064223823777550">Indica l'acció que cal dur a terme quan l'usuari tanca la tapa.

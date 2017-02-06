@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Отвори све</translation>
 <translation id="1430915738399379752">Штампај</translation>
 <translation id="145015347812617860">Ставки: <ph name="COUNT" /></translation>
+<translation id="1491277525950327607">Двапут додирните да бисте укључили/искључили подешавање</translation>
 <translation id="1540800554400757039">1. ред за адресу</translation>
 <translation id="1545749641540134597">Скенирајте QR кôд</translation>
 <translation id="1580783302095112590">Имејл је послата.</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">Ова страница ће се отворити у другој апликацији.</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Обавештење о приватности</translation>
-<translation id="4426508677408162512">Сви обележивачи</translation>
 <translation id="4473991315115669931">Уђи у режим без архивирања</translation>
 <translation id="4526249700380860531">Прегледајте сачуване лозинке и управљајте њима на <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Пробајте поново да се пријавите.</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5317780077021120954">Сачувај</translation>
 <translation id="5327248766486351172">Назив</translation>
+<translation id="5332219387342487447">Начин испоруке</translation>
 <translation id="5388358297987318779">Отвори слику</translation>
 <translation id="5409365236829784218">Није инсталирана ниједна апликација за отварање ове датотеке.</translation>
 <translation id="54401264925851789">Информације о безбедности странице</translation>
@@ -270,6 +271,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6255097610484507482">Измена кредитне картице</translation>
 <translation id="6308436439357671616">Ово вам омогућава да снимате и отпремате слике.</translation>
 <translation id="6314335155547195432">Генериши лозинку</translation>
+<translation id="6324528485781869530">Промените налог за синхронизацију</translation>
 <translation id="6324669097367352121">Подешавања пријављивања</translation>
 <translation id="6337234675334993532">Шифровање</translation>
 <translation id="633809752005859102">Нешто стварно није у реду. Порадићемо на томе.</translation>

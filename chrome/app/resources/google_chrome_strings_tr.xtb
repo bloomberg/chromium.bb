@@ -61,7 +61,6 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="2664962310688259219">Chrome OS açık kaynak lisansları</translation>
 <translation id="2665296953892887393">Kilitlenme raporlarını ve <ph name="UMA_LINK" /> bilgilerini Google'a göndererek Google Chrome'u daha iyi hale getirmeye yardımcı olun</translation>
 <translation id="2689103672227170538">Bu uzantı, Chrome'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
-<translation id="2748463065602559597">Güvenli bir Google Chrome sayfasını görüntülüyorsunuz.</translation>
 <translation id="2769762047821873045">Google Chrome varsayılan tarayıcınız değil.</translation>
 <translation id="2770231113462710648">Varsayılan tarayıcıyı şuna dönüştür:</translation>
 <translation id="2799223571221894425">Yeniden başlat</translation>
@@ -202,6 +201,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6970811910055250180">Cihazınız güncelleniyor...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" />, bu cihazı kullanmadan önce aşağıdaki Hizmet Şartları'nı okuyup kabul etmenizi gerektirmektedir. Bu şartlar, Google Chromium OS Şartları'nın kapsamını genişletmez, değiştirmez veya sınırlamaz.</translation>
 <translation id="6989339256997917931">Google Chrome güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
+<translation id="7048801529101012374">Google Chrome varsayılan tarayıcınız oldu. Tebrikler!</translation>
 <translation id="7098166902387133879">Google Chrome mikrofonunuzu kullanıyor.</translation>
 <translation id="7106741999175697885">Görev Yöneticisi - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome kendini en yeni sürüme güncelleyemedi, bundan dolayı yeni ve harika özelliklerin yanı sıra güvenlik düzeltmelerinden mahrum kalıyorsunuz. Chrome'u manuel olarak yeniden yüklemeniz gerekiyor.</translation>

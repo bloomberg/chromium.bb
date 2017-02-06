@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />，已開啟</translation>
 <translation id="1692077714702418899">結構化的行</translation>
 <translation id="1700517974991662022">曾經造訪過</translation>
+<translation id="1714116687360794776">計量器</translation>
 <translation id="1722567105086139392">連結</translation>
 <translation id="1727806147743597030">頁尾</translation>
 <translation id="174268867904053074">下一個圖形</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">日期時間控制項</translation>
 <translation id="2347456970887948350">連結</translation>
 <translation id="2359897517538099099">未切換至表格模式。</translation>
+<translation id="2390264819538553347">如要前往下一頁，請按下 Enter 鍵；如要返回上一頁，請按下 Backspace 鍵。</translation>
 <translation id="241124561063364910">然後按下</translation>
 <translation id="2416512023405990736">未勾選的核取方塊</translation>
 <translation id="2417569100218200841">內容資訊</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">圓形按鈕群組</translation>
 <translation id="2471138580042810658">標題 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{星號}other{# 個星號}}</translation>
+<translation id="2523609930580546572">ChromeVox 教學課程</translation>
 <translation id="2525706221823668172">Chromebook 鍵盤快速鍵</translation>
 <translation id="2549392850788122959">「<ph name="KEY" />」已重設。</translation>
 <translation id="2553108862507765288">grammatical mistake</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">沒有上一個區段。</translation>
 <translation id="3030432017085518523">選單選項圓形按鈕</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{單引號}other{# 個單引號}}</translation>
+<translation id="3040901448410802366">進度指標</translation>
 <translation id="3046838483509668188">ChromeVox 選項</translation>
 <translation id="3047143736589213134">實驗性按鍵對應配置</translation>
 <translation id="3060756054951570867">「<ph name="TITLE" />」選單已開啟</translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">允許自動換行</translation>
 <translation id="3322936298410871309">上一個第 1 階標題</translation>
 <translation id="3323447499041942178">文字框</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> 滑桿</translation>
 <translation id="3353420241558113817">{"ar": "阿拉伯文",
         "bg": "保加利亞文",
         "ca": "卡達隆尼亞文",
@@ -714,6 +719,7 @@
 <translation id="7693840228159394336">上一個圓形按鈕</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />，<ph name="NAME" />，密碼文字方塊</translation>
+<translation id="7776293189010177726">開啟 ChromeVox 選單</translation>
 <translation id="7805247615045262757">預設導覽</translation>
 <translation id="7805768142964895445">狀態</translation>
 <translation id="7810781339813764006">下一個群組</translation>

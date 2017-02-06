@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Googlova funkcija varnega brskanja je na spletnem mestu <ph name="SITE" /> nedavno <ph name="BEGIN_LINK" />zaznala zlonamerno programsko opremo<ph name="END_LINK" />. Spletna mesta, ki so običajno varna, so včasih okužena z zlonamerno programsko opremo. Zlonamerno vsebino razširja znani distributer zlonamerne programske opreme, <ph name="SUBRESOURCE_HOST" />. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Neveljavna zahteva ali parametri zahteve</translation>
 <translation id="1834321415901700177">Na tem spletnem mestu so škodljivi programi</translation>
-<translation id="1838667051080421715">Ogledujete si vir spletne strani.</translation>
 <translation id="1871208020102129563">Proxy je nastavljen na uporabo stalnih strežnikov proxy, ne na URL skripta .pac.</translation>
+<translation id="187918866476621466">Odpiranje strani ob zagonu</translation>
 <translation id="1883255238294161206">Strni seznam</translation>
 <translation id="1898423065542865115">Filtriranje</translation>
 <translation id="194030505837763158">Pojdite na <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Če se to pogosto pokaže, poskusite <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Različica</translation>
 <translation id="3678029195006412963">Zahteve ni bilo mogoče podpisati</translation>
+<translation id="3679803492151881375">Poročilo o zrušitvi je bilo zajeto takrat: <ph name="CRASH_TIME" />, naloženo takrat: <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informacije o potrdilu</translation>
 <translation id="3690164694835360974">Prijava ni varna</translation>
 <translation id="3693415264595406141">Geslo:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Razveljavi izbris</translation>
 <translation id="4619615317237390068">Zavihki iz drugih naprav</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Ogledujete si stran z razširitvami.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Povezava je bila prekinjena</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Izvajanje orodja Omrežna diagnostika Windows<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Spletna stran na naslovu <ph name="URL" /> morda začasno ne deluje ali pa je trajno premaknjena na novi spletni naslov.</translation>
 <translation id="4771973620359291008">Prišlo je do neznane napake.</translation>
 <translation id="4800132727771399293">Preverite datum poteka in številko CVC ter poskusite znova</translation>
+<translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4813512666221746211">Napaka v omrežju</translation>
 <translation id="4816492930507672669">Prilagodi strani</translation>
 <translation id="4850886885716139402">Pogled</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Ali želite zapustiti to spletno mesto?</translation>
 <translation id="5629630648637658800">Nastavitev pravilnika ni bilo mogoče naložiti</translation>
 <translation id="5631439013527180824">Neveljaven žeton za upravljanje naprave</translation>
+<translation id="5669703222995421982">Prilagojena vsebina</translation>
 <translation id="5675650730144413517">Ta stran ne deluje</translation>
 <translation id="5677928146339483299">Blokirano</translation>
 <translation id="5694783966845939798">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar je strežnik posredoval potrdilo, podpisano s šibkim podpisnim algoritmom (na primer SHA-1). To pomeni, da so varnostne poverilnice, ki jih je posredoval strežnik, morda ponarejene in strežnik morda ni tisti, ki ga pričakujete (morda komunicirate z napadalcem). <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Vrednost pravilnika</translation>
 <translation id="6757797048963528358">Naprava je preklopila v stanje pripravljenosti.</translation>
 <translation id="6778737459546443941">Starši še niso odobrili</translation>
+<translation id="6810899417690483278">ID za prilagajanje</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Spletna stran na naslovu <ph name="URL" /> trenutno ni na voljo. Morda je preobremenjena ali nedosegljiva zaradi vzdrževanja.</translation>
 <translation id="6831043979455480757">Prevedi</translation>
@@ -709,6 +712,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8364627913115013041">Ni nastavljen.</translation>
 <translation id="8380941800586852976">Nevarno</translation>
 <translation id="8382348898565613901">Tu so prikazani nedavno obiskani zaznamki</translation>
+<translation id="8398259832188219207">Poročilo o zrušitvi je bilo naloženo takrat: <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Zrušitve (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Dvakrat morate vnesti isto geslo.</translation>
 <translation id="8428213095426709021">Nastavitve</translation>

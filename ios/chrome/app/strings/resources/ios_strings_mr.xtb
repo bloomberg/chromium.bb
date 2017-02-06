@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">सर्व उघडा</translation>
 <translation id="1430915738399379752">मुद्रण</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> आयटम</translation>
+<translation id="1491277525950327607">सेटिंग टॉगल करण्यासाठी दोनदा टॅप करा</translation>
 <translation id="1540800554400757039">पत्ता 1</translation>
 <translation id="1545749641540134597">QR कोड स्कॅन करा</translation>
 <translation id="1580783302095112590">मेल पाठवले.</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">हे पृष्ठ दुसऱ्या अनुप्रयोगामध्ये उघडेल.</translation>
 <translation id="4378154925671717803">फोन</translation>
 <translation id="441868831736628555">गोपनीयता सूचना</translation>
-<translation id="4426508677408162512">सर्व बुकमार्क</translation>
 <translation id="4473991315115669931">गुप्त मोडमध्ये प्रवेश करा</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />
 वर जतन केलेले संकेतशब्द पहा आणि व्यवस्थापित करा</translation>
@@ -219,6 +219,7 @@
 <translation id="5300589172476337783">दर्शवा</translation>
 <translation id="5317780077021120954">जतन करा</translation>
 <translation id="5327248766486351172">नाव</translation>
+<translation id="5332219387342487447">पाठविण्‍याची पद्धत</translation>
 <translation id="5388358297987318779">प्रतिमा उघडा</translation>
 <translation id="5409365236829784218">ही फाईल उघडू शकणारे कोणतेही अनुप्रयोग स्थापित केलेले नाहीत.</translation>
 <translation id="54401264925851789">पृष्‍ठ सुरक्षितता माहिती</translation>
@@ -271,6 +272,7 @@
 <translation id="6255097610484507482">क्रेडिट कार्ड संपादित करा</translation>
 <translation id="6308436439357671616">हे आपल्याला फोटो घेऊ आणि अपलोड करू देते.</translation>
 <translation id="6314335155547195432">संकेतशब्द व्युत्पन्न करा</translation>
+<translation id="6324528485781869530">संकालन खाते स्विच करा</translation>
 <translation id="6324669097367352121">साइन इन सेटिंग्ज</translation>
 <translation id="6337234675334993532">कूटबद्धीकरण</translation>
 <translation id="633809752005859102">खरोखर काहीतरी चूक झाली. आम्ही त्यावर कार्य करू.</translation>

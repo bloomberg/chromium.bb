@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, lüliti on sees</translation>
 <translation id="1692077714702418899">struktuurne joon</translation>
 <translation id="1700517974991662022">Külastatud</translation>
+<translation id="1714116687360794776">Mõõdik</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Järgmine graafik</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Kuupäeva ja kellaaja valimine</translation>
 <translation id="2347456970887948350">Link</translation>
 <translation id="2359897517538099099">Pole tabelirežiimis.</translation>
+<translation id="2390264819538553347">Edasiliikumiseks vajutage sisestusklahvi, tagasiliikumiseks tagasilükkeklahvi.</translation>
 <translation id="241124561063364910">millele järgneb</translation>
 <translation id="2416512023405990736">Märkimata ruut</translation>
 <translation id="2417569100218200841">Sisu teave</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Raadionuppude rühm</translation>
 <translation id="2471138580042810658">6. pealkiri</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{tärn}other{# tärni}}</translation>
+<translation id="2523609930580546572">ChromeVoxi õpetused</translation>
 <translation id="2525706221823668172">Chromebooki klaviatuuri otseteed</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> on lähtestatud.</translation>
 <translation id="2553108862507765288">grammatical mistake</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Eelmist jaotist ei ole.</translation>
 <translation id="3030432017085518523">Menüü-üksuse raadionupp</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{ülakoma}other{# ülakoma}}</translation>
+<translation id="3040901448410802366">Edenemisnäidik</translation>
 <translation id="3046838483509668188">ChromeVoxi valikud</translation>
 <translation id="3047143736589213134">Katseline klahvitabel</translation>
 <translation id="3060756054951570867">Menüü <ph name="TITLE" /> on avatud</translation>
@@ -230,6 +234,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="3321460131042519426">Luba sõna murdmine</translation>
 <translation id="3322936298410871309">Eelmine 1. taseme pealkiri</translation>
 <translation id="3323447499041942178">Tekstiväli</translation>
+<translation id="3338224621010291843">Liugur <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "araabia",
         "bg": "bulgaaria",
         "ca": "katalaani",
@@ -714,6 +719,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="7693840228159394336">Eelmine raadionupp</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, parooli tekstikast</translation>
+<translation id="7776293189010177726">ChromeVoxi menüüde avamine</translation>
 <translation id="7805247615045262757">vaikimisi navigeerimine</translation>
 <translation id="7805768142964895445">Olek</translation>
 <translation id="7810781339813764006">Järgmine rühm</translation>

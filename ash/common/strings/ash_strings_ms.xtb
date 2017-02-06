@@ -39,6 +39,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="1923539912171292317">Klik automatik</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">Berhenti menghantar <ph name="TAB_NAME" /> ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Pengecas berkuasa rendah</translation>
 <translation id="2204305834655267233">Maklumat Rangkaian</translation>
 <translation id="2208323208084708176">Mod desktop bersatu</translation>
@@ -148,6 +149,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="5331975486040154427">Peranti USB-C (port belakang sebelah kiri)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Semua pengguna yang ada telah ditambahkan pada sesi ini.</translation>
+<translation id="5504841533973703486">Mikrofon Depan</translation>
 <translation id="5507786745520522457">Sediakan data mudah alih</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">Sambungan "<ph name="EXTENSION_NAME" />" boleh membantu menyambung ke rangkaian ini.</translation>
@@ -159,6 +161,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="57838592816432529">Redam</translation>
 <translation id="5825747213122829519">Kaedah masukan anda telah ditukar kepada <ph name="INPUT_METHOD_ID" />.
 Tekan Shift + Alt untuk menukar.</translation>
+<translation id="5830936593837877897">Mikrofon Belakang</translation>
 <translation id="5871632337994001636">Uruskan peranti...</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -248,8 +251,10 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
 <translation id="8054466585765276473">Mengira tempoh bateri.</translation>
 <translation id="8077816382010018681">Tajuk pemberitahuan Ciri QU di sini</translation>
+<translation id="8098591350844501178">Berhenti menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">Mesej SMS: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Disambungkan ke <ph name="NAME" /></translation>
+<translation id="8180896103888046100">Berhenti menghantar ke penerima yang tidak diketahui</translation>
 <translation id="8185286464235484130">Beritahu kami tentang prestasi kami dengan menjawab beberapa soalan.</translation>
 <translation id="8190698733819146287">Sesuaikan bahasa dan input...</translation>
 <translation id="8206859287963243715">Selular</translation>

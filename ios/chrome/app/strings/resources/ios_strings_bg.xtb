@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Отваряне на всички</translation>
 <translation id="1430915738399379752">Печат</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> елемента</translation>
+<translation id="1491277525950327607">Докоснете двукратно за превключване на настройката</translation>
 <translation id="1540800554400757039">Адрес 1</translation>
 <translation id="1545749641540134597">Сканирайте код за бърза реакция</translation>
 <translation id="1580783302095112590">Пощата е изпратена.</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">Тази страница ще се отвори в друго приложение.</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Съобщение за поверителност</translation>
-<translation id="4426508677408162512">Всички отметки</translation>
 <translation id="4473991315115669931">Влизане в режим „инкогнито“</translation>
 <translation id="4526249700380860531">Преглед и управление на запазените пароли на адрес <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Опитайте да влезете отново.</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">Показване</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5327248766486351172">Име</translation>
+<translation id="5332219387342487447">Начин за доставка</translation>
 <translation id="5388358297987318779">Отваряне на изображението</translation>
 <translation id="5409365236829784218">Няма инсталирани приложения, които могат да отворят файла.</translation>
 <translation id="54401264925851789">Информация за сигурността на страницата</translation>
@@ -270,6 +271,7 @@
 <translation id="6255097610484507482">Редактиране на кредитната карта</translation>
 <translation id="6308436439357671616">Това ви позволява да правите и качвате снимки.</translation>
 <translation id="6314335155547195432">Генериране на парола</translation>
+<translation id="6324528485781869530">Превключване на профила за синхронизиране</translation>
 <translation id="6324669097367352121">Настройки за вход</translation>
 <translation id="6337234675334993532">Шифроване</translation>
 <translation id="633809752005859102">Нещо сериозно се обърка. Ще работим по него.</translation>

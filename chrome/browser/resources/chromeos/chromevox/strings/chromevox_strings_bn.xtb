@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, চালু করুন</translation>
 <translation id="1692077714702418899">গঠনগত রেখা</translation>
 <translation id="1700517974991662022">ঘুরে দেখা হয়েছে</translation>
+<translation id="1714116687360794776">মিটার</translation>
 <translation id="1722567105086139392">লিঙ্ক</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">পরবর্তী গ্রাফিক</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">তারিখ সময় নিয়ন্ত্রণ</translation>
 <translation id="2347456970887948350">একটি লিঙ্ক</translation>
 <translation id="2359897517538099099">টেবিল মোডে নয়।</translation>
+<translation id="2390264819538553347">এগিয়ে যাওয়ার জন্য, enter টিপুন; ফিরে যেতে, backspace টিপুন।</translation>
 <translation id="241124561063364910">এর দ্বারা অনুসরণ করা হয়</translation>
 <translation id="2416512023405990736">একটি টিকচিহ্ন উঠানো চেকবাক্স</translation>
 <translation id="2417569100218200841">সামগ্রীর তথ্য</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">রেডিও বোতাম গোষ্ঠী</translation>
 <translation id="2471138580042810658">শিরোনাম ৬</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{তারা}one{#টি তারা}other{#টি তারা}}</translation>
+<translation id="2523609930580546572">ChromeVox টিউটোরিয়াল</translation>
 <translation id="2525706221823668172">Chromebook এর কীবোর্ড শর্টকাটগুলি</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> পুনরায় সেট হয়েছে৷</translation>
 <translation id="2553108862507765288">ব্যাকরণগত ভুল</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">এর পূর্বে কোনো বিভাগ নেই৷</translation>
 <translation id="3030432017085518523">মেনু আইটেম রেডিও বোতাম</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{ঊর্ধকমা}one{#টি ঊর্ধকমা}other{#টি ঊর্ধকমা}}</translation>
+<translation id="3040901448410802366">অগ্রগতি সূচক</translation>
 <translation id="3046838483509668188">ChromeVox বিকল্প</translation>
 <translation id="3047143736589213134">পরীক্ষামূলক কীম্যাপ</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> মেনু খোলা আছে</translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">শব্দ মোড়ানো সক্ষম করুন</translation>
 <translation id="3322936298410871309">পূর্ববর্তী স্তর ১ শিরোনাম</translation>
 <translation id="3323447499041942178">পাঠ্য  বাক্স</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> স্লাইডার</translation>
 <translation id="3353420241558113817">{"ar": "আরবী",
         "bg": "বুলগেরিয়ান",
         "ca": "ক্যাটালান",
@@ -714,6 +719,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="7693840228159394336">পূর্ববর্তী রেডিও বোতাম</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, পাসওয়ার্ড পাঠ্য বাক্স</translation>
+<translation id="7776293189010177726">ChromeVox মেনুগুলি খুলুন</translation>
 <translation id="7805247615045262757">ডিফল্ট নেভিগেশন</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
 <translation id="7810781339813764006">পরবর্তী গোষ্ঠী</translation>

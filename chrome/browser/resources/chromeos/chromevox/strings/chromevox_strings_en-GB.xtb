@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, switch on</translation>
 <translation id="1692077714702418899">structural line</translation>
 <translation id="1700517974991662022">Visited</translation>
+<translation id="1714116687360794776">Meter</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Next graphic</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Date time control</translation>
 <translation id="2347456970887948350">A link</translation>
 <translation id="2359897517538099099">Not in table mode.</translation>
+<translation id="2390264819538553347">To advance, press enter; to go back, press backspace.</translation>
 <translation id="241124561063364910">followed by</translation>
 <translation id="2416512023405990736">An unticked tick box</translation>
 <translation id="2417569100218200841">Content info</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Radio button group</translation>
 <translation id="2471138580042810658">Heading 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisk}other{# asterisks}}</translation>
+<translation id="2523609930580546572">ChromeVox Tutorial</translation>
 <translation id="2525706221823668172">Chromebook keyboard shortcuts</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> has been reset.</translation>
 <translation id="2553108862507765288">grammatical mistake</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">No previous section.</translation>
 <translation id="3030432017085518523">Menu item radio button</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrophe}other{# apostrophes}}</translation>
+<translation id="3040901448410802366">Progress indicator</translation>
 <translation id="3046838483509668188">ChromeVox Options</translation>
 <translation id="3047143736589213134">Experimental keymap</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> menu opened</translation>
@@ -230,6 +234,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3321460131042519426">Enable word wrap</translation>
 <translation id="3322936298410871309">Previous level 1 heading</translation>
 <translation id="3323447499041942178">Text box</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> slider</translation>
 <translation id="3353420241558113817">{"ar": "Arabic",
         "bg": "Bulgarian",
         "ca": "Catalan",
@@ -714,6 +719,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="7693840228159394336">Previous radio button</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, password text box</translation>
+<translation id="7776293189010177726">Open ChromeVox menus</translation>
 <translation id="7805247615045262757">default navigation</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7810781339813764006">Next Group</translation>

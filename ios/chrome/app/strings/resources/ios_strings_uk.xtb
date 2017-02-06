@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Відкрити все</translation>
 <translation id="1430915738399379752">Друк</translation>
 <translation id="145015347812617860">Закладок: <ph name="COUNT" /></translation>
+<translation id="1491277525950327607">Двічі торкніться, щоб змінити налаштування</translation>
 <translation id="1540800554400757039">Адреса 1</translation>
 <translation id="1545749641540134597">Сканувати QR-код</translation>
 <translation id="1580783302095112590">Лист надіслано.</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">Ця сторінка відкриється в іншому додатку.</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Примітка про конфіденційність</translation>
-<translation id="4426508677408162512">Усі закладки</translation>
 <translation id="4473991315115669931">Перейти в режим анонімного перегляду</translation>
 <translation id="4526249700380860531">Переглядайте збережені паролі та керуйте ними на сторінці <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Спробуйте ввійти ще раз.</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5327248766486351172">Назва</translation>
+<translation id="5332219387342487447">Спосіб доставки</translation>
 <translation id="5388358297987318779">Відкрити зображення</translation>
 <translation id="5409365236829784218">Немає встановлених програм, які можуть відкрити цей файл.</translation>
 <translation id="54401264925851789">Відомості про безпеку сторінки</translation>
@@ -270,6 +271,7 @@
 <translation id="6255097610484507482">Редагувати дані кредитної картки</translation>
 <translation id="6308436439357671616">Ви зможете робити й завантажувати фотографії.</translation>
 <translation id="6314335155547195432">Згенерувати пароль</translation>
+<translation id="6324528485781869530">Змінити обліковий запис для синхронізації</translation>
 <translation id="6324669097367352121">Налаштування входу</translation>
 <translation id="6337234675334993532">Шифрування</translation>
 <translation id="633809752005859102">Сталася помилка. Ми виправимо її.</translation>

@@ -52,6 +52,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1445680696957526815">Os componentes do Chrome são incompatíveis entre si. O Chrome pode estar a ser atualizado, tente novamente dentro de alguns minutos. Se o problema continuar, experimente desinstalar e reinstalar o Chrome.</translation>
 <translation id="1446450296470737166">Perm. controlo total dispo. MIDI</translation>
 <translation id="145097072038377568">Desativada nas Definições do Android</translation>
+<translation id="1455941322673536744">Preenchimento auto. e pagamentos</translation>
 <translation id="147006957810816598">A sessão na sua Conta Google não é terminada.</translation>
 <translation id="1477626028522505441">A transferência de <ph name="FILE_NAME" /> falhou devido a problemas do servidor.</translation>
 <translation id="1506061864768559482">Motor de pesquisa</translation>
@@ -195,6 +196,7 @@ Pode controlar a Web física nas Definições do Chrome.
 <translation id="2996291259634659425">Criar frase de acesso</translation>
 <translation id="2996809686854298943">URL obrigatório</translation>
 <translation id="300526633675317032">Esta ação elimina os <ph name="SIZE_IN_KB" /> de armazenamento do Website.</translation>
+<translation id="3029613699374795922"><ph name="KBS" /> KB transferido(s)</translation>
 <translation id="3029704984691124060">As frases de acesso não coincidem</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Abrir no separador anónimo</translation>
@@ -262,6 +264,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3739899004075612870">Adicionado aos marcadores no <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB de outras aplicações</translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
+<translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ative o Bluetooth<ph name="END_LINK" /> para permitir a sincronização</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 item selecionado}other{# itens selecionados}}</translation>
 <translation id="3810838688059735925">Vídeo</translation>
@@ -317,7 +320,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4300272766492248925">Abrir aplicação</translation>
 <translation id="4307992518367153382">Noções básicas</translation>
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
-<translation id="4376501731284077108">Não controlado</translation>
 <translation id="4378154925671717803">Telefone</translation>
 <translation id="4384468725000734951">A utilizar o Sogou para pesquisa</translation>
 <translation id="4412992751769744546">Permitir cookies de terceiros</translation>
@@ -362,8 +364,10 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4837753911714442426">Abrir opções para imprimir página</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4860895144060829044">Telefonar</translation>
+<translation id="4862624982077154323">Nalguns Websites, é possível pagar com aplicações de pagamento compatíveis. Escolha as aplicações que pretende utilizar no Chrome.</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número não suportado de instâncias do Chrome.</translation>
+<translation id="4910889077668685004">Aplicações de pagamento</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /> enquanto procura dispositivos…</translation>
 <translation id="4923459931733593730">Pagamento</translation>
 <translation id="4941291666397027948">* indica um campo obrigatório</translation>
@@ -389,7 +393,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5131405117025179004">Editar conta guardada</translation>
 <translation id="5138299137310274655">Esta página está em <ph name="SOURCE_LANGUAGE" />. Pretende traduzi-la para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Limpar dados armazenados</translation>
-<translation id="5156656584247937086">Esta conta pertence a uma criança</translation>
+<translation id="5152843274749979095">Nenhuma aplicação compatível instalada</translation>
 <translation id="5161254044473106830">Título obrigatório</translation>
 <translation id="5164482624172255778">Pretende que o Google Chrome se ofereça para traduzir as páginas em <ph name="LANGUAGE" /> deste site da próxima vez?</translation>
 <translation id="5168917394043976756">Abrir a gaveta de navegação</translation>
@@ -448,6 +452,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5610807607761827392">Pode gerir cartões e endereços nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5646376287012673985">Localização</translation>
+<translation id="5655963694829536461">Pesquisar as suas transferências</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Criar evento no <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Substituir pedido de um Website para evitar aumentar o zoom</translation>
@@ -472,6 +477,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="583281660410589416">Desconhecido</translation>
 <translation id="5832934273103296195">Expandida – clicar para reduzir</translation>
 <translation id="583891442612896534">O Chrome não consegue comunicar com os servidores da Google para a compressão de dados. A poupança de dados pode ser limitada.</translation>
+<translation id="5858741533101922242">O Chrome não consegue ativar o adaptador Bluetooth</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="5867027562311576691">Serão apresentados mais artigos em breve. Desfrute da sua manhã.</translation>
 <translation id="5869522115854928033">Palavras-passe guardadas</translation>
@@ -503,6 +509,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6140912465461743537">País/região</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de poupança de dados</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6177111841848151710">Bloqueado para o motor de pesquisa atual</translation>
 <translation id="6177390657002841081">Ativar a Poupança de dados</translation>
 <translation id="6181444274883918285">Adicionar exceção de site</translation>
 <translation id="6192792657125177640">Excepções</translation>
@@ -515,6 +522,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6324034347079777476">Sincronização do sistema Android desativada</translation>
 <translation id="6333140779060797560">Partilhar através de <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Encriptação</translation>
+<translation id="6343192674172527289">Nenhuma transferência encontrada</translation>
 <translation id="6364438453358674297">Pretende remover a sugestão do histórico?</translation>
 <translation id="6383961787135158834">Limpar armazen. do site…</translation>
 <translation id="6388207532828177975">Limpar e repor</translation>
@@ -522,6 +530,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6406506848690869874">Sincronização</translation>
 <translation id="6409731863280057959">Pop-ups</translation>
 <translation id="641643625718530986">Imprimir…</translation>
+<translation id="6416782512398055893"><ph name="MBS" /> MB transferido(s)</translation>
 <translation id="6433490469411711332">Editar informações de contacto</translation>
 <translation id="6443118737398455446">Data de validade inválida</translation>
 <translation id="6446608382365791566">Adicionar mais informações</translation>
@@ -532,6 +541,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6477460825583319731">Endereço de email inválido</translation>
 <translation id="6482749332252372425">A transferência de <ph name="FILE_NAME" /> falhou devido à falta de espaço de armazenamento.</translation>
 <translation id="6527303717912515753">Partilhar</translation>
+<translation id="6538442820324228105"><ph name="GBS" /> GB transferido(s)</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Selecione um separador a transmitir</translation>
 <translation id="6545017243486555795">Limpar todos os dados</translation>
@@ -587,6 +597,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="699220179437400583">Comunicar automaticamente detalhes de possíveis incidentes de segurança à Google</translation>
 <translation id="6992289844737586249">Perguntar antes de permitir que os sites utilizem o microfone (recomendado)</translation>
 <translation id="7001663382399377034">Adicionar destinatário</translation>
+<translation id="7016516562562142042">Permitido para o motor de pesquisa atual</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> transferido</translation>
 <translation id="7022756207310403729">Abrir no navegador</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
@@ -713,7 +724,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8372893542064058268">Permitir Sincronização em segundo plano num site específico.</translation>
 <translation id="8374821112118309944">Tem de atualizar o TalkBack para uma versão mais recente.</translation>
 <translation id="8393700583063109961">Enviar mensagem</translation>
-<translation id="8396312449826231789">Apenas sites aprovados</translation>
 <translation id="8413126021676339697">Mostrar histórico completo</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Websites.</translation>
@@ -742,7 +752,6 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8660471606262461360">Do Google Payments</translation>
 <translation id="8676374126336081632">Limpar texto</translation>
 <translation id="869891660844655955">Data de expiração</translation>
-<translation id="8699799819461268362">Filtro Google SafeSites</translation>
 <translation id="8719023831149562936">Impossível transmitir o separador atual</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8730621377337864115">Concluído</translation>

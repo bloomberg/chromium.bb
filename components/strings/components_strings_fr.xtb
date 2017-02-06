@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">La navigation sécurisée de Google a récemment <ph name="BEGIN_LINK" />détecté des logiciels malveillants<ph name="END_LINK" /> sur le site <ph name="SITE" />. Un site Web qui est normalement sans danger peut parfois être infecté par des logiciels malveillants. Le contenu en cause provient de l'hôte <ph name="SUBRESOURCE_HOST" />, une source de logiciels malveillants connue. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">La demande ou ses paramètres ne sont pas valides.</translation>
 <translation id="1834321415901700177">Ce site contient des programmes dangereux</translation>
-<translation id="1838667051080421715">Vous consultez actuellement la source d'une page Web.</translation>
 <translation id="1871208020102129563">Le proxy est configuré pour utiliser des serveurs proxy déterminés, pas une URL de script .pac.</translation>
+<translation id="187918866476621466">Ouvrir les pages de démarrage</translation>
 <translation id="1883255238294161206">Réduire la liste</translation>
 <translation id="1898423065542865115">Filtrage</translation>
 <translation id="194030505837763158">Accédez à <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Si ce message s'affiche régulièrement, essayez ces <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Révision</translation>
 <translation id="3678029195006412963">Impossible de signer la demande</translation>
+<translation id="3679803492151881375">Rapport d'erreur enregistré le <ph name="CRASH_TIME" /> et importé le <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informations relatives au certificat</translation>
 <translation id="3690164694835360974">Connexion non sécurisée</translation>
 <translation id="3693415264595406141">Mot de passe :</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Annuler la suppression</translation>
 <translation id="4619615317237390068">Onglets d'autres appareils</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Vous consultez actuellement une page d'extension.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Votre connexion a été interrompue</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Exécuter les diagnostics réseau de Windows<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Il se peut que la page Web à l'adresse <ph name="URL" /> soit temporairement inaccessible ou qu'elle ait été déplacée de façon permanente à une autre adresse Web.</translation>
 <translation id="4771973620359291008">Une erreur inconnue s'est produite.</translation>
 <translation id="4800132727771399293">Veuillez vérifier la date d'expiration et le code CVC, puis réessayez.</translation>
+<translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4813512666221746211">Erreur réseau.</translation>
 <translation id="4816492930507672669">Ajuster à la page</translation>
 <translation id="4850886885716139402">Afficher</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Voulez-vous quitter ce site ?</translation>
 <translation id="5629630648637658800">Échec du chargement des paramètres de la règle.</translation>
 <translation id="5631439013527180824">Jeton de gestion de l'appareil non valide.</translation>
+<translation id="5669703222995421982">Obtenir une recommandation de contenu personnalisé</translation>
 <translation id="5675650730144413517">Cette page ne fonctionne pas</translation>
 <translation id="5677928146339483299">Bloqué</translation>
 <translation id="5694783966845939798">Vous avez essayé d'accéder à <ph name="DOMAIN" />, mais le serveur a présenté un certificat signé avec un algorithme de signature faible (tel que SHA-1). Il se peut que les identifiants de sécurité présentés par le serveur aient été falsifiés. Le serveur n'est peut-être pas celui auquel vous souhaitez accéder (il peut s'agir d'une tentative de piratage). <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Valeur de la règle</translation>
 <translation id="6757797048963528358">Votre appareil s'est mis en veille.</translation>
 <translation id="6778737459546443941">Tes parents ne l'ont pas encore autorisé</translation>
+<translation id="6810899417690483278">ID de la personnalisation</translation>
 <translation id="6820686453637990663">Cryptogramme</translation>
 <translation id="6830600606572693159">La page Web <ph name="URL" /> n'est pas disponible pour le moment. Cela peut être dû à une surcharge ou à une opération de maintenance.</translation>
 <translation id="6831043979455480757">Traduire</translation>
@@ -709,6 +712,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8364627913115013041">Non définie</translation>
 <translation id="8380941800586852976">Dangereux</translation>
 <translation id="8382348898565613901">Vos favoris récemment consultés s'affichent ici</translation>
+<translation id="8398259832188219207">Rapport d'erreur importé le <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Erreurs (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Vous devez saisir deux fois la même phrase secrète.</translation>
 <translation id="8428213095426709021">Paramètres</translation>

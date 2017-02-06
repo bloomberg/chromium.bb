@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">ሁሉንም ክፈት</translation>
 <translation id="1430915738399379752">አትም</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> ንጥሎች</translation>
+<translation id="1491277525950327607">ቅንብርን ለመቀያየር ሁለቴ መታ ያድርጉ</translation>
 <translation id="1540800554400757039">አድራሻ 1</translation>
 <translation id="1545749641540134597">የኪውአር ኮድ ይቃኙ</translation>
 <translation id="1580783302095112590">መልዕክት ተልኳል።</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">ይህ ገጽ በሌላ መተግበሪያ ውስጥ ይከፈታል።</translation>
 <translation id="4378154925671717803">ስልክ</translation>
 <translation id="441868831736628555">የግላዊነት ማሳወቂያ</translation>
-<translation id="4426508677408162512">ሁሉም ዕልባቶች</translation>
 <translation id="4473991315115669931">ማንነት ወደ ማያሳውቅ ሁነታ ግባ</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> ላይ የተቀመጡ የይለፍ ቃሎችን ይመልከቱ እና ያስተዳድሩ</translation>
 <translation id="4536418791685807335">እንደገና ወደ መለያ ለመግባት ይሞክሩ።</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">አሳይ</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="5327248766486351172">ስም</translation>
+<translation id="5332219387342487447">የመላኪያ መንገድ</translation>
 <translation id="5388358297987318779">ምስል ክፈት</translation>
 <translation id="5409365236829784218">ይህን ፋይል መክፈት የሚችሉ መተግበሪያዎች አልተጫኑም።</translation>
 <translation id="54401264925851789">የገጽ ደህንነት መረጃ</translation>
@@ -270,6 +271,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6255097610484507482">ክሬዲት ካርድን አርትዕ</translation>
 <translation id="6308436439357671616">ይህ ፎቶዎችን እንዲያነሱ እና እንዲሰቅሉ ያስችልዎታል።</translation>
 <translation id="6314335155547195432">የይለፍ ቃል አፍልቅ</translation>
+<translation id="6324528485781869530">የማመሳስል መቀየሪያ መለያ</translation>
 <translation id="6324669097367352121">የመግቢያ ቅንብሮች</translation>
 <translation id="6337234675334993532">ምስጠራ</translation>
 <translation id="633809752005859102">የሆነ ከበድ ያለ ችግር ተፈጥሯል። ችግሩን ለመቅረፍ እየሰራን ነው።</translation>

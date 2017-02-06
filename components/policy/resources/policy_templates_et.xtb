@@ -382,13 +382,13 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 
       Kui seade pole seadistatud, siis saavad kasutajad valida, kas kasutada õigekirjakontrolli teenust või mitte.</translation>
 <translation id="2294382669900758280">Video esitamist Androidi rakendustes ei arvestata, isegi kui reegli väärtuseks on määratud <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Seadistab uue vaikevahelehe teenuses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Lubatud pistikprogrammide loendi määramine</translation>
 <translation id="2309390639296060546">Geograafilise asukoha vaikeseade</translation>
 <translation id="2312134445771258233">Võimaldab seadistada käivitamisel avatavad lehed. Loendi „Käivitamisel avatavad URL-id” sisu eiratakse, kui te ei vali jaotises „Toiming käivitamisel” käsku „Ava URL-ide loend”.</translation>
 <translation id="2337466621458842053">Võimaldab teil määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kujutisi kuvada.
 
           Kui reeglit ei määrata, siis kasutatakse kõikide saitide puhul reegli „DefaultImagesSetting” globaalset vaikeväärtust, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
-<translation id="2366415278352956652">Lubab ülekandmise</translation>
 <translation id="2372547058085956601">Avaliku seansi automaatse sisselogimise viivitus.
 
       Kui reeglit |DeviceLocalAccountAutoLoginId| ei määrata, ei ole sellel mingit mõju. Muidu on mõju järgmine.
@@ -900,6 +900,17 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="3570008976476035109">Blokeeri pistikprogrammid nendel saitidel</translation>
 <translation id="3591584750136265240">Sisselogimise autentimise käitumise seadistamine</translation>
+<translation id="3601614035698083789">Seadistab hallatud järjehoidjate loendi.
+
+      Reegel koosneb järjehoidjate loendist, kusjuures iga järjehoidja on sõnastik, mis
+      sisaldab võtmeid <ph name="NAME" /> ja <ph name="URL_LABEL" />, kus hoiustatakse järjehoidja nime ning selle sihtmärki.
+      Alamkausta saab seadistada, määrates järjehoidja ilma võtmeta <ph name="URL_LABEL" />, kuid lisavõtmega <ph name="CHILDREN" />, mis sisaldab ise järjehoidjate loendit,
+      nagu on ülal määratud (millest mõned võivad olla kaustad). Teenus <ph name="PRODUCT_NAME" /> täiendab poolikuid URL-e,
+      nagu need oleksid edastatud omnikastikese kaudu, nt aadressist <ph name="GOOGLE_COM" /> saab <ph name="HTTPS_GOOGLE_COM" />.
+
+      Need järjehoidjad asuvad kaustas „Hallatud järjehoidjad”, mida kasutaja muuta ei saa, kuid kasutaja saab selle kausta soovi korral järjehoidjaribalt peita. Hallatud järjehoidjad ei ole kasutajakontoga sünkroonitud ja laiendused ei saa neid muuta.
+
+      Alates versioonist 51 saab järjehoidjate kausta nime kohandada, lisades loendiüksuse {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Õigekirjakontrolli veebiteenuse lubamine või keelamine</translation>
 <translation id="3646859102161347133">Ekraaniluubi tüübi määramine</translation>
 <translation id="3653237928288822292">Vaikeotsingupakkuja ikoon</translation>
@@ -1116,6 +1127,17 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 
       Kui selle reegli väärtuseks määratakse Väär, ei saa kasutajad ekraani lukustada (võimalik on ainult kasutajaseansist väljalogimine). Kui selle seade väärtuseks määratakse Tõene või väärtust ei määrata, saavad parooliga autentinud kasutajad ekraani lukustada.</translation>
 <translation id="4121350739760194865">Rakenduste reklaamide ilmumise takistamine uuel vahelehel</translation>
+<translation id="4133301551755536858">Seadistab uue vaikevahelehe teenuses <ph name="PRODUCT_NAME" /> ega luba kasutajatel seda muuta.
+
+          Uus vaheleht on leht, mis avatakse uue vahelehe loomisel (sh uues aknas).
+
+          See reegel ei otsusta, millised lehed käivitamisel avatakse. Neid juhivad reeglid RestoreOnStartup, mis võivad otsustada avada uue vahelehe.
+
+          Reegli NewTabPageLocation saab seadistada siin määratud URL-iks. See mõjutab ka avalehte, kui sellega on määratud avanema uus vaheleht, ja käivitamisel avatavat lehte, kui selleks on määratud uus vaheleht.
+
+          Kui reeglit ei määrata või see jäetakse tühjaks, kasutatakse uut vaikevahelehte.
+
+          See reegel ei ole saadaval Windowsi eksemplarides, mis ei ole liitunud Active Directory domeeniga.</translation>
 <translation id="4147054660081653009">Kliendi sertifikaat reegliga RemoteAccessHostTokenValidationUrl ühendamiseks.
 
           Kui see reegel määratakse, kasutab host kliendi sertifikaati antud väljaandja CN-iga, et reegel RemoteAccessHostTokenValidationUrl autentida. Mis tahes saadaoleva kliendi sertifikaadi kasutamiseks määrake väärtuseks „*”.
@@ -1193,7 +1215,6 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="4467952432486360968">Blokeeri kolmanda osapoole küpsised</translation>
 <translation id="4474167089968829729">Luba paroolide salvestamine paroolihaldurisse</translation>
 <translation id="4476769083125004742">Kui reegel on määratud seadele <ph name="BLOCK_GEOLOCATION_SETTING" />, ei pääse Androidi rakendused asukohateabele juurde. Kui määrate sellele reeglile mõne teise väärtuse või jätate selle määramata, küsitakse kasutaja nõusolekut, kui Androidi rakendus soovib asukohateabele juurde pääseda.</translation>
-<translation id="447686899376429408">Kui see on tõene või määramata, saavad kasutajad brauseris vahelehti, saite või töölauda üle kanda. Kui see on väär, keelatakse valik.</translation>
 <translation id="4480694116501920047">Jõusta SafeSearchi kasutamine</translation>
 <translation id="4482640907922304445">Kuvab rakenduse <ph name="PRODUCT_NAME" /> tööriistaribal nuppu Kodu.
 
@@ -1204,6 +1225,7 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
       Seade lubamisel või keelamisel ei saa kasutajad seadet rakenduses <ph name="PRODUCT_NAME" /> muuta ega alistada.
 
       Kui jätate selle reegli määramata, siis saab kasutaja valida, kas ta soovib nuppu Kodu näha.</translation>
+<translation id="4485425108474077672">Uue vahelehe URL-i seadistamine</translation>
 <translation id="4492287494009043413">Keela ekraanipiltide tegemine</translation>
 <translation id="450537894712826981">Seadistab vahemälu mahu, mida <ph name="PRODUCT_NAME" /> kasutab vahemällu salvestatud meediafailide kettale salvestamiseks.
 
@@ -1624,6 +1646,12 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 
           Kui see seade on keelatud või seadistamata, siis ei edastata gnubby autentimistaotlusi puhverserveri abil.</translation>
 <translation id="5898486742390981550">Kui sisse on loginud mitu kasutajat, saab Androidi rakendusi kasutada ainult peamine kasutaja.</translation>
+<translation id="5906199912611534122">Võimaldab lubada või keelata võrguühenduse piiramise.
+      See kehtib kõigi kasutajate ja seadme kõigi liideste puhul. Pärast määramist
+      on piirang aktiivne, kuni see reeglis keelatakse.
+
+      Kui reegel on määratud väärtusele Väär, ei ole võrguühendus piiratud.
+      Kui reegel on määratud väärtusele Tõene, on süsteem piiratud, et järgida määratud üles- ja allalaadimiskiirust (kbit/s).</translation>
 <translation id="5921713479449475707">Automaatsete allalaadimiste lubamine HTTP kaudu</translation>
 <translation id="5921888683953999946">Sisselogimisekraanil suure kursori hõlbustusfunktsiooni vaikeoleku määramine.
 
@@ -1749,6 +1777,45 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="6282799760374509080">Heli jäädvustamise lubamine või keelamine</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Domeeni nime automaatse täitmise lubamine kasutaja sisselogimise ajal</translation>
+<translation id="6312861131491040487">
+          Määrab loendi rakendustest ja laiendustest, mis installitakse vaikimisi
+          ning kasutajaga suhtlemata ja mida kasutaja ei saa desinstallida.
+          Kõik rakenduste/laienduste taotletud load antakse vaikimisi
+          ning kasutajaga suhtlemata (sh kõik lisaload, mida rakenduse/laienduse
+          tulevased versioonid taotlevad). Load antakse ka laienduste API-dele
+          enterprise.deviceAttributes ja enterprise.platformKeys.
+          (Need kaks API-t pole saadaval rakendustele/laiendustele, mis pole
+          sundinstallitud.)
+
+          See reegel seatakse ettepoole potentsiaalselt konfliktsest
+          reeglist ExtensionsInstallBlacklist. Kui rakendus või laiendus, mis
+          varem sundinstalliti, sellest loendist eemaldatakse, siis
+          desinstallib teenus <ph name="PRODUCT_NAME" /> selle automaatselt.
+
+          Windowsi eksemplaride puhul, mis ei ole ühendatud Active Directory
+          domeeniga, saab sundinstallida vaid Chrome’i veebipoes
+          olevaid rakendusi ja laiendusi.
+
+          Pange tähele, et arendaja tööriistadega saavad kasutajad muuta iga
+          laienduse lähtekoodi (mis võib põhjustada laienduse väärtalitlust).
+          Kui see on probleem, tuleb määrata reegel DeveloperToolsDisabled.
+
+          Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d
+          ja värskenduse URL-i, mis on eraldatud semikoolonitega (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string,
+          mis kuvatakse näiteks arendajarežiimis
+          teenuses <ph name="CHROME_EXTENSIONS_LINK" />. Värskenduse URL peab viitama XML-dokumendi
+          värskendusmanifestile, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />. Pange
+          tähele, et reeglis määratud värskenduse URL-i kasutatakse vaid
+          algsel installimisel ja laienduse tulevased värskendused kasutavad
+          laienduse manifestis märgitud värskenduse URL-i.
+
+          Näiteks reegel <ph name="EXTENSION_POLICY_EXAMPLE" />
+          installib laienduse <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> rakenduse standardselt Chrome’i veebipoe värskenduse
+          URL-ilt. Lisateavet hostimise laienduste kohta leiate siit: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Kui see reegel jäetakse määramata, ei installita automaatselt
+          mitte ühtegi rakendust ega laiendust ja kasutaja saab iga rakenduse või
+          laienduse desinstallida teenuses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome kuvab hoiatuslehe, kui kasutajad liiguvad SSL-i vigadega saitidele. Vaikimisi või siis, kui selle reegli väärtuseks määratakse Tõene, lubatakse kasutajatel nendelt hoiatuslehtedelt kliki abil edasi liikuda.
       Kui selle reegli väärtuseks määratakse Väär, ei lubata kasutajatel hoiatuslehelt kliki abil edasi liikuda.</translation>
 <translation id="6353901068939575220">Määrab, mis parameetreid kasutatakse POST-meetodiga URL-i otsimisel. See koosneb komaga eraldatud nime/väärtuse paaridest. Kui väärtus on malliparameeter, nt {searchTerms} ülalolevas näites, siis asendatakse see otsingutermini andmetega.
@@ -1921,6 +1988,7 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
       Valiku väärtustest olenemata edastatakse mäluteabe aruandlus alati lehele, kuid                 edastatud suurused
       on kvantifitseeritud ja värskenduste määra piiratakse turvakaalutlustel.
       Reaalajas täpsete andmete hankimiseks kasutage sellist tööriista nagu            telemeetria.</translation>
+<translation id="6894178810167845842">Uue vahelehe URL</translation>
 <translation id="6899705656741990703">Tuvasta puhverserveri seaded automaatselt</translation>
 <translation id="6903814433019432303">See reegel on aktiivne vaid jaemüügirežiimis.
 
@@ -2056,6 +2124,7 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="7132877481099023201">URL-id, millele antakse ilma küsimata juurdepääs videojäädvustusseadmetele</translation>
 <translation id="7167436895080860385">Lubage kasutajatel paroolihalduris paroole kuvada (tugi on katkestatud)</translation>
 <translation id="7173856672248996428">Kaduvad profiilid</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Värskenduste jaoks lubatud ühenduse tüübid</translation>
 <translation id="7194407337890404814">Vaikeotsingupakkuja nimi</translation>
 <translation id="7195064223823777550">Määrake toiming, mis kaane sulgemisel tehakse.

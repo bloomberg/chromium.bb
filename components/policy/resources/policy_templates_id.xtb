@@ -223,7 +223,7 @@
       Kebijakan ini diabaikan kecuali jika
       host Chrome Desktop Jarak Jauh terpasang.</translation>
 <translation id="1757688868319862958">Mengizinkan <ph name="PRODUCT_NAME" /> menjalankan plugin yang membutuhkan otorisasi. Jika Anda mengaktifkan setelan ini, plugin yang tidak kedaluwarsa selalu berjalan. Jika setelan ini dinonaktifkan atau tidak disetel, pengguna akan dimintai izin untuk menjalankan plugin yang membutuhkan otorisasi. Ini adalah plugin yang dapat meretas keamanan.</translation>
-<translation id="1781356041596378058">Kebijakan ini juga mengontrol akses ke Opsi Pengembang Android. Jika Anda menyetel kebijakan ini ke true, pengguna tidak dapat mengakses Opsi Pengembang. Jika Anda menyetel kebijakan ini ke false atau tidak menyetel kebijakan ini, pengguna dapat mengakses Opsi Pengembang dengan menge-tap tujuh kali nomor versi di aplikasi setelan Android.</translation>
+<translation id="1781356041596378058">Kebijakan ini juga mengontrol akses ke Opsi Developer Android. Jika Anda menyetel kebijakan ini ke true, pengguna tidak dapat mengakses Opsi Developer. Jika Anda menyetel kebijakan ini ke false atau tidak menyetel kebijakan ini, pengguna dapat mengakses Opsi Developer dengan menge-tap tujuh kali nomor versi di aplikasi setelan Android.</translation>
 <translation id="1803646570632580723">Daftar aplikasi tersemat untuk ditampilkan pada peluncur</translation>
 <translation id="1808715480127969042">Cekal cookie di situs ini</translation>
 <translation id="1827523283178827583">Gunakan server proxy tetap</translation>
@@ -363,11 +363,11 @@
 
       Jika setelan ini tidak dikonfigurasi, maka pengguna dapat memilih apakah layanan memeriksa ejaan harus digunakan atau tidak.</translation>
 <translation id="2294382669900758280">Pemutaran video di aplikasi Android tidak dipertimbangkan, meski kebijakan ini disetel ke <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Mengonfigurasi halaman Tab Baru di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Tentukan daftar plugin yang diaktifkan</translation>
 <translation id="2309390639296060546">Setelan geolokasi default</translation>
 <translation id="2312134445771258233">Memungkinkan Anda mengonfigurasi laman yang dimuat saat permulaan. Isi daftar 'URL yang dibuka saat permulaan' diabaikan kecuali jika Anda memilih 'Buka daftar URL' dalam 'Tindakan saat permulaan'.</translation>
 <translation id="2337466621458842053">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan untuk menampilkan gambar. Jika kebijakan ini dibiarkan tanpa disetel, nilai global default akan digunakan untuk semua situs, baik dari kebijakan 'DefaultImagesSetting', jika disetel, maupun konfigurasi pribadi pengguna.</translation>
-<translation id="2366415278352956652">Mengaktifkan transmisi</translation>
 <translation id="2372547058085956601">Penundaan masuk otomatis sesi publik.
 
       Jika kebijakan |DeviceLocalAccountAutoLoginId| tidak disetel, kebijakan ini tidak akan berpengaruh.
@@ -865,6 +865,17 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="3547954654003013442">Setelan proxy</translation>
 <translation id="3570008976476035109">Mencekal plugin di situs ini</translation>
 <translation id="3591584750136265240">Mengonfigurasi perilaku autentikasi proses masuk</translation>
+<translation id="3601614035698083789">Mengonfigurasi daftar bookmark yang dikelola.
+
+      Kebijakan terdiri dari daftar bookmark yang mana setiap bookmark merupakan
+      kamus yang berisi kunci <ph name="NAME" /> dan <ph name="URL_LABEL" /> yang memegang nama bookmark dan targetnya.
+      Subfolder dapat dikonfigurasi dengan menentukan bookmark tanpa kunci <ph name="URL_LABEL" />, namun dengan kunci <ph name="CHILDREN" /> tambahan yang mana kunci itu sendiri berisi daftar
+      bookmark seperti yang ditentukan di atas (beberapa mungkin berupa folder lagi). <ph name="PRODUCT_NAME" /> mengubah URL yang tidak lengkap
+      yang seolah-olah dikirimkan melalui Omnibox, misalnya <ph name="GOOGLE_COM" /> menjadi <ph name="HTTPS_GOOGLE_COM" />.
+
+      Bookmark ini ditempatkan di folder "Bookmark yang dikelola" yang tidak dapat diubah oleh pengguna, namun pengguna dapat memilih untuk menyembunyikannya dari bilah bookmark. Bookmark yang dikelola tidak disinkronkan dengan akun pengguna dan tidak dapat diubah oleh ekstensi.
+
+      Mulai dengan rilis 51, nama folder untuk bookmark dapat disesuaikan dengan menambahkan item daftar {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Mengaktifkan atau menonaktifkan layanan web memeriksa ejaan</translation>
 <translation id="3646859102161347133">Menyetel jenis lup</translation>
 <translation id="3653237928288822292">Ikon penyedia penelusuran default</translation>
@@ -979,11 +990,11 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika kebijakan ini tidak disetel, SPDY akan tersedia.</translation>
 <translation id="3890999316834333174">Kebijakan buka kunci cepat</translation>
 <translation id="3891357445869647828">Mengaktifkan JavaScript</translation>
-<translation id="3891953007921334498">Menonaktifkan Alat Pengembang dan konsol JavaScript.
+<translation id="3891953007921334498">Menonaktifkan Fitur Developer dan konsol JavaScript.
 
-      Jika Anda mengaktifkan setelan ini, Alat Pengembang tidak dapat diakses dan elemen situs web tidak dapat diperiksa lagi. Setiap pintasan dan menu atau entri konteks menu untuk membuka Alat Pengembang atau Konsol JavaScript akan dinonaktifkan.
+      Jika Anda mengaktifkan setelan ini, Fitur Developer tidak dapat diakses dan elemen situs web tidak dapat diperiksa lagi. Setiap pintasan dan menu atau entri konteks menu untuk membuka Fitur Developer atau Konsol JavaScript akan dinonaktifkan.
 
-      Menonaktifkan opsi ini atau membiarkannya tidak disetel akan memungkinkan pengguna menggunakan Alat Pengembang dan konsol JavaScript.</translation>
+      Menonaktifkan opsi ini atau membiarkannya tidak disetel akan memungkinkan pengguna menggunakan Fitur Developer dan konsol JavaScript.</translation>
 <translation id="3907986150060929099">Menyetel bahasa yang disarankan untuk sesi publik</translation>
 <translation id="3911737181201537215">Kebijakan ini tidak memengaruhi penyimpanan log yang dilakukan oleh Android.</translation>
 <translation id="391531815696899618">Menonaktifkan sinkronisasi Google Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /> ketika disetel ke True. Dalam kasus ini, tidak ada data yang diupload ke Google Drive.
@@ -1072,6 +1083,17 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan ini disetel ke false. pengguna tidak dapat mengunci layar (mereka hanya dapat keluar dari sesi pengguna). Jika setelan ini disetel ke true atau tidak disetel, pengguna yang diautentikasi dengan sandi dapat mengunci layar.</translation>
 <translation id="4121350739760194865">Mencegah promosi apl muncul di laman tab baru</translation>
+<translation id="4133301551755536858">Mengonfigurasi URL halaman Tab Baru default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
+
+          Halaman Tab Baru adalah halaman yang terbuka ketika tab baru dibuat (termasuk halaman yang dibuka di jendela baru).
+
+          Kebijakan ini tidak menentukan halaman yang dibuka saat memulai. Halaman tersebut dikontrol oleh kebijakan RestoreOnStartup, yang bisa jadi untuk membuka halaman Tab Baru.
+
+          NewTabPageLocation dapat disetel ke URL yang Anda tentukan di sini. Hal tersebut juga akan memengaruhi Beranda jika disetel untuk membuka halaman Tab Baru, serta halaman awal jika disetel ke halaman Tab Baru.
+
+          Jika kebijakan tidak disetel atau dibiarkan kosong, halaman tab baru default akan digunakan.
+
+          Kebijakan ini tidak tersedia di Windows yang tidak tergabung dalam domain Active Directory.</translation>
 <translation id="4147054660081653009">Sertifikat klien untuk menyambung ke RemoteAccessHostTokenValidationUrl.
 
           Jika kebijakan ini disetel, host akan menggunakan sertifikat klien dengan CN penerbit yang diberikan untuk mengautentikasi RemoteAccessHostTokenValidationUrl. Setel ke "*" untuk menggunakan sertifikat klien yang tersedia.
@@ -1149,9 +1171,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="4467952432486360968">Cekal cookie pihak ketiga</translation>
 <translation id="4474167089968829729">Aktifkan penyimpanan sandi di pengelola sandi</translation>
 <translation id="4476769083125004742">Jika kebijakan ini disetel ke <ph name="BLOCK_GEOLOCATION_SETTING" />, aplikasi Android tidak dapat mengakses informasi lokasi. Jika Anda menyetel kebijakan ini ke nilai lain atau tidak menyetel kebijakan, pengguna akan dimintai persetujuan ketika aplikasi Android ingin mengakses informasi lokasi.</translation>
-<translation id="447686899376429408">Jika disetel ke true atau tidak disetel, pengguna dapat mentransmisi tab, situs, atau desktop dari browser. Jika disetel ke false, opsi ini akan dinonaktifkan.</translation>
 <translation id="4480694116501920047">Paksakan TelusurAman</translation>
 <translation id="4482640907922304445">Menampilkan tombol Beranda di bilah alat <ph name="PRODUCT_NAME" />. Jika Anda mengaktifkan setelan ini, tombol Beranda akan selalu ditampilkan. Jika Anda menonaktifkan setelan ini, tombol Beranda tidak akan pernah ditampilkan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan ini di <ph name="PRODUCT_NAME" />. Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih apakah akan menampilkan tombol beranda.</translation>
+<translation id="4485425108474077672">Mengonfigurasi URL halaman Tab Baru</translation>
 <translation id="4492287494009043413">Menonaktifkan pengambilan tangkapan layar</translation>
 <translation id="450537894712826981">Mengonfigurasi ukuran cache yang akan digunakan <ph name="PRODUCT_NAME" /> untuk menyimpan file media di disk.
 
@@ -1537,6 +1559,12 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, permintaan autentikasi gnubby tidak akan dilakukan melalui proxy.</translation>
 <translation id="5898486742390981550">Ketika beberapa pengguna masuk, hanya pengguna utama yang dapat menggunakan aplikasi Android.</translation>
+<translation id="5906199912611534122">Mengizinkan untuk mengaktifkan atau menonaktifkan pembatasan jaringan.
+      Kebijakan ini berlaku untuk semua pengguna, dan untuk semua antarmuka di perangkat. Setelah disetel,
+      pembatasan akan terus berlanjut hingga kebijakan ini dinonaktifkan.
+
+      Jika disetel ke false, tidak akan ada pembatasan.
+      Jika disetel ke true, sistem akan dibatasi untuk menerima laju upload dan download (dalam kbit/dtk).</translation>
 <translation id="5921713479449475707">Izinkan download pembaruan otomatis melalui HTTP</translation>
 <translation id="5921888683953999946">Menyetel status default fitur aksesibilitas kursor besar di layar masuk.
 
@@ -1552,7 +1580,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika Anda mengaktifkan setelan ini, TelusurAman di Google Penelusuran akan selalu aktif.
 
       Jika Anda menonaktifkan setelan ini atau tidak menyetel suatu nilai, TelusurAman di Google Penelusuran tidak akan diterapkan.</translation>
-<translation id="5937539742111853215">Kebijakan ini hanya mengontrol mode pengembang <ph name="PRODUCT_OS_NAME" />. Jika ingin mencegah akses ke Opsi Pengembang Android, Anda perlu menyetel kebijakan <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
+<translation id="5937539742111853215">Kebijakan ini hanya mengontrol mode developer <ph name="PRODUCT_OS_NAME" />. Jika ingin mencegah akses ke Opsi Developer Android, Anda perlu menyetel kebijakan <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
 <translation id="5946082169633555022">Saluran beta</translation>
 <translation id="5950205771952201658">Mengingat pemeriksaan pembatalan online kegagalan-lunak tidak memberikan manfaat keamanan yang efektif, pemeriksaan tersebut dinonaktifkan secara default di <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baru. Dengan menyetel kebijakan ini ke true, perilaku sebelumnya akan dipulihkan dan akan dilakukan pemeriksaan OCSP/CRL online.
 
@@ -1654,6 +1682,46 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="6282799760374509080">Izinkan atau tolak penangkapan audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Mengaktifkan pelengkapan otomatis nama domain saat proses masuk pengguna</translation>
+<translation id="6312861131491040487">
+          Menentukan daftar aplikasi dan ekstensi yang diinstal diam-diam,
+          tanpa interaksi pengguna, dan yang tidak dapat di-uninstal oleh
+          pengguna. Semua izin yang diminta oleh aplikasi/ekstensi akan diberikan
+          secara implisit, tanpa interaksi pengguna, termasuk izin tambahan apa
+          pun yang diminta oleh versi aplikasi/ekstensi yang berikutnya.
+          Selain itu, izin diberikan untuk API ekstensi
+          enterprise.deviceAttributes dan enterprise.platformKeys.
+          (Kedua API ini tidak tersedia untuk aplikasi/ekstensi yang tidak diinstal
+          secara paksa.)
+
+          Kebijakan ini diutamakan daripada kebijakan ExtensionsInstallBlacklist
+          yang berpotensi bentrok. Jika aplikasi atau ekstensi yang
+          sebelumnya diinstal secara paksa telah dihapus dari daftar,
+          aplikasi/ekstensi tersebut di-uninstal secara otomatis oleh <ph name="PRODUCT_NAME" />.
+
+          Untuk Windows yang tidak tergabung dalam domain Active Directory,
+          domain, proses instal secara paksa dibatasi untuk aplikasi dan ekstensi
+          yang tercantum dalam Toko Web Chrome.
+
+          Perlu diperhatikan bahwa kode sumber untuk ekstensi apa pun dapat diubah oleh pengguna melalui
+          Alat Developer (berpotensi merender disfungsi ekstensi).
+          Jika hal ini menjadi masalah, kebijakan DeveloperToolsDisabled
+          sebaiknya disetel.
+
+          Setiap item daftar kebijakan merupakan string yang berisi ID ekstensi
+          dan URL "update" yang dipisah dengan titik koma (<ph name="SEMICOLON" />). ID ekstensi adalah string 32 huruf
+          yang ditemukan misalnya di <ph name="CHROME_EXTENSIONS_LINK" /> saat dalam mode
+          developer. URL "update" harus mengarah ke dokumen Update Manifest
+          XML yang dijelaskan di <ph name="LINK_TO_EXTENSION_DOC1" />. Perlu diperhatikan bahwa
+          URL "update" yang disetel dalam kebijakan ini hanya digunakan untuk proses instal
+          awal; update ekstensi selanjutnya akan menggunakan URL update
+          yang ditunjukkan dalam manifest ekstensi.
+
+          Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE" />
+          menginstal aplikasi <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dari URL "update" Toko Web Chrome
+          standar. Untuk informasi selengkapnya tentang menjadi host ekstensi, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang
+          otomatis diinstal, dan pengguna dapat meng-uninstal aplikasi atau ekstensi apa pun di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome menunjukkan laman peringatan saat pengguna menavigasi ke situs dengan kesalahan SSL. Secara default atau saat kebijakan ini disetel ke True, pengguna diizinkan untuk mengeklik melalui laman peringatan ini.
       Menyetel kebijakan ini ke False membuat pengguna tidak dapat mengeklik melalui laman peringatan apa pun.</translation>
 <translation id="6353901068939575220">Menentukan parameter yang digunakan saat menelusuri URL dengan POST. Berisi pasangan nama/nilai yang dipisahkan koma. Jika nilai adalah parameter template, seperti {searchTerms} dalam contoh di atas, akan diganti dengan data istilah penelusuran nyata.
@@ -1816,6 +1884,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Bagaimanapun juga info memori dilaporkan ke laman, terlepas dari nilai opsinya, namun ukuran yang dilaporkan
       dikuantisasi dan tingkat pembaruan dibatasi karena alasan keamanan. Untuk memperoleh data akurat dalam waktu nyata,
       silakan gunakan alat seperti Telemetri.</translation>
+<translation id="6894178810167845842">URL halaman Tab Baru</translation>
 <translation id="6899705656741990703">Mendeteksi setelan proxy secara otomatis</translation>
 <translation id="6903814433019432303">Kebijakan ini aktif dalam mode eceran saja.
 
@@ -1935,6 +2004,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="7132877481099023201">URL yang akan diberi akses ke perangkat perekam video tanpa peringatan</translation>
 <translation id="7167436895080860385">Mengizinkan pengguna menampilkan sandi di Pengelola Sandi (tak lagi digunakan)</translation>
 <translation id="7173856672248996428">Profil singkat</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Jenis sambungan yang diizinkan untuk pembaruan</translation>
 <translation id="7194407337890404814">Nama penyedia penelusuran default</translation>
 <translation id="7195064223823777550">Tentukan tindakan yang akan diambil saat pengguna menutup penutupnya.

@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Otvoriť všetko</translation>
 <translation id="1430915738399379752">Tlačiť</translation>
 <translation id="145015347812617860">Počet položiek: <ph name="COUNT" /></translation>
+<translation id="1491277525950327607">Nastavenie môžete prepnúť dvojitým klepnutím</translation>
 <translation id="1540800554400757039">Adresa 1</translation>
 <translation id="1545749641540134597">Naskenovať kód QR</translation>
 <translation id="1580783302095112590">E-mail bol odoslaný.</translation>
@@ -178,7 +179,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4359125752503270327">Táto stránka sa otvorí v ďalšej aplikácii.</translation>
 <translation id="4378154925671717803">Telefón</translation>
 <translation id="441868831736628555">Upozornenie o ochrane údajov</translation>
-<translation id="4426508677408162512">Všetky záložky</translation>
 <translation id="4473991315115669931">Prejsť do režimu inkognito</translation>
 <translation id="4526249700380860531">Zobrazte si a spravujte uložené heslá na stránke <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Skúste sa znova prihlásiť.</translation>
@@ -218,6 +218,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5300589172476337783">Zobraziť</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5327248766486351172">Názov</translation>
+<translation id="5332219387342487447">Spôsob dodania</translation>
 <translation id="5388358297987318779">Otvoriť obrázok</translation>
 <translation id="5409365236829784218">Nie sú nainštalované žiadne aplikácie, ktoré dokážu otvoriť tento súbor.</translation>
 <translation id="54401264925851789">Informácie o zabezpečení stránky</translation>
@@ -270,6 +271,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="6255097610484507482">Upraviť platobnú kartu</translation>
 <translation id="6308436439357671616">Umožňuje fotiť a nahrať fotky.</translation>
 <translation id="6314335155547195432">Generovanie hesla</translation>
+<translation id="6324528485781869530">Prepnutie účtu na synchronizáciu</translation>
 <translation id="6324669097367352121">Nastavenia prihlásenia</translation>
 <translation id="6337234675334993532">Šifrovanie</translation>
 <translation id="633809752005859102">Niečo sa vážne pokazilo. Na riešení pracujeme.</translation>

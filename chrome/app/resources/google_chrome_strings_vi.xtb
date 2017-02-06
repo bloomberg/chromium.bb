@@ -63,7 +63,6 @@
 <translation id="2664962310688259219">Giấy phép nguồn mở Chrome OS</translation>
 <translation id="2665296953892887393">Giúp cải thiện Google Chrome bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK" /> tới Google</translation>
 <translation id="2689103672227170538">Tiện ích này đã thay đổi trang nào được hiển thị khi bạn khởi động Chrome.</translation>
-<translation id="2748463065602559597">Bạn đang xem trang Google Chrome an toàn.</translation>
 <translation id="2769762047821873045">Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
@@ -204,6 +203,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6970811910055250180">Đang cập nhật thiết bị của bạn...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> yêu cầu bạn đọc và chấp nhận Điều khoản dịch vụ sau đây trước khi sử dụng thiết bị này. Những điều khoản này không mở rộng, sửa đổi hoặc giới hạn Điều khoản Google Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome đã được cập nhật, nhưng bạn đã không sử dụng chương trình này ít nhất 30 ngày.</translation>
+<translation id="7048801529101012374">Google Chrome là trình duyệt mặc định của bạn. Xin chúc mừng!</translation>
 <translation id="7098166902387133879">Google Chrome đang sử dụng micrô của bạn.</translation>
 <translation id="7106741999175697885">Trình quản lý Tác vụ - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cài đặt lại Chrome theo cách thủ công.</translation>

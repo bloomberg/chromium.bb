@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, ενεργοποίηση</translation>
 <translation id="1692077714702418899">δομική γραμμή</translation>
 <translation id="1700517974991662022">Σύνδεσμος που έχετε επισκεφτεί</translation>
+<translation id="1714116687360794776">Μετρητής</translation>
 <translation id="1722567105086139392">Σύνδεσμος</translation>
 <translation id="1727806147743597030">υποσέλιδο</translation>
 <translation id="174268867904053074">Επόμενο γραφικό</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Έλεγχος ημερομηνίας και ώρας</translation>
 <translation id="2347456970887948350">Ένας σύνδεσμος</translation>
 <translation id="2359897517538099099">Όχι στη λειτουργία πίνακα.</translation>
+<translation id="2390264819538553347">Για να συνεχίσετε, πατήστε enter. Για να επιστρέψετε, πατήστε backspace.</translation>
 <translation id="241124561063364910">και στη συνέχεια</translation>
 <translation id="2416512023405990736">Ένα αποεπιλεγμένο πλαίσιο ελέγχου</translation>
 <translation id="2417569100218200841">Πληροφορίες περιεχομένου</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Ομάδα κουμπιών επιλογής</translation>
 <translation id="2471138580042810658">Επικεφαλίδα 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{αστερίσκος}other{# αστερίσκοι}}</translation>
+<translation id="2523609930580546572">Οδηγός ChromeVox</translation>
 <translation id="2525706221823668172">Συντομεύσεις πληκτρολογίου Chromebook</translation>
 <translation id="2549392850788122959">Έγινε επαναφορά του πλήκτρου <ph name="KEY" />.</translation>
 <translation id="2553108862507765288">γραμματικό λάθος</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Δεν υπάρχει προηγούμενη ενότητα.</translation>
 <translation id="3030432017085518523">Κουμπί επιλογής στοιχείου μενού</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{απόστροφος}other{# απόστροφοι}}</translation>
+<translation id="3040901448410802366">Ένδειξη προόδου</translation>
 <translation id="3046838483509668188">Επιλογές ChromeVox</translation>
 <translation id="3047143736589213134">Πειραματική αντιστοίχιση πλήκτρων</translation>
 <translation id="3060756054951570867">Το μενού <ph name="TITLE" /> άνοιξε</translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">Ενεργοποίηση αναδίπλωσης λέξης</translation>
 <translation id="3322936298410871309">Επικεφαλίδα προηγούμενου επιπέδου 1</translation>
 <translation id="3323447499041942178">Πλαίσιο κειμένου </translation>
+<translation id="3338224621010291843">Ρυθμιστικό <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "Αραβικά",
         "bg": "Βουλγαρικά",
         "ca": "Καταλανικά",
@@ -714,6 +719,7 @@
 <translation id="7693840228159394336">Προηγούμενο κουμπί επιλογής</translation>
 <translation id="7701196182766842984">αυτόματη συμπλήρωση λίστας</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, πλαίσιο κειμένου κωδικού πρόσβασης</translation>
+<translation id="7776293189010177726">Άνοιγμα των μενού του ChromeVox</translation>
 <translation id="7805247615045262757">προεπιλεγμένη πλοήγηση</translation>
 <translation id="7805768142964895445">Κατάσταση</translation>
 <translation id="7810781339813764006">Επόμενη ομάδα</translation>

@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, സ്വിച്ച് ഓണാണ്</translation>
 <translation id="1692077714702418899">ഘടനാപരമായ വരി</translation>
 <translation id="1700517974991662022">സന്ദർശിച്ചു</translation>
+<translation id="1714116687360794776">മീറ്റർ</translation>
 <translation id="1722567105086139392">ലിങ്ക്</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">അടുത്ത ഗ്രാഫിക്</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">തീയതി, സമയ നിയന്ത്രണം</translation>
 <translation id="2347456970887948350">ഒരു ലിങ്ക്</translation>
 <translation id="2359897517538099099">പട്ടിക മോഡിൽ അല്ല.</translation>
+<translation id="2390264819538553347">അടുത്ത പേജിലേക്ക് പോകാൻ 'എന്റർ' അമർത്തുക; തിരികെ പോകാൻ 'ബാക്ക്‌സ്‌പെയ്‌സ്' അമർത്തുക.</translation>
 <translation id="241124561063364910">അതിനുശേഷം</translation>
 <translation id="2416512023405990736">അൺചെക്കുചെയ്‌ത ഒരു ചെക്ക്‌ ബോക്‌സ്</translation>
 <translation id="2417569100218200841">ഉള്ളടക്ക വിവരം</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">റേഡിയോ ബട്ടൺ ഗ്രൂപ്പ്</translation>
 <translation id="2471138580042810658">ശീർഷകം 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{നക്ഷത്രചിഹ്നം}other{# നക്ഷത്രചിഹ്നങ്ങൾ}}</translation>
+<translation id="2523609930580546572">ChromeVox ട്യൂട്ടോറിയൽ</translation>
 <translation id="2525706221823668172">Chromebook കീബോർഡ് കുറുക്കുവഴികൾ</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> പുനഃസജ്ജമാക്കി.</translation>
 <translation id="2553108862507765288">വ്യാകരണ പിശക്</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">മുമ്പത്തെ വിഭാഗങ്ങളൊന്നുമില്ല.</translation>
 <translation id="3030432017085518523">മെനു ഇനം റേഡിയോ ബട്ടൺ</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{വിശ്ലേഷം}other{# വിശ്ലേഷങ്ങൾ}}</translation>
+<translation id="3040901448410802366">പ്രോഗ്രസ്സ് ഇൻഡിക്കേറ്റർ</translation>
 <translation id="3046838483509668188">ChromeVox ഓപ്‌ഷനുകൾ</translation>
 <translation id="3047143736589213134">പരീക്ഷണാത്മക കീമാപ്പ്</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> മെനു തുറന്നു</translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">വേഡ് റാപ്പ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="3322936298410871309">മുൻ നില 1 ശീർഷകം</translation>
 <translation id="3323447499041942178">പാഠബോക്‌സ്</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> സ്ലൈഡർ</translation>
 <translation id="3353420241558113817">{"ar": "അറബിക്",
         "bg": "ബൾഗേറിയൻ",
         "ca": "കറ്റാലൻ",
@@ -714,6 +719,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="7693840228159394336">മുൻ റേഡിയോ ബട്ടൺ</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, പാസ്‌വേഡ് വാചക ബോക്സ്</translation>
+<translation id="7776293189010177726">ChromeVox മെനുകൾ തുറക്കുക</translation>
 <translation id="7805247615045262757">സ്ഥിര നാവിഗേഷൻ</translation>
 <translation id="7805768142964895445">നില</translation>
 <translation id="7810781339813764006">അടുത്ത ഗ്രൂപ്പ്</translation>

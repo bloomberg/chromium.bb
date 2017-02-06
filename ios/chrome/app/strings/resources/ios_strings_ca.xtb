@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Obre-les totes</translation>
 <translation id="1430915738399379752">Impressió</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elements</translation>
+<translation id="1491277525950327607">Fes doble toc per canviar la configuració</translation>
 <translation id="1540800554400757039">Adreça 1</translation>
 <translation id="1545749641540134597">Escaneja el codi QR</translation>
 <translation id="1580783302095112590">Correu enviat.</translation>
@@ -178,7 +179,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4359125752503270327">Aquesta pàgina s'obrirà en una altra aplicació.</translation>
 <translation id="4378154925671717803">Telèfon</translation>
 <translation id="441868831736628555">Avís de privadesa</translation>
-<translation id="4426508677408162512">Totes les adreces d'interès</translation>
 <translation id="4473991315115669931">Entra al mode d'incògnit</translation>
 <translation id="4526249700380860531">Consulta i gestiona les contrasenyes desades a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Torna a iniciar la sessió.</translation>
@@ -218,6 +218,7 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5327248766486351172">Nom</translation>
+<translation id="5332219387342487447">Mètode d'enviament</translation>
 <translation id="5388358297987318779">Obre una imatge</translation>
 <translation id="5409365236829784218">Cap aplicació instal·lada no pot obrir el fitxer.</translation>
 <translation id="54401264925851789">Informació de seguretat de la pàgina</translation>
@@ -270,6 +271,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="6255097610484507482">Edita la targeta de crèdit</translation>
 <translation id="6308436439357671616">Això et permet fer i penjar fotos.</translation>
 <translation id="6314335155547195432">Genera una contrasenya</translation>
+<translation id="6324528485781869530">Canvia a un compte sincronitzat</translation>
 <translation id="6324669097367352121">Configuració d'inici de sessió</translation>
 <translation id="6337234675334993532">Encriptació</translation>
 <translation id="633809752005859102">S'ha produït un error. Estem treballant per solucionar-lo.</translation>
@@ -373,7 +375,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8433678324664858900">Mostra suggeriments</translation>
 <translation id="8458397775385147834">1 element suprimit</translation>
-<translation id="8487700953926739672">Disponible fora de línia</translation>
+<translation id="8487700953926739672">Disponible sense connexió</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>
 <translation id="8517375800490286174">Llicències de codi obert</translation>
 <translation id="8524799873541103884">Pestanyes <ph name="INCOGNITO" />: de <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> d'un total de <ph name="NUMBER_OF_OPEN_TABS" /></translation>

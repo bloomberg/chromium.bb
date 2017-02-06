@@ -81,7 +81,6 @@
 <translation id="358997566136285270">‏نشان‌واره Chromium</translation>
 <translation id="3645040538872234961">‏این کار داده‌های محصول مرورتان را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با نام $2 وارد سیستم Chromium شوید.</translation>
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
-<translation id="3748537968684000502">‏شما در حال مشاهده یک صفحه Chromium امن هستید.</translation>
 <translation id="378917192836375108">‏Chromium به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">‏متأسفانه تنظیمات Chromium شما هنگام باز بودن مرورگر در دسترس نیست. برای وارد کردن این تنظیمات در Chromium، کارهای خود را ذخیره کنید و همه پنجره‌های Firefox را ببندید. سپس "ادامه" را کلیک کنید.</translation>
@@ -135,6 +134,7 @@
 <translation id="5620765574781326016">بدون اینکه صفحه را ترک کنید، درباره موضوعات در وب‌سایت‌ها اطلاعاتی به دست آورید.</translation>
 <translation id="5634636535844844681">‏Chromium به Windows 7 یا بالاتر نیاز دارد.</translation>
 <translation id="5680901439334282664">‏ورود به سیستم Chromium</translation>
+<translation id="5684733627009686897">‏Chromium مرورگر پیش‌فرضتان است. هورا!</translation>
 <translation id="5698481217667032250">‏نمایش Chromium به این زبان</translation>
 <translation id="5726838626470692954">‏مدیر شما باید شما را از Chromium حذف و دوباره به آن اضافه کند.</translation>
 <translation id="5768914737813585044">‏نمایش سیستم عامل Chromium به این زبان</translation>

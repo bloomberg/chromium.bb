@@ -22,11 +22,14 @@
 <translation id="2148716181193084225">આજે</translation>
 <translation id="2168039046890040389">પૃષ્ઠ ઉપર</translation>
 <translation id="2190355936436201913">(ખાલી)</translation>
+<translation id="2289052229480071835">તમારી સ્ક્રીન પર લક્ષ્યોને ટચ કરોને ટૅપ કરો.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
 <translation id="2497284189126895209">બધી ફાઇલો</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2522350507219695259">કૅલિબ્રેશન પૂર્ણ થયું</translation>
 <translation id="252373100621549798">અજ્ઞાત પ્રદર્શન</translation>
+<translation id="2662783295652680457">તમારી ટચસ્ક્રીનને વ્યાખ્યાયિત કરો</translation>
 <translation id="2666092431469916601">ઉપર</translation>
 <translation id="2743387203779672305">ક્લિપબોર્ડ પર કૉપિ કરો</translation>
 <translation id="2803313416453193357">ફોલ્ડર ખોલો</translation>
@@ -58,6 +61,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 સેકન્ડ}one{# સેકન્ડ}other{# સેકન્ડ}}</translation>
 <translation id="4971687151119236543">મીડિયા પહેલાંનું ટ્રૅક</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5046499563572181734">અહીં ટૅપ કરો</translation>
 <translation id="5076340679995252485">પેસ્ટ કરો</translation>
 <translation id="5120799197269191491">શોધ+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>

@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Kamakailan lang, <ph name="BEGIN_LINK" />nakakita ng malware<ph name="END_LINK" /> ang Google Safe Browsing sa <ph name="SITE" />. Nagkakaroon ng malware paminsan-minsan ang mga website na karaniwang ligtas. Nanggagaling ang nakakahamak na content sa <ph name="SUBRESOURCE_HOST" />, isang kilalang distributor ng malware. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto nang higit pa<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Di-wastong kahilingan o mga parameter ng kahilingan</translation>
 <translation id="1834321415901700177">Naglalaman ng mga mapanirang program ang site na ito</translation>
-<translation id="1838667051080421715">Tinitingnan mo ang pinagmumulan ng isang web page.</translation>
 <translation id="1871208020102129563">Nakatakda ang proxy upang gumamit ng mga hindi nababagong proxy server, hindi ng isang .pac script URL.</translation>
+<translation id="187918866476621466">Buksan ang mga page sa pagsisimula</translation>
 <translation id="1883255238294161206">Tiklupin ang listahan</translation>
 <translation id="1898423065542865115">Pagfi-filter</translation>
 <translation id="194030505837763158">Pumunta sa <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Kung madalas mo itong nakikita, subukan ang mga ito <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Rebisyon</translation>
 <translation id="3678029195006412963">Hindi malagdaan ang kahilingan</translation>
+<translation id="3679803492151881375">Nakuha ang ulat ng pag-crash noong <ph name="CRASH_TIME" />, na-upload noong <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Impormasyon sa certificate</translation>
 <translation id="3690164694835360974">Hindi ligtas ang pag-log in</translation>
 <translation id="3693415264595406141">Password:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;I-undo ang Pagtanggal</translation>
 <translation id="4619615317237390068">Mga tab mula sa iba pang mga device</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Isang page ng extension ang iyong tinitingnan.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Naputol ang iyong koneksyon</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Magpatakbo ng Windows Network Diagnostics<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Ang webpage sa <ph name="URL" /> ay maaaring pansamantalang hindi gumagana o maaaring permanente itong inilipat sa isang bagong web address.</translation>
 <translation id="4771973620359291008">Isang hindi alam na error ang nangyari.</translation>
 <translation id="4800132727771399293">Tingnan ang iyong petsa ng pag-expire at CVC at subukang muli</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Error sa network</translation>
 <translation id="4816492930507672669">Pagkasyahin sa pahina</translation>
 <translation id="4850886885716139402">View</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Gusto mo bang umalis sa site na ito?</translation>
 <translation id="5629630648637658800">Nabigong i-load ang mga setting ng patakaran</translation>
 <translation id="5631439013527180824">Di-wastong token sa pamamahala ng device</translation>
+<translation id="5669703222995421982">Makakuha ng naka-personalize na content</translation>
 <translation id="5675650730144413517">Hindi gumagana ang page na ito</translation>
 <translation id="5677928146339483299">Naka-block</translation>
 <translation id="5694783966845939798">Sinubukan mong makakonekta sa <ph name="DOMAIN" />, ngunit ang certificate na ipinakita ng server ay nilagdaan gamit ang mahinang signature algorithm (gaya ng SHA-1). Nangangahulugan ito na maaaring napeke ang kredensyal na panseguridad na ipinakita ng server, at maaaring ang server ay hindi ang inaasahan mong server (maaaring nakikipag-ugnayan ka sa isang attacker). <ph name="BEGIN_LEARN_MORE_LINK" />Matuto pa<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Halaga ng patakaran</translation>
 <translation id="6757797048963528358">Nag-sleep ang iyong device.</translation>
 <translation id="6778737459546443941">Hindi pa ito inaaprubahan ng iyong magulang</translation>
+<translation id="6810899417690483278">Customization ID</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Kasalukuyang hindi available ang webpage sa <ph name="URL" />.  Maaaring overloaded ito o hindi pinagana para sa maintenance.</translation>
 <translation id="6831043979455480757">Isalin</translation>
@@ -709,6 +712,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8364627913115013041">Hindi nakatakda.</translation>
 <translation id="8380941800586852976">Mapanganib</translation>
 <translation id="8382348898565613901">Lalabas dito ang iyong mga kamakailang binisitang bookmark</translation>
+<translation id="8398259832188219207">Na-upload ang ulat ng pag-crash noong <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Mga Pag-crash (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Dapat mong ilagay ang parehong passphrase nang dalawang beses.</translation>
 <translation id="8428213095426709021">Mga Setting</translation>

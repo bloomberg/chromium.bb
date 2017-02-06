@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, diaktifkan</translation>
 <translation id="1692077714702418899">baris struktural</translation>
 <translation id="1700517974991662022">Dikunjungi</translation>
+<translation id="1714116687360794776">Meter</translation>
 <translation id="1722567105086139392">Tautan</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Grafik berikutnya</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Kontrol tanggal dan waktu</translation>
 <translation id="2347456970887948350">Tautan</translation>
 <translation id="2359897517538099099">Tidak dalam mode tabel.</translation>
+<translation id="2390264819538553347">Untuk melanjutkan, tekan enter; untuk kembali, tekan backspace.</translation>
 <translation id="241124561063364910">diikuti dengan</translation>
 <translation id="2416512023405990736">Kotak centang yang tidak dicentang</translation>
 <translation id="2417569100218200841">Info konten</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Grup tombol radio</translation>
 <translation id="2471138580042810658">Judul 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{tanda bintang}other{# tanda bintang}}</translation>
+<translation id="2523609930580546572">Tutorial ChromeVox</translation>
 <translation id="2525706221823668172">Pintasan keyboard Chromebook</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> telah disetel ulang.</translation>
 <translation id="2553108862507765288">kesalahan tata bahasa</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Tidak ada bagian sebelumnya.</translation>
 <translation id="3030432017085518523">Tombol radio item menu</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrof}other{# apostrof}}</translation>
+<translation id="3040901448410802366">Indikator kemajuan</translation>
 <translation id="3046838483509668188">Opsi ChromeVox</translation>
 <translation id="3047143736589213134">Peta tombol eksperimental</translation>
 <translation id="3060756054951570867">menu <ph name="TITLE" /> dibuka</translation>
@@ -230,6 +234,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk menavigasi ke tombol 
 <translation id="3321460131042519426">Aktifkan pelipatan kata</translation>
 <translation id="3322936298410871309">Judul tingkat 1 sebelumnya</translation>
 <translation id="3323447499041942178">Kotak teks</translation>
+<translation id="3338224621010291843">Penggeser <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "Arab",
         "bg": "Bulgaria",
         "ca": "Katala",
@@ -714,6 +719,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="7693840228159394336">Tombol radio sebelumnya</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, kotak teks sandi</translation>
+<translation id="7776293189010177726">Membuka menu ChromeVox</translation>
 <translation id="7805247615045262757">navigasi default</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7810781339813764006">Grup Berikutnya</translation>

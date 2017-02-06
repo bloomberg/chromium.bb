@@ -52,6 +52,7 @@
 <translation id="1445680696957526815">Chrome のコンポーネント同士に互換性がありません。Chrome が更新中の可能性があります。しばらくしてからもう一度お試しください。問題が続く場合は、Chrome をいったんアンインストールし、再インストールしてみてください。</translation>
 <translation id="1446450296470737166">MIDI機器のフルコントロールを許可</translation>
 <translation id="145097072038377568">Android の設定で無効</translation>
+<translation id="1455941322673536744">自動入力とお支払い</translation>
 <translation id="147006957810816598">Google アカウントへのログイン状態は維持されます。</translation>
 <translation id="1477626028522505441">サーバーで問題が発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="1506061864768559482">検索エンジン</translation>
@@ -195,6 +196,7 @@
 <translation id="2996291259634659425">パスフレーズの作成</translation>
 <translation id="2996809686854298943">URLが必要です</translation>
 <translation id="300526633675317032">ウェブサイトのストレージ <ph name="SIZE_IN_KB" /> をすべて消去します。</translation>
+<translation id="3029613699374795922"><ph name="KBS" /> KB をダウンロード済み</translation>
 <translation id="3029704984691124060">パスフレーズが一致しません</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">シークレット タブで開く</translation>
@@ -262,6 +264,7 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> にブックマークしました</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB を他のアプリで使用中</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
+<translation id="3773755127849930740">ペア設定するには <ph name="BEGIN_LINK" />Bluetooth をオン<ph name="END_LINK" />にしてください</translation>
 <translation id="3789841737615482174">インストール</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 件のアイテムが選択されました}other{# 件のアイテムが選択されました}}</translation>
 <translation id="3810838688059735925">動画</translation>
@@ -317,7 +320,6 @@
 <translation id="4300272766492248925">アプリを開く</translation>
 <translation id="4307992518367153382">基本設定</translation>
 <translation id="4351244548802238354">ダイアログを閉じる</translation>
-<translation id="4376501731284077108">管理対象外</translation>
 <translation id="4378154925671717803">電話番号</translation>
 <translation id="4384468725000734951">検索に Sogou を使用します</translation>
 <translation id="4412992751769744546">サードパーティの Cookie を許可</translation>
@@ -362,8 +364,10 @@
 <translation id="4837753911714442426">ページの印刷オプションを開く</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="4860895144060829044">通話</translation>
+<translation id="4862624982077154323">一部のウェブサイトでは、サポートされているお支払いアプリを使って支払いができます。Chrome で使用するアプリを選択してください。</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4885273946141277891">Chrome のインスタンス数の上限を超えています。</translation>
+<translation id="4910889077668685004">お支払いアプリ</translation>
 <translation id="4915549754973153784">デバイスのスキャン中… <ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="4923459931733593730">お支払い</translation>
 <translation id="4941291666397027948">* は必須項目です</translation>
@@ -389,7 +393,7 @@
 <translation id="5131405117025179004">保存されているアカウントの編集</translation>
 <translation id="5138299137310274655"><ph name="SOURCE_LANGUAGE" />のページです。<ph name="TARGET_LANGUAGE" />に翻訳しますか？</translation>
 <translation id="515227803646670480">保存したデータの消去</translation>
-<translation id="5156656584247937086">これは子供向けのアカウントです</translation>
+<translation id="5152843274749979095">サポートされているアプリがインストールされていません</translation>
 <translation id="5161254044473106830">タイトルが必要です</translation>
 <translation id="5164482624172255778">次回から Google Chrome でこのサイトの<ph name="LANGUAGE" />ページの翻訳を表示しますか？</translation>
 <translation id="5168917394043976756">操作パネルを開く</translation>
@@ -448,6 +452,7 @@
 <translation id="5610807607761827392">カードと住所は [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
 <translation id="5626134646977739690">名前:</translation>
 <translation id="5646376287012673985">現在地</translation>
+<translation id="5655963694829536461">ダウンロードしたアイテムを検索</translation>
 <translation id="5659593005791499971">メール</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> で予定を作成</translation>
 <translation id="5668404140385795438">ウェブサイトのズーム防止リクエストを上書きする</translation>
@@ -472,6 +477,7 @@
 <translation id="583281660410589416">不明</translation>
 <translation id="5832934273103296195">展開状態 - クリックして折りたたみ</translation>
 <translation id="583891442612896534">データ圧縮のために Chrome から Google サーバーにアクセスすることができません。データ使用量をあまり削減できない可能性があります。</translation>
+<translation id="5858741533101922242">Chrome から Bluetooth アダプタをオンにできません</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="5867027562311576691">記事は随時更新されます。また後でご覧ください。</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
@@ -503,6 +509,7 @@
 <translation id="6140912465461743537">国 / 地域</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> のデータを削減</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6177111841848151710">現在の検索エンジンでブロック</translation>
 <translation id="6177390657002841081">データセーバーをオンにする</translation>
 <translation id="6181444274883918285">サイトの例外を追加</translation>
 <translation id="6192792657125177640">例外</translation>
@@ -515,6 +522,7 @@
 <translation id="6324034347079777476">Android システムの同期が無効です</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> で共有します</translation>
 <translation id="6337234675334993532">暗号化</translation>
+<translation id="6343192674172527289">ダウンロードしたアイテムは見つかりませんでした</translation>
 <translation id="6364438453358674297">履歴から候補を削除しますか？</translation>
 <translation id="6383961787135158834">サイトのストレージ消去...</translation>
 <translation id="6388207532828177975">消去してリセット</translation>
@@ -522,6 +530,7 @@
 <translation id="6406506848690869874">同期</translation>
 <translation id="6409731863280057959">ポップアップ</translation>
 <translation id="641643625718530986">印刷...</translation>
+<translation id="6416782512398055893"><ph name="MBS" /> MB をダウンロード済み</translation>
 <translation id="6433490469411711332">連絡先情報の編集</translation>
 <translation id="6443118737398455446">有効期限が無効です</translation>
 <translation id="6446608382365791566">他の情報を追加</translation>
@@ -532,6 +541,7 @@
 <translation id="6477460825583319731">無効なメールアドレスです</translation>
 <translation id="6482749332252372425">ストレージの空き容量が不足しているため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="6527303717912515753">共有</translation>
+<translation id="6538442820324228105"><ph name="GBS" /> GB をダウンロード済み</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">ビームするにはタブを選択してください</translation>
 <translation id="6545017243486555795">すべてのデータを消去</translation>
@@ -587,6 +597,7 @@
 <translation id="699220179437400583">セキュリティに関する事象についての詳細を Google に自動送信する</translation>
 <translation id="6992289844737586249">サイトにマイクの使用を許可する前に確認する（推奨）</translation>
 <translation id="7001663382399377034">受取人を追加</translation>
+<translation id="7016516562562142042">現在の検索エンジンで許可</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> をダウンロードしました</translation>
 <translation id="7022756207310403729">ブラウザで開く</translation>
 <translation id="7029809446516969842">パスワード</translation>
@@ -713,7 +724,6 @@
 <translation id="8372893542064058268">特定のサイトに対してバックグラウンド同期を許可します。</translation>
 <translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>
 <translation id="8393700583063109961">メッセージを送信</translation>
-<translation id="8396312449826231789">承認済みのサイトのみ</translation>
 <translation id="8413126021676339697">全履歴を表示</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">ほとんどのウェブサイトからログアウトします。</translation>
@@ -742,7 +752,6 @@
 <translation id="8660471606262461360">Google ペイメントから取得</translation>
 <translation id="8676374126336081632">入力内容を消去</translation>
 <translation id="869891660844655955">有効期限</translation>
-<translation id="8699799819461268362">Google セーフサイト フィルタ</translation>
 <translation id="8719023831149562936">現在のタブはビームできません</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8730621377337864115">完了</translation>

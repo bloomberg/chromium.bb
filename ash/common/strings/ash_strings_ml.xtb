@@ -39,6 +39,7 @@
 <translation id="1923539912171292317">യാന്ത്രിക ക്ലിക്കുകൾ</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965"><ph name="TAB_NAME" />, <ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് കാസ്‌റ്റുചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="2127372758936585790">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ</translation>
 <translation id="2204305834655267233">നെറ്റ്‌വർക്ക് വിവരം</translation>
 <translation id="2208323208084708176">ഏകീകൃത ഡെസ്‌ക്‌ടോപ്പ് മോഡ്</translation>
@@ -149,6 +150,7 @@
 <translation id="5331975486040154427">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">ലഭ്യമായ എല്ലാ ഉപയോക്താക്കളേയും ഈ സെഷനിൽ ഇതിനകം ചേർത്തു.</translation>
+<translation id="5504841533973703486">മുൻവശത്തുള്ള മൈക്രോഫോൺ</translation>
 <translation id="5507786745520522457">മൊബൈൽ ഡാറ്റ സജ്ജീകരിക്കുക</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">ഈ നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റുചെയ്യാൻ "<ph name="EXTENSION_NAME" />" വിപുലീകരണത്തിന് സഹായിക്കാനാകും.</translation>
@@ -159,6 +161,7 @@
 <translation id="5777841717266010279">സ്‌ക്രീൻ പങ്കിടൽ നിർത്തണോ?</translation>
 <translation id="57838592816432529">മ്യൂട്ടുചെയ്യുക</translation>
 <translation id="5825747213122829519">നിങ്ങളുടെ ഇൻപുട്ട് രീതി <ph name="INPUT_METHOD_ID" /> എന്നതിലേയ്‌ക്ക് മാറ്റി. സ്വിച്ചുചെയ്യുന്നതിന് Shift + Alt അമർത്തുക.</translation>
+<translation id="5830936593837877897">പിൻഭാഗത്തെ മൈക്രോഫോൺ</translation>
 <translation id="5871632337994001636">ഉപകരണങ്ങൾ നിയന്ത്രിക്കുക...</translation>
 <translation id="5895138241574237353">പുനരാരംഭിക്കുക</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -247,8 +250,10 @@
 <translation id="8000066093800657092">നെറ്റ്‍വര്‍ക്ക് ഇല്ല</translation>
 <translation id="8054466585765276473">ബാറ്ററി സമയം കണക്കാക്കുന്നു.</translation>
 <translation id="8077816382010018681">QU ഫീച്ചർ അറിയിപ്പ് പേര് ഇവിടെയുണ്ട്</translation>
+<translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് സ്‌ക്രീൻ കാസ്‌റ്റുചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="8103386449138765447">SMS സന്ദേശങ്ങൾ: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517"><ph name="NAME" /> എന്നതിലേക്ക് ബന്ധിപ്പിച്ചു</translation>
+<translation id="8180896103888046100">അറിഞ്ഞുകൂടാത്ത റിസീവറിലേക്ക് കാസ്‌റ്റുചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="8185286464235484130">കുറച്ച് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകിക്കൊണ്ട് ഞങ്ങളുടെ പ്രവർത്തനത്തെക്കുറിച്ചുള്ള അഭിപ്രായം അറിയിക്കൂ.</translation>
 <translation id="8190698733819146287">ഭാഷകൾ‌ ഇച്ഛാനുസൃതമാക്കി നല്‍‌കുക...</translation>
 <translation id="8206859287963243715">സെല്ലുലാര്‍‌</translation>

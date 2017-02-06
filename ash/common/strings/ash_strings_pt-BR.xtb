@@ -39,6 +39,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">Parar de transmitir <ph name="TAB_NAME" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
 <translation id="2204305834655267233">Informações de rede</translation>
 <translation id="2208323208084708176">Modo de área de trabalho unificada.</translation>
@@ -148,6 +149,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Todos os usuários disponíveis já foram adicionados a esta sessão.</translation>
+<translation id="5504841533973703486">Microfone frontal</translation>
 <translation id="5507786745520522457">Configurar dados de dispositivos móveis</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">A extensão "<ph name="EXTENSION_NAME" />" pode ajudar na conexão com esta rede.</translation>
@@ -159,6 +161,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="57838592816432529">Desativar som</translation>
 <translation id="5825747213122829519">Seu método de entrada mudou para <ph name="INPUT_METHOD_ID" />.
 Pressione Shift + Alt para alternar.</translation>
+<translation id="5830936593837877897">Microfone traseiro</translation>
 <translation id="5871632337994001636">Gerenciar dispositivos...</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -248,8 +251,10 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="8000066093800657092">Sem rede</translation>
 <translation id="8054466585765276473">Calculando duração da bateria.</translation>
 <translation id="8077816382010018681">Título da notificação do recurso QU aqui</translation>
+<translation id="8098591350844501178">Parar de transmitir tela para <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">Mensagens SMS: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Conectado à <ph name="NAME" /></translation>
+<translation id="8180896103888046100">Parar de transmitir para um destinatário desconhecido</translation>
 <translation id="8185286464235484130">Responda a algumas perguntas para que possamos saber como estamos nos saindo.</translation>
 <translation id="8190698733819146287">Personalizar idiomas e entrada...</translation>
 <translation id="8206859287963243715">Celular</translation>

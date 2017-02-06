@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, 스위치 사용</translation>
 <translation id="1692077714702418899">구조 선</translation>
 <translation id="1700517974991662022">방문함</translation>
+<translation id="1714116687360794776">측정기</translation>
 <translation id="1722567105086139392">링크</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">다음 그래픽</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">날짜 시간 컨트롤</translation>
 <translation id="2347456970887948350">링크</translation>
 <translation id="2359897517538099099">표 모드가 아닙니다.</translation>
+<translation id="2390264819538553347">계속하려면 Enter를 누릅니다. 뒤로 돌아가려면 Backspace를 누릅니다.</translation>
 <translation id="241124561063364910">플러스</translation>
 <translation id="2416512023405990736">선택 취소된 체크박스</translation>
 <translation id="2417569100218200841">콘텐츠 정보</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">라디오 버튼 그룹</translation>
 <translation id="2471138580042810658">제목 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{별표}other{별표 #개}}</translation>
+<translation id="2523609930580546572">ChromeVox 가이드</translation>
 <translation id="2525706221823668172">Chromebook 단축키</translation>
 <translation id="2549392850788122959"><ph name="KEY" />이(가) 재설정되었습니다.</translation>
 <translation id="2553108862507765288">grammatical mistake</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">이전 섹션이 없음</translation>
 <translation id="3030432017085518523">메뉴 항목 라디오 버튼</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{아포스트로피}other{아포스트로피 #개}}</translation>
+<translation id="3040901448410802366">진행률 표시기</translation>
 <translation id="3046838483509668188">ChromeVox 옵션</translation>
 <translation id="3047143736589213134">실험용 키맵</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> 메뉴 열림</translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">줄바꿈 사용</translation>
 <translation id="3322936298410871309">이전 수준 1 제목</translation>
 <translation id="3323447499041942178">입력란</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> 슬라이더</translation>
 <translation id="3353420241558113817">{"ar": "아랍어",
         "bg": "불가리아어",
         "ca": "카탈로니아어",
@@ -714,6 +719,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="7693840228159394336">이전 라디오 버튼</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, 비밀번호 입력란</translation>
+<translation id="7776293189010177726">ChromeVox 메뉴 열기</translation>
 <translation id="7805247615045262757">기본 탐색</translation>
 <translation id="7805768142964895445">상태</translation>
 <translation id="7810781339813764006">다음 그룹</translation>

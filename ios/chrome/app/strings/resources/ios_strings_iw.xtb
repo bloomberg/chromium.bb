@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">פתח הכל</translation>
 <translation id="1430915738399379752">הדפס</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> פריטים</translation>
+<translation id="1491277525950327607">הקש פעמיים כדי להחליף את מצב ההגדרה</translation>
 <translation id="1540800554400757039">כתובת, שורה 1</translation>
 <translation id="1545749641540134597">‏סרוק קוד QR</translation>
 <translation id="1580783302095112590">הדואר נשלח.</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">הדף הזה ייפתח ביישום אחר.</translation>
 <translation id="4378154925671717803">טלפון</translation>
 <translation id="441868831736628555">הודעת פרטיות</translation>
-<translation id="4426508677408162512">כל הסימניות</translation>
 <translation id="4473991315115669931">עבור למצב גלישה בסתר</translation>
 <translation id="4526249700380860531">‏הצג ונהל סיסמאות שמורות ב-<ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">נסה להיכנס שוב.</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">הצג</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5327248766486351172">שם</translation>
+<translation id="5332219387342487447">שיטת משלוח</translation>
 <translation id="5388358297987318779">פתח תמונה</translation>
 <translation id="5409365236829784218">אין יישומים מותקנים שיכולים לפתוח את הקובץ הזה.</translation>
 <translation id="54401264925851789">פרטי אבטחת דף</translation>
@@ -270,6 +271,7 @@
 <translation id="6255097610484507482">ערוך כרטיס אשראי</translation>
 <translation id="6308436439357671616">אישור זה מאפשר לך לצלם ולעדכן תמונות.</translation>
 <translation id="6314335155547195432">צור סיסמה</translation>
+<translation id="6324528485781869530">החלפת חשבון לסנכרון</translation>
 <translation id="6324669097367352121">הגדרות כניסה</translation>
 <translation id="6337234675334993532">הצפנה</translation>
 <translation id="633809752005859102">משהו לגמרי השתבש. נעבוד על זה.</translation>

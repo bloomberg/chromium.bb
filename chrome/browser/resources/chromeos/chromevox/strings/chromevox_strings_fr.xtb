@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, interrupteur activé</translation>
 <translation id="1692077714702418899">ligne de structure</translation>
 <translation id="1700517974991662022">Consulté</translation>
+<translation id="1714116687360794776">Outil de mesure</translation>
 <translation id="1722567105086139392">Lien</translation>
 <translation id="1727806147743597030">conclusion</translation>
 <translation id="174268867904053074">Élément graphique suivant</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Commande relative à la date et à l'heure</translation>
 <translation id="2347456970887948350">Un lien</translation>
 <translation id="2359897517538099099">Vous n'utilisez pas le mode Tableau.</translation>
+<translation id="2390264819538553347">Pour avancer, appuyez sur Entrée. Pour revenir en arrière, appuyez sur Retour arrière.</translation>
 <translation id="241124561063364910">suivi de</translation>
 <translation id="2416512023405990736">Une case décochée</translation>
 <translation id="2417569100218200841">Infos sur le contenu</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Groupe de cases d'option</translation>
 <translation id="2471138580042810658">Titre 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{astérisque}one{# astérisque}other{# astérisques}}</translation>
+<translation id="2523609930580546572">Didacticiel ChromeVox</translation>
 <translation id="2525706221823668172">Raccourcis clavier dans Chromebook</translation>
 <translation id="2549392850788122959">Le mappage du clavier <ph name="KEY" /> a été réinitialisé.</translation>
 <translation id="2553108862507765288">erreur grammaticale</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Aucune section précédente</translation>
 <translation id="3030432017085518523">Case d'option d'élément de menu</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrophe}one{# apostrophe}other{# apostrophes}}</translation>
+<translation id="3040901448410802366">Indicateur de progression</translation>
 <translation id="3046838483509668188">Options ChromeVox</translation>
 <translation id="3047143736589213134">Mappage expérimental du clavier</translation>
 <translation id="3060756054951570867">menu <ph name="TITLE" /> ouvert</translation>
@@ -230,6 +234,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3321460131042519426">Enable word wrap</translation>
 <translation id="3322936298410871309">En-tête précédent de niveau 1</translation>
 <translation id="3323447499041942178">Zone de saisie</translation>
+<translation id="3338224621010291843">Curseur <ph name="NAME" /> <ph name="VALUE" /></translation>
 <translation id="3353420241558113817">{"ar": "Arabe",
         "bg": "Bulgare",
         "ca": "Catalan",
@@ -714,6 +719,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="7693840228159394336">Case d'option précédente</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, zone de texte du mot de passe</translation>
+<translation id="7776293189010177726">Ouvrir les menus ChromeVox</translation>
 <translation id="7805247615045262757">navigation par défaut</translation>
 <translation id="7805768142964895445">État</translation>
 <translation id="7810781339813764006">Groupe suivant</translation>

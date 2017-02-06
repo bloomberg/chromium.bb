@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google ಸುರಕ್ಷಿತ ಬ್ರೌಸ್ ಮಾಡುವಿಕೆ ಇತ್ತೀಚೆಗೆ <ph name="SITE" /> ನಲ್ಲಿ <ph name="BEGIN_LINK" />ಮಾಲ್‌ವೇರ್ ಪತ್ತೆಹಚ್ಚಿದೆ<ph name="END_LINK" />. ಸಾಮಾನ್ಯವಾಗಿ ಸುರಕ್ಷಿತವಾಗಿರುವ ವೆಬ್‌ಸೈಟ್‌ಗಳು ಕೆಲವೊಮ್ಮೆ ಮಾಲ್‌ವೇರ್ ದಾಳಿಗೆ ತುತ್ತಾಗಿರುತ್ತವೆ. ದುರುದ್ದೇಶಪೂರಿತ ವಿಷಯವು ಚಿರಪರಿಚಿತ ಮಾಲ್‌ವೇರ್ <ph name="SUBRESOURCE_HOST" /> ವಿತರಕರಿಂದ ಬರುತ್ತವೆ. <ph name="BEGIN_LEARN_MORE_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">ಅಮಾನ್ಯವಾದ ವಿನಂತಿ ಅಥವಾ ವಿನಂತಿ ಪ್ಯಾರಾಮೀಟರ್‌ಗಳು</translation>
 <translation id="1834321415901700177">ಈ ಸೈಟ್ ಹಾನಿಕಾರಕ ಪ್ರೋಗ್ರಾಂಗಳನ್ನು ಹೊಂದಿದೆ</translation>
-<translation id="1838667051080421715">ನೀವು ವೆಬ್ ಪುಟದ ಮೂಲವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ.</translation>
 <translation id="1871208020102129563">.pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಅಲ್ಲದೆ, ನಿಗಧಿತ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳನ್ನು ಬಳಸಲು ಪ್ರಾಕ್ಸಿಯನ್ನು ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
+<translation id="187918866476621466">ಆರಂಭಿಕ ಪುಟಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="1883255238294161206">ಪಟ್ಟಿಯನ್ನು ಸಂಕುಚಿಸಿ</translation>
 <translation id="1898423065542865115">ಫಿಲ್ಟರಿಂಗ್</translation>
 <translation id="194030505837763158"><ph name="LINK" /> ಗೆ ಹೋಗಿ</translation>
@@ -276,6 +276,7 @@
 <translation id="3655670868607891010">ಇದು ನಿಮಗೆ ಪದೇ ಪದೇ ಎದುರಾಗುತ್ತಿದ್ದರೆ, <ph name="HELP_LINK" /> ಇವುಗಳನ್ನು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3658742229777143148">ಪರಿಷ್ಕರಣೆ</translation>
 <translation id="3678029195006412963">ವಿನಂತಿಗೆ ಸಹಿ ಮಾಡಲಾಗುವುದಿಲ್ಲ</translation>
+<translation id="3679803492151881375"><ph name="CRASH_TIME" /> ನಲ್ಲಿ ಕ್ರ್ಯಾಶ್ ವರದಿಯನ್ನು ಸೆರೆಹಿಡಿಯಲಾಗಿದೆ, <ph name="UPLOAD_TIME" /> ಸಮಯಕ್ಕೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3681007416295224113">ಪ್ರಮಾಣಪತ್ರ ಮಾಹಿತಿ</translation>
 <translation id="3690164694835360974">ಲಾಗಿನ್ ಸುರಕ್ಷಿತವಾಗಿಲ್ಲ</translation>
 <translation id="3693415264595406141">ಪಾಸ್‌ವರ್ಡ್:</translation>
@@ -360,7 +361,6 @@
 <translation id="4594403342090139922">&amp;ಅಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="4619615317237390068">ಇತರ ಸಾಧನಗಳಿಂದ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">ನೀವು ವಿಸ್ತರಣೆಯ ಪುಟವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">ನಿಮ್ಮ ಸಂಪರ್ಕಕ್ಕೆ ಅಡ್ಡಿಯಾಗಿದೆ</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows ನೆಟ್‌ವರ್ಕ್ ಡಯಾಗ್ನಾಸ್ಟಿಕ್ಸ್ ರನ್ ಮಾಡಲಾಗುತ್ತಿದೆ<ph name="END_LINK" /></translation>
@@ -373,6 +373,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> ನಲ್ಲಿರುವ ವೆಬ್‌ಪುಟವು ತಾತ್ಕಾಲಿಕವಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸದೇ ಇರಬಹುದು ಅಥವಾ ಅದನ್ನು ಶಾಶ್ವತವಾಗಿ ಹೊಸ ವೆಬ್ ವಿಳಾಸಕ್ಕೆ ಸರಿಸಲಾಗಿರಬಹುದು.</translation>
 <translation id="4771973620359291008">ಅಪರಿಚಿತ ದೋಷವೊಂದು ಎದುರಾಗಿದೆ.</translation>
 <translation id="4800132727771399293">ನಿಮ್ಮ ಮುಕ್ತಾಯದ ದಿನಾಂಕ ಮತ್ತು CVC ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">ನೆಟ್‌ವರ್ಕ್  ದೋಷ</translation>
 <translation id="4816492930507672669">ಪುಟಕ್ಕೆ ಹೊಂದಿಸು</translation>
 <translation id="4850886885716139402">ವೀಕ್ಷಣೆ</translation>
@@ -447,6 +448,7 @@
 <translation id="5622887735448669177">ನೀವು ಈ ಸೈಟ್ ತೊರೆಯಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="5629630648637658800">ನೀತಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="5631439013527180824">ಅಮಾನ್ಯವಾದ ಸಾಧನ ನಿರ್ವಹಣೆ ಟೋಕನ್</translation>
+<translation id="5669703222995421982">ವೈಯಕ್ತೀಕರಿಸಲಾದ ವಿಷಯವನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="5675650730144413517">ಈ ಪುಟ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿಲ್ಲ</translation>
 <translation id="5677928146339483299">ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="5694783966845939798">ನೀವು <ph name="DOMAIN" /> ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿರುವಿರಿ, ಆದರೆ ದುರ್ಬಲ ಸಹಿ ಅಲ್ಗಾರಿದಮ್ ಬಳಸಿಕೊಂಡು ಸಹಿ ಮಾಡಿದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸರ್ವರ್ ಪ್ರಸ್ತುತಪಡಿಸಿದೆ (SHA-1 ನಂತೆಯೇ). ಇದರರ್ಥ ಸರ್ವರ್ ಪ್ರಸ್ತುತಪಡಿಸಿದ ಸುರಕ್ಷತಾ ರುಜುವಾತುಗಳು ನಕಲಿ ಆಗಿರಬಹುದು ಮತ್ತು ನೀವು ನಿರೀಕ್ಷಿಸಿದ ಸರ್ವರ್ ಅದಾಗಿರದೇ ಇರಬಹುದು (ನೀವು ಆಕ್ರಮಣಕಾರರ ಜೊತೆಗೆ ಸಂವಹನ ಮಾಡುತ್ತಿರಬಹುದು). <ph name="BEGIN_LEARN_MORE_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -546,6 +548,7 @@
 <translation id="6753269504797312559">ನೀತಿ ಮೌಲ್ಯ</translation>
 <translation id="6757797048963528358">ನಿಮ್ಮ ಸಾಧನವು ನಿದ್ರಾವಸ್ಥೆಗೆ ಹೋಗಿದೆ.</translation>
 <translation id="6778737459546443941">ನಿಮ್ಮ ಪೋಷಕರು ಇನ್ನೂ ಇದನ್ನು ಅಂಗೀಕರಿಸಿಲ್ಲ</translation>
+<translation id="6810899417690483278">ಕಸ್ಟಮೈಸೇಶನ್ ಐಡಿ</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> ರಲ್ಲಿ ವೆಬ್‌ಪುಟವು ಪ್ರಸ್ತುತ ಲಭ್ಯವಿಲ್ಲ. ನಿರ್ವಹಣೆಗಾಗಿ ಇದು ಓವರ್ ಲೋಡ್ ಆಗಿರಬಹುದು ಅಥವಾ ಸ್ಥಗಿತಗೊಂಡಿರಬಹುದು. </translation>
 <translation id="6831043979455480757">ಅನುವಾದಿಸು</translation>
@@ -705,6 +708,7 @@
 <translation id="8364627913115013041">ಹೊಂದಿಸಿಲ್ಲ.</translation>
 <translation id="8380941800586852976">ಅಪಾಯಕಾರಿ</translation>
 <translation id="8382348898565613901">ನೀವು ಇತ್ತೀಚಿಗೆ ಭೇಟಿ ನೀಡಿದ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>
+<translation id="8398259832188219207"><ph name="UPLOAD_TIME" /> ಸಮಯಕ್ಕೆ ಕ್ರ್ಯಾಶ್ ವರದಿಯನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8412145213513410671">(<ph name="CRASH_COUNT" />) ಕ್ರ‍್ಯಾಶ್‌ಗಳು </translation>
 <translation id="8412392972487953978">ನೀವು ಒಂದೇ ರೀತಿಯ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ಎರಡು ಬಾರಿ ನಮೂದಿಸಬೇಕು.</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>

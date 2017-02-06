@@ -386,6 +386,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
       Jika tetapan ini tidak dikonfigurasi, maka pengguna boleh memilih sama ada perkhidmatan semakan ejaan harus digunakan atau tidak.</translation>
 <translation id="2294382669900758280">Tindakan memainkan video dalam apl Android tidak diambil kira, walaupun jika dasar ini ditetapkan kepada <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Konfigurasi halaman Tab Baharu lalai dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Tentukan senarai pemalam yang didayakan</translation>
 <translation id="2309390639296060546">Tetapan geolokasi lalai</translation>
 <translation id="2312134445771258233">Membenarkan anda mengkonfigurasi halaman yang dimuatkan pada permulaan.
@@ -394,7 +395,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="2337466621458842053">Membolehkan anda menetapkan senarai corak url yang menentukan tapak mana yang dibenarkan untuk memaparkan imej.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultImagesSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
-<translation id="2366415278352956652">Mendayakan penghantaran</translation>
 <translation id="2372547058085956601">Kelewatan log masuk automatik sesi terbuka.
 
       Jika dasar |DeviceLocalAccountAutoLoginId| tidak ditetapkan, dasar ini tidak mempunyai sebarang kesan. Jika tidak:
@@ -909,6 +909,17 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="3570008976476035109">Sekat pemalam pada tapak ini</translation>
 <translation id="3591584750136265240">Konfigurasikan gelagat pengesahan log masuk</translation>
+<translation id="3601614035698083789">Mengkonfigurasi senarai penanda halaman terurus.
+
+      Dasar ini terdiri daripada satu senarai penanda halaman manakala setiap penanda halaman ialah
+      kamus yang mengandungi kunci <ph name="NAME" /> dan <ph name="URL_LABEL" /> yang menyimpan nama penanda halaman dan sasarannya.
+      Subfolder boleh dikonfigurasikan dengan menentukan penanda halaman tanpa kunci <ph name="URL_LABEL" /> tetapi dengan kunci <ph name="CHILDREN" /> tambahan yang mengandungi satu senarai
+      penanda halaman seperti yang ditentukan di atas (sesetengahnya mungkin folder semula). <ph name="PRODUCT_NAME" /> meminda URL yang tidak lengkap
+      seolah-olah diserahkan melalui Kotak Omni, contohnya <ph name="GOOGLE_COM" /> menjadi <ph name="HTTPS_GOOGLE_COM" />.
+
+      Penanda halaman ini diletakkan dalam folder "Penanda halaman terurus" yang tidak boleh diubah suai oleh pengguna, tetapi pengguna boleh memilih untuk menyembunyikannya daripada bar penanda halaman. Penanda halaman terurus tidak disegerakkan ke akaun pengguna dan tidak boleh diubah suai oleh sambungan.
+
+      Bermula keluaran 51, nama folder untuk penanda halaman boleh disesuaikan dengan menambahkan {"toplevel_name": "sesuatu nama"} item senarai.</translation>
 <translation id="3627678165642179114">Dayakan atau lumpuhkan perkhidmatan web penyemakan ejaan</translation>
 <translation id="3646859102161347133">Tetapkan jenis penggadang skrin</translation>
 <translation id="3653237928288822292">Ikon pembekal carian lalai</translation>
@@ -1130,6 +1141,17 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
       Jika dasar ini ditetapkan kepada palsu, pengguna tidak akan dapat mengunci skrin (hanya boleh mengelog keluar daripada sesi pengguna). Jika tetapan ini ditetapkan kepada benar atau tidak ditetapkan, pengguna yang mengesahkan menggunakan kata laluan boleh mengunci skrin.</translation>
 <translation id="4121350739760194865">Elakkan promosi apl daripada muncul pada halaman tab baharu</translation>
+<translation id="4133301551755536858">Mengkonfigurasi URL halaman Tab Baharu lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubahnya.
+
+          Halaman Tab Baharu ialah halaman yang dibuka apabila tab baharu dibuat (termasuk halaman yang dibuka dalam tetingkap baharu).
+
+          Dasar ini tidak menentukan halaman yang perlu dibuka semasa permulaan. Tindakan ini dikawal oleh dasar RestoreOnStartup, yang mungkin untuk membuka halaman Tab Baharu.
+
+          NewTabPageLocation boleh ditetapkan pada URL yang anda tentukan di sini. Dasar ini turut akan memberi kesan kepada Halaman Utama jika ditetapkan untuk membuka halaman Tab Baharu serta halaman permulaan jika ditetapkan kepada halaman Tab Baharu.
+
+          Jika dasar tidak ditetapkan atau dibiarkan kosong, halaman tab baharu lalai akan digunakan.
+
+          Dasar ini tidak tersedia pada kejadian Windows yang tidak dihubungkan ke domain Active Directory.</translation>
 <translation id="4147054660081653009">Sijil pelanggan untuk bersambung ke RemoteAccessHostTokenValidationUrl.
 
           Jika dasar ini ditetapkan, hos akan menggunakan sijil pelanggan dengan CN pengeluar yang dinyatakan untuk mengesahkan kepada RemoteAccessHostTokenValidationUrl. Tetapkannya kepada "*" untuk menggunakan sebarang sijil pelanggan yang tersedia.
@@ -1207,7 +1229,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="4467952432486360968">Sekat kuki pihak ketiga</translation>
 <translation id="4474167089968829729">Dayakan penyimpanan kata laluan pada pengurus kata laluan</translation>
 <translation id="4476769083125004742">Jika dasar ini ditetapkan kepada <ph name="BLOCK_GEOLOCATION_SETTING" />, apl Android tidak boleh mengakses maklumat lokasi. Jika anda menetapkan dasar ini kepada nilai lain atau membiarkannya tidak ditetapkan, pengguna akan diminta memberi kebenaran semasa apl Android ingin mengakses maklumat lokasi.</translation>
-<translation id="447686899376429408">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, pengguna akan dapat menghantar tab, tapak atau desktop daripada penyemak imbas. Jika ditetapkan kepada palsu, pilihan ini akan dilumpuhkan.</translation>
 <translation id="4480694116501920047">SafeSearch Paksa</translation>
 <translation id="4482640907922304445">Memaparkan butang Laman Utama pada bar alat <ph name="PRODUCT_NAME" />.
 
@@ -1218,6 +1239,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />.
 
       Membiarkan tetapan tanpa ditetapkan akan membolehkan pengguna memilih sama ada untuk memaparkan butang laman utama atau tidak.</translation>
+<translation id="4485425108474077672">Konfigurasi URL halaman Tab Baharu</translation>
 <translation id="4492287494009043413">Lumpuhkan pengambilan tangkapan skrin</translation>
 <translation id="450537894712826981">Mengkonfigurasikan saiz cache yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan fail media cache pada cakera.
 
@@ -1639,6 +1661,12 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 
           Jika tetapan ini dilumpuhkan atau tidak dikonfigurasikan, permintaan pengesahan gnubby tidak akan diproksikan.</translation>
 <translation id="5898486742390981550">Apabila beberapa orang pengguna mengelog masuk, pengguna utama sahaja yang boleh menggunakan apl Android.</translation>
+<translation id="5906199912611534122">Membenarkan pendayaan atau pelumpuhan pendikitan rangkaian.
+      Dasar ini terpakai kepada semua pengguna dan kepada semua antara muka pada peranti. Setelah ditetapkan,
+            pendikitan terus aktif sehingga dasar diubah untuk melumpuhkan pendikitan.
+
+      Jika ditetapkan kepada palsu, tiada pendikitan.
+      Jika ditetapkan kepada benar, sistem didikitkan untuk mencapai kadar muat naik dan muat turun yang ditentukan (dalam kbit/s).</translation>
 <translation id="5921713479449475707">Benarkan muat turun auto kemas kini melalui HTTP</translation>
 <translation id="5921888683953999946">Tetapkan keadaan lalai ciri kebolehcapaian kursor besar pada skrin log masuk. 
 
@@ -1766,6 +1794,46 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="6282799760374509080">Benarkan atau nafikan rakaman audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Dayakan autolengkap nama domain semasa log masuk pengguna</translation>
+<translation id="6312861131491040487">
+          Menentukan satu senarai apl dan sambungan yang dipasang secara senyap,
+          tanpa interaksi pengguna dan tidak boleh dinyahpasang oleh
+          pengguna. Semua kebenaran yang diminta oleh apl/sambungan diberikan
+          secara tersirat, tanpa interaksi pengguna, termasuk sebarang kebenaran
+          tambahan yang diminta oleh versi apl/sambungan yang akan datang.
+          Selain itu, kebenaran diberikan untuk
+          API sambungan enterprise.deviceAttributes dan enterprise.platformKeys.
+          (Kedua-dua API ini tidak tersedia kepada apl/sambungan yang
+          tidak dipaksa pasang.)
+
+          Dasar ini diberi keutamaan berbanding dasar ExtensionsInstallBlacklist
+          yang mungkin bercanggah. Jika apl atau sambungan yang
+          telah dipaksa pasang sebelum ini dialih keluar daripada senarai ini,
+          apl atau sambungan ini akan dinyahpasang secara automatik oleh <ph name="PRODUCT_NAME" />.
+
+          Untuk kejadian Windows yang tidak dihubungkan kepada domain Active
+          Directory, pemasangan paksa dihadkan kepada apl dan sambungan yang
+          disenaraikan dalam Gedung Web Chrome.
+
+          Harap maklum bahawa kod sumber mana-mana sambungan boleh diubah oleh pengguna melalui
+          Alatan Pembangun (mungkin menyebabkan sambungan tidak berfungsi).
+          Jika hal ini menimbulkan masalah, dasar DeveloperToolsDisabled
+          hendaklah ditetapkan.
+
+          Setiap item senarai dasar adalah rentetan yang mengandungi ID sambungan
+          dan URL "kemas kini" yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />). ID sambungan adalah rentetan 32 huruf
+          yang ditemui, misalnya pada <ph name="CHROME_EXTENSIONS_LINK" /> semasa dalam
+          mod pembangun. URL "kemas kini" hendaklah membawa kepada dokumen
+          XML Manifes Kemas Kini seperti yang diterangkan di <ph name="LINK_TO_EXTENSION_DOC1" />. Ambil
+          perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ini hanya digunakan
+          untuk pemasangan dalaman; kemas kini sambungan yang seterusnya menggunakan URL
+          kemas kini yang dinyatakan dalam manifes sambungan.
+
+          Contohnya, <ph name="EXTENSION_POLICY_EXAMPLE" />
+          memasang apl <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> daripada URL "kemas kini" Gedung Web Chrome
+          yang standard. Untuk mendapatkan maklumat lanjut tentang pengehosan sambungan, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, tiada apl atau sambungan dipasang
+          secara automatik dan pengguna boleh menyahpasang sebarang apl atau sambungan dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome memaparkan halaman amaran apabila pengguna menavigasi ke tapak yang mempunyai ralat SSL. Secara lalai atau apabila dasar ini ditetapkan kepada benar, pengguna dibenarkan mengklik lalu halaman amaran ini.
       Pengguna tidak dibenarkan mengklik lalu sebarang halaman amaran apabila dasar ini ditetapkan kepada palsu.</translation>
 <translation id="6353901068939575220">Menentukan parameter yang digunakan apabila mencari URL dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {searchTerms} dalam contoh di atas, nilai ini akan digantikan dengan data istilah carian sebenar.
@@ -1936,6 +2004,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="687046793986382807">Dasar ini telah ditamatkan bermula <ph name="PRODUCT_NAME" /> versi 35.
 
       Walau bagaimanapun, maklumat memori tetap dilaporkan pada halaman, tanpa mengira nilai pilihan tetapi saiz yang dilaporkan adalah anggaran dan kadar kemas kini dihadkan atas tujuan keselamatan. Untuk mendapatkan data masa nyata yang tepat, sila gunakan alatan seperti Telemetri.</translation>
+<translation id="6894178810167845842">URL halaman Tab Baharu</translation>
 <translation id="6899705656741990703">Tetapan proksi auto kesan</translation>
 <translation id="6903814433019432303">Dasar ini aktif dalam mod runcit sahaja.
 
@@ -2071,6 +2140,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7132877481099023201">URL yang akan diberikan akses kepada peranti tangkapan video tanpa gesaan</translation>
 <translation id="7167436895080860385">Benarkan pengguna menunjukkan kata laluan dalam Pengurus Kata Laluan (ditamatkan)</translation>
 <translation id="7173856672248996428">Profil tidak kekal</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Jenis sambungan yang dibenarkan untuk kemas kini</translation>
 <translation id="7194407337890404814">Nama pembekal carian lalai</translation>
 <translation id="7195064223823777550">Menyatakan tindakan yang perlu diambil apabila pengguna menutup penutup.

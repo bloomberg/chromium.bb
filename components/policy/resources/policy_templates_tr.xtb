@@ -378,13 +378,13 @@ Bu ayar true (doğru) değerinde yapılandırılırsa veya hiç yapılandırılm
 
       Bu ayar yapılandırılmazsa, kullanıcılar yazım denetimi hizmetinin kullanılıp kullanılmayacağını belirleyebilirler.</translation>
 <translation id="2294382669900758280">Bu politika <ph name="TRUE" /> seçeneğine ayarlansa bile Android uygulamalarında video oynatma dikkate alınmaz.</translation>
+<translation id="2298647742290373702"><ph name="PRODUCT_NAME" /> ürününde varsayılan Yeni Sekme sayfasını yapılandırın.</translation>
 <translation id="2299220924812062390">Etkinleştirilmiş eklentilerin listesini belirt</translation>
 <translation id="2309390639296060546">Varsayılan coğrafi konum ayarı</translation>
 <translation id="2312134445771258233">Başlangıçta yüklenen sayfaları yapılandırmanıza olanak verir. 'Başlangıçtaki işlem' içinde 'URL listesi aç'ı seçmediğiniz sürece 'Başlangıçta açılan URL'ler' listesinin içeriği göz ardı edilir.</translation>
 <translation id="2337466621458842053">Resimleri görüntülemelerine izin verilen sitelerin belirtildiği bir URL kalıpları listesini ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultImagesSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
-<translation id="2366415278352956652">Yayınlamayı etkinleştirir</translation>
 <translation id="2372547058085956601">Herkese açık oturum otomatik giriş gecikmesi.
 
       |DeviceLocalAccountAutoLoginId| politikası ayarlanmadıysa, bu politikanın etkisi olmaz. Aksi halde:
@@ -901,6 +901,21 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="3547954654003013442">Proxy ayarları</translation>
 <translation id="3570008976476035109">Bu sitelerde eklentileri engelle</translation>
 <translation id="3591584750136265240">Giriş için kimlik doğrulama yöntemini yapılandır</translation>
+<translation id="3601614035698083789">Yönetilen yer işaretleri listesini yapılandırır.
+
+      Politika, yer işaretleri listesinden oluşur; bu yer işaretlerinden her biri 
+      <ph name="NAME" /> ve <ph name="URL_LABEL" /> anahtarlarını içeren ve yer işaretinin adı ile hedefini barındıran bir sözlüktür.
+      Bir <ph name="URL_LABEL" /> anahtarı içermeyen, ancak yukarıda tanımlandığı gibi yer işareti listesini (bunlardan
+      bazıları yine klasör olabilir) barındıran ek bir <ph name="CHILDREN" /> anahtarına sahip yer işareti tanımlanarak
+      bir alt klasör yapılandırılabilir. <ph name="PRODUCT_NAME" />, eksik URL'leri, Çok Amaçlı Adres Çubuğu kullanılarak
+      gönderilmiş gibi düzeltir; örneğin <ph name="GOOGLE_COM" />, <ph name="HTTPS_GOOGLE_COM" /> olur.
+
+      Bu yer işaretleri, kullanıcı tarafından üzerinde değişiklik yapılamayan bir "Yönetilen yer işaretleri"
+      klasörüne konur, ancak kullanıcı bu klasörü yer işareti çubuğunda gizlemeyi seçebilir. Yönetilen yer işaretleri
+      kullanıcı hesabıyla senkronize edilmez ve uzantılar kullanılarak üzerinde değişiklik yapılamaz.
+
+      Sürüm 51'den itibaren, bir {"toplevel_name": "some name"} liste öğesi eklenerek yer işaretlerinin
+      klasör adı özelleştirilebilir.</translation>
 <translation id="3627678165642179114">Yazım denetimi Web hizmetini etkinleştir veya devre dışı bırak</translation>
 <translation id="3646859102161347133">Ekran büyüteci türünü ayarla</translation>
 <translation id="3653237928288822292">Varsayılan arama sağlayıcı simgesi</translation>
@@ -1114,6 +1129,17 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sabit kodlu uyumsuz, eski ve
 
       Bu politika yanlış (false) değerine ayarlanırsa kullanıcılar ekranı kilitleyemez (sadece kullanıcı oturumunu kapatmaları mümkün olur). Bu ayar doğru (true) değerine ayarlanırsa veya ayarlanmadan bırakılırsa, bir şifreyle kimlik doğrulaması yapan kullanıcılar ekranı kilitleyebilir.</translation>
 <translation id="4121350739760194865">Uygulama tanıtımlarının yeni sekme sayfasında görünmesini önle</translation>
+<translation id="4133301551755536858"><ph name="PRODUCT_NAME" /> ürününde varsayılan Yeni Sekme sayfasının URL'sini yapılandırır ve kullanıcıların değiştirmesini önler.
+
+          Yeni Sekme sayfası, yeni sekme oluşturulduğunda (yeni pencerede açılmış olanlar dahil) açılan sayfadır.
+
+          Bu politika başlangıçta hangi sayfaların açılacağını belirlemez. Bu sayfalar Yeni Sekme sayfasını açabilen RestoreOnStartup politikaları ile kontrol edilir.
+
+          NewTabPageLocation, burada belirttiğiniz bir URL'ye ayarlanabilir. Ayrıca Yeni Sekme sayfasını açacak şekilde ayarlanırsa Ana Sayfa'yı, Yeni Sekme sayfasına ayarlanırsa başlangıç sayfasını da etkiler.
+
+          Politika ayarlanmaz veya boş bırakılırsa varsayılan yeni sekme sayfası kullanılır.
+
+          Bu politika bir Active Directory alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="4147054660081653009">RemoteAccessHostTokenValidationUrl'ye bağlanmak için istemci sertifikası.
 
           Bu politika ayarlanırsa ana makine, RemoteAccessHostTokenValidationUrl'ye erişim için kimlik doğrulaması yapmak üzere, belirtilen yayıncı CN'sine (Ortak Ad) sahip bir istemci sertifikasını kullanır. Mevcut istemci sertifikalarından herhangi birisinin kullanılabilmesi için "*" olarak ayarlayın.
@@ -1192,7 +1218,6 @@ politikayı geçersiz kılamaz.
 <translation id="4467952432486360968">Üçüncü taraf çerezlerini engelle</translation>
 <translation id="4474167089968829729">Şifrelerin, şifre yöneticisine kaydedilmesini etkinleştir</translation>
 <translation id="4476769083125004742">Bu politika <ph name="BLOCK_GEOLOCATION_SETTING" /> seçeneğine ayarlanırsa Android uygulamaları konum bilgisine erişemez. Bu politikayı başka bir değere ayarlar veya ayarlamadan bırakırsanız, bir Android uygulaması konum bilgisine erişmek istediğinde kullanıcıdan izin istenir.</translation>
-<translation id="447686899376429408">Bu politika doğru (true) değerine ayarlanırsa veya ayarlanmadan bırakılırsa kullanıcılar sekmeleri, siteleri veya masaüstünü tarayıcıdan yayınlayabilirler. Yanlış (false) değerine ayarlanırsa bu seçenek devre dışı bırakılır.</translation>
 <translation id="4480694116501920047">Güvenli Arama'nın kullanılmasını zorunlu tut</translation>
 <translation id="4482640907922304445"><ph name="PRODUCT_NAME" /> araç çubuğunda Ana Sayfa düğmesini gösterir.
 
@@ -1203,6 +1228,7 @@ politikayı geçersiz kılamaz.
       Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar <ph name="PRODUCT_NAME" /> ürününde bu ayarı değiştiremez veya geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa, kullanıcı ana sayfa düğmesinin gösterilip gösterilmeyeceğini seçebilir.</translation>
+<translation id="4485425108474077672">Yeni Sekme sayfasının URL'sini yapılandır</translation>
 <translation id="4492287494009043413">Ekran görüntüleri almayı devre dışı bırak</translation>
 <translation id="450537894712826981">Önbelleğe alınan medya dosyalarının diskte depolanması için <ph name="PRODUCT_NAME" /> tarafından kullanılacak önbellek boyutunu yapılandırır.
 
@@ -1623,6 +1649,11 @@ Bu politika ayarlanmadan bırakılırsa "DisabledPlugins" içindeki kalıplarla 
 
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa gnubby kimlik doğrulama isteklerinde proxy kullanılmaz.</translation>
 <translation id="5898486742390981550">Birden fazla kullanıcı giriş yaptığında, yalnızca birincil kullanıcı Android uygulamalarını kullanabilir.</translation>
+<translation id="5906199912611534122">Ağ daraltma işlemini etkinleştirmeye veya devre dışı bırakmaya izin verir.
+      Bu, tüm kullanıcılar ve cihazdaki tüm arayüzler için geçerlidir. Ayarlandığında, politika bu özelliği devre dışı bırakacak şekilde değiştirilmedikçe daraltma devam eder.
+
+      Yanlış (false) değerine ayarlanırsa daraltma olmaz.
+      Doğru (true) değerine ayarlanırsa sunulan yükleme ve indirme hızlarına (kbit/sn.) ulaşmak için sistem daraltılır.</translation>
 <translation id="5921713479449475707">HTTP aracılığıyla otomatik güncelleme indirmeye izin ver</translation>
 <translation id="5921888683953999946">Giriş ekranında büyük imleç erişilebilirlik özelliğinin varsayılan durumunu ayarla.
 
@@ -1749,6 +1780,48 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
 <translation id="6282799760374509080">Ses yakalamaya izin verme veya reddetme</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Kullanıcı oturum açarken alan adı otomatik doldurma özelliğini etkinleştir</translation>
+<translation id="6312861131491040487">
+          Kullanıcı müdahalesi olmadan, sessiz şekilde yüklenecek ve kullanıcı tarafından
+          kaldırılamayacak uygulamaların ve uzantıların listesini belirlemenize
+          olanak sağlar. Uygulamalar/uzantılar tarafından istenen tüm izinler ve
+          uygulamanın/uzantının gelecekteki sürümleri tarafından istenecek ek
+          izinler kullanıcı etkileşimi olmadan, örtülü olarak verilir.
+          Ayrıca, izinler enterprise.deviceAttributes ve enterprise.platformKeys
+          uzantı API'leri için verilir. (Bu iki API zorunlu olarak yüklenmemiş
+          uygulamalar/uzantılar tarafından kullanılamaz.)
+
+          Bu politika, çakışabilecek bir ExtensionsInstallBlacklist politikasına göre
+          önceliklidir. Daha önce zorunlu olarak yüklenmiş bir uygulama veya
+          uzantı bu listeden kaldırılırsa <ph name="PRODUCT_NAME" /> tarafından da yüklemesi
+          otomatik olarak kaldırılır.
+
+          Bir Active Directory alan adına katılmamış Windows örnekleri için 
+          zorunlu olarak yüklenen uygulamalar ve uzantılar yalnızca Chrome
+          Web Mağazası'nda listelenenlerle sınırlıdır.
+
+          Bir uzantının kaynak kodunun kullanıcılar tarafından Geliştirici Araçları
+          kullanılarak (uzantının işlevselliğini devre dışı bırakabilecek şekilde)
+          değiştirilebileceğini unutmayın. Böyle bir endişe olması durumunda,
+          DeveloperToolsDisabled politikası ayarlanmalıdır.
+
+          Politikaya ait her liste öğesi, noktalı virgülle (<ph name="SEMICOLON" />) ayrılmış bir
+          uzantı kimliği ve bir "güncelleme" URL'si içeren bir dizedir. Uzantı kimliği,
+          örneğin, geliştirici modundayken <ph name="CHROME_EXTENSIONS_LINK" /> bağlantısında
+          bulunabilen 32 harfli bir dizedir. "Güncelleme" URL'si, <ph name="LINK_TO_EXTENSION_DOC1" />
+          belgesinde açıklandığı gibi bir Güncelleme Manifest XML belgesine işaret
+          etmelidir. Bu politikada ayarlanmış "güncelleme" URL'sinin sadece ilk
+          yükleme için kullanıldığına, uzantının sonraki güncellemelerinde ise
+          uzantının manifest dosyasında belirtilen güncelleme URL'sinin kullanıldığına
+          dikkat edin.
+
+          Örneğin, <ph name="EXTENSION_POLICY_EXAMPLE" />, standart Chrome Web Mağazası
+          "güncelleme" URL'sinden <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />
+          uygulamasını yükler. Uzantıların barındırılması ile ilgili daha fazla bilgi için
+          bkz. <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Bu politika ayarlanmadan bırakılırsa, hiçbir uygulama veya uzantı otomatik
+          olarak yüklenmez
+          ve kullanıcı <ph name="PRODUCT_NAME" /> ürünündeki uygulama veya uzantıları kaldırabilir.</translation>
 <translation id="6315673513957120120">Kullanıcılar SSL hatalarına neden olan sitelere gittiğinde Chrome bir uyarı iletisi görüntüler. Varsayılan olarak veya bu politika doğru seçeneğine ayarlandığında, kullanıcıların bu uyarı sayfalarını tıklamalarına izin verilir.
       Bu politika yanlış seçeneğine ayarlanırsa, kullanıcılar uyarı sayfalarını tıklayamazlar.</translation>
 <translation id="6353901068939575220">POST ile bir URL ararken kullanılacak parametreleri belirtir. Virgülle ayrılmış ad/değer çiftlerini içeren bir listeden oluşur. Bir değer, yukarıdaki örnekteki {searchTerms} gibi bir şablon parametresi ise, gerçek arama terimleri verisiyle değiştirilir.
@@ -1922,6 +1995,7 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
       Bellek bilgisi, seçenek değerinden bağımsız olarak her şekilde sayfada raporlanır, ancak
       raporlanan boyutlar sayısal hale getirilir ve güncelleme hızı güvenlik nedeniyle sınırlanır. Gerçek zamanlı
       doğru veriler edinmek için lütfen Telemetry gibi araçlar kullanın.</translation>
+<translation id="6894178810167845842">Yeni Sekme sayfasının URL'si</translation>
 <translation id="6899705656741990703">Proxy ayarlarını otomatik olarak algıla</translation>
 <translation id="6903814433019432303">Bu politika sadece perakende modunda etkindir.
 
@@ -2054,6 +2128,7 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="7132877481099023201">Soru sorulmadan video yakalama cihazlarına erişim verilecek URL'ler</translation>
 <translation id="7167436895080860385">Kullanıcıların şifreleri Şifre Yöneticisi'nde görüntülemelerine izin ver (kullanımdan kalktı)</translation>
 <translation id="7173856672248996428">Geçici profil</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Güncellemeler için izin verilen bağlantı türleri</translation>
 <translation id="7194407337890404814">Varsayılan arama sağlayıcının adı</translation>
 <translation id="7195064223823777550">Kullanıcı kapağı kapattığında uygulanacak işlemi belirtin.

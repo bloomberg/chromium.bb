@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, aç</translation>
 <translation id="1692077714702418899">yapısal satır</translation>
 <translation id="1700517974991662022">Ziyaret edildi</translation>
+<translation id="1714116687360794776">Ölçüm aracı</translation>
 <translation id="1722567105086139392">Bağlantı</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Sonraki grafik</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Tarih/saat denetimi</translation>
 <translation id="2347456970887948350">Bağlantı</translation>
 <translation id="2359897517538099099">Tablo modunda değil.</translation>
+<translation id="2390264819538553347">İlerlemek için enter tuşuna, geri gitmek için geri tuşuna basın.</translation>
 <translation id="241124561063364910">ardından</translation>
 <translation id="2416512023405990736">İşaretlenmemiş onay kutusu</translation>
 <translation id="2417569100218200841">İçerik bilgileri</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Radyo düğmesi grubu</translation>
 <translation id="2471138580042810658">Başlık 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{yıldız işareti}other{# yıldız işareti}}</translation>
+<translation id="2523609930580546572">ChromeVox Eğiticisi</translation>
 <translation id="2525706221823668172">Chromebook klavye kısayolları</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> sıfırlandı.</translation>
 <translation id="2553108862507765288">grammatical mistake</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Önceki bölüm yok.</translation>
 <translation id="3030432017085518523">Menü öğesi radyo düğmesi</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{kesme işareti}other{# kesme işareti}}</translation>
+<translation id="3040901448410802366">İlerleme göstergesi</translation>
 <translation id="3046838483509668188">ChromeVox Seçenekleri</translation>
 <translation id="3047143736589213134">Deneysel tuş eşleme</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> menüsü açıldı</translation>
@@ -230,6 +234,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'u kullanarak Kapat düğmesine gidin 
 <translation id="3321460131042519426">Kelime kaydırmayı etkinleştir</translation>
 <translation id="3322936298410871309">Önceki 1. düzey başlık</translation>
 <translation id="3323447499041942178">Metin kutusu</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> kaydırma çubuğu</translation>
 <translation id="3353420241558113817">{"ar": "Arapça",
         "bg": "Bulgarca",
         "ca": "Katalanca",
@@ -714,6 +719,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="7693840228159394336">Önceki radyo düğmesi</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, şifre metin kutusu</translation>
+<translation id="7776293189010177726">ChromeVox menülerini aç</translation>
 <translation id="7805247615045262757">varsayılan gezinme</translation>
 <translation id="7805768142964895445">Durum</translation>
 <translation id="7810781339813764006">Sonraki Grup</translation>

@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Deschideți-le pe toate</translation>
 <translation id="1430915738399379752">Printează</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elemente</translation>
+<translation id="1491277525950327607">Atinge de două ori ca să comuți setarea</translation>
 <translation id="1540800554400757039">Adresă 1</translation>
 <translation id="1545749641540134597">Scanează codul QR</translation>
 <translation id="1580783302095112590">E-mail trimis.</translation>
@@ -178,7 +179,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4359125752503270327">Această pagină se va deschide în altă aplicație.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Notificare de confidențialitate</translation>
-<translation id="4426508677408162512">Toate marcajele</translation>
 <translation id="4473991315115669931">Treci în modul incognito</translation>
 <translation id="4526249700380860531">Vezi și gestionează parolele salvate la <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Încearcă să te conectezi din nou.</translation>
@@ -218,6 +218,7 @@ Datele sunt criptate cu expresia de acces pentru sincronizare. Introdu-o pentru 
 <translation id="5300589172476337783">Afișează</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5327248766486351172">Nume</translation>
+<translation id="5332219387342487447">Metoda de expediere</translation>
 <translation id="5388358297987318779">Deschide imaginea</translation>
 <translation id="5409365236829784218">Nicio aplicație instalată nu poate deschide fișierul.</translation>
 <translation id="54401264925851789">Informații privind securitatea paginii</translation>
@@ -270,6 +271,7 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="6255097610484507482">Editați cardul de credit</translation>
 <translation id="6308436439357671616">Astfel, poți să fotografiezi și să încarci fotografiile.</translation>
 <translation id="6314335155547195432">Generează o parolă</translation>
+<translation id="6324528485781869530">Schimbă contul de sincronizare</translation>
 <translation id="6324669097367352121">Setări de conectare</translation>
 <translation id="6337234675334993532">Criptare</translation>
 <translation id="633809752005859102">A apărut o eroare. Ne vom ocupa de asta.</translation>

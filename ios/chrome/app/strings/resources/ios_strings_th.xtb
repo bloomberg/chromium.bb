@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">เปิดทั้งหมด</translation>
 <translation id="1430915738399379752">พิมพ์</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> รายการ</translation>
+<translation id="1491277525950327607">แตะ 2 ครั้งเพื่อสลับการตั้งค่า</translation>
 <translation id="1540800554400757039">ที่อยู่ 1</translation>
 <translation id="1545749641540134597">สแกนโค้ด QR</translation>
 <translation id="1580783302095112590">ส่งอีเมลแล้ว</translation>
@@ -176,7 +177,6 @@
 <translation id="4359125752503270327">หน้านี้จะเปิดในแอปพลิเคชันอื่น</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
 <translation id="441868831736628555">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว</translation>
-<translation id="4426508677408162512">บุ๊กมาร์กทั้งหมด</translation>
 <translation id="4473991315115669931">เข้าสู่โหมดไม่ระบุตัวตน</translation>
 <translation id="4526249700380860531">ดูและจัดการรหัสผ่านที่บันทึกไว้ที่ <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">ลองลงชื่อเข้าใช้อีกครั้ง</translation>
@@ -216,6 +216,7 @@
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5327248766486351172">ชื่อ</translation>
+<translation id="5332219387342487447">วิธีการจัดส่ง</translation>
 <translation id="5388358297987318779">เปิดภาพ</translation>
 <translation id="5409365236829784218">ไม่ได้ติดตั้งแอปพลิเคชันที่สามารถเปิดไฟล์นี้</translation>
 <translation id="54401264925851789">ข้อมูลเกี่ยวกับการรักษาความปลอดภัยของหน้าเว็บ</translation>
@@ -268,6 +269,7 @@
 <translation id="6255097610484507482">แก้ไขบัตรเครดิต</translation>
 <translation id="6308436439357671616">ช่วยให้คุณถ่ายและอัปโหลดรูปภาพได้</translation>
 <translation id="6314335155547195432">สร้างรหัสผ่าน</translation>
+<translation id="6324528485781869530">เปลี่ยนบัญชีที่จะซิงค์</translation>
 <translation id="6324669097367352121">ตั้งค่าลงชื่อเข้าใช้</translation>
 <translation id="6337234675334993532">การเข้ารหัส</translation>
 <translation id="633809752005859102">มีบางสิ่งผิดปกติอย่างมาก เราจะแก้ไขปัญหานี้</translation>

@@ -39,6 +39,7 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="1923539912171292317">Mibofyo ya kiotomatiki</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">Acha kutuma <ph name="TAB_NAME" /> kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Chaja ya nguvu ya chini</translation>
 <translation id="2204305834655267233">Maelezo ya Mtandao</translation>
 <translation id="2208323208084708176">Hali ya eneo-kazi iliyounganishwa</translation>
@@ -149,6 +150,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="5331975486040154427">Kifaa cha USB-C (mlango wa upande wa kushoto nyuma)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Tayari watumiaji wanaopatikana wameongezwa kwenye kikao hiki.</translation>
+<translation id="5504841533973703486">Maikrofoni ya Mbele</translation>
 <translation id="5507786745520522457">Sanidi data ya simu ya mkononi.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">Kiendelezi "<ph name="EXTENSION_NAME" />" kinaweza kusaidia kuunganisha kwenye mtandao huu.</translation>
@@ -160,6 +162,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="57838592816432529">Zima sauti</translation>
 <translation id="5825747213122829519">Mbinu ingizo yako imebadilika hadi <ph name="INPUT_METHOD_ID" />.
 Bonyeza Shift + Alt ili kubadili.</translation>
+<translation id="5830936593837877897">Maikrofoni ya Nyuma</translation>
 <translation id="5871632337994001636">Simamia vifaa...</translation>
 <translation id="5895138241574237353">Zzima na uwashe</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -248,8 +251,10 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="8000066093800657092">Hakuna mtandao</translation>
 <translation id="8054466585765276473">Inakokotoa muda wa betri.</translation>
 <translation id="8077816382010018681">Kichwa cha arifa ya Kipengele cha QU huenda hapa</translation>
+<translation id="8098591350844501178">Acha kutuma skrini kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">Ujumbe wa SMS: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Imeunganishwa kwenye <ph name="NAME" /></translation>
+<translation id="8180896103888046100">Acha kutuma kwenye kipokeaji kisichojulikana</translation>
 <translation id="8185286464235484130">Tupe maoni yako kuhusu huduma yetu kwa kujibu maswali machache.</translation>
 <translation id="8190698733819146287">Geuza lugha na uingizaji kukufaa...</translation>
 <translation id="8206859287963243715">Simu ya Mkononi</translation>

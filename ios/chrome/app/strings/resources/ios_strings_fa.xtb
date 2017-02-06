@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">باز کردن همه</translation>
 <translation id="1430915738399379752">چاپ</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> مورد</translation>
+<translation id="1491277525950327607">برای جابه‌جایی بین تنظیمات، دو ضربه سریع بزنید</translation>
 <translation id="1540800554400757039">آدرس ۱</translation>
 <translation id="1545749641540134597">‏اسکن کد QR</translation>
 <translation id="1580783302095112590">نامه ارسال شد.</translation>
@@ -179,7 +180,6 @@
 <translation id="4359125752503270327">این صفحه در برنامه دیگری باز می‌شود.</translation>
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="441868831736628555">اعلامیه حریم خصوصی</translation>
-<translation id="4426508677408162512">تمام نشانک‌ها</translation>
 <translation id="4473991315115669931">ورود به حالت ناشناس</translation>
 <translation id="4526249700380860531">‏مشاهده و مدیریت گذرواژه‌های ذخیره شده در <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">دوباره برای ورود به سیستم تلاش کنید.</translation>
@@ -219,6 +219,7 @@
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5327248766486351172">نام</translation>
+<translation id="5332219387342487447">روش ارسال کالا</translation>
 <translation id="5388358297987318779">بازکردن تصویر</translation>
 <translation id="5409365236829784218">برنامه‌ای که بتواند این فایل را باز کند در سیستم نصب نشده است.</translation>
 <translation id="54401264925851789">اطلاعات امنیتی صفحه</translation>
@@ -271,6 +272,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6255097610484507482">ویرایش کارت اعتباری</translation>
 <translation id="6308436439357671616">این کار به شما اجازه می‌دهد عکس بگیرید و آن‌ها را بارگذاری کنید.</translation>
 <translation id="6314335155547195432">تولید گذرواژه</translation>
+<translation id="6324528485781869530">تغییر وضعیت حساب همگام‌سازی</translation>
 <translation id="6324669097367352121">تنظیمات ورود به سیستم</translation>
 <translation id="6337234675334993532">رمزگذاری</translation>
 <translation id="633809752005859102">یک مشکل جدی روی داد. برای رفع آن تلاش خواهیم کرد.</translation>

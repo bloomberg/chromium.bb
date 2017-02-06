@@ -39,6 +39,7 @@
 <translation id="1923539912171292317">Αυτόματα κλικ</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">Διακοπή μετάδοσης <ph name="TAB_NAME" /> σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Χαμηλή ισχύς φορτιστή</translation>
 <translation id="2204305834655267233">Πληροφορίες δικτύου</translation>
 <translation id="2208323208084708176">Ενιαία λειτουργία επιφάνειας εργασίας.</translation>
@@ -149,6 +150,7 @@
 <translation id="5331975486040154427">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Όλοι οι διαθέσιμοι χρήστες έχουν ήδη προστεθεί σε αυτήν την περίοδο σύνδεσης.</translation>
+<translation id="5504841533973703486">Μπροστινό μικρόφωνο</translation>
 <translation id="5507786745520522457">Ρύθμιση δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">Η επέκταση "<ph name="EXTENSION_NAME" />" μπορεί να διευκολύνει τη σύνδεση σε αυτό το δίκτυο.</translation>
@@ -160,6 +162,7 @@
 <translation id="57838592816432529">Σίγαση</translation>
 <translation id="5825747213122829519">Η μέθοδος εισαγωγής σας έχει αλλάξει σε <ph name="INPUT_METHOD_ID" />.
 Πατήστε Shift + Alt για εναλλαγή.</translation>
+<translation id="5830936593837877897">Πίσω μικρόφωνο</translation>
 <translation id="5871632337994001636">Διαχείριση συσκευών…</translation>
 <translation id="5895138241574237353">Επανεκκίνηση</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -249,8 +252,10 @@
 <translation id="8000066093800657092">Κανένα δίκτυο</translation>
 <translation id="8054466585765276473">Υπολογισμός χρόνου μπαταρίας που απομένει.</translation>
 <translation id="8077816382010018681">Εδώ εμφανίζεται ο τίτλος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος</translation>
+<translation id="8098591350844501178">Διακοπή μετάδοσης οθόνης σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">Μηνύματα SMS: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Έγινε σύνδεση με το δίκτυο <ph name="NAME" /></translation>
+<translation id="8180896103888046100">Διακοπή μετάδοσης σε άγνωστο δέκτη</translation>
 <translation id="8185286464235484130">Πείτε μας πώς τα πηγαίνουμε απαντώντας σε ορισμένες ερωτήσεις.</translation>
 <translation id="8190698733819146287">Προσαρμογή γλωσσών και εισόδου...</translation>
 <translation id="8206859287963243715">Κινητό</translation>

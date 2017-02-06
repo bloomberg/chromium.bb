@@ -363,11 +363,11 @@
 
        Ha nincs megadva ez a beállítás, akkor a felhasználók választhatnak, hogy használják-e a helyesírás-ellenőrző szolgáltatást vagy sem.</translation>
 <translation id="2294382669900758280">Az androidos alkalmazásokban való videólejátszást a rendszer akkor is figyelmen kívül hagyja, ha a házirend beállítása <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Az alapértelmezett Új lap oldal beállítása a(z) <ph name="PRODUCT_NAME" /> böngészőben.</translation>
 <translation id="2299220924812062390">Adja meg az engedélyezett bővítmények listáját</translation>
 <translation id="2309390639296060546">Helymeghatározás alapértelmezett beállítása</translation>
 <translation id="2312134445771258233">Lehetővé teszi az induláskor betöltött lapok beállítását. Az "Indításkor betöltendő URL-ek" listájának tartalmát figyelmen kívül hagyja, hacsak a "Teendő indításkor" részben nem az "URL-ek listájának megnyitása" lehetőséget választja.</translation>
 <translation id="2337466621458842053">Lehetővé teszi az olyan webhelyeket meghatározó URL-minták listájának összeállítását, amelyek esetében engedélyezett a képek megjelenítése. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultImagesSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
-<translation id="2366415278352956652">Lehetővé teszi az átküldést</translation>
 <translation id="2372547058085956601">A nyilvános munkamenet automatikus bejelentkezési késleltetése.
 
       Ha a |DeviceLocalAccountAutoLoginId| házirend nincs beállítva, akkor nincs semmilyen hatása. Máskülönben:
@@ -862,6 +862,17 @@
 <translation id="3547954654003013442">Proxybeállítások</translation>
 <translation id="3570008976476035109">Bővítmények tiltása ezeken a webhelyeken</translation>
 <translation id="3591584750136265240">Bejelentkezési hitelesítési viselkedés konfigurálása</translation>
+<translation id="3601614035698083789">A kezelt könyvjelzők listáját konfigurálja.
+
+      A házirend könyvjelzők listájából áll, és mindegyik könyvjelző <ph name="NAME" /> és <ph name="URL_LABEL" />
+      kulcsot tartalmazó szótár; a kulcsok a könyvjelző nevét és URL-jét tárolják.
+      Almappát úgy konfigurálhat, hogy <ph name="URL_LABEL" /> kulcs nélküli könyvjelzőt határoz meg, amely azonban további, <ph name="CHILDREN" /> kulccsal rendelkezik.
+      Ez a kulcs maga tartalmazza a könyvjelzők (amelyek közül néhány mappa is lehet) fentiekben meghatározottak szerinti listáját.
+      A(z) <ph name="PRODUCT_NAME" /> úgy egészíti ki a nem teljes URL-eket, mintha azok a cím- és keresősávon keresztül lettek volna beküldve. Így például a <ph name="GOOGLE_COM" /> kiegészül a következőre: <ph name="HTTPS_GOOGLE_COM" />.
+
+      Ezeket a könyvjelzőket a rendszer a „Kezelt könyvjelzők” mappába helyezi, amelyet a felhasználó nem módosíthat, ám elrejthet a könyvjelzősávról. A kezelt könyvjelzőket a rendszer nem szinkronizálja a felhasználó fiókjával, és bővítmények sem módosíthatják őket.
+
+      Az 51-es verziótól kezdődően a könyvjelzőket tartalmazó mappa neve személyre szabható a {"toplevel_name": "some name"} listaelem hozzáadásával.</translation>
 <translation id="3627678165642179114">Engedélyezi vagy letiltja az internetes helyesírás-ellenőrző szolgáltatást</translation>
 <translation id="3646859102161347133">Nagyító típusának beállítása</translation>
 <translation id="3653237928288822292">Alapértelmezett keresési szolgáltató ikonja</translation>
@@ -1065,6 +1076,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha a házirend értéke hamis, a felhasználók nem tudják zárolni a képernyőt (csak a felhasználói munkamenetből való kijelentkezés lesz lehetséges). Ha a beállítás igaz, vagy ha nincs megadva, a jelszóval hitelesített felhasználók zárolhatják a képernyőt.</translation>
 <translation id="4121350739760194865">Megakadályozza az alkalmazáspromóciók megjelenését az új lap oldalon</translation>
+<translation id="4133301551755536858">Az alapértelmezett Új lap oldalt állítja be a(z) <ph name="PRODUCT_NAME" /> böngészőben, és megakadályozza, hogy a felhasználók módosítsák.
+
+          Az Új lap oldal nyílik meg új lapok létrehozásakor (ideérte az új ablakban megnyitott lapokat is).
+
+          Ez a házirend nem határozza meg, hogy indításkor melyik oldalak nyíljanak meg. Azt a RestoreOnStartup házirendek irányítják, amelyek az Új lap oldal megnyitására lehetnek állítva.
+
+          A NewTabPageLocation házirendet be lehet állítani URL-re, amelyet itt ad meg. Ez a Kezdőlapra is hatással van, ha úgy van beállítva, hogy az Új lap oldal nyíljon meg, valamint a kezdőoldalra is, ha az Új lap oldalra van állítva.
+
+          Ha a házirend nincs beállítva, vagy üresen marad, a böngésző az alapértelmezett új lap oldalt használja.
+
+          Ez a házirend nem áll rendelkezésre olyan Windows-példányokon, amelyek nem tartoznak Active Directory-domainhez.</translation>
 <translation id="4147054660081653009">Klienstanúsítvány a RemoteAccessHostTokenValidationUrl eléréséhez.
 
           Ha a házirend be van állítva, akkor a gazdagép a megadott tanúsítványkibocsátói Common Name-mel (a tanúsítványban szereplő névvel) ellátott klienstanúsítvány használatával hitelesíti magát a RemoteAccessHostTokenValidationUrl címén. A „*” érték azt jelenti, hogy bármilyen rendelkezésre álló klienstanúsítvány használható.
@@ -1142,9 +1164,9 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4467952432486360968">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="4474167089968829729">Jelszavak mentésének aktiválása a jelszókezelőben</translation>
 <translation id="4476769083125004742">Ha a házirend beállítása <ph name="BLOCK_GEOLOCATION_SETTING" />, az Android-alkalmazások nem férhetnek hozzá a helyadatokhoz. Ha a házirendet más értékre állítja, vagy ha nem ad meg beállítást, a rendszer a felhasználó beleegyezését kéri, ha valamelyik Android-alkalmazás hozzá kíván férni a helyadatokhoz.</translation>
-<translation id="447686899376429408">Ha értéke igaz, vagy ha nincs beállítva, a felhasználók átküldhetnek lapokat, webhelyeket vagy az asztalt a böngészőből. Ha értéke hamis, ez a lehetőség le lesz tiltva.</translation>
 <translation id="4480694116501920047">Kényszerített Biztonságos Keresés</translation>
 <translation id="4482640907922304445">Megjeleníti a Kezdőoldal gombot az <ph name="PRODUCT_NAME" /> eszköztárán. Ha engedélyezi ezt a beállítást, a Kezdőoldal gomb mindig látható. Ha letiltja a beállítást, a Kezdőoldal gomb soha nem látható. Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül a <ph name="PRODUCT_NAME" /> ezen beállítását. Ha a házirend nincs beállítva, a felhasználó dönthet a Kezdőoldal gomb megjelenítéséről.</translation>
+<translation id="4485425108474077672">Az Új lap oldal URL-jének beállítása</translation>
 <translation id="4492287494009043413">Képernyőképek készítésének letiltása</translation>
 <translation id="450537894712826981">Konfigurálja a gyorsítótár méretét, amelyet a(z) <ph name="PRODUCT_NAME" /> arra használ, hogy a gyorsítótárazott médiafájlokat a merevlemezen tárolja.
 
@@ -1530,6 +1552,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ha a beállítás tiltva van, vagy nincs konfigurálva, akkor a rendszer nem proxyzza a gnubby hitelesítési kéréseket.</translation>
 <translation id="5898486742390981550">Ha több felhasználó van bejelentkezve, csak az elsődleges felhasználó használhat Android-alkalmazásokat.</translation>
+<translation id="5906199912611534122">Lehetővé teszi a hálózatszabályozás engedélyezését és letiltását.
+      Minden felhasználóra és az eszköz minden felületére vonatkozik. A beállítást
+      követően a szabályozás a házirend kikapcsolásáig érvényben marad.
+
+      Ha a házirend értéke hamis, akkor nincs szabályozás.
+      Ha a házirend értéke igaz, akkor szabályozza a rendszert a megadott
+      feltöltési és letöltési sebességének eléréséhez (kbit/s értékben megadva).</translation>
 <translation id="5921713479449475707">Automatikus frissítési letöltések engedélyezése HTTP-n keresztül</translation>
 <translation id="5921888683953999946">A nagy egérmutató kisegítő lehetőség alapértelmezett állapotának megadása a bejelentkezési képernyőn.
 
@@ -1647,6 +1676,48 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6282799760374509080">Hangrögzítés engedélyezése vagy tiltása</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">A domainnév felhasználói bejelentkezés közbeni automatikus kiegészítésének engedélyezése</translation>
+<translation id="6312861131491040487">
+          Meghatározza azon alkalmazások és bővítmények listáját, amelyeket a rendszer háttérben,
+          felhasználói beavatkozás nélkül telepít, és amelyeket a felhasználó 
+          nem tud letörölni. A rendszer az alkalmazások/bővítmények által kért valamennyi engedélyt
+          implicit módon, felhasználói beavatkozás nélkül adja meg, ideértve az
+          alkalmazás/bővítmény jövőbeni verziói által kért engedélyeket is.
+          A rendszer engedélyt ad továbbá az enterprise.deviceAttributes
+          és az enterprise.platformKeys bővítmény API-k számára.
+          (Ez a két API nem hozzáférhető a nem kényszerített telepítésű
+          alkalmazások/bővítmények számára.)
+
+          Ez a házirend előnyt élvez a potenciálisan ellentétes
+          ExtensionsInstallBlacklist házirenddel szemben. Ha valamelyik
+          korábban kényszerítetten telepített alkalmazás vagy bővítmény
+          lekerül a listáról, akkor azt a(z) <ph name="PRODUCT_NAME" /> automatikusan eltávolítja.
+
+          Active Directory-domainhez nem tartozó Windows-példányokon a
+          kényszerített telepítés a Chrome Internetes áruházban megtalálható
+          alkalmazásokra és bővítményekre korlátozódik.
+
+          Jó, ha tudja, hogy a felhasználók a Fejlesztőeszközökkel bármelyik
+          bővítmény forráskódját módosíthatják (a bővítményt akár
+          működésképtelenné is tehetik). Ha ez problémát jelent, akkor
+          engedélyezni kell a DeveloperToolsDisabled házirendet.
+
+          A házirend mindegyik listaeleme olyan karakterlánc, amely pontosvesszővel
+          (<ph name="SEMICOLON" />) elválasztva tartalmazza a bővítményazonosítót és a „frissítési”
+          URL-t. A bővítményazonosító az a 32 betűs karakterlánc, amely pl. a
+          <ph name="CHROME_EXTENSIONS_LINK" /> linken található fejlesztői módban.
+          A „frissítési” URL-nek a következő linken ismertetett frissítési jegyzék XML-
+          dokumentumra kell mutatnia: <ph name="LINK_TO_EXTENSION_DOC1" />. Fontos:
+          Az ebben a házirendben megadott „frissítési” URL csak a kezdeti
+          telepítés céljára szolgál; a bővítmény későbbi frissítései a bővítmény
+          jegyzékfájljában megadott frissítési URL-t használják.
+
+          Például a(z) <ph name="EXTENSION_POLICY_EXAMPLE" /> a Chrome Internetes áruház normál „frissítési”
+          URL-jéről telepíti a(z) <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> alkalmazást.
+          A bővítmények tárolásával kapcsolatos további információt a következő linken talál: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Ha a házirend beállítatlanul marad, az alkalmazások és bővítmények
+          nem települnek automatikusan, a felhasználó bármelyik alkalmazást
+          vagy bővítményt letörölheti a(z) <ph name="PRODUCT_NAME" /> böngészőben.</translation>
 <translation id="6315673513957120120">A Chrome figyelmeztető oldalt jelenít meg, amikor a felhasználó SSL-hibával rendelkező webhelyre navigál. Alapértelmezés szerint, illetve a házirend igaz értékre állításakor a felhasználók továbbléphetnek az ilyen figyelmeztető oldalakról.
       Ha a házirend értéke hamis, akkor a felhasználók nem juthatnak tovább a figyelmeztető oldalon.</translation>
 <translation id="6353901068939575220">Megadja az URL-ek POST metódussal történő keresésekor használt paramétereket. Vesszővel elválasztott név–érték párokat tartalmaz. Ha az egyik érték egy sablonparaméter, ami a fenti példában a {searchTerms}, valódi keresési kifejezések kerülnek a helyére.
@@ -1809,6 +1880,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       A memóriainformációkat tartalmazó jelentéseket a beállítás értékétől függetlenül megkapja az oldal, de a jelentett méretek
       kvantálva vannak, ezenkívül biztonsági okokból a frissítési gyakoriság is korlátozva van. Valósidejű, pontos adatok lekéréséhez
       használjon más eszközt, például a Telemetryt.</translation>
+<translation id="6894178810167845842">Új lap oldal URL-je</translation>
 <translation id="6899705656741990703">Automatikus proxyfelismerés beállításai</translation>
 <translation id="6903814433019432303">Ez a házirend csak kiállító módban aktív.
 
@@ -1928,6 +2000,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7132877481099023201">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a videorögzítő eszközökhöz</translation>
 <translation id="7167436895080860385">Lehetővé teszi, hogy a felhasználók megjelenítsék a jelszavakat a Jelszókezelőben (megszüntetve)</translation>
 <translation id="7173856672248996428">Ideiglenes profil</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Frissítésekhez engedélyezett csatlakozási típusok</translation>
 <translation id="7194407337890404814">Az alapértelmezett keresési szolgáltató neve</translation>
 <translation id="7195064223823777550">Meghatározza az elvégzendő műveletet, ha a felhasználó lecsukja a fedelet.

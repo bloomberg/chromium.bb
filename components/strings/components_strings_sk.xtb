@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Funkcia Bezpečné prehliadanie Google nedávno <ph name="BEGIN_LINK" />zistila malvér<ph name="END_LINK" /> na webe <ph name="SITE" />. Weby, ktoré sú zvyčajne bezpečné, môžu byť niekedy nakazené malvérom. Škodlivý obsah pochádza od hostiteľa <ph name="SUBRESOURCE_HOST" />, ktorý je známym distribútorom malvéru. <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">Neplatná žiadosť alebo parametre žiadosti</translation>
 <translation id="1834321415901700177">Tento web obsahuje škodlivé programy</translation>
-<translation id="1838667051080421715">Zobrazuje sa vám zdroj webovej stránky.</translation>
 <translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC webovej adresy.</translation>
+<translation id="187918866476621466">Otvoriť stránky pri spustení</translation>
 <translation id="1883255238294161206">Zbaliť zoznam</translation>
 <translation id="1898423065542865115">Filtrovanie</translation>
 <translation id="194030505837763158">Prejdite na stránku <ph name="LINK" /></translation>
@@ -275,6 +275,7 @@
 <translation id="3655670868607891010">Ak sa vám táto stránka zobrazuje často, skúste použiť tieto stránky <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Verzia</translation>
 <translation id="3678029195006412963">Požiadavku sa nepodarilo podpísať</translation>
+<translation id="3679803492151881375">Správa o zlyhaní zaznamenaná v čase <ph name="CRASH_TIME" /> bola nahraná o <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informácie o certifikáte</translation>
 <translation id="3690164694835360974">Prihlásenie nie je zabezpečené</translation>
 <translation id="3693415264595406141">Heslo:</translation>
@@ -359,7 +360,6 @@
 <translation id="4594403342090139922">&amp;Vrátiť späť odstránenie</translation>
 <translation id="4619615317237390068">Karty z iných zariadení</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Prezeráte si stránku s rozšíreniami.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Pripojenie bolo prerušené</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Spustiť nástroj Diagnostika siete systému Windows<ph name="END_LINK" /></translation>
@@ -372,6 +372,7 @@
 <translation id="4764776831041365478">Webové stránky na adrese <ph name="URL" /> môžu byť dočasne nedostupné alebo sa mohli natrvalo premiestniť na novú webovú adresu.</translation>
 <translation id="4771973620359291008">Vyskytla sa neznáma chyba.</translation>
 <translation id="4800132727771399293">Skontrolujte dátum vypršania platnosti aj kód CVC a skúste to znova</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Chyba siete</translation>
 <translation id="4816492930507672669">Prispôsobiť stránke</translation>
 <translation id="4850886885716139402">Zobraziť</translation>
@@ -446,6 +447,7 @@
 <translation id="5622887735448669177">Chcete tento web opustiť?</translation>
 <translation id="5629630648637658800">Nastavenia pravidla sa nepodarilo načítať</translation>
 <translation id="5631439013527180824">Neplatný token správy zariadenia</translation>
+<translation id="5669703222995421982">Ako získať prispôsobený obsah</translation>
 <translation id="5675650730144413517">Táto stránka nefunguje</translation>
 <translation id="5677928146339483299">Zablokované</translation>
 <translation id="5694783966845939798">Pokúsili ste sa prejsť do domény <ph name="DOMAIN" />, ale server predložil certifikát podpísaný slabým algoritmom podpisu (napr. SHA-1). Znamená to, že predložené bezpečnostné poverenia mohli byť sfalšované a môže ísť o úplne iný server, ako ste očakávali (je možné, že komunikujete s útočníkom). <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -545,6 +547,7 @@
 <translation id="6753269504797312559">Hodnota pravidla</translation>
 <translation id="6757797048963528358">Vaše zariadenie prešlo do režimu spánku.</translation>
 <translation id="6778737459546443941">Váš rodič to zatiaľ neschválil</translation>
+<translation id="6810899417690483278">Identifikátor prispôsobenia</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Webová stránka na adrese <ph name="URL" /> momentálne nie je k dispozícii. Môže byť preťažená alebo na nej prebieha údržba.</translation>
 <translation id="6831043979455480757">Preložiť</translation>
@@ -704,6 +707,7 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8364627913115013041">Nenastavené.</translation>
 <translation id="8380941800586852976">Nebezpečná</translation>
 <translation id="8382348898565613901">Tu sa zobrazia vaše nedávno navštívené záložky</translation>
+<translation id="8398259832188219207">Správa o zlyhaní bola nahraná o <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Zlyhania (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Rovnakú prístupovú frázu musíte zadať dvakrát.</translation>
 <translation id="8428213095426709021">Nastavenia</translation>

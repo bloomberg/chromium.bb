@@ -65,7 +65,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="2664962310688259219">Licenser för öppen källkod för Chrome OS</translation>
 <translation id="2665296953892887393">Hjälp oss att göra Google Chrome bättre genom att skicka felrapporter och <ph name="UMA_LINK" /> till Google.</translation>
 <translation id="2689103672227170538">Det här tillägget har ändrat vilken sida som visas när du startar Chrome.</translation>
-<translation id="2748463065602559597">Du tittar på en säker Google Chrome-sida.</translation>
 <translation id="2769762047821873045">Google Chrome är inte din standardwebbläsare.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="2799223571221894425">Starta om</translation>
@@ -207,6 +206,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6970811910055250180">Enheten uppdateras ...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> kräver att du läser och godkänner följande användarvillkor innan du använder enheten. Villkoren varken utökar, ändrar eller begränsar villkoren för Google Chrome OS.</translation>
 <translation id="6989339256997917931">Chrome har uppdaterats men du har inte använt det på över 30 dagar.</translation>
+<translation id="7048801529101012374">Google Chrome är din standardwebbläsare.</translation>
 <translation id="7098166902387133879">Google Chrome använder din mikrofon.</translation>
 <translation id="7106741999175697885">Aktivitetshanteraren - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome kunde inte uppdateras till den senaste versionen automatiskt. Därför missar du de senaste nya funktionerna och säkerhetsuppdateringarna. Du måste installera om Chrome manuellt.</translation>

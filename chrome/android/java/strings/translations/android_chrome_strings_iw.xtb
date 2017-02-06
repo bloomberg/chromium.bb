@@ -52,6 +52,7 @@
 <translation id="1445680696957526815">‏הרכיבים של Chrome אינם תואמים זה לזה. ייתכן ש-Chrome מבצע שדרוג, נסה שוב בעוד כמה דקות. אם הבעיה נמשכת, נסה להסיר את Chrome ולהתקין אותו מחדש.</translation>
 <translation id="1446450296470737166">‏התר שליטה מלאה על מכשירי MIDI</translation>
 <translation id="145097072038377568">‏כבוי בהגדרות Android</translation>
+<translation id="1455941322673536744">מילוי אוטומטי ותשלומים</translation>
 <translation id="147006957810816598">‏לא תבוצע יציאה מחשבון Google שלך.</translation>
 <translation id="1477626028522505441">הורדת <ph name="FILE_NAME" /> נכשלה עקב בעיות בשרת.</translation>
 <translation id="1506061864768559482">מנוע חיפוש</translation>
@@ -195,6 +196,7 @@
 <translation id="2996291259634659425">יצירת ביטוי סיסמה</translation>
 <translation id="2996809686854298943">דרושה כתובת אתר</translation>
 <translation id="300526633675317032">פעולה זו תמחק את כל נתוני האתר המאוחסנים (<ph name="SIZE_IN_KB" />).</translation>
+<translation id="3029613699374795922">‏בוצעה הורדה של KB <ph name="KBS" /></translation>
 <translation id="3029704984691124060">ביטויי הסיסמה אינם תואמים</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">פתח בכרטיסיית גלישה בסתר</translation>
@@ -262,6 +264,7 @@
 <translation id="3739899004075612870">נוסף לסימניות ב-<ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">‏‎<ph name="MEGABYTES" /> MB ליישומים אחרים</translation>
 <translation id="3744111561329211289">סינכרון ברקע</translation>
+<translation id="3773755127849930740">‏<ph name="BEGIN_LINK" />הפעל את Bluetooth<ph name="END_LINK" /> כדי לאפשר התאמה</translation>
 <translation id="3789841737615482174">התקן</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{נבחר פריט אחד}two{נבחרו # פריטים}many{נבחרו # פריטים}other{נבחרו # פריטים}}</translation>
 <translation id="3810838688059735925">וידאו</translation>
@@ -317,7 +320,6 @@
 <translation id="4300272766492248925">פתח את האפליקציה</translation>
 <translation id="4307992518367153382">היסודות</translation>
 <translation id="4351244548802238354">סגור את תיבת הדו-שיח</translation>
-<translation id="4376501731284077108">לא מבוקר</translation>
 <translation id="4378154925671717803">טלפון</translation>
 <translation id="4384468725000734951">‏שימוש ב-Sogou לחיפוש</translation>
 <translation id="4412992751769744546">‏התר קובצי Cookie של צד שלישי</translation>
@@ -362,8 +364,10 @@
 <translation id="4837753911714442426">פתח אפשרויות להדפסת דפים</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="4860895144060829044">התקשר</translation>
+<translation id="4862624982077154323">‏בחלק מהאתרים אפשר לשלם באמצעות אפליקציות תשלום נתמכות. בחר את האפליקציות שבהן תשתמש ב-Chrome.</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4885273946141277891">‏מספר בלתי נתמך של מופעי Chrome.</translation>
+<translation id="4910889077668685004">אפליקציות תשלום</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /> בזמן חיפוש התקנים…</translation>
 <translation id="4923459931733593730">תשלום</translation>
 <translation id="4941291666397027948">* מציין שדה חובה</translation>
@@ -389,7 +393,7 @@
 <translation id="5131405117025179004">עריכת חשבון שמור</translation>
 <translation id="5138299137310274655">דף זה מוצג ב<ph name="SOURCE_LANGUAGE" />. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">נקה נתונים מאוחסנים</translation>
-<translation id="5156656584247937086">זהו חשבון של ילד</translation>
+<translation id="5152843274749979095">לא מותקנות אפליקציות נתמכות</translation>
 <translation id="5161254044473106830">יש להזין כותרת</translation>
 <translation id="5164482624172255778">‏האם ברצונך ש-Google Chrome יציע בפעם הבאה לתרגם דפים בשפה <ph name="LANGUAGE" /> מאתר זה?</translation>
 <translation id="5168917394043976756">פתח את חלונית ההזזה לניווט</translation>
@@ -448,6 +452,7 @@
 <translation id="5610807607761827392">ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" /> תוכל לנהל את האפשרויות של כרטיסים וכתובות.</translation>
 <translation id="5626134646977739690">שם:</translation>
 <translation id="5646376287012673985">מיקום</translation>
+<translation id="5655963694829536461">חיפוש ההורדות שלך</translation>
 <translation id="5659593005791499971">אימייל</translation>
 <translation id="5665379678064389456">צור אירוע ב-<ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">עקוף בקשה של אתר שנועדה למנוע שינוי של מרחק התצוגה</translation>
@@ -472,6 +477,7 @@
 <translation id="583281660410589416">לא ידוע</translation>
 <translation id="5832934273103296195">מורחב - הקש כדי לכווץ</translation>
 <translation id="583891442612896534">‏ל-Chrome אין אפשרות לגשת אל שרתי Google לדחיסת נתונים. ייתכן שהחיסכון בנתונים יהיה מוגבל.</translation>
+<translation id="5858741533101922242">‏לא ניתן להפעיל ב-Chrome את מתאם Bluetooth</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5867027562311576691">בקרוב יופיעו מאמרים נוספים. שיהיה לך יום נפלא.</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
@@ -503,6 +509,7 @@
 <translation id="6140912465461743537">ארץ/אזור</translation>
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6177111841848151710">חסוּם למנוע החיפוש הנוכחי</translation>
 <translation id="6177390657002841081">‏הפעל את חוסך הנתונים (Data Saver)</translation>
 <translation id="6181444274883918285">הוסף חריג של אתר</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
@@ -515,6 +522,7 @@
 <translation id="6324034347079777476">‏סנכרון מערכת Android מושבת</translation>
 <translation id="6333140779060797560">שתף באמצעות <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">הצפנה</translation>
+<translation id="6343192674172527289">לא נמצאו הורדות</translation>
 <translation id="6364438453358674297">האם להסיר את ההצעה מההיסטוריה?</translation>
 <translation id="6383961787135158834">מחיקת נתוני אתר מהאחסון...</translation>
 <translation id="6388207532828177975">נקה ואפס</translation>
@@ -522,6 +530,7 @@
 <translation id="6406506848690869874">סנכרן</translation>
 <translation id="6409731863280057959">חלונות קופצים</translation>
 <translation id="641643625718530986">הדפס…</translation>
+<translation id="6416782512398055893">‏בוצעה הורדה של MB <ph name="MBS" /></translation>
 <translation id="6433490469411711332">עריכת הפרטים ליצירת קשר</translation>
 <translation id="6443118737398455446">תאריך התפוגה אינו חוקי</translation>
 <translation id="6446608382365791566">הוסף מידע</translation>
@@ -532,6 +541,7 @@
 <translation id="6477460825583319731">כתובת אימייל לא חוקית</translation>
 <translation id="6482749332252372425">הורדת <ph name="FILE_NAME" /> נכשלה מאחר שחסר מקום אחסון.</translation>
 <translation id="6527303717912515753">שתף</translation>
+<translation id="6538442820324228105">‏בוצעה הורדה של GB <ph name="GBS" /></translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">בחר כרטיסייה להעברת התוכן שלה</translation>
 <translation id="6545017243486555795">נקה את כל הנתונים</translation>
@@ -587,6 +597,7 @@
 <translation id="699220179437400583">‏דווח אוטומטית ל-Google על פרטים של בעיות אבטחה אפשריות</translation>
 <translation id="6992289844737586249">שאל לפני שתאפשר לאתרים להשתמש במיקרופון (מומלץ)</translation>
 <translation id="7001663382399377034">הוספה של נמען</translation>
+<translation id="7016516562562142042">מופעל למנוע החיפוש הנוכחי</translation>
 <translation id="7021515813996758557">הורדת הקובץ <ph name="FILE_NAME" /> בוצעה</translation>
 <translation id="7022756207310403729">פתיחה בדפדפן</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
@@ -713,7 +724,6 @@
 <translation id="8372893542064058268">אפשר סנכרון ברקע לאתר ספציפי.</translation>
 <translation id="8374821112118309944">‏עליך לעדכן את TalkBack לגרסה חדשה יותר.</translation>
 <translation id="8393700583063109961">שלח הודעה</translation>
-<translation id="8396312449826231789">רק אתרים שאושרו</translation>
 <translation id="8413126021676339697">הצג את ההיסטוריה המלאה</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8433057134996913067">פעולה זו תוציא אותך מהחשבון ברוב האתרים.</translation>
@@ -740,7 +750,6 @@
 <translation id="8660471606262461360">‏מ-Google Payments</translation>
 <translation id="8676374126336081632">נקה קלט</translation>
 <translation id="869891660844655955">תאריך תפוגה</translation>
-<translation id="8699799819461268362">‏מסנן Google SafeSites</translation>
 <translation id="8719023831149562936">לא ניתן להעביר תוכן מהכרטיסייה הנוכחית</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8730621377337864115">בוצע</translation>

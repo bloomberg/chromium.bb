@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">সব খুলুন</translation>
 <translation id="1430915738399379752">প্রিন্ট</translation>
 <translation id="145015347812617860"><ph name="COUNT" />টি আইটেম</translation>
+<translation id="1491277525950327607">সেটিং টগল করতে দুবার আলতো চাপুন</translation>
 <translation id="1540800554400757039">ঠিকানা ১</translation>
 <translation id="1545749641540134597">QR কোড স্ক্যান করুন</translation>
 <translation id="1580783302095112590">মেল পাঠানো হয়েছে৷</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">এই পৃষ্ঠাটি আরেকটি অ্যাপ্লিকেশানে খুলবে।</translation>
 <translation id="4378154925671717803">ফোন</translation>
 <translation id="441868831736628555">গোপনীয়তা বিজ্ঞপ্তি</translation>
-<translation id="4426508677408162512">সকল বুকমার্ক</translation>
 <translation id="4473991315115669931">ছদ্মবেশী মোডে প্রবেশ করুন</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> এ গিয়ে সংরক্ষণ করা পাসওয়ার্ডগুলি দেখুন ও পরিচালনা করুন</translation>
 <translation id="4536418791685807335">আবার সাইন ইন করার চেষ্টা করুন।</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5317780077021120954">সংরক্ষণ করুন</translation>
 <translation id="5327248766486351172">নাম</translation>
+<translation id="5332219387342487447">শিপিংয়ের মাধ্যম</translation>
 <translation id="5388358297987318779">চিত্র খুলুন</translation>
 <translation id="5409365236829784218">এই ফাউলটি খুলতে পারে এমন কোনো অ্যাপ্লিকেশন এখানে ডাউনলোড করা নেই৷</translation>
 <translation id="54401264925851789">পৃষ্ঠা নিরাপত্তা তথ্য</translation>
@@ -271,6 +272,7 @@
 <translation id="6255097610484507482">ক্রেডিট কার্ড সম্পাদনা করুন</translation>
 <translation id="6308436439357671616">এটি আপনাকে ফটো তুলতে এবং আপলোড করতে দেয়।</translation>
 <translation id="6314335155547195432">পাসওয়ার্ড তৈরি করুন</translation>
+<translation id="6324528485781869530">সিঙ্ক অ্যাকাউন্ট পাল্টান</translation>
 <translation id="6324669097367352121">প্রবেশ করুন সেটিংস</translation>
 <translation id="6337234675334993532">এনক্রিপশন</translation>
 <translation id="633809752005859102">সত্যিই কিছু ভুল রয়েছে৷ আমরা এটির উপরে কাজ করব৷</translation>

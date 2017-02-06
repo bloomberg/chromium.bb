@@ -22,11 +22,14 @@
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2168039046890040389">Opp 1 s.</translation>
 <translation id="2190355936436201913">(tom)</translation>
+<translation id="2289052229480071835">Trykk på berøringsmålene på skjermen.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB per sek</translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="2497284189126895209">Alle filer</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2522350507219695259">Kalibreringen er ferdig</translation>
 <translation id="252373100621549798">Ukjent skjerm</translation>
+<translation id="2662783295652680457">Definer berøringsskjermen</translation>
 <translation id="2666092431469916601">Topp</translation>
 <translation id="2743387203779672305">Kopiér til utklippstavlen</translation>
 <translation id="2803313416453193357">Åpne mappen</translation>
@@ -58,6 +61,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekund}other{# sekunder}}</translation>
 <translation id="4971687151119236543">Media – forrige spor</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5046499563572181734">Trykk her</translation>
 <translation id="5076340679995252485">&amp;Lim inn</translation>
 <translation id="5120799197269191491">Søk+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>

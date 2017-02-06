@@ -74,6 +74,7 @@
 <translation id="1680732992526857724">Nút gạt, <ph name="NAME" />, được bật</translation>
 <translation id="1692077714702418899">dòng cấu trúc</translation>
 <translation id="1700517974991662022">Đã truy cập</translation>
+<translation id="1714116687360794776">Thước đo</translation>
 <translation id="1722567105086139392">Liên kết</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Hình tiếp theo</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Kiểm soát ngày giờ</translation>
 <translation id="2347456970887948350">Liên kết</translation>
 <translation id="2359897517538099099">Hiện không ở chế độ bảng.</translation>
+<translation id="2390264819538553347">Để chuyển tới trang tiếp theo, nhấn enter; để quay lại trang trước, nhấn phím xóa lùi.</translation>
 <translation id="241124561063364910">theo sau là</translation>
 <translation id="2416512023405990736">Hộp kiểm được bỏ chọn</translation>
 <translation id="2417569100218200841">Thông tin nội dung</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Nhóm nút radio</translation>
 <translation id="2471138580042810658">Tiêu đề 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{dấu hoa thị}other{# dấu hoa thị}}</translation>
+<translation id="2523609930580546572">Hướng dẫn về ChromeVox</translation>
 <translation id="2525706221823668172">Phím tắt Chromebook</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> đã được đặt lại.</translation>
 <translation id="2553108862507765288">lỗi ngữ pháp</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Không có phần trước nào.</translation>
 <translation id="3030432017085518523">Nút radio mục menu</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{dấu nháy đơn}other{# dấu nháy đơn}}</translation>
+<translation id="3040901448410802366">Chỉ báo tiến trình</translation>
 <translation id="3046838483509668188">Tùy chọn của ChromeVox</translation>
 <translation id="3047143736589213134">Sơ đồ bàn phím thử nghiệm</translation>
 <translation id="3060756054951570867">Menu <ph name="TITLE" /> đã được mở</translation>
@@ -230,6 +234,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3321460131042519426">Bật xuống dòng tự động</translation>
 <translation id="3322936298410871309">Tiêu đề cấp 1 trước</translation>
 <translation id="3323447499041942178">Hộp văn bản</translation>
+<translation id="3338224621010291843">Thanh trượt <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "tiếng Ả Rập",
         "bg": "tiếng Bungari",
         "ca": "tiếng Catalan",
@@ -714,6 +719,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="7693840228159394336">Nút radio trước</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, hộp văn bản nhập mật khẩu</translation>
+<translation id="7776293189010177726">Mở menu ChromeVox</translation>
 <translation id="7805247615045262757">điều hướng mặc định</translation>
 <translation id="7805768142964895445">Trạng thái</translation>
 <translation id="7810781339813764006">Nhóm tiếp theo</translation>

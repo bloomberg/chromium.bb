@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google Safe Browsing hat kürzlich <ph name="BEGIN_LINK" />Malware<ph name="END_LINK" /> auf <ph name="SITE" /> gefunden. Websites, die in der Regel sicher sind, können gelegentlich mit Malware infiziert sein. Der schädliche Inhalt stammt von <ph name="SUBRESOURCE_HOST" />, einem bekannten Verteiler von Malware. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">Anfrage oder Anfrageparameter ungültig</translation>
 <translation id="1834321415901700177">Diese Website enthält schädliche Programme</translation>
-<translation id="1838667051080421715">Dies ist die Quelle einer Webseite.</translation>
 <translation id="1871208020102129563">Der Proxy ist zur Verwendung von festen Proxyservern konfiguriert, nicht zur Verwendung einer PAC-Skript-URL.</translation>
+<translation id="187918866476621466">"Beim Start"-Seiten öffnen</translation>
 <translation id="1883255238294161206">Liste ausblenden</translation>
 <translation id="1898423065542865115">Filtern</translation>
 <translation id="194030505837763158">Besuchen Sie die Seite <ph name="LINK" />.</translation>
@@ -278,6 +278,7 @@
 <translation id="3655670868607891010">Sollte Ihnen diese Meldung häufiger angezeigt werden, sehen Sie sich unsere <ph name="HELP_LINK" /> an.</translation>
 <translation id="3658742229777143148">Überarbeitung</translation>
 <translation id="3678029195006412963">Anfrage konnte nicht signiert werden</translation>
+<translation id="3679803492151881375">Absturz am <ph name="CRASH_TIME" /> erfasst und am <ph name="UPLOAD_TIME" /> hochgeladen</translation>
 <translation id="3681007416295224113">Zertifikatinformationen</translation>
 <translation id="3690164694835360974">Log-in nicht sicher</translation>
 <translation id="3693415264595406141">Passwort:</translation>
@@ -362,7 +363,6 @@
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
 <translation id="4619615317237390068">Tabs von anderen Geräten</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Sie sehen sich eine Erweiterungsseite an.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Ihre Verbindung wurde unterbrochen</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows-Netzwerkdiagnose ausführen<ph name="END_LINK" /></translation>
@@ -375,6 +375,7 @@
 <translation id="4764776831041365478">Die Webseite unter <ph name="URL" /> ist möglicherweise vorübergehend nicht verfügbar oder wurde dauerhaft an eine neue Webadresse verschoben.</translation>
 <translation id="4771973620359291008">Ein unbekannter Fehler ist aufgetreten.</translation>
 <translation id="4800132727771399293">Prüfen Sie Ihr Ablaufdatum und Ihren CVC und versuchen Sie es dann erneut.</translation>
+<translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4813512666221746211">Netzwerkfehler</translation>
 <translation id="4816492930507672669">An Seite anpassen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
@@ -449,6 +450,7 @@
 <translation id="5622887735448669177">Möchten Sie diese Website verlassen?</translation>
 <translation id="5629630648637658800">Fehler beim Laden der Richtlinieneinstellungen</translation>
 <translation id="5631439013527180824">Ungültiges Management-Token für das Gerät</translation>
+<translation id="5669703222995421982">Personalisierte Inhalte erhalten</translation>
 <translation id="5675650730144413517">Diese Seite funktioniert nicht</translation>
 <translation id="5677928146339483299">Blockiert</translation>
 <translation id="5694783966845939798">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat jedoch ein Zertifikat übermittelt, das einen schwachen Signaturalgorithmus verwendet, zum Beispiel SHA-1. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen gefälscht sein könnten und es sich möglicherweise gar nicht um den erwarteten Server handelt, sondern Sie mit einem Hacker kommunizieren. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -549,6 +551,7 @@
 <translation id="6753269504797312559">Wert der Richtlinie</translation>
 <translation id="6757797048963528358">Ihr Gerät ist im Ruhemodus.</translation>
 <translation id="6778737459546443941">Dein Elternteil hat die Berechtigung noch nicht erteilt</translation>
+<translation id="6810899417690483278">Personalisierungs-ID</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Die Webseite unter <ph name="URL" /> ist zurzeit nicht verfügbar. Möglicherweise ist sie überlastet oder wird gerade gewartet.</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
@@ -708,6 +711,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8364627913115013041">Nicht eingerichtet</translation>
 <translation id="8380941800586852976">Schädlich</translation>
 <translation id="8382348898565613901">Hier werden Ihre kürzlich aufgerufenen Lesezeichen angezeigt</translation>
+<translation id="8398259832188219207">Absturzbericht hochgeladen am <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Abstürze (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Sie müssen zweimal dieselbe Passphrase eingeben.</translation>
 <translation id="8428213095426709021">Einstellungen</translation>

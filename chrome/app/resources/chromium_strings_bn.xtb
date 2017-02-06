@@ -82,7 +82,6 @@
 <translation id="358997566136285270">Chromium লোগো</translation>
 <translation id="3645040538872234961">এটা স্থায়ীভাবে এই ডিভাইস থেকে আপনার ব্রাউজিং ডেটা মুছে ফেলবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chromium এ $2 হিসাবে সাইন ইন করুন।</translation>
 <translation id="3738139272394829648">স্পর্শের মাধ্যমে অনুসন্ধান</translation>
-<translation id="3748537968684000502">আপনি একটি নিরাপদ Chromium পৃষ্ঠা  দেখছেন৷</translation>
 <translation id="378917192836375108">Chromium আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">দুঃখজনকভাবে, যখন ব্রাউজারটি চলমান আপনার Mozilla Firefox-এর সেটিংস পাওয়া যাচ্ছে না৷ Chromium-এ ওই সমস্ত সেটিংগুলি আমদানী করতে, আপনার কাজ সংরক্ষণ করুন এবং সকল Firefox উইন্ডো বন্ধ করুন৷ তারপরে অবিরত ক্লিক করুন৷</translation>
@@ -136,6 +135,7 @@
 <translation id="5620765574781326016">পৃষ্ঠা থেকে না বেরিয়েই ওয়েবসাইটের বিষয়বস্তুগুলি সম্বন্ধে জানুন৷</translation>
 <translation id="5634636535844844681">Chromium এর জন্য Windows 7 বা উচ্চতর সংস্করণ প্রয়োজন।</translation>
 <translation id="5680901439334282664">Chromium এ প্রবেশ করুন</translation>
+<translation id="5684733627009686897">Chromium আপনার ডিফল্ট ব্রাউজার। ধন্যবাদ!</translation>
 <translation id="5698481217667032250">এই ভাষায় Chromium প্রদর্শন করুন</translation>
 <translation id="5726838626470692954">আপনার পরিচালককে আপনাকে অবশ্যই Chromium থেকে সরিয়ে আবার যোগ করতে হবে।</translation>
 <translation id="5768914737813585044">এই ভাষায় Chromium OS প্রদর্শন করুন</translation>

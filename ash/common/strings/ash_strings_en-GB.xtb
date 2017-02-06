@@ -39,6 +39,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="1923539912171292317">Automatic clicks</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">Stop casting <ph name="TAB_NAME" /> to <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="2204305834655267233">Network Info</translation>
 <translation id="2208323208084708176">Unified desktop mode</translation>
@@ -149,6 +150,7 @@ Press Search or Shift to cancel.</translation>
 <translation id="5331975486040154427">USB-C device (left side back port)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">All available users have already been added to this session.</translation>
+<translation id="5504841533973703486">Front Microphone</translation>
 <translation id="5507786745520522457">Set up mobile data</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">The extension "<ph name="EXTENSION_NAME" />" can help connect to this network.</translation>
@@ -160,6 +162,7 @@ Press Search or Shift to cancel.</translation>
 <translation id="57838592816432529">Mute</translation>
 <translation id="5825747213122829519">Your input method has changed to <ph name="INPUT_METHOD_ID" />.
 Press Shift + Alt to switch.</translation>
+<translation id="5830936593837877897">Rear Microphone</translation>
 <translation id="5871632337994001636">Manage devices...</translation>
 <translation id="5895138241574237353">Restart</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -249,8 +252,10 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="8000066093800657092">No network</translation>
 <translation id="8054466585765276473">Calculating battery time.</translation>
 <translation id="8077816382010018681">QU Feature notification title here</translation>
+<translation id="8098591350844501178">Stop casting screen to <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">SMS messages: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Connected to <ph name="NAME" /></translation>
+<translation id="8180896103888046100">Stop casting to an unknown receiver</translation>
 <translation id="8185286464235484130">Let us know how we’re doing by answering a few questions.</translation>
 <translation id="8190698733819146287">Customise languages and input...</translation>
 <translation id="8206859287963243715">Mobile</translation>

@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Recentemente, a Navegação segura do Google <ph name="BEGIN_LINK" />detectou malware<ph name="END_LINK" /> em <ph name="SITE" />. Websites que costumam ser seguros às vezes são infectados por malware. O conteúdo malicioso vem de <ph name="SUBRESOURCE_HOST" />, um conhecido distribuidor de malware. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Solicitação ou parâmetros de solicitação inválidos</translation>
 <translation id="1834321415901700177">Este site contém programas perigosos</translation>
-<translation id="1838667051080421715">Você está vendo o código-fonte de uma página da Web.</translation>
 <translation id="1871208020102129563">O proxy foi configurado para utilizar servidores de proxy fixo e não um URL de script .pac.</translation>
+<translation id="187918866476621466">Abrir páginas de inicialização</translation>
 <translation id="1883255238294161206">Recolher lista</translation>
 <translation id="1898423065542865115">Filtragem</translation>
 <translation id="194030505837763158">Ir para <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Caso veja esta página com frequência, tente <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisão</translation>
 <translation id="3678029195006412963">Não foi possível assinar a solicitação</translation>
+<translation id="3679803492151881375">Relatório de erros registrado <ph name="CRASH_TIME" />, enviado <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informações do certificado</translation>
 <translation id="3690164694835360974">Login não seguro</translation>
 <translation id="3693415264595406141">Senha:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Desfazer exclusão</translation>
 <translation id="4619615317237390068">Guias de outros dispositivos</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Você está vendo uma página de extensões.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">A conexão foi interrompida</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Executar o Diagnóstico de Rede do Windows<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">A página da web em <ph name="URL" /> pode estar temporariamente indisponível ou pode ter sido movida permanentemente para um novo endereço da web.</translation>
 <translation id="4771973620359291008">Ocorreu um erro desconhecido.</translation>
 <translation id="4800132727771399293">Verifique sua data de validade e seu CVC e tente novamente</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Erro na rede</translation>
 <translation id="4816492930507672669">Ajustar à página</translation>
 <translation id="4850886885716139402">Visualizar</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Deseja sair deste site?</translation>
 <translation id="5629630648637658800">Falha ao carregar as configurações da política</translation>
 <translation id="5631439013527180824">Token de gerenciamento de dispositivo inválido</translation>
+<translation id="5669703222995421982">Receber conteúdo personalizado</translation>
 <translation id="5675650730144413517">Esta página não está funcionando</translation>
 <translation id="5677928146339483299">Bloqueados</translation>
 <translation id="5694783966845939798">Você tentou acessar <ph name="DOMAIN" />, mas o servidor apresentou um certificado assinado por meio de um algoritmo de assinatura fraco (por exemplo, SHA-1). Isso significa que as credenciais de segurança apresentadas pelo servidor podem ter sido forjadas, e talvez o servidor não seja o esperado (você pode estar se comunicando com um invasor). <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Valor da política</translation>
 <translation id="6757797048963528358">O dispositivo entrou em modo de suspensão.</translation>
 <translation id="6778737459546443941">Seu responsável ainda não o aprovou</translation>
+<translation id="6810899417690483278">Código de personalização</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">A página da web <ph name="URL" /> não está disponível no momento. Ela pode estar sobrecarregada ou fora de operação para manutenção.</translation>
 <translation id="6831043979455480757">Traduzir</translation>
@@ -709,6 +712,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8364627913115013041">Não definida.</translation>
 <translation id="8380941800586852976">Perigoso</translation>
 <translation id="8382348898565613901">Os favoritos visitados recentemente aparecerão aqui</translation>
+<translation id="8398259832188219207">Relatório de erros enviado <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Falhas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Você deve inserir a mesma senha duas vezes.</translation>
 <translation id="8428213095426709021">Configurações</translation>

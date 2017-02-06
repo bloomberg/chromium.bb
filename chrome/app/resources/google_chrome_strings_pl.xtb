@@ -61,7 +61,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="2664962310688259219">Licencje oprogramowania typu open source w Chrome OS</translation>
 <translation id="2665296953892887393">Pomóż nam ulepszyć Google Chrome, przesyłając do Google raporty o awariach i <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">To rozszerzenie ustawiło inną stronę wyświetlaną po uruchomieniu Chrome.</translation>
-<translation id="2748463065602559597">Przeglądasz bezpieczną stronę Google Chrome.</translation>
 <translation id="2769762047821873045">Google Chrome nie jest domyślną przeglądarką.</translation>
 <translation id="2770231113462710648">Zmień przeglądarkę domyślną na:</translation>
 <translation id="2799223571221894425">Uruchom ponownie</translation>
@@ -200,6 +199,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="6970811910055250180">Aktualizowanie urządzenia...</translation>
 <translation id="6982337800632491844">Domena <ph name="DOMAIN" /> wymaga, by przed korzystaniem z tego urządzenia przeczytać i zaakceptować Warunki korzystania z usługi. Nie rozszerzają, nie zmieniają ani nie ograniczają one Warunków korzystania z systemu operacyjnego Chrome.</translation>
 <translation id="6989339256997917931">Przeglądarka Google Chrome została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
+<translation id="7048801529101012374">Google Chrome jest domyślną przeglądarką. Hura!</translation>
 <translation id="7098166902387133879">Google Chrome używa Twojego mikrofonu.</translation>
 <translation id="7106741999175697885">Menedżer zadań – Google Chrome</translation>
 <translation id="7125719106133729027">Nie udało się zaktualizować Chrome do najnowszej wersji, więc nie masz nowych, przydatnych funkcji ani poprawek zabezpieczeń. Musisz ręcznie zainstalować Chrome ponownie.</translation>

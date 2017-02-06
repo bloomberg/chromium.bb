@@ -367,13 +367,13 @@
 
       Dacă această setare nu este configurată, atunci utilizatorii pot alege dacă se va utiliza sau nu serviciul de verificare a ortografiei.</translation>
 <translation id="2294382669900758280">Redarea videoclipurilor în aplicațiile Android nu este luată în considerare, chiar dacă politica este setată la <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Configurează pagina Filă nouă prestabilită în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Specifică o listă de pluginuri activate</translation>
 <translation id="2309390639296060546">Setare prestabilită pentru localizarea geografică</translation>
 <translation id="2312134445771258233">Poți să configurezi paginile încărcate la pornire.
 
       Conținutul listei „Adrese URL care se deschid la pornire” este ignorat, cu excepția cazului în care selectezi „Deschide o listă cu adrese URL” în „Acțiune la pornire”.</translation>
 <translation id="2337466621458842053">Vă permite să setați o listă de modele pentru adresele URL care specifică site-urile care au permisiunea să afișeze imagini. Dacă această politică rămâne nesetată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultImagesSetting”, în cazul în care politica este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
-<translation id="2366415278352956652">Activează proiecția</translation>
 <translation id="2372547058085956601">Stabilește intervalul de inactivitate până la conectarea automată la o sesiune publică.
 
       Dacă setarea politicii |DeviceLocalAccountAutoLoginId| este anulată, aceasta nu mai are efect. În caz contrar:
@@ -870,6 +870,17 @@
 <translation id="3547954654003013442">Setări proxy</translation>
 <translation id="3570008976476035109">Blochează pluginurile pe aceste site-uri</translation>
 <translation id="3591584750136265240">Configurează comportamentul de autentificare la conectare</translation>
+<translation id="3601614035698083789">Configurează o listă de marcaje gestionate.
+
+      Politica este o listă de marcaje, iar fiecare marcaj este un
+      dicționar care conține cheile <ph name="NAME" /> și <ph name="URL_LABEL" />, care includ numele și ținta marcajului. Un
+      subdosar poate fi configurat definind un marcaj fără o cheie <ph name="URL_LABEL" />, dar cu o cheie <ph name="CHILDREN" /> suplimentară care la rândul ei include o listă de
+      marcaje așa cum au fost definite mai sus (este posibil ca unele dintre acestea să fie dosare). <ph name="PRODUCT_NAME" /> va modifica adresele URL
+      incomplete ca și cum ar fi trimise prin caseta polivalentă, de exemplu, <ph name="GOOGLE_COM" /> devine <ph name="HTTPS_GOOGLE_COM" />.
+
+      Aceste marcaje sunt plasate într-un dosar „Marcaje gestionate” care nu poate fi modificat de utilizator, dar acesta poate alege să îl ascundă din bara de marcaje. Marcajele gestionate nu sunt sincronizate cu contul utilizatorului și nu pot fi modificate de extensii.
+
+      Începând cu versiunea 51, numele dosarului pentru marcaje poate fi personalizat prin adăugarea unui element din listă {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Activați sau dezactivați serviciul web de verificare a ortografiei</translation>
 <translation id="3646859102161347133">Setați tipul lupei pentru ecran</translation>
 <translation id="3653237928288822292">Pictogramă pentru furnizorul de căutare prestabilit</translation>
@@ -1082,6 +1093,17 @@
 
       Dacă această politică este dezactivată, utilizatorii nu vor putea bloca ecranul (va fi posibilă numai deconectarea de la sesiunea pentru utilizatori). Dacă această setare este activată sau nu este configurată, utilizatorii care s-au autentificat folosind o parolă vor putea bloca ecranul.</translation>
 <translation id="4121350739760194865">Împiedicați promoțiile aplicațiilor să apară în pagina Filă nouă</translation>
+<translation id="4133301551755536858">Configurează adresa URL a paginii Filă nouă prestabilite în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să o schimbe.
+
+          Pagina Filă nouă este pagina care se deschide când sunt create file noi (inclusiv cele deschise în ferestre noi).
+
+          Politica nu decide ce pagini vor fi deschise la pornire. Acestea sunt controlate de politicile RestoreOnStartup, care pot seta deschiderea paginii Filă nouă.
+
+          Politica NewTabPageLocation poate fi setată la o adresă URL pe care o specifici aici. Aceasta va influența și Pagina principală, dacă este setată să deschidă pagina Filă nouă, precum și pagina de pornire, dacă este setată la pagina Filă nouă.
+
+          Dacă politica nu este configurată sau nu este specificată, se va folosi pagina Filă nouă prestabilită.
+
+          Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu Active Directory.</translation>
 <translation id="4147054660081653009">Certificat de client pentru conectarea la RemoteAccessHostTokenValidationUrl.
 
           Dacă această politică este configurată, gazda va folosi un certificat de client cu numele comun al emitentului specificat pentru a se autentifica la RemoteAccessHostTokenValidationUrl. Setează politica la „*” pentru a folosi orice certificat de client disponibil.
@@ -1159,9 +1181,9 @@
 <translation id="4467952432486360968">Blochează cookie-urile terță parte</translation>
 <translation id="4474167089968829729">Activează salvarea parolelor în managerul de parole</translation>
 <translation id="4476769083125004742">Dacă această politică este setată la <ph name="BLOCK_GEOLOCATION_SETTING" />, aplicațiile Android nu pot accesa informațiile despre locație. Dacă setezi orice altă valoare pentru această politică sau nu o configurezi, utilizatorului i se va solicita consimțământul când o aplicație Android dorește să acceseze informațiile despre locație.</translation>
-<translation id="447686899376429408">Dacă politica este activată sau nu este configurată, utilizatorii vor putea să proiecteze file, site-uri sau desktopul din browser. Dacă nu este activată, această opțiune va fi dezactivată.</translation>
 <translation id="4480694116501920047">Impuneți Căutarea sigură</translation>
 <translation id="4482640907922304445">Afișează butonul Pagină de pornire în bara de instrumente din <ph name="PRODUCT_NAME" />. Dacă activați această setare, butonul Pagina de pornire este întotdeauna afișat. Dacă dezactivați această setare, butonul Pagina de pornire nu este afișat. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />. Dacă lăsați această politică nesetată, acest lucru va permite utilizatorului să aleagă dacă să afișeze sau nu butonul Pagină de pornire.</translation>
+<translation id="4485425108474077672">Configurează adresa URL a paginii Filă nouă</translation>
 <translation id="4492287494009043413">Dezactivați capturile de ecran</translation>
 <translation id="450537894712826981">Configurează dimensiunea memoriei cache pe care <ph name="PRODUCT_NAME" /> o va utiliza pentru a stoca pe disc fișierele media salvate în memoria cache.
 
@@ -1551,6 +1573,12 @@
 
           Dacă această setare este dezactivată sau nu este configurată, solicitările de autentificare gnubby nu vor fi trimise printr-un proxy.</translation>
 <translation id="5898486742390981550">Când sunt conectați mai mulți utilizatori, numai utilizatorul principal poate folosi aplicațiile Android.</translation>
+<translation id="5906199912611534122">Permite activarea sau dezactivarea limitării rețelei.
+      Se aplică tuturor utilizatorilor și tuturor interfețelor de pe acest dispozitiv. După ce este configurată,
+      limitarea se aplică până când politica este modificată pentru a o dezactiva.
+
+      Dacă este dezactivată, nu există limitare.
+      Dacă este activată, sistemul este limitat la cotele de încărcare și de descărcare specificate (în KB/s).</translation>
 <translation id="5921713479449475707">Permite descărcarea actualizărilor automate prin HTTP</translation>
 <translation id="5921888683953999946">Setați funcția de accesibilitate pentru cursorul mare ca stare prestabilită pe ecranul de conectare.
 
@@ -1668,6 +1696,46 @@
 <translation id="6282799760374509080">Permiteți sau refuzați preluarea conținutului audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Activează completarea automată a numelui de domeniu la conectarea utilizatorului</translation>
+<translation id="6312861131491040487">
+          Specifică o listă de aplicații și extensii instalate în fundal,
+          fără intervenția utilizatorului și care nu pot fi instalate de către
+          acesta. Toate permisiunile solicitate de aplicații/extensii sunt acordate
+          implicit, fără intervenția utilizatorului, inclusiv orice permisiune
+          suplimentară solicitată de viitoarele versiuni ale aplicației/extensiei.
+          În plus, permisiunile sunt acordate pentru API-urile extensiei
+          enterprise.deviceAttributes și enterprise.platformKeys.
+          (Aceste două API-uri nu sunt disponibile pentru aplicațiile/extensiile care
+          nu sunt instalate forțat).
+
+          Această politică are prioritate față de o politică ExtensionsInstallBlacklist
+          care poate crea conflicte. Dacă o aplicație sau o extensie care
+          a fost instalată forțat anterior este eliminată din listă, aceasta
+          este dezinstalată automat de <ph name="PRODUCT_NAME" />.
+
+          Pentru instanțele Windows neasociate unui domeniu Active 
+          Directory, instalarea forțată se limitează la aplicațiile și extensiile afișate
+          în Magazinul web Chrome.
+
+          Reține că utilizatorii pot să modifice codul sursă al oricărei extensii folosind
+          Instrumentele pentru dezvoltatori (ceea ce poate face extensia
+          nefuncțională). Dacă acest aspect creează probleme, trebuie să se seteze politica
+          DeveloperToolsDisabled.
+
+           Fiecare element din lista politicii este un șir care include un ID al extensiei
+          și o adresă URL de „actualizare”, separate prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul de extensie este un șir alcătuit din 32 de litere
+          găsit, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" />
+          în modul pentru dezvoltatori. Adresa URL de „actualizare” trebuie să trimită la un document XML
+          cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. Reține
+          că adresa URL de actualizare setată în această politică este folosită numai la instalarea
+          inițială. Actualizările ulterioare ale extensiei vor utiliza adresa URL
+          de actualizare indicată în manifestul extensiei.
+
+          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" />
+          instalează aplicația <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> folosind adresa URL standard de „actualizare” din 
+          Magazinul web Chrome. Pentru informații suplimentare despre găzduirea extensiilor, consultă: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Dacă politica nu este configurată, nicio aplicație sau extensie nu va fi instalată
+          automat, iar utilizatorul poate dezinstala orice aplicație sau extensie din <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome afișează o pagină de avertisment atunci când utilizatorii accesează site-uri care au erori SSL. În mod prestabilit sau atunci când această politică este activată, utilizatorii au permisiunea să-și continue navigarea dând clic pe aceste pagini de avertisment.
       Dacă această politică este dezactivată, utilizatorii nu mai au permisiunea să-și continue navigarea dând clic pe aceste pagini de avertisment.</translation>
 <translation id="6353901068939575220">Specifică parametrii utilizați la căutarea unei adrese URL cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {searchTerms} din exemplul de mai sus, acesta va fi înlocuit cu datele termenilor de căutare reali.
@@ -1830,6 +1898,7 @@
       Informațiile privind memoria sunt raportate oricum în pagină, indiferent de valoarea opțiunii, dar dimensiunile raportate sunt
       cuantificate, iar frecvența actualizărilor este limitată din motive de securitate. Pentru a obține date exacte în timp real,
       folosiți instrumente ca Telemetrie.</translation>
+<translation id="6894178810167845842">Adresa URL a paginii Filă nouă</translation>
 <translation id="6899705656741990703">Detectare automată a setărilor proxy</translation>
 <translation id="6903814433019432303">Această politică este activă numai în modul Vânzare. 
 
@@ -1950,6 +2019,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7132877481099023201">Adresele URL cărora li se va acorda acces automat la dispozitivele de capturare a conținutului video</translation>
 <translation id="7167436895080860385">Permite utilizatorilor să afișeze parolele în managerul de parole (s-a renunțat la dezvoltare)</translation>
 <translation id="7173856672248996428">Profil efemer</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipuri de conexiune permise pentru actualizări</translation>
 <translation id="7194407337890404814">Numele furnizorului de căutare prestabilit</translation>
 <translation id="7195064223823777550">Specificați ce se întâmplă atunci când utilizatorul închide capacul.

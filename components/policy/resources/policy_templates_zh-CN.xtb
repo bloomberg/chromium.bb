@@ -330,11 +330,11 @@
 
       如果未配置此设置，那么用户可以选择是否使用拼写检查服务。</translation>
 <translation id="2294382669900758280">即使此政策设为 <ph name="TRUE" />，系统也不会考虑在 Android 应用中播放视频。</translation>
+<translation id="2298647742290373702">在 <ph name="PRODUCT_NAME" /> 中配置默认的“打开新的标签页”页面。</translation>
 <translation id="2299220924812062390">指定已启用插件的列表</translation>
 <translation id="2309390639296060546">默认地理位置设置</translation>
 <translation id="2312134445771258233">允许您配置在启动时加载的页面。除非您在“启动时的操作”中选择“打开网址列表”，否则系统会忽略“启动时打开的网址”列表中的内容。</translation>
 <translation id="2337466621458842053">可让您设置网址格式的列表，这些网址格式用于指定允许显示图片的网站。在未设置此政策的情况下，如果设置了“DefaultImagesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
-<translation id="2366415278352956652">启用投射</translation>
 <translation id="2372547058085956601">公用自助终端自动登录延迟。
 
       如果未设置 |DeviceLocalAccountAutoLoginId| 政策，则此政策不会生效。否则：
@@ -825,6 +825,13 @@
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="3570008976476035109">在这些网站上阻止插件</translation>
 <translation id="3591584750136265240">配置登录身份验证行为</translation>
+<translation id="3601614035698083789">以列表形式配置受管理的书签。
+
+      此政策包含一系列书签，其中的每个书签都是一个包含 <ph name="NAME" /> 键和 <ph name="URL_LABEL" /> 键（这些键分别指定了书签的名称和目标网址）的字典条目。您也可配置一个子文件夹，方法是：定义一个不含 <ph name="URL_LABEL" /> 键但另含一个 <ph name="CHILDREN" /> 键的书签，并使后面这个键自含一个按上述方法指定的书签列表（其中的某些书签仍可以是文件夹）。<ph name="PRODUCT_NAME" /> 会自动修正不完整的网址（就像这些网址是通过多功能框进行提交一样）；例如，自动将 <ph name="GOOGLE_COM" /> 改为 <ph name="HTTPS_GOOGLE_COM" />。
+
+      这些书签均被放置在“受管理的书签”文件夹中。用户虽然无法修改该文件夹，但可以选择在书签栏中隐藏它。受管理的书签既不会同步到用户帐号中，也无法由扩展程序修改。
+
+      从版本 51 开始，用户只需添加列表项“{"toplevel_name": "some name"}”，即可自定义这些书签所属文件夹的名称。</translation>
 <translation id="3627678165642179114">启用或停用拼写检查网络服务</translation>
 <translation id="3646859102161347133">设置放大镜类型</translation>
 <translation id="3653237928288822292">默认搜索服务提供商图标</translation>
@@ -1017,6 +1024,17 @@
 
       如果此政策设为 false，用户将无法锁定屏幕（只能退出用户会话）。如果此设置设为 true 或未设置，则使用密码通过身份验证的用户可以锁定屏幕。</translation>
 <translation id="4121350739760194865">阻止在新标签页上显示应用宣传信息</translation>
+<translation id="4133301551755536858">在 <ph name="PRODUCT_NAME" /> 中配置默认的“打开新的标签页”页面网址，并禁止用户更改它。
+
+         “打开新的标签页”页面是系统为创建新标签页而打开的页面（包括在新窗口中打开的页面）。
+
+          此政策无权决定在启动时打开哪些页面。在启动时打开哪些页面是由 RestoreOnStartup 政策控制的，这类政策可能会打开“打开新的标签页”页面。
+
+          NewTabPageLocation 可被设为您在此处指定的网址。它也会影响主页（如果主页被设为“打开新的标签页”页面）以及启动页（如果启动页被设为“打开新的标签页”页面）。
+
+          如果此政策未设置或留空，系统即会使用默认的“打开新的标签页”页面。
+
+          此政策不适用于未加入 Active Directory 网域的 Windows 实例。</translation>
 <translation id="4147054660081653009">连接到 RemoteAccessHostTokenValidationUrl 时使用的客户端证书。
 
           如果您设置了此政策，主机将使用带有指定颁发者 CN 的客户端证书进行身份验证，以便连接到 RemoteAccessHostTokenValidationUrl。如果将此政策设为“*”，则可以使用任何可用的客户端证书。
@@ -1094,9 +1112,9 @@
 <translation id="4467952432486360968">阻止第三方 Cookie</translation>
 <translation id="4474167089968829729">允许将密码保存到密码管理器</translation>
 <translation id="4476769083125004742">如果此政策设为 <ph name="BLOCK_GEOLOCATION_SETTING" />，Android 应用将无法使用位置信息。如果此政策设为任何其他值或未设置，那么当 Android 应用想使用位置信息时，它会询问用户是否同意。</translation>
-<translation id="447686899376429408">如果将此政策设置为 True 或不设置此政策，则用户将可以通过浏览器投射标签页、网站或桌面内容。如果将此政策设置为 False，则系统会停用此选项。</translation>
 <translation id="4480694116501920047">强制使用安全搜索</translation>
 <translation id="4482640907922304445">在 <ph name="PRODUCT_NAME" />的工具栏上显示“主页”按钮。如果您启用了此设置，则会始终显示“主页”按钮。如果您停用了此设置，则从不显示“主页”按钮。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" />中更改或替换此设置。如果未设置此政策，用户就可以选择是否显示“主页”按钮。</translation>
+<translation id="4485425108474077672">配置“打开新的标签页”页面网址</translation>
 <translation id="4492287494009043413">停用截取屏幕截图功能</translation>
 <translation id="450537894712826981">配置<ph name="PRODUCT_NAME" />将用于在磁盘上存储缓存媒体文件的缓存大小。
 
@@ -1474,6 +1492,11 @@
 
           如果您已停用或未配置此设置，那么系统将不会经由代理处理gnubby身份验证请求。</translation>
 <translation id="5898486742390981550">如果有多个用户同时登录，则只有主要用户可以使用 Android 应用。</translation>
+<translation id="5906199912611534122">允许启用或停用网络节流功能。
+      这适用于所有用户以及设备上的所有界面。节流功能一经启用便会一直有效，除非通过更改此政策停用该功能。
+
+      如果设为 false，系统将不会启用节流功能。
+      如果设为 true，系统则会启用节流功能，以实现所提供的上传速率和下载速率（以 kb/s 为单位）。</translation>
 <translation id="5921713479449475707">允许通过 HTTP 自动更新下载内容</translation>
 <translation id="5921888683953999946">设置登录屏幕上大号光标辅助功能的默认状态。
 
@@ -1586,6 +1609,21 @@
 <translation id="6282799760374509080">是否允许音频捕获</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">允许在用户登录期间自动填充域名</translation>
+<translation id="6312861131491040487">
+          以列表形式指定具有下述特征的应用或扩展程序：无需用户干预即会自动静默安装，且无法由用户卸载。此类应用/扩展程序所请求的所有权限（包括相应应用/扩展程序的后续版本所请求的任何其他权限）均由系统默认授予（无需用户干预）。
+          此外，系统还会向 enterprise.deviceAttributes 和 enterprise.platformKeys 扩展程序 API 授予相关权限。（这两个 API 不适用于非强制安装的应用/扩展程序。）
+
+          此政策优先于可能会与其相冲突的 ExtensionsInstallBlacklist 政策。如果从此列表中移除了之前强制安装的某个应用或扩展程序，<ph name="PRODUCT_NAME" /> 便会自动卸载该应用或扩展程序。
+
+          对于未加入 Active Directory 网域的 Windows 实例，强制安装仅限于 Chrome 网上应用店中所列的应用和扩展程序。
+
+          请注意，用户可通过开发者工具更改任何扩展程序的源代码（此类更改可能会导致相应扩展程序无法正常运行）。如果您不希望用户进行此类更改，则应设置 DeveloperToolsDisabled 政策。
+
+          此政策的每个列表项都是一个字符串，其中包含以分号 (<ph name="SEMICOLON" />) 分隔的一个扩展程序 ID 和一个“更新”网址。扩展程序 ID 是一个由 32 个字母构成的字符串；若想查看示例，请在开发者模式下前往 <ph name="CHROME_EXTENSIONS_LINK" />。“更新”网址应指向一个更新清单 XML 文档，如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述。请注意，此政策中设置的“更新”网址仅用于初次安装；相应扩展程序的后续更新将会使用该扩展程序的清单中指定的更新网址。
+
+          例如，<ph name="EXTENSION_POLICY_EXAMPLE" /> 会从标准 Chrome 网上应用店“更新”网址安装“<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />”应用。若想详细了解如何托管扩展程序，请访问 <ph name="LINK_TO_EXTENSION_DOC2" />。
+
+          如果此政策未设置，系统便不会自动安装任何应用或扩展程序，而且用户可在 <ph name="PRODUCT_NAME" /> 中卸载任何应用或扩展程序。</translation>
 <translation id="6315673513957120120">当用户访问存在 SSL 错误的网站时，Chrome 将显示警告页面。默认情况下，或当此政策设为 true 时，用户可以在点击这些警告页面后继续操作。
       如果将此政策设为 false，用户将无法通过点击任何警告页面继续操作。</translation>
 <translation id="6353901068939575220">指定通过 POST 搜索网址时使用的参数。该参数由以英文逗号分隔的名称/值对组成。如果值为模板参数（例如上例中的 {searchTerms}），那么系统会将其替换成真正的搜索字词数据。
@@ -1747,6 +1785,7 @@
 <translation id="687046793986382807">此政策自35版<ph name="PRODUCT_NAME" />起已停止使用。
 
       无论选项值是什么，系统都会向网页报告内存信息，但出于安全考虑，系统会限制所报告的内存大小，并会限制更新率。要获取准确的实时数据，请使用遥测等工具。</translation>
+<translation id="6894178810167845842">“打开新的标签页”页面网址</translation>
 <translation id="6899705656741990703">自动检测代理设置</translation>
 <translation id="6903814433019432303">此政策仅在零售模式下有效。
 
@@ -1862,6 +1901,7 @@
 <translation id="7132877481099023201">无需提示用户即可使用视频捕获设备的网址</translation>
 <translation id="7167436895080860385">允许用户在密码管理器中显示密码（已弃用）</translation>
 <translation id="7173856672248996428">临时个人资料</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">允许用于更新的连接类型</translation>
 <translation id="7194407337890404814">默认搜索服务提供商名称</translation>
 <translation id="7195064223823777550">指定在用户合上屏幕时执行的操作。

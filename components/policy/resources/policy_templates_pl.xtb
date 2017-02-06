@@ -364,11 +364,11 @@
 
       Jeśli to ustawienie nie zostanie skonfigurowane, użytkownicy będą mogli wybrać, czy chcą używać usługi sprawdzania pisowni.</translation>
 <translation id="2294382669900758280">Odtwarzanie filmów w aplikacjach na Androida nie jest uwzględniane, nawet gdy zasada jest ustawiona na <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Skonfiguruj domyślną stronę nowej karty w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Określ listę włączonych wtyczek</translation>
 <translation id="2309390639296060546">Domyślne ustawienie geolokalizacji</translation>
 <translation id="2312134445771258233">Umożliwia skonfigurowanie stron wczytywanych po uruchomieniu. Zawartość listy „Adresy URL otwierane po uruchomieniu” jest ignorowana, chyba że wybierzesz opcję „Otwórz adresy URL z listy” w ustawieniu „Działanie po uruchomieniu”.</translation>
 <translation id="2337466621458842053">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być wyświetlane obrazy. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
-<translation id="2366415278352956652">Włącza przesyłanie</translation>
 <translation id="2372547058085956601">Opóźnienie automatycznego logowania się do sesji publicznej.
 
       Jeśli zasada |DeviceLocalAccountAutoLoginId| nie jest ustawiona, ta zasada nie daje żadnych rezultatów. W przeciwnym razie:
@@ -866,6 +866,17 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
 <translation id="3570008976476035109">Blokuj wtyczki w tych witrynach</translation>
 <translation id="3591584750136265240">Skonfiguruj sposób uwierzytelniania logowania</translation>
+<translation id="3601614035698083789">Konfiguruje listę zarządzanych zakładek.
+
+      Konfiguruje listę zarządzanych zakładek. Każda z nich to
+      słownik zawierający klucze <ph name="NAME" /> i adres <ph name="URL_LABEL" />, które określają nazwę i adres docelowy zakładki.
+      Można utworzyć podfolder, definiując zakładkę bez klucza <ph name="URL_LABEL" />, ale z dodatkowym kluczem <ph name="CHILDREN" />, który zawiera listę
+      zakładek, taką jak opisano powyżej (niektóre z nich same mogą być folderami). <ph name="PRODUCT_NAME" /> uzupełnia niekompletne adresy URL
+      tak samo jak po wpisaniu w omniboksie – np. <ph name="GOOGLE_COM" /> zamienia na <ph name="HTTPS_GOOGLE_COM" />.
+
+      Te zakładki są umieszczane w folderze „Zakładki zarządzane”, którego użytkownik nie może modyfikować, ale może go ukryć na pasku zakładek. Zakładki zarządzane nie synchronizują się z kontem użytkownika, a rozszerzenia nie mogą ich modyfikować.
+
+      Od wersji 51 nazwę folderu z zakładkami można zmienić, dodając element listy {"nazwa_najwyższego_poziomu": "dowolna nazwa"}.</translation>
 <translation id="3627678165642179114">Włącz lub wyłącz internetową usługę sprawdzania pisowni</translation>
 <translation id="3646859102161347133">Ustaw typ lupy</translation>
 <translation id="3653237928288822292">Ikona domyślnego dostawcy wyszukiwania</translation>
@@ -1071,6 +1082,17 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać z
 
       Jeśli ta zasada jest ustawiona na wartość fałsz, użytkownicy nie mogą blokować ekranu (mogą się tylko wylogować z sesji użytkownika). Jeśli ustawiona jest wartość prawda lub zasada nie została skonfigurowana, użytkownicy, którzy przeprowadzili uwierzytelnianie hasłem, mogą blokować ekran.</translation>
 <translation id="4121350739760194865">Zablokuj wyświetlanie promocji aplikacji na stronie Nowa karta</translation>
+<translation id="4133301551755536858">Pozwala skonfigurować URL domyślnej strony nowej karty w <ph name="PRODUCT_NAME" /> i uniemożliwia zmianę tego adresu użytkownikom.
+
+          Strona nowej karty otwiera się wtedy, gdy tworzone są nowe karty (obejmuje to też karty otwarte w nowych oknach).
+
+          Ta zasada nie kontroluje tego, jakie strony mają się otworzyć po uruchomieniu przeglądarki. Tę funkcję pełnią zasady RestoreOnStartup, które mogą powodować otwarcie strony nowej karty.
+
+          Zasadę NewTabPageLocation można ustawić na URL określony tutaj. Zasada będzie też miała wpływ na stronę startową, jeśli jest skonfigurowana do otwierania strony nowej karty, a także stronę początkową, jeśli jest ustawiona na stronę nowej karty.
+
+          Jeśli zasada nie jest ustawiona lub jest pusta, używana jest domyślna strona nowej karty.
+
+          Ta zasada jest niedostępna w systemach Windows, które nie są dołączone do domeny Active Directory.</translation>
 <translation id="4147054660081653009">Certyfikat klienta umożliwiający nawiązanie połączenia z RemoteAccessHostTokenValidationUrl.
 
           Jeśli ta zasada jest ustawiona, host użyje certyfikatu klienta z numerem określonego wystawcy, by uwierzytelnić połączenie z RemoteAccessHostTokenValidationUrl. Ustaw zasadę na „*”, by użyć dowolnego dostępnego certyfikatu klienta.
@@ -1148,9 +1170,9 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać z
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
 <translation id="4474167089968829729">Włącz zapisywanie haseł w menedżerze haseł</translation>
 <translation id="4476769083125004742">Ustawienie tej zasady na <ph name="BLOCK_GEOLOCATION_SETTING" /> odbiera aplikacjom na Androida dostęp do informacji o lokalizacji. Jeśli zasada ma inną wartość lub jest nieskonfigurowana, użytkownik będzie pytany o zgodę, gdy aplikacja na Androida będzie chciała uzyskać dostęp do informacji o lokalizacji.</translation>
-<translation id="447686899376429408">Jeśli nie skonfigurujesz tej zasady lub ustawisz dla niej wartość prawda, użytkownicy będą mogli przesyłać karty, witryny lub pulpit z przeglądarki. Jeśli ustawisz tu wartość fałsz, ta opcja zostanie wyłączona.</translation>
 <translation id="4480694116501920047">Wymuś stosowanie filtra SafeSearch</translation>
 <translation id="4482640907922304445">Powoduje pokazanie przycisku strony startowej na pasku narzędzi <ph name="PRODUCT_NAME" />. Jeśli włączysz to ustawienie, przycisk strony startowej będzie zawsze widoczny. W przypadku wyłączenia ustawienia przycisk nigdy nie jest widoczny. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />. W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, czy chce, aby przycisk strony startowej był pokazywany.</translation>
+<translation id="4485425108474077672">Skonfiguruj URL strony nowej karty</translation>
 <translation id="4492287494009043413">Wyłącza tworzenie zrzutów ekranu</translation>
 <translation id="450537894712826981">Ustala rozmiar pamięci podręcznej, której <ph name="PRODUCT_NAME" /> będzie używać do zapisywania plików pamięci podręcznej na dysku.
 
@@ -1535,6 +1557,12 @@ Jeśli ta zasada nie zostanie ustawiona, każda wtyczka zgodna ze wzorcem na li�
 
           Jeśli wyłączysz to ustawienie lub go nie skonfigurujesz, żądania uwierzytelniania Gnubby nie będą przesyłane przez serwer proxy.</translation>
 <translation id="5898486742390981550">Gdy zalogowanych jest wielu użytkowników, tylko główny użytkownik może używać aplikacji na Androida.</translation>
+<translation id="5906199912611534122">Umożliwia włączenie lub wyłączenie ograniczenia przepustowości sieci.
+      Ta zasada wpływa na wszystkich użytkowników i wszystkie interfejsy urządzenia. Po włączeniu tej funkcji
+      przepustowość będzie ograniczana do czasu, aż zasada ta nie zostanie zmieniona.
+
+      Wyłączenie zasady sprawi, że przepustowość nie będzie ograniczana.
+      Włączenie zasady sprawi, że przepustowość wysyłania i pobierania będzie ograniczana do podanych wartości (w kb/s).</translation>
 <translation id="5921713479449475707">Zezwalaj na pobieranie aktualizacji automatycznych przez HTTP</translation>
 <translation id="5921888683953999946">Ustawia domyślny stan funkcji ułatwień dostępu w postaci dużego kursora na ekranie logowania.
 
@@ -1652,6 +1680,49 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
 <translation id="6282799760374509080">Zezwól lub nie na przechwytywanie dźwięku</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Włącz autouzupełnianie nazw domen w czasie logowania użytkownika</translation>
+<translation id="6312861131491040487">
+          Określa listę aplikacji i rozszerzeń instalowanych dyskretnie,
+          bez udziału użytkownika, których nie może on odinstalować.
+          Wszystkie uprawnienia aplikacja lub rozszerzenie otrzymuje
+          domyślnie, bez interakcji z użytkownikiem. Dotyczy to też wszelkich
+          dodatkowych uprawnień, o które mogą prosić przyszłe wersje aplikacji lub rozszerzeń.
+          Uprawnienia otrzymują też interfejsy API rozszerzeń
+          enterprise.deviceAttributes oraz enterprise.platformKeys.
+          Te dwa interfejsy API nie są dostępne w przypadku aplikacji
+          lub rozszerzeń, których instalacja nie została wymuszona.
+
+          Ta zasada ma pierwszeństwo przed potencjalnie powodującą konflikt
+          zasadą ExtensionsInstallBlacklist. Jeśli z tej listy zostaną usunięte
+          aplikacja lub rozszerzenie, których instalacja została wymuszona
+          wcześniej, <ph name="PRODUCT_NAME" /> automatycznie je odinstaluje.
+
+          W przypadku systemów Windows niepodłączonych do domeny
+          Active Directory wymuszona instalacja jest ograniczona do rozszerzeń
+          wymienionych w Chrome Web Store.
+
+          Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować
+          za pomocą narzędzi dla programistów (potencjalnie blokując jego
+          działanie). Jeśli jest to problemem, ustaw zasadę
+          DeveloperToolsDisabled.
+
+          Każdy element na liście tej zasady jest ciągiem zawierającym
+          identyfikator rozszerzenia i URL „aktualizacji” oddzielony
+          średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to 32-znakowy ciąg,
+          który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty.
+          URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji
+          w postaci dokumentu XML, zgodnie z opisem w dokumencie <ph name="LINK_TO_EXTENSION_DOC1" />.
+          Uwaga: URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko
+          podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia
+          korzystają z adresu URL aktualizacji wskazanego w pliku manifestu.
+
+          Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje
+          aplikację <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardowego adresu URL „aktualizacji”
+          Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń
+          znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Jeśli ta zasada nie jest ustawiona, aplikacje ani rozszerzenia
+          nie są instalowane automatycznie, a użytkownik może odinstalować
+          dowolne z nich w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome wyświetla stronę z ostrzeżeniem, gdy użytkownicy otworzą witrynę, w której występują błędy SSL. Domyślnie lub wtedy, gdy ta zasada jest włączona, użytkownicy mogą zignorować i zamknąć stronę z ostrzeżeniem.
       Po wyłączeniu tej zasady użytkownicy nie będą mogli zamknąć strony z ostrzeżeniem.</translation>
 <translation id="6353901068939575220">Określa parametry używane przy wyszukiwaniu URL-a z użyciem POST. Składa się z rozdzielonych przecinkami par nazwy i wartości. Jeśli wartość jest parametrem szablonu, tak jak w przykładzie powyżej {searchTerms}, zostanie ona zastąpiona rzeczywistymi danymi wyszukiwanych słów.
@@ -1812,6 +1883,7 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
 <translation id="687046793986382807">Począwszy od wersji 35 usługi <ph name="PRODUCT_NAME" />, te zasady są wycofane.
 
       Informacje o pamięci są raportowane do strony niezależnie od ustawionej opcji, jednak wysyłane dane są kwantyzowane, a częstotliwość ich aktualizacji jest ograniczona ze względów bezpieczeństwa. Aby uzyskać precyzyjne dane w czasie rzeczywistym, użyj narzędzi telemetrycznych.</translation>
+<translation id="6894178810167845842">URL strony nowej karty</translation>
 <translation id="6899705656741990703">Automatycznie wykrywaj ustawienia serwera proxy</translation>
 <translation id="6903814433019432303">Ta zasada jest aktywna tylko w trybie sklepu.
 
@@ -1923,6 +1995,7 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
 <translation id="7132877481099023201">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania filmów</translation>
 <translation id="7167436895080860385">Zezwalaj użytkownikom na pokazywanie haseł w menedżerze haseł (wycofane)</translation>
 <translation id="7173856672248996428">Profil tymczasowy</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Typy połączeń dozwolone dla aktualizacji</translation>
 <translation id="7194407337890404814">Nazwa domyślnego dostawcy wyszukiwania</translation>
 <translation id="7195064223823777550">Określa, jakie działanie ma zostać wykonane po zamknięciu pokrywy przez użytkownika.

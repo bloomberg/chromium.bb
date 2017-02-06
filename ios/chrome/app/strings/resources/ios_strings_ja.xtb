@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">すべて開く</translation>
 <translation id="1430915738399379752">印刷</translation>
 <translation id="145015347812617860"><ph name="COUNT" />個のアイテム</translation>
+<translation id="1491277525950327607">設定を切り替えるにはダブルタップします</translation>
 <translation id="1540800554400757039">住所1行目</translation>
 <translation id="1545749641540134597">QR コードをスキャンします</translation>
 <translation id="1580783302095112590">メールを送信しました。</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">このページは別のアプリケーションで開かれます。</translation>
 <translation id="4378154925671717803">電話番号</translation>
 <translation id="441868831736628555">プライバシーに関するお知らせ</translation>
-<translation id="4426508677408162512">すべてのブックマーク</translation>
 <translation id="4473991315115669931">シークレット モードを開始</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
 <translation id="4536418791685807335">もう一度ログインしてみてください。</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">表示</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名前</translation>
+<translation id="5332219387342487447">配送方法</translation>
 <translation id="5388358297987318779">画像を開く</translation>
 <translation id="5409365236829784218">このファイルを開くアプリがインストールされていません。</translation>
 <translation id="54401264925851789">ページのセキュリティ情報</translation>
@@ -270,6 +271,7 @@
 <translation id="6255097610484507482">クレジットカードの編集</translation>
 <translation id="6308436439357671616">写真を撮影してアップロードできます。</translation>
 <translation id="6314335155547195432">パスワードを生成</translation>
+<translation id="6324528485781869530">同期アカウントの切り替え</translation>
 <translation id="6324669097367352121">ログインの設定</translation>
 <translation id="6337234675334993532">暗号化</translation>
 <translation id="633809752005859102">エラーが発生しました。原因を調査します。</translation>

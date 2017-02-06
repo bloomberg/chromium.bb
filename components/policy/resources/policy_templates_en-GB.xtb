@@ -381,6 +381,7 @@
 
       If this setting is not configured then users can choose whether the spell checking service should be used or not.</translation>
 <translation id="2294382669900758280">Video playing in Android apps is not taken into consideration, even if this policy is set to <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Configure the default New Tab page in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
 <translation id="2309390639296060546">Default geolocation setting</translation>
 <translation id="2312134445771258233">Allows you to configure the pages that are loaded on start-up.
@@ -389,7 +390,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2337466621458842053">Allows you to set a list of url patterns that specify sites which are allowed to display images.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultImagesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
-<translation id="2366415278352956652">Enables cast</translation>
 <translation id="2372547058085956601">The public session auto-login delay.
 
       If the |DeviceLocalAccountAutoLoginId| policy is unset, this policy has no effect. Otherwise:
@@ -908,6 +908,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="3570008976476035109">Block plug-ins on these sites</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
+<translation id="3601614035698083789">Configures a list of managed bookmarks.
+
+      The policy consists of a list of bookmarks whereas each bookmark is a
+      dictionary containing the keys <ph name="NAME" /> and <ph name="URL_LABEL" /> which hold the bookmark's name and its target. A
+      subfolder may be configured by defining a bookmark without an <ph name="URL_LABEL" /> key but with an additional <ph name="CHILDREN" /> key which itself contains a list of
+      bookmarks as defined above (some of which may be folders again). <ph name="PRODUCT_NAME" /> amends incomplete URLs
+      as if they were submitted via the Omnibox, for example <ph name="GOOGLE_COM" /> becomes <ph name="HTTPS_GOOGLE_COM" />.
+
+      These bookmarks are placed in a "Managed bookmarks" folder that can't be modified by the user, but the user can choose to hide it from the bookmark bar. Managed bookmarks are not synced to the user account and can't be modified by extensions.
+
+      Starting with release 51, the folder name for the bookmarks is customisable by adding a {"toplevel_name": "some name"} list item.</translation>
 <translation id="3627678165642179114">Enable or disable spell checking web service</translation>
 <translation id="3646859102161347133">Set screen magnifier type</translation>
 <translation id="3653237928288822292">Default search provider icon</translation>
@@ -1130,6 +1141,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is set to false, users will not be able to lock the screen (only signing out from the user session will be possible). If this setting is set to true or not set, users who authenticated with a password can lock the screen.</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
+<translation id="4133301551755536858">Configures the default New Tab page URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
+
+          The New Tab page is the page opened when new tabs are created (including the one opened in new windows).
+
+          This policy does not decide which pages to be opened on start up. They are controlled by the RestoreOnStartup policies, which could be to open the New Tab page.
+
+          The NewTabPageLocation can be set to a URL you specify here. It will also affect the Home Page if it is set to open the New Tab page, as well as the startup page if set to New Tab page.
+
+          If the policy is not set or left empty the default new tab page is used.
+
+          This policy is not available on Windows instances that are not joined to an Active Directory domain.</translation>
 <translation id="4147054660081653009">Client certificate for connecting to RemoteAccessHostTokenValidationUrl.
 
           If this policy is set, the host will use a client certificate with the given issuer CN to authenticate to RemoteAccessHostTokenValidationUrl. Set it to "*" to use any available client certificate.
@@ -1207,7 +1229,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4467952432486360968">Block third-party cookies</translation>
 <translation id="4474167089968829729">Enable saving passwords to the password manager</translation>
 <translation id="4476769083125004742">If this policy is set to <ph name="BLOCK_GEOLOCATION_SETTING" />, Android apps cannot access location information. If you set this policy to any other value or leave it unset, the user is asked to consent when an Android app wants to access location information.</translation>
-<translation id="447686899376429408">If this is set to true or is not set, users will be able to cast tabs, sites or the desktop from the browser. If set to false, this option will be disabled.</translation>
 <translation id="4480694116501920047">Force SafeSearch</translation>
 <translation id="4482640907922304445">Shows the Home button on <ph name="PRODUCT_NAME" />'s toolbar.
 
@@ -1218,6 +1239,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
 
       Leaving this policy unset will allow the user to choose whether to show the home button.</translation>
+<translation id="4485425108474077672">Configure the New Tab page URL</translation>
 <translation id="4492287494009043413">Disable taking screenshots</translation>
 <translation id="450537894712826981">Configures the cache size that <ph name="PRODUCT_NAME" /> will use for storing cached media files on the disk.
 
@@ -1643,6 +1665,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.</translation>
 <translation id="5898486742390981550">When multiple users are logged in, only the primary user can use Android apps.</translation>
+<translation id="5906199912611534122">Allows enabling or disabling network throttling.
+      This applies to all users, and to all interfaces on the device. Once set,
+      the throttling persists until the policy is changed to disable it.
+
+      If set to false, there is no throttling.
+      If set to true, the system is throttled to achieve the provided upload and download rates (in kbits/s).</translation>
 <translation id="5921713479449475707">Allow autoupdate downloads via HTTP</translation>
 <translation id="5921888683953999946">Set the default state of the large cursor accessibility feature on the login screen.
 
@@ -1764,6 +1792,46 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6282799760374509080">Allow or deny audio capture</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Enable domain name autocomplete during user sign in</translation>
+<translation id="6312861131491040487">
+          Specifies a list of apps and extensions that are installed silently,
+          without user interaction and which cannot be uninstalled by the
+          user. All permissions requested by the apps/extensions are granted
+          implicitly, without user interaction, including any additional
+          permissions requested by future versions of the app/extension.
+          Furthermore, permissions are granted for the
+          enterprise.deviceAttributes and enterprise.platformKeys extension
+          APIs. (These two APIs are not available to apps/extensions that are
+          not force-installed.)
+
+          This policy takes precedence over a potentially conflicting
+          ExtensionsInstallBlacklist policy. If an app or extension that
+          previously had been force-installed is removed from this list, it is
+          automatically uninstalled by <ph name="PRODUCT_NAME" />.
+
+          For Windows instances that are not joined to an Active Directory
+          domain, forced installation is limited to apps and extensions listed
+          in the Chrome Web Store.
+
+          Note that the source code of any extension may be altered by users via
+          Developer Tools (potentially rendering the extension
+          dysfunctional). If this is a concern, the DeveloperToolsDisabled
+          policy should be set.
+
+          Each list item of the policy is a string that contains an extension ID
+          and an "update" URL separated by a semicolon (<ph name="SEMICOLON" />). The extension ID is the 32-letter string
+          found e.g. on <ph name="CHROME_EXTENSIONS_LINK" /> when in
+          developer mode. The "update" URL should point to an Update Manifest
+          XML document as described at <ph name="LINK_TO_EXTENSION_DOC1" />. Note
+          that the "update" URL set in this policy is only used for the initial
+          installation; subsequent updates of the extension employ the update
+          URL indicated in the extension's manifest.
+
+          For example, <ph name="EXTENSION_POLICY_EXAMPLE" />
+          installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app from the standard Chrome Web Store "update"
+          URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          If this policy is left not set, no apps or extensions are installed
+          automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome shows a warning page when users navigate to sites that have SSL errors. By default or when this policy is set to true, users are allowed to click through these warning pages.
       Setting this policy to false disallows users to click through any warning page.</translation>
 <translation id="6353901068939575220">Specifies the parameters used when searching a URL with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
@@ -1936,6 +2004,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Memory info is reported to page anyway, regardless of the option value, but the sizes reported are
       quantised and the rate of updates is limited for security reasons. To obtain real-time precise data,
       please use tools like Telemetry.</translation>
+<translation id="6894178810167845842">New Tab page URL</translation>
 <translation id="6899705656741990703">Auto detect proxy settings</translation>
 <translation id="6903814433019432303">This policy is active in retail mode only.
 
@@ -2069,6 +2138,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7132877481099023201">URLs that will be granted access to video capture devices without prompt</translation>
 <translation id="7167436895080860385">Allow users to show passwords in Password Manager (deprecated)</translation>
 <translation id="7173856672248996428">Ephemeral profile</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Connection types allowed for updates</translation>
 <translation id="7194407337890404814">Default search provider name</translation>
 <translation id="7195064223823777550">Specify the action to take when the user closes the lid.

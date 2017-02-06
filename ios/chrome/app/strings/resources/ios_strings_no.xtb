@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Åpne alle</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementer</translation>
+<translation id="1491277525950327607">Dobbelttrykk for å slå innstillingen av/på</translation>
 <translation id="1540800554400757039">Adresse 1</translation>
 <translation id="1545749641540134597">Skann en QR-kode</translation>
 <translation id="1580783302095112590">E-posten er sendt.</translation>
@@ -178,7 +179,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4359125752503270327">Denne siden åpnes i et annet program.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Merknad om personvern</translation>
-<translation id="4426508677408162512">Alle bokmerker</translation>
 <translation id="4473991315115669931">Slå på inkognitomodus</translation>
 <translation id="4526249700380860531">Se på og administrer lagrede passord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prøv å logge på igjen.</translation>
@@ -218,6 +218,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="5327248766486351172">Navn</translation>
+<translation id="5332219387342487447">Leveringsmetode</translation>
 <translation id="5388358297987318779">Åpne bildet</translation>
 <translation id="5409365236829784218">Ingen av de installerte appene kan åpne denne filen.</translation>
 <translation id="54401264925851789">Sikkerhetsinformasjon for siden</translation>
@@ -270,6 +271,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="6255097610484507482">Rediger kredittkort</translation>
 <translation id="6308436439357671616">Dette gjør at du kan ta og laste opp bilder.</translation>
 <translation id="6314335155547195432">Generer passord</translation>
+<translation id="6324528485781869530">Bytt synkroniseringskonto</translation>
 <translation id="6324669097367352121">Påloggingsinnstillinger</translation>
 <translation id="6337234675334993532">Kryptering</translation>
 <translation id="633809752005859102">Noe gikk veldig galt. Vi skal jobbe med saken.</translation>

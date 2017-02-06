@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, i-on</translation>
 <translation id="1692077714702418899">structural na linya</translation>
 <translation id="1700517974991662022">Nabisita na</translation>
+<translation id="1714116687360794776">Metro</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Susunod na graphic</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Kontrol sa petsa at oras</translation>
 <translation id="2347456970887948350">Isang link</translation>
 <translation id="2359897517538099099">Wala sa table mode.</translation>
+<translation id="2390264819538553347">Upang magpatuloy, pindutin ang enter; upang bumalik, pindutin ang backspace.</translation>
 <translation id="241124561063364910">sinusundan ng</translation>
 <translation id="2416512023405990736">Isang checkbox na walang check</translation>
 <translation id="2417569100218200841">Impormasyon ng nilalaman</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Pangkat ng radio button</translation>
 <translation id="2471138580042810658">Heading 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisk}one{# asterisk}other{# na asterisk}}</translation>
+<translation id="2523609930580546572">Tutorial sa ChromeVox</translation>
 <translation id="2525706221823668172">Mga keyboard shortcut sa Chromebook</translation>
 <translation id="2549392850788122959">Na-reset ang <ph name="KEY" />.</translation>
 <translation id="2553108862507765288">pagkakamali sa grammar</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Walang nakaraang seksyon.</translation>
 <translation id="3030432017085518523">Radio button ng item sa menu</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{kudlit}one{# kudlit}other{# na kudlit}}</translation>
+<translation id="3040901448410802366">Indicator ng pag-usad</translation>
 <translation id="3046838483509668188">Mga Opsyon sa ChromeVox</translation>
 <translation id="3047143736589213134">Pang-eksperimentong keymap</translation>
 <translation id="3060756054951570867">binuksan ang menu ng <ph name="TITLE" /></translation>
@@ -230,6 +234,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="3321460131042519426">I-enable ang word wrap</translation>
 <translation id="3322936298410871309">Nakaraang heading sa antas 1</translation>
 <translation id="3323447499041942178">Text box</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> slider</translation>
 <translation id="3353420241558113817">{"ar": "Arabic",
         "bg": "Bulgarian",
         "ca": "Catalan",
@@ -714,6 +719,7 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="7693840228159394336">Nakaraang radio button</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, text box ng password</translation>
+<translation id="7776293189010177726">Buksan ang mga menu ng ChromeVox</translation>
 <translation id="7805247615045262757">default na pag-navigate</translation>
 <translation id="7805768142964895445">Katayuan</translation>
 <translation id="7810781339813764006">Susunod na Pangkat</translation>

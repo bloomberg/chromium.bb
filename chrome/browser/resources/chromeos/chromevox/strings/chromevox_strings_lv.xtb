@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, ieslēgt</translation>
 <translation id="1692077714702418899">struktūras līnija</translation>
 <translation id="1700517974991662022">Apmeklēta</translation>
+<translation id="1714116687360794776">Mērītājs</translation>
 <translation id="1722567105086139392">Saite</translation>
 <translation id="1727806147743597030">kājene</translation>
 <translation id="174268867904053074">Nākamā grafika</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Datuma/laika vadīkla</translation>
 <translation id="2347456970887948350">Saite</translation>
 <translation id="2359897517538099099">Nav ieslēgts tabulas režīms.</translation>
+<translation id="2390264819538553347">Lai pārietu uz nākamo lapu, nospiediet ievadīšanas taustiņu; lai pārietu uz iepriekšējo lapu, nospiediet atpakaļatkāpes taustiņu.</translation>
 <translation id="241124561063364910">un pēc tam</translation>
 <translation id="2416512023405990736">Neatzīmēta izvēles rūtiņa</translation>
 <translation id="2417569100218200841">Satura informācija</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Radiopogu grupa</translation>
 <translation id="2471138580042810658">6. līmeņa virsraksts</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{zvaigznīte}zero{# zvaigznīšu}one{# zvaigznīte}other{# zvaigznītes}}</translation>
+<translation id="2523609930580546572">ChromeVox mācības</translation>
 <translation id="2525706221823668172">Īsinājumtaustiņi Chromebook datorā</translation>
 <translation id="2549392850788122959">Taustiņš <ph name="KEY" /> ir atiestatīts.</translation>
 <translation id="2553108862507765288">gramatikas kļūda</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Iepriekš nav nevienas sadaļas.</translation>
 <translation id="3030432017085518523">Izvēlnes vienuma radiopoga</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrofs}zero{# apostrofu}one{# apostrofs}other{# apostrofi}}</translation>
+<translation id="3040901448410802366">Norises indikators</translation>
 <translation id="3046838483509668188">ChromeVox opcijas</translation>
 <translation id="3047143736589213134">Eksperimentāla taustiņu piesaiste</translation>
 <translation id="3060756054951570867">Tika atvērta izvēlne <ph name="TITLE" /></translation>
@@ -230,6 +234,7 @@ Ja esat pabeidzis pamācības skatīšanu, izmantojiet ChromeVox, lai pārietu u
 <translation id="3321460131042519426">Iespējot teksta aplaušanu</translation>
 <translation id="3322936298410871309">Iepriekšējais 1. līmeņa virsraksts</translation>
 <translation id="3323447499041942178">Tekstlodziņš</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> slīdnis</translation>
 <translation id="3353420241558113817">{"ar”: “Arābu”,
         “bg”: “Bulgāru”,
         “ca”: “Katalāņu”,
@@ -714,6 +719,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="7693840228159394336">Iepriekšējā radiopoga</translation>
 <translation id="7701196182766842984">automātiski pabeigts saraksts</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, paroles tekstlodziņš</translation>
+<translation id="7776293189010177726">Atvērt ChromeVox izvēlnes</translation>
 <translation id="7805247615045262757">noklusējuma navigācija</translation>
 <translation id="7805768142964895445">Statuss</translation>
 <translation id="7810781339813764006">Nākamā grupa</translation>

@@ -38,6 +38,7 @@
 <translation id="1923539912171292317">کلیک‌های خودکار</translation>
 <translation id="1957803754585243749">۰ درجه</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" /> (‏USB)</translation>
+<translation id="2122028596993374965">شروع ارسال محتوای <ph name="TAB_NAME" /> به <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
 <translation id="2204305834655267233">اطلاعات شبکه</translation>
 <translation id="2208323208084708176">حالت میزکار یکپارچه</translation>
@@ -148,6 +149,7 @@
 <translation id="5331975486040154427">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">تمام کاربران موجود قبلاً به این جلسه اضافه شده‌اند.</translation>
+<translation id="5504841533973703486">میکروفون جلو</translation>
 <translation id="5507786745520522457">تنظیم داده‌های دستگاه همراه</translation>
 <translation id="5543001071567407895">پیامک</translation>
 <translation id="5548285847212963613">افزونه «<ph name="EXTENSION_NAME" />» می‌تواند در اتصال به این شبکه به شما کمک کند.</translation>
@@ -158,6 +160,7 @@
 <translation id="5777841717266010279">اشتراک‌گذاری صفحه نمایش متوقف شود؟</translation>
 <translation id="57838592816432529">بی‌صدا کردن</translation>
 <translation id="5825747213122829519">‏روش ورودی شما به <ph name="INPUT_METHOD_ID" /> تغییر یافت. Shift + Alt را برای تعویض فشار دهید.</translation>
+<translation id="5830936593837877897">میکروفون پشت</translation>
 <translation id="5871632337994001636">مدیریت دستگاه‌ها...</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -247,8 +250,10 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="8000066093800657092">بدون شبکه</translation>
 <translation id="8054466585765276473">درحال محاسبه زمان شارژ باتری.</translation>
 <translation id="8077816382010018681">‏عنوان اعلان QU Feature اینجا می‌آید</translation>
+<translation id="8098591350844501178">توقف ارسال محتوای صفحه به <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">پیامک‌ها: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">متصل به <ph name="NAME" /></translation>
+<translation id="8180896103888046100">توقف ارسال محتوا به گیرنده ناشناس</translation>
 <translation id="8185286464235484130">با پاسخ به چند سؤال، درمورد کیفیت عملکردمان را به ما نشان دهید.</translation>
 <translation id="8190698733819146287">سفارشی کردن زبان‌ها و ورودی...</translation>
 <translation id="8206859287963243715">سلولی</translation>

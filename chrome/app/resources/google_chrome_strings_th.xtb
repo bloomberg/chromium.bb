@@ -61,7 +61,6 @@
 <translation id="2664962310688259219">ใบอนุญาตโอเพนซอร์สของ Chrome OS</translation>
 <translation id="2665296953892887393">ช่วยทำให้ Google Chrome ดียิ่งขึ้นโดยการส่งรายงานข้อขัดข้องและ <ph name="UMA_LINK" /> ไปยัง Google</translation>
 <translation id="2689103672227170538">ส่วนขยายนี้ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณเริ่มต้น Chrome</translation>
-<translation id="2748463065602559597">คุณกำลังดูหน้าเว็บ Google Chrome ที่ปลอดภัย</translation>
 <translation id="2769762047821873045">Google Chrome ไม่ใช่เบราว์เซอร์เริ่มต้นโดยอัตโนมัติของคุณ</translation>
 <translation id="2770231113462710648">เปลี่ยนเบราว์เซอร์ที่เป็นค่าเริ่มต้นเป็น:</translation>
 <translation id="2799223571221894425">เปิดใหม่</translation>
@@ -200,6 +199,7 @@
 <translation id="6970811910055250180">กำลังอัปเดตอุปกรณ์ของคุณ...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> กำหนดว่าคุณต้องอ่านและยอมรับข้อกำหนดในการให้บริการต่อไปนี้ก่อนใช้อุปกรณ์นี้ ข้อกำหนดเหล่านี้ไม่ขยาย แก้ไข หรือจำกัดข้อกำหนดของ Google Chrome OS</translation>
 <translation id="6989339256997917931">อัปเดต Google Chrome แล้ว แต่คุณไม่ได้ใช้งานมาไม่ต่ำกว่า 30 วันแล้ว</translation>
+<translation id="7048801529101012374">Google Chrome เป็นเบราว์เซอร์เริ่มต้นของคุณ ไชโย!</translation>
 <translation id="7098166902387133879">Google Chrome ใช้ไมโครโฟนอยู่</translation>
 <translation id="7106741999175697885">ตัวจัดการงาน - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome ไม่สามารถอัปเดตตัวเองเป็นเวอร์ชันล่าสุดได้ คุณกำลังพลาดคุณลักษณะเจ๋งๆ และการปรับปรุงความปลอดภัย คุณจำเป็นต้องติดตั้ง Chrome ใหม่ด้วยตนเอง</translation>

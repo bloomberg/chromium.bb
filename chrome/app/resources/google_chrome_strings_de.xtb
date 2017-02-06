@@ -61,7 +61,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="2664962310688259219">Open-Source-Lizenzen für Chrome OS</translation>
 <translation id="2665296953892887393">Absturzberichte und <ph name="UMA_LINK" /> zur Verbesserung von Google Chrome an Google senden</translation>
 <translation id="2689103672227170538">Die beim Start von Chrome angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
-<translation id="2748463065602559597">Dies ist eine sichere Google Chrome-Seite.</translation>
 <translation id="2769762047821873045">Google Chrome ist nicht als Ihr Standardbrowser festgelegt.</translation>
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
 <translation id="2799223571221894425">Neu starten</translation>
@@ -199,6 +198,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="6970811910055250180">Ihr Gerät wird aktualisiert...</translation>
 <translation id="6982337800632491844">Vor der Verwendung dieses Geräts ist es erforderlich, dass Sie die folgenden Nutzungsbedingungen von <ph name="DOMAIN" /> akzeptieren. Durch diese Nutzungsbedingungen werden die Google Chrome OS-Nutzungsbedingungen nicht erweitert, geändert oder eingeschränkt.</translation>
 <translation id="6989339256997917931">Google Chrome wurde aktualisiert, Sie haben den Browser jedoch mindestens 30 Tage nicht verwendet.</translation>
+<translation id="7048801529101012374">Google Chrome ist Ihr Standardbrowser. Super!</translation>
 <translation id="7098166902387133879">Google Chrome verwendet Ihr Mikrofon.</translation>
 <translation id="7106741999175697885">Taskmanager - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome konnte nicht automatisch auf die neueste Version aktualisiert werden. In Ihrer Version fehlen einige neue Funktionen und Sicherheitsmerkmale. Installieren Sie Chrome manuell neu.</translation>

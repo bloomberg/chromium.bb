@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, inschakelen</translation>
 <translation id="1692077714702418899">structurele regel</translation>
 <translation id="1700517974991662022">Bezocht</translation>
+<translation id="1714116687360794776">Meter</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">footer</translation>
 <translation id="174268867904053074">Volgende afbeelding</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Bedieningselement voor datum/tijd</translation>
 <translation id="2347456970887948350">Een link</translation>
 <translation id="2359897517538099099">Niet in tabelmodus.</translation>
+<translation id="2390264819538553347">Druk op Enter om door te gaan. Druk op Backspace om terug te gaan.</translation>
 <translation id="241124561063364910">gevolgd door</translation>
 <translation id="2416512023405990736">Een niet-aangevinkt selectievakje</translation>
 <translation id="2417569100218200841">Informatie over content</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Groep met keuzerondjes</translation>
 <translation id="2471138580042810658">Kop 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{sterretje}other{# sterretjes}}</translation>
+<translation id="2523609930580546572">ChromeVox-handleiding</translation>
 <translation id="2525706221823668172">Sneltoetsen op de Chromebook</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> is opnieuw ingesteld.</translation>
 <translation id="2553108862507765288">grammaticafout</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Geen vorig gedeelte.</translation>
 <translation id="3030432017085518523">Keuzerondje voor menu-item</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrof}other{# apostrofs}}</translation>
+<translation id="3040901448410802366">Voortgangsindicator</translation>
 <translation id="3046838483509668188">ChromeVox-opties</translation>
 <translation id="3047143736589213134">Experimentele toetsenbordindeling</translation>
 <translation id="3060756054951570867">menu <ph name="TITLE" /> geopend</translation>
@@ -230,6 +234,7 @@ Als je klaar bent met de handleiding, gebruik je ChromeVox om naar de knop Sluit
 <translation id="3321460131042519426">Tekstterugloop inschakelen</translation>
 <translation id="3322936298410871309">Vorige kop voor niveau 1</translation>
 <translation id="3323447499041942178">Tekstvak</translation>
+<translation id="3338224621010291843">Schuifregelaar <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "Arabisch",
         "bg": "Bulgaars",
         "ca": "Catalaans",
@@ -714,6 +719,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="7693840228159394336">Vorig keuzerondje</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, tekstvak voor wachtwoord</translation>
+<translation id="7776293189010177726">ChromeVox-menu's openen</translation>
 <translation id="7805247615045262757">standaardnavigatie</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7810781339813764006">Volgende groep</translation>

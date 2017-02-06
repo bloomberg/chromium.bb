@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Apri tutte</translation>
 <translation id="1430915738399379752">Stampa</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementi</translation>
+<translation id="1491277525950327607">Tocca due volte per attivare/disattivare l'impostazione</translation>
 <translation id="1540800554400757039">Indirizzo 1</translation>
 <translation id="1545749641540134597">Leggi il codice QR</translation>
 <translation id="1580783302095112590">Messaggio inviato.</translation>
@@ -178,7 +179,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4359125752503270327">Questa pagina verrà aperta con un'altra applicazione.</translation>
 <translation id="4378154925671717803">Telefono</translation>
 <translation id="441868831736628555">Informativa sulla privacy</translation>
-<translation id="4426508677408162512">Tutti i preferiti</translation>
 <translation id="4473991315115669931">Attiva la modalità di navigazione in incognito</translation>
 <translation id="4526249700380860531">Controlla e gestisci le password salvate all'indirizzo <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prova ad accedere nuovamente.</translation>
@@ -218,6 +218,7 @@ I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inserisc
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="5327248766486351172">Nome</translation>
+<translation id="5332219387342487447">Modalità di spedizione</translation>
 <translation id="5388358297987318779">Apri immagine</translation>
 <translation id="5409365236829784218">Non ci sono applicazioni installate in grado di aprire questo file.</translation>
 <translation id="54401264925851789">Info sicurezza pagina</translation>
@@ -270,6 +271,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6255097610484507482">Modifica carta di credito</translation>
 <translation id="6308436439357671616">In questo modo puoi scattare e caricare foto.</translation>
 <translation id="6314335155547195432">Genera password</translation>
+<translation id="6324528485781869530">Cambia account di sincronizzazione</translation>
 <translation id="6324669097367352121">Impostazioni accesso</translation>
 <translation id="6337234675334993532">Crittografia</translation>
 <translation id="633809752005859102">Si è verificato un problema. Stiamo cercando una soluzione.</translation>

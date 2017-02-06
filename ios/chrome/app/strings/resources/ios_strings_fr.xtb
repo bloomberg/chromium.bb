@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Tout ouvrir</translation>
 <translation id="1430915738399379752">Imprimer</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> éléments</translation>
+<translation id="1491277525950327607">Appuyer deux fois pour activer/désactiver le paramètre</translation>
 <translation id="1540800554400757039">Adresse 1</translation>
 <translation id="1545749641540134597">Scanner le code QR</translation>
 <translation id="1580783302095112590">E-mail envoyé.</translation>
@@ -178,7 +179,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="441868831736628555">Avis de confidentialité</translation>
-<translation id="4426508677408162512">Tous les favoris</translation>
 <translation id="4473991315115669931">Activer le mode navigation privée</translation>
 <translation id="4526249700380860531">Afficher et gérer les mots de passe enregistrés sur <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Veuillez essayer de vous reconnecter.</translation>
@@ -218,6 +218,7 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5327248766486351172">Nom</translation>
+<translation id="5332219387342487447">Mode de livraison</translation>
 <translation id="5388358297987318779">Ouvrir l'image</translation>
 <translation id="5409365236829784218">Aucune application installée ne peut ouvrir ce fichier.</translation>
 <translation id="54401264925851789">Informations sur la sécurité de cette page</translation>
@@ -270,6 +271,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="6255097610484507482">Modifier la carte de paiement</translation>
 <translation id="6308436439357671616">Cela vous permet de prendre et d'importer des photos.</translation>
 <translation id="6314335155547195432">Générer mot de passe</translation>
+<translation id="6324528485781869530">Changer de compte pour synchro</translation>
 <translation id="6324669097367352121">Paramètres connexion</translation>
 <translation id="6337234675334993532">Chiffrement</translation>
 <translation id="633809752005859102">Une erreur importante s'est produite. Nous allons rechercher une solution.</translation>

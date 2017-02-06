@@ -39,6 +39,7 @@
 <translation id="1923539912171292317">स्वयंचलित क्लिक</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965"><ph name="RECEIVER_NAME" /> वर <ph name="TAB_NAME" /> कास्ट करणे थांबवा</translation>
 <translation id="2127372758936585790">निम्न-उर्जेचे चार्जर</translation>
 <translation id="2204305834655267233">नेटवर्क माहिती</translation>
 <translation id="2208323208084708176">एकीकृत डेस्कटॉप मोड</translation>
@@ -149,6 +150,7 @@
 <translation id="5331975486040154427">USB-C डिव्‍हाइस (डाव्या बाजूचे मागील पोर्ट)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">सर्व उपलब्‍ध वापरकर्ते आधीपासून या सत्रावर जोडले गेले आहेत.</translation>
+<translation id="5504841533973703486">समोरील मायक्रोफोन</translation>
 <translation id="5507786745520522457">मोबाइल डेटा सेट करा</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">या नेटवर्कवर कनेक्ट करण्यात "<ph name="EXTENSION_NAME" />" विस्तार मदत करू शकतो.</translation>
@@ -160,6 +162,7 @@
 <translation id="57838592816432529">निःशब्द करा</translation>
 <translation id="5825747213122829519">आपली इनपुट पद्धत <ph name="INPUT_METHOD_ID" /> मध्ये बदलली आहे.
 स्विच करण्यासाठी Shift + Alt दाबा.</translation>
+<translation id="5830936593837877897">मागील मायक्रोफोन</translation>
 <translation id="5871632337994001636">डिव्हाइस व्यवस्थापित करा...</translation>
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -248,8 +251,10 @@
 <translation id="8000066093800657092">कोणतेही नेटवर्क नाही</translation>
 <translation id="8054466585765276473">बॅटरी वेळ गणना करत आहे.</translation>
 <translation id="8077816382010018681">QU वैशिष्‍ट्य सूचना शीर्षक येथे असेल</translation>
+<translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> वर स्क्रीन कास्ट करणे थांबवा</translation>
 <translation id="8103386449138765447">SMS संदेश: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517"><ph name="NAME" /> शी कनेक्ट केलेले</translation>
+<translation id="8180896103888046100">एका अज्ञात प्राप्तकर्त्यावर कास्ट करणे थांबवा</translation>
 <translation id="8185286464235484130">काही प्रश्नांची उत्तरे देऊन आम्ही कसे कार्य करत आहोत ते आम्हाला सांगा.</translation>
 <translation id="8190698733819146287">भाषा आणि इनपुट सानुकूलित करा...</translation>
 <translation id="8206859287963243715">सेल्यूलर</translation>

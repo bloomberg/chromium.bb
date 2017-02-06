@@ -52,6 +52,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1445680696957526815">Componentele Chrome nu sunt compatibile între ele. Chrome poate fi în curs de actualizare. Încearcă din nou peste câteva minute. Dacă problema persistă, încearcă să dezinstalezi și să reinstalezi Chrome.</translation>
 <translation id="1446450296470737166">Control complet dispozitive MIDI</translation>
 <translation id="145097072038377568">Dezactivată din Setări Android</translation>
+<translation id="1455941322673536744">Completarea automată și plățile</translation>
 <translation id="147006957810816598">Nu vei fi deconectat(ă) de la Contul Google.</translation>
 <translation id="1477626028522505441">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza unor probleme de server.</translation>
 <translation id="1506061864768559482">Motor de căutare</translation>
@@ -195,6 +196,7 @@ Poți să controlezi Webul material din Setările Chrome.
 <translation id="2996291259634659425">Creează o expresie de acces</translation>
 <translation id="2996809686854298943">Adresă URL obligatorie</translation>
 <translation id="300526633675317032">Astfel, se vor șterge <ph name="SIZE_IN_KB" /> din stocarea site-urilor.</translation>
+<translation id="3029613699374795922"><ph name="KBS" /> KB descărcați</translation>
 <translation id="3029704984691124060">Expresiile de acces nu corespund</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Deschideți într-o filă incognito</translation>
@@ -262,6 +264,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="3739899004075612870">Marcat în <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB pentru alte aplicații</translation>
 <translation id="3744111561329211289">Sincronizare în fundal</translation>
+<translation id="3773755127849930740"><ph name="BEGIN_LINK" />Activează Bluetooth<ph name="END_LINK" /> pentru a permite asocierea</translation>
 <translation id="3789841737615482174">Instalează</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{Un element selectat}few{# elemente selectate}other{# de elemente selectate}}</translation>
 <translation id="3810838688059735925">Video</translation>
@@ -317,7 +320,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4300272766492248925">Deschide aplicația</translation>
 <translation id="4307992518367153382">Elemente de bază</translation>
 <translation id="4351244548802238354">Închide caseta de dialog</translation>
-<translation id="4376501731284077108">Necontrolat</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Pentru căutare se folosește Sogou</translation>
 <translation id="4412992751769744546">Permite cookie-urile terță parte</translation>
@@ -362,8 +364,10 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4837753911714442426">Deschide opțiunile pentru a printa pagina</translation>
 <translation id="4850886885716139402">Afișează</translation>
 <translation id="4860895144060829044">Apelează</translation>
+<translation id="4862624982077154323">Pe unele site-uri, poți plăti folosind aplicațiile pentru plăți acceptate. Alege ce aplicații dorești să folosești în Chrome.</translation>
 <translation id="4881695831933465202">Deschide</translation>
 <translation id="4885273946141277891">Număr de instanțe Chrome neacceptat.</translation>
+<translation id="4910889077668685004">Aplicații pentru plăți</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /> în timp ce se caută dispozitive…</translation>
 <translation id="4923459931733593730">Plată</translation>
 <translation id="4941291666397027948">* indică un câmp obligatoriu</translation>
@@ -389,7 +393,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5131405117025179004">Editează contul salvat</translation>
 <translation id="5138299137310274655">Această pagină este în <ph name="SOURCE_LANGUAGE" />. Vrei să fie tradusă în <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Șterge datele stocate</translation>
-<translation id="5156656584247937086">Acesta este contul unui copil</translation>
+<translation id="5152843274749979095">Nu sunt instalate aplicații acceptate</translation>
 <translation id="5161254044473106830">Titlul este obligatoriu</translation>
 <translation id="5164482624172255778">Doriți ca data viitoare Google Chrome să propună traducerea paginilor în limba <ph name="LANGUAGE" /> de pe acest site?</translation>
 <translation id="5168917394043976756">Deschide panoul de navigare</translation>
@@ -448,6 +452,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5610807607761827392">Poți să gestionezi cardurile și adresele în <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
 <translation id="5626134646977739690">Nume:</translation>
 <translation id="5646376287012673985">Locație</translation>
+<translation id="5655963694829536461">Caută în descărcări</translation>
 <translation id="5659593005791499971">Adresă de e-mail</translation>
 <translation id="5665379678064389456">Creează un eveniment în <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignoră solicitarea unui site de a împiedica mărirea</translation>
@@ -472,6 +477,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="583281660410589416">Necunoscut</translation>
 <translation id="5832934273103296195">Afișare extinsă – dă clic pentru a restrânge</translation>
 <translation id="583891442612896534">Chrome nu poate să contacteze serverele Google pentru comprimarea datelor. Economiile de date pot fi limitate.</translation>
+<translation id="5858741533101922242">Chrome nu poate activa adaptorul Bluetooth</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
 <translation id="5867027562311576691">În curând vor apărea mai multe articole. O dimineață plăcută!</translation>
 <translation id="5869522115854928033">Parole salvate</translation>
@@ -503,6 +509,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="6140912465461743537">Țară/Regiune</translation>
 <translation id="6159335304067198720">Economie de date de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Află mai multe</translation>
+<translation id="6177111841848151710">Blocată pentru motorul de căutare actual</translation>
 <translation id="6177390657002841081">Activează Economizorul de date</translation>
 <translation id="6181444274883918285">Adaugă o excepție privind site-urile</translation>
 <translation id="6192792657125177640">Excepții</translation>
@@ -515,6 +522,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6324034347079777476">Sincronizarea de sistem Android este dezactivată</translation>
 <translation id="6333140779060797560">Trimiteți prin <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Criptare</translation>
+<translation id="6343192674172527289">Nu s-a găsit nicio descărcare</translation>
 <translation id="6364438453358674297">Elimini sugestia din istoric?</translation>
 <translation id="6383961787135158834">Șterge stocare site-uri…</translation>
 <translation id="6388207532828177975">Șterge și resetează</translation>
@@ -522,6 +530,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6406506848690869874">Sincronizare</translation>
 <translation id="6409731863280057959">Ferestre pop-up</translation>
 <translation id="641643625718530986">Printați...</translation>
+<translation id="6416782512398055893"><ph name="MBS" /> MB descărcați</translation>
 <translation id="6433490469411711332">Editează informațiile de contact</translation>
 <translation id="6443118737398455446">Dată de expirare nevalidă</translation>
 <translation id="6446608382365791566">Adaugă mai multe informații</translation>
@@ -532,6 +541,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6477460825583319731">Adresă de e-mail nevalidă</translation>
 <translation id="6482749332252372425">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza spațiului de stocare insuficient.</translation>
 <translation id="6527303717912515753">Trimite</translation>
+<translation id="6538442820324228105"><ph name="GBS" /> GB descărcați</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Selectează o filă pentru transmitere</translation>
 <translation id="6545017243486555795">Șterge toate datele</translation>
@@ -587,6 +597,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="699220179437400583">Raportează automat la Google detaliile eventualelor incidente privind securitatea</translation>
 <translation id="6992289844737586249">Întreabă înainte de a permite site-urilor să folosească microfonul (recomandat)</translation>
 <translation id="7001663382399377034">Adaugă un destinatar</translation>
+<translation id="7016516562562142042">Permis pentru motorul de căutare actual</translation>
 <translation id="7021515813996758557">Fișierul <ph name="FILE_NAME" /> a fost descărcat</translation>
 <translation id="7022756207310403729">Deschide în browser</translation>
 <translation id="7029809446516969842">Parole</translation>
@@ -713,7 +724,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8372893542064058268">Permite sincronizarea în fundal pentru un anumit site.</translation>
 <translation id="8374821112118309944">Trebuie să actualizați TalkBack la o versiune mai nouă.</translation>
 <translation id="8393700583063109961">Trimite un mesaj</translation>
-<translation id="8396312449826231789">Numai site-uri aprobate</translation>
 <translation id="8413126021676339697">Afișați întregul istoric</translation>
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8433057134996913067">Astfel, te vei deconecta de pe majoritatea site-urilor.</translation>
@@ -742,7 +752,6 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="8660471606262461360">Din Google Payments</translation>
 <translation id="8676374126336081632">Șterge textul introdus</translation>
 <translation id="869891660844655955">Dată de expirare</translation>
-<translation id="8699799819461268362">Filtrul Google SafeSites</translation>
 <translation id="8719023831149562936">Fila actuală nu poate fi transmisă</translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8730621377337864115">Terminat</translation>

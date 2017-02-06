@@ -61,7 +61,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="2664962310688259219">Llicències de programari lliure de Chrome OS</translation>
 <translation id="2665296953892887393">Ajudeu a millorar Google Chrome; envieu informes d'error i <ph name="UMA_LINK" /> a Google.</translation>
 <translation id="2689103672227170538">Aquesta extensió ha canviat la pàgina que es mostra quan inicieu Chrome.</translation>
-<translation id="2748463065602559597">Esteu visualitzant una pàgina segura de Google Chrome.</translation>
 <translation id="2769762047821873045">Google Chrome no és el navegador predeterminat.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
 <translation id="2799223571221894425">Reinicia</translation>
@@ -199,6 +198,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="6970811910055250180">S'està actualitzant el dispositiu...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> exigeix que llegiu i accepteu els Termes i condicions següents abans no utilitzeu el dispositiu. Aquestes condicions no amplien, modifiquen ni restringeixen les condicions de Google Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome està actualitzat, però no l'heu utilitzat durant un mínim de 30 dies.</translation>
+<translation id="7048801529101012374">Google Chrome és el navegador predeterminat. Gaudeix-ne.</translation>
 <translation id="7098166902387133879">Google Chrome està utilitzant el micròfon.</translation>
 <translation id="7106741999175697885">Gestor de tasques - Google Chrome</translation>
 <translation id="7125719106133729027">No s'ha pogut fer l'actualització de Chrome a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Cal que torneu a instal·lar Chrome manualment.</translation>

@@ -64,7 +64,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2664962310688259219">Licences Chrome OS Open Source</translation>
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
 <translation id="2689103672227170538">Cette extension a modifié la page qui s'affiche lorsque vous démarrez Chrome.</translation>
-<translation id="2748463065602559597">Cette page Google Chrome est sécurisée.</translation>
 <translation id="2769762047821873045">Google Chrome n'est pas votre navigateur par défaut.</translation>
 <translation id="2770231113462710648">Remplacer le navigateur par défaut par :</translation>
 <translation id="2799223571221894425">Relancer</translation>
@@ -207,6 +206,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6970811910055250180">Mise à jour de votre appareil en cours…</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> implique que vous lisiez et acceptiez les présentes conditions d'utilisation pour utiliser cet appareil. Ces dernières n'étendent, ne modifient ni ne restreignent les conditions d'utilisation de Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome a été mis à jour, mais vous ne l'avez pas utilisé depuis plus de 30 jours.</translation>
+<translation id="7048801529101012374">Google Chrome est votre navigateur par défaut. Félicitations !</translation>
 <translation id="7098166902387133879">Votre micro est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="7106741999175697885">Gestionnaire de tâches - Google Chrome</translation>
 <translation id="7125719106133729027">La mise à jour de Chrome a échoué. Vous n'utilisez pas la dernière version, qui vous permet de bénéficier de nouvelles fonctionnalités pratiques et de correctifs de sécurité. Vous devez réinstaller Chrome manuellement.</translation>

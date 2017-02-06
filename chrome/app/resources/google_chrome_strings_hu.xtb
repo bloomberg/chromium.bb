@@ -61,7 +61,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="2664962310688259219">Chrome OS nyílt forráskódú licencek</translation>
 <translation id="2665296953892887393">Segítse a Google Chrome fejlesztését azáltal, hogy elküldi a Google-nak a következőket: hibajelentések és <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Ez a bővítmény módosította, hogy melyik oldal jelenik meg a Chrome indításakor.</translation>
-<translation id="2748463065602559597">Ön egy biztonságos Google Chrome-oldalt lát.</translation>
 <translation id="2769762047821873045">Nem a Google Chrome az alapértelmezett böngésző.</translation>
 <translation id="2770231113462710648">Alapértelmezett böngésző beállítása:</translation>
 <translation id="2799223571221894425">Újraindítás</translation>
@@ -199,6 +198,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="6970811910055250180">Az eszköz frissítése folyamatban van...</translation>
 <translation id="6982337800632491844">A(z) <ph name="DOMAIN" /> megköveteli, hogy olvassa el, majd fogadja el a következő Általános Szerződési Feltételeket, mielőtt használná ezt az eszközt. Ezek a feltételek nem bővítik, módosítják vagy korlátozzák a Google Chrome OS feltételeit.</translation>
 <translation id="6989339256997917931">A Google Chrome frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
+<translation id="7048801529101012374">A Google Chrome az alapértelmezett böngésző. Hurrá!</translation>
 <translation id="7098166902387133879">A Google Chrome használja a mikrofont.</translation>
 <translation id="7106741999175697885">Feladatkezelő - Google Chrome</translation>
 <translation id="7125719106133729027">A Chrome nem tudott frissíteni a legújabb verzióra, ezért Ön nem rendelkezik a remek új funkciókkal és biztonsági javításokkal. A Chrome kézi újratelepítése szükséges.</translation>

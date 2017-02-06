@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google सुरक्षित ब्राउझिंगला अलीकडे <ph name="SITE" /> वर <ph name="BEGIN_LINK" />मालवेअर आढळले आहे<ph name="END_LINK" />. सामान्यतः सुरक्षित असलेल्या वेबसाइट काहीवेळा मालवेअरमुळे संक्रमित झालेल्या असतात. एक ज्ञात मालवेअर वितरक असलेल्या, <ph name="SUBRESOURCE_HOST" /> कडून दुर्भावनापूर्ण सामग्री येते. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">अवैध विनंती किंवा विनंती मापदंड</translation>
 <translation id="1834321415901700177">या साइटमध्ये धोकादायक प्रोग्राम आहेत</translation>
-<translation id="1838667051080421715">आपण वेब पृष्ठाचा स्त्रोत पहात आहात.</translation>
 <translation id="1871208020102129563">प्रॉक्सी निश्चित प्रॉक्सी सर्व्हर वापरण्‍यास सेट करण्‍यात आले आहे, .pac स्क्रिप्ट URL नव्हे.</translation>
+<translation id="187918866476621466">प्रारंभ पृष्ठ उघडा</translation>
 <translation id="1883255238294161206">सूची संकुचित करा</translation>
 <translation id="1898423065542865115">फिल्टर करणे</translation>
 <translation id="194030505837763158"><ph name="LINK" /> दुव्याकडे जा</translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">आपण हे वारंवार पहात असल्यास, हे वापरून पहा <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">पुनरावृत्ती</translation>
 <translation id="3678029195006412963">विनंती स्वाक्षरीकृत करणे शक्य झाले नाही</translation>
+<translation id="3679803492151881375">क्रॅश अहवाल <ph name="CRASH_TIME" /> वाजता कॅप्चर केला, <ph name="UPLOAD_TIME" /> वाजता अपलोड केला</translation>
 <translation id="3681007416295224113">प्रमाणपत्र माहिती...</translation>
 <translation id="3690164694835360974">लॉग इन सुरक्षित नाही</translation>
 <translation id="3693415264595406141">संकेतशब्द:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;हटवा पूर्ववत करा</translation>
 <translation id="4619615317237390068">अन्य डिव्हाइसेसमधील टॅब</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">आपण एक विस्तार पृष्ठ पाहत आहात.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">आपल्या कनेक्शनमध्ये व्यत्यय आला</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows नेटवर्क निदान चालविणे<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> येथील वेबपृष्ठ कदाचित तात्पुरते बंद आहे किंवा ते कदाचित कायमचे नवीन वेब पत्त्यावर हलवले आहे.</translation>
 <translation id="4771973620359291008">एक अज्ञात त्रुटी आली आहे.</translation>
 <translation id="4800132727771399293">आपली कालबाह्यता तारीख आणि CVC तपासा आणि पुन्हा प्रयत्न करा</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">नेटवर्क त्रुटी</translation>
 <translation id="4816492930507672669">पृष्‍ठानुरुप करा</translation>
 <translation id="4850886885716139402">पहा</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">आपण ही साइट सोडू इच्छिता?</translation>
 <translation id="5629630648637658800">धोरण सेटिंग्ज लोड करण्यात अयशस्वी</translation>
 <translation id="5631439013527180824">अवैध डिव्हाइस व्यवस्थापन टोकन</translation>
+<translation id="5669703222995421982">वैयक्तीकृत सामग्री मिळवा</translation>
 <translation id="5675650730144413517">हे पृष्ठ कार्य करीत नाही</translation>
 <translation id="5677928146339483299">अवरोधित</translation>
 <translation id="5694783966845939798">आपण <ph name="DOMAIN" /> वर पोहोचण्याचा प्रयत्न केला परंतु सर्व्हरने एखाद्या कमकुवत स्वाक्षरी अल्गोरिदम (जसे की SHA-1) चा वापर करून स्वाक्षरीकृत केलेले प्रमाणपत्र सादर केले. याचा अर्थ असा आहे की सर्व्हरने सादर केलेले सुरक्षितता क्रेडेन्शियल बनावटी असू शकतात आणि हा सर्व्हर आपल्याला अपेक्षित असलेला सर्व्हर नसू शकतो (आपण कदाचित एखाद्या आक्रमणकर्त्यासह संप्रेषण करीत आहात). <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -551,6 +553,7 @@
 <translation id="6753269504797312559">धोरण मूल्य</translation>
 <translation id="6757797048963528358">आपले डिव्हाइस निष्क्रीय झाले.</translation>
 <translation id="6778737459546443941">आपल्या पालकाने अद्याप ती मंजूर केली नाही</translation>
+<translation id="6810899417690483278">सानुकूलीकरण आयडी</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> येथील वेबपृष्ठ सध्या अनुपलब्ध आहे. ते ओव्हरलोड असावे किंवा देखरेखीसाठी डाउन असावे.</translation>
 <translation id="6831043979455480757">भाषांतर करा</translation>
@@ -710,6 +713,7 @@
 <translation id="8364627913115013041">सेट केलेले नाही.</translation>
 <translation id="8380941800586852976">धोकादायक</translation>
 <translation id="8382348898565613901">आपण अलिकडेच भेट दिलेले बुकमार्क येथे दिसतील</translation>
+<translation id="8398259832188219207">क्रॅश अहवाल <ph name="UPLOAD_TIME" /> वाजता अपलोड केला</translation>
 <translation id="8412145213513410671">क्रॅश (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">आपण समान सांकेतिक वाक्यांश दोनदा प्रविष्ट करणे आवश्यक आहे.</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>

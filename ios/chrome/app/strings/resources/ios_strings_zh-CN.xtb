@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">全部打开</translation>
 <translation id="1430915738399379752">打印</translation>
 <translation id="145015347812617860">有<ph name="COUNT" />个书签</translation>
+<translation id="1491277525950327607">点按两次即可切换设置</translation>
 <translation id="1540800554400757039">地址第1行</translation>
 <translation id="1545749641540134597">扫描 QR 码</translation>
 <translation id="1580783302095112590">邮件已发送。</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">此页面将在其他应用中打开。</translation>
 <translation id="4378154925671717803">电话</translation>
 <translation id="441868831736628555">隐私权声明</translation>
-<translation id="4426508677408162512">所有书签</translation>
 <translation id="4473991315115669931">进入隐身模式</translation>
 <translation id="4526249700380860531">通过 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看和管理已保存的密码</translation>
 <translation id="4536418791685807335">请尝试重新登录。</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">显示</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名称</translation>
+<translation id="5332219387342487447">送货方式</translation>
 <translation id="5388358297987318779">打开图片</translation>
 <translation id="5409365236829784218">没有安装可打开此文件的应用。</translation>
 <translation id="54401264925851789">网页安全信息</translation>
@@ -270,6 +271,7 @@
 <translation id="6255097610484507482">修改信用卡</translation>
 <translation id="6308436439357671616">这样，您就可以拍摄并上传照片。</translation>
 <translation id="6314335155547195432">生成密码</translation>
+<translation id="6324528485781869530">切换同步帐号</translation>
 <translation id="6324669097367352121">登录设置</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="633809752005859102">出错了，我们马上处理。</translation>

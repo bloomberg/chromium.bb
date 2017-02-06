@@ -361,13 +361,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak toto nastavenie nie je nakonfigurované, používatelia môžu zvoliť, či službu na kontrolu pravopisu chcú použiť alebo nie.</translation>
 <translation id="2294382669900758280">Prehrávanie videí v aplikáciách pre Android sa neberie do úvahy ani v prípade, ak je toto pravidlo nastavené na hodnotu <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Nastavenie predvolenej stránky na novej karte v prehliadači <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Určiť zoznam povolených doplnkov</translation>
 <translation id="2309390639296060546">Predvolené nastavenie geolokácie</translation>
 <translation id="2312134445771258233">Umožňuje konfigurovať stránky, ktoré sa načítavajú pri spustení. Ak ste v časti „Akcie pri spustení“ nezvolili možnosť „Otvoriť zoznam webových adries“, položky v zozname „Webové adresy otvárané pri spustení“ sa ignorujú.</translation>
 <translation id="2337466621458842053">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, na ktorých sa môžu zobrazovať obrázky.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultImagesSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
-<translation id="2366415278352956652">Povolenie prenosu</translation>
 <translation id="2372547058085956601">Oneskorenie automatického prihlásenia do verejnej relácie.
 
       Ak nie je nastavené pravidlo |DeviceLocalAccountAutoLoginId|, nebude mať toto pravidlo žiadny vplyv. V opačnom prípade platí:
@@ -890,6 +890,17 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
 <translation id="3570008976476035109">Blokovať doplnky na týchto stránkach</translation>
 <translation id="3591584750136265240">Konfigurácia správania pri overovaní prihlasovacích údajov</translation>
+<translation id="3601614035698083789">Umožňuje konfigurovať zoznam spravovaných záložiek.
+
+      Toto pravidlo tvorí zoznam záložiek, pričom každá záložka je
+      slovník s kľúčmi <ph name="NAME" /> a <ph name="URL_LABEL" />, v ktorých je názov záložky a jej cieľ.
+      Môžete nakonfigurovať podpriečinok definovaním záložky bez kľúča <ph name="URL_LABEL" />, ale uvedením dodatočného kľúča <ph name="CHILDREN" />, ktorý obsahuje zoznam
+      záložiek definovaných vyššie (znova platí, že niektoré môžu byť priečinky). <ph name="PRODUCT_NAME" /> doplní neúplné webové adresy,
+      ako keby boli odoslané prostredníctvom všeobecného poľa, napríklad adresu <ph name="GOOGLE_COM" /> zmení na <ph name="HTTPS_GOOGLE_COM" />.
+
+      Tieto záložky sú umiestnené do priečinka Spravované záložky, ktorý používateľ nemôže upravovať, ale môže ho na paneli so záložkami skryť. Spravované záložky nie sú synchronizované s účtom používateľa a rozšírenia ich nemôžu upravovať.
+
+      Počnúc vydaním 51 je možné prispôsobiť názov priečinka so záložkami. Stačí pridať položku zoznamu – {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Povoliť alebo zakázať webovú službu kontroly pravopisu</translation>
 <translation id="3646859102161347133">Nastavenie typu lupy obrazovky</translation>
 <translation id="3653237928288822292">Ikona predvoleného poskytovateľa vyhľadávania</translation>
@@ -1105,6 +1116,17 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="4115096483386877940">Povolenie uzamykania obrazovky.
       Ak je toto pravidlo nastavené na hodnotu False, používatelia nebudú môcť uzamykať obrazovku (možné bude iba odhlásenie sa z relácie používateľa). Ak je toto pravidlo nastavené na hodnotu True alebo je ponechané nenastavené, používatelia, ktorí overili svoju totožnosť heslom, budú môcť obrazovku uzamykať.</translation>
 <translation id="4121350739760194865">Zabraňuje tomu, aby sa propagácie aplikácií zobrazovali na stránke Nová karta</translation>
+<translation id="4133301551755536858">Umožňuje nastaviť webovú adresu pre predvolenú stránku na novej karte v prehliadači <ph name="PRODUCT_NAME" /> a zabrániť, aby ju používatelia menili.
+
+          Stránka na novej karte je tá, ktorá sa otvorí, keď vytvoríte nové karty (vrátane stránok otvorených v nových oknách).
+
+          Toto pravidlo neumožňuje určiť, ktoré stránky sa majú otvoriť pri spustení. Tie sú ovládané pravidlami RestoreOnStartup, pomocou ktorých sa dá otvoriť stránka na novej karte.
+
+          Pravidlo NewTabPageLocation môžete nastaviť na webovú adresu, ktorú tu zadáte. Ak ho nastavíte, aby otváralo stránku na novej karte, môže ovplyvniť aj domovskú stránku, ako aj stránku pri spustení.
+
+          Ak toto pravidlo nenastavíte alebo ponecháte prázdne, použije sa predvolená stránka na novej karte.
+
+          Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú pripojené k doméne Active Directory.</translation>
 <translation id="4147054660081653009">Certifikát klienta na pripojenie k adrese RemoteAccessHostTokenValidationUrl.
 
           Ak je toto pravidlo nastavené, hostiteľ použije certifikát klienta s bežným názvom (CN) vydavateľa na overenie totožnosti adresy RemoteAccessHostTokenValidationUrl. Ak chcete použiť ľubovoľný certifikát klienta, ktorý je k dispozícii, použite hodnotu *.
@@ -1182,7 +1204,6 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="4467952432486360968">Blokovať súbory cookie tretej strany</translation>
 <translation id="4474167089968829729">Povolenie ukladania hesiel do správcu hesiel</translation>
 <translation id="4476769083125004742">Ak je toto pravidlo nastavené na možnosť <ph name="BLOCK_GEOLOCATION_SETTING" />, aplikácie pre Android nebudú môcť pristupovať k informáciám o polohe. Ak nastavíte toto pravidlo na akúkoľvek inú hodnotu alebo ho ponecháte nenastavené, používateľ bude požiadaný o súhlas s prístupom aplikácie k informáciám o polohe.</translation>
-<translation id="447686899376429408">Ak toto pravidlo nastavíte na hodnotu True alebo ho nenastavíte, používatelia budú môcť prenášať karty, weby a pracovnú plochu z prehliadača. Ak ho nastavíte na hodnotu False, táto možnosť bude zakázaná.</translation>
 <translation id="4480694116501920047">Vynútenie Bezpečného vyhľadávania</translation>
 <translation id="4482640907922304445">Zobrazí tlačidlo Domovská stránka na paneli s nástrojmi prehliadača <ph name="PRODUCT_NAME" />.
 
@@ -1193,6 +1214,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
       Ak toto nastavenie povolíte alebo zakážete, používatelia ho v prehliadači <ph name="PRODUCT_NAME" /> nebudú môcť zmeniť ani prepísať.
 
       Ak toto nastavenie ponecháte nenastavené, umožní to používateľovi zvoliť, či chce tlačidlo Domovská stránka zobraziť.</translation>
+<translation id="4485425108474077672">Konfigurovať webovú adresu stránky na novej karte</translation>
 <translation id="4492287494009043413">Zákaz zaznamenávania snímok obrazovky</translation>
 <translation id="450537894712826981">Umožňuje nakonfigurovať veľkosť vyrovnávacej pamäte, ktorú služba <ph name="PRODUCT_NAME" /> použije na ukladanie mediálnych súborov vo vyrovnávacej pamäti na disk.
 
@@ -1616,6 +1638,12 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 
           Ak je toto nastavenie zakázané alebo nie je nakonfigurované, žiadosti o overenie gnubby nebudú sprostredkované.</translation>
 <translation id="5898486742390981550">Keď je v Androide prihlásených viacero používateľov, môže aplikácie používať iba hlavný používateľ.</translation>
+<translation id="5906199912611534122">Umožňuje aktivovať alebo deaktivovať obmedzenie rýchlosti siete.
+      Platí pre všetkých používateľov a rozhrania na zariadení. Po nastavení tohto pravidla
+      bude rýchlosť obmedzovaná, dokým ho nezmeníte alebo nezakážete.
+
+      Ak je nastavené na hodnotu False, rýchlosť nie je obmedzovaná.
+      Ak je nastavené na hodnotu True, rýchlosť systému je obmedzovaná, aby sa dosiahli zadané rýchlosti nahrávania a sťahovania (v kilobitoch za sekundu).</translation>
 <translation id="5921713479449475707">Povoliť stiahnutia automatických aktualizácií prostredníctvom protokolu HTTP</translation>
 <translation id="5921888683953999946">Nastaví predvolený stav veľkého kurzora (funkcia na uľahčenie prístupu) na prihlasovacej obrazovke.
 
@@ -1740,6 +1768,46 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 <translation id="6282799760374509080">Povoliť alebo zakázať zaznamenávanie zvuku</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Povolenie automatického dopĺňania názvu domény počas prihlasovania používateľa</translation>
+<translation id="6312861131491040487">
+          Umožňuje určiť zoznam aplikácií a rozšírení, ktoré sa inštalujú potichu,
+          bez interakcie s používateľom, a ktoré používateľ nemôže odinštalovať.
+          Všetky povolenia vyžadované aplikáciami/rozšíreniami sú bezpodmienečne
+          udelené bez interakcie s používateľom, a to vrátane všetkých ďalších
+          povolení vyžiadaných budúcimi verziami daných aplikácií/rozšírení.
+          Ďalej sa udeľujú povolenia pre rozhrania API rozšírení
+          enterprise.deviceAttributes a enterprise.platformKeys.
+          (Tieto dve rozhrania sú k dispozícii iba pre aplikácie/rozšírenia, ktorých
+          inštalácia bola vynútená.)
+
+          Toto pravidlo má prednosť v prípade potenciálneho konfliktu
+          s pravidlom ExtensionsInstallBlacklist. Ak je z tohto zoznamu odstránená
+          aplikácia alebo rozšírenie, ktorého inštalácia v minulosti bola vynútená,
+          <ph name="PRODUCT_NAME" /> ich automaticky odinštaluje.
+
+          V prípade inštancií systému Windows nepripojených k doméne Active 
+          Directory sa vynucuje inštalácia iba rozšírení uvedených
+          v Internetovom obchode Chrome.
+
+          Všimnite si, že zdrojový kód každého rozšírenia je možné pozmeniť
+          pomocou nástrojov pre vývojárov (t. j. potenciálne tým znefunkčniť
+          dané rozšírenie). Ak sa toho obávate, nastavte pravidlo
+          DeveloperToolsDisabled.
+
+          Všetky položky v zozname v rámci tohto pravidla sú reťazce obsahujúce
+          identifikátor rozšírenia a webovú adresu aktualizácie oddelené bodkočiarkou (<ph name="SEMICOLON" />). Identifikátor
+          rozšírenia je reťazec z 32 písmen, ktorý nájdete na stránke <ph name="CHROME_EXTENSIONS_LINK" />,
+          keď použijete režim pre vývojárov. Webová adresa aktualizácie by mala
+          odkazovať na dokument XML s manifestom aktualizácií, ktorého popis nájdete na adrese
+          <ph name="LINK_TO_EXTENSION_DOC1" />. Upozorňujeme, že webová adresa aktualizácie nastavená v tomto pravidle
+          sa použije iba pri prvotnej inštalácii. Ďalšie aktualizácie rozšírenia využívajú webovú adresu
+          uvedenú v jeho manifeste.
+
+          Príklad: <ph name="EXTENSION_POLICY_EXAMPLE" />
+          nainštaluje aplikáciu <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> zo štandardnej webovej adresy
+          na aktualizáciu z Internetového obchodu Chrome. Ďalšie informácie o hostiteľských rozšíreniach nájdete na adrese <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Ak toto pravidlo nenastavíte, nebudú sa automaticky inštalovať žiadne aplikácie
+          ani rozšírenia a používateľ môže odinštalovať ľubovoľnú aplikáciu alebo rozšírenie v prehliadači <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Keď používateľ prejde na weby, ktoré obsahujú chyby protokolu SSL, Chrome zobrazí stránku s upozornením. V predvolenom nastavení alebo vtedy, keď je toto pravidlo nastavené na možnosť True, môžu používatelia preskočiť tieto stránky s upozornením prostredníctvom kliknutia.
       Nastavením tohto pravidla na možnosť False zakážete používateľom, aby mohli stránku s upozornením preskočiť kliknutím.</translation>
 <translation id="6353901068939575220">Určuje parametre, ktoré sa použijú vyhľadávaní webovej adresy pomocou metódy POST. Pozostáva z párov názov/hodnota oddelených čiarkami. Ak je hodnota parameter šablóny, napr. hodnota {searchTerms} v príklade vyššie, bude nahradená údajmi skutočných vyhľadávaných výrazov.
@@ -1912,6 +1980,7 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
       Bez ohľadu na hodnotu výberu sa stránke stále nahlasujú informácie o pamäti. Nahlasované veľkosti sú však z
       bezpečnostných dôvodov kvantované a interval aktualizácií je obmedzený. Ak chcete získať presné údaje v reálnom
       čase, použite nástroje, ako je napríklad Telemetry.</translation>
+<translation id="6894178810167845842">Webová adresa stránky na novej karte</translation>
 <translation id="6899705656741990703">Automaticky zisťovať nastavenia servera proxy</translation>
 <translation id="6903814433019432303">Toto pravidlo je aktívne iba v režime určenom pre predaj.
 
@@ -2044,6 +2113,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="7132877481099023201">Webové adresy, ktorým bude udelený prístup k zariadeniam na zaznamenávanie videa bez zobrazenia výzvy</translation>
 <translation id="7167436895080860385">Povoliť používateľom zobraziť heslá v Správcovi hesiel (podpora bola ukončená)</translation>
 <translation id="7173856672248996428">Efemérny profil</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Typy pripojenia, pre ktoré sú povolené aktualizácie</translation>
 <translation id="7194407337890404814">Názov predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="7195064223823777550">Určuje, aká akcia sa má vykonať, keď používateľ zavrie veko.

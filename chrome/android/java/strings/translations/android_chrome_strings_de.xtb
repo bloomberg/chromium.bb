@@ -52,6 +52,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="1445680696957526815">Die Chrome-Komponenten sind nicht miteinander kompatibel. Möglicherweise wird Chrome gerade aktualisiert. Bitte versuchen Sie es in einigen Minuten erneut. Sollte das Problem weiterhin bestehen, versuchen Sie, Chrome zu deinstallieren und erneut zu installieren.</translation>
 <translation id="1446450296470737166">Volle Kontr. über MIDI-Ger. erl.</translation>
 <translation id="145097072038377568">In den Android-Einstellungen deaktiviert</translation>
+<translation id="1455941322673536744">AutoFill und Zahlungen</translation>
 <translation id="147006957810816598">Sie werden nicht von Ihrem Google-Konto abgemeldet.</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> konnte aufgrund von Serverproblemen nicht heruntergeladen werden.</translation>
 <translation id="1506061864768559482">Suchmaschine</translation>
@@ -195,6 +196,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2996291259634659425">Passphrase erstellen</translation>
 <translation id="2996809686854298943">URL erforderlich</translation>
 <translation id="300526633675317032">Alle <ph name="SIZE_IN_KB" /> des Websitespeichers werden gelöscht.</translation>
+<translation id="3029613699374795922"><ph name="KBS" /> KB heruntergeladen</translation>
 <translation id="3029704984691124060">Passphrasen stimmen nicht überein.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
@@ -262,6 +264,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3739899004075612870">Als Lesezeichen in <ph name="PRODUCT_NAME" /> gespeichert</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB sonstiger Apps</translation>
 <translation id="3744111561329211289">Hintergrundsync</translation>
+<translation id="3773755127849930740"><ph name="BEGIN_LINK" />Aktivieren Sie Bluetooth<ph name="END_LINK" />, um die Kopplung zu ermöglichen</translation>
 <translation id="3789841737615482174">Installieren</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 Element ausgewählt}other{# Elemente ausgewählt}}</translation>
 <translation id="3810838688059735925">Video</translation>
@@ -317,7 +320,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4300272766492248925">App öffnen</translation>
 <translation id="4307992518367153382">Grundeinstellungen</translation>
 <translation id="4351244548802238354">Dialogfeld schließen</translation>
-<translation id="4376501731284077108">Nicht kontrolliert</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Suche erfolgt mit Sogou</translation>
 <translation id="4412992751769744546">Cookies Dritter zulassen</translation>
@@ -362,8 +364,10 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4837753911714442426">Optionen zum Drucken einer Seite öffnen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4860895144060829044">Anrufen</translation>
+<translation id="4862624982077154323">Auf manchen Websites kann mit unterstützten Zahlungs-Apps bezahlt werden. Wählen Sie aus, welche Apps in Chrome verwendet werden sollen.</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4885273946141277891">Nicht unterstützte Anzahl von Chrome-Instanzen</translation>
+<translation id="4910889077668685004">Zahlungs-Apps</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" />, während nach Geräten gesucht wird…</translation>
 <translation id="4923459931733593730">Zahlung</translation>
 <translation id="4941291666397027948">* Pflichtfeld</translation>
@@ -389,7 +393,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5131405117025179004">Gespeichertes Konto bearbeiten</translation>
 <translation id="5138299137310274655">Diese Seite ist auf <ph name="SOURCE_LANGUAGE" />. In <ph name="TARGET_LANGUAGE" /> übersetzen?</translation>
 <translation id="515227803646670480">Gespeich. Daten löschen</translation>
-<translation id="5156656584247937086">Dies ist ein Kinderkonto.</translation>
+<translation id="5152843274749979095">Keine unterstützten Apps installiert</translation>
 <translation id="5161254044473106830">Titel erforderlich</translation>
 <translation id="5164482624172255778">Soll Google Chrome ab dem nächsten Aufruf eine Übersetzung von Seiten dieser Website anbieten, die auf <ph name="LANGUAGE" /> sind?</translation>
 <translation id="5168917394043976756">Navigationsleiste öffnen</translation>
@@ -448,6 +452,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5610807607761827392"><ph name="BEGIN_LINK" />Karten und Adressen können Sie in den Einstellungen verwalten.<ph name="END_LINK" /></translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5646376287012673985">Standort</translation>
+<translation id="5655963694829536461">Downloads durchsuchen</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5665379678064389456">Termin in <ph name="APP_NAME" /> erstellen</translation>
 <translation id="5668404140385795438">Website-Anfrage zum Verhindern des Vergrößerns übergehen</translation>
@@ -472,6 +477,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="583281660410589416">Unbekannt</translation>
 <translation id="5832934273103296195">Maximiert – zum Minimieren klicken</translation>
 <translation id="583891442612896534">Chrome kann die Google-Server für die Datenkomprimierung nicht erreichen. Ihre Einsparungen bei der Datennutzung können begrenzt sein.</translation>
+<translation id="5858741533101922242">Chrome kann den Bluethooth-Adapter nicht aktivieren</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5867027562311576691">Weitere Artikel werden in Kürze erscheinen. Schönen Tag noch!</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
@@ -503,6 +509,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6140912465461743537">Land/Region</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> Einsparungen bei der Datennutzung</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
+<translation id="6177111841848151710">Für die aktuelle Suchmaschine blockiert</translation>
 <translation id="6177390657002841081">Datensparmodus aktivieren</translation>
 <translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
@@ -515,6 +522,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6324034347079777476">Android-Systemsynchronisierung deaktiviert</translation>
 <translation id="6333140779060797560">Über <ph name="APPLICATION" /> teilen</translation>
 <translation id="6337234675334993532">Verschlüsselung</translation>
+<translation id="6343192674172527289">Keine Downloads gefunden</translation>
 <translation id="6364438453358674297">Vorschlag aus Verlauf entfernen?</translation>
 <translation id="6383961787135158834">Websitespeicher löschen...</translation>
 <translation id="6388207532828177975">Löschen &amp; zurücksetzen</translation>
@@ -522,6 +530,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6406506848690869874">Synchronisierung</translation>
 <translation id="6409731863280057959">Pop-ups</translation>
 <translation id="641643625718530986">Drucken...</translation>
+<translation id="6416782512398055893"><ph name="MBS" /> MB heruntergeladen</translation>
 <translation id="6433490469411711332">Kontaktdaten bearbeiten</translation>
 <translation id="6443118737398455446">Ungültiges Ablaufdatum</translation>
 <translation id="6446608382365791566">Weitere Informationen hinzufügen</translation>
@@ -532,6 +541,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6477460825583319731">Ungültige E-Mail-Adresse</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> konnte nicht heruntergeladen werden, weil nicht genügend Speicherplatz vorhanden ist.</translation>
 <translation id="6527303717912515753">Teilen</translation>
+<translation id="6538442820324228105"><ph name="GBS" /> GB heruntergeladen</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Tab zum Beamen auswählen</translation>
 <translation id="6545017243486555795">Alle Daten löschen</translation>
@@ -587,6 +597,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="699220179437400583">Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden</translation>
 <translation id="6992289844737586249">Nachfragen, bevor Websites auf Ihr Mikrofon zugreifen dürfen (empfohlen)</translation>
 <translation id="7001663382399377034">Empfänger hinzufügen</translation>
+<translation id="7016516562562142042">Für aktuelle Suchmaschine zugelassen</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> heruntergeladen</translation>
 <translation id="7022756207310403729">Im Browser öffnen</translation>
 <translation id="7029809446516969842">Passwörter</translation>
@@ -713,7 +724,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
 <translation id="8374821112118309944">TalkBack muss auf eine neuere Version aktualisiert werden.</translation>
 <translation id="8393700583063109961">Nachricht senden</translation>
-<translation id="8396312449826231789">Nur genehmigte Websites</translation>
 <translation id="8413126021676339697">Gesamtverlauf anzeigen</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433057134996913067">Dadurch werden Sie von den meisten Websites abgemeldet.</translation>
@@ -742,7 +752,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8660471606262461360">Aus Google Payments</translation>
 <translation id="8676374126336081632">Eingabe löschen</translation>
 <translation id="869891660844655955">Ablaufdatum</translation>
-<translation id="8699799819461268362">Google SafeSites-Filter</translation>
 <translation id="8719023831149562936">Aktueller Tab kann nicht gebeamt werden.</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8730621377337864115">Fertig</translation>

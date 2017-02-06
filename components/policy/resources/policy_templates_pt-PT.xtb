@@ -366,11 +366,11 @@
 
       Se esta definição não estiver configurada, os utilizadores podem optar por utilizar o serviço de verificação ortográfica ou não.</translation>
 <translation id="2294382669900758280">A reprodução de vídeos em aplicações Android não é tida em consideração mesmo que esta política esteja definida como <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Configurar a página Novo separador predefinida no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especificar uma lista de plug-ins ativados</translation>
 <translation id="2309390639296060546">Definição de geolocalização predefinida</translation>
 <translation id="2312134445771258233">Permite-lhe configurar as páginas que são carregadas no arranque. O conteúdo da lista "URLs a abrir no aranque" é ignorado, a menos que selecione "Abrir uma lista de URLs" em "Ação no arranque".</translation>
 <translation id="2337466621458842053">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a apresentar imagens. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultImagesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
-<translation id="2366415278352956652">Ativa a transmissão</translation>
 <translation id="2372547058085956601">O atraso do início automático da sessão pública.
 
       Se a política |DeviceLocalAccountAutoLoginId| não estiver definida, esta política não tem efeito. Se não for esse o caso:
@@ -867,6 +867,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="3570008976476035109">Bloquear plug-ins nestes sites</translation>
 <translation id="3591584750136265240">Configurar o comportamento de autenticação de início de sessão</translation>
+<translation id="3601614035698083789">Configura uma lista de marcadores geridos.
+      
+      A política consiste numa lista de marcadores, em que cada marcador é um dicionário que contém as chaves <ph name="NAME" /> e <ph name="URL_LABEL" /> que, por sua vez, contêm o nome e o destino do marcador. É possível configurar uma subpasta ao definir um marcador sem uma chave <ph name="URL_LABEL" />, mas com uma chave <ph name="CHILDREN" /> adicional que contém uma lista de marcadores conforme definido acima (alguns deles também podem ser pastas). O <ph name="PRODUCT_NAME" /> corrige os URLs incompletos como se tivessem sido enviados através da caixa geral, por exemplo, <ph name="GOOGLE_COM" /> fica <ph name="HTTPS_GOOGLE_COM" />.
+
+      Estes marcadores são colocados numa pasta "Marcadores geridos" que não pode ser modificada pelo utilizador, embora o utilizador possa optar por ocultá-la da barra de marcadores. Os marcadores geridos não são sincronizados com a conta do utilizador e não podem ser modificados por extensões.
+
+      A partir da versão 51, o nome da pasta para os marcadores é personalizável ao adicionar um item de lista {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Ativar ou desativar o serviço Web de verificação ortográfica</translation>
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
 <translation id="3653237928288822292">Ícone do fornecedor de pesquisas predefinido</translation>
@@ -1073,6 +1080,17 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se esta política estiver definida como falsa, os utilizadores não podem bloquear o ecrã (podem apenas terminar a sessão de utilizador). Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores que efetuaram a autenticação com uma palavra-passe podem bloquear o ecrã.</translation>
 <translation id="4121350739760194865">Impedir a apresentação de promoções de aplicações na página de novo separador</translation>
+<translation id="4133301551755536858">Configura o URL da página Novo separador predefinida no <ph name="PRODUCT_NAME" /> e impede que os utilizadores a alterem.
+
+          A página Novo separador é a página aberta quando são criados novos separadores (incluindo os abertos em novas janelas).
+
+          Esta política não decide as páginas que devem ser abertas no arranque, as quais são controladas pelas políticas RestoreOnStartup, que podem definir a abertura da página Novo separador.
+
+          A política NewTabPageLocation pode ser definida para um URL que aqui especificar. Também afetará a Página inicial se estiver definida para abrir a página Novo separador, bem como a página inicial de origem, se estiver definida como a página Novo separador.
+
+          Se a política não for definida ou for deixada vazia, será utilizada a página Novo separador predefinida.
+
+          Esta política não está disponível nas instâncias do Windows que não estejam associadas a um domínio do Active Directory.</translation>
 <translation id="4147054660081653009">Certificado de cliente para associação a RemoteAccessHostTokenValidationUrl.
 
           Se esta política estiver definida, o anfitrião utiliza um certificado de cliente com o CN do emissor indicado para autenticar para RemoteAccessHostTokenValidationUrl. Defina-o para "*" para utilizar qualquer certificado de cliente disponível.
@@ -1150,9 +1168,9 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Permitir guardar palavras-passe no gestor de palavras-passe</translation>
 <translation id="4476769083125004742">Se esta política estiver definida como <ph name="BLOCK_GEOLOCATION_SETTING" />, as aplicações Android não podem aceder às informações de localização. Se definir esta política com qualquer outro valor ou se a deixar por definir, é pedido a autorização ao utilizador quando uma aplicação Android pretender aceder a informações de localização.</translation>
-<translation id="447686899376429408">Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores podem transmitir separadores, sites ou o ambiente de trabalho a partir do navegador. Se estiver definida como falsa, a opção está desativada.</translation>
 <translation id="4480694116501920047">Forçar Pesquisa Segura</translation>
 <translation id="4482640907922304445">Apresenta o botão Página Inicial na barra de ferramentas do <ph name="PRODUCT_NAME" />. Se ativar esta definição, o botão Página Inicial é sempre apresentado. Se desativar esta definição, o botão Página Inicial nunca é apresentado. Se ativar ou desativar esta definição, os utilizadores não a poderão alterar ou substituir no <ph name="PRODUCT_NAME" />. Se deixar esta política por definir, permitirá que o utilizador decida se pretende ou não apresentar o botão Página Inicial.</translation>
+<translation id="4485425108474077672">Configurar o URL da página Novo separador</translation>
 <translation id="4492287494009043413">Desativar capturas de ecrã</translation>
 <translation id="450537894712826981">Configura o tamanho da cache que o <ph name="PRODUCT_NAME" /> utilizará para armazenar ficheiros multimédia em cache no disco.
 
@@ -1540,6 +1558,12 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
           Se esta definição estiver desativada ou não estiver configurada, os pedidos de autenticação não serão utilizados com proxy.</translation>
 <translation id="5898486742390981550">Quando vários utilizadores têm sessão iniciada, apenas o utilizador principal pode utilizar aplicações Android.</translation>
+<translation id="5906199912611534122">Permite a ativação ou a desativação do controlo de rede.
+      Aplica-se a todos os utilizadores e a todas as interfaces no dispositivo. Depois de definido,
+      o controlo mantém-se até a política ser alterada de modo a desativá-lo.
+
+      Se for definido como falso, não há controlo.
+      Se for definido como verdadeiro, o sistema é controlado para obter as taxas de carregamento e de transferência indicadas (em kbits/s).</translation>
 <translation id="5921713479449475707">Permitir transferências de atualização automática por HTTP</translation>
 <translation id="5921888683953999946">Definir o estado predefinido da funcionalidade de acessibilidade do cursor grande no ecrã de início de sessão.
 
@@ -1657,6 +1681,50 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6282799760374509080">Permitir ou impedir a captura de áudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Ativar o preenchimento automático do nome do domínio durante o início de sessão do utilizador</translation>
+<translation id="6312861131491040487">
+          Especifica uma lista de aplicações e de extensões que são instaladas em segundo plano,
+          sem a interação do utilizador, e que não podem ser desinstaladas pelo
+          utilizador. Todas as autorizações pedidas pelas aplicações/extensões são
+          concedidas implicitamente, sem a interação do utilizador, incluindo quaisquer  
+          autorizações adicionais pedidas pelas versões futuras da aplicação/extensão.
+          Além disso, as autorizações são concedidas para as APIs de extensões  
+          enterprise.deviceAttributes e enterprise.platformKeys. (Estas duas APIs não 
+          estão disponíveis para as aplicações/extensões que não sejam de instalação 
+          forçada.)
+
+          Esta política tem precedência sobre uma política ExtensionsInstallBlacklist 
+          que esteja potencialmente em conflito. Se uma aplicação ou um extensão de 
+          instalação forçada anterior for removida desta lista, é desinstalada 
+          automaticamente pelo <ph name="PRODUCT_NAME" />.
+
+          Para as instâncias do Windows que não estão associadas a um domínio do 
+          Active Directory, a instalação forçada está limitada às aplicações e às 
+          extensões indicadas na Web Store do Chrome.
+
+          Tenha em atenção que o código fonte de qualquer extensão pode ser 
+          alterado pelos utilizadores através das Ferramentas do programador (o 
+          que pode deixar a extensão disfuncional). Se isto for uma preocupação, deve 
+          definir a política DeveloperToolsDisabled.
+
+          
+          Cada item de lista da política é uma string que inclui um ID de extensão e um 
+          URL de "atualização", separados por ponto e vírgula (<ph name="SEMICOLON" />). 
+          O ID de extensão é uma string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> 
+          quando está no modo de programador. O URL de "atualização" deve indicar 
+          um documento XML de manifesto de atualização, tal como descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. 
+          Tenha em atenção que o URL de "atualização" definido nesta política apenas 
+          é utilizado para a instalação inicial, uma vez que as atualizações 
+          subsequentes da extensão utilizam o URL de atualização indicado no
+          manifesto da extensão.
+
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" />
+          instala a aplicação <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> 
+          a partir do URL de "atualização" padrão da Web Store do Chrome. Para obter  
+          mais informações acerca do alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se deixar esta política por definir, não são instaladas automaticamente 
+          quaisquer aplicações ou extensões e o utilizador pode desinstalar qualquer 
+          aplicação ou extensão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">O Chrome mostra uma página de aviso quando os utilizadores navegam para sites com erros de SSL. Por predefinição ou quando esta política está definida como verdadeira, os utilizadores estão autorizados a clicar nestas páginas de aviso.
       Definir esta política como falsa desautoriza os utilizadores a clicar em qualquer página de aviso.</translation>
 <translation id="6353901068939575220">Especifica os parâmetros utilizados ao pesquisar um URL com POST. Consiste em pares de nome/valor separados por vírgulas. Se um valor for o parâmetro de um modelo, como {searchTerms} no exemplo acima, será substituído por dados dos termos de pesquisa reais.
@@ -1819,6 +1887,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       De qualquer forma, as informações de memória são enviadas num relatório por página, independentemente do valor da opção, mas os tamanhos dos relatórios são
       quantificados e a frequência de atualizações é limitada por motivos de segurança. Para obter dados exatos em tempo real,
       utilize ferramentas como a Telemetry.</translation>
+<translation id="6894178810167845842">URL da página Novo separador</translation>
 <translation id="6899705656741990703">Detetar automaticamente definições do proxy</translation>
 <translation id="6903814433019432303">Esta política está ativa apenas no modo de retalho.
 
@@ -1938,6 +2007,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="7132877481099023201">URLs aos quais será concedido acesso a dispositivos de captura de vídeo imediatamente</translation>
 <translation id="7167436895080860385">Permitir que os utilizadores mostrem palavras-passe no Gestor de palavras-passe (descontinuado)</translation>
 <translation id="7173856672248996428">Perfil efémero</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipos de ligação permitidos para atualizações</translation>
 <translation id="7194407337890404814">Nome do fornecedor de pesquisas predefinido</translation>
 <translation id="7195064223823777550">Especificar a ação a realizar quando o utilizador fecha a tampa.

@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">എല്ലാം തുറക്കുക</translation>
 <translation id="1430915738399379752">അച്ചടിക്കുക</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> ഇനങ്ങൾ</translation>
+<translation id="1491277525950327607">ക്രമീകരണം മാറ്റാൻ രണ്ടുതവണ ടാപ്പുചെയ്യുക</translation>
 <translation id="1540800554400757039">വിലാസം 1</translation>
 <translation id="1545749641540134597">QR കോഡ് സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="1580783302095112590">മെയിൽ അയച്ചു.</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">ഈ പേജ് മറ്റൊരു അപ്ലിക്കേഷനിൽ തുറക്കും.</translation>
 <translation id="4378154925671717803">ഫോണ്‍</translation>
 <translation id="441868831736628555">സ്വകാര്യത അറിയിപ്പ്</translation>
-<translation id="4426508677408162512">എല്ലാ ബുക്ക്മാർക്കുകളും</translation>
 <translation id="4473991315115669931">ആൾമാറാട്ട മോഡ് നൽകുക</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> എന്നതിൽ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, നിയന്ത്രിക്കുക</translation>
 <translation id="4536418791685807335">വീണ്ടും സൈൻ ഇൻ ചെയ്യാൻ ശ്രമിക്കുക.</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">കാണിക്കുക</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
 <translation id="5327248766486351172">പേര്</translation>
+<translation id="5332219387342487447">ഷിപ്പിംഗ് രീതി</translation>
 <translation id="5388358297987318779">ഇമേജ് തുറക്കുക</translation>
 <translation id="5409365236829784218">ഈ ഫയലിൽ തുറക്കാൻ കഴിയുന്ന അപ്ലിക്കേഷനുകളൊന്നും ഇൻസ്റ്റാൾ ചെയ്‌തില്ല.</translation>
 <translation id="54401264925851789">പേജ് സുരക്ഷാ വിവരങ്ങൾ</translation>
@@ -270,6 +271,7 @@
 <translation id="6255097610484507482">ക്രെഡിറ്റ് കാര്‍ഡ് എഡിറ്റുചെയ്യുക</translation>
 <translation id="6308436439357671616">ഫോട്ടോകളെടുത്ത് അപ്‌ലോഡുചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു.</translation>
 <translation id="6314335155547195432">പാസ്‌വേഡ് സൃഷ്‌ടിക്കുക</translation>
+<translation id="6324528485781869530">സമന്വയ അക്കൗണ്ട് മാറുക</translation>
 <translation id="6324669097367352121">സൈൻ ഇൻ ക്രമീകരണങ്ങൾ</translation>
 <translation id="6337234675334993532">എന്‍ക്രിപ്ഷന്‍</translation>
 <translation id="633809752005859102">ശരിക്കും എന്തോ കുഴപ്പം സംഭവിച്ചു. ഞങ്ങൾ അത് പരിഹരിക്കും.</translation>

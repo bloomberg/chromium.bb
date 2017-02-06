@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />偵測到惡意軟體<ph name="END_LINK" />。即使是平常可以安全使用的網站，有時也會遭到惡意軟體感染。這些惡意內容來自已知的惡意軟體散佈網站 <ph name="SUBRESOURCE_HOST" />。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">要求或要求參數無效</translation>
 <translation id="1834321415901700177">這個網站含有有害程式</translation>
-<translation id="1838667051080421715">目前顯示的是網頁原始碼。</translation>
 <translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
+<translation id="187918866476621466">開啟起始網頁</translation>
 <translation id="1883255238294161206">收合清單</translation>
 <translation id="1898423065542865115">篩選</translation>
 <translation id="194030505837763158">前往 <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">如果您經常看到這個頁面，請參考這些說明：<ph name="HELP_LINK" />。</translation>
 <translation id="3658742229777143148">修訂版本</translation>
 <translation id="3678029195006412963">無法簽署要求</translation>
+<translation id="3679803492151881375">當機報告擷取時間：<ph name="CRASH_TIME" />，報告上傳時間：<ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">憑證資訊</translation>
 <translation id="3690164694835360974">登入行為不安全</translation>
 <translation id="3693415264595406141">密碼：</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">復原刪除(&amp;U)</translation>
 <translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
 <translation id="4668929960204016307">，</translation>
-<translation id="4670097147947922288">您正在瀏覽擴充功能頁面。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的連線已中斷</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />執行 Windows 網路診斷<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> 的網頁可能暫時無法使用或被永久移至新網址。</translation>
 <translation id="4771973620359291008">發生不明的錯誤。</translation>
 <translation id="4800132727771399293">請檢查您的有效期限和信用卡安全碼，然後再試一次</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">網路錯誤</translation>
 <translation id="4816492930507672669">依頁面大小自動調整</translation>
 <translation id="4850886885716139402">檢視</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">您要離開這個網站嗎？</translation>
 <translation id="5629630648637658800">無法載入政策設定</translation>
 <translation id="5631439013527180824">裝置管理符記無效</translation>
+<translation id="5669703222995421982">取得個人化內容</translation>
 <translation id="5675650730144413517">這個網頁無法正常運作</translation>
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="5694783966845939798">你嘗試連上 <ph name="DOMAIN" />，但伺服器的憑證是以防護力薄弱的簽章演算法 (例如 SHA-1) 進行簽署。這代表伺服器提供的安全性憑證可能遭到偽造，而且這個伺服器可能並不是你的目標伺服器 (你的連線對象可能是攻擊者的電腦)。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" />。</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">政策值</translation>
 <translation id="6757797048963528358">您的裝置已進入睡眠模式。</translation>
 <translation id="6778737459546443941">你的家長尚未核准這個網站</translation>
+<translation id="6810899417690483278">自訂 ID</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">位於 <ph name="URL" /> 的網頁目前無法使用，可能因為超載或為了維護而關閉中。</translation>
 <translation id="6831043979455480757">翻譯</translation>
@@ -709,6 +712,7 @@
 <translation id="8364627913115013041">未設定。</translation>
 <translation id="8380941800586852976">不安全</translation>
 <translation id="8382348898565613901">這裡會顯示你最近造訪過的書籤</translation>
+<translation id="8398259832188219207">當機報告上傳時間：<ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">當機次數 (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">您必須輸入兩次相同的通關密語。</translation>
 <translation id="8428213095426709021">設定</translation>

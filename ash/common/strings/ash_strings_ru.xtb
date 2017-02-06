@@ -39,6 +39,7 @@
 <translation id="1923539912171292317">Автоматическое нажатие</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">Остановить трансляцию вкладки "<ph name="TAB_NAME" />" на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="2127372758936585790">Маломощное зарядное устройство</translation>
 <translation id="2204305834655267233">Информация о сети</translation>
 <translation id="2208323208084708176">Унифицированный режим рабочего стола</translation>
@@ -149,6 +150,7 @@
 <translation id="5331975486040154427">Устройство USB-C (дальний порт слева)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">В этот сеанс уже добавлены все доступные пользователи.</translation>
+<translation id="5504841533973703486">Фронтальный микрофон</translation>
 <translation id="5507786745520522457">Настроить сеть передачи данных</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">Подключиться к этой сети можно с помощью расширения "<ph name="EXTENSION_NAME" />".</translation>
@@ -160,6 +162,7 @@
 <translation id="57838592816432529">Отключить звук</translation>
 <translation id="5825747213122829519">Способ ввода изменен на <ph name="INPUT_METHOD_ID" />.
 Для переключения нажмите Shift + Alt.</translation>
+<translation id="5830936593837877897">Основной микрофон</translation>
 <translation id="5871632337994001636">Управление устройствами...</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
@@ -248,8 +251,10 @@
 <translation id="8000066093800657092">Нет сети</translation>
 <translation id="8054466585765276473">Подсчет оставшегося времени работы от батареи…</translation>
 <translation id="8077816382010018681">Быстрая разблокировка</translation>
+<translation id="8098591350844501178">Остановить трансляцию содержимого экрана на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="8103386449138765447">SMS: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Подключено к сети <ph name="NAME" /></translation>
+<translation id="8180896103888046100">Остановить трансляцию на неизвестное устройство</translation>
 <translation id="8185286464235484130">Поделитесь с нами своим мнением, ответив на несколько вопросов.</translation>
 <translation id="8190698733819146287">Настройки языков и ввода…</translation>
 <translation id="8206859287963243715">Сотовый</translation>

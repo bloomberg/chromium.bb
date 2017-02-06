@@ -52,6 +52,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1445680696957526815">Los componentes de Chrome no son compatibles entre sí. Es posible que Chrome se esté actualizando. Vuelve a intentarlo dentro de unos minutos. Si el problema persiste, prueba a desinstalar Chrome y volver a instalarlo.</translation>
 <translation id="1446450296470737166">Control total dispositivos MIDI</translation>
 <translation id="145097072038377568">Ajustes de Android desactivados</translation>
+<translation id="1455941322673536744">Autocompletar y pagos</translation>
 <translation id="147006957810816598">No se cerrará la sesión en tu cuenta de Google.</translation>
 <translation id="1477626028522505441">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el servidor.</translation>
 <translation id="1506061864768559482">Motor de búsqueda</translation>
@@ -195,6 +196,7 @@ Puedes controlar la Web física en la configuración de Chrome.
 <translation id="2996291259634659425">Crea una frase de contraseña</translation>
 <translation id="2996809686854298943">URL necesaria</translation>
 <translation id="300526633675317032">Se borrarán los <ph name="SIZE_IN_KB" /> de almacenamiento del sitio web.</translation>
+<translation id="3029613699374795922">kB descargados: <ph name="KBS" /></translation>
 <translation id="3029704984691124060">Las frases de contraseña no coinciden</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Abrir en modo de incógnito</translation>
@@ -262,6 +264,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3739899004075612870">Marcador añadido a <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB de otras aplicaciones</translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
+<translation id="3773755127849930740"><ph name="BEGIN_LINK" />Activa el Bluetooth<ph name="END_LINK" /> para permitir la vinculación</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{Se ha seleccionado 1 elemento}other{Se han seleccionado # elementos}}</translation>
 <translation id="3810838688059735925">Vídeo</translation>
@@ -317,7 +320,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4300272766492248925">Abrir aplicación</translation>
 <translation id="4307992518367153382">Básica</translation>
 <translation id="4351244548802238354">Cerrar cuadro de diálogo</translation>
-<translation id="4376501731284077108">Sin control</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="4384468725000734951">Sogou se ha establecido como motor de búsqueda predeterminado</translation>
 <translation id="4412992751769744546">Permitir cookies de terceros</translation>
@@ -362,8 +364,10 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4837753911714442426">Abre las opciones para imprimir la página</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4860895144060829044">Llamar</translation>
+<translation id="4862624982077154323">En algunos sitios web, puedes utilizar aplicaciones compatibles para realizar pagos. Elige las que quieras usar en Chrome.</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instancias de Chrome no admitido.</translation>
+<translation id="4910889077668685004">Aplicaciones de pagos</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /> mientras se buscan dispositivos…</translation>
 <translation id="4923459931733593730">Pago</translation>
 <translation id="4941291666397027948">* indica que el campo es obligatorio</translation>
@@ -389,7 +393,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5131405117025179004">Editar cuenta guardada</translation>
 <translation id="5138299137310274655">Esta página está escrita en <ph name="SOURCE_LANGUAGE" />. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Borrar datos almacenados</translation>
-<translation id="5156656584247937086">Esta es una cuenta infantil</translation>
+<translation id="5152843274749979095">No hay aplicaciones compatibles instaladas</translation>
 <translation id="5161254044473106830">Título obligatorio</translation>
 <translation id="5164482624172255778">¿Quieres que Google Chrome te ofrezca la opción de traducir las páginas escritas en <ph name="LANGUAGE" /> de este sitio la próxima vez?</translation>
 <translation id="5168917394043976756">Abrir panel de navegación</translation>
@@ -448,6 +452,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5610807607761827392">Puedes gestionar las tarjetas y las direcciones en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="5626134646977739690">Nombre:</translation>
 <translation id="5646376287012673985">Ubicación</translation>
+<translation id="5655963694829536461">Busca en las descargas</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5665379678064389456">Crear evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignorar la solicitud de un sitio web para no ampliar la imagen</translation>
@@ -472,6 +477,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="583281660410589416">Desconocido</translation>
 <translation id="5832934273103296195">Vista expandida (hacer clic para contraerla)</translation>
 <translation id="583891442612896534">Chrome no puede acceder a los servidores de Google para comprimir los datos. El ahorro de datos puede estar limitado.</translation>
+<translation id="5858741533101922242">Chrome no ha podido activar el adaptador Bluetooth</translation>
 <translation id="5860033963881614850">No</translation>
 <translation id="5867027562311576691">Próximamente se mostrarán más artículos. Disfruta de la mañana.</translation>
 <translation id="5869522115854928033">Contraseñas guardadas</translation>
@@ -503,6 +509,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="6140912465461743537">País/región</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de ahorro de datos</translation>
 <translation id="6165508094623778733">Más información</translation>
+<translation id="6177111841848151710">Bloqueado en el motor de búsqueda actual</translation>
 <translation id="6177390657002841081">Activar Ahorro de Datos</translation>
 <translation id="6181444274883918285">Añadir excepción de sitio web</translation>
 <translation id="6192792657125177640">Excepciones</translation>
@@ -515,6 +522,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6324034347079777476">Sincronización del sistema Android inhabilitada</translation>
 <translation id="6333140779060797560">Compartir a través de <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Cifrado</translation>
+<translation id="6343192674172527289">No se han encontrado descargas</translation>
 <translation id="6364438453358674297">¿Eliminar sugerencia del historial?</translation>
 <translation id="6383961787135158834">Borrar almacenamiento web…</translation>
 <translation id="6388207532828177975">Borrar y restablecer</translation>
@@ -522,6 +530,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="6409731863280057959">Ventanas emergentes</translation>
 <translation id="641643625718530986">Imprimir…</translation>
+<translation id="6416782512398055893">MB descargados: <ph name="MBS" /></translation>
 <translation id="6433490469411711332">Editar información de contacto</translation>
 <translation id="6443118737398455446">La fecha de caducidad no es válida</translation>
 <translation id="6446608382365791566">Añadir más información</translation>
@@ -532,6 +541,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6477460825583319731">Dirección de correo electrónico no válida</translation>
 <translation id="6482749332252372425">No se ha podido descargar <ph name="FILE_NAME" /> porque no hay suficiente espacio de almacenamiento.</translation>
 <translation id="6527303717912515753">Compartir</translation>
+<translation id="6538442820324228105">GB descargados: <ph name="GBS" /></translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Selecciona una pestaña para compartir</translation>
 <translation id="6545017243486555795">Borrar todos los datos</translation>
@@ -587,6 +597,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="699220179437400583">Enviar a Google automáticamente información sobre posibles incidentes de seguridad</translation>
 <translation id="6992289844737586249">Preguntar antes de permitir que los sitios web utilicen el micrófono (recomendado)</translation>
 <translation id="7001663382399377034">Añadir destinatario</translation>
+<translation id="7016516562562142042">Permitido en el motor de búsqueda actual</translation>
 <translation id="7021515813996758557">Se ha descargado <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">Abrir en el navegador</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
@@ -713,7 +724,6 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8372893542064058268">Permite la sincronización en segundo plano de un sitio web específico.</translation>
 <translation id="8374821112118309944">Debes instalar una nueva versión de TalkBack.</translation>
 <translation id="8393700583063109961">Enviar mensaje</translation>
-<translation id="8396312449826231789">Solo sitios aprobados</translation>
 <translation id="8413126021676339697">Mostrar historial completo</translation>
 <translation id="8428213095426709021">Ajustes</translation>
 <translation id="8433057134996913067">Con esta opción, tu sesión se cerrará en la mayoría de sitios web.</translation>
@@ -741,7 +751,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8660471606262461360">De Google Payments</translation>
 <translation id="8676374126336081632">Borrar entrada</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
-<translation id="8699799819461268362">Filtro SafeSites de Google</translation>
 <translation id="8719023831149562936">No se puede compartir la pestaña actual.</translation>
 <translation id="8725066075913043281">Volver a intentarlo</translation>
 <translation id="8730621377337864115">Listo</translation>

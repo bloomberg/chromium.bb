@@ -39,6 +39,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="1923539912171292317">Automātiskie klikšķi</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">Apturēt “<ph name="TAB_NAME" />” apraidi uztvērējā “<ph name="RECEIVER_NAME" />”</translation>
 <translation id="2127372758936585790">Lādētājs ar mazu strāvas padevi</translation>
 <translation id="2204305834655267233">Tīkla informācija</translation>
 <translation id="2208323208084708176">Vienots darbvirsmas režīms</translation>
@@ -149,6 +150,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="5331975486040154427">USB-C ierīce (pieslēgvieta kreisajā pusē aizmugurē)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Visi pieejamie lietotāji jau ir pievienoti šai sesijai.</translation>
+<translation id="5504841533973703486">Priekšējais mikrofons</translation>
 <translation id="5507786745520522457">Iestatīt mobilos datus</translation>
 <translation id="5543001071567407895">Īsziņa</translation>
 <translation id="5548285847212963613">Paplašinājums “<ph name="EXTENSION_NAME" />” var palīdzēt pievienoties šim tīklam.</translation>
@@ -160,6 +162,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="57838592816432529">Izslēgt skaņu</translation>
 <translation id="5825747213122829519">Ievades metode ir mainīta uz <ph name="INPUT_METHOD_ID" />.
 Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
+<translation id="5830936593837877897">Aizmugurējais mikrofons</translation>
 <translation id="5871632337994001636">Pārvaldīt ierīces...</translation>
 <translation id="5895138241574237353">Restartēt</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -249,8 +252,10 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="8000066093800657092">Nav tīkla</translation>
 <translation id="8054466585765276473">Notiek akumulatora darbības ilguma aprēķināšana.</translation>
 <translation id="8077816382010018681">Vieta ātrās atbloķēšanas funkcijas paziņojuma nosaukumam</translation>
+<translation id="8098591350844501178">Apturēt ekrāna apraidi uztvērējā “<ph name="RECEIVER_NAME" />”</translation>
 <translation id="8103386449138765447">Īsziņas: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Savienots ar <ph name="NAME" /></translation>
+<translation id="8180896103888046100">Apturēt apraidi nezināmā uztvērējā</translation>
 <translation id="8185286464235484130">Lūdzu, atbildiet uz dažiem jautājumiem, lai informētu mūs par pakalpojuma darbību.</translation>
 <translation id="8190698733819146287">Pielāgot valodas un ievadi...</translation>
 <translation id="8206859287963243715">Mobilais tālrunis</translation>

@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Odpri vse</translation>
 <translation id="1430915738399379752">Natisni</translation>
 <translation id="145015347812617860">Št. elementov: <ph name="COUNT" /></translation>
+<translation id="1491277525950327607">Dvakrat se dotaknite, da preklopite nastavitev</translation>
 <translation id="1540800554400757039">Naslov 1</translation>
 <translation id="1545749641540134597">Scan QR Code</translation>
 <translation id="1580783302095112590">Pošta je poslana.</translation>
@@ -178,7 +179,6 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="4359125752503270327">This page will open in another application.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Obvestilo o zasebnosti</translation>
-<translation id="4426508677408162512">Vsi zaznamki</translation>
 <translation id="4473991315115669931">Enter Incognito Mode</translation>
 <translation id="4526249700380860531">Ogled in upravljanje shranjenih gesel na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
@@ -218,6 +218,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5300589172476337783">Pokaži</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5327248766486351172">Ime</translation>
+<translation id="5332219387342487447">Način pošiljanja</translation>
 <translation id="5388358297987318779">Odpri sliko</translation>
 <translation id="5409365236829784218">Nameščena ni nobena apl. za odpiranje te datoteke.</translation>
 <translation id="54401264925851789">Informacije o varnosti strani</translation>
@@ -270,6 +271,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6255097610484507482">Urejanje kreditne kartice</translation>
 <translation id="6308436439357671616">S tem je mogoče fotografirati in nalagati fotografije.</translation>
 <translation id="6314335155547195432">Generate Password</translation>
+<translation id="6324528485781869530">Preklop med računi za sinhronizacijo</translation>
 <translation id="6324669097367352121">Nastavitve za prijavo</translation>
 <translation id="6337234675334993532">Šifriranje</translation>
 <translation id="633809752005859102">Prišlo je do resne napake. Poskusili jo bomo odpraviti.</translation>

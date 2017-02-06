@@ -65,7 +65,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="2664962310688259219">Mga lisensya ng open source ng Chrome OS</translation>
 <translation id="2665296953892887393">Tumulong na gawing mas mahusay ang Google Chrome sa pamamagitan ng pagpapadala ng mga ulat ng pag-crash at <ph name="UMA_LINK" /> sa Google</translation>
 <translation id="2689103672227170538">Binago ng extension na ito ang ipinapakitang page kapag sinimulan mo ang Chrome.</translation>
-<translation id="2748463065602559597">Tumitingin ka sa isang secure na pahina ng Google Chrome.</translation>
 <translation id="2769762047821873045">Hindi Google Chrome ang iyong default na browser.</translation>
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
 <translation id="2799223571221894425">Ilunsad Muli</translation>
@@ -207,6 +206,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6970811910055250180">Ina-update ang iyong device...</translation>
 <translation id="6982337800632491844">Kinakailangan ng <ph name="DOMAIN" /> na basahin mo at tanggapin ang sumusunod na Mga Tuntunin ng Serbisyo bago gamitin ang device na ito. Hindi pinapalawak, binabago o nililimitahan ng mga tuntuning ito ang Mga Tuntunin ng Google Chrome OS.</translation>
 <translation id="6989339256997917931">Na-update na ang Google Chrome, ngunit hindi mo pa ito ginamit sa huling 30 araw.</translation>
+<translation id="7048801529101012374">Ang Google Chrome ay ang iyong default na browser. Ayos!</translation>
 <translation id="7098166902387133879">Ginagamit ng Google Chrome ang iyong mikropono.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
 <translation id="7125719106133729027">Hindi ma-update ng Chrome ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong muling i-install ang Chrome nang manu-mano.</translation>

@@ -39,6 +39,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="1923539912171292317">Clics automatiques</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">Arrêter de diffuser <ph name="TAB_NAME" /> sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
 <translation id="2204305834655267233">Informations réseau</translation>
 <translation id="2208323208084708176">Mode bureau unifié</translation>
@@ -149,6 +150,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="5331975486040154427">Appareil USB de type C (port situé sur la gauche de l'appareil, à l'arrière)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Tous les utilisateurs disponibles ont déjà été ajoutés à cette session.</translation>
+<translation id="5504841533973703486">Micro avant</translation>
 <translation id="5507786745520522457">Configurer les données mobiles</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">L'extension "<ph name="EXTENSION_NAME" />" peut aider à se connecter à ce réseau.</translation>
@@ -160,6 +162,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="57838592816432529">Couper le son</translation>
 <translation id="5825747213122829519">Votre mode de saisie a été remplacé par <ph name="INPUT_METHOD_ID" />.
 Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
+<translation id="5830936593837877897">Micro arrière</translation>
 <translation id="5871632337994001636">Gérer les appareils…</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5901316534475909376">Maj+Échap</translation>
@@ -249,8 +252,10 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="8000066093800657092">Aucun réseau détecté</translation>
 <translation id="8054466585765276473">Calcul de l'autonomie de la batterie en cours…</translation>
 <translation id="8077816382010018681">QU Feature notification title here</translation>
+<translation id="8098591350844501178">Arrêter de diffuser l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="8103386449138765447">Messages SMS : <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Connecté à <ph name="NAME" /></translation>
+<translation id="8180896103888046100">Arrêter la diffusion sur un destinataire inconnu</translation>
 <translation id="8185286464235484130">Donnez-nous votre avis sur nos services en répondant à quelques questions.</translation>
 <translation id="8190698733819146287">Personnaliser les langues et la saisie...</translation>
 <translation id="8206859287963243715">Mobile</translation>

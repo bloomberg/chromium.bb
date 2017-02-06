@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, увімкнено</translation>
 <translation id="1692077714702418899">структурна лінія</translation>
 <translation id="1700517974991662022">Натиснуто</translation>
+<translation id="1714116687360794776">Елемент із meter</translation>
 <translation id="1722567105086139392">Посилання</translation>
 <translation id="1727806147743597030">нижній колонтитул</translation>
 <translation id="174268867904053074">Наступне зображення</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Елемент керування для вибору дати та часу</translation>
 <translation id="2347456970887948350">Посилання</translation>
 <translation id="2359897517538099099">Не в режимі таблиці.</translation>
+<translation id="2390264819538553347">Щоб перейти далі, натисніть клавішу Enter, щоб повернутися назад – клавішу Backspace.</translation>
 <translation id="241124561063364910">а потім –</translation>
 <translation id="2416512023405990736">Невибрана опція</translation>
 <translation id="2417569100218200841">Інформація про вміст</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Група перемикачів</translation>
 <translation id="2471138580042810658">Заголовок 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{зірочка}one{# зірочка}few{# зірочки}many{# зірочок}other{# asterisks}}</translation>
+<translation id="2523609930580546572">Навчальний посібник ChromeVox</translation>
 <translation id="2525706221823668172">Комбінації клавіш Chromebook</translation>
 <translation id="2549392850788122959">Налаштування клавіші <ph name="KEY" /> скинуто.</translation>
 <translation id="2553108862507765288">граматична помилка</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Немає попереднього розділу.</translation>
 <translation id="3030432017085518523">Перемикач пунктів меню</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{апостроф}one{# апостроф}few{# апострофи}many{# апострофів}other{# apostrophes}}</translation>
+<translation id="3040901448410802366">Індикатор перебігу</translation>
 <translation id="3046838483509668188">Параметри ChromeVox</translation>
 <translation id="3047143736589213134">Експериментальна розкладка клавіатури</translation>
 <translation id="3060756054951570867">меню <ph name="TITLE" /> відкрито</translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">Увімкнути перенесення слів</translation>
 <translation id="3322936298410871309">Попередній заголовок рівня 1</translation>
 <translation id="3323447499041942178">Текстове поле</translation>
+<translation id="3338224621010291843">Повзунок <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "арабська",
         "bg": "болгарська",
         "ca": "каталонська",
@@ -714,6 +719,7 @@
 <translation id="7693840228159394336">Попередній перемикач</translation>
 <translation id="7701196182766842984">список автозавершення</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, текстове поле пароля</translation>
+<translation id="7776293189010177726">Відкрити меню ChromeVox</translation>
 <translation id="7805247615045262757">навігація за умовчанням</translation>
 <translation id="7805768142964895445">Статус</translation>
 <translation id="7810781339813764006">Наступна група</translation>

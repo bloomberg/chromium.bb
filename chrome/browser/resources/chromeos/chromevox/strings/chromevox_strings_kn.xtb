@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, ಆನ್ ಮಾಡಿ</translation>
 <translation id="1692077714702418899">ವ್ಯವಸ್ಥಿತ ಸಾಲು</translation>
 <translation id="1700517974991662022">ಭೇಟಿ ನೀಡಲಾಗಿದೆ</translation>
+<translation id="1714116687360794776">ಮೀಟರ್</translation>
 <translation id="1722567105086139392">ಲಿಂಕ್</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">ಮುಂದಿನ ಗ್ರಾಫಿಕ್</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">ದಿನಾಂಕ ಸಮಯ ನಿಯಂತ್ರಣ</translation>
 <translation id="2347456970887948350">ಒಂದು ಲಿಂಕ್</translation>
 <translation id="2359897517538099099">ಕೋಷ್ಟಕದ ಮೋಡ್‌‌ನಲ್ಲಿ ಇಲ್ಲ.</translation>
+<translation id="2390264819538553347">ಮುಂದುವರಿಯಲು, ಎಂಟರ್ ಒತ್ತಿರಿ; ಹಿಂದಕ್ಕೆ ಮರಳಲು, ಬ್ಯಾಕ್‌ಸ್ಪೇಸ್‌ ಒತ್ತಿ.</translation>
 <translation id="241124561063364910">ಇದರ ನಂತರ</translation>
 <translation id="2416512023405990736">ಗುರುತಿಸದೆ ಇರುವ ಚೆಕ್‌ಬಾಕ್ಸ್</translation>
 <translation id="2417569100218200841">ವಿಷಯ ಮಾಹಿತಿ</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">ರೇಡಿಯೊ ಬಟನ್ ಗುಂಪು</translation>
 <translation id="2471138580042810658">ಶೀರ್ಷಿಕೆ 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{ನಕ್ಷತ್ರ ಚಿಹ್ನೆ}one{# ನಕ್ಷತ್ರ ಚಿಹ್ನೆಗಳು}other{# ನಕ್ಷತ್ರ ಚಿಹ್ನೆಗಳು}}</translation>
+<translation id="2523609930580546572">ChromeVox ಟ್ಯುಟೋರಿಯಲ್</translation>
 <translation id="2525706221823668172">Chromebook ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> ಅನ್ನು ಮರುಹೊಂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="2553108862507765288">ವ್ಯಾಕರಣ ದೋಷ</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">ಯಾವುದೇ ಹಿಂದಿನ ವಿಭಾಗವಿಲ್ಲ.</translation>
 <translation id="3030432017085518523">ಮೆನು ಐಟಂ ರೇಡಿಯೋ ಬಟನ್</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{ಸಂಬೋಧನೆಯ ಚಿಹ್ನೆ}one{# ಸಂಬೋಧನೆಯ ಚಿಹ್ನೆಗಳು}other{# ಸಂಬೋಧನೆಯ ಚಿಹ್ನೆಗಳು}}</translation>
+<translation id="3040901448410802366">ಪ್ರಕ್ರಿಯೆ ಸೂಚಕ</translation>
 <translation id="3046838483509668188">ChromeVox ಆಯ್ಕೆಗಳು</translation>
 <translation id="3047143736589213134">ಪ್ರಾಯೋಗಿಕ ಕೀಮ್ಯಾಪ್</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> ಮೆನು ತೆರೆಯಲಾಗಿದೆ</translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">ವರ್ಡ್ ವ್ರ್ಯಾಪ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3322936298410871309">ಹಿಂದಿನ ಹಂತದ 1 ಶಿರೋನಾಮೆ</translation>
 <translation id="3323447499041942178">ಪಠ್ಯ ಪೆಟ್ಟಿಗೆ</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> ಸ್ಲೈಡರ್</translation>
 <translation id="3353420241558113817">{"ar": "ಅರೇಬಿಕ್",
         "bg": "ಬಲ್ಗೇರಿಯನ್",
         "ca": "ಕೆಟಲಾನ್",
@@ -714,6 +719,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="7693840228159394336">ಹಿಂದಿನ ರೇಡಿಯೊ ಬಟನ್</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, ಪಾಸ್‌ವರ್ಡ್ ಪಠ್ಯ ಬಾಕ್ಸ್</translation>
+<translation id="7776293189010177726">ChromeVox ಮೆನುಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="7805247615045262757">ಡೀಫಾಲ್ಟ್ ನ್ಯಾವಿಗೇಷನ್</translation>
 <translation id="7805768142964895445">ಸ್ಥಿತಿ</translation>
 <translation id="7810781339813764006">ಮುಂದಿನ ಗುಂಪು</translation>

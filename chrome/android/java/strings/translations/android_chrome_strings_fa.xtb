@@ -52,6 +52,7 @@
 <translation id="1445680696957526815">‏مؤلفه‌های Chrome با هم سازگار نیستند. ممکن است Chrome در حال ارتقا دادن باشد، لطفاً پس از چند دقیقه دوباره امتحان کنید. اگر همچنان مشکل وجود داشت، نصب Chrome را لغو کنید و دوباره آن را نصب کنید.</translation>
 <translation id="1446450296470737166">‏اجازه کنترل کامل دستگاه‌های MIDI</translation>
 <translation id="145097072038377568">‏در تنظیمات Android مسدود شد</translation>
+<translation id="1455941322673536744">تکمیل خودکار و پرداخت</translation>
 <translation id="147006957810816598">‏از حساب Google خود خارج نمی‌شوید.</translation>
 <translation id="1477626028522505441">به‌دلیل مشکلاتی در سرور، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="1506061864768559482">موتور جستجو</translation>
@@ -195,6 +196,7 @@
 <translation id="2996291259634659425">ایجاد عبارت عبور</translation>
 <translation id="2996809686854298943">نشانی وب لازم است</translation>
 <translation id="300526633675317032">این کار کل <ph name="SIZE_IN_KB" /> فضای ذخیره‌سازی وب‌سایت را پاک می‌کند.</translation>
+<translation id="3029613699374795922"><ph name="KBS" /> کیلوبایت بارگیری شد</translation>
 <translation id="3029704984691124060">عبارت‌های عبور مطابقت ندارند</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
@@ -262,6 +264,7 @@
 <translation id="3739899004075612870">در <ph name="PRODUCT_NAME" /> نشانک‌گذاری شد</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> مگابایت توسط برنامه‌های دیگر</translation>
 <translation id="3744111561329211289">همگام‌سازی پس‌زمینه</translation>
+<translation id="3773755127849930740"><ph name="BEGIN_LINK" />بلوتوث را روشن کنید<ph name="END_LINK" /> تا مرتبط‌سازی امکان‌پذیر شود</translation>
 <translation id="3789841737615482174">نصب</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{۱ مورد انتخاب شد}one{# مورد انتخاب شد}other{# مورد انتخاب شد}}</translation>
 <translation id="3810838688059735925">فیلم</translation>
@@ -317,7 +320,6 @@
 <translation id="4300272766492248925">باز کردن برنامه</translation>
 <translation id="4307992518367153382">موارد اصلی</translation>
 <translation id="4351244548802238354">بستن کادر گفتگو</translation>
-<translation id="4376501731284077108">کنترل نشده</translation>
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="4384468725000734951">‏استفاده از Sogou برای جستجو</translation>
 <translation id="4412992751769744546">اجازه به کوکی‌های طرف ثالث</translation>
@@ -362,8 +364,10 @@
 <translation id="4837753911714442426">باز کردن گزینه‌های چاپ صفحه</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="4860895144060829044">تماس</translation>
+<translation id="4862624982077154323">‏در بعضی از وب‌سایت‌ها، می‌توانید با برنامه‌های پرداخت پشتیبانی‌شده پرداخت کنید. انتخاب کنید کدام برنامه‌ها در Chrome استفاده شوند.</translation>
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="4885273946141277891">‏این تعداد از نسخه‌های Chrome پشتیبانی نمی‌شود.</translation>
+<translation id="4910889077668685004">برنامه‌های پرداخت</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /> درحین اسکن دستگاه‌ها…</translation>
 <translation id="4923459931733593730">پرداخت</translation>
 <translation id="4941291666397027948">* نشانگر قسمت الزامی است</translation>
@@ -389,7 +393,7 @@
 <translation id="5131405117025179004">ویرایش حساب ذخیره‌شده</translation>
 <translation id="5138299137310274655">این صفحه به زبان <ph name="SOURCE_LANGUAGE" /> است. به <ph name="TARGET_LANGUAGE" /> ترجمه شود؟</translation>
 <translation id="515227803646670480">پاک کردن داده ذخیره شده</translation>
-<translation id="5156656584247937086">این یک حساب کودک است</translation>
+<translation id="5152843274749979095">هیچ برنامه پشتیبانی‌شده‌ای نصب نشده است</translation>
 <translation id="5161254044473106830">عنوان مورد نیاز است</translation>
 <translation id="5164482624172255778">‏آیا مایلید دفعه بعد Google Chrome ترجمه صفحاتی به زبان <ph name="LANGUAGE" /> در این سایت را پیشنهاد دهد؟</translation>
 <translation id="5168917394043976756">بازکردن کشوی پیمایش</translation>
@@ -448,6 +452,7 @@
 <translation id="5610807607761827392">می‌توانید در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" />، کارت‌ها و نشانی‌ها را مدیریت کنید.</translation>
 <translation id="5626134646977739690">نام:</translation>
 <translation id="5646376287012673985">مکان</translation>
+<translation id="5655963694829536461">بارگیری‌هایتان را جستجو کنید</translation>
 <translation id="5659593005791499971">رایانامه</translation>
 <translation id="5665379678064389456">ایجاد رویداد در <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">لغو درخواست وب‌سایت برای جلوگیری از بزرگ‌نمایی</translation>
@@ -471,6 +476,7 @@
 <translation id="583281660410589416">ناشناس</translation>
 <translation id="5832934273103296195">بزرگ‌شده - برای کوچک کردن کلیک کنید</translation>
 <translation id="583891442612896534">‏Chrome نمی‌تواند برای فشرده کردن داده‌ها به سرورهای Google دسترسی پیدا کند. شاید ذخیره داده‌هایتان محدود باشد.</translation>
+<translation id="5858741533101922242">‏Chrome قادر به روشن کردن آداپتور بلوتوث نیست</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="5867027562311576691">مقاله‌های بیشتر به‌زودی نشان داده می‌شوند. از صبحتان لذت ببرید.</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
@@ -502,6 +508,7 @@
 <translation id="6140912465461743537">کشور/منطقه</translation>
 <translation id="6159335304067198720">ذخیره داده‌ها: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6177111841848151710">برای موتور جستجوی فعلی مسدود شده است</translation>
 <translation id="6177390657002841081">روشن کردن «صرفه‌جویی در مصرف داده»</translation>
 <translation id="6181444274883918285">افزودن استثنای سایت</translation>
 <translation id="6192792657125177640">موارد استثنا</translation>
@@ -514,6 +521,7 @@
 <translation id="6324034347079777476">‏همگام‌سازی سیستم Android غیرفعال شد</translation>
 <translation id="6333140779060797560">اشتراک‌گذاری از طریق <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">رمزگذاری</translation>
+<translation id="6343192674172527289">هیچ بارگیری‌ای پیدا نشد</translation>
 <translation id="6364438453358674297">پیشنهاد از سابقه حذف شود؟</translation>
 <translation id="6383961787135158834">پاک کردن فضای ذخیره‌سازی سایت…</translation>
 <translation id="6388207532828177975">پاک کردن و بازنشانی</translation>
@@ -521,6 +529,7 @@
 <translation id="6406506848690869874">همگام‌سازی</translation>
 <translation id="6409731863280057959">پنجره‌های بازشو</translation>
 <translation id="641643625718530986">چاپ...</translation>
+<translation id="6416782512398055893"><ph name="MBS" /> مگابایت بارگیری شد</translation>
 <translation id="6433490469411711332">ویرایش اطلاعات تماس</translation>
 <translation id="6443118737398455446">تاریخ انقضای نامعتبر</translation>
 <translation id="6446608382365791566">افزودن اطلاعات بیشتر</translation>
@@ -531,6 +540,7 @@
 <translation id="6477460825583319731">آدرس رایانامه نامعتبر</translation>
 <translation id="6482749332252372425">به‌دلیل نبودن فضای ذخیره‌سازی، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
+<translation id="6538442820324228105"><ph name="GBS" /> گیگابایت بارگیری شد</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">برگه‌ای برای انتقال با پرتو انتخاب کنید</translation>
 <translation id="6545017243486555795">پاک کردن همه داده‌ها</translation>
@@ -586,6 +596,7 @@
 <translation id="699220179437400583">‏گزارش خودکار جزئیات حوادث امنیتی احتمالی به Google.</translation>
 <translation id="6992289844737586249">قبل از اجازه به سایت‌ها برای استفاده از میکروفون ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="7001663382399377034">افزودن گیرنده</translation>
+<translation id="7016516562562142042">برای موتور جستجوی فعلی مجاز است</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> بارگیری شد</translation>
 <translation id="7022756207310403729">بازکردن در مرورگر</translation>
 <translation id="7029809446516969842">گذرواژه‌ها</translation>
@@ -712,7 +723,6 @@
 <translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
 <translation id="8374821112118309944">‏باید TalkBack را به نسخه جدیدتری به‌روزرسانی کنید.</translation>
 <translation id="8393700583063109961">ارسال پیام</translation>
-<translation id="8396312449826231789">فقط سایت‌های تأیید شده</translation>
 <translation id="8413126021676339697">نمایش کل سابقه</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8433057134996913067">با این کار از سیستم بیشتر وب‌سایت‌ها خارج می‌شوید.</translation>
@@ -740,7 +750,6 @@
 <translation id="8660471606262461360">‏از Google Payments</translation>
 <translation id="8676374126336081632">پاک کردن ورودی</translation>
 <translation id="869891660844655955">تاریخ انقضا</translation>
-<translation id="8699799819461268362">‏فیلتر Google SafeSites</translation>
 <translation id="8719023831149562936">انتقال برگه کنونی با پرتو ممکن نیست</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8730621377337864115">تمام</translation>

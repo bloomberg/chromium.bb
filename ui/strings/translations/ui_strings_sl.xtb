@@ -22,11 +22,14 @@
 <translation id="2148716181193084225">Danes</translation>
 <translation id="2168039046890040389">Stran gor</translation>
 <translation id="2190355936436201913">(prazno)</translation>
+<translation id="2289052229480071835">Dotaknite se ciljev za dotik na zaslonu.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2482878487686419369">Obvestila</translation>
 <translation id="2497284189126895209">Vse datoteke</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2522350507219695259">Umerjanje je končano</translation>
 <translation id="252373100621549798">Neznan prikaz</translation>
+<translation id="2662783295652680457">Določanje zaslona na dotik</translation>
 <translation id="2666092431469916601">Na vrh</translation>
 <translation id="2743387203779672305">Kopiraj v odložišče</translation>
 <translation id="2803313416453193357">Odpri mapo</translation>
@@ -58,6 +61,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 s}one{# s}two{# s}few{# s}other{# s}}</translation>
 <translation id="4971687151119236543">Prejšnja skladba</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5046499563572181734">Dotaknite se tukaj</translation>
 <translation id="5076340679995252485">&amp;Prilepi</translation>
 <translation id="5120799197269191491">Tipka za iskanje + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>

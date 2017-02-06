@@ -74,6 +74,7 @@
 <translation id="1680732992526857724">Der Schalter "<ph name="NAME" />" ist aktiviert</translation>
 <translation id="1692077714702418899">Strukturlinie</translation>
 <translation id="1700517974991662022">Besucht</translation>
+<translation id="1714116687360794776">Meter</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Nächste Grafik</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Steuerung für Uhrzeit/Datum</translation>
 <translation id="2347456970887948350">Ein Link</translation>
 <translation id="2359897517538099099">Tabellenmodus ist nicht aktiviert.</translation>
+<translation id="2390264819538553347">Drücken Sie die Eingabetaste, um zur nächsten Seite, oder die Rücktaste, um zur vorigen Seite zu gelangen.</translation>
 <translation id="241124561063364910">gefolgt von</translation>
 <translation id="2416512023405990736">Ein nicht angeklicktes Kästchen</translation>
 <translation id="2417569100218200841">Inhaltsinfo</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Optionsfeldgruppe</translation>
 <translation id="2471138580042810658">Überschrift 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{Sternchen}other{# Sternchen}}</translation>
+<translation id="2523609930580546572">ChromeVox-Anleitung</translation>
 <translation id="2525706221823668172">Tastenkombinationen auf Chromebooks</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> wurde zurückgesetzt.</translation>
 <translation id="2553108862507765288">Grammatikfehler</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Kein vorheriger Abschnitt</translation>
 <translation id="3030432017085518523">Optionsfeld für Menüpunkt</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{Apostroph}other{# Apostrophe}}</translation>
+<translation id="3040901448410802366">Fortschrittsanzeige</translation>
 <translation id="3046838483509668188">ChromeVox-Optionen</translation>
 <translation id="3047143736589213134">Experimentelle Tastaturbelegung</translation>
 <translation id="3060756054951570867">Menü "<ph name="TITLE" />" geöffnet</translation>
@@ -230,6 +234,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3321460131042519426">Zeilenumbruch aktivieren</translation>
 <translation id="3322936298410871309">Vorherige Überschrift der Ebene 1</translation>
 <translation id="3323447499041942178">Textfeld</translation>
+<translation id="3338224621010291843">Schieberegler <ph name="VALUE" /><ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "Arabisch",
         "bg": "Bulgarisch",
         "ca": "Katalanisch",
@@ -714,6 +719,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="7693840228159394336">Vorheriges Optionsfeld</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, Passwort-Textfeld "<ph name="NAME" />"</translation>
+<translation id="7776293189010177726">ChromeVox-Menüs öffnen</translation>
 <translation id="7805247615045262757">Standardnavigation</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7810781339813764006">Nächste Gruppe</translation>

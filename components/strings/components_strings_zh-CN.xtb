@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google 安全浏览功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />检测到恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。这些恶意内容来自已知的恶意软件散布网站 <ph name="SUBRESOURCE_HOST" />。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="1821930232296380041">请求或请求参数无效</translation>
 <translation id="1834321415901700177">此网站包含有害程序</translation>
-<translation id="1838667051080421715">您正在查看网页的源代码。</translation>
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
+<translation id="187918866476621466">打开启动页</translation>
 <translation id="1883255238294161206">收起列表</translation>
 <translation id="1898423065542865115">过滤</translation>
 <translation id="194030505837763158">请访问<ph name="LINK" /></translation>
@@ -276,6 +276,7 @@
 <translation id="3655670868607891010">如果您频繁遇到此问题，请尝试这些<ph name="HELP_LINK" />。</translation>
 <translation id="3658742229777143148">修订版本</translation>
 <translation id="3678029195006412963">无法签署该请求</translation>
+<translation id="3679803492151881375">崩溃报告的获取时间：<ph name="CRASH_TIME" />；上传时间：<ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">证书信息</translation>
 <translation id="3690164694835360974">登录方式不安全</translation>
 <translation id="3693415264595406141">密码：</translation>
@@ -360,7 +361,6 @@
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
 <translation id="4619615317237390068">从其他设备打开的标签页</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">您正在查看的是扩展程序页面。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /><ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的连接已中断</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />运行 Windows 网络诊断<ph name="END_LINK" /></translation>
@@ -373,6 +373,7 @@
 <translation id="4764776831041365478">网址为 <ph name="URL" /> 的网页可能暂时无法连接，或者它已永久性地移动到了新网址。</translation>
 <translation id="4771973620359291008">发生未知错误。</translation>
 <translation id="4800132727771399293">请检查您的到期日期和银行卡验证码 (CVC)，然后重试</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">网络错误</translation>
 <translation id="4816492930507672669">适合页面大小</translation>
 <translation id="4850886885716139402">视图</translation>
@@ -447,6 +448,7 @@
 <translation id="5622887735448669177">要离开此网站吗？</translation>
 <translation id="5629630648637658800">无法加载策略设置</translation>
 <translation id="5631439013527180824">设备管理令牌无效</translation>
+<translation id="5669703222995421982">获取个性化内容</translation>
 <translation id="5675650730144413517">该网页无法正常运作</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
 <translation id="5694783966845939798">您尝试连接到 <ph name="DOMAIN" />，但相应服务器提供的证书是使用防护力薄弱的签名算法（如 SHA-1）签署的。这意味着该服务器提供的安全凭据可能是伪造的，而且该服务器可能并不是您想访问的服务器（您可能正在与攻击者通信）。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
@@ -546,6 +548,7 @@
 <translation id="6753269504797312559">政策值</translation>
 <translation id="6757797048963528358">您的设备已进入休眠模式。</translation>
 <translation id="6778737459546443941">您的父亲/母亲尚未批准此网站</translation>
+<translation id="6810899417690483278">自定义 ID</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">网址为 <ph name="URL" /> 的网页目前无法访问。该网页可能已超载或关闭进行维护。</translation>
 <translation id="6831043979455480757">翻译</translation>
@@ -705,6 +708,7 @@
 <translation id="8364627913115013041">未设置。</translation>
 <translation id="8380941800586852976">危险</translation>
 <translation id="8382348898565613901">您最近访问过的书签会显示在此处</translation>
+<translation id="8398259832188219207">崩溃报告的上传时间：<ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">崩溃次数（<ph name="CRASH_COUNT" /> 次）</translation>
 <translation id="8412392972487953978">您两次输入的密码必须相同。</translation>
 <translation id="8428213095426709021">设置</translation>

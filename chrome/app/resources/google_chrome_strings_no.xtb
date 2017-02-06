@@ -61,7 +61,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="2664962310688259219">Åpen kildekode-lisenser for Chrome OS</translation>
 <translation id="2665296953892887393">Bidra til å gjøre Google Chrome bedre ved å sende programstopprapporter og <ph name="UMA_LINK" /> til Google</translation>
 <translation id="2689103672227170538">Denne utvidelsen har endret hvilken side som vises når du starter Chrome.</translation>
-<translation id="2748463065602559597">Du ser på en sikker Google Chrome-side.</translation>
 <translation id="2769762047821873045">Google Chrome er ikke din standardnettleser.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
 <translation id="2799223571221894425">Start på nytt</translation>
@@ -199,6 +198,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="6970811910055250180">Oppdaterer enheten ...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> krever at du leser og godtar følgende vilkår før du bruker denne enheten. Disse vilkårene utvider, endrer eller begrenser ikke Google Chrome OS-vilkårene.</translation>
 <translation id="6989339256997917931">Google Chrome har blitt oppdatert, men du har ikke brukt programmet på minst 30 dager.</translation>
+<translation id="7048801529101012374">Google Chrome er standardnettleseren din. Hurra!</translation>
 <translation id="7098166902387133879">Google Chrome bruker mikrofonen din.</translation>
 <translation id="7106741999175697885">Oppgavebehandling – Google Chrome</translation>
 <translation id="7125719106133729027">Chrome kan ikke oppdatere seg selv til den nyeste versjonen, så du går glipp av fantastiske nye funksjoner og sikkerhetsforbedringer. Du må installere Chrome på nytt manuelt.</translation>

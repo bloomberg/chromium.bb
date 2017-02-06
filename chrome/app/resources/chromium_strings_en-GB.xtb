@@ -84,7 +84,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="358997566136285270">Chromium logo</translation>
 <translation id="3645040538872234961">This will permanently delete your browsing data from this device. To retrieve your data later, sign in to Chromium as $2.</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
-<translation id="3748537968684000502">You are viewing a secure Chromium page.</translation>
 <translation id="378917192836375108">Chromium lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Unfortunately, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Chromium, save your work and close all Firefox windows. Then click Continue.</translation>
@@ -138,6 +137,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5620765574781326016">Learn about topics on websites without leaving the page.</translation>
 <translation id="5634636535844844681">Chromium requires Windows 7 or higher.</translation>
 <translation id="5680901439334282664">sign in to Chromium</translation>
+<translation id="5684733627009686897">Chromium is your default browser. Thanks!</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
 <translation id="5726838626470692954">Your manager must remove and add you back to Chromium.</translation>
 <translation id="5768914737813585044">Display Chromium OS in this language</translation>

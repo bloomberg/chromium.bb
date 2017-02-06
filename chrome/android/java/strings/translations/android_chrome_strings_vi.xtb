@@ -52,6 +52,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1445680696957526815">Các cấu phần của Chrome không tương thích với nhau. Chrome có thể đang nâng cấp, vui lòng thử lại sau ít phút. Nếu sự cố vẫn tiếp diễn, hãy thử gỡ cài đặt và cài đặt lại Chrome.</translation>
 <translation id="1446450296470737166">Cho phép kiểm soát hoàn toàn thiết bị MIDI</translation>
 <translation id="145097072038377568">Tắt trong Cài đặt Android</translation>
+<translation id="1455941322673536744">Tự động điền và thanh toán</translation>
 <translation id="147006957810816598">Bạn sẽ không bị đăng xuất khỏi tài khoản Google của mình.</translation>
 <translation id="1477626028522505441">Tải xuống <ph name="FILE_NAME" /> không thành công do sự cố máy chủ.</translation>
 <translation id="1506061864768559482">Công cụ tìm kiếm</translation>
@@ -195,6 +196,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="2996291259634659425">Tạo cụm mật khẩu</translation>
 <translation id="2996809686854298943">Cần có URL</translation>
 <translation id="300526633675317032">Thao tác này sẽ xóa tất cả <ph name="SIZE_IN_KB" /> bộ nhớ trang web.</translation>
+<translation id="3029613699374795922">Đã tải xuống <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Cụm mật khẩu không khớp</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
@@ -262,6 +264,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="3739899004075612870">Đã đánh dấu trang trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Các ứng dụng khác chiếm <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">Đồng bộ hóa dưới nền</translation>
+<translation id="3773755127849930740"><ph name="BEGIN_LINK" />Bật Bluetooth<ph name="END_LINK" /> để cho phép ghép nối</translation>
 <translation id="3789841737615482174">Cài đặt</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{Đã chọn 1 mục}other{Đã chọn # mục}}</translation>
 <translation id="3810838688059735925">Video</translation>
@@ -317,7 +320,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4300272766492248925">Mở ứng dụng</translation>
 <translation id="4307992518367153382">Cơ bản</translation>
 <translation id="4351244548802238354">Đóng hộp thoại</translation>
-<translation id="4376501731284077108">Không bị hạn chế</translation>
 <translation id="4378154925671717803">Điện thoại</translation>
 <translation id="4384468725000734951">Sử dụng Sogou để tìm kiếm</translation>
 <translation id="4412992751769744546">Cho phép cookie của bên thứ ba</translation>
@@ -362,8 +364,10 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4837753911714442426">Mở tùy chọn để in trang</translation>
 <translation id="4850886885716139402">Xem</translation>
 <translation id="4860895144060829044">Gọi</translation>
+<translation id="4862624982077154323">Trên một số trang web, bạn có thể thanh toán bằng các ứng dụng thanh toán được hỗ trợ. Hãy chọn ứng dụng mà bạn muốn sử dụng trong Chrome.</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4885273946141277891">Số phiên bản Chrome không được hỗ trợ.</translation>
+<translation id="4910889077668685004">Ứng dụng thanh toán</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /> trong khi quét tìm thiết bị…</translation>
 <translation id="4923459931733593730">Thanh toán</translation>
 <translation id="4941291666397027948">* biểu thị trường bắt buộc</translation>
@@ -389,7 +393,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="5131405117025179004">Chỉnh sửa tài khoản đã lưu</translation>
 <translation id="5138299137310274655">Trang này bằng <ph name="SOURCE_LANGUAGE" />. Dịch sang <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Xóa dữ liệu đã lưu trữ</translation>
-<translation id="5156656584247937086">Đây là tài khoản của trẻ em</translation>
+<translation id="5152843274749979095">Chưa cài đặt ứng dụng được hỗ trợ nào</translation>
 <translation id="5161254044473106830">Cần có tiêu đề</translation>
 <translation id="5164482624172255778">Bạn có muốn Google Chrome đề xuất dịch các trang <ph name="LANGUAGE" /> từ trang web này vào lần tiếp theo không?</translation>
 <translation id="5168917394043976756">Mở ngăn điều hướng</translation>
@@ -448,6 +452,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="5610807607761827392">Bạn có thể quản lý thẻ và địa chỉ trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="5626134646977739690">Tên:</translation>
 <translation id="5646376287012673985">Vị trí</translation>
+<translation id="5655963694829536461">Tìm kiếm tài nguyên đã tải xuống của bạn</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Tạo sự kiện trong <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ghi đè yêu cầu của trang web để chặn phóng to</translation>
@@ -472,6 +477,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="583281660410589416">Không xác định</translation>
 <translation id="5832934273103296195">Đã mở rộng - Nhấp để thu gọn</translation>
 <translation id="583891442612896534">Chrome không thể kết nối với máy chủ của Google để nén dữ liệu. Các khoản tiết kiệm đối với dữ liệu của bạn có thể bị giới hạn.</translation>
+<translation id="5858741533101922242">Chrome không thể bật bộ điều hợp Bluetooth</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5867027562311576691">Các bài viết khác sẽ sớm xuất hiện. Chúc bạn buổi sáng vui vẻ.</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
@@ -503,6 +509,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6140912465461743537">Quốc gia/Vùng</translation>
 <translation id="6159335304067198720">Tiết kiệm <ph name="PERCENT" /> dữ liệu</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
+<translation id="6177111841848151710">Bị chặn đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="6177390657002841081">Bật Trình tiết kiệm dữ liệu</translation>
 <translation id="6181444274883918285">Thêm ngoại lệ cho trang web</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
@@ -515,6 +522,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6324034347079777476">Đồng bộ hóa hệ thống Android đã bị tắt</translation>
 <translation id="6333140779060797560">Chia sẻ qua <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Mã hóa</translation>
+<translation id="6343192674172527289">Không tìm thấy tài nguyên đã tải xuống nào</translation>
 <translation id="6364438453358674297">Xóa đề xuất khỏi lịch sử?</translation>
 <translation id="6383961787135158834">Xóa bộ nhớ trang web...</translation>
 <translation id="6388207532828177975">Xóa và đặt lại</translation>
@@ -522,6 +530,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6406506848690869874">Đồng bộ hóa</translation>
 <translation id="6409731863280057959">Cửa sổ bật lên</translation>
 <translation id="641643625718530986">In…</translation>
+<translation id="6416782512398055893">Đã tải xuống <ph name="MBS" /> MB</translation>
 <translation id="6433490469411711332">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="6443118737398455446">Ngày hết hạn không hợp lệ</translation>
 <translation id="6446608382365791566">Thêm thông tin khác</translation>
@@ -532,6 +541,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6477460825583319731">Địa chỉ email không hợp lệ</translation>
 <translation id="6482749332252372425">Tải xuống <ph name="FILE_NAME" /> không thành công do thiếu dung lượng bộ nhớ.</translation>
 <translation id="6527303717912515753">Chia sẻ</translation>
+<translation id="6538442820324228105">Đã tải xuống <ph name="GBS" /> GB</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Chọn một tab để chiếu</translation>
 <translation id="6545017243486555795">Xóa tất cả dữ liệu</translation>
@@ -587,6 +597,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="699220179437400583">Tự động báo cáo với Google chi tiết về sự cố bảo mật có thể xảy ra</translation>
 <translation id="6992289844737586249">Hỏi trước trước khi cho phép các trang web sử dụng micrô của bạn (được đề xuất)</translation>
 <translation id="7001663382399377034">Thêm người nhận</translation>
+<translation id="7016516562562142042">Được cho phép đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="7021515813996758557">Đã tải xuống <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">Mở trong trình duyệt</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
@@ -713,7 +724,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8372893542064058268">Cho phép Đồng bộ hóa dưới nền cho trang web cụ thể.</translation>
 <translation id="8374821112118309944">Bạn cần phải cập nhật TalkBack lên phiên bản mới hơn.</translation>
 <translation id="8393700583063109961">Gửi tin nhắn</translation>
-<translation id="8396312449826231789">Chỉ các trang web đã được phê duyệt</translation>
 <translation id="8413126021676339697">Hiển thị toàn bộ lịch sử</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433057134996913067">Thao tác này sẽ đăng xuất bạn khỏi hầu hết các trang web.</translation>
@@ -742,7 +752,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8660471606262461360">Từ Google Payments</translation>
 <translation id="8676374126336081632">Xóa văn bản nhập</translation>
 <translation id="869891660844655955">Ngày hết hạn</translation>
-<translation id="8699799819461268362">Bộ lọc Trang web an toàn của Google</translation>
 <translation id="8719023831149562936">Không thể chiếu tab hiện tại</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>

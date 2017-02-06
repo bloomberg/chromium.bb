@@ -341,6 +341,7 @@ Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel
 
       Pokud toto nastavení není nakonfigurováno, uživatelé mohou zvolit, zda službu pro kontrolu pravopisu chtějí použít či nikoli.</translation>
 <translation id="2294382669900758280">Přehrávání videí v aplikacích Android není bráno v potaz ani v případě, že je tato zásada nastavena na hodnotu <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Konfiguruje výchozí stránku Nová karta v prohlížeči <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Zadat seznam aktivovaných pluginů</translation>
 <translation id="2309390639296060546">Výchozí nastavení geolokace</translation>
 <translation id="2312134445771258233">Umožňuje konfigurovat stránky, které se načtou při spuštění.
@@ -349,7 +350,6 @@ Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel
 <translation id="2337466621458842053">Umožňuje nastavit seznam vzorů adres URL pro webové stránky, které mají povoleno zobrazovat obrázky.
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultImagesSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
-<translation id="2366415278352956652">Umožňuje odesílání.</translation>
 <translation id="2372547058085956601">Prodleva automatického přihlášení do veřejné relace.
 
       Pokud není nastavena zásada |DeviceLocalAccountAutoLoginId|, nebude mít tato zásada žádný vliv. V opačném případě platí:
@@ -863,6 +863,13 @@ Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správc
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="3570008976476035109">Blokovat pluginy na těchto stránkách</translation>
 <translation id="3591584750136265240">Konfigurace chování přihlašovacího ověření</translation>
+<translation id="3601614035698083789">Umožňuje nakonfigurovat seznam spravovaných záložek.
+
+Hodnotou této zásady je seznam záložek. Každá záložka je slovník, který obsahuje klíče <ph name="NAME" /> a <ph name="URL_LABEL" />. Ty obsahují název a cíl záložky. Podsložku lze nakonfigurovat definováním záložky bez klíče <ph name="URL_LABEL" />, ale s dodatečným klíčem <ph name="CHILDREN" />, který sám obsahuje seznam záložek podle výše uvedeného popisu (některé z nich mohou být opět složky). Neúplné adresy URL <ph name="PRODUCT_NAME" /> doplní stejně, jako kdybyste je odeslali pomocí omniboxu. Například adresa <ph name="GOOGLE_COM" /> bude doplněna na <ph name="HTTPS_GOOGLE_COM" />.
+
+Tyto záložky budou umístěny do složky Spravované záložky, kterou uživatel nemůže upravovat. Může ji však na liště záložek skrýt. Spravované záložky se nesynchronizují do uživatelského účtu a nelze je upravovat pomocí rozšíření.
+
+      Od verze 51 lze název složky se záložkami upravit přidáním položky {"toplevel_name": "požadovaný název"} do seznamu.</translation>
 <translation id="3627678165642179114">Povolit nebo zakázat webovou službu kontroly pravopisu</translation>
 <translation id="3646859102161347133">Nastavení typu lupy</translation>
 <translation id="3653237928288822292">Ikona výchozího poskytovatele vyhledávání</translation>
@@ -1072,6 +1079,17 @@ Není-li zásada nastavena, bude použita zásada AllowCookies a uživatelé ji
 
 Pokud je tato zásada nastavena na hodnotu false, uživatelé nebudou moci uzamknout obrazovku (k dispozici bude pouze odhlášení od uživatelské relace). Pokud je tato zásada nastavena na hodnotu true nebo není nastavena, uživatelé ověření pomocí hesla budou moci obrazovku uzamknout.</translation>
 <translation id="4121350739760194865">Zabraňuje zobrazování propagace aplikací na stránce Nová karta</translation>
+<translation id="4133301551755536858">Konfiguruje adresu URL výchozí stránky Nová karta v prohlížeči <ph name="PRODUCT_NAME" /> a znemožňuje uživatelům změnit ji.
+
+          Stránka Nová karta je stránka, která se otevře, když jsou vytvořeny nové karty (včetně karty otevřené v nových oknech).
+
+          Tato zásada nerozhoduje o tom, které stránky se mají otevřít při spuštění. Tyto stránky jsou dány zásadami RestoreOnStartup, které mohou určovat, že se má otevřít stránka Nová karta.
+
+          Zásadu NewTabPageLocation lze nastavit na adresu URL, kterou zde zadáte. Může mít vliv také na domovskou a počáteční stránku (pokud jsou nastaveny tak, aby otevíraly stránku Nová karta).
+
+          Pokud tato zásada není nastavena nebo je ponechána prázdná, použije se výchozí stránka Nová karta.
+
+          Tato zásada není k dispozici v instancích systému Windows, které nejsou připojeny k doméně Active Directory.</translation>
 <translation id="4147054660081653009">Klientský certifikát pro připojení k adrese RemoteAccessHostTokenValidationUrl.
 
 Pokud je tato zásada nastavena, hostitel adresu RemoteAccessHostTokenValidationUrl ověří pomocí certifikátu klienta s běžným názvem příslušného vydavatele. Chcete-li použít libovolný dostupný certifikát klienta, jako hodnotu zadejte hvězdičku (*).
@@ -1148,7 +1166,6 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 <translation id="4467952432486360968">Blokovat soubory cookie třetích stran</translation>
 <translation id="4474167089968829729">Povolit ukládání hesel do správce hesel</translation>
 <translation id="4476769083125004742">Je-li tato zásada nastavena na možnost <ph name="BLOCK_GEOLOCATION_SETTING" />, aplikace Android nemají přístup k informacím o poloze. Pokud tuto zásadu nastavíte na jinou hodnotu nebo ji ponecháte nenastavenou a aplikace Android bude chtít získat přístup k informacím o poloze, zobrazí se uživateli žádost o schválení.</translation>
-<translation id="447686899376429408">Pokud je tato zásada nastavena na hodnotu True nebo není nastavena, budou uživatelé z prohlížeče moci odesílat karty, weby a obsah plochy. Je-li tato zásada nastavena na hodnotu False, tato možnost bude zakázána.</translation>
 <translation id="4480694116501920047">Vynutit Bezpečné vyhledávání</translation>
 <translation id="4482640907922304445">Zobrazí na liště aplikace <ph name="PRODUCT_NAME" /> tlačítko Domovská stránka.
 
@@ -1159,6 +1176,7 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
       Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé je v aplikace <ph name="PRODUCT_NAME" /> nebudou moci změnit ani přepsat.
 
       Pokud zásadu nenastavíte, umožníte uživatelům zvolit, zda se tlačítko Domovská stránka zobrazí.</translation>
+<translation id="4485425108474077672">Konfigurace adresy URL stránky Nová karta</translation>
 <translation id="4492287494009043413">Zakázat pořizování snímků obrazovky</translation>
 <translation id="450537894712826981">Slouží ke konfiguraci velikosti mezipaměti, kterou bude <ph name="PRODUCT_NAME" /> používat k ukládání mediálních souborů do mezipaměti na disku.
 
@@ -1574,6 +1592,12 @@ Tato zásada není k dispozici v instancích Windows, které nejsou připojen�
 
           Pokud je toto nastavení zakázáno nebo není nakonfigurováno, žádosti gnubby o ověření nebudou zprostředkovány.</translation>
 <translation id="5898486742390981550">Když je přihlášeno několik uživatelů, může aplikace Android používat pouze primární uživatel.</translation>
+<translation id="5906199912611534122">Umožňuje aktivovat nebo deaktivovat omezení rychlosti sítě.
+      Toto nastavení platí pro všechny uživatele a všechna rozhraní v zařízení. Jakmile je omezení nastaveno,
+      zůstane aktivní, dokud nebude deaktivováno změnou této zásady.
+
+      Je-li tato zásada nastavena na hodnotu False, omezení je vypnuto.
+      Je-li nastavena na hodnotu True, bude systém omezen tak, aby bylo dosaženo zadaných rychlostí nahrávání a stahování (v kilobitech za sekundu).</translation>
 <translation id="5921713479449475707">Povolení stahování automatických aktualizací prostřednictvím protokolu HTTP</translation>
 <translation id="5921888683953999946">Nastavuje výchozí stav funkce usnadnění přístupu pomocí velkého kurzoru na přihlašovací obrazovce.
 
@@ -1694,6 +1718,20 @@ Není-li zásada nastavena, může se uživatelům zobrazit výzva, zda chtějí
 <translation id="6282799760374509080">Povolit nebo zakázat záznam zvuku</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Aktivovat automatické doplňování názvu domény při přihlášení uživatele</translation>
+<translation id="6312861131491040487">
+          Určuje seznam aplikací a rozšíření, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat. Všechna oprávnění požadovaná aplikacemi nebo rozšířeními jsou udělována implicitně bez zásahu uživatele, a to včetně všech dodatečných oprávnění požadovaných budoucími verzemi aplikace nebo rozšíření. Kromě toho jsou udělena oprávnění těchto rozhraní API rozšíření: enterprise.deviceAttributes a enterprise.platformKeys. (Aplikace/rozšíření, jejichž instalace není vynucena, tato rozhraní API k dispozici nemají.)
+
+Tato zásada má přednost před potenciálně konfliktní zásadou ExtensionsInstallBlacklist. Bude-li aplikace nebo rozšíření, které bylo dříve vynuceně nainstalováno, z tohoto seznamu odebráno, <ph name="PRODUCT_NAME" /> je automaticky odinstaluje.
+
+U instancí systému Windows, které nejsou propojeny s doménou Active Directory, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
+
+Zdrojový kód libovolného rozšíření mohou uživatelé pomocí Nástrojů pro vývojáře upravit (což může způsobit, že rozšíření nebude fungovat). Pokud je to problém, nastavte zásadu DeveloperToolsDisabled.
+
+Každá položka v seznamu zásady představuje řetězec, který obsahuje ID rozšíření a adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON" />). ID rozšíření je řetězec o 32 znacích a naleznete jej například zde: <ph name="CHROME_EXTENSIONS_LINK" /> (v režimu pro vývojáře). Adresa URL pro aktualizaci by měla odkazovat na dokument XML manifestu aktualizace (viz <ph name="LINK_TO_EXTENSION_DOC1" />). Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Další aktualizace rozšíření budou používat adresu URL pro aktualizaci uvedenou v manifestu rozšíření.
+
+Například <ph name="EXTENSION_POLICY_EXAMPLE" /> nainstaluje aplikaci <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardní adresy URL pro aktualizaci z Internetového obchodu Chrome. Další informace o hostování rozšíření viz <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření se automaticky neinstalují a uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může kteroukoliv aplikaci nebo rozšíření odinstalovat.</translation>
 <translation id="6315673513957120120">Pokud uživatel přejde na web, který obsahuje chyby protokolu SSL, Chrome zobrazí stránku s upozorněním. Když je tato zásada nastavena na hodnotu True, mohou uživatelé stránky s upozorněním přeskočit a pokračovat. Platí to také ve výchozím nastavení.
 Nastavením této zásady na hodnotu False přeskočení stránky s upozorněním zakážete.</translation>
 <translation id="6353901068939575220">Udává parametry, které budou použity při vyhledávání adresy URL pomocí metody POST. Sestává z párů název–hodnota oddělených čárkou. Pokud je hodnotou parametr šablony (např. {searchTerms} v příkladu výše), bude nahrazen skutečnými údaji vyhledávacích dotazů.
@@ -1863,6 +1901,7 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> nep
 <translation id="687046793986382807">V prohlížečích <ph name="PRODUCT_NAME" /> verze 35 a novějších byla tato zásada zrušena.
 
       Informace o paměti jsou stránce hlášeny bez ohledu na nastavení této možnosti. Velikosti jsou však hlášeny jen po určitých přírůstcích a frekvence aktualizací je z bezpečnostních důvodů omezena. Chcete-li získat přesná data v reálném čase, použijte prosím nástroje, jako je Telemetry.</translation>
+<translation id="6894178810167845842">Adresa URL stránky Nová karta</translation>
 <translation id="6899705656741990703">Zjistit nastavení proxy serveru automaticky</translation>
 <translation id="6903814433019432303">Tato zásada je aktivní pouze v režimu prodeje.
 
@@ -1990,6 +2029,7 @@ Tato zásada není k dispozici v instancích Windows, které nejsou připojen�
 <translation id="7132877481099023201">Adresy URL, kterým bude udělen přístup pro záznam videa bez zobrazení výzvy</translation>
 <translation id="7167436895080860385">Umožnit uživatelům zobrazit hesla ve Správci hesel (podpora ukončena)</translation>
 <translation id="7173856672248996428">Dočasný profil</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Typy připojení, pro které jsou povoleny aktualizace</translation>
 <translation id="7194407337890404814">Název výchozího poskytovatele vyhledávání</translation>
 <translation id="7195064223823777550">Určuje akci, která bude provedena při zavření víka.

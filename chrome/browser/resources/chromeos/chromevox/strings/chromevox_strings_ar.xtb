@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />، في وضع التشغيل</translation>
 <translation id="1692077714702418899">خط تنظيمي</translation>
 <translation id="1700517974991662022">تم الانتقال إليه</translation>
+<translation id="1714116687360794776">متر</translation>
 <translation id="1722567105086139392">رابط</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">الرسم التالي</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">التحكم في الوقت والتاريخ</translation>
 <translation id="2347456970887948350">رابط</translation>
 <translation id="2359897517538099099">ليس في وضع الجدول.</translation>
+<translation id="2390264819538553347">‏للتقدم، اضغط على Enter، وللرجوع للخلف، اضغط على Backspace.</translation>
 <translation id="241124561063364910">يليه</translation>
 <translation id="2416512023405990736">مربع اختيار غير محدد</translation>
 <translation id="2417569100218200841">معلومات المحتوى</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">مجموعة أزرار الاختيار</translation>
 <translation id="2471138580042810658">العنوان السادس</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{علامة نجمة واحدة}zero{# asterisks}two{علامتا نجمة (#)}few{# علامات نجمة}many{# علامة نجمة}other{# من علامات النجمة}}</translation>
+<translation id="2523609930580546572">‏برنامج ChromeVox التعليمي</translation>
 <translation id="2525706221823668172">‏اختصارات لوحة المفاتيح لـ Chromebook</translation>
 <translation id="2549392850788122959">تمت إعادة تعيين <ph name="KEY" />.</translation>
 <translation id="2553108862507765288">خطأ نحوي</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">ليس هناك قسم سابق.</translation>
 <translation id="3030432017085518523">زر اختيار عنصر القائمة</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{فاصلة عليا واحدة}zero{# apostrophes}two{فاصلتان علويتان (}few{# فواصل علوية}many{# فاصلة علوية}other{# من الفواصل العلوية}}</translation>
+<translation id="3040901448410802366">مؤشر التقدم</translation>
 <translation id="3046838483509668188">‏خيارات ChromeVox</translation>
 <translation id="3047143736589213134">مخطط مفاتيح تجريبي</translation>
 <translation id="3060756054951570867">تم فتح القائمة <ph name="TITLE" /></translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">تمكين التفاف الكلمات</translation>
 <translation id="3322936298410871309">عنوان المستوى الأول السابق</translation>
 <translation id="3323447499041942178">مربع نص</translation>
+<translation id="3338224621010291843">شريط تمرير <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">‏{"ar": "العربية"،
         "bg": "البلغارية"،
         "ca": "الكتالانية"،
@@ -714,6 +719,7 @@
 <translation id="7693840228159394336">زر الاختيار السابق</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748">مربع نص كلمة المرور <ph name="NAME" />، بالقيمة <ph name="VALUE" /></translation>
+<translation id="7776293189010177726">‏فتح قوائم ChromeVox</translation>
 <translation id="7805247615045262757">التنقل الافتراضي</translation>
 <translation id="7805768142964895445">الحالة</translation>
 <translation id="7810781339813764006">المجموعة التالية</translation>

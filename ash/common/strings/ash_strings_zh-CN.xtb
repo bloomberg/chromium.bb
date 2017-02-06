@@ -39,6 +39,7 @@
 <translation id="1923539912171292317">自动点击</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">停止将<ph name="TAB_NAME" />投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
 <translation id="2204305834655267233">网络信息</translation>
 <translation id="2208323208084708176">统一桌面模式</translation>
@@ -149,6 +150,7 @@
 <translation id="5331975486040154427">USB-C 设备（左侧后端端口）</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
+<translation id="5504841533973703486">前置麦克风</translation>
 <translation id="5507786745520522457">设置移动数据网络</translation>
 <translation id="5543001071567407895">短信</translation>
 <translation id="5548285847212963613">扩展程序“<ph name="EXTENSION_NAME" />”可帮助连接到此网络。</translation>
@@ -160,6 +162,7 @@
 <translation id="57838592816432529">静音</translation>
 <translation id="5825747213122829519">您的输入法已更改为“<ph name="INPUT_METHOD_ID" />”。
 按 Shift + Alt 键可进行切换。</translation>
+<translation id="5830936593837877897">后置麦克风</translation>
 <translation id="5871632337994001636">管理设备…</translation>
 <translation id="5895138241574237353">重新启动</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -249,8 +252,10 @@
 <translation id="8000066093800657092">未连接任何网络</translation>
 <translation id="8054466585765276473">正在计算续航时间。</translation>
 <translation id="8077816382010018681">此处为快速解锁功能通知标题</translation>
+<translation id="8098591350844501178">停止将屏幕投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="8103386449138765447">短信数：<ph name="MESSAGE_COUNT" /> 条</translation>
 <translation id="8132793192354020517">已连接到 <ph name="NAME" /></translation>
+<translation id="8180896103888046100">停止投射到未知接收器</translation>
 <translation id="8185286464235484130">请回答几个问题，让我们了解您的满意度。</translation>
 <translation id="8190698733819146287">自定义语言和输入法...</translation>
 <translation id="8206859287963243715">蜂窝网络设备</translation>

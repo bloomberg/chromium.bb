@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />: включено</translation>
 <translation id="1692077714702418899">Структурная линия.</translation>
 <translation id="1700517974991662022">Посещено</translation>
+<translation id="1714116687360794776">Счетчик</translation>
 <translation id="1722567105086139392">Ссылка</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Перейти к следующей диаграмме</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Выбор даты и времени</translation>
 <translation id="2347456970887948350">Ссылка</translation>
 <translation id="2359897517538099099">Режим таблицы выключен.</translation>
+<translation id="2390264819538553347">Чтобы продолжить, нажмите ВВОД. Чтобы вернуться на предыдущую страницу, нажмите BACKSPACE.</translation>
 <translation id="241124561063364910">а затем</translation>
 <translation id="2416512023405990736">Снятый флажок</translation>
 <translation id="2417569100218200841">Сведения о контенте</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Группа переключателей</translation>
 <translation id="2471138580042810658">Заголовок шестого уровня.</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{звездочка}one{# звездочка}few{# звездочки}many{# звездочек}other{# asterisks}}</translation>
+<translation id="2523609930580546572">Руководство по ChromeVox</translation>
 <translation id="2525706221823668172">Быстрые клавиши Chromebook</translation>
 <translation id="2549392850788122959">Сброс до состояния по умолчанию для клавиши <ph name="KEY" /> выполнен.</translation>
 <translation id="2553108862507765288">grammatical mistake</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Предыдущего раздела нет.</translation>
 <translation id="3030432017085518523">Пункт меню переключатель</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{апостроф}one{# апостроф}few{# апострофа}many{# апострофов}other{# apostrophes}}</translation>
+<translation id="3040901448410802366">Индикатор выполнения</translation>
 <translation id="3046838483509668188">Параметры ChromeVox</translation>
 <translation id="3047143736589213134">Экспериментальная раскладка</translation>
 <translation id="3060756054951570867">Открыто меню <ph name="TITLE" />.</translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">Переносить по словам</translation>
 <translation id="3322936298410871309">Перейти к предыдущему заголовку первого уровня</translation>
 <translation id="3323447499041942178">Текстовое поле</translation>
+<translation id="3338224621010291843">Ползунок <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "арабский",
         "bg": "болгарский",
         "ca": "каталанский",
@@ -714,6 +719,7 @@
 <translation id="7693840228159394336">Перейти к предыдущему переключателю</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748">Поле для ввода пароля "<ph name="NAME" />" со значением "<ph name="VALUE" />"</translation>
+<translation id="7776293189010177726">Открыть меню ChromeVox</translation>
 <translation id="7805247615045262757">навигация по умолчанию</translation>
 <translation id="7805768142964895445">Состояние</translation>
 <translation id="7810781339813764006">Перейти к следующей группе</translation>

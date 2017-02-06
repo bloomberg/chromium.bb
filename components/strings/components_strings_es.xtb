@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">La función de navegación segura de Google <ph name="BEGIN_LINK" />detectó software malicioso<ph name="END_LINK" /> recientemente en <ph name="SITE" />. En ocasiones, los sitios web que suelen ser seguros contienen software malicioso. Este contenido procede de <ph name="SUBRESOURCE_HOST" />, un conocido distribuidor de este tipo de software. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">Parámetros de solicitud o solicitud no válidos</translation>
 <translation id="1834321415901700177">Este sitio web contiene programas dañinos</translation>
-<translation id="1838667051080421715">Estás viendo la fuente de una página web.</translation>
 <translation id="1871208020102129563">Se ha configurado el proxy de forma que use servidores proxy fijos, en lugar de una URL de secuencia de comandos .pac.</translation>
+<translation id="187918866476621466">Abrir páginas de inicio</translation>
 <translation id="1883255238294161206">Contraer lista</translation>
 <translation id="1898423065542865115">Filtrado</translation>
 <translation id="194030505837763158">Ir a <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Si este mensaje aparece con frecuencia, prueba a solucionarlo con estas <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisión</translation>
 <translation id="3678029195006412963">No se ha podido firmar la solicitud</translation>
+<translation id="3679803492151881375">Informe sobre fallos registrado el <ph name="CRASH_TIME" /> y subido el <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Datos del certificado</translation>
 <translation id="3690164694835360974">Inicio de sesión no seguro</translation>
 <translation id="3693415264595406141">Contraseña:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Deshacer eliminación</translation>
 <translation id="4619615317237390068">Pestañas de otros dispositivos</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Estas viendo la página de una extensión.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Se ha interrumpido la conexión</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Ejecutar Diagnósticos de red de Windows<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Es posible que la página web <ph name="URL" /> esté temporalmente inactiva o que se haya trasladado definitivamente a otra dirección.</translation>
 <translation id="4771973620359291008">Se ha producido un error desconocido.</translation>
 <translation id="4800132727771399293">Comprueba la fecha de caducidad y el código CVC, y vuelve a intentarlo</translation>
+<translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4813512666221746211">Error de red</translation>
 <translation id="4816492930507672669">Ajustar a página</translation>
 <translation id="4850886885716139402">Ver</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">¿Quieres salir de este sitio web?</translation>
 <translation id="5629630648637658800">Error al cargar la configuración de la política</translation>
 <translation id="5631439013527180824">Token de administración de dispositivos no válido</translation>
+<translation id="5669703222995421982">Obtener contenido personalizado</translation>
 <translation id="5675650730144413517">Esta página no funciona</translation>
 <translation id="5677928146339483299">Con bloqueo</translation>
 <translation id="5694783966845939798">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor ha presentado un certificado firmado con un algoritmo de firma no seguro (por ejemplo, SHA-1). Una posible causa de este problema es que se hayan falsificado las credenciales de seguridad presentadas por el servidor y que hayas accedido a la página de un atacante en lugar de establecer conexión con el servidor en cuestión. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Valor de la política</translation>
 <translation id="6757797048963528358">El dispositivo se ha suspendido.</translation>
 <translation id="6778737459546443941">Uno de tus padres aún no lo ha aprobado</translation>
+<translation id="6810899417690483278">ID de personalización</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">La página web de la URL <ph name="URL" /> no está disponible en este momento. Es posible que esté sobrecargada o inactiva debido a tareas de mantenimiento.</translation>
 <translation id="6831043979455480757">Traducir</translation>
@@ -709,6 +712,7 @@
 <translation id="8364627913115013041">No establecida</translation>
 <translation id="8380941800586852976">Peligroso</translation>
 <translation id="8382348898565613901">Los marcadores a los que hayas accedido recientemente aparecen aquí</translation>
+<translation id="8398259832188219207">Informe sobre fallos subido el <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Fallos (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Debes introducir la misma frase de contraseña dos veces.</translation>
 <translation id="8428213095426709021">Ajustes</translation>

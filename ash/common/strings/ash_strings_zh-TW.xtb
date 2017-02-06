@@ -39,6 +39,7 @@
 <translation id="1923539912171292317">自動點擊</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">停止將 <ph name="TAB_NAME" /> 投放到「<ph name="RECEIVER_NAME" />」</translation>
 <translation id="2127372758936585790">低功率充電器</translation>
 <translation id="2204305834655267233">網路資訊</translation>
 <translation id="2208323208084708176">整合桌面模式</translation>
@@ -149,6 +150,7 @@
 <translation id="5331975486040154427">USB-C 裝置 (左後方連接埠)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
+<translation id="5504841533973703486">前置麥克風</translation>
 <translation id="5507786745520522457">設定行動資料</translation>
 <translation id="5543001071567407895">簡訊</translation>
 <translation id="5548285847212963613">「<ph name="EXTENSION_NAME" />」擴充功能可協助連線至這個網路。</translation>
@@ -160,6 +162,7 @@
 <translation id="57838592816432529">靜音</translation>
 <translation id="5825747213122829519">您的輸入法已變更為 <ph name="INPUT_METHOD_ID" />。
 按下 Shift + Alt 鍵即可切換。</translation>
+<translation id="5830936593837877897">後置麥克風</translation>
 <translation id="5871632337994001636">管理裝置...</translation>
 <translation id="5895138241574237353">重新啟動</translation>
 <translation id="5901316534475909376">Shift + Esc 鍵</translation>
@@ -249,8 +252,10 @@
 <translation id="8000066093800657092">沒有網路</translation>
 <translation id="8054466585765276473">正在計算電池使用時間。</translation>
 <translation id="8077816382010018681">在這裡顯示 QU 功能通知標題</translation>
+<translation id="8098591350844501178">停止將畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
 <translation id="8103386449138765447">簡訊數：<ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">已連線至 <ph name="NAME" /></translation>
+<translation id="8180896103888046100">停止投放至不明接收端</translation>
 <translation id="8185286464235484130">請回答幾個問題，讓我們瞭解你的滿意度。</translation>
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
 <translation id="8206859287963243715">手機</translation>

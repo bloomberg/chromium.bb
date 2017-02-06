@@ -61,7 +61,6 @@
 <translation id="2664962310688259219">Chrome 作業系統開放原始碼授權</translation>
 <translation id="2665296953892887393">將當機報告和<ph name="UMA_LINK" />傳送給 Google，助我們一臂之力，讓 Google Chrome 更臻完美</translation>
 <translation id="2689103672227170538">這個擴充功能已變更 Chrome 啟動時所顯示的網頁。</translation>
-<translation id="2748463065602559597">您正在瀏覽安全型 Google Chrome 網頁。</translation>
 <translation id="2769762047821873045">Google Chrome 並非您的預設瀏覽器。</translation>
 <translation id="2770231113462710648">將預設瀏覽器變更為：</translation>
 <translation id="2799223571221894425">重新啟動</translation>
@@ -201,6 +200,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="6970811910055250180">正在更新裝置...</translation>
 <translation id="6982337800632491844">在使用這個裝置前，<ph name="DOMAIN" /> 要求您詳讀並接受下列《服務條款》。這些條款不會擴展、修改或限制《Chrome 作業系統條款》。</translation>
 <translation id="6989339256997917931">Google Chrome 已更新，但您至少已有 30 天未使用該瀏覽器。</translation>
+<translation id="7048801529101012374">太好了！Google Chrome 現已成為你的預設瀏覽器。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麥克風。</translation>
 <translation id="7106741999175697885">工作管理員 - Google Chrome</translation>
 <translation id="7125719106133729027">由於 Chrome 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請以人工方式重新安裝 Chrome。</translation>

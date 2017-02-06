@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google सुरक्षित ब्राउज़िंग को हाल ही में <ph name="SITE" /> पर <ph name="BEGIN_LINK" />मैलवेयर का पता चला<ph name="END_LINK" /> है. आमतौर पर सुरक्षित रहने वाली वेबसाइट कभी-कभी मैलवेयर से संक्रमित हो जाती हैं. दुर्भावनापूर्ण सामग्री <ph name="SUBRESOURCE_HOST" /> से आती है, जिसे ज्ञात मैलवेयर वितरक कहा जाता है. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">अमान्य अनुरोध या अनुरोध पैरामीटर</translation>
 <translation id="1834321415901700177">इस साइट में हानिकारक प्रोग्राम हैं</translation>
-<translation id="1838667051080421715">आप एक वेब पेज का स्रोत देख रहे हैं.</translation>
 <translation id="1871208020102129563">प्रॉक्‍सी को फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर का उपयोग करने के लिए सेट किया गया है, .pac स्‍क्रिप्‍ट फ़ाइल का उपयोग करने के लिए नहीं.</translation>
+<translation id="187918866476621466">शुरुआती पन्ना खोलें</translation>
 <translation id="1883255238294161206">सूची संक्षिप्त करें</translation>
 <translation id="1898423065542865115">फ़िल्टर किया जा रहा है</translation>
 <translation id="194030505837763158"><ph name="LINK" /> पर जाएं</translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">यदि आपको यह बार-बार दिखाई दे रहा हो, तो इन <ph name="HELP_LINK" /> को आज़माएं.</translation>
 <translation id="3658742229777143148">पुनरीक्षण</translation>
 <translation id="3678029195006412963">अनुरोध पर हस्ताक्षर नहीं किया जा सका</translation>
+<translation id="3679803492151881375">ख़राबी रिपोर्ट <ph name="CRASH_TIME" /> पर कैप्चर की गई, <ph name="UPLOAD_TIME" /> पर अपलोड की गई</translation>
 <translation id="3681007416295224113">प्रमाणपत्र जानकारी</translation>
 <translation id="3690164694835360974">लॉगिन सुरक्षित नहीं है</translation>
 <translation id="3693415264595406141">पासवर्ड:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;हटाना वापस लाएं</translation>
 <translation id="4619615317237390068">अन्य डिवाइस के टैब</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">आप एक एक्सटेंशन पेज देख रहे हैं.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">आपका कनेक्शन बाधित था</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows नेटवर्क निदान चलाकर देखें<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> पर मौजूद वेबपेज संभवतः अस्थायी रूप से बंद है या उसे स्थायी रूप से किसी नए वेब पते पर ले जाया गया है.</translation>
 <translation id="4771973620359291008">अज्ञात त्रुटि आई.</translation>
 <translation id="4800132727771399293">अपना अवधि समाप्‍ति दिनांक और CVC जांचें और पुन: प्रयास करें</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">नेटवर्क त्रुटि</translation>
 <translation id="4816492930507672669">पेज में फ़िट करें</translation>
 <translation id="4850886885716139402">देखें</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">क्या आप इस साइट को छोड़ना चाहते हैं?</translation>
 <translation id="5629630648637658800">नीति सेटिंग लोड करने में विफल</translation>
 <translation id="5631439013527180824">अमान्य डिवाइस प्रबंधन टोकन</translation>
+<translation id="5669703222995421982">खास आपके लिए बनी सामग्री पाएं</translation>
 <translation id="5675650730144413517">यह पेज काम नहीं कर रहा है</translation>
 <translation id="5677928146339483299">अवरोधित</translation>
 <translation id="5694783966845939798">आपने <ph name="DOMAIN" /> पर पहुंचने का प्रयास किया, लेकिन सर्वर ने कमज़ोर हस्ताक्षर एल्गोरिदम के उपयोग से हस्ताक्षरित प्रमाणपत्र (जैसे कि SHA-1) प्रस्तुत किया. इसका अर्थ है कि सर्वर द्वारा प्रस्तुत सुरक्षा क्रेडेंशियल नकली हो सकते हैं और हो सकता है कि सर्वर आपका अपेक्षित सर्वर ना हो (हो सकता है आप किसी हमलावर से बातचीत कर रहे हों). <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">नीति मान</translation>
 <translation id="6757797048963528358">आपका डिवाइस निष्क्रिय हो गया है.</translation>
 <translation id="6778737459546443941">आपके अभिभावक ने अभी तक इसकी स्वीकृति नहीं दी है</translation>
+<translation id="6810899417690483278">कस्टमाइज़ेशन आईडी</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> पर वेबपेज वर्तमान में अनुपलब्ध है. संभवतः यह ओवरलोड हो गया है या रखरखाव के लिए बंद कर दिया है.</translation>
 <translation id="6831043979455480757">अनुवाद करें</translation>
@@ -707,6 +710,7 @@
 <translation id="8364627913115013041">सेट नहीं है.</translation>
 <translation id="8380941800586852976">खतरनाक</translation>
 <translation id="8382348898565613901">हाल ही में विज़िट किए गए आपके बुकमार्क यहां दिखाई देते हैं</translation>
+<translation id="8398259832188219207">ख़राबी रिपोर्ट <ph name="UPLOAD_TIME" /> पर अपलोड की गई</translation>
 <translation id="8412145213513410671">क्रैश (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">आपको वही पासफ़्रेज़ दोबारा दर्ज करना होगा.</translation>
 <translation id="8428213095426709021">सेटिंग्स</translation>

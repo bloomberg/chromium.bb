@@ -359,11 +359,11 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 
       Jos asetusta ei ole määritetty, käyttäjät voivat valita, haluavatko he käyttää oikolukupalvelua.</translation>
 <translation id="2294382669900758280">Videoiden toistamista Android-sovelluksissa ei oteta huomioon, vaikka tämän käytännön arvoksi olisi määritetty <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Määritä oletusarvoinen Uusi välilehti ‑sivu kohteessa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Määritä käytössä olevat laajennukset</translation>
 <translation id="2309390639296060546">Maantieteellisen sijainnin oletusasetus</translation>
 <translation id="2312134445771258233">Voit määrittää käynnistettäessä avattavat sivut. Käynnistettäessä avattavat sivut -luettelo ohitetaan, jos et valitse Toiminto käynnistettäessä -asetukseksi vaihtoehtoa Avaa seuraavat sivut:.</translation>
 <translation id="2337466621458842053">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat näyttää kuvia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
-<translation id="2366415278352956652">Mahdollistaa suoratoiston</translation>
 <translation id="2372547058085956601">Julkisen istunnon automaattisen kirjautumisen viive.
 
       Jos |DeviceLocalAccountAutoLoginId|-käytäntöä ei ole määritetty, käytännöllä ei ole vaikutusta. Muutoin:
@@ -860,6 +860,17 @@ Käytännön arvot tulee määrittää millisekunteina. Arvoja voi valita välil
 <translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
 <translation id="3570008976476035109">Estä laajennukset näissä sivustoissa</translation>
 <translation id="3591584750136265240">Määritä kirjautumistodennuksen käytös.</translation>
+<translation id="3601614035698083789">Määrittää hallinnoitujen kirjanmerkkien luettelon.
+
+      Käytäntö on kirjanmerkkiluettelo, ja jokainen kirjanmerkki on
+      sanakirja, joka sisältää kirjanmerkin nimen ja sen kohteen (<ph name="NAME" /> ja <ph name="URL_LABEL" />). 
+      Kirjanmerkkinä voidaan käyttää alikansiota jättämällä pois avain <ph name="URL_LABEL" /> mutta lisäämällä avain <ph name="CHILDREN" />, johon
+      kirjanmerkkilista määritellään yllä kuvatulla tavalla. Myös alikansion kirjanmerkit voivat olla alikansioita. <ph name="PRODUCT_NAME" /> täydentää listan URL-osoitteet
+      omniboxiin kirjoitettujen osoitteiden tavoin. Esimerkiksi osoite <ph name="GOOGLE_COM" /> täydennetään muotoon <ph name="HTTPS_GOOGLE_COM" />.
+
+      Nämä kirjanmerkit lisätään Hallinnoidut kirjanmerkit ‑kansioon. Käyttäjä ei voi muokata niitä, mutta hän voi piilottaa kansion kirjanmerkkipalkista. Hallinnoituja kirjanmerkkejä ei synkronoida käyttäjän tiliin, eivätkä laajennukset voi muokata niitä.
+
+      Julkaisusta 51 eteenpäin kirjanmerkkikansion nimiä voi muokata lisäämällä luettelokohteen {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Ota käyttöön tai poista käytöstä oikoluku-verkkopalvelu</translation>
 <translation id="3646859102161347133">Aseta näytön suurentajan tyyppi</translation>
 <translation id="3653237928288822292">Oletushakupalvelun kuvake</translation>
@@ -1066,6 +1077,17 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
       Jos tämän käytännön arvo on Epätosi, käyttäjät voivat lukita näytön (vain istunnosta uloskirjautuminen on mahdollista). Jos käytännön arvo on Tosi tai sitä ei aseteta, salasanatodennuksen tehneet käyttäjät voivat lukita näytön.</translation>
 <translation id="4121350739760194865">Estä sovelluskampanjoita näkymästä uusi välilehti -sivulla</translation>
+<translation id="4133301551755536858">Määrittää oletusarvoisen Uusi välilehti ‑sivun URL-osoitteen kohteessa <ph name="PRODUCT_NAME" /> ja estää käyttäjiä muuttamasta sitä.
+
+          Uusi välilehti ‑sivu on sivu, joka avautuu kun uusia välilehtiä luodaan (mukaan lukien uusissa ikkunoissa avatut välilehdet).
+
+          Tämä käytäntö ei määritä, mitkä sivut avataan käynnistyksen yhteydessä. Tätä hallinnoivat RestoreOnStartup-käytännöt, jotka on voitu määrittää avaamaan Uusi välilehti ‑sivun.
+
+          NewTabPageLocation voidaan asettaa tietyksi tässä määrittämäksesi URL-osoitteeksi. Se vaikuttaa myös etusivuun, jos se on määritetty avaamaan Uusi välilehti ‑sivu, sekä aloitussivuun, jos aloitussivuksi on määritetty Uusi välilehti ‑sivu.
+
+          Jos käytäntöä ei ole määritetty tai jätetty tyhjäksi, käytetään oletusarvoista Uusi välilehti ‑sivua.
+
+          Tämä käytäntö ei ole käytettävissä sellaisissa Windowsin esiintymissä, joita ei ole liitetty Active Directory ‑verkkotunnukseen.</translation>
 <translation id="4147054660081653009">Asiakasvarmenne yhteyden muodostamiseksi osoitteeseen RemoteAccessHostTokenValidationUrl.
 
           Jos tämä käytäntö on asetettu, isäntä käyttää todentamiseen asiakasvarmennetta ja varmenteen myöntäjän verkkotunnusta muodostaessaan yhteyttä osoitteeseen RemoteAccessHostTokenValidationUrl. Jos arvoksi asetetaan *, mitä tahansa käytettävissä olevaa asiakasvarmennetta käytetään.
@@ -1144,9 +1166,9 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 <translation id="4467952432486360968">Estä kolmannen osapuolen evästeet</translation>
 <translation id="4474167089968829729">Ota käyttöön salasanojen tallentaminen salasanojen hallintaohjelmaan</translation>
 <translation id="4476769083125004742">Jos tämän käytännön arvoksi on määritetty <ph name="BLOCK_GEOLOCATION_SETTING" />, Android-sovellukset eivät voi käyttää sijaintitietoja. Jos tämän käytännön arvoksi määritetään mikä tahansa muu arvo tai arvoa ei määritetä ollenkaan, käyttäjältä pyydetään suostumusta, kun Android-sovellus haluaa käyttää sijaintitietoja.</translation>
-<translation id="447686899376429408">Jos käytännön arvoksi on asetettu Tosi tai sille ei aseteta mitään arvoa, käyttäjät voivat suoratoistaa selaimella välilehtiä, sivustoja tai työpöydän. Jos sen arvo on Epätosi, nämä toiminnot eivät ole käytössä.</translation>
 <translation id="4480694116501920047">Pakota SafeSearch käyttöön</translation>
 <translation id="4482640907922304445">Näyttää Etusivu-painikkeen tuotteen <ph name="PRODUCT_NAME" /> työkalurivissä. Jos otat tämän asetuksen käyttöön, Etusivu-painike näkyy aina. Jos poistat asetuksen käytöstä, Etusivu-painiketta ei näytetä. Valittuasi asetuksen käyttäjät eivät voi muuttaa tai ohittaa sitä tuotteessa <ph name="PRODUCT_NAME" />. Jos tätä käytäntöä ei ole määritetty, käyttäjä voi valita, haluaako hän Etusivu-painikkeen näkyviin työkalurivissä.</translation>
+<translation id="4485425108474077672">Määritä Uusi välilehti ‑sivun URL-osoite</translation>
 <translation id="4492287494009043413">Estä kuvakaappauksien ottaminen</translation>
 <translation id="450537894712826981">Määrittää sen välimuistin koon, jota <ph name="PRODUCT_NAME" /> käyttää välimuistiin tallennettujen tiedostojen tallentamiseen.
 
@@ -1532,6 +1554,12 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 
           Jos asetus ei ole käytössä tai sitä ei ole määritetty, gnubby-todennuspyyntöjä ei lähetetä välityspalvelimen kautta.</translation>
 <translation id="5898486742390981550">Kun useampi käyttäjä on kirjautunut sisään yhtä aikaa, vain ensisijainen käyttäjä voi käyttää Android-sovelluksia.</translation>
+<translation id="5906199912611534122">Sallii verkon rajoituksen käyttöönoton tai käytöstä poistamisen.
+      Tämä koskee kaikkia käyttäjiä ja kaikkia laitteen käyttöliittymiä. Kun se on
+      määritetty, rajoitus on voimassa, kunnes käytännön muutos poistaa sen käytöstä.
+
+      Jos arvoksi on määritetty epätosi, rajoitusta ei käytetä.
+      Jos arvoksi on määritetty tosi, järjestelmää rajoitetaan, kunnes määritetyt lähetys- ja latausnopeudet (kb/s) on saavutettu.</translation>
 <translation id="5921713479449475707">Salli automaattiset päivitykset HTTP:n kautta</translation>
 <translation id="5921888683953999946">Määritä suuren osoittimen käytettävyysominaisuuden oletustila kirjautumisnäytössä.
 
@@ -1649,6 +1677,46 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6282799760374509080">Salli tai estä äänen kaappaaminen</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Verkkotunnuksen automaattinen täydennys kirjautumisen yhteydessä</translation>
+<translation id="6312861131491040487">
+          Määrittää laajennukset, jotka asennetaan huomaamattomasti
+          ilman käyttäjän vuorovaikutusta ja joita käyttäjä ei voi poistaa.
+          Kaikki sovellusten/laajennusten pyytämät käyttöoikeudet myönnetään
+          implisiittisesti ilman käyttäjän vuorovaikutusta, mukaan lukien kaikki
+          sovelluksen/laajennuksen tulevien versioiden pyytämät käyttöoikeudet.
+          Tämän lisäksi käyttöoikeudet myönnetään
+          enterprise.deviceAttributes- ja enterprise.platformKeys-laajennusten 
+          sovellusliittymille. (Nämä kaksi sovellusliittymää eivät ole sellaisten
+          sovellusten/laajennusten käytettävissä, joita ei ole asennettu automaattisesti.)
+
+          Tämä käytäntö ohittaa sen kanssa mahdollisesti ristiriidassa olevan
+          ExtensionsInstallBlacklist-käytännön. Jos aiemmin automaattisesti
+          asennettu sovellus tai laajennus poistetaan tästä luettelosta, <ph name="PRODUCT_NAME" />
+          poistaa sen automaattisesti.
+
+          Jos kyseessä on Windowsin esiintymä, jota ei ole liitetty Active Directory 
+          ‑verkkotunnukseen, automaattiset asennukset on rajoitettu Chrome Web
+          Storesta saatavilla oleviin sovelluksiin ja laajennuksiin.
+
+          Huomaa, että kehittäjätyökaluilla on mahdollista muokata minkä tahansa
+          laajennuksen lähdekoodia, mikä voi mahdollisesti haitata laajennuksen  
+          toimintaa. Tämä voidaan tarvittaessa estää asettamalla käytäntö
+          DeveloperToolsDisabled.
+
+          Käytännön jokainen rivikohta on merkkijono, joka sisältää laajennustunnuksen
+          ja puolipisteellä (<ph name="SEMICOLON" />) erotetun päivitysosoitteen. Laajennustunnus on 
+          32-kirjaiminen merkkijono, jonka esim. <ph name="CHROME_EXTENSIONS_LINK" /> näyttää kehittäjätilassa.
+          Päivitysosoitteen tulee johtaa päivitysluettelotyyppiseen XML-asiakirjaan.  
+          Katso esimerkki: <ph name="LINK_TO_EXTENSION_DOC1" />. Huomaa, että tässä käytännössä määritettyä 
+          päivitysosoitetta käytetään vain ensimmäiseen asennukseen.
+          Laajennuksen myöhempiin päivityksiin käytetään laajennuksen luettelossa  
+          ilmoitettua URL-osoitetta.
+
+          Esimerkiksi <ph name="EXTENSION_POLICY_EXAMPLE" />
+          asentaa sovelluksen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> Chrome Web Storen tavallisen päivitysosoitteen
+          kautta. Lisätietoja laajennusten isännöinnistä: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Jos tätä käytäntöä ei ole määritetty, mitään sovelluksia tai laajennuksia ei
+          asenneta automaattisesti ja käyttäjä voi poistaa minkä tahansa sovelluksen tai laajennuksen kohteessa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome näyttää varoitussivun, jos käyttäjä avaa SSL-virheitä sisältävän sivuston. Jos käytännön arvo on Tosi, käyttäjä voi ohittaa varoitussivun. Tämä on myös oletusarvo.
       Käytännön arvo Epätosi estää varoitussivujen ohittamisen.</translation>
 <translation id="6353901068939575220">Määrittää parametrit, joita käytetään tehtäessä URL-osoitteiden hakuja POST-metodin avulla. Se koostuu pilkuilla erotetuista nimi/arvo-pareista. Jos arvo on malliparametri kuten yllä olevan esimerkin {searchTerms}, se korvataan oikeilla hakusanatiedoilla.
@@ -1809,6 +1877,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="687046793986382807">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 35 alkaen.
 
       Muistitiedot ilmoitetaan sivulle huolimatta valitusta arvosta, mutta ilmoitetut koot pyöristetään ja päivitystiheyttä rajoitetaan turvallisuussyistä. Jos haluat tarkkoja reaaliaikaisia tietoja, käytä esimerkiksi Telemetry-työkalua.</translation>
+<translation id="6894178810167845842">Uusi välilehti ‑sivun URL-osoite</translation>
 <translation id="6899705656741990703">Hae välityspalvelimen asetukset automaattisesti</translation>
 <translation id="6903814433019432303">Tämä käytäntö on aktiivisena vain jälleenmyyntitilassa.
 
@@ -1928,6 +1997,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7132877481099023201">URL-osoitteet, joille sallitaan pääsy videon kaappauslaitteisiin erikseen lupaa kysymättä</translation>
 <translation id="7167436895080860385">Anna käyttäjien katsella salasanoja salasanan hallinnassa (vanhentunut)</translation>
 <translation id="7173856672248996428">Lyhytkestoinen profiili</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Päivityksille sallitut yhteystyypit</translation>
 <translation id="7194407337890404814">Oletushakupalvelun nimi</translation>
 <translation id="7195064223823777550">Määritä toiminto, joka suoritetaan, kun laitteen kansi suljetaan.

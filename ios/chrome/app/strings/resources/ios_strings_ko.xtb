@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">모두 열기</translation>
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="145015347812617860">항목 <ph name="COUNT" />개</translation>
+<translation id="1491277525950327607">설정을 전환하려면 두 번 탭하세요.</translation>
 <translation id="1540800554400757039">주소 1</translation>
 <translation id="1545749641540134597">QR 코드 스캔</translation>
 <translation id="1580783302095112590">메일이 전송되었습니다.</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">이 페이지는 다른 애플리케이션에서 열립니다.</translation>
 <translation id="4378154925671717803">휴대전화</translation>
 <translation id="441868831736628555">개인정보 보호정책</translation>
-<translation id="4426508677408162512">모든 북마크</translation>
 <translation id="4473991315115669931">시크릿 모드 시작</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />에서 저장된 비밀번호 보기 및 관리</translation>
 <translation id="4536418791685807335">다시 로그인해 주세요.</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">표시</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5327248766486351172">이름</translation>
+<translation id="5332219387342487447">배송 방법</translation>
 <translation id="5388358297987318779">이미지 열기</translation>
 <translation id="5409365236829784218">이 파일을 열 수 있는 애플리케이션이 설치되어 있지 않습니다.</translation>
 <translation id="54401264925851789">페이지 보안 정보</translation>
@@ -270,6 +271,7 @@
 <translation id="6255097610484507482">신용카드 수정</translation>
 <translation id="6308436439357671616">액세스를 허용하면 사진을 찍고 업로드할 수 있습니다.</translation>
 <translation id="6314335155547195432">비밀번호 생성</translation>
+<translation id="6324528485781869530">동기화 계정 전환</translation>
 <translation id="6324669097367352121">로그인 설정</translation>
 <translation id="6337234675334993532">암호화</translation>
 <translation id="633809752005859102">문제가 발생했습니다. 조사해 보겠습니다.</translation>

@@ -52,6 +52,7 @@
 <translation id="1445680696957526815">Chrome의 구성요소가 서로 호환되지 않습니다. Chrome이 업그레이드 중일 수 있으니 몇 분 후에 다시 시도하세요. 문제가 계속되면 Chrome을 제거하고 다시 설치해 보세요.</translation>
 <translation id="1446450296470737166">MIDI 기기의 전체 제어 허용</translation>
 <translation id="145097072038377568">Android 설정에서 사용이 중지됨</translation>
+<translation id="1455941322673536744">자동완성 및 결제</translation>
 <translation id="147006957810816598">Google 계정에서 로그아웃되지 않습니다.</translation>
 <translation id="1477626028522505441">서버 문제로 인해 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="1506061864768559482">검색엔진</translation>
@@ -195,6 +196,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="2996291259634659425">암호 만들기</translation>
 <translation id="2996809686854298943">URL이 필요합니다.</translation>
 <translation id="300526633675317032">웹사이트 저장공간 <ph name="SIZE_IN_KB" />가 모두 삭제됩니다.</translation>
+<translation id="3029613699374795922"><ph name="KBS" />KB 다운로드됨</translation>
 <translation id="3029704984691124060">암호가 일치하지 않습니다.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
@@ -262,6 +264,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />에 북마크됨</translation>
 <translation id="3744111309925758534">기타 앱 <ph name="MEGABYTES" />MB</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
+<translation id="3773755127849930740"><ph name="BEGIN_LINK" />블루투스를 사용 설정<ph name="END_LINK" />하여 페어링을 허용하세요.</translation>
 <translation id="3789841737615482174">설치</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1개 항목이 선택되었습니다.}other{#개 항목이 선택되었습니다.}}</translation>
 <translation id="3810838688059735925">동영상</translation>
@@ -317,7 +320,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="4300272766492248925">앱 열기</translation>
 <translation id="4307992518367153382">기본설정</translation>
 <translation id="4351244548802238354">대화상자 닫기</translation>
-<translation id="4376501731284077108">제어되지 않음</translation>
 <translation id="4378154925671717803">휴대전화</translation>
 <translation id="4384468725000734951">검색할 때 Sogou 사용</translation>
 <translation id="4412992751769744546">타사 쿠키 허용</translation>
@@ -362,8 +364,10 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="4837753911714442426">옵션을 열어 페이지 인쇄</translation>
 <translation id="4850886885716139402">보기</translation>
 <translation id="4860895144060829044">전화걸기</translation>
+<translation id="4862624982077154323">일부 웹사이트에서 지원되는 결제 앱으로 결제할 수 있습니다. Chrome에서 사용할 앱을 선택하세요.</translation>
 <translation id="4881695831933465202">열기</translation>
 <translation id="4885273946141277891">지원되지 않는 Chrome 인스턴스 수입니다.</translation>
+<translation id="4910889077668685004">결제 앱</translation>
 <translation id="4915549754973153784">기기를 검색할 때 <ph name="BEGIN_LINK" />도움말 보기<ph name="END_LINK" />...</translation>
 <translation id="4923459931733593730">결제</translation>
 <translation id="4941291666397027948">* 필수 입력란</translation>
@@ -389,7 +393,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="5131405117025179004">저장된 계정 수정</translation>
 <translation id="5138299137310274655">이 페이지는 <ph name="SOURCE_LANGUAGE" />로 되어 있습니다. <ph name="TARGET_LANGUAGE" />로 번역할까요?</translation>
 <translation id="515227803646670480">저장된 데이터 삭제</translation>
-<translation id="5156656584247937086">자녀 계정입니다.</translation>
+<translation id="5152843274749979095">지원되는 앱이 설치되지 않음</translation>
 <translation id="5161254044473106830">제목이 필요합니다.</translation>
 <translation id="5164482624172255778">다음에 Chrome에서 이 사이트의 <ph name="LANGUAGE" /> 페이지를 번역하시겠습니까?</translation>
 <translation id="5168917394043976756">탐색 창 열기</translation>
@@ -448,6 +452,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="5610807607761827392"><ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 카드와 주소를 관리할 수 있습니다.</translation>
 <translation id="5626134646977739690">이름:</translation>
 <translation id="5646376287012673985">위치</translation>
+<translation id="5655963694829536461">다운로드 항목 검색</translation>
 <translation id="5659593005791499971">이메일</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" />에 일정 만들기</translation>
 <translation id="5668404140385795438">웹사이트의 확대 방지 요청 무시</translation>
@@ -472,6 +477,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="583281660410589416">알 수 없음</translation>
 <translation id="5832934273103296195">펼쳐짐 - 접으려면 클릭</translation>
 <translation id="583891442612896534">Chrome이 Google 서버에 접속할 수 없어 데이터를 압축하지 못했습니다. 데이터 절약이 제한적일 수 있습니다.</translation>
+<translation id="5858741533101922242">Chrome에서 블루투스 어댑터를 사용 설정할 수 없습니다.</translation>
 <translation id="5860033963881614850">사용 안함</translation>
 <translation id="5867027562311576691">더 많은 콘텐츠가 표시될 예정이니 기대해주세요. 즐거운 아침 시간 보내세요.</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
@@ -503,6 +509,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="6140912465461743537">국가/지역</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> 데이터 절약</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
+<translation id="6177111841848151710">현재 검색 엔진에 허용되지 않음</translation>
 <translation id="6177390657002841081">데이터 세이버 사용 설정</translation>
 <translation id="6181444274883918285">사이트 예외 추가</translation>
 <translation id="6192792657125177640">예외</translation>
@@ -515,6 +522,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="6324034347079777476">Android 시스템 동기화 사용 안함</translation>
 <translation id="6333140779060797560">공유 방법: <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">암호화</translation>
+<translation id="6343192674172527289">다운로드 항목을 찾을 수 없음</translation>
 <translation id="6364438453358674297">기록에서 제안을 삭제하시겠습니까?</translation>
 <translation id="6383961787135158834">사이트 저장공간 삭제...</translation>
 <translation id="6388207532828177975">삭제 및 재설정</translation>
@@ -522,6 +530,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="6406506848690869874">동기화</translation>
 <translation id="6409731863280057959">팝업</translation>
 <translation id="641643625718530986">인쇄…</translation>
+<translation id="6416782512398055893"><ph name="MBS" />MB 다운로드됨</translation>
 <translation id="6433490469411711332">연락처 정보 수정</translation>
 <translation id="6443118737398455446">유효기간이 잘못되었습니다.</translation>
 <translation id="6446608382365791566">자세한 정보 추가</translation>
@@ -532,6 +541,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="6477460825583319731">잘못된 이메일 주소</translation>
 <translation id="6482749332252372425">저장공간이 부족하여 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="6527303717912515753">공유</translation>
+<translation id="6538442820324228105"><ph name="GBS" />GB 다운로드됨</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">공유할 탭을 선택하세요.</translation>
 <translation id="6545017243486555795">모든 데이터 삭제</translation>
@@ -587,6 +597,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="699220179437400583">발생 가능성이 있는 보안 문제의 세부정보를 자동으로 Google에 신고합니다.</translation>
 <translation id="6992289844737586249">사이트에서 마이크를 사용하기 전에 확인(권장)</translation>
 <translation id="7001663382399377034">수신자 추가</translation>
+<translation id="7016516562562142042">현재 검색 엔진에 허용됨</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" />(이)가 다운로드됨</translation>
 <translation id="7022756207310403729">브라우저에서 열기</translation>
 <translation id="7029809446516969842">비밀번호</translation>
@@ -713,7 +724,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="8372893542064058268">특정 사이트에서 백그라운드 동기화를 허용합니다.</translation>
 <translation id="8374821112118309944">음성 안내 지원을 최신 버전으로 업데이트해야 합니다.</translation>
 <translation id="8393700583063109961">메시지 보내기</translation>
-<translation id="8396312449826231789">승인된 사이트만 허용</translation>
 <translation id="8413126021676339697">방문 기록 전체 보기</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8433057134996913067">이 작업을 수행하면 대부분의 웹사이트에서 로그아웃됩니다.</translation>
@@ -741,7 +751,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="8660471606262461360">출처: Google Payments</translation>
 <translation id="8676374126336081632">입력내용 지우기</translation>
 <translation id="869891660844655955">유효기간</translation>
-<translation id="8699799819461268362">Google SafeSites 필터</translation>
 <translation id="8719023831149562936">현재 탭을 공유할 수 없습니다.</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8730621377337864115">완료</translation>

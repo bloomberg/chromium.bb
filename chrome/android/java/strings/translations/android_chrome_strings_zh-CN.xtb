@@ -52,6 +52,7 @@
 <translation id="1445680696957526815">Chrome 的组件互不兼容。Chrome 可能正在升级，请过几分钟后重试。如果问题仍然存在，请尝试卸载并重新安装 Chrome。</translation>
 <translation id="1446450296470737166">允许全面控制 MIDI 设备</translation>
 <translation id="145097072038377568">已在 Android 设置中停用</translation>
+<translation id="1455941322673536744">自动填充和付款</translation>
 <translation id="147006957810816598">您不会因此而退出自己的 Google 帐号。</translation>
 <translation id="1477626028522505441">未能成功下载 <ph name="FILE_NAME" />，因为服务器出现了问题。</translation>
 <translation id="1506061864768559482">搜索引擎</translation>
@@ -195,6 +196,7 @@
 <translation id="2996291259634659425">创建密码</translation>
 <translation id="2996809686854298943">必须提供网址</translation>
 <translation id="300526633675317032">这会清除全部的网站存储数据 (<ph name="SIZE_IN_KB" />)。</translation>
+<translation id="3029613699374795922">已下载 <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">密码不匹配</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
@@ -262,6 +264,7 @@
 <translation id="3739899004075612870">已在 <ph name="PRODUCT_NAME" /> 中添加书签</translation>
 <translation id="3744111309925758534">其他应用已占用的空间：<ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">后台同步</translation>
+<translation id="3773755127849930740">请<ph name="BEGIN_LINK" />开启蓝牙<ph name="END_LINK" />以允许配对</translation>
 <translation id="3789841737615482174">安装</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{已选择 1 项内容}other{已选择 # 项内容}}</translation>
 <translation id="3810838688059735925">视频</translation>
@@ -317,7 +320,6 @@
 <translation id="4300272766492248925">打开应用</translation>
 <translation id="4307992518367153382">基本设置</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
-<translation id="4376501731284077108">不限</translation>
 <translation id="4378154925671717803">电话</translation>
 <translation id="4384468725000734951">目前使用的搜索引擎是搜狗</translation>
 <translation id="4412992751769744546">允许第三方 Cookie</translation>
@@ -362,8 +364,10 @@
 <translation id="4837753911714442426">打开选项以打印网页</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4860895144060829044">拨打</translation>
+<translation id="4862624982077154323">在某些网站上，您可以使用受支持的付款应用进行付款。请选择要在 Chrome 中使用的应用。</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
+<translation id="4910889077668685004">付款应用</translation>
 <translation id="4915549754973153784">正在搜寻设备…<ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="4923459931733593730">付款</translation>
 <translation id="4941291666397027948">*表示必填字段</translation>
@@ -389,7 +393,7 @@
 <translation id="5131405117025179004">修改已保存的帐号</translation>
 <translation id="5138299137310274655">这是<ph name="SOURCE_LANGUAGE" />网页，要将其翻译成<ph name="TARGET_LANGUAGE" />吗？</translation>
 <translation id="515227803646670480">清除存储的数据</translation>
-<translation id="5156656584247937086">这是一个未成年人帐号</translation>
+<translation id="5152843274749979095">尚未安装任何受支持的应用</translation>
 <translation id="5161254044473106830">必须提供标题</translation>
 <translation id="5164482624172255778">下次访问这个网站时，您希望 Google Chrome 翻译此网站的<ph name="LANGUAGE" />网页吗？</translation>
 <translation id="5168917394043976756">打开抽屉式导航栏</translation>
@@ -448,6 +452,7 @@
 <translation id="5610807607761827392">您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中管理信用卡和地址信息。</translation>
 <translation id="5626134646977739690">名字：</translation>
 <translation id="5646376287012673985">位置</translation>
+<translation id="5655963694829536461">搜索您的下载内容</translation>
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5665379678064389456">在<ph name="APP_NAME" />中创建活动</translation>
 <translation id="5668404140385795438">覆盖网站的请求，以防止放大</translation>
@@ -472,6 +477,7 @@
 <translation id="583281660410589416">未知</translation>
 <translation id="5832934273103296195">已展开 - 点击即可收起</translation>
 <translation id="583891442612896534">Chrome 无法连接到 Google 服务器来进行数据压缩，因此您节省的数据流量可能有限。</translation>
+<translation id="5858741533101922242">Chrome 无法开启蓝牙适配器</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5867027562311576691">更多报道即将奉上。伴您度过美好的晨间时光。</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
@@ -503,6 +509,7 @@
 <translation id="6140912465461743537">国家/地区</translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
 <translation id="6165508094623778733">了解详情</translation>
+<translation id="6177111841848151710">已设为不可供当前的搜索引擎使用</translation>
 <translation id="6177390657002841081">启用流量节省程序</translation>
 <translation id="6181444274883918285">添加例外网站</translation>
 <translation id="6192792657125177640">例外</translation>
@@ -515,6 +522,7 @@
 <translation id="6324034347079777476">Android 系统同步功能已停用</translation>
 <translation id="6333140779060797560">通过<ph name="APPLICATION" />分享</translation>
 <translation id="6337234675334993532">加密</translation>
+<translation id="6343192674172527289">未找到任何下载内容</translation>
 <translation id="6364438453358674297">要从历史记录中移除建议吗？</translation>
 <translation id="6383961787135158834">清除网站存储数据…</translation>
 <translation id="6388207532828177975">清除并重置</translation>
@@ -522,6 +530,7 @@
 <translation id="6406506848690869874">同步</translation>
 <translation id="6409731863280057959">弹出式窗口</translation>
 <translation id="641643625718530986">打印…</translation>
+<translation id="6416782512398055893">已下载 <ph name="MBS" /> MB</translation>
 <translation id="6433490469411711332">修改联系信息</translation>
 <translation id="6443118737398455446">过期日期无效</translation>
 <translation id="6446608382365791566">添加更多信息</translation>
@@ -532,6 +541,7 @@
 <translation id="6477460825583319731">电子邮件地址无效</translation>
 <translation id="6482749332252372425">未能成功下载 <ph name="FILE_NAME" />，因为存储空间不足。</translation>
 <translation id="6527303717912515753">分享</translation>
+<translation id="6538442820324228105">已下载 <ph name="GBS" /> GB</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">选择要传输的标签页</translation>
 <translation id="6545017243486555795">清除所有数据</translation>
@@ -587,6 +597,7 @@
 <translation id="699220179437400583">自动向 Google 报告可能出现的安全事件详情</translation>
 <translation id="6992289844737586249">在允许网站使用您的麦克风前先询问（推荐）</translation>
 <translation id="7001663382399377034">添加收件人</translation>
+<translation id="7016516562562142042">已设为可供当前的搜索引擎使用</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 已下载完毕</translation>
 <translation id="7022756207310403729">在浏览器中打开</translation>
 <translation id="7029809446516969842">密码</translation>
@@ -713,7 +724,6 @@
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>
 <translation id="8393700583063109961">发送消息</translation>
-<translation id="8396312449826231789">只能访问经过批准的网站</translation>
 <translation id="8413126021676339697">显示全部历史记录</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8433057134996913067">这将使您退出大多数网站。</translation>
@@ -742,7 +752,6 @@
 <translation id="8660471606262461360">来自 Google Payments</translation>
 <translation id="8676374126336081632">清除输入的内容</translation>
 <translation id="869891660844655955">截止日期</translation>
-<translation id="8699799819461268362">Google SafeSites 过滤功能</translation>
 <translation id="8719023831149562936">无法传输当前的标签页</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8730621377337864115">完成</translation>

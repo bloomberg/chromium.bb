@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Otevřít vše</translation>
 <translation id="1430915738399379752">Tisk</translation>
 <translation id="145015347812617860">Počet položek: <ph name="COUNT" /></translation>
+<translation id="1491277525950327607">Nastavení můžete přepnout dvojitým klepnutím</translation>
 <translation id="1540800554400757039">První řádek adresy</translation>
 <translation id="1545749641540134597">Naskenovat QR kód</translation>
 <translation id="1580783302095112590">E-mail byl odeslán.</translation>
@@ -178,7 +179,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4359125752503270327">Tato stránka se otevře v jiné aplikaci.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Upozornění ve věci ochrany osobních údajů</translation>
-<translation id="4426508677408162512">Všechny záložky</translation>
 <translation id="4473991315115669931">Přejít do anonymního režimu</translation>
 <translation id="4526249700380860531">Uložená hesla můžete zobrazit a upravit na adrese <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Zkuste se přihlásit znovu.</translation>
@@ -218,6 +218,7 @@ Vaše data jsou šifrována pomocí heslové fráze pro synchronizaci. Chcete-li
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5327248766486351172">Název</translation>
+<translation id="5332219387342487447">Způsob dopravy</translation>
 <translation id="5388358297987318779">Otevřít obrázek</translation>
 <translation id="5409365236829784218">Nemáte nainstalovanou žádnou aplikaci, která by tento soubor uměla otevřít.</translation>
 <translation id="54401264925851789">Informace o zabezpečení stránky</translation>
@@ -270,6 +271,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="6255097610484507482">Upravit platební kartu</translation>
 <translation id="6308436439357671616">Toto umožňuje pořizovat a nahrávat fotky.</translation>
 <translation id="6314335155547195432">Vygenerovat heslo</translation>
+<translation id="6324528485781869530">Přepnout účet pro synchronizaci</translation>
 <translation id="6324669097367352121">Nastavení přihlášení</translation>
 <translation id="6337234675334993532">Šifrování</translation>
 <translation id="633809752005859102">Něco se hodně pokazilo. Na řešení pracujeme.</translation>

@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">બધું ખોલો</translation>
 <translation id="1430915738399379752">છાપો</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> આઇટમ્સ</translation>
+<translation id="1491277525950327607">સેટિંગ ટૉગલ કરવા માટે બે વાર ટૅપ કરો</translation>
 <translation id="1540800554400757039">સરનામું 1</translation>
 <translation id="1545749641540134597">QR કોડ સ્કેન કરો</translation>
 <translation id="1580783302095112590">મેઇલ મોકલ્યો છે.</translation>
@@ -178,7 +179,6 @@
 <translation id="4359125752503270327">આ પૃષ્ઠ બીજી અ‍ૅપ્લિકેશનમાં ખુલશે.</translation>
 <translation id="4378154925671717803">ફોન</translation>
 <translation id="441868831736628555">ગોપનીયતા સૂચના</translation>
-<translation id="4426508677408162512">બધા બુકમાર્ક્સ</translation>
 <translation id="4473991315115669931">છુપા મોડમાં દાખલ થાઓ</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> પર સાચવેલા પાસવર્ડ્સ જુઓ અને સંચાલિત કરો</translation>
 <translation id="4536418791685807335">ફરીથી સાઇન ઇન કરવાનો પ્રયાસ કરો.</translation>
@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">બતાવો</translation>
 <translation id="5317780077021120954">સાચવો</translation>
 <translation id="5327248766486351172">નામ</translation>
+<translation id="5332219387342487447">શિપિંગ પદ્ધતિ</translation>
 <translation id="5388358297987318779">છબી ખોલો</translation>
 <translation id="5409365236829784218">ત્યાં એવી કોઈ ઍપ્લિકેશન ઇન્સ્ટોલ કરેલ નથી જે આ ફાઇલ ખોલી શકે.</translation>
 <translation id="54401264925851789">પૃષ્ઠ સુરક્ષા માહિતી</translation>
@@ -270,6 +271,7 @@
 <translation id="6255097610484507482">ક્રેડિટ કાર્ડ સંપાદિત કરો </translation>
 <translation id="6308436439357671616">આ તમને ફોટા લેવા અને અપલોડ કરવા દે છે.</translation>
 <translation id="6314335155547195432">પાસવર્ડ જનરેટ કરો</translation>
+<translation id="6324528485781869530">સમન્વયન એકાઉન્ટ સ્વિચ કરો</translation>
 <translation id="6324669097367352121">સાઇન ઇન કરો સેટિંગ્સ</translation>
 <translation id="6337234675334993532">એન્ક્રિપ્શન</translation>
 <translation id="633809752005859102">કંઈક ખરેખર ખોટું થયું. અમે તેના પર કામ કરીશું.</translation>

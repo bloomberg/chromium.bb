@@ -332,11 +332,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se questa impostazione non è configurata, gli utenti possono scegliere se utilizzare o meno il servizio di controllo ortografico.</translation>
 <translation id="2294382669900758280">Il video riprodotto nelle app Android non viene considerato, anche se la norma viene impostata su <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Configura la pagina Nuova scheda predefinita in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Consente di specificare un elenco dei plug-in attivati</translation>
 <translation id="2309390639296060546">Impostazione di geolocalizzazione predefinita</translation>
 <translation id="2312134445771258233">Consente di configurare le pagine che vengono caricate all'avvio. I contenuti dell'elenco "Pagine da aprire all'avvio" vengono ignorati a meno che non selezioni "Apri un elenco di URL" in "Azione all'avvio".</translation>
 <translation id="2337466621458842053">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita la visualizzazione di immagini. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultImagesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
-<translation id="2366415278352956652">Consente di attivare la trasmissione</translation>
 <translation id="2372547058085956601">Il ritardo prima dell'accesso automatico alla sessione pubblica.
 
       Se non è impostata, la norma |DeviceLocalAccountAutoLoginId| non ha effetto. In caso contrario:
@@ -831,6 +831,17 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3547954654003013442">Impostazioni proxy</translation>
 <translation id="3570008976476035109">Blocca plug-in su questi siti</translation>
 <translation id="3591584750136265240">Configura il comportamento di autenticazione dell'accesso</translation>
+<translation id="3601614035698083789">Consente di configurare un elenco di preferiti gestiti.
+
+      La norma è costituita da un elenco di preferiti, in cui ogni preferito rappresenta un
+      dizionario contenente le chiavi <ph name="NAME" /> e <ph name="URL_LABEL" />, che indicano il nome e la destinazione del preferito. È
+      possibile configurare una sottocartella definendo un preferito senza chiave <ph name="URL_LABEL" />, ma con una chiave aggiuntiva <ph name="CHILDREN" /> contenente un elenco di
+      preferiti come definito in alto (alcuni preferiti potrebbero essere cartelle a loro volta). <ph name="PRODUCT_NAME" /> corregge gli URL incompleti
+      come se fossero stati inviati tramite la omnibox, ad esempio, <ph name="GOOGLE_COM" /> diventa <ph name="HTTPS_GOOGLE_COM" />.
+
+      Questi preferiti vengono inseriti in una cartella Preferiti gestiti che non può essere modificata dall'utente, ma che l'utente può decidere di nascondere nella barra dei Preferiti. I preferiti gestiti non vengono sincronizzati con l'account utente e non possono essere modificati dalle estensioni.
+
+      A partire dalla versione 51, il nome della cartella per i preferiti è personalizzabile tramite l'aggiunta di una voce di elenco {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Attiva o disattiva il servizio web di controllo ortografico</translation>
 <translation id="3646859102161347133">Impostazione tipo di ingrandimento dello schermo</translation>
 <translation id="3653237928288822292">Icona del provider di ricerca predefinito</translation>
@@ -1026,6 +1037,17 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
 
 Se la norma viene impostata su false, gli utenti non potranno bloccare lo schermo (sarà possibile solo la disconnessione dalla sessione utente). Se la norma viene impostata su true o non viene del tutto impostata, gli utenti autenticati mediante password potranno bloccare lo schermo.</translation>
 <translation id="4121350739760194865">Impedisci la visualizzazione delle promozioni di applicazioni nella pagina Nuova scheda</translation>
+<translation id="4133301551755536858">Consente di configurare l'URL predefinito della pagina Nuova scheda in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificarlo.
+
+          La pagina Nuova scheda è la pagina che si apre quando vengono create nuove schede (incluse quelle aperte in una nuova finestra).
+
+          Questa norma non stabilisce quali pagine debbano essere aperte all'avvio. Tali pagine, infatti, dipendono dalle norme RestoreOnStartup, utilizzate per l'apertura della pagina Nuova scheda.
+
+          La norma NewTabPageLocation può essere impostata su un URL che indichi qui e che verrà utilizzato anche per la Home page, qualora sia impostato per l'apertura della pagina Nuova scheda, oltre che come pagina iniziale.
+
+          Se la norma non è impostata o risulta vuota, viene utilizzara la pagina nuova scheda predefinita.
+
+          Questa norma non è disponibile per le istanze di Windows che non fanno parte di un dominio Active Directory.</translation>
 <translation id="4147054660081653009">Il certificato client per la connessione a RemoteAccessHostTokenValidationUrl.
 
           Se questa norma viene impostata, l'host utilizzerà un certificato client con il nome comune dell'emittente indicato per eseguire l'autenticazione su RemoteAccessHostTokenValidationUrl. Impostare la norma su "*" per utilizzare qualsiasi certificato client disponibile.
@@ -1099,9 +1121,9 @@ Avviso. Non è consigliabile configurare restrizioni alle versioni, poiché potr
 <translation id="4467952432486360968">Blocca cookie di terze parti</translation>
 <translation id="4474167089968829729">Attiva il salvataggio delle password in Gestione password</translation>
 <translation id="4476769083125004742">Se la norma viene impostata su <ph name="BLOCK_GEOLOCATION_SETTING" />, le app Android non possono accedere ai dati sulla posizione. Se la norma viene impostata su qualsiasi altro valore o non viene impostata, all'utente viene chiesta l'autorizzazione quando un'app Android vuole accedere ai dati sulla posizione.</translation>
-<translation id="447686899376429408">Se la norma è impostata su true o non è impostata, gli utenti possono trasmettere schede, siti o il desktop dal browser. Se la norma è impostata su false, l'opzione è disattivata.</translation>
 <translation id="4480694116501920047">Forza SafeSearch</translation>
 <translation id="4482640907922304445">Consente di visualizzare il pulsante Pagina iniziale sulla barra degli strumenti di <ph name="PRODUCT_NAME" />. Se attivi questa impostazione il pulsante Pagina iniziale verrà sempre visualizzato, in caso contrario non verrà mai visualizzato. Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />. Se non imposti questa norma gli utenti potranno scegliere se visualizzare o meno il pulsante Pagina iniziale.</translation>
+<translation id="4485425108474077672">Configura l'URL per la pagina Nuova scheda</translation>
 <translation id="4492287494009043413">Disabilita l'acquisizione di screenshot</translation>
 <translation id="450537894712826981">Consente di configurare le dimensioni della cache che verranno utilizzate da <ph name="PRODUCT_NAME" /> per archiviare sul disco i file multimediali memorizzati nella cache.
 
@@ -1478,6 +1500,11 @@ Se la norma non viene impostata, la lettura vocale viene disattivata alla prima 
 
           Se questa impostazione è disattivata o non configurata, le richieste di autenticazione Gnubby non verranno trasferite al proxy.</translation>
 <translation id="5898486742390981550">Quando più utenti eseguono l'accesso, solo l'utente principale può utilizzare le app Android.</translation>
+<translation id="5906199912611534122">Consente di attivare o disattivare la limitazione della larghezza di banda.
+      La scelta è valida per tutti gli utenti e per tutte le interfacce sul dispositivo. Una volta impostata, la limitazione rimane valida fino alla modifica della norma per disattivarla.
+
+      Se la norma viene impostata su false, non viene applicata alcuna limitazione.
+      Se viene impostata su true, il sistema viene limitato per raggiungere le velocità di caricamento e download indicate (in kbit/s).</translation>
 <translation id="5921713479449475707">Permetti download di aggiornamento automatico tramite HTTP</translation>
 <translation id="5921888683953999946">Consente di impostare lo stato predefinito della funzione di accessibilità del puntatore grande nella schermata di accesso.
 
@@ -1588,6 +1615,46 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6282799760374509080">Consenti o nega acquisizione audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Consente il completamento automatico del nome di dominio durante l'accesso dell'utente</translation>
+<translation id="6312861131491040487">
+          Consente di specificare un elenco di app ed estensioni che vengono installate automaticamente,,
+          senza dunque l'interazione dell'utente e che non possono essere disinstallate
+          dall'utente. Tutte le autorizzazioni richieste dalle app/estensioni vengono concesse
+          implicitamente, senza interazione dell'utente, comprese le eventuali autorizzazioni
+          aggiuntive richieste dalle future versioni delle app/estensioni.
+          Inoltre, le autorizzazioni sono concesse per
+          le API delle estensioni enterprise.deviceAttributes e enterprise.platformKeys.
+          (Queste due API non sono disponibili per le app/estensioni prive di
+          installazione imposta).
+
+          Questa norma ha precedenza su una norma
+          ExtensionsInstallBlacklist potenzialmente in contrasto. Se un'app o un'estensione con
+          installazione imposta viene rimossa da questo elenco,
+          tale app o estensione viene disisntallata automaticamente da <ph name="PRODUCT_NAME" />.
+
+          Per le istanze di Windows che non fanno parte di un dominio Active Directory,
+          l'installazione forzata è limitata alle estensioni elencate
+          nel Chrome Web Store.
+
+          Tieni presente che il codice sorgente delle estensioni potrebbe essere stato modificato dagli utenti tramite
+          gli strumenti per sviluppatori (rendendo potenzialmente problematico il rendering
+          dell'estensione). Se rappresenta un problema, deve essere impostata la norma
+          DeveloperToolsDisabled.
+
+          Ogni voce della norma è una stringa contenente un ID estensione
+          e un URL di "aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere
+          che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> in
+          modalità sviluppatore. L'URL di "aggiornamento" deve indirizzare a un documento
+          XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. L'URL di aggiornamento
+          impostato in questa norma viene utilizzato esclusivamente per l'installazione
+          iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato
+          l'URL di aggiornamento indicato nel file manifest dell'estensione.
+
+          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" />
+          installa l'app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dall'URL di "aggiornamento" del Chrome Web Store
+          standard. Ulteriori informazioni sulle estensioni in hosting sono disponibili all'indirizzo: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se questa norma non è impostata, nessuna app e nessuna estensione vengono installate
+          automaticamente e l'utente può disinstallate qualsiasi app o estrensione in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome mostra una pagina di avviso quando gli utenti visitano siti che presentano errori SSL. Per impostazione predefinita, o se la norma viene impostata su true, gli utenti possono fare clic nelle pagine di avviso.
       Se questa norma viene impostata su false, gli utenti non possono fare clic nelle pagine di avviso.</translation>
 <translation id="6353901068939575220">Consente di specificare i parametri utilizzati durante la ricerca di un URL con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
@@ -1748,6 +1815,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Le informazioni sulla memoria sono comunque riportate sulla pagina, indipendentemente dal valore opzione, ma le dimensioni segnalate presentano
       restrizioni e la frequenza di aggiornamento è stata limitata per motivi di sicurezza. Per acquisire dati precisi in tempo reale,
       utilizza strumenti come Telemetry.</translation>
+<translation id="6894178810167845842">URL della pagina Nuova scheda</translation>
 <translation id="6899705656741990703">Rileva automaticamente impostazioni proxy</translation>
 <translation id="6903814433019432303">Questa norma è attiva soltanto in modalità retail.
 
@@ -1863,6 +1931,7 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
 <translation id="7132877481099023201">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione video senza richieste</translation>
 <translation id="7167436895080860385">Consenti agli utenti di mostrare le password in Gestione password (ritirata)</translation>
 <translation id="7173856672248996428">Profilo temporaneo</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipi di connessioni consentiti per gli aggiornamenti</translation>
 <translation id="7194407337890404814">Nome del provider di ricerca predefinito</translation>
 <translation id="7195064223823777550">Consente di specificare l'azione da compiere quando l'utente chiude il coperchio.

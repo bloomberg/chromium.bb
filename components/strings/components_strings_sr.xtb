@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google безбедно прегледање је недавно <ph name="BEGIN_LINK" />открило малвер<ph name="END_LINK" /> на <ph name="SITE" />. Веб-сајтови који су обично безбедни се понекад заразе малвером. Злонамеран садржај потиче са <ph name="SUBRESOURCE_HOST" />, који је познати дистрибутер малвера. <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Неважећи захтев или параметри захтева</translation>
 <translation id="1834321415901700177">Овај сајт садржи штетне програме</translation>
-<translation id="1838667051080421715">Прегледате извор веб-странице.</translation>
 <translation id="1871208020102129563">Прокси је подешен да користи фиксне прокси сервере, а не URL адресу .pac скрипте.</translation>
+<translation id="187918866476621466">Отвори почетне странице</translation>
 <translation id="1883255238294161206">Скупи листу</translation>
 <translation id="1898423065542865115">Филтрирање</translation>
 <translation id="194030505837763158">Идите на <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Ако вам се ово често приказује, можда вам помогну следећи <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Ревизија</translation>
 <translation id="3678029195006412963">Потписивање захтева није успело</translation>
+<translation id="3679803492151881375">Извештај о отказивању је снимљен <ph name="CRASH_TIME" />, а отпремљен <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Информације о сертификату</translation>
 <translation id="3690164694835360974">Пријављивање није безбедно</translation>
 <translation id="3693415264595406141">Лозинка:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Опозови брисање</translation>
 <translation id="4619615317237390068">Картице са других уређаја</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Прегледате страницу са додацима.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Веза је прекинута</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />да покренете Windows дијагностику мреже<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Могуће је да веб-страница на адреси <ph name="URL" /> привремено не функционише или да је трајно премештена на нову веб адресу.</translation>
 <translation id="4771973620359291008">Дошло је до непознате грешке.</translation>
 <translation id="4800132727771399293">Проверите датум истека и CVC и покушајте поново</translation>
+<translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4813512666221746211">Грешка на мрежи</translation>
 <translation id="4816492930507672669">Уклопи у страницу</translation>
 <translation id="4850886885716139402">Приказ</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Желите ли да напустите овај сајт?</translation>
 <translation id="5629630648637658800">Учитавање подешавања смерница није успело</translation>
 <translation id="5631439013527180824">Неважећи токен за управљање уређајима</translation>
+<translation id="5669703222995421982">Добијте персонализовани садржај</translation>
 <translation id="5675650730144413517">Ова страница не функционише</translation>
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5694783966845939798">Покушали сте да посетите <ph name="DOMAIN" />, али је сервер послао сертификат потписан слабим алгоритмом (као што је SHA-1). То значи да су безбедносни акредитиви које је сервер послао можда кривотворени и сервер можда није онај који мислите да јесте (можда комуницирате са нападачем). <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -549,6 +551,7 @@
 <translation id="6753269504797312559">Вредност смерница</translation>
 <translation id="6757797048963528358">Уређај је прешао у режим спавања.</translation>
 <translation id="6778737459546443941">Родитељ га још увек није одобрио</translation>
+<translation id="6810899417690483278">ИД за прилагођавање</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Веб-страница на адреси <ph name="URL" /> тренутно је недоступна. Можда је преоптерећена или неактивна због одржавања.</translation>
 <translation id="6831043979455480757">Преведи</translation>
@@ -708,6 +711,7 @@
 <translation id="8364627913115013041">Није подешено.</translation>
 <translation id="8380941800586852976">Опасно</translation>
 <translation id="8382348898565613901">Недавно посећени обележивачи се приказују овде</translation>
+<translation id="8398259832188219207">Извештај о отказивању је отпремљен у: <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Отказивања (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Потребно је да двапут унесете исту приступну фразу.</translation>
 <translation id="8428213095426709021">Подешавања</translation>

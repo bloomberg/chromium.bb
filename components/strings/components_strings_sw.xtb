@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Mfumo wa Google wa Kuvinjari Salama <ph name="BEGIN_LINK" />uligundua programu hasidi<ph name="END_LINK" /> kwenye <ph name="SITE" /> hivi majuzi. Tovuti ambazo kwa kawaida huwa salama wakati mwingine huathiriwa na programu hasidi. Maudhui hasidi hutoka kwa <ph name="SUBRESOURCE_HOST" />, msambazaji wa programu hasidi anayejulikana. <ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Ombi au vigezo vya ombi batili</translation>
 <translation id="1834321415901700177">Tovuti hii ina programu hatari</translation>
-<translation id="1838667051080421715">Unaangalia chanzo cha ukurasa wa wavuti.</translation>
 <translation id="1871208020102129563">Proksi imewekwa ili kutumia seva za proksi thabiti, siyo URL ya hati .pac.</translation>
+<translation id="187918866476621466">Fungua kurasa zinazoanza</translation>
 <translation id="1883255238294161206">Kunja orodha</translation>
 <translation id="1898423065542865115">Kuchuja</translation>
 <translation id="194030505837763158">Nenda kwenye <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Ikiwa unaliona tatizo hili mara kwa mara, jaribu <ph name="HELP_LINK" /> haya.</translation>
 <translation id="3658742229777143148">Marekebisho</translation>
 <translation id="3678029195006412963">Ombi halikutiwa sahihi</translation>
+<translation id="3679803492151881375">Ripoti ya kuacha kufanya kazi ilitolewa <ph name="CRASH_TIME" /> na kupakiwa <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Maelezo ya cheti</translation>
 <translation id="3690164694835360974">Kuingia katika akaunti si salama</translation>
 <translation id="3693415264595406141">Nenosiri:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">Tendua Kufuta</translation>
 <translation id="4619615317237390068">Vichupo kutoka kwenye vifaa vingine</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Unaangalia ukurasa wa kiendelezi.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Muunganisho wako umekatizwa</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Kuendesha Zana ya Windows ya Kuchunguza Mtandao<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Ukurasa wa wavuti ulio <ph name="URL" /> unaweza kuwa haupatikani kwa muda au unaweza kuwa umehamishwa kabisa hadi anwani mpya ya wavuti.</translation>
 <translation id="4771973620359291008">Hitilafu isiyojulikana imetokea.</translation>
 <translation id="4800132727771399293">Angalia tarehe yako ya kuisha muda na CVC na ujaribu tena</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Hitilafu ya mtandao</translation>
 <translation id="4816492930507672669">Sawazisha kwenye ukurasa</translation>
 <translation id="4850886885716139402">Mwonekano</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Ungependa kuondoka kwenye tovuti hii?</translation>
 <translation id="5629630648637658800">Imeshindwa kupakia mipangilio ya sera</translation>
 <translation id="5631439013527180824">Ishara ya usimamizi wa kifaa batili</translation>
+<translation id="5669703222995421982">Pata maudhui yanayokufaa</translation>
 <translation id="5675650730144413517">Ukurasa huu haufanyi kazi</translation>
 <translation id="5677928146339483299">Vilivyozuiwa</translation>
 <translation id="5694783966845939798">Umejaribu kufikia <ph name="DOMAIN" />, lakini seva iliwasilisha cheti kilichowekwa sahihi kwa kutumia algoriti dhaifu. Hii inamaanisha kuwa huenda stakabadhi za usalama za seva zilizowasilishwa ni ghushi, na huenda seva siyo uliyoitarajia (huenda unawasiliana na mvamizi).<ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Thamani ya sera</translation>
 <translation id="6757797048963528358">Kifaa chako kiko katika hali tuli.</translation>
 <translation id="6778737459546443941">Mzazi wako bado hajaiidhinisha</translation>
+<translation id="6810899417690483278">Kitambulisho cha kubadilisha ili kukufaa</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Ukurasa wa wavuti katika <ph name="URL" /> haupatikani kwa sasa. Huenda umezidishwa kiwango au unarekebishwa.</translation>
 <translation id="6831043979455480757">Tafsiri</translation>
@@ -709,6 +712,7 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8364627913115013041">Haijawekwa.</translation>
 <translation id="8380941800586852976">Hatari</translation>
 <translation id="8382348898565613901">Alamisho ulizotembelea hivi majuzi zitaonekana hapa</translation>
+<translation id="8398259832188219207">Ripoti ya kuacha kufanya kazi ilipakiwa  <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Mivurugo ( <ph name="CRASH_COUNT" /> )</translation>
 <translation id="8412392972487953978">Lazima uingize kaulisiri ile ile mara mbili.</translation>
 <translation id="8428213095426709021">Mipangilio</translation>

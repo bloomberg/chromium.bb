@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Öppna alla</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> objekt</translation>
+<translation id="1491277525950327607">Aktivera eller inaktivera inställningen genom att trycka snabbt två gånger</translation>
 <translation id="1540800554400757039">Adressrad 1</translation>
 <translation id="1545749641540134597">Skanna QR-kod</translation>
 <translation id="1580783302095112590">E-post skickades.</translation>
@@ -178,7 +179,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4359125752503270327">Sidan öppnas i en annan app.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Sekretessmeddelande</translation>
-<translation id="4426508677408162512">Alla bokmärken</translation>
 <translation id="4473991315115669931">Aktivera inkognitoläge</translation>
 <translation id="4526249700380860531">Visa och hantera sparade lösenord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Försök att logga in igen.</translation>
@@ -218,6 +218,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5300589172476337783">Visa</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5327248766486351172">Namn</translation>
+<translation id="5332219387342487447">Fraktmetod</translation>
 <translation id="5388358297987318779">Öppna bild</translation>
 <translation id="5409365236829784218">Det finns inga installerade appar som kan öppna filen.</translation>
 <translation id="54401264925851789">Sidans säkerhetsinfo</translation>
@@ -270,6 +271,7 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="6255097610484507482">Redigera kreditkort</translation>
 <translation id="6308436439357671616">Det här gör att du kan ta foton och ladda upp dem.</translation>
 <translation id="6314335155547195432">Generera lösenord</translation>
+<translation id="6324528485781869530">Byt synkroniseringskonto</translation>
 <translation id="6324669097367352121">Inloggningsinställn.</translation>
 <translation id="6337234675334993532">Kryptering</translation>
 <translation id="633809752005859102">Någonting gick fel. Vi jobbar på det.</translation>

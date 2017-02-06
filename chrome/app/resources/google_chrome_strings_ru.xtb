@@ -61,7 +61,6 @@
 <translation id="2664962310688259219">Лицензии Chrome OS на ПО с открытым исходным кодом</translation>
 <translation id="2665296953892887393">Помочь улучшить Google Chrome, отправляя в Google отчеты о сбоях и <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Расширение изменило стартовую страницу Chrome.</translation>
-<translation id="2748463065602559597">Вы просматриваете безопасную страницу Google Chrome.</translation>
 <translation id="2769762047821873045">Google Chrome не является браузером по умолчанию.</translation>
 <translation id="2770231113462710648">Назначить браузером по умолчанию:</translation>
 <translation id="2799223571221894425">Перезапустить</translation>
@@ -199,6 +198,7 @@
 <translation id="6970811910055250180">Обновление операционной системы…</translation>
 <translation id="6982337800632491844">До начала работы с устройством необходимо ознакомиться с Условиями использования на веб-сайте <ph name="DOMAIN" /> и принять их. Эти условия не дополняют, не заменяют и не ограничивают Условий использования Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
+<translation id="7048801529101012374">Google Chrome используется как браузер по умолчанию.</translation>
 <translation id="7098166902387133879">Google Chrome использует микрофон.</translation>
 <translation id="7106741999175697885">Диспетчер задач - Google Chrome</translation>
 <translation id="7125719106133729027">Не удалось обновить Chrome до последней версии. Чтобы применить исправления безопасности и воспользоваться новыми замечательными функциями, переустановите Chrome вручную.</translation>

@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри злонамерен софтуер<ph name="END_LINK" /> на <ph name="SITE" />. Уебсайтовете, които обикновено са безопасни, понякога се заразяват с такъв софтуер. Източникът на съответното съдържание е <ph name="SUBRESOURCE_HOST" /> – известен разпространител на злонамерен софтуер. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Заявката или параметрите й са невалидни</translation>
 <translation id="1834321415901700177">Този сайт съдържа опасни програми</translation>
-<translation id="1838667051080421715">Преглеждате изходния код на уеб страницата.</translation>
 <translation id="1871208020102129563">За прокси сървъра е зададено да използва фиксирани прокси сървъри, а не URL адрес на скрипт във формат .pac.</translation>
+<translation id="187918866476621466">Отваряне на страниците при стартиране</translation>
 <translation id="1883255238294161206">Свиване на списъка</translation>
 <translation id="1898423065542865115">Филтриране</translation>
 <translation id="194030505837763158">Към <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Ако виждате това често, опитайте <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Ревизия</translation>
 <translation id="3678029195006412963">Заявката не можа да бъде подписана</translation>
+<translation id="3679803492151881375">Сигналът за срив е записан в/ъв <ph name="CRASH_TIME" /> и качен в/ъв <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Информация за сертификата</translation>
 <translation id="3690164694835360974">Страницата за вход не е защитена</translation>
 <translation id="3693415264595406141">Парола:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Отмяна на изтриването</translation>
 <translation id="4619615317237390068">Раздели от други устройства</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Преглеждате страница на разширение.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Връзката ви бе прекъсната</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Стартирайте мрежова диагностика в Windows<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">До уеб страницата на адрес <ph name="URL" /> може временно да няма достъп или да е преместена за постоянно на нов уеб адрес.</translation>
 <translation id="4771973620359291008">Възникна неизвестна грешка.</translation>
 <translation id="4800132727771399293">Прегледайте датата на валидност и кода за проверка и оптитайте отново</translation>
+<translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4813512666221746211">Грешка в мрежата</translation>
 <translation id="4816492930507672669">Да се побере в страницата</translation>
 <translation id="4850886885716139402">Изглед</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Искате ли да напуснете този сайт?</translation>
 <translation id="5629630648637658800">Зареждането на настройките за правилото не бе успешно</translation>
 <translation id="5631439013527180824">Невалидно означение за управление на устройството</translation>
+<translation id="5669703222995421982">Получаване на персонализирано съдържание</translation>
 <translation id="5675650730144413517">Тази страница не работи</translation>
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5694783966845939798">Направихте опит да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предостави сертификат, подписан със слаб алгоритъм (например SHA-1). Това означава, че идентификационните данни за сигурност от сървъра може да са фалшифицирани и той да не е този, който очаквате (възможно е да сте се свързали с извършител на атака). <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Стойност за правилото</translation>
 <translation id="6757797048963528358">Устройството ви премина в спящ режим.</translation>
 <translation id="6778737459546443941">Родителят ви все още не е одобрил заявката</translation>
+<translation id="6810899417690483278">Идент. № на персонализирането</translation>
 <translation id="6820686453637990663">Код за сигурност</translation>
 <translation id="6830600606572693159">Уеб страницата на адрес <ph name="URL" /> понастоящем не е налице. Възможно е да е претоварена или да не работи поради профилактика.</translation>
 <translation id="6831043979455480757">Превод</translation>
@@ -709,6 +712,7 @@
 <translation id="8364627913115013041">Не е зададено.</translation>
 <translation id="8380941800586852976">Опасно</translation>
 <translation id="8382348898565613901">Наскоро посетените от вас отметки ще се показват тук</translation>
+<translation id="8398259832188219207">Сигналът за срив е качен в/ъв <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Сривове (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Трябва да въведете един и същи пропуск два пъти.</translation>
 <translation id="8428213095426709021">Настройки</translation>

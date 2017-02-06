@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google የጥንቃቄ አሰሳ በቅርቡ በ<ph name="SITE" /> ላይ <ph name="BEGIN_LINK" />ተንኮል-አዘል ዌር<ph name="END_LINK" /> እንዳለ ደርሶበታል። በመደበኛ ጊዜ ደህንነታቸው የተጠበቁ ድር ጣቢያዎች አንዳንድ ጊዜ በተንኮል-አዘል ዌር ሊጠቁ ይችላሉ። በተንኮል-አዘል ዌር አሰራጭነት ከሚታወቀው <ph name="SUBRESOURCE_HOST" /> የመጣ ነው። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" />።</translation>
 <translation id="1821930232296380041">ልክ ያልሆነ ጥያቄ ወይም የጥያቄ ልኬቶች</translation>
 <translation id="1834321415901700177">ይህ ጣቢያ ጎጂ ፕሮግራሞችን ይዟል</translation>
-<translation id="1838667051080421715">የአንድ ድረ-ገጽ ምንጭን እየተመለከቱ ነው።</translation>
 <translation id="1871208020102129563">የ.pac ስክሪፕት ዩአርኤል ሳይሆን ተኪ አገልጋዮችን እንዲጠቀም ነው ተኪ የተዋቀረው።</translation>
+<translation id="187918866476621466">የመነሻ ገጾችን ክፈት</translation>
 <translation id="1883255238294161206">ዝርዝር ሰብስብ</translation>
 <translation id="1898423065542865115">በማጣራት ላይ</translation>
 <translation id="194030505837763158">ወደ <ph name="LINK" /> ሂድ</translation>
@@ -278,6 +278,7 @@
 <translation id="3655670868607891010">ይህንን በተደጋጋሚነት የሚያዩ ከሆኑ <ph name="HELP_LINK" />ን ይሞክሩ።</translation>
 <translation id="3658742229777143148">ክለሳ</translation>
 <translation id="3678029195006412963">ጥያቄ ሊፈረም አልተቻለም</translation>
+<translation id="3679803492151881375">የብልሽት ሪፖርት <ph name="CRASH_TIME" /> ላይ ተይዟል፣ <ph name="UPLOAD_TIME" /> ላይ ተሰቅሏል</translation>
 <translation id="3681007416295224113">የሰርቲፊኬት መረጃ</translation>
 <translation id="3690164694835360974">መግቢያ ደህንነቱ የተጠበቀ አይደለም</translation>
 <translation id="3693415264595406141">የይለፍ ቃል፦</translation>
@@ -362,7 +363,6 @@
 <translation id="4594403342090139922">&amp;ሰርዝን ቀልብስ</translation>
 <translation id="4619615317237390068">ከሌሎች መሣሪያዎች የመጡ ትሮች</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">የቅጥያ ገጽ እየተመለከቱ ነው።</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">የእርስዎ ግንኙነት ተቋርጧል</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />የWindows አውታረ መረብ መመርመሪያን በማሄድ ላይ<ph name="END_LINK" /></translation>
@@ -375,6 +375,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> ላይ ያለው ድረ-ገጽ ለጊዜው የማይሰራ ወይም እስከመጨረሻው ወደ አዲስ የድር አድራሻ ተዛውሮ ሊሆን ይችላል።</translation>
 <translation id="4771973620359291008">ያልታወቀ ስህተት ተከስቷል።</translation>
 <translation id="4800132727771399293">የእርስዎን የአገልግሎት ማብቂያ ቀን እና CVC ይፈትሹ እና እንደገና ይሞክሩ</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">የአውታረ መረብ ስህተት</translation>
 <translation id="4816492930507672669">ገጹን አመጣጥን</translation>
 <translation id="4850886885716139402">አሳይ</translation>
@@ -451,6 +452,7 @@ nil</translation>
 <translation id="5622887735448669177">ይህን ጣቢያ መውጣት ይፈልጋሉ?</translation>
 <translation id="5629630648637658800">የመምሪያ ቅንብሮችን መጫን አልተሳካም</translation>
 <translation id="5631439013527180824">ልክ ያልሆነ የመሣሪያ አስተዳደር ማስመሰያ</translation>
+<translation id="5669703222995421982">ግላዊነት የተላበሰ ይዘት ያግኙ</translation>
 <translation id="5675650730144413517">ይህ ገጽ እየሠራ አይደለም</translation>
 <translation id="5677928146339483299">ታግዷል</translation>
 <translation id="5694783966845939798"><ph name="DOMAIN" />ን ለመድረስ ሞክረዋል፣ ነገር ግን አገልጋዩ ደካማ የፊርማ ስልተ-ቀመር (እንደ SHA-1 ያለ) በመጠቀም የተፈረመ የእውቅና ማረጋገጫ ነው ያቀረበው። ይህም ማለት አገልጋዩ ያቀረበው የደህንነት ምስክርነቶች የተጭበረበሩ ሊሆኑ ይችላሉ፣ እናም አገልጋዩ እርስዎ የሚጠብቁት አገልጋይ ላይሆን ይችላል (ከአጥቂ ጋር እየተገናኙ ሊሆን ይችላል)። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" />።</translation>
@@ -551,6 +553,7 @@ nil</translation>
 <translation id="6753269504797312559">የመምሪያ እሴት</translation>
 <translation id="6757797048963528358">የእርስዎ መሣሪያ ተኝቷል።</translation>
 <translation id="6778737459546443941">የእርስዎ ወላጅ ገና አላጸደቁትም</translation>
+<translation id="6810899417690483278">የብጁነት መታወቂያ</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> ላይ ያለው ድረ-ገጽ በአሁኑ ጊዜ አይገኝም።  ከአቅም በላይ ስራ በዝቶበት ወይም ለጥገና ከስራ ውጪ ተደርጎ ሊሆን ይችላል።</translation>
 <translation id="6831043979455480757">መተርጎም</translation>
@@ -710,6 +713,7 @@ nil</translation>
 <translation id="8364627913115013041">አልተዋቀረም።</translation>
 <translation id="8380941800586852976">አደገኛ</translation>
 <translation id="8382348898565613901">በቅርቡ የጎበኟቸው ዕልባቶች እዚህ ይመጣሉ</translation>
+<translation id="8398259832188219207">የብልሽት ሪፖርት <ph name="UPLOAD_TIME" /> ላይ ተሰቅሏል</translation>
 <translation id="8412145213513410671">ብልሽቶች (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">ተመሳሳዩ የይለፍ ሐረጉን ሁለት ጊዜ ማስገባት አለብዎት።</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>

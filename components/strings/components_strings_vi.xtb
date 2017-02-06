@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Gần đây, tính năng Duyệt web an toàn của Google <ph name="BEGIN_LINK" />đã phát hiện thấy phần mềm độc hại<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web bình thường vẫn an toàn đôi khi bị lây nhiễm phần mềm độc hại. Nội dung độc hại đến từ <ph name="SUBRESOURCE_HOST" />, một đối tượng phân phối phần mềm độc hại đã biết. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Yêu cầu hoặc tham số yêu cầu không hợp lệ</translation>
 <translation id="1834321415901700177">Trang web này có chứa các chương trình độc hại</translation>
-<translation id="1838667051080421715">Bạn đang xem nguồn của trang web.</translation>
 <translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
+<translation id="187918866476621466">Mở trang khởi động</translation>
 <translation id="1883255238294161206">Thu gọn danh sách</translation>
 <translation id="1898423065542865115">Lọc</translation>
 <translation id="194030505837763158">Truy cập <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="HELP_LINK" /> sau.</translation>
 <translation id="3658742229777143148">Bản sửa đổi</translation>
 <translation id="3678029195006412963">Không thể ký yêu cầu</translation>
+<translation id="3679803492151881375">Báo cáo sự cố được ghi lại vào <ph name="CRASH_TIME" />, được tải lên vào <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Thông tin chứng chỉ</translation>
 <translation id="3690164694835360974">Đăng nhập không an toàn</translation>
 <translation id="3693415264595406141">Mật khẩu:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Hoàn tác xóa</translation>
 <translation id="4619615317237390068">Tab từ các thiết bị khác</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Bạn đang xem trang tiện ích.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Kết nối của bạn bị gián đoạn</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Chạy Chẩn đoán mạng của Windows<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Trang web tại <ph name="URL" /> có thể tạm thời không hoạt động hay được chuyển vĩnh viễn sang địa chỉ web mới.</translation>
 <translation id="4771973620359291008">Xảy ra lỗi chưa biết.</translation>
 <translation id="4800132727771399293">Kiểm tra ngày hết hạn và CVC của bạn rồi thử lại</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Lỗi mạng</translation>
 <translation id="4816492930507672669">Vừa với trang</translation>
 <translation id="4850886885716139402">Xem</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Bạn có muốn rời khỏi trang web này không?</translation>
 <translation id="5629630648637658800">Không thể tải cài đặt chính sách</translation>
 <translation id="5631439013527180824">Mã thông báo quản lý thiết bị không hợp lệ</translation>
+<translation id="5669703222995421982">Nhận nội dung được cá nhân hóa</translation>
 <translation id="5675650730144413517">Trang này hiện không hoạt động</translation>
 <translation id="5677928146339483299">Bị chặn</translation>
 <translation id="5694783966845939798">Bạn đã cố gắng truy cập <ph name="DOMAIN" /> nhưng máy chủ xuất trình một chứng chỉ được ký bằng một thuật toán chữ ký yếu (chẳng hạn như SHA-1). Điều này có nghĩa là thông tin đăng nhập bảo mật mà máy chủ xuất trình có thể đã bị giả mạo và máy chủ đó có thể không phải là máy chủ mà bạn mong đợi (bạn có thể đang kết nối với kẻ tấn công). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Giá trị chính sách</translation>
 <translation id="6757797048963528358">Thiết bị của bạn đã chuyển sang chế độ ngủ.</translation>
 <translation id="6778737459546443941">Cha mẹ của bạn chưa phê duyệt trang web</translation>
+<translation id="6810899417690483278">ID tùy chỉnh</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Trang web tại <ph name="URL" /> hiện không có. Trang này có thể đã bị quá tải hoặc đang ngừng hoạt động để bảo trì.</translation>
 <translation id="6831043979455480757">Dịch</translation>
@@ -709,6 +712,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8364627913115013041">Chưa được đặt.</translation>
 <translation id="8380941800586852976">Nguy hiểm</translation>
 <translation id="8382348898565613901">Dấu trang bạn truy cập gần đây sẽ xuất hiện ở đây</translation>
+<translation id="8398259832188219207">Báo cáo sự cố được tải lên vào <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Sự cố (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Bạn phải nhập cùng một cụm mật khẩu hai lần.</translation>
 <translation id="8428213095426709021">Cài đặt</translation>

@@ -379,13 +379,13 @@
 
       Nếu cài đặt này không được định cấu hình thì người dùng có thể chọn xem liệu dịch vụ kiểm tra lỗi chính tả có được sử dụng hay không.</translation>
 <translation id="2294382669900758280">Video đang phát trong các ứng dụng Android không được xem xét ngay cả khi chính sách này được đặt thành <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Định cấu hình trang Tab mới mặc định trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Chỉ định danh sách plugin được phép</translation>
 <translation id="2309390639296060546">Cài đặt vị trí địa lý mặc định</translation>
 <translation id="2312134445771258233">Cho phép bạn định cấu hình các trang được tải khi khởi động. Nội dung của danh sách 'Các URL được mở khi khởi động' bị bỏ qua trừ khi bạn chọn 'Mở danh sách các URL' trong' Tác vụ khi khởi động'.</translation>
 <translation id="2337466621458842053">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép hiển thị hình ảnh.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultImagesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
-<translation id="2366415278352956652">Bật truyền</translation>
 <translation id="2372547058085956601">Thời gian chờ trước khi tự động đăng nhập vào phiên công khai.
 
       Nếu chính sách |DeviceLocalAccountAutoLoginId| không được đặt, chính sách này sẽ không có hiệu lực. Ngược lại:
@@ -903,6 +903,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="3570008976476035109">Chặn plugin trên các trang web này</translation>
 <translation id="3591584750136265240">Định cấu hình hành vi xác thực thông tin đăng nhập</translation>
+<translation id="3601614035698083789">Định cấu hình danh sách dấu trang được quản lý.
+
+      Chính sách bao gồm danh sách các dấu trang trong đó mỗi dấu trang là
+      một từ điển chứa khóa <ph name="NAME" /> và <ph name="URL_LABEL" />. Các khóa này lưu giữ tên cũng như đích tên của dấu trang.
+      Có thể định cấu hình thư mục con bằng cách xác định dấu trang không có khóa <ph name="URL_LABEL" /> nhưng có khóa <ph name="CHILDREN" /> bổ sung có chứa danh sách
+      dấu trang được xác định ở trên (một số dấu trang trong đó có thể lại là thư mục). <ph name="PRODUCT_NAME" /> sửa đổi các URL chưa hoàn chỉnh
+      như thể các URL đó được gửi qua Omnibox, ví dụ: <ph name="GOOGLE_COM" /> trở thành <ph name="HTTPS_GOOGLE_COM" />.
+
+      Các dấu trang này được đặt trong thư mục "Dấu trang được quản lý" mà người dùng không thể sửa đổi, tuy nhiên, người dùng có thể chọn ẩn thư mục đó khỏi thanh dấu trang. Các dấu trang được quản lý không được đồng bộ hóa với tài khoản của người dùng cũng như không thể bị sửa đổi bằng tiện ích.
+
+      Bắt đầu với bản phát hành 51, tên thư mục cho dấu trang có thể được tùy chỉnh bằng cách thêm mục danh sách {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Bật hoặc tắt dịch vụ web kiểm tra lỗi chính tả</translation>
 <translation id="3646859102161347133">Đặt loại kính lúp màn hình</translation>
 <translation id="3653237928288822292">Biểu tượng nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
@@ -1119,6 +1130,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách này được đặt thành false, người dùng sẽ không thể khóa màn hình (chỉ có thể đăng xuất khỏi phiên người dùng). Nếu cài đặt này được đặt thành true hoặc không được đặt, người dùng đã xác thực bằng mật khẩu có thể khóa màn hình.</translation>
 <translation id="4121350739760194865">Chặn các quảng cáo ứng dụng xuất hiện trên trang tab mới</translation>
+<translation id="4133301551755536858">Định cấu hình URL trang Tab mới mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi.
+
+          Trang Tab mới là trang được mở khi tạo các tab mới (bao gồm cả tab được mở trong các cửa sổ mới).
+
+          Chính sách này không quyết định các trang được mở khi khởi động. Các trang này chịu sự chi phối của chính sách RestoreOnStartup để có thể mở trang Tab mới.
+
+          Có thể đặt NewTabPageLocation thành URL bạn chỉ định ở đây. Điều này cũng ảnh hưởng đến Trang chủ nếu NewTabPageLocation được đặt thành mở trang Tab mới cũng như trang khởi động nếu được đặt thành trang Tab mới.
+
+          Nếu để trống hoặc chưa đặt chính sách, trang tab mới mặc định sẽ được sử dụng.
+
+          Chính sách này không khả dụng trên các phiên bản Windows chưa tham gia vào miền Active Directory.</translation>
 <translation id="4147054660081653009">Chứng chỉ ứng dụng để kết nối với RemoteAccessHostTokenValidationUrl.
 
           Nếu chính sách này được đặt, máy chủ sẽ sử dụng chứng chỉ ứng dụng với CN của nhà phát hành được cấp để xác thực với RemoteAccessHostTokenValidationUrl. Đặt thành "*" để sử dụng bất kỳ chứng chỉ ứng dụng nào có sẵn.
@@ -1195,7 +1217,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4467952432486360968">Chặn cookie của bên thứ ba</translation>
 <translation id="4474167089968829729">Bật lưu mật khẩu cho trình quản lý mật khẩu</translation>
 <translation id="4476769083125004742">Nếu chính sách này được đặt thành <ph name="BLOCK_GEOLOCATION_SETTING" />, các ứng dụng Android sẽ không thể truy cập thông tin vị trí. Nếu bạn đặt chính sách này thành một giá trị bất kỳ nào khác hoặc không đặt chính sách này thì người dùng sẽ được yêu cầu đồng ý khi ứng dụng Android muốn truy cập thông tin vị trí.</translation>
-<translation id="447686899376429408">Nếu tùy chọn này được đặt là true hoặc không được đặt, thì người dùng có thể truyền tab, trang web hoặc màn hình từ trình duyệt. Nếu được đặt là false, tùy chọn này sẽ bị vô hiệu hóa.</translation>
 <translation id="4480694116501920047">Buộc Tìm kiếm an toàn</translation>
 <translation id="4482640907922304445">Hiển thị nút Trang chủ trên thanh công cụ của <ph name="PRODUCT_NAME" />.
 
@@ -1206,6 +1227,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong  <ph name="PRODUCT_NAME" />.
 
       Không thiết lập chính sách này sẽ cho phép người dùng chọn có hiển thị nút trang chủ hay không.</translation>
+<translation id="4485425108474077672">Định cấu hình URL trang Tab mới</translation>
 <translation id="4492287494009043413">Tắt tính năng chụp ảnh chụp màn hình</translation>
 <translation id="450537894712826981">Định cấu hình kích thước bộ nhớ cache mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ các tệp phương tiện đã lưu vào bộ nhớ cache trên đĩa.
 
@@ -1628,6 +1650,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu cài đặt này bị tắt hoặc không được định cấu hình, yêu cầu xác thực gnubby sẽ không được proxy.</translation>
 <translation id="5898486742390981550">Khi có nhiều người dùng đăng nhập thì chỉ người dùng chính mới có thể sử dụng các ứng dụng Android.</translation>
+<translation id="5906199912611534122">Cho phép bật hoặc tắt điều chỉnh mạng.
+      Tùy chọn này áp dụng cho tất cả người dùng và tất cả giao diện trên thiết bị. Sau khi được đặt,
+      tính năng điều chỉnh sẽ tiếp tục cho đến khi chính sách này được thay đổi thành tắt tính năng điều chỉnh.
+
+      Nếu được đặt thành false thì sẽ không có tính năng điều chỉnh.
+      Nếu được đặt thành true, hệ thống sẽ được điều chỉnh để đạt được tốc độ tải lên và tải xuống được cung cấp (theo kbit/giây).</translation>
 <translation id="5921713479449475707">Cho phép tài nguyên đã tải xuống tự động cập nhật qua HTTP</translation>
 <translation id="5921888683953999946">Đặt trạng thái mặc định của tính năng trợ năng con trỏ lớn trên màn hình đăng nhập.
 
@@ -1753,6 +1781,46 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6282799760374509080">Cho phép hoặc từ chối ghi âm</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Bật tự động hoàn tất tên miền trong khi người dùng đăng nhập</translation>
+<translation id="6312861131491040487">
+          Chỉ định danh sách các ứng dụng và tiện ích được cài đặt tĩnh,
+          mà không có sự tương tác của người dùng và người dùng không thể
+          gỡ cài đặt. Tất cả các quyền do ứng dụng/tiện ích yêu cầu được cấp
+          hoàn toàn mà không có sự tương tác của người dùng, bao gồm mọi
+          quyền bổ sung do các phiên bản trong tương lai của ứng dụng/tiện ích
+          yêu cầu. Hơn nữa, các quyền sẽ được cấp cho các API tiện ích
+          enterprise.deviceAttributes và enterprise.platformKeys.
+          (Hai API này không khả dụng với ứng dụng/tiện ích
+          không bắt buộc cài đặt.)
+
+          Chính sách này được ưu tiên hơn chính sách
+          ExtensionsInstallBlacklist xung đột tiềm ẩn. Nếu một ứng dụng hoặc tiện
+          ích trước đây bị buộc cài đặt bị xóa khỏi danh sách này thì ứng
+          dụng/tiện ích đó sẽ tự động được <ph name="PRODUCT_NAME" /> gỡ cài đặt.
+
+          Đối với các phiên bản Windows không tham gia miền Active Directory
+          thì cài đặt bắt buộc sẽ bị giới hạn ở các ứng dụng và tiện ích được
+          liệt kê trong Cửa hàng Chrome trực tuyến.
+
+          Hãy lưu ý rằng người dùng có thể thay đổi mã nguồn của bất cứ tiện
+          ích nào qua Công cụ dành cho nhà phát triển (có thể hiển thị tiện ích
+          bất thường). Nếu đây là một mối quan ngại thì cần phải đặt chính sách
+          DeveloperToolsDisabled.
+
+          Mỗi mục danh sách của chính sách là một chuỗi có chứa ID
+          tiện ích và một URL "cập nhật" được phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). ID tiện ích là chuỗi gồm 32 chữ cái
+          được tìm thấy, chẳng hạn như trên <ph name="CHROME_EXTENSIONS_LINK" /> khi ở
+          chế độ nhà phát triển. URL "cập nhật" sẽ trỏ tới tài liệu XML của tệp
+          kê khai cập nhật như được mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Hãy lưu ý rằng
+          URL "cập nhật" được đặt trong chính sách này chỉ được sử dụng cho
+          cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL
+          cập nhật được chỉ ra trong tệp kê khai của tiện ích.
+
+          Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE" />
+          cài đặt ứng dụng <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> từ URL "cập nhật" của Cửa hàng Chrome trực
+          tuyến tiêu chuẩn. Để biết thêm thông tin về việc lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Nếu chính sách này không được đặt thì sẽ không có ứng dụng hoặc
+          tiện ích nào được cài đặt tự động và người dùng có thể gỡ cài đặt mọi ứng dụng hoặc tiện ích trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome hiển thị trang cảnh báo khi người dùng truy cập các trang web gặp lỗi SSL. Theo mặc định hoặc khi chính sách này được đặt thành true, người dùng được phép nhấp qua các trang cảnh báo này.
       Đặt chính sách này thành false sẽ không cho phép người dùng nhấp qua bất kỳ trang cảnh báo nào.</translation>
 <translation id="6353901068939575220">Chỉ định tham số được dùng khi tìm kiếm URL với POST. Tham số này bao gồm các cặp tên/giá trị phân tách bằng dấu phẩy. Nếu một giá trị là tham số mẫu như {searchTerms} trong ví dụ trên, tham số đó sẽ được thay thế bằng dữ liệu cụm từ tìm kiếm thực.
@@ -1918,6 +1986,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Thông tin bộ nhớ vẫn được báo cáo tới trang bất kể giá trị tùy chọn như thế nào. Tuy nhiên, kích thước được báo cáo
       được lượng tử hóa và tốc độ cập nhật bị giới hạn vì lý do bảo mật. Để có dữ liệu chính xác trong thời gian thực,
       hãy sử dụng các công cụ như Telemetry.</translation>
+<translation id="6894178810167845842">URL trang Tab mới</translation>
 <translation id="6899705656741990703">Cài đặt tự động phát hiện proxy</translation>
 <translation id="6903814433019432303">Chính sách này chỉ hoạt động ở chế độ bán lẻ.
 
@@ -2050,6 +2119,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7132877481099023201">Các URL sẽ được cấp quyền truy cập thiết bị quay video mà không cần phải hiển thị lời nhắc</translation>
 <translation id="7167436895080860385">Cho phép người dùng hiển thị mật khẩu trong Trình quản lý mật khẩu (không dùng nữa)</translation>
 <translation id="7173856672248996428">Cấu hình tạm thời</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Các loại kết nối được cho phép để cập nhật</translation>
 <translation id="7194407337890404814">Tên nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="7195064223823777550">Chỉ định hành động sẽ thực hiện khi người dùng đóng nắp.

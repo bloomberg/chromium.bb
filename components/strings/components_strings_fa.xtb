@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">‏«مرور ایمن Google» به‌تازگی در <ph name="SITE" />، ‏<ph name="BEGIN_LINK" />بدافزار شناسایی کرده است<ph name="END_LINK" />. گاهی اوقات وب‌سایت‌هایی که معمولاً امن هستند با بدافزار آلوده می‌شوند. منبع محتوای مخرب <ph name="SUBRESOURCE_HOST" /> (یک توزیع‌کننده بدافزار شناخته شده) است. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">پارامترهای درخواست یا درخواست نامعتبر</translation>
 <translation id="1834321415901700177">این سایت محتوی برنامه‌های مضر است</translation>
-<translation id="1838667051080421715">درحال مشاهده منبع یک صفحه وب هستید.</translation>
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
+<translation id="187918866476621466">باز کردن صفحه‌های شروع</translation>
 <translation id="1883255238294161206">کوچک کردن فهرست</translation>
 <translation id="1898423065542865115">فیلتر کردن</translation>
 <translation id="194030505837763158">رفتن به <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">اگر مکرراً با این مشکل مواجه می‌شوید، <ph name="HELP_LINK" /> را امتحان کنید.</translation>
 <translation id="3658742229777143148">ویرایش</translation>
 <translation id="3678029195006412963">درخواست امضا نشد</translation>
+<translation id="3679803492151881375">گزارش خرابی در <ph name="CRASH_TIME" /> ثبت شد، در <ph name="UPLOAD_TIME" /> بارگذاری شد</translation>
 <translation id="3681007416295224113">اطلاعات گواهی</translation>
 <translation id="3690164694835360974">ورود به سیستم امن نیست</translation>
 <translation id="3693415264595406141">گذرواژه:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;واگرد حذف</translation>
 <translation id="4619615317237390068">برگه‌ها از دستگاه‌های دیگر</translation>
 <translation id="4668929960204016307">،</translation>
-<translation id="4670097147947922288">درحال مشاهده یک صفحه افزونه هستید.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">اتصال شما قطع شد</translation>
 <translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />در حال اجرای Windows Network Diagnostics<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">ممکن است صفحهٔ وب <ph name="URL" /> موقتاً خراب باشد یا ممکن است برای همیشه به آدرس وب جدید منتقل شده باشد.</translation>
 <translation id="4771973620359291008">خطای ناشناخته‌ای رخ داد.</translation>
 <translation id="4800132727771399293">‏تاریخ انقضا و CVC را بررسی کرده و دوباره امتحان کنید</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">خطای شبکه</translation>
 <translation id="4816492930507672669">متناسب با صفحه</translation>
 <translation id="4850886885716139402">نما</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">می‌خواهید از این سایت خارج شوید؟</translation>
 <translation id="5629630648637658800">تنظیمات خط‌مشی بارگیری نشد</translation>
 <translation id="5631439013527180824">نشانه مدیریت دستگاه نامعتبر است</translation>
+<translation id="5669703222995421982">دریافت محتوای شخصی‌سازی‌شده</translation>
 <translation id="5675650730144413517">این صفحه کار نمی‌کند</translation>
 <translation id="5677928146339483299">مسدود است</translation>
 <translation id="5694783966845939798">‏سعی کردید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما سرور گواهینامه‌ای ارائه کرد که با استفاده از الگوریتم امضای ضعیفی (مثل SHA-1) امضا شده بود. این یعنی ممکن است اعتبارنامه‌های امنیتی ارائه‌شده توسط این سرور جعلی باشند و ممکن است این سرور، سرور موردانتظار شما نباشد (شاید درحال ارتباط با یک مهاجم باشید). <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">مقدار خط‌‌مشی</translation>
 <translation id="6757797048963528358">دستگاهتان به خواب رفته است.</translation>
 <translation id="6778737459546443941">والدینتان هنوز این سایت را تأیید نکرده‌اند</translation>
+<translation id="6810899417690483278">شناسه سفارشی‌سازی</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">صفحهٔ وب موجود در <ph name="URL" /> در حال حاضر موجود نیست. ممکن است بیش از حد مشغول باشد یا برای انجام تعمیرات در دسترس نباشد.</translation>
 <translation id="6831043979455480757">ترجمه</translation>
@@ -709,6 +712,7 @@
 <translation id="8364627913115013041">تنظیم نشده است.</translation>
 <translation id="8380941800586852976">خطرناک</translation>
 <translation id="8382348898565613901">نشانک‌هایی که به‌تازگی از آن‌ها دیدن کرده‌اید، در اینجا نشان داده می‌شوند</translation>
+<translation id="8398259832188219207">گزارش خرابی در <ph name="UPLOAD_TIME" /> بارگذاری شد</translation>
 <translation id="8412145213513410671">خرابی ها (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">شما باید همان عبارت عبور را دوبار وارد کنید.</translation>
 <translation id="8428213095426709021">تنظیمات</translation>

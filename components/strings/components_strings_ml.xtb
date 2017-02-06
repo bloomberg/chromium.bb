@@ -86,8 +86,8 @@
 <translation id="1803678881841855883"><ph name="SITE" /> എന്നതിൽ Google സുരക്ഷിത ബ്രൗസിംഗ് ഈയിടെ <ph name="BEGIN_LINK" />മാൽവേർ കണ്ടെത്തി<ph name="END_LINK" /> . സാധാരണ നിലയിൽ സുരക്ഷിതമായ വെബ്സൈറ്റുകളിൽ ചിലപ്പോൾ മാൽവേർ ഉണ്ടായേക്കാം. അറിയപ്പെടുന്ന മാൽ‌വേർ വിതരണക്കാരായ <ph name="SUBRESOURCE_HOST" /> എന്നതിൽ നിന്നാണ് ദോഷകരമായ ഉള്ളടക്കം വരുന്നത്. <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">അഭ്യർത്ഥന അല്ലെങ്കിൽ അഭ്യർത്ഥന പാരാമീറ്ററുകൾ അസാധുവാണ്</translation>
 <translation id="1834321415901700177">ഈ സൈറ്റിൽ ദോഷകരമായ പ്രോഗ്രാമുകൾ അടങ്ങിയിരിക്കുന്നു</translation>
-<translation id="1838667051080421715">നിങ്ങൾ ഒരു വെബ് പേജിന്റെ ഉറവിടമാണ് കാണുന്നത്.</translation>
 <translation id="1871208020102129563">സ്ഥിരമായ പ്രോക്‌സി സെർവറുകൾ ഉപയോഗിക്കുന്നതിനായി പ്രോക്‌സി സജ്ജീകരിച്ചിരിക്കുന്നു, ഒരു .pac സ്‌ക്രിപ്റ്റ് URL ഉപയോഗിക്കുന്നതിനല്ല.</translation>
+<translation id="187918866476621466">ആരംഭ പേജുകൾ തുറക്കുക</translation>
 <translation id="1883255238294161206">ലിസ്റ്റ് ചുരുക്കുക</translation>
 <translation id="1898423065542865115">ഫിൽട്ടർ ചെയ്യുന്നു</translation>
 <translation id="194030505837763158"><ph name="LINK" />-ലേക്ക് പോകുക</translation>
@@ -278,6 +278,7 @@
 <translation id="3655670868607891010">നിങ്ങൾ ഇത് പതിവായി കാണുന്നുണ്ടെങ്കിൽ, ഈ <ph name="HELP_LINK" /> പരീക്ഷിക്കൂ.</translation>
 <translation id="3658742229777143148">പുനരവലോകനം</translation>
 <translation id="3678029195006412963">അഭ്യർത്ഥന സൈൻ ചെയ്യാനായില്ല</translation>
+<translation id="3679803492151881375">ക്രാഷ് റിപ്പോർട്ട് <ph name="CRASH_TIME" />-ന് ക്യാപ്‌ചർ ചെയ്‌ത്, <ph name="UPLOAD_TIME" />-ന് അപ്‌ലോഡുചെയ്‌തു</translation>
 <translation id="3681007416295224113">സര്‍‌ട്ടിഫിക്കറ്റ് വിവരങ്ങള്‍‌</translation>
 <translation id="3690164694835360974">ലോഗിൻ ചെയ്യുന്നത് സുരക്ഷിതമല്ല</translation>
 <translation id="3693415264595406141">പാസ്‌വേഡ്:</translation>
@@ -362,7 +363,6 @@
 <translation id="4594403342090139922">&amp;ഇല്ലാതാക്കുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="4619615317237390068">മറ്റ് ഉപകരണങ്ങളിൽ നിന്നുള്ള ടാബുകൾ</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">നിങ്ങൾ വിപുലീകരണ പേജാണ് കാണുന്നത്.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">നിങ്ങളുടെ കണക്ഷൻ തടസ്സപ്പെട്ടു</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows നെറ്റ്‌വർക്ക് ഡയഗണോസ്‌റ്റിക്‌സ് റൺ ചെയ്യുന്നു<ph name="END_LINK" /></translation>
@@ -375,6 +375,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> ലെ വെബ്‌പേജ് താല്‍‌ക്കാലികമായി പ്രവര്‍‌ത്തനരഹിതമായിരിക്കാം, അല്ലെങ്കില്‍‌ ഒരു പുതിയ വെബ് വിലാസത്തിലേക്ക് ശാശ്വതമായി നീക്കംചെയ്യപ്പെട്ടിരിക്കാം.</translation>
 <translation id="4771973620359291008">ഒരു അജ്ഞാത പിശക് സംഭവിച്ചു.</translation>
 <translation id="4800132727771399293">നിങ്ങളുടെ കാലഹരണ തീയതിയും CVC യും പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">നെറ്റ്‌വര്‍ക്ക് പിശക്</translation>
 <translation id="4816492930507672669">പേജിന് യുക്തമാക്കുക</translation>
 <translation id="4850886885716139402">കാണുക</translation>
@@ -449,6 +450,7 @@
 <translation id="5622887735448669177">നിങ്ങൾക്ക് ഈ സൈറ്റ് വിടണോ?</translation>
 <translation id="5629630648637658800">നയ ക്രമീകരണങ്ങൾ ലോഡുചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="5631439013527180824">ഉപകരണ മാനേജുമെന്റ് ടോക്കൺ അസാധുവാണ്</translation>
+<translation id="5669703222995421982">വ്യക്തിപരമാക്കിയ ഉള്ളടക്കം സ്വന്തമാക്കുക</translation>
 <translation id="5675650730144413517">ഈ പേജ് പ്രവർത്തിക്കുന്നില്ല</translation>
 <translation id="5677928146339483299">തടഞ്ഞു</translation>
 <translation id="5694783966845939798">നിങ്ങള്‍‌ <ph name="DOMAIN" /> ഡൊമെയ്‌ൻ ആക്‌സസ് ചെയ്യാൻ ശ്രമിച്ചു, എന്നാൽ ദുർബലമായ സിഗ്‌നേച്ചര്‍‌ അല്‍‌ഗരിതം (SHA-1 പോലുള്ളത്) ഉപയോഗിച്ച് സൈൻ ചെയ്‌ത സര്‍‌ട്ടിഫിക്കറ്റാണ് സെര്‍‌വര്‍‌ നല്‍‌കിയത്. ഇതിനര്‍‌ത്ഥം സെര്‍‌വര്‍‌ നല്‍‌കിയ സുരക്ഷാ ക്രെഡന്‍‌ഷ്യലുകള്‍‌ വ്യാജമാകാമെന്നും സെര്‍‌വര്‍‌ നിങ്ങള്‍‌ പ്രതീക്ഷിച്ച സെര്‍‌വറായിരിക്കില്ലെന്നുമാണ് (നിങ്ങള്‍‌ ആക്രമണകാരിയുമായിട്ടാകാം ആശയവിനിമയം നടത്തുന്നത്). <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -549,6 +551,7 @@
 <translation id="6753269504797312559">നയ മൂല്യം</translation>
 <translation id="6757797048963528358">നിങ്ങളുടെ ഉപകരണം സുഷുപ്‌തിയിലായി.</translation>
 <translation id="6778737459546443941">നിങ്ങളുടെ രക്ഷിതാവ് ഇതുവരെ അംഗീകാരം നൽകിയിട്ടില്ല</translation>
+<translation id="6810899417690483278">ഇഷ്‌ടാനുസൃതമാക്കൽ ഐഡി</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> എന്നതിലെ വെബ്പേജ് നിലവില്‍ ലഭ്യമല്ല.  അത് ഓവര്‍ലോഡ് ആയിരിക്കുകയോ പുനര്‍നിര്‍മ്മാണത്തിലായിരിക്കുകയോ ആവാം.</translation>
 <translation id="6831043979455480757">വിവർത്തനം ചെയ്യുക</translation>
@@ -708,6 +711,7 @@
 <translation id="8364627913115013041">സജ്ജമാക്കിയിട്ടില്ല.</translation>
 <translation id="8380941800586852976">അപകടകരമായത്</translation>
 <translation id="8382348898565613901">നിങ്ങൾ അടുത്തിടെ സന്ദർശിച്ച ബുക്ക്‌മാർക്കുകൾ ഇവിടെ ദൃശ്യമാകും</translation>
+<translation id="8398259832188219207">ക്രാഷ് റിപ്പോർട്ട് <ph name="UPLOAD_TIME" />-ന് അപ്‌ലോഡുചെയ്‌തു</translation>
 <translation id="8412145213513410671">ക്രാഷുകള്‍ <ph name="CRASH_COUNT" /></translation>
 <translation id="8412392972487953978">നിങ്ങള്‍ സമാന പാസ്ഫ്രെയ്സ് രണ്ടുതവണ നല്‍കണം.</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>

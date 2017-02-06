@@ -22,11 +22,14 @@
 <translation id="2148716181193084225">ಇಂದು</translation>
 <translation id="2168039046890040389">ಪುಟ ಮೇಲೆ</translation>
 <translation id="2190355936436201913">(ಖಾಲಿ)</translation>
+<translation id="2289052229480071835">ನಿಮ್ಮ ಪರದೆಯಲ್ಲಿ ಸ್ಪರ್ಶ ಟಾರ್ಗೆಟ್‌ಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2482878487686419369">ಸೂಚನೆಗಳು</translation>
 <translation id="2497284189126895209">ಎಲ್ಲ ಫೈಲ್‌ಗಳು</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2522350507219695259">ಮಾಪನಾಂಕವು ಪೂರ್ಣಗೊಂಡಿದೆ</translation>
 <translation id="252373100621549798">ಅಪರಿಚಿತ ಪ್ರದರ್ಶನ</translation>
+<translation id="2662783295652680457">ನಿಮ್ಮ ಟಚ್‌ಸ್ಕ್ರೀನ್ ವ್ಯಾಖ್ಯಾನಿಸಿ</translation>
 <translation id="2666092431469916601">ಮೇಲೆ</translation>
 <translation id="2743387203779672305">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ನಕಲಿಸಿ</translation>
 <translation id="2803313416453193357">ಫೋಲ್ಡರ್ ತೆರೆಯಿರಿ</translation>
@@ -58,6 +61,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್}one{# ಸೆಕೆಂಡುಗಳು}other{# ಸೆಕೆಂಡುಗಳು}}</translation>
 <translation id="4971687151119236543">ಮೀಡಿಯಾದ ಹಿಂದಿನ ಟ್ರ್ಯಾಕ್</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5046499563572181734">ಇಲ್ಲಿ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="5076340679995252485">&amp;ಅಂಟಿಸಿ</translation>
 <translation id="5120799197269191491">ಹುಡುಕಾಟ + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>

@@ -39,6 +39,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="1923539912171292317">Nhấp chuột tự động</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2122028596993374965">Dừng truyền <ph name="TAB_NAME" /> sang <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
 <translation id="2204305834655267233">Thông tin mạng</translation>
 <translation id="2208323208084708176">Chế độ màn hình đồng nhất</translation>
@@ -149,6 +150,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="5331975486040154427">Thiết bị USB-C (cổng phía sau, bên trái)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Tất cả người dùng hiện có mặt đã được thêm vào phiên này.</translation>
+<translation id="5504841533973703486">Micrô mặt trước</translation>
 <translation id="5507786745520522457">Thiết lập dữ liệu di động</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">Tiện ích "<ph name="EXTENSION_NAME" />" có thể giúp kết nối với mạng này.</translation>
@@ -160,6 +162,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="57838592816432529">Tắt tiếng</translation>
 <translation id="5825747213122829519">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID" />.
 Nhấn Shift + Alt để chuyển đổi.</translation>
+<translation id="5830936593837877897">Micrô mặt sau</translation>
 <translation id="5871632337994001636">Quản lý thiết bị...</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -249,8 +252,10 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8000066093800657092">Không có mạng nào</translation>
 <translation id="8054466585765276473">Đang tính toán thời lượng pin.</translation>
 <translation id="8077816382010018681">Tiêu đề thông báo tính năng QU tại đây</translation>
+<translation id="8098591350844501178">Dừng truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">Tin nhắn SMS: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Đã kết nối với <ph name="NAME" /></translation>
+<translation id="8180896103888046100">Dừng truyền tới người nhận không xác định</translation>
 <translation id="8185286464235484130">Hãy cho chúng tôi biết tình hình hoạt động của chúng tôi bằng cách trả lời một vài câu hỏi.</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
 <translation id="8206859287963243715">Di động</translation>

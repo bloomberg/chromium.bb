@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google Güvenli Tarama, yakın bir zamanda <ph name="SITE" /> web sitesinde <ph name="BEGIN_LINK" />kötü amaçlı yazılım tespit etti<ph name="END_LINK" />. Normalde güvenli olan web sitelerine bazen kötü amaçlı yazılımlar bulaşır. Kötü amaçlı içerik, kötü amaçlı yazılım dağıtımcısı olduğu bilinen <ph name="SUBRESOURCE_HOST" /> kaynağından gelmektedir. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi edinin<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Geçersiz istek veya istek parametreleri</translation>
 <translation id="1834321415901700177">Bu site zararlı programlar içeriyor</translation>
-<translation id="1838667051080421715">Bir web sayfasının kaynak kodunu görüyorsunuz.</translation>
 <translation id="1871208020102129563">Proxy, bir .pac komut dosyası URL'sini değil, sabit proxy sunucuları kullanacak şekilde ayarlanır.</translation>
+<translation id="187918866476621466">Başlangıç sayfalarını aç</translation>
 <translation id="1883255238294161206">Listeyi daralt</translation>
 <translation id="1898423065542865115">Filtreleme</translation>
 <translation id="194030505837763158"><ph name="LINK" /> adresine git</translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Bunu çok sık görüyorsanız, şunları deneyin: <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Düzeltme</translation>
 <translation id="3678029195006412963">İstek imzalanamadı</translation>
+<translation id="3679803492151881375">Kilitlenme raporunun oluşturulma zamanı: <ph name="CRASH_TIME" />, raporun yüklenme zamanı: <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Sertifika bilgileri</translation>
 <translation id="3690164694835360974">Giriş yapma işlemi güvenli değil</translation>
 <translation id="3693415264595406141">Şifre:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">Silmeyi &amp;Geri Al</translation>
 <translation id="4619615317237390068">Diğer cihazlardan sekmeler</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Bir uzantı sayfası görüntülüyorsunuz.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Bağlantınız kesildi</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows Ağ Teşhislerini Çalıştırma<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> adresindeki web sayfası, geçici olarak kullanılamıyor veya kalıcı olarak yeni bir web adresine taşınmış olabilir.</translation>
 <translation id="4771973620359291008">Bilinmeyen bir hata oluştu.</translation>
 <translation id="4800132727771399293">Son kullanma tarihinizi ve CVC'nizi kontrol edip tekrar deneyin</translation>
+<translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4813512666221746211">Ağ hatası</translation>
 <translation id="4816492930507672669">Sayfaya sığdır</translation>
 <translation id="4850886885716139402">Görüntüle</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Bu siteden ayrılmak istiyor musunuz?</translation>
 <translation id="5629630648637658800">Politika ayarları yüklenemedi</translation>
 <translation id="5631439013527180824">Geçersiz cihaz yönetimi jetonu</translation>
+<translation id="5669703222995421982">Kişiselleştirilmiş içerikler alma</translation>
 <translation id="5675650730144413517">Bu sayfa çalışmıyor</translation>
 <translation id="5677928146339483299">Engellenenler</translation>
 <translation id="5694783966845939798"><ph name="DOMAIN" /> alan adına erişme girişiminde bulundunuz, ancak sunucu zayıf bir imza algoritması kullanılarak imzalanmış bir sertifika sağladı. Bu durum, sunucunun sağladığı güvenlik bilgilerinin sahte olabileceği anlamına gelir ve sunucu sizin beklediğiniz sunucu olmayabilir (bir saldırgan ile irtibat kuruyor olabilirsiniz). <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Politika değeri</translation>
 <translation id="6757797048963528358">Cihazınız uyku moduna geçti.</translation>
 <translation id="6778737459546443941">Ebeveyniniz henüz onaylamadı</translation>
+<translation id="6810899417690483278">Özelleştirme Kimliği</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> adresindeki web sayfası şu anda kullanılamıyor. Aşırı yüklenmiş veya bakım için kapatılmış olabilir.</translation>
 <translation id="6831043979455480757">Çevir</translation>
@@ -709,6 +712,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8364627913115013041">Henüz ayarlanmadı.</translation>
 <translation id="8380941800586852976">Tehlikeli</translation>
 <translation id="8382348898565613901">Son ziyaret ettiğiniz yer işaretleri burada görünür</translation>
+<translation id="8398259832188219207">Kilitlenme raporunun yüklenme zamanı: <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Kilitlenme Sayısı (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Aynı parolayı iki kez girmelisiniz.</translation>
 <translation id="8428213095426709021">Ayarlar</translation>

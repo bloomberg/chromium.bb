@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, चालू करा</translation>
 <translation id="1692077714702418899">संरचनात्मक रेखा</translation>
 <translation id="1700517974991662022">भेट दिलेला</translation>
+<translation id="1714116687360794776">मीटर</translation>
 <translation id="1722567105086139392">दुवा</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">पुढील ग्राफिक</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">तारीख वेळ नियंत्रण</translation>
 <translation id="2347456970887948350">एक दुवा</translation>
 <translation id="2359897517538099099">सारणी मोडमध्ये नाही.</translation>
+<translation id="2390264819538553347">पुढे जाण्यासाठी, enter दाबा; मागे जाण्यासाठी, backspace दाबा.</translation>
 <translation id="241124561063364910">च्या मागून येणारे</translation>
 <translation id="2416512023405990736">अनचेक केलेला चेकबॉक्स</translation>
 <translation id="2417569100218200841">सामग्री माहिती</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">रेडिओ बटण गट</translation>
 <translation id="2471138580042810658">मथळा 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{चौफुली}one{# चौफुली}other{# चौफुली}}</translation>
+<translation id="2523609930580546572">ChromeVox ट्यूटोरियल</translation>
 <translation id="2525706221823668172">Chromebook कीबोर्ड शॉर्टकट</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> रीसेट केली गेली.</translation>
 <translation id="2553108862507765288">grammatical mistake</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">मागील निवड नाही.</translation>
 <translation id="3030432017085518523">मेनू आयटम रेडिओ बटण</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{परोक्षसंबोधन}one{# परोक्षसंबोधने}other{# परोक्षसंबोधने}}</translation>
+<translation id="3040901448410802366">प्रगती निदर्शक</translation>
 <translation id="3046838483509668188">ChromeVox पर्याय</translation>
 <translation id="3047143736589213134">प्रायोगिक मुख्य नकाशा</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> मेनू उघडला</translation>
@@ -229,6 +233,7 @@
 <translation id="3321460131042519426">शब्द ओघ वळविणे सक्षम करा</translation>
 <translation id="3322936298410871309">मागील स्तर 1 मथळा</translation>
 <translation id="3323447499041942178">मजकूर बॉक्स</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> स्लायडर</translation>
 <translation id="3353420241558113817">{"ar": "अरबी",
         "bg": "बल्गेरियन",
         "ca": "कॅटलान",
@@ -714,6 +719,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="7693840228159394336">मागील रेडिओ बटण</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, संकेतशब्द मजकूर बॉक्स</translation>
+<translation id="7776293189010177726">ChromeVox मेनू उघडा</translation>
 <translation id="7805247615045262757">डीफॉल्ट नेव्हिगेशन</translation>
 <translation id="7805768142964895445">स्थिती</translation>
 <translation id="7810781339813764006">पुढील गट</translation>

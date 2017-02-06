@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google Safe Browsing oppdaget nylig <ph name="BEGIN_LINK" />skadelig programvare<ph name="END_LINK" /> på <ph name="SITE" />. Nettsteder som vanligvis er pålitelige, kan av og til bli infisert med skadelig programvare. Det skadelige innholdet kommer fra <ph name="SUBRESOURCE_HOST" />, som er en kjent distributør av skadelig programvare. <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Ugyldig forespørsel eller forespørselsparametere</translation>
 <translation id="1834321415901700177">Dette nettstedet inneholder skadelige programmer</translation>
-<translation id="1838667051080421715">Du ser på kildekoden for en nettside.</translation>
 <translation id="1871208020102129563">Mellomtjeneren er angitt til å bruke statiske proxytjenere, ikke en nettadresse med .pac-skript.</translation>
+<translation id="187918866476621466">Åpne oppstartssidene</translation>
 <translation id="1883255238294161206">Skjul liste</translation>
 <translation id="1898423065542865115">Filtrering</translation>
 <translation id="194030505837763158">Gå til <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Hvis du ser denne meldingen ofte, kan du prøve disse <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Versjon</translation>
 <translation id="3678029195006412963">Forespørselen kunne ikke undertegnes</translation>
+<translation id="3679803492151881375">Programstopprapport generert <ph name="CRASH_TIME" /> og lastet opp <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Sertifikatinformasjon</translation>
 <translation id="3690164694835360974">Påloggingen er ikke trygg</translation>
 <translation id="3693415264595406141">Passord:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Angre slettingen</translation>
 <translation id="4619615317237390068">Faner fra andre enheter</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Dette er en utvidelsesside.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Tilkoblingen ble avbrutt</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Kjør Windows Nettverksdiagnose<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Det kan hende at nettsiden på <ph name="URL" /> er midlertidig nede eller flyttet permanent til en ny nettadresse.</translation>
 <translation id="4771973620359291008">Det har oppstått en ukjent feil.</translation>
 <translation id="4800132727771399293">Kontrollér utløpsdatoen og CVC-koden, og prøv igjen.</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Nettverksfeil</translation>
 <translation id="4816492930507672669">Tilpass til siden</translation>
 <translation id="4850886885716139402">Visning</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Vil du forlate dette nettstedet?</translation>
 <translation id="5629630648637658800">Kunne ikke laste in angivelsen for enhetsinnstillinger</translation>
 <translation id="5631439013527180824">Ugyldig token for enhetsadministrering</translation>
+<translation id="5669703222995421982">Få innhold med et personlig preg</translation>
 <translation id="5675650730144413517">Denne siden fungerer ikke</translation>
 <translation id="5677928146339483299">Blokkert</translation>
 <translation id="5694783966845939798">Du prøvde å gå til <ph name="DOMAIN" />, men tjeneren presenterte et sertifikat som er signert med en usikker signaturalgoritme (som SHA-1). Dette betyr at sikkerhetslegitimasjonen tjeneren har presentert, kan være forfalsket. Tjeneren kan med andre ord være en annen tjener enn du tror (og du kommuniserer kanskje med en angriper). <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Retningslinjeverdi</translation>
 <translation id="6757797048963528358">Enheten din gikk inn i hvilemodus.</translation>
 <translation id="6778737459546443941">Forelderen din har ikke godkjent det ennå</translation>
+<translation id="6810899417690483278">Tilpasnings-ID</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Nettsiden på <ph name="URL" /> er for tiden utilgjengelig. Den kan være overbelastet eller under vedlikehold.</translation>
 <translation id="6831043979455480757">Oversett</translation>
@@ -709,6 +712,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8364627913115013041">Ikke angitt.</translation>
 <translation id="8380941800586852976">Farlig</translation>
 <translation id="8382348898565613901">Bokmerkene du nylig har besøkt, vises her</translation>
+<translation id="8398259832188219207">Programstopprapport lastet opp <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Kræsj (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Du må angi den samme passordfrasen to ganger.</translation>
 <translation id="8428213095426709021">Innstillinger</translation>

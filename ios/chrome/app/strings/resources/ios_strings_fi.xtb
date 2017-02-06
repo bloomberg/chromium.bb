@@ -32,6 +32,7 @@
 <translation id="1407135791313364759">Avaa kaikki</translation>
 <translation id="1430915738399379752">Tulosta</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> kohdetta</translation>
+<translation id="1491277525950327607">Muuta asetusta kaksoisnapauttamalla.</translation>
 <translation id="1540800554400757039">Osoite 1</translation>
 <translation id="1545749641540134597">Skannaa QR-koodi</translation>
 <translation id="1580783302095112590">Viesti lähetetty.</translation>
@@ -178,7 +179,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4359125752503270327">Tämä sivu avataan toisessa sovelluksessa.</translation>
 <translation id="4378154925671717803">Puhelin</translation>
 <translation id="441868831736628555">Tietosuojailmoitus</translation>
-<translation id="4426508677408162512">Kaikki kirjanmerkit</translation>
 <translation id="4473991315115669931">Siirry incognito-tilaan.</translation>
 <translation id="4526249700380860531">Tarkastele ja hallinnoi tallennettuja salasanoja osoitteessa <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Yritä kirjautua sisään uudelleen.</translation>
@@ -218,6 +218,7 @@ Tietosi salataan synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antama
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5327248766486351172">Nimi</translation>
+<translation id="5332219387342487447">Toimitustapa</translation>
 <translation id="5388358297987318779">Avaa kuva</translation>
 <translation id="5409365236829784218">Et ole asentanut sovellusta, jolla tämän tiedoston voi avata.</translation>
 <translation id="54401264925851789">Sivun suojaustiedot</translation>
@@ -270,6 +271,7 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="6255097610484507482">Luottokortin muokkaus</translation>
 <translation id="6308436439357671616">Tämän avulla voit ottaa kuvia ja ladata niitä palvelimelle.</translation>
 <translation id="6314335155547195432">Luo salasana</translation>
+<translation id="6324528485781869530">Vaihda synkronointitiliä</translation>
 <translation id="6324669097367352121">Kirjautumisen aset.</translation>
 <translation id="6337234675334993532">Salaus</translation>
 <translation id="633809752005859102">Jotain meni pahasti vikaan. Pyrimme korjaamaan tilanteen.</translation>

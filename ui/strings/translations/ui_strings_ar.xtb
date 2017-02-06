@@ -22,11 +22,14 @@
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2168039046890040389">صفحة  إلى أعلى</translation>
 <translation id="2190355936436201913">(فارغ)</translation>
+<translation id="2289052229480071835">انقر على أهداف اللمس على شاشتك.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> تيرابايت/ثانية</translation>
 <translation id="2482878487686419369">الاشعارات</translation>
 <translation id="2497284189126895209">الملفّات كلّها</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2522350507219695259">اكتملت المعايرة</translation>
 <translation id="252373100621549798">شاشة عرض غير معروفة</translation>
+<translation id="2662783295652680457">تحديد الشاشة التي تعمل باللمس</translation>
 <translation id="2666092431469916601">أعلى</translation>
 <translation id="2743387203779672305">نسخ إلى الحافظة</translation>
 <translation id="2803313416453193357">فتح المجلد</translation>
@@ -58,6 +61,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{ثانية واحدة}zero{# من الثواني}two{ثانيتان (#)}few{# ثوانٍ}many{# ثانية}other{# من الثواني}}</translation>
 <translation id="4971687151119236543">المقطع الصوتي السابق للوسائط</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5046499563572181734">انقر هنا</translation>
 <translation id="5076340679995252485">ل&amp;صق</translation>
 <translation id="5120799197269191491">بحث+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> بيتابايت</translation>

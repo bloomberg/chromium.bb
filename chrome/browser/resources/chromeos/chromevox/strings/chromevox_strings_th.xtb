@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" /> เปิดอยู่</translation>
 <translation id="1692077714702418899">บรรทัดแบบโครงสร้าง</translation>
 <translation id="1700517974991662022">เคยเข้าชม</translation>
+<translation id="1714116687360794776">เครื่องวัด</translation>
 <translation id="1722567105086139392">ลิงก์</translation>
 <translation id="1727806147743597030">ส่วนท้าย</translation>
 <translation id="174268867904053074">กราฟิกถัดไป</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">การควบคุมวันที่และเวลา</translation>
 <translation id="2347456970887948350">ลิงก์</translation>
 <translation id="2359897517538099099">ไม่ได้อยู่ในโหมดตาราง</translation>
+<translation id="2390264819538553347">กด Enter เพื่อดำเนินการต่อ หรือกด Backspace เพื่อกลับ</translation>
 <translation id="241124561063364910">ตามด้วย</translation>
 <translation id="2416512023405990736">ช่องทำเครื่องหมายที่ไม่ได้ทำเครื่องหมาย</translation>
 <translation id="2417569100218200841">ข้อมูลเนื้อหา</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">กลุ่มปุ่มตัวเลือก</translation>
 <translation id="2471138580042810658">ส่วนหัวระดับ 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{เครื่องหมายดอกจัน}other{# เครื่องหมายดอกจัน}}</translation>
+<translation id="2523609930580546572">บทแนะนำ ChromeVox</translation>
 <translation id="2525706221823668172">แป้นพิม์ลัด Chromebook</translation>
 <translation id="2549392850788122959">รีเซ็ต <ph name="KEY" /> แล้ว</translation>
 <translation id="2553108862507765288">ข้อผิดพลาดทางไวยากรณ์</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">ไม่มีส่วนก่อนหน้า</translation>
 <translation id="3030432017085518523">ปุ่มตัวเลือกรายการเมนู</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{อะโพสโทรฟี}other{# อะโพสโทรฟี}}</translation>
+<translation id="3040901448410802366">ตัวบอกสถานะความคืบหน้า</translation>
 <translation id="3046838483509668188">ตัวเลือก ChromeVox</translation>
 <translation id="3047143736589213134">รูปแบบแป้นแบบทดลอง</translation>
 <translation id="3060756054951570867">เปิดเมนู <ph name="TITLE" /> แล้ว</translation>
@@ -229,6 +233,7 @@
 <translation id="3321460131042519426">เปิดใช้การตัดคำ</translation>
 <translation id="3322936298410871309">ส่วนหัวระดับ 1 ก่อนหน้า</translation>
 <translation id="3323447499041942178">ช่องข้อความ</translation>
+<translation id="3338224621010291843">แถบเลื่อน <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "อาหรับ",
         "bg": "บัลแกเรีย",
         "ca": "คาตาลัน",
@@ -713,6 +718,7 @@
 <translation id="7693840228159394336">ปุ่มตัวเลือกก่อนหน้า</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748">ช่องข้อความรหัสผ่าน <ph name="NAME" /> <ph name="VALUE" /></translation>
+<translation id="7776293189010177726">เปิดเมนู ChromeVox</translation>
 <translation id="7805247615045262757">การนำทางที่เป็นค่าเริ่มต้น</translation>
 <translation id="7805768142964895445">สถานะ</translation>
 <translation id="7810781339813764006">กลุ่มถัดไป</translation>

@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">‏גלישה בטוחה של Google <ph name="BEGIN_LINK" />זיהתה לאחרונה תוכנה זדונית<ph name="END_LINK" /> ב-<ph name="SITE" />. לעיתים קורה שאתרים בטוחים נדבקים בתוכנה זדונית. מקור התוכן הזדוני הוא <ph name="SUBRESOURCE_HOST" />. זהו מפיץ ידוע של תוכנה זדונית. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">הבקשה או הפרמטרים של הבקשה אינם חוקיים</translation>
 <translation id="1834321415901700177">האתר הזה מכיל תוכניות מזיקות</translation>
-<translation id="1838667051080421715">אתה מציג את המקור של דף אינטרנט.</translation>
 <translation id="1871208020102129563">‏שרת ה-Proxy מוגדר להשתמש בשרתי Proxy קבועים, לא בכתובת אתר של סקריפט ‎.Pac</translation>
+<translation id="187918866476621466">פתח דפי פתיחה</translation>
 <translation id="1883255238294161206">כווץ רשימה</translation>
 <translation id="1898423065542865115">סינון</translation>
 <translation id="194030505837763158">עבור ל-<ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">אם אתה רואה זאת לעתים קרובות, נסה את ה<ph name="HELP_LINK" /> האלה.</translation>
 <translation id="3658742229777143148">גרסה קודמת</translation>
 <translation id="3678029195006412963">לא ניתן היה לחתום על הבקשה</translation>
+<translation id="3679803492151881375">דוח קריסה תועד ב-<ph name="CRASH_TIME" />, הועלה ב-<ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">פרטי אישור</translation>
 <translation id="3690164694835360974">ההתחברות אינה מאובטחת</translation>
 <translation id="3693415264595406141">סיסמה:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;ביטול מחיקה</translation>
 <translation id="4619615317237390068">כרטיסיות ממכשירים אחרים</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">אתה צופה בדף של תוסף.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">החיבור נקטע</translation>
 <translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />מפעיל את אבחון הרשת של Windows<ph name="END_LINK" /></translation>
@@ -380,6 +380,7 @@
 1240185477879256427אתר
 Del</translation>
 <translation id="4800132727771399293">‏בדוק את תאריך התפוגה ואת ה-CVC ונסה שוב</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">שגיאת רשת</translation>
 <translation id="4816492930507672669">התאמה לדף</translation>
 <translation id="4850886885716139402">הצג</translation>
@@ -455,6 +456,7 @@ Del</translation>
 <translation id="5622887735448669177">האם ברצונך לעזוב את האתר?</translation>
 <translation id="5629630648637658800">טעינת הגדרות המדיניות נכשלה</translation>
 <translation id="5631439013527180824">אסימון ניהול המכשיר אינו חוקי</translation>
+<translation id="5669703222995421982">התאמה אישית של תוכן</translation>
 <translation id="5675650730144413517">הדף הזה לא עובד</translation>
 <translation id="5677928146339483299">במצב חסום</translation>
 <translation id="5694783966845939798">‏ניסית להיכנס אל <ph name="DOMAIN" />, אבל השרת הציג אישור שנחתם באמצעות אלגוריתם חתימה ברמת אבטחה חלשה (כגון SHA-1). כלומר, ייתכן שאישורי האבטחה שהשרת הציג מזויפים, ושלא מדובר בשרת שציפית לו (ייתכן שאתה מתקשר עם תוקף). <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -555,6 +557,7 @@ Del</translation>
 <translation id="6753269504797312559">ערך מדיניות</translation>
 <translation id="6757797048963528358">המכשיר עבר למצב שינה.</translation>
 <translation id="6778737459546443941">ההורה ששאלת עדיין לא אישר זאת</translation>
+<translation id="6810899417690483278">מזהה של התאמה אישית</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">דף האינטרנט <ph name="URL" /> אינו זמין כעת. ייתכן שהוא בעומס יתר או שהושבת לצורך תחזוקה.</translation>
 <translation id="6831043979455480757">תרגם</translation>
@@ -714,6 +717,7 @@ Del</translation>
 <translation id="8364627913115013041">לא מוגדר.</translation>
 <translation id="8380941800586852976">מסוכן</translation>
 <translation id="8382348898565613901">הסימניות שאליהן נכנסת לאחרונה מופיעות כאן</translation>
+<translation id="8398259832188219207">דוח קריסה הועלה ב-<ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">קריסות (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">עליך להזין את אותו משפט-סיסמה פעמיים.</translation>
 <translation id="8428213095426709021">הגדרות</translation>

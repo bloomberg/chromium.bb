@@ -52,6 +52,7 @@
 <translation id="1445680696957526815">Τα στοιχεία του Chrome δεν είναι συμβατά μεταξύ τους. Το Chrome ενδεχομένως να αναβαθμίζεται. Δοκιμάστε ξανά σε λίγα λεπτά. Αν το πρόβλημα παραμένει, δοκιμάστε να απεγκαταστήσετε και να εγκαταστήσετε ξανά το Chrome.</translation>
 <translation id="1446450296470737166">Να επιτρέπεται πλήρης έλεγχος σε MIDI</translation>
 <translation id="145097072038377568">Έχει απενεργοποιηθεί στις Ρυθμίσεις Android</translation>
+<translation id="1455941322673536744">Αυτόματη Συμπλήρωση και πληρωμές</translation>
 <translation id="147006957810816598">Δεν θα αποσυνδεθείτε από το λογαριασμό σας Google.</translation>
 <translation id="1477626028522505441">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω προβλημάτων στον διακομιστή.</translation>
 <translation id="1506061864768559482">Μηχανή αναζήτησης</translation>
@@ -195,6 +196,7 @@
 <translation id="2996291259634659425">Δημιουργία φράσης πρόσβασης</translation>
 <translation id="2996809686854298943">Απαιτείται διεύθυνση URL</translation>
 <translation id="300526633675317032">Αυτό θα διαγράψει και τα <ph name="SIZE_IN_KB" /> του αποθηκευτικού χώρου ιστότοπων.</translation>
+<translation id="3029613699374795922">Έγινε λήψη <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Οι φράσεις πρόσβασης δεν συμφωνούν</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Άνοιγμα σε καρτέλα ανώνυμης περιήγησης</translation>
@@ -262,6 +264,7 @@
 <translation id="3739899004075612870">Ο σελιδοδείκτης προστέθηκε στο <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB από άλλες εφαρμογές</translation>
 <translation id="3744111561329211289">Συγχρονισμός παρασκηνίου</translation>
+<translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ενεργοποιήστε το Bluetooth<ph name="END_LINK" />, για να επιτρέψετε τη σύζευξη</translation>
 <translation id="3789841737615482174">Εγκατάσταση</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{Επιλέχθηκε 1 στοιχείο}other{Επιλέχθηκαν # στοιχεία}}</translation>
 <translation id="3810838688059735925">Βίντεο</translation>
@@ -317,7 +320,6 @@
 <translation id="4300272766492248925">Άνοιγμα εφαρμογής</translation>
 <translation id="4307992518367153382">Βασικά στοιχεία</translation>
 <translation id="4351244548802238354">Κλείσιμο παραθύρου διαλόγου</translation>
-<translation id="4376501731284077108">Χωρίς έλεγχο</translation>
 <translation id="4378154925671717803">Τηλέφωνο</translation>
 <translation id="4384468725000734951">Χρήση του Sogou για αναζήτηση</translation>
 <translation id="4412992751769744546">Αποδοχή cookie τρίτου μέρους</translation>
@@ -362,8 +364,10 @@
 <translation id="4837753911714442426">Άνοιγμα επιλογών για την εκτύπωση της σελίδας</translation>
 <translation id="4850886885716139402">Προβολή</translation>
 <translation id="4860895144060829044">Κλήση</translation>
+<translation id="4862624982077154323">Σε ορισμένους ιστοτόπους, μπορείτε να πληρώσετε χρησιμοποιώντας υποστηριζόμενες εφαρμογές πληρωμών. Επιλέξτε ποιες εφαρμογές θέλετε να χρησιμοποιείτε στο Chrome.</translation>
 <translation id="4881695831933465202">Άνοιγμα</translation>
 <translation id="4885273946141277891">Μη υποστηριζόμενος αριθμός παρουσιών Chrome.</translation>
+<translation id="4910889077668685004">Εφαρμογές πληρωμών</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Λήψη βοήθειας<ph name="END_LINK" /> κατά τη σάρωση για συσκευές…</translation>
 <translation id="4923459931733593730">Πληρωμή</translation>
 <translation id="4941291666397027948">Το * υποδεικνύει απαιτούμενο πεδίο</translation>
@@ -372,7 +376,7 @@
 <translation id="4961700429721424617">Πρόκειται να αποσυνδεθείτε από έναν λογαριασμό του οποίου η διαχείριση γίνεται από <ph name="MANAGED_DOMAIN" />. Αυτή η ενέργεια θα διαγράψει τα δεδομένα σας στο Chrome από αυτήν τη συσκευή, αλλά θα διατηρηθούν στον Λογαριασμό σας Google.</translation>
 <translation id="497421865427891073">Μετάβαση προς τα εμπρός</translation>
 <translation id="4988526792673242964">Σελίδες</translation>
-<translation id="4996978546172906250">Κοινή χρήση μέσω</translation>
+<translation id="4996978546172906250">Μοιραστείτε μέσω</translation>
 <translation id="5000922062037820727">Αποκλείεται (συνιστάται)</translation>
 <translation id="5004339818306944878">Χρησιμοποιήστε έως 60% λιγότερα δεδομένα και αυξήστε την ταχύτητα του ιστού. Οι διακομιστές της Google θα βελτιστοποιήσουν τις σελίδες που επισκέπτεστε.</translation>
 <translation id="5005498671520578047">Αντιγραφή κωδικού πρόσβασης</translation>
@@ -389,7 +393,7 @@
 <translation id="5131405117025179004">Επεξεργασία αποθηκευμένου λογαριασμού</translation>
 <translation id="5138299137310274655">Αυτή η σελίδα είναι στα <ph name="SOURCE_LANGUAGE" />. Να μεταφραστεί στα <ph name="TARGET_LANGUAGE" />;</translation>
 <translation id="515227803646670480">Διαγραφή αποθηκευμένων δεδομένων</translation>
-<translation id="5156656584247937086">Αυτός ο λογαριασμός είναι παιδικός</translation>
+<translation id="5152843274749979095">Δεν έχουν εγκατασταθεί υποστηριζόμενες εφαρμογές</translation>
 <translation id="5161254044473106830">Απαιτείται τίτλος</translation>
 <translation id="5164482624172255778">Θέλετε το Google Chrome να προσφέρεται να μεταφράσει τις σελίδες <ph name="LANGUAGE" /> από αυτόν τον ιστότοπο την επόμενη φορά;</translation>
 <translation id="5168917394043976756">Άνοιγμα συρταριού πλοήγησης</translation>
@@ -448,6 +452,7 @@
 <translation id="5610807607761827392">Μπορείτε να διαχειριστείτε τις κάρτες και τις διευθύνσεις στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="5626134646977739690">Όνομα:</translation>
 <translation id="5646376287012673985">Τοποθεσία</translation>
+<translation id="5655963694829536461">Αναζήτηση λήψεων</translation>
 <translation id="5659593005791499971">Διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="5665379678064389456">Δημιουργία συμβάντος στην εφαρμογή <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Παράκαμψη του αιτήματος ενός ιστότοπου για παρεμπόδιση εστίασης</translation>
@@ -472,6 +477,7 @@
 <translation id="583281660410589416">Άγνωστο</translation>
 <translation id="5832934273103296195">Αναπτυγμένη - Κάντε κλικ για σύμπτυξη</translation>
 <translation id="583891442612896534">Το Chrome δεν είναι δυνατό να επικοινωνήσει με τους διακομιστές της Google για συμπίεση δεδομένων. Η εξοικονόμηση δεδομένων πιθανώς να είναι περιορισμένη.</translation>
+<translation id="5858741533101922242">Το Chrome δεν είναι δυνατό να ενεργοποιήσει τον προσαρμογέα Bluetooth</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
 <translation id="5867027562311576691">Περισσότερα άρθρα θα εμφανιστούν συντομα. Απολαύστε το πρωινό σας.</translation>
 <translation id="5869522115854928033">Αποθηκευμένοι κωδικοί πρόσβασης</translation>
@@ -503,6 +509,7 @@
 <translation id="6140912465461743537">Χώρα/Περιοχή</translation>
 <translation id="6159335304067198720">Εξοικονόμηση δεδομένων κατά <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
+<translation id="6177111841848151710">Αποκλείστηκε για την τρέχουσα μηχανή αναζήτησης</translation>
 <translation id="6177390657002841081">Ενεργοποίηση Εξοικονόμησης δεδομένων</translation>
 <translation id="6181444274883918285">Προσθήκη εξαίρεσης ιστότοπου</translation>
 <translation id="6192792657125177640">Εξαιρέσεις</translation>
@@ -513,8 +520,9 @@
 <translation id="6295158916970320988">Όλοι οι ιστότοποι</translation>
 <translation id="6320088164292336938">Δόνηση</translation>
 <translation id="6324034347079777476">Ο συγχρονισμός συστήματος Android απενεργοποιήθηκε</translation>
-<translation id="6333140779060797560">Κοινή χρήση μέσω <ph name="APPLICATION" /></translation>
+<translation id="6333140779060797560">Μοιραστείτε μέσω <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Κρυπτογράφηση</translation>
+<translation id="6343192674172527289">Δεν βρέθηκαν λήψεις</translation>
 <translation id="6364438453358674297">Κατάργηση πρότασης από το ιστορικό;</translation>
 <translation id="6383961787135158834">Διαγρ. αποθ. χώρ. ιστότ…</translation>
 <translation id="6388207532828177975">Διαγραφή και επαναφορά</translation>
@@ -522,6 +530,7 @@
 <translation id="6406506848690869874">Συγχρονισμός</translation>
 <translation id="6409731863280057959">Αναδυόμενα παράθυρα</translation>
 <translation id="641643625718530986">Εκτύπωση…</translation>
+<translation id="6416782512398055893">Έγινε λήψη <ph name="MBS" /> MB</translation>
 <translation id="6433490469411711332">Επεξεργασία στοιχείων επαφής</translation>
 <translation id="6443118737398455446">Μη έγκυρη ημερομηνία λήξης</translation>
 <translation id="6446608382365791566">Προσθήκη περισσότερων πληροφοριών</translation>
@@ -532,6 +541,7 @@
 <translation id="6477460825583319731">Μη έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="6482749332252372425">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω έλλειψης αποθηκευτικού χώρου.</translation>
 <translation id="6527303717912515753">Κοινή χρήση</translation>
+<translation id="6538442820324228105">Έγινε λήψη <ph name="GBS" /> GB</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">Επιλέξτε μια καρτέλα για ζεύξη</translation>
 <translation id="6545017243486555795">Διαγραφή όλων των δεδομένων</translation>
@@ -587,6 +597,7 @@
 <translation id="699220179437400583">Αυτόματη αναφορά στην Google των λεπτομερειών πιθανών περιστατικών ασφάλειας</translation>
 <translation id="6992289844737586249">Να γίνεται ερώτηση προτού επιτραπεί στους ιστότοπους να χρησιμοποιήσουν το μικρόφωνό σας (συνιστάται)</translation>
 <translation id="7001663382399377034">Προσθήκη παραλήπτη</translation>
+<translation id="7016516562562142042">Επιτράπηκε για την τρέχουσα μηχανή αναζήτησης</translation>
 <translation id="7021515813996758557">Έγινε λήψη του αρχείου <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">Άνοιγμα σε πρόγρ. περιήγησης</translation>
 <translation id="7029809446516969842">Κωδικοί πρόσβασης</translation>
@@ -713,7 +724,6 @@
 <translation id="8372893542064058268">Να επιτρέπεται ο Συγχρονισμός παρασκηνίου για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="8374821112118309944">Θα πρέπει να ενημερώσετε το TalkBack σε νεότερη έκδοση.</translation>
 <translation id="8393700583063109961">Αποστολή μηνύματος</translation>
-<translation id="8396312449826231789">Μόνο εγκεκριμένοι ιστότοποι</translation>
 <translation id="8413126021676339697">Εμφάνιση πλήρους ιστορικού</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="8433057134996913067">Αυτή η ενέργεια θα σας αποσυνδέσει από τους περισσότερους ιστότοπους.</translation>
@@ -742,7 +752,6 @@
 <translation id="8660471606262461360">Από το Google Payments</translation>
 <translation id="8676374126336081632">Διαγραφή καταχώρισης</translation>
 <translation id="869891660844655955">Ημερομηνία λήξης</translation>
-<translation id="8699799819461268362">Φίλτρο Google SafeSites</translation>
 <translation id="8719023831149562936">Δεν είναι δυνατή η ζεύξη της τρέχουσας καρτέλας</translation>
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>

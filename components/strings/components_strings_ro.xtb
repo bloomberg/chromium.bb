@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Recent, Navigarea sigură Google <ph name="BEGIN_LINK" />a detectat programe malware<ph name="END_LINK" /> pe <ph name="SITE" />. Site-urile care sunt de obicei sigure sunt uneori infectate cu programe malware. Conținutul rău-intenționat provine de la <ph name="SUBRESOURCE_HOST" />, un distribuitor cunoscut de programe malware. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Solicitarea sau parametrii săi sunt greșiți</translation>
 <translation id="1834321415901700177">Acest site conține programe dăunătoare</translation>
-<translation id="1838667051080421715">Se afișează sursa unei pagini web.</translation>
 <translation id="1871208020102129563">Configurația proxy este setată să utilizeze servere proxy fixe, și nu o adresă URL pentru scripturi .pac.</translation>
+<translation id="187918866476621466">Deschide paginile de pornire</translation>
 <translation id="1883255238294161206">Restrângeți lista</translation>
 <translation id="1898423065542865115">Filtrarea</translation>
 <translation id="194030505837763158">Accesați <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Dacă această pagină se afișează în mod frecvent, încercați <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Versiune</translation>
 <translation id="3678029195006412963">Solicitarea nu a putut fi semnată</translation>
+<translation id="3679803492151881375">Raport de blocare creat <ph name="CRASH_TIME" /> și încărcat <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informații despre certificat</translation>
 <translation id="3690164694835360974">Conectarea nu este securizată</translation>
 <translation id="3693415264595406141">Parolă:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Anulați ștergerea</translation>
 <translation id="4619615317237390068">File de pe alte dispozitive</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Se afișează pagina extensiei.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Conexiunea a fost întreruptă</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />să rulezi Diagnostice rețea Windows<ph name="END_LINK" />;</translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Pagina web de la <ph name="URL" /> poate fi temporar nefuncțională sau a fost mutată definitiv la o nouă adresă web.</translation>
 <translation id="4771973620359291008">A apărut o eroare necunoscută.</translation>
 <translation id="4800132727771399293">Verifică data de expirare și codul CVC și încearcă din nou</translation>
+<translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4813512666221746211">Eroare de rețea</translation>
 <translation id="4816492930507672669">Încadrați în pagină</translation>
 <translation id="4850886885716139402">Afișează</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Dorești să părăsești acest site?</translation>
 <translation id="5629630648637658800">Setările pentru politică nu au putut fi încărcate</translation>
 <translation id="5631439013527180824">Indicativ nevalid pentru gestionarea gadgetului</translation>
+<translation id="5669703222995421982">Obține conținut personalizat</translation>
 <translation id="5675650730144413517">Pagina nu funcționează</translation>
 <translation id="5677928146339483299">Blocat</translation>
 <translation id="5694783966845939798">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat semnat folosind un algoritm de semnare slab (cum ar fi SHA-1). Acest lucru înseamnă că este posibil ca datele de conectare de securitate prezentate de server să fie falsificate sau ca serverul să nu fie cel așteptat (este posibil să comunici cu un atacator). <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Valoarea politicii</translation>
 <translation id="6757797048963528358">Dispozitivul este inactiv.</translation>
 <translation id="6778737459546443941">Părintele tău nu l-a aprobat încă</translation>
+<translation id="6810899417690483278">ID-ul de personalizare</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Pagina web de la <ph name="URL" /> nu este disponibilă momentan. Poate fi supraîncărcată sau dezactivată pentru lucrări de întreținere.</translation>
 <translation id="6831043979455480757">Tradu</translation>
@@ -709,6 +712,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8364627913115013041">Nesetată.</translation>
 <translation id="8380941800586852976">Periculos</translation>
 <translation id="8382348898565613901">Marcajele accesate recent apar aici</translation>
+<translation id="8398259832188219207">Raport de blocare încărcat <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Blocări (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Trebuie să introduci aceeași expresie de acces de două ori.</translation>
 <translation id="8428213095426709021">Setări</translation>

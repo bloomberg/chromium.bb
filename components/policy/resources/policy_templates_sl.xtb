@@ -381,6 +381,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Če ta nastavitev ni nastavljena, lahko uporabniki izberejo, ali bo storitev preverjanja črkovanja uporabljena ali ne.</translation>
 <translation id="2294382669900758280">Predvajanje videoposnetkov v aplikacijah za Android se ne upošteva, tudi če je ta pravilnik nastavljen na <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Konfiguriranje privzete strani »Nov zavihek« v brskalniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Določi seznam omogočenih vtičnikov</translation>
 <translation id="2309390639296060546">Privzeta nastavitev geolokacije</translation>
 <translation id="2312134445771258233">Omogoča, da nastavite strani, ki se naložijo pri zagonu.
@@ -389,7 +390,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2337466621458842053">Omogoča nastavitev seznama vzorcev URL-jev, s katerim se določijo, ki lahko prikazujejo slike.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultImagesSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
-<translation id="2366415278352956652">Omogoča predvajanje</translation>
 <translation id="2372547058085956601">Zamik samodejne prijave v javno sejo.
 
       Če pravilnik |DeviceLocalAccountAutoLoginId| ni nastavljen, se ne uporablja. V nasprotnem primeru:
@@ -908,6 +908,18 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="3570008976476035109">Blokiraj vtičnike na teh mestih</translation>
 <translation id="3591584750136265240">Konfiguriranje preverjanja pristnosti pri prijavi</translation>
+<translation id="3601614035698083789">Konfigurira seznam upravljanih zaznamkov.
+
+      Pravilnik sestavlja seznam zaznamkov, pri čemer je vsak zaznamek
+      slovar s ključema <ph name="NAME" /> in <ph name="URL_LABEL" />, v katerih sta shranjena ime in cilj zaznamka.
+      Mogoče je konfigurirati podmapo, tako da definirate zaznamek brez ključa <ph name="URL_LABEL" />, vendar z dodatnim ključem <ph name="CHILDREN" />, ki vsebuje seznam
+      zaznamkov, kot so opredeljeni zgoraj (nekateri so prav tako lahko mape). Brskalnik <ph name="PRODUCT_NAME" /> dopolni nepopolne URL-je,
+      kot bi bili poslani prek iskalne vrstice. <ph name="GOOGLE_COM" /> na primer postane <ph name="HTTPS_GOOGLE_COM" />.
+
+      Ti zaznamki so dani v mapo »Upravljani zaznamki«, ki je uporabnik ne more spreminjati, lahko pa izbere, da je na vrstici z zaznamki skrita. Upravljani zaznamki se ne sinhronizirajo z računom uporabnika in razširitve jih ne morejo spreminjati.
+
+      Od različice 51 naprej je mogoče ime mape za zaznamke prilagoditi z dodajanjem elementa na seznamu
+{"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Omogoči ali onemogoči spletno storitev preverjanja črkovanja</translation>
 <translation id="3646859102161347133">Nastavitev vrste lupe</translation>
 <translation id="3653237928288822292">Privzeta ikona iskalnika</translation>
@@ -1130,6 +1142,17 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če je ta pravilnik onemogočen, uporabniki ne bodo mogli zakleniti zaslona (mogoča bo samo odjava iz uporabniške seje). Če je ta nastavitev omogočena ali nastavljena, bodo lahko zaslon zaklenili uporabniki, ki so preverili pristnost z geslom.</translation>
 <translation id="4121350739760194865">Onemogoči prikaz oglasov za programe na strani »Nov zavihek«.</translation>
+<translation id="4133301551755536858">Konfigurira privzeti URL strani »Nov zavihek« v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom prepreči, da bi ga spremenili.
+
+          Stran »Nov zavihek« je stran, ki se odpre, ko so ustvarjeni novi zavihki (vključno s stranjo, odprto v novih oknih).
+
+          Ta pravilnik ne odloča o tem, katere strani se odprejo ob zagonu. Te nadzirajo pravilniki RestoreOnStartup, ki jih je mogoče uporabiti za odpiranje strani »Nov zavihek«.
+
+          Pravilnik NewTabPageLocation je mogoče nastaviti na URL, ki ga navedete tukaj. To bo prav tako vplivalo na začetno stran, če je nastavljena tako, da se odpre stran »Nov zavihek«, in na začetno stran, če je nastavljena na stran »Nov zavihek«.
+
+          Če pravilnik ni nastavljen ali pustite praznega, se uporabi privzeta stran »Nov zavihek«.
+
+          Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi v domeno Active Directory.</translation>
 <translation id="4147054660081653009">Potrdilo odjemalca za vzpostavljanje povezave s tem: RemoteAccessHostTokenValidationUrl.
 
           Če je ta pravilnik nastavljen, gostitelj za preverjanje pristnosti prek RemoteAccessHostTokenValidationUrl uporabi potrdilo odjemalca, ki ga izda CN. Če želite uporabiti poljubno razpoložljivo potrdilo odjemalca, pravilnik nastavite na »*«.
@@ -1207,7 +1230,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4467952432486360968">Blokiraj piškotke drugih spletnih mest</translation>
 <translation id="4474167089968829729">Omogočanje shranjevanja gesel v upravitelju gesel</translation>
 <translation id="4476769083125004742">Če je ta pravilnik nastavljen na <ph name="BLOCK_GEOLOCATION_SETTING" />, aplikacije za Android ne morejo dostopati do podatkov o lokaciji. Če pravilnik nastavite na katero koli drugo vrednost ali ga ne nastavite, je uporabnik pozvan, da poda soglasje, kadar želi aplikacija za Android dostopati do podatkov o lokaciji.</translation>
-<translation id="447686899376429408">Če je pravilnik omogočen ali ni nastavljen, bo uporabnikom omogočeno predvajanje vsebine zavihkov, spletnih mest ali namizja iz brskalnika. Če je onemogočen, bo ta možnost onemogočena.</translation>
 <translation id="4480694116501920047">Uveljavitev Google Varnega iskanja</translation>
 <translation id="4482640907922304445">Pokaže gumb za domačo stran v orodni vrstici brskalnika <ph name="PRODUCT_NAME" />.
 
@@ -1218,6 +1240,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če to nastavitev omogočite ali onemogočite, je uporabniki v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti.
 
       Če tega pravilnika ne nastavite, lahko uporabnik izbere, ali bo gumb za domačo stran prikazan.</translation>
+<translation id="4485425108474077672">Konfiguriranje URL-ja strani »Nov zavihek«</translation>
 <translation id="4492287494009043413">Onemogoči ustvarjanje posnetkov zaslona</translation>
 <translation id="450537894712826981">Nastavi velikost predpomnilnika, ki ga bo izdelek <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih predstavnostnih datotek na disku.
 
@@ -1640,6 +1663,12 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če je ta nastavitev onemogočena ali ni konfigurirana, zahteve za preverjanje pristnosti »gnubby« ne bodo posredovane.</translation>
 <translation id="5898486742390981550">Če je prijavljenih več uporabnikov, lahko aplikacije za Android uporablja samo primarni uporabnik.</translation>
+<translation id="5906199912611534122">Omogoča omogočanje ali onemogočanje omejevanja omrežja.
+      Ta pravilnik se uporabi za vse uporabnike in vse vmesnike v napravi. Ko je nastavljen,
+      je omejevanje v rabi, dokler se ne onemogoči s spremembo pravilnika.
+
+      Če je pravilnik onemogočen, se omrežje ne omejuje.
+      Če je pravilnik omogočen, se sistem omejuje, da doseže navedeni hitrosti nalaganja in prenašanja (v KB/s).</translation>
 <translation id="5921713479449475707">Dovoli samoposodobitvene prenose prek HTTP</translation>
 <translation id="5921888683953999946">Nastavitev privzetega stanja funkcije velikega kazalca za ljudi s posebnimi potrebami na prijavnem zaslonu.
 
@@ -1768,6 +1797,46 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6282799760374509080">Omogočanje ali onemogočanje snemanja zvoka</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Omogočanje samodokončanja imena domene med prijavo uporabnika</translation>
+<translation id="6312861131491040487">
+          Določa seznam aplikacij in razširitev, ki so nameščene brez obveščanja
+          in posegov uporabnika ter jih uporabnik ne more
+          odstraniti. Vsa dovoljenja, ki jih zahtevajo aplikacije/razširitve, so izrecno
+          odobrena brez posegov uporabnika, vključno z morebitnimi dodatnimi
+          dovoljenji, ki jih zahtevajo prihodnje različice aplikacije/razširitve.
+          Prav tako so odobrena dovoljenja za razširitvena API-ja
+          enterprise.deviceAttributes in enterprise.platformKeys.
+          (Ta API-ja nista na voljo aplikacijam/razširitvam,
+          ki niso vsiljeno nameščene.)
+
+          Ta pravilnik ima prednost pred pravilnikom
+          ExtensionsInstallBlacklist v primeru njunega spora. Če je aplikacija ali razširitev,
+          ki je bila vsiljeno nameščena, odstranjena s tega seznama, jo
+          brskalnik <ph name="PRODUCT_NAME" /> samodejno odstrani.
+
+          Za primerke sistema Windows, ki niso pridruženi v domeno Active Directory,
+          je vsiljeno nameščanje omejeno na aplikacije in razširitve, navedene
+          v Spletni trgovini Chrome.
+
+          Upoštevajte, da lahko uporabniki spremenijo izvorno kodo katere koli razširitve
+          z orodji za razvijalce (s čimer razširitev morda izgubi
+          funkcionalnost). Če imate glede tega pomisleke, nastavite pravilnik
+          DeveloperToolsDisabled.
+
+          Vsak element na seznamu pravilnika je niz, ki vsebuje ID razširitve
+          in URL za »posodobitev«, ločen s podpičjem (<ph name="SEMICOLON" />). ID razširitve je 32-mestni črkovni niz,
+          ki ga je mogoče v načinu za razvijalce
+          najti na primer na <ph name="CHROME_EXTENSIONS_LINK" />. URL za »posodobitev« mora kazati na dokument XML manifesta
+          za posodobitev, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />. Upoštevajte,
+          da se URL za »posodobitev«, nastavljen v tem pravilniku, uporabi samo pri začetni
+          namestitvi; pri vseh nadaljnjih posodobitvah razširitve je uporabljen
+          URL, naveden v manifestu razširitve.
+
+          <ph name="EXTENSION_POLICY_EXAMPLE" /> namesti na primer
+          aplikacijo <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> s standardnega URL-ja za »posodobitev« v Spletni trgovini Chrome.
+          Več informacij o gostovanju razširitev je na voljo tukaj: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Če ta pravilnik ni nastavljen, nobena aplikacija ali razširitev ni nameščena
+          samodejno in uporabnik lahko odstrani katero koli aplikacijo ali razširitev v brskalniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome prikaže opozorilno stran, ko uporabniki prikrmarijo na spletna mesta, na katerih so napake SSL. Uporabnikom je privzeto (ali če je ta pravilnik omogočen) dovoljeno, da s klikom opustijo te strani z opozorilom.
       Če onemogočite ta pravilnik, uporabnikom ni dovoljeno s klikom opustiti katere koli strani z opozorilom.</translation>
 <translation id="6353901068939575220">Določa parametre, uporabljene pri iskanju URL-ja z metodo POST. Sestavljena je iz parov ime/vrednost, ločenih z vejico. Če je vrednost parameter predloge, kot je v zgornjih primerih {searchTerms}, bo zamenjana s pravimi podatki iskalnih izrazov.
@@ -1940,6 +2009,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Podatki o pomnilniku se vseeno pošiljajo strani, ne glede na vrednost možnosti, vendar se poslane vrednosti
       kvantizirajo in je hitrost posodobitev iz varnostnih razlogov omejena. Če želite sprotne natančne podatke,
       uporabite orodja, kot je Telemetry.</translation>
+<translation id="6894178810167845842">URL strani »Nov zavihek«</translation>
 <translation id="6899705656741990703">Samodejno zaznavanje nastavitev proxyja</translation>
 <translation id="6903814433019432303">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
@@ -2073,6 +2143,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7132877481099023201">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem videa</translation>
 <translation id="7167436895080860385">Dovoli uporabnikom, da pokažejo gesla v upravitelju gesel (zastarelo).</translation>
 <translation id="7173856672248996428">Kratkotrajni profil</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Dovoljene vrste povezav za posodobitve</translation>
 <translation id="7194407337890404814">Privzeto ime iskalnika</translation>
 <translation id="7195064223823777550">Navedite dejanje, ki naj se izvede, ko uporabnik zapre pokrov.

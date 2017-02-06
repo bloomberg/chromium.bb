@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, चालू करें</translation>
 <translation id="1692077714702418899">संरचनात्मक रेखा</translation>
 <translation id="1700517974991662022">देखा गया</translation>
+<translation id="1714116687360794776">मीटर</translation>
 <translation id="1722567105086139392">लिंक</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">अगला ग्राफ़िक</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">दिनांक समय नियंत्रण</translation>
 <translation id="2347456970887948350">लिंक</translation>
 <translation id="2359897517538099099">तालिका मोड में नहीं है.</translation>
+<translation id="2390264819538553347">आगे जाने के लिए, enter दबाएं, वापस जाने के लिए, backspace दबाएं.</translation>
 <translation id="241124561063364910">इसके बाद</translation>
 <translation id="2416512023405990736">अनचेक किया गया चेकबॉक्स</translation>
 <translation id="2417569100218200841">सामग्री की जानकारी</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">रेडियो बटन समूह</translation>
 <translation id="2471138580042810658">शीर्षक 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{तारा चिह्न}one{# तारा चिह्न}other{# तारा चिह्न}}</translation>
+<translation id="2523609930580546572">ChromeVox ट्यूटोरियल</translation>
 <translation id="2525706221823668172">Chromebook कीबोर्ड शॉर्टकट</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> को रीसेट कर दिया गया है.</translation>
 <translation id="2553108862507765288">व्याकरण की गलती</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">कोई पिछला अनुभाग नहीं.</translation>
 <translation id="3030432017085518523">मेनू आइटम रेडियो बटन</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{संबंध कारक चिह्न}one{# संबंध कारक चिह्न}other{# संबंध कारक चिह्न}}</translation>
+<translation id="3040901448410802366">प्रगति संकेतक</translation>
 <translation id="3046838483509668188">ChromeVox विकल्प</translation>
 <translation id="3047143736589213134">प्रयोगात्‍मक कीमैप</translation>
 <translation id="3060756054951570867"><ph name="TITLE" />, मेनू खुल गया</translation>
@@ -230,6 +234,7 @@
 <translation id="3321460131042519426">शब्द लपेटना सक्षम करें</translation>
 <translation id="3322936298410871309">पिछले स्‍तर 1 का शीर्षक</translation>
 <translation id="3323447499041942178">टेक्स्ट बॉक्‍स</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> स्‍लाइडर</translation>
 <translation id="3353420241558113817">{"ar": "अरबी",
         "bg": "बुल्गारियाई",
         "ca": "कातलान",
@@ -714,6 +719,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="7693840228159394336">पिछला रेडियो बटन</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, पासवर्ड लेख बॉक्‍स</translation>
+<translation id="7776293189010177726">ChromeVox मेनू खोलें</translation>
 <translation id="7805247615045262757">डिफ़ॉल्ट मार्गदर्शक</translation>
 <translation id="7805768142964895445">स्थिति</translation>
 <translation id="7810781339813764006">अगला समूह</translation>

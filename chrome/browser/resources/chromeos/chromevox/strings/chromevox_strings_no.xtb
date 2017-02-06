@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />-bryteren er på</translation>
 <translation id="1692077714702418899">strukturlinje</translation>
 <translation id="1700517974991662022">Besøkt.</translation>
+<translation id="1714116687360794776">Måler</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Neste illustrasjon</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Kontroll av dato/tidspunkt</translation>
 <translation id="2347456970887948350">En link</translation>
 <translation id="2359897517538099099">Tabellmodus er ikke aktiv.</translation>
+<translation id="2390264819538553347">Trykk på Enter for å gå videre eller på tilbaketasten for å gå tilbake.</translation>
 <translation id="241124561063364910">etterfulgt av</translation>
 <translation id="2416512023405990736">En avmerkingsboks uten hake</translation>
 <translation id="2417569100218200841">Innholdsinformasjon</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Gruppe med alternativknapper</translation>
 <translation id="2471138580042810658">Overskrift 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisk}other{# asterisker}}</translation>
+<translation id="2523609930580546572">ChromeVox-veiledning</translation>
 <translation id="2525706221823668172">Hurtigtaster på Chromebook</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> er tilbakestilt.</translation>
 <translation id="2553108862507765288">grammatical mistake</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Det finnes ingen forrige del.</translation>
 <translation id="3030432017085518523">Alternativknapp for menyelement</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrof}other{# apostrofer}}</translation>
+<translation id="3040901448410802366">Fremdriftsindikator</translation>
 <translation id="3046838483509668188">Alternativer for ChromeVox</translation>
 <translation id="3047143736589213134">Eksperimentelt tastaturoppsett</translation>
 <translation id="3060756054951570867"><ph name="TITLE" />-menyen er åpen</translation>
@@ -230,6 +234,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3321460131042519426">Slå på tekstbryting</translation>
 <translation id="3322936298410871309">Forrige overskrift på nivå 1</translation>
 <translation id="3323447499041942178">Tekstboks</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" />-glidebryter</translation>
 <translation id="3353420241558113817">{"ar": "Arabisk",
         "bg": "Bulgarsk",
         "ca": "Katalansk",
@@ -714,6 +719,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7693840228159394336">Forrige alternativknapp</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, tekstfelt for passord</translation>
+<translation id="7776293189010177726">Åpne ChromeVox-menyene</translation>
 <translation id="7805247615045262757">standardnavigasjon</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7810781339813764006">Neste gruppe</translation>

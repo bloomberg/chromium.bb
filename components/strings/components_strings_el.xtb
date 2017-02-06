@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Η Ασφαλής περιήγηση Google <ph name="BEGIN_LINK" />εντόπισε κακόβουλο πρόγραμμα<ph name="END_LINK" /> πρόσφατα στον ιστότοπο <ph name="SITE" />. Οι ιστότοποι που είναι συνήθως ασφαλείς προσβάλλονται ορισμένες φορές από κακόβουλο λογισμικό. Το κακόβουλο λογισμικό προέρχεται από τον κεντρικό υπολογιστή <ph name="SUBRESOURCE_HOST" />, γνωστό διανομέα κακόβουλου λογισμικού. <ph name="BEGIN_LEARN_MORE_LINK" />Μάθετε περισσότερα<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Μη έγκυρο αίτημα ή παράμετροι αιτήματος</translation>
 <translation id="1834321415901700177">Αυτός ο ιστότοπος περιέχει κακόβουλα προγράμματα</translation>
-<translation id="1838667051080421715">Βλέπετε την πηγή μιας ιστοσελίδας.</translation>
 <translation id="1871208020102129563">Ο διακομιστής μεσολάβησης έχει ρυθμιστεί να χρησιμοποιεί διακομιστές μεσολάβησης και όχι μια διεύθυνση URL σεναρίου .pac.</translation>
+<translation id="187918866476621466">Άνοιγμα σελίδων εκκίνησης</translation>
 <translation id="1883255238294161206">Σύμπτυξη λίστας</translation>
 <translation id="1898423065542865115">Φιλτράρισμα</translation>
 <translation id="194030505837763158">Μετάβαση στο σύνδεσμο <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Αν αυτό το μήνυμα εμφανίζεται συχνά, μπορείτε να βρείτε βοήθεια εδώ <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Αναθεώρηση</translation>
 <translation id="3678029195006412963">Δεν ήταν δυνατή η έγκριση του αιτήματος</translation>
+<translation id="3679803492151881375">Η αναφορά σφαλμάτων καταγράφηκε στις <ph name="CRASH_TIME" /> και μεταφορτώθηκε στις <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Πληροφορίες πιστοποιητικού</translation>
 <translation id="3690164694835360974">Μη ασφαλής σύνδεση</translation>
 <translation id="3693415264595406141">Κωδικός πρόσβασης:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Αναίρεση διαγραφής</translation>
 <translation id="4619615317237390068">Καρτέλες από άλλες συσκευές</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Βλέπετε μια σελίδα επέκτασης.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Η σύνδεσή σας διακόπηκε</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Να εκτελέσετε τον Διαγνωστικό έλεγχο δικτύου των Windows<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Η ιστοσελίδα στη διεύθυνση <ph name="URL" /> μπορεί να βρίσκεται προσωρινά εκτός λειτουργίας ή ίσως έχει μεταφερθεί μόνιμα σε νέα διεύθυνση ιστού.</translation>
 <translation id="4771973620359291008">Παρουσιάστηκε άγνωστο σφάλμα.</translation>
 <translation id="4800132727771399293">Ελέγξτε την ημερομηνία λήξης και τον κωδικό σας CVC και δοκιμάστε ξανά</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Σφάλμα δικτύου</translation>
 <translation id="4816492930507672669">Προσαρμογή στη σελίδα</translation>
 <translation id="4850886885716139402">Προβολή</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Θέλετε να φύγετε από αυτόν τον ιστότοπο;</translation>
 <translation id="5629630648637658800">Αποτυχία φόρτωσης ρυθμίσεων πολιτικής</translation>
 <translation id="5631439013527180824">Μη έγκυρο διακριτικό διαχείρισης συσκευής</translation>
+<translation id="5669703222995421982">Λήψη εξατομικευμένου περιεχομένου</translation>
 <translation id="5675650730144413517">Αυτή η σελίδα δεν λειτουργεί</translation>
 <translation id="5677928146339483299">Αποκλεισμένος</translation>
 <translation id="5694783966845939798">Προσπαθήσατε να μεταβείτε στον τομέα <ph name="DOMAIN" />, αλλά ο διακομιστής παρουσίασε ένα πιστοποιητικό το οποίο ήταν υπογεγραμμένο με έναν αδύναμο αλγόριθμο υπογραφής (όπως SHA-1). Αυτό σημαίνει ότι μπορεί να έχουν πλαστογραφηθεί τα διαπιστευτήρια ασφαλείας που επέδειξε ο διακομιστής και ότι αυτός ο διακομιστής μπορεί να μην είναι αυτό που περιμένατε (μπορεί να επικοινωνείτε με έναν εισβολέα). <ph name="BEGIN_LEARN_MORE_LINK" />Μάθετε περισσότερα<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Τιμή πολιτικής</translation>
 <translation id="6757797048963528358">Η συσκευή σας τέθηκε σε αδράνεια.</translation>
 <translation id="6778737459546443941">Ο γονέας σου δεν τον έχει εγκρίνει ακόμα</translation>
+<translation id="6810899417690483278">Αναγνωριστικό προσαρμογής</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Η ιστοσελίδα στο <ph name="URL" /> δεν είναι διαθέσιμη προς το παρόν. Μπορεί να είναι υπερφορτωμένη ή εκτός λειτουργίας για συντήρηση.</translation>
 <translation id="6831043979455480757">Μετάφραση</translation>
@@ -709,6 +712,7 @@
 <translation id="8364627913115013041">Δεν έχει οριστεί.</translation>
 <translation id="8380941800586852976">Επικίνδυνο</translation>
 <translation id="8382348898565613901">Οι σελιδοδείκτες που επισκεφτήκατε πρόσφατα εμφανίζονται εδώ.</translation>
+<translation id="8398259832188219207">Η αναφορά σφαλμάτων μεταφορτώθηκε στις <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Σφάλματα (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Πρέπει να εισαγάγετε δύο φορές την ίδια φράση πρόσβασης.</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>

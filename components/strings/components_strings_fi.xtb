@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Googlen selaussuoja <ph name="BEGIN_LINK" />havaitsi äskettäin haittaohjelman<ph name="END_LINK" /> sivustolla <ph name="SITE" />. Myös tavallisesti turvalliset verkkosivustot voivat joskus saada haittaohjelmatartunnan. Haitallisen sisällön lähde on <ph name="SUBRESOURCE_HOST" />, tunnettu haittaohjelmien jakelija. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">Pyyntö on virheellinen tai pyynnön parametrit ovat virheelliset</translation>
 <translation id="1834321415901700177">Tämä sivusto sisältää haitallisia ohjelmia</translation>
-<translation id="1838667051080421715">Katselet verkkosivun lähdekoodia.</translation>
 <translation id="1871208020102129563">Välityspalvelin on asetettu käyttämään kiinteitä välityspalvelimia, ei .pac-URL-osoitetta.</translation>
+<translation id="187918866476621466">Avaa aloitussivut</translation>
 <translation id="1883255238294161206">Tiivistä luettelo</translation>
 <translation id="1898423065542865115">Suodatus</translation>
 <translation id="194030505837763158">Siirry osoitteeseen <ph name="LINK" /></translation>
@@ -280,6 +280,7 @@
 <translation id="3655670868607891010">Jos näet tämän usein, kokeile näitä <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Päivitetty versio</translation>
 <translation id="3678029195006412963">Pyynnön allekirjoittaminen epäonnistui.</translation>
+<translation id="3679803492151881375">Kaatumisraportti tallennettu <ph name="CRASH_TIME" />, lähetetty <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Varmenteen tiedot</translation>
 <translation id="3690164694835360974">Sisäänkirjautuminen ei ole turvallinen</translation>
 <translation id="3693415264595406141">Salasana:</translation>
@@ -364,7 +365,6 @@
 <translation id="4594403342090139922">K&amp;umoa poisto</translation>
 <translation id="4619615317237390068">Välilehdet muista laitteista</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Katselet laajennussivua.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Yhteys keskeytyi</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windowsin verkon diagnostiikkaa<ph name="END_LINK" /></translation>
@@ -377,6 +377,7 @@
 <translation id="4764776831041365478">Osoitteessa <ph name="URL" /> oleva sivu saattaa olla väliaikaisesti pois käytöstä tai se on voitu siirtää pysyvästi uuteen osoitteeseen.</translation>
 <translation id="4771973620359291008">Tapahtui tuntematon virhe.</translation>
 <translation id="4800132727771399293">Tarkista vanhenemispäivä ja CVC ja yritä uudelleen.</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Verkkovirhe</translation>
 <translation id="4816492930507672669">Sovita sivulle</translation>
 <translation id="4850886885716139402">Näytä</translation>
@@ -451,6 +452,7 @@
 <translation id="5622887735448669177">Haluatko poistua tältä sivustolta?</translation>
 <translation id="5629630648637658800">Käytännön asetuksien lataaminen epäonnistui</translation>
 <translation id="5631439013527180824">Laitteenhallintatunnus on virheellinen</translation>
+<translation id="5669703222995421982">Hanki räätälöityä sisältöä</translation>
 <translation id="5675650730144413517">Sivu ei toimi</translation>
 <translation id="5677928146339483299">Estetty</translation>
 <translation id="5694783966845939798">Yritit muodostaa yhteyden verkkotunnukseen <ph name="DOMAIN" />, mutta palvelimen esittämä varmenne käyttää heikkoa allekirjoitusalgoritmia (esim. SHA-1). Palvelimen esittämät tunnistetiedot voivat olla väärennettyjä, eikä palvelin välttämättä ole tavoittelemasi palvelin (saatat olla tekemisissä hakkerin kanssa). <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -551,6 +553,7 @@
 <translation id="6753269504797312559">Käytännön arvo</translation>
 <translation id="6757797048963528358">Laitteesi siirtyi virransäästötilaan.</translation>
 <translation id="6778737459546443941">Vanhempasi ei ole hyväksynyt sitä vielä.</translation>
+<translation id="6810899417690483278">Muokkaustunnus</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Verkkosivusto osoitteessa <ph name="URL" /> ei ole juuri nyt käytettävissä. Se saattaa olla ylikuormitettu tai suljettuna ylläpitotoimien vuoksi.</translation>
 <translation id="6831043979455480757">Käännä</translation>
@@ -710,6 +713,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8364627913115013041">Ei määritetty.</translation>
 <translation id="8380941800586852976">Vaarallinen</translation>
 <translation id="8382348898565613901">Viimeksi käyttämäsi kirjanmerkit näkyvät tässä.</translation>
+<translation id="8398259832188219207">Kaatumisraportti lähetetty <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Kaatumiset (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Kirjoita sama tunnuslause kahdesti.</translation>
 <translation id="8428213095426709021">Asetukset</translation>

@@ -61,7 +61,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="2664962310688259219">Lisensi sumber terbuka Chrome OS</translation>
 <translation id="2665296953892887393">Bantu Google Chrome jadi lebih baik dengan mengirim laporan kerusakan dan <ph name="UMA_LINK" /> ke Google</translation>
 <translation id="2689103672227170538">Ekstensi ini telah mengubah apa yang ditampilkan oleh laman saat Anda memulai Chrome.</translation>
-<translation id="2748463065602559597">Anda sedang melihat laman Google Chrome yang aman.</translation>
 <translation id="2769762047821873045">Google Chrome bukan browser default.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="2799223571221894425">Luncurkan Ulang</translation>
@@ -199,6 +198,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="6970811910055250180">Memperbarui perangkat Anda...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> mewajibkan Anda membaca dan menyetujui Persyaratan Layanan sebelum menggunakan perangkat ini. Persyaratan ini tidak memperluas, mengubah, atau membatasi Persyaratan Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
+<translation id="7048801529101012374">Google Chrome adalah browser default Anda. Hore!</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon Anda.</translation>
 <translation id="7106741999175697885">Pengelola Tugas - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda melewatkan perbaikan keamanan dan fitur baru yang keren. Anda perlu memasang ulang Chrome secara manual.</translation>

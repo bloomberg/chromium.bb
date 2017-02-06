@@ -61,7 +61,6 @@
 <translation id="2664962310688259219">Chrome OS ओपन सोर्स लाइसेंस</translation>
 <translation id="2665296953892887393">Google को क्रैश रिपोर्ट और <ph name="UMA_LINK" /> भेजकर Google Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="2689103672227170538">इस एक्सटेंशन ने यह बदल दिया है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
-<translation id="2748463065602559597">आप एक सुरक्षि‍त Google Chrome पृष्‍ठ देख रहे हैं.</translation>
 <translation id="2769762047821873045">Google Chrome आपका सामान्य ब्राउज़र नहीं है.</translation>
 <translation id="2770231113462710648">डिफ़ॉल्ट ब्राउज़र को इसमें बदलें:</translation>
 <translation id="2799223571221894425">पुन: लॉन्‍च करें</translation>
@@ -201,6 +200,7 @@
 <translation id="6970811910055250180">आपका डिवाइस अपडेट किया जा रहा है...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> चाहता है कि इस डिवाइस का उपयोग करने से पहले आप निम्न सेवा की शर्तों पढ़ लें और उन्हें स्वीकार करें. ये शर्तें Chrome OS शर्तों का विस्तार, उनमें बदलाव या उन्हें सीमित नहीं करतीं.</translation>
 <translation id="6989339256997917931">Google Chrome को अपडेट कर दिया गया  है, लेकिन आपने इसका कम से कम 30 दिन से उपयोग नहीं किया है.</translation>
+<translation id="7048801529101012374">Google Chrome आपका डिफ़ॉल्ट ब्राउज़र है. क्या बात है!</translation>
 <translation id="7098166902387133879">Google Chrome आपके माइक्रोफ़ोन का उपयोग कर रहा है.</translation>
 <translation id="7106741999175697885">काम का प्रबंधक - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome स्वयं को नवीनतम वर्शन में अपडेट नहीं कर सका, इसलिए आप शानदार नई सुविधाओं और सुरक्षा समाधानों का लाभ नहीं ले पा रहे हैं. आपको Chrome को मैन्युअल रूप से फिर से इंस्टॉल करना होगा.</translation>

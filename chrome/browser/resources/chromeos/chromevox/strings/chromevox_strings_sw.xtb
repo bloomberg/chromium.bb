@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, washa</translation>
 <translation id="1692077714702418899">mstari wa muundo</translation>
 <translation id="1700517974991662022">Lililotembelewa</translation>
+<translation id="1714116687360794776">Mita</translation>
 <translation id="1722567105086139392">Kiungo</translation>
 <translation id="1727806147743597030">kijachini</translation>
 <translation id="174268867904053074">Mchoro unaofuata</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Kidhibiti cha tarehe na saa</translation>
 <translation id="2347456970887948350">Kiungo</translation>
 <translation id="2359897517538099099">Haiko katika hali ya jedwali.</translation>
+<translation id="2390264819538553347">Ili uendelee, bonyeza kitufe cha Enter, ili urudi nyuma, bonyeza kitufe cha Backspace.</translation>
 <translation id="241124561063364910">inafuatwa na</translation>
 <translation id="2416512023405990736">Kisanduku cha kuteua ambacho hakijateuliwa</translation>
 <translation id="2417569100218200841">Maelezo ya maudhui</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Vitufe kadhaa vya mviringo</translation>
 <translation id="2471138580042810658">Kichwa 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{nyota}other{nyota #}}</translation>
+<translation id="2523609930580546572">Mafunzo ya ChromeVox</translation>
 <translation id="2525706221823668172">Njia ya mikato ya kibodi kwenye Chromebook</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> imewekwa upya.</translation>
 <translation id="2553108862507765288">kosa la sarufi</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Hakuna sehemu iliyotangulia.</translation>
 <translation id="3030432017085518523">Kitufe cha mviringo cha menyu</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrofi}other{apostrofi #}}</translation>
+<translation id="3040901448410802366">Kiashirio cha maendeleo</translation>
 <translation id="3046838483509668188">Chaguo za ChromeVox</translation>
 <translation id="3047143736589213134">Ramani msingi ya majaribio</translation>
 <translation id="3060756054951570867">Menyu <ph name="TITLE" /> imefunguliwa</translation>
@@ -229,6 +233,7 @@
 <translation id="3321460131042519426">Washa kipengee cha kufunga neno</translation>
 <translation id="3322936298410871309">Kichwa cha ngazi ya 1 kilichotangulia</translation>
 <translation id="3323447499041942178">Kikasha maandishi</translation>
+<translation id="3338224621010291843">Kitelezi cha <ph name="VALUE" /> <ph name="NAME" /></translation>
 <translation id="3353420241558113817">{"ar": "Kiarabu",
         "bg": "Kibulgaria",
         "ca": "Kikatalani",
@@ -713,6 +718,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="7693840228159394336">Kitufe cha mviringo kilichotangulia</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, kikasha maandishi cha nenosiri</translation>
+<translation id="7776293189010177726">Fungua menyu za ChromeVox</translation>
 <translation id="7805247615045262757">kudurusu chaguo-msingi</translation>
 <translation id="7805768142964895445">Hali</translation>
 <translation id="7810781339813764006">Kikundi Kinachofuata</translation>

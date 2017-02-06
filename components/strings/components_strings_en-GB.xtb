@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google Safe Browsing recently <ph name="BEGIN_LINK" />detected malware<ph name="END_LINK" /> on <ph name="SITE" />. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST" />, a known malware distributor. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
 <translation id="1834321415901700177">This site contains harmful programs</translation>
-<translation id="1838667051080421715">You are viewing the source of a web page.</translation>
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
+<translation id="187918866476621466">Open startup pages</translation>
 <translation id="1883255238294161206">Collapse list</translation>
 <translation id="1898423065542865115">Filtering</translation>
 <translation id="194030505837763158">Go to <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">If you're seeing this frequently, try these <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revision</translation>
 <translation id="3678029195006412963">Request could not be signed</translation>
+<translation id="3679803492151881375">Crash report captured on <ph name="CRASH_TIME" />, uploaded on <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Certificate information</translation>
 <translation id="3690164694835360974">Login not secure</translation>
 <translation id="3693415264595406141">Password:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Undo Delete</translation>
 <translation id="4619615317237390068">Tabs from other devices</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">You are viewing an extension page.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Your connection was interrupted</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Running Windows Network Diagnostics<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">The web page at <ph name="URL" /> might be temporarily down or it may have moved permanently to a new web address.</translation>
 <translation id="4771973620359291008">An unknown error has occurred.</translation>
 <translation id="4800132727771399293">Check your expiration date and CVC and try again</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Network error</translation>
 <translation id="4816492930507672669">Fit to page</translation>
 <translation id="4850886885716139402">View</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Do you want to leave this site?</translation>
 <translation id="5629630648637658800">Failed to load policy settings</translation>
 <translation id="5631439013527180824">Invalid device management token</translation>
+<translation id="5669703222995421982">Get personalised content</translation>
 <translation id="5675650730144413517">This page isn’t working</translation>
 <translation id="5677928146339483299">Blocked</translation>
 <translation id="5694783966845939798">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate signed using a weak signature algorithm (such as SHA-1). This means that the security credentials the server presented could have been forged, and the server may not be the server you expected (you may be communicating with an attacker). <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Policy Value</translation>
 <translation id="6757797048963528358">Your device went to sleep.</translation>
 <translation id="6778737459546443941">Your parent hasn't approved it yet</translation>
+<translation id="6810899417690483278">Customisation ID</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">The web page at <ph name="URL" /> is currently unavailable. It may be overloaded or down for maintenance.</translation>
 <translation id="6831043979455480757">Translate</translation>
@@ -709,6 +712,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8364627913115013041">Not set.</translation>
 <translation id="8380941800586852976">Dangerous</translation>
 <translation id="8382348898565613901">Your recently visited bookmarks appear here</translation>
+<translation id="8398259832188219207">Crash report uploaded on <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Crashes (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">You must enter the same passphrase twice.</translation>
 <translation id="8428213095426709021">Settings</translation>

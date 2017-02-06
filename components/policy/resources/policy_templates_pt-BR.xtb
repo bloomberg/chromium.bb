@@ -359,11 +359,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta configuração não for feita, os usuários poderão escolher se o serviço de verificação ortográfica deve ser usado ou não.</translation>
 <translation id="2294382669900758280">A reprodução de vídeos em apps Android não é levada em consideração, mesmo se esta política estiver definida como <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Configurar a página "Nova guia" padrão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especifica uma lista de plug-ins ativados</translation>
 <translation id="2309390639296060546">Configuração padrão de geolocalização</translation>
 <translation id="2312134445771258233">Permite configurar as páginas que são carregadas na inicialização. O conteúdo da lista "URLs que devem ser abertos na inicialização" é ignorado, a menos que você selecione "Abrir uma lista de URLs" em "Ação na inicialização".</translation>
 <translation id="2337466621458842053">Permite que você defina uma lista de padrões URL para especificar os sites autorizados a exibir imagens. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultImagesSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
-<translation id="2366415278352956652">Permite a transmissão</translation>
 <translation id="2372547058085956601">O período de espera para login automático na sessão pública.
 
       Se a política |DeviceLocalAccountAutoLoginId| não for definida, não terá efeito algum. Caso contrário:
@@ -854,6 +854,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="3570008976476035109">Bloquear plug-ins nestes sites</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
+<translation id="3601614035698083789">Configura uma lista de favoritos gerenciados.
+
+      A política consiste em uma lista de favoritos. E cada favorito é um
+      dicionário contendo as chaves <ph name="NAME" /> e <ph name="URL_LABEL" />, que detêm o nome do favorito e o destino dele. É
+      possível configurar uma subpasta definindo um favorito sem uma chave <ph name="URL_LABEL" />, mas com uma chave <ph name="CHILDREN" /> adicional que, por si só, contenha uma lista de
+      favoritos, conforme definido acima (alguns deles podem ser pastas novamente). O <ph name="PRODUCT_NAME" /> altera URLs incompletos
+      como se eles fossem enviados pela Omnibox. Por exemplo, <ph name="GOOGLE_COM" /> torna-se <ph name="HTTPS_GOOGLE_COM" />.
+
+      Esses favoritos são colocados em uma pasta "Favoritos gerenciados" que não pode ser modificada pelo usuário, mas o usuário pode optar por ocultá-la da barra de favoritos. Favoritos gerenciados não são sincronizados com a conta do usuário e não podem ser modificados por extensões.
+
+      A partir da versão 51, é possível personalizar o nome da pasta dos favoritos adicionando um item de lista {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Ativar ou desativar serviço da web de verificação ortográfica</translation>
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
 <translation id="3653237928288822292">Ícone do provedor de pesquisa padrão</translation>
@@ -1059,6 +1070,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta política for definida como false, os usuários não poderão bloquear a tela (só será possível sair da sessão do usuário). Se esta configuração for definida como true ou não for definida, os usuários que fizeram a autenticação com uma senha poderão bloquear a tela.</translation>
 <translation id="4121350739760194865">Evitar que promoções de aplicativos apareçam na página nova guia</translation>
+<translation id="4133301551755536858">Configura o URL padrão da página "Nova guia" no <ph name="PRODUCT_NAME" /> e impede os usuários de alterá-lo.
+
+          A página "Nova guia" é a página aberta quando novas guias são criadas (incluindo as que são abertas em novas janelas).
+
+          Esta política não decide quais páginas serão abertas na inicialização. Isso é controlado pelas políticas RestoreOnStartup, que podem definir que a página aberta será a "Nova guia".
+
+          É possível definir NewTabPageLocation para o URL que você especificar aqui. Isso também afeta a página inicial, caso esteja definida para abrir a página "Nova guia", e a página de inicialização, caso esteja definida como a página "Nova guia".
+
+          Se a política não estiver definida ou for deixada em branco, a página "Nova guia" padrão será usada.
+
+          Esta política não está disponível em instâncias do Windows não vinculadas a um domínio do Active Directory.</translation>
 <translation id="4147054660081653009">Certificado do cliente para conexão a RemoteAccessHostTokenValidationUrl.
 
           Se esta política é configurada, o host usa um certificado do cliente com o dado CN do emissor para autenticar para RemoteAccessHostTokenValidationUrl. Defina-a como "*" para usar qualquer certificado de cliente disponível.
@@ -1136,9 +1158,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Ativar salvamento de senhas no gerenciador de senhas</translation>
 <translation id="4476769083125004742">Se esta política for definida como <ph name="BLOCK_GEOLOCATION_SETTING" />, os apps Android não poderão acessar as informações de local. Se você configurar essa política para qualquer outro valor ou deixá-la sem definição, será solicitado o consentimento do usuário quando um app Android quiser acessar as informações de local.</translation>
-<translation id="447686899376429408">Se essa política estiver definida como true ou não estiver definida, os usuários conseguirão transmitir guias, sites ou a área de trabalho a partir do navegador. Se ela for definida como false, essa opção ficará desativada.</translation>
 <translation id="4480694116501920047">Forçar SafeSearch</translation>
 <translation id="4482640907922304445">Mostra o botão "Página inicial" na barra de ferramentas de <ph name="PRODUCT_NAME" />. Se ativar esta configuração, o botão "Página inicial" será sempre exibido. Se desativar esta configuração, o botão "Página inicial" nunca será exibido. Se ativar ou desativar esta configuração, os usuários não podem alterá-la ou substituí-la em <ph name="PRODUCT_NAME" />. Deixar esta política sem definição permitirá ao usuário escolher se deseja exibir o botão "Página inicial".</translation>
+<translation id="4485425108474077672">Configurar o URL da página "Nova guia"</translation>
 <translation id="4492287494009043413">Desativar captura de tela</translation>
 <translation id="450537894712826981">Configura o tamanho do cache que o <ph name="PRODUCT_NAME" /> usará para armazenar os arquivos de mídia em cache no disco.
 
@@ -1515,6 +1537,12 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
            Se essa configuração não está ativada ou configurada, as solicitações de autenticação gnubby não são transmitidas por proxy.</translation>
 <translation id="5898486742390981550">Quando vários usuários estão conectados, somente o usuário principal pode usar os apps Android.</translation>
+<translation id="5906199912611534122">Permite ativar ou desativar o acelerador de rede.
+      Essa opção se aplica a todos os usuários e todas as interfaces no dispositivo. Depois que a política é definida,
+      o acelerador permanece ativado até que ela seja alterada para desativá-lo.
+
+      Se a política é definida como false, não há acelerador.
+      Se definida como true, o sistema é suspenso para arquivar as taxas de upload e download (em kbits/s) fornecidas.</translation>
 <translation id="5921713479449475707">Permitir atualização automática de downloads via HTTP</translation>
 <translation id="5921888683953999946">Definir o estado padrão do recurso de acessibilidade do cursor grande na tela de login.
 
@@ -1632,6 +1660,46 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="6282799760374509080">Permitir ou negar captura de áudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Ativar preenchimento automático do nome de domínio durante login do usuário</translation>
+<translation id="6312861131491040487">
+          Especifica uma lista de apps e extensões que são instalados silenciosamente,
+          sem a interação do usuário, e que não podem ser desinstalados pelo
+          usuário. Todas as permissões solicitadas por apps/extensões são concedidas
+          implicitamente, sem a interação do usuário, incluindo quaisquer permissões
+          adicionais solicitadas por versões futuras do app/extensão.
+          Além disso, são concedidas permissões para as APIs de extensão 
+          enterprise.deviceAttributes e enterprise.platformKeys. Essas duas APIs
+          não estão disponíveis para apps/extensões que não tenham sido
+          instalados forçadamente.
+
+          Esta política tem precedência sobre uma política ExtensionsInstallBlacklist
+          potencialmente conflitante. Se um app ou extensão anteriormente instalado
+          de modo forçado for removido dessa lista, será automaticamente
+          desinstalado pelo <ph name="PRODUCT_NAME" />.
+
+          Em instâncias do Windows não vinculadas a um domínio do
+          Active Directory, a instalação forçada limita-se a apps e extensões listados
+          na Chrome Web Store.
+
+          O código-fonte de qualquer extensão pode ser alterado pelos usuários por meio
+          das Ferramentas de desenvolvedor, possivelmente tornando a extensão
+          defeituosa. Se essa preocupação existir, será preciso definir a política
+          DeveloperToolsDisabled.
+
+          Cada item da lista da política é uma string que contém um código de extensão
+          e um URL de "atualização" separados por ponto e vírgula (<ph name="SEMICOLON" />). O código da
+          extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" />
+          no modo de desenvolvedor. O URL de "atualização" deve apontar para um
+          documento de atualização do Manifesto XML, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
+          O URL de "atualização" definido nesta política só é usado para a instalação
+          inicial. As atualizações subsequentes da extensão empregam o URL de
+          atualização indicado no manifesto da extensão.
+
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" />
+          instala o app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> a partir do URL padrão de "atualização" da Chrome Web Store.
+          Para ver mais informações sobre extensões de hospedagem, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se esta política não for definida, nenhum app ou extensão será instalado
+          automaticamente, e o usuário poderá desinstalar apps ou extensões no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">O Chrome mostra uma página de aviso quando os usuários navegam para sites que têm erros de SSL. Por padrão ou quando esta política é definida como "true", os usuários têm permissão para clicar nessas páginas de aviso.
       A definição desta política como "false" não permite que os usuários cliquem em qualquer página de aviso.</translation>
 <translation id="6353901068939575220">Especifica os parâmetros usados ao pesquisar URL com POST. Consiste em pares de nomes/valores separados por vírgula. Se um valor for um parâmetro de modelos, como {searchTerms} no exemplo acima, será substituído por dados de termos de pesquisa reais.
@@ -1794,6 +1862,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       De alguma forma, as informações da memória são reportadas à página, independentemente do valor da opção. No entanto, os tamanhos reportados são
       quantificados, e a taxa de atualizações é limitada por motivos de segurança. Para obter dados precisos em tempo real,
       utilize ferramentas como o Telemetry.</translation>
+<translation id="6894178810167845842">URL da página "Nova guia"</translation>
 <translation id="6899705656741990703">Detectar automaticamente configurações de proxy</translation>
 <translation id="6903814433019432303">Esta política é ativa somente no modo de varejo. Determina o conjunto de URLs a serem carregados quando a sessão de demonstração for iniciada. Esta política substitui quaisquer outros mecanismos de definição do URL inicial e, portanto, somente pode ser aplicada a uma sessão não associada a determinado usuário.</translation>
 <translation id="6908640907898649429">Configura o provedor de pesquisa padrão. É possível especificar o provedor de pesquisa padrão que será usado ou escolhido pelo usuário para desativar a pesquisa padrão.</translation>
@@ -1912,6 +1981,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7132877481099023201">URLs que terão acesso a dispositivos de captura de vídeo sem solicitação</translation>
 <translation id="7167436895080860385">Permitir que os usuários exibam senhas no gerenciador de senhas (uso suspenso)</translation>
 <translation id="7173856672248996428">Perfil temporário</translation>
+<translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipos de conexão permitidos para atualizações</translation>
 <translation id="7194407337890404814">Nome do provedor de pesquisa padrão</translation>
 <translation id="7195064223823777550">Especifica a ação a ser executada quando o usuário fecha a tampa.

@@ -65,7 +65,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="2664962310688259219">Licencias de código abierto de Chrome OS</translation>
 <translation id="2665296953892887393">Ayudar a mejorar Google Chrome enviando informes sobre fallos y <ph name="UMA_LINK" /> a Google</translation>
 <translation id="2689103672227170538">Esta extensión ha cambiado la página que se muestra al iniciar Chrome.</translation>
-<translation id="2748463065602559597">Estás viendo una página de Google Chrome segura.</translation>
 <translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
 <translation id="2770231113462710648">Cambiar navegador predeterminado por:</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
@@ -207,6 +206,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="6970811910055250180">Actualizando el dispositivo...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> requiere que leas y aceptes las siguientes Condiciones de Servicio antes de utilizar este dispositivo. Estas condiciones no amplían, modifican ni limitan los términos de Google Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome se ha actualizado, pero llevas al menos 30 días sin utilizarlo.</translation>
+<translation id="7048801529101012374">Google Chrome es tu navegador predeterminado.</translation>
 <translation id="7098166902387133879">Google Chrome está utilizando el micrófono.</translation>
 <translation id="7106741999175697885">Administrador de tareas de Google Chrome</translation>
 <translation id="7125719106133729027">Chrome no ha podido actualizarse automáticamente a la última versión, por lo que te estás perdiendo algunos magníficos parches de seguridad y fantásticas funciones nuevas. Tendrás que volver a instalar Chrome manualmente.</translation>

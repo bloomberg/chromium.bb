@@ -61,7 +61,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="2664962310688259219">Licencias de código abierto del Sistema operativo Chrome</translation>
 <translation id="2665296953892887393">Envía a Google informes de fallos y <ph name="UMA_LINK" /> para ayudar a mejorar Google Chrome.</translation>
 <translation id="2689103672227170538">Esta extensión cambió la página que se muestra al iniciar Chrome.</translation>
-<translation id="2748463065602559597">Estás viendo una página segura de Google Chrome.</translation>
 <translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
 <translation id="2770231113462710648">Cambiar el navegador predeterminado a:</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
@@ -199,6 +198,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="6970811910055250180">Actualizando el dispositivo...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> requiere que leas y aceptes las siguientes Condiciones del servicio antes de usar este dispositivo. Estas condiciones no amplían, modifican ni limitan las Condiciones del Sistema operativo de Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome fue actualizado, pero no lo has utilizado en los últimos 30 días.</translation>
+<translation id="7048801529101012374">Google Chrome es tu navegador predeterminado.</translation>
 <translation id="7098166902387133879">Google Chrome está usando tu micrófono.</translation>
 <translation id="7106741999175697885">Administrador de tareas - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome no pudo actualizarse a la versión más reciente, por lo que no estás aprovechando las funciones geniales ni las correcciones de seguridad que se agregaron. Debes reinstalar Chrome de forma manual.</translation>

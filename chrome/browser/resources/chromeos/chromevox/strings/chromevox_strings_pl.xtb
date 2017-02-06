@@ -74,6 +74,7 @@
 <translation id="1680732992526857724"><ph name="NAME" />, przełącznik włączony</translation>
 <translation id="1692077714702418899">linia struktury</translation>
 <translation id="1700517974991662022">Kliknięty</translation>
+<translation id="1714116687360794776">Miernik</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Następna grafika</translation>
@@ -123,6 +124,7 @@
 <translation id="2344193891939537199">Element wyboru daty i godziny</translation>
 <translation id="2347456970887948350">Link</translation>
 <translation id="2359897517538099099">Nie jesteś w trybie tabeli.</translation>
+<translation id="2390264819538553347">Aby kontynuować, naciśnij Enter. Aby się cofnąć, naciśnij Backspace.</translation>
 <translation id="241124561063364910">, a następnie naciśnij</translation>
 <translation id="2416512023405990736">Niezaznaczone pole</translation>
 <translation id="2417569100218200841">Informacje o zawartości</translation>
@@ -134,6 +136,7 @@
 <translation id="2462626033734746142">Grupa przycisków radiowych</translation>
 <translation id="2471138580042810658">Nagłówek 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{gwiazdka}few{# znaki gwiazdki}many{# znaków gwiazdki}other{# asterisks}}</translation>
+<translation id="2523609930580546572">Samouczek ChromeVox</translation>
 <translation id="2525706221823668172">Skróty klawiszowe na Chromebooku</translation>
 <translation id="2549392850788122959">Klawisz <ph name="KEY" /> został zresetowany.</translation>
 <translation id="2553108862507765288">błąd gramatyczny</translation>
@@ -189,6 +192,7 @@
 <translation id="3012414509011670858">Brak poprzedniej sekcji.</translation>
 <translation id="3030432017085518523">Przycisk opcji elementu menu</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrof}few{# apostrofy}many{# apostrofów}other{# apostrophes}}</translation>
+<translation id="3040901448410802366">Wskaźnik postępu</translation>
 <translation id="3046838483509668188">Opcje ChromeVox</translation>
 <translation id="3047143736589213134">Eksperymentalna mapa klawiatury</translation>
 <translation id="3060756054951570867">otwarte menu <ph name="TITLE" /></translation>
@@ -230,6 +234,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3321460131042519426">Włącz zawijanie wyrazów</translation>
 <translation id="3322936298410871309">Poprzedni nagłówek poziomu 1</translation>
 <translation id="3323447499041942178">Pole tekstowe</translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> – suwak</translation>
 <translation id="3353420241558113817">{"ar": "arabski",
         "bg": "bułgarski",
         "ca": "kataloński",
@@ -714,6 +719,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="7693840228159394336">Poprzedni przycisk opcji</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, pole tekstowe hasła</translation>
+<translation id="7776293189010177726">Otwórz menu ChromeVox</translation>
 <translation id="7805247615045262757">domyślna nawigacja</translation>
 <translation id="7805768142964895445">Stan</translation>
 <translation id="7810781339813764006">Następna grupa</translation>

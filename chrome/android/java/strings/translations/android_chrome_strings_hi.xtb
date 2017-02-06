@@ -52,6 +52,7 @@
 <translation id="1445680696957526815">Chrome के घटक एक-दूसरे से असंगत हैं. संभवत: Chrome अपग्रेड हो रहा है, कृपया कुछ ही देर में पुन: प्रयास करें. यदि समस्या बनी रहती है, तो Chrome को अनइंस्टॉल करके और पुन: इंस्टॉल करके देखें.</translation>
 <translation id="1446450296470737166">MIDI डिवाइस के पूर्ण नियंत्रण की अनुमति दें</translation>
 <translation id="145097072038377568">Android सेटिंग में बंद कर दिया गया है</translation>
+<translation id="1455941322673536744">ऑटोमैटिक भरना और भुगतान</translation>
 <translation id="147006957810816598">आप अपने Google खाते से प्रस्थान नहीं करेंगे.</translation>
 <translation id="1477626028522505441">सर्वर संबधी समस्‍याओं के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="1506061864768559482">खोज इंजन</translation>
@@ -195,6 +196,7 @@
 <translation id="2996291259634659425">पासफ़्रेज़ बनाएं</translation>
 <translation id="2996809686854298943">URL आवश्यक है</translation>
 <translation id="300526633675317032">इससे वेबसाइट की सभी <ph name="SIZE_IN_KB" /> जगह साफ़ हो जाएगी.</translation>
+<translation id="3029613699374795922"><ph name="KBS" /> केबी डाउनलोड किया गया</translation>
 <translation id="3029704984691124060">पासफ़्रेज़ मिलान नहीं करते</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />सहायता प्राप्त करें<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">गुप्त टैब में खोलें</translation>
@@ -262,6 +264,7 @@
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> में बुकमार्क किया गया</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB अन्य ऐप्लिकेशन</translation>
 <translation id="3744111561329211289">पृष्ठभूमि समन्वयन</translation>
+<translation id="3773755127849930740">युग्मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />ब्लूटूथ चालू करें<ph name="END_LINK" /></translation>
 <translation id="3789841737615482174">इंस्‍टॉल करें</translation>
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 आइटम चयनित}one{# आइटम चयनित}other{# आइटम चयनित}}</translation>
 <translation id="3810838688059735925">वीडियो</translation>
@@ -317,7 +320,6 @@
 <translation id="4300272766492248925">ऐप्लिकेशन खोलें</translation>
 <translation id="4307992518367153382">आधारभूत बातें</translation>
 <translation id="4351244548802238354">संवाद बंद करें</translation>
-<translation id="4376501731284077108">अनियंत्रित</translation>
 <translation id="4378154925671717803">फ़ोन</translation>
 <translation id="4384468725000734951">खोजने के लिए Sogou का उपयोग करना</translation>
 <translation id="4412992751769744546">तृतीय-पक्ष कुकी को अनुमति दें</translation>
@@ -362,8 +364,10 @@
 <translation id="4837753911714442426">पेज प्रिंट करने के विकल्प खोलें</translation>
 <translation id="4850886885716139402">देखें</translation>
 <translation id="4860895144060829044">कॉल करें</translation>
+<translation id="4862624982077154323">कुछ वेबसाइटों पर, आप समर्थित भुगतान ऐप्लिकेशन से भुगतान कर सकते हैं. Chrome में उपयोग किए जाने वाले ऐप्लिकेशन चुनें.</translation>
 <translation id="4881695831933465202">खोलें</translation>
 <translation id="4885273946141277891">Chrome इंस्टेंस की असमर्थित संख्या.</translation>
+<translation id="4910889077668685004">भुगतान ऐप्लिकेशन</translation>
 <translation id="4915549754973153784">डिवाइस स्कैन करने में <ph name="BEGIN_LINK" />सहायता पाएं<ph name="END_LINK" />...</translation>
 <translation id="4923459931733593730">भुगतान</translation>
 <translation id="4941291666397027948">* आवश्‍यक फ़ील्‍ड इंगित करता है</translation>
@@ -389,7 +393,7 @@
 <translation id="5131405117025179004">सहेजा गया खाता संपादित करें</translation>
 <translation id="5138299137310274655">यह पृष्‍ठ <ph name="SOURCE_LANGUAGE" /> में है. इसका <ph name="TARGET_LANGUAGE" /> में अनुवाद करें?</translation>
 <translation id="515227803646670480">संग्रहीत डेटा साफ़ करें</translation>
-<translation id="5156656584247937086">यह बच्चे का खाता है</translation>
+<translation id="5152843274749979095">कोई समर्थित ऐप्लिकेशन इंस्‍टॉल नहीं है</translation>
 <translation id="5161254044473106830">शीर्षक आवश्‍यक</translation>
 <translation id="5164482624172255778">क्या आप चाहते हैं कि Google Chrome अगली बार इस साइट के <ph name="LANGUAGE" /> पृष्ठों का अनुवाद करने का ऑफ़र दे?</translation>
 <translation id="5168917394043976756">मार्गदर्शक ड्रॉवर खोलें</translation>
@@ -448,6 +452,7 @@
 <translation id="5610807607761827392">आप <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में कार्ड और पते प्रबंधित कर सकते हैं.</translation>
 <translation id="5626134646977739690">नाम:</translation>
 <translation id="5646376287012673985">स्थान</translation>
+<translation id="5655963694829536461">अपने डाउनलोड खोजें</translation>
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> में इवेंट बनाएं</translation>
 <translation id="5668404140385795438">किसी वेबसाइट का ज़ूम इन करने का अनुरोध ओवरराइड करें</translation>
@@ -472,6 +477,7 @@
 <translation id="583281660410589416">अज्ञात</translation>
 <translation id="5832934273103296195">विस्तारित - संक्षिप्त करने के लिए क्लिक करें</translation>
 <translation id="583891442612896534">Chrome डेटा संपीड़न के लिए Google के सर्वर तक नहीं पहुंच पा रहा है. आपकी डेटा की बचत सीमित हो सकती हैं.</translation>
+<translation id="5858741533101922242">Chrome, ब्लूटूथ एडाप्टर को चालू नहीं कर सका</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5867027562311576691">जल्द ही अधिक लेख दिखाई देंगे. अपनी सुबह का आनंद लें.</translation>
 <translation id="5869522115854928033">सहेजे गए पासवर्ड</translation>
@@ -503,6 +509,7 @@
 <translation id="6140912465461743537">देश/क्षेत्र</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
+<translation id="6177111841848151710">अभी के खोज इंजन के लिए ब्लॉक किया गया</translation>
 <translation id="6177390657002841081">डेटा बचाने का साधन चालू करना</translation>
 <translation id="6181444274883918285">साइट का अपवाद जोड़ें</translation>
 <translation id="6192792657125177640">अपवाद</translation>
@@ -515,6 +522,7 @@
 <translation id="6324034347079777476">Android सिस्टम समन्वयन अक्षम है</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> के द्वारा साझा करें</translation>
 <translation id="6337234675334993532">सुरक्षित तरीका</translation>
+<translation id="6343192674172527289">कोई डाउनलोड नहीं मिला</translation>
 <translation id="6364438453358674297">सुझाव को इतिहास से निकालें?</translation>
 <translation id="6383961787135158834">साइट की जगह साफ़ करें…</translation>
 <translation id="6388207532828177975">साफ़ करें और रीसेट करें</translation>
@@ -522,6 +530,7 @@
 <translation id="6406506848690869874">समन्वय</translation>
 <translation id="6409731863280057959">पॉप-अप</translation>
 <translation id="641643625718530986">प्रिंट करें…</translation>
+<translation id="6416782512398055893"><ph name="MBS" /> एमबी डाउनलोड किया गया</translation>
 <translation id="6433490469411711332">संपर्क जानकारी संपादित करें</translation>
 <translation id="6443118737398455446">अमान्य समाप्ति दिनांक</translation>
 <translation id="6446608382365791566">और जानकारी जोड़ें</translation>
@@ -532,6 +541,7 @@
 <translation id="6477460825583319731">अमान्य ईमेल पता</translation>
 <translation id="6482749332252372425">मेमोरी स्‍थान कम होने के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="6527303717912515753">साझा करें</translation>
+<translation id="6538442820324228105"><ph name="GBS" /> जीबी डाउनलोड किया गया</translation>
 <translation id="654278619399546675">passwords.google.com</translation>
 <translation id="654446541061731451">बीम के लिए टैब को चुनें</translation>
 <translation id="6545017243486555795">सभी डेटा साफ़ करें</translation>
@@ -587,6 +597,7 @@
 <translation id="699220179437400583">Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करें</translation>
 <translation id="6992289844737586249">साइट को अपने माइक्रोफ़ोन का उपयोग करने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
 <translation id="7001663382399377034">प्राप्तकर्ता जोड़ें</translation>
+<translation id="7016516562562142042">अभी वाले खोज इंजन के लिए अनुमति दी गई</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> को डाउनलोड किया गया</translation>
 <translation id="7022756207310403729">ब्राउज़र में खोलें</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
@@ -713,7 +724,6 @@
 <translation id="8372893542064058268">किसी विशिष्ट साइट के लिए पृष्ठभूमि समन्वयन की अनुमति दें.</translation>
 <translation id="8374821112118309944">आपको TalkBack को अधिक नए वर्शन से अपडेट करना होगा.</translation>
 <translation id="8393700583063109961">संदेश भेजें</translation>
-<translation id="8396312449826231789">केवल स्‍वीकृत साइटें</translation>
 <translation id="8413126021676339697">संपूर्ण इतिहास दिखाएं</translation>
 <translation id="8428213095426709021">सेटिंग्स</translation>
 <translation id="8433057134996913067">इससे आप अधिकांश वेबसाइट से प्रस्थान कर जाएंगे.</translation>
@@ -742,7 +752,6 @@
 <translation id="8660471606262461360">Google पेमेंट्स से</translation>
 <translation id="8676374126336081632">इनपुट साफ़ करें</translation>
 <translation id="869891660844655955">समय समाप्ति दिनांक</translation>
-<translation id="8699799819461268362">Google सुरक्षित साइट फ़िल्‍टर</translation>
 <translation id="8719023831149562936">वर्तमान टैब को बीम नहीं किया जा सकता</translation>
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="8730621377337864115">पूर्ण</translation>

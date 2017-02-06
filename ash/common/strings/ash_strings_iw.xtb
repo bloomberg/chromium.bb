@@ -39,6 +39,7 @@
 <translation id="1923539912171292317">לחיצות אוטומטיות</translation>
 <translation id="1957803754585243749">‎0°‎</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" />‏ (USB)</translation>
+<translation id="2122028596993374965">הפסק להעביר את <ph name="TAB_NAME" /> אל <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">מטען בעל מתח נמוך</translation>
 <translation id="2204305834655267233">פרטי רשת</translation>
 <translation id="2208323208084708176">מצב שולחן עבודה מאוחד</translation>
@@ -149,6 +150,7 @@
 <translation id="5331975486040154427">‏מכשיר עם יציאת USB-C (יציאה שמאלית-אחורית)</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">כל המשתמשים הזמינים כבר נוספו לפעילות זו באתר.</translation>
+<translation id="5504841533973703486">מיקרופון קדמי</translation>
 <translation id="5507786745520522457">הגדר נתונים לנייד</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">התוסף "<ph name="EXTENSION_NAME" />" יכול לעזור בהתחברות אל הרשת הזו.</translation>
@@ -160,6 +162,7 @@
 <translation id="57838592816432529">השתק</translation>
 <translation id="5825747213122829519">‏שיטת הקלט שלך השתנתה ל-<ph name="INPUT_METHOD_ID" />.
         הקש Shift + Alt כדי להחליף.</translation>
+<translation id="5830936593837877897">מיקרופון אחורי</translation>
 <translation id="5871632337994001636">נהל מכשירים...</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -248,8 +251,10 @@
 <translation id="8000066093800657092">אין רשת</translation>
 <translation id="8054466585765276473">מחשב זמן סוללה</translation>
 <translation id="8077816382010018681">‏כותרת ההודעה של תכונת QU תופיע כאן</translation>
+<translation id="8098591350844501178">הפסק להעביר את המסך אל <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">‏הודעות SMS‏: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">מחובר ל<ph name="NAME" /></translation>
+<translation id="8180896103888046100">הפסק להעביר למקלט לא ידוע</translation>
 <translation id="8185286464235484130">ענה על כמה שאלות כדי לתת לנו משוב.</translation>
 <translation id="8190698733819146287">התאם אישית שפה וקלט...</translation>
 <translation id="8206859287963243715">סלולארי</translation>

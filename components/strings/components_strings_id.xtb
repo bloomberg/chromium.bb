@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">Google Penjelajahan Aman baru-baru ini <ph name="BEGIN_LINK" />mendeteksi perangkat lunak perusak<ph name="END_LINK" /> di <ph name="SITE" />. Situs web yang biasanya aman terkadang dapat terinfeksi perangkat lunak perusak. Konten berbahaya tersebut berasal dari <ph name="SUBRESOURCE_HOST" />, sebuah distributor perangkat lunak perusak ternama. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak valid</translation>
 <translation id="1834321415901700177">Situs ini berisi program yang berbahaya</translation>
-<translation id="1838667051080421715">Anda sedang melihat sumber laman web.</translation>
 <translation id="1871208020102129563">Proxy disetel untuk menggunakan server proxy tetap, bukan URL skrip .pac.</translation>
+<translation id="187918866476621466">Buka halaman awal</translation>
 <translation id="1883255238294161206">Ciutkan daftar</translation>
 <translation id="1898423065542865115">Pemfilteran</translation>
 <translation id="194030505837763158">Buka <ph name="LINK" /></translation>
@@ -279,6 +279,7 @@
 <translation id="3655670868607891010">Jika Anda sering melihatnya, coba <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisi</translation>
 <translation id="3678029195006412963">Permintaan tidak dapat ditandatangani</translation>
+<translation id="3679803492151881375">Laporan kerusakan direkam pada <ph name="CRASH_TIME" />, diupload pada <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informasi sertifikat</translation>
 <translation id="3690164694835360974">Proses masuk tidak aman</translation>
 <translation id="3693415264595406141">Sandi:</translation>
@@ -363,7 +364,6 @@
 <translation id="4594403342090139922">&amp;Urungkan Penghapusan</translation>
 <translation id="4619615317237390068">Tab dari perangkat lain</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Anda sedang melihat laman ekstensi.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Sambungan Anda terganggu</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Jalankan Diagnostik Jaringan Windows<ph name="END_LINK" /></translation>
@@ -376,6 +376,7 @@
 <translation id="4764776831041365478">Laman web di <ph name="URL" /> mungkin sedang tidak aktif untuk sementara atau dipindahkan secara permanen ke alamat web baru.</translation>
 <translation id="4771973620359291008">Terjadi kesalahan yang tidak diketahui.</translation>
 <translation id="4800132727771399293">Periksa tanggal masa berlaku habis dan CVC, lalu coba lagi</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Kesalahan jaringan</translation>
 <translation id="4816492930507672669">Paskan dengan halaman</translation>
 <translation id="4850886885716139402">Lihat</translation>
@@ -450,6 +451,7 @@
 <translation id="5622887735448669177">Ingin keluar dari situs ini?</translation>
 <translation id="5629630648637658800">Gagal memuat setelan kebijakan</translation>
 <translation id="5631439013527180824">Token pengelolaan perangkat tidak valid</translation>
+<translation id="5669703222995421982">Mendapatkan konten hasil personalisasi</translation>
 <translation id="5675650730144413517">Halaman ini tidak berfungsi</translation>
 <translation id="5677928146339483299">Dicekal</translation>
 <translation id="5694783966845939798">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi server menunjukkan sertifikat yang ditandatangani menggunakan algoritme tanda tangan yang lemah (seperti SHA-1). Artinya, kredensial keamanan yang ditunjukkan server mungkin telah dipalsukan, dan server tersebut mungkin bukan server yang diharapkan (Anda mungkin sedang berkomunikasi dengan penyerang). <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -550,6 +552,7 @@
 <translation id="6753269504797312559">Nilai kebijakan</translation>
 <translation id="6757797048963528358">Perangkat Anda sedang dalam mode tidur.</translation>
 <translation id="6778737459546443941">Orang tuamu belum menyetujuinya</translation>
+<translation id="6810899417690483278">ID Penyesuaian</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Saat ini laman web di <ph name="URL" /> tidak tersedia. Mungkin laman web sedang kelebihan muatan atau terganggu karena ada perawatan.</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
@@ -709,6 +712,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8364627913115013041">Tidak disetel.</translation>
 <translation id="8380941800586852976">Berbahaya</translation>
 <translation id="8382348898565613901">Bookmark yang baru-baru ini dikunjungi ditampilkan di sini</translation>
+<translation id="8398259832188219207">Laporan kerusakan diupload pada <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Ngadat (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Anda harus memasukkan frasa sandi yang sama dua kali.</translation>
 <translation id="8428213095426709021">Setelan</translation>

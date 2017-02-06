@@ -86,8 +86,8 @@
 <translation id="1803678881841855883">சமீபத்தில் Google இன் பாதுகாப்பான உலாவலானது <ph name="SITE" /> இல் <ph name="BEGIN_LINK" />தீம்பொருளைக் கண்டறிந்துள்ளது<ph name="END_LINK" />. பொதுவாகப் பாதுகாப்பாக இருக்கும் இணையதளங்கள் சில நேரங்களில் தீம்பொருளால் பாதிக்கப்படுவதுண்டு. தீங்கிழைக்கும் உள்ளடக்கமானது பிரபலமான <ph name="SUBRESOURCE_HOST" /> எனும் தீம்பொருள் வழங்குநரிடமிருந்து வருகிறது. <ph name="BEGIN_LEARN_MORE_LINK" />மேலும் அறிக<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">தவறான கோரிக்கை அல்லது கோரிக்கை அளவுருக்கள்</translation>
 <translation id="1834321415901700177">இந்தத் தளத்தில் தீங்கிழைக்கும் நிரல்கள் உள்ளன</translation>
-<translation id="1838667051080421715">இணையப் பக்கத்தின் மூலத்தைப் பார்க்கிறீர்கள்.</translation>
 <translation id="1871208020102129563">நிலையான ப்ராக்ஸி சேவையகங்களைப் பயன்படுத்த ப்ராக்ஸி அமைக்கப்பட்டுள்ளது, .pac ஸ்கிரிப்ட் URL அல்ல.</translation>
+<translation id="187918866476621466">துவக்கப் பக்கங்களைத் திற</translation>
 <translation id="1883255238294161206">பட்டியலைச் சுருக்கு</translation>
 <translation id="1898423065542865115">வடிகட்டுதல்</translation>
 <translation id="194030505837763158"><ph name="LINK" /> க்குச் செல்க</translation>
@@ -276,6 +276,7 @@
 <translation id="3655670868607891010">இதை அடிக்கடி காண்கிறீர்கள் எனில், <ph name="HELP_LINK" /> ஐ முயற்சிக்கவும்.</translation>
 <translation id="3658742229777143148">மீள்திருத்தங்கள்</translation>
 <translation id="3678029195006412963">கோரிக்கையில் கையொப்பமிட முடியவில்லை</translation>
+<translation id="3679803492151881375"><ph name="CRASH_TIME" /> அன்று சிதைவு அறிக்கை பதிவுசெய்யப்பட்டு, <ph name="UPLOAD_TIME" /> அன்று பதிவேற்றப்பட்டது</translation>
 <translation id="3681007416295224113">சான்றிதழ் தகவல்</translation>
 <translation id="3690164694835360974">உள்நுழைவது பாதுகாப்பானது அல்ல</translation>
 <translation id="3693415264595406141">கடவுச்சொல்:</translation>
@@ -360,7 +361,6 @@
 <translation id="4594403342090139922">&amp;நீக்குதலைச் செயல்தவிர்</translation>
 <translation id="4619615317237390068">பிற சாதனங்களின் தாவல்கள்</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">நீட்டிப்புப் பக்கத்தைப் பார்க்கிறீர்கள்.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">உங்கள் இணைப்பில் தடங்கல் ஏற்பட்டது</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows நெட்வொர்க் டயக்னஸ்டிக்ஸ் கருவியை இயக்கவும்<ph name="END_LINK" /></translation>
@@ -373,6 +373,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> இல் உள்ள வலைப்பக்கமானது தற்காலிகமாக இயங்காமல் இருக்கலாம் அல்லது அது ஒரு புதிய வலை முகவரிக்கு நிரந்தரமாக நகர்த்தப்பட்டிருக்கலாம்.</translation>
 <translation id="4771973620359291008">அறியப்படாத பிழை ஏற்பட்டுள்ளது.</translation>
 <translation id="4800132727771399293">காலாவதியாகும் நேரத்தையும், CVCஐயும் சரிபார்த்து, மீண்டும் முயற்சிக்கவும்</translation>
+<translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">பிணைய பிழை</translation>
 <translation id="4816492930507672669">பக்கத்தில் பொருத்து</translation>
 <translation id="4850886885716139402">காட்சி</translation>
@@ -447,6 +448,7 @@
 <translation id="5622887735448669177">தளத்திலிருந்து வெளியேறவா?</translation>
 <translation id="5629630648637658800">கொள்கை அமைப்புகளை ஏற்றுவதில் தோல்வி</translation>
 <translation id="5631439013527180824">தவறான சாதன நிர்வாக டோக்கன்</translation>
+<translation id="5669703222995421982">தனிப்பயனாக்கிய உள்ளடக்கத்தைப் பெறுங்கள்</translation>
 <translation id="5675650730144413517">இந்தப் பக்கம் செயல்படவில்லை</translation>
 <translation id="5677928146339483299">தடுக்கப்பட்டது</translation>
 <translation id="5694783966845939798"><ph name="DOMAIN" />க்குச் செல்ல முயற்சி செய்தீர்கள், ஆனால் சேவையகமானது வலிமையற்ற கையொப்ப அல்காரிதமைப் (SHA-1 போன்றவை) பயன்படுத்திக் கையொப்பமிட்ட சான்றிதழை வழங்கியுள்ளது. அதாவது, சேவையகம் வழங்கியுள்ள பாதுகாப்பு அனுமதிச் சான்றுகள் போலியாக உருவாக்கப்பட்டிருக்கலாம், அத்துடன் சேவையகம் நீங்கள் எதிர்பார்த்த சேவையகமாக இல்லாமல் இருக்கக்கூடும் (நீங்கள் தொடர்புகொண்டிருப்பது ஹேக்கராக இருக்கலாம்). <ph name="BEGIN_LEARN_MORE_LINK" />மேலும் அறிக<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -546,6 +548,7 @@
 <translation id="6753269504797312559">கொள்கை மதிப்பு</translation>
 <translation id="6757797048963528358">உங்கள் சாதனம் உறக்கநிலைக்குச் சென்றது.</translation>
 <translation id="6778737459546443941">இன்னும் உங்கள் பெற்றோர் அனுமதிக்கவில்லை</translation>
+<translation id="6810899417690483278">தனிப்பயனாக்கல் ஐடி</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> இல் உள்ள வலைப்பக்கம் தற்போது கிடைக்கவில்லை.  அது அதிக சுமையில் இருக்கலாம் அல்லது பராமரிப்பின் காரணமாக செயல்படாமல் இருக்கலாம்.</translation>
 <translation id="6831043979455480757">மொழிபெயர்</translation>
@@ -705,6 +708,7 @@
 <translation id="8364627913115013041">அமைக்கப்படவில்லை.</translation>
 <translation id="8380941800586852976">ஆபத்தானது</translation>
 <translation id="8382348898565613901">நீங்கள் சமீபத்தில் பார்வையிட்ட புத்தகக்குறிகள் இங்கே தோன்றும்</translation>
+<translation id="8398259832188219207">சிதைவு அறிக்கை பதிவேற்றப்பட்ட தேதி: <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">செயலிழப்புகள் (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">நீங்கள் கண்டிப்பாக ஒரே கடவுச்சொற்றொடரை இரு முறை உள்ளிட வேண்டும்.</translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>
