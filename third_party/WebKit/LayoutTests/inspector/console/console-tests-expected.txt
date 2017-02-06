@@ -25,9 +25,9 @@ CONSOLE MESSAGE: line 29: function f() { }
 CONSOLE MESSAGE: line 30: 1,2,3
 CONSOLE MESSAGE: line 31: /regexp.*/
 CONSOLE MESSAGE: line 32: console.groupEnd
-CONSOLE DEBUG: line 33: : 1
-CONSOLE DEBUG: line 34: : 1
-CONSOLE DEBUG: line 35: : 1
+CONSOLE DEBUG: line 33: 1
+CONSOLE DEBUG: line 34: 1
+CONSOLE DEBUG: line 35: 1
 CONSOLE DEBUG: line 36: title: 1
 CONSOLE DEBUG: line 37: title: 2
 CONSOLE DEBUG: line 38: title: 3
@@ -46,9 +46,9 @@ console-tests.html:17 count: 2 console-message-wrapper console-info-level > cons
 console-tests.html:18 group console-message-wrapper console-info-level > console-message console-group-title
 console-tests.html:20 1 2 3 console-message-wrapper console-info-level > console-message
 console-tests.html:21 groupCollapsed console-message-wrapper console-info-level > console-message console-group-title
-console-tests.html:33 : 1 console-message-wrapper console-info-level > console-message
-console-tests.html:34 : 1 console-message-wrapper console-info-level > console-message
-console-tests.html:35 : 1 console-message-wrapper console-info-level > console-message
+console-tests.html:33 1 console-message-wrapper console-info-level > console-message
+console-tests.html:34 1 console-message-wrapper console-info-level > console-message
+console-tests.html:35 1 console-message-wrapper console-info-level > console-message
 console-tests.html:36 title: 1 console-message-wrapper console-info-level > console-message
 console-tests.html:37 title: 2 console-message-wrapper console-info-level > console-message
 console-tests.html:38 title: 3 console-message-wrapper console-info-level > console-message
