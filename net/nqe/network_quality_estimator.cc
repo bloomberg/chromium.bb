@@ -1476,10 +1476,12 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
     RecordExternalEstimateProviderMetrics(
         EXTERNAL_ESTIMATE_PROVIDER_STATUS_RTT_AVAILABLE);
     UMA_HISTOGRAM_TIMES("NQE.ExternalEstimateProvider.RTT", rtt);
-    rtt_observations_.AddObservation(RttObservation(
+    RttObservation rtt_observation(
         rtt, tick_clock_->NowTicks(), signal_strength_dbm_,
-        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
+        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE);
+    rtt_observations_.AddObservation(rtt_observation);
     external_estimate_provider_quality_.set_http_rtt(rtt);
+    NotifyObserversOfRTT(rtt_observation);
   }
 
   if (downstream_throughput_kbps > 0) {
@@ -1487,13 +1489,15 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
         EXTERNAL_ESTIMATE_PROVIDER_STATUS_DOWNLINK_BANDWIDTH_AVAILABLE);
     UMA_HISTOGRAM_COUNTS("NQE.ExternalEstimateProvider.DownlinkBandwidth",
                          downstream_throughput_kbps);
+    ThroughputObservation throughput_observation(
+        downstream_throughput_kbps, tick_clock_->NowTicks(),
+        signal_strength_dbm_,
+        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE);
     downstream_throughput_kbps_observations_.AddObservation(
-        ThroughputObservation(
-            downstream_throughput_kbps, tick_clock_->NowTicks(),
-            signal_strength_dbm_,
-            NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
+        throughput_observation);
     external_estimate_provider_quality_.set_downstream_throughput_kbps(
         downstream_throughput_kbps);
+    NotifyObserversOfThroughput(throughput_observation);
   }
 }
 
@@ -1523,6 +1527,10 @@ void NetworkQualityEstimator::NotifyObserversOfRTT(
     const RttObservation& observation) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(nqe::internal::InvalidRTT(), observation.value);
+  DCHECK_GT(NETWORK_QUALITY_OBSERVATION_SOURCE_MAX, observation.source);
+
+  UMA_HISTOGRAM_ENUMERATION("NQE.RTT.ObservationSource", observation.source,
+                            NETWORK_QUALITY_OBSERVATION_SOURCE_MAX);
 
   // Maybe recompute the effective connection type since a new RTT observation
   // is available.
@@ -1537,6 +1545,10 @@ void NetworkQualityEstimator::NotifyObserversOfThroughput(
     const ThroughputObservation& observation) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(nqe::internal::kInvalidThroughput, observation.value);
+  DCHECK_GT(NETWORK_QUALITY_OBSERVATION_SOURCE_MAX, observation.source);
+
+  UMA_HISTOGRAM_ENUMERATION("NQE.Kbps.ObservationSource", observation.source,
+                            NETWORK_QUALITY_OBSERVATION_SOURCE_MAX);
 
   // Maybe recompute the effective connection type since a new throughput
   // observation is available.

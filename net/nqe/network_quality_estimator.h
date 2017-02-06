@@ -380,6 +380,11 @@ class NET_EXPORT NetworkQualityEstimator
       base::TimeDelta* transport_rtt,
       int32_t* downstream_throughput_kbps) const;
 
+  // Notifies |this| of a new transport layer RTT. Called by socket watchers.
+  // Protected for testing.
+  void OnUpdatedRTTAvailable(SocketPerformanceWatcherFactory::Protocol protocol,
+                             const base::TimeDelta& rtt);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            AdaptiveRecomputationEffectiveConnectionType);
@@ -466,10 +471,6 @@ class NET_EXPORT NetworkQualityEstimator
   // a valid observation is available. |downstream_kbps| is the downstream
   // throughput in kilobits per second.
   void OnNewThroughputObservationAvailable(int32_t downstream_kbps);
-
-  // Notifies |this| of a new transport layer RTT.
-  void OnUpdatedRTTAvailable(SocketPerformanceWatcherFactory::Protocol protocol,
-                             const base::TimeDelta& rtt);
 
   // Obtains the model parameters for different effective connection types from
   // the field trial parameters. For each effective connection type, a model
