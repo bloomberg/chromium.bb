@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "extensions/common/feature_switch.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
@@ -249,13 +248,10 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
-    enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-        extensions::FeatureSwitch::extension_action_redesign(), true));
     ToolbarActionsBar::disable_animations_for_testing_ = true;
   }
 
   void TearDownOnMainThread() override {
-    enable_redesign_.reset();
     ToolbarActionsBar::disable_animations_for_testing_ = false;
     ExtensionBrowserTest::TearDownOnMainThread();
   }
@@ -295,8 +291,6 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
   NSView* appMenuButton() { return [toolbarController_ appMenuButton]; }
 
  private:
-  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
-
   ToolbarController* toolbarController_ = nil;
   AppMenuController* appMenuController_ = nil;
   ToolbarActionsModel* model_ = nullptr;

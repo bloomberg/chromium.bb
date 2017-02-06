@@ -26,7 +26,6 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
 
 namespace {
 
@@ -96,9 +95,6 @@ void ExtensionActionPlatformDelegateCocoa::CloseOverflowMenu() {
 
 void ExtensionActionPlatformDelegateCocoa::ShowContextMenu() {
   // We should only use this code path for extensions shown in the toolbar.
-  DCHECK(controller_->extension_action()->action_type() ==
-             extensions::ActionInfo::TYPE_BROWSER ||
-         extensions::FeatureSwitch::extension_action_redesign()->IsEnabled());
   BrowserWindowController* windowController = [BrowserWindowController
       browserWindowControllerForWindow:controller_->browser()
                                            ->window()
@@ -112,20 +108,9 @@ NSPoint ExtensionActionPlatformDelegateCocoa::GetPopupPoint() const {
   BrowserWindowController* windowController =
       [BrowserWindowController browserWindowControllerForWindow:
           controller_->browser()->window()->GetNativeWindow()];
-  NSPoint popupPoint;
-  if (controller_->extension_action()->action_type() ==
-          extensions::ActionInfo::TYPE_BROWSER ||
-      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
-    BrowserActionsController* actionsController =
-        [[windowController toolbarController] browserActionsController];
-    popupPoint = [actionsController popupPointForId:controller_->GetId()];
-  } else {
-    DCHECK_EQ(extensions::ActionInfo::TYPE_PAGE,
-              controller_->extension_action()->action_type());
-    popupPoint = [windowController locationBarBridge]->GetPageActionBubblePoint(
-        controller_->extension_action());
-  }
-  return popupPoint;
+  BrowserActionsController* actionsController =
+      [[windowController toolbarController] browserActionsController];
+  return [actionsController popupPointForId:controller_->GetId()];
 }
 
 void ExtensionActionPlatformDelegateCocoa::Observe(
