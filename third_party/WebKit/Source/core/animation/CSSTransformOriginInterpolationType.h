@@ -21,7 +21,7 @@ class CSSTransformOriginInterpolationType
 
  private:
   InterpolationValue maybeConvertValue(const CSSValue& value,
-                                       const StyleResolverState&,
+                                       const StyleResolverState*,
                                        ConversionCheckers&) const final {
     const CSSValueList& list = toCSSValueList(value);
     DCHECK_EQ(list.length(), 3U);

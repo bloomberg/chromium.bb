@@ -156,7 +156,7 @@ InterpolationValue CSSRotateInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSRotateInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState&,
+    const StyleResolverState*,
     ConversionCheckers&) const {
   return convertRotation(StyleBuilderConverter::convertRotation(value));
 }

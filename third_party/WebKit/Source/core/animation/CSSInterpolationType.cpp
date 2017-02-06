@@ -161,7 +161,7 @@ InterpolationValue CSSInterpolationType::maybeConvertSingleInternal(
     return maybeConvertInherit(state, conversionCheckers);
   }
 
-  return maybeConvertValue(*value, state, conversionCheckers);
+  return maybeConvertValue(*value, &state, conversionCheckers);
 }
 
 const PropertyRegistry::Registration* getRegistration(
@@ -188,7 +188,7 @@ InterpolationValue CSSInterpolationType::maybeConvertCustomPropertyDeclaration(
   // the default CSSValueInterpolationType handler.
   // This might involve making the "catch-all" InterpolationType explicit
   // e.g. add bool InterpolationType::isCatchAll().
-  return maybeConvertValue(declaration, state, conversionCheckers);
+  return maybeConvertValue(declaration, &state, conversionCheckers);
 }
 
 InterpolationValue
@@ -229,7 +229,7 @@ CSSInterpolationType::maybeConvertCustomPropertyDeclarationInternal(
       return nullptr;
     }
 
-    return maybeConvertValue(*value, state, conversionCheckers);
+    return maybeConvertValue(*value, &state, conversionCheckers);
   }
 
   if (declaration.value()->needsVariableResolution()) {
@@ -246,7 +246,7 @@ CSSInterpolationType::maybeConvertCustomPropertyDeclarationInternal(
     const CSSValue* parsedValue =
         declaration.value()->parseForSyntax(registration->syntax());
     if (parsedValue) {
-      return maybeConvertValue(*parsedValue, state, conversionCheckers);
+      return maybeConvertValue(*parsedValue, &state, conversionCheckers);
     }
   }
 
@@ -277,8 +277,7 @@ InterpolationValue CSSInterpolationType::maybeConvertUnderlyingValue(
   }
   // TODO(alancutter): Remove the need for passing in conversion checkers.
   ConversionCheckers dummyConversionCheckers;
-  return maybeConvertValue(*underlyingValue, environment.state(),
-                           dummyConversionCheckers);
+  return maybeConvertValue(*underlyingValue, nullptr, dummyConversionCheckers);
 }
 
 void CSSInterpolationType::apply(

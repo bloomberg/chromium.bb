@@ -85,7 +85,7 @@ InterpolationValue CSSPathInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSPathInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState& state,
+    const StyleResolverState*,
     ConversionCheckers& conversionCheckers) const {
   if (!value.isPathValue()) {
     DCHECK_EQ(toCSSIdentifierValue(value).getValueID(), CSSValueNone);

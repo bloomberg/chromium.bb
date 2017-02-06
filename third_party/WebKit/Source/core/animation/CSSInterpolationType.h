@@ -30,7 +30,7 @@ class CSSInterpolationType : public InterpolationType {
   virtual InterpolationValue maybeConvertInherit(const StyleResolverState&,
                                                  ConversionCheckers&) const = 0;
   virtual InterpolationValue maybeConvertValue(const CSSValue&,
-                                               const StyleResolverState&,
+                                               const StyleResolverState*,
                                                ConversionCheckers&) const = 0;
   virtual void additiveKeyframeHook(InterpolationValue&) const {}
 

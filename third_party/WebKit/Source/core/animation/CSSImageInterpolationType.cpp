@@ -214,7 +214,7 @@ InterpolationValue CSSImageInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSImageInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState&,
+    const StyleResolverState*,
     ConversionCheckers&) const {
   return maybeConvertCSSValue(value, true);
 }

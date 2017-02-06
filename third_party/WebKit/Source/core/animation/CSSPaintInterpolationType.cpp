@@ -79,7 +79,7 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSPaintInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState&,
+    const StyleResolverState*,
     ConversionCheckers&) const {
   std::unique_ptr<InterpolableValue> interpolableColor =
       CSSColorInterpolationType::maybeCreateInterpolableColor(value);

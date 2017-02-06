@@ -30,7 +30,7 @@ class CSSPathInterpolationType : public CSSInterpolationType {
   InterpolationValue maybeConvertInherit(const StyleResolverState&,
                                          ConversionCheckers&) const final;
   InterpolationValue maybeConvertValue(const CSSValue&,
-                                       const StyleResolverState&,
+                                       const StyleResolverState*,
                                        ConversionCheckers&) const final;
   InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
       const StyleResolverState&) const final;

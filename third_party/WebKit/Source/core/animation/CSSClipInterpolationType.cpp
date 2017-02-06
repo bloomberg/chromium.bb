@@ -205,7 +205,7 @@ static std::unique_ptr<InterpolableValue> convertClipComponent(
 
 InterpolationValue CSSClipInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState& state,
+    const StyleResolverState*,
     ConversionCheckers&) const {
   if (!value.isQuadValue())
     return nullptr;

@@ -152,7 +152,7 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSTextIndentInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState&,
+    const StyleResolverState*,
     ConversionCheckers&) const {
   InterpolationValue length = nullptr;
   TextIndentLine line = ComputedStyle::initialTextIndentLine();

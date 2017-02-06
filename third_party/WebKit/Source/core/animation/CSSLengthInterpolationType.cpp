@@ -85,7 +85,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSLengthInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState&,
+    const StyleResolverState*,
     ConversionCheckers& conversionCheckers) const {
   if (value.isIdentifierValue()) {
     CSSValueID valueID = toCSSIdentifierValue(value).getValueID();

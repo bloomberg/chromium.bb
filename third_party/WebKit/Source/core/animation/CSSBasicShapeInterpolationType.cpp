@@ -102,7 +102,7 @@ InterpolationValue CSSBasicShapeInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSBasicShapeInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState&,
+    const StyleResolverState*,
     ConversionCheckers&) const {
   if (!value.isBaseValueList())
     return BasicShapeInterpolationFunctions::maybeConvertCSSValue(value);

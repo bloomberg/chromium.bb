@@ -111,7 +111,7 @@ InterpolationValue CSSFontSizeInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSFontSizeInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState& state,
+    const StyleResolverState* state,
     ConversionCheckers& conversionCheckers) const {
   std::unique_ptr<InterpolableValue> result =
       LengthInterpolationFunctions::maybeConvertCSSValue(value)
@@ -122,7 +122,8 @@ InterpolationValue CSSFontSizeInterpolationType::maybeConvertValue(
   if (!value.isIdentifierValue())
     return nullptr;
 
-  return maybeConvertKeyword(toCSSIdentifierValue(value).getValueID(), state,
+  DCHECK(state);
+  return maybeConvertKeyword(toCSSIdentifierValue(value).getValueID(), *state,
                              conversionCheckers);
 }
 

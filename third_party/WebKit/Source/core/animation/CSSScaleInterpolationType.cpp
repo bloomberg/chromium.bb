@@ -164,7 +164,7 @@ InterpolationValue CSSScaleInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSScaleInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState&,
+    const StyleResolverState*,
     ConversionCheckers&) const {
   if (!value.isBaseValueList())
     return Scale().createInterpolationValue();

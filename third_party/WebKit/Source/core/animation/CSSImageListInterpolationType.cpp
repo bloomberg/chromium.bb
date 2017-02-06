@@ -110,7 +110,7 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSImageListInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState&,
+    const StyleResolverState*,
     ConversionCheckers&) const {
   if (value.isIdentifierValue() &&
       toCSSIdentifierValue(value).getValueID() == CSSValueNone)

@@ -49,7 +49,7 @@ CSSPositionAxisListInterpolationType::convertPositionAxisCSSValue(
 
 InterpolationValue CSSPositionAxisListInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState&,
+    const StyleResolverState*,
     ConversionCheckers&) const {
   if (!value.isBaseValueList()) {
     return ListInterpolationFunctions::createList(

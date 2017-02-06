@@ -35,7 +35,7 @@ class CSSOffsetRotateInterpolationType : public CSSInterpolationType {
   InterpolationValue maybeConvertInherit(const StyleResolverState&,
                                          ConversionCheckers&) const final;
   InterpolationValue maybeConvertValue(const CSSValue&,
-                                       const StyleResolverState&,
+                                       const StyleResolverState*,
                                        ConversionCheckers&) const final;
   PairwiseInterpolationValue maybeMergeSingles(
       InterpolationValue&& start,

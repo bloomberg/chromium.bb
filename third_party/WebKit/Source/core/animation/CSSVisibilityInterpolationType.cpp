@@ -134,7 +134,7 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSVisibilityInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState& state,
+    const StyleResolverState*,
     ConversionCheckers& conversionCheckers) const {
   if (!value.isIdentifierValue())
     return nullptr;

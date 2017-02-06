@@ -212,11 +212,13 @@ enum InterpolableColorPairIndex : unsigned {
 
 InterpolationValue CSSColorInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState& state,
+    const StyleResolverState* state,
     ConversionCheckers& conversionCheckers) const {
   if (cssProperty() == CSSPropertyColor && value.isIdentifierValue() &&
-      toCSSIdentifierValue(value).getValueID() == CSSValueCurrentcolor)
-    return maybeConvertInherit(state, conversionCheckers);
+      toCSSIdentifierValue(value).getValueID() == CSSValueCurrentcolor) {
+    DCHECK(state);
+    return maybeConvertInherit(*state, conversionCheckers);
+  }
 
   std::unique_ptr<InterpolableValue> interpolableColor =
       maybeCreateInterpolableColor(value);

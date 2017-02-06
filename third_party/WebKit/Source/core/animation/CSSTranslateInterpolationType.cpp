@@ -110,7 +110,7 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSTranslateInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState&,
+    const StyleResolverState*,
     ConversionCheckers&) const {
   if (!value.isBaseValueList())
     return nullptr;

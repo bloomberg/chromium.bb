@@ -19,7 +19,7 @@ class CSSLengthPairInterpolationType : public CSSLengthListInterpolationType {
 
  private:
   InterpolationValue maybeConvertValue(const CSSValue& value,
-                                       const StyleResolverState&,
+                                       const StyleResolverState*,
                                        ConversionCheckers&) const final {
     const CSSValuePair& pair = toCSSValuePair(value);
     return ListInterpolationFunctions::createList(2, [&pair](size_t index) {

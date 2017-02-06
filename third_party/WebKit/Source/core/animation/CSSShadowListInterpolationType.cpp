@@ -94,7 +94,7 @@ InterpolationValue CSSShadowListInterpolationType::maybeConvertInherit(
 
 InterpolationValue CSSShadowListInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState&,
+    const StyleResolverState*,
     ConversionCheckers&) const {
   if (value.isIdentifierValue() &&
       toCSSIdentifierValue(value).getValueID() == CSSValueNone)

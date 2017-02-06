@@ -40,20 +40,20 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSValueNonInterpolableValue);
 InterpolationValue CSSValueInterpolationType::maybeConvertInitial(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
-  return maybeConvertValue(*CSSInitialValue::create(), state,
+  return maybeConvertValue(*CSSInitialValue::create(), &state,
                            conversionCheckers);
 }
 
 InterpolationValue CSSValueInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
-  return maybeConvertValue(*CSSInheritedValue::create(), state,
+  return maybeConvertValue(*CSSInheritedValue::create(), &state,
                            conversionCheckers);
 }
 
 InterpolationValue CSSValueInterpolationType::maybeConvertValue(
     const CSSValue& value,
-    const StyleResolverState& state,
+    const StyleResolverState*,
     ConversionCheckers& conversionCheckers) const {
   return InterpolationValue(InterpolableList::create(0),
                             CSSValueNonInterpolableValue::create(&value));
