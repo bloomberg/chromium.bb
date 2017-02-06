@@ -528,24 +528,6 @@ void LocationBarViewMac::RedrawDecoration(LocationBarDecoration* decoration) {
     [field_ setNeedsDisplayInRect:frame];
 }
 
-void LocationBarViewMac::SetPreviewEnabledPageAction(
-    ExtensionAction* page_action, bool preview_enabled) {
-  DCHECK(page_action);
-  WebContents* contents = GetWebContents();
-  if (!contents)
-    return;
-  RefreshPageActionDecorations();
-  Layout();
-
-  PageActionDecoration* decoration = GetPageActionDecoration(page_action);
-  DCHECK(decoration);
-  if (!decoration)
-    return;
-
-  decoration->set_preview_enabled(preview_enabled);
-  decoration->UpdateVisibility(contents);
-}
-
 NSRect LocationBarViewMac::GetPageActionFrame(ExtensionAction* page_action) {
   PageActionDecoration* decoration = GetPageActionDecoration(page_action);
   if (!decoration)

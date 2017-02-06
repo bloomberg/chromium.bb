@@ -30,7 +30,6 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/common/feature_switch.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using extensions::Extension;
@@ -248,17 +247,12 @@ base::string16 ExtensionInstalledBubble::GetHowToUseDescription() const {
 }
 
 void ExtensionInstalledBubble::Initialize() {
-  bool extension_action_redesign_on =
-      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled();
-
   const extensions::ActionInfo* action_info = nullptr;
   if ((action_info = extensions::ActionInfo::GetBrowserActionInfo(
            extension_)) != nullptr) {
     type_ = BROWSER_ACTION;
   } else if ((action_info = extensions::ActionInfo::GetPageActionInfo(
-                  extension_)) != nullptr &&
-             (extensions::ActionInfo::IsVerboseInstallMessage(extension_) ||
-              extension_action_redesign_on)) {
+                  extension_)) != nullptr) {
     type_ = PAGE_ACTION;
   } else if (!extensions::OmniboxInfo::GetKeyword(extension_).empty()) {
     type_ = OMNIBOX_KEYWORD;
@@ -288,14 +282,7 @@ void ExtensionInstalledBubble::Initialize() {
         options_ |= HOW_TO_MANAGE;
       }
 
-      if (type_ == BROWSER_ACTION || extension_action_redesign_on) {
-        // If the toolbar redesign is enabled, all bubbles for extensions point
-        // to their toolbar action.
-        anchor_position_ = ANCHOR_BROWSER_ACTION;
-      } else {
-        DCHECK_EQ(type_, PAGE_ACTION);
-        anchor_position_ = ANCHOR_PAGE_ACTION;
-      }
+      anchor_position_ = ANCHOR_ACTION;
       break;
     case OMNIBOX_KEYWORD:
       options_ |= HOW_TO_USE | HOW_TO_MANAGE;

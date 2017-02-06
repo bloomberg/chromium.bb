@@ -160,14 +160,6 @@ class LocationBarView : public LocationBar,
     return manage_passwords_icon_view_;
   }
 
-  // Sets |preview_enabled| for the PageAction View associated with this
-  // |page_action|. If |preview_enabled| is true, the view will display the
-  // PageActions icon even though it has not been activated by the extension.
-  // This is used by the ExtensionInstalledBubble to preview what the icon
-  // will look like for the user upon installation of the extension.
-  void SetPreviewEnabledPageAction(ExtensionAction* page_action,
-                                   bool preview_enabled);
-
   // Retrieves the PageAction View which is associated with |page_action|.
   PageActionWithBadgeView* GetPageActionView(ExtensionAction* page_action);
 

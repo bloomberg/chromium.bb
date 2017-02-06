@@ -51,8 +51,7 @@ class ExtensionInstalledBubble : public BubbleDelegate {
 
   // The different possible anchor positions.
   enum AnchorPosition {
-    ANCHOR_BROWSER_ACTION,
-    ANCHOR_PAGE_ACTION,
+    ANCHOR_ACTION,
     ANCHOR_OMNIBOX,
     ANCHOR_APP_MENU,
   };

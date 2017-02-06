@@ -22,7 +22,6 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
@@ -288,21 +287,11 @@ TEST_F(ExtensionInstalledBubbleControllerTest,
   [controller close];
 }
 
-// Test the layout of a bubble for an unpacked extension (which is not syncable)
-// and verify that the page action preview is enabled.
-TEST_F(ExtensionInstalledBubbleControllerTest, BubbleLayoutPageActionUnpacked) {
-  // Tests legacy behavior.
-  extensions::FeatureSwitch::ScopedOverride extension_action_override(
-      extensions::FeatureSwitch::extension_action_redesign(), false);
-  // Page actions need a web contents (for the location bar to not break).
-  AddWebContents();
-
-  LocationBarTesting* locationBar =
-      browser()->window()->GetLocationBar()->GetLocationBarForTesting();
-  // To start, there should be no visible page actions.
-  EXPECT_EQ(0, locationBar->PageActionVisibleCount());
-
-  CreateExtension(PAGE_ACTION, true, extensions::Manifest::UNPACKED);
+// Test the layout of a bubble for an unpacked extension (which is not
+// syncable).
+TEST_F(ExtensionInstalledBubbleControllerTest,
+       BubbleLayoutBrowserActionUnpacked) {
+  CreateExtension(BROWSER_ACTION, true, extensions::Manifest::UNPACKED);
   ExtensionInstalledBubbleController* controller = CreateController();
   ASSERT_TRUE(controller);
 
@@ -331,14 +320,6 @@ TEST_F(ExtensionInstalledBubbleControllerTest, BubbleLayoutPageActionUnpacked) {
   EXPECT_GT(NSMinY(headingFrame), NSMinY(howToManageFrame));
   EXPECT_GT(NSMinY(howToUseFrame), NSMinY(howToManageFrame));
   EXPECT_GT(NSMinY(iconFrame), 0);
-
-  // The page action preview should be visible.
-  EXPECT_TRUE([controller pageActionPreviewShowing]);
-  EXPECT_EQ(1, locationBar->PageActionVisibleCount());
-
-  [controller close];
-  // The page action preview should have ended.
-  EXPECT_EQ(0, locationBar->PageActionVisibleCount());
 }
 
 TEST_F(ExtensionInstalledBubbleControllerTest, ParentClose) {

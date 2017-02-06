@@ -334,27 +334,6 @@ void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
     ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
 }
 
-void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
-                                                  bool preview_enabled) {
-  if (is_popup_mode_)
-    return;
-
-  DCHECK(page_action);
-  WebContents* web_contents = GetWebContents();
-
-  RefreshPageActionViews();
-  PageActionWithBadgeView* page_action_view =
-      static_cast<PageActionWithBadgeView*>(GetPageActionView(page_action));
-  DCHECK(page_action_view);
-  if (!page_action_view)
-    return;
-
-  page_action_view->image_view()->set_preview_enabled(preview_enabled);
-  page_action_view->UpdateVisibility(web_contents);
-  Layout();
-  SchedulePaint();
-}
-
 PageActionWithBadgeView* LocationBarView::GetPageActionView(
     ExtensionAction* page_action) {
   DCHECK(page_action);

@@ -126,14 +126,6 @@ class LocationBarViewMac : public LocationBar,
   // Re-draws |decoration| if it's already being displayed.
   void RedrawDecoration(LocationBarDecoration* decoration);
 
-  // Sets preview_enabled_ for the PageActionImageView associated with this
-  // |page_action|. If |preview_enabled|, the location bar will display the
-  // PageAction icon even if it has not been activated by the extension.
-  // This is used by the ExtensionInstalledBubble to preview what the icon
-  // will look like for the user upon installation of the extension.
-  void SetPreviewEnabledPageAction(ExtensionAction* page_action,
-                                   bool preview_enabled);
-
   // Retrieve the frame for the given |page_action|.
   NSRect GetPageActionFrame(ExtensionAction* page_action);
 

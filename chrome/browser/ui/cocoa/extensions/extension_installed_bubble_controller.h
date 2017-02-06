@@ -55,11 +55,6 @@ enum ExtensionType {
 
   extension_installed_bubble::ExtensionType type_;
 
-  // We need to remove the page action immediately when the browser window
-  // closes while this bubble is still open, so the bubble's closing animation
-  // doesn't overlap browser destruction.
-  BOOL pageActionPreviewShowing_;
-
   // A weak reference to the bubble. It's owned by the BubbleManager.
   ExtensionInstalledBubble* installedBubble_;
 
@@ -90,7 +85,6 @@ enum ExtensionType {
 @property(nonatomic, readonly) NSView* manageShortcutLink;
 @property(nonatomic, readonly) NSView* promoContainer;
 @property(nonatomic, readonly) NSView* iconImage;
-@property(nonatomic) BOOL pageActionPreviewShowing;
 
 // Initialize the window. It will be shown by the BubbleManager.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
