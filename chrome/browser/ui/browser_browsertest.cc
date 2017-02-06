@@ -721,14 +721,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
 class RedirectObserver : public content::WebContentsObserver {
  public:
   explicit RedirectObserver(content::WebContents* web_contents)
-      : WebContentsObserver(web_contents) {
+      : WebContentsObserver(web_contents),
+        transition_(ui::PageTransition::PAGE_TRANSITION_LINK) {
   }
 
-  void DidNavigateAnyFrame(
-      content::RenderFrameHost* render_frame_host,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override {
-    params_ = params;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (!navigation_handle->HasCommitted())
+      return;
+    transition_ = navigation_handle->GetPageTransition();
+    redirects_ = navigation_handle->GetRedirectChain();
   }
 
   void WebContentsDestroyed() override {
@@ -737,12 +739,12 @@ class RedirectObserver : public content::WebContentsObserver {
     FAIL() << "WebContents closed during navigation (http://crbug.com/314036).";
   }
 
-  const content::FrameNavigateParams& params() const {
-    return params_;
-  }
+  ui::PageTransition transition() const { return transition_; }
+  const std::vector<GURL> redirects() const { return redirects_; }
 
  private:
-  content::FrameNavigateParams params_;
+  ui::PageTransition transition_;
+  std::vector<GURL> redirects_;
 
   DISALLOW_COPY_AND_ASSIGN(RedirectObserver);
 };
@@ -789,11 +791,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoStopDuringTransferUntilCommit) {
     // history autocomplete to work.
     EXPECT_EQ(redirect_url, contents->GetController().GetLastCommittedEntry()->
                   GetOriginalRequestURL());
-    EXPECT_EQ(2U, redirect_observer.params().redirects.size());
-    EXPECT_EQ(redirect_url, redirect_observer.params().redirects.at(0));
-    EXPECT_EQ(dest_url, redirect_observer.params().redirects.at(1));
+    EXPECT_EQ(2U, redirect_observer.redirects().size());
+    EXPECT_EQ(redirect_url, redirect_observer.redirects().at(0));
+    EXPECT_EQ(dest_url, redirect_observer.redirects().at(1));
     EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
-        redirect_observer.params().transition, ui::PAGE_TRANSITION_TYPED));
+        redirect_observer.transition(), ui::PAGE_TRANSITION_TYPED));
   }
 
   // Restore previous browser client.
