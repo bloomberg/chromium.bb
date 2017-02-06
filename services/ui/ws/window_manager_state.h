@@ -24,6 +24,7 @@ namespace ui {
 namespace ws {
 
 class DisplayManager;
+class PlatformDisplay;
 class WindowManagerDisplayRoot;
 class WindowTree;
 

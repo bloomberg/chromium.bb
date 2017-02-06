@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "services/ui/ws/accelerator.h"
-#include "services/ui/ws/display.h"
 #include "services/ui/ws/drag_controller.h"
 #include "services/ui/ws/drag_source.h"
 #include "services/ui/ws/event_dispatcher_delegate.h"

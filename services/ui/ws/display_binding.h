@@ -10,12 +10,12 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
-#include "services/ui/ws/display.h"
 #include "services/ui/ws/user_id.h"
 
 namespace ui {
 namespace ws {
 
+class Display;
 class ServerWindow;
 class WindowServer;
 class WindowTree;

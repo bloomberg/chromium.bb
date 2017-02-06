@@ -18,7 +18,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
-#include "services/ui/ws/display.h"
 #include "services/ui/ws/gpu_host_delegate.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/operation.h"
@@ -33,6 +32,7 @@ namespace ui {
 namespace ws {
 
 class AccessPolicy;
+class Display;
 class DisplayManager;
 class GpuHost;
 class ServerWindow;

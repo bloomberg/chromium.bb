@@ -4,6 +4,7 @@
 
 #include "services/ui/ws/window_manager_display_root.h"
 
+#include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/window_server.h"
