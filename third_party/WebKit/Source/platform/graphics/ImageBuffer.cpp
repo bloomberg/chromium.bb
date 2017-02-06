@@ -467,8 +467,20 @@ void ImageBuffer::putByteArray(Multiply multiplied,
   const size_t srcBytesPerRow = bytesPerPixel * sourceSize.width();
   const void* srcAddr =
       source + originY * srcBytesPerRow + originX * bytesPerPixel;
-  SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType
-                                                        : kUnpremul_SkAlphaType;
+
+  SkAlphaType alphaType;
+  if (Opaque == m_surface->getOpacityMode()) {
+    // If the surface is opaque, tell it that we are writing opaque
+    // pixels.  Writing non-opaque pixels to opaque is undefined in
+    // Skia.  There is some discussion about whether it should be
+    // defined in skbug.com/6157.  For now, we can get the desired
+    // behavior (memcpy) by pretending the write is opaque.
+    alphaType = kOpaque_SkAlphaType;
+  } else {
+    alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType
+                                              : kUnpremul_SkAlphaType;
+  }
+
   SkImageInfo info;
   if (m_surface->colorSpace()) {
     info = SkImageInfo::Make(sourceRect.width(), sourceRect.height(),
