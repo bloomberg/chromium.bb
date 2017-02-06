@@ -226,7 +226,7 @@ class CONTENT_EXPORT ControllerPresentationServiceDelegate
   // ownership passed from controlling frame to the offscreen presentation.
   // |receiver_connection_request|: Mojo InterfaceRequest to be bind to receiver
   // page's presentation connection.
-  virtual void ConnectToOffscreenPresentation(
+  virtual void ConnectToPresentation(
       int render_process_id,
       int render_frame_id,
       const PresentationSessionInfo& session,

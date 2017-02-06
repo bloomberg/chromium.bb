@@ -28,6 +28,7 @@
 
 namespace blink {
 class WebPresentationAvailabilityObserver;
+class WebPresentationConnection;
 class WebPresentationReceiver;
 class WebString;
 class WebURL;
@@ -62,6 +63,8 @@ class CONTENT_EXPORT PresentationDispatcher
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestSendString);
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestSendArrayBuffer);
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestSendBlobData);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest,
+                           TestOnReceiverConnectionAvailable);
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestCloseSession);
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestTerminateSession);
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest,
@@ -174,6 +177,17 @@ class CONTENT_EXPORT PresentationDispatcher
   // |HandleSendMessageRequests| will be invoked after the send is attempted.
   void DoSendMessage(SendMessageRequest* request);
   void HandleSendMessageRequests(bool success);
+
+  // Creates ControllerConnectionProxy object |controller_connection_proxy| with
+  // |connection|. Sends mojo interface ptr of |controller_connection_proxy|
+  // and mojo interface request of |controller_connection_proxy|'s
+  // |target_connection_| to PresentationService.
+  // |session_info|: |connection|'s id and url;
+  // |connection|: |controller_connection_proxy|'s |source_connection_|. Raw
+  // pointer to Blink connection owning proxy object. It does not take object
+  // ownership.
+  void SetControllerConnection(const PresentationSessionInfo& session_info,
+                               blink::WebPresentationConnection* connection);
 
   virtual void ConnectToPresentationServiceIfNeeded();
 

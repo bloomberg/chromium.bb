@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
+#include "chrome/browser/media/router/receiver_presentation_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "content/public/browser/render_view_host.h"
@@ -117,11 +118,14 @@ void OffscreenTab::Start(const GURL& start_url,
   // automatically unmuted, but will be captured into the MediaStream.
   offscreen_tab_web_contents_->SetAudioMuted(true);
 
-  // TODO(imcheng): If |optional_presentation_id| is not empty, register it with
-  // the PresentationRouter.  http://crbug.com/513859
   if (!optional_presentation_id.empty()) {
-    NOTIMPLEMENTED()
-        << "Register with PresentationRouter, id=" << optional_presentation_id;
+    DVLOG(1) << " Register with ReceiverPresentationServiceDelegateImpl, "
+             << "[presentation_id]: " << optional_presentation_id;
+    // Create a ReceiverPSDImpl associated with the offscreen tab's WebContents.
+    // The new instance will set up the necessary infrastructure to allow
+    // controlling peers the ability to connect to the offscreen tab.
+    media_router::ReceiverPresentationServiceDelegateImpl::CreateForWebContents(
+        offscreen_tab_web_contents_.get(), optional_presentation_id);
 
     if (auto* render_view_host =
             offscreen_tab_web_contents_->GetRenderViewHost()) {
