@@ -95,9 +95,16 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
                 new SpanInfo("<LINK1>", "</LINK1>", clickableTermsSpan),
                 new SpanInfo("<LINK2>", "</LINK2>", clickablePrivacySpan)));
 
-        // If this page should be skipped, hide all the UI elements except for the
-        // Chrome logo and the spinner.
-        if (FirstRunStatus.shouldSkipWelcomePage()) {
+        // If this page should be skipped, it can be one of the following cases:
+        //   1. Native hasn't been initialized yet and this page will be skipped once that happens.
+        //   2. The user has moved back to this page after advancing past it. In this case, this
+        //      may not even be the same object as before, as the fragment may have been re-created.
+        //
+        // In case 1, hide all the elements except for Chrome logo and the spinner until native gets
+        // initialized at which point the activity will skip the page.
+        // We distinguish case 1 from case 2 by the value of |mNativeInitialized|, as that is set
+        // via onAttachFragment() from FirstRunActivity - which is before this onViewCreated().
+        if (!mNativeInitialized && FirstRunStatus.shouldSkipWelcomePage()) {
             setSpinnerVisible(true);
         }
     }
