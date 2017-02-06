@@ -2219,7 +2219,7 @@ crbug.com/595993 external/wpt/service-workers/service-worker/request-end-to-end.
 crbug.com/666628 http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Pass Failure ]
 crbug.com/666628 virtual/mojo-loading/http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Pass Failure ]
 
-crbug.com/619427 [ Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
+crbug.com/619427 [ Mac Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
 crbug.com/667371 inspector/elements/styles-1/color-aware-property-value-edit.html [ Pass Failure ]
 
