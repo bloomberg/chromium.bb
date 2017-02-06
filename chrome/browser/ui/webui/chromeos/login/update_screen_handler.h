@@ -19,10 +19,11 @@ class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
   UpdateScreenHandler();
   ~UpdateScreenHandler() override;
 
+ private:
   // UpdateView:
   void Show() override;
   void Hide() override;
-  void Bind(UpdateModel& model) override;
+  void Bind(UpdateScreen* screen) override;
   void Unbind() override;
 
   // BaseScreenHandler:
@@ -30,11 +31,10 @@ class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
- private:
-  UpdateModel* model_;
+  UpdateScreen* screen_ = nullptr;
 
-  // Keeps whether screen should be shown right after initialization.
-  bool show_on_init_;
+  // If true, Initialize() will call Show().
+  bool show_on_init_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenHandler);
 };
