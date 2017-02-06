@@ -19,8 +19,4 @@ void TestPresentationConnection::bindProxy(
   proxy_ = std::move(proxy);
 }
 
-blink::WebPresentationConnectionProxy* TestPresentationConnection::proxy() {
-  return proxy_.get();
-}
-
 }  // namespace content

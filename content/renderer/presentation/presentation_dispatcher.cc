@@ -214,14 +214,12 @@ void PresentationDispatcher::sendBlobData(
 }
 
 void PresentationDispatcher::DoSendMessage(SendMessageRequest* request) {
-  DCHECK(request->connection_proxy);
-  // TODO(crbug.com/684116): Remove static_cast after moving message queue logic
-  // from PresentationDispatcher to PresentationConnectionProxy.
-  static_cast<const PresentationConnectionProxy*>(request->connection_proxy)
-      ->SendConnectionMessage(
-          std::move(request->message),
-          base::Bind(&PresentationDispatcher::HandleSendMessageRequests,
-                     base::Unretained(this)));
+  ConnectToPresentationServiceIfNeeded();
+
+  presentation_service_->SendConnectionMessage(
+      std::move(request->session_info), std::move(request->message),
+      base::Bind(&PresentationDispatcher::HandleSendMessageRequests,
+                 base::Unretained(this)));
 }
 
 void PresentationDispatcher::HandleSendMessageRequests(bool success) {
@@ -243,20 +241,6 @@ void PresentationDispatcher::HandleSendMessageRequests(bool success) {
   if (!message_request_queue_.empty()) {
     DoSendMessage(message_request_queue_.front().get());
   }
-}
-
-void PresentationDispatcher::SetControllerConnection(
-    const PresentationSessionInfo& session_info,
-    blink::WebPresentationConnection* connection) {
-  DCHECK(connection);
-
-  auto* controller_connection_proxy = new ControllerConnectionProxy(connection);
-  connection->bindProxy(base::WrapUnique(controller_connection_proxy));
-
-  ConnectToPresentationServiceIfNeeded();
-  presentation_service_->SetPresentationConnection(
-      session_info, controller_connection_proxy->Bind(),
-      controller_connection_proxy->MakeRemoteRequest());
 }
 
 void PresentationDispatcher::closeSession(
@@ -490,19 +474,13 @@ void PresentationDispatcher::OnDefaultSessionStarted(
   if (!controller_)
     return;
 
+  presentation_service_->ListenForConnectionMessages(session_info);
   auto* connection =
       controller_->didStartDefaultSession(blink::WebPresentationSessionInfo(
           session_info.presentation_url,
           blink::WebString::fromUTF8(session_info.presentation_id)));
-
-  if (connection) {
-    SetControllerConnection(session_info, connection);
-    // Change blink connection state to 'connected' before listening to
-    // connection message. Remove ListenForConnectionMessage() after
-    // TODO(crbug.com/687011): use BrowserPresentationConnectionProxy to send
-    // message from route to blink connection.
-    presentation_service_->ListenForConnectionMessages(session_info);
-  }
+  connection->bindProxy(
+      base::MakeUnique<ControllerConnectionProxy>(connection));
 }
 
 void PresentationDispatcher::OnSessionCreated(
@@ -519,15 +497,14 @@ void PresentationDispatcher::OnSessionCreated(
   }
 
   DCHECK(session_info);
+  presentation_service_->ListenForConnectionMessages(session_info.value());
   callback->onSuccess(blink::WebPresentationSessionInfo(
       session_info->presentation_url,
       blink::WebString::fromUTF8(session_info->presentation_id)));
-  // Change blink connection state to 'connected' before listening to
-  // connection message. Remove ListenForConnectionMessage() after
-  // TODO(crbug.com/687011): use BrowserPresentationConnectionProxy to send
-  // message from route to blink connection.
-  SetControllerConnection(session_info.value(), callback->getConnection());
-  presentation_service_->ListenForConnectionMessages(session_info.value());
+
+  auto* connection = callback->getConnection();
+  connection->bindProxy(
+      base::MakeUnique<ControllerConnectionProxy>(connection));
 }
 
 void PresentationDispatcher::OnReceiverConnectionAvailable(
@@ -535,7 +512,6 @@ void PresentationDispatcher::OnReceiverConnectionAvailable(
     blink::mojom::PresentationConnectionPtr controller_connection_ptr,
     blink::mojom::PresentationConnectionRequest receiver_connection_request) {
   DCHECK(receiver_);
-
   // Bind receiver_connection_proxy with PresentationConnection in receiver
   // page.
   auto* connection = receiver_->onReceiverConnectionAvailable(

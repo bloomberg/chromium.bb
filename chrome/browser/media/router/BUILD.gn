@@ -18,8 +18,6 @@ static_library("router") {
     "//url",
   ]
   sources = [
-    "browser_presentation_connection_proxy.cc",
-    "browser_presentation_connection_proxy.h",
     "create_presentation_connection_request.cc",
     "create_presentation_connection_request.h",
     "issue.cc",

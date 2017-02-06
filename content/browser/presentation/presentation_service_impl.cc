@@ -472,7 +472,7 @@ void PresentationServiceImpl::SetPresentationConnection(
   if (!controller_delegate_)
     return;
 
-  controller_delegate_->ConnectToPresentation(
+  controller_delegate_->ConnectToOffscreenPresentation(
       render_process_id_, render_frame_id_, session_info,
       std::move(controller_connection_ptr),
       std::move(receiver_connection_request));
