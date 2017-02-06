@@ -1,99 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 </head>
 
 <body>
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Basic tests for BiquadFilterNode.");
+let audit = Audit.createTaskRunner();
 
-var context = 0;
+audit.define('test', function(task, should) {
+  task.describe('Basic tests for BiquadFilterNode');
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-    
-    window.jsTestIsAsync = true;
+  let context = new AudioContext();
+  let filter = context.createBiquadFilter();
 
-    context = new AudioContext();
-    var filter = context.createBiquadFilter();
-   
-    if (filter.numberOfInputs === 1) 
-        testPassed("BiquadFilterNode has one input.");
-    else
-        testFailed("BiquadFilterNode should have one input.");
-    
-    if (filter.numberOfOutputs === 1) 
-        testPassed("BiquadFilterNode has one output.");
-    else
-        testFailed("BiquadFilterNode should have one output.");
-    
-    if (filter.type === "lowpass")
-        testPassed("Biquad filter defaults to low-pass filter.");
-    else
-        testFailed("Biquad filter should default to low-pass filter.");
-    
-    if (filter.frequency.value === 350)
-        testPassed("The default value of frequency is 350.");
-    else
-        testFailed("The default value of frequency should be 350.");
-    
-    if (filter.Q.value === 1)
-        testPassed("The default value of Q is 1.");
-    else
-        testFailed("The default value of Q should be 1.");
-    
-    if (filter.gain.value === 0)
-        testPassed("The default value of gain is 0.");
-    else
-        testFailed("The default value of gain should be 0.");
+  should(filter.numberOfInputs, 'Number of inputs').beEqualTo(1);
 
-    // Check that all legal filter types can be set.
-    var filterTypeArray = [{type: "lowpass"},
-                           {type: "highpass"},
-                           {type: "bandpass"},
-                           {type: "lowshelf"},
-                           {type: "highshelf"},
-                           {type: "peaking"},
-                           {type: "notch"},
-                           {type: "allpass"}];
+  should(filter.numberOfOutputs, 'Number of outputs').beEqualTo(1);
 
-    for (var i = 0; i < filterTypeArray.length; ++i) {
-        try {
-            filter.type = filterTypeArray[i].type;
-            if (filter.type === filterTypeArray[i].type) {
-                var message = "Biquad filter type '" + filterTypeArray[i].type + "' is settable.";
-                testPassed(message);
-            } else {
-                var message = "Biquad filter type '" + filterTypeArray[i].type + "' was not correctly set.";
-                testFailed(message);
-            }
-        } catch(e) {
-            var message = "Biquad filter type " + i + " should not throw exception.";
-            testFailed(message);
-        }
-    }
+  should(filter.type, 'Default filter type').beEqualTo('lowpass');
+
+  should(filter.frequency.value, 'Default frequency value').beEqualTo(350);
+
+  should(filter.Q.value, 'Default Q value').beEqualTo(1);
+
+  should(filter.gain.value, 'Default gain value').beEqualTo(0);
+
+  // Check that all legal filter types can be set.
+  let filterTypeArray = [
+    {type: 'lowpass'}, {type: 'highpass'}, {type: 'bandpass'},
+    {type: 'lowshelf'}, {type: 'highshelf'}, {type: 'peaking'}, {type: 'notch'},
+    {type: 'allpass'}
+  ];
+
+  for (let i = 0; i < filterTypeArray.length; ++i) {
+    should(
+        () => filter.type = filterTypeArray[i].type,
+        'Setting filter.type to ' + filterTypeArray[i].type)
+        .notThrow();
+    should(filter.type, 'Filter type is').beEqualTo(filterTypeArray[i].type);
+  }
 
 
-    // Check that numerical values are no longer supported
-    filter.type = 99;
-    if (filter.type == 99)
-        testFailed("Biquad filter type incorrectly set to 99.")
-    else
-        testPassed("Biquad filter type correctly not set to 99.");
+  // Check that numerical values are no longer supported
+  filter.type = 99;
+  should(filter.type, 'Setting filter.type to (invalid) 99').notBeEqualTo(99);
 
-    finishJSTest();
-}
+  task.done();
+});
 
-runTest();
+audit.run();
 
 </script>
 
