@@ -327,7 +327,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private List<SectionSeparator> mSectionSeparators;
 
     private PaymentRequestSection mSelectedSection;
-    private boolean mIsShowingEditDialog;
+    private boolean mIsExpandedToFullHeight;
     private boolean mIsProcessingPayClicked;
     private boolean mIsClientClosing;
     private boolean mIsClientCheckingSelection;
@@ -833,7 +833,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         } else if (v == mPayButton) {
             processPayButton();
         } else if (v == mEditButton) {
-            if (mIsShowingEditDialog) {
+            if (mIsExpandedToFullHeight) {
                 dismissDialog(true);
             } else {
                 expand(mOrderSummarySection);
@@ -930,7 +930,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mCloseButton.setVisibility(View.VISIBLE);
             mSpinnyLayout.setVisibility(View.GONE);
 
-            if (mIsShowingEditDialog) {
+            if (mIsExpandedToFullHeight) {
                 ((FrameLayout.LayoutParams) mRequestView.getLayoutParams()).height =
                         LayoutParams.MATCH_PARENT;
                 mRequestView.requestLayout();
@@ -980,7 +980,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     private void expand(PaymentRequestSection section) {
-        if (!mIsShowingEditDialog) {
+        if (!mIsExpandedToFullHeight) {
             // Container now takes the full height of the screen, animating towards it.
             mRequestView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
             mRequestView.addOnLayoutChangeListener(new SheetEnlargingAnimator(true));
@@ -1029,7 +1029,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     false /* leftIsSingleLine */, null /* rightTruncate */,
                     false /* rightIsSingleLine */);
 
-            mIsShowingEditDialog = true;
+            mIsExpandedToFullHeight = true;
         }
 
         // Update the section contents when they're selected.
