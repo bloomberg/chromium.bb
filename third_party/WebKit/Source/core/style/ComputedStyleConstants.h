@@ -122,12 +122,11 @@ enum EBorderPrecedence {
 enum OutlineIsAuto { OutlineIsAutoOff = 0, OutlineIsAutoOn };
 
 enum EPosition {
-  StaticPosition = 0,
-  RelativePosition = 1,
-  AbsolutePosition = 2,
-  StickyPosition = 3,
-  // This value is required to pack our bits efficiently in LayoutObject.
-  FixedPosition = 6
+  StaticPosition,
+  RelativePosition,
+  AbsolutePosition,
+  StickyPosition,
+  FixedPosition
 };
 
 enum EMarginCollapse {
