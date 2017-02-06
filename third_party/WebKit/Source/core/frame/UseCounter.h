@@ -1438,6 +1438,8 @@ class CORE_EXPORT UseCounter {
     HTMLTableCellElementColspanGreaterThan8190 = 1785,
     SelectionAddRangeIntersect = 1786,
     PostMessageFromInsecureToSecureToplevel = 1787,
+    // The above items are available in M57 branch.
+
     V8MediaSession_Metadata_AttributeGetter = 1788,
     V8MediaSession_Metadata_AttributeSetter = 1789,
     V8MediaSession_PlaybackState_AttributeGetter = 1790,
