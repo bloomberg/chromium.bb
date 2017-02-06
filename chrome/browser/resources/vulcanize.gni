@@ -9,6 +9,8 @@ template("vulcanize") {
     # Declare dependencies to all involved tools.
     inputs = [
       "//chrome/browser/resources/unpack_pak.py",
+      "//third_party/node/node.py",
+      "//third_party/node/node_modules.py",
       "//third_party/node/node_modules.tar.gz.sha1",
     ]
 
