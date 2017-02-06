@@ -32,7 +32,7 @@ class CORE_EXPORT NGTextLayoutAlgorithm : public NGLayoutAlgorithm {
                         NGConstraintSpace* space,
                         NGBreakToken* break_token = nullptr);
 
-  NGPhysicalFragment* Layout() override;
+  RefPtr<NGPhysicalFragment> Layout() override;
   void LayoutInline(NGLineBuilder*);
 
  private:

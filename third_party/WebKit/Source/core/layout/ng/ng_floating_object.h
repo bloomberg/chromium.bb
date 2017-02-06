@@ -18,7 +18,7 @@ class NGPhysicalFragment;
 
 // Struct that keeps all information needed to position floats in LayoutNG.
 struct CORE_EXPORT NGFloatingObject
-    : public GarbageCollected<NGFloatingObject> {
+    : public GarbageCollectedFinalized<NGFloatingObject> {
   NGFloatingObject(NGPhysicalFragment* fragment,
                    NGConstraintSpace* space,
                    NGBlockNode* node,
@@ -31,7 +31,7 @@ struct CORE_EXPORT NGFloatingObject
     clear_type = style.clear();
   }
 
-  Member<NGPhysicalFragment> fragment;
+  RefPtr<NGPhysicalFragment> fragment;
   // TODO(glebl): Constraint space should be const here.
   Member<NGConstraintSpace> space;
   Member<NGBlockNode> node;
@@ -40,7 +40,6 @@ struct CORE_EXPORT NGFloatingObject
   NGBoxStrut margins;
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(fragment);
     visitor->trace(space);
     visitor->trace(node);
   }

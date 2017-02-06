@@ -13,13 +13,12 @@
 
 namespace blink {
 
-class CORE_EXPORT NGFragment : public GarbageCollected<NGFragment> {
+class CORE_EXPORT NGFragment {
+  STACK_ALLOCATED();
+
  public:
   NGWritingMode WritingMode() const {
     return static_cast<NGWritingMode>(writing_mode_);
-  }
-  TextDirection Direction() const {
-    return static_cast<TextDirection>(direction_);
   }
 
   // Returns the border-box size.
@@ -36,22 +35,13 @@ class CORE_EXPORT NGFragment : public GarbageCollected<NGFragment> {
 
   NGPhysicalFragment::NGFragmentType Type() const;
 
-  NGPhysicalFragment* PhysicalFragment() const { return physical_fragment_; };
-
-  DECLARE_TRACE();
-
  protected:
-  NGFragment(NGWritingMode writing_mode,
-             TextDirection direction,
-             NGPhysicalFragment* physical_fragment)
-      : physical_fragment_(physical_fragment),
-        writing_mode_(writing_mode),
-        direction_(static_cast<unsigned>(direction)) {}
+  NGFragment(NGWritingMode writing_mode, NGPhysicalFragment* physical_fragment)
+      : physical_fragment_(physical_fragment), writing_mode_(writing_mode) {}
 
-  Member<NGPhysicalFragment> physical_fragment_;
+  NGPhysicalFragment* physical_fragment_;
 
   unsigned writing_mode_ : 3;
-  unsigned direction_ : 1;
 };
 
 }  // namespace blink

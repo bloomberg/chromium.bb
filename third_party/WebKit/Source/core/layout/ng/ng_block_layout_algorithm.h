@@ -7,9 +7,9 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_block_node.h"
-#include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_column_mapper.h"
+#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "core/layout/ng/ng_units.h"
 #include "wtf/RefPtr.h"
@@ -18,10 +18,9 @@ namespace blink {
 
 class ComputedStyle;
 class NGBlockBreakToken;
+class NGBoxFragment;
 class NGConstraintSpace;
 class NGConstraintSpaceBuilder;
-class NGFragment;
-class NGFragmentBuilder;
 class NGPhysicalFragment;
 
 // A class for general block layout (e.g. a <div> with no special style).
@@ -42,7 +41,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                          NGBreakToken* break_token = nullptr);
 
   bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) const override;
-  NGPhysicalFragment* Layout() override;
+  RefPtr<NGPhysicalFragment> Layout() override;
 
  private:
   NGBoxStrut CalculateMargins(const NGConstraintSpace& space,
@@ -50,7 +49,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   // Creates a new constraint space for the current child.
   NGConstraintSpace* CreateConstraintSpaceForCurrentChild();
-  void FinishCurrentChildLayout(NGFragment* fragment);
+  void FinishCurrentChildLayout(RefPtr<NGPhysicalBoxFragment>);
 
   // Proceed to the next sibling that still needs layout.
   //
@@ -127,7 +126,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // The break token from which we are currently resuming layout.
   Persistent<NGBreakToken> break_token_;
 
-  Persistent<NGFragmentBuilder> builder_;
+  std::unique_ptr<NGFragmentBuilder> builder_;
   Persistent<NGConstraintSpaceBuilder> space_builder_;
   Persistent<NGConstraintSpace> space_for_current_child_;
   Persistent<NGBlockNode> current_child_;

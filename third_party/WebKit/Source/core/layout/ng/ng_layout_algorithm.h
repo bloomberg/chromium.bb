@@ -25,7 +25,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
   // constraints given by the NGConstraintSpace. Returns a fragment with the
   // resulting layout information.
   // TODO(layout-dev): attempt to make this function const.
-  virtual NGPhysicalFragment* Layout() = 0;
+  virtual RefPtr<NGPhysicalFragment> Layout() = 0;
 
   // Computes the min-content and max-content intrinsic sizes for the given box.
   // The result will not take any min-width, max-width or width properties into

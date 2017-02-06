@@ -66,12 +66,10 @@ void NGLineBuilder::CreateLine() {
     // properties, not the resolved bidi direction.
     TextDirection css_direction = style->direction();
     text_builder.SetDirection(css_direction);
-    NGTextFragment* text_fragment = new NGTextFragment(
-        constraint_space_->WritingMode(), css_direction,
-        text_builder.ToTextFragment(inline_box_, line_item_chunk.start_index,
-                                    line_item_chunk.end_index));
+    RefPtr<NGPhysicalTextFragment> text_fragment = text_builder.ToTextFragment(
+        inline_box_, line_item_chunk.start_index, line_item_chunk.end_index);
 
-    fragments_.push_back(text_fragment);
+    fragments_.push_back(std::move(text_fragment));
     offsets_.push_back(NGLogicalOffset(inline_offset, content_size_));
     inline_offset += line_item_chunk.inline_size;
   }
@@ -132,8 +130,11 @@ void NGLineBuilder::CreateFragments(NGFragmentBuilder* container_builder) {
   DCHECK(line_item_chunks_.isEmpty()) << "Must call CreateLine().";
   DCHECK_EQ(fragments_.size(), offsets_.size());
 
-  for (unsigned i = 0; i < fragments_.size(); i++)
-    container_builder->AddChild(fragments_[i], offsets_[i]);
+  for (unsigned i = 0; i < fragments_.size(); i++) {
+    // TODO(layout-dev): This should really be a std::move but
+    // CopyFragmentDataToLayoutBlockFlow also uses the fragments.
+    container_builder->AddChild(fragments_[i].get(), offsets_[i]);
+  }
 
   // TODO(kojii): Check if the line box width should be content or available.
   // TODO(kojii): Need to take constraint_space into account.
@@ -151,7 +152,7 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
   Vector<unsigned, 32> text_offsets(items.size());
   inline_box_->GetLayoutTextOffsets(&text_offsets);
 
-  HeapVector<Member<const NGFragment>, 32> fragments_for_bidi_runs;
+  Vector<NGPhysicalFragment*, 32> fragments_for_bidi_runs;
   fragments_for_bidi_runs.reserveInitialCapacity(items.size());
   BidiRunList<BidiRun> bidi_runs;
   LineInfo line_info;
@@ -159,9 +160,8 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
   for (const auto& line_box_data : line_box_data_list_) {
     // Create a BidiRunList for this line.
     for (; fragment_index < line_box_data.fragment_end; fragment_index++) {
-      const NGFragment* fragment = fragments_[fragment_index];
-      const NGPhysicalTextFragment* text_fragment =
-          toNGPhysicalTextFragment(fragment->PhysicalFragment());
+      NGPhysicalTextFragment* text_fragment =
+          toNGPhysicalTextFragment(fragments_[fragment_index].get());
       // TODO(kojii): needs to reverse for RTL?
       for (unsigned item_index = text_fragment->StartIndex();
            item_index < text_fragment->EndIndex(); item_index++) {
@@ -181,7 +181,7 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
                             LineLayoutItem(layout_object));
         }
         bidi_runs.addRun(run);
-        fragments_for_bidi_runs.push_back(fragment);
+        fragments_for_bidi_runs.push_back(text_fragment);
       }
     }
     // TODO(kojii): bidi needs to find the logical last run.
@@ -196,12 +196,14 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
     // Copy fragments data to InlineBoxes.
     DCHECK_EQ(fragments_for_bidi_runs.size(), bidi_runs.runCount());
     BidiRun* run = bidi_runs.firstRun();
-    for (const auto& fragment : fragments_for_bidi_runs) {
+    for (auto* physical_fragment : fragments_for_bidi_runs) {
       DCHECK(run);
+      NGTextFragment fragment(constraint_space_->WritingMode(),
+                              toNGPhysicalTextFragment(physical_fragment));
       InlineBox* inline_box = run->m_box;
-      inline_box->setLogicalWidth(fragment->InlineSize());
-      inline_box->setLogicalLeft(fragment->InlineOffset());
-      inline_box->setLogicalTop(fragment->BlockOffset());
+      inline_box->setLogicalWidth(fragment.InlineSize());
+      inline_box->setLogicalLeft(fragment.InlineOffset());
+      inline_box->setLogicalTop(fragment.BlockOffset());
       run = run->next();
     }
     DCHECK(!run);
@@ -221,7 +223,6 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
 DEFINE_TRACE(NGLineBuilder) {
   visitor->trace(inline_box_);
   visitor->trace(constraint_space_);
-  visitor->trace(fragments_);
 }
 
 }  // namespace blink

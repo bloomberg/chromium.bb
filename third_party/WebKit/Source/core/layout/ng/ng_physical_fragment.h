@@ -29,12 +29,18 @@ struct NGFloatingObject;
 // Layout code should only access output layout information through the
 // NGFragmentBase classes which transforms information into the logical
 // coordinate system.
-class CORE_EXPORT NGPhysicalFragment
-    : public GarbageCollectedFinalized<NGPhysicalFragment> {
+class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
  public:
   enum NGFragmentType { kFragmentBox = 0, kFragmentText = 1 };
 
   NGFragmentType Type() const { return static_cast<NGFragmentType>(type_); }
+
+  // Override RefCounted's deref() to ensure operator delete is called on the
+  // appropriate subclass type.
+  void deref() const {
+    if (derefBase())
+      destroy();
+  }
 
   // The accessors in this class shouldn't be used by layout code directly,
   // instead should be accessed by the NGFragmentBase classes. These accessors
@@ -90,46 +96,44 @@ class CORE_EXPORT NGPhysicalFragment
   // The float cannot be positioned right away inside of the 1st div because
   // the vertical position is not known at that moment. It will be known only
   // after the 2nd div collapses its margin with its parent.
-  const HeapVector<Member<NGFloatingObject>>& UnpositionedFloats() const {
+  const Vector<Persistent<NGFloatingObject>>& UnpositionedFloats() const {
     return unpositioned_floats_;
   }
 
   // List of positioned float that need to be copied to the old layout tree.
   // TODO(layout-ng): remove this once we change painting code to handle floats
   // differently.
-  const HeapVector<Member<NGFloatingObject>>& PositionedFloats() const {
+  const Vector<Persistent<NGFloatingObject>>& PositionedFloats() const {
     return positioned_floats_;
   }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
-  DECLARE_TRACE();
-
-  void finalizeGarbageCollectedObject();
-
  protected:
-  NGPhysicalFragment(
-      LayoutObject* layout_object,
-      NGPhysicalSize size,
-      NGPhysicalSize overflow,
-      NGFragmentType type,
-      HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
-      Vector<NGStaticPosition> out_of_flow_positions,
-      HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
-      HeapVector<Member<NGFloatingObject>>& positioned_floats,
-      NGBreakToken* break_token = nullptr);
+  NGPhysicalFragment(LayoutObject* layout_object,
+                     NGPhysicalSize size,
+                     NGPhysicalSize overflow,
+                     NGFragmentType type,
+                     PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>&
+                         out_of_flow_descendants,
+                     Vector<NGStaticPosition> out_of_flow_positions,
+                     Vector<Persistent<NGFloatingObject>>& unpositioned_floats,
+                     Vector<Persistent<NGFloatingObject>>& positioned_floats,
+                     NGBreakToken* break_token = nullptr);
 
   LayoutObject* layout_object_;
   NGPhysicalSize size_;
   NGPhysicalSize overflow_;
   NGPhysicalOffset offset_;
-  Member<NGBreakToken> break_token_;
-  HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_descendants_;
+  Persistent<NGBreakToken> break_token_;
+  PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_descendants_;
   Vector<NGStaticPosition> out_of_flow_positions_;
-  HeapVector<Member<NGFloatingObject>> unpositioned_floats_;
-  HeapVector<Member<NGFloatingObject>> positioned_floats_;
+  Vector<Persistent<NGFloatingObject>> unpositioned_floats_;
+  Vector<Persistent<NGFloatingObject>> positioned_floats_;
 
   unsigned type_ : 1;
   unsigned is_placed_ : 1;
+
+ private:
+  void destroy() const;
 };
 
 }  // namespace blink

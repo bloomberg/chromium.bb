@@ -33,7 +33,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   ~NGBlockNode() override;
 
-  NGPhysicalFragment* Layout(NGConstraintSpace* constraint_space) override;
+  RefPtr<NGPhysicalFragment> Layout(
+      NGConstraintSpace* constraint_space) override;
   NGBlockNode* NextSibling() override;
   LayoutObject* GetLayoutObject() override;
 
@@ -60,7 +61,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // Runs layout on layout_box_ and creates a fragment for the resulting
   // geometry.
-  NGPhysicalBoxFragment* RunOldLayout(const NGConstraintSpace&);
+  RefPtr<NGPhysicalBoxFragment> RunOldLayout(const NGConstraintSpace&);
 
   // Called if this is an out-of-flow block which needs to be
   // positioned with legacy layout.
@@ -86,7 +87,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // TODO(mstensho): An input node may produce multiple fragments, so this
   // should probably be renamed to last_fragment_ or something like that, since
   // the last fragment is all we care about when resuming layout.
-  Member<NGPhysicalBoxFragment> fragment_;
+  RefPtr<NGPhysicalBoxFragment> fragment_;
 };
 
 DEFINE_TYPE_CASTS(NGBlockNode,

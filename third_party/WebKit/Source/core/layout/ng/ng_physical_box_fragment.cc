@@ -10,11 +10,12 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     LayoutObject* layout_object,
     NGPhysicalSize size,
     NGPhysicalSize overflow,
-    HeapVector<Member<NGPhysicalFragment>>& children,
-    HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
+    Vector<RefPtr<NGPhysicalFragment>>& children,
+    PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>&
+        out_of_flow_descendants,
     Vector<NGStaticPosition>& out_of_flow_positions,
-    HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
-    HeapVector<Member<NGFloatingObject>>& positioned_floats,
+    Vector<Persistent<NGFloatingObject>>& unpositioned_floats,
+    Vector<Persistent<NGFloatingObject>>& positioned_floats,
     const WTF::Optional<NGLogicalOffset>& bfc_offset,
     const NGMarginStrut& end_margin_strut,
     NGBreakToken* break_token)
@@ -30,11 +31,6 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       bfc_offset_(bfc_offset),
       end_margin_strut_(end_margin_strut) {
   children_.swap(children);
-}
-
-DEFINE_TRACE_AFTER_DISPATCH(NGPhysicalBoxFragment) {
-  visitor->trace(children_);
-  NGPhysicalFragment::traceAfterDispatch(visitor);
 }
 
 }  // namespace blink

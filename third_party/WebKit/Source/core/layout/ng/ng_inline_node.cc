@@ -215,7 +215,7 @@ void NGInlineNode::ShapeText() {
   }
 }
 
-NGPhysicalFragment* NGInlineNode::Layout(NGConstraintSpace*) {
+RefPtr<NGPhysicalFragment> NGInlineNode::Layout(NGConstraintSpace*) {
   ASSERT_NOT_REACHED();
   return nullptr;
 }

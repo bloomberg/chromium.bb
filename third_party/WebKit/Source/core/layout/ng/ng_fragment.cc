@@ -44,8 +44,4 @@ NGPhysicalFragment::NGFragmentType NGFragment::Type() const {
   return physical_fragment_->Type();
 }
 
-DEFINE_TRACE(NGFragment) {
-  visitor->trace(physical_fragment_);
-}
-
 }  // namespace blink

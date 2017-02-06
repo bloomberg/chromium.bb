@@ -16,9 +16,8 @@ namespace blink {
 class CORE_EXPORT NGBoxFragment final : public NGFragment {
  public:
   NGBoxFragment(NGWritingMode writing_mode,
-                TextDirection direction,
                 NGPhysicalBoxFragment* physical_fragment)
-      : NGFragment(writing_mode, direction, physical_fragment) {}
+      : NGFragment(writing_mode, physical_fragment) {}
 
   const WTF::Optional<NGLogicalOffset>& BfcOffset() const;
 

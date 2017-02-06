@@ -34,7 +34,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   NGInlineNode(LayoutObject* start_inline, const ComputedStyle* block_style);
   ~NGInlineNode() override;
 
-  NGPhysicalFragment* Layout(NGConstraintSpace*) override;
+  RefPtr<NGPhysicalFragment> Layout(NGConstraintSpace*) override;
   void LayoutInline(NGConstraintSpace*, NGLineBuilder*);
   NGInlineNode* NextSibling() override;
   LayoutObject* GetLayoutObject() override;

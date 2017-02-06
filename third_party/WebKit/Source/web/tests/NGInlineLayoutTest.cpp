@@ -48,7 +48,7 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
 
   NGInlineNode* inlineBox =
       new NGInlineNode(blockFlow->firstChild(), blockFlow->mutableStyle());
-  NGPhysicalFragment* fragment =
+  RefPtr<NGPhysicalFragment> fragment =
       NGInlineLayoutAlgorithm(blockFlow, blockFlow->style(), inlineBox,
                               constraintSpace)
           .Layout();
@@ -75,7 +75,7 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
 
   NGInlineNode* inlineBox =
       new NGInlineNode(blockFlow->firstChild(), blockFlow->mutableStyle());
-  NGPhysicalFragment* fragment =
+  RefPtr<NGPhysicalFragment> fragment =
       NGInlineLayoutAlgorithm(blockFlow, blockFlow->style(), inlineBox,
                               constraintSpace)
           .Layout();
@@ -85,6 +85,9 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   expectedText.append(objectReplacementCharacter);
   expectedText.append(".");
   EXPECT_EQ(expectedText, inlineBox->Text(0, 8));
+
+  // Delete the line box tree to avoid leaks in the test.
+  blockFlow->deleteLineBoxTree();
 }
 
 }  // namespace blink

@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_break_token.h"
+#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
@@ -16,7 +17,6 @@ namespace blink {
 class ComputedStyle;
 class LayoutObject;
 class NGConstraintSpace;
-class NGFragmentBuilder;
 class NGInlineNode;
 
 // A class for inline layout (e.g. a anonymous block with inline-level children
@@ -40,7 +40,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
                           NGConstraintSpace* space,
                           NGBreakToken* break_token = nullptr);
 
-  NGPhysicalFragment* Layout() override;
+  RefPtr<NGPhysicalFragment> Layout() override;
 
  private:
   // Read-only Getters.
@@ -52,7 +52,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
   Persistent<NGInlineNode> first_child_;
   Persistent<NGConstraintSpace> constraint_space_;
   Persistent<NGBreakToken> break_token_;
-  Persistent<NGFragmentBuilder> builder_;
+  std::unique_ptr<NGFragmentBuilder> builder_;
 };
 
 }  // namespace blink

@@ -23,10 +23,11 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
       unsigned end_index,
       NGPhysicalSize size,
       NGPhysicalSize overflow,
-      HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
+      PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>&
+          out_of_flow_descendants,
       Vector<NGStaticPosition> out_of_flow_positions,
-      HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
-      HeapVector<Member<NGFloatingObject>>& positioned_floats)
+      Vector<Persistent<NGFloatingObject>>& unpositioned_floats,
+      Vector<Persistent<NGFloatingObject>>& positioned_floats)
       : NGPhysicalFragment(layout_object,
                            size,
                            overflow,
@@ -39,11 +40,6 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
         start_index_(start_index),
         end_index_(end_index) {}
 
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    visitor->trace(node_);
-    NGPhysicalFragment::traceAfterDispatch(visitor);
-  }
-
   const NGInlineNode* Node() const { return node_; }
 
   // The range of NGLayoutInlineItem.
@@ -55,7 +51,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
  private:
   // TODO(kojii): NGInlineNode is to access text content and NGLayoutInlineItem.
   // Review if it's better to point them.
-  Member<const NGInlineNode> node_;
+  Persistent<const NGInlineNode> node_;
   unsigned start_index_;
   unsigned end_index_;
 };

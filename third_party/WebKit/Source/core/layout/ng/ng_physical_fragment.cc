@@ -15,10 +15,11 @@ NGPhysicalFragment::NGPhysicalFragment(
     NGPhysicalSize size,
     NGPhysicalSize overflow,
     NGFragmentType type,
-    HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
+    PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>&
+        out_of_flow_descendants,
     Vector<NGStaticPosition> out_of_flow_positions,
-    HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
-    HeapVector<Member<NGFloatingObject>>& positioned_floats,
+    Vector<Persistent<NGFloatingObject>>& unpositioned_floats,
+    Vector<Persistent<NGFloatingObject>>& positioned_floats,
     NGBreakToken* break_token)
     : layout_object_(layout_object),
       size_(size),
@@ -32,25 +33,11 @@ NGPhysicalFragment::NGPhysicalFragment(
   positioned_floats_.swap(positioned_floats);
 }
 
-DEFINE_TRACE(NGPhysicalFragment) {
+void NGPhysicalFragment::destroy() const {
   if (Type() == kFragmentText)
-    static_cast<NGPhysicalTextFragment*>(this)->traceAfterDispatch(visitor);
+    delete static_cast<const NGPhysicalTextFragment*>(this);
   else
-    static_cast<NGPhysicalBoxFragment*>(this)->traceAfterDispatch(visitor);
-}
-
-void NGPhysicalFragment::finalizeGarbageCollectedObject() {
-  if (Type() == kFragmentText)
-    static_cast<NGPhysicalTextFragment*>(this)->~NGPhysicalTextFragment();
-  else
-    static_cast<NGPhysicalBoxFragment*>(this)->~NGPhysicalBoxFragment();
-}
-
-DEFINE_TRACE_AFTER_DISPATCH(NGPhysicalFragment) {
-  visitor->trace(out_of_flow_descendants_);
-  visitor->trace(break_token_);
-  visitor->trace(unpositioned_floats_);
-  visitor->trace(positioned_floats_);
+    delete static_cast<const NGPhysicalBoxFragment*>(this);
 }
 
 }  // namespace blink

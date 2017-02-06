@@ -6,6 +6,7 @@
 
 #include "core/layout/ng/ng_absolute_utils.h"
 #include "core/layout/ng/ng_block_break_token.h"
+#include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_column_mapper.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
@@ -177,24 +178,27 @@ NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
                               NGFloatingObject* floating_object) {
   NGConstraintSpace* float_space = floating_object->space;
   DCHECK(floating_object->fragment) << "Fragment cannot be null here";
-  NGBoxFragment* float_fragment =
-      new NGBoxFragment(float_space->WritingMode(), float_space->Direction(),
-                        toNGPhysicalBoxFragment(floating_object->fragment));
+
+  // TODO(ikilpatrick): The writing mode switching here looks wrong.
+  NGBoxFragment float_fragment(
+      float_space->WritingMode(),
+      toNGPhysicalBoxFragment(floating_object->fragment.get()));
+
   // Find a layout opportunity that will fit our float.
   const NGLayoutOpportunity opportunity =
-      FindLayoutOpportunityForFragment(floating_object->space, *float_fragment,
+      FindLayoutOpportunityForFragment(floating_object->space, float_fragment,
                                        origin_point, floating_object->margins);
   DCHECK(!opportunity.IsEmpty()) << "Opportunity is empty but it shouldn't be";
 
   // Calculate the float offset if needed.
   LayoutUnit float_offset;
   if (floating_object->exclusion_type == NGExclusion::kFloatRight) {
-    float_offset = opportunity.size.inline_size - float_fragment->InlineSize();
+    float_offset = opportunity.size.inline_size - float_fragment.InlineSize();
   }
 
   // Add the float as an exclusion.
   const NGExclusion exclusion = CreateExclusion(
-      *float_fragment, opportunity, float_offset, floating_object->margins,
+      float_fragment, opportunity, float_offset, floating_object->margins,
       floating_object->exclusion_type);
   float_space->AddExclusion(exclusion);
 
@@ -264,8 +268,9 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
       first_child_(first_child),
       constraint_space_(constraint_space),
       break_token_(break_token),
-      builder_(new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox,
-                                     layout_object)) {
+      builder_(WTF::wrapUnique(
+          new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox,
+                                layout_object))) {
   DCHECK(style_);
 }
 
@@ -308,7 +313,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateRelativeOffset(
   return {inline_offset, block_offset};
 }
 
-NGPhysicalFragment* NGBlockLayoutAlgorithm::Layout() {
+RefPtr<NGPhysicalFragment> NGBlockLayoutAlgorithm::Layout() {
   WTF::Optional<MinAndMaxContentSizes> sizes;
   if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style())) {
     // TODO(ikilpatrick): Change ComputeMinAndMaxContentSizes to return
@@ -391,14 +396,12 @@ NGPhysicalFragment* NGBlockLayoutAlgorithm::Layout() {
            SpaceAvailableForCurrentChild() > LayoutUnit());
     space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
 
-    NGPhysicalFragment* child_fragment =
+    RefPtr<NGPhysicalFragment> physical_fragment =
         current_child_->Layout(space_for_current_child_);
 
-    FinishCurrentChildLayout(new NGBoxFragment(
-        ConstraintSpace().WritingMode(), ConstraintSpace().Direction(),
-        toNGPhysicalBoxFragment(child_fragment)));
+    FinishCurrentChildLayout(toNGPhysicalBoxFragment(physical_fragment.get()));
 
-    if (!ProceedToNextUnfinishedSibling(child_fragment))
+    if (!ProceedToNextUnfinishedSibling(physical_fragment.get()))
       break;
   }
 
@@ -419,13 +422,14 @@ NGPhysicalFragment* NGBlockLayoutAlgorithm::Layout() {
   builder_->SetBlockSize(block_size);
 
   // Layout our absolute and fixed positioned children.
-  NGOutOfFlowLayoutPart(Style(), builder_).Run();
+  NGOutOfFlowLayoutPart(Style(), builder_.get()).Run();
 
   // Non empty blocks always know their position in space:
   if (block_size) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
-    UpdateFragmentBfcOffset(curr_bfc_offset_, ConstraintSpace(), builder_);
-    PositionPendingFloats(curr_bfc_offset_, builder_);
+    UpdateFragmentBfcOffset(curr_bfc_offset_, ConstraintSpace(),
+                            builder_.get());
+    PositionPendingFloats(curr_bfc_offset_, builder_.get());
   }
 
   // Margins collapsing:
@@ -442,25 +446,25 @@ NGPhysicalFragment* NGBlockLayoutAlgorithm::Layout() {
   if (ConstraintSpace().HasBlockFragmentation())
     FinalizeForFragmentation();
 
-  NGPhysicalFragment* fragment = builder_->ToBoxFragment();
-
-  return fragment;
+  return builder_->ToBoxFragment();
 }
 
 void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
-    NGFragment* base_fragment) {
-  const NGBoxFragment& fragment = *toNGBoxFragment(base_fragment);
-  if (!fragment.PhysicalFragment()->UnpositionedFloats().isEmpty())
+    RefPtr<NGPhysicalBoxFragment> physical_fragment) {
+  NGBoxFragment fragment(ConstraintSpace().WritingMode(),
+                         physical_fragment.get());
+
+  if (!physical_fragment->UnpositionedFloats().isEmpty())
     DCHECK(!builder_->BfcOffset()) << "Parent BFC offset shouldn't be set here";
   // Pull out unpositioned floats to the current fragment. This may needed if
   // for example the child fragment could not position its floats because it's
   // empty and therefore couldn't determine its position in space.
   builder_->MutableUnpositionedFloats().appendVector(
-      fragment.PhysicalFragment()->UnpositionedFloats());
+      physical_fragment->UnpositionedFloats());
 
   if (CurrentChildStyle().isFloating()) {
     NGFloatingObject* floating_object = new NGFloatingObject(
-        fragment.PhysicalFragment(), space_for_current_child_, current_child_,
+        physical_fragment.get(), space_for_current_child_, current_child_,
         CurrentChildStyle(), curr_child_margins_);
     builder_->AddUnpositionedFloat(floating_object);
     // No need to postpone the positioning if we know the correct offset.
@@ -470,7 +474,7 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
       // Example: <div style="margin-bottom: 20px"><float></div>
       //          <div style="margin-bottom: 30px"></div>
       origin_point.block_offset += curr_margin_strut_.Sum();
-      PositionPendingFloats(origin_point, builder_);
+      PositionPendingFloats(origin_point, builder_.get());
     }
     return;
   }
@@ -478,8 +482,9 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
   // Fragment that knows its offset can be used to set parent's BFC position.
   if (fragment.BfcOffset()) {
     curr_bfc_offset_.block_offset = fragment.BfcOffset().value().block_offset;
-    UpdateFragmentBfcOffset(curr_bfc_offset_, ConstraintSpace(), builder_);
-    PositionPendingFloats(curr_bfc_offset_, builder_);
+    UpdateFragmentBfcOffset(curr_bfc_offset_, ConstraintSpace(),
+                            builder_.get());
+    PositionPendingFloats(curr_bfc_offset_, builder_.get());
   }
   NGLogicalOffset fragment_offset = CalculateRelativeOffset(fragment);
 
@@ -487,8 +492,6 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
     fragmentainer_mapper_->ToVisualOffset(fragment_offset);
   else
     fragment_offset.block_offset -= PreviousBreakOffset();
-
-  builder_->AddChild(base_fragment, fragment_offset);
 
   // Update margin strut.
   curr_margin_strut_ = fragment.EndMarginStrut();
@@ -499,6 +502,8 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
       std::max(max_inline_size_, fragment.InlineSize() +
                                      curr_child_margins_.InlineSum() +
                                      border_and_padding_.InlineSum());
+
+  builder_->AddChild(std::move(physical_fragment), fragment_offset);
 }
 
 bool NGBlockLayoutAlgorithm::ProceedToNextUnfinishedSibling(
@@ -688,13 +693,14 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() {
   // https://software.hixie.ch/utilities/js/live-dom-viewer/saved/4847
   if (CurrentChildStyle().clear() != EClear::kNone) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
-    UpdateFragmentBfcOffset(curr_bfc_offset_, ConstraintSpace(), builder_);
+    UpdateFragmentBfcOffset(curr_bfc_offset_, ConstraintSpace(),
+                            builder_.get());
     // Only collapse margins if it's an adjoining block with clearance.
     if (!content_size_) {
       curr_margin_strut_ = NGMarginStrut();
       curr_child_margins_.block_start = LayoutUnit();
     }
-    PositionPendingFloats(curr_bfc_offset_, builder_);
+    PositionPendingFloats(curr_bfc_offset_, builder_.get());
     AdjustToClearance(constraint_space_->Exclusions(), CurrentChildStyle(),
                       builder_->BfcOffset().value(), &content_size_);
   }

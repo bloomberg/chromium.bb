@@ -39,10 +39,10 @@ void FragmentPositionUpdated(const NGPhysicalBoxFragment& box_fragment) {
 // Similar to FragmentPositionUpdated but for floats.
 // - Updates layout object's geometric information.
 // - Creates legacy FloatingObject and attached it to the provided parent.
-void FloatingObjectPositionedUpdated(NGFloatingObject& floating_object,
+void FloatingObjectPositionedUpdated(NGFloatingObject* floating_object,
                                      LayoutBox* parent) {
   NGPhysicalBoxFragment* box_fragment =
-      toNGPhysicalBoxFragment(floating_object.fragment);
+      toNGPhysicalBoxFragment(floating_object->fragment.get());
   FragmentPositionUpdated(*box_fragment);
 
   LayoutBox* layout_box = toLayoutBox(box_fragment->GetLayoutObject());
@@ -79,7 +79,8 @@ NGBlockNode::NGBlockNode(ComputedStyle* style)
 // included from a compilation unit that lacks the ComputedStyle definition.
 NGBlockNode::~NGBlockNode() {}
 
-NGPhysicalFragment* NGBlockNode::Layout(NGConstraintSpace* constraint_space) {
+RefPtr<NGPhysicalFragment> NGBlockNode::Layout(
+    NGConstraintSpace* constraint_space) {
   // Use the old layout code and synthesize a fragment.
   if (!CanUseNewLayout()) {
     DCHECK(layout_box_);
@@ -87,7 +88,7 @@ NGPhysicalFragment* NGBlockNode::Layout(NGConstraintSpace* constraint_space) {
     return fragment_;
   }
 
-  NGPhysicalFragment* fragment;
+  RefPtr<NGPhysicalFragment> fragment;
 
   if (HasInlineChildren()) {
     fragment =
@@ -101,7 +102,7 @@ NGPhysicalFragment* NGBlockNode::Layout(NGConstraintSpace* constraint_space) {
                    .Layout();
   }
 
-  fragment_ = toNGPhysicalBoxFragment(fragment);
+  fragment_ = toNGPhysicalBoxFragment(fragment.get());
   CopyFragmentDataToLayoutBox(*constraint_space);
   return fragment_;
 }
@@ -143,12 +144,10 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
   }
 
   // Have to synthesize this value.
-  NGPhysicalFragment* physical_fragment = Layout(constraint_space);
-  NGBoxFragment* fragment = new NGBoxFragment(
-      FromPlatformWritingMode(Style().getWritingMode()), Style().direction(),
-      toNGPhysicalBoxFragment(physical_fragment));
-
-  sizes.min_content = fragment->InlineOverflow();
+  RefPtr<NGPhysicalFragment> physical_fragment = Layout(constraint_space);
+  NGBoxFragment min_fragment(FromPlatformWritingMode(Style().getWritingMode()),
+                             toNGPhysicalBoxFragment(physical_fragment.get()));
+  sizes.min_content = min_fragment.InlineOverflow();
 
   // Now, redo with infinite space for max_content
   constraint_space =
@@ -160,10 +159,9 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
           .ToConstraintSpace();
 
   physical_fragment = Layout(constraint_space);
-  fragment = new NGBoxFragment(
-      FromPlatformWritingMode(Style().getWritingMode()), Style().direction(),
-      toNGPhysicalBoxFragment(physical_fragment));
-  sizes.max_content = fragment->InlineOverflow();
+  NGBoxFragment max_fragment(FromPlatformWritingMode(Style().getWritingMode()),
+                             toNGPhysicalBoxFragment(physical_fragment.get()));
+  sizes.max_content = max_fragment.InlineOverflow();
   return sizes;
 }
 
@@ -215,7 +213,6 @@ NGBreakToken* NGBlockNode::CurrentBreakToken() const {
 }
 
 DEFINE_TRACE(NGBlockNode) {
-  visitor->trace(fragment_);
   visitor->trace(next_sibling_);
   visitor->trace(first_child_);
   NGLayoutInputNode::trace(visitor);
@@ -283,7 +280,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
         FragmentPositionUpdated(toNGPhysicalBoxFragment(*child_fragment));
 
       for (const auto& floating_object : child_fragment->PositionedFloats()) {
-        FloatingObjectPositionedUpdated(*floating_object, layout_box_);
+        FloatingObjectPositionedUpdated(floating_object, layout_box_);
       }
     }
   }
@@ -296,7 +293,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   }
 }
 
-NGPhysicalBoxFragment* NGBlockNode::RunOldLayout(
+RefPtr<NGPhysicalBoxFragment> NGBlockNode::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
   NGLogicalSize available_size = constraint_space.PercentageResolutionSize();
   layout_box_->setOverrideContainingBlockContentLogicalWidth(

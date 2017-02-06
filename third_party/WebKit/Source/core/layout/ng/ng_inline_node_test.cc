@@ -63,9 +63,8 @@ class NGInlineNodeTest : public ::testing::Test {
     style_->font().update(nullptr);
   }
 
-  void CreateLine(
-      NGInlineNode* node,
-      HeapVector<Member<const NGPhysicalTextFragment>>* fragments_out) {
+  void CreateLine(NGInlineNode* node,
+                  Vector<RefPtr<const NGPhysicalTextFragment>>* fragments_out) {
     NGConstraintSpace* constraint_space =
         NGConstraintSpaceBuilder(kHorizontalTopBottom).ToConstraintSpace();
     NGLineBuilder line_builder(node, constraint_space);
@@ -76,9 +75,9 @@ class NGInlineNodeTest : public ::testing::Test {
     NGFragmentBuilder fragment_builder(NGPhysicalFragment::kFragmentBox,
                                        /* layout_object */ nullptr);
     line_builder.CreateFragments(&fragment_builder);
-    NGPhysicalBoxFragment* fragment = fragment_builder.ToBoxFragment();
-    for (const NGPhysicalFragment* child : fragment->Children()) {
-      fragments_out->push_back(toNGPhysicalTextFragment(child));
+    RefPtr<NGPhysicalBoxFragment> fragment = fragment_builder.ToBoxFragment();
+    for (const auto& child : fragment->Children()) {
+      fragments_out->push_back(toNGPhysicalTextFragment(child.get()));
     }
   }
 
@@ -187,7 +186,7 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
 
 TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   NGInlineNodeForTest* node = CreateBidiIsolateNode(style_.get());
-  HeapVector<Member<const NGPhysicalTextFragment>> fragments;
+  Vector<RefPtr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
   ASSERT_EQ(5u, fragments.size());
   TEST_TEXT_FRAGMENT(fragments[0], node, 0u, 1u, TextDirection::kLtr);

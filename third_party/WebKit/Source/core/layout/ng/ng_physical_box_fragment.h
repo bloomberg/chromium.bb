@@ -23,16 +23,17 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
       LayoutObject* layout_object,
       NGPhysicalSize size,
       NGPhysicalSize overflow,
-      HeapVector<Member<NGPhysicalFragment>>& children,
-      HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
+      Vector<RefPtr<NGPhysicalFragment>>& children,
+      PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>&
+          out_of_flow_descendants,
       Vector<NGStaticPosition>& out_of_flow_positions,
-      HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
-      HeapVector<Member<NGFloatingObject>>& positioned_floats,
+      Vector<Persistent<NGFloatingObject>>& unpositioned_floats,
+      Vector<Persistent<NGFloatingObject>>& positioned_floats,
       const WTF::Optional<NGLogicalOffset>& bfc_offset,
       const NGMarginStrut& end_margin_strut,
       NGBreakToken* break_token = nullptr);
 
-  const HeapVector<Member<NGPhysicalFragment>>& Children() const {
+  const Vector<RefPtr<NGPhysicalFragment>>& Children() const {
     return children_;
   }
 
@@ -42,15 +43,11 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
   const NGMarginStrut& EndMarginStrut() const { return end_margin_strut_; }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
-
  private:
-  HeapVector<Member<NGPhysicalFragment>> children_;
+  Vector<RefPtr<NGPhysicalFragment>> children_;
   const WTF::Optional<NGLogicalOffset> bfc_offset_;
   const NGMarginStrut end_margin_strut_;
 };
-
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(NGPhysicalBoxFragment);
 
 DEFINE_TYPE_CASTS(NGPhysicalBoxFragment,
                   NGPhysicalFragment,

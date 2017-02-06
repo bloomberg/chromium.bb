@@ -5,6 +5,7 @@
 #ifndef NGFragmentBuilder_h
 #define NGFragmentBuilder_h
 
+#include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_physical_fragment.h"
@@ -12,17 +13,15 @@
 
 namespace blink {
 
-class NGFragment;
 class NGInlineNode;
 class NGPhysicalBoxFragment;
 class NGPhysicalTextFragment;
 
-class CORE_EXPORT NGFragmentBuilder final
-    : public GarbageCollectedFinalized<NGFragmentBuilder> {
+class CORE_EXPORT NGFragmentBuilder final {
  public:
   NGFragmentBuilder(NGPhysicalFragment::NGFragmentType, LayoutObject*);
 
-  using WeakBoxList = HeapLinkedHashSet<WeakMember<NGBlockNode>>;
+  using WeakBoxList = PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
   NGFragmentBuilder& SetWritingMode(NGWritingMode);
   NGFragmentBuilder& SetDirection(TextDirection);
@@ -34,7 +33,8 @@ class CORE_EXPORT NGFragmentBuilder final
   NGFragmentBuilder& SetInlineOverflow(LayoutUnit);
   NGFragmentBuilder& SetBlockOverflow(LayoutUnit);
 
-  NGFragmentBuilder& AddChild(NGFragment*, const NGLogicalOffset&);
+  NGFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
+                              const NGLogicalOffset&);
   NGFragmentBuilder& AddFloatingObject(NGFloatingObject*,
                                        const NGLogicalOffset&);
 
@@ -90,26 +90,24 @@ class CORE_EXPORT NGFragmentBuilder final
   // do not provide a setter here.
 
   // Creates the fragment. Can only be called once.
-  NGPhysicalBoxFragment* ToBoxFragment();
-  NGPhysicalTextFragment* ToTextFragment(NGInlineNode*,
-                                         unsigned start_index,
-                                         unsigned end_index);
+  RefPtr<NGPhysicalBoxFragment> ToBoxFragment();
+  RefPtr<NGPhysicalTextFragment> ToTextFragment(NGInlineNode*,
+                                                unsigned start_index,
+                                                unsigned end_index);
 
   // Mutable list of floats that need to be positioned.
-  HeapVector<Member<NGFloatingObject>>& MutableUnpositionedFloats() {
+  Vector<Persistent<NGFloatingObject>>& MutableUnpositionedFloats() {
     return unpositioned_floats_;
   }
 
   // List of floats that need to be positioned.
-  const HeapVector<Member<NGFloatingObject>>& UnpositionedFloats() const {
+  const Vector<Persistent<NGFloatingObject>>& UnpositionedFloats() const {
     return unpositioned_floats_;
   }
 
   const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
     return bfc_offset_;
   }
-
-  DECLARE_VIRTUAL_TRACE();
 
   // Out-of-flow descendant placement information.
   // The generated fragment must compute NGStaticPosition for all
@@ -138,7 +136,7 @@ class CORE_EXPORT NGFragmentBuilder final
   NGLogicalSize size_;
   NGLogicalSize overflow_;
 
-  HeapVector<Member<NGPhysicalFragment>> children_;
+  Vector<RefPtr<NGPhysicalFragment>> children_;
   Vector<NGLogicalOffset> offsets_;
 
   WeakBoxList out_of_flow_descendant_candidates_;
@@ -149,12 +147,12 @@ class CORE_EXPORT NGFragmentBuilder final
 
   // Floats that need to be positioned by the next in-flow fragment that can
   // determine its block position in space.
-  HeapVector<Member<NGFloatingObject>> unpositioned_floats_;
+  Vector<Persistent<NGFloatingObject>> unpositioned_floats_;
 
   Vector<NGLogicalOffset> floating_object_offsets_;
-  HeapVector<Member<NGFloatingObject>> positioned_floats_;
+  Vector<Persistent<NGFloatingObject>> positioned_floats_;
 
-  Member<NGBreakToken> break_token_;
+  Persistent<NGBreakToken> break_token_;
 
   WTF::Optional<NGLogicalOffset> bfc_offset_;
   NGMarginStrut end_margin_strut_;
