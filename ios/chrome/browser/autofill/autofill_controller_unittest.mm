@@ -596,7 +596,8 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
 
 // Checks that an HTTP page containing a credit card results in a navigation
 // entry with the "credit card displayed" bit set to true.
-TEST_F(AutofillControllerTest, HttpCreditCard) {
+// TODO(crbug.com/689082): disabled due to flakyness.
+TEST_F(AutofillControllerTest, DISABLED_HttpCreditCard) {
   LoadHtml(kCreditCardAutofocusFormHtml, GURL("http://chromium.test"));
 
   web::SSLStatus ssl_status =
