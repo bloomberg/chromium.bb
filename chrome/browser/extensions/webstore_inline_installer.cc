@@ -13,8 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
@@ -229,13 +229,14 @@ bool WebstoreInlineInstaller::CheckRequestorPermitted(
 // Private implementation.
 //
 
-void WebstoreInlineInstaller::DidNavigateAnyFrame(
-    content::RenderFrameHost* render_frame_host,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (!details.is_in_page &&
-      (render_frame_host == host_ || details.is_main_frame))
+void WebstoreInlineInstaller::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->HasCommitted() &&
+      !navigation_handle->IsSamePage() &&
+      (navigation_handle->GetRenderFrameHost() == host_ ||
+       navigation_handle->IsInMainFrame())) {
     host_ = nullptr;
+  }
 }
 
 void WebstoreInlineInstaller::WebContentsDestroyed() {
