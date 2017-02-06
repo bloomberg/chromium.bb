@@ -48,11 +48,39 @@ class Git(object):
 
     executable_name = 'git'
 
-    def __init__(self, cwd, executive=None, filesystem=None):
-        self.cwd = cwd
+    def __init__(self, cwd=None, executive=None, filesystem=None):
         self._executive = executive or Executive()
         self._filesystem = filesystem or FileSystem()
+
+        self.cwd = cwd or self._filesystem.abspath(self._filesystem.getcwd())
+        if not Git.in_working_directory(self.cwd, executive=self._executive):
+            module_directory = self._filesystem.abspath(
+                self._filesystem.dirname(self._filesystem.path_to_module(self.__module__)))
+            _log.info('The current directory (%s) is not in a git repo, trying directory %s.',
+                      cwd, module_directory)
+            if Git.in_working_directory(module_directory, executive=self._executive):
+                self.cwd = module_directory
+            _log.error('Failed to find Git repo for %s or %s', cwd, module_directory)
+
+        self._init_executable_name()
         self.checkout_root = self.find_checkout_root(self.cwd)
+
+    def _init_executable_name(self):
+        # FIXME: This is a hack and should be removed.
+        try:
+            self._executive.run_command(['git', 'help'])
+        except OSError:
+            try:
+                self._executive.run_command(['git.bat', 'help'])
+                # The Win port uses the depot_tools package, which contains a number
+                # of development tools, including Python and git. Instead of using a
+                # real git executable, depot_tools indirects via a batch file, called
+                # "git.bat". This batch file allows depot_tools to auto-update the real
+                # git executable, which is contained in a subdirectory.
+                _log.debug('Engaging git.bat Windows hack.')
+                self.executable_name = 'git.bat'
+            except OSError:
+                _log.debug('Failed to engage git.bat Windows hack.')
 
     def _run_git(self,
                  command_args,

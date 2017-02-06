@@ -13,8 +13,9 @@ class MockGit(object):
 
     executable_name = 'mock-git'
 
-    def __init__(self, filesystem=None, executive=None):
+    def __init__(self, cwd=None, filesystem=None, executive=None):
         self.checkout_root = '/mock-checkout'
+        self.cwd = cwd or self.checkout_root
         self.added_paths = set()
         self._filesystem = filesystem or MockFileSystem()
         self._executive = executive or MockExecutive()

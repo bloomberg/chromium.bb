@@ -341,7 +341,7 @@ def summarize_results(port_obj, expectations, initial_results,
     results['chromium_revision'] = ''
     if port_obj.get_option('builder_name'):
         path = port_obj.repository_path()
-        scm = port_obj.host.scm_for_path(path)
+        scm = port_obj.host.scm(path=path)
         if scm:
             results['chromium_revision'] = str(scm.commit_position(path))
         else:

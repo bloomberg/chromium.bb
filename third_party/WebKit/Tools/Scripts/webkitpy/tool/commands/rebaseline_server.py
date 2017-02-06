@@ -82,7 +82,6 @@ class RebaselineServer(AbstractLocalServerCommand):
     def _prepare_config(self, options, args, tool):
         results_directory = args[0]
         host = Host()
-        host.initialize_scm()
 
         print 'Parsing full_results.json...'
         results_json_path = host.filesystem.join(results_directory, 'full_results.json')

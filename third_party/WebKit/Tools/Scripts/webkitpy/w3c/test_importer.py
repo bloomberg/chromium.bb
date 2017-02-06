@@ -39,7 +39,6 @@ class TestImporter(object):
 
     def __init__(self, host):
         self.host = host
-        self.host.initialize_scm()
         self.executive = host.executive
         self.fs = host.filesystem
         self.finder = WebKitFinder(self.fs)
