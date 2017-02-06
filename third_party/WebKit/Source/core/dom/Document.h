@@ -63,13 +63,16 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
-#include "public/platform/site_engagement.mojom-blink.h"
 #include "wtf/Compiler.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
 #include <memory>
 
 namespace blink {
+
+namespace mojom {
+enum class EngagementLevel : int32_t;
+}
 
 class AnimationClock;
 class DocumentTimeline;
@@ -1201,10 +1204,10 @@ class CORE_EXPORT Document : public ContainerNode,
   Document& ensureTemplateDocument();
   Document* templateDocumentHost() { return m_templateDocumentHost; }
 
-  mojom::blink::EngagementLevel getEngagementLevel() const {
+  mojom::EngagementLevel getEngagementLevel() const {
     return m_engagementLevel;
   }
-  void setEngagementLevel(mojom::blink::EngagementLevel level) {
+  void setEngagementLevel(mojom::EngagementLevel level) {
     m_engagementLevel = level;
   }
 

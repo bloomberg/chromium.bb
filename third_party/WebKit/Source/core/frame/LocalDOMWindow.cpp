@@ -87,6 +87,7 @@
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScreenInfo.h"
+#include "public/platform/site_engagement.mojom-blink.h"
 
 #include <memory>
 

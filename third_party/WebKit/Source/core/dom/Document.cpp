@@ -247,6 +247,7 @@
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom-blink.h"
+#include "public/platform/site_engagement.mojom-blink.h"
 #include "wtf/AutoReset.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
@@ -257,6 +258,7 @@
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/TextEncodingRegistry.h"
+
 #include <memory>
 
 using namespace WTF;
