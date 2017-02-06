@@ -16,6 +16,7 @@ import operator
 import optparse
 import os
 import re
+import shutil
 import struct
 import sys
 import tempfile
@@ -99,6 +100,52 @@ _DUMP_STATIC_INITIALIZERS_PATH = os.path.join(
 # Pragma exists when enable_resource_whitelist_generation=true.
 _RC_HEADER_RE = re.compile(
     r'^#define (?P<name>\w+) (?:_Pragma\(.*?\) )?(?P<id>\d+)$')
+_READELF_SIZES_METRICS = {
+  'text': ['.text'],
+  'data': ['.data', '.rodata', '.data.rel.ro', '.data.rel.ro.local'],
+  'relocations': ['.rel.dyn', '.rel.plt', '.rela.dyn', '.rela.plt'],
+  'unwind': ['.ARM.extab', '.ARM.exidx', '.eh_frame', '.eh_frame_hdr',],
+  'symbols': ['.dynsym', '.dynstr', '.dynamic', '.shstrtab', '.got', '.plt',
+              '.got.plt', '.hash'],
+  'bss': ['.bss'],
+  'other': ['.init_array', '.fini_array', '.comment', '.note.gnu.gold-version',
+            '.ARM.attributes', '.note.gnu.build-id', '.gnu.version',
+            '.gnu.version_d', '.gnu.version_r', '.interp', '.gcc_except_table']
+}
+
+
+def _ExtractMainLibSectionSizesFromApk(apk_path, main_lib_path):
+  tmpdir = tempfile.mkdtemp(suffix='_apk_extract')
+  grouped_section_sizes = collections.defaultdict(int)
+  try:
+    with zipfile.ZipFile(apk_path, 'r') as z:
+      extracted_lib_path = z.extract(main_lib_path, tmpdir)
+      section_sizes = _CreateSectionNameSizeMap(extracted_lib_path)
+
+      for group_name, section_names in _READELF_SIZES_METRICS.iteritems():
+        for section_name in section_names:
+          if section_name in section_sizes:
+            grouped_section_sizes[group_name] += section_sizes.pop(section_name)
+
+      # Group any unknown section headers into the "other" group.
+      for section_header, section_size in section_sizes.iteritems():
+        print "Unknown elf section header:", section_header
+        grouped_section_sizes['other'] += section_size
+
+      return grouped_section_sizes
+  finally:
+    shutil.rmtree(tmpdir)
+
+
+def _CreateSectionNameSizeMap(so_path):
+  stdout = cmd_helper.GetCmdOutput(['readelf', '-S', '--wide', so_path])
+  section_sizes = {}
+  # Matches  [ 2] .hash HASH 00000000006681f0 0001f0 003154 04   A  3   0  8
+  for match in re.finditer(r'\[[\s\d]+\] (\..*)$', stdout, re.MULTILINE):
+    items = match.group(1).split()
+    section_sizes[items[0]] = int(items[4], 16)
+
+  return section_sizes
 
 
 def CountStaticInitializers(so_path):
@@ -364,6 +411,12 @@ def PrintApkAnalysis(apk_filename, chartjson=None):
     secondary_size = native_code.ComputeUncompressedSize() - main_lib_size
     ReportPerfResult(chartjson, apk_basename + '_Specifics',
                      'other lib size', secondary_size, 'bytes')
+
+    main_lib_section_sizes = _ExtractMainLibSectionSizesFromApk(
+        apk_filename, main_lib_info.filename)
+    for metric_name, size in main_lib_section_sizes.iteritems():
+      ReportPerfResult(chartjson, apk_basename + '_MainLibInfo',
+                       metric_name, size, 'bytes')
 
   # Main metric that we want to monitor for jumps.
   normalized_apk_size = total_apk_size
