@@ -17,7 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -240,9 +240,8 @@ void ContentAutofillDriver::SetDataList(
 }
 
 void ContentAutofillDriver::DidNavigateFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (details.is_navigation_to_different_page())
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage())
     autofill_manager_->Reset();
 }
 

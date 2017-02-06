@@ -110,17 +110,14 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
   frame_driver_map_.erase(render_frame_host);
 }
 
-void ContentAutofillDriverFactory::DidNavigateAnyFrame(
-    content::RenderFrameHost* render_frame_host,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  frame_driver_map_[render_frame_host]->DidNavigateFrame(details, params);
-}
-
 void ContentAutofillDriverFactory::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->HasCommitted())
-    client_->HideAutofillPopup();
+  if (!navigation_handle->HasCommitted())
+    return;
+
+  client_->HideAutofillPopup();
+  frame_driver_map_[navigation_handle->GetRenderFrameHost()]->
+      DidNavigateFrame(navigation_handle);
 }
 
 void ContentAutofillDriverFactory::WasHidden() {
