@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 
 #include <unordered_set>
 
@@ -55,18 +55,18 @@ class MockFaviconService : public favicon::FaviconService {
 
 }  // namespace
 
-#pragma mark - ReadingListViewControllerTest
+#pragma mark - ReadingListCollectionViewControllerTest
 
-class ReadingListViewControllerTest : public testing::Test {
+class ReadingListCollectionViewControllerTest : public testing::Test {
  public:
-  ReadingListViewControllerTest() {}
-  ~ReadingListViewControllerTest() override {}
+  ReadingListCollectionViewControllerTest() {}
+  ~ReadingListCollectionViewControllerTest() override {}
 
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   std::unique_ptr<favicon::LargeIconService> large_icon_service_;
   std::unique_ptr<MockFaviconService> mock_favicon_service_;
 
-  base::scoped_nsobject<ReadingListViewController>
+  base::scoped_nsobject<ReadingListCollectionViewController>
       reading_list_view_controller_;
   id mock_delegate_;
 
@@ -79,24 +79,26 @@ class ReadingListViewControllerTest : public testing::Test {
     reading_list_model_.reset(new ReadingListModelImpl(nullptr, nullptr));
     large_icon_service_.reset(new favicon::LargeIconService(
         mock_favicon_service_.get(), base::ThreadTaskRunnerHandle::Get()));
-    reading_list_view_controller_.reset([[ReadingListViewController alloc]
-                     initWithModel:reading_list_model_.get()
-                  largeIconService:large_icon_service_.get()
-        readingListDownloadService:nil
-                           toolbar:nil]);
+    reading_list_view_controller_.reset(
+        [[ReadingListCollectionViewController alloc]
+                         initWithModel:reading_list_model_.get()
+                      largeIconService:large_icon_service_.get()
+            readingListDownloadService:nil
+                               toolbar:nil]);
 
     mock_delegate_ = [OCMockObject
-        niceMockForProtocol:@protocol(ReadingListViewControllerDelegate)];
+        niceMockForProtocol:@protocol(
+                                ReadingListCollectionViewControllerDelegate)];
     [reading_list_view_controller_ setDelegate:mock_delegate_];
   }
 
  private:
   web::TestWebThreadBundle thread_bundle_;
-  DISALLOW_COPY_AND_ASSIGN(ReadingListViewControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(ReadingListCollectionViewControllerTest);
 };
 
 // Tests that reading list items are displayed.
-TEST_F(ReadingListViewControllerTest, DisplaysItems) {
+TEST_F(ReadingListCollectionViewControllerTest, DisplaysItems) {
   // Prefill some items.
   reading_list_model_->AddEntry(GURL("https://chromium.org"), "news",
                                 reading_list::ADDED_VIA_CURRENT_APP);
@@ -122,12 +124,13 @@ TEST_F(ReadingListViewControllerTest, DisplaysItems) {
 }
 
 // Tests that the view controller is dismissed when Done button is pressed.
-TEST_F(ReadingListViewControllerTest, GetsDismissed) {
+TEST_F(ReadingListCollectionViewControllerTest, GetsDismissed) {
   // Load view.
   [reading_list_view_controller_ view];
 
   [[mock_delegate_ expect]
-      dismissReadingListViewController:reading_list_view_controller_.get()];
+      dismissReadingListCollectionViewController:reading_list_view_controller_
+                                                     .get()];
 
   // Simulate tap on "Done" button.
   UIBarButtonItem* done =
@@ -139,7 +142,7 @@ TEST_F(ReadingListViewControllerTest, GetsDismissed) {
 
 // Tests that when an item is selected, the article is opened with UrlLoader and
 // the view controller is dismissed.
-TEST_F(ReadingListViewControllerTest, OpensItems) {
+TEST_F(ReadingListCollectionViewControllerTest, OpensItems) {
   NSIndexPath* indexPath = [NSIndexPath indexPathForItem:1 inSection:0];
 
   GURL url("https://chromium.org");
@@ -155,8 +158,8 @@ TEST_F(ReadingListViewControllerTest, OpensItems) {
               itemAtIndexPath:indexPath]);
 
   [[mock_delegate_ expect]
-      readingListViewController:reading_list_view_controller_.get()
-                       openItem:readingListItem];
+      readingListCollectionViewController:reading_list_view_controller_.get()
+                                 openItem:readingListItem];
 
   // Simulate touch on second cell.
   [reading_list_view_controller_

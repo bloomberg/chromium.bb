@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -76,7 +76,8 @@ typedef void (^EntryUpdater)(const GURL&);
 using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
-@interface ReadingListViewController ()<ReadingListModelBridgeObserver> {
+@interface ReadingListCollectionViewController ()<
+    ReadingListModelBridgeObserver> {
   // Toolbar with the actions.
   ReadingListToolbar* _toolbar;
   // Action sheet presenting the subactions of the toolbar.
@@ -187,7 +188,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
 @end
 
-@implementation ReadingListViewController
+@implementation ReadingListCollectionViewController
 @synthesize readingListModel = _readingListModel;
 @synthesize largeIconService = _largeIconService;
 @synthesize readingListDownloadService = _readingListDownloadService;
@@ -237,11 +238,13 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   [_toolbar setState:toolbarState];
 }
 
-- (void)setDelegate:(id<ReadingListViewControllerDelegate>)delegate {
+- (void)setDelegate:(id<ReadingListCollectionViewControllerDelegate>)delegate {
   _delegate = delegate;
   if (self.readingListModel->loaded())
-    [delegate readingListViewController:self
-                               hasItems:(self.readingListModel->size() > 0)];
+    [delegate
+        readingListCollectionViewController:self
+                                   hasItems:(self.readingListModel->size() >
+                                             0)];
 }
 
 #pragma mark - UIViewController
@@ -299,7 +302,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
         base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(
             [self.collectionViewModel itemAtIndexPath:indexPath]);
 
-    [self.delegate readingListViewController:self openItem:readingListItem];
+    [self.delegate readingListCollectionViewController:self
+                                              openItem:readingListItem];
   }
 }
 
@@ -485,7 +489,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 - (void)dismiss {
-  [self.delegate dismissReadingListViewController:self];
+  [self.delegate dismissReadingListCollectionViewController:self];
 }
 
 - (void)loadModel {
@@ -497,7 +501,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     self.collectionView.alwaysBounceVertical = YES;
     [self loadItems];
     self.collectionView.backgroundView = nil;
-    [self.delegate readingListViewController:self hasItems:YES];
+    [self.delegate readingListCollectionViewController:self hasItems:YES];
   }
 }
 
@@ -630,7 +634,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   // The collection is empty, add background.
   self.collectionView.alwaysBounceVertical = NO;
   self.collectionView.backgroundView = _emptyCollectionBackground;
-  [self.delegate readingListViewController:self hasItems:NO];
+  [self.delegate readingListCollectionViewController:self hasItems:NO];
 }
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
@@ -661,9 +665,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   ReadingListCollectionViewItem* readingListItem =
       base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(touchedItem);
 
-  [self.delegate readingListViewController:self
-                 displayContextMenuForItem:readingListItem
-                                   atPoint:touchLocation];
+  [self.delegate readingListCollectionViewController:self
+                           displayContextMenuForItem:readingListItem
+                                             atPoint:touchLocation];
 }
 
 - (void)stopObservingReadingListModel {
@@ -769,7 +773,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
 - (void)markAllItemsAs {
   [self initializeActionSheet];
-  __weak ReadingListViewController* weakSelf = self;
+  __weak ReadingListCollectionViewController* weakSelf = self;
   [_actionSheet addItemWithTitle:l10n_util::GetNSStringWithFixup(
                                      IDS_IOS_READING_LIST_MARK_ALL_READ_ACTION)
                           action:^{
@@ -788,7 +792,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
 - (void)markMixedItemsAs {
   [self initializeActionSheet];
-  __weak ReadingListViewController* weakSelf = self;
+  __weak ReadingListCollectionViewController* weakSelf = self;
   [_actionSheet addItemWithTitle:l10n_util::GetNSStringWithFixup(
                                      IDS_IOS_READING_LIST_MARK_READ_BUTTON)
                           action:^{

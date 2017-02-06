@@ -14,9 +14,9 @@
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
@@ -72,7 +72,7 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 // UrlLoader for navigating to entries.
 @property(nonatomic, weak, readonly) id<UrlLoader> URLLoader;
 @property(nonatomic, strong, readonly)
-    ReadingListViewController* readingListViewController;
+    ReadingListCollectionViewController* readingListCollectionViewController;
 
 // Closes the ReadingList view.
 - (void)dismiss;
@@ -81,15 +81,17 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 // Opens the offline url |offlineURL| of the entry saved in the reading list
 // model with the |entryURL| url.
 - (void)openOfflineURL:(const GURL&)offlineURL
-            correspondingEntryURL:(const GURL&)entryURL
-    fromReadingListViewController:
-        (ReadingListViewController*)readingListViewController;
+                      correspondingEntryURL:(const GURL&)entryURL
+    fromReadingListCollectionViewController:
+        (ReadingListCollectionViewController*)
+            readingListCollectionViewController;
 
 @end
 
 @implementation ReadingListViewControllerContainer
 
-@synthesize readingListViewController = _readingListViewController;
+@synthesize readingListCollectionViewController =
+    _readingListCollectionViewController;
 @synthesize URLLoader = _URLLoader;
 
 - (instancetype)initWithModel:(ReadingListModel*)model
@@ -102,12 +104,13 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
     _URLLoader = loader;
     _toolbar = [[ReadingListToolbar alloc] initWithFrame:CGRectZero];
     _toolbar.heightDelegate = self;
-    _readingListViewController = [[ReadingListViewController alloc]
-                     initWithModel:model
-                  largeIconService:largeIconService
-        readingListDownloadService:readingListDownloadService
-                           toolbar:_toolbar];
-    _readingListViewController.delegate = self;
+    _readingListCollectionViewController =
+        [[ReadingListCollectionViewController alloc]
+                         initWithModel:model
+                      largeIconService:largeIconService
+            readingListDownloadService:readingListDownloadService
+                               toolbar:_toolbar];
+    _readingListCollectionViewController.delegate = self;
 
     // Configure modal presentation.
     [self setModalPresentationStyle:UIModalPresentationFormSheet];
@@ -117,23 +120,23 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 }
 
 - (void)viewDidLoad {
-  [self addChildViewController:self.readingListViewController];
-  [self.view addSubview:self.readingListViewController.view];
-  [self.readingListViewController didMoveToParentViewController:self];
+  [self addChildViewController:self.readingListCollectionViewController];
+  [self.view addSubview:self.readingListCollectionViewController.view];
+  [self.readingListCollectionViewController didMoveToParentViewController:self];
 
   [_toolbar setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [self.readingListViewController.view
+  [self.readingListCollectionViewController.view
       setTranslatesAutoresizingMaskIntoConstraints:NO];
 
   NSDictionary* views =
-      @{ @"collection" : self.readingListViewController.view };
+      @{ @"collection" : self.readingListCollectionViewController.view };
   NSArray* constraints = @[ @"V:|[collection]", @"H:|[collection]|" ];
   ApplyVisualConstraints(constraints, views);
 
   // This constraint has a low priority so it will only take effect when the
   // toolbar isn't present, allowing the collection to take the whole page.
   NSLayoutConstraint* constraint =
-      [self.readingListViewController.view.bottomAnchor
+      [self.readingListCollectionViewController.view.bottomAnchor
           constraintEqualToAnchor:self.view.bottomAnchor];
   constraint.priority = LayoutPriorityLow;
   constraint.active = YES;
@@ -150,17 +153,18 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
   return YES;
 }
 
-#pragma mark - ReadingListViewControllerDelegate
+#pragma mark - ReadingListCollectionViewControllerDelegate
 
-- (void)readingListViewController:
-            (ReadingListViewController*)readingListViewController
-                         hasItems:(BOOL)hasItems {
+- (void)readingListCollectionViewController:
+            (ReadingListCollectionViewController*)
+                readingListCollectionViewController
+                                   hasItems:(BOOL)hasItems {
   if (hasItems) {
     // If there are items, add the toolbar.
     [self.view addSubview:_toolbar];
     NSDictionary* views = @{
       @"toolbar" : _toolbar,
-      @"collection" : readingListViewController.view
+      @"collection" : readingListCollectionViewController.view
     };
     NSArray* constraints = @[ @"V:[collection][toolbar]|", @"H:|[toolbar]|" ];
     ApplyVisualConstraints(constraints, views);
@@ -179,22 +183,24 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
   }
 }
 
-- (void)dismissReadingListViewController:
-    (ReadingListViewController*)readingListViewController {
-  [readingListViewController willBeDismissed];
+- (void)dismissReadingListCollectionViewController:
+    (ReadingListCollectionViewController*)readingListCollectionViewController {
+  [readingListCollectionViewController willBeDismissed];
   [self dismiss];
 }
 
-- (void)
-readingListViewController:(ReadingListViewController*)readingListViewController
-displayContextMenuForItem:(ReadingListCollectionViewItem*)readingListItem
-                  atPoint:(CGPoint)menuLocation {
+- (void)readingListCollectionViewController:
+            (ReadingListCollectionViewController*)
+                readingListCollectionViewController
+                  displayContextMenuForItem:
+                      (ReadingListCollectionViewItem*)readingListItem
+                                    atPoint:(CGPoint)menuLocation {
   const ReadingListEntry* entry =
-      readingListViewController.readingListModel->GetEntryByURL(
+      readingListCollectionViewController.readingListModel->GetEntryByURL(
           readingListItem.url);
 
   if (!entry) {
-    [readingListViewController reloadData];
+    [readingListCollectionViewController reloadData];
     return;
   }
   const GURL entryURL = entry->URL();
@@ -207,7 +213,8 @@ displayContextMenuForItem:(ReadingListCollectionViewItem*)readingListItem
                          message:readingListItem.detailText
                             rect:CGRectMake(menuLocation.x, menuLocation.y, 0,
                                             0)
-                            view:readingListViewController.collectionView];
+                            view:readingListCollectionViewController
+                                     .collectionView];
 
   NSString* openInNewTabTitle =
       l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
@@ -254,9 +261,9 @@ displayContextMenuForItem:(ReadingListCollectionViewItem*)readingListItem
                     UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu",
                                               VIEW_OFFLINE, ENUM_MAX);
                     [weakSelf openOfflineURL:offlineURL
-                                correspondingEntryURL:entryURL
-                        fromReadingListViewController:
-                            readingListViewController];
+                                          correspondingEntryURL:entryURL
+                        fromReadingListCollectionViewController:
+                            readingListCollectionViewController];
                   }
                    style:UIAlertActionStyleDefault];
   }
@@ -273,14 +280,16 @@ displayContextMenuForItem:(ReadingListCollectionViewItem*)readingListItem
 }
 
 - (void)
-readingListViewController:(ReadingListViewController*)readingListViewController
-                 openItem:(ReadingListCollectionViewItem*)readingListItem {
+readingListCollectionViewController:
+    (ReadingListCollectionViewController*)readingListCollectionViewController
+                           openItem:
+                               (ReadingListCollectionViewItem*)readingListItem {
   const ReadingListEntry* entry =
-      readingListViewController.readingListModel->GetEntryByURL(
+      readingListCollectionViewController.readingListModel->GetEntryByURL(
           readingListItem.url);
 
   if (!entry) {
-    [readingListViewController reloadData];
+    [readingListCollectionViewController reloadData];
     return;
   }
 
@@ -297,19 +306,19 @@ readingListViewController:(ReadingListViewController*)readingListViewController
 #pragma mark - ReadingListToolbarActionTarget
 
 - (void)markPressed {
-  [self.readingListViewController markPressed];
+  [self.readingListCollectionViewController markPressed];
 }
 
 - (void)deletePressed {
-  [self.readingListViewController deletePressed];
+  [self.readingListCollectionViewController deletePressed];
 }
 
 - (void)enterEditingModePressed {
-  [self.readingListViewController enterEditingModePressed];
+  [self.readingListCollectionViewController enterEditingModePressed];
 }
 
 - (void)exitEditingModePressed {
-  [self.readingListViewController exitEditingModePressed];
+  [self.readingListCollectionViewController exitEditingModePressed];
 }
 
 #pragma mark - ReadingListToolbarHeightDelegate
@@ -349,16 +358,18 @@ readingListViewController:(ReadingListViewController*)readingListViewController
 }
 
 - (void)openOfflineURL:(const GURL&)offlineURL
-            correspondingEntryURL:(const GURL&)entryURL
-    fromReadingListViewController:
-        (ReadingListViewController*)readingListViewController {
-  [readingListViewController willBeDismissed];
+                      correspondingEntryURL:(const GURL&)entryURL
+    fromReadingListCollectionViewController:
+        (ReadingListCollectionViewController*)
+            readingListCollectionViewController {
+  [readingListCollectionViewController willBeDismissed];
 
   [self openNewTabWithURL:offlineURL incognito:NO];
 
   UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", true);
   const GURL updateURL = entryURL;
-  readingListViewController.readingListModel->SetReadStatus(updateURL, true);
+  readingListCollectionViewController.readingListModel->SetReadStatus(updateURL,
+                                                                      true);
 }
 
 #pragma mark - UIResponder

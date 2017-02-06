@@ -29,6 +29,8 @@ source_set("reading_list") {
     "number_badge_view.mm",
     "offline_page_native_content.h",
     "offline_page_native_content.mm",
+    "reading_list_collection_view_controller.h",
+    "reading_list_collection_view_controller.mm",
     "reading_list_collection_view_item.h",
     "reading_list_collection_view_item.mm",
     "reading_list_menu_notification_delegate.h",
@@ -38,8 +40,6 @@ source_set("reading_list") {
     "reading_list_side_swipe_provider.mm",
     "reading_list_toolbar.h",
     "reading_list_toolbar.mm",
-    "reading_list_view_controller.h",
-    "reading_list_view_controller.mm",
     "reading_list_view_controller_builder.h",
     "reading_list_view_controller_builder.mm",
     "reading_list_view_controller_container.h",
@@ -88,8 +88,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "offline_page_native_content_unittest.mm",
+    "reading_list_collection_view_controller_unittest.mm",
     "reading_list_view_controller_container_unittest.mm",
-    "reading_list_view_controller_unittest.mm",
   ]
   deps = [
     ":reading_list",
