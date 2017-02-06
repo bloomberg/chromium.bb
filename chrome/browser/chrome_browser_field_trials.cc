@@ -73,6 +73,7 @@ void InstantiatePersistentHistograms() {
   const uint32_t kAllocId = 0x935DDD43;  // SHA1(BrowserMetrics)
   std::string storage = variations::GetVariationParamValueByFeature(
       base::kPersistentHistogramsFeature, "storage");
+
   if (storage == "MappedFile") {
     // If for some reason the existing "active" file could not be moved above
     // then it is essential it be scheduled for deletion when possible and the
@@ -98,7 +99,7 @@ void InstantiatePersistentHistograms() {
         result = MAPPED_FILE_FAILED;
       }
     }
-  } else if (storage == "LocalMemory") {
+  } else if (storage.empty() || storage == "LocalMemory") {
     // Use local memory for storage even though it will not persist across
     // an unclean shutdown.
     base::GlobalHistogramAllocator::CreateWithLocalMemory(
