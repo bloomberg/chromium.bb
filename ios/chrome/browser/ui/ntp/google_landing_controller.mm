@@ -1223,57 +1223,61 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 - (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
           viewForSupplementaryElementOfKind:(NSString*)kind
                                 atIndexPath:(NSIndexPath*)indexPath {
+  DCHECK(kind == UICollectionElementKindSectionHeader);
+
   if (!_supplementaryViews)
     _supplementaryViews.reset([[NSMutableArray alloc] init]);
-  if (kind == UICollectionElementKindSectionHeader) {
-    NSUInteger section = indexPath.section;
-    if (section == SectionWithOmnibox) {
-      if (!_headerView) {
-        _headerView.reset([[collectionView
-            dequeueReusableSupplementaryViewOfKind:
-                UICollectionElementKindSectionHeader
-                               withReuseIdentifier:@"header"
-                                      forIndexPath:indexPath] retain]);
-        [_headerView addSubview:[_doodleController view]];
-        [_headerView addSubview:_searchTapTarget];
-        [_headerView addViewsToSearchField:_searchTapTarget];
 
-        if (!IsIPadIdiom()) {
-          ReadingListModel* readingListModel = nullptr;
-          if (reading_list::switches::IsReadingListEnabled()) {
-            readingListModel =
-                ReadingListModelFactory::GetForBrowserState(_browserState);
-          }
-          // iPhone header also contains a toolbar since the normal toolbar is
-          // hidden.
-          [_headerView addToolbarWithDelegate:_webToolbarDelegate
-                                      focuser:_focuser
-                                     tabModel:_tabModel
-                             readingListModel:readingListModel];
+  if (indexPath.section == SectionWithOmnibox) {
+    if (!_headerView) {
+      _headerView.reset([[collectionView
+          dequeueReusableSupplementaryViewOfKind:
+              UICollectionElementKindSectionHeader
+                             withReuseIdentifier:@"header"
+                                    forIndexPath:indexPath] retain]);
+      [_headerView addSubview:[_doodleController view]];
+      [_headerView addSubview:_searchTapTarget];
+      [_headerView addViewsToSearchField:_searchTapTarget];
+
+      if (!IsIPadIdiom()) {
+        ReadingListModel* readingListModel = nullptr;
+        if (reading_list::switches::IsReadingListEnabled()) {
+          readingListModel =
+              ReadingListModelFactory::GetForBrowserState(_browserState);
         }
-        [_supplementaryViews addObject:_headerView];
+        // iPhone header also contains a toolbar since the normal toolbar is
+        // hidden.
+        [_headerView addToolbarWithDelegate:_webToolbarDelegate
+                                    focuser:_focuser
+                                   tabModel:_tabModel
+                           readingListModel:readingListModel];
       }
-      return _headerView;
-    } else if (section == SectionWithMostVisited) {
-      if (!_promoHeaderView) {
-        _promoHeaderView.reset([[collectionView
-            dequeueReusableSupplementaryViewOfKind:
-                UICollectionElementKindSectionHeader
-                               withReuseIdentifier:@"whatsNew"
-                                      forIndexPath:indexPath] retain]);
-        [_promoHeaderView setSideMargin:[self leftMargin]];
-        [_promoHeaderView setDelegate:self];
-        if (_notification_promo && _notification_promo->CanShow()) {
-          [_promoHeaderView setText:base::SysUTF8ToNSString(
-                                        _notification_promo->promo_text())];
-          [_promoHeaderView setIcon:_notification_promo->icon()];
-          _notification_promo->HandleViewed();
-        }
-        [_supplementaryViews addObject:_promoHeaderView];
-      }
-      return _promoHeaderView;
+      [_supplementaryViews addObject:_headerView];
     }
+    return _headerView;
   }
+
+  if (indexPath.section == SectionWithMostVisited) {
+    if (!_promoHeaderView) {
+      _promoHeaderView.reset([[collectionView
+          dequeueReusableSupplementaryViewOfKind:
+              UICollectionElementKindSectionHeader
+                             withReuseIdentifier:@"whatsNew"
+                                    forIndexPath:indexPath] retain]);
+      [_promoHeaderView setSideMargin:[self leftMargin]];
+      [_promoHeaderView setDelegate:self];
+      if (_notification_promo && _notification_promo->CanShow()) {
+        [_promoHeaderView
+            setText:base::SysUTF8ToNSString(_notification_promo->promo_text())];
+        [_promoHeaderView setIcon:_notification_promo->icon()];
+        _notification_promo->HandleViewed();
+      }
+      [_supplementaryViews addObject:_promoHeaderView];
+    }
+    return _promoHeaderView;
+  }
+
+  NOTREACHED();
   return nil;
 }
 
