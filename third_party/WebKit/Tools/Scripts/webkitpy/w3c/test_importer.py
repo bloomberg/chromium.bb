@@ -340,17 +340,19 @@ class TestImporter(object):
         if try_results and self.git_cl.has_failing_try_results(try_results):
             self.fetch_new_expectations_and_baselines()
 
-        # Wait for CQ try jobs to finish. If there are failures, then abort.
+        # Trigger CQ and wait for CQ try jobs to finish.
         self.git_cl.run(['set-commit', '--rietveld'])
         try_results = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS, timeout_seconds=TIMEOUT_SECONDS)
 
         if not try_results:
+            _log.error('No try job results.')
             self.git_cl.run(['set-close'])
             return False
 
-        if self.git_cl.has_failing_try_results(try_results):
-            _log.info('CQ failed; aborting.')
+        # If the CQ passes, then the issue will be closed.
+        if not self.git_cl.is_closed():
+            _log.error('CQ appears to have failed; aborting.')
             self.git_cl.run(['set-close'])
             return False
 
