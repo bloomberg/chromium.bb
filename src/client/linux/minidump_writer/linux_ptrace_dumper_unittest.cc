@@ -507,7 +507,6 @@ TEST_F(LinuxPtraceDumperTest, SanitizeStackCopy) {
   for (size_t i = 0; i < word_count; ++i)
     ++pre_sanitization_words[stack_words[i]];
 
-  fprintf(stderr, "stack_offset=%lu stack_len=%lu stack=%p\n", stack_offset, stack_len, stack);
   dumper.SanitizeStackCopy(stack_copy, stack_len, thread_info.stack_pointer,
                            stack_offset);
 
