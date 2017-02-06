@@ -28,15 +28,6 @@ body.hide-fakebox-logo #fakebox {
   visibility: hidden;
 }
 
-body.fakebox-disable #fakebox {
-  border-color: rgb(238, 238, 238);
-  cursor: default;
-}
-
-body.fakebox-disable #fakebox > input {
-  cursor: default;
-}
-
 #logo {
   background-image: url(../../../../ui/webui/resources/images/google_logo.svg);
   background-repeat: no-repeat;
@@ -236,8 +227,7 @@ html[dir=rtl] #mv-notice-x {
 }
 
 #mv-notice-links span:hover,
-#mv-notice-links span:focus,
-#recent-tabs:hover {
+#mv-notice-links span:focus {
   text-decoration: underline;
 }
 
@@ -278,26 +268,6 @@ html[dir=rtl] #attribution,
   left: 8px;
   right: auto;
   text-align: right;
-}
-
-#recent-tabs {
-  background: #fff;
-  border: 1px solid #c0c0c0;
-  border-radius: 2px;
-  bottom: 0;
-  color: rgb(17, 85, 204);
-  cursor: pointer;
-  font-family: Arial;
-  font-size: 14px;
-  opacity: 0.9;
-  padding: 3px;
-  position: fixed;
-  right: 8px;
-}
-
-html[dir=rtl] #recent-tabs {
-  left: 8px;
-  right: auto;
 }
 
 #mv-single {

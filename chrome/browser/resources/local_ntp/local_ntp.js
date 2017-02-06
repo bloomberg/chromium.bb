@@ -93,7 +93,6 @@ var CLASSES = {
   DARK: 'dark',
   DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
-  FAKEBOX_DISABLE: 'fakebox-disable', // Makes fakebox non-interactive
   FAKEBOX_FOCUS: 'fakebox-focused', // Applies focus styles to the fakebox
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
@@ -136,18 +135,6 @@ var IDS = {
  */
 var KEYCODE = {
   ENTER: 13
-};
-
-
-/**
- * Enum for the state of the NTP when it is disposed.
- * @enum {number}
- * @const
- */
-var NTP_DISPOSE_STATE = {
-  NONE: 0,  // Preserve the NTP appearance and functionality
-  DISABLE_FAKEBOX: 1,
-  HIDE_FAKEBOX_AND_LOGO: 2
 };
 
 
@@ -208,20 +195,6 @@ var ntpApiHandle;
  * @type {Object}
  */
 var searchboxApiHandle;
-
-
-/**
- * The state of the NTP when a query is entered into the Omnibox.
- * @type {NTP_DISPOSE_STATE}
- */
-var omniboxInputBehavior = NTP_DISPOSE_STATE.NONE;
-
-
-/**
- * The state of the NTP when a query is entered into the Fakebox.
- * @type {NTP_DISPOSE_STATE}
- */
-var fakeboxInputBehavior = NTP_DISPOSE_STATE.HIDE_FAKEBOX_AND_LOGO;
 
 
 /** @type {number} @const */
@@ -332,6 +305,7 @@ function onThemeChange() {
  * omitted the style will be reverted to the default.
  * @private
  */
+// TODO(treib): We actually never call this without a themeInfo. Should we?
 function setCustomThemeStyle(opt_themeInfo) {
   var customStyleElement = $(IDS.CUSTOM_THEME_STYLE);
   var head = document.head;
@@ -415,19 +389,6 @@ function setAttributionVisibility_(show) {
   if (attribution) {
     attribution.style.display = show ? '' : 'none';
   }
-}
-
-
- /**
- * Converts an Array of color components into RRGGBBAA format.
- * @param {Array<number>} color Array of rgba color components.
- * @return {string} Color string in RRGGBBAA format.
- * @private
- */
-function convertToRRGGBBAAColor(color) {
-  return color.map(function(t) {
-    return ('0' + t.toString(16)).slice(-2);  // To 2-digit, 0-padded hex.
-  }).join('');
 }
 
 
@@ -566,31 +527,15 @@ function onInputStart() {
   if (fakebox && isFakeboxFocused()) {
     setFakeboxFocus(false);
     setFakeboxDragFocus(false);
-    disposeNtp(true);
-  } else if (!isFakeboxFocused()) {
-    disposeNtp(false);
-  }
-}
-
-
-/**
- * Disposes the NTP, according to where the input was entered.
- * @param {boolean} wasFakeboxInput True if the input was in the fakebox.
- */
-function disposeNtp(wasFakeboxInput) {
-  var behavior = wasFakeboxInput ? fakeboxInputBehavior : omniboxInputBehavior;
-  if (behavior == NTP_DISPOSE_STATE.DISABLE_FAKEBOX)
-    setFakeboxActive(false);
-  else if (behavior == NTP_DISPOSE_STATE.HIDE_FAKEBOX_AND_LOGO)
     setFakeboxAndLogoVisibility(false);
+  }
 }
 
 
 /**
  * Restores the NTP (re-enables the fakebox and unhides the logo.)
  */
-function restoreNtp() {
-  setFakeboxActive(true);
+function onInputCancel() {
   setFakeboxAndLogoVisibility(true);
 }
 
@@ -619,20 +564,11 @@ function isFakeboxFocused() {
 
 
 /**
- * @param {boolean} enable True to enable the fakebox.
- */
-function setFakeboxActive(enable) {
-  document.body.classList.toggle(CLASSES.FAKEBOX_DISABLE, !enable);
-}
-
-
-/**
  * @param {!Event} event The click event.
  * @return {boolean} True if the click occurred in an enabled fakebox.
  */
 function isFakeboxClick(event) {
-  return fakebox.contains(event.target) &&
-      !document.body.classList.contains(CLASSES.FAKEBOX_DISABLE);
+  return fakebox.contains(event.target);
 }
 
 
@@ -641,33 +577,6 @@ function isFakeboxClick(event) {
  */
 function setFakeboxAndLogoVisibility(show) {
   document.body.classList.toggle(CLASSES.HIDE_FAKEBOX_AND_LOGO, !show);
-}
-
-
-/**
- * Shortcut for document.getElementById.
- * @param {string} id of the element.
- * @return {HTMLElement} with the id.
- */
-function $(id) {
-  return document.getElementById(id);
-}
-
-
-/**
- * Utility function which creates an element with an optional classname and
- * appends it to the specified parent.
- * @param {Element} parent The parent to append the new element.
- * @param {string} name The name of the new element.
- * @param {string=} opt_class The optional classname of the new element.
- * @return {Element} The new element.
- */
-function createAndAppendElement(parent, name, opt_class) {
-  var child = document.createElement(name);
-  if (opt_class)
-    child.classList.add(opt_class);
-  parent.appendChild(child);
-  return child;
 }
 
 
@@ -716,9 +625,8 @@ function handlePostMessage(event) {
 
 
 /**
- * Prepares the New Tab Page by adding listeners, rendering the current
- * theme, the most visited pages section, and Google-specific elements for a
- * Google-provided page.
+ * Prepares the New Tab Page by adding listeners, the most visited pages
+ * section, and Google-specific elements for a Google-provided page.
  */
 function init() {
   notification = $(IDS.NOTIFICATION);
@@ -759,17 +667,14 @@ function init() {
 
   var restoreAllLink = $(IDS.RESTORE_ALL_LINK);
   restoreAllLink.addEventListener('click', onRestoreAll);
-  registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onUndo);
+  registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onRestoreAll);
   restoreAllLink.textContent =
       configData.translatedStrings.restoreThumbnailsShort;
 
   $(IDS.ATTRIBUTION_TEXT).textContent =
       configData.translatedStrings.attributionIntro;
 
-  var notificationCloseButton = $(IDS.NOTIFICATION_CLOSE_BUTTON);
-  createAndAppendElement(
-      notificationCloseButton, 'div', CLASSES.BLACKLIST_BUTTON_INNER);
-  notificationCloseButton.addEventListener('click', hideNotification);
+  $(IDS.NOTIFICATION_CLOSE_BUTTON).addEventListener('click', hideNotification);
 
   window.addEventListener('resize', onResize);
   updateContentWidth();
@@ -781,7 +686,7 @@ function init() {
   ntpApiHandle.onmostvisitedchange = onMostVisitedChange;
 
   ntpApiHandle.oninputstart = onInputStart;
-  ntpApiHandle.oninputcancel = restoreNtp;
+  ntpApiHandle.oninputcancel = onInputCancel;
 
   if (ntpApiHandle.isInputInProgress)
     onInputStart();

@@ -97,6 +97,8 @@ void AddString(base::DictionaryValue* dictionary,
 
 // Adds a localized string for the Google searchbox placeholder text.
 void AddGoogleSearchboxPlaceholderString(base::DictionaryValue* dictionary) {
+  // TODO(treib): Remove the param from the string; it's only ever used with
+  // "Google".
   base::string16 placeholder = l10n_util::GetStringFUTF16(
       IDS_SEARCH_BOX_EMPTY_HINT,
       base::ASCIIToUTF16("Google"));
