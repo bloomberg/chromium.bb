@@ -17,10 +17,10 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_utils.h"
 
 @interface PaymentRequestCoordinator () {
-  autofill::PersonalDataManager* _personalDataManager;  // weak
   base::WeakNSProtocol<id<PaymentRequestCoordinatorDelegate>> _delegate;
   base::scoped_nsobject<UINavigationController> _navigationController;
   base::scoped_nsobject<PaymentRequestViewController> _viewController;
@@ -36,10 +36,6 @@
   base::mac::ObjCPropertyReleaser _propertyReleaser_PaymentRequestCoordinator;
 }
 
-// Returns the credit cards available from |_personalDataManager| that match
-// a supported type specified in |_paymentRequest|.
-- (std::vector<autofill::CreditCard*>)supportedMethods;
-
 @end
 
 @implementation PaymentRequestCoordinator
@@ -48,18 +44,12 @@
 @synthesize pageFavicon = _pageFavicon;
 @synthesize pageTitle = _pageTitle;
 @synthesize pageHost = _pageHost;
-@synthesize selectedShippingAddress = _selectedShippingAddress;
-@synthesize selectedShippingOption = _selectedShippingOption;
 
-@synthesize selectedPaymentMethod = _selectedPaymentMethod;
-
-- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
-                       personalDataManager:
-                           (autofill::PersonalDataManager*)personalDataManager {
+- (instancetype)initWithBaseViewController:
+    (UIViewController*)baseViewController {
   if ((self = [super initWithBaseViewController:baseViewController])) {
     _propertyReleaser_PaymentRequestCoordinator.Init(
         self, [PaymentRequestCoordinator class]);
-    _personalDataManager = personalDataManager;
   }
   return self;
 }
@@ -73,33 +63,11 @@
 }
 
 - (void)start {
-  const std::vector<autofill::AutofillProfile*> addresses =
-      _personalDataManager->GetProfilesToSuggest();
-  if (addresses.size() > 0)
-    _selectedShippingAddress = addresses[0];
-
-  for (size_t i = 0; i < _paymentRequest.details.shipping_options.size(); ++i) {
-    web::PaymentShippingOption* shippingOption =
-        &_paymentRequest.details.shipping_options[i];
-    if (shippingOption->selected) {
-      // If more than one option has |selected| set, the last one in the
-      // sequence should be treated as the selected item.
-      _selectedShippingOption = shippingOption;
-    }
-  }
-
-  const std::vector<autofill::CreditCard*> cards = [self supportedMethods];
-  if (cards.size() > 0)
-    _selectedPaymentMethod = cards[0];
-
-  _viewController.reset([[PaymentRequestViewController alloc] init]);
-  [_viewController setPaymentRequest:_paymentRequest];
+  _viewController.reset([[PaymentRequestViewController alloc]
+      initWithPaymentRequest:_paymentRequest]);
   [_viewController setPageFavicon:_pageFavicon];
   [_viewController setPageTitle:_pageTitle];
   [_viewController setPageHost:_pageHost];
-  [_viewController setSelectedShippingAddress:_selectedShippingAddress];
-  [_viewController setSelectedShippingOption:_selectedShippingOption];
-  [_viewController setSelectedPaymentMethod:_selectedPaymentMethod];
   [_viewController setDelegate:self];
   [_viewController loadModel];
 
@@ -124,30 +92,10 @@
   _viewController.reset();
 }
 
-- (std::vector<autofill::CreditCard*>)supportedMethods {
-  std::vector<autofill::CreditCard*> supported_methods;
-
-  std::unordered_set<base::string16> supported_method_types;
-  for (web::PaymentMethodData method_data : _paymentRequest.method_data) {
-    for (base::string16 supported_method : method_data.supported_methods)
-      supported_method_types.insert(supported_method);
-  }
-
-  for (autofill::CreditCard* card :
-       _personalDataManager->GetCreditCardsToSuggest()) {
-    const std::string spec_card_type =
-        autofill::data_util::GetPaymentRequestData(card->type())
-            .basic_card_payment_type;
-    if (supported_method_types.find(base::ASCIIToUTF16(spec_card_type)) !=
-        supported_method_types.end())
-      supported_methods.push_back(card);
-  }
-
-  return supported_methods;
-}
-
 - (void)sendPaymentResponse {
-  DCHECK(_selectedPaymentMethod);
+  DCHECK(_paymentRequest->selected_credit_card());
+  autofill::CreditCard* selectedCreditCard =
+      _paymentRequest->selected_credit_card();
 
   // TODO(crbug.com/602666): Unmask if this is a server card and/or ask the user
   //   for CVC here.
@@ -155,19 +103,20 @@
   //   PersonalDataManager.
   web::PaymentResponse paymentResponse;
   paymentResponse.details.cardholder_name =
-      _selectedPaymentMethod->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL);
+      selectedCreditCard->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL);
   paymentResponse.details.card_number =
-      _selectedPaymentMethod->GetRawInfo(autofill::CREDIT_CARD_NUMBER);
+      selectedCreditCard->GetRawInfo(autofill::CREDIT_CARD_NUMBER);
   paymentResponse.details.expiry_month =
-      _selectedPaymentMethod->GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH);
-  paymentResponse.details.expiry_year = _selectedPaymentMethod->GetRawInfo(
-      autofill::CREDIT_CARD_EXP_2_DIGIT_YEAR);
+      selectedCreditCard->GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH);
+  paymentResponse.details.expiry_year =
+      selectedCreditCard->GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
   paymentResponse.details.card_security_code =
-      _selectedPaymentMethod->GetRawInfo(
-          autofill::CREDIT_CARD_VERIFICATION_CODE);
-  if (!_selectedPaymentMethod->billing_address_id().empty()) {
-    autofill::AutofillProfile* address = _personalDataManager->GetProfileByGUID(
-        _selectedPaymentMethod->billing_address_id());
+      selectedCreditCard->GetRawInfo(autofill::CREDIT_CARD_VERIFICATION_CODE);
+  if (!selectedCreditCard->billing_address_id().empty()) {
+    autofill::AutofillProfile* address =
+        autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
+            selectedCreditCard->billing_address_id(),
+            _paymentRequest->billing_profiles());
     if (address) {
       paymentResponse.details.billing_address =
           payment_request_utils::PaymentAddressFromAutofillProfile(address);
@@ -179,8 +128,7 @@
 }
 
 - (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails {
-  _paymentRequest.details = paymentDetails;
-  [_viewController setPaymentRequest:_paymentRequest];
+  _paymentRequest->set_payment_details(paymentDetails);
   [_viewController updatePaymentSummarySection];
 }
 
@@ -200,11 +148,7 @@
     (PaymentRequestViewController*)controller {
   _itemsDisplayCoordinator.reset([[PaymentItemsDisplayCoordinator alloc]
       initWithBaseViewController:_viewController]);
-  [_itemsDisplayCoordinator setTotal:_paymentRequest.details.total];
-  [_itemsDisplayCoordinator
-      setPaymentItems:_paymentRequest.details.display_items];
-  [_itemsDisplayCoordinator
-      setPayButtonEnabled:(_selectedPaymentMethod != nil)];
+  [_itemsDisplayCoordinator setPaymentRequest:_paymentRequest];
   [_itemsDisplayCoordinator setDelegate:self];
 
   [_itemsDisplayCoordinator start];
@@ -215,11 +159,7 @@
   _shippingAddressSelectionCoordinator.reset(
       [[ShippingAddressSelectionCoordinator alloc]
           initWithBaseViewController:_viewController]);
-  const std::vector<autofill::AutofillProfile*> addresses =
-      _personalDataManager->GetProfilesToSuggest();
-  [_shippingAddressSelectionCoordinator setShippingAddresses:addresses];
-  [_shippingAddressSelectionCoordinator
-      setSelectedShippingAddress:_selectedShippingAddress];
+  [_shippingAddressSelectionCoordinator setPaymentRequest:_paymentRequest];
   [_shippingAddressSelectionCoordinator setDelegate:self];
 
   [_shippingAddressSelectionCoordinator start];
@@ -230,17 +170,7 @@
   _shippingOptionSelectionCoordinator.reset(
       [[ShippingOptionSelectionCoordinator alloc]
           initWithBaseViewController:_viewController]);
-
-  std::vector<web::PaymentShippingOption*> shippingOptions;
-  shippingOptions.reserve(_paymentRequest.details.shipping_options.size());
-  std::transform(std::begin(_paymentRequest.details.shipping_options),
-                 std::end(_paymentRequest.details.shipping_options),
-                 std::back_inserter(shippingOptions),
-                 [](web::PaymentShippingOption& option) { return &option; });
-
-  [_shippingOptionSelectionCoordinator setShippingOptions:shippingOptions];
-  [_shippingOptionSelectionCoordinator
-      setSelectedShippingOption:_selectedShippingOption];
+  [_shippingOptionSelectionCoordinator setPaymentRequest:_paymentRequest];
   [_shippingOptionSelectionCoordinator setDelegate:self];
 
   [_shippingOptionSelectionCoordinator start];
@@ -250,8 +180,7 @@
     (PaymentRequestViewController*)controller {
   _methodSelectionCoordinator.reset([[PaymentMethodSelectionCoordinator alloc]
       initWithBaseViewController:_viewController]);
-  [_methodSelectionCoordinator setPaymentMethods:[self supportedMethods]];
-  [_methodSelectionCoordinator setSelectedPaymentMethod:_selectedPaymentMethod];
+  [_methodSelectionCoordinator setPaymentRequest:_paymentRequest];
   [_methodSelectionCoordinator setDelegate:self];
 
   [_methodSelectionCoordinator start];
@@ -276,7 +205,7 @@
             (ShippingAddressSelectionCoordinator*)coordinator
                    didSelectShippingAddress:
                        (autofill::AutofillProfile*)shippingAddress {
-  _selectedShippingAddress = shippingAddress;
+  _paymentRequest->set_selected_shipping_profile(shippingAddress);
   [_viewController updateSelectedShippingAddress:shippingAddress];
 
   web::PaymentAddress address =
@@ -299,7 +228,6 @@
             (ShippingOptionSelectionCoordinator*)coordinator
                    didSelectShippingOption:
                        (web::PaymentShippingOption*)shippingOption {
-  _selectedShippingOption = shippingOption;
   [_viewController updateSelectedShippingOption:shippingOption];
 
   [_delegate paymentRequestCoordinator:self
@@ -320,9 +248,8 @@
 - (void)paymentMethodSelectionCoordinator:
             (PaymentMethodSelectionCoordinator*)coordinator
                    didSelectPaymentMethod:(autofill::CreditCard*)creditCard {
-  _selectedPaymentMethod = creditCard;
+  _paymentRequest->set_selected_credit_card(creditCard);
 
-  [_viewController setSelectedPaymentMethod:creditCard];
   [_viewController loadModel];
   [[_viewController collectionView] reloadData];
 

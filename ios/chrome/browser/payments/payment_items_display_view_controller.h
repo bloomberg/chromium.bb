@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 #include <vector>
 
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #include "ios/web/public/payments/payment_request.h"
 
@@ -35,19 +36,19 @@ extern NSString* const kPaymentItemsDisplayItemId;
 // payment (e.g. individual goods/services, tax, shipping).
 @interface PaymentItemsDisplayViewController : CollectionViewController
 
-// The payment total to be displayed to the user.
-@property(nonatomic, assign) web::PaymentItem total;
-
-// The line items to be displayed to the user.
-@property(nonatomic, assign) std::vector<web::PaymentItem> paymentItems;
-
 // The delegate to be notified when the user selects touches the return button
 // or the pay button.
 @property(nonatomic, weak) id<PaymentItemsDisplayViewControllerDelegate>
     delegate;
 
-- (instancetype)initWithPayButtonEnabled:(BOOL)payButtonEnabled
+// Initializes this object with an instance of PaymentRequest which owns an
+// instance of web::PaymentRequest as provided by the page invoking the Payment
+// Request API. This object will not take ownership of |paymentRequest|.
+- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+                      payButtonEnabled:(BOOL)payButtonEnabled
     NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;

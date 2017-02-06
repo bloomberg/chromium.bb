@@ -11,12 +11,13 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
+#import "ios/chrome/browser/payments/cells/payments_text_item.h"
+#include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
@@ -47,6 +48,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface PaymentMethodSelectionViewController () {
   base::WeakNSProtocol<id<PaymentMethodSelectionViewControllerDelegate>>
       _delegate;
+
+  // The PaymentRequest object owning an instance of web::PaymentRequest as
+  // provided by the page invoking the Payment Request API. This is a weak
+  // pointer and should outlive this class.
+  PaymentRequest* _paymentRequest;
 }
 
 // Called when the user presses the return button.
@@ -56,10 +62,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation PaymentMethodSelectionViewController
 
-@synthesize selectedPaymentMethod = _selectedPaymentMethod;
-@synthesize paymentMethods = _paymentMethods;
-
-- (instancetype)init {
+- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
+  DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
     [self setTitle:l10n_util::GetNSString(
                        IDS_IOS_PAYMENT_REQUEST_METHOD_SELECTION_TITLE)];
@@ -70,6 +74,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                             action:@selector(onReturn)];
     returnButton.accessibilityLabel = l10n_util::GetNSString(IDS_ACCNAME_BACK);
     [self navigationItem].leftBarButtonItem = returnButton;
+
+    _paymentRequest = paymentRequest;
   }
   return self;
 }
@@ -94,8 +100,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [model addSectionWithIdentifier:SectionIdentifierPayment];
 
-  for (size_t i = 0; i < _paymentMethods.size(); ++i) {
-    autofill::CreditCard* paymentMethod = _paymentMethods[i];
+  for (const auto& paymentMethod : _paymentRequest->credit_cards()) {
     PaymentMethodItem* paymentMethodItem = [[[PaymentMethodItem alloc]
         initWithType:ItemTypePaymentMethod] autorelease];
     paymentMethodItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -109,7 +114,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
             .icon_resource_id;
     paymentMethodItem.methodTypeIcon = NativeImage(methodTypeIconID);
 
-    if (paymentMethod == _selectedPaymentMethod)
+    if (_paymentRequest->selected_credit_card() == paymentMethod)
       paymentMethodItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
     [model addItem:paymentMethodItem
         toSectionWithIdentifier:SectionIdentifierPayment];
@@ -145,10 +150,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSInteger itemType =
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
   if (itemType == ItemTypePaymentMethod) {
-    DCHECK(indexPath.item < (NSInteger)_paymentMethods.size());
+    DCHECK(indexPath.item < (NSInteger)_paymentRequest->credit_cards().size());
     [_delegate
         paymentMethodSelectionViewController:self
-                      didSelectPaymentMethod:_paymentMethods[indexPath.item]];
+                      didSelectPaymentMethod:_paymentRequest->credit_cards()
+                                                 [indexPath.item]];
   }
   // TODO(crbug.com/602666): Present a credit card addition UI when
   //     itemType == ItemAddMethod.

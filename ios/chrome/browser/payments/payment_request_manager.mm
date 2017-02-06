@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/payments/js_payment_request_manager.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_coordinator.h"
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
@@ -49,6 +50,12 @@ const NSTimeInterval kTimeoutInterval = 60.0;
 
   // PersonalDataManager used to manage user credit cards and addresses.
   autofill::PersonalDataManager* _personalDataManager;
+
+  // Object that owns an instance of web::PaymentRequest as provided by the page
+  // invoking the PaymentRequest API. Also caches credit cards and addresses
+  // provided by the _personalDataManager and manages selected ones for the
+  // current PaymentRequest flow.
+  std::unique_ptr<PaymentRequest> _paymentRequest;
 
   // WebState for the tab this object is attached to.
   web::WebState* _webState;
@@ -282,6 +289,10 @@ const NSTimeInterval kTimeoutInterval = 60.0;
     return NO;
   }
 
+  _paymentRequest.reset(
+      new PaymentRequest(base::MakeUnique<web::PaymentRequest>(paymentRequest),
+                         _personalDataManager));
+
   UIImage* pageFavicon = nil;
   web::NavigationItem* navigationItem =
       [self webState]->GetNavigationManager()->GetVisibleItem();
@@ -291,9 +302,8 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   NSString* pageHost =
       base::SysUTF8ToNSString([self webState]->GetLastCommittedURL().host());
   _paymentRequestCoordinator.reset([[PaymentRequestCoordinator alloc]
-      initWithBaseViewController:_baseViewController
-             personalDataManager:_personalDataManager]);
-  [_paymentRequestCoordinator setPaymentRequest:paymentRequest];
+      initWithBaseViewController:_baseViewController]);
+  [_paymentRequestCoordinator setPaymentRequest:_paymentRequest.get()];
   [_paymentRequestCoordinator setPageFavicon:pageFavicon];
   [_paymentRequestCoordinator setPageTitle:pageTitle];
   [_paymentRequestCoordinator setPageHost:pageHost];
@@ -391,7 +401,6 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   [_paymentRequestJsManager
       resolveRequestPromiseWithPaymentResponse:paymentResponse
                              completionHandler:nil];
-
   [self setUnblockEventQueueTimer];
   [self setPaymentResponseTimeoutTimer];
 }

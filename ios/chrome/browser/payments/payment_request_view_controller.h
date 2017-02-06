@@ -7,12 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #include "ios/web/public/payments/payment_request.h"
 
 namespace autofill {
 class AutofillProfile;
-class CreditCard;
 }
 
 extern NSString* const kPaymentRequestCollectionViewId;
@@ -52,10 +52,6 @@ extern NSString* const kPaymentRequestCollectionViewId;
 // the user and communicating their choices to the supplied delegate.
 @interface PaymentRequestViewController : CollectionViewController
 
-// The PaymentRequest object as provided by the page invoking the Payment
-// Request API.
-@property(nonatomic, assign) web::PaymentRequest paymentRequest;
-
 // The favicon of the page invoking the Payment Request API.
 @property(nonatomic, retain) UIImage* pageFavicon;
 
@@ -64,15 +60,6 @@ extern NSString* const kPaymentRequestCollectionViewId;
 
 // The host of the page invoking the Payment Request API.
 @property(nonatomic, copy) NSString* pageHost;
-
-// The currently selected and displayed shipping address, if any.
-@property(nonatomic, assign) autofill::AutofillProfile* selectedShippingAddress;
-
-// The currently selected and displayed shipping option, if any.
-@property(nonatomic, assign) web::PaymentShippingOption* selectedShippingOption;
-
-// The currently selected and displayed payment method, if any.
-@property(nonatomic, assign) autofill::CreditCard* selectedPaymentMethod;
 
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestViewControllerDelegate> delegate;
@@ -88,7 +75,13 @@ extern NSString* const kPaymentRequestCollectionViewId;
 - (void)updateSelectedShippingOption:
     (web::PaymentShippingOption*)shippingOption;
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
+// Initializes this object with an instance of PaymentRequest which owns an
+// instance of web::PaymentRequest as provided by the page invoking the Payment
+// Request API. This object will not take ownership of |paymentRequest|.
+- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;

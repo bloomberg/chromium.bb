@@ -136,10 +136,16 @@ class PersonalDataManager : public KeyedService,
   // Removes the profile or credit card represented by |guid|.
   virtual void RemoveByGUID(const std::string& guid);
 
-  // Returns the profile with the specified |guid|, or NULL if there is no
+  // Returns the profile with the specified |guid|, or nullptr if there is no
   // profile with the specified |guid|. Both web and auxiliary profiles may
   // be returned.
   AutofillProfile* GetProfileByGUID(const std::string& guid);
+
+  // Returns the profile with the specified |guid| from the given |profiles|, or
+  // nullptr if there is no profile with the specified |guid|.
+  static AutofillProfile* GetProfileFromProfilesByGUID(
+      const std::string& guid,
+      const std::vector<AutofillProfile*>& profiles);
 
   // Adds |credit_card| to the web database.
   void AddCreditCard(const CreditCard& credit_card);
@@ -168,7 +174,7 @@ class PersonalDataManager : public KeyedService,
   // Sets a server credit card for test.
   void AddServerCreditCardForTest(std::unique_ptr<CreditCard> credit_card);
 
-  // Returns the credit card with the specified |guid|, or NULL if there is
+  // Returns the credit card with the specified |guid|, or nullptr if there is
   // no credit card with the specified |guid|.
   virtual CreditCard* GetCreditCardByGUID(const std::string& guid);
 
@@ -472,7 +478,7 @@ class PersonalDataManager : public KeyedService,
   // Functionally equivalent to GetProfiles(), but also records metrics if
   // |record_metrics| is true. Metrics should be recorded when the returned
   // profiles will be used to populate the fields shown in an Autofill popup.
-  const std::vector<AutofillProfile*>& GetProfiles(
+  virtual const std::vector<AutofillProfile*>& GetProfiles(
       bool record_metrics) const;
 
   // Returns credit card suggestions based on the |cards_to_suggest| and the

@@ -4,7 +4,10 @@
 
 #import "ios/chrome/browser/payments/payment_items_display_coordinator.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -21,6 +24,12 @@ TEST(PaymentItemsDisplayCoordinatorTest, StartAndStop) {
     PaymentItemsDisplayCoordinator* coordinator =
         [[[PaymentItemsDisplayCoordinator alloc]
             initWithBaseViewController:base_view_controller] autorelease];
+
+    autofill::TestPersonalDataManager personal_data_manager;
+    std::unique_ptr<PaymentRequest> payment_request =
+        base::MakeUnique<PaymentRequest>(
+            base::MakeUnique<web::PaymentRequest>(), &personal_data_manager);
+    [coordinator setPaymentRequest:payment_request.get()];
 
     EXPECT_EQ(1u, [navigation_controller.viewControllers count]);
 

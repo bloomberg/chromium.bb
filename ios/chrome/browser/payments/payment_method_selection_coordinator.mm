@@ -7,6 +7,7 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 
 @interface PaymentMethodSelectionCoordinator () {
   base::WeakNSProtocol<id<PaymentMethodSelectionCoordinatorDelegate>> _delegate;
@@ -17,8 +18,7 @@
 
 @implementation PaymentMethodSelectionCoordinator
 
-@synthesize paymentMethods = _paymentMethods;
-@synthesize selectedPaymentMethod = _selectedPaymentMethod;
+@synthesize paymentRequest = _paymentRequest;
 
 - (id<PaymentMethodSelectionCoordinatorDelegate>)delegate {
   return _delegate.get();
@@ -29,9 +29,8 @@
 }
 
 - (void)start {
-  _viewController.reset([[PaymentMethodSelectionViewController alloc] init]);
-  [_viewController setPaymentMethods:_paymentMethods];
-  [_viewController setSelectedPaymentMethod:_selectedPaymentMethod];
+  _viewController.reset([[PaymentMethodSelectionViewController alloc]
+      initWithPaymentRequest:_paymentRequest]);
   [_viewController setDelegate:self];
   [_viewController loadModel];
 
@@ -53,7 +52,6 @@
             (PaymentMethodSelectionViewController*)controller
                       didSelectPaymentMethod:
                           (autofill::CreditCard*)paymentMethod {
-  _selectedPaymentMethod = paymentMethod;
   [_delegate paymentMethodSelectionCoordinator:self
                         didSelectPaymentMethod:paymentMethod];
 }

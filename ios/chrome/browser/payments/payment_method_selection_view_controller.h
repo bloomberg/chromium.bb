@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #include "ios/web/public/payments/payment_request.h"
 
@@ -37,18 +38,18 @@ class CreditCard;
 // delegate. Also offers a button to add a new payment method.
 @interface PaymentMethodSelectionViewController : CollectionViewController
 
-// The payment methods available to fulfill the payment request.
-@property(nonatomic, assign) std::vector<autofill::CreditCard*> paymentMethods;
-
-// The payment method selected by the user, if any.
-@property(nonatomic, assign) autofill::CreditCard* selectedPaymentMethod;
-
 // The delegate to be notified when the user selects a payment method or chooses
 // to return without selecting one.
 @property(nonatomic, weak) id<PaymentMethodSelectionViewControllerDelegate>
     delegate;
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
+// Initializes this object with an instance of PaymentRequest which owns an
+// instance of web::PaymentRequest as provided by the page invoking the Payment
+// Request API. This object will not take ownership of |paymentRequest|.
+- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;

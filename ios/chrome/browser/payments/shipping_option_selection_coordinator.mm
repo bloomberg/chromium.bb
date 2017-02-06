@@ -19,14 +19,14 @@
 // UI is locked so that the user can't interact with it, then the delegate is
 // notified. The delay is here to let the user get a visual feedback of the
 // selection before this view disappears.
-- (void)delayedNotifyDelegateOfSelection;
+- (void)delayedNotifyDelegateOfSelection:
+    (web::PaymentShippingOption*)shippingOption;
 
 @end
 
 @implementation ShippingOptionSelectionCoordinator
 
-@synthesize shippingOptions = _shippingOptions;
-@synthesize selectedShippingOption = _selectedShippingOption;
+@synthesize paymentRequest = _paymentRequest;
 
 - (id<ShippingOptionSelectionCoordinatorDelegate>)delegate {
   return _delegate.get();
@@ -37,9 +37,8 @@
 }
 
 - (void)start {
-  _viewController.reset([[ShippingOptionSelectionViewController alloc] init]);
-  [_viewController setShippingOptions:_shippingOptions];
-  [_viewController setSelectedShippingOption:_selectedShippingOption];
+  _viewController.reset([[ShippingOptionSelectionViewController alloc]
+      initWithPaymentRequest:_paymentRequest]);
   [_viewController setDelegate:self];
   [_viewController loadModel];
 
@@ -60,8 +59,7 @@
             (ShippingOptionSelectionViewController*)controller
                        selectedShippingOption:
                            (web::PaymentShippingOption*)shippingOption {
-  _selectedShippingOption = shippingOption;
-  [self delayedNotifyDelegateOfSelection];
+  [self delayedNotifyDelegateOfSelection:shippingOption];
 }
 
 - (void)shippingOptionSelectionViewControllerDidReturn:
@@ -69,7 +67,8 @@
   [_delegate shippingOptionSelectionCoordinatorDidReturn:self];
 }
 
-- (void)delayedNotifyDelegateOfSelection {
+- (void)delayedNotifyDelegateOfSelection:
+    (web::PaymentShippingOption*)shippingOption {
   _viewController.get().view.userInteractionEnabled = NO;
   base::WeakNSObject<ShippingOptionSelectionCoordinator> weakSelf(self);
   dispatch_after(
@@ -83,7 +82,7 @@
 
         _viewController.get().view.userInteractionEnabled = YES;
         [_delegate shippingOptionSelectionCoordinator:self
-                              didSelectShippingOption:_selectedShippingOption];
+                              didSelectShippingOption:shippingOption];
       });
 }
 

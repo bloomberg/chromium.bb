@@ -10,16 +10,10 @@
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/payments/payment_items_display_coordinator.h"
 #import "ios/chrome/browser/payments/payment_method_selection_coordinator.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/payments/shipping_address_selection_coordinator.h"
 #import "ios/chrome/browser/payments/shipping_option_selection_coordinator.h"
-#include "ios/web/public/payments/payment_request.h"
-
-namespace autofill {
-class AutofillProfile;
-class CreditCard;
-class PersonalDataManager;
-}
 
 @class PaymentRequestCoordinator;
 
@@ -57,16 +51,12 @@ class PersonalDataManager;
 // Creates a Payment Request coordinator that will present UI on
 // |viewController| using data available from |personalDataManager|.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                       personalDataManager:
-                           (autofill::PersonalDataManager*)personalDataManager
     NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-
-// The PaymentRequest object as provided by the page invoking the Payment
-// Request API. Should be set before calling |start|.
-@property(nonatomic, assign) web::PaymentRequest paymentRequest;
+// The PaymentRequest object owning an instance of web::PaymentRequest as
+// provided by the page invoking the Payment Request API. This is a weak
+// reference and should outlive this class.
+@property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The favicon of the page invoking the PaymentRequest API. Should be set before
 // calling |start|.
@@ -79,17 +69,6 @@ class PersonalDataManager;
 // The host of the page invoking the Payment Request API. Should be set before
 // calling |start|.
 @property(nonatomic, copy) NSString* pageHost;
-
-// The currently selected shipping address, if any.
-@property(nonatomic, readonly)
-    autofill::AutofillProfile* selectedShippingAddress;
-
-// The currently selected shipping option, if any.
-@property(nonatomic, readonly)
-    web::PaymentShippingOption* selectedShippingOption;
-
-// The payment method selected by the user, if any.
-@property(nonatomic, readonly) autofill::CreditCard* selectedPaymentMethod;
 
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestCoordinatorDelegate> delegate;

@@ -7,9 +7,12 @@
 #include <vector>
 
 #include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/cells/shipping_address_item.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -21,13 +24,30 @@ class ShippingAddressSelectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
   CollectionViewController* NewController() override NS_RETURNS_RETAINED {
-    return [[ShippingAddressSelectionViewController alloc] init];
+    personal_data_manager_ =
+        base::MakeUnique<autofill::TestPersonalDataManager>();
+    // AddTestingProfile will not take ownership of the profiles passed to it.
+    profile1_ = base::MakeUnique<autofill::AutofillProfile>();
+    personal_data_manager_->AddTestingProfile(profile1_.get());
+    profile2_ = base::MakeUnique<autofill::AutofillProfile>();
+    personal_data_manager_->AddTestingProfile(profile2_.get());
+
+    payment_request_ = base::MakeUnique<PaymentRequest>(
+        base::MakeUnique<web::PaymentRequest>(), personal_data_manager_.get());
+
+    return [[ShippingAddressSelectionViewController alloc]
+        initWithPaymentRequest:payment_request_.get()];
   }
 
   ShippingAddressSelectionViewController* ShippingAddressSelectionController() {
     return base::mac::ObjCCastStrict<ShippingAddressSelectionViewController>(
         controller());
   }
+
+  std::unique_ptr<autofill::AutofillProfile> profile1_;
+  std::unique_ptr<autofill::AutofillProfile> profile2_;
+  std::unique_ptr<autofill::TestPersonalDataManager> personal_data_manager_;
+  std::unique_ptr<PaymentRequest> payment_request_;
 };
 
 // Tests that the correct number of items are displayed after loading the model
@@ -37,18 +57,6 @@ TEST_F(ShippingAddressSelectionViewControllerTest, TestModel) {
   CheckController();
   CheckTitleWithId(IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_TITLE);
 
-  std::unique_ptr<autofill::AutofillProfile> profile1(
-      new autofill::AutofillProfile());
-  std::unique_ptr<autofill::AutofillProfile> profile2(
-      new autofill::AutofillProfile());
-
-  std::vector<autofill::AutofillProfile*> shippingAddresses;
-  shippingAddresses.push_back(profile1.get());
-  shippingAddresses.push_back(profile2.get());
-
-  [ShippingAddressSelectionController() setShippingAddresses:shippingAddresses];
-  [ShippingAddressSelectionController()
-      setSelectedShippingAddress:shippingAddresses[0]];
   [ShippingAddressSelectionController() loadModel];
 
   ASSERT_EQ(1, NumberOfSections());

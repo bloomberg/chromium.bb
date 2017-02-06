@@ -45,6 +45,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface PaymentItemsDisplayViewController () {
   base::WeakNSProtocol<id<PaymentItemsDisplayViewControllerDelegate>> _delegate;
   base::scoped_nsobject<MDCFlatButton> _payButton;
+
+  // The PaymentRequest object owning an instance of web::PaymentRequest as
+  // provided by the page invoking the Payment Request API. This is a weak
+  // pointer and should outlive this class.
+  PaymentRequest* _paymentRequest;
 }
 
 // Called when the user presses the return button.
@@ -57,10 +62,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation PaymentItemsDisplayViewController
 
-@synthesize total = _total;
-@synthesize paymentItems = _paymentItems;
-
-- (instancetype)initWithPayButtonEnabled:(BOOL)payButtonEnabled {
+- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+                      payButtonEnabled:(BOOL)payButtonEnabled {
+  DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
     [self setTitle:l10n_util::GetNSString(
                        IDS_IOS_PAYMENT_REQUEST_PAYMENT_ITEMS_TITLE)];
@@ -112,6 +116,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     UIBarButtonItem* payButtonItem =
         [[[UIBarButtonItem alloc] initWithCustomView:buttonView] autorelease];
     [self navigationItem].rightBarButtonItem = payButtonItem;
+
+    _paymentRequest = paymentRequest;
   }
   return self;
 }
@@ -145,19 +151,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
   PriceItem* totalItem =
       [[[PriceItem alloc] initWithType:ItemTypePaymentItemTotal] autorelease];
   totalItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;
-  totalItem.item = base::SysUTF16ToNSString(_total.label);
+  totalItem.item =
+      base::SysUTF16ToNSString(_paymentRequest->payment_details().total.label);
 
-  NSString* currencyCode = base::SysUTF16ToNSString(_total.amount.currency);
+  NSString* currencyCode = base::SysUTF16ToNSString(
+      _paymentRequest->payment_details().total.amount.currency);
   NSDecimalNumber* value = [NSDecimalNumber
-      decimalNumberWithString:SysUTF16ToNSString(_total.amount.value)];
+      decimalNumberWithString:SysUTF16ToNSString(
+                                  _paymentRequest->payment_details()
+                                      .total.amount.value)];
   totalItem.price =
       payment_request_utils::FormattedCurrencyString(value, currencyCode);
 
   [model addItem:totalItem toSectionWithIdentifier:SectionIdentifierPayment];
 
   // Add the line item entries.
-  for (size_t i = 0; i < _paymentItems.size(); ++i) {
-    web::PaymentItem paymentItem = _paymentItems[i];
+  for (const auto& paymentItem :
+       _paymentRequest->payment_details().display_items) {
     PriceItem* paymentItemItem =
         [[[PriceItem alloc] initWithType:ItemTypePaymentItem] autorelease];
     paymentItemItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;

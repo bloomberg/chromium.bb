@@ -4,29 +4,63 @@
 
 #import "ios/chrome/browser/payments/shipping_option_selection_view_controller.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
 namespace {
 
 class ShippingOptionSelectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
   CollectionViewController* NewController() override NS_RETURNS_RETAINED {
-    return [[ShippingOptionSelectionViewController alloc] init];
+    personal_data_manager_ =
+        base::MakeUnique<autofill::TestPersonalDataManager>();
+
+    std::unique_ptr<web::PaymentRequest> web_payment_request =
+        base::MakeUnique<web::PaymentRequest>();
+    web::PaymentShippingOption shipping_option1;
+    shipping_option1.id = base::ASCIIToUTF16("1234");
+    shipping_option1.label = base::ASCIIToUTF16("1-Day");
+    shipping_option1.amount.value = base::ASCIIToUTF16("0.99");
+    shipping_option1.amount.currency = base::ASCIIToUTF16("USD");
+    shipping_option1.selected = true;
+    web_payment_request->details.shipping_options.push_back(shipping_option1);
+    web::PaymentShippingOption shipping_option2;
+    shipping_option2.id = base::ASCIIToUTF16("4321");
+    shipping_option2.label = base::ASCIIToUTF16("10-Days");
+    shipping_option2.amount.value = base::ASCIIToUTF16("0.01");
+    shipping_option2.amount.currency = base::ASCIIToUTF16("USD");
+    shipping_option2.selected = false;
+    web_payment_request->details.shipping_options.push_back(shipping_option2);
+    web_payment_request->options.request_shipping = true;
+
+    payment_request_ = base::MakeUnique<PaymentRequest>(
+        std::move(web_payment_request), personal_data_manager_.get());
+
+    return [[ShippingOptionSelectionViewController alloc]
+        initWithPaymentRequest:payment_request_.get()];
   }
 
   ShippingOptionSelectionViewController* ShippingOptionSelectionController() {
     return base::mac::ObjCCastStrict<ShippingOptionSelectionViewController>(
         controller());
   }
+
+  std::unique_ptr<autofill::TestPersonalDataManager> personal_data_manager_;
+  std::unique_ptr<PaymentRequest> payment_request_;
 };
 
 // Tests that the correct number of items are displayed after loading the model
@@ -36,18 +70,6 @@ TEST_F(ShippingOptionSelectionViewControllerTest, TestModel) {
   CheckController();
   CheckTitleWithId(IDS_IOS_PAYMENT_REQUEST_SHIPPING_OPTION_SELECTION_TITLE);
 
-  std::unique_ptr<web::PaymentShippingOption> option1(
-      new web::PaymentShippingOption());
-  std::unique_ptr<web::PaymentShippingOption> option2(
-      new web::PaymentShippingOption());
-
-  std::vector<web::PaymentShippingOption*> shippingOptions;
-  shippingOptions.push_back(option1.get());
-  shippingOptions.push_back(option2.get());
-
-  [ShippingOptionSelectionController() setShippingOptions:shippingOptions];
-  [ShippingOptionSelectionController()
-      setSelectedShippingOption:shippingOptions[0]];
   [ShippingOptionSelectionController() loadModel];
 
   ASSERT_EQ(1, NumberOfSections());

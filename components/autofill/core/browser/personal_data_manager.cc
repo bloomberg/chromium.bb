@@ -255,15 +255,15 @@ const char kFrecencyFieldTrialName[] = "AutofillProfileOrderByFrecency";
 const char kFrecencyFieldTrialLimitParam[] = "limit";
 
 PersonalDataManager::PersonalDataManager(const std::string& app_locale)
-    : database_(NULL),
+    : database_(nullptr),
       is_data_loaded_(false),
       pending_profiles_query_(0),
       pending_server_profiles_query_(0),
       pending_creditcards_query_(0),
       pending_server_creditcards_query_(0),
       app_locale_(app_locale),
-      pref_service_(NULL),
-      account_tracker_(NULL),
+      pref_service_(nullptr),
+      account_tracker_(nullptr),
       is_off_the_record_(false),
       has_logged_profile_count_(false),
       has_logged_local_credit_card_count_(false),
@@ -541,10 +541,16 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
 
 AutofillProfile* PersonalDataManager::GetProfileByGUID(
     const std::string& guid) {
-  const std::vector<AutofillProfile*>& profiles = GetProfiles();
+  return GetProfileFromProfilesByGUID(guid, GetProfiles());
+}
+
+// static
+AutofillProfile* PersonalDataManager::GetProfileFromProfilesByGUID(
+    const std::string& guid,
+    const std::vector<AutofillProfile*>& profiles) {
   std::vector<AutofillProfile*>::const_iterator iter =
       FindElementByGUID<AutofillProfile>(profiles, guid);
-  return (iter != profiles.end()) ? *iter : NULL;
+  return iter != profiles.end() ? *iter : nullptr;
 }
 
 void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
@@ -713,7 +719,7 @@ CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
   const std::vector<CreditCard*>& credit_cards = GetCreditCards();
   std::vector<CreditCard*>::const_iterator iter =
       FindElementByGUID<CreditCard>(credit_cards, guid);
-  return (iter != credit_cards.end()) ? *iter : NULL;
+  return iter != credit_cards.end() ? *iter : nullptr;
 }
 
 void PersonalDataManager::GetNonEmptyTypes(
@@ -933,7 +939,7 @@ void PersonalDataManager::SetPrefService(PrefService* pref_service) {
   enabled_pref_.reset(new BooleanPrefMember);
   wallet_enabled_pref_.reset(new BooleanPrefMember);
   pref_service_ = pref_service;
-  // |pref_service_| can be NULL in tests.
+  // |pref_service_| can be nullptr in tests.
   if (pref_service_) {
     enabled_pref_->Init(prefs::kAutofillEnabled, pref_service_,
         base::Bind(&PersonalDataManager::EnabledPrefChanged,

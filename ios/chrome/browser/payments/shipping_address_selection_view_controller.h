@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #include "ios/web/public/payments/payment_request.h"
 
@@ -37,13 +38,6 @@ class AutofillProfile;
 // delegate. Also offers a button to add a shipping address.
 @interface ShippingAddressSelectionViewController : CollectionViewController
 
-// The available shipping addresses to fulfill the payment request.
-@property(nonatomic, assign) std::vector<autofill::AutofillProfile*>
-    shippingAddresses;
-
-// The shipping address selected by the user, if any.
-@property(nonatomic, assign) autofill::AutofillProfile* selectedShippingAddress;
-
 // Whether or not the view is in a loading state.
 @property(nonatomic, assign) BOOL isLoading;
 
@@ -55,7 +49,13 @@ class AutofillProfile;
 @property(nonatomic, weak) id<ShippingAddressSelectionViewControllerDelegate>
     delegate;
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
+// Initializes this object with an instance of PaymentRequest which owns an
+// instance of web::PaymentRequest as provided by the page invoking the Payment
+// Request API. This object will not take ownership of |paymentRequest|.
+- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;

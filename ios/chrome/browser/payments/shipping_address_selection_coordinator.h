@@ -9,6 +9,7 @@
 #include <vector>
 
 #import "ios/chrome/browser/chrome_coordinator.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -37,12 +38,10 @@ class AutofillProfile;
 // controller provided in the initializer.
 @interface ShippingAddressSelectionCoordinator : ChromeCoordinator
 
-// The available shipping addresses to fulfill the payment request.
-@property(nonatomic, assign) std::vector<autofill::AutofillProfile*>
-    shippingAddresses;
-
-// The shipping address selected by the user, if any.
-@property(nonatomic, assign) autofill::AutofillProfile* selectedShippingAddress;
+// The PaymentRequest object owning an instance of web::PaymentRequest as
+// provided by the page invoking the Payment Request API. This is a weak
+// reference and should outlive this class.
+@property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The delegate to be notified when the user selects a shipping address or
 // returns without selecting one.

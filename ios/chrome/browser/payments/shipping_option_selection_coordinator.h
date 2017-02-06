@@ -9,6 +9,7 @@
 #include <vector>
 
 #import "ios/chrome/browser/chrome_coordinator.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/web/public/payments/payment_request.h"
 
 @class ShippingOptionSelectionCoordinator;
@@ -34,12 +35,10 @@
 // controller provided in the initializer.
 @interface ShippingOptionSelectionCoordinator : ChromeCoordinator
 
-// The available shipping options to fulfill the payment request.
-@property(nonatomic, assign) std::vector<web::PaymentShippingOption*>
-    shippingOptions;
-
-// The shipping option selected by the user, if any.
-@property(nonatomic, assign) web::PaymentShippingOption* selectedShippingOption;
+// The PaymentRequest object owning an instance of web::PaymentRequest as
+// provided by the page invoking the Payment Request API. This is a weak
+// reference and should outlive this class.
+@property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The delegate to be notified when the user selects a shipping option or
 // returns without selecting one.

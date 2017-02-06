@@ -75,6 +75,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   base::scoped_nsobject<UIBarButtonItem> _cancelButton;
   base::scoped_nsobject<MDCFlatButton> _payButton;
 
+  // The PaymentRequest object owning an instance of web::PaymentRequest as
+  // provided by the page invoking the Payment Request API. This is a weak
+  // pointer and should outlive this class.
+  PaymentRequest* _paymentRequest;
+
   PriceItem* _paymentSummaryItem;
   ShippingAddressItem* _selectedShippingAddressItem;
   CollectionViewTextItem* _selectedShippingOptionItem;
@@ -93,15 +98,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation PaymentRequestViewController
 
-@synthesize paymentRequest = _paymentRequest;
 @synthesize pageFavicon = _pageFavicon;
 @synthesize pageTitle = _pageTitle;
 @synthesize pageHost = _pageHost;
-@synthesize selectedShippingAddress = _selectedShippingAddress;
-@synthesize selectedShippingOption = _selectedShippingOption;
-@synthesize selectedPaymentMethod = _selectedPaymentMethod;
 
-- (instancetype)init {
+- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
+  DCHECK(paymentRequest);
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
     _propertyReleaser_PaymentRequestViewController.Init(
         self, [PaymentRequestViewController class]);
@@ -137,7 +139,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                    action:@selector(onConfirm)
          forControlEvents:UIControlEventTouchUpInside];
     [_payButton sizeToFit];
-    [_payButton setEnabled:NO];
+    [_payButton setEnabled:(paymentRequest->selected_credit_card() != nil)];
     [_payButton setAutoresizingMask:UIViewAutoresizingFlexibleTrailingMargin() |
                                     UIViewAutoresizingFlexibleTopMargin |
                                     UIViewAutoresizingFlexibleBottomMargin];
@@ -161,6 +163,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     UIBarButtonItem* payButtonItem =
         [[[UIBarButtonItem alloc] initWithCustomView:buttonView] autorelease];
     [self navigationItem].rightBarButtonItem = payButtonItem;
+
+    _paymentRequest = paymentRequest;
   }
   return self;
 }
@@ -171,11 +175,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)setDelegate:(id<PaymentRequestViewControllerDelegate>)delegate {
   _delegate.reset(delegate);
-}
-
-- (void)setSelectedPaymentMethod:(autofill::CreditCard*)method {
-  _selectedPaymentMethod = method;
-  [_payButton setEnabled:(method != nil)];
 }
 
 - (void)onCancel {
@@ -211,8 +210,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _paymentSummaryItem =
       [[[PriceItem alloc] initWithType:ItemTypeSummaryTotal] autorelease];
   [self fillPaymentSummaryItem:_paymentSummaryItem
-               withPaymentItem:_paymentRequest.details.total];
-  if (!_paymentRequest.details.display_items.empty()) {
+               withPaymentItem:_paymentRequest->payment_details().total];
+  if (!_paymentRequest->payment_details().display_items.empty()) {
     _paymentSummaryItem.accessoryType =
         MDCCollectionViewCellAccessoryDisclosureIndicator;
     _paymentSummaryItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -230,12 +229,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
       forSectionWithIdentifier:SectionIdentifierShipping];
 
   CollectionViewItem* shippingAddressItem = nil;
-  if (_selectedShippingAddress) {
+  if (_paymentRequest->selected_shipping_profile()) {
     _selectedShippingAddressItem = [[[ShippingAddressItem alloc]
         initWithType:ItemTypeShippingAddress] autorelease];
     shippingAddressItem = _selectedShippingAddressItem;
     [self fillShippingAddressItem:_selectedShippingAddressItem
-                      withAddress:_selectedShippingAddress];
+                      withAddress:_paymentRequest->selected_shipping_profile()];
     _selectedShippingAddressItem.accessoryType =
         MDCCollectionViewCellAccessoryDisclosureIndicator;
 
@@ -255,12 +254,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierShipping];
 
   CollectionViewTextItem* shippingOptionItem = nil;
-  if (_selectedShippingOption) {
+  if (_paymentRequest->selected_shipping_option()) {
     _selectedShippingOptionItem = [[[CollectionViewTextItem alloc]
         initWithType:ItemTypeShippingOption] autorelease];
     shippingOptionItem = _selectedShippingOptionItem;
     [self fillShippingOptionItem:_selectedShippingOptionItem
-                      withOption:_selectedShippingOption];
+                      withOption:_paymentRequest->selected_shipping_option()];
   } else {
     shippingOptionItem = [[[CollectionViewTextItem alloc]
         initWithType:ItemTypeSelectShippingOption] autorelease];
@@ -283,18 +282,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model setHeader:paymentTitle
       forSectionWithIdentifier:SectionIdentifierPayment];
 
-  if (_selectedPaymentMethod) {
+  if (_paymentRequest->selected_credit_card()) {
     PaymentMethodItem* paymentMethod = [[[PaymentMethodItem alloc]
         initWithType:ItemTypePaymentMethod] autorelease];
 
     paymentMethod.methodID = base::SysUTF16ToNSString(
-        _selectedPaymentMethod->TypeAndLastFourDigits());
+        _paymentRequest->selected_credit_card()->TypeAndLastFourDigits());
     paymentMethod.methodDetail = base::SysUTF16ToNSString(
-        _selectedPaymentMethod->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
+        _paymentRequest->selected_credit_card()->GetRawInfo(
+            autofill::CREDIT_CARD_NAME_FULL));
 
     int selectedMethodCardTypeIconID =
         autofill::data_util::GetPaymentRequestData(
-            _selectedPaymentMethod->type())
+            _paymentRequest->selected_credit_card()->type())
             .icon_resource_id;
     paymentMethod.methodTypeIcon = NativeImage(selectedMethodCardTypeIconID);
 
@@ -328,7 +328,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)updatePaymentSummarySection {
   [self fillPaymentSummaryItem:_paymentSummaryItem
-               withPaymentItem:_paymentRequest.details.total];
+               withPaymentItem:_paymentRequest->payment_details().total];
   NSIndexPath* indexPath =
       [self.collectionViewModel indexPathForItem:_paymentSummaryItem
                          inSectionWithIdentifier:SectionIdentifierSummary];
@@ -337,7 +337,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)updateSelectedShippingAddress:
     (autofill::AutofillProfile*)shippingAddress {
-  [self setSelectedShippingAddress:shippingAddress];
+  _paymentRequest->set_selected_shipping_profile(shippingAddress);
   [self fillShippingAddressItem:_selectedShippingAddressItem
                     withAddress:shippingAddress];
   NSIndexPath* indexPath =
@@ -348,7 +348,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)updateSelectedShippingOption:
     (web::PaymentShippingOption*)shippingOption {
-  [self setSelectedShippingOption:shippingOption];
   [self fillShippingOptionItem:_selectedShippingOptionItem
                     withOption:shippingOption];
   NSIndexPath* indexPath =
@@ -362,11 +361,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)fillPaymentSummaryItem:(PriceItem*)item
                withPaymentItem:(web::PaymentItem)paymentItem {
   item.item = l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_TOTAL_HEADER);
-  NSString* currencyCode =
-      base::SysUTF16ToNSString(_paymentRequest.details.total.amount.currency);
+  NSString* currencyCode = base::SysUTF16ToNSString(
+      _paymentRequest->payment_details().total.amount.currency);
   NSDecimalNumber* value = [NSDecimalNumber
       decimalNumberWithString:SysUTF16ToNSString(
-                                  _paymentRequest.details.total.amount.value)];
+                                  _paymentRequest->payment_details()
+                                      .total.amount.value)];
   item.price =
       payment_request_utils::FormattedCurrencyString(value, currencyCode);
 }
@@ -431,7 +431,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
     case ItemTypeSummaryTotal:
-      if (!_paymentRequest.details.display_items.empty())
+      if (!_paymentRequest->payment_details().display_items.empty())
         [_delegate
             paymentRequestViewControllerDidSelectPaymentSummaryItem:self];
       break;
@@ -457,7 +457,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CGFloat)collectionView:(UICollectionView*)collectionView
     cellHeightAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  if ((type == ItemTypePaymentMethod && _selectedPaymentMethod) ||
+  if ((type == ItemTypePaymentMethod &&
+       _paymentRequest->selected_credit_card()) ||
       (type == ItemTypeShippingAddress)) {
     CollectionViewItem* item =
         [self.collectionViewModel itemAtIndexPath:indexPath];
@@ -477,7 +478,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
   if (type == ItemTypeSummaryTotal &&
-      _paymentRequest.details.display_items.empty()) {
+      _paymentRequest->payment_details().display_items.empty()) {
     return YES;
   } else {
     return NO;

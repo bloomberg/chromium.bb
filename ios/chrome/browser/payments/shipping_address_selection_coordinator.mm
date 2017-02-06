@@ -7,6 +7,7 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/shipping_address_selection_view_controller.h"
 
 @interface ShippingAddressSelectionCoordinator ()<
@@ -20,14 +21,14 @@
 // UI is locked so that the user can't interact with it, then the delegate is
 // notified. The delay is here to let the user get a visual feedback of the
 // selection before this view disappears.
-- (void)delayedNotifyDelegateOfSelection;
+- (void)delayedNotifyDelegateOfSelection:
+    (autofill::AutofillProfile*)shippingAddress;
 
 @end
 
 @implementation ShippingAddressSelectionCoordinator
 
-@synthesize shippingAddresses = _shippingAddresses;
-@synthesize selectedShippingAddress = _selectedShippingAddress;
+@synthesize paymentRequest = _paymentRequest;
 
 - (id<ShippingAddressSelectionCoordinatorDelegate>)delegate {
   return _delegate.get();
@@ -38,9 +39,8 @@
 }
 
 - (void)start {
-  _viewController.reset([[ShippingAddressSelectionViewController alloc] init]);
-  [_viewController setShippingAddresses:_shippingAddresses];
-  [_viewController setSelectedShippingAddress:_selectedShippingAddress];
+  _viewController.reset([[ShippingAddressSelectionViewController alloc]
+      initWithPaymentRequest:_paymentRequest]);
   [_viewController setDelegate:self];
   [_viewController loadModel];
 
@@ -61,8 +61,7 @@
             (ShippingAddressSelectionViewController*)controller
                        selectedShippingAddress:
                            (autofill::AutofillProfile*)shippingAddress {
-  _selectedShippingAddress = shippingAddress;
-  [self delayedNotifyDelegateOfSelection];
+  [self delayedNotifyDelegateOfSelection:shippingAddress];
 }
 
 - (void)shippingAddressSelectionViewControllerDidReturn:
@@ -70,7 +69,8 @@
   [_delegate shippingAddressSelectionCoordinatorDidReturn:self];
 }
 
-- (void)delayedNotifyDelegateOfSelection {
+- (void)delayedNotifyDelegateOfSelection:
+    (autofill::AutofillProfile*)shippingAddress {
   _viewController.get().view.userInteractionEnabled = NO;
   base::WeakNSObject<ShippingAddressSelectionCoordinator> weakSelf(self);
   dispatch_after(
@@ -83,9 +83,8 @@
           return;
 
         _viewController.get().view.userInteractionEnabled = YES;
-        [_delegate
-            shippingAddressSelectionCoordinator:self
-                       didSelectShippingAddress:_selectedShippingAddress];
+        [_delegate shippingAddressSelectionCoordinator:self
+                              didSelectShippingAddress:shippingAddress];
       });
 }
 

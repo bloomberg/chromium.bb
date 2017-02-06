@@ -35,7 +35,7 @@ void TestPersonalDataManager::AddTestingServerCreditCard(
 
 const std::vector<AutofillProfile*>& TestPersonalDataManager::GetProfiles()
     const {
-  return profiles_;
+  return GetProfiles(false);
 }
 
 std::vector<AutofillProfile*> TestPersonalDataManager::web_profiles() const {
@@ -70,6 +70,11 @@ const std::string& TestPersonalDataManager::GetDefaultCountryCodeForNewAddress()
     return PersonalDataManager::GetDefaultCountryCodeForNewAddress();
 
   return default_country_code_;
+}
+
+const std::vector<AutofillProfile*>& TestPersonalDataManager::GetProfiles(
+    bool record_metrics) const {
+  return profiles_;
 }
 
 }  // namespace autofill
