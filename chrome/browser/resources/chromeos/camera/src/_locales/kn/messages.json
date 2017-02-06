@@ -222,5 +222,9 @@
   "deleteMultiConfirmationMsg": {
     "message": "ನೀವು ನಿಜವಾಗಿಯೂ ಈ ಐಟಂಗಳನ್ನು ತೆಗೆದುಹಾಕಲು ಬಯಸುತ್ತೀರಾ?",
     "description": "Confirmation message before removing multiple selected items from the gallery."
+  },
+  "toggleCameraButton": {
+    "message": "ಕ್ಯಾಮರಾ ಟಾಗಲ್ ಮಾಡಿ",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   }
 }

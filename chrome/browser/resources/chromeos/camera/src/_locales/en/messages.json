@@ -4,8 +4,8 @@
     "description": "Name of the Camera App."
   },
   "description": {
-     "message": "Take crazy pictures with your web camera.",
-     "description": "Short description of the Camera App."
+    "message": "Take crazy pictures with your web camera.",
+    "description": "Short description of the Camera App."
   },
   "andyEffect": {
     "message": "Andy",
@@ -242,4 +242,3 @@
     "description": "Confirmation message before removing multiple selected items from the gallery."
   }
 }
-

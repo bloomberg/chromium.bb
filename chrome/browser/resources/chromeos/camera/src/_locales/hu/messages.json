@@ -222,5 +222,9 @@
   "deleteMultiConfirmationMsg": {
     "message": "Biztosan eltávolítja ezeket az elemeket?",
     "description": "Confirmation message before removing multiple selected items from the gallery."
+  },
+  "toggleCameraButton": {
+    "message": "Kamerák közötti váltás",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   }
 }

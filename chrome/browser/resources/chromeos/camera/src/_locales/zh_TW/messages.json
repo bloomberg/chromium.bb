@@ -222,5 +222,9 @@
   "deleteMultiConfirmationMsg": {
     "message": "確定要移除這些項目嗎？",
     "description": "Confirmation message before removing multiple selected items from the gallery."
+  },
+  "toggleCameraButton": {
+    "message": "切換相機",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   }
 }

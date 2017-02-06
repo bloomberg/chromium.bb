@@ -222,5 +222,9 @@
   "deleteMultiConfirmationMsg": {
     "message": "இந்த உருப்படிகளை நிச்சயமாக அகற்ற விரும்புகிறீர்களா?",
     "description": "Confirmation message before removing multiple selected items from the gallery."
+  },
+  "toggleCameraButton": {
+    "message": "கேமராவை மாற்று",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   }
 }
