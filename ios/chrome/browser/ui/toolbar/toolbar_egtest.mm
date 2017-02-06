@@ -27,6 +27,10 @@
 #include "ios/web/public/test/http_server_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::WebViewContainingText;
@@ -52,8 +56,8 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
       tag = IDC_SHOW_OTHER_DEVICES;
     }
     if (tag) {
-      base::scoped_nsobject<GenericChromeCommand> command(
-          [[GenericChromeCommand alloc] initWithTag:tag]);
+      GenericChromeCommand* command =
+          [[GenericChromeCommand alloc] initWithTag:tag];
       chrome_test_util::RunCommandWithActiveViewController(command);
     }
   }
