@@ -8,10 +8,12 @@
 
 #include "ash/display/event_transformation_handler.h"
 #include "ash/shell.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -32,6 +34,51 @@
 #endif
 
 namespace {
+
+// Waits until the immersive mode reveal ends, and therefore the top view of
+// the browser is no longer visible.
+class ImmersiveRevealEndedWaiter : public ImmersiveModeController::Observer {
+ public:
+  explicit ImmersiveRevealEndedWaiter(
+      ImmersiveModeController* immersive_controller)
+      : immersive_controller_(immersive_controller) {
+    immersive_controller_->AddObserver(this);
+  }
+
+  ~ImmersiveRevealEndedWaiter() override {
+    if (immersive_controller_)
+      immersive_controller_->RemoveObserver(this);
+  }
+
+  void Wait() {
+    if (!immersive_controller_ || !immersive_controller_->IsRevealed())
+      return;
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  void MaybeQuitRunLoop() {
+    if (!quit_closure_.is_null())
+      base::ResetAndReturn(&quit_closure_).Run();
+  }
+
+  // ImmersiveModeController::Observer:
+  void OnImmersiveRevealEnded() override { MaybeQuitRunLoop(); }
+
+  void OnImmersiveModeControllerDestroyed() override {
+    MaybeQuitRunLoop();
+    immersive_controller_->RemoveObserver(this);
+    immersive_controller_ = nullptr;
+  }
+
+  ImmersiveModeController* immersive_controller_;
+  base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImmersiveRevealEndedWaiter);
+};
 
 class TabScrubberTest : public InProcessBrowserTest,
                         public TabStripModelObserver {
@@ -279,6 +326,33 @@ IN_PROC_BROWSER_TEST_F(TabScrubberTest, MultiBrowser) {
 
   Scrub(browser2, 0, EACH_TAB);
   EXPECT_EQ(0, browser2->tab_strip_model()->active_index());
+}
+
+// Tests that tab scrubbing works correctly for a full-screen browser.
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, FullScreenBrowser) {
+  AddTabs(browser(), 6);
+  browser()->tab_strip_model()->ActivateTabAt(4, false);
+
+  chrome::ToggleFullscreenMode(browser());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
+      browser()->window()->GetNativeWindow());
+  ImmersiveModeController* immersive_controller =
+      browser_view->immersive_mode_controller();
+  EXPECT_TRUE(immersive_controller->IsEnabled());
+
+  ImmersiveRevealEndedWaiter waiter(immersive_controller);
+  waiter.Wait();
+
+  EXPECT_FALSE(immersive_controller->IsRevealed());
+
+  EXPECT_EQ(4, browser()->tab_strip_model()->active_index());
+  Scrub(browser(), 0, EACH_TAB);
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(4U, activation_order_.size());
+  EXPECT_EQ(3, activation_order_[0]);
+  EXPECT_EQ(2, activation_order_[1]);
+  EXPECT_EQ(1, activation_order_[2]);
+  EXPECT_EQ(0, activation_order_[3]);
 }
 
 // Swipe 4 tabs in each direction with an extra swipe within each. The same

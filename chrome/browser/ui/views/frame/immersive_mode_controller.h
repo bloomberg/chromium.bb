@@ -50,6 +50,9 @@ class ImmersiveModeController {
     // Called when a reveal of the top-of-window views has been initiated.
     virtual void OnImmersiveRevealStarted() {}
 
+    // Called when a reveal of the top-of-window views has finished.
+    virtual void OnImmersiveRevealEnded() {}
+
     // Called when the immersive mode controller has been destroyed.
     virtual void OnImmersiveModeControllerDestroyed() {}
 

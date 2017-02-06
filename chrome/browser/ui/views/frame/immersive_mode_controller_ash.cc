@@ -274,6 +274,8 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealEnded() {
   browser_view_->top_container()->DestroyLayer();
   UpdateTabIndicators();
   LayoutBrowserRootView();
+  for (Observer& observer : observers_)
+    observer.OnImmersiveRevealEnded();
 }
 
 void ImmersiveModeControllerAsh::OnImmersiveFullscreenExited() {
