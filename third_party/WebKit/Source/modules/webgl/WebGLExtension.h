@@ -65,13 +65,6 @@ class WebGLExtension : public GarbageCollected<WebGLExtension>,
 
   DECLARE_VIRTUAL_TRACE();
 
-  // For use by V8 bindings only.
-  HTMLCanvasElement* canvas() const {
-    if (m_context)
-      return m_context->canvas();
-    return nullptr;
-  }
-
  protected:
   explicit WebGLExtension(WebGLRenderingContextBase*);
 

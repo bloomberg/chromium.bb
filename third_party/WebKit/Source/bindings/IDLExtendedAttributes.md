@@ -906,8 +906,7 @@ if the wrapper is unreachable on the JS side (i.e., V8's GC assumes that the wra
 reachable in the DOM side). Use `[DependentLifetime]` to relax the assumption.
 For example, if the DOM object has `[ActiveScriptWrappable]` and implements hasPendingActivity(), it must be annotated with
 `[DependentLifetime]`. Otherwise, the wrapper will be collected regardless of the returned value
-of the hasPendingActivity(). DOM objects that are pointed to by `[SetWrapperReferenceFrom]` and
-`[SetWrapperReferenceTo]` must be annotated with `[DependentLifetime]`.
+of the hasPendingActivity().
 
 ### [DeprecateAs] _(m, a, c)_
 
@@ -1262,34 +1261,6 @@ For more information, see [RuntimeEnabledFeatures](https://code.google.com/p/chr
 Summary: Caches the resulting object and always returns the same object.
 
 When specified, caches the resulting object and returns it in later calls so that the attribute always returns the same object. Must be accompanied with `[SameObject]`.
-
-### [SetWrapperReferenceFrom=xxx] _(i)_
-
-### [SetWrapperReferenceTo=xxx] _(i)_
-
-Summary: This generates code that allows you to set up implicit references between wrappers which can be used to keep wrappers alive during GC.
-
-Usage: `[SetWrapperReferenceFrom]` and `[SetWrapperReferenceTo]` can be specified on an interface. Use `[Custom=VisitDOMWrapper]` if want to write a custom function.
-
-```webidl
-[
-  SetWrapperReferenceFrom=element
-] interface XXX { ... };
-```
-
-The code generates a function called `XXX::visitDOMWrapper` which is called by `V8GCController` before GC. The function adds implicit references from the specified object to this object's wrapper to keep it alive.
-
-The `[SetWrapperReferenceFrom]` extended attribute takes a value, which is the function to call to get the object that determines whether the object is reachable or not. The currently valid values are: `document`, `element`, `owner`, `ownerNode`
-
-```webidl
-[
-  SetWrapperReferenceTo=targetMethod
-] interface YYY { ... };
-```
-
-The code generates a function called `YYY::visitDOMWrapper` which is called by `V8GCController` before GC. The function adds implicit references from this object's wrapper to a target object's wrapper to keeps it alive.
-
-The `[SetWrapperReferenceTo]` extended attribute takes a value, which is the method name to call to get the target object. For example, with the above declaration a call will be made to `YYY::targetMethod()` to get the target of the reference.
 
 ## Rare Blink-specific IDL Extended Attributes
 

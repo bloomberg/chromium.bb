@@ -24,9 +24,9 @@
  */
 
 [
+    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants,
-    SetWrapperReferenceFrom=canvas,
 ] interface WebGLDepthTexture {
     const unsigned long UNSIGNED_INT_24_8_WEBGL = 0x84FA;
 };

@@ -24,7 +24,7 @@
  */
 
 [
+    DependentLifetime,
     NoInterfaceObject,
-    SetWrapperReferenceFrom=canvas,
 ] interface OESElementIndexUint {
 };

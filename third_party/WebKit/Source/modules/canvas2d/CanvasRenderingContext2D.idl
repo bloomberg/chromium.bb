@@ -36,7 +36,7 @@ enum CanvasFillRule { "nonzero", "evenodd" };
 enum ImageSmoothingQuality {"low", "medium", "high"};
 
 [
-    SetWrapperReferenceFrom=canvas,
+    DependentLifetime,
 ] interface CanvasRenderingContext2D {
     // back-reference to the canvas
     readonly attribute HTMLCanvasElement canvas;

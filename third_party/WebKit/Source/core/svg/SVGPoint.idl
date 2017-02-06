@@ -24,8 +24,8 @@
 
 // TODO(foolip): SVGPoint is gone from SVG 2, replaced by DOMPoint.
 [
+    DependentLifetime,
     ImplementedAs=SVGPointTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGPoint {
     [RaisesException=Setter] attribute unrestricted float x;
     [RaisesException=Setter] attribute unrestricted float y;

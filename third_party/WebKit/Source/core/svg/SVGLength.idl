@@ -23,8 +23,8 @@
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGLength
 
 [
+    DependentLifetime,
     ImplementedAs=SVGLengthTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGLength {
     // Length Unit Types
     const unsigned short SVG_LENGTHTYPE_UNKNOWN    = 0;

@@ -24,8 +24,8 @@
 
 // TODO(foolip): SVGRect is gone from SVG 2, replaced by DOMRect.
 [
+    DependentLifetime,
     ImplementedAs=SVGRectTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGRect {
     [RaisesException=Setter] attribute unrestricted float x;
     [RaisesException=Setter] attribute unrestricted float y;

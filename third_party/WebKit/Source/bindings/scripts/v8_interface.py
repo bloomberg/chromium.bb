@@ -213,30 +213,6 @@ def interface_context(interface, interfaces):
     # as in the WebIDL spec?
     is_immutable_prototype = is_global or 'ImmutablePrototype' in extended_attributes
 
-    # [SetWrapperReferenceFrom]
-    set_wrapper_reference_from = extended_attributes.get('SetWrapperReferenceFrom')
-    if set_wrapper_reference_from:
-        includes.update(['bindings/core/v8/V8GCController.h',
-                         'core/dom/Element.h'])
-
-    # [SetWrapperReferenceTo]
-    set_wrapper_reference_to_argument = extended_attributes.get('SetWrapperReferenceTo')
-    set_wrapper_reference_to = None
-    if set_wrapper_reference_to_argument:
-        set_wrapper_reference_to = {
-            'name': set_wrapper_reference_to_argument.name,
-            # FIXME: properly should be:
-            # 'cpp_type': set_wrapper_reference_to_argument.idl_type.cpp_type_args(raw_type=True),
-            # (if type is non-wrapper type like NodeFilter, normally RefPtr)
-            # Raw pointers faster though, and NodeFilter hacky anyway.
-            'cpp_type': set_wrapper_reference_to_argument.idl_type.implemented_as + '*',
-            'idl_type': set_wrapper_reference_to_argument.idl_type,
-            'v8_type': v8_types.v8_type(set_wrapper_reference_to_argument.idl_type.name),
-        }
-        set_wrapper_reference_to['idl_type'].add_includes_for_type()
-
-    has_visit_dom_wrapper = (set_wrapper_reference_from or set_wrapper_reference_to)
-
     wrapper_class_id = ('NodeClassId' if inherits_interface(interface.name, 'Node') else 'ObjectClassId')
 
     # [ActiveScriptWrappable] must be accompanied with [DependentLifetime].
@@ -263,7 +239,6 @@ def interface_context(interface, interfaces):
                                        interface.name != 'EventTarget'),
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_partial_interface': len(interface.partial_interfaces) > 0,
-        'has_visit_dom_wrapper': has_visit_dom_wrapper,
         'header_includes': header_includes,
         'interface_name': interface.name,
         'is_array_buffer_or_view': is_array_buffer_or_view,
@@ -275,7 +250,7 @@ def interface_context(interface, interfaces):
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_partial': interface.is_partial,
         'is_typed_array_type': is_typed_array_type,
-        'lifetime': 'Dependent' if (has_visit_dom_wrapper or is_dependent_lifetime) else 'Independent',
+        'lifetime': 'Dependent' if is_dependent_lifetime else 'Independent',
         'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
         'needs_runtime_enabled_installer': needs_runtime_enabled_installer,
         'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(interface),
@@ -283,8 +258,6 @@ def interface_context(interface, interfaces):
         'pass_cpp_type': cpp_name(interface) + '*',
         'active_scriptwrappable': active_scriptwrappable,
         'runtime_enabled_feature_name': runtime_enabled_feature_name(interface),  # [RuntimeEnabled]
-        'set_wrapper_reference_from': set_wrapper_reference_from,
-        'set_wrapper_reference_to': set_wrapper_reference_to,
         'v8_class': v8_class_name,
         'v8_class_or_partial': v8_class_name_or_partial,
         'wrapper_class_id': wrapper_class_id,

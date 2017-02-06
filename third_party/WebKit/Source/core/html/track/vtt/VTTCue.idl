@@ -38,7 +38,7 @@ enum AlignSetting { "start", "middle", "end", "left", "right" };
 [
     Constructor(double startTime, double endTime, DOMString text),
     ConstructorCallWith=Document,
-    SetWrapperReferenceFrom=owner,
+    DependentLifetime,
 ] interface VTTCue : TextTrackCue {
     // TODO(foolip): regionId has been replaced by a region attribute.
     [RuntimeEnabled=WebVTTRegions] attribute DOMString regionId;

@@ -48,10 +48,6 @@ TrackBase::TrackBase(WebMediaPlayer::TrackType type,
 
 TrackBase::~TrackBase() {}
 
-Node* TrackBase::owner() const {
-  return m_mediaElement;
-}
-
 DEFINE_TRACE(TrackBase) {
   Supplementable<TrackBase>::trace(visitor);
   visitor->trace(m_mediaElement);

@@ -41,7 +41,6 @@ callback VoidCallbackFunctionModules = void ();
     DoNotCheckConstants,
     ImplementedAs=TestInterface5Implementation,
     RuntimeEnabled=FeatureName,
-    SetWrapperReferenceTo(TestInterface5 referencedName),
     Exposed=(Worker,Window),
 ] interface TestInterface5 : TestInterfaceEmpty {
     // members needed to test [ImplementedAs], as this affect attribute

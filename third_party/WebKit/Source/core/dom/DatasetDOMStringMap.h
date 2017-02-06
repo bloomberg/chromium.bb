@@ -47,8 +47,6 @@ class DatasetDOMStringMap final : public DOMStringMap {
                ExceptionState&) override;
   bool deleteItem(const String& name) override;
 
-  Element* element() override { return m_element; }
-
   DECLARE_VIRTUAL_TRACE();
 
  private:

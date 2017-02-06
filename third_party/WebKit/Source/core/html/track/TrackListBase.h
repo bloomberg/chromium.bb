@@ -79,8 +79,6 @@ class TrackListBase : public EventTargetWithInlineData {
     scheduleEvent(Event::create(EventTypeNames::change));
   }
 
-  Node* owner() const { return m_mediaElement; }
-
   DEFINE_INLINE_TRACE() {
     visitor->trace(m_tracks);
     visitor->trace(m_mediaElement);

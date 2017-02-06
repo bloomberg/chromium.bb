@@ -34,7 +34,6 @@
 
 namespace blink {
 
-class Element;
 class ExceptionState;
 
 class CORE_EXPORT DOMTokenListObserver : public GarbageCollectedMixin {
@@ -78,8 +77,6 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
   void setObserver(DOMTokenListObserver* observer) { m_observer = observer; }
 
   const AtomicString& toString() const { return value(); }
-
-  virtual Element* element() { return 0; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_observer); }
 

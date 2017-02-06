@@ -5,8 +5,8 @@
 // https://html.spec.whatwg.org/#videotracklist
 
 [
+    DependentLifetime,
     RuntimeEnabled=AudioVideoTracks,
-    SetWrapperReferenceFrom=owner,
 ] interface VideoTrackList : EventTarget {
   readonly attribute unsigned long length;
   getter VideoTrack (unsigned long index);

@@ -43,8 +43,6 @@ class ClassList final : public DOMTokenList {
   unsigned length() const override;
   const AtomicString item(unsigned index) const override;
 
-  Element* element() override { return m_element; }
-
   void clearValueForQuirksMode() { m_classNamesForQuirksMode = nullptr; }
 
   DECLARE_VIRTUAL_TRACE();

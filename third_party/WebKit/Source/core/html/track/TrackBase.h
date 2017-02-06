@@ -52,7 +52,6 @@ class CORE_EXPORT TrackBase : public Supplementable<TrackBase> {
     m_mediaElement = mediaElement;
   }
   HTMLMediaElement* mediaElement() const { return m_mediaElement; }
-  Node* owner() const;
 
   DECLARE_VIRTUAL_TRACE();
 

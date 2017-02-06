@@ -22,8 +22,8 @@
 // https://svgwg.org/svg2-draft/coords.html#InterfaceSVGTransform
 
 [
+    DependentLifetime,
     ImplementedAs=SVGTransformTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGTransform {
     // Transform Types
     const unsigned short SVG_TRANSFORM_UNKNOWN = 0;

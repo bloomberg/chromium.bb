@@ -5,9 +5,9 @@
 typedef unsigned long long GLuint64EXT;
 
 [
+    DependentLifetime,
     DoNotCheckConstants,
     NoInterfaceObject,
-    SetWrapperReferenceFrom=canvas,
 ] interface EXTDisjointTimerQueryWebGL2 {
     const GLenum QUERY_COUNTER_BITS_EXT      = 0x8864;
     const GLenum TIME_ELAPSED_EXT            = 0x88BF;

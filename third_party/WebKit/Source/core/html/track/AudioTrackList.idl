@@ -5,8 +5,8 @@
 // https://html.spec.whatwg.org/#audiotracklist
 
 [
+    DependentLifetime,
     RuntimeEnabled=AudioVideoTracks,
-    SetWrapperReferenceFrom=owner,
 ] interface AudioTrackList : EventTarget {
   readonly attribute unsigned long length;
   getter AudioTrack (unsigned long index);

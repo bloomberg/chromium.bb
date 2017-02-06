@@ -24,8 +24,8 @@
  */
 
 [
+    DependentLifetime,
     NoInterfaceObject,
-    SetWrapperReferenceFrom=canvas,
 ] interface WebGLLoseContext {
     void loseContext();
     void restoreContext();

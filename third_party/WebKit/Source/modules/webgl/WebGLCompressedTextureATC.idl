@@ -24,9 +24,9 @@
  */
 
 [
+    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants,
-    SetWrapperReferenceFrom=canvas,
 ] interface WebGLCompressedTextureATC {
     /* Compressed Texture Formats */
     const unsigned long COMPRESSED_RGB_ATC_WEBGL                     = 0x8C92;

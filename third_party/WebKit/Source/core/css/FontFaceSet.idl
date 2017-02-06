@@ -36,7 +36,6 @@ enum FontFaceSetLoadStatus { "loading", "loaded" };
 // have a constructor, and thus not have [NoInterfaceObject].
 [
     DependentLifetime,
-    SetWrapperReferenceFrom=document,
     NoInterfaceObject,
 ] interface FontFaceSet : EventTarget {
     setlike<FontFace>;

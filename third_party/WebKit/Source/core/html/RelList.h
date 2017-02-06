@@ -19,7 +19,6 @@ class RelList final : public DOMTokenList {
   unsigned length() const override;
   const AtomicString item(unsigned index) const override;
 
-  Element* element() override { return m_element; }
   void setRelValues(const AtomicString&);
 
   DECLARE_VIRTUAL_TRACE();

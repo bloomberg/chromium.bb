@@ -21,7 +21,7 @@
 // https://dom.spec.whatwg.org/#interface-nodeiterator
 
 [
-    SetWrapperReferenceTo(NodeFilter filter),
+    DependentLifetime,
 ] interface NodeIterator {
     [SameObject] readonly attribute Node root;
     readonly attribute Node referenceNode;

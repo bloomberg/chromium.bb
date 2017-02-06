@@ -36,8 +36,6 @@
 
 namespace blink {
 
-class Element;
-
 class DOMStringMap : public GarbageCollected<DOMStringMap>,
                      public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -65,8 +63,6 @@ class DOMStringMap : public GarbageCollected<DOMStringMap>,
     getNames(names);
   }
   bool namedPropertyQuery(const AtomicString&, ExceptionState&);
-
-  virtual Element* element() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

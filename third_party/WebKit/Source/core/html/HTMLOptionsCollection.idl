@@ -23,7 +23,6 @@
 
 [
     DependentLifetime,
-    SetWrapperReferenceFrom=ownerNode,
 ] interface HTMLOptionsCollection : HTMLCollection {
     // inherits item()
     [CEReactions, RaisesException=Setter] attribute unsigned long length; // shadows inherited length

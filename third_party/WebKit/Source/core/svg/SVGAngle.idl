@@ -23,8 +23,8 @@
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGAngle
 
 [
+    DependentLifetime,
     ImplementedAs=SVGAngleTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGAngle {
     // Angle Unit Types
     const unsigned short SVG_ANGLETYPE_UNKNOWN = 0;

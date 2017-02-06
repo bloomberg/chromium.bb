@@ -27,8 +27,8 @@
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGLengthList
 
 [
+    DependentLifetime,
     ImplementedAs=SVGLengthListTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGLengthList {
     readonly attribute unsigned long length;
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;

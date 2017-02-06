@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 [
+    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants,
-    SetWrapperReferenceFrom=canvas,
 ] interface WebGLCompressedTextureETC {
     /* Compressed Texture Format */
     const unsigned long COMPRESSED_R11_EAC                        = 0x9270;

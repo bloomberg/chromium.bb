@@ -6,7 +6,6 @@
 
 [
     DoNotCheckConstants,
-    SetWrapperReferenceFrom=canvas,
     Exposed(Worker ExperimentalCanvasFeatures, Window StableBlinkFeatures),
     DependentLifetime,
 ] interface WebGL2RenderingContext { };

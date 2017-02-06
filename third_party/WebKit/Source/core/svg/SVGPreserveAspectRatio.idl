@@ -26,8 +26,8 @@
 // https://svgwg.org/svg2-draft/coords.html#InterfaceSVGPreserveAspectRatio
 
 [
+    DependentLifetime,
     ImplementedAs=SVGPreserveAspectRatioTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGPreserveAspectRatio {
     // Alignment types
     const unsigned short SVG_PRESERVEASPECTRATIO_UNKNOWN = 0;

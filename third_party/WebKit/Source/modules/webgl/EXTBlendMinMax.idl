@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 [
+    DependentLifetime,
     DoNotCheckConstants,
     NoInterfaceObject,
-    SetWrapperReferenceFrom=canvas,
 ] interface EXTBlendMinMax {
     const unsigned long MIN_EXT              = 0x8007;
     const unsigned long MAX_EXT              = 0x8008;

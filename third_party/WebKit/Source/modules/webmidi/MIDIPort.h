@@ -73,7 +73,6 @@ class MIDIPort : public EventTargetWithInlineData,
   ScriptPromise open(ScriptState*);
   ScriptPromise close(ScriptState*);
 
-  MIDIAccess* midiAccess() const { return m_access; }
   midi::mojom::PortState getState() const { return m_state; }
   void setState(midi::mojom::PortState);
   ConnectionState getConnection() const { return m_connection; }
@@ -106,6 +105,7 @@ class MIDIPort : public EventTargetWithInlineData,
            midi::mojom::PortState);
 
   void open();
+  MIDIAccess* midiAccess() const { return m_access; }
 
  private:
   ScriptPromise accept(ScriptState*);

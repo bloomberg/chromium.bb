@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 [
+    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants,
-    SetWrapperReferenceFrom=canvas,
 ] interface WebGLGetBufferSubDataAsync {
     [CallWith=ScriptState] Promise<ArrayBufferView> getBufferSubDataAsync(GLenum target, GLintptr srcByteOffset, ArrayBufferView dstData, optional GLuint dstOffset = 0, optional GLuint length = 0);
 };

@@ -24,9 +24,9 @@
  */
 
 [
+    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants,
-    SetWrapperReferenceFrom=canvas,
 ] interface OESStandardDerivatives {
     const unsigned long FRAGMENT_SHADER_DERIVATIVE_HINT_OES = 0x8B8B;
 };

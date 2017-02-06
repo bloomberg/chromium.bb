@@ -27,8 +27,8 @@
 // https://svgwg.org/svg2-draft/coords.html#InterfaceSVGTransformList
 
 [
+    DependentLifetime,
     ImplementedAs=SVGTransformListTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGTransformList {
     readonly attribute unsigned long length;
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;

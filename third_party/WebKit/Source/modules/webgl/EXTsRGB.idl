@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 [
+    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants,
-    SetWrapperReferenceFrom=canvas,
 ] interface EXTsRGB {
     const unsigned long SRGB_EXT                                     = 0x8C40;
     const unsigned long SRGB_ALPHA_EXT                               = 0x8C42;

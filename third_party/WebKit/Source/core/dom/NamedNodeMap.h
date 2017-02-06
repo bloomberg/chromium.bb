@@ -62,8 +62,6 @@ class NamedNodeMap final : public GarbageCollected<NamedNodeMap>,
   Attr* item(unsigned index) const;
   size_t length() const;
 
-  Element* element() const { return m_element; }
-
   DECLARE_TRACE();
 
  private:
