@@ -34,7 +34,6 @@ _JAVA_SUBDIR = 'symlinked-java'
 _SRCJARS_SUBDIR = 'extracted-srcjars'
 _JNI_LIBS_SUBDIR = 'symlinked-libs'
 _ARMEABI_SUBDIR = 'armeabi'
-_RES_SUBDIR = 'extracted-res'
 
 _DEFAULT_TARGETS = [
     # TODO(agrieve): Requires alternate android.jar to compile.
@@ -213,17 +212,6 @@ class _ProjectContextGenerator(object):
           os.path.join(self.EntryOutputDir(entry), _SRCJARS_SUBDIR))
     return java_dirs
 
-  def _GenResDirs(self, entry):
-    res_dirs = list(entry.DepsInfo().get('owned_resources_dirs', []))
-    zips = entry.DepsInfo().get('owned_resources_zips')
-    if zips:
-      # These are generated resources that should not be modified.
-      res_dir = os.path.join(self.EntryOutputDir(entry), _RES_SUBDIR)
-      for zip_path in _RebasePath(zips):
-        _ExtractFile(zip_path, res_dir)
-      res_dirs.append(res_dir)
-    return res_dirs
-
   def _Relativize(self, entry, paths):
     return _RebasePath(paths, self.EntryOutputDir(entry))
 
@@ -252,7 +240,6 @@ class _ProjectContextGenerator(object):
         entry, android_test_manifest)
     variables['java_dirs'] = self._Relativize(entry, self._GenJavaDirs(entry))
     variables['jni_libs'] = self._Relativize(entry, self._GenJniLibs(entry))
-    variables['res_dirs'] = self._Relativize(entry, self._GenResDirs(entry))
     deps = [_ProjectEntry.FromBuildConfigPath(p)
             for p in entry.Gradle()['dependent_android_projects']]
     variables['android_project_deps'] = [d.ProjectName() for d in deps]
@@ -442,12 +429,6 @@ def _GenerateSettingsGradle(project_entries):
   return '\n'.join(lines)
 
 
-def _ExtractFile(zip_path, extracted_path):
-  logging.info('Extracting %s to %s', zip_path, extracted_path)
-  with zipfile.ZipFile(zip_path) as z:
-    z.extractall(extracted_path)
-
-
 def _ExtractSrcjars(entry_output_dir, srcjar_tuples):
   """Extracts all srcjars to the directory given by the tuples."""
   extracted_paths = set(s[1] for s in srcjar_tuples)
@@ -456,7 +437,9 @@ def _ExtractSrcjars(entry_output_dir, srcjar_tuples):
     shutil.rmtree(extracted_path, True)
 
   for srcjar_path, extracted_path in srcjar_tuples:
-    _ExtractFile(srcjar_path, extracted_path)
+    logging.info('Extracting %s to %s', srcjar_path, extracted_path)
+    with zipfile.ZipFile(srcjar_path) as z:
+      z.extractall(extracted_path)
 
 
 def _FindAllProjectEntries(main_entries):
