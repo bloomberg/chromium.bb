@@ -695,10 +695,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             doLiteralSearch = true;
         }
 
-        boolean quickActionShown =
-                mSearchPanel.getSearchBarControl().getQuickActionControl().hasQuickAction();
-        boolean receivedContextualCardsData = !quickActionShown && !TextUtils.isEmpty(caption)
+        boolean receivedCaptionOrThumbnail = !TextUtils.isEmpty(caption)
                 || !TextUtils.isEmpty(thumbnailUrl);
+
         if (ContextualSearchFieldTrial.shouldHideContextualCardsData()) {
             // Clear the thumbnail URL and caption so that they are not displayed in the bar. This
             // is used to determine the CTR on contextual searches where we would have shown
@@ -717,10 +716,14 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             onSetCaption(caption, doesAnswer);
         }
 
+        boolean quickActionShown =
+                mSearchPanel.getSearchBarControl().getQuickActionControl().hasQuickAction();
+        boolean receivedContextualCardsEntityData = !quickActionShown && receivedCaptionOrThumbnail;
+
         if (ContextualSearchFieldTrial.isContextualCardsBarIntegrationEnabled()) {
-            ContextualSearchUma.logContextualCardsDataShown(receivedContextualCardsData);
+            ContextualSearchUma.logContextualCardsDataShown(receivedContextualCardsEntityData);
             mSearchPanel.getPanelMetrics().setWasContextualCardsDataShown(
-                    receivedContextualCardsData);
+                    receivedContextualCardsEntityData);
         }
 
         if (ContextualSearchFieldTrial.isContextualSearchSingleActionsEnabled()) {
