@@ -25,10 +25,10 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/trace_event/category_registry.h"
 #include "base/trace_event/event_name_filter.h"
@@ -965,12 +965,16 @@ void TraceLog::FinishFlush(int generation, bool discard_events) {
     return;
   }
 
-  if (use_worker_thread_ &&
-      WorkerPool::PostTask(
-          FROM_HERE, Bind(&TraceLog::ConvertTraceEventsToTraceFormat,
-                          Passed(&previous_logged_events),
-                          flush_output_callback, argument_filter_predicate),
-          true)) {
+  if (use_worker_thread_) {
+    base::PostTaskWithTraits(
+        FROM_HERE, base::TaskTraits()
+                       .MayBlock()
+                       .WithPriority(base::TaskPriority::BACKGROUND)
+                       .WithShutdownBehavior(
+                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+        Bind(&TraceLog::ConvertTraceEventsToTraceFormat,
+             Passed(&previous_logged_events), flush_output_callback,
+             argument_filter_predicate));
     return;
   }
 
