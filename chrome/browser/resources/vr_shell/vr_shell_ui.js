@@ -34,6 +34,12 @@ var vrShellUi = (function() {
       /** @const */ this.CSS_WIDTH_PIXELS = 960.0;
       /** @const */ this.CSS_HEIGHT_PIXELS = 640.0;
       /** @const */ this.DPR = 1.2;
+      /** @const */ this.MENU_MODE_SCREEN_DISTANCE = 1.2;
+      /** @const */ this.MENU_MODE_SCREEN_HEIGHT = 0.5;
+      /** @const */ this.MENU_MODE_SCREEN_ELEVATION = 0.1;
+
+      this.menuMode = false;
+      this.fullscreen = false;
 
       let element = new api.UiElement(0, 0, 0, 0);
       element.setFill(new api.Content());
@@ -57,19 +63,41 @@ var vrShellUi = (function() {
       }
     }
 
-    setOpacity(opacity) {
-      let update = new api.UiElementUpdate();
-      update.setOpacity(opacity);
-      ui.updateElement(this.elementId, update);
+    setMenuMode(enabled) {
+      if (this.menuMode == enabled)
+        return;
+      this.menuMode = enabled;
+      this.updateState()
     }
 
     setFullscreen(enabled) {
-      let anim = new api.Animation(this.elementId, ANIM_DURATION);
-      if (enabled) {
-        anim.setTranslation(0, 0, -this.FULLSCREEN_DISTANCE);
-      } else {
-        anim.setTranslation(0, 0, -this.BROWSING_SCREEN_DISTANCE);
+      if (this.fullscreen == enabled)
+        return;
+      this.fullscreen = enabled;
+      this.updateState()
+    }
+
+    updateState() {
+      // Defaults content quad parameters.
+      let y = 0;
+      let z = -this.BROWSING_SCREEN_DISTANCE;
+      let height = this.SCREEN_HEIGHT;
+
+      // Mode-specific overrides.
+      if (this.menuMode) {
+        y = this.MENU_MODE_SCREEN_ELEVATION;
+        z = -this.MENU_MODE_SCREEN_DISTANCE;
+        height = this.MENU_MODE_SCREEN_HEIGHT;
+      } else if (this.fullscreen) {
+        z = -this.FULLSCREEN_DISTANCE;
       }
+
+      let anim;
+      anim = new api.Animation(this.elementId, ANIM_DURATION);
+      anim.setTranslation(0, y, z);
+      ui.addAnimation(anim);
+      anim = new api.Animation(this.elementId, ANIM_DURATION);
+      anim.setSize(height * this.SCREEN_RATIO, height);
       ui.addAnimation(anim);
     }
 
@@ -168,14 +196,17 @@ var vrShellUi = (function() {
         ],
       ];
 
-      /** @const */ var BUTTON_SPACING = 0.136;
+      /** @const */ var BUTTON_Y = -0.27;
+      /** @const */ var BUTTON_Z = -1;
+      /** @const */ var BUTTON_SPACING = 0.11;
 
       let startPosition = -BUTTON_SPACING * (descriptors.length / 2.0 - 0.5);
       for (let i = 0; i < descriptors.length; i++) {
         // Use an invisible parent to simplify Z-axis movement on hover.
         let position = new api.UiElement(0, 0, 0, 0);
         position.setVisible(false);
-        position.setTranslation(startPosition + i * BUTTON_SPACING, -0.68, -1);
+        position.setTranslation(
+            startPosition + i * BUTTON_SPACING, BUTTON_Y, BUTTON_Z);
         let id = ui.addElement(position);
 
         let domId = descriptors[i][0];
@@ -586,7 +617,6 @@ var vrShellUi = (function() {
           }
         }.bind(this, i));
       }
-
     }
 
     setEnabled(enabled) {
@@ -653,8 +683,9 @@ var vrShellUi = (function() {
 
       api.doAction(api.Action.SET_CONTENT_PAUSED, {'paused': menuMode});
 
-      this.contentQuad.setEnabled(mode == api.Mode.STANDARD && !menuMode);
+      this.contentQuad.setEnabled(mode == api.Mode.STANDARD);
       this.contentQuad.setFullscreen(this.fullscreen);
+      this.contentQuad.setMenuMode(menuMode);
       // TODO(crbug/643815): Set aspect ratio on content quad when available.
       this.controls.setEnabled(menuMode);
       this.omnibox.setEnabled(menuMode);
