@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/thumbnails/content_analysis.h"
 #include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
@@ -90,17 +91,13 @@ void ContentBasedThumbnailingAlgorithm::ProcessBitmap(
     return;
   }
 
-  if (!BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-          FROM_HERE,
-          base::Bind(&CreateRetargetedThumbnail,
-                     source_bitmap,
-                     target_thumbnail_size,
-                     context,
-                     callback),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)) {
-    LOG(WARNING) << "PostSequencedWorkerTask failed. The thumbnail for "
-                 << context->url << " will not be created.";
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      base::TaskTraits()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN),
+      base::Bind(&CreateRetargetedThumbnail, source_bitmap,
+                 target_thumbnail_size, context, callback));
 }
 
 // static
