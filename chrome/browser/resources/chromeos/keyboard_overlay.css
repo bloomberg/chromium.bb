@@ -190,3 +190,7 @@ body {
 .keyboard-overlay-key.is-shortcut .keyboard-overlay-key-text {
   opacity: 0.25;
 }
+
+#instructions:focus {
+  outline: none;
+}
