@@ -218,7 +218,8 @@ void Connector::WaitToReadMore() {
   DCHECK(!handle_watcher_);
 
   handle_watcher_.reset(new Watcher(FROM_HERE, task_runner_));
-  handle_watcher_->set_heap_profiler_tag(heap_profiler_tag_);
+  if (heap_profiler_tag_)
+    handle_watcher_->set_heap_profiler_tag(heap_profiler_tag_);
   MojoResult rv = handle_watcher_->Start(
       message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&Connector::OnWatcherHandleReady, base::Unretained(this)));
