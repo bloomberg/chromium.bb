@@ -603,6 +603,10 @@
       "./browser_tests",
     ],
   },
+  "microdump_stackwalk" : {
+    "label": "//breakpad:microdump_stackwalk",
+    "type": "additional_compile_target",
+  },
   "midi_unittests": {
     "label": "//media/midi:midi_unittests",
     "type": "windowed_test_launcher",
