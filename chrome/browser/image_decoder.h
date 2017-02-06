@@ -71,8 +71,7 @@ class ImageDecoder {
 #endif  // defined(OS_CHROMEOS)
   };
 
-  ImageDecoder();
-  ~ImageDecoder();
+  static ImageDecoder* GetInstance();
 
   // Calls StartWithOptions() with ImageCodec::DEFAULT_CODEC and
   // shrink_to_fit = false.
@@ -100,6 +99,9 @@ class ImageDecoder {
 
  private:
   using RequestMap = std::map<int, ImageRequest*>;
+
+  ImageDecoder();
+  ~ImageDecoder() = delete;
 
   void StartWithOptionsImpl(ImageRequest* image_request,
                             std::vector<uint8_t> image_data,

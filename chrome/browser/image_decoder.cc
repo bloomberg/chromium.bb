@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/lazy_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,9 +18,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
-
-// static, Leaky to allow access from any thread.
-base::LazyInstance<ImageDecoder>::Leaky g_decoder = LAZY_INSTANCE_INITIALIZER;
 
 const int64_t kMaxImageSizeInBytes =
     static_cast<int64_t>(IPC::Channel::kMaximumMessageSize);
@@ -95,9 +91,11 @@ ImageDecoder::ImageRequest::~ImageRequest() {
   ImageDecoder::Cancel(this);
 }
 
-ImageDecoder::ImageDecoder() : image_request_id_counter_(0) {}
-
-ImageDecoder::~ImageDecoder() {}
+// static
+ImageDecoder* ImageDecoder::GetInstance() {
+  static auto* image_decoder = new ImageDecoder();
+  return image_decoder;
+}
 
 // static
 void ImageDecoder::Start(ImageRequest* image_request,
@@ -117,8 +115,8 @@ void ImageDecoder::StartWithOptions(ImageRequest* image_request,
                                     std::vector<uint8_t> image_data,
                                     ImageCodec image_codec,
                                     bool shrink_to_fit) {
-  g_decoder.Get().StartWithOptionsImpl(image_request, std::move(image_data),
-                                       image_codec, shrink_to_fit);
+  ImageDecoder::GetInstance()->StartWithOptionsImpl(
+      image_request, std::move(image_data), image_codec, shrink_to_fit);
 }
 
 // static
@@ -130,6 +128,8 @@ void ImageDecoder::StartWithOptions(ImageRequest* image_request,
                    std::vector<uint8_t>(image_data.begin(), image_data.end()),
                    image_codec, shrink_to_fit);
 }
+
+ImageDecoder::ImageDecoder() : image_request_id_counter_(0) {}
 
 void ImageDecoder::StartWithOptionsImpl(ImageRequest* image_request,
                                         std::vector<uint8_t> image_data,
@@ -173,7 +173,7 @@ void ImageDecoder::StartWithOptionsImpl(ImageRequest* image_request,
 // static
 void ImageDecoder::Cancel(ImageRequest* image_request) {
   DCHECK(image_request);
-  g_decoder.Get().CancelImpl(image_request);
+  ImageDecoder::GetInstance()->CancelImpl(image_request);
 }
 
 void ImageDecoder::CancelImpl(ImageRequest* image_request) {
