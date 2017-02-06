@@ -8,7 +8,7 @@
 
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -129,14 +129,12 @@ void PermissionServiceContext::FrameDeleted(
   CancelPendingOperations(render_frame_host);
 }
 
-void PermissionServiceContext::DidNavigateAnyFrame(
-    RenderFrameHost* render_frame_host,
-    const LoadCommittedDetails& details,
-    const FrameNavigateParams& params) {
-  if (details.is_in_page)
+void PermissionServiceContext::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted() || navigation_handle->IsSamePage())
     return;
 
-  CancelPendingOperations(render_frame_host);
+  CancelPendingOperations(navigation_handle->GetRenderFrameHost());
 }
 
 void PermissionServiceContext::CancelPendingOperations(

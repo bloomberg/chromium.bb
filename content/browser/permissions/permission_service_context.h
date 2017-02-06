@@ -66,9 +66,7 @@ class PermissionServiceContext : public WebContentsObserver {
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
   void FrameDeleted(RenderFrameHost* render_frame_host) override;
-  void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
-                           const LoadCommittedDetails& details,
-                           const FrameNavigateParams& params) override;
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   void CancelPendingOperations(RenderFrameHost*);
 
