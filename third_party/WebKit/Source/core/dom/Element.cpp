@@ -605,6 +605,12 @@ void Element::callApplyScroll(ScrollState& scrollState) {
   // or CC. http://crbug.com/625676.
   DisableCompositingQueryAsserts disabler;
 
+  if (!document().frameHost()) {
+    // We should always have a frameHost if we're scrolling. See
+    // crbug.com/689074 for details.
+    return;
+  }
+
   ScrollStateCallback* callback =
       scrollCustomizationCallbacks().getApplyScroll(this);
 
