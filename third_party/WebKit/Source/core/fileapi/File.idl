@@ -26,9 +26,7 @@
 // https://w3c.github.io/FileAPI/#file
 
 [
-    // TODO(jsbell): fileName parameter has [EnsureUTF16] in the spec; use
-    // USVString? https://github.com/w3c/FileAPI/issues/9
-    Constructor(sequence<BlobPart> fileBits, DOMString fileName, optional FilePropertyBag options),
+    Constructor(sequence<BlobPart> fileBits, USVString fileName, optional FilePropertyBag options),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     Exposed=(Window,Worker),
