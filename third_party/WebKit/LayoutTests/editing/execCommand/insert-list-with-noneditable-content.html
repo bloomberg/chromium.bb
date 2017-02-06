@@ -15,8 +15,7 @@ test(() => assert_selection(
     '<div contenteditable>',
       '<ul>',
         '<li>',
-          // Known bug (crbug.com/583631) that contenteditable=false is lost.
-          'On^e two <span style="background-color: lightgray;">three</span> four',
+          'On^e two <span contenteditable="false" style="background-color: lightgray;">three</span> four',
         '</li>',
         '<li>',
           'Fiv|e six.',

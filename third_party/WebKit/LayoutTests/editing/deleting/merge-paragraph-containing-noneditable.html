@@ -19,8 +19,7 @@ test(() => assert_selection(
     '<div contenteditable>',
       '<p>',
         'First Paragraph.|First',
-        // Known bug (crbug.com/583631) that contenteditable="false" is lost.
-        '<span class="noneditable">Second</span>',
+        '<span class="noneditable" contenteditable="false">Second</span>',
         'Third',
       '</p>',
     '</div>'

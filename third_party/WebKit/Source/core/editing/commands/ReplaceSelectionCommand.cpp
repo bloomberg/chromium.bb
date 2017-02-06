@@ -667,8 +667,11 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(
       continue;
     }
 
-    if (element->parentNode() && hasRichlyEditableStyle(*element->parentNode()))
+    if (element->parentNode() &&
+        hasRichlyEditableStyle(*element->parentNode()) &&
+        hasRichlyEditableStyle(*element)) {
       removeElementAttribute(element, contenteditableAttr);
+    }
 
     // WebKit used to not add display: inline and float: none on copy.
     // Keep this code around for backward compatibility
