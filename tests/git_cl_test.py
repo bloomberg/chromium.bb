@@ -1180,7 +1180,8 @@ class TestGitCl(TestCase):
                            squash_mode='default',
                            expected_upstream_ref='origin/refs/heads/master',
                            ref_suffix='', title=None, notify=False,
-                           post_amend_description=None, issue=None, cc=None):
+                           post_amend_description=None, issue=None, cc=None,
+                           git_mirror=None):
     if post_amend_description is None:
       post_amend_description = description
     calls = []
@@ -1274,8 +1275,26 @@ class TestGitCl(TestCase):
     if reviewers:
       ref_suffix += ',' + ','.join('r=%s' % email
                                    for email in sorted(reviewers))
+
+    if git_mirror is None:
+      calls += [
+          ((['git', 'config', 'remote.origin.url'],),
+           'https://chromium.googlesource.com/yyy/zzz'),
+      ]
+    else:
+      calls += [
+          ((['git', 'config', 'remote.origin.url'],),
+           '/cache/this-dir-exists'),
+          (('os.path.isdir', '/cache/this-dir-exists'),
+           True),
+          # Runs in /cache/this-dir-exists.
+          ((['git', 'config', 'remote.origin.url'],),
+           'https://chromium.googlesource.com/yyy/zzz'),
+      ]
+
     calls += [
-        ((['git', 'push', 'origin',
+        ((['git', 'push',
+           'https://chromium.googlesource.com/yyy/zzz',
            ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
          ('remote:\n'
          'remote: Processing changes: (\)\n'
@@ -1322,7 +1341,8 @@ class TestGitCl(TestCase):
       notify=False,
       post_amend_description=None,
       issue=None,
-      cc=None):
+      cc=None,
+      git_mirror=None):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -1343,6 +1363,13 @@ class TestGitCl(TestCase):
               lambda *_, **__: self._mocked_call(['RunEditor']))
     self.mock(git_cl, 'DownloadGerritHook', self._mocked_call)
 
+    original_os_path_isdir = os.path.isdir
+    def selective_os_path_isdir_mock(path):
+      if path == '/cache/this-dir-exists':
+        return self._mocked_call('os.path.isdir', path)
+      return original_os_path_isdir(path)
+    self.mock(os.path, 'isdir', selective_os_path_isdir_mock)
+
     self.calls = self._gerrit_base_calls(
         issue=issue,
         fetched_description=description)
@@ -1352,7 +1379,7 @@ class TestGitCl(TestCase):
         expected_upstream_ref=expected_upstream_ref,
         ref_suffix=ref_suffix, title=title, notify=notify,
         post_amend_description=post_amend_description,
-        issue=issue, cc=cc)
+        issue=issue, cc=cc, git_mirror=git_mirror)
     # Uncomment when debugging.
     # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
     git_cl.main(['upload'] + upload_args)
@@ -1432,6 +1459,15 @@ class TestGitCl(TestCase):
         [],
         squash=True,
         expected_upstream_ref='origin/master')
+
+  def test_gerrit_upload_squash_first_with_mirror(self):
+    self._run_gerrit_upload_test(
+        ['--squash'],
+        'desc\nBUG=\n\nChange-Id: 123456789',
+        [],
+        squash=True,
+        expected_upstream_ref='origin/master',
+        git_mirror='https://chromium.googlesource.com/yyy/zzz')
 
   def test_gerrit_upload_squash_reupload(self):
     description = 'desc\nBUG=\n\nChange-Id: 123456789'

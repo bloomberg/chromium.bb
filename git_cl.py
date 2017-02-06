@@ -2819,7 +2819,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     try:
       push_stdout = gclient_utils.CheckCallAndFilter(
-          ['git', 'push', gerrit_remote, refspec],
+          ['git', 'push', self.GetRemoteUrl(), refspec],
           print_stdout=True,
           # Flush after every line: useful for seeing progress when running as
           # recipe.
