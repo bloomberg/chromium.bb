@@ -176,6 +176,7 @@ SystemLogUploader::SystemLogUploader(
   if (!syslog_delegate_)
     syslog_delegate_.reset(new SystemLogDelegate(task_runner));
   DCHECK(syslog_delegate_);
+  SYSLOG(INFO) << "Creating system log uploader.";
 
   // Watch for policy changes.
   upload_enabled_observer_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
@@ -232,6 +233,7 @@ std::string SystemLogUploader::RemoveSensitiveData(
     const std::string& data) {
   return anonymizer->Anonymize(data);
 }
+
 void SystemLogUploader::RefreshUploadSettings() {
   // Attempt to fetch the current value of the reporting settings.
   // If trusted values are not available, register this function to be called
@@ -256,6 +258,8 @@ void SystemLogUploader::UploadSystemLogs(
   // Must be called on the main thread.
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!upload_job_);
+
+  SYSLOG(INFO) << "Uploading system logs.";
 
   GURL upload_url(GetUploadUrl());
   DCHECK(upload_url.is_valid());
@@ -283,6 +287,7 @@ void SystemLogUploader::StartLogUpload() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (upload_enabled_) {
+    SYSLOG(INFO) << "Starting system log upload.";
     syslog_delegate_->LoadSystemLogs(base::Bind(
         &SystemLogUploader::UploadSystemLogs, weak_factory_.GetWeakPtr()));
   } else {
@@ -298,6 +303,7 @@ void SystemLogUploader::ScheduleNextSystemLogUpload(base::TimeDelta frequency) {
   base::TimeDelta delay = std::max(
       (last_upload_attempt_ + frequency) - base::Time::NowFromSystemTime(),
       base::TimeDelta());
+  SYSLOG(INFO) << "Scheduling next system log upload " << delay << " from now.";
   // Ensure that we never have more than one pending delayed task.
   weak_factory_.InvalidateWeakPtrs();
   task_runner_->PostDelayedTask(FROM_HERE,

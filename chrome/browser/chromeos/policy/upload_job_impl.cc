@@ -10,6 +10,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
@@ -30,7 +31,7 @@ const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 // Value the "Content-Type" field will be set to in the POST request.
 const char kUploadContentType[] = "multipart/form-data";
 
-// Number of upload attempts.
+// Number of upload attempts. Should not exceed 10 because of the histogram.
 const int kMaxAttempts = 4;
 
 // Max size of MIME boundary according to RFC 1341, section 7.2.1.
@@ -38,6 +39,9 @@ const size_t kMaxMimeBoundarySize = 70;
 
 // Delay after each unsuccessful upload attempt.
 long g_retry_delay_ms = 25000;
+
+// Name of the UploadJobSuccess UMA histogram.
+const char kUploadJobSuccessHistogram[] = "Enterprise.UploadJobSuccess";
 
 }  // namespace
 
@@ -121,6 +125,22 @@ size_t DataSegment::GetDataSize() const {
   return data_->size();
 }
 
+// Used in the Enterprise.UploadJobSuccess histogram, shows how many retries
+// we had to do to execute the UploadJob.
+enum UploadJobSuccess {
+  // No retries happened, the upload succeeded for the first try.
+  REQUEST_NO_RETRY = 0,
+
+  // 1..kMaxAttempts-1: number of retries
+
+  // The request failed (too many retries).
+  REQUEST_FAILED = 10,
+  // The request was interrupted.
+  REQUEST_INTERRUPTED,
+
+  REQUEST_MAX
+};
+
 std::string UploadJobImpl::RandomMimeBoundaryGenerator::GenerateBoundary()
     const {
   return net::GenerateMimeMultipartBoundary();
@@ -148,6 +168,7 @@ UploadJobImpl::UploadJobImpl(
   DCHECK(token_service_);
   DCHECK(url_context_getter_);
   DCHECK(delegate_);
+  SYSLOG(INFO) << "Upload job created.";
   if (!upload_url_.is_valid()) {
     state_ = ERROR;
     NOTREACHED() << upload_url_ << " is not a valid URL.";
@@ -155,6 +176,12 @@ UploadJobImpl::UploadJobImpl(
 }
 
 UploadJobImpl::~UploadJobImpl() {
+  if (state_ != ERROR && state_ != SUCCESS) {
+    SYSLOG(ERROR) << "Upload job interrupted.";
+    UMA_HISTOGRAM_ENUMERATION(kUploadJobSuccessHistogram,
+                              UploadJobSuccess::REQUEST_INTERRUPTED,
+                              UploadJobSuccess::REQUEST_MAX);
+  }
 }
 
 void UploadJobImpl::AddDataSegment(
@@ -194,6 +221,7 @@ void UploadJobImpl::SetRetryDelayForTesting(long retry_delay_ms) {
 void UploadJobImpl::RequestAccessToken() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!access_token_request_);
+  SYSLOG(INFO) << "Requesting access token.";
 
   state_ = ACQUIRING_TOKEN;
 
@@ -272,6 +300,7 @@ bool UploadJobImpl::SetUpMultipart() {
 void UploadJobImpl::CreateAndStartURLFetcher(const std::string& access_token) {
   // Ensure that the content has been prepared and the upload url is valid.
   DCHECK_EQ(PREPARING_CONTENT, state_);
+  SYSLOG(INFO) << "Starting URL fetcher.";
 
   std::string content_type = kUploadContentType;
   content_type.append("; boundary=");
@@ -288,6 +317,7 @@ void UploadJobImpl::CreateAndStartURLFetcher(const std::string& access_token) {
 
 void UploadJobImpl::StartUpload() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  SYSLOG(INFO) << "Starting upload.";
 
   if (!SetUpMultipart()) {
     SYSLOG(ERROR) << "Multipart message assembly failed.";
@@ -305,6 +335,7 @@ void UploadJobImpl::OnGetTokenSuccess(
   DCHECK_EQ(ACQUIRING_TOKEN, state_);
   DCHECK_EQ(access_token_request_.get(), request);
   access_token_request_.reset();
+  SYSLOG(INFO) << "Token successfully acquired.";
 
   // Also cache the token locally, so that we can revoke it later if necessary.
   access_token_ = access_token;
@@ -333,6 +364,9 @@ void UploadJobImpl::HandleError(ErrorCode error_code) {
     access_token_.clear();
     post_data_.reset();
     state_ = ERROR;
+    UMA_HISTOGRAM_ENUMERATION(kUploadJobSuccessHistogram,
+                              UploadJobSuccess::REQUEST_FAILED,
+                              UploadJobSuccess::REQUEST_MAX);
     delegate_->OnFailure(error_code);
   } else {
     if (error_code == AUTHENTICATION_ERROR) {
@@ -362,6 +396,7 @@ void UploadJobImpl::HandleError(ErrorCode error_code) {
 void UploadJobImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(upload_fetcher_.get(), source);
   DCHECK_EQ(UPLOADING, state_);
+  SYSLOG(INFO) << "URL fetch completed.";
   const net::URLRequestStatus& status = source->GetStatus();
   if (!status.is_success()) {
     SYSLOG(ERROR) << "URLRequestStatus error " << status.error();
@@ -374,6 +409,8 @@ void UploadJobImpl::OnURLFetchComplete(const net::URLFetcher* source) {
       access_token_.clear();
       post_data_.reset();
       state_ = SUCCESS;
+      UMA_HISTOGRAM_ENUMERATION(kUploadJobSuccessHistogram, retry_,
+                                UploadJobSuccess::REQUEST_MAX);
       delegate_->OnSuccess();
     } else if (response_code == net::HTTP_UNAUTHORIZED) {
       SYSLOG(ERROR) << "Unauthorized request.";
