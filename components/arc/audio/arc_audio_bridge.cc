@@ -59,6 +59,18 @@ void ArcAudioBridge::OnAudioNodesChanged() {
   SendSwitchState(headphone_inserted, microphone_inserted);
 }
 
+void ArcAudioBridge::OnOutputNodeVolumeChanged(uint64_t node_id, int volume) {
+  DVLOG(1) << "Output node " << node_id << " volume " << volume;
+  volume_ = volume;
+  SendVolumeState();
+}
+
+void ArcAudioBridge::OnOutputMuteChanged(bool mute_on, bool system_adjust) {
+  DVLOG(1) << "Output mute " << mute_on << " by system " << system_adjust;
+  muted_ = mute_on;
+  SendVolumeState();
+}
+
 void ArcAudioBridge::SendSwitchState(bool headphone_inserted,
                                      bool microphone_inserted) {
   uint32_t switch_state = 0;
@@ -76,6 +88,14 @@ void ArcAudioBridge::SendSwitchState(bool headphone_inserted,
       arc_bridge_service()->audio(), NotifySwitchState);
   if (audio_instance)
     audio_instance->NotifySwitchState(switch_state);
+}
+
+void ArcAudioBridge::SendVolumeState() {
+  DVLOG(1) << "Send volume " << volume_ << " muted " << muted_;
+  mojom::AudioInstance* audio_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->audio(), NotifyVolumeState);
+  if (audio_instance)
+    audio_instance->NotifyVolumeState(volume_, muted_);
 }
 
 }  // namespace arc

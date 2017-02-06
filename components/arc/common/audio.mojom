@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 3
+
 module arc.mojom;
 
 // Use same switch values as kernel switch events.
@@ -16,6 +18,7 @@ interface AudioHost {
   ShowVolumeControls@0();
 };
 
+// Next method ID: 3
 interface AudioInstance {
   // Establishes full-duplex communication with the host.
   [MinVersion=1] Init@1(AudioHost host);
@@ -24,4 +27,9 @@ interface AudioInstance {
   // represented by the corresponding bit, if the bit is set then the switch
   // is plugged/inserted.
   NotifySwitchState@0(uint32 state);
+
+  // Notify volume and mute state.
+  // volume ranges from 0 to 100.
+  // muted == true if audio is muted.
+  [MinVersion=2] NotifyVolumeState@2(uint32 volume, bool muted);
 };
