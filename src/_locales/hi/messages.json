@@ -222,5 +222,9 @@
   "deleteMultiConfirmationMsg": {
     "message": "क्या आप वाकई इन आइटम को निकालना चाहते हैं?",
     "description": "Confirmation message before removing multiple selected items from the gallery."
+  },
+  "toggleCameraButton": {
+    "message": "कैमरा टॉगल करें",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   }
 }
