@@ -196,6 +196,7 @@ bundle_data("resources_unit_tests") {
 }
 
 source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "history_ui_egtest.mm",
