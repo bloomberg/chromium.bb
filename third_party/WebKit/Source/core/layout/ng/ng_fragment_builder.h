@@ -109,6 +109,7 @@ class CORE_EXPORT NGFragmentBuilder final {
     return bfc_offset_;
   }
 
+ private:
   // Out-of-flow descendant placement information.
   // The generated fragment must compute NGStaticPosition for all
   // out-of-flow descendants.
