@@ -6,7 +6,6 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/test/scoped_command_line.h"
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/chrome_switches.h"
@@ -20,6 +19,10 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
@@ -73,8 +76,8 @@ void OpenNewIncognitoTabUsingUI() {
 // Triggers the opening of the tab switcher by launching a command. Should be
 // called only when the tab switcher is not presented.
 void EnterTabSwitcherWithCommand() {
-  base::scoped_nsobject<GenericChromeCommand> command(
-      [[GenericChromeCommand alloc] initWithTag:IDC_TOGGLE_TAB_SWITCHER]);
+  GenericChromeCommand* command =
+      [[GenericChromeCommand alloc] initWithTag:IDC_TOGGLE_TAB_SWITCHER];
   chrome_test_util::RunCommandWithActiveViewController(command);
 }
 
