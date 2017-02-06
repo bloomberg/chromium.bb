@@ -351,21 +351,67 @@ static const struct zwp_linux_buffer_params_v1_listener params_listener = {
 	create_failed
 };
 
+static bool
+check_v4l2_control_bool(const int fd,
+                        const struct v4l2_query_ext_ctrl *qectrl,
+                        const char *control_name,
+                        const int expected_value)
+{
+	struct v4l2_control ctrl;
+
+	memset(&ctrl, 0, sizeof(ctrl));
+	ctrl.id = qectrl->id;
+
+	if (qectrl->flags & V4L2_CTRL_FLAG_DISABLED)
+		return false;
+
+	if (!(qectrl->type == V4L2_CTRL_TYPE_BOOLEAN))
+		return false;
+
+	if (strcmp(qectrl->name, control_name))
+		return false;
+
+	/* with the early-outs out of the way, do the actual check */
+	if (xioctl(fd, VIDIOC_G_CTRL, &ctrl))
+		return false;
+
+	if (ctrl.value != expected_value)
+		return false;
+
+	return true;
+}
+
 static void
 create_dmabuf_buffer(struct display *display, struct buffer *buffer)
 {
 	struct zwp_linux_buffer_params_v1 *params;
 	uint64_t modifier;
-	uint32_t flags;
+	uint32_t lbp_flags;
 	unsigned i;
+	struct v4l2_query_ext_ctrl qectrl;
+	const unsigned int v4l2_qec_flags =
+                           V4L2_CTRL_FLAG_NEXT_CTRL | V4L2_CTRL_FLAG_NEXT_COMPOUND;
+	const char *vflip_ctrl = "Vertical Flip";
+	const char *hflip_ctrl = "Horizontal Flip";
 
 	modifier = 0;
-	flags = 0;
+	lbp_flags = 0;
 
-	/* XXX: apparently some webcams may actually provide y-inverted images,
-	 * in which case we should set
-	 * flags = ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT
-	 */
+	/* handle relevant v4l2 controls */
+	memset(&qectrl, 0, sizeof(qectrl));
+	qectrl.id |= v4l2_qec_flags;
+	while (!xioctl(display->v4l_fd, VIDIOC_QUERY_EXT_CTRL, &qectrl)) {
+		if (check_v4l2_control_bool(display->v4l_fd, &qectrl,
+                                            vflip_ctrl, 0x1)) {
+			lbp_flags = ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT;
+			printf ("\"%s\" control is set, inverting Y\n", vflip_ctrl);
+		} else if (check_v4l2_control_bool(display->v4l_fd, &qectrl,
+                                                   hflip_ctrl, 0x1)) {
+			printf ("\"%s\" control is set, but dmabuf output cannot"
+                                "be flipped horizontally\n", hflip_ctrl);
+		}
+		qectrl.id |= v4l2_qec_flags;
+	}
 
 	params = zwp_linux_dmabuf_v1_create_params(display->dmabuf);
 	for (i = 0; i < display->format.num_planes; ++i)
@@ -382,7 +428,7 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer)
 	                                  display->format.width,
 	                                  display->format.height,
 	                                  display->drm_format,
-	                                  flags);
+	                                  lbp_flags);
 }
 
 static int
