@@ -254,11 +254,13 @@ public final class NewTabPageUma {
         long timeFromIntent = SystemClock.elapsedRealtime()
                 - IntentHandler.getTimestampFromIntent(activity.getIntent());
         if (activity.hadWarmStart()) {
-            RecordHistogram.recordTimesHistogram("NewTabPage.SearchAvailableLoadTime.WarmStart",
-                    timeFromIntent, TimeUnit.MILLISECONDS);
+            RecordHistogram.recordMediumTimesHistogram(
+                    "NewTabPage.SearchAvailableLoadTime2.WarmStart", timeFromIntent,
+                    TimeUnit.MILLISECONDS);
         } else {
-            RecordHistogram.recordTimesHistogram("NewTabPage.SearchAvailableLoadTime.ColdStart",
-                    timeFromIntent, TimeUnit.MILLISECONDS);
+            RecordHistogram.recordMediumTimesHistogram(
+                    "NewTabPage.SearchAvailableLoadTime2.ColdStart", timeFromIntent,
+                    TimeUnit.MILLISECONDS);
         }
     }
 
