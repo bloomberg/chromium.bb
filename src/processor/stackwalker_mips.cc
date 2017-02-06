@@ -108,7 +108,7 @@ StackFrameMIPS* StackwalkerMIPS::GetCallerByCFIFrameInfo(
   StackFrameMIPS* last_frame = static_cast<StackFrameMIPS*>(frames.back());
 
   if (context_->context_flags & MD_CONTEXT_MIPS) {
-    uint32_t sp = 0, pc = 0;
+    uint32_t pc = 0;
 
     // Populate a dictionary with the valid register values in last_frame.
     CFIFrameInfo::RegisterValueMap<uint32_t> callee_registers;
@@ -129,7 +129,6 @@ StackFrameMIPS* StackwalkerMIPS::GetCallerByCFIFrameInfo(
         caller_registers.find(".cfa");
 
     if (entry != caller_registers.end()) {
-      sp = entry->second;
       caller_registers["$sp"] = entry->second;
     }
 
@@ -176,7 +175,7 @@ StackFrameMIPS* StackwalkerMIPS::GetCallerByCFIFrameInfo(
 
     return frame.release();
   } else {
-    uint64_t sp = 0, pc = 0;
+    uint64_t pc = 0;
 
     // Populate a dictionary with the valid register values in last_frame.
     CFIFrameInfo::RegisterValueMap<uint64_t> callee_registers;
@@ -197,7 +196,6 @@ StackFrameMIPS* StackwalkerMIPS::GetCallerByCFIFrameInfo(
         caller_registers.find(".cfa");
 
     if (entry != caller_registers.end()) {
-      sp = entry->second;
       caller_registers["$sp"] = entry->second;
     }
 
