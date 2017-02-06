@@ -46,23 +46,6 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
     const base::string16& title,
     views::VectorIconButtonDelegate* delegate);
 
-// Creates a view to be displayed in the PaymentRequestDialog.
-// |header_view| is the view displayed on top of the dialog, containing title,
-// (optional) back button, and close buttons.
-// |content_view| is displayed between |header_view| and the pay/cancel buttons.
-// The returned view takes ownership of |header_view| and |content_view|.
-// +---------------------------+
-// |        HEADER VIEW        |
-// +---------------------------+
-// |          CONTENT          |
-// |           VIEW            |
-// +---------------------------+
-// |            | CANCEL | PAY |
-// +---------------------------+
-std::unique_ptr<views::View> CreatePaymentView(
-    std::unique_ptr<views::View> header_view,
-    std::unique_ptr<views::View> content_view);
-
 // Represents formatting options for each of the different contexts in which an
 // Address label may be displayed.
 enum class AddressStyleType { SUMMARY, DETAILED };

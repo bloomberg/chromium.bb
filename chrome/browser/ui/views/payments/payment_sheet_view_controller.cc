@@ -204,10 +204,6 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
 void PaymentSheetViewController::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
   switch (sender->tag()) {
-    case static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG):
-      dialog()->CloseDialog();
-      break;
-
     case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON):
       dialog()->ShowOrderSummary();
@@ -228,7 +224,8 @@ void PaymentSheetViewController::ButtonPressed(
       break;
 
     default:
-      NOTREACHED();
+      PaymentRequestSheetController::ButtonPressed(sender, event);
+      break;
   }
 }
 

@@ -49,18 +49,4 @@ std::unique_ptr<views::View> ShippingListViewController::CreateView() {
       std::move(content_view));
 }
 
-void ShippingListViewController::ButtonPressed(views::Button* sender,
-                                               const ui::Event& event) {
-  switch (sender->tag()) {
-    case static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG):
-      dialog()->CloseDialog();
-      break;
-    case static_cast<int>(PaymentRequestCommonTags::BACK_BUTTON_TAG):
-      dialog()->GoBack();
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 }  // namespace payments

@@ -131,26 +131,12 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
                          DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL)
           .release());
 
-  return payments::CreatePaymentView(
+  return CreatePaymentView(
       CreateSheetHeaderView(
           true,
           l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_ORDER_SUMMARY_TITLE),
           this),
       std::move(content_view));
-}
-
-void OrderSummaryViewController::ButtonPressed(
-    views::Button* sender, const ui::Event& event) {
-  switch (sender->tag()) {
-    case static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG):
-      dialog()->CloseDialog();
-      break;
-    case static_cast<int>(PaymentRequestCommonTags::BACK_BUTTON_TAG):
-      dialog()->GoBack();
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 }  // namespace payments

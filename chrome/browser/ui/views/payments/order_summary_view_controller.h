@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
-#include "ui/views/controls/button/vector_icon_button_delegate.h"
 
 namespace payments {
 
@@ -16,8 +15,7 @@ class PaymentRequestDialogView;
 
 // The PaymentRequestSheetController subtype for the Order Summary screen of the
 // Payment Request flow.
-class OrderSummaryViewController : public PaymentRequestSheetController,
-                                   public views::VectorIconButtonDelegate {
+class OrderSummaryViewController : public PaymentRequestSheetController {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
   OrderSummaryViewController(PaymentRequest* request,
@@ -28,9 +26,6 @@ class OrderSummaryViewController : public PaymentRequestSheetController,
   std::unique_ptr<views::View> CreateView() override;
 
  private:
-  // views::VectorIconButtonDelegate:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   DISALLOW_COPY_AND_ASSIGN(OrderSummaryViewController);
 };
 

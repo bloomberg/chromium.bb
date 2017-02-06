@@ -19,7 +19,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
@@ -113,38 +112,6 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   layout->AddView(title_label);
 
   return container;
-}
-
-
-std::unique_ptr<views::View> CreatePaymentView(
-    std::unique_ptr<views::View> header_view,
-    std::unique_ptr<views::View> content_view) {
-  std::unique_ptr<views::View> view = base::MakeUnique<views::View>();
-  view->set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
-
-  // Paint the sheets to layers, otherwise the MD buttons (which do paint to a
-  // layer) won't do proper clipping.
-  view->SetPaintToLayer();
-
-  views::GridLayout* layout = new views::GridLayout(view.get());
-  view->SetLayoutManager(layout);
-
-  constexpr int kTopInsetSize = 9;
-  constexpr int kBottomInsetSize = 18;
-  layout->SetInsets(kTopInsetSize, 0, kBottomInsetSize, 0);
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                     1, views::GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, 0);
-  // |header_view| will be deleted when |view| is.
-  layout->AddView(header_view.release());
-
-  layout->StartRow(0, 0);
-  // |content_view| will be deleted when |view| is.
-  layout->AddView(content_view.release());
-
-  return view;
 }
 
 std::unique_ptr<views::View> GetShippingAddressLabel(

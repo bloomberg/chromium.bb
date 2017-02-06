@@ -1807,6 +1807,7 @@ split_static_library("ui") {
         "views/payments/payment_request_dialog_view_ids.h",
         "views/payments/payment_request_row_view.cc",
         "views/payments/payment_request_row_view.h",
+        "views/payments/payment_request_sheet_controller.cc",
         "views/payments/payment_request_sheet_controller.h",
         "views/payments/payment_request_views_util.cc",
         "views/payments/payment_request_views_util.h",
