@@ -111,11 +111,13 @@ void MTPDeviceDelegateImplWinTest::SetUp() {
 }
 
 void MTPDeviceDelegateImplWinTest::TearDown() {
-  // Windows storage monitor must be destroyed on the same thread
-  // as construction.
-  TestStorageMonitor::Destroy();
-
   ChromeRenderViewHostTestHarness::TearDown();
+
+  TestingBrowserProcess::DeleteInstance();
+
+  // Windows storage monitor must be destroyed after the MediaFileSystemRegistry
+  // owned by TestingBrowserProcess because it uses it in its destructor.
+  TestStorageMonitor::Destroy();
 }
 
 void MTPDeviceDelegateImplWinTest::ProcessAttach(
@@ -156,8 +158,7 @@ void MTPDeviceDelegateImplWinTest::CheckGalleryInfo(
     EXPECT_EQ(0UL, info.transient_device_id.size());
 }
 
-// Crashes on chromium.win/Win7 bot. http://crbug.com/686803
-TEST_F(MTPDeviceDelegateImplWinTest, DISABLED_GalleryNameMTP) {
+TEST_F(MTPDeviceDelegateImplWinTest, GalleryNameMTP) {
   base::FilePath location(
       PortableDeviceWatcherWin::GetStoragePathFromStorageId(
           TestPortableDeviceWatcherWin::kStorageUniqueIdA));
