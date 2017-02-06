@@ -4184,39 +4184,66 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreEnabled) {
   EXPECT_TRUE(pref->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
 }
 
-// Test ArcLocationServiceEnabled policy.
+// Test ArcLocationServiceEnabled policy and its interplay with the
+// DefaultGeolocationSetting policy.
 IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcLocationServiceEnabled) {
   const PrefService* const pref = browser()->profile()->GetPrefs();
 
-  // ARC Location Service is switched on by default.
-  EXPECT_TRUE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));
-  EXPECT_FALSE(pref->IsManagedPreference(prefs::kArcLocationServiceEnabled));
+  // Values of the ArcLocationServiceEnabled policy to be tested.
+  const std::vector<base::Value> test_policy_values = {
+      base::Value(),                  // unset
+      base::FundamentalValue(false),  // disabled
+      base::FundamentalValue(true),   // enabled
+  };
+  // Values of the DefaultGeolocationSetting policy to be tested.
+  const std::vector<base::Value> test_default_geo_policy_values = {
+      base::Value(),              // unset
+      base::FundamentalValue(1),  // 'AllowGeolocation'
+      base::FundamentalValue(2),  // 'BlockGeolocation'
+      base::FundamentalValue(3),  // 'AskGeolocation'
+  };
 
-  // Managed Location Service.
-  PolicyMap policies;
-  // AllowGeolocation
-  policies.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::FundamentalValue>(1), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));
-  EXPECT_FALSE(pref->IsManagedPreference(prefs::kArcLocationServiceEnabled));
+  for (const auto& test_policy_value : test_policy_values) {
+    for (const auto& test_default_geo_policy_value :
+         test_default_geo_policy_values) {
+      PolicyMap policies;
+      if (test_policy_value.is_bool()) {
+        policies.Set(key::kArcLocationServiceEnabled, POLICY_LEVEL_MANDATORY,
+                     POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                     test_policy_value.CreateDeepCopy(), nullptr);
+      }
+      if (test_default_geo_policy_value.is_int()) {
+        policies.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
+                     POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                     test_default_geo_policy_value.CreateDeepCopy(), nullptr);
+      }
+      UpdateProviderPolicy(policies);
 
-  // BlockGeolocation
-  policies.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::FundamentalValue>(2), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));
-  EXPECT_TRUE(pref->IsManagedPreference(prefs::kArcLocationServiceEnabled));
+      const bool should_be_disabled_by_policy =
+          test_policy_value.is_bool() && !test_policy_value.GetBool();
+      const bool should_be_disabled_by_default_geo_policy =
+          test_default_geo_policy_value.is_int() &&
+          test_default_geo_policy_value.GetInt() == 2;
+      const bool expected_pref_value =
+          !(should_be_disabled_by_policy ||
+            should_be_disabled_by_default_geo_policy);
+      EXPECT_EQ(expected_pref_value,
+                pref->GetBoolean(prefs::kArcLocationServiceEnabled))
+          << "ArcLocationServiceEnabled policy is set to " << test_policy_value
+          << "DefaultGeolocationSetting policy is set to "
+          << test_default_geo_policy_value;
 
-  // AskGeolocation
-  policies.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::FundamentalValue>(3), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));
-  EXPECT_FALSE(pref->IsManagedPreference(prefs::kArcLocationServiceEnabled));
+      const bool expected_pref_managed =
+          test_policy_value.is_bool() ||
+          (test_default_geo_policy_value.is_int() &&
+           test_default_geo_policy_value.GetInt() == 2);
+      EXPECT_EQ(expected_pref_managed,
+                pref->IsManagedPreference(prefs::kArcLocationServiceEnabled))
+          << "ArcLocationServiceEnabled policy is set to " << test_policy_value
+          << "DefaultGeolocationSetting policy is set to "
+          << test_default_geo_policy_value;
+    }
+  }
 }
 
 namespace {

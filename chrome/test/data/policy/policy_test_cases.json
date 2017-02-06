@@ -2724,6 +2724,15 @@
     ]
   },
 
+  "ArcLocationServiceEnabled": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "ArcLocationServiceEnabled": false },
+    "pref_mappings": [
+      { "pref": "arc.location_service.enabled" }
+    ]
+  },
+
   "ReportArcStatusEnabled": {
     "os": ["chromeos"],
     "can_be_recommended": false,
