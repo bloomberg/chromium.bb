@@ -56,7 +56,6 @@
     // File or Blob data
     readonly attribute (DOMString or ArrayBuffer)? result;
 
-    // TODO(jsbell): Spec has DOMError, which is being deprecated.
     readonly attribute DOMException? error;
 
     // event handler attributes
