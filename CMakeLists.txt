@@ -461,8 +461,6 @@ set(AOM_AV1_ENCODER_SSE2_ASM
     "${AOM_ROOT}/av1/encoder/x86/temporal_filter_apply_sse2.asm")
 
 set(AOM_AV1_ENCODER_SSE2_INTRIN
-    # Requires CONFIG_EXT_INTER
-    #"${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c"
     "${AOM_ROOT}/av1/encoder/x86/dct_intrin_sse2.c"
     "${AOM_ROOT}/av1/encoder/x86/highbd_block_error_intrin_sse2.c"
     "${AOM_ROOT}/av1/encoder/x86/av1_quantize_sse2.c")
@@ -513,8 +511,6 @@ set(AOM_UNIT_TEST_SOURCES
     "${AOM_ROOT}/test/av1_inv_txfm_test.cc"
     "${AOM_ROOT}/test/av1_txfm_test.cc"
     "${AOM_ROOT}/test/av1_txfm_test.h"
-    # requires CONFIG_EXT_INTER
-    #"${AOM_ROOT}/test/av1_wedge_utils_test.cc"
     "${AOM_ROOT}/test/avg_test.cc"
     "${AOM_ROOT}/test/blend_a64_mask_1d_test.cc"
     "${AOM_ROOT}/test/blend_a64_mask_test.cc"
@@ -555,9 +551,6 @@ set(AOM_UNIT_TEST_SOURCES
     "${AOM_ROOT}/test/level_test.cc"
     "${AOM_ROOT}/test/lossless_test.cc"
     "${AOM_ROOT}/test/lpf_8_test.cc"
-    # requires CONFIG_EXT_INTER
-    #"${AOM_ROOT}/test/masked_sad_test.cc"
-    #"${AOM_ROOT}/test/masked_variance_test.cc"
     "${AOM_ROOT}/test/md5_helper.h"
     "${AOM_ROOT}/test/minmax_test.cc"
     # requires CONFIG_MOTION_VAR
@@ -664,6 +657,22 @@ if (CONFIG_CLPF)
   set(AOM_UNIT_TEST_SOURCES
       ${AOM_UNIT_TEST_SOURCES}
       "${AOM_ROOT}/test/clpf_test.cc")
+endif ()
+
+if (CONFIG_EXT_INTER)
+  set(AOM_AV1_ENCODER_SOURCES
+      ${AOM_AV1_ENCODER_SOURCES}
+      "${AOM_ROOT}/av1/encoder/wedge_utils.c")
+
+  set(AOM_AV1_ENCODER_SSE2_INTRIN
+      ${AOM_AV1_ENCODER_SSE2_INTRIN}
+      "${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c")
+
+  set(AOM_UNIT_TEST_SOURCES
+      ${AOM_UNIT_TEST_SOURCES}
+      "${AOM_ROOT}/test/av1_wedge_utils_test.cc"
+      "${AOM_ROOT}/test/masked_sad_test.cc"
+      "${AOM_ROOT}/test/masked_variance_test.cc")
 endif ()
 
 if (CONFIG_INTERNAL_STATS)
