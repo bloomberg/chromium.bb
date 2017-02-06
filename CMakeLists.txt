@@ -491,9 +491,6 @@ set(AOM_UNIT_TEST_SOURCES
     "${AOM_ROOT}/test/active_map_test.cc"
     "${AOM_ROOT}/test/altref_test.cc"
     "${AOM_ROOT}/test/android"
-    # requires CONFIG_ANS
-    #"${AOM_ROOT}/test/ans_codec_test.cc"
-    #"${AOM_ROOT}/test/ans_test.cc"
     "${AOM_ROOT}/test/aq_segment_test.cc"
     "${AOM_ROOT}/test/arf_freq_test.cc"
     "${AOM_ROOT}/test/av1_convolve_optimz_test.cc"
@@ -537,7 +534,6 @@ set(AOM_UNIT_TEST_SOURCES
     "${AOM_ROOT}/test/encode_api_test.cc"
     "${AOM_ROOT}/test/encode_test_driver.cc"
     "${AOM_ROOT}/test/encode_test_driver.h"
-    "${AOM_ROOT}/test/encoder_parms_get_to_decoder.cc"
     "${AOM_ROOT}/test/end_to_end_test.cc"
     "${AOM_ROOT}/test/error_block_test.cc"
     "${AOM_ROOT}/test/error_resilience_test.cc"
@@ -608,6 +604,26 @@ if (CONFIG_ACCOUNTING)
   set(AOM_UNIT_TEST_SOURCES
       ${AOM_UNIT_TEST_SOURCES}
       "${AOM_ROOT}/test/accounting_test.cc")
+endif ()
+
+if (CONFIG_ANS)
+  if (CONFIG_DAALA_EC)
+    message(FATAL_ERROR "CONFIG_ANS requires CONFIG_DAALA_EC=0.")
+  endif ()
+
+  set(AOM_DSP_SOURCES
+      ${AOM_DSP_SOURCES}
+      "${AOM_ROOT}/aom_dsp/ans.h"
+      "${AOM_ROOT}/aom_dsp/ansreader.h"
+      "${AOM_ROOT}/aom_dsp/answriter.h"
+      "${AOM_ROOT}/aom_dsp/buf_ans.c"
+      "${AOM_ROOT}/aom_dsp/buf_ans.h")
+
+  set(AOM_UNIT_TEST_SOURCES
+      ${AOM_UNIT_TEST_SOURCES}
+      "${AOM_ROOT}/test/ans_codec_test.cc"
+      "${AOM_ROOT}/test/ans_test.cc")
+  list(REMOVE_ITEM AOM_UNIT_TEST_SOURCES "${AOM_ROOT}/test/boolcoder_test.cc")
 endif ()
 
 if (CONFIG_CLPF)
