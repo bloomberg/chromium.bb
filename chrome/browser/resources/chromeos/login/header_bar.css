@@ -66,22 +66,20 @@ html[screen=oobe] .login-header-bar-animate-slow {
   background-color: white;
   border: 1px solid lightgray;
   border-radius: 2px;
-  bottom: 15px;
+  bottom: 0;
   color: black !important;
   display: block;
   font-size: 13px;
   height: auto;
-  left: 15px;
-  margin: 0 0 -10px -10px;
   min-height: 34px;
   position: absolute;
   text-align: center;
   width: 180px;
 }
 
-html[dir=rtl] #more-settings-header-bar-item.active
-                button.add-supervised-user-menu {
-  right: 0;
+#more-settings-header-bar-item.active button.add-supervised-user-menu:focus {
+  border: 2px solid var(--google-blue-500);
+  border-radius: 2px;
 }
 
 html[dir=rtl] .header-bar-item {
