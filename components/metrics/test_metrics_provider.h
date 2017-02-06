@@ -20,7 +20,8 @@ class TestMetricsProvider : public MetricsProvider {
         has_initial_stability_metrics_(false),
         has_initial_stability_metrics_called_(false),
         provide_initial_stability_metrics_called_(false),
-        provide_stability_metrics_called_(false) {}
+        provide_stability_metrics_called_(false),
+        provide_system_profile_metrics_called_(false) {}
 
   // MetricsProvider:
   void Init() override;
@@ -29,6 +30,8 @@ class TestMetricsProvider : public MetricsProvider {
   void ProvideInitialStabilityMetrics(
       SystemProfileProto* system_profile_proto) override;
   void ProvideStabilityMetrics(
+      SystemProfileProto* system_profile_proto) override;
+  void ProvideSystemProfileMetrics(
       SystemProfileProto* system_profile_proto) override;
 
   bool init_called() { return init_called_; }
@@ -45,6 +48,9 @@ class TestMetricsProvider : public MetricsProvider {
   bool provide_stability_metrics_called() const {
     return provide_stability_metrics_called_;
   }
+  bool provide_system_profile_metrics_called() const {
+    return provide_system_profile_metrics_called_;
+  }
 
  private:
   bool init_called_;
@@ -53,6 +59,7 @@ class TestMetricsProvider : public MetricsProvider {
   bool has_initial_stability_metrics_called_;
   bool provide_initial_stability_metrics_called_;
   bool provide_stability_metrics_called_;
+  bool provide_system_profile_metrics_called_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMetricsProvider);
 };

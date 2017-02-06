@@ -102,6 +102,14 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // Completes the two-phase initialization of ChromeMetricsServiceClient.
   void Initialize();
 
+  // Registers providers to the MetricsService. These provide data from
+  // alternate sources.
+  void RegisterMetricsServiceProviders();
+
+  // Registers providers to the UkmService. These provide data from alternate
+  // sources.
+  void RegisterUKMProviders();
+
   // Callback to chain init tasks: Pops and executes the next init task from
   // |initialize_task_queue_|, then passes itself as callback for each init task
   // to call upon completion.

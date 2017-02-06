@@ -33,4 +33,9 @@ void TestMetricsProvider::ProvideStabilityMetrics(
   provide_stability_metrics_called_ = true;
 }
 
+void TestMetricsProvider::ProvideSystemProfileMetrics(
+    SystemProfileProto* system_profile_proto) {
+  provide_system_profile_metrics_called_ = true;
+}
+
 }  // namespace metrics

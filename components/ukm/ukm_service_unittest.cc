@@ -4,10 +4,14 @@
 
 #include "components/ukm/ukm_service.h"
 
+#include <string>
+#include <utility>
+
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/proto/ukm/report.pb.h"
 #include "components/metrics/proto/ukm/source.pb.h"
+#include "components/metrics/test_metrics_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/ukm/persisted_logs_metrics_impl.h"
@@ -121,6 +125,32 @@ TEST_F(UkmServiceTest, SourceSerialization) {
 
   EXPECT_EQ(GURL("https://google.com").spec(), proto_source.url());
   EXPECT_EQ(300, proto_source.first_contentful_paint_msec());
+}
+
+TEST_F(UkmServiceTest, MetricsProviderTest) {
+  UkmService service(&prefs_, &client_);
+
+  metrics::TestMetricsProvider* provider = new metrics::TestMetricsProvider();
+  service.RegisterMetricsProvider(
+      std::unique_ptr<metrics::MetricsProvider>(provider));
+
+  service.Initialize();
+
+  // Providers have not supplied system profile information yet.
+  EXPECT_FALSE(provider->provide_system_profile_metrics_called());
+
+  task_runner_->RunUntilIdle();
+  service.EnableReporting();
+
+  service.RecordSource(base::WrapUnique(new UkmSource()));
+  service.Flush();
+  EXPECT_EQ(GetPersistedLogCount(), 1);
+
+  Report proto_report = GetPersistedReport();
+  EXPECT_EQ(1, proto_report.sources_size());
+
+  // Providers have now supplied system profile information.
+  EXPECT_TRUE(provider->provide_system_profile_metrics_called());
 }
 
 }  // namespace ukm

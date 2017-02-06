@@ -7,12 +7,14 @@
 
 #include <stddef.h>
 #include <memory>
+#include <vector>
 
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
+#include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_reporting_scheduler.h"
 #include "components/metrics/persisted_logs.h"
 
@@ -31,7 +33,7 @@ class UkmSource;
 // This feature controls whether UkmService should be created.
 extern const base::Feature kUkmFeature;
 
-// The Url-Keyed Metrics (UKM) service is responsible for gathering and
+// The URL-Keyed Metrics (UKM) service is responsible for gathering and
 // uploading reports that contain fine grained performance metrics including
 // URLs for top-level navigations.
 class UkmService : public base::SupportsWeakPtr<UkmService> {
@@ -45,7 +47,7 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // Initializes the UKM service.
   void Initialize();
 
-  // Enable/disable transmission of accumulated logs.  Logs that have already
+  // Enables/disables transmission of accumulated logs. Logs that have already
   // been created will remain persisted to disk.
   void EnableReporting();
   void DisableReporting();
@@ -54,11 +56,16 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // until periodically serialized for upload, and then deleted.
   void RecordSource(std::unique_ptr<UkmSource> source);
 
-  // Record any collected data into logs, and write to disk.
+  // Records any collected data into logs, and writes to disk.
   void Flush();
 
-  // Delete any unsent local data.
+  // Deletes any unsent local data.
   void Purge();
+
+  // Registers the specified |provider| to provide additional metrics into the
+  // UKM log. Should be called during MetricsService initialization only.
+  void RegisterMetricsProvider(
+      std::unique_ptr<metrics::MetricsProvider> provider);
 
   // Registers the names of all of the preferences used by UkmService in
   // the provided PrefRegistry.
@@ -70,7 +77,7 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   }
 
  private:
-  // Start metrics client initialization.
+  // Starts metrics client initialization.
   void StartInitTask();
 
   // Called when initialization tasks are complete, to notify the scheduler
@@ -84,7 +91,7 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // persisted_logs_.
   void BuildAndStoreLog();
 
-  // Start an upload of the next log from persisted_logs_.
+  // Starts an upload of the next log from persisted_logs_.
   void StartScheduledUpload();
 
   // Called by log_uploader_ when the an upload is completed.
@@ -99,6 +106,9 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.
   metrics::MetricsServiceClient* const client_;
+
+  // Registered metrics providers.
+  std::vector<std::unique_ptr<metrics::MetricsProvider>> metrics_providers_;
 
   // Logs that have not yet been sent.
   metrics::PersistedLogs persisted_logs_;

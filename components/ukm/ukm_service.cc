@@ -114,6 +114,9 @@ UkmService::UkmService(PrefService* pref_service,
                  base::Unretained(client_));
   scheduler_.reset(new ukm::MetricsReportingScheduler(
       rotate_callback, get_upload_interval_callback));
+
+  for (auto& provider : metrics_providers_)
+    provider->Init();
 }
 
 UkmService::~UkmService() {
@@ -134,6 +137,10 @@ void UkmService::Initialize() {
 void UkmService::EnableReporting() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "UkmService::EnableReporting";
+
+  for (auto& provider : metrics_providers_)
+    provider->OnRecordingEnabled();
+
   if (!initialize_started_)
     Initialize();
   scheduler_->Start();
@@ -142,6 +149,10 @@ void UkmService::EnableReporting() {
 void UkmService::DisableReporting() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "UkmService::DisableReporting";
+
+  for (auto& provider : metrics_providers_)
+    provider->OnRecordingDisabled();
+
   scheduler_->Stop();
   Flush();
 }
@@ -156,6 +167,11 @@ void UkmService::Purge() {
   DVLOG(1) << "UkmService::Purge";
   persisted_logs_.Purge();
   sources_.clear();
+}
+
+void UkmService::RegisterMetricsProvider(
+    std::unique_ptr<metrics::MetricsProvider> provider) {
+  metrics_providers_.push_back(std::move(provider));
 }
 
 // static
@@ -204,7 +220,11 @@ void UkmService::BuildAndStoreLog() {
 
   metrics::MetricsLog::RecordCoreSystemProfile(client_,
                                                report.mutable_system_profile());
-  // TODO(rkaplow): Populate network information.
+
+  for (auto& provider : metrics_providers_) {
+    provider->ProvideSystemProfileMetrics(report.mutable_system_profile());
+  }
+
   std::string serialized_log;
   report.SerializeToString(&serialized_log);
   persisted_logs_.StoreLog(serialized_log);
