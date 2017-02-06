@@ -92,6 +92,53 @@ WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
+    'Mac Release (Intel)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.12'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Mac Debug (Intel)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.12'
+        },
+      ],
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Mac Retina Release (AMD)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Mac Retina Debug (AMD)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    # BEGIN obsolete Mac bots -- remove after waterfall restarted successfully.
     'Mac 10.10 Release (Intel)': {
       'swarming_dimensions': [
         {
@@ -138,6 +185,7 @@ WATERFALL = {
       'swarming': True,
       'os_type': 'mac',
     },
+    # END obsolete Mac bots -- remove after waterfall restarted successfully.
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -351,6 +399,7 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
+    # BEGIN obsolete Mac bots -- remove after waterfall restarted successfully.
     'Mac 10.10 Release (Intel)': {
       'swarming_dimensions': [
         {
@@ -448,6 +497,116 @@ FYI_WATERFALL = {
       'os_type': 'mac',
     },
     'Mac 10.11 Retina Release (AMD)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Release',
+      # This bot is a one-off for testing purposes.
+      'swarming': False,
+      'os_type': 'mac',
+    },
+    # END obsolete Mac bots -- remove after waterfall restarted successfully.
+    'Mac Release (Intel)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.12'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Mac Debug (Intel)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.12'
+        },
+      ],
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Mac Pro Release (AMD)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:679e',
+          'os': 'Mac-10.10'
+        },
+      ],
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'mac',
+    },
+    'Mac Pro Debug (AMD)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:679e',
+          'os': 'Mac-10.10'
+        },
+      ],
+      'build_config': 'Debug',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'mac',
+    },
+    'Mac Retina Release (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:0fe9',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Mac Retina Debug (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:0fe9',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Mac Retina Release (AMD)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Mac Retina Debug (AMD)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Mac Experimental Retina Release (AMD)': {
       'swarming_dimensions': [
         {
           'gpu': '1002:6821',
@@ -708,6 +867,45 @@ FYI_WATERFALL = {
       'os_type': 'win',
       'type': Types.OPTIONAL,
     },
+    'Optional Mac Release (Intel)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.12'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+      'type': Types.OPTIONAL,
+    },
+    'Optional Mac Retina Release (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:0fe9',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+      'type': Types.OPTIONAL,
+    },
+    'Optional Mac Retina Release (AMD)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6821',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+      'type': Types.OPTIONAL,
+    },
+    # BEGIN obsolete Mac bots -- remove after waterfall restarted successfully.
     'Optional Mac 10.10 Release (Intel)': {
       'swarming_dimensions': [
         {
@@ -746,6 +944,7 @@ FYI_WATERFALL = {
       'os_type': 'mac',
       'type': Types.OPTIONAL,
     },
+    # END obsolete Mac bots -- remove after waterfall restarted successfully.
     'Optional Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
