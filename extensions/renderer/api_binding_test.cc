@@ -72,7 +72,8 @@ void APIBindingTest::TearDown() {
     run_garbage_collection();
 
     // The context should have been deleted.
-    ASSERT_TRUE(weak_context.IsEmpty());
+    // (ASSERT_TRUE is not used, so that Isolate::Exit is still called.)
+    EXPECT_TRUE(weak_context.IsEmpty());
   } else {
     // The context was already deleted (as through DisposeContext()), but we
     // still need to garbage collect.
