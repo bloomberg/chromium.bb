@@ -5176,6 +5176,22 @@ def CMDformat(parser, args):
         DieWithError("gn format failed on " + gn_diff_file +
                      "\nTry running 'gn format' on this file manually.")
 
+  metrics_xml_files = [
+    'tools/metrics/actions/actions.xml',
+    'tools/metrics/histograms/histograms.xml',
+    'tools/metrics/rappor/rappor.xml']
+  for xml_file in metrics_xml_files:
+    if xml_file in diff_files:
+      tool_dir = top_dir + '/' + os.path.dirname(xml_file)
+      cmd = [tool_dir + '/pretty_print.py', '--non-interactive']
+      if opts.dry_run or opts.diff:
+        cmd.append('--diff')
+      stdout = RunCommand(cmd, cwd=top_dir)
+      if opts.diff:
+        sys.stdout.write(stdout)
+      if opts.dry_run and stdout:
+        return_value = 2  # Not formatted.
+
   return return_value
 
 
