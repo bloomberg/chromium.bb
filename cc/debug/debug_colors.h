@@ -108,6 +108,9 @@ class DebugColors {
   static SkColor MissingResizeInvalidations();
   static SkColor PictureBorderColor();
 
+  static SkColor GLCompositedTextureQuadBorderColor(int index);
+  static int GLCompositedTextureQuadBoderWidth();
+
   static SkColor HUDBackgroundColor();
   static SkColor HUDSeparatorLineColor();
   static SkColor HUDIndicatorLineColor();

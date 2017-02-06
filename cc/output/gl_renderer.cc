@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "cc/base/container_util.h"
 #include "cc/base/math_util.h"
+#include "cc/debug/debug_colors.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/context_provider.h"
@@ -2428,9 +2429,15 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
         program->matrix_location(), 1, false,
         reinterpret_cast<float*>(&draw_cache_.matrix_data.front()));
 
-    gl_->Uniform4f(program->color_location(), 0.0f, 1.0f, 0.0f, 1.0f);
+    // Pick a random color based on the scale on X and Y.
+    int colorIndex = static_cast<int>(draw_cache_.matrix_data.front().data[0] *
+                                      draw_cache_.matrix_data.front().data[5]);
+    SkColor color = DebugColors::GLCompositedTextureQuadBorderColor(colorIndex);
 
-    gl_->LineWidth(3.0f);
+    gl_->Uniform4f(program->color_location(), SkColorGetR(color),
+                   SkColorGetG(color), SkColorGetB(color), 1.0f);
+
+    gl_->LineWidth(DebugColors::GLCompositedTextureQuadBoderWidth());
     // The indices for the line are stored in the same array as the triangle
     // indices.
     gl_->DrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0);

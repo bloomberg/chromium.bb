@@ -138,6 +138,19 @@ int DebugColors::DirectPictureBorderWidth(const LayerTreeImpl* tree_impl) {
   return Scale(1, tree_impl);
 }
 
+// Borders added to GL composited draw quads. This is useful to debug HW
+// overlays. When the border disappears, it means we're using an overlay.
+// We draw borders in different colors to be able to distinguish neighboring
+// quads (often shadows).
+SkColor DebugColors::GLCompositedTextureQuadBorderColor(int index) {
+  const SkColor kColors[] = {SK_ColorBLUE,   SK_ColorGREEN, SK_ColorRED,
+                             SK_ColorYELLOW, SK_ColorCYAN,  SK_ColorMAGENTA};
+  return kColors[index % arraysize(kColors)];
+}
+int DebugColors::GLCompositedTextureQuadBoderWidth() {
+  return 6;
+}
+
 // Compressed tile borders are blue.
 SkColor DebugColors::CompressedTileBorderColor() {
   return SkColorSetARGB(100, 20, 20, 240);
