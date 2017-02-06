@@ -501,12 +501,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Returns nullptr if this PaintLayer is not composited.
   GraphicsLayer* graphicsLayerBacking(const LayoutObject* = nullptr) const;
 
-  // TODO(yigu): PaintLayerScrollableArea::computeNeedsCompositedScrolling
-  // calls this method to obtain main thread scrolling reasons due to
-  // background paint location. Once the cases get handled on compositor the
-  // parameter "reasons" could be removed.
-  BackgroundPaintLocation backgroundPaintLocation(
-      uint32_t* reasons = nullptr) const;
+  BackgroundPaintLocation backgroundPaintLocation() const;
   // NOTE: If you are using hasCompositedLayerMapping to determine the state of
   // compositing for this layer, (and not just to do bookkeeping related to the
   // mapping like, say, allocating or deallocating a mapping), then you may have
