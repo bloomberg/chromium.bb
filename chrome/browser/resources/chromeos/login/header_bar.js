@@ -64,6 +64,8 @@ cr.define('login', function() {
           this.handleCancelMultipleSignInClick_);
       this.addSupervisedUserMenu.addEventListener('click',
           this.handleAddSupervisedUserClick_.bind(this));
+      this.addSupervisedUserMenu.addEventListener('keydown',
+          this.handleAddSupervisedUserKeyDown_.bind(this));
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.LOGIN ||
           Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE) {
         if (Oobe.getInstance().newKioskUI)
@@ -116,13 +118,9 @@ cr.define('login', function() {
     set isMoreSettingsActive(active) {
       if (active == this.isMoreSettingsActive)
         return;
-      if (active) {
-        this.getMoreSettingsMenu.classList.add('active');
-      } else {
-        this.getMoreSettingsMenu.classList.remove('active');
-      }
+      this.getMoreSettingsMenu.classList.toggle('active', active);
+      $('more-settings-button').tabIndex = active ? -1 : 0;
     },
-
 
     /**
      * Add user button click handler.
@@ -145,11 +143,6 @@ cr.define('login', function() {
 
     handleClick_: function(e) {
       this.isMoreSettingsActive = false;
-    },
-
-    handleAddSupervisedUserClick_: function(e) {
-      chrome.send('showSupervisedUserCreationScreen');
-      e.preventDefault();
     },
 
     /**
@@ -208,6 +201,28 @@ cr.define('login', function() {
     handleCancelMultipleSignInClick_: function(e) {
       chrome.send('cancelUserAdding');
       e.stopPropagation();
+    },
+
+    /**
+     * Add supervised user button handler.
+     *
+     * @private
+     */
+    handleAddSupervisedUserClick_: function(e) {
+      chrome.send('showSupervisedUserCreationScreen');
+      e.preventDefault();
+    },
+
+    /**
+     * Add supervised user key handler, ESC closes menu.
+     *
+     * @private
+     */
+    handleAddSupervisedUserKeyDown_: function(e) {
+      if (e.key == 'Escape' && this.isMoreSettingsActive) {
+        this.isMoreSettingsActive = false;
+        $('more-settings-button').focus();
+      }
     },
 
     /**
