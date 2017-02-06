@@ -119,6 +119,14 @@ function output(opt_string) {
 }
 
 /**
+ * Returns number of lines in pending output.
+ * @returns {number}
+ */
+function countOutputLines() {
+  return pendingOutput.split('\n').length;
+}
+
+/**
  * Generates the header of the cc file to stdout.
  * @param {string?} testFixture Name of test fixture.
  */
@@ -340,6 +348,22 @@ function GEN_INCLUDE(includes) {
 }
 
 /**
+ * Capture stack-trace and find line number of TEST_F function call.
+ * @return {Number} line number of TEST_F function call.
+ */
+function getTestDeclarationLineNumber() {
+  var oldPrepareStackTrace = Error.prepareStackTrace;
+  Error.prepareStackTrace = function(error, structuredStackTrace) {
+    return structuredStackTrace;
+  };
+  var error = Error('');
+  Error.captureStackTrace(error, TEST_F);
+  var lineNumber = error.stack[0].getLineNumber();
+  Error.prepareStackTrace = oldPrepareStackTrace;
+  return lineNumber;
+}
+
+/**
  * Generate gtest-style TEST_F definitions for C++ with a body that
  * will invoke the |testBody| for |testFixture|.|testFunction|.
  * @param {string} testFixture The name of this test's fixture.
@@ -363,6 +387,7 @@ function TEST_F(testFixture, testFunction, testBody) {
             return includeFileToPaths(includeFile).base;
           }),
       resolveClosureModuleDeps(this[testFixture].prototype.closureModuleDeps));
+  var testFLine = getTestDeclarationLineNumber();
 
   if (typedefCppFixture && !(testFixture in typedeffedCppFixtures)) {
     var switches = this[testFixture].prototype.commandLineSwitches;
@@ -392,7 +417,12 @@ class ${testFixture} : public ${typedefCppFixture} {
     typedeffedCppFixtures[testFixture] = typedefCppFixture;
   }
 
-  output(`${testF}(${testFixture}, ${testFunction}) {`);
+  var outputLine = countOutputLines() + 3;
+  output(`
+#line ${testFLine} "${jsFile}"
+${testF}(${testFixture}, ${testFunction}) {
+#line ${outputLine} "${outputFile}"`);
+
   for (var i = 0; i < extraLibraries.length; i++) {
     var libraryName = extraLibraries[i].replace(/\\/g, '/');
     output(`
