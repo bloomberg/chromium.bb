@@ -202,9 +202,39 @@ Especially, avoid defining a pre-finalizer in a class that can be allocated a lo
 
 ### EAGERLY_FINALIZE
 
-### DISALLOW_NEW_EXCEPT_PLACEMENT_NEW
+A class-level annotation to indicate that class instances that the GC have determined as unreachable, should be eagerly
+swept and finalized by the garbage collector, before the Blink thread (the mutator) resumes after a garbage
+collection. The C++ destructor runs as part of this step. The default sweeping behavior is incremental, sweeping
+pages as demanded by later heap allocations.
+
+Like for the pre-finalizer mechanism, an `EAGERLY_FINALIZE()`d class is allowed to touch other heap objects, which
+is sometimes required, but the main use case for eager finalization is to promptly let go of off-heap resources
+and associations, by unregistering and destructing those eagerly. If not done, these external references would
+otherwise attempt to unsafely access an effectively-dead object (pending lazy sweeping of its heap page.)
+
+`EAGERLY_FINALIZE()` solves the same problem as pre-finalizers, but it arguably fits more naturally with the host
+language's mechanism for finalization (C++ destructors.) One `EAGERLY_FINALIZE()` caveat is that the destructor
+is not allowed to touch another eagerly finalized object (their finalization ordering isn't deterministic) nor
+any pre-finalized objects. Choose the one you think best fits your need for prompt finalization.
 
 ### STACK_ALLOCATED
+
+Class level annotation that should be used if the object is only stack allocated; it disallows use
+of `operator new`. Any garbage-collected objects should be kept as `Member<T>` references, but you do not
+need to define a `trace()` method as they are on the stack, and automatically traced and kept alive should
+a conservative GC be required.
+
+### DISALLOW_NEW()
+
+Class-level annotation declaring the class a part object that cannot be separately allocated using `operator new`.
+If the class has `Member<T>` references, you need a `trace()` method which the object containing the `DISALLOW_NEW()`
+part object must call upon. The clang Blink GC plugin checks and enforces this.
+
+### DISALLOW_NEW_EXCEPT_PLACEMENT_NEW
+
+Class-level annotation allowing only the use of the placement `new` operator. This disallows general allocation of the
+object but allows putting the object as a value object in collections.  If the class has `Member<T>` references,
+you need to declare a `trace()` method. That trace method will be called automatically by the on-heap collections.
 
 ## Handles
 
