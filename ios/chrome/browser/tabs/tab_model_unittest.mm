@@ -159,14 +159,6 @@ class TabModelTest : public PlatformTest {
   }
 
  protected:
-  Tab* CreateTab(NSString* windowName,
-                 double lastVisitedTimestamp) NS_RETURNS_RETAINED {
-    return [[TabTest alloc] initWithWindowName:windowName
-                          lastVisitedTimestamp:lastVisitedTimestamp
-                                  browserState:chrome_browser_state_.get()
-                                      tabModel:tab_model_.get()];
-  }
-
   std::unique_ptr<WebStateImpl> CreateWebState(NSString* windowName,
                                                NSString* opener,
                                                NSInteger index) {
