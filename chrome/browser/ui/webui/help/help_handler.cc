@@ -21,7 +21,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -152,8 +152,6 @@ bool CanChangeChannel(Profile* profile) {
 // Returns the path of the regulatory labels directory for a given region, if
 // found. Must be called from the blocking pool.
 base::FilePath GetRegulatoryLabelDirForRegion(const std::string& region) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   // Generate the path under the asset dir or URL host to the regulatory files
   // for the region, e.g., "regulatory_labels/us/".
   const base::FilePath region_path =
@@ -173,8 +171,6 @@ base::FilePath GetRegulatoryLabelDirForRegion(const std::string& region) {
 // Finds the directory for the regulatory label, using the VPD region code.
 // Also tries "us" as a fallback region. Must be called from the blocking pool.
 base::FilePath FindRegulatoryLabelDir() {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   std::string region;
   base::FilePath region_path;
   // Use the VPD region code to find the label dir.
@@ -193,7 +189,6 @@ base::FilePath FindRegulatoryLabelDir() {
 // Reads the file containing the regulatory label text, if found, relative to
 // the asset directory. Must be called from the blocking pool.
 std::string ReadRegulatoryLabelText(const base::FilePath& path) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::FilePath text_path(chrome::kChromeOSAssetPath);
   text_path = text_path.Append(path);
   text_path = text_path.AppendASCII(kRegulatoryLabelTextFilename);
@@ -475,25 +470,22 @@ void HelpHandler::RefreshUpdateStatus() {
 
 void HelpHandler::OnPageLoaded(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&chromeos::version_loader::GetVersion,
                  chromeos::version_loader::VERSION_FULL),
-      base::Bind(&HelpHandler::OnOSVersion,
-                 weak_factory_.GetWeakPtr()));
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
+      base::Bind(&HelpHandler::OnOSVersion, weak_factory_.GetWeakPtr()));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&chromeos::version_loader::GetARCVersion),
-      base::Bind(&HelpHandler::OnARCVersion,
-                 weak_factory_.GetWeakPtr()));
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
+      base::Bind(&HelpHandler::OnARCVersion, weak_factory_.GetWeakPtr()));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&chromeos::version_loader::GetFirmware),
-      base::Bind(&HelpHandler::OnOSFirmware,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&HelpHandler::OnOSFirmware, weak_factory_.GetWeakPtr()));
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "help.HelpPage.updateEnableReleaseChannel",
@@ -533,9 +525,9 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
         base::Bind(&HelpHandler::OnEolStatus, weak_factory_.GetWeakPtr()));
   }
 
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&FindRegulatoryLabelDir),
       base::Bind(&HelpHandler::OnRegulatoryLabelDirFound,
                  weak_factory_.GetWeakPtr()));
@@ -736,8 +728,9 @@ void HelpHandler::OnRegulatoryLabelDirFound(const base::FilePath& path) {
   if (path.empty())
     return;
 
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&ReadRegulatoryLabelText, path),
       base::Bind(&HelpHandler::OnRegulatoryLabelTextRead,
                  weak_factory_.GetWeakPtr()));
