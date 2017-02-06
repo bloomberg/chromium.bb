@@ -9,3 +9,5 @@ per-file usb_key_code_*=wez@chromium.org
 per-file *websocket*=ricea@chromium.org
 per-file *websocket*=tyoshino@chromium.org
 per-file *websocket*=yhirano@chromium.org
+
+# COMPONENT: Internals>Plugins>Pepper
