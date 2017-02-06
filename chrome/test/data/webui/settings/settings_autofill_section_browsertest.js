@@ -434,7 +434,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       return self.createAddressDialog_(
           FakeDataMaker.emptyAddressEntry()).then(function(dialog) {
         var title = dialog.$$('.title');
-        assertEquals(loadTimeData.getString('addAddress'), title.textContent);
+        assertEquals(loadTimeData.getString('addAddressTitle'),
+            title.textContent);
         // Shouldn't be possible to save until something is typed in.
         assertTrue(dialog.$.saveButton.disabled);
       });

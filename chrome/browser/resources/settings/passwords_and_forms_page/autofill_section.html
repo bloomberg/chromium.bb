@@ -52,7 +52,11 @@
       }
     </style>
     <div class="settings-box first">
-      <h2>$i18n{addresses}</h2>
+      <h2 class="start">$i18n{addresses}</h2>
+      <paper-button class="secondary-button header-aligned-button"
+          on-tap="onAddAddressTap_">
+        $i18n{add}
+      </paper-button>
     </div>
     <div class="list-frame">
       <div id="addressList" class="vertical-list">
@@ -82,11 +86,6 @@
           hidden$="[[hasSome_(addresses)]]">
         $i18n{noAddressesFound}
       </div>
-      <div class="list-item">
-        <a is="action-link" class="list-button" on-tap="onAddAddressTap_">
-          $i18n{addAddress}
-        </a>
-      </div>
     </div>
     <dialog is="cr-action-menu" id="addressSharedMenu">
       <button id="menuEditAddress" class="dropdown-item"
@@ -101,7 +100,11 @@
       </settings-address-edit-dialog>
     </template>
     <div class="settings-box first">
-      <h2>$i18n{creditCards}</h2>
+      <h2 class="start">$i18n{creditCards}</h2>
+      <paper-button class="secondary-button header-aligned-button"
+          on-tap="onAddCreditCardTap_">
+        $i18n{add}
+      </paper-button>
     </div>
     <div class="list-frame">
       <div id="creditCardsHeading" class="list-item column-header"
@@ -137,11 +140,6 @@
       <div id="noCreditCardsLabel" class="list-item"
           hidden$="[[hasSome_(creditCards)]]">
         $i18n{noCreditCardsFound}
-      </div>
-      <div class="list-item">
-        <a is="action-link" class="list-button" on-tap="onAddCreditCardTap_">
-          $i18n{addCreditCard}
-        </a>
       </div>
     </div>
     <dialog is="cr-action-menu" id="creditCardSharedMenu">
