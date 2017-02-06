@@ -42,7 +42,7 @@ class FlakyTests(Command):
     help_text = "Print out flaky lines from the flakiness dashboard"
     show_in_main_help = True
 
-    FLAKINESS_DASHBOARD_URL = 'https://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=%s'
+    FLAKINESS_DASHBOARD_URL = 'https://test-results.appspot.com/dashboards/flakiness_dashboard.html#testType=webkit_tests&tests=%s'
 
     BUG_TEMPLATE = ('https://code.google.com/p/chromium/issues/entry?owner=FILL_ME_IN&status=Assigned&'
                     'labels=Pri-1,Cr-Blink,FlakyLayoutTest&summary=XXXXXXX%20is%20flaky&'
