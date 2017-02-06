@@ -517,7 +517,7 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
 
       closest_element_distance = distance_to_plane;
       Rectf pixel_rect;
-      if (plane->content_quad) {
+      if (plane->fill == Fill::CONTENT) {
         pixel_rect = {0, 0, content_tex_css_width_, content_tex_css_height_};
       } else {
         pixel_rect = {plane->copy_rect.x, plane->copy_rect.y,
@@ -528,8 +528,8 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
 
       target_point_ = plane_intersection_point;
       target_element_ = plane.get();
-      input_target = plane->content_quad ? InputTarget::CONTENT
-                                         : InputTarget::UI;
+      input_target = (plane->fill == Fill::CONTENT) ? InputTarget::CONTENT
+                                                    : InputTarget::UI;
     }
   }
   SendEventsToTarget(input_target, pixel_x, pixel_y);
@@ -726,9 +726,7 @@ void VrShellGl::DrawVrShell(const gvr::Mat4f& head_pose,
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 
-    glClearColor(BackgroundRenderer::kFogBrightness,
-                 BackgroundRenderer::kFogBrightness,
-                 BackgroundRenderer::kFogBrightness, 1.0f);
+    glClearColor(kFogBrightness, kFogBrightness, kFogBrightness, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
   if (!world_elements.empty()) {
@@ -789,10 +787,6 @@ void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
             buffer_viewport_->GetSourceFov(), kZNear, kZFar),
         view_matrix);
 
-    if (!web_vr_mode_) {
-      // TODO(tiborg): Enable through the UI API.
-      // DrawBackground(render_matrix);
-    }
     DrawElements(render_matrix, elements);
     if (head_pose != nullptr && !web_vr_mode_) {
       DrawCursor(render_matrix);
@@ -804,23 +798,44 @@ void VrShellGl::DrawElements(
     const gvr::Mat4f& render_matrix,
     const std::vector<const ContentRectangle*>& elements) {
   for (const auto& rect : elements) {
-    Rectf copy_rect;
-    jint texture_handle;
-    if (rect->content_quad) {
-      copy_rect = {0, 0, 1, 1};
-      texture_handle = content_texture_id_;
-    } else {
-      copy_rect.x = static_cast<float>(rect->copy_rect.x) / ui_tex_css_width_;
-      copy_rect.y = static_cast<float>(rect->copy_rect.y) / ui_tex_css_height_;
-      copy_rect.width = static_cast<float>(rect->copy_rect.width) /
-          ui_tex_css_width_;
-      copy_rect.height = static_cast<float>(rect->copy_rect.height) /
-          ui_tex_css_height_;
-      texture_handle = ui_texture_id_;
-    }
     gvr::Mat4f transform = MatrixMul(render_matrix, rect->transform.to_world);
-    vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
-        texture_handle, transform, copy_rect, rect->computed_opacity);
+    switch (rect->fill) {
+      case Fill::SPRITE: {
+        Rectf copy_rect;
+        copy_rect.x = static_cast<float>(rect->copy_rect.x) / ui_tex_css_width_;
+        copy_rect.y =
+            static_cast<float>(rect->copy_rect.y) / ui_tex_css_height_;
+        copy_rect.width =
+            static_cast<float>(rect->copy_rect.width) / ui_tex_css_width_;
+        copy_rect.height =
+            static_cast<float>(rect->copy_rect.height) / ui_tex_css_height_;
+        jint texture_handle = ui_texture_id_;
+        vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
+            texture_handle, transform, copy_rect, rect->computed_opacity);
+        break;
+      }
+      case Fill::OPAQUE_GRADIENT: {
+        vr_shell_renderer_->GetGradientQuadRenderer()->Draw(
+            transform, rect->edge_color, rect->center_color,
+            rect->computed_opacity);
+        break;
+      }
+      case Fill::GRID_GRADIENT: {
+        vr_shell_renderer_->GetGradientGridRenderer()->Draw(
+            transform, rect->edge_color, rect->center_color,
+            rect->gridline_count, rect->computed_opacity);
+        break;
+      }
+      case Fill::CONTENT: {
+        Rectf copy_rect = {0, 0, 1, 1};
+        jint texture_handle = content_texture_id_;
+        vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
+            texture_handle, transform, copy_rect, rect->computed_opacity);
+        break;
+      }
+      default:
+        break;
+    }
   }
 }
 
@@ -909,10 +924,6 @@ void VrShellGl::DrawWebVr() {
 
   glViewport(0, 0, render_size_primary_.width, render_size_primary_.height);
   vr_shell_renderer_->GetWebVrRenderer()->Draw(webvr_texture_id_);
-}
-
-void VrShellGl::DrawBackground(const gvr::Mat4f& render_matrix) {
-  vr_shell_renderer_->GetBackgroundRenderer()->Draw(render_matrix);
 }
 
 void VrShellGl::OnTriggerEvent() {

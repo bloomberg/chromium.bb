@@ -36,7 +36,7 @@ var vrShellUi = (function() {
       /** @const */ this.DPR = 1.2;
 
       let element = new api.UiElement(0, 0, 0, 0);
-      element.setIsContentQuad();
+      element.setFill(new api.Content());
       element.setVisible(false);
       element.setSize(
           this.SCREEN_HEIGHT * this.SCREEN_RATIO, this.SCREEN_HEIGHT);
@@ -483,6 +483,60 @@ var vrShellUi = (function() {
     }
   };
 
+  class Background {
+    constructor() {
+      /** @const */ var GRADIENT_LIGHER_GRAY =
+          {r: 0.57, g: 0.57, b: 0.57, a: 1.0};
+      /** @const */ var GRADIENT_DARKER_GRAY =
+          {r: 0.48, g: 0.48, b: 0.48, a: 1.0};
+      /** @const */ var SCENE_GROUND_SIZE = 25.0;
+      /** @const */ var SCENE_HEIGHT = 4.0;
+      /** @const */ var GRIDLINE_COUNT = 10;
+
+      // Make ground plane.
+      let groundPlane = new api.UiElementUpdate();
+      groundPlane.setVisible(true);
+      groundPlane.setSize(SCENE_GROUND_SIZE, SCENE_GROUND_SIZE);
+      groundPlane.setFill(
+          new api.OpaqueGradient(GRADIENT_LIGHER_GRAY, GRADIENT_DARKER_GRAY));
+      groundPlane.setTranslation(0, -SCENE_HEIGHT / 2, 0);
+      groundPlane.setRotation(1.0, 0.0, 0.0, -Math.PI / 2);
+      this.groundPlaneId = ui.addElement(groundPlane);
+
+      // Make ceiling plane.
+      let ceilingPlane = new api.UiElementUpdate();
+      ceilingPlane.setVisible(true);
+      ceilingPlane.setSize(SCENE_GROUND_SIZE, SCENE_GROUND_SIZE);
+      ceilingPlane.setFill(
+          new api.OpaqueGradient(GRADIENT_LIGHER_GRAY, GRADIENT_DARKER_GRAY));
+      ceilingPlane.setTranslation(0, SCENE_HEIGHT / 2, 0);
+      ceilingPlane.setRotation(1.0, 0.0, 0.0, Math.PI / 2);
+      this.ceilingPlaneId = ui.addElement(ceilingPlane);
+
+      // Ground grid.
+      let groundGrid = new api.UiElementUpdate();
+      groundGrid.setVisible(true);
+      groundGrid.setSize(SCENE_GROUND_SIZE, SCENE_GROUND_SIZE);
+      groundGrid.setFill(new api.GridGradient(
+          GRADIENT_LIGHER_GRAY, GRADIENT_LIGHER_GRAY, GRIDLINE_COUNT));
+      groundGrid.setTranslation(0, -SCENE_HEIGHT / 2 + 0.01, 0);
+      groundGrid.setRotation(1.0, 0.0, 0.0, -Math.PI / 2);
+      this.groundGridId = ui.addElement(groundGrid);
+    }
+
+    setEnabled(enabled) {
+      let groundPlaneUpdate = new api.UiElementUpdate();
+      groundPlaneUpdate.setVisible(enabled);
+      ui.updateElement(this.groundPlaneId, groundPlaneUpdate);
+      let ceilingPlaneUpdate = new api.UiElementUpdate();
+      ceilingPlaneUpdate.setVisible(enabled);
+      ui.updateElement(this.ceilingPlaneId, ceilingPlaneUpdate);
+      let groundGridUpdate = new api.UiElementUpdate();
+      groundGridUpdate.setVisible(enabled);
+      ui.updateElement(this.groundGridId, groundGridUpdate);
+    }
+  };
+
   class Omnibox {
     constructor() {
       this.enabled = false;
@@ -563,6 +617,7 @@ var vrShellUi = (function() {
       this.menuMode = false;
       this.fullscreen = false;
 
+      this.background = new Background();
       this.contentQuad = new ContentQuad();
       let contentId = this.contentQuad.getElementId();
 
@@ -604,6 +659,7 @@ var vrShellUi = (function() {
           mode == api.Mode.WEB_VR && !menuMode);
 
       this.reloadUiButton.setEnabled(mode == api.Mode.STANDARD);
+      this.background.setEnabled(mode == api.Mode.STANDARD && !menuMode);
 
       api.setUiCssSize(
           uiRootElement.clientWidth, uiRootElement.clientHeight, UI_DPR);

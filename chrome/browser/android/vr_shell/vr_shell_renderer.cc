@@ -16,12 +16,11 @@ namespace {
   { left, bottom, left, top, right, bottom, left, top, right, top, right, \
     bottom }
 
-static constexpr float kHalfHeight = 0.5f;
-static constexpr float kHalfWidth = 0.5f;
+static constexpr float kHalfSize = 0.5f;
 static constexpr float kTextureQuadPosition[18] = {
-    -kHalfWidth, kHalfHeight,  0.0f, -kHalfWidth, -kHalfHeight, 0.0f,
-    kHalfWidth,  kHalfHeight,  0.0f, -kHalfWidth, -kHalfHeight, 0.0f,
-    kHalfWidth,  -kHalfHeight, 0.0f, kHalfWidth,  kHalfHeight,  0.0f};
+    -kHalfSize, kHalfSize,  0.0f, -kHalfSize, -kHalfSize, 0.0f,
+    kHalfSize,  kHalfSize,  0.0f, -kHalfSize, -kHalfSize, 0.0f,
+    kHalfSize,  -kHalfSize, 0.0f, kHalfSize,  kHalfSize,  0.0f};
 static constexpr int kPositionDataSize = 3;
 // Number of vertices passed to glDrawArrays().
 static constexpr int kVerticesNumber = 6;
@@ -54,11 +53,6 @@ static constexpr float kFadePoint = 0.5335;
 static constexpr float kLaserColor[] = {1.0f, 1.0f, 1.0f, 0.5f};
 static constexpr int kLaserDataWidth = 48;
 static constexpr int kLaserDataHeight = 1;
-
-// Background constants.
-static constexpr float kGroundTileSize = 2.5f;
-static constexpr float kGroundMaxSize = 25.0f;
-static constexpr float kGroundYPosition = -2.0f;
 
 // Laser texture data, 48x1 RGBA.
 // TODO(mthiesse): As we add more resources for VR Shell, we should put them
@@ -97,7 +91,8 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_Position = u_ModelViewProjMatrix * a_Position;
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::BACKGROUND_VERTEX_SHADER:
+    case vr_shell::ShaderID::GRADIENT_QUAD_VERTEX_SHADER:
+    case vr_shell::ShaderID::GRADIENT_GRID_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
           uniform mat4 u_ModelViewProjMatrix;
@@ -106,7 +101,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
           varying vec2 v_GridPosition;
 
           void main() {
-            v_GridPosition = a_Position.xz / u_SceneRadius;
+            v_GridPosition = a_Position.xy / u_SceneRadius;
             gl_Position = u_ModelViewProjMatrix * a_Position;
           }
           /* clang-format on */);
@@ -207,19 +202,21 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_FragColor = vec4(final_color.xyz, final_color.w * total_fade);
           }
           /* clang-format on */);
-    case vr_shell::ShaderID::BACKGROUND_FRAGMENT_SHADER:
-      return SHADER(
+    case vr_shell::ShaderID::GRADIENT_QUAD_FRAGMENT_SHADER:
+    case vr_shell::ShaderID::GRADIENT_GRID_FRAGMENT_SHADER:
+      return OEIE_SHADER(
           /* clang-format off */
           precision highp float;
           varying vec2 v_GridPosition;
           uniform vec4 u_CenterColor;
           uniform vec4 u_EdgeColor;
+          uniform mediump float u_Opacity;
 
           void main() {
             float edgeColorWeight = clamp(length(v_GridPosition), 0.0, 1.0);
             float centerColorWeight = 1.0 - edgeColorWeight;
-            gl_FragColor = u_CenterColor * centerColorWeight +
-                u_EdgeColor * edgeColorWeight;
+            gl_FragColor = (u_CenterColor * centerColorWeight +
+                u_EdgeColor * edgeColorWeight) * vec4(1.0, 1.0, 1.0, u_Opacity);
           }
           /* clang-format on */);
     default:
@@ -453,122 +450,120 @@ void LaserRenderer::Draw(const gvr::Mat4f& view_proj_matrix) {
 
 LaserRenderer::~LaserRenderer() = default;
 
-BackgroundRenderer::BackgroundRenderer()
-    : BaseRenderer(BACKGROUND_VERTEX_SHADER, BACKGROUND_FRAGMENT_SHADER) {
+GradientQuadRenderer::GradientQuadRenderer()
+    : BaseRenderer(GRADIENT_QUAD_VERTEX_SHADER, GRADIENT_QUAD_FRAGMENT_SHADER) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   scene_radius_handle_ = glGetUniformLocation(program_handle_, "u_SceneRadius");
   center_color_handle_ = glGetUniformLocation(program_handle_, "u_CenterColor");
   edge_color_handle_ = glGetUniformLocation(program_handle_, "u_EdgeColor");
-
-  // Make ground grid.
-  int groundTilesNumber = kGroundMaxSize / kGroundTileSize;
-  scene_radius_ = groundTilesNumber * kGroundTileSize * 0.5f;
-  int groundLinesNumber = 2 * (groundTilesNumber + 1);
-  ground_grid_lines_.resize(groundLinesNumber);
-
-  for (int i = 0; i < groundLinesNumber - 1; i += 2) {
-    float position =
-        -scene_radius_ + (i / 2) * scene_radius_ * 2.0f / groundTilesNumber;
-
-    // Line parallel to the z axis.
-    Line3d& zLine = ground_grid_lines_[i];
-    // Line parallel to the x axis.
-    Line3d& xLine = ground_grid_lines_[i + 1];
-
-    zLine.start.x = position;
-    zLine.start.y = kGroundYPosition;
-    zLine.start.z = -scene_radius_;
-    zLine.end.x = position;
-    zLine.end.y = kGroundYPosition;
-    zLine.end.z = scene_radius_;
-    xLine.start.x = -scene_radius_;
-    xLine.start.y = kGroundYPosition;
-    xLine.start.z = position;
-    xLine.end.x = scene_radius_;
-    xLine.end.y = kGroundYPosition;
-    xLine.end.z = position;
-  }
-
-  // Make plane for ground and ceilings.
-  // clang-format off
-  ground_ceiling_plane_positions_ = {
-      // First triangle.
-      -scene_radius_, 0.0f,  scene_radius_,
-       scene_radius_, 0.0f,  scene_radius_,
-      -scene_radius_, 0.0f, -scene_radius_,
-      // Second triangle.
-      -scene_radius_, 0.0f, -scene_radius_,
-       scene_radius_, 0.0f,  scene_radius_,
-       scene_radius_, 0.0f, -scene_radius_};
-  // clang-format on
-
-  // Make the transform to draw the plane either on the ground or the ceiling.
-  SetIdentityM(ground_plane_transform_mat_);
-  TranslateMRight(ground_plane_transform_mat_, ground_plane_transform_mat_,
-                  0.0f, kGroundYPosition - 0.1f, 0.0f);
-
-  SetIdentityM(ceiling_plane_transform_mat_);
-  gvr::Quatf rotation_quat = QuatFromAxisAngle({1.0f, 0.0f, 0.0f}, M_PI);
-  ceiling_plane_transform_mat_ =
-      MatrixMul(ceiling_plane_transform_mat_, QuatToMatrix(rotation_quat));
-  TranslateMRight(ceiling_plane_transform_mat_, ceiling_plane_transform_mat_,
-                  0.0f, kGroundYPosition - 0.1f, 0.0f);
+  opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
 }
 
-void BackgroundRenderer::Draw(const gvr::Mat4f& view_proj_matrix) {
-  glUseProgram(program_handle_);
+void GradientQuadRenderer::Draw(const gvr::Mat4f& view_proj_matrix,
+                                const Colorf& edge_color,
+                                const Colorf& center_color,
+                                float opacity) {
+  PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
+
+  // Tell shader the grid size so that it can calculate the fading.
+  glUniform1f(scene_radius_handle_, kHalfSize);
+
+  // Set the edge color to the fog color so that it seems to fade out.
+  glUniform4f(edge_color_handle_, edge_color.r, edge_color.g, edge_color.b,
+              edge_color.a);
+  glUniform4f(center_color_handle_, center_color.r, center_color.g,
+              center_color.b, center_color.a);
+  glUniform1f(opacity_handle_, opacity);
+
+  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+
+  glDisableVertexAttribArray(position_handle_);
+  glDisableVertexAttribArray(tex_coord_handle_);
+}
+
+GradientQuadRenderer::~GradientQuadRenderer() = default;
+
+GradientGridRenderer::GradientGridRenderer()
+    : BaseRenderer(GRADIENT_QUAD_VERTEX_SHADER, GRADIENT_QUAD_FRAGMENT_SHADER) {
+  model_view_proj_matrix_handle_ =
+      glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
+  scene_radius_handle_ = glGetUniformLocation(program_handle_, "u_SceneRadius");
+  center_color_handle_ = glGetUniformLocation(program_handle_, "u_CenterColor");
+  edge_color_handle_ = glGetUniformLocation(program_handle_, "u_EdgeColor");
+  opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
+}
+
+void GradientGridRenderer::Draw(const gvr::Mat4f& view_proj_matrix,
+                                const Colorf& edge_color,
+                                const Colorf& center_color,
+                                int gridline_count,
+                                float opacity) {
+  // In case the tile number changed we have to regenerate the grid lines.
+  if (grid_lines_.size() != static_cast<size_t>(2 * (gridline_count + 1))) {
+    MakeGridLines(gridline_count);
+  }
 
   // Pass in model view project matrix.
   glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
                      MatrixToGLArray(view_proj_matrix).data());
 
   // Tell shader the grid size so that it can calculate the fading.
-  int groundTilesNumber = kGroundMaxSize / kGroundTileSize;
-  glUniform1f(scene_radius_handle_, scene_radius_);
+  glUniform1f(scene_radius_handle_, kHalfSize);
 
   // Set the edge color to the fog color so that it seems to fade out.
-  glUniform4f(edge_color_handle_, kFogBrightness, kFogBrightness,
-              kFogBrightness, 1.0f);
+  glUniform4f(edge_color_handle_, edge_color.r, edge_color.g, edge_color.b,
+              edge_color.a);
+  glUniform4f(center_color_handle_, center_color.r, center_color.g,
+              center_color.b, center_color.a);
+  glUniform1f(opacity_handle_, opacity);
 
-  // Draw the ground grid.
+  // Draw the grid.
   glEnableVertexAttribArray(position_handle_);
   glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
-                        (float*)ground_grid_lines_.data());
-  glUniform4f(center_color_handle_, kGridBrightness, kGridBrightness,
-              kGridBrightness, 1.0f);
-  int groundVerticesNumber = 4 * (groundTilesNumber + 1);
-  glDrawArrays(GL_LINES, 0, groundVerticesNumber);
-
-  // Draw the ground plane.
-  gvr::Mat4f transformed_matrix =
-      MatrixMul(view_proj_matrix, ground_plane_transform_mat_);
-  glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
-                     MatrixToGLArray(transformed_matrix).data());
-  glUniform4f(center_color_handle_, kGroundCeilingBrightness,
-              kGroundCeilingBrightness, kGroundCeilingBrightness, 1.0f);
-  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
-                        ground_ceiling_plane_positions_.data());
-  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
-
-  // Draw the ceiling plane.
-  transformed_matrix =
-      MatrixMul(view_proj_matrix, ceiling_plane_transform_mat_);
-  glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
-                     MatrixToGLArray(transformed_matrix).data());
-  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+                        (float*)grid_lines_.data());
+  int verticesNumber = 4 * (gridline_count + 1);
+  glDrawArrays(GL_LINES, 0, verticesNumber);
 
   glDisableVertexAttribArray(position_handle_);
 }
 
-BackgroundRenderer::~BackgroundRenderer() = default;
+GradientGridRenderer::~GradientGridRenderer() = default;
+
+void GradientGridRenderer::MakeGridLines(int gridline_count) {
+  int linesNumber = 2 * (gridline_count + 1);
+  grid_lines_.resize(linesNumber);
+
+  for (int i = 0; i < linesNumber - 1; i += 2) {
+    float position = -kHalfSize + (i / 2) * kHalfSize * 2.0f / gridline_count;
+
+    // Line parallel to the z axis.
+    Line3d& zLine = grid_lines_[i];
+    // Line parallel to the x axis.
+    Line3d& xLine = grid_lines_[i + 1];
+
+    zLine.start.x = position;
+    zLine.start.y = kHalfSize;
+    zLine.start.z = 0.0f;
+    zLine.end.x = position;
+    zLine.end.y = -kHalfSize;
+    zLine.end.z = 0.0f;
+    xLine.start.x = -kHalfSize;
+    xLine.start.y = -position;
+    xLine.start.z = 0.0f;
+    xLine.end.x = kHalfSize;
+    xLine.end.y = -position;
+    xLine.end.z = 0.0f;
+  }
+}
 
 VrShellRenderer::VrShellRenderer()
     : textured_quad_renderer_(new TexturedQuadRenderer),
       webvr_renderer_(new WebVrRenderer),
       reticle_renderer_(new ReticleRenderer),
       laser_renderer_(new LaserRenderer),
-      background_renderer_(new BackgroundRenderer) {}
+      gradient_quad_renderer_(new GradientQuadRenderer),
+      gradient_grid_renderer_(new GradientGridRenderer) {}
 
 VrShellRenderer::~VrShellRenderer() = default;
 

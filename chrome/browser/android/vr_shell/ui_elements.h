@@ -28,6 +28,22 @@ enum YAnchoring {
   YBOTTOM
 };
 
+enum Fill {
+  NONE = 0,
+  // The element is filled with part of the HTML UI as specified by the copy
+  // rect.
+  SPRITE = 1,
+  // The element is filled with a radial gradient as specified by the edge and
+  // center color.
+  OPAQUE_GRADIENT = 2,
+  // Same as OPAQUE_GRADIENT but the element is drawn as a grid.
+  GRID_GRADIENT = 3,
+  // The element is filled with the content web site. Only one content element
+  // may be added to the
+  // scene.
+  CONTENT = 4
+};
+
 struct ReversibleTransform {
   ReversibleTransform();
 
@@ -72,7 +88,7 @@ struct ContentRectangle : public WorldRectangle {
   // Valid IDs are non-negative.
   int id = -1;
 
-  // If a non-negative parent ID is specified, applicable tranformations
+  // If a non-negative parent ID is specified, applicable transformations
   // are applied relative to the parent, rather than absolutely.
   int parent_id = -1;
 
@@ -85,10 +101,6 @@ struct ContentRectangle : public WorldRectangle {
   // If true, transformations will be applied relative to the field of view,
   // rather than the world.
   bool lock_to_fov = false;
-
-  // If true, this element is the content quad. Only one content quad may be
-  // added to the scene.
-  bool content_quad = false;
 
   // Specifies the region (in pixels) of a texture to render.
   Recti copy_rect = {0, 0, 0, 0};
@@ -120,6 +132,13 @@ struct ContentRectangle : public WorldRectangle {
 
   // Animations that affect the properties of the object over time.
   std::vector<std::unique_ptr<Animation>> animations;
+
+  Fill fill = Fill::NONE;
+
+  Colorf edge_color = {1.0f, 1.0f, 1.0f, 1.0f};
+  Colorf center_color = {1.0f, 1.0f, 1.0f, 1.0f};
+
+  int gridline_count = 1;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentRectangle);

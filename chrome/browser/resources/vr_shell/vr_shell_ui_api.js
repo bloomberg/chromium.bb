@@ -119,6 +119,52 @@ api.setUiCssSize = function(width, height, dpr) {
   chrome.send('setUiCssSize', [width, height, dpr]);
 };
 
+api.FillType = {
+  'NONE': 0,
+  'SPRITE': 1,
+  'OPAQUE_GRADIENT': 2,
+  'GRID_GRADIENT': 3,
+  'CONTENT': 4
+};
+
+api.Fill = class {
+  constructor(type) {
+    this.properties = {};
+    this.properties['fillType'] = type;
+  }
+}
+
+api.Sprite = class extends api.Fill {
+  constructor(pixelX, pixelY, pixelWidth, pixelHeight) {
+    super(api.FillType.SPRITE);
+    this.properties.copyRect =
+        {x: pixelX, y: pixelY, width: pixelWidth, height: pixelHeight};
+  }
+}
+
+api.OpaqueGradient = class extends api.Fill {
+  constructor(edgeColor, centerColor) {
+    super(api.FillType.OPAQUE_GRADIENT);
+    this.properties.edgeColor = edgeColor;
+    this.properties.centerColor = centerColor;
+  }
+}
+
+api.GridGradient = class extends api.Fill {
+  constructor(edgeColor, centerColor, gridlineCount) {
+    super(api.FillType.GRID_GRADIENT);
+    this.properties.edgeColor = edgeColor;
+    this.properties.centerColor = centerColor;
+    this.properties.gridlineCount = gridlineCount;
+  }
+}
+
+api.Content = class extends api.Fill {
+  constructor() {
+    super(api.FillType.CONTENT);
+  }
+}
+
 /**
  * Represents updates to UI element properties. Any properties set on this
  * object are relayed to an underlying native element via scene command.
@@ -137,13 +183,6 @@ api.UiElementUpdate = class {
    */
   setId(id) {
     this.properties['id'] = id;
-  }
-
-  /**
-  * Operates on an instance of MyClass and returns something.
-  */
-  setIsContentQuad() {
-    this.properties['contentQuad'] = true;
   }
 
   /**
@@ -245,6 +284,10 @@ api.UiElementUpdate = class {
   setOpacity(opacity) {
     this.properties['opacity'] = opacity;
   }
+
+  setFill(fill) {
+    Object.assign(this.properties, fill.properties);
+  }
 };
 
 /**
@@ -266,9 +309,7 @@ api.UiElement = class extends api.UiElementUpdate {
   constructor(pixelX, pixelY, pixelWidth, pixelHeight) {
     super();
 
-    /** @private {Object} */
-    this.properties['copyRect'] =
-        {x: pixelX, y: pixelY, width: pixelWidth, height: pixelHeight};
+    this.setFill(new api.Sprite(pixelX, pixelY, pixelWidth, pixelHeight));
   }
 };
 

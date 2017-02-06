@@ -63,8 +63,8 @@ scene.Scene = class {
   }
 
   /**
-   * Add a new UiElement to the scene, returning the ID assigned.
-   * @param {api.UiElement} element
+   * Add a new UiElementUpdate to the scene, returning the ID assigned.
+   * @param {api.UiElementUpdate} element
    */
   addElement(element) {
     var id = this.idIndex++;

@@ -34,6 +34,13 @@ typedef struct RotationAxisAngle {
   float angle;
 } RotationAxisAngle;
 
+typedef struct Colorf {
+  float r;
+  float g;
+  float b;
+  float a;
+} Colorf;
+
 void SetIdentityM(gvr::Mat4f& mat);
 
 void TranslateM(gvr::Mat4f& tmat, gvr::Mat4f& mat, float x, float y, float z);

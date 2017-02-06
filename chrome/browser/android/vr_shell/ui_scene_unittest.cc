@@ -75,15 +75,21 @@ TEST(UiScene, AddRemoveContentQuad) {
 
   base::DictionaryValue dict;
   dict.SetInteger("id", 0);
-  dict.SetBoolean("contentQuad", true);
+  dict.SetInteger("fillType", Fill::CONTENT);
   scene.AddUiElementFromDict(dict);
   EXPECT_NE(scene.GetContentQuad(), nullptr);
 
-  dict.SetBoolean("contentQuad", false);
+  dict.SetInteger("fillType", Fill::SPRITE);
+  std::unique_ptr<base::DictionaryValue> copy_rect(new base::DictionaryValue);
+  copy_rect->SetInteger("x", 100);
+  copy_rect->SetInteger("y", 101);
+  copy_rect->SetInteger("width", 102);
+  copy_rect->SetInteger("height", 103);
+  dict.Set("copyRect", std::move(copy_rect));
   scene.UpdateUiElementFromDict(dict);
   EXPECT_EQ(scene.GetContentQuad(), nullptr);
 
-  dict.SetBoolean("contentQuad", true);
+  dict.SetInteger("fillType", Fill::CONTENT);
   scene.UpdateUiElementFromDict(dict);
   EXPECT_NE(scene.GetContentQuad(), nullptr);
 
@@ -236,7 +242,7 @@ TEST(UiScene, AddUiElementFromDictionary) {
   dict.SetBoolean("visible", false);
   dict.SetBoolean("hitTestable", false);
   dict.SetBoolean("lockToFov", true);
-  dict.SetBoolean("contentQuad", true);
+  dict.SetInteger("fillType", Fill::SPRITE);
   dict.SetInteger("xAnchoring", XAnchoring::XLEFT);
   dict.SetInteger("yAnchoring", YAnchoring::YTOP);
   dict.SetDouble("opacity", 0.357);
@@ -281,7 +287,7 @@ TEST(UiScene, AddUiElementFromDictionary) {
   EXPECT_EQ(element->visible, false);
   EXPECT_EQ(element->hit_testable, false);
   EXPECT_EQ(element->lock_to_fov, true);
-  EXPECT_EQ(element->content_quad, true);
+  EXPECT_EQ(element->fill, Fill::SPRITE);
   EXPECT_EQ(element->x_anchoring, XAnchoring::XLEFT);
   EXPECT_EQ(element->y_anchoring, YAnchoring::YTOP);
   EXPECT_FLOAT_EQ(element->opacity, 0.357);
@@ -307,6 +313,91 @@ TEST(UiScene, AddUiElementFromDictionary) {
   EXPECT_FLOAT_EQ(element->translation.x, 500);
   EXPECT_FLOAT_EQ(element->translation.y, 501);
   EXPECT_FLOAT_EQ(element->translation.z, 502);
+}
+
+TEST(UiScene, AddUiElementFromDictionary_Fill) {
+  UiScene scene;
+  base::DictionaryValue dict;
+
+  base::DictionaryValue copy_rect;
+  copy_rect.SetInteger("x", 1);
+  copy_rect.SetInteger("y", 2);
+  copy_rect.SetInteger("width", 3);
+  copy_rect.SetInteger("height", 4);
+
+  base::DictionaryValue edge_color;
+  edge_color.SetDouble("r", 0.1);
+  edge_color.SetDouble("g", 0.2);
+  edge_color.SetDouble("b", 0.3);
+  edge_color.SetDouble("a", 0.4);
+
+  base::DictionaryValue center_color;
+  center_color.SetDouble("r", 0.5);
+  center_color.SetDouble("g", 0.6);
+  center_color.SetDouble("b", 0.7);
+  center_color.SetDouble("a", 0.8);
+
+  // Test SPRITE filling.
+  dict.SetInteger("id", 9);
+  dict.SetInteger("fillType", Fill::SPRITE);
+  dict.Set("copyRect", copy_rect.DeepCopy());
+  scene.AddUiElementFromDict(dict);
+  const auto* element = scene.GetUiElementById(9);
+
+  EXPECT_EQ(element->fill, Fill::SPRITE);
+  EXPECT_EQ(element->copy_rect.x, 1);
+  EXPECT_EQ(element->copy_rect.y, 2);
+  EXPECT_EQ(element->copy_rect.width, 3);
+  EXPECT_EQ(element->copy_rect.height, 4);
+
+  // Test OPAQUE_GRADIENT filling.
+  dict.Clear();
+  dict.SetInteger("id", 10);
+  dict.SetInteger("fillType", Fill::OPAQUE_GRADIENT);
+  dict.Set("edgeColor", edge_color.DeepCopy());
+  dict.Set("centerColor", center_color.DeepCopy());
+  scene.AddUiElementFromDict(dict);
+  element = scene.GetUiElementById(10);
+
+  EXPECT_EQ(element->fill, Fill::OPAQUE_GRADIENT);
+  EXPECT_FLOAT_EQ(element->edge_color.r, 0.1);
+  EXPECT_FLOAT_EQ(element->edge_color.g, 0.2);
+  EXPECT_FLOAT_EQ(element->edge_color.b, 0.3);
+  EXPECT_FLOAT_EQ(element->edge_color.a, 0.4);
+  EXPECT_FLOAT_EQ(element->center_color.r, 0.5);
+  EXPECT_FLOAT_EQ(element->center_color.g, 0.6);
+  EXPECT_FLOAT_EQ(element->center_color.b, 0.7);
+  EXPECT_FLOAT_EQ(element->center_color.a, 0.8);
+
+  // Test GRID_GRADIENT filling.
+  dict.Clear();
+  dict.SetInteger("id", 11);
+  dict.SetInteger("fillType", Fill::GRID_GRADIENT);
+  dict.Set("edgeColor", edge_color.DeepCopy());
+  dict.Set("centerColor", center_color.DeepCopy());
+  dict.SetInteger("gridlineCount", 10);
+  scene.AddUiElementFromDict(dict);
+  element = scene.GetUiElementById(11);
+
+  EXPECT_EQ(element->fill, Fill::GRID_GRADIENT);
+  EXPECT_FLOAT_EQ(element->edge_color.r, 0.1);
+  EXPECT_FLOAT_EQ(element->edge_color.g, 0.2);
+  EXPECT_FLOAT_EQ(element->edge_color.b, 0.3);
+  EXPECT_FLOAT_EQ(element->edge_color.a, 0.4);
+  EXPECT_FLOAT_EQ(element->center_color.r, 0.5);
+  EXPECT_FLOAT_EQ(element->center_color.g, 0.6);
+  EXPECT_FLOAT_EQ(element->center_color.b, 0.7);
+  EXPECT_FLOAT_EQ(element->center_color.a, 0.8);
+  EXPECT_EQ(element->gridline_count, 10);
+
+  // Test CONTENT filling.
+  dict.Clear();
+  dict.SetInteger("id", 12);
+  dict.SetInteger("fillType", Fill::CONTENT);
+  scene.AddUiElementFromDict(dict);
+  element = scene.GetUiElementById(12);
+
+  EXPECT_EQ(element->fill, Fill::CONTENT);
 }
 
 TEST(UiScene, AddAnimationFromDictionary) {

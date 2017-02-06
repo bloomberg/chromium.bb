@@ -15,6 +15,9 @@
 
 namespace vr_shell {
 
+// TODO(tiborg): set background color through JS API.
+constexpr float kFogBrightness = 0.57f;
+
 typedef unsigned int GLuint;
 
 enum ShaderID {
@@ -27,8 +30,10 @@ enum ShaderID {
   RETICLE_FRAGMENT_SHADER,
   LASER_VERTEX_SHADER,
   LASER_FRAGMENT_SHADER,
-  BACKGROUND_VERTEX_SHADER,
-  BACKGROUND_FRAGMENT_SHADER,
+  GRADIENT_QUAD_VERTEX_SHADER,
+  GRADIENT_QUAD_FRAGMENT_SHADER,
+  GRADIENT_GRID_VERTEX_SHADER,
+  GRADIENT_GRID_FRAGMENT_SHADER,
   SHADER_ID_MAX
 };
 
@@ -137,29 +142,48 @@ class LaserRenderer : public BaseRenderer {
   DISALLOW_COPY_AND_ASSIGN(LaserRenderer);
 };
 
-class BackgroundRenderer : public BaseRenderer {
+class GradientQuadRenderer : public BaseRenderer {
  public:
-  static constexpr float kFogBrightness = 0.57f;
-  static constexpr float kGroundCeilingBrightness = 0.48f;
-  static constexpr float kGridBrightness = 0.57f;
+  GradientQuadRenderer();
+  ~GradientQuadRenderer() override;
 
-  BackgroundRenderer();
-  ~BackgroundRenderer() override;
-
-  void Draw(const gvr::Mat4f& view_proj_matrix);
+  void Draw(const gvr::Mat4f& view_proj_matrix,
+            const Colorf& edge_color,
+            const Colorf& center_color,
+            float opacity);
 
  private:
   GLuint model_view_proj_matrix_handle_;
   GLuint scene_radius_handle_;
   GLuint center_color_handle_;
   GLuint edge_color_handle_;
-  std::vector<Line3d>  ground_grid_lines_;
-  std::vector<float> ground_ceiling_plane_positions_;
-  gvr::Mat4f ground_plane_transform_mat_;
-  gvr::Mat4f ceiling_plane_transform_mat_;
-  float scene_radius_;
+  GLuint opacity_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(BackgroundRenderer);
+  DISALLOW_COPY_AND_ASSIGN(GradientQuadRenderer);
+};
+
+class GradientGridRenderer : public BaseRenderer {
+ public:
+  GradientGridRenderer();
+  ~GradientGridRenderer() override;
+
+  void Draw(const gvr::Mat4f& view_proj_matrix,
+            const Colorf& edge_color,
+            const Colorf& center_color,
+            int gridline_count,
+            float opacity);
+
+ private:
+  void MakeGridLines(int gridline_count);
+
+  GLuint model_view_proj_matrix_handle_;
+  GLuint scene_radius_handle_;
+  GLuint center_color_handle_;
+  GLuint edge_color_handle_;
+  GLuint opacity_handle_;
+  std::vector<Line3d> grid_lines_;
+
+  DISALLOW_COPY_AND_ASSIGN(GradientGridRenderer);
 };
 
 class VrShellRenderer {
@@ -183,8 +207,12 @@ class VrShellRenderer {
     return laser_renderer_.get();
   }
 
-  BackgroundRenderer* GetBackgroundRenderer() {
-    return background_renderer_.get();
+  GradientQuadRenderer* GetGradientQuadRenderer() {
+    return gradient_quad_renderer_.get();
+  }
+
+  GradientGridRenderer* GetGradientGridRenderer() {
+    return gradient_grid_renderer_.get();
   }
 
  private:
@@ -192,7 +220,8 @@ class VrShellRenderer {
   std::unique_ptr<WebVrRenderer> webvr_renderer_;
   std::unique_ptr<ReticleRenderer> reticle_renderer_;
   std::unique_ptr<LaserRenderer> laser_renderer_;
-  std::unique_ptr<BackgroundRenderer> background_renderer_;
+  std::unique_ptr<GradientQuadRenderer> gradient_quad_renderer_;
+  std::unique_ptr<GradientGridRenderer> gradient_grid_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(VrShellRenderer);
 };
