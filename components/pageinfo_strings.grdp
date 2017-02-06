@@ -92,10 +92,10 @@
     Your connection to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> is encrypted using an obsolete cipher suite.
   </message>
   <message name="IDS_PAGE_INFO_EXTENSION_PAGE" desc="Message to display in the page info bubble when the page you are on is a chrome-extension:// page. This refers to Chrome extensions.">
-    You are viewing an extension page.
+    You're viewing an extension page
   </message>
   <message name="IDS_PAGE_INFO_VIEW_SOURCE_PAGE" desc="Message to display in the page info bubble when you are viewing page sources by using |View page source| option from the right click menu.">
-    You are viewing the source of a web page.
+    You're viewing the source of a web page
   </message>
 
   <if expr="not use_titlecase">
