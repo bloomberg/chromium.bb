@@ -69,7 +69,9 @@
     </dialog>
     <div id="bookmarksCard" hidden$="[[isEmptyList_(displayedList.length)]]">
       <template is="dom-repeat" items="[[displayedList]]" as="item">
-        <bookmarks-item item="[[item]]"></bookmarks-item>
+        <bookmarks-item item="[[item]]"
+            is-selected-item="[[item.isSelectedItem]]">
+        </bookmarks-item>
       </template>
     </div>
     <div class="centered-message"

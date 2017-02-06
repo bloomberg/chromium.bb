@@ -10,10 +10,15 @@
     <style include="shared-style">
       :host {
         -webkit-padding-start: 20px;
+        -webkit-user-select: none;
         align-items: center;
         display: flex;
         flex-direction: row;
         height: 40px;
+      }
+
+      :host([is-selected-item]) {
+        background-color: rgb(225, 235, 253);
       }
 
       #website-title {
@@ -58,7 +63,7 @@
       [[item.title]]
     </div>
     <button is="paper-icon-button-light" class="more-vert-button"
-        on-tap="onMenuButtonOpenTap_">
+        on-click="onMenuButtonOpenClick_">
       <div></div>
       <div></div>
       <div></div>

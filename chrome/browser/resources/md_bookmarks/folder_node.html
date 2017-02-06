@@ -43,8 +43,8 @@
         overflow: hidden;
       }
 
-      :host([is-selected]) .menu-label,
-      :host([is-selected]) #folder-label {
+      :host([is-selected-folder]) .menu-label,
+      :host([is-selected-folder]) #folder-label {
         color: var(--folder-active-color);
       }
 
@@ -65,7 +65,7 @@
 
     <div id="container" class="v-centered">
       <div id="folder-label" class="v-centered" on-tap="selectFolder_">
-        <iron-icon icon="[[getFolderIcon_(isSelected)]]"></iron-icon>
+        <iron-icon icon="[[getFolderIcon_(isSelectedFolder)]]"></iron-icon>
         <div class="menu-label">[[item.title]]</div>
       </div>
       <template is="dom-if" if="[[hasChildFolder_(item.children)]]">
@@ -74,11 +74,11 @@
       </template>
     </div>
     <div id="descendants" hidden$="[[!item.isOpen]]">
-      <template is="dom-repeat" items="[[item.children]]" as="child">
-        <template is="dom-if" if="[[!child.url]]">
-          <bookmarks-folder-node item="[[child]]"
-              is-selected="[[child.isSelected]]"></bookmarks-folder-node>
-        </template>
+      <template is="dom-repeat" items="[[item.children]]"
+          filter="isFolder_" observe="url" as="child">
+        <bookmarks-folder-node item="[[child]]"
+            is-selected-folder="[[child.isSelectedFolder]]">
+        </bookmarks-folder-node>
       </template>
     </div>
   </template>

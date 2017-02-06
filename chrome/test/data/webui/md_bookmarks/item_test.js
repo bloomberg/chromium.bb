@@ -27,4 +27,28 @@ suite('<bookmarks-item>', function() {
     assertTrue(item.$['folder-icon'].hidden);
     assertFalse(item.$.icon.hidden);
   });
+
+  test('pressing the buttons fires the right event', function() {
+    var counter = [0, 0, 0];
+    document.addEventListener('select-item', function(e) {
+      if (e.detail.range)
+        counter[0]++;
+      else if (e.detail.add)
+        counter[1]++;
+      else
+        counter[2]++;
+    });
+
+    customClick(item);
+    assertDeepEquals([0, 0, 1], counter);
+
+    customClick(item, {shiftKey: true});
+    assertDeepEquals([1, 0, 1], counter);
+
+    customClick(item, {ctrlKey: true});
+    assertDeepEquals([1, 1, 1], counter);
+
+    customClick(item, {shiftKey: true, ctrlKey: true});
+    assertDeepEquals([2, 1, 1], counter);
+  });
 });

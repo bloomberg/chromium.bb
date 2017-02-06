@@ -19,7 +19,8 @@
     <div id="folder-tree">
       <template is="dom-repeat" items="[[rootFolders]]">
         <bookmarks-folder-node item="[[item]]"
-            is-selected="[[item.isSelected]]"></bookmarks-folder-node>
+            is-selected-folder="[[item.isSelectedFolder]]">
+        </bookmarks-folder-node>
       </template>
     </div>
   </template>

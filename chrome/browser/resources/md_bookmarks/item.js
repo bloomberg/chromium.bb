@@ -13,17 +13,28 @@ Polymer({
     },
 
     isFolder_: Boolean,
+
+    isSelectedItem: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
   },
 
   observers: [
     'updateFavicon_(item.url)',
   ],
 
+  listeners: {
+    'click': 'onClick_',
+    'dblclick': 'onDblClick_',
+  },
+
   /**
    * @param {Event} e
    * @private
    */
-  onMenuButtonOpenTap_: function(e) {
+  onMenuButtonOpenClick_: function(e) {
+    e.stopPropagation();
     this.fire('open-item-menu', {
       target: e.target,
       item: this.item,
@@ -35,7 +46,30 @@ Polymer({
     this.isFolder_ = !(this.item.url);
   },
 
-  /** @private */
+  /**
+   * @param {Event} e
+   * @private
+   */
+  onClick_: function(e) {
+    this.fire('select-item', {
+      item: this.item,
+      range: e.shiftKey,
+      add: e.ctrlKey,
+    });
+  },
+
+  /**
+   * @param {Event} e
+   * @private
+   */
+  onDblClick_: function(e) {
+    /* TODO(jiaxi): Add double click later. */
+  },
+
+  /**
+   * @param {string} url
+   * @private
+   */
   updateFavicon_: function(url) {
     this.$.icon.style.backgroundImage = cr.icon.getFavicon(url);
   },

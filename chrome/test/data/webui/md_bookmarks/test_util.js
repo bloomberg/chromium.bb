@@ -52,6 +52,19 @@ function createFolder(id, children, config) {
 }
 
 /**
+ * Splices out the item/folder at |index| and adjusts the indices of all the
+ * items after that.
+ * @param {BookmarkTreeNode} tree
+ * @param {Number} index
+ */
+function removeChild(tree, index) {
+  tree.children.splice(index, 1);
+  for (var i = index; i < tree.children.length; i++) {
+    tree.children[i].index = i;
+  }
+}
+
+/**
  * Creates a bookmark with given properties.
  * @param {string} id
  * @param {Object=} config
@@ -68,4 +81,28 @@ function createItem(id, config) {
       newItem[key] = config[key];
   }
   return newItem;
+}
+
+/**
+ * Sends a custom click event to |element|.
+ * @param {HTMLElement} element
+ * @param {Object=} config
+ */
+function customClick(element, config) {
+  var props = {
+    bubbles: true,
+    cancelable: true,
+    buttons: 1,
+    shiftKey: false,
+    ctrlKey: false,
+  };
+
+  if (config) {
+    for (var key in config)
+      props[key] = config[key];
+  }
+
+  element.dispatchEvent(new MouseEvent('mousedown', props));
+  element.dispatchEvent(new MouseEvent('mouseup', props));
+  element.dispatchEvent(new MouseEvent('click', props));
 }
