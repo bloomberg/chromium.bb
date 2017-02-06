@@ -18,6 +18,15 @@ class PrefService;
 
 namespace startup_metric_utils {
 
+// Identifies the workload of profiled WebContents, used to refine startup
+// metrics.
+enum class WebContentsWorkload {
+  // Only loading a single tab.
+  SINGLE_TAB,
+  // Loading multiple tabs (of which the profiled WebContents is foreground).
+  MULTI_TABS,
+};
+
 // Registers startup related prefs in |registry|.
 void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -75,8 +84,9 @@ void RecordFirstWebContentsMainFrameLoad(const base::TimeTicks& ticks);
 void RecordFirstWebContentsNonEmptyPaint(const base::TimeTicks& ticks);
 
 // Call this with the time when the first web contents began navigating its main
-// frame.
-void RecordFirstWebContentsMainNavigationStart(const base::TimeTicks& ticks);
+// frame. Adds a suffix to its metrics according to |workload|.
+void RecordFirstWebContentsMainNavigationStart(const base::TimeTicks& ticks,
+                                               WebContentsWorkload workload);
 
 // Call this with the time when the first web contents successfully committed
 // its navigation for the main frame.

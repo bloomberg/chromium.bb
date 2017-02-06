@@ -412,7 +412,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   is_screen_observer_ = true;
 
 #if !defined(OS_ANDROID)
-  FirstWebContentsProfiler::Start();
+  metrics::BeginFirstWebContentsProfiling();
   metrics::TabUsageRecorder::Initialize();
 #endif  // !defined(OS_ANDROID)
 }
