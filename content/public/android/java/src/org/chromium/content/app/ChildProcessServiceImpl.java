@@ -87,6 +87,10 @@ public class ChildProcessServiceImpl {
 
     private final Semaphore mActivitySemaphore = new Semaphore(1);
 
+    ChildProcessServiceImpl() {
+        KillChildUncaughtExceptionHandler.maybeInstallHandler();
+    }
+
     // Return a Linker instance. If testing, the Linker needs special setup.
     private Linker getLinker() {
         if (Linker.areTestsEnabled()) {
