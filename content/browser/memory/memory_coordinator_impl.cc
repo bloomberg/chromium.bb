@@ -328,9 +328,10 @@ bool MemoryCoordinatorImpl::ChangeStateIfNeeded(base::MemoryState prev_state,
   last_state_change_ = base::TimeTicks::Now();
   current_state_ = next_state;
 
-  TRACE_EVENT2("memory-infra", "MemoryCoordinatorImpl::ChangeStateIfNeeded",
-               "prev", MemoryStateToString(prev_state),
-               "next", MemoryStateToString(next_state));
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
+               "MemoryCoordinatorImpl::ChangeStateIfNeeded", "prev",
+               MemoryStateToString(prev_state), "next",
+               MemoryStateToString(next_state));
   RecordStateChange(prev_state, next_state,
                     last_state_change_ - prev_last_state_change);
   NotifyStateToClients();

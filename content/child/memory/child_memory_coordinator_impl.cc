@@ -60,8 +60,9 @@ ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {
 
 void ChildMemoryCoordinatorImpl::OnStateChange(mojom::MemoryState state) {
   base::MemoryState base_state = ToBaseMemoryState(state);
-  TRACE_EVENT1("memory-infra", "ChildMemoryCoordinatorImpl::OnStateChange",
-               "state", MemoryStateToString(base_state));
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
+               "ChildMemoryCoordinatorImpl::OnStateChange", "state",
+               MemoryStateToString(base_state));
   base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
       base_state);
 }
