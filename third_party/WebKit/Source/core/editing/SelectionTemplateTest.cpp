@@ -64,4 +64,11 @@ TEST_F(SelectionTest, range) {
   EXPECT_EQ(extent, selection.extent());
 }
 
+TEST_F(SelectionTest, setIsHandleVisible) {
+  SelectionInDOMTree::Builder builder;
+  builder.setIsHandleVisible(true);
+  const SelectionInDOMTree& selection = builder.build();
+  EXPECT_TRUE(selection.isHandleVisible());
+}
+
 }  // namespace blink

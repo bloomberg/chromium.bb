@@ -16,7 +16,8 @@ SelectionTemplate<Strategy>::SelectionTemplate(const SelectionTemplate& other)
       m_affinity(other.m_affinity),
       m_granularity(other.m_granularity),
       m_hasTrailingWhitespace(other.m_hasTrailingWhitespace),
-      m_isDirectional(other.m_isDirectional)
+      m_isDirectional(other.m_isDirectional),
+      m_isHandleVisible(other.m_isHandleVisible)
 #if DCHECK_IS_ON()
       ,
       m_domTreeVersion(other.m_domTreeVersion)
@@ -45,7 +46,8 @@ bool SelectionTemplate<Strategy>::operator==(
          m_affinity == other.m_affinity &&
          m_granularity == other.m_granularity &&
          m_hasTrailingWhitespace == other.m_hasTrailingWhitespace &&
-         m_isDirectional == other.m_isDirectional;
+         m_isDirectional == other.m_isDirectional &&
+         m_isHandleVisible == other.m_isHandleVisible;
 }
 
 template <typename Strategy>
