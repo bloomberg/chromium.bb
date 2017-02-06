@@ -599,6 +599,17 @@ set(AOM_UNIT_TEST_INTRIN_SSE2 "${AOM_ROOT}/test/simd_cmp_sse2.cc")
 set(AOM_UNIT_TEST_INTRIN_SSSE3 "${AOM_ROOT}/test/simd_cmp_ssse3.cc")
 set(AOM_UNIT_TEST_INTRIN_SSE4_1 "${AOM_ROOT}/test/simd_cmp_sse4.cc")
 
+if (CONFIG_ACCOUNTING)
+  set(AOM_AV1_COMMON_SOURCES
+      ${AOM_AV1_COMMON_SOURCES}
+      "${AOM_ROOT}/av1/common/accounting.c"
+      "${AOM_ROOT}/av1/common/accounting.h")
+
+  set(AOM_UNIT_TEST_SOURCES
+      ${AOM_UNIT_TEST_SOURCES}
+      "${AOM_ROOT}/test/accounting_test.cc")
+endif ()
+
 if (CONFIG_CLPF)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
