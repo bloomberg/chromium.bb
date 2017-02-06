@@ -581,6 +581,7 @@ void CleanCertificatePolicyCache(
   [tab fetchFavicon];
   [_tabs insertObject:tab atIndex:index];
 
+  TabParentingGlobalObserver::GetInstance()->OnTabParented(tab.webState);
   [_observers tabModel:self didInsertTab:tab atIndex:index inForeground:NO];
   [_observers tabModelDidChangeTabCount:self];
 
@@ -620,6 +621,7 @@ void CleanCertificatePolicyCache(
   [_tabs replaceObjectAtIndex:index withObject:newTab];
   [newTab setParentTabModel:self];
 
+  TabParentingGlobalObserver::GetInstance()->OnTabParented(newTab.webState);
   [_observers tabModel:self didReplaceTab:oldTab withTab:newTab atIndex:index];
 
   if (self.currentTab == oldTab)
