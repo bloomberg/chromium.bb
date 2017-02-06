@@ -49,7 +49,7 @@ crbug.com/600618 virtual/spv2/svg/custom/object-current-scale.html [ Pass ]
 # SkiaBitLocker should avoid allocating huge offscreen buffer
 crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Skip ]
 crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash2.html [ Skip ]
-crbug.com/619427 [ Linux ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
+crbug.com/619427 [ Mac Linux ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 # --- End SPV2 Tests ---
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
