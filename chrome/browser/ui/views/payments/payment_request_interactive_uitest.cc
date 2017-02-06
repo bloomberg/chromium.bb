@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
@@ -22,6 +23,9 @@ class PaymentRequestWebContentsManagerTest
   PaymentRequestWebContentsManagerTest()
       : PaymentRequestInteractiveTestBase(
             "/payment_request_multiple_requests.html") {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestWebContentsManagerTest);
 };
 
 // If the page creates multiple PaymentRequest objects, it should not crash.
@@ -36,6 +40,9 @@ class PaymentRequestNoShippingTest : public PaymentRequestInteractiveTestBase {
   PaymentRequestNoShippingTest()
       : PaymentRequestInteractiveTestBase(
             "/payment_request_no_shipping_test.html") {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestNoShippingTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest,
@@ -90,6 +97,9 @@ class PaymentRequestAbortTest : public PaymentRequestInteractiveTestBase {
  protected:
   PaymentRequestAbortTest()
       : PaymentRequestInteractiveTestBase("/payment_request_abort_test.html") {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestAbortTest);
 };
 
 // Testing the use of the abort() JS API.

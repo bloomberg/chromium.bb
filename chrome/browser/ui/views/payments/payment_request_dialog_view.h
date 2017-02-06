@@ -35,6 +35,12 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
     virtual void OnDialogOpened() = 0;
 
     virtual void OnOrderSummaryOpened() = 0;
+
+    virtual void OnPaymentMethodOpened() = 0;
+
+    virtual void OnCreditCardEditorOpened() = 0;
+
+    virtual void OnBackNavigation() = 0;
   };
 
   // Build a Dialog around the PaymentRequest object. |observer| is used to
@@ -60,6 +66,9 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void ShowOrderSummary();
   void ShowShippingListSheet();
   void ShowPaymentMethodSheet();
+  void ShowCreditCardEditor();
+
+  ViewStack* view_stack_for_testing() { return &view_stack_; }
 
  private:
   void ShowInitialPaymentSheet();

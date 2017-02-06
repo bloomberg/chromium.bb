@@ -26,6 +26,9 @@ class PaymentMethodViewController : public PaymentRequestSheetController {
   std::unique_ptr<views::View> CreateView() override;
 
  private:
+  // PaymentRequestSheetController:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodViewController);
 };
 

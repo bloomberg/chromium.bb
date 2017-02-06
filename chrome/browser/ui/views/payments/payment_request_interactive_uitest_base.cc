@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
+#include "chrome/browser/ui/views/payments/view_stack.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/payments/payment_request.h"
@@ -26,6 +27,7 @@
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/gfx/animation/test_animation_delegate.h"
 #include "ui/views/controls/styled_label.h"
 
 namespace payments {
@@ -74,6 +76,21 @@ void PaymentRequestInteractiveTestBase::OnOrderSummaryOpened() {
     event_observer_->Observe(DialogEvent::ORDER_SUMMARY_OPENED);
 }
 
+void PaymentRequestInteractiveTestBase::OnPaymentMethodOpened() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::PAYMENT_METHOD_OPENED);
+}
+
+void PaymentRequestInteractiveTestBase::OnCreditCardEditorOpened() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
+}
+
+void PaymentRequestInteractiveTestBase::OnBackNavigation() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::BACK_NAVIGATION);
+}
+
 void PaymentRequestInteractiveTestBase::OnWidgetDestroyed(
     views::Widget* widget) {
   if (event_observer_)
@@ -99,9 +116,19 @@ void PaymentRequestInteractiveTestBase::InvokePaymentRequestUI() {
 void PaymentRequestInteractiveTestBase::OpenOrderSummaryScreen() {
   ResetEventObserver(DialogEvent::ORDER_SUMMARY_OPENED);
 
-  ClickOnDialogView(DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION);
+  ClickOnDialogViewAndWait(DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION);
+}
 
-  WaitForObservedEvent();
+void PaymentRequestInteractiveTestBase::OpenPaymentMethodScreen() {
+  ResetEventObserver(DialogEvent::PAYMENT_METHOD_OPENED);
+
+  ClickOnDialogViewAndWait(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION);
+}
+
+void PaymentRequestInteractiveTestBase::OpenCreditCardEditorScreen() {
+  ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
+
+  ClickOnDialogViewAndWait(DialogViewID::PAYMENT_METHOD_ADD_CARD_BUTTON);
 }
 
 content::WebContents*
@@ -136,7 +163,7 @@ void PaymentRequestInteractiveTestBase::CreatePaymentRequestForTest(
                              std::move(request));
 }
 
-void PaymentRequestInteractiveTestBase::ClickOnDialogView(
+void PaymentRequestInteractiveTestBase::ClickOnDialogViewAndWait(
     DialogViewID view_id) {
   views::View* view =
       delegate_->dialog_view()->GetViewByID(static_cast<int>(view_id));
@@ -146,6 +173,27 @@ void PaymentRequestInteractiveTestBase::ClickOnDialogView(
       view, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
       run_loop.QuitClosure());
   run_loop.Run();
+
+  WaitForAnimation();
+
+  WaitForObservedEvent();
+}
+
+void PaymentRequestInteractiveTestBase::WaitForAnimation() {
+  ViewStack* view_stack = dialog_view()->view_stack_for_testing();
+  if (view_stack->slide_in_animator_->IsAnimating()) {
+    view_stack->slide_in_animator_->SetAnimationDuration(1);
+    view_stack->slide_in_animator_->SetAnimationDelegate(
+        view_stack->top(), std::unique_ptr<gfx::AnimationDelegate>(
+                               new gfx::TestAnimationDelegate()));
+    base::RunLoop().Run();
+  } else if (view_stack->slide_out_animator_->IsAnimating()) {
+    view_stack->slide_out_animator_->SetAnimationDuration(1);
+    view_stack->slide_out_animator_->SetAnimationDelegate(
+        view_stack->top(), std::unique_ptr<gfx::AnimationDelegate>(
+                               new gfx::TestAnimationDelegate()));
+    base::RunLoop().Run();
+  }
 }
 
 const base::string16& PaymentRequestInteractiveTestBase::GetStyledLabelText(

@@ -8,15 +8,14 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/views/payments/credit_card_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/order_summary_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_method_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
 #include "chrome/browser/ui/views/payments/shipping_list_view_controller.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/payments/payment_request.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace chrome {
@@ -36,13 +35,9 @@ namespace {
 // subclass of concrete type |Controller|, passing it non-owned pointers to
 // |dialog| and the |request| that initiated that dialog. |map| should be owned
 // by |dialog|.
-template <typename Controller>
 std::unique_ptr<views::View> CreateViewAndInstallController(
-    payments::ControllerMap* map,
-    payments::PaymentRequest* request,
-    payments::PaymentRequestDialogView* dialog) {
-  std::unique_ptr<Controller> controller =
-      base::MakeUnique<Controller>(request, dialog);
+    std::unique_ptr<PaymentRequestSheetController> controller,
+    payments::ControllerMap* map) {
   std::unique_ptr<views::View> view = controller->CreateView();
   (*map)[view.get()] = std::move(controller);
   return view;
@@ -96,27 +91,47 @@ int PaymentRequestDialogView::GetDialogButtons() const {
 
 void PaymentRequestDialogView::GoBack() {
   view_stack_.Pop();
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnBackNavigation();
 }
 
 void PaymentRequestDialogView::ShowOrderSummary() {
-  view_stack_.Push(CreateViewAndInstallController<OrderSummaryViewController>(
-                       &controller_map_, request_, this),
-                   /* animate = */ true);
-
+  view_stack_.Push(
+      CreateViewAndInstallController(
+          base::MakeUnique<OrderSummaryViewController>(request_, this),
+          &controller_map_),
+      /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnOrderSummaryOpened();
 }
 
 void PaymentRequestDialogView::ShowPaymentMethodSheet() {
-  view_stack_.Push(CreateViewAndInstallController<PaymentMethodViewController>(
-                       &controller_map_, request_, this),
-                   /* animate = */ true);
+  view_stack_.Push(
+      CreateViewAndInstallController(
+          base::MakeUnique<PaymentMethodViewController>(request_, this),
+          &controller_map_),
+      /* animate = */ true);
+  if (observer_for_testing_)
+    observer_for_testing_->OnPaymentMethodOpened();
 }
 
 void PaymentRequestDialogView::ShowShippingListSheet() {
-  view_stack_.Push(CreateViewAndInstallController<ShippingListViewController>(
-                       &controller_map_, request_, this),
-                   /* animate = */ true);
+  view_stack_.Push(
+      CreateViewAndInstallController(
+          base::MakeUnique<ShippingListViewController>(request_, this),
+          &controller_map_),
+      /* animate = */ true);
+}
+
+void PaymentRequestDialogView::ShowCreditCardEditor() {
+  view_stack_.Push(
+      CreateViewAndInstallController(
+          base::MakeUnique<CreditCardEditorViewController>(request_, this),
+          &controller_map_),
+      /* animate = */ true);
+  if (observer_for_testing_)
+    observer_for_testing_->OnCreditCardEditorOpened();
 }
 
 void PaymentRequestDialogView::ShowDialog() {
@@ -129,9 +144,11 @@ void PaymentRequestDialogView::CloseDialog() {
 }
 
 void PaymentRequestDialogView::ShowInitialPaymentSheet() {
-  view_stack_.Push(CreateViewAndInstallController<PaymentSheetViewController>(
-                       &controller_map_, request_, this),
-                   /* animate = */ false);
+  view_stack_.Push(
+      CreateViewAndInstallController(
+          base::MakeUnique<PaymentSheetViewController>(request_, this),
+          &controller_map_),
+      /* animate = */ false);
   if (observer_for_testing_)
     observer_for_testing_->OnDialogOpened();
 }

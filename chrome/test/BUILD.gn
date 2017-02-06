@@ -576,6 +576,7 @@ if (!is_android) {
         # TODO(crbug.com/679127): Enable these tests on "mac_views_browser" once
         # it is supported.
         sources += [
+          "../browser/ui/views/payments/payment_request_credit_card_editor_interactive_uitest.cc",
           "../browser/ui/views/payments/payment_request_interactive_uitest.cc",
           "../browser/ui/views/payments/payment_request_interactive_uitest_base.cc",
           "../browser/ui/views/payments/payment_request_interactive_uitest_base.h",
