@@ -27,6 +27,10 @@
 #import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/wait_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Returns a fake identity.
@@ -406,8 +410,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   OpenSignInFromSettings();
 
   // Open new tab to cancel sign-in.
-  base::scoped_nsobject<OpenUrlCommand> command(
-      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")]);
+  OpenUrlCommand* command =
+      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
   chrome_test_util::RunCommandWithActiveViewController(command);
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
@@ -444,8 +448,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Open new tab to cancel sign-in.
-  base::scoped_nsobject<OpenUrlCommand> command(
-      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")]);
+  OpenUrlCommand* command =
+      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
   chrome_test_util::RunCommandWithActiveViewController(command);
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
@@ -503,8 +507,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SIGNIN_BUTTON);
 
   // Open new tab to cancel sign-in.
-  base::scoped_nsobject<OpenUrlCommand> command(
-      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")]);
+  OpenUrlCommand* command =
+      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
   chrome_test_util::RunCommandWithActiveViewController(command);
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
@@ -564,8 +568,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open new tab to cancel sign-in.
-  base::scoped_nsobject<OpenUrlCommand> command(
-      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")]);
+  OpenUrlCommand* command =
+      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
   chrome_test_util::RunCommandWithActiveViewController(command);
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
