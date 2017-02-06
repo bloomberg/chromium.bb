@@ -297,7 +297,7 @@ class _BackgroundTask(multiprocessing.Process):
       results = []
       with open(self._output.name, 'r') as output:
         pos = 0
-        running, exited_cleanly, task_errors, all_errors = (True, False, [], [])
+        running, exited_cleanly, task_errors, run_errors = (True, False, [], [])
         while running:
           # Check whether the process is still alive.
           running = self.is_alive()
@@ -307,7 +307,6 @@ class _BackgroundTask(multiprocessing.Process):
                 self._queue.get(True, self.PRINT_INTERVAL)
             if errors:
               task_errors.extend(errors)
-              all_errors.extend(errors)
 
             running = False
             exited_cleanly = True
@@ -320,13 +319,13 @@ class _BackgroundTask(multiprocessing.Process):
             self.join(self.EXIT_TIMEOUT)
             if self.exitcode is None:
               msg = '%r hung for %r seconds' % (self, self.EXIT_TIMEOUT)
-              all_errors.extend(
+              run_errors.extend(
                   failures_lib.CreateExceptInfo(ProcessExitTimeout(msg), ''))
               self._KillChildren([self])
             elif not exited_cleanly:
               msg = ('%r exited unexpectedly with code %s'
                      % (self, self.exitcode))
-              all_errors.extend(
+              run_errors.extend(
                   failures_lib.CreateExceptInfo(ProcessUnexpectedExit(msg), ''))
 
           # Read output from process.
@@ -338,7 +337,7 @@ class _BackgroundTask(multiprocessing.Process):
           elif running and time.time() > silent_death_time:
             msg = ('No output from %r for %r seconds' %
                    (self, self.SILENT_TIMEOUT))
-            all_errors.extend(
+            run_errors.extend(
                 failures_lib.CreateExceptInfo(ProcessSilentTimeout(msg), ''))
             self._KillChildren([self])
 
@@ -356,11 +355,11 @@ class _BackgroundTask(multiprocessing.Process):
             buf = output.read(_BUFSIZE)
 
           # Print error messages if anything exceptional occurred.
-          if len(all_errors) > len(task_errors):
+          if run_errors:
             logging.PrintBuildbotStepFailure()
-            msg = '\n'.join(x.str for x in all_errors if x)
-            logging.warning(msg)
             traceback.print_stack()
+            logging.warning('\n'.join(x.str for x in run_errors if x))
+            logging.info('\n'.join(x.str for x in task_errors if x))
 
           sys.stdout.flush()
           sys.stderr.flush()
@@ -373,7 +372,7 @@ class _BackgroundTask(multiprocessing.Process):
       self.Cleanup(silent=True)
 
     # If an error occurred, return it.
-    return all_errors
+    return run_errors + task_errors
 
   def start(self):
     """Invoke multiprocessing.Process.start after flushing output/err."""
