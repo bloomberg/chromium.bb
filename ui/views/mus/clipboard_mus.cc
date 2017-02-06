@@ -86,6 +86,8 @@ bool ClipboardMus::HasMimeType(const std::vector<std::string>& available_types,
   return base::ContainsValue(available_types, type);
 }
 
+void ClipboardMus::OnPreShutdown() {}
+
 uint64_t ClipboardMus::GetSequenceNumber(ui::ClipboardType type) const {
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   uint64_t sequence_number = 0;

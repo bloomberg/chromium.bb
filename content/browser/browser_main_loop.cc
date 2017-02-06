@@ -921,6 +921,8 @@ int BrowserMainLoop::PreCreateThreads() {
 
 void BrowserMainLoop::PreShutdown() {
   parts_->PreShutdown();
+
+  ui::Clipboard::OnPreShutdownForCurrentThread();
 }
 
 void BrowserMainLoop::CreateStartupTasks() {

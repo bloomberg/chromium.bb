@@ -143,10 +143,19 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // the IO thread.
   static Clipboard* GetForCurrentThread();
 
+  // Does any work necessary prior to Chrome shutdown for the current thread.
+  // All platforms but Windows have a single clipboard shared accross all
+  // threads. This function is a no-op on Windows. On Desktop Linux, if Chrome
+  // has ownership of the clipboard selection this function transfers the
+  // clipboard selection to the clipboard manager.
+  static void OnPreShutdownForCurrentThread();
+
   // Destroys the clipboard for the current thread. Usually, this will clean up
   // all clipboards, except on Windows. (Previous code leaks the IO thread
   // clipboard, so it shouldn't be a problem.)
   static void DestroyClipboardForCurrentThread();
+
+  virtual void OnPreShutdown() = 0;
 
   // Returns a sequence number which uniquely identifies clipboard state.
   // This can be used to version the data on the clipboard and determine

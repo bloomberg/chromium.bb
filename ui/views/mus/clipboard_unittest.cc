@@ -37,6 +37,8 @@ class ForwardingTestingClipboard : public ui::Clipboard {
 
  protected:
   // Overridden from ui::Clipboard:
+  void OnPreShutdown() override {}
+
   uint64_t GetSequenceNumber(ClipboardType type) const override {
     return clipboard_to_test_->GetSequenceNumber(type);
   }

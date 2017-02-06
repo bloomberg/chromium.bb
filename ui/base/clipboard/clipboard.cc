@@ -64,6 +64,18 @@ Clipboard* Clipboard::GetForCurrentThread() {
   return clipboard;
 }
 
+// static
+void Clipboard::OnPreShutdownForCurrentThread() {
+  base::AutoLock lock(clipboard_map_lock_.Get());
+  base::PlatformThreadId id = GetAndValidateThreadID();
+
+  ClipboardMap* clipboard_map = clipboard_map_.Pointer();
+  ClipboardMap::const_iterator it = clipboard_map->find(id);
+  if (it != clipboard_map->end())
+    it->second->OnPreShutdown();
+}
+
+// static
 void Clipboard::DestroyClipboardForCurrentThread() {
   base::AutoLock lock(clipboard_map_lock_.Get());
 

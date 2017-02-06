@@ -272,6 +272,8 @@ ClipboardAndroid::~ClipboardAndroid() {
   DCHECK(CalledOnValidThread());
 }
 
+void ClipboardAndroid::OnPreShutdown() {}
+
 uint64_t ClipboardAndroid::GetSequenceNumber(ClipboardType /* type */) const {
   DCHECK(CalledOnValidThread());
   // TODO: implement this. For now this interface will advertise

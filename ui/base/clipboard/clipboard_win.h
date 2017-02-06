@@ -33,6 +33,7 @@ class ClipboardWin : public Clipboard {
   ~ClipboardWin() override;
 
   // Clipboard overrides:
+  void OnPreShutdown() override;
   uint64_t GetSequenceNumber(ClipboardType type) const override;
   bool IsFormatAvailable(const FormatType& format,
                          ClipboardType type) const override;

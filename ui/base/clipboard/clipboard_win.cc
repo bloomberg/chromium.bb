@@ -419,6 +419,8 @@ ClipboardWin::ClipboardWin() {
 ClipboardWin::~ClipboardWin() {
 }
 
+void ClipboardWin::OnPreShutdown() {}
+
 uint64_t ClipboardWin::GetSequenceNumber(ClipboardType type) const {
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   return ::GetClipboardSequenceNumber();

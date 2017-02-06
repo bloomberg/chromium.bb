@@ -26,6 +26,8 @@ Clipboard* TestClipboard::CreateForCurrentThread() {
   return clipboard;
 }
 
+void TestClipboard::OnPreShutdown() {}
+
 uint64_t TestClipboard::GetSequenceNumber(ClipboardType type) const {
   return GetStore(type).sequence_number;
 }

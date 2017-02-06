@@ -23,6 +23,7 @@ class ClipboardAuraX11 : public Clipboard {
   ~ClipboardAuraX11() override;
 
   // Clipboard overrides:
+  void OnPreShutdown() override;
   uint64_t GetSequenceNumber(ClipboardType type) const override;
   bool IsFormatAvailable(const FormatType& format,
                          ClipboardType type) const override;

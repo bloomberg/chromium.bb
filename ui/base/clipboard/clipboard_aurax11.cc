@@ -678,7 +678,10 @@ ClipboardAuraX11::ClipboardAuraX11() : aurax11_details_(new AuraX11Details) {
 
 ClipboardAuraX11::~ClipboardAuraX11() {
   DCHECK(CalledOnValidThread());
+}
 
+void ClipboardAuraX11::OnPreShutdown() {
+  DCHECK(CalledOnValidThread());
   aurax11_details_->StoreCopyPasteDataAndWait();
 }
 
