@@ -832,6 +832,14 @@ TEST_F(TabModelTest, PersistSelectionChange) {
   TestChromeBrowserState::Builder test_cbs_builder;
   auto chrome_browser_state = test_cbs_builder.Build();
 
+  // Tabs register some observers with the ChromeBrowserState in an ObserverList
+  // that assert it is empty in its destructor. As Tab are Objective-C object,
+  // it is necessary to use a local pool to ensure all autoreleased object that
+  // may reference those Tabs are deallocated before the TestChromeBrowserState
+  // is destroyed (this cannot use the TabModelTest ScopedNSAutoreleasePool as
+  // it will be drained after the local variable chrome_browser_state).
+  base::mac::ScopedNSAutoreleasePool pool;
+
   NSString* stashPath =
       base::SysUTF8ToNSString(chrome_browser_state->GetStatePath().value());
 
@@ -853,6 +861,9 @@ TEST_F(TabModelTest, PersistSelectionChange) {
                                            toDirectory:stashPath];
   [model browserStateDestroyed];
   model.reset();
+
+  // Restoring TabModel session sends asynchronous tasks to IO thread, wait
+  // for them to complete after destroying the TabModel.
   base::RunLoop().RunUntilIdle();
 
   SessionWindowIOS* sessionWindow = [[SessionServiceIOS sharedService]
@@ -868,6 +879,11 @@ TEST_F(TabModelTest, PersistSelectionChange) {
                browserState:chrome_browser_state.get()]);
   EXPECT_EQ(model.get().currentTab, [model tabAtIndex:1]);
   [model browserStateDestroyed];
+  model.reset();
+
+  // Restoring TabModel session sends asynchronous tasks to IO thread, wait
+  // for them to complete after destroying the TabModel.
+  base::RunLoop().RunUntilIdle();
 
   // Clean up.
   EXPECT_TRUE([[NSFileManager defaultManager] removeItemAtPath:stashPath
