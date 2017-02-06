@@ -24,7 +24,7 @@ setup_env() {
 # We also do it by hand because when we're throttled, the addon will exit
 # the build immediately and skip the main script!
 coverity_scan() {
-  if [ "${TRAVIS_JOB_NUMBER##*.}" != "1" ] || \
+  if [ "${COVERITY_SCAN}" != "true" ] || \
      [ -n "${TRAVIS_TAG}" ] || \
      [ "${TRAVIS_PULL_REQUEST}" = "true" ]
   then
