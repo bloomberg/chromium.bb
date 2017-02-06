@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/common/presentation_constants.h"
 #include "content/public/common/presentation_session.h"
@@ -235,6 +236,9 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
+    // This needed to keep the WebContentsObserverSanityChecker checks happy for
+    // when AppendChild is called.
+    NavigateAndCommit(GURL("about:blank"));
 
     auto request = mojo::MakeRequest(&service_ptr_);
     EXPECT_CALL(mock_delegate_, AddObserver(_, _, _)).Times(1);
@@ -261,6 +265,18 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
       service_impl_.reset();
     }
     RenderViewHostImplTestHarness::TearDown();
+  }
+
+  void Navigate(bool main_frame) {
+    content::RenderFrameHost* rfh = main_rfh();
+    content::RenderFrameHostTester* rfh_tester =
+        content::RenderFrameHostTester::For(rfh);
+    if (!main_frame)
+      rfh = rfh_tester->AppendChild("subframe");
+    std::unique_ptr<NavigationHandle> navigation_handle =
+        NavigationHandle::CreateNavigationHandleForTesting(
+            GURL(), rfh, true);
+    // Destructor calls DidFinishNavigation.
   }
 
   void ListenForScreenAvailabilityAndWait(const GURL& url,
@@ -435,21 +451,14 @@ TEST_F(PresentationServiceImplTest, DidNavigateThisFrame) {
   ListenForScreenAvailabilityAndWait(presentation_url1_, true);
 
   ExpectReset();
-  service_impl_->DidNavigateAnyFrame(
-      contents()->GetMainFrame(),
-      content::LoadCommittedDetails(),
-      content::FrameNavigateParams());
+  Navigate(true);
   ExpectCleanState();
 }
 
 TEST_F(PresentationServiceImplTest, DidNavigateOtherFrame) {
   ListenForScreenAvailabilityAndWait(presentation_url1_, true);
 
-  // TODO(imcheng): How to get a different RenderFrameHost?
-  service_impl_->DidNavigateAnyFrame(
-      nullptr,
-      content::LoadCommittedDetails(),
-      content::FrameNavigateParams());
+  Navigate(false);
 
   // Availability is reported and callback is invoked since it was not
   // removed.

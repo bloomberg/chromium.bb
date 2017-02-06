@@ -32,8 +32,6 @@
 
 namespace content {
 
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
 struct PresentationConnectionMessage;
 class RenderFrameHost;
 
@@ -190,10 +188,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   void Bind(mojo::InterfaceRequest<blink::mojom::PresentationService> request);
 
   // WebContentsObserver override.
-  void DidNavigateAnyFrame(
-      content::RenderFrameHost* render_frame_host,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
 

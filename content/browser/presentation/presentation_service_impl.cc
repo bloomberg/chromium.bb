@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -508,23 +508,23 @@ void PresentationServiceImpl::OnReceiverConnectionAvailable(
       std::move(receiver_connection_request));
 }
 
-void PresentationServiceImpl::DidNavigateAnyFrame(
-    content::RenderFrameHost* render_frame_host,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void PresentationServiceImpl::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
   DVLOG(2) << "PresentationServiceImpl::DidNavigateAnyFrame";
-  if (!FrameMatches(render_frame_host))
+  if (!navigation_handle->HasCommitted() ||
+      !FrameMatches(navigation_handle->GetRenderFrameHost())) {
     return;
+  }
 
-  std::string prev_url_host = details.previous_url.host();
-  std::string curr_url_host = params.url.host();
+  std::string prev_url_host = navigation_handle->GetPreviousURL().host();
+  std::string curr_url_host = navigation_handle->GetURL().host();
 
   // If a frame navigation is in-page (e.g. navigating to a fragment in
   // same page) then we do not unregister listeners.
   DVLOG(2) << "DidNavigateAnyFrame: "
            << "prev host: " << prev_url_host << ", curr host: " << curr_url_host
-           << ", details.is_in_page: " << details.is_in_page;
-  if (details.is_in_page)
+           << ", details.is_in_page: " << navigation_handle->IsSamePage();
+  if (navigation_handle->IsSamePage())
     return;
 
   // Reset if the frame actually navigated.
