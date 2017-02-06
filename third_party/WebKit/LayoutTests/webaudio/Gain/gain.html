@@ -8,77 +8,105 @@ The 11th note will be of gain 0.0, so it should be silent (at the end in the ren
 
 <html>
 <head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
-
+<script src="../resources/audit.js"></script>
+<script src="../resources/buffer-loader.js"></script>
 </head>
 <body>
 
 <script>
+let audit = Audit.createTaskRunner();
 
-window.onload = init;
+let sampleRate = 44100.0;
+let bufferDurationSeconds = 0.125;
+let numberOfNotes = 11;
+let noteSpacing =
+    bufferDurationSeconds + 0.020;  // leave 20ms of silence between each "note"
+let lengthInSeconds = numberOfNotes * noteSpacing;
 
-var sampleRate = 44100.0;
-var bufferDurationSeconds = 0.125;
-var numberOfNotes = 11;
-var noteSpacing = bufferDurationSeconds + 0.020; // leave 20ms of silence between each "note"
-var lengthInSeconds = numberOfNotes * noteSpacing;
-
-var context = 0;
-var sinWaveBuffer = 0;
+let context = 0;
+let sinWaveBuffer = 0;
+let reference = 0;
 
 function createSinWaveBuffer(lengthInSeconds, frequency) {
-    var audioBuffer = context.createBuffer(2, lengthInSeconds * sampleRate, sampleRate);
+  let audioBuffer =
+      context.createBuffer(2, lengthInSeconds * sampleRate, sampleRate);
 
-    var n = audioBuffer.length;
-    var channelL = audioBuffer.getChannelData(0);
-    var channelR = audioBuffer.getChannelData(1);
+  let n = audioBuffer.length;
+  let channelL = audioBuffer.getChannelData(0);
+  let channelR = audioBuffer.getChannelData(1);
 
-    for (var i = 0; i < n; ++i) {
-        channelL[i] = Math.sin(frequency * 2.0*Math.PI * i / sampleRate);
-        channelR[i] = channelL[i];
-    }
+  for (let i = 0; i < n; ++i) {
+    channelL[i] = Math.sin(frequency * 2.0 * Math.PI * i / sampleRate);
+    channelR[i] = channelL[i];
+  }
 
-    return audioBuffer;
+  return audioBuffer;
 }
 
 function playNote(time, gain) {
-    var source = context.createBufferSource();
-    source.buffer = sinWaveBuffer;
+  let source = context.createBufferSource();
+  source.buffer = sinWaveBuffer;
 
-    var gainNode = context.createGain();
-    gainNode.gain.value = gain;
+  let gainNode = context.createGain();
+  gainNode.gain.value = gain;
 
-    source.connect(gainNode);
-    gainNode.connect(context.destination);
+  source.connect(gainNode);
+  gainNode.connect(context.destination);
 
-    source.start(time);
+  source.start(time);
 }
 
-function init() {
-    if (!window.testRunner)
-        return;
+audit.define('create context', function(task, should) {
+  task.describe('Create context for test');
+  // Create offline audio context.
+  context =
+      new OfflineAudioContext(2, sampleRate * lengthInSeconds, sampleRate);
+  task.done();
+});
 
-    // Create offline audio context.
-    context = new OfflineAudioContext(2, sampleRate * lengthInSeconds, sampleRate);
+audit.define('load-ref', function(task, should) {
+  task.describe('Load reference audio file');
+  let bufferLoader =
+      new BufferLoader(context, ['gain-expected.wav'], bufferList => {
+        reference = bufferList[0].getChannelData(0);
+        task.done();
+      });
 
-    // Create a buffer for a short "note".
-    sinWaveBuffer = createSinWaveBuffer(bufferDurationSeconds, 880.0);
+  bufferLoader.load();
+});
 
-    // Render 11 notes, starting at a gain of 1.0, decreasing in gain by 0.1.
-    // The last note will be of gain 0.0, so shouldn't be perceptible in the rendered output.
-    for (var i = 0; i < numberOfNotes; ++i) {
-        var time = i * noteSpacing;
-        var gain = 1.0 - i / (numberOfNotes - 1);
-        playNote(time, gain);
-    }
+audit.define('test', function(task, should) {
+  task.describe('GainNode functionality');
 
-    context.oncomplete = finishAudioTest;
-    context.startRendering();
+  // Create a buffer for a short "note".
+  sinWaveBuffer = createSinWaveBuffer(bufferDurationSeconds, 880.0);
 
-    testRunner.waitUntilDone();
-}
+  // Render 11 notes, starting at a gain of 1.0, decreasing in gain by 0.1.
+  // The last note will be of gain 0.0, so shouldn't be perceptible in the
+  // rendered output.
+  for (let i = 0; i < numberOfNotes; ++i) {
+    let time = i * noteSpacing;
+    let gain = 1.0 - i / (numberOfNotes - 1);
+    playNote(time, gain);
+  }
 
+  context.startRendering()
+      .then(buffer => {
+        let actual = buffer.getChannelData(0);
+        should(actual, 'Output from gain node').beCloseToArray(reference, {
+          absoluteThreshold: 3.0503e-5
+        });
+        let snr = 10 * Math.log10(computeSNR(actual, reference));
+        should(snr, 'SNR (in dB)').beGreaterThanOrEqualTo(89.088);
+      })
+      .then(() => task.done());
+  ;
+});
+
+audit.run();
 </script>
 
 </body>

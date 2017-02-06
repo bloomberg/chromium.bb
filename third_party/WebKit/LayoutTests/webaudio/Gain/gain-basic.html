@@ -6,34 +6,33 @@ Verifies GainNode attributes and their type.
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 
 </head>
 <body>
 
 <script>
-description("Tests GainNode attributes in IDL.");
+let audit = Audit.createTaskRunner();
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-    }
+audit.define('test', function(task, should) {
+  // Create audio context.
+  let context = new AudioContext();
 
-    // Create audio context.
-    var context = new AudioContext();
+  // Create gain node.
+  let gainNode = context.createGain();
 
-    // Create gain node.
-    var gainNode = context.createGain();
+  should(
+      gainNode.gain instanceof AudioParam,
+      'gainNode.gain instanceof AudioParam')
+      .beTrue();
 
-    if (gainNode.gain.toString().indexOf("AudioParam") > -1)
-        testPassed("gain is of AudioParam type.");
-    else
-        testFailed("gain is not of AudioParam type.");
-}
+  task.done();
+});
 
-runTest();
+audit.run();
 </script>
 
 </body>
