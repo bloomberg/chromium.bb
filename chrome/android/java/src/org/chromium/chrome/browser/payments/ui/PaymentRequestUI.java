@@ -683,7 +683,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param section The shipping options.
      */
     public void updateSection(@DataType int whichSection, SectionInformation section) {
-        mIsEditingPaymentItem = false;
         if (whichSection == TYPE_SHIPPING_ADDRESSES) {
             mShippingAddressSectionInformation = section;
             mShippingAddressSection.update(section);
@@ -697,8 +696,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mPaymentMethodSectionInformation = section;
             mPaymentMethodSection.update(section);
         }
+
+        boolean isFinishingEditItem = mIsEditingPaymentItem;
+        mIsEditingPaymentItem = false;
         updateSectionButtons();
         updatePayButtonEnabled();
+
+        // Notify ready for input for test if this is finishing editing item.
+        if (isFinishingEditItem) notifyReadyForInput();
     }
 
     @Override

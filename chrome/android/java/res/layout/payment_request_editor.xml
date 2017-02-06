@@ -6,7 +6,8 @@
 <!-- PaymentRequestUI editor dialog. -->
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto" >
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    android:background="@android:color/white" >
 
     <!-- Toolbar -->
     <org.chromium.chrome.browser.payments.ui.EditorDialogToolbar

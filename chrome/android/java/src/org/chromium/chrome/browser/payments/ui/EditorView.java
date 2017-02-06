@@ -4,12 +4,19 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.v4.view.animation.FastOutLinearInInterpolator;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.InputFilter;
@@ -40,6 +47,7 @@ import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
+import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,13 +59,19 @@ import javax.annotation.Nullable;
  * The PaymentRequest editor dialog. Can be used for editing contact information, shipping address,
  * billing address, and credit cards.
  */
-public class EditorView extends AlwaysDismissedDialog
-        implements OnClickListener, DialogInterface.OnDismissListener {
+public class EditorView
+        extends AlwaysDismissedDialog implements OnClickListener, DialogInterface.OnShowListener {
     /** The indicator for input fields that are required. */
     public static final String REQUIRED_FIELD_INDICATOR = "*";
 
     /** Help page that the user is directed to when asking for help. */
     private static final String HELP_URL = "https://support.google.com/chrome/answer/142893?hl=en";
+
+    /** Duration of the animation to show the UI to full height. */
+    private static final int DIALOG_ENTER_ANIMATION_MS = 300;
+
+    /** Duration of the animation to hide the UI. */
+    private static final int DIALOG_EXIT_ANIMATION_MS = 195;
 
     private final Context mContext;
     private final PaymentRequestObserverForTest mObserverForTest;
@@ -79,6 +93,8 @@ public class EditorView extends AlwaysDismissedDialog
     @Nullable private TextView mCardInput;
     @Nullable private TextView mPhoneInput;
 
+    private Animator mDialogInOutAnimator;
+
     /**
      * Builds the editor view.
      *
@@ -87,6 +103,8 @@ public class EditorView extends AlwaysDismissedDialog
      */
     public EditorView(Activity activity, PaymentRequestObserverForTest observerForTest) {
         super(activity, R.style.FullscreenWhite);
+        // Sets transparent background for animating content view.
+        getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         mContext = activity;
         mObserverForTest = observerForTest;
         mHandler = new Handler();
@@ -244,7 +262,7 @@ public class EditorView extends AlwaysDismissedDialog
         if (view.getId() == R.id.payments_edit_done_button) {
             if (validateForm()) {
                 mEditorModel.done();
-                dismiss();
+                dismissDialog();
                 return;
             }
 
@@ -256,7 +274,32 @@ public class EditorView extends AlwaysDismissedDialog
 
     private void cancelEdit() {
         mEditorModel.cancel();
-        dismiss();
+        dismissDialog();
+    }
+
+    private void dismissDialog() {
+        if (mDialogInOutAnimator != null || !isShowing()) return;
+
+        removeTextChangedListenersAndInputFilters();
+
+        Animator dropDown =
+                ObjectAnimator.ofFloat(mLayout, View.TRANSLATION_Y, 0f, mLayout.getHeight());
+        Animator fadeOut = ObjectAnimator.ofFloat(mLayout, View.ALPHA, mLayout.getAlpha(), 0f);
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(dropDown, fadeOut);
+
+        mDialogInOutAnimator = animatorSet;
+        mDialogInOutAnimator.setDuration(DIALOG_EXIT_ANIMATION_MS);
+        mDialogInOutAnimator.setInterpolator(new FastOutLinearInInterpolator());
+        mDialogInOutAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mDialogInOutAnimator = null;
+                dismiss();
+            }
+        });
+
+        mDialogInOutAnimator.start();
     }
 
     private void prepareButtons() {
@@ -402,7 +445,7 @@ public class EditorView extends AlwaysDismissedDialog
      * @param editorModel The description of the editor user interface to display.
      */
     public void show(final EditorModel editorModel) {
-        setOnDismissListener(this);
+        setOnShowListener(this);
         mEditorModel = editorModel;
 
         mLayout = LayoutInflater.from(mContext).inflate(R.layout.payment_request_editor, null);
@@ -415,7 +458,54 @@ public class EditorView extends AlwaysDismissedDialog
         prepareEditor();
         prepareButtons();
         show();
+    }
 
+    /** Rereads the values in the model to update the UI. */
+    public void update() {
+        for (int i = 0; i < mFieldViews.size(); i++) {
+            mFieldViews.get(i).update();
+        }
+    }
+
+    @Override
+    public void onShow(DialogInterface dialog) {
+        assert mDialogInOutAnimator == null;
+
+        // Hide keyboard and disable EditText views for animation efficiency.
+        if (getCurrentFocus() != null) UiUtils.hideKeyboard(getCurrentFocus());
+        for (int i = 0; i < mEditableTextFields.size(); i++) {
+            mEditableTextFields.get(i).setEnabled(false);
+        }
+
+        mLayout.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        mLayout.buildLayer();
+        Animator popUp =
+                ObjectAnimator.ofFloat(mLayout, View.TRANSLATION_Y, mLayout.getHeight(), 0f);
+        Animator fadeIn = ObjectAnimator.ofFloat(mLayout, View.ALPHA, 0f, 1f);
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(popUp, fadeIn);
+
+        mDialogInOutAnimator = animatorSet;
+        mDialogInOutAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
+        mDialogInOutAnimator.setInterpolator(new LinearOutSlowInInterpolator());
+        mDialogInOutAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mLayout.setLayerType(View.LAYER_TYPE_NONE, null);
+                for (int i = 0; i < mEditableTextFields.size(); i++) {
+                    mEditableTextFields.get(i).setEnabled(true);
+                }
+                // Note that keyboard will not show for dropdown field since it's not necessary.
+                if (getCurrentFocus() != null) UiUtils.showKeyboard(getCurrentFocus());
+                mDialogInOutAnimator = null;
+                initFocus();
+            }
+        });
+
+        mDialogInOutAnimator.start();
+    }
+
+    private void initFocus() {
         // Immediately focus the first invalid field to make it faster to edit.
         final List<EditorFieldView> invalidViews = getViewsWithInvalidInformation(false);
         if (!invalidViews.isEmpty()) {
@@ -432,23 +522,10 @@ public class EditorView extends AlwaysDismissedDialog
         }
     }
 
-    /** Rereads the values in the model to update the UI. */
-    public void update() {
-        for (int i = 0; i < mFieldViews.size(); i++) {
-            mFieldViews.get(i).update();
-        }
-    }
-
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        removeTextChangedListenersAndInputFilters();
-        mEditorModel.cancel();
-    }
-
     private void removeTextChangedListenersAndInputFilters() {
         if (mCardInput != null) {
             mCardInput.removeTextChangedListener(mCardNumberFormatter);
-            mCardInput.setFilters(new InputFilter[0]);  // Null is not allowed.
+            mCardInput.setFilters(new InputFilter[0]); // Null is not allowed.
             mCardInput = null;
         }
 

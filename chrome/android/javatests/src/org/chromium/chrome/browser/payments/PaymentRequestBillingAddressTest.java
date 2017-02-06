@@ -191,7 +191,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyToPay);
         // Edit the second card.
         clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickOnPaymentMethodSuggestionOptionAndWait(1, mReadyForInput);
+        clickOnPaymentMethodSuggestionOptionAndWait(1, mReadyToEdit);
 
         // Now in Card Editor to add a billing address. "Select" is selected in the dropdown.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
@@ -311,7 +311,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyToPay);
         // Edit the second card.
         clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickOnPaymentMethodSuggestionOptionAndWait(1, mReadyForInput);
+        clickOnPaymentMethodSuggestionOptionAndWait(1, mReadyToEdit);
 
         // Now "Select" is selected in the dropdown.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
