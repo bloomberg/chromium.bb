@@ -20,6 +20,10 @@
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const char kURLOfTestPage[] = "http://testPage";
 std::string const kHTMLOfTestPage =
