@@ -284,7 +284,12 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
     }
 
-    /** Length of the animation to either show the UI or expand it to full height. */
+    /**
+     * Length of the animation to either show the UI or expand it to full height.
+     * Note that click of 'Pay' button is not accepted until the animation is done, so this duration
+     * also serves the function of preventing the user from accidently double-clicking on the screen
+     * when triggering payment and thus authorizing unwanted transaction.
+     */
     private static final int DIALOG_ENTER_ANIMATION_MS = 225;
 
     /** Length of the animation to hide the bottom sheet UI. */
