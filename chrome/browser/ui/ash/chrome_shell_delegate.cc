@@ -287,6 +287,9 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
           msg = IDS_A11Y_ALERT_CAPS_OFF;
           break;
         case ash::A11Y_ALERT_SCREEN_ON:
+          // Enable automation manager when alert is screen-on, as it is
+          // previously disabled by alert screen-off.
+          SetAutomationManagerEnabled(profile, true);
           msg = IDS_A11Y_ALERT_SCREEN_ON;
           break;
         case ash::A11Y_ALERT_SCREEN_OFF:
@@ -306,6 +309,10 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
       if (msg) {
         AutomationManagerAura::GetInstance()->HandleAlert(
             profile, l10n_util::GetStringUTF8(msg));
+        // After handling the alert, if the alert is screen-off, we should
+        // disable automation manager to handle any following a11y events.
+        if (alert == ash::A11Y_ALERT_SCREEN_OFF)
+          SetAutomationManagerEnabled(profile, false);
       }
     }
   }
@@ -339,6 +346,16 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
   }
 
  private:
+  void SetAutomationManagerEnabled(content::BrowserContext* context,
+                                   bool enabled) {
+    DCHECK(context);
+    AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
+    if (enabled)
+      manager->Enable(context);
+    else
+      manager->Disable();
+  }
+
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateImpl);
 };
 
