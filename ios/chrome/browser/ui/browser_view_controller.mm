@@ -3409,6 +3409,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   if ([self isTabNativePage:tab])
     return;
 
+  // Don't show the bubble twice (this can happen when tapping very quickly in
+  // accessibility mode).
+  if (_pageInfoController)
+    return;
+
   base::RecordAction(UserMetricsAction("MobileToolbarPageSecurityInfo"));
 
   // Dismiss the omnibox (if open).
