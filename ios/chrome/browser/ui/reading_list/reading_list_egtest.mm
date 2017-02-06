@@ -6,7 +6,6 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/reading_list/ios/reading_list_model.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -24,6 +23,10 @@
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/web/public/test/http_server.h"
 #import "ios/web/public/test/http_server_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const char kReadTitle[] = "foobar";
@@ -133,8 +136,8 @@ void AssertHeaderNotVisible(std::string header) {
 
 // Opens the reading list menu using command line.
 void OpenReadingList() {
-  base::scoped_nsobject<GenericChromeCommand> command(
-      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_READING_LIST]);
+  GenericChromeCommand* command =
+      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_READING_LIST];
   chrome_test_util::RunCommandWithActiveViewController(command);
 }
 
