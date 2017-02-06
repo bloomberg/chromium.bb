@@ -52,9 +52,9 @@ bool ContentSuggestionsNotificationHelper::SendNotification(
   if (skimage.empty())
     return false;
 
-  jint timeout_at_millis = timeout_at.ToJavaTime();
+  jlong timeout_at_millis = timeout_at.ToJavaTime();
   if (timeout_at == base::Time::Max()) {
-    timeout_at_millis = std::numeric_limits<jint>::max();
+    timeout_at_millis = std::numeric_limits<jlong>::max();
   }
 
   if (Java_ContentSuggestionsNotificationHelper_showNotification(
