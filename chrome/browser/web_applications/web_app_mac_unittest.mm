@@ -44,16 +44,7 @@ class WebAppShortcutCreatorMock : public web_app::WebAppShortcutCreator {
  public:
   WebAppShortcutCreatorMock(const base::FilePath& app_data_dir,
                             const web_app::ShortcutInfo* shortcut_info)
-      : WebAppShortcutCreator(app_data_dir,
-                              shortcut_info,
-                              extensions::FileHandlersInfo()) {}
-
-  WebAppShortcutCreatorMock(
-      const base::FilePath& app_data_dir,
-      const web_app::ShortcutInfo* shortcut_info,
-      const extensions::FileHandlersInfo& file_handlers_info)
-      : WebAppShortcutCreator(app_data_dir, shortcut_info, file_handlers_info) {
-  }
+      : WebAppShortcutCreator(app_data_dir, shortcut_info) {}
 
   MOCK_CONST_METHOD0(GetApplicationsDirname, base::FilePath());
   MOCK_CONST_METHOD1(GetAppBundleById,

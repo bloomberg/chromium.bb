@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/web_application_info.h"
-#include "extensions/common/manifest_handlers/file_handler_info.h"
 
 class Profile;
 
@@ -106,11 +105,6 @@ enum ShortcutCreationReason {
   SHORTCUT_CREATION_AUTOMATED,
 };
 
-// Called by GetInfoForApp after fetching the ShortcutInfo and FileHandlersInfo.
-typedef base::Callback<void(std::unique_ptr<ShortcutInfo>,
-                            const extensions::FileHandlersInfo&)>
-    InfoCallback;
-
 // Called by GetShortcutInfoForApp after fetching the ShortcutInfo.
 typedef base::Callback<void(std::unique_ptr<ShortcutInfo>)>
     ShortcutInfoCallback;
@@ -132,16 +126,8 @@ std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app,
     Profile* profile);
 
-// Populates a ShortcutInfo and FileHandlersInfo for the given |extension| in
-// |profile| and passes them to |callback| after asynchronously loading all icon
-// representations.
-void GetInfoForApp(const extensions::Extension* extension,
-                   Profile* profile,
-                   const InfoCallback& callback);
-
 // Populates a ShortcutInfo for the given |extension| in |profile| and passes
-// it to |callback| after asynchronously loading all icon representations. This
-// is equivalent to GetInfoForApp, but it throws away the FileHandlersInfo.
+// it to |callback| after asynchronously loading all icon representations.
 void GetShortcutInfoForApp(const extensions::Extension* extension,
                            Profile* profile,
                            const ShortcutInfoCallback& callback);
@@ -179,13 +165,10 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name);
 
 // Create shortcuts for web application based on given shortcut data.
 // |shortcut_info| contains information about the shortcuts to create, and
-// |locations| contains information about where to create them, while
-// |file_handlers_info| contains information about the file handlers to create.
-void CreateShortcutsWithInfo(
-    ShortcutCreationReason reason,
-    const ShortcutLocations& locations,
-    std::unique_ptr<ShortcutInfo> shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info);
+// |locations| contains information about where to create them.
+void CreateShortcutsWithInfo(ShortcutCreationReason reason,
+                             const ShortcutLocations& locations,
+                             std::unique_ptr<ShortcutInfo> shortcut_info);
 
 // Creates shortcuts for an app. This loads the app's icon from disk, and calls
 // CreateShortcutsWithInfo(). If you already have a ShortcutInfo with the app's
@@ -249,7 +232,6 @@ std::vector<base::FilePath> GetShortcutPaths(
 bool CreatePlatformShortcuts(
     const base::FilePath& shortcut_data_path,
     std::unique_ptr<ShortcutInfo> shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info,
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason);
 
@@ -262,11 +244,9 @@ void DeletePlatformShortcuts(const base::FilePath& shortcut_data_path,
 // Updates all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the UpdateAllShortcuts function, and
 // is executed on the FILE thread.
-void UpdatePlatformShortcuts(
-    const base::FilePath& shortcut_data_path,
-    const base::string16& old_app_title,
-    std::unique_ptr<ShortcutInfo> shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info);
+void UpdatePlatformShortcuts(const base::FilePath& shortcut_data_path,
+                             const base::string16& old_app_title,
+                             std::unique_ptr<ShortcutInfo> shortcut_info);
 
 // Delete all the shortcuts for an entire profile.
 // This is executed on the FILE thread.

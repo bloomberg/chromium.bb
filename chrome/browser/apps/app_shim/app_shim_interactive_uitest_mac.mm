@@ -223,7 +223,7 @@ base::FilePath GetAppShimPath(Profile* profile,
       web_app::ShortcutInfoForExtensionAndProfile(app, profile);
   web_app::WebAppShortcutCreator shortcut_creator(
       web_app::GetWebAppDataDirectory(profile->GetPath(), app->id(), GURL()),
-      shortcut_info.get(), extensions::FileHandlersInfo());
+      shortcut_info.get());
   return shortcut_creator.GetInternalShortcutPath();
 }
 
@@ -554,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
       web_app::ShortcutInfoForExtensionAndProfile(app, profile());
   web_app::WebAppShortcutCreator shortcut_creator(
       web_app::GetWebAppDataDirectory(profile()->GetPath(), app->id(), GURL()),
-      shortcut_info.get(), extensions::FileHandlersInfo());
+      shortcut_info.get());
   shortcut_creator.UpdateShortcuts();
   base::FilePath shim_path = shortcut_creator.GetInternalShortcutPath();
   NSMutableDictionary* plist_64 = [NSMutableDictionary

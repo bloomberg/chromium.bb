@@ -24,7 +24,6 @@ namespace internals {
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
     std::unique_ptr<ShortcutInfo> shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info,
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason /*creation_reason*/) {
 #if !defined(OS_CHROMEOS)
@@ -44,11 +43,9 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
 #endif
 }
 
-void UpdatePlatformShortcuts(
-    const base::FilePath& web_app_path,
-    const base::string16& /*old_app_title*/,
-    std::unique_ptr<ShortcutInfo> shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info) {
+void UpdatePlatformShortcuts(const base::FilePath& web_app_path,
+                             const base::string16& /*old_app_title*/,
+                             std::unique_ptr<ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
@@ -65,8 +62,7 @@ void UpdatePlatformShortcuts(
     creation_locations.applications_menu_location = APP_MENU_LOCATION_HIDDEN;
 
   CreatePlatformShortcuts(web_app_path, std::move(shortcut_info),
-                          file_handlers_info, creation_locations,
-                          SHORTCUT_CREATION_AUTOMATED);
+                          creation_locations, SHORTCUT_CREATION_AUTOMATED);
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {

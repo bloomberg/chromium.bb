@@ -385,9 +385,9 @@ bool CreateApplicationShortcutView::Accept() {
   creation_locations.in_quick_launch_bar = false;
 #endif
 
-  web_app::CreateShortcutsWithInfo(
-      web_app::SHORTCUT_CREATION_BY_USER, creation_locations,
-      std::move(shortcut_info_), file_handlers_info_);
+  web_app::CreateShortcutsWithInfo(web_app::SHORTCUT_CREATION_BY_USER,
+                                   creation_locations,
+                                   std::move(shortcut_info_));
   return true;
 }
 
@@ -521,11 +521,9 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
 
   InitControls(DIALOG_LAYOUT_APP_SHORTCUT);
 
-  // Get shortcut, icon and file handler information; they are needed for
-  // creating the shortcut.
-  web_app::GetInfoForApp(
-      app,
-      profile,
+  // Get shortcut and icon information; needed for creating the shortcut.
+  web_app::GetShortcutInfoForApp(
+      app, profile,
       base::Bind(&CreateChromeApplicationShortcutView::OnAppInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -545,8 +543,6 @@ bool CreateChromeApplicationShortcutView::Cancel() {
 }
 
 void CreateChromeApplicationShortcutView::OnAppInfoLoaded(
-    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info) {
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   shortcut_info_ = std::move(shortcut_info);
-  file_handlers_info_ = file_handlers_info;
 }

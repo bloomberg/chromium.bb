@@ -88,12 +88,11 @@ base::FilePath GetShortcutDataDir(const web_app::ShortcutInfo& shortcut_info) {
 void UpdateAllShortcutsForShortcutInfo(
     const base::string16& old_app_title,
     const base::Closure& callback,
-    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info) {
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   base::FilePath shortcut_data_dir = GetShortcutDataDir(*shortcut_info);
-  base::Closure task = base::Bind(
-      &web_app::internals::UpdatePlatformShortcuts, shortcut_data_dir,
-      old_app_title, base::Passed(&shortcut_info), file_handlers_info);
+  base::Closure task = base::Bind(&web_app::internals::UpdatePlatformShortcuts,
+                                  shortcut_data_dir, old_app_title,
+                                  base::Passed(&shortcut_info));
   if (callback.is_null()) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task);
   } else {
@@ -103,8 +102,7 @@ void UpdateAllShortcutsForShortcutInfo(
 }
 
 void OnImageLoaded(std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
-                   extensions::FileHandlersInfo file_handlers_info,
-                   web_app::InfoCallback callback,
+                   web_app::ShortcutInfoCallback callback,
                    const gfx::ImageFamily& image_family) {
   // If the image failed to load (e.g. if the resource being loaded was empty)
   // use the standard application icon.
@@ -124,28 +122,19 @@ void OnImageLoaded(std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
     shortcut_info->favicon = image_family;
   }
 
-  callback.Run(std::move(shortcut_info), file_handlers_info);
-}
-
-void IgnoreFileHandlersInfo(
-    const web_app::ShortcutInfoCallback& shortcut_info_callback,
-    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info) {
-  shortcut_info_callback.Run(std::move(shortcut_info));
+  callback.Run(std::move(shortcut_info));
 }
 
 void ScheduleCreatePlatformShortcut(
     web_app::ShortcutCreationReason reason,
     const web_app::ShortcutLocations& locations,
-    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info) {
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   base::FilePath shortcut_data_dir = GetShortcutDataDir(*shortcut_info);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
           base::IgnoreResult(&web_app::internals::CreatePlatformShortcuts),
-          shortcut_data_dir, base::Passed(&shortcut_info), file_handlers_info,
-          locations, reason));
+          shortcut_data_dir, base::Passed(&shortcut_info), locations, reason));
 }
 
 }  // namespace
@@ -238,15 +227,11 @@ std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
   return shortcut_info;
 }
 
-void GetInfoForApp(const extensions::Extension* extension,
-                   Profile* profile,
-                   const InfoCallback& callback) {
+void GetShortcutInfoForApp(const extensions::Extension* extension,
+                           Profile* profile,
+                           const ShortcutInfoCallback& callback) {
   std::unique_ptr<web_app::ShortcutInfo> shortcut_info(
       web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
-  const std::vector<extensions::FileHandlerInfo>* file_handlers =
-      extensions::FileHandlers::GetFileHandlers(extension);
-  extensions::FileHandlersInfo file_handlers_info =
-      file_handlers ? *file_handlers : extensions::FileHandlersInfo();
 
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   for (size_t i = 0; i < kNumDesiredSizes; ++i) {
@@ -289,15 +274,7 @@ void GetInfoForApp(const extensions::Extension* extension,
   // image and exit immediately.
   extensions::ImageLoader::Get(profile)->LoadImageFamilyAsync(
       extension, info_list,
-      base::Bind(&OnImageLoaded, base::Passed(&shortcut_info),
-                 file_handlers_info, callback));
-}
-
-void GetShortcutInfoForApp(const extensions::Extension* extension,
-                           Profile* profile,
-                           const ShortcutInfoCallback& callback) {
-  GetInfoForApp(
-      extension, profile, base::Bind(&IgnoreFileHandlersInfo, callback));
+      base::Bind(&OnImageLoaded, base::Passed(&shortcut_info), callback));
 }
 
 bool ShouldCreateShortcutFor(web_app::ShortcutCreationReason reason,
@@ -407,11 +384,9 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
   return app_name.substr(prefix.length());
 }
 
-void CreateShortcutsWithInfo(
-    ShortcutCreationReason reason,
-    const ShortcutLocations& locations,
-    std::unique_ptr<ShortcutInfo> shortcut_info,
-    const extensions::FileHandlersInfo& file_handlers_info) {
+void CreateShortcutsWithInfo(ShortcutCreationReason reason,
+                             const ShortcutLocations& locations,
+                             std::unique_ptr<ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If the shortcut is for an application shortcut with the new bookmark app
@@ -433,8 +408,7 @@ void CreateShortcutsWithInfo(
       return;
   }
 
-  ScheduleCreatePlatformShortcut(reason, locations, std::move(shortcut_info),
-                                 file_handlers_info);
+  ScheduleCreatePlatformShortcut(reason, locations, std::move(shortcut_info));
 }
 
 void CreateShortcuts(ShortcutCreationReason reason,
@@ -446,7 +420,7 @@ void CreateShortcuts(ShortcutCreationReason reason,
   if (!ShouldCreateShortcutFor(reason, profile, app))
     return;
 
-  GetInfoForApp(
+  GetShortcutInfoForApp(
       app, profile, base::Bind(&CreateShortcutsWithInfo, reason, locations));
 }
 
@@ -468,8 +442,9 @@ void UpdateAllShortcuts(const base::string16& old_app_title,
                         const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  GetInfoForApp(app, profile, base::Bind(&UpdateAllShortcutsForShortcutInfo,
-                                         old_app_title, callback));
+  GetShortcutInfoForApp(
+      app, profile,
+      base::Bind(&UpdateAllShortcutsForShortcutInfo, old_app_title, callback));
 }
 
 bool IsValidUrl(const GURL& url) {

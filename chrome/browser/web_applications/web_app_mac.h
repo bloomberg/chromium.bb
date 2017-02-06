@@ -15,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "extensions/common/manifest_handlers/file_handler_info.h"
 
 namespace base {
 class CommandLine;
@@ -54,8 +53,7 @@ class WebAppShortcutCreator {
   // Retains the pointer |shortcut_info|; the ShortcutInfo object must outlive
   // the WebAppShortcutCreator.
   WebAppShortcutCreator(const base::FilePath& app_data_dir,
-                        const ShortcutInfo* shortcut_info,
-                        const extensions::FileHandlersInfo& file_handlers_info);
+                        const ShortcutInfo* shortcut_info);
 
   virtual ~WebAppShortcutCreator();
 
@@ -126,9 +124,6 @@ class WebAppShortcutCreator {
 
   // Information about the app. Owned by the caller of the constructor.
   const ShortcutInfo* info_;
-
-  // The app's file handlers.
-  extensions::FileHandlersInfo file_handlers_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreator);
 };
