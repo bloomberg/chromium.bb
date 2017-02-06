@@ -60,6 +60,10 @@ enum LoadErrors {
   LOAD_ERRORS_COUNT,
 };
 
+void LogDataPackError(LoadErrors error) {
+  UMA_HISTOGRAM_ENUMERATION("DataPack.Load", error, LOAD_ERRORS_COUNT);
+}
+
 }  // namespace
 
 namespace ui {
@@ -77,8 +81,7 @@ bool DataPack::LoadFromPath(const base::FilePath& path) {
   mmap_.reset(new base::MemoryMappedFile);
   if (!mmap_->Initialize(path)) {
     DLOG(ERROR) << "Failed to mmap datapack";
-    UMA_HISTOGRAM_ENUMERATION("DataPack.Load", INIT_FAILED,
-                              LOAD_ERRORS_COUNT);
+    LogDataPackError(INIT_FAILED);
     mmap_.reset();
     return false;
   }
@@ -96,8 +99,7 @@ bool DataPack::LoadFromFileRegion(
   mmap_.reset(new base::MemoryMappedFile);
   if (!mmap_->Initialize(std::move(file), region)) {
     DLOG(ERROR) << "Failed to mmap datapack";
-    UMA_HISTOGRAM_ENUMERATION("DataPack.Load", INIT_FAILED_FROM_FILE,
-                              LOAD_ERRORS_COUNT);
+    LogDataPackError(INIT_FAILED_FROM_FILE);
     mmap_.reset();
     return false;
   }
@@ -108,8 +110,7 @@ bool DataPack::LoadImpl() {
   // Sanity check the header of the file.
   if (kHeaderLength > mmap_->length()) {
     DLOG(ERROR) << "Data pack file corruption: incomplete file header.";
-    UMA_HISTOGRAM_ENUMERATION("DataPack.Load", HEADER_TRUNCATED,
-                              LOAD_ERRORS_COUNT);
+    LogDataPackError(HEADER_TRUNCATED);
     mmap_.reset();
     return false;
   }
@@ -121,8 +122,7 @@ bool DataPack::LoadImpl() {
   if (version != kFileFormatVersion) {
     LOG(ERROR) << "Bad data pack version: got " << version << ", expected "
                << kFileFormatVersion;
-    UMA_HISTOGRAM_ENUMERATION("DataPack.Load", BAD_VERSION,
-                              LOAD_ERRORS_COUNT);
+    LogDataPackError(BAD_VERSION);
     mmap_.reset();
     return false;
   }
@@ -135,8 +135,7 @@ bool DataPack::LoadImpl() {
       text_encoding_type_ != BINARY) {
     LOG(ERROR) << "Bad data pack text encoding: got " << text_encoding_type_
                << ", expected between " << BINARY << " and " << UTF16;
-    UMA_HISTOGRAM_ENUMERATION("DataPack.Load", WRONG_ENCODING,
-                              LOAD_ERRORS_COUNT);
+    LogDataPackError(WRONG_ENCODING);
     mmap_.reset();
     return false;
   }
@@ -148,8 +147,7 @@ bool DataPack::LoadImpl() {
       mmap_->length()) {
     LOG(ERROR) << "Data pack file corruption: too short for number of "
                   "entries specified.";
-    UMA_HISTOGRAM_ENUMERATION("DataPack.Load", INDEX_TRUNCATED,
-                              LOAD_ERRORS_COUNT);
+    LogDataPackError(INDEX_TRUNCATED);
     mmap_.reset();
     return false;
   }
@@ -161,8 +159,7 @@ bool DataPack::LoadImpl() {
     if (entry->file_offset > mmap_->length()) {
       LOG(ERROR) << "Entry #" << i << " in data pack points off end of file. "
                  << "Was the file corrupted?";
-      UMA_HISTOGRAM_ENUMERATION("DataPack.Load", ENTRY_NOT_FOUND,
-                                LOAD_ERRORS_COUNT);
+      LogDataPackError(ENTRY_NOT_FOUND);
       mmap_.reset();
       return false;
     }
