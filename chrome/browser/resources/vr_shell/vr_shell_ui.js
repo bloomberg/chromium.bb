@@ -220,6 +220,9 @@ var vrShellUi = (function() {
 
       let update = new api.UiElementUpdate();
       update.setVisible(false);
+      update.setSize(0.5, 0.2);
+      update.setTranslation(0, -2, -1);
+      update.setRotation(1, 0, 0, -0.8);
       ui.updateElement(this.uiElement.uiElementId, update);
     }
 
@@ -560,6 +563,7 @@ var vrShellUi = (function() {
       // Watch for the enter key to trigger navigation.
       this.inputField.addEventListener('keypress', function(e) {
         if (e.keyCode == 13) {
+          this.setSuggestions([]);
           api.doAction(
               // TODO(crbug.com/683344): Properly choose prefix.
               api.Action.LOAD_URL, {'url': 'http://' + e.target.value});
@@ -572,15 +576,17 @@ var vrShellUi = (function() {
       });
 
       // Clicking on suggestions triggers navigation.
-      let elements = root.querySelectorAll('.omnibox-suggestion');
+      let elements = root.querySelectorAll('.suggestion');
       this.maxSuggestions = elements.length;
       for (var i = 0; i < elements.length; i++) {
         elements[i].addEventListener('click', function(index, e) {
           if (e.target.url) {
             api.doAction(api.Action.LOAD_URL, {'url': e.target.url});
+            this.setSuggestions([]);
           }
         }.bind(this, i));
       }
+
     }
 
     setEnabled(enabled) {

@@ -80,7 +80,7 @@ html {
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-  border-radius: 50%;
+  border-radius: 10%;
   height: 96px;
   margin: auto auto;
   opacity: 0.8;
@@ -113,12 +113,13 @@ html {
 }
 
 #reload-ui-button {
-  --tranX: 0;
-  --tranY: -1.2;
-  --tranZ: -1.2;
   color: white;
   font-size: 24px;
   padding: 12px;
+}
+
+#reload-ui-button:hover {
+  background-color: pink;
 }
 
 #url-indicator-container {
@@ -193,44 +194,59 @@ html {
 
 #omnibox-ui-element {
   --tranX: 0;
-  --tranY: -0.2;
+  --tranY: -0.1;
   --tranZ: -1.0;
+  background-color: transparent;
+  box-sizing: border-box;
   font-family: arial;
+  font-size: 16px;
+  width: 400px;
 }
 
-#omnibox-url-divider {
-  background-color: black;
-  height: 1px;
+#suggestions {
+  border: 1px solid transparent;
+  box-sizing: border-box;
+}
+
+.suggestion {
+  align-items: center; /* Vertically center text in div. */
+  background-color: white;
+  /* Use a transparent border to hide text overflow, but allow background to
+   * color show through. */
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  box-sizing: border-box;
+  display: flex;
+  height: 24px;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: nowrap;
+}
+
+.suggestion:hover {
+  background-color: orange;
 }
 
 #omnibox-url-element {
   background-color: white;
+  border: 1px solid grey;
+  box-sizing: border-box;
   display: flex;
+  flex-direction: row-reverse; /* Right-justify for convienence. */
+  margin-top: 2px;
   padding: 5px;
-  width: 100%;
-}
-
-.omnibox-suggestion {
-  background-color: white;
-  height: 22px;
-  overflow: hidden;
-  padding-left: 5px;
-  padding-right: 5px;
-  white-space: nowrap;
-  width: 100%;
 }
 
 #omnibox-input-field {
   border: none;
   font-size: 16px;
-  margin: 3px;
+  outline: none; /* Do not show an outline when focused. */
   overflow: hidden;
-  padding: 0;
   white-space: nowrap;
-  width: 280px;
+  width: 100%;
 }
 
 #omnibox-clear-button {
   background: url(../../../../ui/webui/resources/images/x-hover.png) no-repeat center center;
-  width: 15px;
+  width: 18px;
 }
