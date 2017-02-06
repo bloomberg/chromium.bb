@@ -52,11 +52,12 @@ scoped_refptr<shell_integration::DefaultProtocolClientWorker> CreateShellWorker(
 
 ExternalProtocolHandler::BlockState GetBlockStateWithDelegate(
     const std::string& scheme,
-    ExternalProtocolHandler::Delegate* delegate) {
+    ExternalProtocolHandler::Delegate* delegate,
+    Profile* profile) {
   if (!delegate)
-    return ExternalProtocolHandler::GetBlockState(scheme);
+    return ExternalProtocolHandler::GetBlockState(scheme, profile);
 
-  return delegate->GetBlockState(scheme);
+  return delegate->GetBlockState(scheme, profile);
 }
 
 void RunExternalProtocolDialogWithDelegate(
@@ -135,7 +136,8 @@ void OnDefaultProtocolClientWorkerFinished(
 
 // static
 ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
-    const std::string& scheme) {
+    const std::string& scheme,
+    Profile* profile) {
   // If we are being carpet bombed, block the request.
   if (!g_accept_requests)
     return BLOCK;
@@ -147,18 +149,36 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
     return BLOCK;
   }
 
-  // Check the stored prefs.
-  // TODO(pkasting): This kind of thing should go in the preferences on the
-  // profile, not in the local state. http://crbug.com/457254
-  PrefService* pref = g_browser_process->local_state();
-  if (pref) {  // May be NULL during testing.
-    DictionaryPrefUpdate update_excluded_schemas(pref, prefs::kExcludedSchemes);
+  // Check if there are any prefs in the local state. If there are, wipe them,
+  // and migrate the prefs to the profile.
+  // TODO(ramyasharma) remove the migration in M61.
+  PrefService* local_prefs = g_browser_process->local_state();
+  PrefService* profile_prefs = profile->GetPrefs();
+  if (local_prefs && profile_prefs) {  // May be NULL during testing.
+    DictionaryPrefUpdate local_state_schemas(local_prefs,
+                                             prefs::kExcludedSchemes);
+    DictionaryPrefUpdate update_excluded_schemas_profile(
+        profile_prefs, prefs::kExcludedSchemes);
+    if (update_excluded_schemas_profile->empty()) {
+      // Copy local state to profile state.
+      for (base::DictionaryValue::Iterator it(*local_state_schemas);
+           !it.IsAtEnd(); it.Advance()) {
+        bool is_blocked;
+        // Discard local state if set to blocked, to reset all users
+        // stuck in 'Do Nothing' + 'Do Not Open' state back to the default
+        // prompt state.
+        if (it.value().GetAsBoolean(&is_blocked) && !is_blocked)
+          update_excluded_schemas_profile->SetBoolean(it.key(), is_blocked);
+      }
+      // TODO(ramyasharma): Clear only if required.
+      local_prefs->ClearPref(prefs::kExcludedSchemes);
+    }
 
-    // Warm up the dictionary if needed.
-    PrepopulateDictionary(update_excluded_schemas.Get());
+    // Prepopulate the default states each time.
+    PrepopulateDictionary(update_excluded_schemas_profile.Get());
 
     bool should_block;
-    if (update_excluded_schemas->GetBoolean(scheme, &should_block))
+    if (update_excluded_schemas_profile->GetBoolean(scheme, &should_block))
       return should_block ? BLOCK : DONT_BLOCK;
   }
 
@@ -167,18 +187,18 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
 
 // static
 void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
-                                            BlockState state) {
+                                            BlockState state,
+                                            Profile* profile) {
   // Set in the stored prefs.
-  // TODO(pkasting): This kind of thing should go in the preferences on the
-  // profile, not in the local state. http://crbug.com/457254
-  PrefService* pref = g_browser_process->local_state();
-  if (pref) {  // May be NULL during testing.
-    DictionaryPrefUpdate update_excluded_schemas(pref, prefs::kExcludedSchemes);
-
-    if (state == UNKNOWN) {
-      update_excluded_schemas->Remove(scheme, NULL);
-    } else {
-      update_excluded_schemas->SetBoolean(scheme, (state == BLOCK));
+  PrefService* profile_prefs = profile->GetPrefs();
+  if (profile_prefs) {  // May be NULL during testing.
+    DictionaryPrefUpdate update_excluded_schemas_profile(
+        profile_prefs, prefs::kExcludedSchemes);
+    if (!update_excluded_schemas_profile->empty()) {
+      if (state == UNKNOWN)
+        update_excluded_schemas_profile->Remove(scheme, nullptr);
+      else
+        update_excluded_schemas_profile->SetBoolean(scheme, (state == BLOCK));
     }
   }
 }
@@ -197,8 +217,14 @@ void ExternalProtocolHandler::LaunchUrlWithDelegate(
   // have parameters unexpected by the external program.
   std::string escaped_url_string = net::EscapeExternalHandlerValue(url.spec());
   GURL escaped_url(escaped_url_string);
+
+  content::WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_host_id, render_view_routing_id);
+  Profile* profile = nullptr;
+  if (web_contents)  // Maybe NULL during testing.
+    profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   BlockState block_state =
-      GetBlockStateWithDelegate(escaped_url.scheme(), delegate);
+      GetBlockStateWithDelegate(escaped_url.scheme(), delegate, profile);
   if (block_state == BLOCK) {
     if (delegate)
       delegate->BlockRequest();
@@ -243,11 +269,6 @@ void ExternalProtocolHandler::PermitLaunchUrl() {
 // static
 void ExternalProtocolHandler::PrepopulateDictionary(
     base::DictionaryValue* win_pref) {
-  static bool is_warm = false;
-  if (is_warm)
-    return;
-  is_warm = true;
-
   static const char* const denied_schemes[] = {
     "afp",
     "data",

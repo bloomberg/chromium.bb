@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/chromium_strings.h"
@@ -94,9 +95,15 @@
       NOTREACHED();
   }
 
+  content::WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_host_id_, routing_id_);
+
   // Set the "don't warn me again" info.
   if ([[alert_ suppressionButton] state] == NSOnState) {
-    ExternalProtocolHandler::SetBlockState(url_.scheme(), blockState);
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+    ExternalProtocolHandler::SetBlockState(url_.scheme(), blockState, profile);
     ExternalProtocolHandler::RecordMetrics(true);
   } else {
     ExternalProtocolHandler::RecordMetrics(false);
@@ -105,9 +112,6 @@
   if (blockState == ExternalProtocolHandler::DONT_BLOCK) {
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
                              base::Time::Now() - creation_time_);
-
-    content::WebContents* web_contents =
-        tab_util::GetWebContentsByID(render_process_host_id_, routing_id_);
 
     ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_, web_contents);
   }

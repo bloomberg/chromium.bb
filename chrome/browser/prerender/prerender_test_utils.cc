@@ -224,8 +224,8 @@ class NeverRunsExternalProtocolHandlerDelegate
     return nullptr;
   }
 
-  ExternalProtocolHandler::BlockState GetBlockState(
-      const std::string& scheme) override {
+  ExternalProtocolHandler::BlockState GetBlockState(const std::string& scheme,
+                                                    Profile* profile) override {
     // Block everything and fail the test.
     ADD_FAILURE();
     return ExternalProtocolHandler::BLOCK;

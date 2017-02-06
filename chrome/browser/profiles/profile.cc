@@ -178,6 +178,7 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
   registry->RegisterDictionaryPref(prefs::kWebShareVisitedTargets);
+  registry->RegisterDictionaryPref(prefs::kExcludedSchemes);
 }
 
 std::string Profile::GetDebugName() {
