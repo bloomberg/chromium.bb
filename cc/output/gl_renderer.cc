@@ -2099,14 +2099,6 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
 
-namespace {
-
-float RelativeError(float a, float b) {
-  return std::abs(a - b) / std::max(1.f, std::abs(a + b));
-}
-
-}  // namespace
-
 // TODO(ccameron): This has been replicated in ui/gfx/color_transform.cc. Delete
 // one of the instances.
 void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
@@ -2115,82 +2107,19 @@ void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
                              float resource_offset,
                              ColorConversionMode color_conversion_mode,
                              float* yuv_to_rgb_matrix) {
-  float yuv_to_rgb_multiplied[9];
-  float yuv_adjust_with_offset[3];
-
-  // These values are magic numbers that are used in the transformation from YUV
-  // to RGB color values.  They are taken from the following webpage:
-  // http://www.fourcc.org/fccyvrgb.php
-  float yuv_to_rgb_rec601[9] = {
-      1.164f, 1.164f, 1.164f, 0.0f, -.391f, 2.018f, 1.596f, -.813f, 0.0f,
-  };
-  float yuv_to_rgb_jpeg[9] = {
-      1.f, 1.f, 1.f, 0.0f, -.34414f, 1.772f, 1.402f, -.71414f, 0.0f,
-  };
-  float yuv_to_rgb_rec709[9] = {
-      1.164f, 1.164f, 1.164f, 0.0f, -0.213f, 2.112f, 1.793f, -0.533f, 0.0f,
-  };
-
-  // They are used in the YUV to RGBA conversion formula:
-  //   Y - 16   : Gives 16 values of head and footroom for overshooting
-  //   U - 128  : Turns unsigned U into signed U [-128,127]
-  //   V - 128  : Turns unsigned V into signed V [-128,127]
-  float yuv_adjust_constrained[3] = {
-      -16.f, -128.f, -128.f,
-  };
-
-  // Same as above, but without the head and footroom.
-  float yuv_adjust_full[3] = {
-      0.0f, -128.f, -128.f,
-  };
-
-  float* yuv_to_rgb = NULL;
-  float* yuv_adjust = NULL;
-
   gfx::ColorSpace gfx_color_space;
   switch (color_space) {
     case YUVVideoDrawQuad::REC_601:
-      yuv_to_rgb = yuv_to_rgb_rec601;
-      yuv_adjust = yuv_adjust_constrained;
       gfx_color_space = gfx::ColorSpace::CreateREC601();
       break;
     case YUVVideoDrawQuad::REC_709:
-      yuv_to_rgb = yuv_to_rgb_rec709;
-      yuv_adjust = yuv_adjust_constrained;
       gfx_color_space = gfx::ColorSpace::CreateREC709();
       break;
     case YUVVideoDrawQuad::JPEG:
-      yuv_to_rgb = yuv_to_rgb_jpeg;
-      yuv_adjust = yuv_adjust_full;
       gfx_color_space = gfx::ColorSpace::CreateJpeg();
       break;
   }
 
-  // Formula according to BT.601-7 section 2.5.3.
-  DCHECK_LE(YUVVideoDrawQuad::kMinBitsPerChannel, bits_per_channel);
-  DCHECK_LE(bits_per_channel, YUVVideoDrawQuad::kMaxBitsPerChannel);
-  float adjustment_multiplier =
-      (1 << (bits_per_channel - 8)) * 1.0f / ((1 << bits_per_channel) - 1);
-
-  for (int i = 0; i < 9; ++i)
-    yuv_to_rgb_multiplied[i] = yuv_to_rgb[i] * resource_multiplier;
-
-  float yuv_adjust_with_offset_untransformed[3];
-  for (int i = 0; i < 3; ++i) {
-    yuv_adjust_with_offset_untransformed[i] =
-        yuv_adjust[i] * adjustment_multiplier / resource_multiplier -
-        resource_offset;
-  }
-
-  for (int i = 0; i < 3; ++i) {
-    yuv_adjust_with_offset[i] = 0;
-    for (int j = 0; j < 3; ++j) {
-      yuv_adjust_with_offset[i] += yuv_to_rgb_multiplied[3 * j + i] *
-                                   yuv_adjust_with_offset_untransformed[j];
-    }
-  }
-
-  // TODO(ccameron): Delete the above code, and just the below code instead.
   // Compute the matrix |full_transform| which converts input YUV values to RGB
   // values.
   SkMatrix44 full_transform;
@@ -2224,25 +2153,7 @@ void ComputeYUVToRGBMatrices(YUVVideoDrawQuad::ColorSpace color_space,
     full_transform.postConcat(yuv_to_rgb);
   }
 
-  SkMatrix44 full_transform_old;
-  full_transform_old.set3x3RowMajorf(yuv_to_rgb_multiplied);
-  full_transform_old.transpose();
-  full_transform_old.postTranslate(yuv_adjust_with_offset[0],
-                                   yuv_adjust_with_offset[1],
-                                   yuv_adjust_with_offset[2]);
-
-  // TODO(ccameron): The gfx::ColorSpace-based approach produces some pixel
-  // differences. For the initial checkin, DCHECK that the parameters are
-  // very close. The subsequent checkins will delete the old path.
-  const float kEpsilon = 1.f / 255.f;
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      DCHECK_LT(
-          RelativeError(full_transform_old.get(i, j), full_transform.get(i, j)),
-          kEpsilon);
-    }
-  }
-  full_transform_old.asColMajorf(yuv_to_rgb_matrix);
+  full_transform.asColMajorf(yuv_to_rgb_matrix);
 }
 
 void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
