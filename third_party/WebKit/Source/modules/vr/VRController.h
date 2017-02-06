@@ -38,6 +38,8 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
                           device::mojom::blink::VRDisplayClientRequest,
                           device::mojom::blink::VRDisplayInfoPtr) override;
 
+  void focusChanged();
+
   DECLARE_VIRTUAL_TRACE();
 
  private:

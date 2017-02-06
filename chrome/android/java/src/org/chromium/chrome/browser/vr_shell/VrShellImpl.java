@@ -196,6 +196,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mOriginalWindowAndroid = mContentCVC.getWindowAndroid();
         mTab.updateWindowAndroid(mContentVrWindowAndroid);
         mContentCVC.onAttachedToWindow();
+        mContentCVC.getContainerView().requestFocus();
 
         // Make sure we are not redirecting to another app, i.e. out of VR mode.
         mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();

@@ -114,7 +114,7 @@ void VRDisplay::disconnected() {
 }
 
 bool VRDisplay::getFrameData(VRFrameData* frameData) {
-  if (!m_framePose || m_displayBlurred)
+  if (!m_navigatorVR->isFocused() || !m_framePose || m_displayBlurred)
     return false;
 
   if (!frameData)
@@ -128,7 +128,7 @@ bool VRDisplay::getFrameData(VRFrameData* frameData) {
 }
 
 VRPose* VRDisplay::getPose() {
-  if (!m_framePose || m_displayBlurred)
+  if (!m_navigatorVR->isFocused() || !m_framePose || m_displayBlurred)
     return nullptr;
 
   VRPose* pose = VRPose::create();
@@ -672,6 +672,8 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
 }
 
 void VRDisplay::ConnectVSyncProvider() {
+  if (!m_navigatorVR->isFocused())
+    return;
   m_display->GetVRVSyncProvider(mojo::MakeRequest(&m_vrVSyncProvider));
   if (m_pendingRaf && !m_displayBlurred) {
     m_vrVSyncProvider->GetVSync(convertToBaseCallback(
@@ -745,6 +747,12 @@ bool VRDisplay::hasPendingActivity() const {
   // Prevent V8 from garbage collecting the wrapper object if there are
   // event listeners attached to it.
   return getExecutionContext() && hasEventListeners();
+}
+
+void VRDisplay::focusChanged() {
+  // TODO(mthiesse): Blur/focus the display.
+  m_vrVSyncProvider.reset();
+  ConnectVSyncProvider();
 }
 
 DEFINE_TRACE(VRDisplay) {

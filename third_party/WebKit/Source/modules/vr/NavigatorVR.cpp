@@ -77,6 +77,8 @@ VRController* NavigatorVR::controller() {
 
   if (!m_controller) {
     m_controller = new VRController(this);
+    m_controller->setListeningForActivate(m_focused && m_listeningForActivate);
+    m_controller->focusChanged();
   }
 
   return m_controller;
@@ -90,13 +92,13 @@ Document* NavigatorVR::document() {
 DEFINE_TRACE(NavigatorVR) {
   visitor->trace(m_controller);
   Supplement<Navigator>::trace(visitor);
-  PageVisibilityObserver::trace(visitor);
 }
 
 NavigatorVR::NavigatorVR(Navigator& navigator)
     : Supplement<Navigator>(navigator),
-      PageVisibilityObserver(navigator.frame()->page()) {
+      FocusChangedObserver(navigator.frame()->page()) {
   navigator.frame()->domWindow()->registerEventListenerObserver(this);
+  focusedFrameChanged();
 }
 
 NavigatorVR::~NavigatorVR() {}
@@ -122,12 +124,14 @@ void NavigatorVR::dispatchVRGestureEvent(VRDisplayEvent* event) {
   window->dispatchEvent(event);
 }
 
-void NavigatorVR::pageVisibilityChanged() {
-  if (!page())
+void NavigatorVR::focusedFrameChanged() {
+  bool focused = isFrameFocused(supplementable()->frame());
+  if (focused == m_focused)
     return;
+  m_focused = focused;
   if (m_controller) {
-    m_controller->setListeningForActivate(page()->isPageVisible() &&
-                                          m_listeningForActivate);
+    m_controller->setListeningForActivate(m_listeningForActivate && focused);
+    m_controller->focusChanged();
   }
 }
 
@@ -138,8 +142,8 @@ void NavigatorVR::didAddEventListener(LocalDOMWindow* window,
   if (eventType == EventTypeNames::vrdisplayactivate &&
       supplementable()->frame() && supplementable()->frame()->document() &&
       Fullscreen::fullscreenEnabled(*supplementable()->frame()->document())) {
-    controller()->setListeningForActivate(true);
     m_listeningForActivate = true;
+    controller()->setListeningForActivate(m_focused);
   } else if (eventType == EventTypeNames::vrdisplayconnect) {
     // If the page is listening for connection events make sure we've created a
     // controller so that we'll be notified of new devices.
@@ -151,8 +155,8 @@ void NavigatorVR::didRemoveEventListener(LocalDOMWindow* window,
                                          const AtomicString& eventType) {
   if (eventType == EventTypeNames::vrdisplayactivate &&
       !window->hasEventListeners(EventTypeNames::vrdisplayactivate)) {
-    controller()->setListeningForActivate(false);
     m_listeningForActivate = false;
+    controller()->setListeningForActivate(false);
   }
 }
 

@@ -19,6 +19,8 @@ blink_core_sources("page") {
     "DragController.cpp",
     "DragData.cpp",
     "EventWithHitTestResults.h",
+    "FocusChangedObserver.cpp",
+    "FocusChangedObserver.h",
     "FocusController.cpp",
     "FrameTree.cpp",
     "NetworkStateNotifier.cpp",

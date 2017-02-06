@@ -64,12 +64,18 @@ void VRController::OnDisplayConnected(
       new VRDisplay(m_navigatorVR, std::move(display), std::move(request));
   vrDisplay->update(displayInfo);
   vrDisplay->onConnected();
+  vrDisplay->focusChanged();
   m_displays.push_back(vrDisplay);
 
   if (m_displays.size() == m_numberOfSyncedDisplays) {
     m_displaySynced = true;
     onGetDisplays();
   }
+}
+
+void VRController::focusChanged() {
+  for (const auto& display : m_displays)
+    display->focusChanged();
 }
 
 // Called when the VRService has called OnDisplayConnected for all active
@@ -101,8 +107,8 @@ void VRController::dispose() {
   m_binding.Close();
 
   // Shutdown all displays' message pipe
-  for (size_t i = 0; i < m_displays.size(); ++i)
-    m_displays[i]->dispose();
+  for (const auto& display : m_displays)
+    display->dispose();
 
   m_displays.clear();
 

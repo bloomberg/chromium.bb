@@ -40,6 +40,7 @@ struct FocusCandidate;
 struct FocusParams;
 class Document;
 class Element;
+class FocusChangedObserver;
 class Frame;
 class HTMLFrameOwnerElement;
 class InputDeviceCapabilities;
@@ -93,6 +94,8 @@ class CORE_EXPORT FocusController final
   void setFocused(bool);
   bool isFocused() const { return m_isFocused; }
 
+  void registerFocusChangedObserver(FocusChangedObserver*);
+
   DECLARE_TRACE();
 
  private:
@@ -118,11 +121,14 @@ class CORE_EXPORT FocusController final
                                      WebFocusType,
                                      FocusCandidate& closest);
 
+  void notifyFocusChangedObservers() const;
+
   Member<Page> m_page;
   Member<Frame> m_focusedFrame;
   bool m_isActive;
   bool m_isFocused;
   bool m_isChangingFocusedFrame;
+  HeapHashSet<WeakMember<FocusChangedObserver>> m_focusChangedObservers;
 };
 
 }  // namespace blink
