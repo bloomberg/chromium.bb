@@ -18751,6 +18751,196 @@
             "chrome_internal"
         ]
     },
+    "plaso-chrome-pfq": {
+        "_template": "chrome_pfq",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "manifest": "official.xml"
+    },
+    "plaso-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "plaso-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "plaso"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "plaso-full": {
+        "_template": "full",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "plaso-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "plaso"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "plaso-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "plaso"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "plaso-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "plaso"
+        ]
+    },
+    "plaso-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "plaso-release": {
+        "_template": "release",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "plaso-release-afdo": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal",
+        "child_configs": [
+            {
+                "_template": "release_afdo_generate",
+                "boards": [
+                    "plaso"
+                ],
+                "grouped": true,
+                "name": "plaso-release-afdo-generate"
+            },
+            {
+                "_template": "release_afdo_use",
+                "boards": [
+                    "plaso"
+                ],
+                "grouped": true,
+                "name": "plaso-release-afdo-use"
+            }
+        ]
+    },
+    "plaso-release-afdo-generate": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "plaso-release-afdo-use": {
+        "_template": "release_afdo_use",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "plaso-tot-chrome-pfq-informational": {
+        "_template": "chrome_pfq_informational",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal",
+        "manifest": "official.xml"
+    },
+    "plaso-tot-chrome-pfq-informational-gn": {
+        "_template": "chrome_pfq_informational_gn",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal",
+        "manifest": "official.xml"
+    },
+    "plaso-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "plaso-tot-chromium-pfq-informational-gn": {
+        "_template": "chromium_pfq_informational_gn",
+        "boards": [
+            "plaso"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal",
+            "gn"
+        ]
+    },
+    "plaso-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "plaso"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
     "poppy-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [

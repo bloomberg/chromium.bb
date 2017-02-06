@@ -519,6 +519,7 @@ _x86_internal_release_boards = frozenset([
     'parrot_ivb',
     'pbody',
     'peppy',
+    'plaso',
     'poppy',
     'pyro',
     'quawks',
