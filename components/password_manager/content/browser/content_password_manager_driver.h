@@ -27,8 +27,7 @@ struct PasswordForm;
 }
 
 namespace content {
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
+class NavigationHandle;
 class RenderFrameHost;
 }
 
@@ -83,8 +82,7 @@ class ContentPasswordManagerDriver
   PasswordManager* GetPasswordManager() override;
   PasswordAutofillManager* GetPasswordAutofillManager() override;
 
-  void DidNavigateFrame(const content::LoadCommittedDetails& details,
-                        const content::FrameNavigateParams& params);
+  void DidNavigateFrame(content::NavigationHandle* navigation_handle);
 
   // autofill::mojom::PasswordManagerDriver:
   void PasswordFormsParsed(

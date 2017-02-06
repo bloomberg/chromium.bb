@@ -16,8 +16,8 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/ssl_status.h"
@@ -145,12 +145,13 @@ void ContentPasswordManagerDriverFactory::RenderFrameDeleted(
   frame_driver_map_.erase(render_frame_host);
 }
 
-void ContentPasswordManagerDriverFactory::DidNavigateAnyFrame(
-    content::RenderFrameHost* render_frame_host,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  frame_driver_map_.find(render_frame_host)
-      ->second->DidNavigateFrame(details, params);
+void ContentPasswordManagerDriverFactory::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted())
+    return;
+
+  frame_driver_map_.find(navigation_handle->GetRenderFrameHost())
+      ->second->DidNavigateFrame(navigation_handle);
 }
 
 void ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability() {
