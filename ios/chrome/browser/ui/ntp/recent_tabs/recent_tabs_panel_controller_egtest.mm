@@ -26,7 +26,7 @@
 
 namespace {
 const char kURLOfTestPage[] = "http://testPage";
-std::string const kHTMLOfTestPage =
+const char kHTMLOfTestPage[] =
     "<head><title>TestPageTitle</title></head><body>hello</body>";
 NSString* const kTitleOfTestPage = @"TestPageTitle";
 
@@ -76,10 +76,10 @@ id<GREYMatcher> RecentlyClosedLabelMatcher() {
 - (void)setUp {
   [ChromeEarlGrey clearBrowsingHistory];
   [super setUp];
-  std::map<GURL, std::string> responses;
-  const GURL testPageURL = web::test::HttpServer::MakeUrl(kURLOfTestPage);
-  responses[testPageURL] = kHTMLOfTestPage;
-  web::test::SetUpSimpleHttpServer(responses);
+  web::test::SetUpSimpleHttpServer(std::map<GURL, std::string>{{
+      web::test::HttpServer::MakeUrl(kURLOfTestPage),
+      std::string(kHTMLOfTestPage),
+  }});
 }
 
 - (void)tearDown {
