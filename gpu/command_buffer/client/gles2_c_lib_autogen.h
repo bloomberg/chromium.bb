@@ -1724,11 +1724,9 @@ void GL_APIENTRY GLES2OverlayPromotionHintCHROMIUM(GLuint texture,
   gles2::GetGLContext()->OverlayPromotionHintCHROMIUM(texture, promotion_hint,
                                                       display_x, display_y);
 }
-void GL_APIENTRY GLES2SwapBuffersWithDamageCHROMIUM(GLint x,
-                                                    GLint y,
-                                                    GLint width,
-                                                    GLint height) {
-  gles2::GetGLContext()->SwapBuffersWithDamageCHROMIUM(x, y, width, height);
+void GL_APIENTRY GLES2SwapBuffersWithBoundsCHROMIUM(GLsizei count,
+                                                    const GLint* rects) {
+  gles2::GetGLContext()->SwapBuffersWithBoundsCHROMIUM(count, rects);
 }
 
 namespace gles2 {
@@ -3034,8 +3032,8 @@ extern const NameToFunc g_gles2_function_table[] = {
         reinterpret_cast<GLES2FunctionPointer>(glOverlayPromotionHintCHROMIUM),
     },
     {
-        "glSwapBuffersWithDamageCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glSwapBuffersWithDamageCHROMIUM),
+        "glSwapBuffersWithBoundsCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glSwapBuffersWithBoundsCHROMIUM),
     },
     {
         NULL, NULL,

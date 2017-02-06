@@ -2506,13 +2506,12 @@ void GLES2TraceImplementation::OverlayPromotionHintCHROMIUM(
                                     display_y);
 }
 
-void GLES2TraceImplementation::SwapBuffersWithDamageCHROMIUM(GLint x,
-                                                             GLint y,
-                                                             GLint width,
-                                                             GLint height) {
+void GLES2TraceImplementation::SwapBuffersWithBoundsCHROMIUM(
+    GLsizei count,
+    const GLint* rects) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::SwapBuffersWithDamageCHROMIUM");
-  gl_->SwapBuffersWithDamageCHROMIUM(x, y, width, height);
+                                "GLES2Trace::SwapBuffersWithBoundsCHROMIUM");
+  gl_->SwapBuffersWithBoundsCHROMIUM(count, rects);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

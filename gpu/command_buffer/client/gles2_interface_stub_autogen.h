@@ -870,8 +870,5 @@ void OverlayPromotionHintCHROMIUM(GLuint texture,
                                   GLboolean promotion_hint,
                                   GLint display_x,
                                   GLint display_y) override;
-void SwapBuffersWithDamageCHROMIUM(GLint x,
-                                   GLint y,
-                                   GLint width,
-                                   GLint height) override;
+void SwapBuffersWithBoundsCHROMIUM(GLsizei count, const GLint* rects) override;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_AUTOGEN_H_

@@ -896,8 +896,6 @@ virtual void OverlayPromotionHintCHROMIUM(GLuint texture,
                                           GLboolean promotion_hint,
                                           GLint display_x,
                                           GLint display_y) = 0;
-virtual void SwapBuffersWithDamageCHROMIUM(GLint x,
-                                           GLint y,
-                                           GLint width,
-                                           GLint height) = 0;
+virtual void SwapBuffersWithBoundsCHROMIUM(GLsizei count,
+                                           const GLint* rects) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

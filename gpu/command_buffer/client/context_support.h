@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_CLIENT_CONTEXT_SUPPORT_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/callback.h"
 #include "ui/gfx/overlay_transform.h"
@@ -41,7 +42,7 @@ class ContextSupport {
       bool aggressively_free_resources) = 0;
 
   virtual void Swap() = 0;
-  virtual void SwapWithDamage(const gfx::Rect& damage) = 0;
+  virtual void SwapWithBounds(const std::vector<gfx::Rect>& rects) = 0;
   virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) = 0;
   virtual void CommitOverlayPlanes() = 0;
 

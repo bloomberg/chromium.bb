@@ -12,4 +12,16 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_4_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_4_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest4, SwapBuffersWithBoundsCHROMIUMImmediateValidArgs) {
+  cmds::SwapBuffersWithBoundsCHROMIUMImmediate& cmd =
+      *GetImmediateAs<cmds::SwapBuffersWithBoundsCHROMIUMImmediate>();
+  SpecializedSetup<cmds::SwapBuffersWithBoundsCHROMIUMImmediate, 0>(true);
+  GLint temp[4 * 2] = {
+      0,
+  };
+  EXPECT_CALL(*gl_, SwapBuffersWithBoundsCHROMIUM(1, PointsToArray(temp, 4)));
+  cmd.Init(1, &temp[0]);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_4_AUTOGEN_H_

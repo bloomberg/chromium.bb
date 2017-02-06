@@ -13,8 +13,15 @@ GLSurfaceCast::GLSurfaceCast(gfx::AcceleratedWidget widget,
                              SurfaceFactoryCast* parent)
     : NativeViewGLSurfaceEGL(parent->GetNativeWindow()),
       widget_(widget),
-      parent_(parent) {
+      parent_(parent),
+      supports_swap_buffer_with_bounds_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableSwapBuffersWithBounds)) {
   DCHECK(parent_);
+}
+
+bool GLSurfaceCast::SupportsSwapBuffersWithBounds() {
+  return supports_swap_buffer_with_bounds_;
 }
 
 gfx::SwapResult GLSurfaceCast::SwapBuffers() {
@@ -25,15 +32,23 @@ gfx::SwapResult GLSurfaceCast::SwapBuffers() {
   return result;
 }
 
-gfx::SwapResult GLSurfaceCast::SwapBuffersWithDamage(int x,
-                                                     int y,
-                                                     int width,
-                                                     int height) {
+gfx::SwapResult GLSurfaceCast::SwapBuffersWithBounds(
+    const std::vector<gfx::Rect>& rects) {
+  DCHECK(supports_swap_buffer_with_bounds_);
+
+  // TODO(halliwell): Request new EGL extension so we're not abusing
+  // SwapBuffersWithDamage here.
+  std::vector<int> rects_data(rects.size() * 4);
+  for (size_t i = 0; i != rects.size(); ++i) {
+    rects_data[i * 4 + 0] = rects[i].x();
+    rects_data[i * 4 + 1] = rects[i].y();
+    rects_data[i * 4 + 2] = rects[i].width();
+    rects_data[i * 4 + 3] = rects[i].height();
+  }
   gfx::SwapResult result =
-      NativeViewGLSurfaceEGL::SwapBuffersWithDamage(x, y, width, height);
+      NativeViewGLSurfaceEGL::SwapBuffersWithDamage(rects_data);
   if (result == gfx::SwapResult::SWAP_ACK)
     parent_->OnSwapBuffers();
-
   return result;
 }
 

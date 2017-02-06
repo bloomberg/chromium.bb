@@ -787,9 +787,7 @@ bool NativeViewGLSurfaceEGL::Initialize(
   }
 
   supports_swap_buffer_with_damage_ =
-      g_driver_egl.ext.b_EGL_KHR_swap_buffers_with_damage &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSwapBuffersWithDamage);
+      g_driver_egl.ext.b_EGL_KHR_swap_buffers_with_damage;
 
   if (sync_provider)
     vsync_provider_ = std::move(sync_provider);
@@ -930,10 +928,6 @@ EGLSurface NativeViewGLSurfaceEGL::GetHandle() {
   return surface_;
 }
 
-bool NativeViewGLSurfaceEGL::SupportsSwapBuffersWithDamage() {
-  return supports_swap_buffer_with_damage_;
-}
-
 bool NativeViewGLSurfaceEGL::SupportsPostSubBuffer() {
   return supports_post_sub_buffer_;
 }
@@ -946,25 +940,18 @@ bool NativeViewGLSurfaceEGL::BuffersFlipped() const {
   return g_use_direct_composition;
 }
 
-gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffersWithDamage(int x,
-                                                              int y,
-                                                              int width,
-                                                              int height) {
+gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffersWithDamage(
+    const std::vector<int>& rects) {
   DCHECK(supports_swap_buffer_with_damage_);
   UpdateSwapInterval();
   if (!CommitAndClearPendingOverlays()) {
     DVLOG(1) << "Failed to commit pending overlay planes.";
     return gfx::SwapResult::SWAP_FAILED;
   }
-  if (flips_vertically_) {
-    // With EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE the contents are rendered
-    // inverted, but the damage rectangle is still measured from the
-    // bottom left.
-    y = GetSize().height() - y - height;
-  }
 
-  EGLint damage_rect[4] = {x, y, width, height};
-  if (!eglSwapBuffersWithDamageKHR(GetDisplay(), surface_, damage_rect, 1)) {
+  if (!eglSwapBuffersWithDamageKHR(GetDisplay(), surface_,
+                                   const_cast<EGLint*>(rects.data()),
+                                   static_cast<EGLint>(rects.size() / 4))) {
     DVLOG(1) << "eglSwapBuffersWithDamageKHR failed with error "
              << GetLastEGLErrorString();
     return gfx::SwapResult::SWAP_FAILED;

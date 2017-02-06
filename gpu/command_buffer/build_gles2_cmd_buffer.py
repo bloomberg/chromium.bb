@@ -3373,7 +3373,6 @@ _FUNCTION_INFO = {
     'type': 'PUTn',
     'count': 1,
     'decoder_func': 'DoInvalidateFramebuffer',
-    'client_test': False,
     'unit_test': False,
     'es3': True,
   },
@@ -3381,7 +3380,6 @@ _FUNCTION_INFO = {
     'type': 'PUTn',
     'count': 1,
     'decoder_func': 'DoInvalidateSubFramebuffer',
-    'client_test': False,
     'unit_test': False,
     'es3': True,
   },
@@ -3654,8 +3652,10 @@ _FUNCTION_INFO = {
     'extension': True,
     'trace_level': 1,
   },
-  'SwapBuffersWithDamageCHROMIUM': {
-    'type': 'Custom',
+  'SwapBuffersWithBoundsCHROMIUM': {
+    'type': 'PUTn',
+    'count': 4,
+    'decoder_func': 'DoSwapBuffersWithBoundsCHROMIUM',
     'impl_func': False,
     'client_test': False,
     'extension': True,
@@ -4081,7 +4081,6 @@ _FUNCTION_INFO = {
     'type': 'PUTn',
     'decoder_func': 'DoDrawBuffersEXT',
     'count': 1,
-    'client_test': False,
     'unit_test': False,
     # could use 'extension_flag': 'ext_draw_buffers' but currently expected to
     # work without.
@@ -4328,7 +4327,6 @@ _FUNCTION_INFO = {
     'count': 1,
     'decoder_func': 'DoDiscardFramebufferEXT',
     'unit_test': False,
-    'client_test': False,
     'extension': 'EXT_discard_framebuffer',
     'extension_flag': 'ext_discard_framebuffer',
     'trace_level': 2,
@@ -7335,6 +7333,9 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
+    impl_func = func.GetInfo('impl_func')
+    if (impl_func != None and impl_func != True):
+      return;
     f.write("%s GLES2Implementation::%s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
@@ -7361,6 +7362,10 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2ImplementationUnitTest(self, func, f):
     """Writes the GLES2 Implemention unit test."""
+    client_test = func.GetInfo('client_test', True)
+    if not client_test:
+      return;
+
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
   %(type)s data[%(count_param)d][%(count)d] = {{0}};

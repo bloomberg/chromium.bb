@@ -122,12 +122,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   gfx::SwapResult SwapBuffers() override;
   gfx::Size GetSize() override;
   EGLSurface GetHandle() override;
-  bool SupportsSwapBuffersWithDamage() override;
   bool SupportsPostSubBuffer() override;
-  gfx::SwapResult SwapBuffersWithDamage(int x,
-                                        int y,
-                                        int width,
-                                        int height) override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
   bool SupportsCommitOverlayPlanes() override;
   gfx::SwapResult CommitOverlayPlanes() override;
@@ -155,6 +150,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   bool enable_fixed_size_angle_;
 
   void OnSetSwapInterval(int interval) override;
+  gfx::SwapResult SwapBuffersWithDamage(const std::vector<int>& rects);
 
  private:
   // Commit the |pending_overlays_| and clear the vector. Returns false if any

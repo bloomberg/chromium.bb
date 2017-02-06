@@ -3185,14 +3185,14 @@ void OverlayPromotionHintCHROMIUM(GLuint texture,
   }
 }
 
-void SwapBuffersWithDamageCHROMIUM(GLint x,
-                                   GLint y,
-                                   GLint width,
-                                   GLint height) {
-  gles2::cmds::SwapBuffersWithDamageCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::SwapBuffersWithDamageCHROMIUM>();
+void SwapBuffersWithBoundsCHROMIUMImmediate(GLsizei count, const GLint* rects) {
+  const uint32_t size =
+      gles2::cmds::SwapBuffersWithBoundsCHROMIUMImmediate::ComputeSize(count);
+  gles2::cmds::SwapBuffersWithBoundsCHROMIUMImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          gles2::cmds::SwapBuffersWithBoundsCHROMIUMImmediate>(size);
   if (c) {
-    c->Init(x, y, width, height);
+    c->Init(count, rects);
   }
 }
 

@@ -58,7 +58,7 @@ Capabilities::Capabilities()
       num_program_binary_formats(0),
       uniform_buffer_offset_alignment(1),
       post_sub_buffer(false),
-      swap_buffers_with_damage(false),
+      swap_buffers_with_bounds(false),
       commit_overlay_planes(false),
       egl_image_external(false),
       texture_format_astc(false),

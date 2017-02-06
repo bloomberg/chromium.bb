@@ -731,10 +731,8 @@ error::Error DoGetUniformsES3CHROMIUM(GLuint program,
                                       std::vector<uint8_t>* data);
 error::Error DoGetTranslatedShaderSourceANGLE(GLuint shader,
                                               std::string* source);
-error::Error DoSwapBuffersWithDamageCHROMIUM(GLint x,
-                                             GLint y,
-                                             GLint width,
-                                             GLint height);
+error::Error DoSwapBuffersWithBoundsCHROMIUM(GLsizei count,
+                                             const volatile GLint* rects);
 error::Error DoPostSubBufferCHROMIUM(GLint x,
                                      GLint y,
                                      GLint width,

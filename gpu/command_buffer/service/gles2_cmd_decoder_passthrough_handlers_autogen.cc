@@ -4156,5 +4156,31 @@ error::Error GLES2DecoderPassthroughImpl::HandleOverlayPromotionHintCHROMIUM(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::HandleSwapBuffersWithBoundsCHROMIUMImmediate(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::SwapBuffersWithBoundsCHROMIUMImmediate& c =
+      *static_cast<
+          const volatile gles2::cmds::SwapBuffersWithBoundsCHROMIUMImmediate*>(
+          cmd_data);
+  GLsizei count = static_cast<GLsizei>(c.count);
+  uint32_t data_size = 0;
+  if (count >= 0 &&
+      !GLES2Util::ComputeDataSize(count, sizeof(GLint), 4, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  volatile const GLint* rects = GetImmediateDataAs<volatile const GLint*>(
+      c, data_size, immediate_data_size);
+  error::Error error = DoSwapBuffersWithBoundsCHROMIUM(count, rects);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 }  // namespace gles2
 }  // namespace gpu

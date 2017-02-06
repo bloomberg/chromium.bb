@@ -52,7 +52,7 @@ bool GLSurface::DeferDraws() {
   return false;
 }
 
-bool GLSurface::SupportsSwapBuffersWithDamage() {
+bool GLSurface::SupportsSwapBuffersWithBounds() {
   return false;
 }
 
@@ -76,10 +76,8 @@ void GLSurface::SwapBuffersAsync(const SwapCompletionCallback& callback) {
   NOTREACHED();
 }
 
-gfx::SwapResult GLSurface::SwapBuffersWithDamage(int x,
-                                                 int y,
-                                                 int width,
-                                                 int height) {
+gfx::SwapResult GLSurface::SwapBuffersWithBounds(
+    const std::vector<gfx::Rect>& rects) {
   return gfx::SwapResult::SWAP_FAILED;
 }
 
@@ -241,11 +239,9 @@ void GLSurfaceAdapter::SwapBuffersAsync(
   surface_->SwapBuffersAsync(callback);
 }
 
-gfx::SwapResult GLSurfaceAdapter::SwapBuffersWithDamage(int x,
-                                                        int y,
-                                                        int width,
-                                                        int height) {
-  return surface_->SwapBuffersWithDamage(x, y, width, height);
+gfx::SwapResult GLSurfaceAdapter::SwapBuffersWithBounds(
+    const std::vector<gfx::Rect>& rects) {
+  return surface_->SwapBuffersWithBounds(rects);
 }
 
 gfx::SwapResult GLSurfaceAdapter::PostSubBuffer(int x,
@@ -273,8 +269,8 @@ void GLSurfaceAdapter::CommitOverlayPlanesAsync(
   surface_->CommitOverlayPlanesAsync(callback);
 }
 
-bool GLSurfaceAdapter::SupportsSwapBuffersWithDamage() {
-  return surface_->SupportsSwapBuffersWithDamage();
+bool GLSurfaceAdapter::SupportsSwapBuffersWithBounds() {
+  return surface_->SupportsSwapBuffersWithBounds();
 }
 
 bool GLSurfaceAdapter::SupportsPostSubBuffer() {

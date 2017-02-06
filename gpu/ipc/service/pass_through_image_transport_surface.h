@@ -32,10 +32,8 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   void Destroy() override;
   gfx::SwapResult SwapBuffers() override;
   void SwapBuffersAsync(const SwapCompletionCallback& callback) override;
-  gfx::SwapResult SwapBuffersWithDamage(int x,
-                                        int y,
-                                        int width,
-                                        int height) override;
+  gfx::SwapResult SwapBuffersWithBounds(
+      const std::vector<gfx::Rect>& rects) override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
   void PostSubBufferAsync(int x,
                           int y,

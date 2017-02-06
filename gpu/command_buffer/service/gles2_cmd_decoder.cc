@@ -913,6 +913,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Wrapper for SwapBuffers.
   void DoSwapBuffers();
 
+  // Wrapper for SwapBuffersWithBoundsCHROMIUM.
+  void DoSwapBuffersWithBoundsCHROMIUM(GLsizei count,
+                                       const volatile GLint* rects);
+
   // Callback for async SwapBuffers.
   void FinishSwapBuffers(gfx::SwapResult result);
 
@@ -2341,7 +2345,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool context_was_lost_;
   bool reset_by_robustness_extension_;
   bool supports_post_sub_buffer_;
-  bool supports_swap_buffers_with_damage_;
+  bool supports_swap_buffers_with_bounds_;
   bool supports_commit_overlay_planes_;
   bool supports_async_swap_;
 
@@ -3038,7 +3042,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       context_was_lost_(false),
       reset_by_robustness_extension_(false),
       supports_post_sub_buffer_(false),
-      supports_swap_buffers_with_damage_(false),
+      supports_swap_buffers_with_bounds_(false),
       supports_commit_overlay_planes_(false),
       supports_async_swap_(false),
       derivatives_explicitly_enabled_(false),
@@ -3552,7 +3556,7 @@ bool GLES2DecoderImpl::Initialize(
       !surface->IsOffscreen())
     supports_post_sub_buffer_ = false;
 
-  supports_swap_buffers_with_damage_ = surface->SupportsSwapBuffersWithDamage();
+  supports_swap_buffers_with_bounds_ = surface->SupportsSwapBuffersWithBounds();
 
   supports_commit_overlay_planes_ = surface->SupportsCommitOverlayPlanes();
 
@@ -3726,7 +3730,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 #endif
 
   caps.post_sub_buffer = supports_post_sub_buffer_;
-  caps.swap_buffers_with_damage = supports_swap_buffers_with_damage_;
+  caps.swap_buffers_with_bounds = supports_swap_buffers_with_bounds_;
   caps.commit_overlay_planes = supports_commit_overlay_planes_;
   caps.surfaceless = surfaceless_;
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
@@ -11720,18 +11724,15 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleSwapBuffersWithDamageCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::SwapBuffersWithDamageCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::SwapBuffersWithDamageCHROMIUM*>(
-          cmd_data);
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::SwapBuffersWithDamageCHROMIUM");
+void GLES2DecoderImpl::DoSwapBuffersWithBoundsCHROMIUM(
+    GLsizei count,
+    const volatile GLint* rects) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::SwapBuffersWithBoundsCHROMIUM");
   { TRACE_EVENT_SYNTHETIC_DELAY("gpu.PresentingFrame"); }
-  if (!supports_swap_buffers_with_damage_) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSwapBuffersWithDamageCHROMIUM",
+  if (!supports_swap_buffers_with_bounds_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSwapBuffersWithBoundsCHROMIUM",
                        "command not supported by surface");
-    return error::kNoError;
+    return;
   }
   bool is_tracing;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
@@ -11745,10 +11746,12 @@ error::Error GLES2DecoderImpl::HandleSwapBuffersWithDamageCHROMIUM(
 
   ClearScheduleCALayerState();
 
-  FinishSwapBuffers(
-      surface_->SwapBuffersWithDamage(c.x, c.y, c.width, c.height));
-
-  return error::kNoError;
+  std::vector<gfx::Rect> bounds(count);
+  for (GLsizei i = 0; i < count; ++i) {
+    bounds[i] = gfx::Rect(rects[i * 4 + 0], rects[i * 4 + 1], rects[i * 4 + 2],
+                          rects[i * 4 + 3]);
+  }
+  FinishSwapBuffers(surface_->SwapBuffersWithBounds(bounds));
 }
 
 error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(

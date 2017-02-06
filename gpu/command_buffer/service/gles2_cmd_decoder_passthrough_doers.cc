@@ -2667,14 +2667,17 @@ error::Error GLES2DecoderPassthroughImpl::DoGetTranslatedShaderSourceANGLE(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithDamageCHROMIUM(
-    GLint x,
-    GLint y,
-    GLint width,
-    GLint height) {
-  gfx::SwapResult result = surface_->PostSubBuffer(x, y, width, height);
+error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithBoundsCHROMIUM(
+    GLsizei count,
+    const volatile GLint* rects) {
+  std::vector<gfx::Rect> bounds(count);
+  for (GLsizei i = 0; i < count; ++i) {
+    bounds[i] = gfx::Rect(rects[i * 4 + 0], rects[i * 4 + 1], rects[i * 4 + 2],
+                          rects[i * 4 + 3]);
+  }
+  gfx::SwapResult result = surface_->SwapBuffersWithBounds(bounds);
   if (result == gfx::SwapResult::SWAP_FAILED) {
-    LOG(ERROR) << "Context lost because PostSubBuffer failed.";
+    LOG(ERROR) << "Context lost because SwapBuffersWithBounds failed.";
   }
   // TODO(geofflang): force the context loss?
   return error::kNoError;

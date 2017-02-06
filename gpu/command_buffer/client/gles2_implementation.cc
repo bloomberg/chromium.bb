@@ -1488,20 +1488,28 @@ void GLES2Implementation::SwapBuffers() {
   }
 }
 
-void GLES2Implementation::SwapBuffersWithDamageCHROMIUM(GLint x,
-                                                        GLint y,
-                                                        GLint width,
-                                                        GLint height) {
+void GLES2Implementation::SwapBuffersWithBoundsCHROMIUM(GLsizei count,
+                                                        const GLint* rects) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glSwapBuffersWithDamageCHROMIUM("
-                     << x << ", " << y << ", " << width << ", " << height
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glSwapBuffersWithBoundsCHROMIUM("
+                     << count << ", " << static_cast<const void*>(rects)
                      << ")");
-  TRACE_EVENT2("gpu", "GLES2::SwapBuffersWithDamageCHROMIUM", "width", width,
-               "height", height);
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << rects[0 + i * 4] << ", "
+                          << rects[1 + i * 4] << ", " << rects[2 + i * 4]
+                          << ", " << rects[3 + i * 4]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glSwapBuffersWithBoundsCHROMIUM",
+               "count < 0");
+    return;
+  }
 
   // Same flow control as GLES2Implementation::SwapBuffers (see comments there).
   swap_buffers_tokens_.push(helper_->InsertToken());
-  helper_->SwapBuffersWithDamageCHROMIUM(x, y, width, height);
+  helper_->SwapBuffersWithBoundsCHROMIUMImmediate(count, rects);
   helper_->CommandBufferHelper::Flush();
   if (swap_buffers_tokens_.size() > kMaxSwapBuffers + 1) {
     helper_->WaitForToken(swap_buffers_tokens_.front());
@@ -4876,9 +4884,15 @@ void GLES2Implementation::Swap() {
   SwapBuffers();
 }
 
-void GLES2Implementation::SwapWithDamage(const gfx::Rect& damage) {
-  SwapBuffersWithDamageCHROMIUM(damage.x(), damage.y(), damage.width(),
-                                damage.height());
+void GLES2Implementation::SwapWithBounds(const std::vector<gfx::Rect>& rects) {
+  std::vector<int> rects_data(rects.size() * 4);
+  for (size_t i = 0; i < rects.size(); ++i) {
+    rects_data[i * 4 + 0] = rects[i].x();
+    rects_data[i * 4 + 1] = rects[i].y();
+    rects_data[i * 4 + 2] = rects[i].width();
+    rects_data[i * 4 + 3] = rects[i].height();
+  }
+  SwapBuffersWithBoundsCHROMIUM(rects.size(), rects_data.data());
 }
 
 void GLES2Implementation::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
