@@ -251,9 +251,9 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   LostContextMode m_contextLostMode;
   bool m_contextRestorable;
   unsigned m_tryRestoreContextAttemptCount;
-  Timer<CanvasRenderingContext2D> m_dispatchContextLostEventTimer;
-  Timer<CanvasRenderingContext2D> m_dispatchContextRestoredEventTimer;
-  Timer<CanvasRenderingContext2D> m_tryRestoreContextEventTimer;
+  TaskRunnerTimer<CanvasRenderingContext2D> m_dispatchContextLostEventTimer;
+  TaskRunnerTimer<CanvasRenderingContext2D> m_dispatchContextRestoredEventTimer;
+  TaskRunnerTimer<CanvasRenderingContext2D> m_tryRestoreContextEventTimer;
 
   FilterOperations m_filterOperations;
   HashMap<String, Font> m_fontsResolvedUsingCurrentStyle;

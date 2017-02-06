@@ -41,6 +41,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
@@ -119,12 +120,18 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
       m_contextRestorable(true),
       m_tryRestoreContextAttemptCount(0),
       m_dispatchContextLostEventTimer(
+          TaskRunnerHelper::get(TaskType::MiscPlatformAPI,
+                                canvas->document().frame()),
           this,
           &CanvasRenderingContext2D::dispatchContextLostEvent),
       m_dispatchContextRestoredEventTimer(
+          TaskRunnerHelper::get(TaskType::MiscPlatformAPI,
+                                canvas->document().frame()),
           this,
           &CanvasRenderingContext2D::dispatchContextRestoredEvent),
       m_tryRestoreContextEventTimer(
+          TaskRunnerHelper::get(TaskType::MiscPlatformAPI,
+                                canvas->document().frame()),
           this,
           &CanvasRenderingContext2D::tryRestoreContextEvent),
       m_pruneLocalFontCacheScheduled(false) {
