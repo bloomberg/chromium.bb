@@ -23,6 +23,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -363,9 +364,9 @@ void NaClDomHandler::MaybeRespondToPage() {
 
   if (!pnacl_path_validated_) {
     std::string* version_string = new std::string;
-    base::PostTaskAndReplyWithResult(
-        BrowserThread::GetBlockingPool(),
-        FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::BACKGROUND),
         base::Bind(&CheckPathAndVersion, version_string),
         base::Bind(&NaClDomHandler::DidCheckPathAndVersion,
                    weak_ptr_factory_.GetWeakPtr(),
