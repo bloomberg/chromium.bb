@@ -22,7 +22,7 @@ using message_center::NotifierId;
 namespace features {
 
 const base::Feature kAllowFullscreenWebNotificationsFeature{
-  "FSNotificationsWeb", base::FEATURE_DISABLED_BY_DEFAULT
+  "FSNotificationsWeb", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 } // namespace features

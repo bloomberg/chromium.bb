@@ -57,7 +57,7 @@ namespace extensions {
 namespace notifications = api::notifications;
 
 const base::Feature kAllowFullscreenAppNotificationsFeature{
-  "FSNotificationsApp", base::FEATURE_DISABLED_BY_DEFAULT
+  "FSNotificationsApp", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 namespace {
