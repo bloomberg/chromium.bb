@@ -1262,8 +1262,6 @@ class CORE_EXPORT UseCounter {
     DocumentCreateTouchTargetWrongType = 1610,
     DocumentCreateTouchLessThanSevenArguments = 1611,
     DocumentCreateTouchMoreThanSevenArguments = 1612,
-    EncryptedMediaCapabilityProvided = 1613,
-    EncryptedMediaCapabilityNotProvided = 1614,
     LongTaskObserver = 1615,
     CSSMotionInEffect = 1616,
     CSSOffsetInEffect = 1617,

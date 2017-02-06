@@ -130,12 +130,6 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
   // See http://crbug.com/605661.
   void checkEmptyCodecs(const WebMediaKeySystemConfiguration&);
 
-  // Log UseCounter if selected configuration does not have at least one of
-  // 'audioCapabilities' and 'videoCapabilities' non-empty.
-  // TODO(jrummell): Switch to deprecation message once we have data.
-  // See http://crbug.com/616233.
-  void checkCapabilities(const WebMediaKeySystemConfiguration&);
-
   Member<ScriptPromiseResolver> m_resolver;
   const String m_keySystem;
   WebVector<WebMediaKeySystemConfiguration> m_supportedConfigurations;
@@ -202,7 +196,6 @@ SecurityOrigin* MediaKeySystemAccessInitializer::getSecurityOrigin() const {
 void MediaKeySystemAccessInitializer::requestSucceeded(
     WebContentDecryptionModuleAccess* access) {
   checkEmptyCodecs(access->getConfiguration());
-  checkCapabilities(access->getConfiguration());
 
   if (!isExecutionContextValid())
     return;
@@ -299,24 +292,6 @@ void MediaKeySystemAccessInitializer::checkEmptyCodecs(
     UseCounter::count(
         m_resolver->getExecutionContext(),
         UseCounter::EncryptedMediaAllSelectedContentTypesHaveCodecs);
-  }
-}
-
-void MediaKeySystemAccessInitializer::checkCapabilities(
-    const WebMediaKeySystemConfiguration& config) {
-  // This is only checking that at least one capability is provided in the
-  // selected configuration, as apps may pass empty capabilities for
-  // compatibility with other implementations.
-  bool atLeastOneAudioCapability = config.audioCapabilities.size() > 0;
-  bool atLeastOneVideoCapability = config.videoCapabilities.size() > 0;
-
-  if (atLeastOneAudioCapability || atLeastOneVideoCapability) {
-    UseCounter::count(m_resolver->getExecutionContext(),
-                      UseCounter::EncryptedMediaCapabilityProvided);
-  } else {
-    Deprecation::countDeprecation(
-        m_resolver->getExecutionContext(),
-        UseCounter::EncryptedMediaCapabilityNotProvided);
   }
 }
 

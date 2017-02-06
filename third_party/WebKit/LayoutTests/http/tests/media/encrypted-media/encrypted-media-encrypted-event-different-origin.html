@@ -44,7 +44,10 @@
                 }
 
                 logMessage('starting');
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                navigator.requestMediaKeySystemAccess(
+                    'org.w3.clearkey',
+                    [{audioCapabilities: [{contentType: 'audio/webm; codecs=vorbis'}]}])
+                  .then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     video.addEventListener('encrypted', test.step_func(onEncrypted), true);

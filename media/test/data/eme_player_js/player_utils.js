@@ -114,26 +114,21 @@ PlayerUtils.registerEMEEventListeners = function(player) {
   // or 'videoCapabilities' to be specified. It also requires only codecs
   // specific to the capability, so unlike MSE cannot have both audio and
   // video codecs in the contentType.
-  if (player.testConfig.mediaType == 'video/webm; codecs="vp8"' ||
-      player.testConfig.mediaType == 'video/webm; codecs="vp9"' ||
-      player.testConfig.mediaType == 'video/mp4; codecs="avc1.4D000C"') {
-    // Video only.
-    config.videoCapabilities = [{contentType: player.testConfig.mediaType}];
-  } else if (
-      player.testConfig.mediaType == 'audio/webm; codecs="vorbis"' ||
-      player.testConfig.mediaType == 'audio/webm; codecs="opus"' ||
-      player.testConfig.mediaType == 'audio/mp4; codecs="mp4a.40.2"') {
-    // Audio only.
-    config.audioCapabilities = [{contentType: player.testConfig.mediaType}];
-  } else if (
-      player.testConfig.mediaType == 'video/webm; codecs="vorbis, vp8"') {
-    // Both audio and video codecs specified.
-    config.audioCapabilities = [{contentType: 'audio/webm; codecs="vorbis"'}];
-    config.videoCapabilities = [{contentType: 'video/webm; codecs="vp8"'}];
-  } else if (player.testConfig.mediaType == 'video/webm; codecs="opus, vp9"') {
-    // Both audio and video codecs specified.
-    config.audioCapabilities = [{contentType: 'audio/webm; codecs="opus"'}];
-    config.videoCapabilities = [{contentType: 'video/webm; codecs="vp9"'}];
+  if (player.testConfig.mediaType) {
+    if (player.testConfig.mediaType.substring(0, 5) == 'video') {
+      config.videoCapabilities = [{contentType: player.testConfig.mediaType}];
+    } else if (player.testConfig.mediaType.substring(0, 5) == 'audio') {
+      config.audioCapabilities = [{contentType: player.testConfig.mediaType}];
+    }
+    // Handle special cases where both audio and video are needed.
+    if (player.testConfig.mediaType == 'video/webm; codecs="vorbis, vp8"') {
+      config.audioCapabilities = [{contentType: 'audio/webm; codecs="vorbis"'}];
+      config.videoCapabilities = [{contentType: 'video/webm; codecs="vp8"'}];
+    } else if (
+        player.testConfig.mediaType == 'video/webm; codecs="opus, vp9"') {
+      config.audioCapabilities = [{contentType: 'audio/webm; codecs="opus"'}];
+      config.videoCapabilities = [{contentType: 'video/webm; codecs="vp9"'}];
+    }
   } else {
     // Some tests (e.g. mse_different_containers.html) specify audio and
     // video codecs seperately.

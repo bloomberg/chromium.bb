@@ -670,8 +670,10 @@ KeySystemConfigSelector::GetSupportedConfiguration(
 
   // 15. If the videoCapabilities and audioCapabilities members in candidate
   //     configuration are both empty, return NotSupported.
-  // TODO(jrummell): Enforce this once the deprecation warning is removed.
-  // See http://crbug.com/616233.
+  if (candidate.videoCapabilities.isEmpty() &&
+      candidate.audioCapabilities.isEmpty()) {
+    return CONFIGURATION_NOT_SUPPORTED;
+  }
 
   // 16. If the videoCapabilities member in candidate configuration is
   //     non-empty:

@@ -55,6 +55,9 @@ public class KeySystemTest extends AwTestBase {
     }
 
     private String getKeySystemTestPage() {
+        // requestMediaKeySystemAccess() provides 2 different configurations
+        // as encrypted webm is only supported on Lollipop+. mp4 is proprietary,
+        // and may not be supported on all Android devices.
         return "<html> <script>"
                 + "var result;"
                 + "function success(keySystemAccess) {"
@@ -64,8 +67,13 @@ public class KeySystemTest extends AwTestBase {
                 + "  result = error.name;"
                 + "}"
                 + "function isKeySystemSupported(keySystem) {"
-                + "  navigator.requestMediaKeySystemAccess(keySystem, [{}]).then("
-                + "      success, failure);"
+                + "  navigator.requestMediaKeySystemAccess("
+                + "     keySystem, "
+                + "     [{audioCapabilities:"
+                + "         [{contentType: 'audio/webm; codec=\"vorbis\"'}]}, "
+                + "      {videoCapabilities:"
+                + "         [{contentType: 'video/mp4; codecs=\"avc1.4D000C\"'}]}])"
+                + "  .then(success, failure);"
                 + "}"
                 + "function areProprietaryCodecsSupported() {"
                 + "  var video = document.createElement('video');"
