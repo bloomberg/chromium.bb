@@ -148,6 +148,7 @@
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 #import "ios/chrome/browser/web/error_page_content.h"
@@ -2499,13 +2500,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_COPY);
     action = ^{
       Record(ACTION_COPY_LINK_ADDRESS, isImage, isLink);
-      NSURL* url = net::NSURLWithGURL(link);
-      NSDictionary* item = @{
-        (NSString*)kUTTypeURL : url,
-        (NSString*)kUTTypeUTF8PlainText :
-            [[url absoluteString] dataUsingEncoding:NSUTF8StringEncoding],
-      };
-      [[UIPasteboard generalPasteboard] setItems:@[ item ]];
+      StoreURLInPasteboard(link);
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
   }
@@ -4357,7 +4352,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   DCHECK(reading_list::switches::IsReadingListEnabled());
   UIViewController* vc = [ReadingListViewControllerBuilder
       readingListViewControllerInBrowserState:self.browserState
-                                     tabModel:_model];
+                                       loader:self];
   [self presentViewController:vc animated:YES completion:nil];
 }
 

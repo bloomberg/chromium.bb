@@ -14,6 +14,7 @@ class ChromeBrowserState;
 }
 
 @class TabModel;
+@protocol UrlLoader;
 
 @protocol ReadingListViewControllerDelegate;
 
@@ -22,7 +23,7 @@ class ChromeBrowserState;
 
 + (ReadingListViewControllerContainer*)
 readingListViewControllerInBrowserState:(ios::ChromeBrowserState*)browserState
-                               tabModel:(TabModel*)tabModel;
+                                 loader:(id<UrlLoader>)loader;
 
 @end
 

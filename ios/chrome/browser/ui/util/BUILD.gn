@@ -14,6 +14,8 @@ source_set("util") {
     "label_observer.mm",
     "manual_text_framer.h",
     "manual_text_framer.mm",
+    "pasteboard_util.h",
+    "pasteboard_util.mm",
     "relaxed_bounds_constraints_hittest.h",
     "snapshot_util.h",
     "snapshot_util.mm",

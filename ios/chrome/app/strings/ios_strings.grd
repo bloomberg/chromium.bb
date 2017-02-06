@@ -1062,6 +1062,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_READING_LIST_CANCEL_BUTTON" desc="Label of the button to stop editing the reading list entries (delete, mark as read/unread) [Length: 25em]" meaning="Stop editing. [Length: 25em]">
         Cancel
       </message>
+      <message name="IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE" desc="Title of the button to display the Offline version instead of the Online one. [Length: 50em]">
+        View Offline Version in New Tab
+      </message>
       <message name="IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON" desc="Label of the button to delete all the reading list entries read [Length: 25em]" meaning="Delete all the read entries. [Length: 25em]">
         Delete Read
       </message>

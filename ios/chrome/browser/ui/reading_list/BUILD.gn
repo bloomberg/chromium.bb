@@ -66,12 +66,14 @@ source_set("reading_list") {
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/side_swipe",
     "//ios/chrome/browser/ui/static_content",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//net",
     "//ui/base",
+    "//ui/strings",
     "//url",
   ]
   public_deps = [
@@ -86,6 +88,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "offline_page_native_content_unittest.mm",
+    "reading_list_view_controller_container_unittest.mm",
     "reading_list_view_controller_unittest.mm",
   ]
   deps = [
@@ -104,6 +107,7 @@ source_set("unit_tests") {
     "//ios/web:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
+    "//ui/base",
   ]
 }
 

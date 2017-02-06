@@ -6,6 +6,7 @@
 
 #include <unordered_set>
 
+#import "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -18,17 +19,15 @@
 #include "components/reading_list/ios/reading_list_model_storage.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
-#import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/url_loader.h"
-#include "ios/web/public/navigation_item.h"
-#include "ios/web/public/referrer.h"
-#import "ios/web/public/test/web_test_with_web_state.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+
+namespace {
 
 #pragma mark - MockFaviconService
 
@@ -54,24 +53,11 @@ class MockFaviconService : public favicon::FaviconService {
   DISALLOW_COPY_AND_ASSIGN(MockFaviconService);
 };
 
-#pragma mark - MockLargeIconService
-
-// This class provides access to LargeIconService internals, using the current
-// thread's task runner for testing.
-class MockLargeIconService : public favicon::LargeIconService {
- public:
-  explicit MockLargeIconService(MockFaviconService* mock_favicon_service)
-      : LargeIconService(mock_favicon_service,
-                         base::ThreadTaskRunnerHandle::Get()) {}
-  ~MockLargeIconService() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockLargeIconService);
-};
+}  // namespace
 
 #pragma mark - ReadingListViewControllerTest
 
-class ReadingListViewControllerTest : public web::WebTestWithWebState {
+class ReadingListViewControllerTest : public testing::Test {
  public:
   ReadingListViewControllerTest() {}
   ~ReadingListViewControllerTest() override {}
@@ -82,31 +68,30 @@ class ReadingListViewControllerTest : public web::WebTestWithWebState {
 
   base::scoped_nsobject<ReadingListViewController>
       reading_list_view_controller_;
+  id mock_delegate_;
 
   // TODO(crbug.com/625617) When offline url can be opened, use a mock for the
   // readinglistdownloadservice.
   void SetUp() override {
-    web::WebTestWithWebState::SetUp();
+    testing::Test::SetUp();
     mock_favicon_service_.reset(new MockFaviconService());
 
-    // OCMOCK_VALUE needs a lvalues.
-    web::WebState* mock_web_state = web_state();
-    id tab = [OCMockObject mockForClass:[Tab class]];
-    [[[tab stub] andReturnValue:OCMOCK_VALUE(mock_web_state)] webState];
-    id tabModel = [OCMockObject mockForClass:[TabModel class]];
-    [[[tabModel stub] andReturn:tab] currentTab];
-
     reading_list_model_.reset(new ReadingListModelImpl(nullptr, nullptr));
-    large_icon_service_.reset(
-        new MockLargeIconService(mock_favicon_service_.get()));
+    large_icon_service_.reset(new favicon::LargeIconService(
+        mock_favicon_service_.get(), base::ThreadTaskRunnerHandle::Get()));
     reading_list_view_controller_.reset([[ReadingListViewController alloc]
                      initWithModel:reading_list_model_.get()
-                          tabModel:tabModel
                   largeIconService:large_icon_service_.get()
         readingListDownloadService:nil
                            toolbar:nil]);
+
+    mock_delegate_ = [OCMockObject
+        niceMockForProtocol:@protocol(ReadingListViewControllerDelegate)];
+    [reading_list_view_controller_ setDelegate:mock_delegate_];
   }
 
+ private:
+  web::TestWebThreadBundle thread_bundle_;
   DISALLOW_COPY_AND_ASSIGN(ReadingListViewControllerTest);
 };
 
@@ -141,45 +126,43 @@ TEST_F(ReadingListViewControllerTest, GetsDismissed) {
   // Load view.
   [reading_list_view_controller_ view];
 
-  id partialMock =
-      [OCMockObject partialMockForObject:reading_list_view_controller_.get()];
-  [[partialMock expect] dismiss];
+  [[mock_delegate_ expect]
+      dismissReadingListViewController:reading_list_view_controller_.get()];
 
   // Simulate tap on "Done" button.
   UIBarButtonItem* done =
       reading_list_view_controller_.get().navigationItem.rightBarButtonItem;
   [done.target performSelector:done.action];
 
-  [partialMock verify];
+  EXPECT_OCMOCK_VERIFY(mock_delegate_);
 }
 
 // Tests that when an item is selected, the article is opened with UrlLoader and
 // the view controller is dismissed.
 TEST_F(ReadingListViewControllerTest, OpensItems) {
-  id partialMock =
-      [OCMockObject partialMockForObject:reading_list_view_controller_.get()];
+  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:1 inSection:0];
 
   GURL url("https://chromium.org");
+  GURL url2("https://chromium.org/2");
   reading_list_model_->AddEntry(url, "chromium",
                                 reading_list::ADDED_VIA_CURRENT_APP);
-  [reading_list_view_controller_ view];
-  [[partialMock expect] dismiss];
+  reading_list_model_->AddEntry(url2, "chromium - 2",
+                                reading_list::ADDED_VIA_CURRENT_APP);
 
-  // Simulate touch on first cell.
-  [reading_list_view_controller_.get().collectionView.delegate
+  ReadingListCollectionViewItem* readingListItem =
+      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(
+          [[reading_list_view_controller_ collectionViewModel]
+              itemAtIndexPath:indexPath]);
+
+  [[mock_delegate_ expect]
+      readingListViewController:reading_list_view_controller_.get()
+                       openItem:readingListItem];
+
+  // Simulate touch on second cell.
+  [reading_list_view_controller_
                 collectionView:reading_list_view_controller_.get()
                                    .collectionView
-      didSelectItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
-  web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetPendingItem();
+      didSelectItemAtIndexPath:indexPath];
 
-  EXPECT_EQ(item->GetURL().spec(), url.spec());
-  EXPECT_FALSE(item->GetReferrer().url.is_valid());
-  EXPECT_EQ(item->GetReferrer().policy,
-            web::ReferrerPolicy::ReferrerPolicyDefault);
-  EXPECT_TRUE(PageTransitionCoreTypeIs(
-      item->GetTransitionType(),
-      ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK));
-
-  [partialMock verify];
+  EXPECT_OCMOCK_VERIFY(mock_delegate_);
 }

@@ -15,33 +15,44 @@ namespace favicon {
 class LargeIconService;
 }
 
+@class ReadingListCollectionViewItem;
 class ReadingListDownloadService;
 class ReadingListModel;
+@class ReadingListViewController;
 @class TabModel;
 
-// Audience for the ReadingListViewController, managing the visibility of the
-// toolbar and dismissing the Reading List View.
-@protocol ReadingListViewControllerAudience<NSObject>
+// Delegate for the ReadingListViewController, managing the visibility of the
+// toolbar, dismissing the Reading List View and opening elements.
+@protocol ReadingListViewControllerDelegate<NSObject>
 
 // Whether the collection has items.
-- (void)setCollectionHasItems:(BOOL)hasItems;
+- (void)readingListViewController:
+            (ReadingListViewController*)readingListViewController
+                         hasItems:(BOOL)hasItems;
 
 // Dismisses the Reading List View.
-- (void)dismiss;
+- (void)dismissReadingListViewController:
+    (ReadingListViewController*)readingListViewController;
+
+// Displays the context menu for the |readingListItem|. The |menuLocation| is
+// the anchor of the context menu in the
+// readingListViewController.collectionView coordinates.
+- (void)
+readingListViewController:(ReadingListViewController*)readingListViewController
+displayContextMenuForItem:(ReadingListCollectionViewItem*)readingListItem
+                  atPoint:(CGPoint)menuLocation;
+
+// Opens the entry corresponding to the |readingListItem|.
+- (void)
+readingListViewController:(ReadingListViewController*)readingListViewController
+                 openItem:(ReadingListCollectionViewItem*)readingListItem;
 
 @end
 
 @interface ReadingListViewController
     : CollectionViewController<ReadingListToolbarActions>
 
-@property(nonatomic, readonly) ReadingListModel* readingListModel;
-@property(weak, nonatomic, readonly) TabModel* tabModel;
-@property(nonatomic, readonly) favicon::LargeIconService* largeIconService;
-@property(nonatomic, readonly)
-    ReadingListDownloadService* readingListDownloadService;
-
 - (instancetype)initWithModel:(ReadingListModel*)model
-                      tabModel:(TabModel*)tabModel
               largeIconService:(favicon::LargeIconService*)largeIconService
     readingListDownloadService:
         (ReadingListDownloadService*)readingListDownloadService
@@ -50,7 +61,17 @@ class ReadingListModel;
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 
-@property(nonatomic, weak) id<ReadingListViewControllerAudience> audience;
+@property(nonatomic, weak) id<ReadingListViewControllerDelegate> delegate;
+@property(nonatomic, readonly) ReadingListModel* readingListModel;
+@property(nonatomic, readonly) favicon::LargeIconService* largeIconService;
+@property(nonatomic, readonly)
+    ReadingListDownloadService* readingListDownloadService;
+
+// Prepares this view controller to be dismissed.
+- (void)willBeDismissed;
+
+// Reloads all the data from the ReadingListModel.
+- (void)reloadData;
 
 @end
 

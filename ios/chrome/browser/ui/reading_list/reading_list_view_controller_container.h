@@ -14,14 +14,17 @@ class LargeIconService;
 
 class ReadingListDownloadService;
 class ReadingListModel;
-@class TabModel;
+@class ReadingListViewController;
+@protocol UrlLoader;
 
-// Container for the Reading List View Controller.
+// Container for the Reading List View Controller and the toolbar. It handles
+// the interactions between the two. It also acts as a ReadingList delegate,
+// opening entries and displaying context menu.
 @interface ReadingListViewControllerContainer
-    : UIViewController<ReadingListViewControllerAudience>
+    : UIViewController<ReadingListViewControllerDelegate>
 
 - (instancetype)initWithModel:(ReadingListModel*)model
-                      tabModel:(TabModel*)tabModel
+                        loader:(id<UrlLoader>)loader
               largeIconService:(favicon::LargeIconService*)largeIconService
     readingListDownloadService:
         (ReadingListDownloadService*)readingListDownloadService

@@ -20,7 +20,7 @@
 
 + (ReadingListViewControllerContainer*)
 readingListViewControllerInBrowserState:(ios::ChromeBrowserState*)browserState
-                               tabModel:(TabModel*)tabModel {
+                                 loader:(id<UrlLoader>)loader {
   ReadingListModel* model =
       ReadingListModelFactory::GetInstance()->GetForBrowserState(browserState);
   favicon::LargeIconService* service =
@@ -30,7 +30,7 @@ readingListViewControllerInBrowserState:(ios::ChromeBrowserState*)browserState
           browserState);
   ReadingListViewControllerContainer* vc =
       [[ReadingListViewControllerContainer alloc] initWithModel:model
-                                                       tabModel:tabModel
+                                                         loader:loader
                                                largeIconService:service
                                      readingListDownloadService:rlservice];
   return vc;
