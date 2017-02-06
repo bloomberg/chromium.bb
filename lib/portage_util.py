@@ -571,10 +571,13 @@ class EBuild(object):
     # this covers some types of failures.
     projects = []
     srcpaths = []
+    rev_subdirs = []
     if 'CROS_WORKON_PROJECT' in settings:
       projects = settings['CROS_WORKON_PROJECT'].split(',')
     if 'CROS_WORKON_SRCPATH' in settings:
       srcpaths = settings['CROS_WORKON_SRCPATH'].split(',')
+    if 'CROS_WORKON_SUBDIRS_TO_REV' in settings:
+      rev_subdirs = settings['CROS_WORKON_SUBDIRS_TO_REV'].split(',')
 
     if not (projects or srcpaths):
       raise EbuildFormatIncorrectException(
@@ -585,8 +588,7 @@ class EBuild(object):
     subdirs = settings['CROS_WORKON_SUBDIR'].split(',')
     live = settings['CROS_WORKON_ALWAYS_LIVE']
     commit = settings.get('CROS_WORKON_COMMIT')
-    rev_subdirs = settings.get('CROS_WORKON_SUBDIRS_TO_REV')
-    if (len(projects) > 1 or len(srcpaths) > 1) and rev_subdirs:
+    if (len(projects) > 1 or len(srcpaths) > 1) and len(rev_subdirs) > 0:
       raise EbuildFormatIncorrectException(
           ebuild_path,
           'Must not define CROS_WORKON_SUBDIRS_TO_REV if defining multiple '
@@ -872,10 +874,11 @@ class EBuild(object):
     srcdir = srcdirs[0]
     logrange = '%s..%s' % (stable_commit_hash, current_commit_hash)
     paths = self.cros_workon_vars.rev_subdirs
+    git_args = ['log', '--oneline', logrange, '--']
+    git_args.extend(self.cros_workon_vars.rev_subdirs)
 
     try:
-      output = EBuild._RunGit(
-          srcdir, ['log', '--oneline', logrange, '--', paths])
+      output = EBuild._RunGit(srcdir, git_args)
     except cros_build_lib.RunCommandError as ex:
       logging.warning(str(ex))
       return True
