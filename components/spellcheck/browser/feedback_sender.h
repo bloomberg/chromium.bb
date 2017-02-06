@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/spellcheck/browser/feedback.h"
@@ -185,7 +186,7 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
   // Feedback senders that need to stay alive for the duration of sending data.
   // If a sender is destroyed before it finishes, then sending feedback will be
   // canceled.
-  std::vector<std::unique_ptr<net::URLFetcher>> senders_;
+  ScopedVector<net::URLFetcher> senders_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackSender);
 };

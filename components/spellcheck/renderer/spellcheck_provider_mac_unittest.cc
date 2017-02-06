@@ -40,7 +40,7 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
 
   SpellCheckHostMsg_RequestTextCheck::Param read_parameters1;
   bool ok = SpellCheckHostMsg_RequestTextCheck::Read(
-      provider_.messages_[0].get(), &read_parameters1);
+      provider_.messages_[0], &read_parameters1);
   EXPECT_TRUE(ok);
   EXPECT_EQ(std::get<2>(read_parameters1), base::ASCIIToUTF16("hello "));
 
@@ -64,13 +64,13 @@ TEST_F(SpellCheckProviderMacTest, TwoRoundtripSuccess) {
 
   SpellCheckHostMsg_RequestTextCheck::Param read_parameters1;
   bool ok = SpellCheckHostMsg_RequestTextCheck::Read(
-      provider_.messages_[0].get(), &read_parameters1);
+      provider_.messages_[0], &read_parameters1);
   EXPECT_TRUE(ok);
   EXPECT_EQ(std::get<2>(read_parameters1), base::UTF8ToUTF16("hello "));
 
   SpellCheckHostMsg_RequestTextCheck::Param read_parameters2;
-  ok = SpellCheckHostMsg_RequestTextCheck::Read(provider_.messages_[1].get(),
-                                                &read_parameters2);
+  ok = SpellCheckHostMsg_RequestTextCheck::Read(
+      provider_.messages_[1], &read_parameters2);
   EXPECT_TRUE(ok);
   EXPECT_EQ(std::get<2>(read_parameters2), base::UTF8ToUTF16("bye "));
 

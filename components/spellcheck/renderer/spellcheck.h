@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/spellcheck/renderer/custom_dictionary_engine.h"
@@ -150,7 +151,7 @@ class SpellCheck : public content::RenderThreadObserver,
 
   // A vector of objects used to actually check spelling, one for each enabled
   // language.
-  std::vector<std::unique_ptr<SpellcheckLanguage>> languages_;
+  ScopedVector<SpellcheckLanguage> languages_;
 
   // Custom dictionary spelling engine.
   CustomDictionaryEngine custom_dictionary_;

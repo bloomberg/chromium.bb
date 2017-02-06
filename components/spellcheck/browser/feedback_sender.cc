@@ -376,9 +376,10 @@ void FeedbackSender::RandBytes(void* p, size_t len) {
 }
 
 void FeedbackSender::OnURLFetchComplete(const net::URLFetcher* source) {
-  for (auto sender_it = senders_.begin(); sender_it != senders_.end();
+  for (ScopedVector<net::URLFetcher>::iterator sender_it = senders_.begin();
+       sender_it != senders_.end();
        ++sender_it) {
-    if ((*sender_it).get() == source) {
+    if (*sender_it == source) {
       senders_.erase(sender_it);
       return;
     }
@@ -440,14 +441,15 @@ void FeedbackSender::SendFeedback(const std::vector<Misspelling>& feedback_data,
 
   // The tests use this identifier to mock the URL fetcher.
   static const int kUrlFetcherId = 0;
-  auto sender = net::URLFetcher::Create(kUrlFetcherId, feedback_service_url_,
-                                        net::URLFetcher::POST, this);
+  net::URLFetcher* sender =
+      net::URLFetcher::Create(kUrlFetcherId, feedback_service_url_,
+                              net::URLFetcher::POST, this).release();
   data_use_measurement::DataUseUserData::AttachToFetcher(
-      sender.get(), data_use_measurement::DataUseUserData::SPELL_CHECKER);
+      sender, data_use_measurement::DataUseUserData::SPELL_CHECKER);
   sender->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                        net::LOAD_DO_NOT_SAVE_COOKIES);
   sender->SetUploadData("application/json", feedback);
-  senders_.push_back(std::move(sender));
+  senders_.push_back(sender);
 
   // Request context is nullptr in testing.
   if (request_context_.get()) {

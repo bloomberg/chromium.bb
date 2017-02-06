@@ -4,7 +4,6 @@
 
 #include "components/spellcheck/renderer/spellcheck_provider_test.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/spellcheck/common/spellcheck_marker.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
@@ -63,7 +62,7 @@ bool TestingSpellCheckProvider::Send(IPC::Message* message)  {
   }
 #endif
 
-  messages_.push_back(base::WrapUnique<IPC::Message>(message));
+  messages_.push_back(message);
   return true;
 }
 
