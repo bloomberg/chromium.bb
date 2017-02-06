@@ -20,7 +20,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-            <View
+            <org.chromium.chrome.browser.widget.FadingBackgroundView
                 android:id="@+id/fading_focus_target"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
