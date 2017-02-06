@@ -2,74 +2,43 @@
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 </head>
 
 <body>
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Basic tests for DynamicsCompressorNode API.");
-
+var audit = Audit.createTaskRunner();
 var context;
 var compressor;
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-    
-    window.jsTestIsAsync = true;
+audit.define("test", function (task, should) {
+    task.describe("Basic tests for DynamicsCompressorNode API");
 
     context = new AudioContext();
     compressor = context.createDynamicsCompressor();
 
-    try {
-        if (compressor.threshold.value == -24)
-            testPassed("threshold attribute has correct default value.");
-        else
-            testFailed("threshold attribute has incorrect default value.");
+    should(compressor.threshold.value, "compressor.threshold.value")
+      .beEqualTo(-24);
+    should(compressor.knee.value, "compressor.knee.value")
+      .beEqualTo(30);
+    should(compressor.ratio.value, "compressor.ratio.value")
+      .beEqualTo(12);
+    should(compressor.attack.value, "compressor.attack.value")
+      .beEqualTo(Math.fround(0.003));
+    should(compressor.release.value, "compressor.release.value")
+      .beEqualTo(0.25);
+    should(typeof compressor.reduction, "typeof compressor.reduction")
+      .beEqualTo("number");
+    should(compressor.reduction, "compressor.reduction")
+      .beEqualTo(0);
 
-        if (compressor.knee.value == 30)
-            testPassed("knee attribute has correct default value.");
-        else
-            testFailed("knee attribute has incorrect default value.");
-        
-        if (compressor.ratio.value == 12)
-            testPassed("ratio attribute has correct default value.");
-        else
-            testFailed("ratio attribute has incorrect default value.");
-        
-        if (compressor.attack.value === Math.fround(0.003))
-            testPassed("attack attribute has correct default value.");
-        else
-            testFailed("attack attribute has incorrect default value.");
+    done();
+});
 
-        if (compressor.release.value === 0.25)
-            testPassed("release attribute has correct default value.");
-        else
-            testFailed("release attribute has incorrect default value.");
-
-        if (typeof compressor.reduction === "number") {
-            testPassed("reduction attribute is a number.")
-            if (compressor.reduction == 0)
-                testPassed("reduction attribute has correct default value.")
-        } else {
-            testFailed("reduction attribute is an " + compressor.reduction.constructor.name + " not a number.");
-        }
-
-    } catch(e) {
-        testFailed("Exception thrown when accessing DynamicsCompressorNode attributes.");
-    }
-
-    finishJSTest();
-}
-
-runTest();
+audit.run();
 
 </script>
 

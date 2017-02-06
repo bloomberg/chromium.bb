@@ -2,45 +2,29 @@
 <html>
   <head>
     <title>Validate Reduction Value of DynamicsComporessor after Disabling</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
     <script>
-      description("Validate Reduction Value of DynamicsComporessor after Disabling");
+      let audit = Audit.createTaskRunner();
+      let context;
+      let buffer;
+      let source;
+      let compressor;
 
-      var context;
-      var buffer;
-      var source;
-      var compressor;
-      var renderedData;
+      let sampleRate = 44100;
+      let testDurationSamples = 44100;
 
-      var sampleRate = 44100;
-      var testDurationSamples = 44100;
-
-      function checkResult (event) {
-
-          renderedData = event.renderedBuffer.getChannelData(0);
-
-          // Check that the reduction value is 0.0.
-          if (compressor.reduction !== 0.0) {
-              testFailed("Expected reduction of 0.0, but the value is " + compressor.reduction);
-          }
-          else {
-              testPassed("Reduction is 0.0");
-          }
-
-          finishJSTest();
-      }
-
-      function runTest() {
-          window.jsTestIsAsync = true;
-
+      audit.define("test", function (task, should) {
+          task.describe(
+            "Validate Reduction Value of DynamicsCompressor after Disabling"
+          );
           // Create the offline context for the test.
           context = new OfflineAudioContext(1, testDurationSamples, sampleRate);
-          context.oncomplete = checkResult;
 
           // Create the constant sample buffer of 0.5 sec.
           buffer = createConstantBuffer(context, testDurationSamples / 2, 1);
@@ -56,11 +40,16 @@
           source.start(0.0);
 
           // Render it!
-          context.startRendering();
-      }
+          context.startRendering()
+            .then(() => {
+               // Check that the reduction value is 0.0.
+               should(compressor.reduction, "compressor.reduction")
+                 .beEqualTo(0);
+               task.done();
+            });
+      });
 
-      runTest();
-      succesfullyParsed = true;
+      audit.run();
     </script>
   </body>
 </html>

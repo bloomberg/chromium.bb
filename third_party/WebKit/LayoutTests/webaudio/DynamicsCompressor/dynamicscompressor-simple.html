@@ -1,17 +1,15 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
-    <div id="description"></div>
-    <div id="console"></div>
-    
     <script>
-      description("Test pre-emphasis in DynamicsCompressor is removed");
+      var audit = Audit.createTaskRunner();
       var context;
       var compressor;
       var sampleRate = 44100;
@@ -22,8 +20,7 @@
       // filters, the peak value is about 0.21.  Without it, the peak is about 0.84.
       var peakThreshold = 0.83;
 
-      function checkResult(event) {
-        var renderedBuffer = event.renderedBuffer;
+      function checkResult(renderedBuffer, should) {
         renderedData = renderedBuffer.getChannelData(0);
         // Search for a peak in the last part of the data.
         var startSample = sampleRate * (lengthInSeconds - .1);
@@ -37,23 +34,17 @@
              peak = sample;
         }
 
-        if (peak >= peakThreshold) {
-          testPassed("Pre-emphasis effect not applied as expected..");
-        } else {
-          testFailed("Pre-emphasis caused output to be decreased to " + peak
-                     + " (expected >= " + peakThreshold + ")");
-        }
+        should(peak >= peakThreshold, "Pre-emphasis effect not applied")
+          .beTrue();
 
-        if (compressor.reduction)
-          testPassed("Reduction value changed as expected.")
-        else
-          testFailed("Reduction value is still the default value of 0.");
-        finishJSTest();
+        should(compressor.reduction !== 0,
+          "Reduction value changed")
+          .beTrue();
       }
 
-      function runTest() {
-        window.jsTestIsAsync = true;
-      
+      audit.define("test", function (task, should) {
+        task.describe("Test pre-emphasis in DynamicsCompressor is removed");
+
         context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
         // Connect an oscillator to a gain node to the compressor.  The
         // oscillator frequency is set to a high value for the (original)
@@ -69,13 +60,13 @@
         gain.connect(compressor);
         compressor.connect(context.destination);
         osc.start();
-        context.oncomplete = checkResult;
-        context.startRendering();
-      }
-      
-      runTest();
-      successfullyParsed = true;
 
+        context.startRendering()
+          .then(buffer => checkResult(buffer, should))
+          .then(() => task.done());;
+      });
+      
+      audit.run();
     </script>
     
   </body>
