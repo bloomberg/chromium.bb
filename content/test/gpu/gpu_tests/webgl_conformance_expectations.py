@@ -485,9 +485,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android'])
     self.Fail('conformance/textures/image/tex-2d-rgb-rgb-unsigned_byte.html',
         ['android'], bug=586183)
-    # The following tests timed out on android, so skip them for now.
-    self.Skip('conformance/textures/image_bitmap_from_video/*',
-        ['android'], bug=585108)
 
     self.Fail('conformance/textures/misc/' +
         'copytexsubimage2d-large-partial-copy-corruption.html',
