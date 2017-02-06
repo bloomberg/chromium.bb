@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -49,11 +50,10 @@ class DelegationTracker::DelegatedForChild : content::WebContentsObserver {
     ClearPermissions(render_frame_host);
   }
 
-  void DidNavigateAnyFrame(
-      content::RenderFrameHost* render_frame_host,
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override {
-    ClearPermissions(render_frame_host);
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->HasCommitted())
+      ClearPermissions(navigation_handle->GetRenderFrameHost());
   }
 
   content::RenderFrameHost* child_rfh_;
