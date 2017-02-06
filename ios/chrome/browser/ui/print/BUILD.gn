@@ -21,6 +21,7 @@ source_set("print") {
 }
 
 source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "print_controller_egtest.mm",
