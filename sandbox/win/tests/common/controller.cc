@@ -136,15 +136,12 @@ void TestRunner::Init(JobLevel job_level,
 }
 
 TargetPolicy* TestRunner::GetPolicy() {
-  return policy_;
+  return policy_.get();
 }
 
 TestRunner::~TestRunner() {
   if (target_process_.IsValid() && kill_on_destruction_)
     ::TerminateProcess(target_process_.Get(), 0);
-
-  if (policy_)
-    policy_->Release();
 }
 
 bool TestRunner::AddRule(TargetPolicy::SubSystem subsystem,
@@ -242,10 +239,8 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
     result = broker_->SpawnTarget(prog_name, arguments.c_str(), policy_,
                                   &warning_result, &last_error, &target);
   }
-  if (release_policy_in_run_) {
-    policy_->Release();
+  if (release_policy_in_run_)
     policy_ = nullptr;
-  }
 
   if (SBOX_ALL_OK != result)
     return SBOX_TEST_FAILED_TO_RUN_TEST;

@@ -27,10 +27,10 @@ bool InitializeSandbox(sandbox::SandboxInterfaceInfo* sandbox_info) {
     // broken. This has to run before threads and windows are created.
     if (!command_line.HasSwitch(switches::kNoSandbox)) {
       // Precreate the desktop and window station used by the renderers.
-      sandbox::TargetPolicy* policy = broker_services->CreatePolicy();
+      scoped_refptr<sandbox::TargetPolicy> policy =
+          broker_services->CreatePolicy();
       sandbox::ResultCode result = policy->CreateAlternateDesktop(true);
       CHECK(sandbox::SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION != result);
-      policy->Release();
     }
     return true;
   }
