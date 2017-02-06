@@ -409,6 +409,40 @@ class OutOfMemoryHandledTest : public OutOfMemoryTest {
   }
 };
 
+#if defined(OS_WIN)
+
+namespace {
+
+DWORD HandleOutOfMemoryException(EXCEPTION_POINTERS* exception_ptrs,
+                                 size_t expected_size) {
+  EXPECT_EQ(base::win::kOomExceptionCode,
+            exception_ptrs->ExceptionRecord->ExceptionCode);
+  EXPECT_LE(1U, exception_ptrs->ExceptionRecord->NumberParameters);
+  EXPECT_EQ(expected_size,
+            exception_ptrs->ExceptionRecord->ExceptionInformation[0]);
+  return EXCEPTION_EXECUTE_HANDLER;
+}
+
+}  // namespace
+
+TEST_F(OutOfMemoryTest, TerminateBecauseOutOfMemoryReportsAllocSize) {
+// On Windows, TerminateBecauseOutOfMemory reports the attempted allocation
+// size in the exception raised.
+#if defined(ARCH_CPU_64_BITS)
+  // Test with a size larger than 32 bits on 64 bit machines.
+  const size_t kAttemptedAllocationSize = 0xBADA55F00DULL;
+#else
+  const size_t kAttemptedAllocationSize = 0xBADA55;
+#endif
+
+  __try {
+    base::TerminateBecauseOutOfMemory(kAttemptedAllocationSize);
+  } __except (HandleOutOfMemoryException(GetExceptionInformation(),
+                                         kAttemptedAllocationSize)) {
+  }
+}
+#endif  // OS_WIN
+
 // TODO(b.kelemen): make UncheckedMalloc and UncheckedCalloc work
 // on Windows as well.
 TEST_F(OutOfMemoryHandledTest, UncheckedMalloc) {

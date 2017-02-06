@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/process/memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +19,10 @@
 namespace crash_reporter {
 
 int RunAsCrashpadHandler(const base::CommandLine& command_line) {
+  // Make sure this process terminates on OOM in the same mode as other Chrome
+  // processes.
+  base::EnableTerminationOnOutOfMemory();
+
   std::vector<base::string16> argv = command_line.argv();
   const base::string16 process_type = L"--type=";
   argv.erase(std::remove_if(argv.begin(), argv.end(),
