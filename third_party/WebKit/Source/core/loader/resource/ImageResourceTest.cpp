@@ -202,13 +202,15 @@ class ImageResourceTestMockFetchContext : public FetchContext {
 // ASSERT_TRUE() without needing to worry about unregistering the mocked URL
 // load to avoid putting other tests into inconsistent states in case the
 // assertion fails.
+// TODO(toyoshim): Generalize and move to platform/testing/URLTestHelpers.
 class ScopedRegisteredURL {
  public:
   ScopedRegisteredURL(const KURL& url,
                       const String& fileName = "cancelTest.html",
                       const String& mimeType = "text/html")
       : m_url(url) {
-    URLTestHelpers::registerMockedURLLoad(m_url, fileName, mimeType);
+    URLTestHelpers::registerMockedURLLoad(
+        m_url, testing::webTestDataPath(fileName.utf8().data()), mimeType);
   }
 
   ~ScopedRegisteredURL() {
@@ -1191,8 +1193,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
   KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html",
-                                        "text/html");
+  ScopedRegisteredURL scopedRegisteredURL(testURL);
   ResourceRequest request = ResourceRequest(testURL);
   ImageResource* imageResource = ImageResource::create(request);
   imageResource->setStatus(ResourceStatus::Pending);

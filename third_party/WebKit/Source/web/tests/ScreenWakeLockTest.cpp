@@ -83,8 +83,9 @@ class ScreenWakeLockTest : public testing::Test {
  protected:
   void SetUp() override {
     m_webViewHelper.initialize(true, &m_testWebFrameClient);
-    blink::URLTestHelpers::registerMockedURLFromBaseURL(
+    blink::URLTestHelpers::registerMockedURLLoadFromBase(
         blink::WebString::fromUTF8("http://example.com/"),
+        blink::testing::webTestDataPath(),
         blink::WebString::fromUTF8("foo.html"));
     loadFrame();
   }

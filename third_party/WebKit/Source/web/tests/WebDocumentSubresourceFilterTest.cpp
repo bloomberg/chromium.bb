@@ -7,6 +7,7 @@
 #include "core/dom/Element.h"
 #include "core/html/HTMLImageElement.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebCache.h"
@@ -101,9 +102,9 @@ class WebDocumentSubresourceFilterTest : public ::testing::Test {
 
  private:
   void registerMockedHttpURLLoad(const std::string& fileName) {
-    URLTestHelpers::registerMockedURLFromBaseURL(
-        WebString::fromUTF8(m_baseURL.c_str()),
-        WebString::fromUTF8(fileName.c_str()));
+    URLTestHelpers::registerMockedURLLoadFromBase(
+        WebString::fromUTF8(m_baseURL), testing::webTestDataPath(),
+        WebString::fromUTF8(fileName));
   }
 
   // ::testing::Test:
@@ -122,7 +123,7 @@ TEST_F(WebDocumentSubresourceFilterTest, AllowedSubresource) {
   expectSubresourceWasLoaded(true);
   // The filter should not be consulted for the main document resource.
   EXPECT_THAT(queriedSubresourcePaths(),
-              testing::ElementsAre("/white-1x1.png"));
+              ::testing::ElementsAre("/white-1x1.png"));
 }
 
 TEST_F(WebDocumentSubresourceFilterTest, DisallowedSubresource) {
@@ -132,8 +133,8 @@ TEST_F(WebDocumentSubresourceFilterTest, DisallowedSubresource) {
 
 TEST_F(WebDocumentSubresourceFilterTest, FilteringDecisionIsMadeLoadByLoad) {
   for (const bool allowSubresources : {false, true}) {
-    SCOPED_TRACE(testing::Message() << "First load allows subresources = "
-                                    << allowSubresources);
+    SCOPED_TRACE(::testing::Message() << "First load allows subresources = "
+                                      << allowSubresources);
 
     loadDocument(allowSubresources);
     expectSubresourceWasLoaded(allowSubresources);
@@ -141,7 +142,7 @@ TEST_F(WebDocumentSubresourceFilterTest, FilteringDecisionIsMadeLoadByLoad) {
     loadDocument(!allowSubresources);
     expectSubresourceWasLoaded(!allowSubresources);
     EXPECT_THAT(queriedSubresourcePaths(),
-                testing::ElementsAre("/white-1x1.png"));
+                ::testing::ElementsAre("/white-1x1.png"));
 
     WebCache::clear();
   }

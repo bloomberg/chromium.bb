@@ -199,15 +199,18 @@ class WebFrameTest : public ::testing::Test {
   }
 
   void registerMockedHttpURLLoad(const std::string& fileName) {
-    URLTestHelpers::registerMockedURLFromBaseURL(
-        WebString::fromUTF8(m_baseURL.c_str()),
-        WebString::fromUTF8(fileName.c_str()));
+    registerMockedURLLoadFromBase(m_baseURL, fileName);
   }
 
   void registerMockedChromeURLLoad(const std::string& fileName) {
-    URLTestHelpers::registerMockedURLFromBaseURL(
-        WebString::fromUTF8(m_chromeURL.c_str()),
-        WebString::fromUTF8(fileName.c_str()));
+    registerMockedURLLoadFromBase(m_chromeURL, fileName);
+  }
+
+  void registerMockedURLLoadFromBase(const std::string& baseURL,
+                                     const std::string& fileName) {
+    URLTestHelpers::registerMockedURLLoadFromBase(
+        WebString::fromUTF8(baseURL), testing::webTestDataPath(),
+        WebString::fromUTF8(fileName));
   }
 
   void registerMockedHttpURLLoadWithCSP(const std::string& fileName,
@@ -221,15 +224,15 @@ class WebFrameTest : public ::testing::Test {
         WebString::fromUTF8(csp));
     std::string fullString = m_baseURL + fileName;
     URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-        toKURL(fullString.c_str()), WebString::fromUTF8(fileName.c_str()),
-        WebString::fromUTF8(""), response);
+        toKURL(fullString),
+        testing::webTestDataPath(WebString::fromUTF8(fileName)), response);
   }
 
   void registerMockedHttpURLLoadWithMimeType(const std::string& fileName,
                                              const std::string& mimeType) {
-    URLTestHelpers::registerMockedURLFromBaseURL(
-        WebString::fromUTF8(m_baseURL.c_str()),
-        WebString::fromUTF8(fileName.c_str()), WebString::fromUTF8(mimeType));
+    URLTestHelpers::registerMockedURLLoadFromBase(
+        WebString::fromUTF8(m_baseURL), testing::webTestDataPath(),
+        WebString::fromUTF8(fileName), WebString::fromUTF8(mimeType));
   }
 
   void applyViewportStyleOverride(
@@ -624,9 +627,7 @@ TEST_P(ParameterizedWebFrameTest, ChromePageNoJavascript) {
 TEST_P(ParameterizedWebFrameTest, LocationSetHostWithMissingPort) {
   std::string fileName = "print-location-href.html";
   registerMockedHttpURLLoad(fileName);
-  URLTestHelpers::registerMockedURLLoad(
-      toKURL("http://internal.test:0/" + fileName),
-      WebString::fromUTF8(fileName));
+  registerMockedURLLoadFromBase("http://internal.test:0/", fileName);
 
   FrameTestHelpers::WebViewHelper webViewHelper;
 
@@ -651,9 +652,7 @@ TEST_P(ParameterizedWebFrameTest, LocationSetHostWithMissingPort) {
 TEST_P(ParameterizedWebFrameTest, LocationSetEmptyPort) {
   std::string fileName = "print-location-href.html";
   registerMockedHttpURLLoad(fileName);
-  URLTestHelpers::registerMockedURLLoad(
-      toKURL("http://internal.test:0/" + fileName),
-      WebString::fromUTF8(fileName));
+  registerMockedURLLoadFromBase("http://internal.test:0/", fileName);
 
   FrameTestHelpers::WebViewHelper webViewHelper;
 
@@ -6823,8 +6822,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
 }
 
 TEST_P(ParameterizedWebFrameTest, FirstPartyForCookiesForRedirect) {
-  String filePath = testing::blinkRootDir();
-  filePath.append("/Source/web/tests/data/first_party.html");
+  String filePath = testing::webTestDataPath("first_party.html");
 
   WebURL testURL(toKURL("http://internal.test/first_party_redirect.html"));
   char redirect[] = "http://internal.test/first_party.html";
@@ -8250,9 +8248,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestFetch) {
 }
 
 TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchAllow) {
-  URLTestHelpers::registerMockedURLLoad(
-      toKURL(m_notBaseURL + "link-manifest-fetch.json"),
-      "link-manifest-fetch.json");
+  registerMockedURLLoadFromBase(m_notBaseURL, "link-manifest-fetch.json");
   registerMockedHttpURLLoadWithCSP("foo.html", "manifest-src *");
 
   FrameTestHelpers::WebViewHelper webViewHelper;
@@ -8267,9 +8263,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchAllow) {
 }
 
 TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelf) {
-  URLTestHelpers::registerMockedURLLoad(
-      toKURL(m_notBaseURL + "link-manifest-fetch.json"),
-      "link-manifest-fetch.json");
+  registerMockedURLLoadFromBase(m_notBaseURL, "link-manifest-fetch.json");
   registerMockedHttpURLLoadWithCSP("foo.html", "manifest-src 'self'");
 
   FrameTestHelpers::WebViewHelper webViewHelper;
@@ -8287,9 +8281,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelf) {
 }
 
 TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelfReportOnly) {
-  URLTestHelpers::registerMockedURLLoad(
-      toKURL(m_notBaseURL + "link-manifest-fetch.json"),
-      "link-manifest-fetch.json");
+  registerMockedURLLoadFromBase(m_notBaseURL, "link-manifest-fetch.json");
   registerMockedHttpURLLoadWithCSP("foo.html", "manifest-src 'self'",
                                    /* report only */ true);
 
@@ -10284,9 +10276,9 @@ class SaveImageFromDataURLWebFrameClient
 
 TEST_F(WebFrameTest, SaveImageAt) {
   std::string url = m_baseURL + "image-with-data-url.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url),
-                                        "image-with-data-url.html");
-  URLTestHelpers::registerMockedURLLoad(toKURL("http://test"), "white-1x1.png");
+  registerMockedURLLoadFromBase(m_baseURL, "image-with-data-url.html");
+  URLTestHelpers::registerMockedURLLoad(
+      toKURL("http://test"), testing::webTestDataPath("white-1x1.png"));
 
   FrameTestHelpers::WebViewHelper helper;
   SaveImageFromDataURLWebFrameClient client;
@@ -10323,7 +10315,7 @@ TEST_F(WebFrameTest, SaveImageAt) {
 
 TEST_F(WebFrameTest, SaveImageWithImageMap) {
   std::string url = m_baseURL + "image-map.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-map.html");
+  registerMockedURLLoadFromBase(m_baseURL, "image-map.html");
 
   FrameTestHelpers::WebViewHelper helper;
   SaveImageFromDataURLWebFrameClient client;
@@ -10356,7 +10348,7 @@ TEST_F(WebFrameTest, SaveImageWithImageMap) {
 
 TEST_F(WebFrameTest, CopyImageAt) {
   std::string url = m_baseURL + "canvas-copy-image.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "canvas-copy-image.html");
+  registerMockedURLLoadFromBase(m_baseURL, "canvas-copy-image.html");
 
   FrameTestHelpers::WebViewHelper helper;
   WebViewImpl* webView = helper.initializeAndLoad(url, true, 0);
@@ -10381,7 +10373,7 @@ TEST_F(WebFrameTest, CopyImageAt) {
 
 TEST_F(WebFrameTest, CopyImageAtWithPinchZoom) {
   std::string url = m_baseURL + "canvas-copy-image.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "canvas-copy-image.html");
+  registerMockedURLLoadFromBase(m_baseURL, "canvas-copy-image.html");
 
   FrameTestHelpers::WebViewHelper helper;
   WebViewImpl* webView = helper.initializeAndLoad(url, true, 0);
@@ -10411,7 +10403,7 @@ TEST_F(WebFrameTest, CopyImageWithImageMap) {
   SaveImageFromDataURLWebFrameClient client;
 
   std::string url = m_baseURL + "image-map.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-map.html");
+  registerMockedURLLoadFromBase(m_baseURL, "image-map.html");
 
   FrameTestHelpers::WebViewHelper helper;
   WebViewImpl* webView = helper.initializeAndLoad(url, true, &client);
@@ -10444,7 +10436,8 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame) {
   helper.initialize(true);
 
   std::string redirectURL = m_baseURL + "foo.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(redirectURL), "foo.html");
+  URLTestHelpers::registerMockedURLLoad(toKURL(redirectURL),
+                                        testing::webTestDataPath("foo.html"));
   WebURLRequest request(toKURL("javascript:location='" + redirectURL + "'"));
   helper.webView()->mainFrameImpl()->loadRequest(request);
 
@@ -10576,8 +10569,9 @@ class MultipleDataChunkDelegate : public WebURLLoaderTestDelegate {
 
 TEST_F(WebFrameTest, ImageDocumentDecodeError) {
   std::string url = m_baseURL + "not_an_image.ico";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "not_an_image.ico",
-                                        "image/x-icon");
+  URLTestHelpers::registerMockedURLLoad(
+      toKURL(url), testing::webTestDataPath("not_an_image.ico"),
+      "image/x-icon");
   MultipleDataChunkDelegate delegate;
   Platform::current()->getURLLoaderMockFactory()->setLoaderDelegate(&delegate);
   FrameTestHelpers::WebViewHelper helper;
@@ -11333,7 +11327,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
   registerMockedHttpURLLoad("single_iframe.html");
   URLTestHelpers::registerMockedURLLoad(
       toKURL(m_baseURL + "visible_iframe.html"),
-      WebString::fromUTF8("frame_with_frame.html"));
+      testing::webTestDataPath("frame_with_frame.html"));
   registerMockedHttpURLLoad("parent_detaching_frame.html");
 
   FrameTestHelpers::WebViewHelper webViewHelper;

@@ -36,6 +36,7 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebCache.h"
@@ -48,8 +49,8 @@ namespace blink {
 
 typedef bool TestParamRootLayerScrolling;
 class LayoutGeometryMapTest
-    : public testing::Test,
-      public testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public ::testing::Test,
+      public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest {
  public:
   LayoutGeometryMapTest()
@@ -158,9 +159,9 @@ class LayoutGeometryMapTest
   }
 
   void registerMockedHttpURLLoad(const std::string& fileName) {
-    URLTestHelpers::registerMockedURLFromBaseURL(
-        WebString::fromUTF8(m_baseURL.c_str()),
-        WebString::fromUTF8(fileName.c_str()));
+    URLTestHelpers::registerMockedURLLoadFromBase(
+        WebString::fromUTF8(m_baseURL), testing::webTestDataPath(),
+        WebString::fromUTF8(fileName));
   }
 
   const std::string m_baseURL;

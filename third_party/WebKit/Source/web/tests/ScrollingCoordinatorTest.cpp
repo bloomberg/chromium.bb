@@ -39,6 +39,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerPositionConstraint.h"
@@ -54,7 +55,7 @@
 
 namespace blink {
 
-class ScrollingCoordinatorTest : public testing::Test {
+class ScrollingCoordinatorTest : public ::testing::Test {
  public:
   ScrollingCoordinatorTest() : m_baseURL("http://www.test.com/") {
     m_helper.initialize(true, nullptr, &m_mockWebViewClient, nullptr,
@@ -89,9 +90,9 @@ class ScrollingCoordinatorTest : public testing::Test {
   }
 
   void registerMockedHttpURLLoad(const std::string& fileName) {
-    URLTestHelpers::registerMockedURLFromBaseURL(
-        WebString::fromUTF8(m_baseURL.c_str()),
-        WebString::fromUTF8(fileName.c_str()));
+    URLTestHelpers::registerMockedURLLoadFromBase(
+        WebString::fromUTF8(m_baseURL), testing::webTestDataPath(),
+        WebString::fromUTF8(fileName));
   }
 
   WebLayer* getRootScrollLayer() {

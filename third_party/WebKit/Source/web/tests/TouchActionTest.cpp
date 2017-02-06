@@ -95,12 +95,15 @@ const int kfakeTouchId = 7;
 class TouchActionTest : public ::testing::Test {
  public:
   TouchActionTest() : m_baseURL("http://www.test.com/") {
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL),
-                                                 "touch-action-tests.css");
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL),
-                                                 "touch-action-tests.js");
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL),
-                                                 "white-1x1.png");
+    URLTestHelpers::registerMockedURLLoadFromBase(
+        WebString::fromUTF8(m_baseURL), testing::webTestDataPath(),
+        "touch-action-tests.css");
+    URLTestHelpers::registerMockedURLLoadFromBase(
+        WebString::fromUTF8(m_baseURL), testing::webTestDataPath(),
+        "touch-action-tests.js");
+    URLTestHelpers::registerMockedURLLoadFromBase(
+        WebString::fromUTF8(m_baseURL), testing::webTestDataPath(),
+        "white-1x1.png");
   }
 
   void TearDown() override {
@@ -195,8 +198,9 @@ void TouchActionTest::runIFrameTest(std::string file) {
 WebView* TouchActionTest::setupTest(
     std::string file,
     TouchActionTrackingWebWidgetClient& client) {
-  URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL),
-                                               WebString::fromUTF8(file));
+  URLTestHelpers::registerMockedURLLoadFromBase(WebString::fromUTF8(m_baseURL),
+                                                testing::webTestDataPath(),
+                                                WebString::fromUTF8(file));
   // Note that JavaScript must be enabled for shadow DOM tests.
   WebView* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + file, true, 0, 0, &client);

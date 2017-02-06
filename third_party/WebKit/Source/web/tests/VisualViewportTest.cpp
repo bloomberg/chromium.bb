@@ -22,6 +22,7 @@
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebInputEvent.h"
@@ -103,8 +104,8 @@ namespace {
 
 typedef bool TestParamRootLayerScrolling;
 class VisualViewportTest
-    : public testing::Test,
-      public testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public ::testing::Test,
+      public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest {
  public:
   VisualViewportTest()
@@ -143,9 +144,16 @@ class VisualViewportTest
   }
 
   void registerMockedHttpURLLoad(const std::string& fileName) {
-    URLTestHelpers::registerMockedURLFromBaseURL(
-        WebString::fromUTF8(m_baseURL.c_str()),
-        WebString::fromUTF8(fileName.c_str()));
+    URLTestHelpers::registerMockedURLLoadFromBase(
+        WebString::fromUTF8(m_baseURL), blink::testing::webTestDataPath(),
+        WebString::fromUTF8(fileName));
+  }
+
+  void registerMockedHttpURLLoad(const std::string& url,
+                                 const std::string& fileName) {
+    URLTestHelpers::registerMockedURLLoad(
+        toKURL(url),
+        blink::testing::webTestDataPath(WebString::fromUTF8(fileName)));
   }
 
   WebLayer* getRootScrollLayer() {
@@ -2143,8 +2151,7 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
   webViewImpl->resizeWithBrowserControls(WebSize(pageWidth, pageHeight),
                                          browserControlsHeight, false);
 
-  URLTestHelpers::registerMockedURLLoad(toKURL("http://example.com/foo.png"),
-                                        "white-1x1.png");
+  registerMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
   WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
   FrameTestHelpers::loadHTMLString(webViewImpl->mainFrame(),
                                    "<!DOCTYPE html>"
@@ -2226,8 +2233,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   webViewImpl->resizeWithBrowserControls(WebSize(pageWidth, pageHeight),
                                          browserControlsHeight, false);
 
-  URLTestHelpers::registerMockedURLLoad(toKURL("http://example.com/foo.png"),
-                                        "white-1x1.png");
+  registerMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
   WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
   FrameTestHelpers::loadHTMLString(webViewImpl->mainFrame(),
                                    "<!DOCTYPE html>"
@@ -2334,8 +2340,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
   webViewImpl->resizeWithBrowserControls(WebSize(pageWidth, pageHeight),
                                          browserControlsHeight, false);
 
-  URLTestHelpers::registerMockedURLLoad(toKURL("http://example.com/foo.png"),
-                                        "white-1x1.png");
+  registerMockedHttpURLLoad("http://example.com/foo.png", "white-1x1.png");
   WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
   // This time the background is the default attachment.
   FrameTestHelpers::loadHTMLString(webViewImpl->mainFrame(),

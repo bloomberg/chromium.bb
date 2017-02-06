@@ -31,6 +31,7 @@
 #include "public/web/WebSearchableFormData.h"
 
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebCache.h"
@@ -42,7 +43,16 @@
 
 namespace blink {
 
-class WebSearchableFormDataTest : public testing::Test {
+namespace {
+
+void registerMockedURLLoadFromBaseURL(const std::string& baseURL,
+                                      const std::string& fileName) {
+  URLTestHelpers::registerMockedURLLoadFromBase(WebString::fromUTF8(baseURL),
+                                                testing::webTestDataPath(),
+                                                WebString::fromUTF8(fileName));
+}
+
+class WebSearchableFormDataTest : public ::testing::Test {
  protected:
   WebSearchableFormDataTest() {}
 
@@ -54,10 +64,10 @@ class WebSearchableFormDataTest : public testing::Test {
   FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
 
+}  // namespace
 TEST_F(WebSearchableFormDataTest, HttpSearchString) {
   std::string baseURL("http://www.test.com/");
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(baseURL.c_str()), "search_form_http.html");
+  registerMockedURLLoadFromBaseURL(baseURL, "search_form_http.html");
   WebView* webView =
       m_webViewHelper.initializeAndLoad(baseURL + "search_form_http.html");
 
@@ -73,8 +83,7 @@ TEST_F(WebSearchableFormDataTest, HttpSearchString) {
 
 TEST_F(WebSearchableFormDataTest, HttpsSearchString) {
   std::string baseURL("https://www.test.com/");
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(baseURL.c_str()), "search_form_https.html");
+  registerMockedURLLoadFromBaseURL(baseURL, "search_form_https.html");
   WebView* webView =
       m_webViewHelper.initializeAndLoad(baseURL + "search_form_https.html");
 

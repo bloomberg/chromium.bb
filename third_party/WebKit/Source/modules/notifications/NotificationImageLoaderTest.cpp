@@ -10,6 +10,7 @@
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
@@ -23,11 +24,12 @@ namespace {
 
 enum class LoadState { kNotLoaded, kLoadFailed, kLoadSuccessful };
 
-const char kBaseUrl[] = "http://test.com/";
-const char kIcon500x500[] = "500x500.png";
+constexpr char kBaseUrl[] = "http://test.com/";
+constexpr char kBaseDir[] = "notifications/";
+constexpr char kIcon500x500[] = "500x500.png";
 
 // This mirrors the definition in NotificationImageLoader.cpp.
-const unsigned long kImageFetchTimeoutInMs = 90000;
+constexpr unsigned long kImageFetchTimeoutInMs = 90000;
 
 static_assert(kImageFetchTimeoutInMs > 1000.0,
               "kImageFetchTimeoutInMs must be greater than 1000ms.");
@@ -49,10 +51,9 @@ class NotificationImageLoaderTest : public ::testing::Test {
   // Registers a mocked URL. When fetched it will be loaded form the test data
   // directory.
   WebURL registerMockedURL(const String& fileName) {
-    WebURL url(KURL(ParsedURLString, kBaseUrl + fileName));
-    URLTestHelpers::registerMockedURLLoad(url, fileName, "notifications/",
-                                          "image/png");
-    return url;
+    WebURL registeredUrl = URLTestHelpers::registerMockedURLLoadFromBase(
+        kBaseUrl, testing::webTestDataPath(kBaseDir), fileName, "image/png");
+    return registeredUrl;
   }
 
   // Callback for the NotificationImageLoader. This will set the state of the

@@ -39,13 +39,9 @@ using blink::testing::createTestFont;
 
 namespace blink {
 
-static inline String fontPath(String relativePath) {
-  return testing::blinkRootDir() + "/Source/platform/testing/data/" +
-         relativePath;
-}
-
 TEST(FontPlatformDataTest, AhemHasNoSpaceInLigaturesOrKerning) {
-  Font font = createTestFont("Ahem", fontPath("Ahem.woff"), 16);
+  Font font =
+      createTestFont("Ahem", testing::platformTestDataPath("Ahem.woff"), 16);
   const FontPlatformData& platformData = font.primaryFont()->platformData();
   TypesettingFeatures features = Kerning | Ligatures;
 
@@ -53,8 +49,9 @@ TEST(FontPlatformDataTest, AhemHasNoSpaceInLigaturesOrKerning) {
 }
 
 TEST(FontPlatformDataTest, AhemSpaceLigatureHasSpaceInLigaturesOrKerning) {
-  Font font = createTestFont("AhemSpaceLigature",
-                             fontPath("AhemSpaceLigature.woff"), 16);
+  Font font = createTestFont(
+      "AhemSpaceLigature",
+      testing::platformTestDataPath("AhemSpaceLigature.woff"), 16);
   const FontPlatformData& platformData = font.primaryFont()->platformData();
   TypesettingFeatures features = Kerning | Ligatures;
 
@@ -62,8 +59,9 @@ TEST(FontPlatformDataTest, AhemSpaceLigatureHasSpaceInLigaturesOrKerning) {
 }
 
 TEST(FontPlatformDataTest, AhemSpaceLigatureHasNoSpaceWithoutFontFeatures) {
-  Font font = createTestFont("AhemSpaceLigature",
-                             fontPath("AhemSpaceLigature.woff"), 16);
+  Font font = createTestFont(
+      "AhemSpaceLigature",
+      testing::platformTestDataPath("AhemSpaceLigature.woff"), 16);
   const FontPlatformData& platformData = font.primaryFont()->platformData();
   TypesettingFeatures features = 0;
 

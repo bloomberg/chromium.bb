@@ -39,9 +39,7 @@
 namespace blink {
 
 static PassRefPtr<SharedBuffer> readFile(const char* fileName) {
-  String filePath = testing::blinkRootDir();
-  filePath.append("/Source/web/tests/data/");
-  filePath.append(fileName);
+  String filePath = testing::webTestDataPath(fileName);
 
   return testing::readFromFile(filePath);
 }

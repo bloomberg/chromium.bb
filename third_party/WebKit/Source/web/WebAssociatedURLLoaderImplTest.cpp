@@ -68,21 +68,16 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
         m_didFinishLoading(false),
         m_didFail(false) {
     // Reuse one of the test files from WebFrameTest.
-    m_baseFilePath = testing::blinkRootDir();
-    m_baseFilePath.append("/Source/web/tests/data/");
-    m_frameFilePath = m_baseFilePath;
-    m_frameFilePath.append("iframes_test.html");
+    m_frameFilePath = testing::webTestDataPath("iframes_test.html");
   }
 
   KURL RegisterMockedUrl(const std::string& urlRoot,
                          const WTF::String& filename) {
     WebURLResponse response;
     response.setMIMEType("text/html");
-    WTF::String localPath = m_baseFilePath;
-    localPath.append(filename);
     KURL url = toKURL(urlRoot + filename.utf8().data());
-    Platform::current()->getURLLoaderMockFactory()->registerURL(url, response,
-                                                                localPath);
+    Platform::current()->getURLLoaderMockFactory()->registerURL(
+        url, response, testing::webTestDataPath(filename.utf8().data()));
     return url;
   }
 
@@ -246,7 +241,6 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
   WebFrame* mainFrame() const { return m_helper.webView()->mainFrame(); }
 
  protected:
-  String m_baseFilePath;
   String m_frameFilePath;
   FrameTestHelpers::WebViewHelper m_helper;
 

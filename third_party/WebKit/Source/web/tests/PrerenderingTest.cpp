@@ -28,8 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <functional>
+#include <list>
+#include <memory>
 #include "core/dom/NodeTraversal.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrerender.h"
 #include "public/platform/WebPrerenderingSupport.h"
@@ -45,9 +49,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/PtrUtil.h"
-#include <functional>
-#include <list>
-#include <memory>
 
 namespace blink {
 
@@ -155,7 +156,7 @@ class TestPrerenderingSupport : public WebPrerenderingSupport {
   Vector<WebPrerender> m_abandonedPrerenders;
 };
 
-class PrerenderingTest : public testing::Test {
+class PrerenderingTest : public ::testing::Test {
  public:
   ~PrerenderingTest() override {
     Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
@@ -163,8 +164,9 @@ class PrerenderingTest : public testing::Test {
   }
 
   void initialize(const char* baseURL, const char* fileName) {
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL),
-                                                 WebString::fromUTF8(fileName));
+    URLTestHelpers::registerMockedURLLoadFromBase(
+        WebString::fromUTF8(baseURL), blink::testing::webTestDataPath(),
+        WebString::fromUTF8(fileName));
     const bool RunJavascript = true;
     m_webViewHelper.initialize(RunJavascript);
     m_webViewHelper.webView()->setPrerendererClient(&m_prerendererClient);

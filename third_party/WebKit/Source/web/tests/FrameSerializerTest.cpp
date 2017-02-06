@@ -30,10 +30,12 @@
 
 #include "core/frame/FrameSerializer.h"
 
+#include <string>
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "platform/SerializedResource.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
@@ -56,11 +58,11 @@ using blink::URLTestHelpers::registerMockedURLLoad;
 
 namespace blink {
 
-class FrameSerializerTest : public testing::Test,
+class FrameSerializerTest : public ::testing::Test,
                             public FrameSerializer::Delegate {
  public:
   FrameSerializerTest()
-      : m_folder(WebString::fromUTF8("frameserializer/")),
+      : m_folder("frameserializer/"),
         m_baseUrl(toKURL("http://www.test.com")) {}
 
  protected:
@@ -74,15 +76,14 @@ class FrameSerializerTest : public testing::Test,
     WebCache::clear();
   }
 
-  void setBaseFolder(const char* folder) {
-    m_folder = WebString::fromUTF8(folder);
-  }
+  void setBaseFolder(const char* folder) { m_folder = folder; }
 
   void setRewriteURLFolder(const char* folder) { m_rewriteFolder = folder; }
 
   void registerURL(const KURL& url, const char* file, const char* mimeType) {
-    registerMockedURLLoad(url, WebString::fromUTF8(file), m_folder,
-                          WebString::fromUTF8(mimeType));
+    registerMockedURLLoad(
+        url, testing::webTestDataPath(WebString::fromUTF8(m_folder + file)),
+        WebString::fromUTF8(mimeType));
   }
 
   void registerURL(const char* url, const char* file, const char* mimeType) {
@@ -188,7 +189,7 @@ class FrameSerializerTest : public testing::Test,
   }
 
   FrameTestHelpers::WebViewHelper m_helper;
-  WebString m_folder;
+  std::string m_folder;
   KURL m_baseUrl;
   Deque<SerializedResource> m_resources;
   HashMap<String, String> m_rewriteURLs;

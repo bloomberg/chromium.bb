@@ -1959,9 +1959,6 @@ group("blink_platform_unittests_data") {
   data = [
     "testing/data/",
 
-    # TODO(toyoshim): Used by ResourceFetcherTest. Remove this dependency.
-    "../web/tests/data/",
-
     # Required by some image decoder tests.
     "image-decoders/testing/",
     "../../LayoutTests/images/resources/",

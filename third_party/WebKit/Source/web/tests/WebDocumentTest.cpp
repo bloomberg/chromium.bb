@@ -16,6 +16,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +44,7 @@ class WebDocumentTest : public ::testing::Test {
 void WebDocumentTest::SetUpTestCase() {
   URLTestHelpers::registerMockedURLLoad(
       toKURL(std::string(kDefaultOrigin) + kManifestDummyFilePath),
-      WebString::fromUTF8(kManifestDummyFilePath));
+      testing::webTestDataPath(kManifestDummyFilePath));
 }
 
 void WebDocumentTest::loadURL(const std::string& url) {
@@ -175,6 +176,10 @@ KURL toOriginB(const char* file) {
   return toKURL(std::string(baseURLOriginB) + file);
 }
 
+void registerMockedURLLoad(const KURL& url, const char* path) {
+  URLTestHelpers::registerMockedURLLoad(url, testing::webTestDataPath(path));
+}
+
 }  // anonymous namespace
 
 class WebDocumentFirstPartyTest : public WebDocumentTest {
@@ -188,44 +193,28 @@ class WebDocumentFirstPartyTest : public WebDocumentTest {
 };
 
 void WebDocumentFirstPartyTest::SetUpTestCase() {
-  URLTestHelpers::registerMockedURLLoad(toOriginA(emptyFile),
-                                        WebString::fromUTF8(emptyFile));
-  URLTestHelpers::registerMockedURLLoad(toOriginA(nestedData),
-                                        WebString::fromUTF8(nestedData));
-  URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginA),
-                                        WebString::fromUTF8(nestedOriginA));
-  URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginSubA),
-                                        WebString::fromUTF8(nestedOriginSubA));
-  URLTestHelpers::registerMockedURLLoad(
-      toOriginA(nestedOriginSecureA), WebString::fromUTF8(nestedOriginSecureA));
-  URLTestHelpers::registerMockedURLLoad(
-      toOriginA(nestedOriginAInOriginA),
-      WebString::fromUTF8(nestedOriginAInOriginA));
-  URLTestHelpers::registerMockedURLLoad(
-      toOriginA(nestedOriginAInOriginB),
-      WebString::fromUTF8(nestedOriginAInOriginB));
-  URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginB),
-                                        WebString::fromUTF8(nestedOriginB));
-  URLTestHelpers::registerMockedURLLoad(
-      toOriginA(nestedOriginBInOriginA),
-      WebString::fromUTF8(nestedOriginBInOriginA));
-  URLTestHelpers::registerMockedURLLoad(
-      toOriginA(nestedOriginBInOriginB),
-      WebString::fromUTF8(nestedOriginBInOriginB));
-  URLTestHelpers::registerMockedURLLoad(toOriginA(nestedSrcDoc),
-                                        WebString::fromUTF8(nestedSrcDoc));
+  registerMockedURLLoad(toOriginA(emptyFile), emptyFile);
+  registerMockedURLLoad(toOriginA(nestedData), nestedData);
+  registerMockedURLLoad(toOriginA(nestedOriginA), nestedOriginA);
+  registerMockedURLLoad(toOriginA(nestedOriginSubA), nestedOriginSubA);
+  registerMockedURLLoad(toOriginA(nestedOriginSecureA), nestedOriginSecureA);
+  registerMockedURLLoad(toOriginA(nestedOriginAInOriginA),
+                        nestedOriginAInOriginA);
+  registerMockedURLLoad(toOriginA(nestedOriginAInOriginB),
+                        nestedOriginAInOriginB);
+  registerMockedURLLoad(toOriginA(nestedOriginB), nestedOriginB);
+  registerMockedURLLoad(toOriginA(nestedOriginBInOriginA),
+                        nestedOriginBInOriginA);
+  registerMockedURLLoad(toOriginA(nestedOriginBInOriginB),
+                        nestedOriginBInOriginB);
+  registerMockedURLLoad(toOriginA(nestedSrcDoc), nestedSrcDoc);
 
-  URLTestHelpers::registerMockedURLLoad(toOriginSubA(emptyFile),
-                                        WebString::fromUTF8(emptyFile));
-  URLTestHelpers::registerMockedURLLoad(toOriginSecureA(emptyFile),
-                                        WebString::fromUTF8(emptyFile));
+  registerMockedURLLoad(toOriginSubA(emptyFile), emptyFile);
+  registerMockedURLLoad(toOriginSecureA(emptyFile), emptyFile);
 
-  URLTestHelpers::registerMockedURLLoad(toOriginB(emptyFile),
-                                        WebString::fromUTF8(emptyFile));
-  URLTestHelpers::registerMockedURLLoad(toOriginB(nestedOriginA),
-                                        WebString::fromUTF8(nestedOriginA));
-  URLTestHelpers::registerMockedURLLoad(toOriginB(nestedOriginB),
-                                        WebString::fromUTF8(nestedOriginB));
+  registerMockedURLLoad(toOriginB(emptyFile), emptyFile);
+  registerMockedURLLoad(toOriginB(nestedOriginA), nestedOriginA);
+  registerMockedURLLoad(toOriginB(nestedOriginB), nestedOriginB);
 }
 
 void WebDocumentFirstPartyTest::load(const char* file) {

@@ -36,6 +36,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/page/Page.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebCache.h"
@@ -51,7 +52,7 @@ namespace blink {
 // These tests cover browser controls scrolling on main-thread.
 // The animation for completing a partial show/hide is done in compositor so
 // it is not covered here.
-class BrowserControlsTest : public testing::Test {
+class BrowserControlsTest : public ::testing::Test {
  public:
   BrowserControlsTest() : m_baseURL("http://www.test.com/") {
     registerMockedHttpURLLoad("large-div.html");
@@ -93,9 +94,9 @@ class BrowserControlsTest : public testing::Test {
   }
 
   void registerMockedHttpURLLoad(const std::string& fileName) {
-    URLTestHelpers::registerMockedURLFromBaseURL(
-        WebString::fromUTF8(m_baseURL.c_str()),
-        WebString::fromUTF8(fileName.c_str()));
+    URLTestHelpers::registerMockedURLLoadFromBase(
+        WebString::fromUTF8(m_baseURL), testing::webTestDataPath(),
+        WebString::fromUTF8(fileName));
   }
 
   WebCoalescedInputEvent generateEvent(WebInputEvent::Type type,

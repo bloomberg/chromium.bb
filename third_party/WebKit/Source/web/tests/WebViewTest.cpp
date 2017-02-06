@@ -234,10 +234,12 @@ class WebViewTest
   }
 
  protected:
-  void registerMockedHttpURLLoad(const std::string& fileName) {
-    URLTestHelpers::registerMockedURLFromBaseURL(
-        WebString::fromUTF8(m_baseURL.c_str()),
-        WebString::fromUTF8(fileName.c_str()));
+  std::string registerMockedHttpURLLoad(const std::string& fileName) {
+    return URLTestHelpers::registerMockedURLLoadFromBase(
+               WebString::fromUTF8(m_baseURL), testing::webTestDataPath(),
+               WebString::fromUTF8(fileName))
+        .string()
+        .utf8();
   }
 
   void testAutoResize(const WebSize& minAutoResize,
@@ -275,9 +277,8 @@ static std::string hitTestElementId(WebView* view, int x, int y) {
 INSTANTIATE_TEST_CASE_P(All, WebViewTest, ::testing::Bool());
 
 TEST_P(WebViewTest, HitTestContentEditableImageMaps) {
-  std::string url = m_baseURL + "content-editable-image-maps.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url),
-                                        "content-editable-image-maps.html");
+  std::string url =
+      registerMockedHttpURLLoad("content-editable-image-maps.html");
   WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
   webView->resize(WebSize(500, 500));
 
@@ -315,8 +316,7 @@ static WebElement hitTestUrlElement(WebView* view, int x, int y) {
 }
 
 TEST_P(WebViewTest, ImageMapUrls) {
-  std::string url = m_baseURL + "image-map.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-map.html");
+  std::string url = registerMockedHttpURLLoad("image-map.html");
   WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
   webView->resize(WebSize(400, 400));
 
@@ -336,8 +336,7 @@ TEST_P(WebViewTest, ImageMapUrls) {
 TEST_P(WebViewTest, BrokenImage) {
   URLTestHelpers::registerMockedErrorURLLoad(
       KURL(toKURL(m_baseURL), "non_existent.png"));
-  std::string url = m_baseURL + "image-broken.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-broken.html");
+  std::string url = registerMockedHttpURLLoad("image-broken.html");
 
   WebView* webView = m_webViewHelper.initialize();
   webView->settings()->setLoadsImagesAutomatically(true);
@@ -354,8 +353,7 @@ TEST_P(WebViewTest, BrokenImage) {
 TEST_P(WebViewTest, BrokenInputImage) {
   URLTestHelpers::registerMockedErrorURLLoad(
       KURL(toKURL(m_baseURL), "non_existent.png"));
-  std::string url = m_baseURL + "input-image-broken.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "input-image-broken.html");
+  std::string url = registerMockedHttpURLLoad("input-image-broken.html");
 
   WebView* webView = m_webViewHelper.initialize();
   webView->settings()->setLoadsImagesAutomatically(true);
@@ -487,8 +485,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
 }
 
 TEST_P(WebViewTest, FocusIsInactive) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), "visible_iframe.html");
+  registerMockedHttpURLLoad("visible_iframe.html");
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "visible_iframe.html");
 
@@ -514,8 +511,7 @@ TEST_P(WebViewTest, FocusIsInactive) {
 }
 
 TEST_P(WebViewTest, ActiveState) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), "visible_iframe.html");
+  registerMockedHttpURLLoad("visible_iframe.html");
   WebView* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "visible_iframe.html");
 
@@ -533,7 +529,8 @@ TEST_P(WebViewTest, ActiveState) {
 
 TEST_P(WebViewTest, HitTestResultAtWithPageScale) {
   std::string url = m_baseURL + "specify_size.html?" + "50px" + ":" + "50px";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "specify_size.html");
+  URLTestHelpers::registerMockedURLLoad(
+      toKURL(url), testing::webTestDataPath("specify_size.html"));
   WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
   webView->resize(WebSize(100, 100));
   WebPoint hitPoint(75, 75);
@@ -552,7 +549,8 @@ TEST_P(WebViewTest, HitTestResultAtWithPageScale) {
 
 TEST_P(WebViewTest, HitTestResultAtWithPageScaleAndPan) {
   std::string url = m_baseURL + "specify_size.html?" + "50px" + ":" + "50px";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "specify_size.html");
+  URLTestHelpers::registerMockedURLLoad(
+      toKURL(url), testing::webTestDataPath("specify_size.html"));
   WebView* webView = m_webViewHelper.initialize(true);
   loadFrame(webView->mainFrame(), url);
   webView->resize(WebSize(100, 100));
@@ -577,8 +575,7 @@ TEST_P(WebViewTest, HitTestResultAtWithPageScaleAndPan) {
 }
 
 TEST_P(WebViewTest, HitTestResultForTapWithTapArea) {
-  std::string url = m_baseURL + "hit_test.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "hit_test.html");
+  std::string url = registerMockedHttpURLLoad("hit_test.html");
   WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
   webView->resize(WebSize(100, 100));
   WebPoint hitPoint(55, 55);
@@ -604,8 +601,7 @@ TEST_P(WebViewTest, HitTestResultForTapWithTapArea) {
 }
 
 TEST_P(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan) {
-  std::string url = m_baseURL + "hit_test.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "hit_test.html");
+  std::string url = registerMockedHttpURLLoad("hit_test.html");
   WebView* webView = m_webViewHelper.initialize(true);
   loadFrame(webView->mainFrame(), url);
   webView->resize(WebSize(100, 100));
@@ -644,7 +640,8 @@ void WebViewTest::testAutoResize(
   AutoResizeWebViewClient client;
   std::string url =
       m_baseURL + "specify_size.html?" + pageWidth + ":" + pageHeight;
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "specify_size.html");
+  URLTestHelpers::registerMockedURLLoad(
+      toKURL(url), testing::webTestDataPath("specify_size.html"));
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(url, true, 0, &client);
   client.testData().setWebView(webView);
@@ -753,9 +750,7 @@ TEST_P(WebViewTest, AutoResizeMaxSize) {
 
 void WebViewTest::testTextInputType(WebTextInputType expectedType,
                                     const std::string& htmlFile) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8(htmlFile.c_str()));
+  registerMockedHttpURLLoad(htmlFile);
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + htmlFile);
   WebInputMethodControllerImpl* controller =
@@ -817,9 +812,7 @@ TEST_P(WebViewTest, TextInputInfoUpdateStyleAndLayout) {
 
 void WebViewTest::testInputMode(WebTextInputMode expectedInputMode,
                                 const std::string& htmlFile) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8(htmlFile.c_str()));
+  registerMockedHttpURLLoad(htmlFile);
   WebViewImpl* webViewImpl =
       m_webViewHelper.initializeAndLoad(m_baseURL + htmlFile);
   webViewImpl->setInitialFocus(false);
@@ -867,10 +860,10 @@ TEST_P(WebViewTest, InputMode) {
 }
 
 TEST_P(WebViewTest, TextInputInfoWithReplacedElements) {
-  std::string url = m_baseURL + "div_with_image.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "div_with_image.html");
-  URLTestHelpers::registerMockedURLLoad(toKURL("http://www.test.com/foo.png"),
-                                        "white-1x1.png");
+  std::string url = registerMockedHttpURLLoad("div_with_image.html");
+  URLTestHelpers::registerMockedURLLoad(
+      toKURL("http://www.test.com/foo.png"),
+      testing::webTestDataPath("white-1x1.png"));
   WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url);
   webViewImpl->setInitialFocus(false);
   WebTextInputInfo info =
@@ -880,9 +873,7 @@ TEST_P(WebViewTest, TextInputInfoWithReplacedElements) {
 }
 
 TEST_P(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   webView->setInitialFocus(false);
@@ -898,9 +889,7 @@ TEST_P(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo) {
   EXPECT_EQ(-1, info.compositionStart);
   EXPECT_EQ(-1, info.compositionEnd);
 
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("content_editable_populated.html"));
+  registerMockedHttpURLLoad("content_editable_populated.html");
   webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "content_editable_populated.html");
   webView->setInitialFocus(false);
@@ -918,9 +907,7 @@ TEST_P(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo) {
 
 // Regression test for crbug.com/663645
 TEST_P(WebViewTest, FinishComposingTextDoesNotAssert) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_default.html"));
+  registerMockedHttpURLLoad("input_field_default.html");
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_default.html");
   webView->setInitialFocus(false);
@@ -949,9 +936,7 @@ TEST_P(WebViewTest, FinishComposingTextDoesNotAssert) {
 }
 
 TEST_P(WebViewTest, FinishComposingTextCursorPositionChange) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   webView->setInitialFocus(false);
@@ -1001,9 +986,7 @@ TEST_P(WebViewTest, FinishComposingTextCursorPositionChange) {
 }
 
 TEST_P(WebViewTest, SetCompositionForNewCaretPositions) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   webView->setInitialFocus(false);
@@ -1110,9 +1093,7 @@ TEST_P(WebViewTest, SetCompositionForNewCaretPositions) {
 }
 
 TEST_P(WebViewTest, SetCompositionWithEmptyText) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   webView->setInitialFocus(false);
@@ -1152,9 +1133,7 @@ TEST_P(WebViewTest, SetCompositionWithEmptyText) {
 }
 
 TEST_P(WebViewTest, CommitTextForNewCaretPositions) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   webView->setInitialFocus(false);
@@ -1221,9 +1200,7 @@ TEST_P(WebViewTest, CommitTextForNewCaretPositions) {
 }
 
 TEST_P(WebViewTest, CommitTextWhileComposing) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   webView->setInitialFocus(false);
@@ -1290,9 +1267,7 @@ TEST_P(WebViewTest, CommitTextWhileComposing) {
 }
 
 TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("form_with_input.html"));
+  registerMockedHttpURLLoad("form_with_input.html");
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "form_with_input.html");
   webView->resize(WebSize(800, 600));
@@ -1326,9 +1301,7 @@ TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
 }
 
 TEST_P(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("text_area_populated.html"));
+  registerMockedHttpURLLoad("text_area_populated.html");
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "text_area_populated.html");
   webView->setInitialFocus(false);
@@ -1370,9 +1343,7 @@ TEST_P(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
 }
 
 TEST_P(WebViewTest, ExtendSelectionAndDelete) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   WebLocalFrameImpl* frame = webView->mainFrameImpl();
@@ -1391,9 +1362,7 @@ TEST_P(WebViewTest, ExtendSelectionAndDelete) {
 }
 
 TEST_P(WebViewTest, DeleteSurroundingText) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebView* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
@@ -1436,9 +1405,7 @@ TEST_P(WebViewTest, DeleteSurroundingText) {
 }
 
 TEST_P(WebViewTest, SetCompositionFromExistingText) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   webView->setInitialFocus(false);
@@ -1464,9 +1431,7 @@ TEST_P(WebViewTest, SetCompositionFromExistingText) {
 }
 
 TEST_P(WebViewTest, SetCompositionFromExistingTextInTextArea) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("text_area_populated.html"));
+  registerMockedHttpURLLoad("text_area_populated.html");
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "text_area_populated.html");
   webView->setInitialFocus(false);
@@ -1507,9 +1472,7 @@ TEST_P(WebViewTest, SetCompositionFromExistingTextInTextArea) {
 }
 
 TEST_P(WebViewTest, SetCompositionFromExistingTextInRichText) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("content_editable_rich_text.html"));
+  registerMockedHttpURLLoad("content_editable_rich_text.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "content_editable_rich_text.html");
   webView->setInitialFocus(false);
@@ -1524,9 +1487,7 @@ TEST_P(WebViewTest, SetCompositionFromExistingTextInRichText) {
 }
 
 TEST_P(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   webView->setInitialFocus(false);
@@ -1594,9 +1555,7 @@ TEST_P(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 }
 
 TEST_P(WebViewTest, IsSelectionAnchorFirst) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   WebLocalFrame* frame = webView->mainFrameImpl();
@@ -1612,9 +1571,7 @@ TEST_P(WebViewTest, IsSelectionAnchorFirst) {
 }
 
 TEST_P(WebViewTest, ExitingDeviceEmulationResetsPageScale) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("200-by-300.html"));
+  registerMockedHttpURLLoad("200-by-300.html");
   WebViewImpl* webViewImpl =
       m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
   webViewImpl->resize(WebSize(200, 300));
@@ -1638,9 +1595,7 @@ TEST_P(WebViewTest, ExitingDeviceEmulationResetsPageScale) {
 }
 
 TEST_P(WebViewTest, HistoryResetScrollAndScaleState) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("200-by-300.html"));
+  registerMockedHttpURLLoad("200-by-300.html");
   WebViewImpl* webViewImpl =
       m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
   webViewImpl->resize(WebSize(100, 150));
@@ -1675,9 +1630,7 @@ TEST_P(WebViewTest, HistoryResetScrollAndScaleState) {
 }
 
 TEST_P(WebViewTest, BackForwardRestoreScroll) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("back_forward_restore_scroll.html"));
+  registerMockedHttpURLLoad("back_forward_restore_scroll.html");
   WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(
       m_baseURL + "back_forward_restore_scroll.html");
   webViewImpl->resize(WebSize(640, 480));
@@ -1736,9 +1689,7 @@ TEST_P(WebViewTest, BackForwardRestoreScroll) {
 // Tests that we restore scroll and scale *after* the fullscreen styles are
 // removed and the page is laid out. http://crbug.com/625683.
 TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("fullscreen_style.html"));
+  registerMockedHttpURLLoad("fullscreen_style.html");
   WebViewImpl* webViewImpl =
       m_webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_style.html");
   webViewImpl->resize(WebSize(800, 600));
@@ -1777,9 +1728,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
 // Tests that exiting and immediately reentering fullscreen doesn't cause the
 // scroll and scale restoration to occur when we enter fullscreen again.
 TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("fullscreen_style.html"));
+  registerMockedHttpURLLoad("fullscreen_style.html");
   WebViewImpl* webViewImpl =
       m_webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_style.html");
   webViewImpl->resize(WebSize(800, 600));
@@ -1827,9 +1776,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
 }
 
 TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("200-by-300.html"));
+  registerMockedHttpURLLoad("200-by-300.html");
   WebViewImpl* webViewImpl =
       m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
   webViewImpl->resize(WebSize(100, 150));
@@ -1887,9 +1834,7 @@ class PrintWebViewClient : public FrameTestHelpers::TestWebViewClient {
 
 TEST_P(WebViewTest, PrintWithXHRInFlight) {
   PrintWebViewClient client;
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("print_with_xhr_inflight.html"));
+  registerMockedHttpURLLoad("print_with_xhr_inflight.html");
   WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(
       m_baseURL + "print_with_xhr_inflight.html", true, 0, &client);
 
@@ -1920,10 +1865,8 @@ static void DragAndDropURL(WebViewImpl* webView, const std::string& url) {
 }
 
 TEST_P(WebViewTest, DragDropURL) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), "foo.html");
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), "bar.html");
+  registerMockedHttpURLLoad("foo.html");
+  registerMockedHttpURLLoad("bar.html");
 
   const std::string fooUrl = m_baseURL + "foo.html";
   const std::string barUrl = m_baseURL + "bar.html";
@@ -2028,9 +1971,7 @@ bool WebViewTest::tapElementById(WebInputEvent::Type type,
 }
 
 TEST_P(WebViewTest, DetectContentAroundPosition) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("content_listeners.html"));
+  registerMockedHttpURLLoad("content_listeners.html");
 
   ContentDetectorClient client;
   WebView* webView = m_webViewHelper.initializeAndLoad(
@@ -2084,9 +2025,7 @@ TEST_P(WebViewTest, DetectContentAroundPosition) {
 }
 
 TEST_P(WebViewTest, ContentDetectionInIframe) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("content_listeners_iframe.html"));
+  registerMockedHttpURLLoad("content_listeners_iframe.html");
 
   ContentDetectorClient client;
   WebView* webView = m_webViewHelper.initializeAndLoad(
@@ -2162,9 +2101,7 @@ TEST_P(WebViewTest, ClientTapHandlingNullWebViewClient) {
 }
 
 TEST_P(WebViewTest, LongPressEmptyDiv) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("long_press_empty_div.html"));
+  registerMockedHttpURLLoad("long_press_empty_div.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "long_press_empty_div.html", true);
@@ -2185,9 +2122,7 @@ TEST_P(WebViewTest, LongPressEmptyDiv) {
 }
 
 TEST_P(WebViewTest, LongPressEmptyDivAlwaysShow) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("long_press_empty_div.html"));
+  registerMockedHttpURLLoad("long_press_empty_div.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "long_press_empty_div.html", true);
@@ -2208,9 +2143,7 @@ TEST_P(WebViewTest, LongPressEmptyDivAlwaysShow) {
 }
 
 TEST_P(WebViewTest, LongPressObject) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("long_press_object.html"));
+  registerMockedHttpURLLoad("long_press_object.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "long_press_object.html", true);
@@ -2235,9 +2168,7 @@ TEST_P(WebViewTest, LongPressObject) {
 }
 
 TEST_P(WebViewTest, LongPressObjectFallback) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("long_press_object_fallback.html"));
+  registerMockedHttpURLLoad("long_press_object_fallback.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "long_press_object_fallback.html", true);
@@ -2262,9 +2193,7 @@ TEST_P(WebViewTest, LongPressObjectFallback) {
 }
 
 TEST_P(WebViewTest, LongPressImage) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("long_press_image.html"));
+  registerMockedHttpURLLoad("long_press_image.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "long_press_image.html", true);
@@ -2285,9 +2214,7 @@ TEST_P(WebViewTest, LongPressImage) {
 }
 
 TEST_P(WebViewTest, LongPressVideo) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("long_press_video.html"));
+  registerMockedHttpURLLoad("long_press_video.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "long_press_video.html", true);
@@ -2308,9 +2235,7 @@ TEST_P(WebViewTest, LongPressVideo) {
 }
 
 TEST_P(WebViewTest, LongPressLink) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("long_press_link.html"));
+  registerMockedHttpURLLoad("long_press_link.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "long_press_link.html", true);
@@ -2331,12 +2256,11 @@ TEST_P(WebViewTest, LongPressLink) {
 }
 
 TEST_P(WebViewTest, showContextMenuOnLongPressingLinks) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("long_press_links_and_images.html"));
+  registerMockedHttpURLLoad("long_press_links_and_images.html");
 
-  URLTestHelpers::registerMockedURLLoad(toKURL("http://www.test.com/foo.png"),
-                                        "white-1x1.png");
+  URLTestHelpers::registerMockedURLLoad(
+      toKURL("http://www.test.com/foo.png"),
+      testing::webTestDataPath("white-1x1.png"));
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "long_press_links_and_images.html", true);
 
@@ -2358,9 +2282,7 @@ TEST_P(WebViewTest, showContextMenuOnLongPressingLinks) {
 }
 
 TEST_P(WebViewTest, LongPressEmptyEditableSelection) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("long_press_empty_editable_selection.html"));
+  registerMockedHttpURLLoad("long_press_empty_editable_selection.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "long_press_empty_editable_selection.html", true);
@@ -2381,9 +2303,7 @@ TEST_P(WebViewTest, LongPressEmptyEditableSelection) {
 }
 
 TEST_P(WebViewTest, LongPressEmptyNonEditableSelection) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("long_press_image.html"));
+  registerMockedHttpURLLoad("long_press_image.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "long_press_image.html", true);
@@ -2405,9 +2325,7 @@ TEST_P(WebViewTest, LongPressEmptyNonEditableSelection) {
 }
 
 TEST_P(WebViewTest, LongPressSelection) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("longpress_selection.html"));
+  registerMockedHttpURLLoad("longpress_selection.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "longpress_selection.html", true);
@@ -2428,9 +2346,7 @@ TEST_P(WebViewTest, LongPressSelection) {
 
 #if !OS(MACOSX)
 TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("longpress_textarea.html"));
+  registerMockedHttpURLLoad("longpress_textarea.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "longpress_textarea.html", true);
@@ -2473,9 +2389,7 @@ TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
 #endif
 
 TEST_P(WebViewTest, LongPressImageTextarea) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("longpress_image_contenteditable.html"));
+  registerMockedHttpURLLoad("longpress_image_contenteditable.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "longpress_image_contenteditable.html", true);
@@ -2493,9 +2407,7 @@ TEST_P(WebViewTest, LongPressImageTextarea) {
 }
 
 TEST_P(WebViewTest, BlinkCaretAfterLongPress) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("blink_caret_on_typing_after_long_press.html"));
+  registerMockedHttpURLLoad("blink_caret_on_typing_after_long_press.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "blink_caret_on_typing_after_long_press.html", true);
@@ -2511,8 +2423,7 @@ TEST_P(WebViewTest, BlinkCaretAfterLongPress) {
 }
 
 TEST_P(WebViewTest, BlinkCaretOnClosingContextMenu) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("form.html"));
+  registerMockedHttpURLLoad("form.html");
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "form.html", true);
 
@@ -2546,9 +2457,7 @@ TEST_P(WebViewTest, BlinkCaretOnClosingContextMenu) {
 }
 
 TEST_P(WebViewTest, SelectionOnReadOnlyInput) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("selection_readonly.html"));
+  registerMockedHttpURLLoad("selection_readonly.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "selection_readonly.html", true);
   webView->resize(WebSize(640, 480));
@@ -2567,9 +2476,7 @@ TEST_P(WebViewTest, SelectionOnReadOnlyInput) {
 }
 
 TEST_P(WebViewTest, KeyDownScrollsHandled) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("content-width-1000.html"));
+  registerMockedHttpURLLoad("content-width-1000.html");
 
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "content-width-1000.html", true);
@@ -2746,9 +2653,7 @@ class MockAutofillClient : public WebAutofillClient {
 };
 
 TEST_P(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   MockAutofillClient client;
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
@@ -2790,9 +2695,7 @@ static void verifySelectionAndComposition(WebViewImpl* webView,
 }
 
 TEST_P(WebViewTest, CompositionNotCancelledByBackspace) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("composition_not_cancelled_by_backspace.html"));
+  registerMockedHttpURLLoad("composition_not_cancelled_by_backspace.html");
   MockAutofillClient client;
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "composition_not_cancelled_by_backspace.html");
@@ -2838,9 +2741,7 @@ TEST_P(WebViewTest, CompositionNotCancelledByBackspace) {
 }
 
 TEST_P(WebViewTest, FinishComposingTextTriggersAutofillTextChange) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   MockAutofillClient client;
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
@@ -2873,9 +2774,7 @@ TEST_P(WebViewTest, FinishComposingTextTriggersAutofillTextChange) {
 }
 
 TEST_P(WebViewTest, SetCompositionFromExistingTextTriggersAutofillTextChange) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   MockAutofillClient client;
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html", true);
@@ -2985,8 +2884,7 @@ TEST_P(WebViewTest, FocusExistingFrameOnNavigate) {
 }
 
 TEST_P(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), "focusout_focusin_events.html");
+  registerMockedHttpURLLoad("focusout_focusin_events.html");
   WebView* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "focusout_focusin_events.html", true, 0);
 
@@ -3000,9 +2898,7 @@ TEST_P(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
 }
 
 TEST_P(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      "domfocusout_domfocusin_events.html");
+  registerMockedHttpURLLoad("domfocusout_domfocusin_events.html");
   WebView* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "domfocusout_domfocusin_events.html", true, 0);
 
@@ -3040,8 +2936,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
       RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled();
   RuntimeEnabledFeatures::setInputMultipleFieldsUIEnabled(false);
   DateTimeChooserWebViewClient client;
-  std::string url = m_baseURL + "date_time_chooser.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "date_time_chooser.html");
+  std::string url = registerMockedHttpURLLoad("date_time_chooser.html");
   WebViewImpl* webViewImpl =
       m_webViewHelper.initializeAndLoad(url, true, 0, &client);
 
@@ -3117,8 +3012,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
 }
 
 TEST_P(WebViewTest, DispatchesFocusBlurOnViewToggle) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), "focus_blur_events.html");
+  registerMockedHttpURLLoad("focus_blur_events.html");
   WebView* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "focus_blur_events.html", true, 0);
 
@@ -3156,11 +3050,8 @@ TEST_P(WebViewTest, SmartClipData) {
   WebString clipText;
   WebString clipHtml;
   WebRect clipRect;
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("smartclip.html"));
+  registerMockedHttpURLLoad("Ahem.ttf");
+  registerMockedHttpURLLoad("smartclip.html");
   WebView* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "smartclip.html");
   webView->resize(WebSize(500, 500));
@@ -3195,11 +3086,8 @@ TEST_P(WebViewTest, SmartClipDataWithPinchZoom) {
   WebString clipText;
   WebString clipHtml;
   WebRect clipRect;
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("smartclip.html"));
+  registerMockedHttpURLLoad("Ahem.ttf");
+  registerMockedHttpURLLoad("smartclip.html");
   WebView* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "smartclip.html");
   webView->resize(WebSize(500, 500));
@@ -3216,11 +3104,8 @@ TEST_P(WebViewTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone) {
   WebString clipText;
   WebString clipHtml;
   WebRect clipRect;
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("smartclip_user_select_none.html"));
+  registerMockedHttpURLLoad("Ahem.ttf");
+  registerMockedHttpURLLoad("smartclip_user_select_none.html");
   WebView* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "smartclip_user_select_none.html");
   webView->resize(WebSize(500, 500));
@@ -3235,11 +3120,8 @@ TEST_P(WebViewTest, SmartClipDoesNotCrashPositionReversed) {
   WebString clipText;
   WebString clipHtml;
   WebRect clipRect;
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("smartclip_reversed_positions.html"));
+  registerMockedHttpURLLoad("Ahem.ttf");
+  registerMockedHttpURLLoad("smartclip_reversed_positions.html");
   WebView* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "smartclip_reversed_positions.html");
   webView->resize(WebSize(500, 500));
@@ -3280,9 +3162,7 @@ WebLocalFrame* CreateChildCounterFrameClient::createChildFrame(
 }
 
 TEST_P(WebViewTest, ChangeDisplayMode) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("display_mode.html"));
+  registerMockedHttpURLLoad("display_mode.html");
   WebView* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "display_mode.html", true);
 
@@ -3298,9 +3178,7 @@ TEST_P(WebViewTest, ChangeDisplayMode) {
 
 TEST_P(WebViewTest, AddFrameInCloseUnload) {
   CreateChildCounterFrameClient frameClient;
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("add_frame_in_unload.html"));
+  registerMockedHttpURLLoad("add_frame_in_unload.html");
   m_webViewHelper.initializeAndLoad(m_baseURL + "add_frame_in_unload.html",
                                     true, &frameClient);
   m_webViewHelper.reset();
@@ -3309,9 +3187,7 @@ TEST_P(WebViewTest, AddFrameInCloseUnload) {
 
 TEST_P(WebViewTest, AddFrameInCloseURLUnload) {
   CreateChildCounterFrameClient frameClient;
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("add_frame_in_unload.html"));
+  registerMockedHttpURLLoad("add_frame_in_unload.html");
   m_webViewHelper.initializeAndLoad(m_baseURL + "add_frame_in_unload.html",
                                     true, &frameClient);
   m_webViewHelper.webView()->mainFrame()->dispatchUnloadEvent();
@@ -3321,9 +3197,7 @@ TEST_P(WebViewTest, AddFrameInCloseURLUnload) {
 
 TEST_P(WebViewTest, AddFrameInNavigateUnload) {
   CreateChildCounterFrameClient frameClient;
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("add_frame_in_unload.html"));
+  registerMockedHttpURLLoad("add_frame_in_unload.html");
   m_webViewHelper.initializeAndLoad(m_baseURL + "add_frame_in_unload.html",
                                     true, &frameClient);
   FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(),
@@ -3334,12 +3208,8 @@ TEST_P(WebViewTest, AddFrameInNavigateUnload) {
 
 TEST_P(WebViewTest, AddFrameInChildInNavigateUnload) {
   CreateChildCounterFrameClient frameClient;
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("add_frame_in_unload_wrapper.html"));
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("add_frame_in_unload.html"));
+  registerMockedHttpURLLoad("add_frame_in_unload_wrapper.html");
+  registerMockedHttpURLLoad("add_frame_in_unload.html");
   m_webViewHelper.initializeAndLoad(
       m_baseURL + "add_frame_in_unload_wrapper.html", true, &frameClient);
   FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(),
@@ -3378,9 +3248,7 @@ TEST_P(WebViewTest, HasTouchEventHandlers) {
   // We need to create a LayerTreeView for the client before loading the page,
   // otherwise ChromeClient will default to assuming there are touch handlers.
   WebLayerTreeView* layerTreeView = client.initializeLayerTreeView();
-  std::string url = m_baseURL + "has_touch_event_handlers.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url),
-                                        "has_touch_event_handlers.html");
+  std::string url = registerMockedHttpURLLoad("has_touch_event_handlers.html");
   WebViewImpl* webViewImpl =
       m_webViewHelper.initializeAndLoad(url, true, 0, 0, &client);
   ASSERT_TRUE(layerTreeView);
@@ -3506,8 +3374,7 @@ TEST_P(WebViewTest, HasTouchEventHandlers) {
 // is different from detaching and re-attaching the same node, which is covered
 // by layout tests under fast/events/.
 TEST_P(WebViewTest, DeleteElementWithRegisteredHandler) {
-  std::string url = m_baseURL + "simple_div.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "simple_div.html");
+  std::string url = registerMockedHttpURLLoad("simple_div.html");
   WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true);
 
   Persistent<Document> document =
@@ -3533,8 +3400,7 @@ TEST_P(WebViewTest, DeleteElementWithRegisteredHandler) {
 
 // This test verifies the text input flags are correctly exposed to script.
 TEST_P(WebViewTest, TextInputFlags) {
-  std::string url = m_baseURL + "text_input_flags.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "text_input_flags.html");
+  std::string url = registerMockedHttpURLLoad("text_input_flags.html");
   WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true);
   webViewImpl->setInitialFocus(false);
 
@@ -3593,8 +3459,7 @@ TEST_P(WebViewTest, TextInputFlags) {
 // Check that the WebAutofillClient is correctly notified about first user
 // gestures after load, following various input events.
 TEST_P(WebViewTest, FirstUserGestureObservedKeyEvent) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("form.html"));
+  registerMockedHttpURLLoad("form.html");
   MockAutofillClient client;
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "form.html", true);
@@ -3618,8 +3483,7 @@ TEST_P(WebViewTest, FirstUserGestureObservedKeyEvent) {
 }
 
 TEST_P(WebViewTest, FirstUserGestureObservedMouseEvent) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("form.html"));
+  registerMockedHttpURLLoad("form.html");
   MockAutofillClient client;
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "form.html", true);
@@ -3644,9 +3508,7 @@ TEST_P(WebViewTest, FirstUserGestureObservedMouseEvent) {
 }
 
 TEST_P(WebViewTest, FirstUserGestureObservedGestureTap) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("longpress_selection.html"));
+  registerMockedHttpURLLoad("longpress_selection.html");
   MockAutofillClient client;
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "longpress_selection.html", true);
@@ -3664,9 +3526,7 @@ TEST_P(WebViewTest, FirstUserGestureObservedGestureTap) {
 }
 
 TEST_P(WebViewTest, CompositionIsUserGesture) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_populated.html"));
+  registerMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_populated.html");
   WebLocalFrameImpl* frame = webView->mainFrameImpl();
@@ -3686,9 +3546,7 @@ TEST_P(WebViewTest, CompositionIsUserGesture) {
 }
 
 TEST_P(WebViewTest, CompareSelectAllToContentAsText) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("longpress_selection.html"));
+  registerMockedHttpURLLoad("longpress_selection.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "longpress_selection.html", true);
 
@@ -3705,8 +3563,7 @@ TEST_P(WebViewTest, CompareSelectAllToContentAsText) {
 }
 
 TEST_P(WebViewTest, AutoResizeSubtreeLayout) {
-  std::string url = m_baseURL + "subtree-layout.html";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "subtree-layout.html");
+  std::string url = registerMockedHttpURLLoad("subtree-layout.html");
   WebView* webView = m_webViewHelper.initialize(true);
 
   webView->enableAutoResizeMode(WebSize(200, 200), WebSize(200, 200));
@@ -3723,7 +3580,8 @@ TEST_P(WebViewTest, AutoResizeSubtreeLayout) {
 
 TEST_P(WebViewTest, PreferredSize) {
   std::string url = m_baseURL + "specify_size.html?100px:100px";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "specify_size.html");
+  URLTestHelpers::registerMockedURLLoad(
+      toKURL(url), testing::webTestDataPath("specify_size.html"));
   WebView* webView = m_webViewHelper.initializeAndLoad(url, true);
 
   WebSize size = webView->contentsPreferredMinimumSize();
@@ -3748,7 +3606,8 @@ TEST_P(WebViewTest, PreferredSize) {
   EXPECT_EQ(100, size.height);
 
   url = m_baseURL + "specify_size.html?1.5px:1.5px";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "specify_size.html");
+  URLTestHelpers::registerMockedURLLoad(
+      toKURL(url), testing::webTestDataPath("specify_size.html"));
   webView = m_webViewHelper.initializeAndLoad(url, true);
 
   webView->setZoomLevel(WebView::zoomFactorToZoomLevel(1));
@@ -3759,7 +3618,8 @@ TEST_P(WebViewTest, PreferredSize) {
 
 TEST_P(WebViewTest, PreferredSizeDirtyLayout) {
   std::string url = m_baseURL + "specify_size.html?100px:100px";
-  URLTestHelpers::registerMockedURLLoad(toKURL(url), "specify_size.html");
+  URLTestHelpers::registerMockedURLLoad(
+      toKURL(url), testing::webTestDataPath("specify_size.html"));
   WebView* webView = m_webViewHelper.initializeAndLoad(url, true);
   WebElement documentElement =
       webView->mainFrame()->document().documentElement();
@@ -3807,10 +3667,8 @@ class UnhandledTapWebViewClient : public FrameTestHelpers::TestWebViewClient {
 
 TEST_P(WebViewTest, ShowUnhandledTapUIIfNeeded) {
   std::string testFile = "show_unhandled_tap.html";
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(testFile));
+  registerMockedHttpURLLoad("Ahem.ttf");
+  registerMockedHttpURLLoad(testFile);
   UnhandledTapWebViewClient client;
   WebView* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + testFile, true, 0, &client);
@@ -3878,10 +3736,8 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeeded) {
 
 TEST_P(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateDom) {
   std::string testFile = "show_unhandled_tap.html";
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(testFile));
+  registerMockedHttpURLLoad("Ahem.ttf");
+  registerMockedHttpURLLoad(testFile);
   UnhandledTapWebViewClient client;
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + testFile, true, 0, &client);
@@ -3905,10 +3761,8 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateDom) {
 
 TEST_P(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateStyle) {
   std::string testFile = "show_unhandled_tap.html";
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(testFile));
+  registerMockedHttpURLLoad("Ahem.ttf");
+  registerMockedHttpURLLoad(testFile);
   UnhandledTapWebViewClient client;
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + testFile, true, 0, &client);
@@ -3941,10 +3795,8 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateStyle) {
 
 TEST_P(WebViewTest, ShowUnhandledTapUIIfNeededWithPreventDefault) {
   std::string testFile = "show_unhandled_tap.html";
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(testFile));
+  registerMockedHttpURLLoad("Ahem.ttf");
+  registerMockedHttpURLLoad(testFile);
   UnhandledTapWebViewClient client;
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + testFile, true, 0, &client);
@@ -3989,9 +3841,7 @@ TEST_P(WebViewTest, StopLoadingIfJavaScriptURLReturnsNoStringResult) {
 
 #if OS(MACOSX)
 TEST_P(WebViewTest, WebSubstringUtil) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("content_editable_populated.html"));
+  registerMockedHttpURLLoad("content_editable_populated.html");
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "content_editable_populated.html");
   webView->settings()->setDefaultFontSize(12);
@@ -4022,12 +3872,8 @@ TEST_P(WebViewTest, WebSubstringUtil) {
 }
 
 TEST_P(WebViewTest, WebSubstringUtilIframe) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("single_iframe.html"));
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("visible_iframe.html"));
+  registerMockedHttpURLLoad("single_iframe.html");
+  registerMockedHttpURLLoad("visible_iframe.html");
   WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "single_iframe.html");
   webView->settings()->setDefaultFontSize(12);
@@ -4065,9 +3911,7 @@ TEST_P(WebViewTest, WebSubstringUtilIframe) {
 #endif
 
 TEST_P(WebViewTest, PasswordFieldEditingIsUserGesture) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("input_field_password.html"));
+  registerMockedHttpURLLoad("input_field_password.html");
   MockAutofillClient client;
   WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "input_field_password.html", true);
@@ -4188,9 +4032,7 @@ TEST_P(WebViewTest, ClosingPageIsSuspended) {
 }
 
 TEST_P(WebViewTest, ForceAndResetViewport) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("200-by-300.html"));
+  registerMockedHttpURLLoad("200-by-300.html");
   WebViewImpl* webViewImpl =
       m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
   webViewImpl->resize(WebSize(100, 150));
@@ -4236,9 +4078,7 @@ TEST_P(WebViewTest, ForceAndResetViewport) {
 }
 
 TEST_P(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("200-by-300.html"));
+  registerMockedHttpURLLoad("200-by-300.html");
   WebViewImpl* webViewImpl =
       m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
   webViewImpl->resize(WebSize(100, 150));
@@ -4268,9 +4108,7 @@ TEST_P(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
 }
 
 TEST_P(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(m_baseURL.c_str()),
-      WebString::fromUTF8("200-by-300.html"));
+  registerMockedHttpURLLoad("200-by-300.html");
   WebViewImpl* webViewImpl =
       m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
   webViewImpl->resize(WebSize(100, 150));

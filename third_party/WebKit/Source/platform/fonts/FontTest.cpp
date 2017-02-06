@@ -14,13 +14,9 @@ using blink::testing::createTestFont;
 
 namespace blink {
 
-static inline String fontPath(String relativePath) {
-  return testing::blinkRootDir() + "/Source/platform/testing/data/" +
-         relativePath;
-}
-
 TEST(FontTest, TextIntercepts) {
-  Font font = createTestFont("Ahem", fontPath("Ahem.woff"), 16);
+  Font font =
+      createTestFont("Ahem", testing::platformTestDataPath("Ahem.woff"), 16);
   // A sequence of LATIN CAPITAL LETTER E WITH ACUTE and LATIN SMALL LETTER P
   // characters. E ACUTES are squares above the baseline in Ahem, while p's
   // are rectangles below the baseline.

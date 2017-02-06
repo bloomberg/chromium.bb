@@ -4,8 +4,10 @@
 
 #include "core/loader/DocumentLoader.h"
 
+#include <queue>
 #include "core/page/Page.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
@@ -14,7 +16,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/AutoReset.h"
-#include <queue>
 
 namespace blink {
 
@@ -25,7 +26,8 @@ class DocumentLoaderTest : public ::testing::Test {
   void SetUp() override {
     m_webViewHelper.initialize();
     URLTestHelpers::registerMockedURLLoad(
-        URLTestHelpers::toKURL("https://example.com/foo.html"), "foo.html");
+        URLTestHelpers::toKURL("https://example.com/foo.html"),
+        testing::webTestDataPath("foo.html"));
   }
 
   void TearDown() override {

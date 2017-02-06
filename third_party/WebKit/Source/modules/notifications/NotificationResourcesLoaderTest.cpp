@@ -4,10 +4,12 @@
 
 #include "modules/notifications/NotificationResourcesLoader.h"
 
+#include <memory>
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Heap.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
@@ -19,19 +21,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Functional.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 namespace {
 
-const char kBaseUrl[] = "http://test.com/";
-const char kIcon48x48[] = "48x48.png";
-const char kIcon100x100[] = "100x100.png";
-const char kIcon110x110[] = "110x110.png";
-const char kIcon120x120[] = "120x120.png";
-const char kIcon500x500[] = "500x500.png";
-const char kIcon3000x1000[] = "3000x1000.png";
-const char kIcon3000x2000[] = "3000x2000.png";
+constexpr char kBaseUrl[] = "http://test.com/";
+constexpr char kBaseDir[] = "notifications/";
+constexpr char kIcon48x48[] = "48x48.png";
+constexpr char kIcon100x100[] = "100x100.png";
+constexpr char kIcon110x110[] = "110x110.png";
+constexpr char kIcon120x120[] = "120x120.png";
+constexpr char kIcon500x500[] = "500x500.png";
+constexpr char kIcon3000x1000[] = "3000x1000.png";
+constexpr char kIcon3000x2000[] = "3000x2000.png";
 
 class NotificationResourcesLoaderTest : public ::testing::Test {
  public:
@@ -61,12 +63,9 @@ class NotificationResourcesLoaderTest : public ::testing::Test {
   // Registers a mocked url. When fetched, |fileName| will be loaded from the
   // test data directory.
   WebURL registerMockedURL(const String& fileName) {
-    WebURL url(KURL(ParsedURLString, kBaseUrl + fileName));
-
-    URLTestHelpers::registerMockedURLLoad(url, fileName, "notifications/",
-                                          "image/png");
-
-    return url;
+    WebURL registeredUrl = URLTestHelpers::registerMockedURLLoadFromBase(
+        kBaseUrl, testing::webTestDataPath(kBaseDir), fileName, "image/png");
+    return registeredUrl;
   }
 
   // Registers a mocked url that will fail to be fetched, with a 404 error.

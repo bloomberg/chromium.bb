@@ -44,6 +44,17 @@
 namespace blink {
 namespace testing {
 
+namespace {
+
+base::FilePath blinkRootFilePath() {
+  base::FilePath path;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return base::MakeAbsoluteFilePath(
+      path.Append(FILE_PATH_LITERAL("third_party/WebKit")));
+}
+
+}  // namespace
+
 void runPendingTasks() {
   Platform::current()->currentThread()->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE, WTF::bind(&exitRunLoop));
@@ -61,21 +72,6 @@ void runDelayedTasks(double delayMs) {
   enterRunLoop();
 }
 
-String blinkRootDir() {
-  base::FilePath path;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
-  path = path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
-  path = base::MakeAbsoluteFilePath(path);
-  return String::fromUTF8(path.MaybeAsASCII().c_str());
-}
-
-PassRefPtr<SharedBuffer> readFromFile(const String& path) {
-  base::FilePath filePath = blink::WebStringToFilePath(path);
-  std::string buffer;
-  base::ReadFileToString(filePath, &buffer);
-  return SharedBuffer::create(buffer.data(), buffer.size());
-}
-
 void enterRunLoop() {
   base::RunLoop().Run();
 }
@@ -86,6 +82,31 @@ void exitRunLoop() {
 
 void yieldCurrentThread() {
   base::PlatformThread::YieldCurrentThread();
+}
+
+String blinkRootDir() {
+  return FilePathToWebString(blinkRootFilePath());
+}
+
+String webTestDataPath(const String& relativePath) {
+  return FilePathToWebString(
+      blinkRootFilePath()
+          .Append(FILE_PATH_LITERAL("Source/web/tests/data"))
+          .Append(WebStringToFilePath(relativePath)));
+}
+
+String platformTestDataPath(const String& relativePath) {
+  return FilePathToWebString(
+      blinkRootFilePath()
+          .Append(FILE_PATH_LITERAL("Source/platform/testing/data"))
+          .Append(WebStringToFilePath(relativePath)));
+}
+
+PassRefPtr<SharedBuffer> readFromFile(const String& path) {
+  base::FilePath filePath = blink::WebStringToFilePath(path);
+  std::string buffer;
+  base::ReadFileToString(filePath, &buffer);
+  return SharedBuffer::create(buffer.data(), buffer.size());
 }
 
 }  // namespace testing

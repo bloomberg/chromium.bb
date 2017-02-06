@@ -25,6 +25,7 @@
 
 #include "web/LinkHighlightImpl.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
@@ -33,6 +34,7 @@
 #include "core/page/TouchDisambiguation.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebFloatPoint.h"
@@ -49,9 +51,10 @@
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
+
+namespace {
 
 GestureEventWithHitTestResults getTargetedEvent(WebViewImpl* webViewImpl,
                                                 WebGestureEvent& touchEvent) {
@@ -63,16 +66,19 @@ GestureEventWithHitTestResults getTargetedEvent(WebViewImpl* webViewImpl,
       .targetGestureEvent(scaledEvent, true);
 }
 
-TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
-  const std::string baseURL("http://www.test.com/");
-  const std::string fileName("test_touch_link_highlight.html");
-
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(baseURL.c_str()),
+std::string registerMockedURLLoad() {
+  WebURL url = URLTestHelpers::registerMockedURLLoadFromBase(
+      WebString::fromUTF8("http://www.test.com/"), testing::webTestDataPath(),
       WebString::fromUTF8("test_touch_link_highlight.html"));
+  return url.string().utf8();
+}
+
+}  // namespace
+
+TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
+  const std::string url = registerMockedURLLoad();
   FrameTestHelpers::WebViewHelper webViewHelper;
-  WebViewImpl* webViewImpl =
-      webViewHelper.initializeAndLoad(baseURL + fileName, true);
+  WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(url, true);
   int pageWidth = 640;
   int pageHeight = 480;
   webViewImpl->resize(WebSize(pageWidth, pageHeight));
@@ -141,15 +147,10 @@ FakeCompositingWebViewClient* compositingWebViewClient() {
 }  // anonymous namespace
 
 TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
-  const std::string baseURL("http://www.test.com/");
-  const std::string fileName("test_touch_link_highlight.html");
-
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(baseURL.c_str()),
-      WebString::fromUTF8("test_touch_link_highlight.html"));
+  const std::string url = registerMockedURLLoad();
   FrameTestHelpers::WebViewHelper webViewHelper;
-  WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(
-      baseURL + fileName, true, 0, compositingWebViewClient());
+  WebViewImpl* webViewImpl =
+      webViewHelper.initializeAndLoad(url, true, 0, compositingWebViewClient());
 
   int pageWidth = 640;
   int pageHeight = 480;
@@ -189,15 +190,10 @@ TEST(LinkHighlightImplTest, resetLayerTreeView) {
   std::unique_ptr<FakeCompositingWebViewClient> webViewClient =
       WTF::makeUnique<FakeCompositingWebViewClient>();
 
-  const std::string baseURL("http://www.test.com/");
-  const std::string fileName("test_touch_link_highlight.html");
-
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(baseURL.c_str()),
-      WebString::fromUTF8("test_touch_link_highlight.html"));
+  const std::string url = registerMockedURLLoad();
   FrameTestHelpers::WebViewHelper webViewHelper;
-  WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(
-      baseURL + fileName, true, 0, webViewClient.get());
+  WebViewImpl* webViewImpl =
+      webViewHelper.initializeAndLoad(url, true, 0, webViewClient.get());
 
   int pageWidth = 640;
   int pageHeight = 480;
@@ -233,15 +229,10 @@ TEST(LinkHighlightImplTest, resetLayerTreeView) {
 }
 
 TEST(LinkHighlightImplTest, multipleHighlights) {
-  const std::string baseURL("http://www.test.com/");
-  const std::string fileName("test_touch_link_highlight.html");
-
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(baseURL.c_str()),
-      WebString::fromUTF8("test_touch_link_highlight.html"));
+  const std::string url = registerMockedURLLoad();
   FrameTestHelpers::WebViewHelper webViewHelper;
-  WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(
-      baseURL + fileName, true, 0, compositingWebViewClient());
+  WebViewImpl* webViewImpl =
+      webViewHelper.initializeAndLoad(url, true, 0, compositingWebViewClient());
 
   int pageWidth = 640;
   int pageHeight = 480;

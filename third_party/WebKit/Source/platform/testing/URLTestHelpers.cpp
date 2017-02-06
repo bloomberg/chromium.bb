@@ -30,7 +30,11 @@
 
 #include "platform/testing/URLTestHelpers.h"
 
+#include <string>
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "public/platform/FilePathConversion.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
@@ -41,25 +45,25 @@
 namespace blink {
 namespace URLTestHelpers {
 
-void registerMockedURLFromBaseURL(const WebString& baseURL,
-                                  const WebString& fileName,
-                                  const WebString& mimeType) {
+WebURL registerMockedURLLoadFromBase(const WebString& baseURL,
+                                     const WebString& basePath,
+                                     const WebString& fileName,
+                                     const WebString& mimeType) {
   // fullURL = baseURL + fileName.
-  std::string fullString =
+  std::string fullURL =
       std::string(baseURL.utf8().data()) + std::string(fileName.utf8().data());
-  registerMockedURLLoad(toKURL(fullString.c_str()), fileName,
-                        WebString::fromUTF8(""), mimeType);
+
+  // filePath = basePath + ("/" +) fileName.
+  base::FilePath filePath =
+      WebStringToFilePath(basePath).Append(WebStringToFilePath(fileName));
+
+  KURL url = toKURL(fullURL);
+  registerMockedURLLoad(url, FilePathToWebString(filePath), mimeType);
+  return WebURL(url);
 }
 
 void registerMockedURLLoad(const WebURL& fullURL,
-                           const WebString& fileName,
-                           const WebString& mimeType) {
-  registerMockedURLLoad(fullURL, fileName, WebString::fromUTF8(""), mimeType);
-}
-
-void registerMockedURLLoad(const WebURL& fullURL,
-                           const WebString& fileName,
-                           const WebString& relativeBaseDirectory,
+                           const WebString& filePath,
                            const WebString& mimeType) {
   WebURLLoadTiming timing;
   timing.initialize();
@@ -69,8 +73,7 @@ void registerMockedURLLoad(const WebURL& fullURL,
   response.setHTTPStatusCode(200);
   response.setLoadTiming(timing);
 
-  registerMockedURLLoadWithCustomResponse(fullURL, fileName,
-                                          relativeBaseDirectory, response);
+  registerMockedURLLoadWithCustomResponse(fullURL, filePath, response);
 }
 
 void registerMockedErrorURLLoad(const WebURL& fullURL) {
@@ -88,18 +91,9 @@ void registerMockedErrorURLLoad(const WebURL& fullURL) {
       fullURL, response, error);
 }
 
-void registerMockedURLLoadWithCustomResponse(
-    const WebURL& fullURL,
-    const WebString& fileName,
-    const WebString& relativeBaseDirectory,
-    WebURLResponse response) {
-  // Physical file path for the mock =
-  // <webkitRootDir> + relativeBaseDirectory + fileName.
-  String filePath = testing::blinkRootDir();
-  filePath.append("/Source/web/tests/data/");
-  filePath.append(relativeBaseDirectory);
-  filePath.append(fileName);
-
+void registerMockedURLLoadWithCustomResponse(const WebURL& fullURL,
+                                             const WebString& filePath,
+                                             WebURLResponse response) {
   Platform::current()->getURLLoaderMockFactory()->registerURL(fullURL, response,
                                                               filePath);
 }
