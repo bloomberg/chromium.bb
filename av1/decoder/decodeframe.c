@@ -346,7 +346,9 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
   int off;
   const int is_keyframe = 0;
   const int has_dc_skip = 1;
-  int quant_shift = get_tx_scale(bs);
+  /*TODO(tterribe): Handle CONFIG_AOM_HIGHBITDEPTH.*/
+  int coeff_shift = 3 - get_tx_scale(bs);
+  int rounding_mask;
   // DC quantizer for PVQ
   int pvq_dc_quant;
   int lossless = (quant[0] == 0);
@@ -363,40 +365,47 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
   od_raster_to_coding_order(ref_coeff_pvq, blk_size, tx_type, ref_coeff,
                             blk_size);
 
+  assert(OD_COEFF_SHIFT >= 3);
   if (lossless)
     pvq_dc_quant = 1;
   else {
     if (use_activity_masking)
       pvq_dc_quant = OD_MAXI(
-          1, (quant[0] >> quant_shift) *
+          1, (quant[0] << (OD_COEFF_SHIFT - 3)) *
                      dec->state.pvq_qm_q4[pli][od_qm_get_index(bs, 0)] >>
                  4);
     else
-      pvq_dc_quant = OD_MAXI(1, quant[0] >> quant_shift);
+      pvq_dc_quant = OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3));
   }
 
   off = od_qm_offset(bs, xdec);
 
   // copy int16 inputs to int32
-  for (i = 0; i < blk_size * blk_size; i++) ref_int32[i] = ref_coeff_pvq[i];
+  for (i = 0; i < blk_size * blk_size; i++) {
+    ref_int32[i] = ref_coeff_pvq[i] << (OD_COEFF_SHIFT - coeff_shift);
+  }
 
-  od_pvq_decode(dec, ref_int32, out_int32, (int)quant[1] >> quant_shift, pli,
-                bs, OD_PVQ_BETA[use_activity_masking][pli][bs],
+  od_pvq_decode(dec, ref_int32, out_int32, quant[1] << (OD_COEFF_SHIFT - 3),
+                pli, bs, OD_PVQ_BETA[use_activity_masking][pli][bs],
                 OD_ROBUST_STREAM, is_keyframe, &flags, ac_dc_coded,
                 dec->state.qm + off, dec->state.qm_inv + off);
 
-  // copy int32 result back to int16
-  for (i = 0; i < blk_size * blk_size; i++) dqcoeff_pvq[i] = out_int32[i];
-
-  if (!has_dc_skip || dqcoeff_pvq[0]) {
-    dqcoeff_pvq[0] =
+  if (!has_dc_skip || out_int32[0]) {
+    out_int32[0] =
         has_dc_skip + generic_decode(dec->r, &dec->state.adapt.model_dc[pli],
                                      -1, &dec->state.adapt.ex_dc[pli][bs][0], 2,
                                      "dc:mag");
-    if (dqcoeff_pvq[0])
-      dqcoeff_pvq[0] *= aom_read_bit(dec->r, "dc:sign") ? -1 : 1;
+    if (out_int32[0]) out_int32[0] *= aom_read_bit(dec->r, "dc:sign") ? -1 : 1;
   }
-  dqcoeff_pvq[0] = dqcoeff_pvq[0] * pvq_dc_quant + ref_coeff_pvq[0];
+  out_int32[0] = out_int32[0] * pvq_dc_quant + ref_int32[0];
+
+  // copy int32 result back to int16
+  assert(OD_COEFF_SHIFT > coeff_shift);
+  rounding_mask = (1 << (OD_COEFF_SHIFT - coeff_shift - 1)) - 1;
+  for (i = 0; i < blk_size * blk_size; i++) {
+    dqcoeff_pvq[i] = (out_int32[i] + (out_int32[i] < 0) + rounding_mask) >>
+                     (OD_COEFF_SHIFT - coeff_shift);
+  }
 
   od_coding_order_to_raster(dqcoeff, blk_size, tx_type, dqcoeff_pvq, blk_size);
 

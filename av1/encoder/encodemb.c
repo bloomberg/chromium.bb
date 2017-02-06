@@ -1129,7 +1129,9 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
     int tx_size, TX_TYPE tx_type, int *rate, int speed, PVQ_INFO *pvq_info) {
   const int tx_blk_size = tx_size_wide[tx_size];
   PVQ_SKIP_TYPE ac_dc_coded;
-  int quant_shift = get_tx_scale(tx_size);
+  /*TODO(tterribe): Handle CONFIG_AOM_HIGHBITDEPTH.*/
+  int coeff_shift = 3 - get_tx_scale(tx_size);
+  int rounding_mask;
   int pvq_dc_quant;
   int use_activity_masking = daala_enc->use_activity_masking;
   int tell;
@@ -1148,15 +1150,16 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
   DECLARE_ALIGNED(16, int32_t, ref_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
   DECLARE_ALIGNED(16, int32_t, out_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
 
+  assert(OD_COEFF_SHIFT >= 3);
   // DC quantizer for PVQ
   if (use_activity_masking)
     pvq_dc_quant = OD_MAXI(
-        1, (quant[0] >> quant_shift) *
+        1, (quant[0] << (OD_COEFF_SHIFT - 3)) *
                    daala_enc->state.pvq_qm_q4[plane]
                                              [od_qm_get_index(tx_size, 0)] >>
                4);
   else
-    pvq_dc_quant = OD_MAXI(1, quant[0] >> quant_shift);
+    pvq_dc_quant = OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3));
 
   *eob = 0;
 
@@ -1174,8 +1177,8 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
 
   // copy int16 inputs to int32
   for (i = 0; i < tx_blk_size * tx_blk_size; i++) {
-    ref_int32[i] = ref_coeff_pvq[i];
-    in_int32[i] = coeff_pvq[i];
+    ref_int32[i] = ref_coeff_pvq[i] << (OD_COEFF_SHIFT - coeff_shift);
+    in_int32[i] = coeff_pvq[i] << (OD_COEFF_SHIFT - coeff_shift);
   }
 
 #if PVQ_CHROMA_RD
@@ -1192,8 +1195,8 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
 
   ac_dc_coded = od_pvq_encode(
       daala_enc, ref_int32, in_int32, out_int32,
-      (int)quant[0] >> quant_shift,  // scale/quantizer
-      (int)quant[1] >> quant_shift,  // scale/quantizer
+      quant[0] << (OD_COEFF_SHIFT - 3),  // scale/quantizer
+      quant[1] << (OD_COEFF_SHIFT - 3),  // scale/quantizer
       plane, tx_size, OD_PVQ_BETA[use_activity_masking][plane][tx_size],
       OD_ROBUST_STREAM,
       0,        // is_keyframe,
@@ -1220,7 +1223,12 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(
   out_int32[0] += ref_int32[0];
 
   // copy int32 result back to int16
-  for (i = 0; i < tx_blk_size * tx_blk_size; i++) dqcoeff_pvq[i] = out_int32[i];
+  assert(OD_COEFF_SHIFT > coeff_shift);
+  rounding_mask = (1 << (OD_COEFF_SHIFT - coeff_shift - 1)) - 1;
+  for (i = 0; i < tx_blk_size * tx_blk_size; i++) {
+    dqcoeff_pvq[i] = (out_int32[i] + (out_int32[i] < 0) + rounding_mask) >>
+                     (OD_COEFF_SHIFT - coeff_shift);
+  }
 
   // Back to original coefficient order
   od_coding_order_to_raster(dqcoeff, tx_blk_size, tx_type, dqcoeff_pvq,
