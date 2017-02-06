@@ -15,10 +15,10 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "third_party/re2/src/re2/stringpiece.h"
@@ -115,8 +115,9 @@ void SendLocalFileResourceWithOrigin(
   fullpath = fullpath.AppendASCII(kBasePath).AppendASCII(path);
   content::URLDataSource::GotDataCallback wrapper =
       base::Bind(&CheckLocalIncludes, callback);
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&ReadFileAndReturn, fullpath),
       base::Bind(&CallbackWithLoadedResource, origin, wrapper));
 }
