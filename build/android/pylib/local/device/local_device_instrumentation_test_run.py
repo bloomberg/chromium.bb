@@ -293,7 +293,8 @@ class LocalDeviceInstrumentationTestRun(
     results = self._test_instance.GenerateTestResults(
         result_code, result_bundle, statuses, start_ms, duration_ms)
     for result in results:
-      result.SetLink('logcat', logcat_url)
+      if logcat_url:
+        result.SetLink('logcat', logcat_url)
 
     # Update the result name if the test used flags.
     if flags:
