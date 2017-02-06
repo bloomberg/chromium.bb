@@ -19,11 +19,11 @@ function registration_tests(register_method, check_error_types) {
       var scope = 'resources/registration/normal';
       return register_method(script, {scope: scope})
         .then(function(registration) {
-            assert_equals(registration.constructor.name,
-                          'ServiceWorkerRegistration',
-                          'Successfully registered.');
-            service_worker_unregister_and_done(t, scope);
-          })
+            assert_true(
+              registration instanceof ServiceWorkerRegistration,
+              'Successfully registered.');
+            return registration.unregister();
+          });
     }, 'Registering normal scope');
 
   promise_test(function(t) {
@@ -31,15 +31,15 @@ function registration_tests(register_method, check_error_types) {
       var scope = 'resources/registration/scope-with-fragment#ref';
       return register_method(script, {scope: scope})
         .then(function(registration) {
-            assert_equals(registration.constructor.name,
-                          'ServiceWorkerRegistration',
-                          'Successfully registered.');
+            assert_true(
+              registration instanceof ServiceWorkerRegistration,
+              'Successfully registered.');
             assert_equals(
               registration.scope,
               normalizeURL('resources/registration/scope-with-fragment'),
               'A fragment should be removed from scope')
-            service_worker_unregister_and_done(t, scope);
-          })
+            return registration.unregister();
+          });
     }, 'Registering scope with fragment');
 
   promise_test(function(t) {
@@ -47,11 +47,11 @@ function registration_tests(register_method, check_error_types) {
       var scope = 'resources/';
       return register_method(script, {scope: scope})
         .then(function(registration) {
-            assert_equals(registration.constructor.name,
-                          'ServiceWorkerRegistration',
-                          'Successfully registered.');
-            service_worker_unregister_and_done(t, scope);
-          })
+            assert_true(
+              registration instanceof ServiceWorkerRegistration,
+              'Successfully registered.');
+            return registration.unregister();
+          });
     }, 'Registering same scope as the script directory');
 
   promise_test(function(t) {
@@ -98,12 +98,11 @@ function registration_tests(register_method, check_error_types) {
       return promise_rejects(t,
           check_error_types ? new TypeError : null,
           register_method(script, {scope: scope}),
-          navigator.serviceWorker.register(script, {scope: scope}),
           'Registration of non-existent script should fail.');
     }, 'Registering non-existent script');
 
   promise_test(function(t) {
-      var script = 'resources/invalid-chunked-encoding.php';
+      var script = 'resources/invalid-chunked-encoding.py';
       var scope = 'resources/scope/invalid-chunked-encoding/';
       return promise_rejects(t,
           check_error_types ? new TypeError : null,
@@ -112,7 +111,7 @@ function registration_tests(register_method, check_error_types) {
     }, 'Registering invalid chunked encoding script');
 
   promise_test(function(t) {
-      var script = 'resources/invalid-chunked-encoding-with-flush.php';
+      var script = 'resources/invalid-chunked-encoding-with-flush.py';
       var scope = 'resources/scope/invalid-chunked-encoding-with-flush/';
       return promise_rejects(t,
           check_error_types ? new TypeError : null,
@@ -121,7 +120,7 @@ function registration_tests(register_method, check_error_types) {
     }, 'Registering invalid chunked encoding script with flush');
 
   promise_test(function(t) {
-      var script = 'resources/mime-type-worker.php';
+      var script = 'resources/mime-type-worker.py';
       var scope = 'resources/scope/no-mime-type-worker/';
       return promise_rejects(t,
           check_error_types ? 'SecurityError' : null,
@@ -130,7 +129,7 @@ function registration_tests(register_method, check_error_types) {
     }, 'Registering script with no MIME type');
 
   promise_test(function(t) {
-      var script = 'resources/mime-type-worker.php?mime=text/plain';
+      var script = 'resources/mime-type-worker.py?mime=text/plain';
       var scope = 'resources/scope/bad-mime-type-worker/';
       return promise_rejects(t,
           check_error_types ? 'SecurityError' : null,
@@ -139,7 +138,7 @@ function registration_tests(register_method, check_error_types) {
     }, 'Registering script with bad MIME type');
 
   promise_test(function(t) {
-      var script = 'resources/redirect.php?Redirect=' +
+      var script = 'resources/redirect.py?Redirect=' +
                     encodeURIComponent('/resources/registration-worker.js');
       var scope = 'resources/scope/redirect/';
       return promise_rejects(t,
@@ -149,7 +148,7 @@ function registration_tests(register_method, check_error_types) {
     }, 'Registering redirected script');
 
   promise_test(function(t) {
-      var script = 'resources/malformed-worker.php?parse-error';
+      var script = 'resources/malformed-worker.py?parse-error';
       var scope = 'resources/scope/parse-error';
       return promise_rejects(t,
           check_error_types ? new TypeError : null,
@@ -158,7 +157,7 @@ function registration_tests(register_method, check_error_types) {
     }, 'Registering script including parse error');
 
   promise_test(function(t) {
-      var script = 'resources/malformed-worker.php?undefined-error';
+      var script = 'resources/malformed-worker.py?undefined-error';
       var scope = 'resources/scope/undefined-error';
       return promise_rejects(t,
           check_error_types ? new TypeError : null,
@@ -167,7 +166,7 @@ function registration_tests(register_method, check_error_types) {
     }, 'Registering script including undefined error');
 
   promise_test(function(t) {
-      var script = 'resources/malformed-worker.php?uncaught-exception';
+      var script = 'resources/malformed-worker.py?uncaught-exception';
       var scope = 'resources/scope/uncaught-exception';
       return promise_rejects(t,
           check_error_types ? new TypeError : null,
@@ -176,19 +175,19 @@ function registration_tests(register_method, check_error_types) {
     }, 'Registering script including uncaught exception');
 
   promise_test(function(t) {
-      var script = 'resources/malformed-worker.php?caught-exception';
+      var script = 'resources/malformed-worker.py?caught-exception';
       var scope = 'resources/scope/caught-exception';
       return register_method(script, {scope: scope})
-          .then(function(registration) {
-              assert_equals(registration.constructor.name,
-                            'ServiceWorkerRegistration',
-                            'Successfully registered.');
-              service_worker_unregister_and_done(t, scope);
-            })
+        .then(function(registration) {
+            assert_true(
+              registration instanceof ServiceWorkerRegistration,
+              'Successfully registered.');
+            return registration.unregister();
+          });
     }, 'Registering script including caught exception');
 
   promise_test(function(t) {
-      var script = 'resources/malformed-worker.php?import-malformed-script';
+      var script = 'resources/malformed-worker.py?import-malformed-script';
       var scope = 'resources/scope/import-malformed-script';
       return promise_rejects(t,
           check_error_types ? new TypeError : null,
@@ -197,7 +196,7 @@ function registration_tests(register_method, check_error_types) {
     }, 'Registering script importing malformed script');
 
   promise_test(function(t) {
-      var script = 'resources/malformed-worker.php?import-no-such-script';
+      var script = 'resources/malformed-worker.py?import-no-such-script';
       var scope = 'resources/scope/import-no-such-script';
       return promise_rejects(t,
           check_error_types ? new TypeError : null,
@@ -216,7 +215,7 @@ function registration_tests(register_method, check_error_types) {
               registration.scope,
               normalizeURL(scope),
               'URL-encoded multibyte characters should be available.');
-            service_worker_unregister_and_done(t, scope);
+            return registration.unregister();
           });
     }, 'Scope including URL-encoded multibyte characters');
 
@@ -231,7 +230,7 @@ function registration_tests(register_method, check_error_types) {
               registration.scope,
               normalizeURL(scope),
               'Non-URL-encoded multibyte characters should be available.');
-            service_worker_unregister_and_done(t, scope);
+            return registration.unregister();
           });
     }, 'Scope including non-escaped multibyte characters');
 
@@ -298,7 +297,7 @@ function registration_tests(register_method, check_error_types) {
               get_newest_worker(registration).scriptURL,
               normalizeURL('resources/empty-worker.js'),
               'Script URL including self-reference should be normalized.');
-            service_worker_unregister_and_done(t, scope);
+            return registration.unregister();
           });
     }, 'Script URL including self-reference');
 
@@ -311,7 +310,7 @@ function registration_tests(register_method, check_error_types) {
               registration.scope,
               normalizeURL('resources/scope/self-reference-in-scope'),
               'Scope including self-reference should be normalized.');
-            service_worker_unregister_and_done(t, scope);
+            return registration.unregister();
           });
     }, 'Scope including self-reference');
 
@@ -324,7 +323,7 @@ function registration_tests(register_method, check_error_types) {
               get_newest_worker(registration).scriptURL,
               normalizeURL('resources/empty-worker.js'),
               'Script URL including parent-reference should be normalized.');
-            service_worker_unregister_and_done(t, scope);
+            return registration.unregister();
           });
     }, 'Script URL including parent-reference');
 
@@ -337,7 +336,7 @@ function registration_tests(register_method, check_error_types) {
               registration.scope,
               normalizeURL('resources/scope/parent-reference-in-scope'),
               'Scope including parent-reference should be normalized.');
-            service_worker_unregister_and_done(t, scope);
+            return registration.unregister();
           });
     }, 'Scope including parent-reference');
 
@@ -371,7 +370,7 @@ function registration_tests(register_method, check_error_types) {
               registration.scope,
               normalizeURL(scope),
               'Should successfully be registered.');
-            service_worker_unregister_and_done(t, scope);
+            return registration.unregister();
           })
     }, 'Scope including consecutive slashes');
 

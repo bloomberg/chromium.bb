@@ -3787,6 +3787,11 @@
      {}
     ]
    ],
+   "./MANIFEST.json": [
+    [
+     {}
+    ]
+   ],
    "./README.md": [
     [
      {}
@@ -15113,6 +15118,11 @@
     ]
    ],
    "service-workers/service-worker/resources/register-closed-window-iframe.html": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/registration-tests.js": [
     [
      {}
     ]
@@ -30458,6 +30468,12 @@
      {}
     ]
    ],
+   "service-workers/service-worker/register-link-element.https.html": [
+    [
+     "/service-workers/service-worker/register-link-element.https.html",
+     {}
+    ]
+   ],
    "service-workers/service-worker/register-same-scope-different-script-url.https.html": [
     [
      "/service-workers/service-worker/register-same-scope-different-script-url.https.html",
@@ -34433,6 +34449,10 @@
   ],
   "./LICENSE.md": [
    "89af73c41d456ee93bd40921e96414c1908fc48c",
+   "support"
+  ],
+  "./MANIFEST.json": [
+   "3364d99562a170daf89ad09865f224bc7813fb9e",
    "support"
   ],
   "./README.md": [
@@ -52615,6 +52635,10 @@
    "864f5435fc40124dbe2c1ffb0e1942fee58228d2",
    "testharness"
   ],
+  "service-workers/service-worker/register-link-element.https.html": [
+   "fcd2a244ad1f12c954c231c479f89beaa3c145e6",
+   "testharness"
+  ],
   "service-workers/service-worker/register-same-scope-different-script-url.https.html": [
    "7c32948fe5ff738a38b08ff2d2497ddb63f0a8ef",
    "testharness"
@@ -52648,7 +52672,7 @@
    "testharness"
   ],
   "service-workers/service-worker/registration.https.html": [
-   "9e21fc312a4aae93fcaf6013d20bd38c2cefc9cf",
+   "0a06c368a14c008c385c9df3cde35f090d96d58b",
    "testharness"
   ],
   "service-workers/service-worker/rejections.https.html": [
@@ -53085,6 +53109,10 @@
   ],
   "service-workers/service-worker/resources/register-closed-window-iframe.html": [
    "18ee27c8d6a5497bf16b3315ba9eee2b474154b5",
+   "support"
+  ],
+  "service-workers/service-worker/resources/registration-tests.js": [
+   "5588535a80930c1d526d3b94ec7930a191d729db",
    "support"
   ],
   "service-workers/service-worker/resources/registration-worker.js": [
