@@ -40,6 +40,7 @@ class DiscardableSharedMemoryManager;
 }
 
 namespace media {
+class AudioSystem;
 #if defined(OS_WIN)
 class SystemMessageWindowWin;
 #elif defined(OS_LINUX) && defined(USE_UDEV)
@@ -137,6 +138,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   int GetResultCode() const { return result_code_; }
 
   media::AudioManager* audio_manager() const { return audio_manager_.get(); }
+  media::AudioSystem* audio_system() const { return audio_system_.get(); }
   MediaStreamManager* media_stream_manager() const {
     return media_stream_manager_.get();
   }
@@ -295,6 +297,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   // AudioThread needs to outlive |audio_manager_|.
   std::unique_ptr<AudioManagerThread> audio_thread_;
   media::ScopedAudioManagerPtr audio_manager_;
+  // Calls to |audio_system_| must not be posted to the audio thread if it
+  // differs from the UI one.
+  std::unique_ptr<media::AudioSystem> audio_system_;
 
   std::unique_ptr<midi::MidiService> midi_service_;
 

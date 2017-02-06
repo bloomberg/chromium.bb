@@ -61,8 +61,10 @@ SpeechRecognitionManagerImpl* SpeechRecognitionManagerImpl::GetInstance() {
 }
 
 SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl(
+    media::AudioSystem* audio_system,
     MediaStreamManager* media_stream_manager)
-    : media_stream_manager_(media_stream_manager),
+    : audio_system_(audio_system),
+      media_stream_manager_(media_stream_manager),
       primary_session_id_(kSessionIDInvalid),
       last_session_id_(kSessionIDInvalid),
       is_dispatching_event_(false),
@@ -130,11 +132,8 @@ int SpeechRecognitionManagerImpl::CreateSession(
   google_remote_engine->SetConfig(remote_engine_config);
 
   session->recognizer = new SpeechRecognizerImpl(
-      this,
-      session_id,
-      config.continuous,
-      config.interim_results,
-      google_remote_engine);
+      this, audio_system_, session_id, config.continuous,
+      config.interim_results, google_remote_engine);
 #else
   session->recognizer = new SpeechRecognizerImplAndroid(this, session_id);
 #endif

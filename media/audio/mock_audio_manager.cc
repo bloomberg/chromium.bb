@@ -10,6 +10,19 @@
 
 namespace media {
 
+void MockAudioManager::Deleter::operator()(
+    const MockAudioManager* instance) const {
+  CHECK(instance);
+  if (instance->GetTaskRunner()->BelongsToCurrentThread()) {
+    delete instance;
+    return;
+  }
+  // AudioManager must be destroyed on the audio thread.
+  if (!instance->GetTaskRunner()->DeleteSoon(FROM_HERE, instance)) {
+    LOG(WARNING) << "Failed to delete AudioManager instance.";
+  }
+}
+
 MockAudioManager::MockAudioManager(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : AudioManager(task_runner, task_runner) {}
@@ -18,14 +31,17 @@ MockAudioManager::~MockAudioManager() {
 }
 
 bool MockAudioManager::HasAudioOutputDevices() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   return true;
 }
 
 bool MockAudioManager::HasAudioInputDevices() {
-  return true;
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  return has_input_devices_;
 }
 
 base::string16 MockAudioManager::GetAudioInputDeviceModel() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   return base::string16();
 }
 
@@ -33,10 +49,14 @@ void MockAudioManager::ShowAudioInputSettings() {
 }
 
 void MockAudioManager::GetAudioInputDeviceDescriptions(
-    AudioDeviceDescriptions* device_descriptions) {}
+    AudioDeviceDescriptions* device_descriptions) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+}
 
 void MockAudioManager::GetAudioOutputDeviceDescriptions(
-    AudioDeviceDescriptions* device_descriptions) {}
+    AudioDeviceDescriptions* device_descriptions) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+}
 
 media::AudioOutputStream* MockAudioManager::MakeAudioOutputStream(
     const media::AudioParameters& params,
@@ -75,16 +95,19 @@ AudioParameters MockAudioManager::GetDefaultOutputStreamParameters() {
 
 AudioParameters MockAudioManager::GetOutputStreamParameters(
       const std::string& device_id) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   return AudioParameters();
 }
 
 AudioParameters MockAudioManager::GetInputStreamParameters(
     const std::string& device_id) {
-  return AudioParameters();
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  return input_params_;
 }
 
 std::string MockAudioManager::GetAssociatedOutputDeviceID(
     const std::string& input_device_id) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   return std::string();
 }
 
@@ -95,6 +118,15 @@ std::unique_ptr<AudioLog> MockAudioManager::CreateAudioLog(
 
 const char* MockAudioManager::GetName() {
   return nullptr;
+}
+
+void MockAudioManager::SetInputStreamParameters(
+    const AudioParameters& input_params) {
+  input_params_ = input_params;
+}
+
+void MockAudioManager::SetHasInputDevices(bool has_input_devices) {
+  has_input_devices_ = has_input_devices;
 }
 
 }  // namespace media.

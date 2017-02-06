@@ -92,6 +92,7 @@
 #include "device/battery/battery_status_service.h"
 #include "device/gamepad/gamepad_service.h"
 #include "device/sensors/device_sensor_service.h"
+#include "media/audio/audio_system_impl.h"
 #include "media/base/media.h"
 #include "media/base/user_input_monitor.h"
 #include "media/midi/midi_service.h"
@@ -1539,8 +1540,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   {
     TRACE_EVENT0("startup",
       "BrowserMainLoop::BrowserThreadsStarted:InitSpeechRecognition");
-    speech_recognition_manager_.reset(
-        new SpeechRecognitionManagerImpl(media_stream_manager_.get()));
+    speech_recognition_manager_.reset(new SpeechRecognitionManagerImpl(
+        audio_system_.get(), media_stream_manager_.get()));
   }
 
   {
@@ -1799,6 +1800,9 @@ void BrowserMainLoop::CreateAudioManager() {
         MediaInternals::GetInstance());
   }
   CHECK(audio_manager_);
+
+  audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
+  CHECK(audio_system_);
 }
 
 }  // namespace content

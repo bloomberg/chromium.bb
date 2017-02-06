@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_MOCK_AUDIO_MANAGER_H_
 
 #include "base/macros.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "media/audio/audio_manager.h"
 
 namespace media {
@@ -14,8 +15,15 @@ namespace media {
 // which avoids to use the actual (system and platform dependent) AudioManager.
 // Some bots does not have input devices, thus using the actual AudioManager
 // would causing failures on classes which expect that.
-class MockAudioManager : public media::AudioManager {
+class MockAudioManager : public AudioManager {
  public:
+  class Deleter {
+   public:
+    void operator()(const MockAudioManager* instance) const;
+  };
+
+  using UniquePtr = std::unique_ptr<MockAudioManager, Deleter>;
+
   explicit MockAudioManager(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -33,16 +41,16 @@ class MockAudioManager : public media::AudioManager {
   void GetAudioOutputDeviceDescriptions(
       media::AudioDeviceDescriptions* device_descriptions) override;
 
-  media::AudioOutputStream* MakeAudioOutputStream(
+  AudioOutputStream* MakeAudioOutputStream(
       const media::AudioParameters& params,
       const std::string& device_id,
       const LogCallback& log_callback) override;
 
-  media::AudioOutputStream* MakeAudioOutputStreamProxy(
+  AudioOutputStream* MakeAudioOutputStreamProxy(
       const media::AudioParameters& params,
       const std::string& device_id) override;
 
-  media::AudioInputStream* MakeAudioInputStream(
+  AudioInputStream* MakeAudioInputStream(
       const media::AudioParameters& params,
       const std::string& device_id,
       const LogCallback& log_callback) override;
@@ -63,10 +71,18 @@ class MockAudioManager : public media::AudioManager {
 
   const char* GetName() override;
 
+  // Setters to emulate desired in-test behavior.
+  void SetInputStreamParameters(const AudioParameters& input_params);
+  void SetHasInputDevices(bool has_input_devices);
+
  protected:
   ~MockAudioManager() override;
 
  private:
+  friend class base::DeleteHelper<MockAudioManager>;
+  AudioParameters input_params_;
+  bool has_input_devices_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
 };
 
