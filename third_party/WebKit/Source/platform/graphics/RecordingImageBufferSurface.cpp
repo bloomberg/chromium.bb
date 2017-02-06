@@ -104,8 +104,9 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas(
   }
 
   if (m_currentFrame) {
-    m_currentFrame->finishRecordingAsPicture()->playback(
-        m_fallbackSurface->canvas());
+    sk_sp<PaintRecord> record = m_currentFrame->finishRecordingAsPicture();
+    if (record)
+      record->playback(m_fallbackSurface->canvas());
     m_currentFrame.reset();
   }
 
