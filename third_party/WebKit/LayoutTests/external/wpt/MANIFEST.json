@@ -649,6 +649,12 @@
      {}
     ]
    ],
+   "pointerevents/pointerlock/pointerevent_movementxy-manual.html": [
+    [
+     "/pointerevents/pointerlock/pointerevent_movementxy-manual.html",
+     {}
+    ]
+   ],
    "selection/dir-manual.html": [
     [
      "/selection/dir-manual.html",
@@ -3902,6 +3908,11 @@
     ]
    ],
    "FileAPI/support/upload.txt": [
+    [
+     {}
+    ]
+   ],
+   "FileAPI/support/url-origin.html": [
     [
      {}
     ]
@@ -13976,7 +13987,17 @@
      {}
     ]
    ],
+   "navigation-timing/idlharness-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "navigation-timing/nav2_data_uri.html": [
+    [
+     {}
+    ]
+   ],
+   "navigation-timing/nav2_idlharness-expected.txt": [
     [
      {}
     ]
@@ -14042,6 +14063,11 @@
     ]
    ],
    "pointerevents/pointerevent_support.js": [
+    [
+     {}
+    ]
+   ],
+   "pointerevents/pointerlock/resources/pointerevent_movementxy-iframe.html": [
     [
      {}
     ]
@@ -17185,6 +17211,12 @@
    "FileAPI/reading-data-section/filereader_result.html": [
     [
      "/FileAPI/reading-data-section/filereader_result.html",
+     {}
+    ]
+   ],
+   "FileAPI/url/origin.sub.html": [
+    [
+     "/FileAPI/url/origin.sub.html",
      {}
     ]
    ],
@@ -22087,6 +22119,12 @@
    "hr-time/test_cross_frame_start.html": [
     [
      "/hr-time/test_cross_frame_start.html",
+     {}
+    ]
+   ],
+   "hr-time/window-worker-time-origin.html": [
+    [
+     "/hr-time/window-worker-time-origin.html",
      {}
     ]
    ],
@@ -34597,6 +34635,14 @@
    "f7ff9e8b7bb2e09b70935a5d785e0cc5d9d0abf0",
    "support"
   ],
+  "FileAPI/support/url-origin.html": [
+   "18972f4ed024eb5e1494ac466426ae32b3f5525f",
+   "support"
+  ],
+  "FileAPI/url/origin.sub.html": [
+   "427ede39094dacc910250495bc39ae5ad5826279",
+   "testharness"
+  ],
   "FileAPI/url/url_createobjecturl_blob.html": [
    "bfd9cbe17c74e7b181156c47228beb694d8375af",
    "testharness"
@@ -39050,7 +39096,7 @@
    "support"
   ],
   "hr-time/idlharness.html": [
-   "3767c5eb13de996ea4c1538ee87a11be9431eb24",
+   "b56993b32650d40226e08beee147bc28c76cfa22",
    "testharness"
   ],
   "hr-time/monotonic-clock.html": [
@@ -39063,6 +39109,10 @@
   ],
   "hr-time/test_cross_frame_start.html": [
    "289c39cd0c74f3ca28fe5087b75ef01135396594",
+   "testharness"
+  ],
+  "hr-time/window-worker-time-origin.html": [
+   "556079c9d81c55df55c69738384991d31cad2c77",
    "testharness"
   ],
   "html-imports/document/document-method-changes.html": [
@@ -51089,12 +51139,20 @@
    "2907c67a3ab9c22ba98f03acf16adc2f2b31ee30",
    "testharness"
   ],
+  "navigation-timing/idlharness-expected.txt": [
+   "306b63ff98511e156b27df4b6c0b2c65be597a39",
+   "support"
+  ],
   "navigation-timing/idlharness.html": [
    "12635e5ffcc457a3db40ec483ea724f60a2ef59f",
    "testharness"
   ],
   "navigation-timing/nav2_data_uri.html": [
    "b5f72095f600b8a840c0b3d8048e863ab5fbf215",
+   "support"
+  ],
+  "navigation-timing/nav2_idlharness-expected.txt": [
+   "74c2dd20ecb939ba357339312ff83cfc7dbd16d8",
    "support"
   ],
   "navigation-timing/nav2_idlharness.html": [
@@ -51446,7 +51504,7 @@
    "support"
   ],
   "pointerevents/pointerevent_support.js": [
-   "9acc7b1287ff2ff9fd663e109f407a2ac599d9f1",
+   "2b8c7b6d0917b9cc624735b7dc1105a732f9b3f4",
    "support"
   ],
   "pointerevents/pointerevent_suppress_compat_events_on_click-manual.html": [
@@ -51552,6 +51610,14 @@
   "pointerevents/pointerevent_touch-action-verification.html": [
    "c2c952d562f601f2104014f6236368a7f6b84801",
    "testharness"
+  ],
+  "pointerevents/pointerlock/pointerevent_movementxy-manual.html": [
+   "09da177c312d4112bc0177221cccaf787455db7e",
+   "manual"
+  ],
+  "pointerevents/pointerlock/resources/pointerevent_movementxy-iframe.html": [
+   "829b27c2a0f9281d65f7e2d760c7204781c71660",
+   "support"
   ],
   "pointerevents/resources/pointerevent_attributes_hoverable_pointers-iframe.html": [
    "12b9d7e5634989c031842792c3fd054983d5fddd",
