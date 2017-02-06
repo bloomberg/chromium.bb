@@ -144,9 +144,9 @@ history::DownloadRow GetDownloadRow(
 }
 
 enum class ShouldUpdateHistoryResult {
-    NO,
-    UPDATE,
-    UPDATE_IMMEDIATELY,
+  NO_UPDATE,
+  UPDATE,
+  UPDATE_IMMEDIATELY,
 };
 
 ShouldUpdateHistoryResult ShouldUpdateHistory(
@@ -181,7 +181,7 @@ ShouldUpdateHistoryResult ShouldUpdateHistory(
     return ShouldUpdateHistoryResult::UPDATE;
   }
 
-  return ShouldUpdateHistoryResult::NO;
+  return ShouldUpdateHistoryResult::NO_UPDATE;
 }
 
 typedef std::vector<history::DownloadRow> InfoVector;
@@ -430,7 +430,8 @@ void DownloadHistory::OnDownloadUpdated(
   history::DownloadRow current_info(GetDownloadRow(item));
   ShouldUpdateHistoryResult should_update_result =
       ShouldUpdateHistory(data->info(), current_info);
-  bool should_update = (should_update_result != ShouldUpdateHistoryResult::NO);
+  bool should_update =
+      (should_update_result != ShouldUpdateHistoryResult::NO_UPDATE);
   UMA_HISTOGRAM_ENUMERATION("Download.HistoryPropagatedUpdate",
                             should_update, 2);
   if (should_update) {
