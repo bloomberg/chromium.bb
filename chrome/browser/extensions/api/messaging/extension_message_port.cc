@@ -8,7 +8,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -58,11 +58,10 @@ class ExtensionMessagePort::FrameTracker : public content::WebContentsObserver,
     port_->UnregisterFrame(render_frame_host);
   }
 
-  void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
-                           const content::LoadCommittedDetails& details,
-                           const content::FrameNavigateParams&) override {
-    if (!details.is_in_page)
-      port_->UnregisterFrame(render_frame_host);
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->HasCommitted() && !navigation_handle->IsSamePage())
+      port_->UnregisterFrame(navigation_handle->GetRenderFrameHost());
   }
 
   void DidDetachInterstitialPage() override {
