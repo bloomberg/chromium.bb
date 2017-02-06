@@ -302,6 +302,9 @@ void MetricsLog::RecordStabilityMetrics(
 
 void MetricsLog::RecordGeneralMetrics(
     const std::vector<MetricsProvider*>& metrics_providers) {
+  if (local_state_->GetBoolean(prefs::kMetricsResetIds))
+    UMA_HISTOGRAM_BOOLEAN("UMA.IsClonedInstall", true);
+
   for (size_t i = 0; i < metrics_providers.size(); ++i)
     metrics_providers[i]->ProvideGeneralMetrics(uma_proto());
 }
