@@ -1098,6 +1098,9 @@ bool RenderFrameHostManager::ShouldTransitionCrossSite() {
   // TODO(nick): Move all handling of kSingleProcess/kProcessPerTab into
   // SiteIsolationPolicy so we have a consistent behavior around the interaction
   // of the process model flags.
+  //
+  // TODO(creis, alexmos): This looks like it will break single-process and
+  // process-per-tab.  See https://crbug.com/688617.
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return true;
 
