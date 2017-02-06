@@ -87,10 +87,6 @@ class AppMenuButton : public views::MenuButton {
   // Our owning toolbar view.
   ToolbarView* toolbar_view_;
 
-  // Whether or not we should allow dragging extension icons onto this button
-  // (in order to open the overflow in the app menu).
-  bool allow_extension_dragging_;
-
   // Listeners to call when the menu opens.
   base::ObserverList<views::MenuListener> menu_listeners_;
 

@@ -29,7 +29,6 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "extensions/common/feature_switch.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
@@ -80,9 +79,6 @@ class ToolbarViewInteractiveUITest : public ExtensionBrowserTest {
 
   // The drag-and-drop background thread.
   std::unique_ptr<base::Thread> dnd_thread_;
-
-  // Override the extensions-action-redesign switch.
-  std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> feature_override_;
 };
 
 ToolbarViewInteractiveUITest::ToolbarViewInteractiveUITest()
@@ -147,10 +143,6 @@ void ToolbarViewInteractiveUITest::FinishDragAndDrop(
 void ToolbarViewInteractiveUITest::SetUpCommandLine(
     base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
-  // We do this before the rest of the setup because it can affect how the views
-  // are constructed.
-  feature_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
-      extensions::FeatureSwitch::extension_action_redesign(), true));
   ToolbarActionsBar::disable_animations_for_testing_ = true;
   AppMenuButton::g_open_app_immediately_for_testing = true;
 }

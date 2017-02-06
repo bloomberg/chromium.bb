@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/theme_resources.h"
-#include "extensions/common/feature_switch.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
@@ -38,8 +37,6 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
       severity_(AppMenuIconController::Severity::NONE),
       type_(AppMenuIconController::IconType::NONE),
       toolbar_view_(toolbar_view),
-      allow_extension_dragging_(
-          extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
       margin_trailing_(0),
       weak_factory_(this) {
   SetInkDropMode(InkDropMode::ON);
@@ -188,26 +185,19 @@ gfx::Rect AppMenuButton::GetThemePaintRect() const {
 bool AppMenuButton::GetDropFormats(
     int* formats,
     std::set<ui::Clipboard::FormatType>* format_types) {
-  return allow_extension_dragging_ ?
-      BrowserActionDragData::GetDropFormats(format_types) :
-      views::View::GetDropFormats(formats, format_types);
+  return BrowserActionDragData::GetDropFormats(format_types);
 }
 
 bool AppMenuButton::AreDropTypesRequired() {
-  return allow_extension_dragging_ ?
-      BrowserActionDragData::AreDropTypesRequired() :
-      views::View::AreDropTypesRequired();
+  return BrowserActionDragData::AreDropTypesRequired();
 }
 
 bool AppMenuButton::CanDrop(const ui::OSExchangeData& data) {
-  return allow_extension_dragging_ ?
-      BrowserActionDragData::CanDrop(data,
-                                     toolbar_view_->browser()->profile()) :
-      views::View::CanDrop(data);
+  return BrowserActionDragData::CanDrop(data,
+                                        toolbar_view_->browser()->profile());
 }
 
 void AppMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
-  DCHECK(allow_extension_dragging_);
   DCHECK(!weak_factory_.HasWeakPtrs());
   if (!g_open_app_immediately_for_testing) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -220,16 +210,13 @@ void AppMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
 }
 
 int AppMenuButton::OnDragUpdated(const ui::DropTargetEvent& event) {
-  DCHECK(allow_extension_dragging_);
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
 void AppMenuButton::OnDragExited() {
-  DCHECK(allow_extension_dragging_);
   weak_factory_.InvalidateWeakPtrs();
 }
 
 int AppMenuButton::OnPerformDrop(const ui::DropTargetEvent& event) {
-  DCHECK(allow_extension_dragging_);
   return ui::DragDropTypes::DRAG_MOVE;
 }
