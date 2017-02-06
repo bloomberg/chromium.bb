@@ -13,14 +13,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
-#import "ios/clean/chrome/browser/tab_model/tab_group.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_container_coordinator.h"
-#import "ios/clean/chrome/browser/web/web_mediator.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -34,14 +32,16 @@
 @interface TabGridCoordinator ()<TabGridDataSource,
                                  SettingsCommands,
                                  TabCommands,
-                                 TabGridCommands>
-@property(nonatomic, strong) TabGroup* tabGroup;
+                                 TabGridCommands> {
+  std::vector<std::unique_ptr<web::WebState>> _webStates;
+  size_t _activeWebStateIndex;
+}
+
 @property(nonatomic, strong) TabGridViewController* viewController;
 @property(nonatomic, weak) SettingsCoordinator* settingsCoordinator;
 @end
 
 @implementation TabGridCoordinator
-@synthesize tabGroup = _tabGroup;
 @synthesize viewController = _viewController;
 @synthesize settingsCoordinator = _settingsCoordinator;
 
@@ -49,9 +49,14 @@
 
 - (void)setBrowserState:(ios::ChromeBrowserState*)browserState {
   [super setBrowserState:browserState];
-  // PLACEHOLDER: Generate a tab group with four empty tabs.
-  self.tabGroup =
-      [TabGroup tabGroupWithEmptyTabCount:7 forBrowserState:self.browserState];
+
+  for (int i = 0; i < 7; i++) {
+    web::WebState::CreateParams webStateCreateParams(browserState);
+    std::unique_ptr<web::WebState> webState =
+        web::WebState::Create(webStateCreateParams);
+    _webStates.push_back(std::move(webState));
+  }
+  _activeWebStateIndex = 0;
 }
 
 #pragma mark - BrowserCoordinator
@@ -74,12 +79,14 @@
 #pragma mark - TabGridDataSource
 
 - (NSUInteger)numberOfTabsInTabGrid {
-  return self.tabGroup.count;
+  return static_cast<NSUInteger>(_webStates.size());
 }
 
 - (NSString*)titleAtIndex:(NSInteger)index {
-  WebMediator* tab = [self.tabGroup tabAtIndex:index];
-  GURL url = tab.webState->GetVisibleURL();
+  size_t i = static_cast<size_t>(index);
+  DCHECK(i < _webStates.size());
+  web::WebState* webState = _webStates[i].get();
+  GURL url = webState->GetVisibleURL();
   NSString* urlText = @"<New Tab>";
   if (url.is_valid()) {
     urlText = base::SysUTF8ToNSString(url.spec());
@@ -92,10 +99,13 @@
 - (void)showTabAtIndexPath:(NSIndexPath*)indexPath {
   TabStripContainerCoordinator* tabCoordinator =
       [[TabStripContainerCoordinator alloc] init];
-  tabCoordinator.webMediator = [self.tabGroup tabAtIndex:indexPath.item];
+  size_t index = static_cast<size_t>(indexPath.item);
+  DCHECK(index < _webStates.size());
+  tabCoordinator.webState = _webStates[index].get();
   tabCoordinator.presentationKey = indexPath;
   [self addChildCoordinator:tabCoordinator];
   [tabCoordinator start];
+  _activeWebStateIndex = index;
 }
 
 #pragma mark - TabGridCommands
@@ -130,15 +140,15 @@
 - (void)openURL:(NSURL*)URL {
   [self.overlayCoordinator stop];
   [self removeOverlayCoordinator];
-  WebMediator* activeTab = [self.tabGroup activeTab];
+  web::WebState* activeWebState = _webStates[_activeWebStateIndex].get();
   web::NavigationManager::WebLoadParams params(net::GURLWithNSURL(URL));
   params.transition_type = ui::PAGE_TRANSITION_LINK;
-  activeTab.webState->GetNavigationManager()->LoadURLWithParams(params);
+  activeWebState->GetNavigationManager()->LoadURLWithParams(params);
   if (!self.children.count) {
-    // Placeholder — since there's only one tab in the grid, just open
-    // the tab at index path (0,0).
-    NSUInteger index = [self.tabGroup indexOfTab:activeTab];
-    [self showTabAtIndexPath:[NSIndexPath indexPathForItem:index inSection:0]];
+    [self showTabAtIndexPath:[NSIndexPath
+                                 indexPathForItem:static_cast<NSUInteger>(
+                                                      _activeWebStateIndex)
+                                        inSection:0]];
   }
 }
 

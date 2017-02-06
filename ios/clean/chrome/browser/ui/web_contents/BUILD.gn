@@ -14,7 +14,6 @@ source_set("web_contents") {
 
   deps = [
     "//ios/clean/chrome/browser",
-    "//ios/clean/chrome/browser/web",
     "//ios/shared/chrome/browser/coordinator_context",
     "//ios/web",
     "//ui/base",

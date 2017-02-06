@@ -31,7 +31,7 @@
 
 @synthesize presentationKey = _presentationKey;
 @synthesize viewController = _viewController;
-@synthesize webMediator = _webMediator;
+@synthesize webState = _webState;
 
 - (void)start {
   self.viewController = [[TabStripContainerViewController alloc] init];
@@ -39,7 +39,7 @@
   self.viewController.modalPresentationStyle = UIModalPresentationCustom;
 
   TabCoordinator* tabCoordinator = [[TabCoordinator alloc] init];
-  tabCoordinator.webMediator = self.webMediator;
+  tabCoordinator.webState = self.webState;
   [self addChildCoordinator:tabCoordinator];
   // Unset the base view controller, so |tabCoordinator| doesn't present
   // its view controller.

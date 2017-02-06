@@ -11,16 +11,16 @@
 
 #import "ios/clean/chrome/browser/browser_coordinator.h"
 
-@class WebMediator;
+namespace web {
+class WebState;
+}
 
 // A coordinator for a UI element that displays the web view associated with
 // |webState|.
 @interface WebCoordinator : BrowserCoordinator
 
-// The mediator for the web state this coordinator is displaying. Other
-// coordinators that interact with the web state should do so through this
-// property, not by directly interacting with the web state.
-@property(nonatomic, strong) WebMediator* webMediator;
+// The web state this coordinator is displaying.
+@property(nonatomic, assign) web::WebState* webState;
 
 @end
 

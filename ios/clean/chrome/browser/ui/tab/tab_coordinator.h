@@ -12,15 +12,17 @@
 #import <UIKit/UIKit.h>
 #import "ios/clean/chrome/browser/browser_coordinator.h"
 
-@class WebMediator;
+namespace web {
+class WebState;
+}
 
 // Coordinator that runs a tab: A composed UI consisting of a web view plus
 // additional UI components such as a toolbar.
 @interface TabCoordinator : BrowserCoordinator
 
-// The WebMediator representing the web page that will be displayed in this tab.
+// The WebState representing the web page that will be displayed in this tab.
 // Calling code should assign this before starting this coordinator.
-@property(nonatomic, readwrite, strong) WebMediator* webMediator;
+@property(nonatomic, assign) web::WebState* webState;
 
 // An opaque key provided by this coordinator's parent which can be passed in
 // to a transition animation to synchronize the presentation with the presenting

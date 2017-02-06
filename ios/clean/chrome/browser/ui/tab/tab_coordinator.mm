@@ -17,7 +17,6 @@
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_coordinator.h"
-#import "ios/clean/chrome/browser/web/web_mediator.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
@@ -41,7 +40,7 @@ const BOOL kUseBottomToolbar = NO;
 
 @synthesize presentationKey = _presentationKey;
 @synthesize viewController = _viewController;
-@synthesize webMediator = _webMediator;
+@synthesize webState = _webState;
 
 - (void)start {
   self.viewController = [self newTabContainer];
@@ -49,7 +48,7 @@ const BOOL kUseBottomToolbar = NO;
   self.viewController.modalPresentationStyle = UIModalPresentationCustom;
 
   WebCoordinator* webCoordinator = [[WebCoordinator alloc] init];
-  webCoordinator.webMediator = self.webMediator;
+  webCoordinator.webState = self.webState;
   [self addChildCoordinator:webCoordinator];
   // Unset the base view controller, so |webCoordinator| doesn't present its
   // view controller.
@@ -58,10 +57,10 @@ const BOOL kUseBottomToolbar = NO;
 
   ToolbarCoordinator* toolbarCoordinator = [[ToolbarCoordinator alloc] init];
   [self addChildCoordinator:toolbarCoordinator];
-  // TODO: Instead of this, let WebMediator maintain a set of webStateObservers
-  // and just provide -addObserver and -stopObserving methods.
+  // PLACEHOLDER : Pass the WebState into the toolbar coordinator and let it
+  // create a mediator (or whatever) that observes the webState.
   _webStateObserver = base::MakeUnique<web::WebStateObserverBridge>(
-      self.webMediator.webState, toolbarCoordinator);
+      self.webState, toolbarCoordinator);
   // Unset the base view controller, so |toolbarCoordinator| doesn't present
   // its view controller.
   toolbarCoordinator.context.baseViewController = nil;

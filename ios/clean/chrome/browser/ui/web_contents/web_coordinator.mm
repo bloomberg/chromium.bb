@@ -10,8 +10,8 @@
 
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_view_controller.h"
-#import "ios/clean/chrome/browser/web/web_mediator.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
+#include "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,12 +24,13 @@
 @end
 
 @implementation WebCoordinator
-@synthesize webMediator = _webMediator;
+@synthesize webState = _webState;
 @synthesize viewController = _viewController;
 
 - (void)start {
-  self.viewController = [[WebContentsViewController alloc]
-      initWithWebState:self.webMediator.webState];
+  self.webState->SetWebUsageEnabled(true);
+  self.viewController =
+      [[WebContentsViewController alloc] initWithWebState:self.webState];
 
   // Reminder: this is a no-op if |baseViewController| is nil, for example
   // when this coordinator's view controller will be contained instead of
@@ -37,6 +38,10 @@
   [self.context.baseViewController presentViewController:self.viewController
                                                 animated:self.context.animated
                                               completion:nil];
+}
+
+- (void)stop {
+  self.webState->SetWebUsageEnabled(false);
 }
 
 @end
