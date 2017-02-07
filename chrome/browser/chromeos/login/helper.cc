@@ -9,6 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -86,7 +87,6 @@ content::StoragePartition* GetPartition(content::WebContents* embedder,
 }
 
 base::ScopedFD GetDataReadPipe(const std::string& data) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   int pipe_fds[2];
   if (!base::CreateLocalNonBlockingPipe(pipe_fds)) {
     DLOG(ERROR) << "Failed to create pipe";
@@ -264,8 +264,9 @@ net::URLRequestContextGetter* GetSigninContext() {
 
 void GetPipeReadEnd(const std::string& data,
                     const OnPipeReadyCallback& callback) {
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&GetDataReadPipe, data), callback);
 }
 
