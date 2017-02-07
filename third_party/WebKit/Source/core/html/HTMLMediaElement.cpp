@@ -4005,6 +4005,10 @@ EnumerationHistogram& HTMLMediaElement::showControlsHistogram() const {
 void HTMLMediaElement::onVisibilityChangedForAutoplay(bool isVisible) {
   if (!isVisible)
     return;
+  // Visibility change might be notified after stopping the observer, as it is a
+  // delayed task. Abort the steps if this happens.
+  if (!m_autoplayVisibilityObserver)
+    return;
 
   if (shouldAutoplay()) {
     m_paused = false;
