@@ -228,14 +228,16 @@ CairoSurface::~CairoSurface() {
 }
 
 SkColor CairoSurface::GetAveragePixelValue(bool only_frame_pixels) {
+  cairo_surface_flush(surface_);
   int num_samples = 0;
   long a = 0, r = 0, g = 0, b = 0;
   SkColor* data =
       reinterpret_cast<SkColor*>(cairo_image_surface_get_data(surface_));
   int width = cairo_image_surface_get_width(surface_);
   int height = cairo_image_surface_get_height(surface_);
+  DCHECK(4 * width == cairo_image_surface_get_stride(surface_));
   auto accumulate = [&](int x, int y) mutable {
-    SkColor color = data[x * width + y];
+    SkColor color = data[y * width + x];
     int alpha = SkColorGetA(color);
     a += alpha;
     r += alpha * SkColorGetR(color);
@@ -258,6 +260,8 @@ SkColor CairoSurface::GetAveragePixelValue(bool only_frame_pixels) {
       for (int y = 1; y < height - 1; y++)
         accumulate(x, y);
   }
+  if (a == 0)
+    return SK_ColorTRANSPARENT;
   return SkColorSetARGB(a / num_samples, r / a, g / a, b / a);
 }
 

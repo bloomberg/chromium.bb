@@ -109,7 +109,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem GtkLabel#label");
     case ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor:
       return GetFgColor(
-          "GtkMenu#menu GtkMenuItem#menuitem:selected GtkLabel#label");
+          "GtkMenu#menu GtkMenuItem#menuitem:hover GtkLabel#label");
     case ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor:
       return GetFgColor(
           "GtkMenu#menu GtkMenuItem#menuitem:disabled GtkLabel#label");
