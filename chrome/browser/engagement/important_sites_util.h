@@ -13,6 +13,10 @@
 
 class Profile;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 class ImportantSitesUtil {
  public:
   struct ImportantDomainInfo {
@@ -21,6 +25,10 @@ class ImportantSitesUtil {
     double engagement_score = 0;
     int32_t reason_bitfield = 0;
   };
+
+  static bool IsDialogDisabled(Profile* profile);
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // This returns the top |<=max_results| important registrable domains. This
   // uses site engagement and notifications to generate the list. |max_results|

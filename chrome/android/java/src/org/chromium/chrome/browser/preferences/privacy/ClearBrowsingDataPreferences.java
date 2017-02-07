@@ -627,9 +627,9 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     }
 
     @Override
-    public void onImportantRegisterableDomainsReady(
-            String[] domains, String[] exampleOrigins, int[] importantReasons) {
-        if (domains == null) return;
+    public void onImportantRegisterableDomainsReady(String[] domains, String[] exampleOrigins,
+            int[] importantReasons, boolean dialogDisabled) {
+        if (domains == null || dialogDisabled) return;
         // mMaxImportantSites is a constant on the C++ side. While 0 is valid, use 1 as the minimum
         // because histogram code assumes a min >= 1; the underflow bucket will record the 0s.
         RecordHistogram.recordLinearCountHistogram("History.ClearBrowsingData.NumImportant",

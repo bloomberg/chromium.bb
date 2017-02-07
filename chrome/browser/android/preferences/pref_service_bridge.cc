@@ -717,9 +717,11 @@ static jboolean CanDeleteBrowsingHistory(JNIEnv* env,
 static void FetchImportantSites(JNIEnv* env,
                                 const JavaParamRef<jclass>& clazz,
                                 const JavaParamRef<jobject>& java_callback) {
+  Profile* profile = GetOriginalProfile();
   std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
-      ImportantSitesUtil::GetImportantRegisterableDomains(GetOriginalProfile(),
+      ImportantSitesUtil::GetImportantRegisterableDomains(profile,
                                                           kMaxImportantSites);
+  bool dialog_disabled = ImportantSitesUtil::IsDialogDisabled(profile);
 
   std::vector<std::string> important_domains;
   std::vector<int32_t> important_domain_reasons;
@@ -739,7 +741,7 @@ static void FetchImportantSites(JNIEnv* env,
 
   Java_ImportantSitesCallback_onImportantRegisterableDomainsReady(
       env, java_callback.obj(), java_domains.obj(), java_origins.obj(),
-      java_reasons.obj());
+      java_reasons.obj(), dialog_disabled);
 }
 
 // This value should not change during a sessions, as it's used for UMA metrics.

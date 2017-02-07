@@ -92,10 +92,12 @@ public final class PrefServiceBridge {
          *                       favicons.
          * @param importantReasons Bitfield of reasons why this domain was selected. Pass this back
          *                         to clearBrowinsgData so we can record metrics.
+         * @param dialogDisabled If the important dialog has been ignored too many times and should
+         *                       not be shown.
          */
         @CalledByNative("ImportantSitesCallback")
-        void onImportantRegisterableDomainsReady(
-                String[] domains, String[] exampleOrigins, int[] importantReasons);
+        void onImportantRegisterableDomainsReady(String[] domains, String[] exampleOrigins,
+                int[] importantReasons, boolean dialogDisabled);
     }
 
     /**

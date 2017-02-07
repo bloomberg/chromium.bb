@@ -22,9 +22,13 @@
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/WebKit/public/platform/site_engagement.mojom.h"
 #include "url/gurl.h"
@@ -32,6 +36,12 @@
 namespace {
 using bookmarks::BookmarkModel;
 using ImportantDomainInfo = ImportantSitesUtil::ImportantDomainInfo;
+
+// Note: These values are stored on both the per-site content settings
+// dictionary and the dialog preference dictionary.
+
+static const char kTimeLastIgnored[] = "TimeLastIgnored";
+static const int kBlacklistExpirationTimeDays = 30 * 5;
 
 static const char kNumTimesIgnoredName[] = "NumTimesIgnored";
 static const int kTimesIgnoredForBlacklist = 3;
@@ -83,6 +93,31 @@ enum CrossedReason {
   CROSSED_REASON_UNKNOWN = 7,
   CROSSED_REASON_BOUNDARY
 };
+
+void RecordIgnore(base::DictionaryValue* dict) {
+  int times_ignored = 0;
+  dict->GetInteger(kNumTimesIgnoredName, &times_ignored);
+  dict->SetInteger(kNumTimesIgnoredName, ++times_ignored);
+  dict->SetDouble(kTimeLastIgnored, base::Time::Now().ToDoubleT());
+}
+
+// If we should blacklist the item with the given dictionary ignored record.
+bool ShouldSuppressItem(base::DictionaryValue* dict) {
+  double last_ignored_time = 0;
+  if (dict->GetDouble(kTimeLastIgnored, &last_ignored_time)) {
+    base::TimeDelta diff =
+        base::Time::Now() - base::Time::FromDoubleT(last_ignored_time);
+    if (diff >= base::TimeDelta::FromDays(kBlacklistExpirationTimeDays)) {
+      dict->SetInteger(kNumTimesIgnoredName, 0);
+      dict->Remove(kTimeLastIgnored, nullptr);
+      return false;
+    }
+  }
+
+  int times_ignored = 0;
+  return dict->GetInteger(kNumTimesIgnoredName, &times_ignored) &&
+         times_ignored >= kTimesIgnoredForBlacklist;
+}
 
 CrossedReason GetCrossedReasonFromBitfield(int32_t reason_bitfield) {
   bool durable = (reason_bitfield & (1 << ImportantReason::DURABLE)) != 0;
@@ -198,13 +233,8 @@ base::hash_set<std::string> GetBlacklistedImportantDomains(Profile* profile) {
     if (!dict)
       continue;
 
-    int times_ignored = 0;
-    if (!dict->GetInteger(kNumTimesIgnoredName, &times_ignored) ||
-        times_ignored < kTimesIgnoredForBlacklist) {
-      continue;
-    }
-
-    ignoring_domains.insert(origin.host());
+    if (ShouldSuppressItem(dict.get()))
+      ignoring_domains.insert(origin.host());
   }
   return ignoring_domains;
 }
@@ -320,6 +350,18 @@ void PopulateInfoMapWithHomeScreen(
 
 }  // namespace
 
+bool ImportantSitesUtil::IsDialogDisabled(Profile* profile) {
+  PrefService* service = profile->GetPrefs();
+  DictionaryPrefUpdate update(service, prefs::kImportantSitesDialogHistory);
+
+  return ShouldSuppressItem(update.Get());
+}
+
+void ImportantSitesUtil::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(prefs::kImportantSitesDialogHistory);
+}
+
 std::vector<ImportantDomainInfo>
 ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
                                                     size_t max_results) {
@@ -385,36 +427,41 @@ void ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
         "Storage.ImportantSites.CBDIgnoredReasonCount", reason_bitfield);
   }
 
-  // We use the ignored sites to update our important sites blacklist.
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  for (const std::string& ignored_site : ignored_sites) {
-    GURL origin("http://" + ignored_site);
-    std::unique_ptr<base::Value> value = map->GetWebsiteSetting(
-        origin, origin, CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, "", nullptr);
 
-    std::unique_ptr<base::DictionaryValue> dict =
-        base::DictionaryValue::From(map->GetWebsiteSetting(
-            origin, origin, CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, "",
-            nullptr));
+  // We use the ignored sites to update our important sites blacklist only if
+  // the user chose to blacklist a site.
+  if (!blacklisted_sites.empty()) {
+    for (const std::string& ignored_site : ignored_sites) {
+      GURL origin("http://" + ignored_site);
+      std::unique_ptr<base::DictionaryValue> dict =
+          base::DictionaryValue::From(map->GetWebsiteSetting(
+              origin, origin, CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, "",
+              nullptr));
 
-    int times_ignored = 0;
-    if (dict)
-      dict->GetInteger(kNumTimesIgnoredName, &times_ignored);
-    else
-      dict = base::MakeUnique<base::DictionaryValue>();
-    dict->SetInteger(kNumTimesIgnoredName, ++times_ignored);
+      if (!dict)
+        dict = base::MakeUnique<base::DictionaryValue>();
 
-    map->SetWebsiteSettingDefaultScope(
-        origin, origin, CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, "",
-        std::move(dict));
+      RecordIgnore(dict.get());
+
+      map->SetWebsiteSettingDefaultScope(
+          origin, origin, CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, "",
+          std::move(dict));
+    }
+  } else {
+    // Record that the user did not interact with the dialog.
+    PrefService* service = profile->GetPrefs();
+    DictionaryPrefUpdate update(service, prefs::kImportantSitesDialogHistory);
+    RecordIgnore(update.Get());
   }
 
   // We clear our blacklist for sites that the user chose.
-  for (const std::string& ignored_site : blacklisted_sites) {
-    GURL origin("http://" + ignored_site);
+  for (const std::string& blacklisted_site : blacklisted_sites) {
+    GURL origin("http://" + blacklisted_site);
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetInteger(kNumTimesIgnoredName, 0);
+    dict->Remove(kTimeLastIgnored, nullptr);
     map->SetWebsiteSettingDefaultScope(
         origin, origin, CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, "",
         std::move(dict));

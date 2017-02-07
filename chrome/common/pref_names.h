@@ -36,6 +36,7 @@ extern const char kDisableScreenshots[];
 extern const char kForceEphemeralProfiles[];
 extern const char kHomePageIsNewTabPage[];
 extern const char kHomePage[];
+extern const char kImportantSitesDialogHistory[];
 #if defined(OS_WIN)
 extern const char kLastProfileResetTimestamp[];
 #endif

@@ -68,6 +68,10 @@ const char kHomePageIsNewTabPage[] = "homepage_is_newtabpage";
 // This is the URL of the page to load when opening new tabs.
 const char kHomePage[] = "homepage";
 
+// Stores information about the important sites dialog, including the time and
+// frequency it has been ignored.
+const char kImportantSitesDialogHistory[] = "important_sites_dialog";
+
 #if defined(OS_WIN)
 // This is a timestamp of the last time this profile was reset by a third party
 // tool. On Windows, a third party tool may set a registry value that will be
