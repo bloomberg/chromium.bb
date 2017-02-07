@@ -109,6 +109,9 @@ enum SBThreatType {
 
   // Url abuses a permission API.
   SB_THREAT_TYPE_API_ABUSE,
+
+  // Activation patterns for the Subresource Filter.
+  SB_THREAT_TYPE_SUBRESOURCE_FILTER,
 };
 
 // The information required to uniquely identify each list the client is
@@ -143,15 +146,16 @@ std::ostream& operator<<(std::ostream& os, const ListIdentifier& id);
 PlatformType GetCurrentPlatformType();
 const ListIdentifier GetCertCsdDownloadWhitelistId();
 const ListIdentifier GetChromeExtMalwareId();
-const ListIdentifier GetChromeUrlApiId();
 const ListIdentifier GetChromeFilenameClientIncidentId();
+const ListIdentifier GetChromeUrlApiId();
 const ListIdentifier GetChromeUrlClientIncidentId();
 const ListIdentifier GetIpMalwareId();
 const ListIdentifier GetUrlCsdDownloadWhitelistId();
 const ListIdentifier GetUrlCsdWhitelistId();
-const ListIdentifier GetUrlMalwareId();
 const ListIdentifier GetUrlMalBinId();
+const ListIdentifier GetUrlMalwareId();
 const ListIdentifier GetUrlSocEngId();
+const ListIdentifier GetUrlSubresourceFilterId();
 const ListIdentifier GetUrlUwsId();
 
 // Represents the state of each store.

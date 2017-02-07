@@ -116,6 +116,7 @@ class LocalSafeBrowsingDatabaseManager
   bool CanCheckUrl(const GURL& url) const override;
 
   bool CheckBrowseUrl(const GURL& url, Client* client) override;
+  bool CheckUrlForSubresourceFilter(const GURL& url, Client* client) override;
   bool CheckDownloadUrl(const std::vector<GURL>& url_chain,
                         Client* client) override;
   bool CheckExtensionIDs(const std::set<std::string>& extension_ids,

@@ -46,7 +46,8 @@ class SafeBrowsingDatabaseManager
     virtual void OnCheckApiBlacklistUrlResult(const GURL& url,
                                               const ThreatMetadata& metadata) {}
 
-    // Called when the result of checking a browse URL is known.
+    // Called when the result of checking a browse URL is known or the result of
+    // checking the URL for subresource filter is known.
     virtual void OnCheckBrowseUrlResult(const GURL& url,
                                         SBThreatType threat_type,
                                         const ThreatMetadata& metadata) {}
@@ -116,6 +117,15 @@ class SafeBrowsingDatabaseManager
   // Otherwise it returns false, and "client" is called asynchronously with the
   // result when it is ready.
   virtual bool CheckBrowseUrl(const GURL& url, Client* client) = 0;
+
+  // Called on the IO thread to check if the given url belongs to the
+  // subresource filter list. If the url doesn't belong to the list, the check
+  // happens synchronously, otherwise it returns false, and "client" is called
+  // asynchronously with the result when it is ready.
+  // Currently supported only on desktop. Returns TRUE if the list is not yet
+  // available.
+  virtual bool CheckUrlForSubresourceFilter(const GURL& url,
+                                            Client* client) = 0;
 
   // Check if the prefix for |url| is in safebrowsing download add lists.
   // Result will be passed to callback in |client|.

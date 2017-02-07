@@ -132,6 +132,10 @@ const ListIdentifier GetUrlSocEngId() {
                         SOCIAL_ENGINEERING_PUBLIC);
 }
 
+const ListIdentifier GetUrlSubresourceFilterId() {
+  return ListIdentifier(GetCurrentPlatformType(), URL, SUBRESOURCE_FILTER);
+}
+
 const ListIdentifier GetUrlUwsId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, UNWANTED_SOFTWARE);
 }

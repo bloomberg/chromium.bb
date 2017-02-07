@@ -557,6 +557,14 @@ bool LocalSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
   return false;
 }
 
+bool LocalSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
+    const GURL& url,
+    Client* client) {
+  // TODO(melandory): implement Android support.
+  NOTREACHED();
+  return true;
+}
+
 void LocalSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (const auto& check : checks_) {

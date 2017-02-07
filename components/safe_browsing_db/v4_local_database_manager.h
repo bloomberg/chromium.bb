@@ -52,6 +52,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   bool CheckExtensionIDs(const std::set<FullHash>& extension_ids,
                          Client* client) override;
   bool CheckResourceUrl(const GURL& url, Client* client) override;
+  bool CheckUrlForSubresourceFilter(const GURL& url, Client* client) override;
   bool MatchCsdWhitelistUrl(const GURL& url) override;
   bool MatchDownloadWhitelistString(const std::string& str) override;
   bool MatchDownloadWhitelistUrl(const GURL& url) override;
@@ -101,10 +102,14 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // extension is a unsafe.
     CHECK_EXTENSION_IDS = 3,
 
+    // This respresents the case when we're trying to determine if a URL belongs
+    // to the list where subresource filter should be active.
+    CHECK_URL_FOR_SUBRESOURCE_FILTER = 4,
+
     // This represents the other cases when a check is being performed
     // synchronously so a client callback isn't required. For instance, when
     // trying to determing if an IP address is unsafe due to hosting Malware.
-    CHECK_OTHER = 4,
+    CHECK_OTHER = 5,
   };
 
   // The information we need to process a URL safety reputation request and

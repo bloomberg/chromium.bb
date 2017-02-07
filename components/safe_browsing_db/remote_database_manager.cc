@@ -222,6 +222,13 @@ bool RemoteSafeBrowsingDatabaseManager::CheckResourceUrl(const GURL& url,
   return true;
 }
 
+bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
+    const GURL& url,
+    Client* client) {
+  NOTREACHED();
+  return false;
+}
+
 bool RemoteSafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
   NOTREACHED();
   return true;

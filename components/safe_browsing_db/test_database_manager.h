@@ -31,6 +31,7 @@ class TestSafeBrowsingDatabaseManager
   bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
                          Client* client) override;
   bool CheckResourceUrl(const GURL& url, Client* client) override;
+  bool CheckUrlForSubresourceFilter(const GURL& url, Client* client) override;
   bool MatchCsdWhitelistUrl(const GURL& url) override;
   bool MatchDownloadWhitelistString(const std::string& str) override;
   bool MatchDownloadWhitelistUrl(const GURL& url) override;

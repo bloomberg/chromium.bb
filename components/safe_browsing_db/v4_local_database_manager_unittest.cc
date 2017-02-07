@@ -732,6 +732,35 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckResourceUrl) {
   EXPECT_TRUE(client.on_check_resource_url_result_called_);
 }
 
+TEST_F(V4LocalDatabaseManagerTest, TestSubresourceFilterCallback) {
+  // Setup to receive full-hash misses.
+  ScopedFakeGetHashProtocolManagerFactory pin;
+
+  // Reset the database manager so it picks up the replacement protocol manager.
+  ResetLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+
+  // An URL and matching prefix.
+  const GURL url("http://example.com/a/");
+  const HashPrefix hash_prefix("eW\x1A\xF\xA9");
+
+  // Put a match in the db that will cause a protocol-manager request.
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetUrlSubresourceFilterId(),
+                                       hash_prefix);
+  ReplaceV4Database(store_and_hash_prefixes, true /* stores_available */);
+
+  // Test that a request flows through to the callback.
+  {
+    TestClient client(SB_THREAT_TYPE_SAFE, url);
+    EXPECT_FALSE(
+        v4_local_database_manager_->CheckUrlForSubresourceFilter(url, &client));
+    EXPECT_FALSE(client.on_check_browse_url_result_called_);
+    WaitForTasksOnTaskRunner();
+    EXPECT_TRUE(client.on_check_browse_url_result_called_);
+  }
+}
+
 // TODO(nparker): Add tests for
 //   CheckDownloadUrl()
 //   CheckExtensionIDs()

@@ -183,6 +183,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
       case safe_browsing::SB_THREAT_TYPE_EXTENSION:
       case safe_browsing::SB_THREAT_TYPE_BLACKLISTED_RESOURCE:
       case safe_browsing::SB_THREAT_TYPE_API_ABUSE:
+      case safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER:
         // These threat types are not currently associated with
         // interstitials, and thus resources with these threat types are
         // not ever whitelisted or pending whitelisting.
