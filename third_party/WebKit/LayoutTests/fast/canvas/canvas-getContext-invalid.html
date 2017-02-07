@@ -1,9 +1,20 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body>
-<script src="script-tests/canvas-getContext-invalid.js"></script>
+<script>
+test(function(t) {
+    canvas = document.createElement('canvas');
+    
+    assert_equals(canvas.getContext(''), null);
+    assert_equals(canvas.getContext('2d#'), null);
+    assert_equals(canvas.getContext('This is clearly not a valid context name.'), null);
+    assert_equals(canvas.getContext('2d\0'), null);
+    assert_equals(canvas.getContext('2\uFF44'), null);
+    assert_equals(canvas.getContext('2D'), null);
+    assert_throws(null, function() {canvas.getContext();});
+    assert_equals(canvas.getContext('null'), null);
+    assert_equals(canvas.getContext('undefined'), null);
+    
+}, "Test that invalid canvas getContext() requests return null.");
+</script>
 </body>
-</html>

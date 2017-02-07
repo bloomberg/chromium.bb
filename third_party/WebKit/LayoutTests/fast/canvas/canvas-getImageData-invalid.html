@@ -1,9 +1,24 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body>
-<script src="script-tests/canvas-getImageData-invalid.js"></script>
+<script>
+test(function(t) {
+    ctx = document.createElement('canvas').getContext('2d');
+    
+    assert_throws(null, function() {ctx.getImageData(NaN, 10, 10, 10)});
+    assert_throws(null, function() {ctx.getImageData(10, NaN, 10, 10)});
+    assert_throws(null, function() {ctx.getImageData(10, 10, NaN, 10)});
+    assert_throws(null, function() {ctx.getImageData(10, 10, 10, NaN)});
+    assert_throws(null, function() {ctx.getImageData(Infinity, 10, 10, 10)});
+    assert_throws(null, function() {ctx.getImageData(10, Infinity, 10, 10)});
+    assert_throws(null, function() {ctx.getImageData(10, 10, Infinity, 10)});
+    assert_throws(null, function() {ctx.getImageData(10, 10, 10, Infinity)});
+    assert_throws(null, function() {ctx.getImageData(undefined, 10, 10, 10)});
+    assert_throws(null, function() {ctx.getImageData(10, undefined, 10, 10)});
+    assert_throws(null, function() {ctx.getImageData(10, 10, undefined, 10)});
+    assert_throws(null, function() {ctx.getImageData(10, 10, 10, undefined)});
+    assert_throws(null, function() {ctx.getImageData(10, 10, 0, 10)});
+    assert_throws(null, function() {ctx.getImageData(10, 10, 10, 0)});
+}, "Test the handling of invalid arguments in canvas getImageData().");
+</script>
 </body>
-</html>
