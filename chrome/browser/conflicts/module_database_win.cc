@@ -340,9 +340,18 @@ bool ModuleDatabase::ModuleInfoKey::operator<(const ModuleInfoKey& mik) const {
                          mik.module_time_date_stamp);
 }
 
+// ModuleDatabase::CertificateInfo ---------------------------------------------
+
+ModuleDatabase::CertificateInfo::CertificateInfo() : type(NO_CERTIFICATE) {}
+
 // ModuleDatabase::ModuleInfoData ----------------------------------------------
 
 ModuleDatabase::ModuleInfoData::ModuleInfoData() : process_types(0) {}
+
+ModuleDatabase::ModuleInfoData::ModuleInfoData(const ModuleInfoData& others) =
+    default;
+
+ModuleDatabase::ModuleInfoData::~ModuleInfoData() = default;
 
 // ModuleDatabase::ProcessInfoKey ----------------------------------------------
 

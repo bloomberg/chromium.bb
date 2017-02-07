@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/conflicts/module_info_util_win.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -73,25 +74,6 @@ class ModuleEnumerator {
     XP           = 1 << 0,
   };
 
-  // The type of certificate found for the module.
-  enum CertificateType {
-    NO_CERTIFICATE,
-    CERTIFICATE_IN_FILE,
-    CERTIFICATE_IN_CATALOG,
-  };
-
-  // Information about the certificate of a file.
-  struct CertificateInfo {
-    CertificateInfo();
-
-    // The type of signature encountered.
-    CertificateType type;
-    // Path to the file containing the certificate. Empty if NO_CERTIFICATE.
-    base::FilePath path;
-    // The "Subject" name of the certificate.
-    base::string16 subject;
-  };
-
   // The structure we populate when enumerating modules.
   struct Module {
     Module();
@@ -126,7 +108,7 @@ class ModuleEnumerator {
     // The duplicate count within each category of modules.
     int duplicate_count;
     // The certificate info for the module.
-    CertificateInfo cert_info;
+    ModuleDatabase::CertificateInfo cert_info;
   };
 
   // A vector typedef of all modules enumerated.
