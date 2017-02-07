@@ -461,7 +461,7 @@ TestQuicSpdyClientSession::TestQuicSpdyClientSession(
     QuicCryptoClientConfig* crypto_config)
     : QuicClientSessionBase(connection, &push_promise_index_, config) {
   crypto_stream_.reset(new QuicCryptoClientStream(
-      server_id, this, CryptoTestUtils::ProofVerifyContextForTesting(),
+      server_id, this, crypto_test_utils::ProofVerifyContextForTesting(),
       crypto_config, this));
   Initialize();
 }
@@ -645,7 +645,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   EXPECT_TRUE(packet != nullptr);
   char* buffer = new char[kMaxPacketSize];
   size_t encrypted_length = framer.EncryptPayload(
-      ENCRYPTION_NONE, path_id, packet_number, *packet, buffer, kMaxPacketSize);
+      ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize);
   EXPECT_NE(0u, encrypted_length);
   return new QuicEncryptedPacket(buffer, encrypted_length, true);
 }
@@ -699,7 +699,7 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
 
   char* buffer = new char[kMaxPacketSize];
   size_t encrypted_length = framer.EncryptPayload(
-      ENCRYPTION_NONE, path_id, packet_number, *packet, buffer, kMaxPacketSize);
+      ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize);
   EXPECT_NE(0u, encrypted_length);
   return new QuicEncryptedPacket(buffer, encrypted_length, true);
 }

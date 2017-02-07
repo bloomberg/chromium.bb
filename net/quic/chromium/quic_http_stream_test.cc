@@ -202,7 +202,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
   QuicHttpStreamTest()
       : use_closing_stream_(false),
-        crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
+        crypto_config_(crypto_test_utils::ProofVerifierForTesting()),
         read_buffer_(new IOBufferWithSize(4096)),
         promise_id_(kServerDataStreamId1),
         stream_id_(kClientDataStreamId1),

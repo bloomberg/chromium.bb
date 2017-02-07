@@ -53,24 +53,6 @@ class FakeProofSource : public net::ProofSource {
   explicit FakeProofSource(bool success) : success_(success) {}
 
   // ProofSource override.
-  bool GetProof(const QuicSocketAddress& server_ip,
-                const std::string& hostname,
-                const std::string& server_config,
-                net::QuicVersion quic_version,
-                base::StringPiece chlo_hash,
-                const net::QuicTagVector& connection_options,
-                QuicReferenceCountedPointer<net::ProofSource::Chain>* out_certs,
-                net::QuicCryptoProof* proof) override {
-    if (success_) {
-      std::vector<std::string> certs;
-      certs.push_back("Required to establish handshake");
-      *out_certs = new ProofSource::Chain(certs);
-      proof->signature = "Signature";
-      proof->leaf_cert_scts = "Time";
-    }
-    return success_;
-  }
-
   void GetProof(const QuicSocketAddress& server_ip,
                 const std::string& hostname,
                 const std::string& server_config,
@@ -78,7 +60,16 @@ class FakeProofSource : public net::ProofSource {
                 base::StringPiece chlo_hash,
                 const net::QuicTagVector& connection_options,
                 std::unique_ptr<Callback> callback) override {
-    LOG(INFO) << "GetProof() providing dummy credentials for insecure QUIC";
+    QuicReferenceCountedPointer<net::ProofSource::Chain> chain;
+    net::QuicCryptoProof proof;
+    if (success_) {
+      std::vector<std::string> certs;
+      certs.push_back("Required to establish handshake");
+      chain = new ProofSource::Chain(certs);
+      proof.signature = "Signature";
+      proof.leaf_cert_scts = "Time";
+    }
+    callback->Run(success_, chain, proof, nullptr /* details */);
   }
 
  private:

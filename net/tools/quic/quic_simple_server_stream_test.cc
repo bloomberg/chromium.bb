@@ -186,7 +186,7 @@ class QuicSimpleServerStreamTest
         crypto_config_(new QuicCryptoServerConfig(
             QuicCryptoServerConfig::TESTING,
             QuicRandom::GetInstance(),
-            ::net::test::CryptoTestUtils::ProofSourceForTesting())),
+            crypto_test_utils::ProofSourceForTesting())),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
         session_(connection_,

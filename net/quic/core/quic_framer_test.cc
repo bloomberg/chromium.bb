@@ -113,7 +113,6 @@ class TestEncrypter : public QuicEncrypter {
   bool SetKey(StringPiece key) override { return true; }
   bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
   bool EncryptPacket(QuicVersion version,
-                     QuicPathId path_id,
                      QuicPacketNumber packet_number,
                      StringPiece associated_data,
                      StringPiece plaintext,
@@ -121,7 +120,6 @@ class TestEncrypter : public QuicEncrypter {
                      size_t* output_length,
                      size_t max_output_length) override {
     version_ = version;
-    path_id_ = path_id;
     packet_number_ = packet_number;
     associated_data_ = associated_data.as_string();
     plaintext_ = plaintext.as_string();
@@ -142,7 +140,6 @@ class TestEncrypter : public QuicEncrypter {
 
   QuicVersion version_;
   Perspective perspective_;
-  QuicPathId path_id_;
   QuicPacketNumber packet_number_;
   string associated_data_;
   string plaintext_;
@@ -161,7 +158,6 @@ class TestDecrypter : public QuicDecrypter {
     return true;
   }
   bool DecryptPacket(QuicVersion version,
-                     QuicPathId path_id,
                      QuicPacketNumber packet_number,
                      StringPiece associated_data,
                      StringPiece ciphertext,
@@ -169,7 +165,6 @@ class TestDecrypter : public QuicDecrypter {
                      size_t* output_length,
                      size_t max_output_length) override {
     version_ = version;
-    path_id_ = path_id;
     packet_number_ = packet_number;
     associated_data_ = associated_data.as_string();
     ciphertext_ = ciphertext.as_string();
@@ -184,7 +179,6 @@ class TestDecrypter : public QuicDecrypter {
   uint32_t cipher_id() const override { return 0xFFFFFFF2; }
   QuicVersion version_;
   Perspective perspective_;
-  QuicPathId path_id_;
   QuicPacketNumber packet_number_;
   string associated_data_;
   string ciphertext_;
@@ -3772,9 +3766,8 @@ TEST_P(QuicFramerTest, EncryptPacket) {
       !kIncludeVersion, !kIncludePathId, !kIncludeDiversificationNonce,
       PACKET_6BYTE_PACKET_NUMBER));
   char buffer[kMaxPacketSize];
-  size_t encrypted_length =
-      framer_.EncryptPayload(ENCRYPTION_NONE, kDefaultPathId, packet_number,
-                             *raw, buffer, kMaxPacketSize);
+  size_t encrypted_length = framer_.EncryptPayload(
+      ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize);
 
   ASSERT_NE(0u, encrypted_length);
   EXPECT_TRUE(CheckEncryption(kDefaultPathId, packet_number, raw.get()));
@@ -3808,9 +3801,8 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
       kIncludeVersion, !kIncludePathId, !kIncludeDiversificationNonce,
       PACKET_6BYTE_PACKET_NUMBER));
   char buffer[kMaxPacketSize];
-  size_t encrypted_length =
-      framer_.EncryptPayload(ENCRYPTION_NONE, kDefaultPathId, packet_number,
-                             *raw, buffer, kMaxPacketSize);
+  size_t encrypted_length = framer_.EncryptPayload(
+      ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize);
 
   ASSERT_NE(0u, encrypted_length);
   EXPECT_TRUE(CheckEncryption(kDefaultPathId, packet_number, raw.get()));
@@ -3845,7 +3837,7 @@ TEST_P(QuicFramerTest, EncryptPacketWithMultipathFlag) {
       PACKET_6BYTE_PACKET_NUMBER));
   char buffer[kMaxPacketSize];
   size_t encrypted_length = framer_.EncryptPayload(
-      ENCRYPTION_NONE, kPathId, packet_number, *raw, buffer, kMaxPacketSize);
+      ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize);
 
   ASSERT_NE(0u, encrypted_length);
   EXPECT_TRUE(CheckEncryption(kPathId, packet_number, raw.get()));
@@ -3882,7 +3874,7 @@ TEST_P(QuicFramerTest, EncryptPacketWithBothVersionFlagAndMultipathFlag) {
       PACKET_6BYTE_PACKET_NUMBER));
   char buffer[kMaxPacketSize];
   size_t encrypted_length = framer_.EncryptPayload(
-      ENCRYPTION_NONE, kPathId, packet_number, *raw, buffer, kMaxPacketSize);
+      ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize);
 
   ASSERT_NE(0u, encrypted_length);
   EXPECT_TRUE(CheckEncryption(kPathId, packet_number, raw.get()));
@@ -3904,9 +3896,9 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   std::unique_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames));
   ASSERT_TRUE(raw_ack_packet != nullptr);
   char buffer[kMaxPacketSize];
-  size_t encrypted_length = framer_.EncryptPayload(
-      ENCRYPTION_NONE, kDefaultPathId, header.packet_number, *raw_ack_packet,
-      buffer, kMaxPacketSize);
+  size_t encrypted_length =
+      framer_.EncryptPayload(ENCRYPTION_NONE, header.packet_number,
+                             *raw_ack_packet, buffer, kMaxPacketSize);
   ASSERT_NE(0u, encrypted_length);
   // Now make sure we can turn our ack packet back into an ack frame.
   ASSERT_TRUE(framer_.ProcessPacket(
@@ -3936,9 +3928,9 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
       BuildDataPacket(header, frames, 500));
   ASSERT_TRUE(raw_ack_packet != nullptr);
   char buffer[kMaxPacketSize];
-  size_t encrypted_length = framer_.EncryptPayload(
-      ENCRYPTION_NONE, kDefaultPathId, header.packet_number, *raw_ack_packet,
-      buffer, kMaxPacketSize);
+  size_t encrypted_length =
+      framer_.EncryptPayload(ENCRYPTION_NONE, header.packet_number,
+                             *raw_ack_packet, buffer, kMaxPacketSize);
   ASSERT_NE(0u, encrypted_length);
   // Now make sure we can turn our ack packet back into an ack frame.
   ASSERT_TRUE(framer_.ProcessPacket(
@@ -3969,9 +3961,9 @@ TEST_P(QuicFramerTest, CleanTruncation) {
   ASSERT_TRUE(raw_ack_packet != nullptr);
 
   char buffer[kMaxPacketSize];
-  size_t encrypted_length = framer_.EncryptPayload(
-      ENCRYPTION_NONE, kDefaultPathId, header.packet_number, *raw_ack_packet,
-      buffer, kMaxPacketSize);
+  size_t encrypted_length =
+      framer_.EncryptPayload(ENCRYPTION_NONE, header.packet_number,
+                             *raw_ack_packet, buffer, kMaxPacketSize);
   ASSERT_NE(0u, encrypted_length);
 
   // Now make sure we can turn our ack packet back into an ack frame.

@@ -104,7 +104,7 @@ class URLRequestQuicTest : public ::testing::Test {
         directory.Append(FILE_PATH_LITERAL("quic_test.example.com.key.pkcs8")),
         directory.Append(FILE_PATH_LITERAL("quic_test.example.com.key.sct"))));
     server_.reset(new QuicSimpleServer(
-        test::CryptoTestUtils::ProofSourceForTesting(), config,
+        test::crypto_test_utils::ProofSourceForTesting(), config,
         net::QuicCryptoServerConfig::ConfigOptions(), AllSupportedVersions(),
         &response_cache_));
     int rv = server_->Listen(

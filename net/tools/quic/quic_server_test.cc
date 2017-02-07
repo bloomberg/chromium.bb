@@ -51,8 +51,8 @@ class MockQuicSimpleDispatcher : public QuicSimpleDispatcher {
 class TestQuicServer : public QuicServer {
  public:
   TestQuicServer()
-      : QuicServer(CryptoTestUtils::ProofSourceForTesting(), &response_cache_) {
-  }
+      : QuicServer(crypto_test_utils::ProofSourceForTesting(),
+                   &response_cache_) {}
 
   ~TestQuicServer() override {}
 
@@ -147,7 +147,7 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
   QuicServerDispatchPacketTest()
       : crypto_config_("blah",
                        QuicRandom::GetInstance(),
-                       CryptoTestUtils::ProofSourceForTesting()),
+                       crypto_test_utils::ProofSourceForTesting()),
         version_manager_(AllSupportedVersions()),
         dispatcher_(
             config_,
