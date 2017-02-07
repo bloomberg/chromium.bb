@@ -8,6 +8,7 @@
 #include "base/android/context_utils.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
 #include "jni/MidiManagerAndroid_jni.h"
 #include "media/midi/midi_device_android.h"
@@ -22,15 +23,39 @@ using midi::mojom::Result;
 
 namespace midi {
 
-MidiManager* MidiManager::Create() {
+namespace {
+
+// MidiManagerAndroid should be enabled only when the feature is enabled via
+// chrome://flags on M+, or enabled by server configurations under specified
+// Android versions, M+ or N+.
+bool IsMidiManagerAndroidEnabled() {
+  // The feature is not enabled by chrome://flags or field trials.
+  if (!base::FeatureList::IsEnabled(features::kMidiManagerAndroid))
+    return false;
+
   auto sdk_version = base::android::BuildInfo::GetInstance()->sdk_int();
-  if (sdk_version <= base::android::SDK_VERSION_LOLLIPOP_MR1 ||
-      !base::FeatureList::IsEnabled(features::kMidiManagerAndroid)) {
-    return new MidiManagerUsb(std::unique_ptr<UsbMidiDevice::Factory>(
-        new UsbMidiDeviceFactoryAndroid));
+
+  // If the feature is enabled, check the RequredAndroidVersion param. If the
+  // param is provided and the value is "NOUGAT", use MidiManagerAndroid on N
+  // and later versions. This string comparison should not match when users
+  // enable the feature via chrome://flags.
+  if (base::GetFieldTrialParamValueByFeature(features::kMidiManagerAndroid,
+                                             "RequiredAndroidVersion") ==
+      "NOUGAT") {
+    return sdk_version >= base::android::SDK_VERSION_NOUGAT;
   }
 
-  return new MidiManagerAndroid();
+  // Otherwise, allow to use MidiManagerAndroid on M and later versions.
+  return sdk_version >= base::android::SDK_VERSION_MARSHMALLOW;
+}
+
+}  // namespace
+
+MidiManager* MidiManager::Create() {
+  if (IsMidiManagerAndroidEnabled())
+    return new MidiManagerAndroid();
+
+  return new MidiManagerUsb(base::MakeUnique<UsbMidiDeviceFactoryAndroid>());
 }
 
 MidiManagerAndroid::MidiManagerAndroid() {}
