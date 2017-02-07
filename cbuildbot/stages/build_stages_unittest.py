@@ -24,6 +24,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
+from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
@@ -240,18 +241,22 @@ class BuildPackagesStageTest(AllConfigsTestCase,
 
   def setUp(self):
     self._release_tag = None
+    self._update_metadata = False
+    self._mock_configurator = None
     self.PatchObject(commands, 'ExtractDependencies', return_value=dict())
 
   def ConstructStage(self):
     self._run.attrs.release_tag = self._release_tag
-    return build_stages.BuildPackagesStage(self._run, self._current_board)
+    return build_stages.BuildPackagesStage(
+        self._run, self._current_board,
+        update_metadata=self._update_metadata)
 
   def RunTestsWithBotId(self, bot_id, options_tests=True):
     """Test with the config for the specified bot_id."""
     self._Prepare(bot_id)
     self._run.options.tests = options_tests
 
-    with self.RunStageWithConfig() as rc:
+    with self.RunStageWithConfig(self._mock_configurator) as rc:
       cfg = self._run.config
       rc.assertCommandContains(['./build_packages'])
       rc.assertCommandContains(['./build_packages', '--skip_chroot_upgrade'])
@@ -273,6 +278,35 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     self.PatchObject(commands, 'ExtractDependencies',
                      side_effect=Exception('unmet dependency'))
     self.RunTestsWithBotId('x86-generic-paladin')
+
+  def testFirmwareVersions(self):
+    """Test that firmware versions are extracted correctly."""
+    expected_main_firmware_version = 'reef_v1.1.5822-78709a5'
+    expected_ec_firmware_version = 'Google_Reef.9042.30.0'
+
+    def _HookRunCommandFirmwareUpdate(rc):
+      rc.AddCmdResult(partial_mock.ListRegex('chromeos-firmwareupdate'),
+                      output='BIOS version: %s\nEC version: %s' %
+                      (expected_main_firmware_version,
+                       expected_ec_firmware_version))
+
+    self._update_metadata = True
+    update = os.path.join(
+        self.build_root,
+        'chroot/build/x86-generic/usr/sbin/chromeos-firmwareupdate')
+    osutils.Touch(update, makedirs=True)
+
+    self._mock_configurator = _HookRunCommandFirmwareUpdate
+    self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
+    board_metadata = (self._run.attrs.metadata.GetDict()['board-metadata']
+                      .get('x86-generic'))
+    if board_metadata:
+      self.assertIn('main-firmware-version', board_metadata)
+      self.assertEqual(board_metadata['main-firmware-version'],
+                       expected_main_firmware_version)
+      self.assertIn('ec-firmware-version', board_metadata)
+      self.assertEqual(board_metadata['ec-firmware-version'],
+                       expected_ec_firmware_version)
 
 
 class BuildImageStageMock(partial_mock.PartialMock):
