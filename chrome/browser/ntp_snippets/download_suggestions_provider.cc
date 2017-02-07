@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -44,23 +45,49 @@ using offline_pages::OfflinePageModelQueryBuilder;
 namespace {
 
 const int kDefaultMaxSuggestionsCount = 5;
+const int kDefaultMaxDownloadAgeHours = 6 * 7 * 24;  // 6 weeks
 const char kAssetDownloadsPrefix = 'D';
 const char kOfflinePageDownloadsPrefix = 'O';
 
+// NOTE: You must set variation param values for both features (one of them may
+// be disabled in future).
 const char* kMaxSuggestionsCountParamName = "downloads_max_count";
+const char* kMaxDownloadAgeHoursParamName = "downloads_max_age_hours";
 
-bool CompareOfflinePagesMostRecentlyCreatedFirst(const OfflinePageItem& left,
-                                                 const OfflinePageItem& right) {
-  return left.creation_time > right.creation_time;
+const base::Feature& GetEnabledDownloadsFeature() {
+  bool assets_enabled =
+      base::FeatureList::IsEnabled(features::kAssetDownloadSuggestionsFeature);
+  DCHECK(assets_enabled ||
+         base::FeatureList::IsEnabled(
+             features::kOfflinePageDownloadSuggestionsFeature));
+  return assets_enabled ? features::kAssetDownloadSuggestionsFeature
+                        : features::kOfflinePageDownloadSuggestionsFeature;
 }
 
 int GetMaxSuggestionsCount() {
-  bool assets_enabled =
-      base::FeatureList::IsEnabled(features::kAssetDownloadSuggestionsFeature);
+  // One cannot get a variation param from a disabled feature, so the enabled
+  // one is taken.
   return variations::GetVariationParamByFeatureAsInt(
-      assets_enabled ? features::kAssetDownloadSuggestionsFeature
-                     : features::kOfflinePageDownloadSuggestionsFeature,
-      kMaxSuggestionsCountParamName, kDefaultMaxSuggestionsCount);
+      GetEnabledDownloadsFeature(), kMaxSuggestionsCountParamName,
+      kDefaultMaxSuggestionsCount);
+}
+
+int GetMaxDownloadAgeHours() {
+  // One cannot get a variation param from a disabled feature, so the enabled
+  // one is taken.
+  return variations::GetVariationParamByFeatureAsInt(
+      GetEnabledDownloadsFeature(), kMaxDownloadAgeHoursParamName,
+      kDefaultMaxDownloadAgeHours);
+}
+
+base::Time GetOfflinePagePublishedTime(const OfflinePageItem& item) {
+  return item.creation_time;
+}
+
+bool CompareOfflinePagesMostRecentlyPublishedFirst(
+    const OfflinePageItem& left,
+    const OfflinePageItem& right) {
+  return GetOfflinePagePublishedTime(left) > GetOfflinePagePublishedTime(right);
 }
 
 std::string GetOfflinePagePerCategoryID(int64_t raw_offline_page_id) {
@@ -91,7 +118,7 @@ bool CorrespondsToOfflinePage(const ContentSuggestion::ID& suggestion_id) {
   return false;
 }
 
-bool IsDownloadCompleted(const DownloadItem& item) {
+bool IsAssetDownloadCompleted(const DownloadItem& item) {
   return item.GetState() == DownloadItem::DownloadState::COMPLETE &&
          !item.GetFileExternallyRemoved();
 }
@@ -100,8 +127,8 @@ base::Time GetAssetDownloadPublishedTime(const DownloadItem& item) {
   return item.GetStartTime();
 }
 
-bool CompareDownloadsMostRecentlyDownloadedFirst(const DownloadItem* left,
-                                                 const DownloadItem* right) {
+bool CompareDownloadsMostRecentlyPublishedFirst(const DownloadItem* left,
+                                                const DownloadItem* right) {
   return GetAssetDownloadPublishedTime(*left) >
          GetAssetDownloadPublishedTime(*right);
 }
@@ -127,7 +154,8 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
     offline_pages::OfflinePageModel* offline_page_model,
     content::DownloadManager* download_manager,
     DownloadHistory* download_history,
-    PrefService* pref_service)
+    PrefService* pref_service,
+    std::unique_ptr<base::Clock> clock)
     : ContentSuggestionsProvider(observer),
       category_status_(CategoryStatus::AVAILABLE_LOADING),
       provided_category_(Category::FromKnownCategory(
@@ -136,6 +164,7 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
       download_manager_(download_manager),
       download_history_(download_history),
       pref_service_(pref_service),
+      clock_(std::move(clock)),
       is_asset_downloads_initialization_complete_(false),
       weak_ptr_factory_(this) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
@@ -347,7 +376,7 @@ void DownloadSuggestionsProvider::OfflinePageAdded(
     auto oldest_page_iterator =
         std::max_element(cached_offline_page_downloads_.begin(),
                          cached_offline_page_downloads_.end(),
-                         &CompareOfflinePagesMostRecentlyCreatedFirst);
+                         &CompareOfflinePagesMostRecentlyPublishedFirst);
     *oldest_page_iterator = added_page;
   }
 
@@ -420,7 +449,7 @@ void DownloadSuggestionsProvider::OnDownloadDestroyed(
 
   item->RemoveObserver(this);
 
-  if (!IsDownloadCompleted(*item)) {
+  if (!IsAssetDownloadCompleted(*item)) {
     return;
   }
   // TODO(vitaliii): Implement a better way to clean up dismissed IDs (in case
@@ -494,7 +523,8 @@ void DownloadSuggestionsProvider::FetchAssetsDownloads() {
         GetAssetDownloadPerCategoryID(item->GetId());
     if (old_dismissed_ids.count(within_category_id)) {
       retained_dismissed_ids.insert(within_category_id);
-    } else if (IsDownloadCompleted(*item)) {
+    } else if (IsAssetDownloadCompleted(*item) &&
+               !IsDownloadOutdated(GetAssetDownloadPublishedTime(*item))) {
       cached_asset_downloads_.push_back(item);
       // We may already observe this item and, therefore, we remove the
       // observer first.
@@ -518,7 +548,7 @@ void DownloadSuggestionsProvider::FetchAssetsDownloads() {
     std::nth_element(cached_asset_downloads_.begin(),
                      cached_asset_downloads_.begin() + max_suggestions_count,
                      cached_asset_downloads_.end(),
-                     &CompareDownloadsMostRecentlyDownloadedFirst);
+                     &CompareDownloadsMostRecentlyPublishedFirst);
     cached_asset_downloads_.resize(max_suggestions_count);
   }
 }
@@ -570,7 +600,7 @@ ContentSuggestion DownloadSuggestionsProvider::ConvertOfflinePage(
   } else {
     suggestion.set_title(offline_page.title);
   }
-  suggestion.set_publish_date(offline_page.creation_time);
+  suggestion.set_publish_date(GetOfflinePagePublishedTime(offline_page));
   suggestion.set_publisher_name(base::UTF8ToUTF16(offline_page.url.host()));
   auto extra = base::MakeUnique<ntp_snippets::DownloadSuggestionExtra>();
   extra->is_download_asset = false;
@@ -598,9 +628,17 @@ ContentSuggestion DownloadSuggestionsProvider::ConvertDownloadItem(
   return suggestion;
 }
 
+bool DownloadSuggestionsProvider::IsDownloadOutdated(
+    const base::Time& published_time) {
+  // TODO(vitaliii): Also consider last access time here once it is collected
+  // for asset downloads.
+  return published_time <
+         clock_->Now() - base::TimeDelta::FromHours(GetMaxDownloadAgeHours());
+}
+
 bool DownloadSuggestionsProvider::CacheAssetDownloadIfNeeded(
     const content::DownloadItem* item) {
-  if (!IsDownloadCompleted(*item)) {
+  if (!IsAssetDownloadCompleted(*item)) {
     return false;
   }
 
@@ -617,9 +655,9 @@ bool DownloadSuggestionsProvider::CacheAssetDownloadIfNeeded(
             GetMaxSuggestionsCount());
   if (static_cast<int>(cached_asset_downloads_.size()) ==
       GetMaxSuggestionsCount()) {
-    auto oldest = std::max_element(
-        cached_asset_downloads_.begin(), cached_asset_downloads_.end(),
-        &CompareDownloadsMostRecentlyDownloadedFirst);
+    auto oldest = std::max_element(cached_asset_downloads_.begin(),
+                                   cached_asset_downloads_.end(),
+                                   &CompareDownloadsMostRecentlyPublishedFirst);
     if (GetAssetDownloadPublishedTime(*item) <=
         GetAssetDownloadPublishedTime(**oldest)) {
       return false;
@@ -706,10 +744,12 @@ void DownloadSuggestionsProvider::UpdateOfflinePagesCache(
   for (const OfflinePageItem& item : all_download_offline_pages) {
     std::string id_within_category =
         GetOfflinePagePerCategoryID(item.offline_id);
-    if (!old_dismissed_ids.count(id_within_category)) {
-      items.push_back(&item);
-    } else {
+    if (old_dismissed_ids.count(id_within_category)) {
       retained_dismissed_ids.insert(id_within_category);
+    } else {
+      if (!IsDownloadOutdated(GetOfflinePagePublishedTime(item))) {
+        items.push_back(&item);
+      }
     }
   }
 
@@ -723,7 +763,7 @@ void DownloadSuggestionsProvider::UpdateOfflinePagesCache(
     std::nth_element(
         items.begin(), items.begin() + max_suggestions_count, items.end(),
         [](const OfflinePageItem* left, const OfflinePageItem* right) {
-          return CompareOfflinePagesMostRecentlyCreatedFirst(*left, *right);
+          return CompareOfflinePagesMostRecentlyPublishedFirst(*left, *right);
         });
     items.resize(max_suggestions_count);
   }

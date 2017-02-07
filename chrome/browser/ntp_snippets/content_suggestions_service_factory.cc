@@ -121,7 +121,7 @@ void RegisterDownloadsProvider(OfflinePageModel* offline_page_model,
                                PrefService* pref_service) {
   auto provider = base::MakeUnique<DownloadSuggestionsProvider>(
       service, offline_page_model, download_manager, download_history,
-      pref_service);
+      pref_service, base::MakeUnique<base::DefaultClock>());
   service->RegisterProvider(std::move(provider));
 }
 #endif  // OS_ANDROID
