@@ -565,7 +565,7 @@ VALID_BUILD_TYPES = (
 
 # The default list of pre-cq configs to use.
 PRE_CQ_DEFAULT_CONFIGS = ['rambi-pre-cq', 'mixed-a-pre-cq', 'mixed-b-pre-cq',
-                          'mixed-c-pre-cq']
+                          'mixed-c-pre-cq', 'x86-alex-no-vmtest-pre-cq']
 
 # The name of the pre-cq launching config.
 PRE_CQ_LAUNCHER_CONFIG = 'pre-cq-launcher'
