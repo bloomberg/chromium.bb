@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/pref_names.h"
@@ -14,7 +15,6 @@
 #include "chromeos/system/version_loader.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
@@ -124,8 +124,9 @@ void HatsDialog::CreateAndShow(bool is_google_account) {
 
   std::unique_ptr<HatsDialog> hats_dialog(new HatsDialog);
 
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&GetFormattedSiteContext, user_locale, kDeviceInfoStopKeyword),
       base::Bind(&HatsDialog::Show, base::Passed(&hats_dialog),
                  is_google_account ? kGooglerSiteID : kSiteID));
