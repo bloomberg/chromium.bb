@@ -109,23 +109,11 @@ void ServerWindowCompositorFrameSinkManager::RemoveChildFrameSinkId(
   frame_sink_data_->compositor_frame_sink->RemoveChildFrameSink(frame_sink_id);
 }
 
-bool ServerWindowCompositorFrameSinkManager::HasCompositorFrameSink() const {
-  return !!frame_sink_data_;
-}
-
 gfx::Size ServerWindowCompositorFrameSinkManager::GetLatestFrameSize() const {
   if (!frame_sink_data_)
     return gfx::Size();
 
   return frame_sink_data_->latest_submitted_surface_info.size_in_pixels();
-}
-
-cc::SurfaceId ServerWindowCompositorFrameSinkManager::GetLatestSurfaceId()
-    const {
-  if (!frame_sink_data_)
-    return cc::SurfaceId();
-
-  return frame_sink_data_->latest_submitted_surface_info.id();
 }
 
 void ServerWindowCompositorFrameSinkManager::SetLatestSurfaceInfo(

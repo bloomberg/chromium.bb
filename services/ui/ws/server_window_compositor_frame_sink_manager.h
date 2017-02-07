@@ -63,12 +63,7 @@ class ServerWindowCompositorFrameSinkManager {
   void AddChildFrameSinkId(const cc::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSinkId(const cc::FrameSinkId& frame_sink_id);
 
-  ServerWindow* window() { return window_; }
-
-  bool HasCompositorFrameSink() const;
-
   gfx::Size GetLatestFrameSize() const;
-  cc::SurfaceId GetLatestSurfaceId() const;
   void SetLatestSurfaceInfo(const cc::SurfaceInfo& surface_info);
 
   void OnRootChanged(ServerWindow* old_root, ServerWindow* new_root);

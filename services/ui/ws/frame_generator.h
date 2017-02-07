@@ -82,8 +82,6 @@ class FrameGenerator : public cc::mojom::MojoCompositorFrameSinkClient {
 
   mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> binding_;
 
-  base::WeakPtrFactory<FrameGenerator> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(FrameGenerator);
 };
 

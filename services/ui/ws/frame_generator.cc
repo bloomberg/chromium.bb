@@ -26,8 +26,7 @@ FrameGenerator::FrameGenerator(FrameGeneratorDelegate* delegate,
                                ServerWindow* root_window)
     : delegate_(delegate),
       root_window_(root_window),
-      binding_(this),
-      weak_factory_(this) {
+      binding_(this) {
   DCHECK(delegate_);
 }
 
@@ -40,9 +39,6 @@ void FrameGenerator::SetDeviceScaleFactor(float device_scale_factor) {
 }
 
 FrameGenerator::~FrameGenerator() {
-  // Invalidate WeakPtrs now to avoid callbacks back into the
-  // FrameGenerator during destruction of |compositor_frame_sink_|.
-  weak_factory_.InvalidateWeakPtrs();
   compositor_frame_sink_.reset();
 }
 
@@ -107,6 +103,7 @@ void FrameGenerator::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   // Nothing to do here because FrameGenerator CompositorFrames don't reference
   // any resources.
+  DCHECK(resources.empty());
 }
 
 void FrameGenerator::WillDrawSurface() {
