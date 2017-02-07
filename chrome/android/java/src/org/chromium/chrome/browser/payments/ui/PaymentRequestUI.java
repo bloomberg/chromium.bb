@@ -378,7 +378,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mRequestShipping = requestShipping;
         mRequestContactDetails = requestContact;
         mShowDataSource = showDataSource;
-        mAnimatorTranslation = activity.getResources().getDimensionPixelSize(
+        mAnimatorTranslation = mContext.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
 
         mErrorView = (PaymentRequestUiErrorView) LayoutInflater.from(mContext).inflate(
@@ -422,7 +422,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         mRequestView =
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
-        prepareRequestView(activity, title, origin, canAddCards);
+        prepareRequestView(mContext, title, origin, canAddCards);
 
         // To handle the specced animations, the dialog is entirely contained within a translucent
         // FrameLayout.  This could eventually be converted to a real BottomSheetDialog, but that
@@ -527,13 +527,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * TODO(dfalcantara): Ideally, everything related to the request and its views would just be put
      *                    into its own class but that'll require yanking out a lot of this class.
      *
-     * @param activity    Activity displaying the UI.
+     * @param context     The application context.
      * @param title       Title of the page.
      * @param origin      Host of the page.
      * @param canAddCards Whether new cards can be added.
      */
     private void prepareRequestView(
-            Activity activity, String title, String origin, boolean canAddCards) {
+            Context context, String title, String origin, boolean canAddCards) {
         mSpinnyLayout = mRequestView.findViewById(R.id.payment_request_spinny);
         assert mSpinnyLayout.getVisibility() == View.VISIBLE;
         mIsShowingSpinner = true;
@@ -549,12 +549,12 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mCloseButton = mRequestView.findViewById(R.id.close_button);
         mCloseButton.setOnClickListener(this);
         mPayButton = DualControlLayout.createButtonForLayout(
-                activity, true, activity.getString(R.string.payments_pay_button), this);
+                context, true, context.getString(R.string.payments_pay_button), this);
         mEditButton = DualControlLayout.createButtonForLayout(
-                activity, false, activity.getString(R.string.payments_edit_button), this);
+                context, false, context.getString(R.string.payments_edit_button), this);
         mButtonBar = (DualControlLayout) mRequestView.findViewById(R.id.button_bar);
         mButtonBar.setAlignment(DualControlLayout.ALIGN_END);
-        mButtonBar.setStackedMargin(activity.getResources().getDimensionPixelSize(
+        mButtonBar.setStackedMargin(context.getResources().getDimensionPixelSize(
                 R.dimen.infobar_margin_between_stacked_buttons));
         mButtonBar.addView(mPayButton);
         mButtonBar.addView(mEditButton);
@@ -564,19 +564,19 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mPaymentContainer = (ScrollView) mRequestView.findViewById(R.id.option_container);
         mPaymentContainerLayout =
                 (LinearLayout) mRequestView.findViewById(R.id.payment_container_layout);
-        mOrderSummarySection = new LineItemBreakdownSection(activity,
-                activity.getString(R.string.payments_order_summary_label), this,
-                activity.getString(R.string.payments_updated_label));
+        mOrderSummarySection = new LineItemBreakdownSection(context,
+                context.getString(R.string.payments_order_summary_label), this,
+                context.getString(R.string.payments_updated_label));
         mShippingSummarySection = new ExtraTextsSection(
-                activity, activity.getString(mShippingStrings.getSummaryLabel()), this);
+                context, context.getString(mShippingStrings.getSummaryLabel()), this);
         mShippingAddressSection = new OptionSection(
-                activity, activity.getString(mShippingStrings.getAddressLabel()), this);
+                context, context.getString(mShippingStrings.getAddressLabel()), this);
         mShippingOptionSection = new OptionSection(
-                activity, activity.getString(mShippingStrings.getOptionLabel()), this);
+                context, context.getString(mShippingStrings.getOptionLabel()), this);
         mContactDetailsSection = new OptionSection(
-                activity, activity.getString(R.string.payments_contact_details_label), this);
+                context, context.getString(R.string.payments_contact_details_label), this);
         mPaymentMethodSection = new OptionSection(
-                activity, activity.getString(R.string.payments_method_of_payment_label), this);
+                context, context.getString(R.string.payments_method_of_payment_label), this);
 
         // Some sections conditionally allow adding new options.
         mShippingOptionSection.setCanAddItems(false);

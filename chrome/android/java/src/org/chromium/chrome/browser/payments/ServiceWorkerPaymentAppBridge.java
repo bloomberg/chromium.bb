@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -58,7 +57,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @Override
-    public void create(Context context, WebContents webContents, Set<String> methodNames,
+    public void create(WebContents webContents, Set<String> methodNames,
             PaymentAppFactory.PaymentAppCreatedCallback callback) {
         nativeGetAllAppManifests(webContents, callback);
     }

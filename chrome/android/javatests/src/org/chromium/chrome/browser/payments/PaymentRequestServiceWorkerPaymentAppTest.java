@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.content.Context;
 import android.support.test.filters.MediumTest;
 
 import org.chromium.base.test.util.Feature;
@@ -35,15 +34,14 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
     /**
      * Installs a mock service worker based payment app for testing.
      *
-     * @param optionPresence Whether the manifest has any payment options. Either NO_OPTIONS
-     *                       ONE_OPTION or TWO_OPTIONS
+     * @param instrumentPresence Whether the manifest has any payment options. Either NO_OPTIONS
+     *                           ONE_OPTION or TWO_OPTIONS
      */
     private void installMockServiceWorkerPaymentApp(final int instrumentPresence) {
         PaymentAppFactory.getInstance().addAdditionalFactory(
                 new PaymentAppFactory.PaymentAppFactoryAddition() {
                     @Override
-                    public void create(Context context, WebContents webContents,
-                            Set<String> methodNames,
+                    public void create(WebContents webContents, Set<String> methodNames,
                             PaymentAppFactory.PaymentAppCreatedCallback callback) {
                         ServiceWorkerPaymentAppBridge.Manifest testManifest =
                                 new ServiceWorkerPaymentAppBridge.Manifest();

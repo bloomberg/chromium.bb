@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.util.Pair;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedCallback;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryAddition;
@@ -38,8 +39,14 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
     private static final String BASIC_CARD_PAYMENT_METHOD = "basic-card";
 
     @Override
-    public void create(Context context, WebContents webContents, Set<String> methods,
+    public void create(WebContents webContents, Set<String> methods,
             PaymentAppCreatedCallback callback) {
+        Context context = ChromeActivity.fromWebContents(webContents);
+        if (context == null) {
+            callback.onAllPaymentAppsCreated();
+            return;
+        }
+
         Map<String, AndroidPaymentApp> installedApps = new HashMap<>();
         PackageManager pm = context.getPackageManager();
         Intent payIntent = new Intent();
@@ -114,7 +121,7 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
 
         for (ResolveInfo match : matches) {
             Pair<String, Drawable> appInfo =
-                    new Pair<String, Drawable>(match.loadLabel(pm).toString(), match.loadIcon(pm));
+                    new Pair<>(match.loadLabel(pm).toString(), match.loadIcon(pm));
             paymentAppsInfo.put(match.activityInfo.packageName, appInfo);
         }
 

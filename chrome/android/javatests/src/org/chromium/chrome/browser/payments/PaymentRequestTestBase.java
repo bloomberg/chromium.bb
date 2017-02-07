@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.payments;
 
 import static java.util.Arrays.asList;
 
-import android.content.Context;
 import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
@@ -805,7 +804,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         /**
          * Called when the UI is ready for input.
          *
-         * @param ui The UI that is ready for input.
+         * @param target The UI that is ready for input.
          */
         public void notifyCalled(T target) {
             ThreadUtils.assertOnUiThread();
@@ -865,7 +864,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         final TestPay app = new TestPay(methodNames, instrumentPresence, responseSpeed);
         PaymentAppFactory.getInstance().addAdditionalFactory(new PaymentAppFactoryAddition() {
             @Override
-            public void create(Context context, WebContents webContents, Set<String> methodNames,
+            public void create(WebContents webContents, Set<String> methodNames,
                     final PaymentAppFactory.PaymentAppCreatedCallback callback) {
                 if (creationSpeed == IMMEDIATE_CREATION) {
                     callback.onPaymentAppCreated(app);

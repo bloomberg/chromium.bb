@@ -150,6 +150,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
+
 /**
  * A {@link AsyncInitializationActivity} that builds and manages a {@link CompositorViewHolder}
  * and associated classes.
@@ -1951,6 +1953,30 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         boolean useLowEndTheme =
                 SysUtils.isLowEndDevice() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
         return (useLowEndTheme ? R.style.MainTheme_LowEnd : R.style.MainTheme);
+    }
+
+    /**
+     * Looks up the Chrome activity of the given web contents. This can be null. Should never be
+     * cached, because web contents can change activities, e.g., when user selects "Open in Chrome"
+     * menu item.
+     *
+     * @param webContents The web contents for which to lookup the Chrome activity.
+     * @return Possibly null Chrome activity that should never be cached.
+     */
+    @Nullable public static ChromeActivity fromWebContents(@Nullable WebContents webContents) {
+        if (webContents == null) return null;
+
+        ContentViewCore contentViewCore = ContentViewCore.fromWebContents(webContents);
+        if (contentViewCore == null) return null;
+
+        WindowAndroid window = contentViewCore.getWindowAndroid();
+        if (window == null) return null;
+
+        Activity activity = window.getActivity().get();
+        if (activity == null) return null;
+        if (!(activity instanceof ChromeActivity)) return null;
+
+        return (ChromeActivity) activity;
     }
 
     private void setLowEndTheme() {
