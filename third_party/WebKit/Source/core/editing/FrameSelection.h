@@ -27,6 +27,7 @@
 #ifndef FrameSelection_h
 #define FrameSelection_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
 #include "core/dom/SynchronousMutationObserver.h"
@@ -38,9 +39,9 @@
 #include "platform/Timer.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 
@@ -56,6 +57,7 @@ class SelectionEditor;
 class PendingSelection;
 class Text;
 class TextIteratorBehavior;
+struct PaintInvalidatorContext;
 
 enum class CursorAlignOnScroll { IfNeeded, Always };
 
@@ -192,9 +194,9 @@ class CORE_EXPORT FrameSelection final
   Position start() const { return selection().start(); }
   Position end() const { return selection().end(); }
 
-  // Returns true if specified layout block has caret. This function is
-  // called during InRecalStyle and InPaint.
-  bool hasCaretIn(const LayoutBlock&) const;
+  // Returns true if specified layout block should paint caret. This function is
+  // called during painting only.
+  bool shouldPaintCaret(const LayoutBlock&) const;
 
   // Bounds of (possibly transformed) caret in absolute coords
   IntRect absoluteCaretBounds();
@@ -213,15 +215,22 @@ class CORE_EXPORT FrameSelection final
   Range* firstRange() const;
 
   void documentAttached(Document*);
-  void dataWillChange(const CharacterData& node);
 
   void didLayout();
   bool isAppearanceDirty() const;
   void commitAppearanceIfNeeded(LayoutView&);
   void setCaretVisible(bool caretIsVisible);
-  void setCaretRectNeedsUpdate();
   void scheduleVisualUpdate() const;
-  void invalidateCaretRect(bool forceInvalidation = false);
+  void scheduleVisualUpdateForPaintInvalidationIfNeeded() const;
+
+  // Paint invalidation methods delegating to FrameCaret.
+  void clearPreviousCaretVisualRect(const LayoutBlock&);
+  void layoutBlockWillBeDestroyed(const LayoutBlock&);
+  void updateStyleAndLayoutIfNeeded();
+  void invalidatePaintIfNeeded(const LayoutBlock&,
+                               const PaintInvalidatorContext&,
+                               PaintInvalidationReason);
+
   void paintCaret(GraphicsContext&, const LayoutPoint&);
 
   // Used to suspend caret blinking while the mouse is down.
@@ -283,6 +292,7 @@ class CORE_EXPORT FrameSelection final
   DECLARE_TRACE();
 
  private:
+  friend class BlockPaintInvalidatorTest;
   friend class FrameSelectionTest;
   friend class PaintControllerPaintTestForSlimmingPaintV1AndV2;
   friend class SelectionControllerTest;
@@ -291,7 +301,6 @@ class CORE_EXPORT FrameSelection final
 
   explicit FrameSelection(LocalFrame&);
 
-  // For |PaintControllerPaintTestForSlimmingPaintV1AndV2|.
   const DisplayItemClient& caretDisplayItemClientForTesting() const;
 
   // Note: We have |selectionInFlatTree()| for unit tests, we should
@@ -338,10 +347,6 @@ class CORE_EXPORT FrameSelection final
                          const NodeWithIndex& nodeToBeRemovedWithIndex,
                          unsigned oldLength) final;
   void didSplitTextNode(const Text& oldNode) final;
-
-  // For unittests
-  bool shouldPaintCaretForTesting() const;
-  bool isPreviousCaretDirtyForTesting() const;
 
   Member<LocalFrame> m_frame;
   const Member<PendingSelection> m_pendingSelection;

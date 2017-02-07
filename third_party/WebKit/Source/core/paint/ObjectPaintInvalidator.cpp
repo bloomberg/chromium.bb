@@ -318,7 +318,8 @@ void ObjectPaintInvalidator::setBackingNeedsPaintInvalidationInRect(
         rect, reason, m_object);
   } else if (paintInvalidationContainer.usesCompositedScrolling()) {
     DCHECK(m_object == paintInvalidationContainer);
-    if (reason == PaintInvalidationBackgroundOnScrollingContentsLayer) {
+    if (reason == PaintInvalidationBackgroundOnScrollingContentsLayer ||
+        reason == PaintInvalidationCaret) {
       layer.compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(
           rect, reason, m_object);
     } else {

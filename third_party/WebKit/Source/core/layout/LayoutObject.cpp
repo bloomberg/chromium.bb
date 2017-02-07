@@ -1514,13 +1514,11 @@ StyleDifference LayoutObject::adjustStyleDifference(
   // needed if we have style or text affected by these properties.
   if (diff.textDecorationOrColorChanged() && !diff.needsPaintInvalidation()) {
     if (style()->hasBorder() || style()->hasOutline() ||
-        style()->hasBackgroundRelatedColorReferencingCurrentColor()
+        style()->hasBackgroundRelatedColorReferencingCurrentColor() ||
         // Skip any text nodes that do not contain text boxes. Whitespace cannot
         // be skipped or we will miss invalidating decorations (e.g.,
         // underlines).
-        || (isText() && !isBR() && toLayoutText(this)->hasTextBoxes())
-        // Caret is painted in text color.
-        || (isLayoutBlock() && toLayoutBlock(this)->hasCaret()) ||
+        (isText() && !isBR() && toLayoutText(this)->hasTextBoxes()) ||
         (isSVG() && style()->svgStyle().isFillColorCurrentColor()) ||
         (isSVG() && style()->svgStyle().isStrokeColorCurrentColor()) ||
         isListMarker())

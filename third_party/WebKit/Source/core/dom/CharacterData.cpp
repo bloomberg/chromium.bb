@@ -176,9 +176,6 @@ void CharacterData::setDataAndUpdate(const String& newData,
                                      unsigned oldLength,
                                      unsigned newLength,
                                      UpdateSource source) {
-  if (source != UpdateFromParser)
-    document().dataWillChange(*this);
-
   String oldData = m_data;
   m_data = newData;
 

@@ -7,9 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
-          "rect": [790, 7, 3, 21],
-          "reason": "invalidate paint rectangle"
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [791, 8, 1, 19],
+          "reason": "caret"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "Caret",
-      "reason": "invalidate paint rectangle"
+      "reason": "caret"
     }
   ]
 }

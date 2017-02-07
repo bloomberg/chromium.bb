@@ -18,36 +18,13 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [7, 83, 3, 21],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [7, 83, 3, 21],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [7, 83, 3, 21],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [7, 63, 3, 21],
-          "reason": "invalidate paint rectangle"
+          "rect": [8, 64, 1, 19],
+          "reason": "caret"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "Caret",
-      "reason": "invalidate paint rectangle"
-    },
-    {
-      "object": "Caret",
-      "reason": "invalidate paint rectangle"
-    },
     {
       "object": "LayoutBlockFlow DIV",
       "reason": "border box change"
@@ -62,11 +39,7 @@
     },
     {
       "object": "Caret",
-      "reason": "invalidate paint rectangle"
-    },
-    {
-      "object": "Caret",
-      "reason": "invalidate paint rectangle"
+      "reason": "caret"
     },
     {
       "object": "LayoutBR BR",

@@ -379,9 +379,9 @@ bool isEditablePosition(const Position& position) {
   DCHECK(node->document().isActive());
   if (node->document().lifecycle().state() >=
       DocumentLifecycle::InStyleRecalc) {
-    // TODO(yosin): Once we change |LayoutObject::adjustStyleDifference()|
-    // not to call |FrameSelection::hasCaret()|, we should not assume
-    // calling |isEditablePosition()| in |InStyleRecalc| is safe.
+    // TODO(yosin): Update the condition and DCHECK here given that
+    // https://codereview.chromium.org/2665823002/ avoided this function from
+    // being called during InStyleRecalc.
   } else {
     DCHECK(!needsLayoutTreeUpdate(position)) << position;
   }

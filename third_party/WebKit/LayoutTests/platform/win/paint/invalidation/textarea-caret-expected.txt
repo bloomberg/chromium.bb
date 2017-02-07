@@ -30,30 +30,11 @@
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [173, 30, 15, 15],
           "reason": "scroll"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [186, 10, 2, 18],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [186, 10, 2, 18],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [186, 10, 2, 18],
-          "reason": "invalidate paint rectangle"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "Caret",
-      "reason": "invalidate paint rectangle"
-    },
     {
       "object": "LayoutTextControl TEXTAREA id='editor'",
       "reason": "subtree"
@@ -76,11 +57,7 @@
     },
     {
       "object": "Caret",
-      "reason": "invalidate paint rectangle"
-    },
-    {
-      "object": "Caret",
-      "reason": "invalidate paint rectangle"
+      "reason": "caret"
     },
     {
       "object": "LayoutText #text",

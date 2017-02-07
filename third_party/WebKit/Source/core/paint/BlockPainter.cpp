@@ -43,7 +43,7 @@ void BlockPainter::paint(const PaintInfo& paintInfo,
   // FIXME: reduce the number of such cases.
   ContentsClipBehavior contentsClipBehavior = ForceContentsClip;
   if (m_layoutBlock.shouldClipOverflow() && !m_layoutBlock.hasControlClip() &&
-      !m_layoutBlock.hasCaret())
+      !m_layoutBlock.shouldPaintCarets())
     contentsClipBehavior = SkipContentsClipIfPossible;
 
   if (originalPhase == PaintPhaseOutline) {
@@ -246,7 +246,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo,
 
   // If the caret's node's layout object's containing block is this block, and
   // the paint action is PaintPhaseForeground, then paint the caret.
-  if (paintPhase == PaintPhaseForeground && m_layoutBlock.hasCaret())
+  if (paintPhase == PaintPhaseForeground && m_layoutBlock.shouldPaintCarets())
     paintCarets(paintInfo, paintOffset);
 }
 
@@ -254,10 +254,10 @@ void BlockPainter::paintCarets(const PaintInfo& paintInfo,
                                const LayoutPoint& paintOffset) {
   LocalFrame* frame = m_layoutBlock.frame();
 
-  if (m_layoutBlock.hasCursorCaret())
+  if (m_layoutBlock.shouldPaintCursorCaret())
     frame->selection().paintCaret(paintInfo.context, paintOffset);
 
-  if (m_layoutBlock.hasDragCaret()) {
+  if (m_layoutBlock.shouldPaintDragCaret()) {
     frame->page()->dragCaret().paintDragCaret(frame, paintInfo.context,
                                               paintOffset);
   }

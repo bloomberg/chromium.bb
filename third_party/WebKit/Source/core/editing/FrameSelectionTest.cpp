@@ -4,6 +4,7 @@
 
 #include "core/editing/FrameSelection.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -14,6 +15,7 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/input/EventHandler.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/testing/DummyPageHolder.h"
@@ -23,7 +25,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 
@@ -39,17 +40,6 @@ class FrameSelectionTest : public EditingTestBase {
   Text* appendTextNode(const String& data);
   int layoutCount() const {
     return dummyPageHolder().frameView().layoutCount();
-  }
-
-  bool isCaretBoundsDirty() const {
-    return selection().m_frameCaret->m_caretRectDirty;
-  }
-
-  bool shouldPaintCaretForTesting() const {
-    return selection().shouldPaintCaretForTesting();
-  }
-  bool isPreviousCaretDirtyForTesting() const {
-    return selection().isPreviousCaretDirtyForTesting();
   }
 
   PositionWithAffinity caretPosition() const {
@@ -76,25 +66,6 @@ TEST_F(FrameSelectionTest, SetValidSelection) {
   EXPECT_FALSE(selection().isNone());
 }
 
-TEST_F(FrameSelectionTest, InvalidateCaretRect) {
-  Text* text = appendTextNode("Hello, World!");
-  document().view()->updateAllLifecyclePhases();
-
-  selection().setSelection(
-      SelectionInDOMTree::Builder().collapse(Position(text, 0)).build());
-  selection().setCaretRectNeedsUpdate();
-  EXPECT_TRUE(isCaretBoundsDirty());
-  selection().invalidateCaretRect();
-  EXPECT_FALSE(isCaretBoundsDirty());
-
-  document().body()->removeChild(text);
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  selection().setCaretRectNeedsUpdate();
-  EXPECT_TRUE(isCaretBoundsDirty());
-  selection().invalidateCaretRect();
-  EXPECT_FALSE(isCaretBoundsDirty());
-}
-
 TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   Text* text = appendTextNode("Hello, World!");
   document().view()->updateAllLifecyclePhases();
@@ -106,8 +77,10 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   selection().setCaretVisible(true);
   selection().setSelection(
       SelectionInDOMTree::Builder().collapse(Position(text, 0)).build());
+  document().view()->updateAllLifecyclePhases();
   EXPECT_TRUE(selection().isCaret());
-  EXPECT_TRUE(shouldPaintCaretForTesting());
+  EXPECT_TRUE(toLayoutBlock(document().body()->layoutObject())
+                  ->shouldPaintCursorCaret());
 
   int startCount = layoutCount();
   {
@@ -125,58 +98,6 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   }
   paintController->commitNewDisplayItems();
   EXPECT_EQ(startCount, layoutCount());
-}
-
-TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter) {
-  Text* text = appendTextNode("Hello, World!");
-  document().view()->updateAllLifecyclePhases();
-
-  document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
-  document().body()->focus();
-  EXPECT_TRUE(document().body()->isFocused());
-
-  selection().setCaretVisible(true);
-  EXPECT_TRUE(selection().isCaret());
-  EXPECT_TRUE(shouldPaintCaretForTesting());
-
-  // Simulate to type "Hello, World!".
-  DisableCompositingQueryAsserts disabler;
-  document().updateStyleAndLayout();
-  selection().setSelection(
-      SelectionInDOMTree::Builder().collapse(selection().end()).build());
-  selection().setCaretRectNeedsUpdate();
-  EXPECT_TRUE(isCaretBoundsDirty());
-  EXPECT_FALSE(isPreviousCaretDirtyForTesting());
-  selection().invalidateCaretRect();
-  EXPECT_FALSE(isCaretBoundsDirty());
-  EXPECT_TRUE(isPreviousCaretDirtyForTesting());
-
-  // Simulate to remove all except for "H".
-  text->replaceWholeText("H");
-  document().updateStyleAndLayout();
-  selection().setSelection(
-      SelectionInDOMTree::Builder().collapse(selection().end()).build());
-  selection().setCaretRectNeedsUpdate();
-  EXPECT_TRUE(isCaretBoundsDirty());
-  // "H" remains so early previousCaret invalidation isn't needed.
-  EXPECT_TRUE(isPreviousCaretDirtyForTesting());
-  selection().invalidateCaretRect();
-  EXPECT_FALSE(isCaretBoundsDirty());
-  EXPECT_TRUE(isPreviousCaretDirtyForTesting());
-
-  // Simulate to remove the last character.
-  document().body()->removeChild(text);
-  // This line is the objective of this test.
-  // As removing the last character, early previousCaret invalidation is
-  // executed.
-  EXPECT_FALSE(isPreviousCaretDirtyForTesting());
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  selection().setCaretRectNeedsUpdate();
-  EXPECT_TRUE(isCaretBoundsDirty());
-  EXPECT_FALSE(isPreviousCaretDirtyForTesting());
-  selection().invalidateCaretRect();
-  EXPECT_FALSE(isCaretBoundsDirty());
-  EXPECT_TRUE(isPreviousCaretDirtyForTesting());
 }
 
 #define EXPECT_EQ_SELECTED_TEXT(text) \

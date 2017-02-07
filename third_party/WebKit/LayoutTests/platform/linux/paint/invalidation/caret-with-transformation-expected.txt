@@ -7,14 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
-          "rect": [322, 197, 14, 21],
-          "reason": "invalidate paint rectangle"
+          "object": "LayoutBlockFlow DIV id='div'",
+          "rect": [42, 36, 11, 18],
+          "reason": "caret"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [41, 35, 14, 20],
-          "reason": "invalidate paint rectangle"
+          "object": "LayoutBlockFlow DIV id='div'",
+          "rect": [324, 199, 11, 17],
+          "reason": "caret"
         }
       ]
     }
@@ -22,11 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "Caret",
-      "reason": "invalidate paint rectangle"
-    },
-    {
-      "object": "Caret",
-      "reason": "invalidate paint rectangle"
+      "reason": "caret"
     }
   ]
 }

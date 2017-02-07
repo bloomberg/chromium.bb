@@ -56,6 +56,8 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason) {
       return "SVG resource change";
     case PaintInvalidationBackgroundOnScrollingContentsLayer:
       return "background on scrolling contents layer";
+    case PaintInvalidationCaret:
+      return "caret";
     case PaintInvalidationForTesting:
       return "for testing";
     case PaintInvalidationDelayedFull:

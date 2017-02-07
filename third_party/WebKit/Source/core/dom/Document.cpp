@@ -4249,11 +4249,6 @@ void Document::nodeWillBeRemoved(Node& n) {
     styleEngine().elementWillBeRemoved(toElement(n));
 }
 
-void Document::dataWillChange(const CharacterData& characterData) {
-  if (LocalFrame* frame = this->frame())
-    frame->selection().dataWillChange(characterData);
-}
-
 void Document::didInsertText(Node* text, unsigned offset, unsigned length) {
   for (Range* range : m_ranges)
     range->didInsertText(text, offset, length);

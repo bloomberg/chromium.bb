@@ -373,8 +373,6 @@ void PaintInvalidator::invalidatePaintIfNeeded(
     ScopedUndoFrameViewContentClipAndScroll undo(frameView, context);
     frameView.invalidatePaintOfScrollControlsIfNeeded(context);
   }
-
-  frameView.frame().selection().invalidateCaretRect();
 }
 
 void PaintInvalidator::invalidatePaintIfNeeded(

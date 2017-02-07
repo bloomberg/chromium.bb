@@ -27,11 +27,15 @@
 #ifndef DragCaret_h
 #define DragCaret_h
 
+#include <memory>
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/CaretDisplayItemClient.h"
-#include <memory>
+#include "platform/graphics/PaintInvalidationReason.h"
 
 namespace blink {
+
+class LayoutBlock;
+struct PaintInvalidatorContext;
 
 class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
                         public SynchronousMutationObserver {
@@ -43,9 +47,19 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
 
   virtual ~DragCaret();
 
-  void paintDragCaret(LocalFrame*, GraphicsContext&, const LayoutPoint&) const;
+  // Paint invalidation methods delegating to CaretDisplayItemClient.
+  void clearPreviousVisualRect(const LayoutBlock&);
+  void layoutBlockWillBeDestroyed(const LayoutBlock&);
+  void updateStyleAndLayoutIfNeeded();
+  void invalidatePaintIfNeeded(const LayoutBlock&,
+                               const PaintInvalidatorContext&,
+                               PaintInvalidationReason);
 
-  bool hasCaretIn(const LayoutBlock&) const;
+  bool shouldPaintCaret(const LayoutBlock&) const;
+  void paintDragCaret(const LocalFrame*,
+                      GraphicsContext&,
+                      const LayoutPoint&) const;
+
   bool isContentRichlyEditable() const;
 
   bool hasCaret() const { return m_position.isNotNull(); }
@@ -58,16 +72,11 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
  private:
   DragCaret();
 
-  void invalidateCaretRect(Node*, const LayoutRect&);
-
   // Implementations of |SynchronousMutationObserver|
   void nodeChildrenWillBeRemoved(ContainerNode&) final;
   void nodeWillBeRemoved(Node&) final;
 
   PositionWithAffinity m_position;
-  // caret rect in coords local to the layoutObject responsible for painting the
-  // caret
-  LayoutRect m_caretLocalRect;
   const std::unique_ptr<CaretDisplayItemClient> m_caretBase;
 };
 

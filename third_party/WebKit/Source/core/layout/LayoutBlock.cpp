@@ -134,6 +134,11 @@ void LayoutBlock::willBeDestroyed() {
   if (!documentBeingDestroyed() && parent())
     parent()->dirtyLinesFromChangedChild(this);
 
+  if (LocalFrame* frame = this->frame()) {
+    frame->selection().layoutBlockWillBeDestroyed(*this);
+    frame->page()->dragCaret().layoutBlockWillBeDestroyed(*this);
+  }
+
   if (TextAutosizer* textAutosizer = document().textAutosizer())
     textAutosizer->destroy(this);
 
@@ -1025,7 +1030,12 @@ PaintInvalidationReason LayoutBlock::invalidatePaintIfNeeded(
 
 PaintInvalidationReason LayoutBlock::invalidatePaintIfNeeded(
     const PaintInvalidatorContext& context) const {
-  return BlockPaintInvalidator(*this, context).invalidatePaintIfNeeded();
+  return BlockPaintInvalidator(*this).invalidatePaintIfNeeded(context);
+}
+
+void LayoutBlock::clearPreviousVisualRects() {
+  LayoutBox::clearPreviousVisualRects();
+  BlockPaintInvalidator(*this).clearPreviousVisualRects();
 }
 
 void LayoutBlock::removePositionedObjects(
@@ -1843,15 +1853,12 @@ inline bool LayoutBlock::isInlineBoxWrapperActuallyChild() const {
          editingIgnoresContent(*node());
 }
 
-bool LayoutBlock::hasCursorCaret() const {
-  LocalFrame* frame = this->frame();
-  return frame->selection().hasCaretIn(*this);
+bool LayoutBlock::shouldPaintCursorCaret() const {
+  return frame()->selection().shouldPaintCaret(*this);
 }
 
-bool LayoutBlock::hasDragCaret() const {
-  LocalFrame* frame = this->frame();
-  DragCaret& dragCaret = frame->page()->dragCaret();
-  return dragCaret.hasCaretIn(*this);
+bool LayoutBlock::shouldPaintDragCaret() const {
+  return frame()->page()->dragCaret().shouldPaintCaret(*this);
 }
 
 LayoutRect LayoutBlock::localCaretRect(InlineBox* inlineBox,

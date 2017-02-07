@@ -26,6 +26,7 @@
 
 #include "core/frame/FrameView.h"
 
+#include <memory>
 #include "core/HTMLNames.h"
 #include "core/MediaTypeNames.h"
 #include "core/animation/DocumentAnimations.h"
@@ -40,6 +41,7 @@
 #include "core/dom/ResizeObserverController.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/editing/DragCaret.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
@@ -93,6 +95,7 @@
 #include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
+#include "core/paint/BlockPaintInvalidator.h"
 #include "core/paint/FramePainter.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintTiming.h"
@@ -129,7 +132,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
-#include <memory>
 
 // Used to check for dirty layouts violating document lifecycle rules.
 // If arg evaluates to true, the program will continue. If arg evaluates to
@@ -1340,8 +1342,6 @@ void FrameView::invalidatePaintIfNeeded(
   RELEASE_ASSERT(!layoutViewItem().isNull());
   if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
     invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState);
-
-  m_frame->selection().invalidateCaretRect();
 }
 
 void FrameView::setNeedsPaintPropertyUpdate() {
@@ -3249,6 +3249,9 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal() {
   if (frame().document()->hasFinishedParsing() &&
       frame().loader().stateMachine()->committedFirstRealDocumentLoad())
     m_isVisuallyNonEmpty = true;
+
+  frame().selection().updateStyleAndLayoutIfNeeded();
+  frame().page()->dragCaret().updateStyleAndLayoutIfNeeded();
 }
 
 void FrameView::invalidateTreeIfNeededRecursive() {
@@ -3268,8 +3271,7 @@ void FrameView::invalidateTreeIfNeededRecursiveInternal() {
   // throttled even though we are (e.g., it didn't compute its visibility yet).
   if (shouldThrottleRendering())
     return;
-  TRACE_EVENT1("blink", "FrameView::invalidateTreeIfNeededRecursive", "root",
-               layoutView()->debugName().ascii());
+  TRACE_EVENT0("blink", "FrameView::invalidateTreeIfNeededRecursiveInternal");
 
   Vector<const LayoutObject*> pendingDelayedPaintInvalidations;
   PaintInvalidationState rootPaintInvalidationState(
@@ -3282,8 +3284,8 @@ void FrameView::invalidateTreeIfNeededRecursiveInternal() {
   // because
   // - the frame is a detached frame; or
   // - it didn't need paint invalidation.
-  // We need to call invalidateTreeIfNeededRecursive() for such frames to finish
-  // required paint invalidation and advance their life cycle state.
+  // We need to call invalidateTreeIfNeededRecursiveInternal() for such frames
+  // to finish required paint invalidation and advance their life cycle state.
   for (Frame* child = m_frame->tree().firstChild(); child;
        child = child->tree().nextSibling()) {
     if (child->isLocalFrame()) {

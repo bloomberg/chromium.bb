@@ -7,13 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='test'",
-          "rect": [38, 78, 152, 102],
-          "reason": "forced by layout"
+          "object": "LayoutBlockFlow DIV id='root' class='editing'",
+          "rect": [7, 7, 786, 20],
+          "reason": "full"
         },
         {
           "object": "LayoutText #text",
-          "rect": [39, 79, 146, 99],
+          "rect": [8, 8, 10, 18],
           "reason": "layoutObject removal"
         }
       ]
@@ -25,24 +25,12 @@
       "reason": "layoutObject removal"
     },
     {
-      "object": "LayoutBlockFlow DIV id='test'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "object": "LayoutBlockFlow DIV id='root' class='editing'",
+      "reason": "full"
     },
     {
       "object": "Caret",
       "reason": "caret"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "forced by layout"
     }
   ]
 }

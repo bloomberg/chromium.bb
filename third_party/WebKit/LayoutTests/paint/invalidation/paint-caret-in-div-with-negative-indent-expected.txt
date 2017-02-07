@@ -8,8 +8,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='editable'",
-          "rect": [357, 199, 3, 22],
-          "reason": "invalidate paint rectangle"
+          "rect": [358, 200, 1, 20],
+          "reason": "caret"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "Caret",
-      "reason": "invalidate paint rectangle"
+      "reason": "caret"
     }
   ]
 }

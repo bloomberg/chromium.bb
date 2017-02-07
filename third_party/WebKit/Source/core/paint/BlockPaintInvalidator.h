@@ -17,15 +17,14 @@ class BlockPaintInvalidator {
   STACK_ALLOCATED();
 
  public:
-  BlockPaintInvalidator(const LayoutBlock& block,
-                        const PaintInvalidatorContext& context)
-      : m_block(block), m_context(context) {}
+  BlockPaintInvalidator(const LayoutBlock& block) : m_block(block) {}
 
-  PaintInvalidationReason invalidatePaintIfNeeded();
+  void clearPreviousVisualRects();
+  PaintInvalidationReason invalidatePaintIfNeeded(
+      const PaintInvalidatorContext&);
 
  private:
   const LayoutBlock& m_block;
-  const PaintInvalidatorContext& m_context;
 };
 
 }  // namespace blink

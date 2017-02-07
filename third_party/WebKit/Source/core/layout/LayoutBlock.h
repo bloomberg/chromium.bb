@@ -486,15 +486,19 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   bool isSelectionRoot() const;
 
  public:
-  bool hasCursorCaret() const;
-  bool hasDragCaret() const;
-  bool hasCaret() const { return hasCursorCaret() || hasDragCaret(); }
+  bool shouldPaintCursorCaret() const;
+  bool shouldPaintDragCaret() const;
+  bool shouldPaintCarets() const {
+    return shouldPaintCursorCaret() || shouldPaintDragCaret();
+  }
 
  protected:
   PaintInvalidationReason invalidatePaintIfNeeded(
       const PaintInvalidationState&) override;
   PaintInvalidationReason invalidatePaintIfNeeded(
       const PaintInvalidatorContext&) const override;
+
+  void clearPreviousVisualRects() override;
 
  private:
   LayoutRect localCaretRect(InlineBox*,

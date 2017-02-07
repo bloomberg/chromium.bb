@@ -222,7 +222,7 @@ void FrameSelection::setSelectionAlgorithm(
 
   m_handleVisibility = handleVisibility;
   m_selectionEditor->setVisibleSelection(s, options);
-  m_frameCaret->setCaretRectNeedsUpdate();
+  scheduleVisualUpdateForPaintInvalidationIfNeeded();
 
   if (!s.isNone() && !(options & DoNotSetFocus)) {
     setFocusedNodeIfNeeded();
@@ -237,9 +237,6 @@ void FrameSelection::setSelectionAlgorithm(
   }
 
   if (!(options & DoNotUpdateAppearance)) {
-    // Hits in
-    // compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html
-    DisableCompositingQueryAsserts disabler;
     m_frameCaret->stopCaretBlinkTimer();
     updateAppearance();
   }
@@ -401,7 +398,6 @@ void FrameSelection::nodeChildrenWillBeRemoved(ContainerNode& container) {
     m_selectionEditor->setWithoutValidation(newStart, newEnd);
   else
     m_selectionEditor->setWithoutValidation(newEnd, newStart);
-  m_frameCaret->setCaretRectNeedsUpdate();
   if (document().isRunningExecCommand())
     return;
   TypingCommand::closeTyping(m_frame);
@@ -481,7 +477,6 @@ void FrameSelection::respondToNodeModification(Node& node,
 
   if (clearDOMTreeSelection)
     setSelection(SelectionInDOMTree(), DoNotSetFocus);
-  m_frameCaret->setCaretRectNeedsUpdate();
 
   // TODO(yosin): We should move to call |TypingCommand::closeTyping()| to
   // |Editor| class.
@@ -692,7 +687,7 @@ bool FrameSelection::modify(EAlteration alter,
   if (userTriggered == UserTriggered)
     m_granularity = CharacterGranularity;
 
-  m_frameCaret->setCaretRectNeedsUpdate();
+  scheduleVisualUpdateForPaintInvalidationIfNeeded();
 
   return true;
 }
@@ -727,7 +722,6 @@ void FrameSelection::documentAttached(Document* document) {
   DCHECK(document);
   m_useSecureKeyboardEntryWhenActive = false;
   m_selectionEditor->documentAttached(document);
-  m_frameCaret->documentAttached(document);
   setContext(document);
 }
 
@@ -742,26 +736,36 @@ void FrameSelection::contextDestroyed(Document* document) {
   m_selectionEditor->documentDetached(*document);
 }
 
-bool FrameSelection::hasCaretIn(const LayoutBlock& layoubBlock) const {
+void FrameSelection::clearPreviousCaretVisualRect(const LayoutBlock& block) {
+  m_frameCaret->clearPreviousVisualRect(block);
+}
+
+void FrameSelection::layoutBlockWillBeDestroyed(const LayoutBlock& block) {
+  m_frameCaret->layoutBlockWillBeDestroyed(block);
+}
+
+void FrameSelection::updateStyleAndLayoutIfNeeded() {
+  m_frameCaret->updateStyleAndLayoutIfNeeded();
+}
+
+void FrameSelection::invalidatePaintIfNeeded(
+    const LayoutBlock& block,
+    const PaintInvalidatorContext& context,
+    PaintInvalidationReason reason) {
+  m_frameCaret->invalidatePaintIfNeeded(block, context, reason);
+}
+
+bool FrameSelection::shouldPaintCaret(const LayoutBlock& block) const {
   DCHECK(selection().isValidFor(document()));
-  if (!isCaret())
-    return false;
-  return CaretDisplayItemClient::caretLayoutObject(
-             selection().start().anchorNode()) == layoubBlock &&
-         hasEditableStyle();
+
+  bool result = m_frameCaret->shouldPaintCaret(block);
+  DCHECK(!result || (isCaret() && hasEditableStyle()));
+  return result;
 }
 
 IntRect FrameSelection::absoluteCaretBounds() {
   DCHECK(selection().isValidFor(*m_frame->document()));
   return m_frameCaret->absoluteCaretBounds();
-}
-
-void FrameSelection::invalidateCaretRect(bool forceInvalidation) {
-  m_frameCaret->invalidateCaretRect(forceInvalidation);
-}
-
-void FrameSelection::dataWillChange(const CharacterData& node) {
-  m_frameCaret->dataWillChange(node);
 }
 
 void FrameSelection::paintCaret(GraphicsContext& context,
@@ -1069,7 +1073,6 @@ void FrameSelection::commitAppearanceIfNeeded(LayoutView& layoutView) {
 }
 
 void FrameSelection::didLayout() {
-  setCaretRectNeedsUpdate();
   updateAppearance();
 }
 
@@ -1329,6 +1332,11 @@ void FrameSelection::scheduleVisualUpdate() const {
     page->animator().scheduleVisualUpdate(m_frame->localFrameRoot());
 }
 
+void FrameSelection::scheduleVisualUpdateForPaintInvalidationIfNeeded() const {
+  if (FrameView* frameView = m_frame->view())
+    frameView->scheduleVisualUpdateForPaintInvalidationIfNeeded();
+}
+
 bool FrameSelection::selectWordAroundPosition(const VisiblePosition& position) {
   static const EWordSide wordSideList[2] = {RightWordIfOnBoundary,
                                             LeftWordIfOnBoundary};
@@ -1412,18 +1420,6 @@ void FrameSelection::updateIfNeeded() {
 void FrameSelection::setCaretVisible(bool caretIsVisible) {
   m_frameCaret->setCaretVisibility(caretIsVisible ? CaretVisibility::Visible
                                                   : CaretVisibility::Hidden);
-}
-
-bool FrameSelection::shouldPaintCaretForTesting() const {
-  return m_frameCaret->shouldPaintCaretForTesting();
-}
-
-bool FrameSelection::isPreviousCaretDirtyForTesting() const {
-  return m_frameCaret->isPreviousCaretDirtyForTesting();
-}
-
-void FrameSelection::setCaretRectNeedsUpdate() {
-  m_frameCaret->setCaretRectNeedsUpdate();
 }
 
 void FrameSelection::setCaretBlinkingSuspended(bool suspended) {

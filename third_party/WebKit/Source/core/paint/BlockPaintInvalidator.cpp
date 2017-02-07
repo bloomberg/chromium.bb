@@ -4,23 +4,32 @@
 
 #include "core/paint/BlockPaintInvalidator.h"
 
+#include "core/editing/DragCaret.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutBlock.h"
+#include "core/page/Page.h"
 #include "core/paint/BoxPaintInvalidator.h"
+#include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintInvalidator.h"
 
 namespace blink {
 
-PaintInvalidationReason BlockPaintInvalidator::invalidatePaintIfNeeded() {
-  PaintInvalidationReason reason =
-      BoxPaintInvalidator(m_block, m_context).invalidatePaintIfNeeded();
+void BlockPaintInvalidator::clearPreviousVisualRects() {
+  m_block.frame()->selection().clearPreviousCaretVisualRect(m_block);
+  m_block.frame()->page()->dragCaret().clearPreviousVisualRect(m_block);
+}
 
-  if (reason != PaintInvalidationNone && m_block.hasCaret()) {
-    FrameSelection& selection = m_block.frame()->selection();
-    selection.setCaretRectNeedsUpdate();
-    selection.invalidateCaretRect(true);
-  }
+PaintInvalidationReason BlockPaintInvalidator::invalidatePaintIfNeeded(
+    const PaintInvalidatorContext& context) {
+  PaintInvalidationReason reason =
+      BoxPaintInvalidator(m_block, context).invalidatePaintIfNeeded();
+
+  m_block.frame()->selection().invalidatePaintIfNeeded(m_block, context,
+                                                       reason);
+  m_block.frame()->page()->dragCaret().invalidatePaintIfNeeded(m_block, context,
+                                                               reason);
+
   return reason;
 }
 }
