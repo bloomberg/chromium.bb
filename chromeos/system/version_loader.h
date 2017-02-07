@@ -21,15 +21,15 @@ enum VersionFormat {
 // Gets the version.
 // If |full_version| is true version string with extra info is extracted,
 // otherwise it's in short format x.x.xx.x.
-// Must be run on a blocking thread pool.
+// May block.
 CHROMEOS_EXPORT std::string GetVersion(VersionFormat format);
 
 // Gets the ARC version.
-// Must be run on a blocking thread pool.
+// May block.
 CHROMEOS_EXPORT std::string GetARCVersion();
 
 // Gets the firmware info.
-// Must be run on a blocking thread pool.
+// May block.
 CHROMEOS_EXPORT std::string GetFirmware();
 
 // Extracts the firmware from the file.
