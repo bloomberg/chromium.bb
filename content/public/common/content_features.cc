@@ -266,6 +266,10 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
+// A browsing history manager implementation for Android.
+const base::Feature kNativeAndroidHistoryManager{
+  "AndroidHistoryManager", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // FeatureList definition for the Seccomp field trial.
 const base::Feature kSeccompSandboxAndroid{"SeccompSandboxAndroid",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

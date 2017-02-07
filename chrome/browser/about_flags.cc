@@ -2155,7 +2155,7 @@ const FeatureEntry kFeatureEntries[] = {
                      "AutofillCreditCardPopupLayout")},
     {"native-android-history-manager", IDS_NATIVE_ANDROID_HISTORY_MANAGER,
      IDS_NATIVE_ANDROID_HISTORY_MANAGER_DESCRIPTION, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kNativeAndroidHistoryManager)},
+     FEATURE_VALUE_TYPE(features::kNativeAndroidHistoryManager)},
 #endif  // OS_ANDROID
 
 #if defined(OS_WIN)

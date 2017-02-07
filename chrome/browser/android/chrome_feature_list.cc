@@ -35,6 +35,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::kAutofillScanCardholderName,
     &features::kConsistentOmniboxGeolocation,
     &features::kCredentialManagementAPI,
+    &features::kNativeAndroidHistoryManager,
     &features::kServiceWorkerPaymentApps,
     &features::kSimplifiedFullscreenUI,
     &features::kVrShell,
@@ -48,7 +49,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchSingleActions,
     &kImportantSitesInCBD,
     &kImprovedA2HS,
-    &kNativeAndroidHistoryManager,
     &kNoCreditCardAbort,
     &kNTPFakeOmniboxTextFeature,
     &kNTPOfflinePagesFeature,
@@ -105,9 +105,6 @@ const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
 // URL which opens Chrome in fullscreen.
 const base::Feature kImprovedA2HS{"ImprovedA2HS",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNativeAndroidHistoryManager{
-  "AndroidHistoryManager", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

@@ -7,6 +7,7 @@
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
@@ -137,6 +138,27 @@ void ContentSerializedNavigationDriver::Sanitize(
     navigation->original_request_url_ = navigation->virtual_url_;
     navigation->encoded_page_state_ = content::PageState::CreateFromURL(
         navigation->virtual_url_).ToEncodedData();
+  }
+
+  if (base::FeatureList::IsEnabled(features::kNativeAndroidHistoryManager) &&
+      navigation->virtual_url_.SchemeIs(content::kChromeUIScheme) &&
+      (navigation->virtual_url_.host_piece() == content::kChromeUIHistoryHost ||
+       navigation->virtual_url_.host_piece() ==
+           content::kChromeUIHistoryFrameHost)) {
+    // Rewrite the old history Web UI to the new android native history.
+    navigation->virtual_url_ = GURL(content::kChromeUINativeHistoryURL);
+    navigation->original_request_url_ = navigation->virtual_url_;
+    navigation->encoded_page_state_ = content::PageState::CreateFromURL(
+        navigation->virtual_url_).ToEncodedData();
+  } else if (
+      !base::FeatureList::IsEnabled(features::kNativeAndroidHistoryManager) &&
+      navigation->virtual_url_.SchemeIs(content::kChromeNativeUIScheme) &&
+      navigation->virtual_url_.host_piece() == content::kChromeUIHistoryHost) {
+    // If the android native history UI has been disabled, redirect
+    // chrome-native://history to the old web UI.
+    navigation->virtual_url_ = GURL(content::kChromeUIHistoryURL);
+    navigation->original_request_url_ = navigation->virtual_url_;
+    navigation->encoded_page_state_ = std::string();
   }
 #endif  // defined(OS_ANDROID)
 }

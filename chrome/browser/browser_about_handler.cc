@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/url_formatter/url_fixer.h"
+#include "content/public/common/content_features.h"
 #include "extensions/features/features.h"
 
 #if !defined(OS_ANDROID)
@@ -88,8 +89,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
 #if defined(OS_ANDROID)
     // TODO(twellington): remove this after native Android history launches.
     // See http://crbug.com/654071.
-    if (!base::FeatureList::IsEnabled(
-            chrome::android::kNativeAndroidHistoryManager)) {
+    if (!base::FeatureList::IsEnabled(features::kNativeAndroidHistoryManager)) {
       // On Android, redirect directly to chrome://history-frame since
       // uber page is unsupported.
       host = chrome::kChromeUIHistoryFrameHost;

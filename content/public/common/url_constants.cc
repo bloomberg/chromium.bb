@@ -16,6 +16,9 @@ const char kViewSourceScheme[] = "view-source";
 #if defined(OS_CHROMEOS)
 const char kExternalFileScheme[] = "externalfile";
 #endif
+#if defined(OS_ANDROID)
+const char kChromeNativeUIScheme[] = "chrome-native";
+#endif
 
 const char kAboutSrcDocURL[] = "about:srcdoc";
 
@@ -28,6 +31,9 @@ const char kChromeUIDinoHost[] = "dino";
 const char kChromeUIGpuHost[] = "gpu";
 const char kChromeUIHistogramHost[] = "histograms";
 const char kChromeUIHistoryHost[] = "history";
+#if defined(OS_ANDROID)
+const char kChromeUIHistoryFrameHost[] = "history-frame";
+#endif
 const char kChromeUIMediaInternalsHost[] = "media-internals";
 const char kChromeUIMemoryExhaustHost[] = "memory-exhaust";
 const char kChromeUINetworkViewCacheHost[] = "view-http-cache";
@@ -66,5 +72,10 @@ const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
 const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
 const char kChromeUIResourcesURL[] = "chrome://resources/";
 const char kChromeUIShorthangURL[] = "chrome://shorthang/";
+
+#if defined(OS_ANDROID)
+const char kChromeUIHistoryURL[] = "chrome://history/";
+const char kChromeUINativeHistoryURL[] = "chrome-native://history/";
+#endif
 
 }  // namespace content
