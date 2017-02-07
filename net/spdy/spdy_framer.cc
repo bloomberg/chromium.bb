@@ -21,6 +21,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/spdy/hpack/hpack_constants.h"
 #include "net/spdy/hpack/hpack_decoder.h"
@@ -571,7 +572,7 @@ void SpdyFramer::SpdySettingsScratch::Reset() {
 }
 
 SpdyFrameType SpdyFramer::ValidateFrameHeader(bool is_control_frame,
-                                              int frame_type_field,
+                                              uint8_t frame_type_field,
                                               size_t payload_length_field) {
   if (!IsDefinedFrameType(frame_type_field)) {
     // We ignore unknown frame types for extensibility, as long as
@@ -584,12 +585,13 @@ SpdyFrameType SpdyFramer::ValidateFrameHeader(bool is_control_frame,
       // if we expect a continuation and receive an unknown frame.
       DLOG(ERROR) << "The framer was expecting to receive a CONTINUATION "
                   << "frame, but instead received an unknown frame of type "
-                  << frame_type_field;
+                  << base::StringPrintf("%x", frame_type_field);
       set_error(SPDY_UNEXPECTED_FRAME);
     } else if (!valid_stream) {
       // Report an invalid frame error and close the stream if the
       // stream_id is not valid.
-      DLOG(WARNING) << "Unknown control frame type " << frame_type_field
+      DLOG(WARNING) << "Unknown control frame type "
+                    << base::StringPrintf("%x", frame_type_field)
                     << " received on invalid stream "
                     << current_frame_stream_id_;
       set_error(SPDY_INVALID_CONTROL_FRAME);
@@ -652,18 +654,16 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
                          current_frame_buffer_.len());
   bool is_control_frame = false;
 
-  int control_frame_type_field = kDataFrameType;
   uint32_t length_field = 0;
   bool successful_read = reader.ReadUInt24(&length_field);
   DCHECK(successful_read);
 
-  uint8_t control_frame_type_field_uint8;
-  successful_read = reader.ReadUInt8(&control_frame_type_field_uint8);
+  uint8_t control_frame_type_field = 0;
+  successful_read = reader.ReadUInt8(&control_frame_type_field);
   DCHECK(successful_read);
   // We check control_frame_type_field's validity in
   // ValidateFrameHeader().
-  control_frame_type_field = control_frame_type_field_uint8;
-  is_control_frame = control_frame_type_field != kDataFrameType;
+  is_control_frame = control_frame_type_field != DATA;
 
   current_frame_length_ = length_field + GetFrameHeaderSize();
 
@@ -1267,8 +1267,9 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
 bool SpdyFramer::ProcessSetting(const char* data) {
   // Extract fields.
   // Maintain behavior of old SPDY 2 bug with byte ordering of flags/id.
-  int id_field = base::NetToHost16(*(reinterpret_cast<const uint16_t*>(data)));
-  int32_t value =
+  uint16_t id_field =
+      base::NetToHost16(*(reinterpret_cast<const uint16_t*>(data)));
+  uint32_t value =
       base::NetToHost32(*(reinterpret_cast<const uint32_t*>(data + 2)));
 
   // Validate id.

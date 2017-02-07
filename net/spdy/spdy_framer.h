@@ -602,7 +602,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Otherwise returns a best guess at invalid frame type,
   // after setting the appropriate SpdyFramerError.
   SpdyFrameType ValidateFrameHeader(bool is_control_frame,
-                                    int frame_type_field,
+                                    uint8_t frame_type_field,
                                     size_t payload_length_field);
 
   // Helpers for above internal breakouts from ProcessInput.

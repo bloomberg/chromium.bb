@@ -52,7 +52,7 @@ bool IsPaddable(Http2FrameType type) {
 }
 
 SpdyFrameType ToSpdyFrameType(Http2FrameType type) {
-  return ParseFrameType(static_cast<int>(type));
+  return ParseFrameType(static_cast<uint8_t>(type));
 }
 
 uint64_t ToSpdyPingId(const Http2PingFields& ping) {
@@ -369,7 +369,7 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
   void OnSetting(const Http2SettingFields& setting_fields) override {
     DVLOG(1) << "OnSetting: " << setting_fields;
     SpdySettingsIds setting_id;
-    if (!ParseSettingsId(static_cast<int>(setting_fields.parameter),
+    if (!ParseSettingsId(static_cast<uint16_t>(setting_fields.parameter),
                          &setting_id)) {
       DVLOG(1) << "Ignoring invalid setting id: " << setting_fields;
       return;
