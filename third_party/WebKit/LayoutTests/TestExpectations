@@ -141,6 +141,11 @@ crbug.com/674396 [ Win ] compositing/reflections/nested-reflection-transition.ht
 # Added 2016-12-15
 crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 
+# Added 2017-01-16
+crbug.com/681471 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
+crbug.com/681471 virtual/disable-spinvalidation/paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
+
+# ====== Paint team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
@@ -2321,9 +2326,6 @@ crbug.com/680050 inspector/sources/debugger-ui/watch-expressions-panel-switch.ht
 
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Failure Pass ]
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass ]
-
-crbug.com/681471 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
-crbug.com/681471 virtual/disable-spinvalidation/paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
 
 crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
 
