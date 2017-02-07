@@ -850,8 +850,7 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_SETTINGS_PAGE_HTML"
                  file="site_settings_page/site_settings_page.html"
-                 type="chrome_html"
-                 preprocess="true" />
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_SETTINGS_PAGE_JS"
                  file="site_settings_page/site_settings_page.js"
                  type="chrome_html" />

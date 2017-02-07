@@ -1754,7 +1754,7 @@
     Some content services use unique identifiers for the purposes of authorizing access to protected content.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_ENABLE" desc="Label for the toggle enabling protected content.">
-    Allow identifiers for protected content (computer restart may be required)
+    Allow sites to play protected content (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS" desc="Label for the unsandboxed plugin access site settings.">
     Unsandboxed plugin access
