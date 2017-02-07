@@ -15,6 +15,7 @@
 @class CRWSessionCertificatePolicyManager;
 
 namespace web {
+class BrowserState;
 class NavigationManagerImpl;
 struct Referrer;
 }
@@ -63,6 +64,8 @@ struct Referrer;
 
 // Sets the corresponding NavigationManager.
 - (void)setNavigationManager:(web::NavigationManagerImpl*)navigationManager;
+// Sets the corresponding BrowserState.
+- (void)setBrowserState:(web::BrowserState*)browserState;
 
 // Add a new entry with the given url, referrer, and navigation type, making it
 // the current entry. If |url| is the same as the current entry's url, this

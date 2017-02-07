@@ -241,6 +241,12 @@
   }
 }
 
+- (void)setBrowserState:(web::BrowserState*)browserState {
+  _browserState = browserState;
+  DCHECK(!_navigationManager ||
+         _navigationManager->GetBrowserState() == _browserState);
+}
+
 - (NSString*)description {
   return [NSString
       stringWithFormat:

@@ -86,6 +86,7 @@ void NavigationManagerImpl::SetDelegate(NavigationManagerDelegate* delegate) {
 
 void NavigationManagerImpl::SetBrowserState(BrowserState* browser_state) {
   browser_state_ = browser_state;
+  [session_controller_ setBrowserState:browser_state];
 }
 
 void NavigationManagerImpl::SetSessionController(
