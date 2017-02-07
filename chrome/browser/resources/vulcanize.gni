@@ -43,8 +43,6 @@ template("vulcanize") {
       invoker.html_out_file,
       "--js_out_file",
       invoker.js_out_file,
-      "--input_type",
-      invoker.input_type,
       "--input",
       invoker.input,
       "--insert_in_head",

@@ -1,13 +1,11 @@
 import("../vulcanize.gni")
 
 vulcanize("vulcanize") {
+  deps = []
   host = "downloads"
   html_in_file = "downloads.html"
   html_out_file = "vulcanized.html"
-  insert_in_head = "<base href=chrome://downloads>"
-
-  input_type = "FOLDER"
   input = rebase_path(".", root_build_dir)
+  insert_in_head = "<base href=chrome://downloads>"
   js_out_file = "crisper.js"
-  deps = []
 }
