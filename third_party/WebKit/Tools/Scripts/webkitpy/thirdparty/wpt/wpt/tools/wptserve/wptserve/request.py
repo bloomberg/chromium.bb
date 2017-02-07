@@ -3,8 +3,7 @@ import cgi
 import Cookie
 import StringIO
 import tempfile
-
-from six.moves.urllib.parse import parse_qsl, urlsplit
+import urlparse
 
 from . import stash
 from .utils import HTTPException
@@ -266,7 +265,7 @@ class Request(object):
                                       host,
                                       port,
                                       self.request_path)
-        self.url_parts = urlsplit(self.url)
+        self.url_parts = urlparse.urlsplit(self.url)
 
         self._raw_headers = request_handler.headers
 
@@ -291,7 +290,7 @@ class Request(object):
     @property
     def GET(self):
         if self._GET is None:
-            params = parse_qsl(self.url_parts.query, keep_blank_values=True)
+            params = urlparse.parse_qsl(self.url_parts.query, keep_blank_values=True)
             self._GET = MultiDict()
             for key, value in params:
                 self._GET.add(key, value)
