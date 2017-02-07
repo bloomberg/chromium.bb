@@ -157,10 +157,6 @@ crbug.com/451577 virtual/mojo-loading/http/tests/inspector/network/network-datar
 crbug.com/24182 http/tests/perf/large-inlined-script.html [ Timeout Pass ]
 crbug.com/24182 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [ Timeout Pass ]
 
-# https://crbug.com/672570: autoplay-crossorigin.html fails w/ --site-per-process
-crbug.com/672570 http/tests/media/autoplay-crossorigin.html [ Timeout ]
-crbug.com/672570 virtual/mojo-loading/http/tests/media/autoplay-crossorigin.html [ Timeout ]
-
 # https://crbug.com/680201: referrer-policy-attribute-import-no-referrer.html fails w/ --site-per-process
 crbug.com/680201 http/tests/security/referrer-policy-attribute-import-no-referrer.html [ Failure ]
 crbug.com/680201 virtual/mojo-loading/http/tests/security/referrer-policy-attribute-import-no-referrer.html [ Failure ]
