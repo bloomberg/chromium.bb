@@ -971,6 +971,38 @@ struct zwp_fullscreen_shell_mode_feedback_v1_listener mode_feedback_listener = {
 	mode_feedback_cancelled,
 };
 
+static enum mode_status
+wayland_output_fullscreen_shell_mode_feedback(struct wayland_output *output,
+					      struct weston_mode *mode)
+{
+	struct wayland_backend *b = to_wayland_backend(output->base.compositor);
+	struct zwp_fullscreen_shell_mode_feedback_v1 *mode_feedback;
+	enum mode_status mode_status;
+	int ret = 0;
+
+	mode_feedback =
+		zwp_fullscreen_shell_v1_present_surface_for_mode(b->parent.fshell,
+								 output->parent.surface,
+								 output->parent.output,
+								 mode->refresh);
+
+	zwp_fullscreen_shell_mode_feedback_v1_add_listener(mode_feedback,
+							   &mode_feedback_listener,
+							   &mode_status);
+
+	output->parent.draw_initial_frame = false;
+	draw_initial_frame(output);
+	wl_surface_commit(output->parent.surface);
+
+	mode_status = MODE_STATUS_UNKNOWN;
+	while (mode_status == MODE_STATUS_UNKNOWN && ret >= 0)
+		ret = wl_display_dispatch(b->parent.wl_display);
+
+	zwp_fullscreen_shell_mode_feedback_v1_destroy(mode_feedback);
+
+	return mode_status;
+}
+
 static int
 wayland_output_switch_mode(struct weston_output *output_base,
 			   struct weston_mode *mode)
@@ -979,9 +1011,7 @@ wayland_output_switch_mode(struct weston_output *output_base,
 	struct wayland_backend *b;
 	struct wl_surface *old_surface;
 	struct weston_mode *old_mode;
-	struct zwp_fullscreen_shell_mode_feedback_v1 *mode_feedback;
 	enum mode_status mode_status;
-	int ret = 0;
 
 	if (output_base == NULL) {
 		weston_log("output is NULL.\n");
@@ -1015,24 +1045,10 @@ wayland_output_switch_mode(struct weston_output *output_base,
 	/* Blow the old buffers because we changed size/surfaces */
 	wayland_output_resize_surface(output);
 
-	mode_feedback =
-		zwp_fullscreen_shell_v1_present_surface_for_mode(b->parent.fshell,
-								 output->parent.surface,
-								 output->parent.output,
-								 mode->refresh);
-	zwp_fullscreen_shell_mode_feedback_v1_add_listener(mode_feedback,
-							   &mode_feedback_listener,
-							   &mode_status);
+	mode_status = wayland_output_fullscreen_shell_mode_feedback(output, mode);
 
 	/* This should kick-start things again */
-	output->parent.draw_initial_frame = true;
 	wayland_output_start_repaint_loop(&output->base);
-
-	mode_status = MODE_STATUS_UNKNOWN;
-	while (mode_status == MODE_STATUS_UNKNOWN && ret >= 0)
-		ret = wl_display_dispatch(b->parent.wl_display);
-
-	zwp_fullscreen_shell_mode_feedback_v1_destroy(mode_feedback);
 
 	if (mode_status == MODE_STATUS_FAIL) {
 		output->base.current_mode = old_mode;
@@ -1171,6 +1187,7 @@ wayland_output_enable(struct weston_output *base)
 {
 	struct wayland_output *output = to_wayland_output(base);
 	struct wayland_backend *b = to_wayland_backend(base->compositor);
+	enum mode_status mode_status;
 	int ret = 0;
 
 	weston_log("Creating %dx%d wayland output at (%d, %d)\n",
@@ -1208,28 +1225,23 @@ wayland_output_enable(struct weston_output *base)
 	output->base.switch_mode = wayland_output_switch_mode;
 
 	if (b->sprawl_across_outputs) {
-		wayland_output_set_fullscreen(output,
-					      WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER,
-					      output->mode.refresh, output->parent.output);
+		if (b->parent.fshell) {
+			wayland_output_resize_surface(output);
 
-		if (output->parent.xdg_toplevel) {
-			zxdg_toplevel_v6_set_fullscreen(output->parent.xdg_toplevel,
-							output->parent.output);
-		}
-		else if (output->parent.shell_surface) {
-			wl_shell_surface_set_fullscreen(output->parent.shell_surface,
-							WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER,
-							output->mode.refresh, output->parent.output);
-		} else if (b->parent.fshell) {
-			zwp_fullscreen_shell_v1_present_surface(b->parent.fshell,
-								output->parent.surface,
-								ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_CENTER,
-								output->parent.output);
-			zwp_fullscreen_shell_mode_feedback_v1_destroy(
-				zwp_fullscreen_shell_v1_present_surface_for_mode(b->parent.fshell,
-										 output->parent.surface,
-										 output->parent.output,
-										 output->mode.refresh));
+			mode_status = wayland_output_fullscreen_shell_mode_feedback(output, &output->mode);
+
+			if (mode_status == MODE_STATUS_FAIL) {
+				zwp_fullscreen_shell_v1_present_surface(b->parent.fshell,
+									output->parent.surface,
+									ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_CENTER,
+									output->parent.output);
+
+				output->parent.draw_initial_frame = true;
+			}
+		} else {
+			wayland_output_set_fullscreen(output,
+						      WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER,
+						      output->mode.refresh, output->parent.output);
 		}
 	} else if (b->fullscreen) {
 		wayland_output_set_fullscreen(output, 0, 0, NULL);
