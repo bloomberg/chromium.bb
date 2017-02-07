@@ -2339,11 +2339,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       GetGlobalJavaInterfaces()
           ->CreateInterfaceFactory<device::VibrationManager>());
 
-  if (base::FeatureList::IsEnabled(media::kAndroidMediaPlayerRenderer)) {
-    // Creates a MojoRendererService, passing it a MediaPlayerRender.
-    GetInterfaceRegistry()->AddInterface<media::mojom::Renderer>(base::Bind(
-        &content::CreateMediaPlayerRenderer, base::Unretained(this)));
-  }
+  // Creates a MojoRendererService, passing it a MediaPlayerRender.
+  GetInterfaceRegistry()->AddInterface<media::mojom::Renderer>(base::Bind(
+      &content::CreateMediaPlayerRenderer, base::Unretained(this)));
 #else
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&device::VibrationManagerImpl::Create));

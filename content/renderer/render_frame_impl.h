@@ -145,7 +145,6 @@ class PresentationDispatcher;
 class PushMessagingDispatcher;
 class RenderAccessibilityImpl;
 class RendererMediaPlayerManager;
-class RendererMediaSessionManager;
 class RendererPpapiHost;
 class RenderFrameObserver;
 class RenderViewImpl;
@@ -1059,14 +1058,7 @@ class CONTENT_EXPORT RenderFrameImpl
                              bool content_initiated);
 
 #if defined(OS_ANDROID)
-  blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
-      blink::WebMediaPlayerClient* client,
-      blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
-      const media::WebMediaPlayerParams& params);
-
   RendererMediaPlayerManager* GetMediaPlayerManager();
-
-  RendererMediaSessionManager* GetMediaSessionManager();
 #endif
 
   bool AreSecureCodecsSupported();
@@ -1248,7 +1240,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // browser process. It's okay to use raw pointers since they're both
   // RenderFrameObservers.
   RendererMediaPlayerManager* media_player_manager_;
-  RendererMediaSessionManager* media_session_manager_;
 #endif
 
   media::SurfaceManager* media_surface_manager_;

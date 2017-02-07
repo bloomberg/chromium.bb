@@ -240,7 +240,6 @@
 #include "content/renderer/media/android/renderer_surface_view_manager.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "content/renderer/media/android/stream_texture_wrapper_impl.h"
-#include "content/renderer/media/android/webmediaplayer_android.h"
 #include "media/base/android/media_codec_util.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #endif
@@ -1095,7 +1094,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       web_user_media_client_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
-      media_session_manager_(NULL),
 #endif
       media_surface_manager_(nullptr),
       devtools_agent_(nullptr),
@@ -2859,11 +2857,6 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   bool use_fallback_path = false;
 #if defined(OS_ANDROID)
   use_fallback_path = !UseWebMediaPlayerImpl(url);
-
-  if (use_fallback_path &&
-      !base::FeatureList::IsEnabled(media::kAndroidMediaPlayerRenderer)) {
-    return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
-  }
 #endif  // defined(OS_ANDROID)
 
   std::unique_ptr<media::RendererFactory> media_renderer_factory;
@@ -6482,25 +6475,6 @@ void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state,
 }
 
 #if defined(OS_ANDROID)
-WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
-    WebMediaPlayerClient* client,
-    WebMediaPlayerEncryptedMediaClient* encrypted_client,
-    const media::WebMediaPlayerParams& params) {
-  scoped_refptr<StreamTextureFactory> stream_texture_factory =
-      RenderThreadImpl::current()->GetStreamTexureFactory();
-  if (!stream_texture_factory.get()) {
-    LOG(ERROR) << "Failed to get stream texture factory!";
-    return NULL;
-  }
-
-  bool enable_texture_copy =
-      RenderThreadImpl::current()->EnableStreamTextureCopy();
-  return new WebMediaPlayerAndroid(
-      frame_, client, encrypted_client, GetWebMediaPlayerDelegate(),
-      GetMediaPlayerManager(), stream_texture_factory, routing_id_,
-      enable_texture_copy, params);
-}
-
 RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
   if (!media_player_manager_)
     media_player_manager_ = new RendererMediaPlayerManager(this);

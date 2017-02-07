@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/public/common/renderer_preferences.h"
-#include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/base/media_switches.h"
 #include "third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"

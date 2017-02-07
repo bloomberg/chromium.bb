@@ -201,10 +201,6 @@ const base::Feature kExternalClearKeyForTesting{
     "external-clear-key-for-testing", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
-// Replaces WPMA by the MediaPlayerRenderer for HLS and fallback playback.
-const base::Feature kAndroidMediaPlayerRenderer{
-    "android-media-player-renderer", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Lock the screen orientation when a video goes fullscreen.
 const base::Feature kVideoFullscreenOrientationLock{
     "VideoFullscreenOrientationLock", base::FEATURE_ENABLED_BY_DEFAULT};

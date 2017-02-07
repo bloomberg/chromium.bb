@@ -1608,10 +1608,11 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
 #if defined(OS_ANDROID)
   // We can't play HLS URLs with WebMediaPlayerImpl, so in cases where they are
   // encountered, instruct the HTML media element to create a new WebMediaPlayer
-  // instance with the correct URL to trigger WebMediaPlayerAndroid creation.
+  // instance with the correct URL to trigger the creation of WMPI with a
+  // MediaPlayerRendererFactory instead.
   //
-  // TODO(tguilbert): Remove this code path once we have the ability to host a
-  // MediaPlayer within a Mojo media renderer.  http://crbug.com/580626
+  // TODO(tguilbert): Allow 'hotswapping' renderer factories to prevent reloads
+  // and/or rely on demuxer extracted MediaContainerNames. See crbug.com/663503.
   if (data_source_ && !use_fallback_path_) {
     const GURL url_after_redirects = data_source_->GetUrlAfterRedirects();
     if (MediaCodecUtil::IsHLSURL(url_after_redirects)) {
