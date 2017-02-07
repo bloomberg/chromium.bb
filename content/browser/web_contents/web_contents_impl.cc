@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
@@ -1266,8 +1267,7 @@ bool WebContentsImpl::IsCrashed() const {
           crashed_status_ ==
               base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM ||
 #endif
-          crashed_status_ == base::TERMINATION_STATUS_LAUNCH_FAILED
-          );
+          crashed_status_ == base::TERMINATION_STATUS_LAUNCH_FAILED);
 }
 
 void WebContentsImpl::SetIsCrashed(base::TerminationStatus status,
@@ -3550,7 +3550,6 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
 void WebContentsImpl::OnDidDisplayInsecureContent(RenderFrameHostImpl* source) {
   // Any frame can trigger display of insecure content, so we don't check
   // |source| here.
-  RecordAction(base::UserMetricsAction("SSL.DisplayedInsecureContent"));
   controller_.ssl_manager()->DidDisplayMixedContent();
 }
 
