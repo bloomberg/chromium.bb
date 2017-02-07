@@ -59,13 +59,6 @@ MojoResult ServiceRunner::Run(MojoHandle service_request_handle,
     base::RunLoop run_loop;
     context_->SetConnectionLostClosure(run_loop.QuitClosure());
     run_loop.Run();
-    // It's very common for the service to cache the app and terminate on
-    // errors. If we don't delete the service before the app we run the risk of
-    // the service having a stale reference to the app and trying to use it.
-    // Note that we destruct the message loop first because that might trigger
-    // connection error handlers and they might access objects created by the
-    // service.
-    loop.reset();
     context_.reset();
   }
   return MOJO_RESULT_OK;
