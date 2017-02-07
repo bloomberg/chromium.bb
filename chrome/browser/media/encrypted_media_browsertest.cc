@@ -103,7 +103,7 @@ enum SrcType {
 };
 
 // Whether the video should be played once or twice.
-enum class PlayTwice { NO, YES };
+enum class PlayCount { ONCE, TWICE };
 
 // Format of a container when testing different streams.
 enum class EncryptedContainer {
@@ -154,7 +154,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
                              SrcType src_type,
                              const std::string& session_to_load,
                              bool force_invalid_response,
-                             PlayTwice play_twice,
+                             PlayCount play_count,
                              const std::string& expected_title) {
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("mediaFile", media_file));
@@ -166,7 +166,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       query_params.push_back(std::make_pair("forceInvalidResponse", "1"));
     if (!session_to_load.empty())
       query_params.push_back(std::make_pair("sessionToLoad", session_to_load));
-    if (play_twice == PlayTwice::YES)
+    if (play_count == PlayCount::TWICE)
       query_params.push_back(std::make_pair("playTwice", "1"));
     RunEncryptedMediaTestPage(html_page, key_system, query_params,
                               expected_title);
@@ -182,7 +182,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     }
 
     RunEncryptedMediaTest(kDefaultEmePlayer, media_file, media_type, key_system,
-                          src_type, kNoSessionToLoad, false, PlayTwice::NO,
+                          src_type, kNoSessionToLoad, false, PlayCount::ONCE,
                           expected_title);
     // Check KeyMessage received for all key systems.
     bool receivedKeyMessage = false;
@@ -298,7 +298,7 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
     // type.
     RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
                           kWebMVorbisAudioOnly, key_system, SRC,
-                          kNoSessionToLoad, false, PlayTwice::NO,
+                          kNoSessionToLoad, false, PlayCount::ONCE,
                           expected_title);
   }
 
@@ -307,7 +307,7 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
                         const std::string& expected_title) {
     RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-v_enc-v.webm",
                           kWebMVP8VideoOnly, key_system, SRC, session_to_load,
-                          false, PlayTwice::NO, expected_title);
+                          false, PlayCount::ONCE, expected_title);
   }
 
  protected:
@@ -360,21 +360,21 @@ class EncryptedMediaTest : public EncryptedMediaTestBase,
     DCHECK(IsPlayBackPossible(CurrentKeySystem()));
     RunEncryptedMediaTest(kDefaultEmePlayer, encrypted_media, media_type,
                           CurrentKeySystem(), CurrentSourceType(),
-                          kNoSessionToLoad, false, PlayTwice::YES, kEnded);
+                          kNoSessionToLoad, false, PlayCount::TWICE, kEnded);
   }
 
   void RunInvalidResponseTest() {
     RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-av_enc-av.webm",
                           kWebMVorbisAudioVP8Video, CurrentKeySystem(),
                           CurrentSourceType(), kNoSessionToLoad, true,
-                          PlayTwice::NO, kEmeUpdateFailed);
+                          PlayCount::ONCE, kEmeUpdateFailed);
   }
 
   void TestFrameSizeChange() {
     RunEncryptedMediaTest(
         "encrypted_frame_size_change.html", "frame_size_change-av_enc-v.webm",
         kWebMVorbisAudioVP8Video, CurrentKeySystem(), CurrentSourceType(),
-        kNoSessionToLoad, false, PlayTwice::NO, kEnded);
+        kNoSessionToLoad, false, PlayCount::ONCE, kEnded);
   }
 
   void TestConfigChange() {
@@ -621,7 +621,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
   RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
                         kWebMVorbisAudioOnly, "com.widevine", MSE,
-                        kNoSessionToLoad, false, PlayTwice::NO,
+                        kNoSessionToLoad, false, PlayCount::ONCE,
                         kEmeNotSupportedError);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
