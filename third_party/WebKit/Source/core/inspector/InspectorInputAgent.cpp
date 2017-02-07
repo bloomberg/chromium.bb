@@ -112,6 +112,7 @@ class SyntheticInspectorTouchEvent : public blink::WebTouchEvent {
     m_type = type;
     m_modifiers = modifiers;
     m_timeStampSeconds = timestamp.InSeconds();
+    movedBeyondSlopRegion = true;
   }
 
   void append(const blink::WebTouchPoint& point) {

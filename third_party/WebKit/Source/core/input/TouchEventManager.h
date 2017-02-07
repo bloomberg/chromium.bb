@@ -95,6 +95,7 @@ class CORE_EXPORT TouchEventManager
   Member<Document> m_touchSequenceDocument;
 
   bool m_touchPressed;
+  bool m_suppressingTouchmovesWithinSlop;
 
   // The current touch action, computed on each touch start and is
   // a union of all touches. Reset when all touches are released.

@@ -28,10 +28,6 @@ namespace {
 // scrolling is active and possible.
 const double kAsyncTouchMoveIntervalSec = .2;
 
-// A sanity check on touches received to ensure that touch movement outside
-// the platform slop region will cause scrolling.
-const double kMaxConceivablePlatformSlopRegionLengthDipsSquared = 60. * 60.;
-
 TouchEventWithLatencyInfo ObtainCancelEventForTouchEvent(
     const TouchEventWithLatencyInfo& event_to_cancel) {
   TouchEventWithLatencyInfo event = event_to_cancel;
@@ -279,59 +275,6 @@ class LegacyTouchEventQueue::TouchTimeoutHandler {
   bool sequence_using_mobile_timeout_;
 };
 
-// Provides touchmove slop suppression for a touch sequence until a
-// (unprevented) touch will trigger immediate scrolling.
-class LegacyTouchEventQueue::TouchMoveSlopSuppressor {
- public:
-  TouchMoveSlopSuppressor() : suppressing_touchmoves_(false) {}
-
-  bool FilterEvent(const WebTouchEvent& event) {
-    if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
-      suppressing_touchmoves_ = true;
-      touch_start_location_ = gfx::PointF(event.touches[0].position);
-    }
-
-    if (event.type() == WebInputEvent::TouchEnd ||
-        event.type() == WebInputEvent::TouchCancel)
-      suppressing_touchmoves_ = false;
-
-    if (event.type() != WebInputEvent::TouchMove)
-      return false;
-
-    if (suppressing_touchmoves_) {
-      if (event.touchesLength > 1) {
-        suppressing_touchmoves_ = false;
-      } else if (event.movedBeyondSlopRegion) {
-        suppressing_touchmoves_ = false;
-      } else {
-        // No sane slop region should be larger than 60 DIPs.
-        DCHECK_LT(
-            (gfx::PointF(event.touches[0].position) - touch_start_location_)
-                .LengthSquared(),
-            kMaxConceivablePlatformSlopRegionLengthDipsSquared);
-      }
-    }
-
-    return suppressing_touchmoves_;
-  }
-
-  void ConfirmTouchEvent(InputEventAckState ack_result) {
-    if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
-      suppressing_touchmoves_ = false;
-  }
-
-  bool suppressing_touchmoves() const { return suppressing_touchmoves_; }
-
- private:
-  bool suppressing_touchmoves_;
-
-  // Sanity check that the upstream touch provider is properly reporting whether
-  // the touch sequence will cause scrolling.
-  gfx::PointF touch_start_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchMoveSlopSuppressor);
-};
-
 // This class represents a single coalesced touch event. However, it also keeps
 // track of all the original touch-events that were coalesced into a single
 // event. The coalesced event is forwarded to the renderer, while the original
@@ -426,7 +369,6 @@ LegacyTouchEventQueue::LegacyTouchEventQueue(TouchEventQueueClient* client,
       has_handlers_(true),
       has_handler_for_current_sequence_(false),
       drop_remaining_touches_in_sequence_(false),
-      touchmove_slop_suppressor_(new TouchMoveSlopSuppressor),
       send_touch_events_async_(false),
       last_sent_touch_timestamp_sec_(0) {
   if (config.touch_ack_timeout_supported) {
@@ -532,8 +474,6 @@ void LegacyTouchEventQueue::ProcessTouchAck(
 
   if (timeout_handler_ && timeout_handler_->ConfirmTouchEvent(ack_result))
     return;
-
-  touchmove_slop_suppressor_->ConfirmTouchEvent(ack_result);
 
   if (touch_queue_.empty())
     return;
@@ -656,12 +596,6 @@ void LegacyTouchEventQueue::FlushPendingAsyncTouchmove() {
 void LegacyTouchEventQueue::OnGestureScrollEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (gesture_event.event.type() == blink::WebInputEvent::GestureScrollBegin) {
-    if (has_handler_for_current_sequence_ &&
-        !drop_remaining_touches_in_sequence_) {
-      DCHECK(!touchmove_slop_suppressor_->suppressing_touchmoves())
-          << "A touch handler should be offered a touchmove before scrolling.";
-    }
-
     pending_async_touchmove_.reset();
 
     return;
@@ -870,9 +804,6 @@ LegacyTouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
 
   if (timeout_handler_ && timeout_handler_->FilterEvent(event))
     return ACK_WITH_NO_CONSUMER_EXISTS;
-
-  if (touchmove_slop_suppressor_->FilterEvent(event))
-    return ACK_WITH_NOT_CONSUMED;
 
   if (drop_remaining_touches_in_sequence_ &&
       event.type() != WebInputEvent::TouchCancel) {

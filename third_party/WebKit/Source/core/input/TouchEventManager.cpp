@@ -62,6 +62,18 @@ enum TouchEventDispatchResultType {
   TouchEventDispatchResultTypeMax,
 };
 
+bool IsTouchSequenceStart(const WebTouchEvent& event) {
+  if (!event.touchesLength)
+    return false;
+  if (event.type() != WebInputEvent::TouchStart)
+    return false;
+  for (size_t i = 0; i < event.touchesLength; ++i) {
+    if (event.touches[i].state != blink::WebTouchPoint::StatePressed)
+      return false;
+  }
+  return true;
+}
+
 // Defining this class type local to dispatchTouchEvents() and annotating
 // it with STACK_ALLOCATED(), runs into MSVC(VS 2013)'s C4822 warning
 // that the local class doesn't provide a local definition for 'operator new'.
@@ -95,6 +107,7 @@ void TouchEventManager::clear() {
   m_targetForTouchID.clear();
   m_regionForTouchID.clear();
   m_touchPressed = false;
+  m_suppressingTouchmovesWithinSlop = false;
   m_currentTouchAction = TouchActionAuto;
 }
 
@@ -112,6 +125,22 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
   // |changedTouches| attributes in the JS event. See
   // http://www.w3.org/TR/touch-events/#touchevent-interface for how these
   // lists fit together.
+
+  // Suppress all the touch moves in the slop region.
+  if (IsTouchSequenceStart(event))
+    m_suppressingTouchmovesWithinSlop = true;
+
+  if (event.type() == WebInputEvent::TouchEnd ||
+      event.type() == WebInputEvent::TouchCancel || event.touchesLength > 1) {
+    m_suppressingTouchmovesWithinSlop = false;
+  }
+
+  if (m_suppressingTouchmovesWithinSlop &&
+      event.type() == WebInputEvent::TouchMove) {
+    if (!event.movedBeyondSlopRegion)
+      return WebInputEventResult::HandledSuppressed;
+    m_suppressingTouchmovesWithinSlop = false;
+  }
 
   // Holds the complete set of touches on the screen.
   TouchList* touches = TouchList::create();

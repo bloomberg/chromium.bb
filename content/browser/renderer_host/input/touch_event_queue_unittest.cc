@@ -1388,9 +1388,9 @@ TEST_F(TouchEventQueueTest, NoCancelOnTouchTimeoutWithoutConsumer) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
-// Tests that TouchMove's are dropped if within the boundary-inclusive slop
-// suppression region for an unconsumed TouchStart.
-TEST_F(TouchEventQueueTest, TouchMoveSuppressionIncludingSlopBoundary) {
+// Tests that TouchMove's movedBeyondSlopRegion is set to false if within the
+// boundary-inclusive slop region for an unconsumed TouchStart.
+TEST_F(TouchEventQueueTest, TouchMovedBeyondSlopRegionCheck) {
   SetUpForTouchMoveSlopTesting(kSlopLengthDips);
 
   // Queue a TouchStart.
@@ -1399,39 +1399,44 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionIncludingSlopBoundary) {
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
-  // TouchMove's within the region should be suppressed.
+  // TouchMove's movedBeyondSlopRegion within the slop region is set to false.
   MoveTouchPoint(0, 0, kHalfSlopLengthDips);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+  EXPECT_FALSE(acked_event().movedBeyondSlopRegion);
 
   MoveTouchPoint(0, kHalfSlopLengthDips, 0);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+  EXPECT_FALSE(acked_event().movedBeyondSlopRegion);
 
   MoveTouchPoint(0, -kHalfSlopLengthDips, 0);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+  EXPECT_FALSE(acked_event().movedBeyondSlopRegion);
 
   MoveTouchPoint(0, -kSlopLengthDips, 0);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+  EXPECT_FALSE(acked_event().movedBeyondSlopRegion);
 
   MoveTouchPoint(0, 0, kSlopLengthDips);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+  EXPECT_FALSE(acked_event().movedBeyondSlopRegion);
 
-  // As soon as a TouchMove exceeds the (Euclidean) distance, no more
-  // TouchMove's should be suppressed.
+  // When a TouchMove exceeds the (Euclidean) distance, the TouchMove's
+  // movedBeyondSlopRegion is set to true.
   const float kFortyFiveDegreeSlopLengthXY =
       kSlopLengthDips * std::sqrt(2.f) / 2;
   MoveTouchPoint(0, kFortyFiveDegreeSlopLengthXY + .2f,
@@ -1441,113 +1446,26 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionIncludingSlopBoundary) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  // Even TouchMove's within the original slop region should now be forwarded.
-  MoveTouchPoint(0, 0, 0);
-  EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, GetAndResetAckedEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  // A new touch sequence should reset suppression.
-  ReleaseTouchPoint(0);
-  PressTouchPoint(0, 0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  ASSERT_EQ(2U, GetAndResetSentEventCount());
-  ASSERT_EQ(2U, GetAndResetAckedEventCount());
-  ASSERT_EQ(0U, queued_event_count());
-
-  // The slop region is boundary-inclusive.
-  MoveTouchPoint(0, kSlopLengthDips - 1, 0);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  MoveTouchPoint(0, kSlopLengthDips, 0);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_TRUE(acked_event().movedBeyondSlopRegion);
 }
 
-// Tests that TouchMove's are not dropped within the slop suppression region if
-// the touchstart was consumed.
-TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterTouchConsumed) {
-  SetUpForTouchMoveSlopTesting(kSlopLengthDips);
-
-  // Queue a TouchStart.
-  PressTouchPoint(0, 0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  ASSERT_EQ(1U, GetAndResetSentEventCount());
-  ASSERT_EQ(1U, GetAndResetAckedEventCount());
-
-  // TouchMove's within the region should not be suppressed, as a touch was
-  // consumed.
-  MoveTouchPoint(0, 0, kHalfSlopLengthDips);
-  EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, GetAndResetAckedEventCount());
-}
-
-// Tests that even very small TouchMove's are not suppressed when suppression is
-// disabled.
-TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionIfDisabled) {
+// Tests that even very small TouchMove's movedBeyondSlopRegion is set to true
+// when the slop region's dimension is 0.
+TEST_F(TouchEventQueueTest, MovedBeyondSlopRegionAlwaysTrueIfDimensionZero) {
   // Queue a TouchStart.
   PressTouchPoint(0, 0);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
-  // Small TouchMove's should not be suppressed.
+  // Small TouchMove's movedBeyondSlopRegion is set to true.
   MoveTouchPoint(0, 0.001f, 0.001f);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
-}
-
-// Tests that TouchMove's are not dropped if a secondary pointer is present
-// during any movement.
-TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
-  SetUpForTouchMoveSlopTesting(kSlopLengthDips);
-
-  // Queue a TouchStart.
-  PressTouchPoint(0, 0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  ASSERT_EQ(1U, GetAndResetSentEventCount());
-  ASSERT_EQ(1U, GetAndResetAckedEventCount());
-
-  // TouchMove's within the region should be suppressed.
-  MoveTouchPoint(0, 0, kHalfSlopLengthDips);
-  EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  // Simulate a secondary pointer press.
-  PressTouchPoint(kSlopLengthDips, 0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  // TouchMove with a secondary pointer should not be suppressed.
-  MoveTouchPoint(1, kSlopLengthDips+1, 0);
-  EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  // Release the secondary pointer.
-  ReleaseTouchPoint(0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-
-  // TouchMove's should not should be suppressed, even with the original
-  // unmoved pointer.
-  MoveTouchPoint(0, 0, 0);
-  EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_TRUE(acked_event().movedBeyondSlopRegion);
 }
 
 // Tests that secondary touch points can be forwarded even if the primary touch

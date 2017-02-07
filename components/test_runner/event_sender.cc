@@ -2236,22 +2236,6 @@ void EventSender::DoLeapForward(int milliseconds) {
   time_offset_ms_ += milliseconds;
 }
 
-void EventSender::GetOptionalTouchArgs(gin::Arguments* args,
-                                       bool& moved_beyond_slop_region,
-                                       uint32_t& unique_touch_event_id) {
-  moved_beyond_slop_region = false;
-  if(!args->PeekNext().IsEmpty() && args->PeekNext()->IsString()) {
-    std::string arg;
-    if (args->GetNext(&arg) && arg == "movedBeyondSlopRegion")
-      moved_beyond_slop_region = true;
-    else
-      args->ThrowError();
-  }
-
-  unique_touch_event_id = GetUniqueTouchEventId(args);
-  return;
-}
-
 uint32_t EventSender::GetUniqueTouchEventId(gin::Arguments* args) {
   uint32_t unique_touch_event_id;
   if(!args->PeekNext().IsEmpty() && args->GetNext(&unique_touch_event_id))
@@ -2262,9 +2246,7 @@ uint32_t EventSender::GetUniqueTouchEventId(gin::Arguments* args) {
 
 void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
                                         gin::Arguments* args) {
-  bool moved_beyond_slop_region;
-  uint32_t unique_touch_event_id;
-  GetOptionalTouchArgs(args, moved_beyond_slop_region, unique_touch_event_id);
+  uint32_t unique_touch_event_id = GetUniqueTouchEventId(args);
 
   DCHECK_GT(static_cast<unsigned>(WebTouchEvent::kTouchesLengthCap),
             touch_points_.size());
@@ -2275,7 +2257,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
   touch_event.dispatchType = touch_cancelable_
                                  ? WebInputEvent::Blocking
                                  : WebInputEvent::EventNonBlocking;
-  touch_event.movedBeyondSlopRegion = moved_beyond_slop_region;
+  touch_event.movedBeyondSlopRegion = true;
   touch_event.uniqueTouchEventId = unique_touch_event_id;
   touch_event.touchesLength = touch_points_.size();
   for (size_t i = 0; i < touch_points_.size(); ++i)

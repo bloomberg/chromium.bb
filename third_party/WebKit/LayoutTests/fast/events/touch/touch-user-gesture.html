@@ -57,7 +57,7 @@ cancelEvent = false;
 eventSender.addTouchPoint(targetX, targetY);
 testPopupOnEventDuring('touchstart', false, function() { eventSender.touchStart(); });
 eventSender.updateTouchPoint(0, targetX + 10, targetY);
-testPopupOnEventDuring('touchmove', false, function() { eventSender.touchMove("movedBeyondSlopRegion"); });
+testPopupOnEventDuring('touchmove', false, function() { eventSender.touchMove(); });
 eventSender.notifyStartOfTouchScroll();
 eventSender.releaseTouchPoint(0);
 testPopupOnEventDuring('touchend', false, function() { eventSender.touchEnd(); });

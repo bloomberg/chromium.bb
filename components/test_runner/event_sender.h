@@ -177,9 +177,6 @@ class EventSender {
 
   void DoLeapForward(int milliseconds);
 
-  void GetOptionalTouchArgs(gin::Arguments* args,
-                            bool& moved_beyond_slop_region,
-                            uint32_t& unique_touch_event_id);
   uint32_t GetUniqueTouchEventId(gin::Arguments* args);
   void SendCurrentTouchEvent(blink::WebInputEvent::Type, gin::Arguments* args);
 

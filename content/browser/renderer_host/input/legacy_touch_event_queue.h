@@ -96,7 +96,6 @@ class CONTENT_EXPORT LegacyTouchEventQueue : public TouchEventQueue {
 
  private:
   class TouchTimeoutHandler;
-  class TouchMoveSlopSuppressor;
   friend class TouchTimeoutHandler;
   friend class TouchEventQueueTest;
 
@@ -180,10 +179,6 @@ class CONTENT_EXPORT LegacyTouchEventQueue : public TouchEventQueue {
 
   // Optional handler for timed-out touch event acks.
   std::unique_ptr<TouchTimeoutHandler> timeout_handler_;
-
-  // Suppression of TouchMove's within a slop region when a sequence has not yet
-  // been preventDefaulted.
-  std::unique_ptr<TouchMoveSlopSuppressor> touchmove_slop_suppressor_;
 
   // Whether touch events should remain buffered and dispatched asynchronously
   // while a scroll sequence is active.  In this mode, touchmove's are throttled
