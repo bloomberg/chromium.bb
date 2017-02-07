@@ -15,6 +15,10 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
 
+#if defined(OS_ANDROID)
+#include "net/cert/cert_verify_proc_android.h"
+#endif
+
 using network_time::NetworkTimeTracker;
 
 namespace certificate_reporting {
@@ -85,6 +89,15 @@ ErrorReport::ErrorReport(const std::string& hostname,
   cert_report_->set_is_issued_by_known_root(ssl_info.is_issued_by_known_root);
 
   AddCertStatusToReportErrors(ssl_info.cert_status, cert_report_.get());
+
+#if defined(OS_ANDROID)
+  CertLoggerFeaturesInfo* features_info = cert_report_->mutable_features_info();
+  features_info->set_android_aia_fetching_status(
+      base::FeatureList::IsEnabled(
+          net::CertVerifyProcAndroid::kAIAFetchingFeature)
+          ? CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_ENABLED
+          : CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_DISABLED);
+#endif
 }
 
 ErrorReport::~ErrorReport() {}

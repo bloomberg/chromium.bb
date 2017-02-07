@@ -67,6 +67,21 @@ message CertLoggerFeaturesInfo {
   }
 
   optional NetworkTimeQueryingInfo network_time_querying_info = 1;
+
+  // Records whether the Android AIA fetching feature is enabled.
+  //
+  // This is an enum rather than a boolean as a convenience to
+  // distinguish reports where fetching is disabled from reports that
+  // were sent before this field was present. (In other words, if it
+  // were a boolean, a value of false might mean that fetching was
+  // disabled, or it might mean that the browser version was older than
+  // when this field was added.)
+  enum AndroidAIAFetchingStatus {
+    ANDROID_AIA_FETCHING_UNKNOWN = 0;
+    ANDROID_AIA_FETCHING_ENABLED = 1;
+    ANDROID_AIA_FETCHING_DISABLED = 2;
+  }
+  optional AndroidAIAFetchingStatus android_aia_fetching_status = 2;
 }
 
 message CertLoggerRequest {

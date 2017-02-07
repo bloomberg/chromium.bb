@@ -25,6 +25,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/test/scoped_feature_list.h"
+#include "net/cert/cert_verify_proc_android.h"
+#endif
+
 using net::SSLInfo;
 using testing::UnorderedElementsAre;
 using testing::UnorderedElementsAreArray;
@@ -190,9 +195,9 @@ TEST(ErrorReportTest, CertificateTransparencyError) {
       VerifyErrorReportSerialization(report_known, ssl_info, cert_errors));
 }
 
-// Tests that information about relevant features are included in the
+// Tests that information about network time querying is included in the
 // report.
-TEST(ErrorReportTest, FeatureInfo) {
+TEST(ErrorReportTest, NetworkTimeQueryingFeatureInfo) {
   base::Thread io_thread("IO thread");
   base::Thread::Options thread_options;
   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -233,6 +238,46 @@ TEST(ErrorReportTest, FeatureInfo) {
                 .network_time_querying_info()
                 .network_time_query_behavior());
 }
+
+#if defined(OS_ANDROID)
+// Tests that information about the Android AIA fetching feature is included in
+// the report when the feature is disabled.
+TEST(ErrorReportTest, AndroidAIAFetchingFeatureDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      net::CertVerifyProcAndroid::kAIAFetchingFeature);
+
+  SSLInfo ssl_info;
+  ASSERT_NO_FATAL_FAILURE(
+      GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
+  ErrorReport report(kDummyHostname, ssl_info);
+  std::string serialized_report;
+  ASSERT_TRUE(report.Serialize(&serialized_report));
+  CertLoggerRequest parsed;
+  ASSERT_TRUE(parsed.ParseFromString(serialized_report));
+  EXPECT_EQ(CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_DISABLED,
+            parsed.features_info().android_aia_fetching_status());
+}
+
+// Tests that information about the Android AIA fetching feature is included in
+// the report when the feature is enabled.
+TEST(ErrorReportTest, AndroidAIAFetchingFeatureEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      net::CertVerifyProcAndroid::kAIAFetchingFeature);
+
+  SSLInfo ssl_info;
+  ASSERT_NO_FATAL_FAILURE(
+      GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
+  ErrorReport report(kDummyHostname, ssl_info);
+  std::string serialized_report;
+  ASSERT_TRUE(report.Serialize(&serialized_report));
+  CertLoggerRequest parsed;
+  ASSERT_TRUE(parsed.ParseFromString(serialized_report));
+  EXPECT_EQ(CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_ENABLED,
+            parsed.features_info().android_aia_fetching_status());
+}
+#endif
 
 }  // namespace
 
