@@ -271,21 +271,6 @@ const int LoginDisplayHostImpl::kShowLoginWebUIid = 0x1111;
 
 LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
     : wallpaper_bounds_(wallpaper_bounds),
-      shutting_down_(false),
-      oobe_progress_bar_visible_(false),
-      session_starting_(false),
-      login_window_(NULL),
-      login_view_(NULL),
-      webui_login_display_(NULL),
-      is_showing_login_(false),
-      is_wallpaper_loaded_(false),
-      status_area_saved_visibility_(false),
-      crash_count_(0),
-      restore_path_(RESTORE_UNKNOWN),
-      finalize_animation_type_(ANIMATION_WORKSPACE),
-      startup_sound_played_(false),
-      startup_sound_honors_spoken_feedback_(false),
-      is_observing_keyboard_(false),
       pointer_factory_(this),
       animation_weak_ptr_factory_(this) {
   if (chrome::IsRunningInMash()) {
@@ -463,7 +448,7 @@ LoginDisplay* LoginDisplayHostImpl::CreateLoginDisplay(
 }
 
 gfx::NativeWindow LoginDisplayHostImpl::GetNativeWindow() const {
-  return login_window_ ? login_window_->GetNativeWindow() : NULL;
+  return login_window_ ? login_window_->GetNativeWindow() : nullptr;
 }
 
 WebUILoginView* LoginDisplayHostImpl::GetWebUILoginView() const {
@@ -590,7 +575,7 @@ void LoginDisplayHostImpl::StartUserAdding(
   // after the animation is finished.
   chrome::MultiUserWindowManager* window_manager =
       chrome::MultiUserWindowManager::GetInstance();
-  // MultiUserWindowManager instance might be null in a unit test.
+  // MultiUserWindowManager instance might be nullptr in a unit test.
   if (window_manager)
     window_manager->AddObserver(this);
 
@@ -1005,7 +990,7 @@ void LoginDisplayHostImpl::OnWillRemoveView(views::Widget* widget,
                                             views::View* view) {
   if (view != static_cast<views::View*>(login_view_))
     return;
-  login_view_ = NULL;
+  login_view_ = nullptr;
   widget->RemoveRemovalsObserver(this);
 }
 
@@ -1198,15 +1183,18 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
 }
 
 void LoginDisplayHostImpl::ResetLoginWindowAndView() {
-  if (!login_window_)
-    return;
-  login_window_->Close();
-  login_window_ = NULL;
+  // Make sure to reset the |login_view_| pointer first; it is owned by
+  // |login_window_|. Closing |login_window_| could immediately invalidate the
+  // |login_view_| pointer.
+  if (login_view_) {
+    login_view_->SetUIEnabled(true);
+    login_view_ = nullptr;
+  }
 
-  if (!login_view_)
-    return;
-  login_view_->SetUIEnabled(true);
-  login_view_ = NULL;
+  if (login_window_) {
+    login_window_->Close();
+    login_window_ = nullptr;
+  }
 }
 
 void LoginDisplayHostImpl::OnAuthPrewarmDone() {
