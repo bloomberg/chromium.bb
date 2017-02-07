@@ -12,6 +12,23 @@ namespace subresource_filter {
 // Encompasses all details of whether/how subresource filtering should be
 // activated in a given frame in the frame hierarchy.
 struct ActivationState {
+  ActivationState() = default;
+
+  explicit ActivationState(ActivationLevel activation_level)
+      : activation_level(activation_level) {}
+
+  bool operator==(const ActivationState& rhs) const {
+    return activation_level == rhs.activation_level &&
+           filtering_disabled_for_document ==
+               rhs.filtering_disabled_for_document &&
+           (filtering_disabled_for_document ||
+            generic_blocking_rules_disabled ==
+                rhs.generic_blocking_rules_disabled) &&
+           measure_performance == rhs.measure_performance;
+  }
+
+  bool operator!=(const ActivationState& rhs) const { return !operator==(rhs); }
+
   // The degree to which subresource filtering is activated for the page load.
   ActivationLevel activation_level = ActivationLevel::DISABLED;
 

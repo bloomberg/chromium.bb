@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TEST_RULESET_UTILS_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TEST_RULESET_UTILS_H_
 
+#include <stdint.h>
+#include <string>
+#include <vector>
+
 #include "base/strings/string_piece.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
 
@@ -13,7 +17,10 @@ namespace testing {
 
 proto::UrlRule CreateSuffixRule(base::StringPiece suffix);
 
-proto::UrlRule CreateWhitelistRuleForDocument(base::StringPiece pattern);
+proto::UrlRule CreateWhitelistRuleForDocument(
+    base::StringPiece pattern,
+    int32_t activation_types = proto::ACTIVATION_TYPE_DOCUMENT,
+    std::vector<std::string> domains = std::vector<std::string>());
 
 }  // namespace testing
 }  // namespace subresource_filter

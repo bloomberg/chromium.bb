@@ -164,15 +164,22 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
     RecordHistogramsOnLoadCommitted();
     if (activation_level_for_provisional_load_ != ActivationLevel::DISABLED &&
         ruleset_dealer_->IsRulesetFileAvailable()) {
-      base::Closure first_disallowed_load_callback(
-          base::Bind(&SubresourceFilterAgent::
-                         SignalFirstSubresourceDisallowedForCommittedLoad,
-                     AsWeakPtr()));
+      base::OnceClosure first_disallowed_load_callback(
+          base::BindOnce(&SubresourceFilterAgent::
+                             SignalFirstSubresourceDisallowedForCommittedLoad,
+                         AsWeakPtr()));
+
+      auto ruleset = ruleset_dealer_->GetRuleset();
+      DCHECK(ruleset);
+      ActivationState activation_state = ComputeActivationState(
+          activation_level_for_provisional_load_, measure_performance_,
+          ancestor_document_urls, ruleset.get());
+      DCHECK(!ancestor_document_urls.empty());
       std::unique_ptr<DocumentSubresourceFilter> filter(
           new DocumentSubresourceFilter(
-              activation_level_for_provisional_load_, measure_performance_,
-              ruleset_dealer_->GetRuleset(), ancestor_document_urls,
-              first_disallowed_load_callback));
+              url::Origin(ancestor_document_urls[0]), activation_state,
+              std::move(ruleset), std::move(first_disallowed_load_callback)));
+
       filter_for_last_committed_load_ = filter->AsWeakPtr();
       SetSubresourceFilterForCommittedLoad(std::move(filter));
     }

@@ -73,56 +73,84 @@ proto::ElementType ToElementType(
   }
 }
 
+ActivationState ComputeActivationStateImpl(
+    const GURL& document_url,
+    const url::Origin& parent_document_origin,
+    const ActivationState& parent_activation_state,
+    const IndexedRulesetMatcher& matcher) {
+  ActivationState activation_state = parent_activation_state;
+  if (activation_state.filtering_disabled_for_document)
+    return activation_state;
+
+  // TODO(pkalinnikov): Match several activation types in a batch.
+  if (matcher.ShouldDisableFilteringForDocument(
+          document_url, parent_document_origin,
+          proto::ACTIVATION_TYPE_DOCUMENT)) {
+    activation_state.filtering_disabled_for_document = true;
+  } else if (!activation_state.generic_blocking_rules_disabled &&
+             matcher.ShouldDisableFilteringForDocument(
+                 document_url, parent_document_origin,
+                 proto::ACTIVATION_TYPE_GENERICBLOCK)) {
+    activation_state.generic_blocking_rules_disabled = true;
+  }
+  return activation_state;
+}
+
 }  // namespace
 
-DocumentSubresourceFilter::DocumentSubresourceFilter(
+ActivationState ComputeActivationState(
+    const GURL& document_url,
+    const url::Origin& parent_document_origin,
+    const ActivationState& parent_activation_state,
+    const MemoryMappedRuleset* ruleset) {
+  DCHECK(ruleset);
+  IndexedRulesetMatcher matcher(ruleset->data(), ruleset->length());
+  return ComputeActivationStateImpl(document_url, parent_document_origin,
+                                    parent_activation_state, matcher);
+}
+
+ActivationState ComputeActivationState(
     ActivationLevel activation_level,
     bool measure_performance,
-    const scoped_refptr<const MemoryMappedRuleset>& ruleset,
     const std::vector<GURL>& ancestor_document_urls,
-    const base::Closure& first_disallowed_load_callback)
-    : activation_level_(activation_level),
-      measure_performance_(measure_performance),
-      ruleset_(ruleset),
-      ruleset_matcher_(ruleset_->data(), ruleset_->length()),
-      first_disallowed_load_callback_(first_disallowed_load_callback) {
-  TRACE_EVENT1("loader", "DocumentSubresourceFilter::DocumentSubresourceFilter",
-               "document_url", ancestor_document_urls.empty()
-                                   ? std::string()
-                                   : ancestor_document_urls[0].spec());
-
+    const MemoryMappedRuleset* ruleset) {
   SCOPED_UMA_HISTOGRAM_MICRO_TIMER(
       "SubresourceFilter.DocumentLoad.Activation.WallDuration");
   SCOPED_UMA_HISTOGRAM_MICRO_THREAD_TIMER(
       "SubresourceFilter.DocumentLoad.Activation.CPUDuration");
 
-  DCHECK_NE(activation_level_, ActivationLevel::DISABLED);
+  ActivationState activation_state(activation_level);
+  activation_state.measure_performance = measure_performance;
   DCHECK(ruleset);
+
+  IndexedRulesetMatcher matcher(ruleset->data(), ruleset->length());
 
   url::Origin parent_document_origin;
   for (auto iter = ancestor_document_urls.rbegin(),
             rend = ancestor_document_urls.rend();
        iter != rend; ++iter) {
     const GURL& document_url(*iter);
-    if (ruleset_matcher_.ShouldDisableFilteringForDocument(
-            document_url, parent_document_origin,
-            proto::ACTIVATION_TYPE_DOCUMENT)) {
-      filtering_disabled_for_document_ = true;
-      return;
-    }
-    // TODO(pkalinnikov): Match several activation types in a batch.
-    generic_blocking_rules_disabled_ =
-        generic_blocking_rules_disabled_ ||
-        ruleset_matcher_.ShouldDisableFilteringForDocument(
-            document_url, parent_document_origin,
-            proto::ACTIVATION_TYPE_GENERICBLOCK);
-
-    // TODO(pkalinnikov): Think about avoiding this conversion.
+    activation_state = ComputeActivationStateImpl(
+        document_url, parent_document_origin, activation_state, matcher);
     parent_document_origin = url::Origin(document_url);
   }
 
-  url::Origin document_origin = std::move(parent_document_origin);
-  document_origin_.reset(new FirstPartyOrigin(std::move(document_origin)));
+  return activation_state;
+}
+
+DocumentSubresourceFilter::DocumentSubresourceFilter(
+    url::Origin document_origin,
+    ActivationState activation_state,
+    scoped_refptr<const MemoryMappedRuleset> ruleset,
+    base::OnceClosure first_disallowed_load_callback)
+    : activation_state_(activation_state),
+      ruleset_(std::move(ruleset)),
+      ruleset_matcher_(ruleset_->data(), ruleset_->length()),
+      first_disallowed_load_callback_(
+          std::move(first_disallowed_load_callback)) {
+  DCHECK_NE(activation_state_.activation_level, ActivationLevel::DISABLED);
+  if (!activation_state_.filtering_disabled_for_document)
+    document_origin_.reset(new FirstPartyOrigin(std::move(document_origin)));
 }
 
 DocumentSubresourceFilter::~DocumentSubresourceFilter() = default;
@@ -134,14 +162,15 @@ bool DocumentSubresourceFilter::allowLoad(
                resourceUrl.string().utf8());
 
   auto wall_duration_timer = ScopedTimers::StartIf(
-      measure_performance_ && ScopedThreadTimers::IsSupported(),
+      activation_state_.measure_performance &&
+          ScopedThreadTimers::IsSupported(),
       [this](base::TimeDelta delta) {
         statistics_.evaluation_total_wall_duration += delta;
         UMA_HISTOGRAM_MICRO_TIMES(
             "SubresourceFilter.SubresourceLoad.Evaluation.WallDuration", delta);
       });
   auto cpu_duration_timer = ScopedThreadTimers::StartIf(
-      measure_performance_, [this](base::TimeDelta delta) {
+      activation_state_.measure_performance, [this](base::TimeDelta delta) {
         statistics_.evaluation_total_cpu_duration += delta;
         UMA_HISTOGRAM_MICRO_TIMES(
             "SubresourceFilter.SubresourceLoad.Evaluation.CPUDuration", delta);
@@ -149,7 +178,7 @@ bool DocumentSubresourceFilter::allowLoad(
 
   ++statistics_.num_loads_total;
 
-  if (filtering_disabled_for_document_)
+  if (activation_state_.filtering_disabled_for_document)
     return true;
 
   if (resourceUrl.protocolIs(url::kDataScheme))
@@ -159,13 +188,12 @@ bool DocumentSubresourceFilter::allowLoad(
   DCHECK(document_origin_);
   if (ruleset_matcher_.ShouldDisallowResourceLoad(
           GURL(resourceUrl), *document_origin_, ToElementType(request_context),
-          generic_blocking_rules_disabled_)) {
+          activation_state_.generic_blocking_rules_disabled)) {
     ++statistics_.num_loads_matching_rules;
-    if (activation_level_ == ActivationLevel::ENABLED) {
+    if (activation_state_.activation_level == ActivationLevel::ENABLED) {
       if (!first_disallowed_load_callback_.is_null()) {
         DCHECK_EQ(statistics_.num_loads_disallowed, 0);
-        first_disallowed_load_callback_.Run();
-        first_disallowed_load_callback_.Reset();
+        std::move(first_disallowed_load_callback_).Run();
       }
       ++statistics_.num_loads_disallowed;
       return false;

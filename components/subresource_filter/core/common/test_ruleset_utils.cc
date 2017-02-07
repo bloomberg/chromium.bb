@@ -19,15 +19,22 @@ proto::UrlRule CreateSuffixRule(base::StringPiece suffix) {
   return rule;
 }
 
-proto::UrlRule CreateWhitelistRuleForDocument(base::StringPiece pattern) {
+proto::UrlRule CreateWhitelistRuleForDocument(
+    base::StringPiece pattern,
+    int32_t activation_types,
+    std::vector<std::string> domains) {
   proto::UrlRule rule;
+  rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
   rule.set_source_type(proto::SOURCE_TYPE_ANY);
-  rule.set_element_types(proto::ELEMENT_TYPE_ALL);
+  rule.set_activation_types(activation_types);
+
+  for (std::string& domain : domains) {
+    rule.add_domains()->set_domain(std::move(domain));
+  }
+
   rule.set_url_pattern_type(proto::URL_PATTERN_TYPE_SUBSTRING);
   rule.set_anchor_left(proto::ANCHOR_TYPE_NONE);
   rule.set_anchor_right(proto::ANCHOR_TYPE_NONE);
-  rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
-  rule.set_activation_types(proto::ACTIVATION_TYPE_DOCUMENT);
   rule.set_url_pattern(pattern.as_string());
   return rule;
 }
