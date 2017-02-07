@@ -25,17 +25,9 @@ class UpdateRecommendedDialogTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(UpdateRecommendedDialogTest);
 };
 
-#if !defined(OS_MACOSX)
-// Initially disabled except on Mac due to http://crbug.com/683808.
-#define MAYBE_InvokeDialog_default DISABLED_InvokeDialog_default
-#else
-#define MAYBE_InvokeDialog_default InvokeDialog_default
-#endif
-
 // Test that calls ShowDialog("default"). Interactive when run via
 // browser_tests --gtest_filter=BrowserDialogTest.Invoke --interactive
 // --dialog=UpdateRecommendedDialogTest.InvokeDialog_default
-IN_PROC_BROWSER_TEST_F(UpdateRecommendedDialogTest,
-                       MAYBE_InvokeDialog_default) {
+IN_PROC_BROWSER_TEST_F(UpdateRecommendedDialogTest, InvokeDialog_default) {
   RunDialog();
 }
