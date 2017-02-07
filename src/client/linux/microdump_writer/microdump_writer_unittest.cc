@@ -95,7 +95,7 @@ void CrashAndGetMicrodump(const MappingList& mappings,
   // has been sanitized.
   strcpy(identifiable_string, kIdentifiableString);
   // Force the strcpy to not be optimized away.
-  write(STDOUT_FILENO, identifiable_string, 0);
+  IGNORE_RET(write(STDOUT_FILENO, identifiable_string, 0));
 
   const pid_t child = fork();
   if (child == 0) {
