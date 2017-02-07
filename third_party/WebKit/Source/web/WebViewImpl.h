@@ -286,14 +286,14 @@ class WEB_EXPORT WebViewImpl final
   void invalidateRect(const IntRect&);
 
   void setBaseBackgroundColor(WebColor);
+  void setBaseBackgroundColorOverride(WebColor);
   void setBackgroundColorOverride(WebColor);
   void setZoomFactorOverride(float);
   void setCompositorDeviceScaleFactorOverride(float);
   void setDeviceEmulationTransform(const TransformationMatrix&);
   TransformationMatrix getDeviceEmulationTransformForTesting() const;
 
-  Color baseBackgroundColor() const { return m_baseBackgroundColor; }
-
+  Color baseBackgroundColor() const;
   WebColor backgroundColorOverride() const { return m_backgroundColorOverride; }
 
   Frame* focusedCoreFrame() const;
@@ -532,6 +532,8 @@ class WEB_EXPORT WebViewImpl final
   bool getCompositionCharacterBounds(WebVector<WebRect>&) override;
   void applyReplacementRange(const WebRange&) override;
 
+  void updateBaseBackgroundColor();
+
   friend class WebView;  // So WebView::Create can call our constructor
   friend class WebViewFrameWidget;
   friend class WTF::RefCounted<WebViewImpl>;
@@ -706,6 +708,7 @@ class WEB_EXPORT WebViewImpl final
   std::unique_ptr<FullscreenController> m_fullscreenController;
 
   WebColor m_baseBackgroundColor;
+  WebColor m_baseBackgroundColorOverride;
   WebColor m_backgroundColorOverride;
   float m_zoomFactorOverride;
 

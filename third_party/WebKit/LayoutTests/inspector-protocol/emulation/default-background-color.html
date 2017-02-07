@@ -1,0 +1,35 @@
+<html>
+<head>
+
+<style>
+html {
+    margin: 0;
+}
+</style>
+
+<script src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+
+<script>
+function test()
+{
+    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "testRunner.dumpAsTextWithPixelResults();"} );
+
+    InspectorTest.sendCommand("Emulation.setDefaultBackgroundColorOverride", { "color": { "r": 0x12, "g": 0x34, "b": 0x56, "a": 1.0 } }, backgroundColorSet);
+
+    function backgroundColorSet(messageObject) {
+      if (!!messageObject.result.exceptionDetails)
+          InspectorTest.log("FAIL: unexpected exception: " + JSON.stringify(messageObject, null, 2));
+
+      // Complete the test without closing the inspector, so that the override stays active for the picture.
+      InspectorTest.sendCommand("Runtime.evaluate", { "expression": "testRunner.notifyDone();"} );
+    }
+}
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Tests that Emulation.setDefaultBackgroundColorOverride changes the background color of a page that does not specify one.
+</p>
+</body>
+</html>

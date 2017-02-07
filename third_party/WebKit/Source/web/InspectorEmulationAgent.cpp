@@ -7,8 +7,10 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/protocol/DOM.h"
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
+#include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebThread.h"
@@ -27,6 +29,8 @@ static const char forcedViewportEnabled[] = "forcedViewportEnabled";
 static const char forcedViewportX[] = "forcedViewportX";
 static const char forcedViewportY[] = "forcedViewportY";
 static const char forcedViewportScale[] = "forcedViewportScale";
+static const char defaultBackgroundColorOverrideRGBA[] =
+    "defaultBackgroundColorOverrideRGBA";
 }
 
 InspectorEmulationAgent* InspectorEmulationAgent::create(
@@ -64,6 +68,16 @@ void InspectorEmulationAgent::restore() {
         m_state->doubleProperty(EmulationAgentState::forcedViewportY, 0),
         m_state->doubleProperty(EmulationAgentState::forcedViewportScale, 1));
   }
+  auto rgbaValue =
+      m_state->get(EmulationAgentState::defaultBackgroundColorOverrideRGBA);
+  if (rgbaValue) {
+    blink::protocol::ErrorSupport errors;
+    auto rgba = protocol::DOM::RGBA::fromValue(rgbaValue, &errors);
+    if (!errors.hasErrors()) {
+      setDefaultBackgroundColorOverride(
+          Maybe<protocol::DOM::RGBA>(std::move(rgba)));
+    }
+  }
 }
 
 Response InspectorEmulationAgent::disable() {
@@ -72,6 +86,7 @@ Response InspectorEmulationAgent::disable() {
   setEmulatedMedia(String());
   setCPUThrottlingRate(1);
   resetViewport();
+  setDefaultBackgroundColorOverride(Maybe<protocol::DOM::RGBA>());
   return Response::OK();
 }
 
@@ -167,6 +182,25 @@ void InspectorEmulationAgent::virtualTimeBudgetExpired() {
   m_webLocalFrameImpl->view()->scheduler()->setVirtualTimePolicy(
       WebViewScheduler::VirtualTimePolicy::PAUSE);
   frontend()->virtualTimeBudgetExpired();
+}
+
+Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
+    Maybe<protocol::DOM::RGBA> color) {
+  if (!color.isJust()) {
+    // Clear the override and state.
+    webViewImpl()->setBaseBackgroundColorOverride(Color::transparent);
+    m_state->remove(EmulationAgentState::defaultBackgroundColorOverrideRGBA);
+    return Response::OK();
+  }
+
+  blink::protocol::DOM::RGBA* rgba = color.fromJust();
+  m_state->setValue(EmulationAgentState::defaultBackgroundColorOverrideRGBA,
+                    rgba->toValue());
+  // Clamping of values is done by Color() constructor.
+  int alpha = lroundf(255.0f * rgba->getA(1.0f));
+  webViewImpl()->setBaseBackgroundColorOverride(
+      Color(rgba->getR(), rgba->getG(), rgba->getB(), alpha).rgb());
+  return Response::OK();
 }
 
 DEFINE_TRACE(InspectorEmulationAgent) {

@@ -14,6 +14,12 @@ namespace blink {
 class WebLocalFrameImpl;
 class WebViewImpl;
 
+namespace protocol {
+namespace DOM {
+class RGBA;
+}  // namespace DOM
+}  // namespace protocol
+
 class InspectorEmulationAgent final
     : public InspectorBaseAgent<protocol::Emulation::Metainfo> {
   WTF_MAKE_NONCOPYABLE(InspectorEmulationAgent);
@@ -41,6 +47,8 @@ class InspectorEmulationAgent final
   Response setCPUThrottlingRate(double) override;
   Response setVirtualTimePolicy(const String& policy,
                                 Maybe<int> virtualTimeBudgetMs) override;
+  Response setDefaultBackgroundColorOverride(
+      Maybe<protocol::DOM::RGBA>) override;
 
   // InspectorBaseAgent overrides.
   Response disable() override;

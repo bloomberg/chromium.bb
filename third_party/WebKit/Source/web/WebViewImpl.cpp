@@ -372,6 +372,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       m_flingSourceDevice(WebGestureDeviceUninitialized),
       m_fullscreenController(FullscreenController::create(this)),
       m_baseBackgroundColor(Color::white),
+      m_baseBackgroundColorOverride(Color::transparent),
       m_backgroundColorOverride(Color::transparent),
       m_zoomFactorOverride(0),
       m_userGestureObserved(false),
@@ -3568,12 +3569,35 @@ WebInputMethodControllerImpl* WebViewImpl::getActiveWebInputMethodController()
   return WebInputMethodControllerImpl::fromFrame(focusedLocalFrameInWidget());
 }
 
+Color WebViewImpl::baseBackgroundColor() const {
+  return alphaChannel(m_baseBackgroundColorOverride)
+             ? m_baseBackgroundColorOverride
+             : m_baseBackgroundColor;
+}
+
 void WebViewImpl::setBaseBackgroundColor(WebColor color) {
   if (m_baseBackgroundColor == color)
     return;
 
   m_baseBackgroundColor = color;
+  updateBaseBackgroundColor();
+}
 
+void WebViewImpl::setBaseBackgroundColorOverride(WebColor color) {
+  m_baseBackgroundColorOverride = color;
+  if (mainFrameImpl()) {
+    // Force lifecycle update to ensure we're good to call
+    // FrameView::setBaseBackgroundColor().
+    mainFrameImpl()
+        ->frame()
+        ->view()
+        ->updateLifecycleToCompositingCleanPlusScrolling();
+  }
+  updateBaseBackgroundColor();
+}
+
+void WebViewImpl::updateBaseBackgroundColor() {
+  Color color = baseBackgroundColor();
   if (m_page->mainFrame() && m_page->mainFrame()->isLocalFrame())
     m_page->deprecatedLocalMainFrame()->view()->setBaseBackgroundColor(color);
 }
