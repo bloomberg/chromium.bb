@@ -12,6 +12,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -50,7 +51,7 @@ class FileFlusher::Job {
 
  private:
   // Flush files on a blocking pool thread.
-  void FlushOnBlockingPool();
+  void FlushAsync();
 
   // Whether to exclude the |path| from flushing.
   bool ShouldExclude(const base::FilePath& path) const;
@@ -96,9 +97,10 @@ void FileFlusher::Job::Start() {
     return;
   }
 
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(&FileFlusher::Job::FlushOnBlockingPool,
-                            base::Unretained(this)),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&FileFlusher::Job::FlushAsync, base::Unretained(this)),
       base::Bind(&FileFlusher::Job::FinishOnUIThread, base::Unretained(this)));
 }
 
@@ -113,9 +115,7 @@ void FileFlusher::Job::Cancel() {
     ScheduleFinish();
 }
 
-void FileFlusher::Job::FlushOnBlockingPool() {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
+void FileFlusher::Job::FlushAsync() {
   VLOG(1) << "Flushing files under " << path_.value();
 
   base::FileEnumerator traversal(path_, true /* recursive */,
