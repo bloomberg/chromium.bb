@@ -54,8 +54,9 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTestInGuestMode,
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
+// MEMORY_SANITIZER: http://crbug.com/508949
+// CHROME_OS: http://crbug.com/688568
+#if defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
 #define MAYBE_OpenSingleVideoOnDrive DISABLED_OpenSingleVideoOnDrive
 #else
 #define MAYBE_OpenSingleVideoOnDrive OpenSingleVideoOnDrive
