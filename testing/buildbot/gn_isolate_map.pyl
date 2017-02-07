@@ -567,6 +567,17 @@
     "label": "//mash:all",
     "type": "additional_compile_target",
   },
+  "mash_browser_tests": {
+    "label": "//chrome/test:mash_browser_tests",
+    "label_type": "group",
+    "type": "windowed_test_launcher",
+    "executable": "browser_tests",
+    "args": [
+      "--run-in-mash",
+      "--use-test-config",
+      "--service-overrides=../../chrome/app/mash/mash_service_overrides.json",
+    ],
+  },
   "media_unittests": {
     "label": "//media:media_unittests",
     "type": "windowed_test_launcher",

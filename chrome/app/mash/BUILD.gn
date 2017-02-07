@@ -90,3 +90,10 @@ catalog_cpp_source("chrome_mash_catalog") {
   catalog = ":catalog"
   generated_function_name = "CreateChromeMashCatalog"
 }
+
+source_set("mash_service_overrides") {
+  testonly = true
+  data = [
+    "mash_service_overrides.json",
+  ]
+}
