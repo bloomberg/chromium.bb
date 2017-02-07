@@ -406,6 +406,14 @@ void WebURLResponse::setCorsExposedHeaderNames(
   m_resourceResponse->setCorsExposedHeaderNames(exposedHeaderNames);
 }
 
+bool WebURLResponse::didServiceWorkerNavigationPreload() const {
+  return m_resourceResponse->didServiceWorkerNavigationPreload();
+}
+
+void WebURLResponse::setDidServiceWorkerNavigationPreload(bool value) {
+  m_resourceResponse->setDidServiceWorkerNavigationPreload(value);
+}
+
 WebString WebURLResponse::downloadFilePath() const {
   return m_resourceResponse->downloadedFilePath();
 }

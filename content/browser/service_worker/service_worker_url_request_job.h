@@ -101,6 +101,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   ~ServiceWorkerURLRequestJob() override;
 
   const ResourceContext* resource_context() const { return resource_context_; }
+  bool did_navigation_preload() const { return did_navigation_preload_; }
 
   // Sets the response type.
   // When an in-flight request possibly needs CORS check, use

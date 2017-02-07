@@ -98,6 +98,7 @@ ResourceResponse::ResourceResponse()
       m_wasFetchedViaForeignFetch(false),
       m_wasFallbackRequiredByServiceWorker(false),
       m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault),
+      m_didServiceWorkerNavigationPreload(false),
       m_responseTime(0),
       m_remotePort(0),
       m_encodedDataLength(0),
@@ -140,6 +141,7 @@ ResourceResponse::ResourceResponse(const KURL& url,
       m_wasFetchedViaForeignFetch(false),
       m_wasFallbackRequiredByServiceWorker(false),
       m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault),
+      m_didServiceWorkerNavigationPreload(false),
       m_responseTime(0),
       m_remotePort(0),
       m_encodedDataLength(0),
@@ -190,6 +192,8 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   m_serviceWorkerResponseType = data->m_serviceWorkerResponseType;
   m_urlListViaServiceWorker = data->m_urlListViaServiceWorker;
   m_cacheStorageCacheName = data->m_cacheStorageCacheName;
+  m_didServiceWorkerNavigationPreload =
+      data->m_didServiceWorkerNavigationPreload;
   m_responseTime = data->m_responseTime;
   m_remoteIPAddress = AtomicString(data->m_remoteIPAddress);
   m_remotePort = data->m_remotePort;
@@ -259,6 +263,8 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData()
                  data->m_urlListViaServiceWorker.begin(),
                  [](const KURL& url) { return url.copy(); });
   data->m_cacheStorageCacheName = cacheStorageCacheName().isolatedCopy();
+  data->m_didServiceWorkerNavigationPreload =
+      m_didServiceWorkerNavigationPreload;
   data->m_responseTime = m_responseTime;
   data->m_remoteIPAddress = m_remoteIPAddress.getString().isolatedCopy();
   data->m_remotePort = m_remotePort;

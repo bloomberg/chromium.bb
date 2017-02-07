@@ -338,6 +338,13 @@ class PLATFORM_EXPORT ResourceResponse final {
     m_corsExposedHeaderNames = headerNames;
   }
 
+  bool didServiceWorkerNavigationPreload() const {
+    return m_didServiceWorkerNavigationPreload;
+  }
+  void setDidServiceWorkerNavigationPreload(bool value) {
+    m_didServiceWorkerNavigationPreload = value;
+  }
+
   int64_t responseTime() const { return m_responseTime; }
   void setResponseTime(int64_t responseTime) { m_responseTime = responseTime; }
 
@@ -482,6 +489,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   // to be set if the response was fetched by a ServiceWorker.
   Vector<String> m_corsExposedHeaderNames;
 
+  // True if service worker navigation preload was performed due to
+  // the request for this resource.
+  bool m_didServiceWorkerNavigationPreload;
+
   // The time at which the response headers were received.  For cached
   // responses, this time could be "far" in the past.
   int64_t m_responseTime;
@@ -560,6 +571,7 @@ struct CrossThreadResourceResponseData {
   WebServiceWorkerResponseType m_serviceWorkerResponseType;
   Vector<KURL> m_urlListViaServiceWorker;
   String m_cacheStorageCacheName;
+  bool m_didServiceWorkerNavigationPreload;
   int64_t m_responseTime;
   String m_remoteIPAddress;
   unsigned short m_remotePort;

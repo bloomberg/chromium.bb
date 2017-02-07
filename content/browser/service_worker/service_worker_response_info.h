@@ -32,7 +32,8 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
 
   void GetExtraResponseInfo(ResourceResponseInfo* response_info) const;
   void OnPrepareToRestart(base::TimeTicks service_worker_start_time,
-                          base::TimeTicks service_worker_ready_time);
+                          base::TimeTicks service_worker_ready_time,
+                          bool did_navigation_preload);
   void OnStartCompleted(
       bool was_fetched_via_service_worker,
       bool was_fetched_via_foreign_fetch,
@@ -43,7 +44,8 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
       base::TimeTicks service_worker_ready_time,
       bool response_is_in_cache_storage,
       const std::string& response_cache_storage_cache_name,
-      const ServiceWorkerHeaderList& cors_exposed_header_names);
+      const ServiceWorkerHeaderList& cors_exposed_header_names,
+      bool did_navigation_preload);
   void ResetData();
 
   // Returns true if a service worker responded to the request. If the service
@@ -89,6 +91,7 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
   const std::string& response_cache_storage_cache_name() const {
     return response_cache_storage_cache_name_;
   }
+  bool did_navigation_preload() const { return did_navigation_preload_; }
 
  private:
   ServiceWorkerResponseInfo();
@@ -104,6 +107,7 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
   bool response_is_in_cache_storage_ = false;
   std::string response_cache_storage_cache_name_;
   ServiceWorkerHeaderList cors_exposed_header_names_;
+  bool did_navigation_preload_ = false;
 };
 
 }  // namespace content

@@ -794,7 +794,8 @@ void ServiceWorkerURLRequestJob::NotifyStartError(
 
 void ServiceWorkerURLRequestJob::NotifyRestartRequired() {
   ServiceWorkerResponseInfo::ForRequest(request_, true)
-      ->OnPrepareToRestart(worker_start_time_, worker_ready_time_);
+      ->OnPrepareToRestart(worker_start_time_, worker_ready_time_,
+                           did_navigation_preload_);
   delegate_->OnPrepareToRestart();
   URLRequestJob::NotifyRestartRequired();
 }
@@ -818,7 +819,8 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
               base::TimeTicks() /* service_worker_ready_time */,
               false /* response_is_in_cache_storage */,
               std::string() /* response_cache_storage_cache_name */,
-              ServiceWorkerHeaderList() /* cors_exposed_header_names */);
+              ServiceWorkerHeaderList() /* cors_exposed_header_names */,
+              did_navigation_preload_);
       break;
     case FALLBACK_TO_RENDERER:
     case FORWARD_TO_SERVICE_WORKER:
@@ -832,7 +834,8 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
               fall_back_required_, response_url_list_,
               service_worker_response_type_, worker_start_time_,
               worker_ready_time_, response_is_in_cache_storage_,
-              response_cache_storage_cache_name_, cors_exposed_header_names_);
+              response_cache_storage_cache_name_, cors_exposed_header_names_,
+              did_navigation_preload_);
       break;
   }
 }

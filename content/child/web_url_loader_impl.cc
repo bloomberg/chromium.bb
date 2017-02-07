@@ -1087,6 +1087,8 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
       info.cors_exposed_header_names.end(), cors_exposed_header_names.begin(),
       [](const std::string& h) { return blink::WebString::fromLatin1(h); });
   response->setCorsExposedHeaderNames(cors_exposed_header_names);
+  response->setDidServiceWorkerNavigationPreload(
+      info.did_service_worker_navigation_preload);
   response->setEncodedDataLength(info.encoded_data_length);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);

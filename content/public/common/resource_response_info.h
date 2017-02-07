@@ -178,6 +178,10 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   // In case this is a CORS response fetched by a ServiceWorker, this is the
   // set of headers that should be exposed.
   std::vector<std::string> cors_exposed_header_names;
+
+  // True if service worker navigation preload was performed due to the request
+  // for this response.
+  bool did_service_worker_navigation_preload;
 };
 
 }  // namespace content

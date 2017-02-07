@@ -281,6 +281,12 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void setCorsExposedHeaderNames(
       const WebVector<WebString>&);
 
+  // Whether service worker navigation preload occurred.
+  // See ServiceWorkerResponseInfo::did_navigation_preload() for
+  // details.
+  BLINK_PLATFORM_EXPORT bool didServiceWorkerNavigationPreload() const;
+  BLINK_PLATFORM_EXPORT void setDidServiceWorkerNavigationPreload(bool);
+
   // This indicates the location of a downloaded response if the
   // WebURLRequest had the downloadToFile flag set to true. This file path
   // remains valid for the lifetime of the WebURLLoader used to create it.
