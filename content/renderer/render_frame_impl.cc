@@ -618,7 +618,8 @@ base::TimeTicks SanitizeNavigationTiming(
 
 // PlzNavigate
 CommonNavigationParams MakeCommonNavigationParams(
-    const blink::WebFrameClient::NavigationPolicyInfo& info) {
+    const blink::WebFrameClient::NavigationPolicyInfo& info,
+    int load_flags) {
   Referrer referrer(
       GURL(info.urlRequest.httpHeaderField(
           WebString::fromUTF8("Referer")).latin1()),
@@ -637,10 +638,15 @@ CommonNavigationParams MakeCommonNavigationParams(
       static_cast<FrameMsg_UILoadMetricsReportType::Value>(
           info.urlRequest.inputPerfMetricReportPolicy());
 
+  // Determine the navigation type.
   FrameMsg_Navigate_Type::Value navigation_type =
-      info.navigationType == blink::WebNavigationTypeReload
-      ? FrameMsg_Navigate_Type::RELOAD
-      : FrameMsg_Navigate_Type::NORMAL;
+      FrameMsg_Navigate_Type::NORMAL;
+  if (info.navigationType == blink::WebNavigationTypeReload) {
+    if (load_flags & net::LOAD_BYPASS_CACHE)
+      navigation_type = FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE;
+    else
+      navigation_type = FrameMsg_Navigate_Type::RELOAD;
+  }
 
   const RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(info.urlRequest.getExtraData());
@@ -6260,7 +6266,8 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
     begin_navigation_params.client_side_redirect_url = frame_->document().url();
 
   Send(new FrameHostMsg_BeginNavigation(
-      routing_id_, MakeCommonNavigationParams(info), begin_navigation_params));
+      routing_id_, MakeCommonNavigationParams(info, load_flags),
+      begin_navigation_params));
 }
 
 void RenderFrameImpl::LoadDataURL(
