@@ -719,8 +719,14 @@ std::unique_ptr<JSONObject> PaintLayerCompositor::layerTreeAsJSON(
   // similar between platforms (unless we explicitly request dumping from the
   // root.
   GraphicsLayer* rootLayer = m_rootContentLayer.get();
-  if (flags & LayerTreeIncludesRootLayer)
-    rootLayer = rootGraphicsLayer();
+  if (flags & LayerTreeIncludesRootLayer) {
+    if (m_layoutView.frame()->isMainFrame()) {
+      while (rootLayer->parent())
+        rootLayer = rootLayer->parent();
+    } else {
+      rootLayer = rootGraphicsLayer();
+    }
+  }
 
   return rootLayer->layerTreeAsJSON(flags);
 }
