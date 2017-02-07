@@ -33,9 +33,8 @@ typedef uint8_t AnsP8;
 #define RANS_PROB_BITS 15
 #define RANS_PRECISION (1u << RANS_PROB_BITS)
 
-// L_BASE % PRECISION must be 0. Increasing L_BASE beyond 2**15 will cause uabs
-// to overflow.
-#define L_BASE (RANS_PRECISION)
+// L_BASE is the ANS base state. L_BASE % PRECISION must be 0.
+#define L_BASE (1u << 17)
 #define IO_BASE 256
 // Range I = { L_BASE, L_BASE + 1, ..., L_BASE * IO_BASE - 1 }
 
