@@ -239,8 +239,9 @@ void LayoutBlock::styleDidChange(StyleDifference diff,
   // width or height of the block to end up being the same. We keep track of
   // this change so in layoutBlock, we can know to set relayoutChildren=true.
   m_widthAvailableToChildrenChanged |=
-      oldStyle && diff.needsFullLayout() && needsLayout() &&
-      borderOrPaddingLogicalDimensionChanged(*oldStyle, newStyle, LogicalWidth);
+      oldStyle && needsLayout() &&
+      (diff.needsFullLayout() || borderOrPaddingLogicalDimensionChanged(
+                                     *oldStyle, newStyle, LogicalWidth));
   m_heightAvailableToChildrenChanged |= oldStyle && diff.needsFullLayout() &&
                                         needsLayout() &&
                                         borderOrPaddingLogicalDimensionChanged(
