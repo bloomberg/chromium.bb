@@ -636,6 +636,7 @@ const CGFloat kSeparatorInset = 10;
           self.entriesType = NO_ENTRIES;
         }
         [self updateEntriesStatusMessage];
+        [self.delegate historyCollectionViewControllerDidChangeEntries:self];
       }];
 }
 
