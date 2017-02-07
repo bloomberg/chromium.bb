@@ -27,15 +27,17 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
   explicit TestDocumentSubresourceFilter(bool allowLoads)
       : m_allowLoads(allowLoads) {}
 
-  bool allowLoad(const WebURL& resourceUrl,
-                 WebURLRequest::RequestContext) override {
+  LoadPolicy getLoadPolicy(const WebURL& resourceUrl,
+                           WebURLRequest::RequestContext) override {
     std::string resourcePath = WebString(KURL(resourceUrl).path()).utf8();
     if (std::find(m_queriedSubresourcePaths.begin(),
                   m_queriedSubresourcePaths.end(),
                   resourcePath) == m_queriedSubresourcePaths.end())
       m_queriedSubresourcePaths.push_back(resourcePath);
-    return m_allowLoads;
+    return m_allowLoads ? Allow : Disallow;
   }
+
+  void reportDisallowedLoad() override {}
 
   const std::vector<std::string>& queriedSubresourcePaths() const {
     return m_queriedSubresourcePaths;

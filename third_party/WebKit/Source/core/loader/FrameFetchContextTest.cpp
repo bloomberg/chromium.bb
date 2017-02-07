@@ -30,6 +30,7 @@
 
 #include "core/loader/FrameFetchContext.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameOwner.h"
@@ -48,10 +49,10 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebCachePolicy.h"
+#include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -80,6 +81,23 @@ class MockFrameLoaderClient : public EmptyFrameLoaderClient {
   MOCK_METHOD1(didDisplayContentWithCertificateErrors, void(const KURL&));
   MOCK_METHOD2(dispatchDidLoadResourceFromMemoryCache,
                void(const ResourceRequest&, const ResourceResponse&));
+};
+
+class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
+ public:
+  FixedPolicySubresourceFilter(LoadPolicy policy, int* filteredLoadCounter)
+      : m_policy(policy), m_filteredLoadCounter(filteredLoadCounter) {}
+
+  LoadPolicy getLoadPolicy(const WebURL& resourceUrl,
+                           WebURLRequest::RequestContext) override {
+    return m_policy;
+  }
+
+  void reportDisallowedLoad() override { ++*m_filteredLoadCounter; }
+
+ private:
+  const LoadPolicy m_policy;
+  int* m_filteredLoadCounter;
 };
 
 class FrameFetchContextTest : public ::testing::Test {
@@ -124,6 +142,49 @@ class FrameFetchContextTest : public ::testing::Test {
   Persistent<LocalFrame> childFrame;
   Persistent<Document> childDocument;
   Persistent<DummyFrameOwner> owner;
+};
+
+class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
+ protected:
+  void SetUp() override {
+    FrameFetchContextTest::SetUp();
+    m_filteredLoadCallbackCounter = 0;
+  }
+
+  void TearDown() override {
+    document->loader()->setSubresourceFilter(nullptr);
+    FrameFetchContextTest::TearDown();
+  }
+
+  int getFilteredLoadCallCount() const { return m_filteredLoadCallbackCounter; }
+
+  void setFilterPolicy(WebDocumentSubresourceFilter::LoadPolicy policy) {
+    document->loader()->setSubresourceFilter(
+        WTF::makeUnique<FixedPolicySubresourceFilter>(
+            policy, &m_filteredLoadCallbackCounter));
+  }
+
+  ResourceRequestBlockedReason canRequest() {
+    return canRequestInternal(
+        FetchContext::SecurityViolationReportingPolicy::Report);
+  }
+
+  ResourceRequestBlockedReason canRequestPreload() {
+    return canRequestInternal(
+        FetchContext::SecurityViolationReportingPolicy::SuppressReporting);
+  }
+
+ private:
+  ResourceRequestBlockedReason canRequestInternal(
+      FetchContext::SecurityViolationReportingPolicy reportingPolicy) {
+    KURL inputURL(ParsedURLString, "http://example.com/");
+    ResourceRequest resourceRequest(inputURL);
+    return fetchContext->canRequest(
+        Resource::Image, resourceRequest, inputURL, ResourceLoaderOptions(),
+        reportingPolicy, FetchRequest::UseDefaultOriginRestrictionForType);
+  }
+
+  int m_filteredLoadCallbackCounter;
 };
 
 // This test class sets up a mock frame loader client.
@@ -807,6 +868,43 @@ TEST_F(FrameFetchContextTest, SetIsExternalRequestForLocalDocument) {
     fetchContext->addAdditionalRequestHeaders(subRequest, FetchSubresource);
     EXPECT_EQ(test.isExternalExpectation, subRequest.isExternalRequest());
   }
+}
+
+TEST_F(FrameFetchContextSubresourceFilterTest, Filter) {
+  setFilterPolicy(WebDocumentSubresourceFilter::Disallow);
+
+  EXPECT_EQ(ResourceRequestBlockedReason::SubresourceFilter, canRequest());
+  EXPECT_EQ(1, getFilteredLoadCallCount());
+
+  EXPECT_EQ(ResourceRequestBlockedReason::SubresourceFilter, canRequest());
+  EXPECT_EQ(2, getFilteredLoadCallCount());
+
+  EXPECT_EQ(ResourceRequestBlockedReason::SubresourceFilter,
+            canRequestPreload());
+  EXPECT_EQ(2, getFilteredLoadCallCount());
+
+  EXPECT_EQ(ResourceRequestBlockedReason::SubresourceFilter, canRequest());
+  EXPECT_EQ(3, getFilteredLoadCallCount());
+}
+
+TEST_F(FrameFetchContextSubresourceFilterTest, Allow) {
+  setFilterPolicy(WebDocumentSubresourceFilter::Allow);
+
+  EXPECT_EQ(ResourceRequestBlockedReason::None, canRequest());
+  EXPECT_EQ(0, getFilteredLoadCallCount());
+
+  EXPECT_EQ(ResourceRequestBlockedReason::None, canRequestPreload());
+  EXPECT_EQ(0, getFilteredLoadCallCount());
+}
+
+TEST_F(FrameFetchContextSubresourceFilterTest, WouldDisallow) {
+  setFilterPolicy(WebDocumentSubresourceFilter::WouldDisallow);
+
+  EXPECT_EQ(ResourceRequestBlockedReason::None, canRequest());
+  EXPECT_EQ(0, getFilteredLoadCallCount());
+
+  EXPECT_EQ(ResourceRequestBlockedReason::None, canRequestPreload());
+  EXPECT_EQ(0, getFilteredLoadCallCount());
 }
 
 }  // namespace blink

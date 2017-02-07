@@ -26,8 +26,9 @@ class MockWebDocumentSubresourceFilter
   ~MockWebDocumentSubresourceFilter() override;
 
   // blink::WebDocumentSubresourceFilter:
-  bool allowLoad(const blink::WebURL& resource_url,
-                 blink::WebURLRequest::RequestContext) override;
+  LoadPolicy getLoadPolicy(const blink::WebURL& resource_url,
+                           blink::WebURLRequest::RequestContext) override;
+  void reportDisallowedLoad() override;
 
  private:
   std::vector<std::string> disallowed_path_suffixes_;

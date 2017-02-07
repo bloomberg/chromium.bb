@@ -18,7 +18,8 @@ MockWebDocumentSubresourceFilter::MockWebDocumentSubresourceFilter(
 
 MockWebDocumentSubresourceFilter::~MockWebDocumentSubresourceFilter() {}
 
-bool MockWebDocumentSubresourceFilter::allowLoad(
+blink::WebDocumentSubresourceFilter::LoadPolicy
+MockWebDocumentSubresourceFilter::getLoadPolicy(
     const blink::WebURL& resource_url,
     blink::WebURLRequest::RequestContext /* ignored */) {
   const std::string resource_path(GURL(resource_url).path());
@@ -27,7 +28,11 @@ bool MockWebDocumentSubresourceFilter::allowLoad(
                       [&resource_path](const std::string& suffix) {
                         return base::EndsWith(resource_path, suffix,
                                               base::CompareCase::SENSITIVE);
-                      }) == disallowed_path_suffixes_.end();
+                      }) == disallowed_path_suffixes_.end()
+             ? Allow
+             : Disallow;
 }
+
+void MockWebDocumentSubresourceFilter::reportDisallowedLoad() {}
 
 }  // namespace test_runner

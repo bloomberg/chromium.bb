@@ -92,9 +92,12 @@ TEST_F(DocumentSubresourceFilterTest, DryRun) {
       url::Origin(), activation_state, ruleset(),
       first_disallowed_load_callback_receiver.closure());
 
-  EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
-  EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
-  EXPECT_TRUE(filter.allowLoad(GURL(kTestBetaURL), request_context));
+  EXPECT_EQ(blink::WebDocumentSubresourceFilter::WouldDisallow,
+            filter.getLoadPolicy(GURL(kTestAlphaURL), request_context));
+  EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
+            filter.getLoadPolicy(GURL(kTestAlphaDataURI), request_context));
+  EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
+            filter.getLoadPolicy(GURL(kTestBetaURL), request_context));
 
   const auto& statistics = filter.statistics();
   EXPECT_EQ(3, statistics.num_loads_total);
@@ -109,15 +112,16 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
   auto test_impl = [this](bool measure_performance) {
     blink::WebURLRequest::RequestContext request_context =
         blink::WebURLRequest::RequestContextImage;
-
     ActivationState activation_state(kEnabled);
     activation_state.measure_performance = measure_performance;
     DocumentSubresourceFilter filter(url::Origin(), activation_state, ruleset(),
                                      base::OnceClosure());
-
-    EXPECT_FALSE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
-    EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
-    EXPECT_TRUE(filter.allowLoad(GURL(kTestBetaURL), request_context));
+    EXPECT_EQ(blink::WebDocumentSubresourceFilter::Disallow,
+              filter.getLoadPolicy(GURL(kTestAlphaURL), request_context));
+    EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
+              filter.getLoadPolicy(GURL(kTestAlphaDataURI), request_context));
+    EXPECT_EQ(blink::WebDocumentSubresourceFilter::Allow,
+              filter.getLoadPolicy(GURL(kTestBetaURL), request_context));
 
     const auto& statistics = filter.statistics();
     EXPECT_EQ(3, statistics.num_loads_total);
@@ -139,8 +143,6 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
 
 TEST_F(DocumentSubresourceFilterTest,
        CallbackFiredExactlyOnceAfterFirstDisallowedLoad) {
-  blink::WebURLRequest::RequestContext request_context =
-      blink::WebURLRequest::RequestContextImage;
   TestCallbackReceiver first_disallowed_load_callback_receiver;
 
   ActivationState activation_state(kEnabled);
@@ -149,11 +151,10 @@ TEST_F(DocumentSubresourceFilterTest,
       url::Origin(), activation_state, ruleset(),
       first_disallowed_load_callback_receiver.closure());
 
-  EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
   EXPECT_EQ(0u, first_disallowed_load_callback_receiver.callback_count());
-  EXPECT_FALSE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
+  filter.reportDisallowedLoad();
   EXPECT_EQ(1u, first_disallowed_load_callback_receiver.callback_count());
-  EXPECT_FALSE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
+  filter.reportDisallowedLoad();
   EXPECT_EQ(1u, first_disallowed_load_callback_receiver.callback_count());
 }
 

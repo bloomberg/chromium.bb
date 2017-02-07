@@ -30,7 +30,10 @@ enum WebLoadingBehaviorFlag {
   WebLoadingBehaviorCSSPreloadFound = 1 << 4,
   // Indicates that the page has a synchronous, same-origin document.written
   // script with different protocol.
-  WebLoadingBehaviorDocumentWriteBlockDifferentScheme = 1 << 5
+  WebLoadingBehaviorDocumentWriteBlockDifferentScheme = 1 << 5,
+  // Indicates that a subresource on the page matched the subresource filtering
+  // rules.
+  WebLoadingBehaviorSubresourceFilterMatch = 1 << 6
 };
 
 }  // namespace blink

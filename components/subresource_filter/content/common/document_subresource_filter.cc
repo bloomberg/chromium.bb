@@ -155,10 +155,11 @@ DocumentSubresourceFilter::DocumentSubresourceFilter(
 
 DocumentSubresourceFilter::~DocumentSubresourceFilter() = default;
 
-bool DocumentSubresourceFilter::allowLoad(
+blink::WebDocumentSubresourceFilter::LoadPolicy
+DocumentSubresourceFilter::getLoadPolicy(
     const blink::WebURL& resourceUrl,
     blink::WebURLRequest::RequestContext request_context) {
-  TRACE_EVENT1("loader", "DocumentSubresourceFilter::allowLoad", "url",
+  TRACE_EVENT1("loader", "DocumentSubresourceFilter::getLoadPolicy", "url",
                resourceUrl.string().utf8());
 
   auto wall_duration_timer = ScopedTimers::StartIf(
@@ -179,10 +180,10 @@ bool DocumentSubresourceFilter::allowLoad(
   ++statistics_.num_loads_total;
 
   if (activation_state_.filtering_disabled_for_document)
-    return true;
+    return Allow;
 
   if (resourceUrl.protocolIs(url::kDataScheme))
-    return true;
+    return Allow;
 
   ++statistics_.num_loads_evaluated;
   DCHECK(document_origin_);
@@ -191,15 +192,20 @@ bool DocumentSubresourceFilter::allowLoad(
           activation_state_.generic_blocking_rules_disabled)) {
     ++statistics_.num_loads_matching_rules;
     if (activation_state_.activation_level == ActivationLevel::ENABLED) {
-      if (!first_disallowed_load_callback_.is_null()) {
-        DCHECK_EQ(statistics_.num_loads_disallowed, 0);
-        std::move(first_disallowed_load_callback_).Run();
-      }
       ++statistics_.num_loads_disallowed;
-      return false;
+      return Disallow;
+    } else if (activation_state_.activation_level == ActivationLevel::DRYRUN) {
+      return WouldDisallow;
     }
   }
-  return true;
+  return Allow;
+}
+
+void DocumentSubresourceFilter::reportDisallowedLoad() {
+  if (first_disallowed_load_callback_.is_null())
+    return;
+
+  std::move(first_disallowed_load_callback_).Run();
 }
 
 }  // namespace subresource_filter

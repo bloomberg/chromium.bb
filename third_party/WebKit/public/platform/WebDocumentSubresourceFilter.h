@@ -13,9 +13,14 @@ class WebURL;
 
 class WebDocumentSubresourceFilter {
  public:
+  enum LoadPolicy { Allow, Disallow, WouldDisallow };
   virtual ~WebDocumentSubresourceFilter() {}
-  virtual bool allowLoad(const WebURL& resourceUrl,
-                         WebURLRequest::RequestContext) = 0;
+  virtual LoadPolicy getLoadPolicy(const WebURL& resourceUrl,
+                                   WebURLRequest::RequestContext) = 0;
+
+  // Report that a resource loaded by the document (not a preload) was
+  // disallowed.
+  virtual void reportDisallowedLoad() = 0;
 };
 
 }  // namespace blink

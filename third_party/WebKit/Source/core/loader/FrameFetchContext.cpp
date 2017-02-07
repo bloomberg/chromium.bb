@@ -819,10 +819,26 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
   // proceed.
   DocumentLoader* documentLoader = masterDocumentLoader();
   if (documentLoader && documentLoader->subresourceFilter() &&
-      type != Resource::MainResource && type != Resource::ImportResource &&
-      !documentLoader->subresourceFilter()->allowLoad(
-          url, resourceRequest.requestContext()))
-    return ResourceRequestBlockedReason::SubresourceFilter;
+      type != Resource::MainResource && type != Resource::ImportResource) {
+    WebDocumentSubresourceFilter::LoadPolicy loadPolicy =
+        documentLoader->subresourceFilter()->getLoadPolicy(
+            url, resourceRequest.requestContext());
+    if (reportingPolicy == SecurityViolationReportingPolicy::Report) {
+      switch (loadPolicy) {
+        case WebDocumentSubresourceFilter::Allow:
+          break;
+        case WebDocumentSubresourceFilter::Disallow:
+          documentLoader->subresourceFilter()->reportDisallowedLoad();
+        // fall through
+        case WebDocumentSubresourceFilter::WouldDisallow:
+          documentLoader->didObserveLoadingBehavior(
+              WebLoadingBehaviorSubresourceFilterMatch);
+          break;
+      }
+    }
+    if (loadPolicy == WebDocumentSubresourceFilter::Disallow)
+      return ResourceRequestBlockedReason::SubresourceFilter;
+  }
 
   return ResourceRequestBlockedReason::None;
 }

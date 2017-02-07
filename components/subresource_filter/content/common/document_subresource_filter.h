@@ -73,8 +73,9 @@ class DocumentSubresourceFilter
   const DocumentLoadStatistics& statistics() const { return statistics_; }
 
   // blink::WebDocumentSubresourceFilter:
-  bool allowLoad(const blink::WebURL& resourceUrl,
-                 blink::WebURLRequest::RequestContext) override;
+  LoadPolicy getLoadPolicy(const blink::WebURL& resourceUrl,
+                           blink::WebURLRequest::RequestContext) override;
+  void reportDisallowedLoad() override;
 
  private:
   const ActivationState activation_state_;
