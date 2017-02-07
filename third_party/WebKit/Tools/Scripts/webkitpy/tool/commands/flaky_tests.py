@@ -39,35 +39,30 @@ _log = logging.getLogger(__name__)
 
 class FlakyTests(Command):
     name = "print-flaky-tests"
-    help_text = "Print out flaky lines from the flakiness dashboard"
+    help_text = "Print out flaky tests based on results from the flakiness dashboard"
     show_in_main_help = True
 
     FLAKINESS_DASHBOARD_URL = 'https://test-results.appspot.com/dashboards/flakiness_dashboard.html#testType=webkit_tests&tests=%s'
 
-    BUG_TEMPLATE = ('https://code.google.com/p/chromium/issues/entry?owner=FILL_ME_IN&status=Assigned&'
-                    'labels=Pri-1,Cr-Blink,FlakyLayoutTest&summary=XXXXXXX%20is%20flaky&'
-                    'comment=XXXXXXX%20is%20flaky.%0A%0AIt%20failed%20twice%20and%20then'
-                    '%20passed%20on%20the%203rd%20or%204th%20retry.%20This%20is%20too%20'
-                    'flaky.%20The%20test%20will%20be%20skipped%20until%20it%27s%20fixed.'
-                    '%20If%20not%20fixed%20in%203%20months,%20it%20will%20be%20deleted%20'
-                    'or%20perma-skipped.%0A%0AIn%20the%20flakiness%20dashboard,%20the%20'
-                    'turquoise%20boxes%20are%20runs%20where%20the%20test%20failed%20and%20'
-                    'then%20passed%20on%20retry.%0A%0Ahttp://test-results.appspot.com'
-                    '/dashboards/flakiness_dashboard.html%23tests=XXXXXXX')
+    BUG_TEMPLATE = (
+        'https://code.google.com/p/chromium/issues/entry?owner=FILL_ME_IN&status=Assigned&'
+        'labels=Pri-1,Cr-Blink,FlakyLayoutTest&summary=XXXXXXX%20is%20flaky&'
+        'comment=XXXXXXX%20is%20flaky.%0A%0AIt%20failed%20twice%20and%20then'
+        '%20passed%20on%20the%203rd%20or%204th%20retry.%20This%20is%20too%20'
+        'flaky.%20The%20test%20will%20be%20skipped%20until%20it%27s%20fixed.'
+        '%20If%20not%20fixed%20in%203%20months,%20it%20will%20be%20deleted%20'
+        'or%20perma-skipped.%0A%0AIn%20the%20flakiness%20dashboard,%20the%20'
+        'turquoise%20boxes%20are%20runs%20where%20the%20test%20failed%20and%20'
+        'then%20passed%20on%20retry.%0A%0Ahttp://test-results.appspot.com'
+        '/dashboards/flakiness_dashboard.html%23tests=XXXXXXX')
 
-    HEADER = '''Manually add bug numbers for these and then put the lines in LayoutTests/TestExpectations.
-Look up the test in the flakiness dashboard first to see if the the platform
-specifiers should be made more general.
+    HEADER = (
+        'Manually add bug numbers for these and then put the lines in LayoutTests/TestExpectations.\n'
+        'Look up the test in the flakiness dashboard first to see if the the platform\n'
+        'specifiers should be made more general.\n\n'
+        'Bug template:\n%s\n') % BUG_TEMPLATE
 
-Bug template:
-%s
-''' % BUG_TEMPLATE
-
-    OUTPUT = '''%s
-%s
-
-Flakiness dashboard: %s
-'''
+    OUTPUT = '%s\n%s\n\nFlakiness dashboard: %s\n'
 
     def __init__(self):
         super(FlakyTests, self).__init__()
@@ -113,7 +108,7 @@ Flakiness dashboard: %s
 
     def execute(self, options, args, tool):
         factory = self.expectations_factory(tool.builders)
-        lines = self._collect_expectation_lines(tool.builders.all_builder_names(), factory)
+        lines = self._collect_expectation_lines(tool.builders.all_continuous_builder_names(), factory)
         lines.sort(key=lambda line: line.path)
 
         port = tool.port_factory.get()
