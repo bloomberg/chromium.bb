@@ -10,9 +10,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
-#include "chrome/browser/webshare/share_service_impl.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -159,13 +160,13 @@ payments::PaymentRequestDialog* CreatePaymentRequestDialog(
     payments::PaymentRequest* request);
 
 // Shows the dialog to choose a share target app. |targets| is a list of app
-// titles that will be shown in a list. Calls |callback| with SHARE if an app
-// was chosen, or CANCEL if the dialog was cancelled.
-// TODO(mgiuca): Callback should provide info about the picked app.
+// title and manifest URL pairs that will be shown in a list. If the user picks
+// a target, this calls |callback| with the manifest URL of the chosen target,
+// or supplies null if the user cancelled the share.
 void ShowWebShareTargetPickerDialog(
     gfx::NativeWindow parent_window,
-    const std::vector<base::string16>& targets,
-    const base::Callback<void(SharePickerResult)>& callback);
+    const std::vector<std::pair<base::string16, GURL>>& targets,
+    const base::Callback<void(base::Optional<std::string>)>& callback);
 
 #if defined(OS_MACOSX)
 

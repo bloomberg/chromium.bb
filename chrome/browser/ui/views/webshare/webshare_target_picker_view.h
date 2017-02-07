@@ -13,7 +13,11 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/controls/table/table_view.h"
+#include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_delegate.h"
+
+class GURL;
 
 // Dialog that presents the user with a list of share target apps. Allows the
 // user to pick one target to be opened and have data passed to it.
@@ -22,14 +26,17 @@
 // in-development feature (Web Share) behind a runtime flag. It should not be
 // used by any released code until going through UI review.
 class WebShareTargetPickerView : public views::DialogDelegateView,
+                                 public views::TableViewObserver,
                                  public ui::TableModel {
  public:
-  // |targets| is a list of app titles that will be shown in a list. Calls
-  // |close_callback| with SHARE if an app was chosen, or CANCEL if the dialog
-  // was cancelled.
+  // |targets| is a list of app title and manifest URL pairs that will be shown
+  // in a list. If the user picks a target, this calls |callback| with the
+  // manifest URL of the chosen target, or returns null if the user cancelled
+  // the share.
   WebShareTargetPickerView(
-      const std::vector<base::string16>& targets,
-      const base::Callback<void(SharePickerResult)>& close_callback);
+      const std::vector<std::pair<base::string16, GURL>>& targets,
+      const base::Callback<void(base::Optional<std::string>)>&
+          close_callback);
   ~WebShareTargetPickerView() override;
 
   // views::View overrides:
@@ -43,6 +50,11 @@ class WebShareTargetPickerView : public views::DialogDelegateView,
   bool Cancel() override;
   bool Accept() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+
+  // views::TableViewObserver overrides:
+  void OnSelectionChanged() override;
+  void OnDoubleClick() override;
 
   // ui::TableModel overrides:
   int RowCount() override;
@@ -50,9 +62,11 @@ class WebShareTargetPickerView : public views::DialogDelegateView,
   void SetObserver(ui::TableModelObserver* observer) override;
 
  private:
-  const std::vector<base::string16> targets_;
+  views::TableView* table_;
 
-  base::Callback<void(SharePickerResult)> close_callback_;
+  const std::vector<std::pair<base::string16, GURL>> targets_;
+
+  base::Callback<void(base::Optional<std::string>)> close_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebShareTargetPickerView);
 };

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/webshare/share_service_impl.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -32,19 +33,20 @@ class ShareServiceTestImpl : public ShareServiceImpl {
     return share_service_helper_raw;
   }
 
-  void set_picker_result(SharePickerResult result) {
+  void set_picker_result(base::Optional<std::string> result) {
     picker_result_ = result;
   }
 
   const std::string& GetLastUsedTargetURL() { return last_used_target_url_; }
 
  private:
-  SharePickerResult picker_result_ = SharePickerResult::SHARE;
+  base::Optional<std::string> picker_result_;
   std::string last_used_target_url_;
 
   void ShowPickerDialog(
-      const std::vector<base::string16>& targets,
-      const base::Callback<void(SharePickerResult)>& callback) override {
+      const std::vector<std::pair<base::string16, GURL>>& targets,
+      const base::Callback<void(base::Optional<std::string>)>& callback)
+      override {
     callback.Run(picker_result_);
   }
 
@@ -92,6 +94,8 @@ TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
       "https://wicg.github.io/web-share-target/demos/"
       "sharetarget.html?title=My%20title&text=My%20text&url=https%3A%2F%2Fwww."
       "google.com%2F";
+  share_service_helper_->set_picker_result(base::Optional<std::string>(
+      "https://wicg.github.io/web-share-target/demos/"));
 
   const GURL url(kUrlSpec);
   base::Callback<void(const base::Optional<std::string>&)> callback =
@@ -108,9 +112,8 @@ TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
 
 // Tests the result of cancelling the share in the picker UI.
 TEST_F(ShareServiceImplUnittest, ShareCancel) {
-  // Ask that the dialog be cancelled.
-  share_service_helper_->set_picker_result(SharePickerResult::CANCEL);
-
+  // picker_result_ is set to nullopt by default, so this imitates the user
+  // cancelling a share.
   // Expect an error message in response.
   base::Callback<void(const base::Optional<std::string>&)> callback =
       base::Bind(&ShareServiceImplUnittest::DidShare, base::Unretained(this),

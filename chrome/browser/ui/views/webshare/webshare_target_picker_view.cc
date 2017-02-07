@@ -4,14 +4,15 @@
 
 #include "chrome/browser/ui/views/webshare/webshare_target_picker_view.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -24,8 +25,8 @@ namespace chrome {
 
 void ShowWebShareTargetPickerDialog(
     gfx::NativeWindow parent_window,
-    const std::vector<base::string16>& targets,
-    const base::Callback<void(SharePickerResult)>& callback) {
+    const std::vector<std::pair<base::string16, GURL>>& targets,
+    const base::Callback<void(base::Optional<std::string>)>& callback) {
   constrained_window::CreateBrowserModalDialogViews(
       new WebShareTargetPickerView(targets, callback), parent_window)
       ->Show();
@@ -34,8 +35,8 @@ void ShowWebShareTargetPickerDialog(
 }  // namespace chrome
 
 WebShareTargetPickerView::WebShareTargetPickerView(
-    const std::vector<base::string16>& targets,
-    const base::Callback<void(SharePickerResult)>& close_callback)
+    const std::vector<std::pair<base::string16, GURL>>& targets,
+    const base::Callback<void(base::Optional<std::string>)>& close_callback)
     : targets_(targets), close_callback_(close_callback) {
   views::BoxLayout* layout = new views::BoxLayout(
       views::BoxLayout::kVertical, views::kPanelHorizMargin,
@@ -47,15 +48,16 @@ WebShareTargetPickerView::WebShareTargetPickerView(
   AddChildView(overview_label);
 
   std::vector<ui::TableColumn> table_columns{ui::TableColumn()};
-  views::TableView* table =
-      new views::TableView(this, table_columns, views::TEXT_ONLY, true);
+  table_ = new views::TableView(this, table_columns, views::TEXT_ONLY, true);
   // Select the first row.
   if (RowCount() > 0)
-    table->Select(0);
+    table_->Select(0);
+
+  table_->set_observer(this);
 
   // Create the table parent (a ScrollView which includes the scroll bars and
   // border). We add this parent (not the table itself) to the dialog.
-  views::View* table_parent = table->CreateParentIfNecessary();
+  views::View* table_parent = table_->CreateParentIfNecessary();
   AddChildView(table_parent);
   // Make the table expand to fill the space.
   layout->SetFlexForView(table_parent, 1);
@@ -77,14 +79,16 @@ base::string16 WebShareTargetPickerView::GetWindowTitle() const {
 
 bool WebShareTargetPickerView::Cancel() {
   if (!close_callback_.is_null())
-    close_callback_.Run(SharePickerResult::CANCEL);
+    close_callback_.Run(base::nullopt);
 
   return true;
 }
 
 bool WebShareTargetPickerView::Accept() {
-  if (!close_callback_.is_null())
-    close_callback_.Run(SharePickerResult::SHARE);
+  if (!close_callback_.is_null()) {
+    DCHECK(!table_->selection_model().empty());
+    close_callback_.Run(targets_[table_->FirstSelectedRow()].second.spec());
+  }
 
   return true;
 }
@@ -97,12 +101,33 @@ base::string16 WebShareTargetPickerView::GetDialogButtonLabel(
   return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
+bool WebShareTargetPickerView::IsDialogButtonEnabled(
+    ui::DialogButton button) const {
+  // User shouldn't select OK button if they haven't selected a target.
+  if (button == ui::DIALOG_BUTTON_OK)
+    return !table_->selection_model().empty();
+
+  return true;
+}
+
+void WebShareTargetPickerView::OnSelectionChanged() {
+  GetDialogClientView()->UpdateDialogButtons();
+}
+
+void WebShareTargetPickerView::OnDoubleClick() {
+  GetDialogClientView()->AcceptWindow();
+}
+
 int WebShareTargetPickerView::RowCount() {
   return targets_.size();
 }
 
 base::string16 WebShareTargetPickerView::GetText(int row, int /*column_id*/) {
-  return targets_[row];
+  // Show "title (origin)", to disambiguate titles that are the same, and as a
+  // security measure.
+  return targets_[row].first +
+         base::UTF8ToUTF16(" (" + targets_[row].second.GetOrigin().spec() +
+                           ")");
 }
 
 void WebShareTargetPickerView::SetObserver(ui::TableModelObserver* observer) {}

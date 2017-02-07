@@ -114,14 +114,14 @@ bool ShareServiceImpl::ReplacePlaceholders(base::StringPiece url_template,
 }
 
 void ShareServiceImpl::ShowPickerDialog(
-    const std::vector<base::string16>& targets,
-    const base::Callback<void(SharePickerResult)>& callback) {
+    const std::vector<std::pair<base::string16, GURL>>& targets,
+    const base::Callback<void(base::Optional<std::string>)>& callback) {
   // TODO(mgiuca): Get the browser window as |parent_window|.
 #if defined(OS_LINUX) || defined(OS_WIN)
   chrome::ShowWebShareTargetPickerDialog(nullptr /* parent_window */, targets,
                                          callback);
 #else
-  callback.Run(SharePickerResult::CANCEL);
+  callback.Run(base::nullopt);
 #endif
 }
 
@@ -138,9 +138,15 @@ void ShareServiceImpl::Share(const std::string& title,
                              const std::string& text,
                              const GURL& share_url,
                              const ShareCallback& callback) {
-  // TODO(constantina): Replace hard-coded name with the registered target list.
+  // TODO(constantina): Replace hard-coded name and manifest URL with the list
+  // of registered targets' manifest URLs.
   constexpr char kTargetName[] = "Web Share Target Test App";
-  std::vector<base::string16> targets{base::ASCIIToUTF16(kTargetName)};
+  constexpr char kManifestURL[] =
+      "https://wicg.github.io/web-share-target/demos/manifest.json";
+  // TODO(constantina): Pass vector of pairs of target names and manifest URLs
+  // to picker.
+  std::vector<std::pair<base::string16, GURL>> targets{make_pair(
+      base::ASCIIToUTF16(kTargetName), GURL(kManifestURL))};
 
   ShowPickerDialog(targets, base::Bind(&ShareServiceImpl::OnPickerClosed,
                                        base::Unretained(this), title, text,
@@ -151,16 +157,17 @@ void ShareServiceImpl::OnPickerClosed(const std::string& title,
                                       const std::string& text,
                                       const GURL& share_url,
                                       const ShareCallback& callback,
-                                      SharePickerResult result) {
-  if (result == SharePickerResult::CANCEL) {
+                                      base::Optional<std::string> result) {
+  if (!result.has_value()) {
     callback.Run(base::Optional<std::string>("Share was cancelled"));
     return;
   }
 
-  // TODO(constantina): replace hard-coded URL with one from user-chosen site.
-  constexpr char kUrlBase[] = "https://wicg.github.io/web-share-target/";
+  // TODO(constantina): use manifest URL in result to look up corresponding URL
+  // template.
   constexpr char kUrlTemplate[] =
-      "demos/sharetarget.html?title={title}&text={text}&url={url}";
+      "https://wicg.github.io/web-share-target/demos/"
+      "sharetarget.html?title={title}&text={text}&url={url}";
 
   std::string url_template_filled;
   if (!ReplacePlaceholders(kUrlTemplate, title, text, share_url,
@@ -170,7 +177,7 @@ void ShareServiceImpl::OnPickerClosed(const std::string& title,
     return;
   }
 
-  GURL target_url(kUrlBase + url_template_filled);
+  GURL target_url(url_template_filled);
   if (!target_url.is_valid()) {
     callback.Run(base::Optional<std::string>(
         "Error: url of share target is not a valid url."));

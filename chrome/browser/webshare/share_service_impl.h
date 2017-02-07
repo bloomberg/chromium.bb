@@ -14,11 +14,6 @@
 
 class GURL;
 
-enum class SharePickerResult {
-  CANCEL,
-  SHARE
-};
-
 // Desktop implementation of the ShareService Mojo service.
 class ShareServiceImpl : public blink::mojom::ShareService {
  public:
@@ -37,11 +32,12 @@ class ShareServiceImpl : public blink::mojom::ShareService {
   FRIEND_TEST_ALL_PREFIXES(ShareServiceImplUnittest, ReplacePlaceholders);
 
   // Shows the share picker dialog with |targets| as the list of applications
-  // presented to the user. Passes the result to |callback|. Virtual for
-  // testing.
+  // presented to the user. Passes the result to |callback|. If the user picks a
+  // target, the result passed to |callback| is the manifest URL of the chosen
+  // target, or is null if the user cancelled the share. Virtual for testing.
   virtual void ShowPickerDialog(
-      const std::vector<base::string16>& targets,
-      const base::Callback<void(SharePickerResult)>& callback);
+      const std::vector<std::pair<base::string16, GURL>>& targets,
+      const base::Callback<void(base::Optional<std::string>)>& callback);
 
   // Opens a new tab and navigates to |target_url|.
   // Virtual for testing purposes.
@@ -65,7 +61,7 @@ class ShareServiceImpl : public blink::mojom::ShareService {
                       const std::string& text,
                       const GURL& share_url,
                       const ShareCallback& callback,
-                      SharePickerResult result);
+                      base::Optional<std::string> result);
 
   DISALLOW_COPY_AND_ASSIGN(ShareServiceImpl);
 };
