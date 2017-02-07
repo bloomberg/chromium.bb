@@ -8,8 +8,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsautorelease_pool.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
@@ -31,6 +29,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using testing::_;
 using testing::AtLeast;
@@ -124,8 +126,8 @@ class RecentTabsPanelControllerTest : public BlockCleanupTest {
     EXPECT_CALL(*sync_service, GetOpenTabsUIDelegate())
         .WillRepeatedly(Return(nullptr));
 
-    mock_table_view_controller_.reset([[OCMockObject
-        niceMockForClass:[RecentTabsTableViewController class]] retain]);
+    mock_table_view_controller_ =
+        [OCMockObject niceMockForClass:[RecentTabsTableViewController class]];
   }
 
   void SetupSyncState(BOOL signedIn,
@@ -172,10 +174,10 @@ class RecentTabsPanelControllerTest : public BlockCleanupTest {
                 chrome_browser_state_.get()));
     EXPECT_CALL(*sync_service, AddObserver(_)).Times(AtLeast(1));
     EXPECT_CALL(*sync_service, RemoveObserver(_)).Times(AtLeast(1));
-    controller_.reset([[RecentTabsPanelController alloc]
+    controller_ = [[RecentTabsPanelController alloc]
         initWithController:(RecentTabsTableViewController*)
-                               mock_table_view_controller_.get()
-              browserState:chrome_browser_state_.get()]);
+                               mock_table_view_controller_
+              browserState:chrome_browser_state_.get()];
   }
 
  protected:
@@ -187,19 +189,13 @@ class RecentTabsPanelControllerTest : public BlockCleanupTest {
   std::unique_ptr<OpenTabsUIDelegateMock> open_tabs_ui_delegate_;
 
   // Must be declared *after* |chrome_browser_state_| so it can outlive it.
-  base::scoped_nsobject<OCMockObject> mock_table_view_controller_;
-  base::scoped_nsobject<RecentTabsPanelController> controller_;
-
-  // Sets up a private Autorelease Pool so objects retained by OCMockObject
-  // are released as soon as possible. Otherwise, weak pointers in the
-  // objects retained by OCMockObject may surface as a BADACC when the
-  // unit test autorelease pool is released.
-  base::mac::ScopedNSAutoreleasePool pool_;
+  OCMockObject* mock_table_view_controller_;
+  RecentTabsPanelController* controller_;
 };
 
 TEST_F(RecentTabsPanelControllerTest, TestConstructorDestructor) {
   CreateController();
-  EXPECT_TRUE(controller_.get());
+  EXPECT_TRUE(controller_);
 }
 
 TEST_F(RecentTabsPanelControllerTest, TestUserSignedOut) {

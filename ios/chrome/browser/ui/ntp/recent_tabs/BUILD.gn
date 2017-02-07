@@ -49,6 +49,7 @@ source_set("recent_tabs") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "recent_tabs_panel_controller_unittest.mm",
