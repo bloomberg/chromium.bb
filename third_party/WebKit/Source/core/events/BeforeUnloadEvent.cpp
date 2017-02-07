@@ -25,8 +25,7 @@
 
 namespace blink {
 
-BeforeUnloadEvent::BeforeUnloadEvent()
-    : Event(EventTypeNames::beforeunload, false, true) {}
+BeforeUnloadEvent::BeforeUnloadEvent() {}
 
 BeforeUnloadEvent::~BeforeUnloadEvent() {}
 

@@ -7,14 +7,14 @@ FAIL ANIMATIONEVENT should be an alias for AnimationEvent. Failed to execute 'cr
 FAIL createEvent('ANIMATIONEVENT') should be initialized correctly. Cannot read property 'type' of undefined
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "AnimationEvents" 
 PASS BeforeUnloadEvent should be an alias for BeforeUnloadEvent. 
-FAIL createEvent('BeforeUnloadEvent') should be initialized correctly. assert_equals: type should be initialized to the empty string expected "" but got "beforeunload"
+PASS createEvent('BeforeUnloadEvent') should be initialized correctly. 
 FAIL beforeunloadevent should be an alias for BeforeUnloadEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('beforeunloadevent') is invalid.
 FAIL createEvent('beforeunloadevent') should be initialized correctly. Cannot read property 'type' of undefined
 FAIL BEFOREUNLOADEVENT should be an alias for BeforeUnloadEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('BEFOREUNLOADEVENT') is invalid.
 FAIL createEvent('BEFOREUNLOADEVENT') should be initialized correctly. Cannot read property 'type' of undefined
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "BeforeUnloadEvents" 
 PASS CloseEvent should be an alias for CloseEvent. 
-FAIL createEvent('CloseEvent') should be initialized correctly. assert_equals: type should be initialized to the empty string expected "" but got "close"
+FAIL createEvent('CloseEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
 FAIL closeevent should be an alias for CloseEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('closeevent') is invalid.
 FAIL createEvent('closeevent') should be initialized correctly. Cannot read property 'type' of undefined
 FAIL CLOSEEVENT should be an alias for CloseEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('CLOSEEVENT') is invalid.
@@ -137,7 +137,7 @@ FAIL PAGETRANSITIONEVENT should be an alias for PageTransitionEvent. Failed to e
 FAIL createEvent('PAGETRANSITIONEVENT') should be initialized correctly. Cannot read property 'type' of undefined
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "PageTransitionEvents" 
 PASS PopStateEvent should be an alias for PopStateEvent. 
-FAIL createEvent('PopStateEvent') should be initialized correctly. assert_equals: type should be initialized to the empty string expected "" but got "popstate"
+PASS createEvent('PopStateEvent') should be initialized correctly. 
 FAIL popstateevent should be an alias for PopStateEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('popstateevent') is invalid.
 FAIL createEvent('popstateevent') should be initialized correctly. Cannot read property 'type' of undefined
 FAIL POPSTATEEVENT should be an alias for PopStateEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('POPSTATEEVENT') is invalid.

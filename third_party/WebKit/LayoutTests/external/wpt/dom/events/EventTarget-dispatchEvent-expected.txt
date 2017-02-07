@@ -2,8 +2,8 @@ CONSOLE ERROR: line 60: Uncaught Error
 This is a testharness.js-based test.
 PASS Calling dispatchEvent(null). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (AnimationEvent). 
-FAIL If the event's initialized flag is not set, an InvalidStateError must be thrown (BeforeUnloadEvent). assert_equals: Event type should be empty string before initialization expected "" but got "beforeunload"
-FAIL If the event's initialized flag is not set, an InvalidStateError must be thrown (CloseEvent). assert_equals: Event type should be empty string before initialization expected "" but got "close"
+PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (BeforeUnloadEvent). 
+PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (CloseEvent). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (CompositionEvent). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (CustomEvent). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (DeviceMotionEvent). 
@@ -21,7 +21,7 @@ PASS If the event's initialized flag is not set, an InvalidStateError must be th
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (MouseEvent). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (MouseEvents). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (PageTransitionEvent). 
-FAIL If the event's initialized flag is not set, an InvalidStateError must be thrown (PopStateEvent). assert_equals: Event type should be empty string before initialization expected "" but got "popstate"
+PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (PopStateEvent). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (ProgressEvent). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (StorageEvent). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (SVGEvents). 

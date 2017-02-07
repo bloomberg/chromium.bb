@@ -72,10 +72,7 @@ class CloseEvent final : public Event {
   DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 
  private:
-  CloseEvent()
-      : Event(EventTypeNames::close, false, false),
-        m_wasClean(false),
-        m_code(0) {}
+  CloseEvent() : m_wasClean(false), m_code(0) {}
 
   CloseEvent(bool wasClean, int code, const String& reason)
       : Event(EventTypeNames::close, false, false),

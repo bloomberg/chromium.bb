@@ -32,9 +32,7 @@
 namespace blink {
 
 PopStateEvent::PopStateEvent()
-    : Event(EventTypeNames::popstate, false, true),
-      m_serializedState(nullptr),
-      m_history(nullptr) {}
+    : m_serializedState(nullptr), m_history(nullptr) {}
 
 PopStateEvent::PopStateEvent(const AtomicString& type,
                              const PopStateEventInit& initializer)

@@ -2973,6 +2973,7 @@ bool Document::dispatchBeforeUnloadEvent(ChromeClient& chromeClient,
     return false;
 
   BeforeUnloadEvent* beforeUnloadEvent = BeforeUnloadEvent::create();
+  beforeUnloadEvent->initEvent(EventTypeNames::beforeunload, false, true);
   m_loadEventProgress = BeforeUnloadEventInProgress;
   m_domWindow->dispatchEvent(beforeUnloadEvent, this);
   m_loadEventProgress = BeforeUnloadEventCompleted;
