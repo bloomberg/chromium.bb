@@ -53,28 +53,6 @@
         width: 31px;
       }
 
-      iron-dropdown .dropdown-content {
-        min-width: 128px;
-        padding: 8px 0;
-      }
-
-      iron-dropdown .dropdown-item:focus {
-        @apply(--cr-selectable-focus);
-      }
-
-      iron-dropdown .dropdown-content {
-        background-color: white;
-        box-shadow: 0 2px 6px var(--paper-grey-500);
-      }
-
-      iron-dropdown .dropdown-content paper-item {
-        @apply(--settings-actionable);
-      }
-
-      iron-dropdown .dropdown-content .dropdown-item[disabled] {
-        opacity: var(--settings-disabled-opacity);
-      }
-
       span ~ a {
         -webkit-margin-start: 4px;
       }
@@ -335,10 +313,6 @@
         display: flex;
         flex-shrink: 0;
         height: var(--settings-row-min-height);
-      }
-
-      .settings-box paper-item iron-icon {
-        padding: var(--cr-icon-padding);
       }
 
       /* Helper for a list frame to automatically avoid the separator line. */

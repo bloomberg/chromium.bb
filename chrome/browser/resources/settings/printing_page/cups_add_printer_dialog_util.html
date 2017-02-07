@@ -6,31 +6,49 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="cups_printers_browser_proxy.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="../settings_vars_css.html">
+
+<dom-module id="cups-add-printer-dialog-style">
+  <template>
+    <style>
+      .list-item {
+        background: none;
+        border: none;
+        box-sizing: border-box;
+        color: var(--paper-grey-800);
+        font: inherit;
+        min-height: 32px;
+        padding: 0 24px;
+        text-align: start;
+        width: 100%;
+        @apply(--settings-actionable);
+      }
+
+      .list-item:focus {
+        background-color: var(--paper-grey-300);
+        outline: none;
+      }
+    </style>
+  </template>
+</dom-module>
 
 <dom-module id="add-printer-list">
   <template>
-    <style include="settings-shared">
-      .list-frame {
-        -webkit-padding-end: 0;
-        -webkit-padding-start: 0;
-      }
-
+    <style include="settings-shared cups-add-printer-dialog-style">
       .list-item {
-        -webkit-padding-start: 20px;
-        min-height: 35px;
+        padding: 0 20px;
       }
     </style>
-    <div class="list-frame">
+    <div>
       <array-selector id="arraySelector" items="[[printers]]"
           selected="{{selectedPrinter}}">
       </array-selector>
       <template is="dom-repeat" items="[[printers]]">
-        <paper-item class="list-item" on-tap="onSelect_">
+        <button class="list-item" on-tap="onSelect_">
           [[item.printerName]] [[item.printerModel]]
-        </paper-item>
+        </button>
       </template>
     </div>
   </template>
@@ -38,7 +56,7 @@
 
 <dom-module id="drop-down-search-box">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared cups-add-printer-dialog-style">
       iron-dropdown,
       paper-input-container {
         width: 270px;
@@ -51,8 +69,11 @@
         };
       }
 
-      iron-dropdown .dropdown-content paper-item {
-        min-height: 40px;
+      iron-dropdown .dropdown-content {
+        background-color: white;
+        box-shadow: 0 2px 6px var(--paper-grey-500);
+        min-width: 128px;
+        padding: 8px 0;
       }
     </style>
     <paper-input-container no-label-float>
@@ -68,7 +89,7 @@
       <div class="dropdown-content">
         <template is="dom-repeat" items="[[items]]"
             filter="[[filterItems_(searchTerm_)]]">
-          <paper-item on-tap="onSelect_">[[item]]</paper-item>
+          <button class="list-item" on-tap="onSelect_">[[item]]</button>
         </template>
       </div>
     </iron-dropdown>
