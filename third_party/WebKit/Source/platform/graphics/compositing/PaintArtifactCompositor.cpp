@@ -282,7 +282,7 @@ static void applyClipsBetweenStates(const PropertyTreeState& localState,
 #endif
 
   FloatRect combinedClip =
-      geometryMapper.localToAncestorClipRect(localState, ancestorState);
+      geometryMapper.localToAncestorClipRect(localState, ancestorState).rect();
 
   ccList.CreateAndAppendPairedBeginItem<cc::FloatClipDisplayItem>(
       gfx::RectF(combinedClip));
@@ -600,14 +600,18 @@ bool PaintArtifactCompositor::mightOverlap(
                                           EffectPaintPropertyNode::root());
 
   FloatRect paintChunkScreenVisualRect =
-      geometryMapper.localToAncestorVisualRect(
-          paintChunk.bounds, paintChunk.properties.propertyTreeState,
-          rootPropertyTreeState);
+      geometryMapper
+          .localToAncestorVisualRect(paintChunk.bounds,
+                                     paintChunk.properties.propertyTreeState,
+                                     rootPropertyTreeState)
+          .rect();
 
   FloatRect pendingLayerScreenVisualRect =
-      geometryMapper.localToAncestorVisualRect(
-          candidatePendingLayer.bounds, candidatePendingLayer.propertyTreeState,
-          rootPropertyTreeState);
+      geometryMapper
+          .localToAncestorVisualRect(candidatePendingLayer.bounds,
+                                     candidatePendingLayer.propertyTreeState,
+                                     rootPropertyTreeState)
+          .rect();
 
   return paintChunkScreenVisualRect.intersects(pendingLayerScreenVisualRect);
 }

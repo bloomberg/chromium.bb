@@ -121,8 +121,10 @@ ClipRect PrePaintTreeWalk::clipRectForContext(
   // TODO(chrishtr): remove need for this.
   LayoutRect localRect(LayoutRect::infiniteIntRect());
 
-  LayoutRect rect(m_geometryMapper.sourceToDestinationVisualRect(
-      FloatRect(localRect), localState, ancestorState));
+  LayoutRect rect(m_geometryMapper
+                      .sourceToDestinationVisualRect(FloatRect(localRect),
+                                                     localState, ancestorState)
+                      .rect());
   rect.moveBy(-ancestorPaintOffset);
   return rect;
 }

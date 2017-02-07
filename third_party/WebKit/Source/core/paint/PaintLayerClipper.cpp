@@ -206,10 +206,9 @@ LayoutRect PaintLayerClipper::localClipRect(
     const PaintLayer& clippingRootLayer) const {
   ClipRectsContext context(&clippingRootLayer, PaintingClipRects);
   if (m_geometryMapper) {
-    LayoutRect premappedRect =
-        applyOverflowClipToBackgroundRectWithGeometryMapper(
-            context, clipRectWithGeometryMapper(context, false))
-            .rect();
+    ClipRect clipRect = clipRectWithGeometryMapper(context, false);
+    applyOverflowClipToBackgroundRectWithGeometryMapper(context, clipRect);
+    LayoutRect premappedRect = clipRect.rect();
 
     // The rect now needs to be transformed to the local space of this
     // PaintLayer.
@@ -283,8 +282,9 @@ void PaintLayerClipper::calculateRectsWithGeometryMapper(
     ClipRect& backgroundRect,
     ClipRect& foregroundRect,
     const LayoutPoint* offsetFromRoot) const {
-  backgroundRect = applyOverflowClipToBackgroundRectWithGeometryMapper(
-      context, clipRectWithGeometryMapper(context, false));
+  backgroundRect = clipRectWithGeometryMapper(context, false);
+  applyOverflowClipToBackgroundRectWithGeometryMapper(context, backgroundRect);
+
   backgroundRect.move(
       context.subPixelAccumulation);  // TODO(chrishtr): is this needed?
   backgroundRect.intersect(paintDirtyRect);
@@ -466,34 +466,34 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
       propertyTreeState.setClip(properties->overflowClip());
   }
 
-  FloatRect clippedRectInRootLayerSpace =
+  FloatClipRect clippedRectInRootLayerSpace =
       m_geometryMapper->sourceToDestinationVisualRect(
           FloatRect(source), propertyTreeState, destinationPropertyTreeState);
-  clippedRectInRootLayerSpace.moveBy(
-      -FloatPoint(context.rootLayer->layoutObject()->paintOffset()));
-  return ClipRect(LayoutRect(clippedRectInRootLayerSpace));
+  ClipRect clipRect(LayoutRect(clippedRectInRootLayerSpace.rect()));
+  if (clippedRectInRootLayerSpace.hasRadius())
+    clipRect.setHasRadius(true);
+
+  clipRect.moveBy(-context.rootLayer->layoutObject()->paintOffset());
+  return clipRect;
 }
 
-ClipRect PaintLayerClipper::applyOverflowClipToBackgroundRectWithGeometryMapper(
+void PaintLayerClipper::applyOverflowClipToBackgroundRectWithGeometryMapper(
     const ClipRectsContext& context,
-    const ClipRect& clip) const {
+    ClipRect& clip) const {
   const LayoutObject& layoutObject = *m_layer.layoutObject();
-  FloatRect clipRect(clip.rect());
-  if (shouldClipOverflow(context)) {
-    LayoutRect layerBoundsWithVisualOverflow =
-        layoutObject.isLayoutView()
-            ? toLayoutView(layoutObject).viewRect()
-            : toLayoutBox(layoutObject).visualOverflowRect();
-    toLayoutBox(layoutObject)
-        .flipForWritingMode(
-            // PaintLayer are in physical coordinates, so the overflow has to be
-            // flipped.
-            layerBoundsWithVisualOverflow);
-    mapLocalToRootWithGeometryMapper(context, layerBoundsWithVisualOverflow);
-    clipRect.intersect(FloatRect(layerBoundsWithVisualOverflow));
-  }
-
-  return ClipRect(LayoutRect(clipRect));
+  if (!shouldClipOverflow(context))
+    return;
+  LayoutRect layerBoundsWithVisualOverflow =
+      layoutObject.isLayoutView()
+          ? toLayoutView(layoutObject).viewRect()
+          : toLayoutBox(layoutObject).visualOverflowRect();
+  toLayoutBox(layoutObject)
+      .flipForWritingMode(
+          // PaintLayer are in physical coordinates, so the overflow has to be
+          // flipped.
+          layerBoundsWithVisualOverflow);
+  mapLocalToRootWithGeometryMapper(context, layerBoundsWithVisualOverflow);
+  clip.intersect(layerBoundsWithVisualOverflow);
 }
 
 ClipRect PaintLayerClipper::backgroundClipRect(

@@ -5,7 +5,7 @@
 #ifndef GeometryMapper_h
 #define GeometryMapper_h
 
-#include "platform/geometry/FloatRect.h"
+#include "platform/graphics/paint/FloatClipRect.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/HashMap.h"
@@ -17,7 +17,9 @@ namespace blink {
 // intersection of all clips between the descendant and the ancestor (*not*
 // including the ancestor) in the clip tree, individually transformed from
 // their localTransformSpace into the ancestor's localTransformSpace.
-typedef HashMap<const ClipPaintPropertyNode*, FloatRect> ClipCache;
+// If one of the clip that contributes to it has a border radius, the
+// hasRadius() field is set to true.
+typedef HashMap<const ClipPaintPropertyNode*, FloatClipRect> ClipCache;
 
 // Maps from a transform node that is a descendant of the ancestor to the
 // combined transform between the descendant's and the ancestor's coordinate
@@ -67,7 +69,7 @@ class PLATFORM_EXPORT GeometryMapper {
   //
   // DCHECK fails if the clip of |destinationState| is not an ancestor of the
   // clip of |sourceState|, or the inverse transform is not invertible.
-  FloatRect sourceToDestinationVisualRect(
+  FloatClipRect sourceToDestinationVisualRect(
       const FloatRect&,
       const PropertyTreeState& sourceState,
       const PropertyTreeState& destinationState);
@@ -91,7 +93,7 @@ class PLATFORM_EXPORT GeometryMapper {
   // DCHECK fails if any of the paint property tree nodes in
   // |localTransformState| are not equal to or a descendant of that in
   // |ancestorState|.
-  FloatRect localToAncestorVisualRect(
+  FloatClipRect localToAncestorVisualRect(
       const FloatRect&,
       const PropertyTreeState& localTransformState,
       const PropertyTreeState& ancestorState);
@@ -130,7 +132,7 @@ class PLATFORM_EXPORT GeometryMapper {
 
   // Returns the "clip visual rect" between |localTransformState| and
   // |ancestorState|. See above for the definition of "clip visual rect".
-  FloatRect localToAncestorClipRect(
+  FloatClipRect localToAncestorClipRect(
       const PropertyTreeState& localTransformState,
       const PropertyTreeState& ancestorState);
 
@@ -147,13 +149,13 @@ class PLATFORM_EXPORT GeometryMapper {
   // successful on return. See comments of the public functions for failure
   // conditions.
 
-  FloatRect sourceToDestinationVisualRectInternal(
+  FloatClipRect sourceToDestinationVisualRectInternal(
       const FloatRect&,
       const PropertyTreeState& sourceState,
       const PropertyTreeState& destinationState,
       bool& success);
 
-  FloatRect localToAncestorVisualRectInternal(
+  FloatClipRect localToAncestorVisualRectInternal(
       const FloatRect&,
       const PropertyTreeState& localTransformState,
       const PropertyTreeState& ancestorState,
@@ -170,7 +172,7 @@ class PLATFORM_EXPORT GeometryMapper {
       const TransformPaintPropertyNode* ancestorTransformNode,
       bool& success);
 
-  FloatRect localToAncestorClipRectInternal(
+  FloatClipRect localToAncestorClipRectInternal(
       const PropertyTreeState& localTransformState,
       const PropertyTreeState& ancestorState,
       bool& success);

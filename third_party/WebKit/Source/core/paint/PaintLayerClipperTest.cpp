@@ -101,6 +101,70 @@ TEST_P(PaintLayerClipperTest, ControlClip) {
 #endif
 }
 
+TEST_P(PaintLayerClipperTest, RoundedClip) {
+  setBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<div id='target' style='position:absolute; width: 200px; height: 300px;"
+      "    overflow: hidden; border-radius: 1px'>"
+      "</div>");
+
+  Element* target = document().getElementById("target");
+  PaintLayer* targetPaintLayer =
+      toLayoutBoxModelObject(target->layoutObject())->layer();
+  ClipRectsContext context(document().layoutView()->layer(), UncachedClipRects);
+  // When RLS is enabled, the LayoutView will have a composited scrolling layer,
+  // so don't apply an overflow clip.
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    context.setIgnoreOverflowClip();
+
+  LayoutRect layerBounds;
+  ClipRect backgroundRect, foregroundRect;
+  targetPaintLayer->clipper().calculateRects(
+      context, LayoutRect(LayoutRect::infiniteIntRect()), layerBounds,
+      backgroundRect, foregroundRect);
+
+  // Only the foreground rect gets hasRadius set for overflow clipping
+  // of descendants.
+  EXPECT_EQ(LayoutRect(8, 8, 200, 300), backgroundRect.rect());
+  EXPECT_FALSE(backgroundRect.hasRadius());
+  EXPECT_EQ(LayoutRect(8, 8, 200, 300), foregroundRect.rect());
+  EXPECT_TRUE(foregroundRect.hasRadius());
+  EXPECT_EQ(LayoutRect(8, 8, 200, 300), layerBounds);
+}
+
+TEST_P(PaintLayerClipperTest, RoundedClipNested) {
+  setBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<div id='parent' style='position:absolute; width: 200px; height: 300px;"
+      "    overflow: hidden; border-radius: 1px'>"
+      "  <div id='child' style='position: relative; width: 500px; "
+      "       height: 500px'>"
+      "  </div>"
+      "</div>");
+
+  Element* parent = document().getElementById("parent");
+  PaintLayer* parentPaintLayer =
+      toLayoutBoxModelObject(parent->layoutObject())->layer();
+
+  Element* child = document().getElementById("child");
+  PaintLayer* childPaintLayer =
+      toLayoutBoxModelObject(child->layoutObject())->layer();
+
+  ClipRectsContext context(parentPaintLayer, UncachedClipRects);
+
+  LayoutRect layerBounds;
+  ClipRect backgroundRect, foregroundRect;
+  childPaintLayer->clipper().calculateRects(
+      context, LayoutRect(LayoutRect::infiniteIntRect()), layerBounds,
+      backgroundRect, foregroundRect);
+
+  EXPECT_EQ(LayoutRect(0, 0, 200, 300), backgroundRect.rect());
+  EXPECT_TRUE(backgroundRect.hasRadius());
+  EXPECT_EQ(LayoutRect(0, 0, 200, 300), foregroundRect.rect());
+  EXPECT_TRUE(foregroundRect.hasRadius());
+  EXPECT_EQ(LayoutRect(0, 0, 500, 500), layerBounds);
+}
+
 TEST_P(PaintLayerClipperTest, ControlClipSelect) {
   setBodyInnerHTML(
       "<select id='target' style='position: relative; width: 100px; "
