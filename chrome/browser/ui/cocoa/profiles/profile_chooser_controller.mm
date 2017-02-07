@@ -2138,14 +2138,20 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // Profile name, left-aligned to the right of profile icon.
   xOffset += kMdImageSide + kHorizontalSpacing;
   CGFloat fontSize = kTextFontSize + 1.0;
-  NSTextField* profileName =
-      BuildLabel(base::SysUTF16ToNSString(profileNameString), NSZeroPoint, nil);
+  NSString* profileNameNSString = base::SysUTF16ToNSString(profileNameString);
+  NSTextField* profileName = BuildLabel(profileNameNSString, NSZeroPoint, nil);
   [[profileName cell] setLineBreakMode:NSLineBreakByTruncatingTail];
   [profileName setFont:[NSFont labelFontOfSize:fontSize]];
   [profileName sizeToFit];
   const int profileNameYOffset =
       cardYOffset +
       std::floor((kMdImageSide - NSHeight([profileName frame])) / 2);
+  if (profileName.frame.size.width > availableTextWidth) {
+    // Add the tooltip only if the profile name is truncated. This method to
+    // test if text field is truncated is not ideal (spaces between characters
+    // may be reduced to avoid truncation).
+    profileName.toolTip = profileNameNSString;
+  }
   [profileName
       setFrame:NSMakeRect(xOffset, profileNameYOffset, availableTextWidth,
                           NSHeight([profileName frame]))];
@@ -2158,10 +2164,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     cardYOffset += kMdImageSide / 2 - [profileName frame].size.height;
     [profileName setFrameOrigin:NSMakePoint(xOffset, cardYOffset)];
 
+    NSString* elidedEmail =
+        ElideEmail(base::UTF16ToUTF8(item.username), availableTextWidth);
     NSTextField* username = BuildLabel(
-        ElideEmail(base::UTF16ToUTF8(item.username), availableTextWidth),
-        NSZeroPoint, skia::SkColorToSRGBNSColor(SK_ColorGRAY));
+        elidedEmail, NSZeroPoint, skia::SkColorToSRGBNSColor(SK_ColorGRAY));
     [username setFrameOrigin:NSMakePoint(xOffset, NSMaxY([profileName frame]))];
+    NSString* usernameNSString = base::SysUTF16ToNSString(item.username);
+    if (![elidedEmail isEqualToString:usernameNSString]) {
+      // Add the tooltip only if the user name is truncated.
+      username.toolTip = usernameNSString;
+    }
     [profileCard addSubview:username];
   }
 
