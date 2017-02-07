@@ -10,8 +10,8 @@
 namespace blink {
 
 ServiceWorkerRegistrationSync::ServiceWorkerRegistrationSync(
-    ServiceWorkerRegistration* registration)
-    : m_registration(registration) {}
+    ServiceWorkerRegistration& registration)
+    : Supplement<ServiceWorkerRegistration>(registration) {}
 
 ServiceWorkerRegistrationSync::~ServiceWorkerRegistrationSync() {}
 
@@ -26,7 +26,7 @@ ServiceWorkerRegistrationSync& ServiceWorkerRegistrationSync::from(
           Supplement<ServiceWorkerRegistration>::from(registration,
                                                       supplementName()));
   if (!supplement) {
-    supplement = new ServiceWorkerRegistrationSync(&registration);
+    supplement = new ServiceWorkerRegistrationSync(registration);
     provideTo(registration, supplementName(), supplement);
   }
   return *supplement;
@@ -39,12 +39,11 @@ SyncManager* ServiceWorkerRegistrationSync::sync(
 
 SyncManager* ServiceWorkerRegistrationSync::sync() {
   if (!m_syncManager)
-    m_syncManager = SyncManager::create(m_registration);
+    m_syncManager = SyncManager::create(supplementable());
   return m_syncManager.get();
 }
 
 DEFINE_TRACE(ServiceWorkerRegistrationSync) {
-  visitor->trace(m_registration);
   visitor->trace(m_syncManager);
   Supplement<ServiceWorkerRegistration>::trace(visitor);
 }

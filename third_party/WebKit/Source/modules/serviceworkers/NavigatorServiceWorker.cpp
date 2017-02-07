@@ -12,7 +12,8 @@
 
 namespace blink {
 
-NavigatorServiceWorker::NavigatorServiceWorker(Navigator& navigator) {}
+NavigatorServiceWorker::NavigatorServiceWorker(Navigator& navigator)
+    : Supplement<Navigator>(navigator) {}
 
 NavigatorServiceWorker* NavigatorServiceWorker::from(Document& document) {
   if (!document.frame() || !document.frame()->domWindow())

@@ -30,10 +30,9 @@ class ServiceWorkerRegistrationSync final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit ServiceWorkerRegistrationSync(ServiceWorkerRegistration*);
+  explicit ServiceWorkerRegistrationSync(ServiceWorkerRegistration&);
   static const char* supplementName();
 
-  Member<ServiceWorkerRegistration> m_registration;
   Member<SyncManager> m_syncManager;
 };
 

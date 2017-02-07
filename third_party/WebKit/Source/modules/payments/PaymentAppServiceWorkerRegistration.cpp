@@ -22,7 +22,7 @@ PaymentAppServiceWorkerRegistration& PaymentAppServiceWorkerRegistration::from(
                                                       supplementName()));
 
   if (!supplement) {
-    supplement = new PaymentAppServiceWorkerRegistration(&registration);
+    supplement = new PaymentAppServiceWorkerRegistration(registration);
     provideTo(registration, supplementName(), supplement);
   }
 
@@ -40,20 +40,19 @@ PaymentAppManager* PaymentAppServiceWorkerRegistration::paymentAppManager(
 PaymentAppManager* PaymentAppServiceWorkerRegistration::paymentAppManager(
     ScriptState* scriptState) {
   if (!m_paymentAppManager) {
-    m_paymentAppManager = PaymentAppManager::create(m_registration);
+    m_paymentAppManager = PaymentAppManager::create(supplementable());
   }
   return m_paymentAppManager.get();
 }
 
 DEFINE_TRACE(PaymentAppServiceWorkerRegistration) {
-  visitor->trace(m_registration);
   visitor->trace(m_paymentAppManager);
   Supplement<ServiceWorkerRegistration>::trace(visitor);
 }
 
 PaymentAppServiceWorkerRegistration::PaymentAppServiceWorkerRegistration(
-    ServiceWorkerRegistration* registration)
-    : m_registration(registration) {}
+    ServiceWorkerRegistration& registration)
+    : Supplement<ServiceWorkerRegistration>(registration) {}
 
 // static
 const char* PaymentAppServiceWorkerRegistration::supplementName() {
