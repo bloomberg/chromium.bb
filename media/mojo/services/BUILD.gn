@@ -18,9 +18,11 @@ config("mojo_media_config") {
     defines = [ "ENABLE_MOJO_MEDIA" ]
 
     assert(mojo_media_services != [], "No mojo media service specified")
+    mojo_renderer_enabled = false
     foreach(service, mojo_media_services) {
       if (service == "renderer") {
         defines += [ "ENABLE_MOJO_RENDERER" ]
+        mojo_renderer_enabled = true
       } else if (service == "cdm") {
         defines += [ "ENABLE_MOJO_CDM" ]
       } else if (service == "audio_decoder") {
@@ -31,6 +33,9 @@ config("mojo_media_config") {
         assert(false, "Invalid mojo media service: $service")
       }
     }
+    assert(
+        mojo_renderer_enabled || !enable_runtime_media_renderer_selection,
+        "The mojo renderer must be enabled to use runtime media renderer selection.")
 
     if (mojo_media_host == "browser") {
       defines += [ "ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS" ]

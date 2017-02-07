@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "media/base/media_export.h"
+#include "media/media_features.h"
 #include "ppapi/features/features.h"
 
 namespace switches {
@@ -51,6 +52,10 @@ MEDIA_EXPORT extern const char kEnableDefaultMediaSession[];
 #if BUILDFLAG(ENABLE_PLUGINS)
 MEDIA_EXPORT extern const char kEnableDefaultMediaSessionDuckFlash[];
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+#if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
+MEDIA_EXPORT extern const char kDisableMojoRenderer[];
+#endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
 
 MEDIA_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 MEDIA_EXPORT extern const char kUseFileForFakeVideoCapture[];

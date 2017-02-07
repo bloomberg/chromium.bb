@@ -101,7 +101,22 @@ declare_args() {
   # Enable the TestMojoMediaClient to be used in mojo MediaService. This is for
   # testing only and will override the default platform MojoMediaClient, if any.
   enable_test_mojo_media_client = false
+
+  # When enabled, this feature allows developers to use a runtime flag to
+  # choose the implementation of the renderer that is used. On a build which
+  # enables the mojo renderer, if --disable-mojo-renderer is passed at start-up,
+  # the "default" renderer will be used instead. Both renderer implementations
+  # will be linked if this feature is enabled, increasing the binary size. This
+  # feature does not make sense if the mojo renderer is not enabled.
+  enable_runtime_media_renderer_selection = is_cast_desktop_build
 }
+
+# This feature can only be enabled when using Mojo media. Furthermore, the
+# "renderer" service must be enabled, which is asserted in
+# //media/mojo/services/BUILD.gn
+assert(
+    !enable_runtime_media_renderer_selection || enable_mojo_media,
+    "Runtime media renderer selection only applies when mojo media is enabled.")
 
 # Use another declare_args() to pick up possible overrides of enable_mojo_media
 # from --args command line flags. See "gn help declare_args".

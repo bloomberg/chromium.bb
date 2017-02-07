@@ -260,8 +260,11 @@
 
 #if defined(ENABLE_MOJO_RENDERER)
 #include "media/mojo/clients/mojo_renderer_factory.h"  // nogncheck
-#else
-#include "media/renderers/default_renderer_factory.h"
+#endif
+
+#if !defined(ENABLE_MOJO_RENDERER) || \
+    BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
+#include "media/renderers/default_renderer_factory.h"  // nogncheck
 #endif
 
 #if defined(ENABLE_MOJO_AUDIO_DECODER) || defined(ENABLE_MOJO_VIDEO_DECODER)
@@ -2880,16 +2883,27 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #endif  // defined(OS_ANDROID)
   } else {
 #if defined(ENABLE_MOJO_RENDERER)
-    media_renderer_factory = base::MakeUnique<media::MojoRendererFactory>(
-        base::Bind(&RenderThreadImpl::GetGpuFactories,
-                   base::Unretained(render_thread)),
-        GetMediaInterfaceProvider());
+#if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableMojoRenderer)) {
+      media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
+          media_log, GetDecoderFactory(),
+          base::Bind(&RenderThreadImpl::GetGpuFactories,
+                     base::Unretained(render_thread)));
+    }
+#endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
+    if (!media_renderer_factory) {
+      media_renderer_factory = base::MakeUnique<media::MojoRendererFactory>(
+          base::Bind(&RenderThreadImpl::GetGpuFactories,
+                     base::Unretained(render_thread)),
+          GetMediaInterfaceProvider());
+    }
 #else
     media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
         media_log, GetDecoderFactory(),
         base::Bind(&RenderThreadImpl::GetGpuFactories,
                    base::Unretained(render_thread)));
-#endif
+#endif  // defined(ENABLE_MOJO_RENDERER)
   }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
