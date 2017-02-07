@@ -907,6 +907,9 @@
     'styleguide': {
       'filepath': '^styleguide/',
     },
+    'subresource_filter': {
+      'filepath': 'subresource_filter|SubresourceFilter',
+    },
     'supervised_users': {
       'filepath': 'chrome/browser/.*managed_mode'\
                   '|chrome/browser/.*managed_user'\
@@ -2039,6 +2042,7 @@
     'styleguide': ['danakj+watch@chromium.org',
                    'jbroman+cpp@chromium.org',
                    'vmpstr+watch@chromium.org'],
+    'subresource_filter': ['subresource-filter-reviews@chromium.org'],
     'supervised_users': ['pam+watch@chromium.org'],
     'swreporter': ['alito+watch@chromium.org',
                    'ftirelo+watch@chromium.org',
