@@ -244,12 +244,20 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
             return;
         }
 
-        super.onCreate(savedInstanceState);
+        super.onCreate(transformSavedInstanceStateForOnCreate(savedInstanceState));
         mOnCreateTimestampMs = SystemClock.elapsedRealtime();
         mOnCreateTimestampUptimeMs = SystemClock.uptimeMillis();
         mSavedInstanceState = savedInstanceState;
 
         ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
+    }
+
+    /**
+     * Allows subclasses to override the instance state passed to super.onCreate().
+     * The original instance state will still be available via getSavedInstanceState().
+     */
+    protected Bundle transformSavedInstanceStateForOnCreate(Bundle savedInstanceState) {
+        return savedInstanceState;
     }
 
     /**

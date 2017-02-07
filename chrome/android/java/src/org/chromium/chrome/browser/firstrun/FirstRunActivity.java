@@ -170,6 +170,16 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     // AsyncInitializationActivity:
 
     @Override
+    protected Bundle transformSavedInstanceStateForOnCreate(Bundle savedInstanceState) {
+        // We pass null to Activity.onCreate() so that it doesn't automatically restore
+        // the FragmentManager state - as that may cause fragments to be loaded that have
+        // dependencies on native before native has been loaded (and then crash). Instead,
+        // these fragments will be recreated manually by us and their progression restored
+        // from |mFreProperties| which we still get from getSavedInstanceState() below.
+        return null;
+    }
+
+    @Override
     public void setContentView() {
         Bundle savedInstanceState = getSavedInstanceState();
         if (savedInstanceState != null) {
@@ -278,6 +288,17 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putAll(mFreProperties);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle state) {
+        // Don't automatically restore state here. This is a counterpart to the override
+        // of transformSavedInstanceStateForOnCreate() as the two need to be consistent.
+        // The default implementation of this would restore the state of the views, which
+        // would otherwise cause a crash in ViewPager used to manage fragments - as it
+        // expects consistency between the states restored by onCreate() and this method.
+        // Activity doesn't check for null on the parameter, so pass an empty bundle.
+        super.onRestoreInstanceState(new Bundle());
     }
 
     @Override
