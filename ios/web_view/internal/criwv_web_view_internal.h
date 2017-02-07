@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_VIEW_IMPL_H_
-#define IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_VIEW_IMPL_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_VIEW_INTERNAL_H_
+#define IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_VIEW_INTERNAL_H_
 
 #import "ios/web_view/public/criwv_web_view.h"
 
@@ -20,4 +20,4 @@ class CRIWVBrowserState;
 
 @end
 
-#endif  // IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_VIEW_IMPL_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_CRIWV_WEB_VIEW_INTERNAL_H_
