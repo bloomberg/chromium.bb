@@ -253,8 +253,9 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
 
   FetchContext& fetchContext = frame->document()->fetcher()->context();
 
-  fetchContext.willStartLoadingResource(m_identifier, request, Resource::Image,
-                                        initiator, false);
+  fetchContext.willStartLoadingResource(
+      m_identifier, request, Resource::Image, initiator,
+      FetchContext::V8ActivityLoggingPolicy::Log);
 
   FetchInitiatorInfo initiatorInfo;
   initiatorInfo.name = initiator;

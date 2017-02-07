@@ -172,7 +172,11 @@ bool ResourceLoader::willFollowRedirect(
   if (!isManualRedirectFetchRequest(m_resource->resourceRequest())) {
     ResourceRequestBlockedReason blockedReason = context().canRequest(
         m_resource->getType(), newRequest, newRequest.url(),
-        m_resource->options(), m_resource->isUnusedPreload(),
+        m_resource->options(),
+        /* Don't send security violation reports for unused preloads */
+        (m_resource->isUnusedPreload()
+             ? FetchContext::SecurityViolationReportingPolicy::SuppressReporting
+             : FetchContext::SecurityViolationReportingPolicy::Report),
         FetchRequest::UseDefaultOriginRestrictionForType);
     if (blockedReason != ResourceRequestBlockedReason::None) {
       cancelForRedirectAccessCheckError(newRequest.url(), blockedReason);
@@ -258,11 +262,15 @@ ResourceRequestBlockedReason ResourceLoader::canAccessResponse(
     Resource* resource,
     const ResourceResponse& response) const {
   // Redirects can change the response URL different from one of request.
-  bool forPreload = resource->isUnusedPreload();
-  ResourceRequestBlockedReason blockedReason =
-      context().canRequest(resource->getType(), resource->resourceRequest(),
-                           response.url(), resource->options(), forPreload,
-                           FetchRequest::UseDefaultOriginRestrictionForType);
+  bool unusedPreload = resource->isUnusedPreload();
+  ResourceRequestBlockedReason blockedReason = context().canRequest(
+      resource->getType(), resource->resourceRequest(), response.url(),
+      resource->options(),
+      /* Don't send security violation reports for unused preloads */
+      (unusedPreload
+           ? FetchContext::SecurityViolationReportingPolicy::SuppressReporting
+           : FetchContext::SecurityViolationReportingPolicy::Report),
+      FetchRequest::UseDefaultOriginRestrictionForType);
   if (blockedReason != ResourceRequestBlockedReason::None)
     return blockedReason;
 
@@ -286,7 +294,7 @@ ResourceRequestBlockedReason ResourceLoader::canAccessResponse(
           sourceOrigin);
   if (corsStatus != CrossOriginAccessControl::kAccessAllowed) {
     resource->setCORSFailed();
-    if (!forPreload) {
+    if (!unusedPreload) {
       String resourceType = Resource::resourceTypeToString(
           resource->getType(), resource->options().initiatorInfo.name);
       StringBuilder builder;

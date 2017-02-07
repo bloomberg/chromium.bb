@@ -118,7 +118,7 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
                                 ResourceRequest&,
                                 Resource::Type,
                                 const AtomicString& fetchInitiatorName,
-                                bool forPreload) override;
+                                V8ActivityLoggingPolicy) override;
   void didLoadResource(Resource*) override;
 
   void addResourceTiming(const ResourceTimingInfo&) override;
@@ -128,7 +128,7 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
-      bool forPreload,
+      SecurityViolationReportingPolicy,
       FetchRequest::OriginRestriction) const override;
   ResourceRequestBlockedReason allowResponse(
       Resource::Type,
@@ -185,7 +185,7 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
-      bool forPreload,
+      SecurityViolationReportingPolicy,
       FetchRequest::OriginRestriction,
       ResourceRequest::RedirectStatus) const;
 

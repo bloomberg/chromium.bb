@@ -571,7 +571,7 @@ void FrameFetchContext::willStartLoadingResource(
     ResourceRequest& request,
     Resource::Type type,
     const AtomicString& fetchInitiatorName,
-    bool forPreload) {
+    V8ActivityLoggingPolicy loggingPolicy) {
   TRACE_EVENT_ASYNC_BEGIN1(
       "blink.net", "Resource", identifier, "data",
       loadResourceTraceData(identifier, request.url(), request.priority()));
@@ -586,7 +586,7 @@ void FrameFetchContext::willStartLoadingResource(
   } else {
     m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
   }
-  if (!forPreload) {
+  if (loggingPolicy == V8ActivityLoggingPolicy::Log) {
     V8DOMActivityLogger* activityLogger = nullptr;
     if (fetchInitiatorName == FetchInitiatorTypeNames::xmlhttprequest) {
       activityLogger = V8DOMActivityLogger::currentActivityLogger();
@@ -652,12 +652,13 @@ ResourceRequestBlockedReason FrameFetchContext::canRequest(
     const ResourceRequest& resourceRequest,
     const KURL& url,
     const ResourceLoaderOptions& options,
-    bool forPreload,
+    SecurityViolationReportingPolicy reportingPolicy,
     FetchRequest::OriginRestriction originRestriction) const {
   ResourceRequestBlockedReason blockedReason =
-      canRequestInternal(type, resourceRequest, url, options, forPreload,
+      canRequestInternal(type, resourceRequest, url, options, reportingPolicy,
                          originRestriction, resourceRequest.redirectStatus());
-  if (blockedReason != ResourceRequestBlockedReason::None && !forPreload) {
+  if (blockedReason != ResourceRequestBlockedReason::None &&
+      reportingPolicy == SecurityViolationReportingPolicy::Report) {
     InspectorInstrumentation::didBlockRequest(
         frame(), resourceRequest, masterDocumentLoader(), options.initiatorInfo,
         blockedReason);
@@ -671,7 +672,8 @@ ResourceRequestBlockedReason FrameFetchContext::allowResponse(
     const KURL& url,
     const ResourceLoaderOptions& options) const {
   ResourceRequestBlockedReason blockedReason =
-      canRequestInternal(type, resourceRequest, url, options, false,
+      canRequestInternal(type, resourceRequest, url, options,
+                         SecurityViolationReportingPolicy::Report,
                          FetchRequest::UseDefaultOriginRestrictionForType,
                          RedirectStatus::FollowedRedirect);
   if (blockedReason != ResourceRequestBlockedReason::None) {
@@ -687,7 +689,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
     const ResourceRequest& resourceRequest,
     const KURL& url,
     const ResourceLoaderOptions& options,
-    bool forPreload,
+    SecurityViolationReportingPolicy reportingPolicy,
     FetchRequest::OriginRestriction originRestriction,
     ResourceRequest::RedirectStatus redirectStatus) const {
   if (InspectorInstrumentation::shouldBlockRequest(frame(), resourceRequest))
@@ -699,7 +701,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
 
   if (originRestriction != FetchRequest::NoOriginRestriction &&
       securityOrigin && !securityOrigin->canDisplay(url)) {
-    if (!forPreload)
+    if (reportingPolicy == SecurityViolationReportingPolicy::Report)
       FrameLoader::reportLocalLoadFailed(frame(), url.elidedString());
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::requestResource URL was not "
                                  "allowed by SecurityOrigin::canDisplay";
@@ -746,11 +748,10 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
       frame()->script().shouldBypassMainWorldCSP() ||
       options.contentSecurityPolicyOption == DoNotCheckContentSecurityPolicy;
 
-  // Don't send CSP messages for preloads, we might never actually display those
-  // items.
   ContentSecurityPolicy::ReportingStatus cspReporting =
-      forPreload ? ContentSecurityPolicy::SuppressReport
-                 : ContentSecurityPolicy::SendReport;
+      (reportingPolicy == SecurityViolationReportingPolicy::SuppressReporting)
+          ? ContentSecurityPolicy::SuppressReport
+          : ContentSecurityPolicy::SendReport;
 
   if (m_document) {
     DCHECK(m_document->contentSecurityPolicy());
@@ -807,8 +808,9 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
   // mixed content with a CSP policy, they don't get a warning. They'll still
   // get a warning in the console about CSP blocking the load.
   MixedContentChecker::ReportingStatus mixedContentReporting =
-      forPreload ? MixedContentChecker::SuppressReport
-                 : MixedContentChecker::SendReport;
+      (reportingPolicy == SecurityViolationReportingPolicy::SuppressReporting)
+          ? MixedContentChecker::SuppressReport
+          : MixedContentChecker::SendReport;
   if (MixedContentChecker::shouldBlockFetch(frame(), resourceRequest, url,
                                             mixedContentReporting))
     return ResourceRequestBlockedReason::MixedContent;

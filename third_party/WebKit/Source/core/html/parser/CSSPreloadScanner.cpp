@@ -98,6 +98,9 @@ inline void CSSPreloadScanner::tokenize(UChar c,
                                         const SegmentedString& source) {
   // We are just interested in @import rules, no need for real tokenization here
   // Searching for other types of resources is probably low payoff.
+  // If we ever decide to preload fonts, we also need to change
+  // ResourceFetcher::resourceNeedsLoad to immediately load speculative font
+  // preloads.
   switch (m_state) {
     case Initial:
       if (isHTMLSpace<UChar>(c))

@@ -124,23 +124,23 @@ class PLATFORM_EXPORT FetchContext
   virtual bool shouldLoadNewResource(Resource::Type) const { return false; }
   // Called when a resource load is first requested, which may not be when the
   // load actually begins.
-  // TODO(toyoshim): Consider to use enum. See https://crbug.com/675883.
+  enum class V8ActivityLoggingPolicy { SuppressLogging, Log };
   virtual void willStartLoadingResource(unsigned long identifier,
                                         ResourceRequest&,
                                         Resource::Type,
                                         const AtomicString& fetchInitiatorName,
-                                        bool forPreload);
+                                        V8ActivityLoggingPolicy);
   virtual void didLoadResource(Resource*);
 
   virtual void addResourceTiming(const ResourceTimingInfo&);
   virtual bool allowImage(bool, const KURL&) const { return false; }
-  // TODO(toyoshim): Consider to use enum. See https://crbug.com/675883.
+  enum class SecurityViolationReportingPolicy { SuppressReporting, Report };
   virtual ResourceRequestBlockedReason canRequest(
       Resource::Type,
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
-      bool forPreload,
+      SecurityViolationReportingPolicy,
       FetchRequest::OriginRestriction) const {
     return ResourceRequestBlockedReason::Other;
   }

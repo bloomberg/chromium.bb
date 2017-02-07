@@ -57,8 +57,8 @@ class PLATFORM_EXPORT FetchRequest {
   };
   // TODO(toyoshim): Consider to define an enum for preload options, and use it
   // instead of bool in this class, FrameFetchContext, and so on. If it is
-  // reasonable, we try merging m_forPreload and m_linkPreload into one enum
-  // type. See https://crbug.com/675883.
+  // reasonable, we try merging m_speculativePreload and m_linkPreload into one
+  // enum type. See https://crbug.com/675883.
 
   struct ResourceWidth {
     DISALLOW_NEW();
@@ -96,12 +96,12 @@ class PLATFORM_EXPORT FetchRequest {
     return m_clientHintPreferences;
   }
 
-  bool forPreload() const { return m_forPreload; }
-  void setForPreload(bool forPreload, double discoveryTime = 0);
+  bool isSpeculativePreload() const { return m_speculativePreload; }
+  void setSpeculativePreload(bool speculativePreload, double discoveryTime = 0);
 
   double preloadDiscoveryTime() { return m_preloadDiscoveryTime; }
 
-  bool isLinkPreload() { return m_linkPreload; }
+  bool isLinkPreload() const { return m_linkPreload; }
   void setLinkPreload(bool isLinkPreload) { m_linkPreload = isLinkPreload; }
 
   void setContentSecurityCheck(
@@ -152,7 +152,7 @@ class PLATFORM_EXPORT FetchRequest {
   ResourceRequest m_resourceRequest;
   String m_charset;
   ResourceLoaderOptions m_options;
-  bool m_forPreload;
+  bool m_speculativePreload;
   bool m_linkPreload;
   double m_preloadDiscoveryTime;
   DeferOption m_defer;

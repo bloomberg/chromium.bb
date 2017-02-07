@@ -339,7 +339,6 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
         OtherMessageSource, VerboseMessageLevel,
         String("Preload triggered for " + href.host() + href.path())));
   }
-  linkRequest.setForPreload(true, monotonicallyIncreasingTime());
   linkRequest.setLinkPreload(true);
   return document.loader()->startPreload(resourceType.value(), linkRequest);
 }

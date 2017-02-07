@@ -39,7 +39,7 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
     : m_resourceRequest(resourceRequest),
       m_charset(charset),
       m_options(ResourceFetcher::defaultResourceOptions()),
-      m_forPreload(false),
+      m_speculativePreload(false),
       m_linkPreload(false),
       m_preloadDiscoveryTime(0.0),
       m_defer(NoDefer),
@@ -53,7 +53,7 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
                            const ResourceLoaderOptions& options)
     : m_resourceRequest(resourceRequest),
       m_options(options),
-      m_forPreload(false),
+      m_speculativePreload(false),
       m_linkPreload(false),
       m_preloadDiscoveryTime(0.0),
       m_defer(NoDefer),
@@ -67,7 +67,7 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
                            const FetchInitiatorInfo& initiator)
     : m_resourceRequest(resourceRequest),
       m_options(ResourceFetcher::defaultResourceOptions()),
-      m_forPreload(false),
+      m_speculativePreload(false),
       m_linkPreload(false),
       m_preloadDiscoveryTime(0.0),
       m_defer(NoDefer),
@@ -132,8 +132,9 @@ void FetchRequest::setResourceWidth(ResourceWidth resourceWidth) {
   }
 }
 
-void FetchRequest::setForPreload(bool forPreload, double discoveryTime) {
-  m_forPreload = forPreload;
+void FetchRequest::setSpeculativePreload(bool speculativePreload,
+                                         double discoveryTime) {
+  m_speculativePreload = speculativePreload;
   m_preloadDiscoveryTime = discoveryTime;
 }
 

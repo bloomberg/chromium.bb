@@ -169,7 +169,7 @@ class PLATFORM_EXPORT ResourceFetcher
       const ResourceRequest&,
       ResourcePriority::VisibilityStatus,
       FetchRequest::DeferOption = FetchRequest::NoDefer,
-      bool forPreload = false);
+      bool speculativePreload = false);
 
   enum PrepareRequestResult { Abort, Continue, Block };
 
@@ -193,7 +193,7 @@ class PLATFORM_EXPORT ResourceFetcher
                                                  Resource* existingResource,
                                                  bool isStaticData) const;
 
-  void moveCachedNonBlockingResourceToBlocking(Resource*, const FetchRequest&);
+  void makePreloadedResourceBlockOnloadIfNeeded(Resource*, const FetchRequest&);
   void moveResourceLoaderToNonBlocking(ResourceLoader*);
   void removeResourceLoader(ResourceLoader*);
   void handleLoadCompletion(Resource*);

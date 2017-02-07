@@ -74,7 +74,7 @@ Resource* PreloadRequest::start(Document* document) {
     request.setCharset(
         m_charset.isEmpty() ? document->characterSet().getString() : m_charset);
   }
-  request.setForPreload(true, m_discoveryTime);
+  request.setSpeculativePreload(true, m_discoveryTime);
 
   return document->loader()->startPreload(m_resourceType, request);
 }

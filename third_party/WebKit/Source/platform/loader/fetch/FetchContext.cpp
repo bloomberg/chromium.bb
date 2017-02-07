@@ -92,7 +92,7 @@ void FetchContext::willStartLoadingResource(
     ResourceRequest&,
     Resource::Type,
     const AtomicString& fetchInitiatorName,
-    bool) {}
+    V8ActivityLoggingPolicy) {}
 
 void FetchContext::didLoadResource(Resource*) {}
 

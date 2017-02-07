@@ -155,7 +155,12 @@ ImageResource* ImageResource::fetch(FetchRequest& request,
     if (requestURL.isValid()) {
       ResourceRequestBlockedReason blockReason = fetcher->context().canRequest(
           Resource::Image, request.resourceRequest(), requestURL,
-          request.options(), request.forPreload(),
+          request.options(),
+          /* Don't send security violation reports for speculative preloads */
+          request.isSpeculativePreload()
+              ? FetchContext::SecurityViolationReportingPolicy::
+                    SuppressReporting
+              : FetchContext::SecurityViolationReportingPolicy::Report,
           request.getOriginRestriction());
       if (blockReason == ResourceRequestBlockedReason::None)
         fetcher->context().sendImagePing(requestURL);

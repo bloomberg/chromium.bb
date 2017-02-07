@@ -53,7 +53,7 @@ class MockFetchContext : public FetchContext {
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
-      bool forPreload,
+      SecurityViolationReportingPolicy,
       FetchRequest::OriginRestriction) const override {
     return ResourceRequestBlockedReason::None;
   }
