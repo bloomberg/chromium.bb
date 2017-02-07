@@ -375,6 +375,10 @@ class CLStatsEngine(object):
         'mean_good_patch_rejections': numpy.mean(rejection_counts),
         'good_patch_rejection_breakdown': good_patch_rejection_breakdown,
         'good_patch_rejection_count': false_rejection_count,
+        'good_patch_rejections_50': numpy.percentile(rejection_counts, 50),
+        'good_patch_rejections_90': numpy.percentile(rejection_counts, 90),
+        'good_patch_rejections_95': numpy.percentile(rejection_counts, 95),
+        'good_patch_rejections_99': numpy.percentile(rejection_counts, 99),
         'false_rejection_rate': false_rejection_rate,
         'median_handling_time': numpy.median(patch_handle_times),
         'patch_handling_time': patch_handle_times,
@@ -399,35 +403,42 @@ class CLStatsEngine(object):
         'patch_blame_counts': patch_blame_counts,
     }
 
-    logging.info('CQ committed %s changes', summary['submitted_patches'])
+    s = summary
+
+    logging.info('CQ committed %s changes', s['submitted_patches'])
     logging.info('CQ correctly rejected %s unique changes',
                  summary['unique_blames_change_count'])
     logging.info('pre-CQ and CQ incorrectly rejected %s changes a total of '
                  '%s times (pre-CQ: %s; CQ: %s)',
-                 summary['patch_flake_rejections'],
-                 summary['false_rejection_total'],
-                 summary['false_rejection_pre_cq'],
-                 summary['false_rejection_cq'])
+                 s['patch_flake_rejections'],
+                 s['false_rejection_total'],
+                 s['false_rejection_pre_cq'],
+                 s['false_rejection_cq'])
 
-    logging.info('      Total CL actions: %d.', summary['total_cl_actions'])
-    logging.info('    Unique CLs touched: %d.', summary['unique_cls'])
-    logging.info('Unique patches touched: %d.', summary['unique_patches'])
-    logging.info('   Total CLs submitted: %d.', summary['submitted_patches'])
-    logging.info('      Total rejections: %d.', summary['rejections'])
-    logging.info(' Total submit failures: %d.', summary['submit_fails'])
+    logging.info('      Total CL actions: %d.', s['total_cl_actions'])
+    logging.info('    Unique CLs touched: %d.', s['unique_cls'])
+    logging.info('Unique patches touched: %d.', s['unique_patches'])
+    logging.info('   Total CLs submitted: %d.', s['submitted_patches'])
+    logging.info('      Total rejections: %d.', s['rejections'])
+    logging.info(' Total submit failures: %d.', s['submit_fails'])
     logging.info(' Good patches rejected: %d.',
-                 summary['patch_flake_rejections'])
+                 s['patch_flake_rejections'])
     logging.info('   Mean rejections per')
     logging.info('            good patch: %.2f',
-                 summary['mean_good_patch_rejections'])
+                 s['mean_good_patch_rejections'])
+    logging.info('Good patch rejections')
+    logging.info('                 50ile: %d', s['good_patch_rejections_50'])
+    logging.info('                 90ile: %d', s['good_patch_rejections_90'])
+    logging.info('                 95ile: %d', s['good_patch_rejections_95'])
+    logging.info('                 99ile: %d', s['good_patch_rejections_99'])
     logging.info(' False rejection rate for CQ: %.1f%%',
-                 summary['false_rejection_rate'].get(constants.CQ, 0))
+                 s['false_rejection_rate'].get(constants.CQ, 0))
     logging.info(' False rejection rate for Pre-CQ: %.1f%%',
-                 summary['false_rejection_rate'].get(constants.PRE_CQ, 0))
+                 s['false_rejection_rate'].get(constants.PRE_CQ, 0))
     logging.info(' Combined false rejection rate: %.1f%%',
-                 summary['false_rejection_rate']['combined'])
+                 s['false_rejection_rate']['combined'])
 
-    for x, p in summary['good_patch_rejection_breakdown']:
+    for x, p in s['good_patch_rejection_breakdown']:
       logging.info('%d good patches were rejected %d times.', p, x)
     logging.info('')
     logging.info('Good patch handling time:')
@@ -436,7 +447,7 @@ class CLStatsEngine(object):
     logging.info('  25th percentile: %.2f hours',
                  numpy.percentile(patch_handle_times, 25) / 3600.0)
     logging.info('  50th percentile: %.2f hours',
-                 summary['median_handling_time'] / 3600.0)
+                 s['median_handling_time'] / 3600.0)
     logging.info('  75th percentile: %.2f hours',
                  numpy.percentile(patch_handle_times, 75) / 3600.0)
     logging.info('  90th percentile: %.2f hours',
