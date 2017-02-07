@@ -13,7 +13,6 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
@@ -88,19 +87,10 @@ RefPtr<NGPhysicalFragment> NGBlockNode::Layout(
     return fragment_;
   }
 
-  RefPtr<NGPhysicalFragment> fragment;
-
-  if (HasInlineChildren()) {
-    fragment =
-        NGInlineLayoutAlgorithm(GetLayoutObject(), &Style(),
-                                toNGInlineNode(FirstChild()), constraint_space)
-            .Layout();
-  } else {
-    fragment = NGBlockLayoutAlgorithm(GetLayoutObject(), &Style(),
-                                      toNGBlockNode(FirstChild()),
-                                      constraint_space, CurrentBreakToken())
-                   .Layout();
-  }
+  RefPtr<NGPhysicalFragment> fragment =
+      NGBlockLayoutAlgorithm(GetLayoutObject(), &Style(), FirstChild(),
+                             constraint_space, CurrentBreakToken())
+          .Layout();
 
   fragment_ = toNGPhysicalBoxFragment(fragment.get());
   CopyFragmentDataToLayoutBox(*constraint_space);
@@ -133,17 +123,12 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
           .ToConstraintSpace();
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
-  // TODO(kojii): Add other algorithms when they support
-  // ComputeMinAndMaxContentSizes.
-  NGLayoutInputNode* first_child = FirstChild();
-  if (!first_child || first_child->Type() == kLegacyBlock) {
-    NGBlockLayoutAlgorithm minmax_algorithm(
-        layout_box_, &Style(), toNGBlockNode(FirstChild()), constraint_space);
-    Optional<MinAndMaxContentSizes> maybe_sizes =
-        minmax_algorithm.ComputeMinAndMaxContentSizes();
-    if (maybe_sizes.has_value())
-      return *maybe_sizes;
-  }
+  NGBlockLayoutAlgorithm minmax_algorithm(layout_box_, &Style(), FirstChild(),
+                                          constraint_space);
+  Optional<MinAndMaxContentSizes> maybe_sizes =
+      minmax_algorithm.ComputeMinAndMaxContentSizes();
+  if (maybe_sizes.has_value())
+    return *maybe_sizes;
 
   // Have to synthesize this value.
   RefPtr<NGPhysicalFragment> physical_fragment = Layout(constraint_space);

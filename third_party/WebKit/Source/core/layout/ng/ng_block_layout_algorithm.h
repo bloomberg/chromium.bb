@@ -21,6 +21,7 @@ class NGBlockBreakToken;
 class NGBoxFragment;
 class NGConstraintSpace;
 class NGConstraintSpaceBuilder;
+class NGInlineNode;
 class NGPhysicalFragment;
 
 // A class for general block layout (e.g. a <div> with no special style).
@@ -36,7 +37,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   //              fragment within.
   NGBlockLayoutAlgorithm(LayoutObject* layout_object,
                          PassRefPtr<const ComputedStyle> style,
-                         NGBlockNode* first_child,
+                         NGLayoutInputNode* first_child,
                          NGConstraintSpace* space,
                          NGBreakToken* break_token = nullptr);
 
@@ -50,6 +51,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // Creates a new constraint space for the current child.
   NGConstraintSpace* CreateConstraintSpaceForCurrentChild();
   void FinishCurrentChildLayout(RefPtr<NGPhysicalBoxFragment>);
+
+  // Layout inline children.
+  void LayoutInlineChildren(NGInlineNode*);
 
   // Proceed to the next sibling that still needs layout.
   //
@@ -105,7 +109,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // Read-only Getters.
   const ComputedStyle& CurrentChildStyle() const {
     DCHECK(current_child_);
-    return current_child_->Style();
+    return toNGBlockNode(current_child_)->Style();
   }
 
   const NGConstraintSpace& ConstraintSpace() const {
@@ -120,7 +124,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   RefPtr<const ComputedStyle> style_;
 
-  Persistent<NGBlockNode> first_child_;
+  Persistent<NGLayoutInputNode> first_child_;
   Persistent<NGConstraintSpace> constraint_space_;
 
   // The break token from which we are currently resuming layout.
@@ -129,7 +133,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   std::unique_ptr<NGFragmentBuilder> builder_;
   Persistent<NGConstraintSpaceBuilder> space_builder_;
   Persistent<NGConstraintSpace> space_for_current_child_;
-  Persistent<NGBlockNode> current_child_;
+  Persistent<NGLayoutInputNode> current_child_;
 
   // Mapper from the fragmented flow coordinate space coordinates to visual
   // coordinates. Only set on fragmentation context roots, such as multicol

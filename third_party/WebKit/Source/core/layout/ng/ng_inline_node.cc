@@ -224,15 +224,7 @@ void NGInlineNode::LayoutInline(NGConstraintSpace* constraint_space,
                                 NGLineBuilder* line_builder) {
   PrepareLayout();
 
-  // NOTE: We don't need to change the coordinate system here as we are an
-  // inline.
-  NGConstraintSpace* child_constraint_space =
-      NGConstraintSpaceBuilder(constraint_space->WritingMode())
-          .SetTextDirection(constraint_space->Direction())
-          .ToConstraintSpace();
-
-  NGTextLayoutAlgorithm(this, child_constraint_space)
-      .LayoutInline(line_builder);
+  NGTextLayoutAlgorithm(this, constraint_space).LayoutInline(line_builder);
 }
 
 NGInlineNode* NGInlineNode::NextSibling() {

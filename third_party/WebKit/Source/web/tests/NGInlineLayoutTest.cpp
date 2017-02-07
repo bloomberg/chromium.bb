@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_inline_layout_algorithm.h"
 #include "core/layout/ng/ng_inline_node.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -49,8 +49,8 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   NGInlineNode* inlineBox =
       new NGInlineNode(blockFlow->firstChild(), blockFlow->mutableStyle());
   RefPtr<NGPhysicalFragment> fragment =
-      NGInlineLayoutAlgorithm(blockFlow, blockFlow->style(), inlineBox,
-                              constraintSpace)
+      NGBlockLayoutAlgorithm(blockFlow, blockFlow->style(), inlineBox,
+                             constraintSpace)
           .Layout();
   EXPECT_TRUE(fragment);
 
@@ -76,8 +76,8 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   NGInlineNode* inlineBox =
       new NGInlineNode(blockFlow->firstChild(), blockFlow->mutableStyle());
   RefPtr<NGPhysicalFragment> fragment =
-      NGInlineLayoutAlgorithm(blockFlow, blockFlow->style(), inlineBox,
-                              constraintSpace)
+      NGBlockLayoutAlgorithm(blockFlow, blockFlow->style(), inlineBox,
+                             constraintSpace)
           .Layout();
   EXPECT_TRUE(fragment);
 
