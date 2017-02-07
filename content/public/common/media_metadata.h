@@ -9,16 +9,37 @@
 
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/common/manifest.h"
+#include "ui/gfx/geometry/size.h"
+#include "url/gurl.h"
 
 namespace content {
 
 // The MediaMetadata is a structure carrying information associated to a
 // content::MediaSession.
 struct CONTENT_EXPORT MediaMetadata {
-  // TODO(zqzhang): move |Manifest::Icon| to a common place. See
-  // https://crbug.com/621859.
-  using MediaImage = Manifest::Icon;
+  // Structure representing an MediaImage as per the MediaSession API, see:
+  // https://wicg.github.io/mediasession/#dictdef-mediaimage
+  struct CONTENT_EXPORT MediaImage {
+    MediaImage();
+    MediaImage(const MediaImage& other);
+    ~MediaImage();
+
+    bool operator==(const MediaImage& other) const;
+
+    // MUST be a valid url. If an icon doesn't have a valid URL, it will not be
+    // successfully parsed, thus will not be represented in the Manifest.
+    GURL src;
+
+    // Empty if the parsing failed or the field was not present. The type can be
+    // any string and doesn't have to be a valid image MIME type at this point.
+    // It is up to the consumer of the object to check if the type matches a
+    // supported type.
+    base::string16 type;
+
+    // Empty if the parsing failed, the field was not present or empty.
+    // The special value "any" is represented by gfx::Size(0, 0).
+    std::vector<gfx::Size> sizes;
+  };
 
   MediaMetadata();
   ~MediaMetadata();

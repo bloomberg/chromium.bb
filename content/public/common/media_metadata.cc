@@ -9,6 +9,17 @@
 
 namespace content {
 
+MediaMetadata::MediaImage::MediaImage() = default;
+
+MediaMetadata::MediaImage::MediaImage(const MediaImage& other) = default;
+
+MediaMetadata::MediaImage::~MediaImage() = default;
+
+bool MediaMetadata::MediaImage::operator==(
+    const MediaMetadata::MediaImage& other) const {
+  return src == other.src && type == other.type && sizes == other.sizes;
+}
+
 MediaMetadata::MediaMetadata() = default;
 
 MediaMetadata::~MediaMetadata() = default;
