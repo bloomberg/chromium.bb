@@ -1347,8 +1347,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     // Clears pending navigation history after successfully launching the
     // external app.
     DCHECK([self navigationManager]);
-    [[self navigationManager]->GetSessionController()
-            discardNonCommittedEntries];
+    [[self navigationManager]->GetSessionController() discardNonCommittedItems];
     // Ensure the UI reflects the current entry, not the just-discarded pending
     // entry.
     [parentTabModel_ notifyTabChanged:self];
@@ -1534,14 +1533,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   DCHECK_EQ(self.useDesktopUserAgent, NO);
   DCHECK([self navigationManager]);
   [[self navigationManager]->GetSessionController()
-          useDesktopUserAgentForNextPendingEntry];
+          useDesktopUserAgentForNextPendingItem];
 }
 
 - (void)reloadForDesktopUserAgent {
   // |loadWithParams| will recreate the removed UIWebView.
   [self.webController requirePageReconstruction];
 
-  // TODO(crbug.com/228171): A hack in session_controller -addPendingEntry
+  // TODO(crbug.com/228171): A hack in session_controller -addPendingItem
   // discusses making tab responsible for distinguishing history stack
   // navigation from new navigations. Because we want a new navigation here, we
   // use |PAGE_TRANSITION_FORM_SUBMIT|. When session_controller changes, so

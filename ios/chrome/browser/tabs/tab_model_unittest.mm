@@ -624,7 +624,7 @@ TEST_F(TabModelTest, AddWithOrderControllerAndGrouping) {
       [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
   // Force the history to update, as it is used to determine grouping.
   ASSERT_TRUE([parent navigationManager]);
-  [[parent navigationManager]->GetSessionController() commitPendingEntry];
+  [[parent navigationManager]->GetSessionController() commitPendingItem];
   [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
   [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
 
@@ -662,7 +662,7 @@ TEST_F(TabModelTest, AddWithOrderControllerAndGrouping) {
   parent_params.transition_type = ui::PAGE_TRANSITION_TYPED;
   [[parent webController] loadWithParams:parent_params];
   ASSERT_TRUE([parent navigationManager]);
-  [[parent navigationManager]->GetSessionController() commitPendingEntry];
+  [[parent navigationManager]->GetSessionController() commitPendingItem];
   EXPECT_EQ([tab_model_ indexOfTab:parent], 0U);
 
   // Add a new tab. It should be added behind the parent. It should not be added
@@ -707,7 +707,7 @@ TEST_F(TabModelTest, AddWithLinkTransitionAndIndex) {
       [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
   // Force the history to update, as it is used to determine grouping.
   ASSERT_TRUE([parent navigationManager]);
-  [[parent navigationManager]->GetSessionController() commitPendingEntry];
+  [[parent navigationManager]->GetSessionController() commitPendingItem];
   [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
   [tab_model_ addTabWithURL:kURL referrer:kEmptyReferrer windowName:nil];
 

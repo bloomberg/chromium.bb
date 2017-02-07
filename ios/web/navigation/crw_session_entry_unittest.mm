@@ -40,13 +40,12 @@ class CRWSessionEntryTest : public PlatformTest {
     item->SetTransitionType(transition);
     item->SetTimestamp(base::Time::Now());
     item->SetPostData([@"Test data" dataUsingEncoding:NSUTF8StringEncoding]);
-    sessionEntry_.reset(
+    session_entry_.reset(
         [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)]);
   }
-  void TearDown() override { sessionEntry_.reset(); }
 
  protected:
-  base::scoped_nsobject<CRWSessionEntry> sessionEntry_;
+  base::scoped_nsobject<CRWSessionEntry> session_entry_;
 };
 
 void CRWSessionEntryTest::expectEqualSessionEntries(
@@ -74,33 +73,25 @@ void CRWSessionEntryTest::expectEqualSessionEntries(
 }
 
 TEST_F(CRWSessionEntryTest, Description) {
-  [sessionEntry_ navigationItem]->SetTitle(base::SysNSStringToUTF16(@"Title"));
-  EXPECT_NSEQ([sessionEntry_ description],
+  [session_entry_ navigationItem]->SetTitle(base::SysNSStringToUTF16(@"Title"));
+  EXPECT_NSEQ([session_entry_ description],
               @"url:http://init.test/ originalurl:http://init.test/ "
               @"title:Title transition:2 displayState:{ scrollOffset:(nan, "
               @"nan), zoomScaleRange:(nan, nan), zoomScale:nan } desktopUA:0");
 }
 
-TEST_F(CRWSessionEntryTest, CopyWithZone) {
-  CRWSessionEntry* sessionEntry2 = [sessionEntry_ copy];
-  EXPECT_NE(sessionEntry_, sessionEntry2);
-  expectEqualSessionEntries(
-      sessionEntry_, sessionEntry2,
-      [sessionEntry_ navigationItem]->GetTransitionType());
-}
-
 TEST_F(CRWSessionEntryTest, EmptyVirtualUrl) {
   EXPECT_EQ(GURL("http://init.test/"),
-            [sessionEntry_ navigationItem]->GetURL());
+            [session_entry_ navigationItem]->GetURL());
 }
 
 TEST_F(CRWSessionEntryTest, NonEmptyVirtualUrl) {
-  web::NavigationItem* item = [sessionEntry_ navigationItem];
+  web::NavigationItem* item = [session_entry_ navigationItem];
   item->SetVirtualURL(GURL("http://user.friendly"));
   EXPECT_EQ(GURL("http://user.friendly/"), item->GetVirtualURL());
   EXPECT_EQ(GURL("http://init.test/"), item->GetURL());
 }
 
 TEST_F(CRWSessionEntryTest, EmptyDescription) {
-  EXPECT_GT([[sessionEntry_ description] length], 0U);
+  EXPECT_GT([[session_entry_ description] length], 0U);
 }

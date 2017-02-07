@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
@@ -22,9 +23,7 @@
 @property(nonatomic, readwrite, copy) NSString* openerId;
 @property(nonatomic, readwrite, getter=isOpenedByDOM) BOOL openedByDOM;
 @property(nonatomic, readwrite, assign) NSInteger openerNavigationIndex;
-@property(nonatomic, readwrite, assign) NSInteger currentNavigationIndex;
 @property(nonatomic, readwrite, assign) NSInteger previousNavigationIndex;
-@property(nonatomic, readwrite, retain) NSArray* entries;
 @property(nonatomic, readwrite, retain)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 @end
@@ -54,9 +53,10 @@ CRWNavigationManagerStorage* NavigationManagerStorageBuilder::BuildStorage(
       session_controller.sessionCertificatePolicyManager;
   NSMutableArray* item_storages = [[NSMutableArray alloc] init];
   NavigationItemStorageBuilder item_storage_builder;
-  for (CRWSessionEntry* entry in session_controller.entries) {
-    [item_storages
-        addObject:item_storage_builder.BuildStorage(entry.navigationItemImpl)];
+  for (size_t index = 0; index < session_controller.items.size(); ++index) {
+    web::NavigationItemImpl* item =
+        static_cast<web::NavigationItemImpl*>(session_controller.items[index]);
+    [item_storages addObject:item_storage_builder.BuildStorage(item)];
   }
   serialized_navigation_manager.itemStorages = item_storages;
   return serialized_navigation_manager;
@@ -66,8 +66,20 @@ std::unique_ptr<NavigationManagerImpl>
 NavigationManagerStorageBuilder::BuildNavigationManagerImpl(
     CRWNavigationManagerStorage* navigation_manager_serialization) const {
   DCHECK(navigation_manager_serialization);
+  NSArray* item_storages = navigation_manager_serialization.itemStorages;
+  web::ScopedNavigationItemList items(item_storages.count);
+  NavigationItemStorageBuilder item_storage_builder;
+  for (size_t index = 0; index < item_storages.count; ++index) {
+    std::unique_ptr<NavigationItemImpl> item_impl =
+        item_storage_builder.BuildNavigationItemImpl(item_storages[index]);
+    items[index] = std::move(item_impl);
+  }
+  NSUInteger current_index =
+      navigation_manager_serialization.currentNavigationIndex;
   base::scoped_nsobject<CRWSessionController> session_controller(
-      [[CRWSessionController alloc] init]);
+      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
+                                               currentIndex:current_index
+                                               browserState:nullptr]);
   [session_controller setTabId:navigation_manager_serialization.tabID];
   [session_controller setOpenerId:navigation_manager_serialization.openerID];
   [session_controller
@@ -76,8 +88,6 @@ NavigationManagerStorageBuilder::BuildNavigationManagerImpl(
                                                    .openerNavigationIndex];
   [session_controller
       setWindowName:navigation_manager_serialization.windowName];
-  [session_controller setCurrentNavigationIndex:navigation_manager_serialization
-                                                    .currentNavigationIndex];
   [session_controller
       setPreviousNavigationIndex:navigation_manager_serialization
                                      .previousNavigationIndex];
@@ -86,17 +96,6 @@ NavigationManagerStorageBuilder::BuildNavigationManagerImpl(
   [session_controller
       setSessionCertificatePolicyManager:navigation_manager_serialization
                                              .sessionCertificatePolicyManager];
-  NavigationItemStorageBuilder item_storage_builder;
-  NSArray* item_storages = navigation_manager_serialization.itemStorages;
-  NSMutableArray* entries = [[NSMutableArray alloc] init];
-  for (CRWNavigationItemStorage* item_storage in item_storages) {
-    std::unique_ptr<NavigationItemImpl> item_impl =
-        item_storage_builder.BuildNavigationItemImpl(item_storage);
-    std::unique_ptr<NavigationItem> item(item_impl.release());
-    [entries addObject:[[CRWSessionEntry alloc]
-                           initWithNavigationItem:std::move(item)]];
-  }
-  [session_controller setEntries:entries];
   std::unique_ptr<NavigationManagerImpl> navigation_manager(
       new NavigationManagerImpl());
   navigation_manager->SetSessionController(session_controller);

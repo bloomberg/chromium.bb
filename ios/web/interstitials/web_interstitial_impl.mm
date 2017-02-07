@@ -64,7 +64,7 @@ void WebInterstitialImpl::Show() {
     // SessionController usage here.
     CRWSessionController* sessionController =
         navigation_manager_->GetSessionController();
-    [sessionController addTransientEntryWithURL:url_];
+    [sessionController addTransientItemWithURL:url_];
 
     // Give delegates a chance to set some states on the navigation item.
     GetDelegate()->OverrideItem(navigation_manager_->GetTransientItem());

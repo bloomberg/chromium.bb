@@ -1393,17 +1393,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)pushStateWithPageURL:(const GURL&)pageURL
                  stateObject:(NSString*)stateObject
                   transition:(ui::PageTransition)transition {
-  [[self sessionController] pushNewEntryWithURL:pageURL
-                                    stateObject:stateObject
-                                     transition:transition];
+  [[self sessionController] pushNewItemWithURL:pageURL
+                                   stateObject:stateObject
+                                    transition:transition];
   [self didUpdateHistoryStateWithPageURL:pageURL];
   self.userInteractionRegistered = NO;
 }
 
 - (void)replaceStateWithPageURL:(const GURL&)pageUrl
                     stateObject:(NSString*)stateObject {
-  [[self sessionController] updateCurrentEntryWithURL:pageUrl
-                                          stateObject:stateObject];
+  [[self sessionController] updateCurrentItemWithURL:pageUrl
+                                         stateObject:stateObject];
   [self didUpdateHistoryStateWithPageURL:pageUrl];
 }
 
@@ -1594,13 +1594,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (_webStateImpl->GetNavigationManagerImpl().GetPendingItem()) {
     // Update the existing pending entry.
     // Typically on PAGE_TRANSITION_CLIENT_REDIRECT.
-    [[self sessionController] updatePendingEntry:requestURL];
+    [[self sessionController] updatePendingItem:requestURL];
   } else {
     // A new session history entry needs to be created.
-    [[self sessionController] addPendingEntry:requestURL
-                                     referrer:referrer
-                                   transition:transition
-                            rendererInitiated:YES];
+    [[self sessionController] addPendingItem:requestURL
+                                    referrer:referrer
+                                  transition:transition
+                           rendererInitiated:YES];
   }
   _webStateImpl->SetIsLoading(true);
   _webStateImpl->OnProvisionalNavigationStarted(requestURL);
@@ -1615,8 +1615,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Same-document navigations must trigger a popState event.
   CRWSessionController* sessionController = self.sessionController;
   BOOL sameDocumentNavigation = [sessionController
-      isSameDocumentNavigationBetweenEntry:sessionController.currentEntry
-                                  andEntry:sessionController.previousEntry];
+      isSameDocumentNavigationBetweenItem:sessionController.currentItem
+                                  andItem:sessionController.previousItem];
   // WKWebView doesn't send hashchange events for same-document non-BFLI
   // navigations, so one must be dispatched manually for hash change same-
   // document navigations.
@@ -1910,7 +1910,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // record it for general reload.
   // TODO(jimblackler): consider a single unified call to record state whenever
   // the page is about to be changed. This cannot currently be done after
-  // addPendingEntry is called.
+  // addPendingItem is called.
 
   [_delegate webWillInitiateLoadWithParams:params];
 
@@ -1939,10 +1939,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         _webStateImpl->GetNavigationManagerImpl().GetSessionController();
     if (!self.currentSessionEntry)
       initialNavigation = YES;
-    [history addPendingEntry:navUrl
-                    referrer:params.referrer
-                  transition:transition
-           rendererInitiated:params.is_renderer_initiated];
+    [history addPendingItem:navUrl
+                   referrer:params.referrer
+                 transition:transition
+          rendererInitiated:params.is_renderer_initiated];
     web::NavigationItemImpl* addedItem =
         [self currentSessionEntry].navigationItemImpl;
     DCHECK(addedItem);
@@ -1991,7 +1991,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       // WebUI URLs can not be opened by DOM to prevent cross-site scripting as
       // they have increased power. WebUI URLs may only be opened when the user
       // types in the URL or use bookmarks.
-      [[self sessionController] discardNonCommittedEntries];
+      [[self sessionController] discardNonCommittedItems];
       return;
     } else {
       [self createWebUIForURL:currentURL];
@@ -2170,22 +2170,23 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   if (!_webStateImpl->IsShowingWebInterstitial())
     [self recordStateInHistory];
-  CRWSessionEntry* fromEntry = self.sessionController.currentEntry;
+  CRWSessionEntry* fromEntry = sessionController.currentEntry;
+  CRWSessionEntry* toEntry = entries[index];
 
   NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
   if (![userDefaults boolForKey:@"PendingIndexNavigationDisabled"]) {
-    BOOL sameDocumentNavigation =
-        [sessionController isSameDocumentNavigationBetweenEntry:fromEntry
-                                                       andEntry:entries[index]];
+    BOOL sameDocumentNavigation = [sessionController
+        isSameDocumentNavigationBetweenItem:fromEntry.navigationItem
+                                    andItem:toEntry.navigationItem];
     if (sameDocumentNavigation) {
-      [self.sessionController goToEntryAtIndex:index];
+      [self.sessionController goToItemAtIndex:index];
       // TODO(crbug.com/684098): move this call out this block to avoid code
       // duplication.
       [self webWillFinishHistoryNavigationFromEntry:fromEntry];
       [self updateHTML5HistoryState];
     } else {
-      [sessionController discardNonCommittedEntries];
-      [sessionController setPendingEntryIndex:index];
+      [sessionController discardNonCommittedItems];
+      [sessionController setPendingItemIndex:index];
 
       // TODO(crbug.com/684098): move this call out this block to avoid code
       // duplication.
@@ -2199,7 +2200,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [self loadCurrentURL];
     }
   } else {
-    [self.sessionController goToEntryAtIndex:index];
+    [self.sessionController goToItemAtIndex:index];
     if (fromEntry)
       [self finishHistoryNavigationFromEntry:fromEntry];
   }
@@ -2304,8 +2305,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // calls to window.history.pushState().
   BOOL shouldLoadURL =
       ![_webStateImpl->GetNavigationManagerImpl().GetSessionController()
-          isSameDocumentNavigationBetweenEntry:fromEntry
-                                      andEntry:self.currentSessionEntry];
+          isSameDocumentNavigationBetweenItem:fromEntry.navigationItem
+                                      andItem:self.currentNavItem];
   web::NavigationItemImpl* currentItem =
       self.currentSessionEntry.navigationItemImpl;
   GURL endURL = [self URLForHistoryNavigationFromItem:fromEntry.navigationItem
@@ -3155,7 +3156,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   self.userInteractionRegistered = NO;
   _pageHasZoomed = NO;
 
-  [[self sessionController] commitPendingEntry];
+  [[self sessionController] commitPendingItem];
   [_delegate webDidStartLoadingURL:url shouldUpdateHistory:updateHistory];
 }
 
@@ -3461,7 +3462,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)handleCancelledError:(NSError*)error {
   if ([self shouldCancelLoadForCancelledError:error]) {
     [self loadCancelled];
-    [[self sessionController] discardNonCommittedEntries];
+    [[self sessionController] discardNonCommittedItems];
   }
 }
 
@@ -4537,7 +4538,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   base::RecordAction(UserMetricsAction("Stop"));
   // Discard the pending and transient entried before notifying the tab model
   // observers of the change via |-abortLoad|.
-  [[self sessionController] discardNonCommittedEntries];
+  [[self sessionController] discardNonCommittedItems];
   [self abortLoad];
   web::NavigationItem* item = [self currentNavItem];
   GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
@@ -4744,7 +4745,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     BOOL previousItemWasLoadedInNativeView =
         [self shouldLoadURLInNativeView:lastCommittedURL];
     if (!isFirstLoad && !previousItemWasLoadedInNativeView)
-      [self.sessionController discardNonCommittedEntries];
+      [self.sessionController discardNonCommittedItems];
   }
 
   handler(allowNavigation ? WKNavigationResponsePolicyAllow
@@ -4884,7 +4885,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       _documentURL != _lastRegisteredRequestURL) {
     // if |_lastRegisteredRequestURL| is an invalid URL, then |_documentURL|
     // will be "about:blank".
-    [[self sessionController] updatePendingEntry:_documentURL];
+    [[self sessionController] updatePendingItem:_documentURL];
   }
   DCHECK(_documentURL == _lastRegisteredRequestURL ||
          (!_lastRegisteredRequestURL.is_valid() &&

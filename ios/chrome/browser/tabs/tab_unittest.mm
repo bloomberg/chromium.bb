@@ -238,12 +238,12 @@ class TabTest : public BlockCleanupTest {
     [tab_ webWillAddPendingURL:redirectUrl
                     transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT];
     [[tab_ navigationManager]->GetSessionController()
-          addPendingEntry:redirectUrl
+           addPendingItem:redirectUrl
                  referrer:empty_referrer
                transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
         rendererInitiated:YES];
     web_state_impl_->OnProvisionalNavigationStarted(redirectUrl);
-    [[tab_ navigationManager]->GetSessionController() commitPendingEntry];
+    [[tab_ navigationManager]->GetSessionController() commitPendingItem];
     [[tab_ webController] webStateImpl]->OnNavigationCommitted(redirectUrl);
     [tab_ webDidStartLoadingURL:redirectUrl shouldUpdateHistory:YES];
     [tab_ webController:mock_web_controller_ titleDidChange:title];

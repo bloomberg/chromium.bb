@@ -37,11 +37,11 @@ class NativeAppNavigationUtilsTest : public web::WebTest {
   void AddItem(const std::string& url_spec, ui::PageTransition transition) {
     CRWSessionController* session_controller =
         web_state_->GetNavigationManagerImpl().GetSessionController();
-    [session_controller addPendingEntry:GURL(url_spec)
-                               referrer:web::Referrer()
-                             transition:transition
-                      rendererInitiated:NO];
-    [session_controller commitPendingEntry];
+    [session_controller addPendingItem:GURL(url_spec)
+                              referrer:web::Referrer()
+                            transition:transition
+                     rendererInitiated:NO];
+    [session_controller commitPendingItem];
   }
 
  private:

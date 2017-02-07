@@ -62,45 +62,45 @@ TEST_F(NavigationManagerTest, EmptyManager) {
 
 // Tests that GetPendingItemIndex() returns -1 if there is no pending entry.
 TEST_F(NavigationManagerTest, GetPendingItemIndexWithoutPendingEntry) {
-  [session_controller() addPendingEntry:GURL("http://www.url.com")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
+  [session_controller() addPendingItem:GURL("http://www.url.com")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
 }
 
 // Tests that GetPendingItemIndex() returns current item index if there is a
 // pending entry.
 TEST_F(NavigationManagerTest, GetPendingItemIndexWithPendingEntry) {
-  [session_controller() addPendingEntry:GURL("http://www.url.com")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/0")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
+  [session_controller() addPendingItem:GURL("http://www.url.com")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/0")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
   EXPECT_EQ(0, navigation_manager()->GetPendingItemIndex());
 }
 
 // Tests that GetPendingItemIndex() returns same index as was set by
-// -[CRWSessionController setPendingEntryIndex:].
+// -[CRWSessionController setPendingItemIndex:].
 TEST_F(NavigationManagerTest, GetPendingItemIndexWithIndexedPendingEntry) {
-  [session_controller() addPendingEntry:GURL("http://www.url.com")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/0")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
+  [session_controller() addPendingItem:GURL("http://www.url.com")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/0")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
 
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
-  [session_controller() setPendingEntryIndex:0];
+  [session_controller() setPendingItemIndex:0];
   EXPECT_EQ(0, navigation_manager()->GetPendingItemIndex());
 }
 
@@ -114,7 +114,7 @@ TEST_F(NavigationManagerTest, CanGoBackWithoutCommitedItem) {
 // Tests that going back or negative offset is not possible if there is a
 // transient item, but not committed items.
 TEST_F(NavigationManagerTest, CanGoBackWithTransientItem) {
-  [session_controller() addTransientEntryWithURL:GURL("http://www.url.com")];
+  [session_controller() addTransientItemWithURL:GURL("http://www.url.com")];
 
   EXPECT_FALSE(navigation_manager()->CanGoBack());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
@@ -123,12 +123,12 @@ TEST_F(NavigationManagerTest, CanGoBackWithTransientItem) {
 // Tests that going back or negative offset is possible if there is a transient
 // item and at least one committed item.
 TEST_F(NavigationManagerTest, CanGoBackWithTransientItemAndCommittedItem) {
-  [session_controller() addPendingEntry:GURL("http://www.url.com")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addTransientEntryWithURL:GURL("http://www.url.com/0")];
+  [session_controller() addPendingItem:GURL("http://www.url.com")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addTransientItemWithURL:GURL("http://www.url.com/0")];
 
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -137,11 +137,11 @@ TEST_F(NavigationManagerTest, CanGoBackWithTransientItemAndCommittedItem) {
 // Tests that going back or negative offset is not possible if there is ony one
 // committed item and no transient item.
 TEST_F(NavigationManagerTest, CanGoBackWithSingleCommitedItem) {
-  [session_controller() addPendingEntry:GURL("http://www.url.com")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
+  [session_controller() addPendingItem:GURL("http://www.url.com")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
 
   EXPECT_FALSE(navigation_manager()->CanGoBack());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
@@ -149,34 +149,34 @@ TEST_F(NavigationManagerTest, CanGoBackWithSingleCommitedItem) {
 
 // Tests going back possibility with multiple committed items.
 TEST_F(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
-  [session_controller() addPendingEntry:GURL("http://www.url.com")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/0")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/1")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
+  [session_controller() addPendingItem:GURL("http://www.url.com")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/0")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/1")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
 
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToEntryAtIndex:1];
+  [session_controller() goToItemAtIndex:1];
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToEntryAtIndex:0];
+  [session_controller() goToItemAtIndex:0];
   EXPECT_FALSE(navigation_manager()->CanGoBack());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToEntryAtIndex:1];
+  [session_controller() goToItemAtIndex:1];
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 }
@@ -184,21 +184,21 @@ TEST_F(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
 // Tests that going forward or positive offset is not possible if there is a
 // pending entry.
 TEST_F(NavigationManagerTest, CanGoForwardWithPendingItem) {
-  [session_controller() addPendingEntry:GURL("http://www.url.com")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/0")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() goToEntryAtIndex:0];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/1")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
+  [session_controller() addPendingItem:GURL("http://www.url.com")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/0")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() goToItemAtIndex:0];
+  [session_controller() addPendingItem:GURL("http://www.url.com/1")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
 
   // Pending entry should not allow going forward.
   EXPECT_FALSE(navigation_manager()->CanGoForward());
@@ -215,11 +215,11 @@ TEST_F(NavigationManagerTest, CanGoForwardWithoutCommitedItem) {
 // Tests that going forward or positive offset is not possible if there is ony
 // one committed item and no transient item.
 TEST_F(NavigationManagerTest, CanGoForwardWithSingleCommitedItem) {
-  [session_controller() addPendingEntry:GURL("http://www.url.com")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
+  [session_controller() addPendingItem:GURL("http://www.url.com")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
 
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
@@ -227,38 +227,38 @@ TEST_F(NavigationManagerTest, CanGoForwardWithSingleCommitedItem) {
 
 // Tests going forward possibility with multiple committed items.
 TEST_F(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
-  [session_controller() addPendingEntry:GURL("http://www.url.com")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/0")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/1")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
+  [session_controller() addPendingItem:GURL("http://www.url.com")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/0")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/1")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
 
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToEntryAtIndex:1];
+  [session_controller() goToItemAtIndex:1];
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToEntryAtIndex:0];
+  [session_controller() goToItemAtIndex:0];
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToEntryAtIndex:1];
+  [session_controller() goToItemAtIndex:1];
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToEntryAtIndex:2];
+  [session_controller() goToItemAtIndex:2];
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 }
@@ -267,36 +267,36 @@ TEST_F(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
 // navigation manager will have redirect entries to make sure they are
 // appropriately skipped.
 TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
-  [session_controller() addPendingEntry:GURL("http://www.url.com/0")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_LINK
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/redirect")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/1")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_LINK
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/2")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_LINK
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/redirect")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
+  [session_controller() addPendingItem:GURL("http://www.url.com/0")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/redirect")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/1")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/2")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/redirect")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_IS_REDIRECT_MASK
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
   ASSERT_EQ(5, navigation_manager()->GetItemCount());
   ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
 
   // Go to entry at index 1 and test API from that state.
-  [session_controller() goToEntryAtIndex:1];
+  [session_controller() goToItemAtIndex:1];
   ASSERT_EQ(1, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
@@ -320,7 +320,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000002, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Go to entry at index 2 and test API from that state.
-  [session_controller() goToEntryAtIndex:2];
+  [session_controller() goToItemAtIndex:2];
   ASSERT_EQ(2, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -342,7 +342,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000003, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Go to entry at index 4 and test API from that state.
-  [session_controller() goToEntryAtIndex:4];
+  [session_controller() goToItemAtIndex:4];
   ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -364,7 +364,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Test with existing transient entry.
-  [session_controller() addTransientEntryWithURL:GURL("http://www.url.com")];
+  [session_controller() addTransientItemWithURL:GURL("http://www.url.com")];
   ASSERT_EQ(5, navigation_manager()->GetItemCount());
   ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
@@ -389,10 +389,10 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Now test with pending item index.
-  [session_controller() discardNonCommittedEntries];
+  [session_controller() discardNonCommittedItems];
 
   // Set pending index to 1 and test API from that state.
-  [session_controller() setPendingEntryIndex:1];
+  [session_controller() setPendingItemIndex:1];
   ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(1, navigation_manager()->GetPendingItemIndex());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
@@ -416,7 +416,7 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000002, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Set pending index to 2 and test API from that state.
-  [session_controller() setPendingEntryIndex:2];
+  [session_controller() setPendingItemIndex:2];
   ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(2, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -438,8 +438,8 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000003, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Set pending index to 4 and committed entry to 1 and test.
-  [session_controller() goToEntryAtIndex:1];
-  [session_controller() setPendingEntryIndex:4];
+  [session_controller() goToItemAtIndex:1];
+  [session_controller() setPendingItemIndex:4];
   ASSERT_EQ(1, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(4, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -461,9 +461,9 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Test with existing transient entry in the end of the stack.
-  [session_controller() goToEntryAtIndex:4];
-  [session_controller() setPendingEntryIndex:-1];
-  [session_controller() addTransientEntryWithURL:GURL("http://www.url.com")];
+  [session_controller() goToItemAtIndex:4];
+  [session_controller() setPendingItemIndex:-1];
+  [session_controller() addTransientItemWithURL:GURL("http://www.url.com")];
   ASSERT_EQ(5, navigation_manager()->GetItemCount());
   ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
@@ -494,23 +494,23 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
 TEST_F(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
   // Create a transient item in the middle of the navigation stack and go back
   // to it (pending index is 1, current index is 2).
-  [session_controller() addPendingEntry:GURL("http://www.url.com/0")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_LINK
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/1")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_LINK
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addPendingEntry:GURL("http://www.url.com/2")
-                               referrer:Referrer()
-                             transition:ui::PAGE_TRANSITION_LINK
-                      rendererInitiated:NO];
-  [session_controller() commitPendingEntry];
-  [session_controller() addTransientEntryWithURL:GURL("http://www.url.com/1")];
-  [session_controller() setPendingEntryIndex:1];
+  [session_controller() addPendingItem:GURL("http://www.url.com/0")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/1")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addPendingItem:GURL("http://www.url.com/2")
+                              referrer:Referrer()
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller() commitPendingItem];
+  [session_controller() addTransientItemWithURL:GURL("http://www.url.com/1")];
+  [session_controller() setPendingItemIndex:1];
 
   ASSERT_EQ(3, navigation_manager()->GetItemCount());
   ASSERT_EQ(2, navigation_manager()->GetCurrentItemIndex());
@@ -520,8 +520,8 @@ TEST_F(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
 
   // Now go forward to that middle transient item (pending index is 1,
   // current index is 0).
-  [session_controller() goToEntryAtIndex:0];
-  [session_controller() setPendingEntryIndex:1];
+  [session_controller() goToItemAtIndex:0];
+  [session_controller() setPendingItemIndex:1];
   ASSERT_EQ(3, navigation_manager()->GetItemCount());
   ASSERT_EQ(0, navigation_manager()->GetCurrentItemIndex());
   ASSERT_EQ(1, navigation_manager()->GetPendingItemIndex());

@@ -219,7 +219,7 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
         [web_controller() webStateImpl]->GetNavigationManagerImpl();
     navigationManager.InitializeSession(@"name", nil, NO, 0);
     [navigationManager.GetSessionController()
-          addPendingEntry:GURL("http://www.google.com/?q=foo#bar")
+           addPendingItem:GURL("http://www.google.com/?q=foo#bar")
                  referrer:web::Referrer()
                transition:ui::PAGE_TRANSITION_TYPED
         rendererInitiated:NO];
@@ -810,7 +810,7 @@ class CRWWebControllerNativeContentTest : public web::WebTestWithWebController {
         [web_controller() webStateImpl]->GetNavigationManagerImpl();
     navigation_manager.InitializeSession(@"name", nil, NO, 0);
     [navigation_manager.GetSessionController()
-          addPendingEntry:URL
+           addPendingItem:URL
                  referrer:web::Referrer()
                transition:ui::PAGE_TRANSITION_TYPED
         rendererInitiated:NO];
