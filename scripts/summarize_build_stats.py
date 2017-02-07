@@ -679,17 +679,17 @@ The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ i
  </tr>
 </table>
 
-<h2>What issues caused the most CQ flakiness this week?</h2>
+<h2>Which issues or CLs caused the most false rejections this week?</h2>
 <i>Note: test flake may be caused by flake in the test itself, or flake in the product.</i><br>
 <p id="note">At your discretion, pick the top few which caused the most failures</p>
 <ul>
-{cq_flakes_html}
+{false_rejections_html}
 </ul>
 
-<h2>What CLs caused issues for other developers?</h2>
+<h2>Which issues or CLs caused the most CQ run failures this week?</h2>
 <p id="note">At your discretion, pull the top blamed CLs from the summarize_build_stats output. When appropriate, summarize what action we plan to take to block these changes in the pre-CQ.</p>
 <ul>
-{cl_flakes_html}
+{build_failures_html}
 </ul>
 
 <h2>What was the patch turnaround time?</h2>
@@ -720,23 +720,24 @@ def GenerateReport(file_out, summary):
   sorted_blame_counts = sorted([(v, k) for (k, v) in
                                 summary['patch_blame_counts'].iteritems()],
                                reverse=True)
-  cq_flakes = [{'id': b_id, 'rejections': rejs}
-               for rejs, b_id in sorted_blame_counts]
-  flake_fmt = ('  <li><a href="http://{id}">{id}</a> (<b>[{rejections}] false '
-               'rejections</b>): _<replace>Brief explanation of bug. If '
+  false_rejections = [{'id': blame, 'rejections': rejs}
+                      for rejs, blame in sorted_blame_counts]
+  flake_fmt = ('  <li><a href="http://{id}">{id}</a> (<b>{rejections} </b> '
+               'false rejections): _<replace>Brief explanation of bug. If '
                'fixed, or describe workarounds</replace>_</li>')
-  report['cq_flakes_html'] = '\n'.join([flake_fmt.format(**x)
-                                        for x in cq_flakes])
+  report['false_rejections_html'] = '\n'.join([flake_fmt.format(**x)
+                                               for x in false_rejections])
 
   sorted_fails = sorted([(v, k) for (k, v) in
                          summary['build_blame_counts'].iteritems()],
                         reverse=True)
-  cl_fails = [{'id': b_id, 'rejections': rejs} for rejs, b_id in sorted_fails]
+  build_fails = [{'id': blame, 'fails': fails}
+                 for fails, blame in sorted_fails]
   cl_flake_fmt = ('  <li><a href="http://{id}">{id}</a> '
-                  '(<b>[{rejections}] build failures</b>): '
+                  '(<b>{fails}</b> build failures): '
                   '_<replace>explanation</replace>_</li>')
-  report['cl_flakes_html'] = '\n'.join([cl_flake_fmt.format(**x)
-                                        for x in cl_fails])
+  report['build_failures_html'] = '\n'.join([cl_flake_fmt.format(**x)
+                                             for x in build_fails])
 
   file_out.write(ReportHTMLTemplate.format(**report))
 
