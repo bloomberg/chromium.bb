@@ -251,6 +251,12 @@ suite('<bookmarks-store>', function() {
     assertEquals('http://www.google.com', store.idToNodeMap_['2'].url);
   });
 
+  test('folder gets updated after renaming', function() {
+    store.onBookmarkChanged_('3', {'title': 'Main Folder'});
+    assertEquals('Main Folder', store.idToNodeMap_['3'].title);
+    assertEquals(undefined, store.idToNodeMap_['3'].url);
+  });
+
   //////////////////////////////////////////////////////////////////////////////
   // search tests:
 

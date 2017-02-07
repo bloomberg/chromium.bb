@@ -321,14 +321,14 @@
   <!-- End of Bookmarks Manager strings. -->
 
   <!-- Begin of material design Bookmarks Manager strings. -->
-  <message name="IDS_MD_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
-    Bookmarks
-  </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_CLEAR_SEARCH" desc="Title of the button in the bookmark manager that stops a search.">
     Clear search
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_EMPTY_LIST" desc="Text on the bookmarks list that indicates that a folder has no bookmarks.">
     This folder is empty
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_FOLDER_RENAME_TITLE" desc="Title of the bookmark editor window when editing folders.">
+    Rename Folder
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK" desc="Title of the bookmark toolbar dropdown menu item that adds a new bookmark.">
     Add new bookmark
@@ -348,11 +348,17 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_IMPORT" desc="Title of the bookmark toolbar dropdown menu item that imports bookmarks.">
     Import Bookmarks
   </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_RENAME" desc="Title of the bookmark list dropdown menu item that renames folders.">
+    Rename
+  </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_SORT" desc="Title of the bookmark toolbar dropdown menu item that sorts bookmarks by title.">
     Sort by title
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_NO_SEARCH_RESULTS" desc="Text on the bookmarks list that indicates that no bookmarks or folders match the search.">
     No search results found
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
+    Bookmarks
   </message>
   <!-- End of material design Bookmarks Manager strings. -->
 
