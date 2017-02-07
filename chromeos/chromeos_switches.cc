@@ -63,6 +63,16 @@ const char kAppAutoLaunched[] = "app-auto-launched";
 // Path for app's OEM manifest file.
 const char kAppOemManifestFile[] = "app-mode-oem-manifest";
 
+// Signals ARC support status on this device. This can take one of the
+// following three values.
+// - none: ARC is not installed on this device. (default)
+// - installed: ARC is installed on this device, but not officially supported.
+//   Users can enable ARC only when Finch experiment is turned on.
+// - officially-supported: ARC is installed and supported on this device. So
+//   users can enable ARC via settings etc.
+const char kArcAvailability[] = "arc-availability";
+
+// DEPRECATED: Please use --arc-availability=installed.
 // Signals the availability of the ARC instance on this device.
 const char kArcAvailable[] = "arc-available";
 
@@ -216,6 +226,7 @@ const char kEnableAd[] = "enable-ad";
 // Enables the Android Wallpapers App as the default app on Chrome OS.
 const char kEnableAndroidWallpapersApp[] = "enable-android-wallpapers-app";
 
+// DEPRECATED. Please use --arc-availability=officially-supported.
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
 

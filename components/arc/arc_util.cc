@@ -4,6 +4,8 @@
 
 #include "components/arc/arc_util.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "chromeos/chromeos_switches.h"
@@ -19,21 +21,39 @@ namespace {
 const base::Feature kEnableArcFeature{"EnableARC",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Possible values for --arc-availability flag.
+constexpr char kAvailabilityNone[] = "none";
+constexpr char kAvailabilityInstalled[] = "installed";
+constexpr char kAvailabilityOfficiallySupported[] = "officially-supported";
+
 }  // namespace
 
 bool IsArcAvailable() {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
-  // TODO(hidehiko): Unify --enable-arc and --arc-available flags.
-  // If switches::kEnableArc is set, the device is officially supported to run
-  // ARC. If it is not, but switches::kArcAvailable is set, ARC is installed
-  // but is not allowed to run unless |kEnableArcFeature| is true.
+
+  if (command_line->HasSwitch(chromeos::switches::kArcAvailability)) {
+    std::string value = command_line->GetSwitchValueASCII(
+        chromeos::switches::kArcAvailability);
+    DCHECK(value == kAvailabilityNone ||
+           value == kAvailabilityInstalled ||
+           value == kAvailabilityOfficiallySupported)
+        << "Unknown flag value: " << value;
+    return value == kAvailabilityOfficiallySupported ||
+        (value == kAvailabilityInstalled &&
+         base::FeatureList::IsEnabled(kEnableArcFeature));
+  }
+
+  // For transition, fallback to old flags.
+  // TODO(hidehiko): Remove this and clean up whole this function, when
+  // session_manager supports a new flag.
   return command_line->HasSwitch(chromeos::switches::kEnableArc) ||
-         (command_line->HasSwitch(chromeos::switches::kArcAvailable) &&
-          base::FeatureList::IsEnabled(kEnableArcFeature));
+      (command_line->HasSwitch(chromeos::switches::kArcAvailable) &&
+       base::FeatureList::IsEnabled(kEnableArcFeature));
 }
 
 void SetArcAvailableCommandLineForTesting(base::CommandLine* command_line) {
-  command_line->AppendSwitch(chromeos::switches::kEnableArc);
+  command_line->AppendSwitchASCII(chromeos::switches::kArcAvailability,
+                                  kAvailabilityOfficiallySupported);
 }
 
 bool IsArcKioskMode() {

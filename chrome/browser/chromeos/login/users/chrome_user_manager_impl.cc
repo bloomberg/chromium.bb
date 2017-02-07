@@ -881,7 +881,13 @@ void ChromeUserManagerImpl::ArcKioskAppLoggedIn(user_manager::User* user) {
       user_manager::User::USER_IMAGE_INVALID, false);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(chromeos::switches::kEnableArc);
+  // This works partially, because sevices calling IsArcAvailable()
+  // before Kiosk log-in does not work. This causes an issue that ARC apps
+  // may not be shown in App launcher. cf) crbug.com/685393, crbug.com/678846.
+  // TODO(hidehiko|poromov|lhchavez): Find a correct approach, then remove
+  // this.
+  command_line->AppendSwitchASCII(chromeos::switches::kArcAvailability,
+                                  "officially-supported");
   command_line->AppendSwitch(::switches::kForceAndroidAppMode);
   command_line->AppendSwitch(::switches::kSilentLaunch);
 

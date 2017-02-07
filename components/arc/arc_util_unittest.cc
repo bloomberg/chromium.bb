@@ -36,6 +36,20 @@ class ScopedArcFeature {
 
 using ArcUtilTest = testing::Test;
 
+TEST_F(ArcUtilTest, IsArcAvailable_None) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+
+  command_line->InitFromArgv({"", "--arc-availability=none"});
+  EXPECT_FALSE(IsArcAvailable());
+
+  // If --arc-availability flag is set to "none", even if Finch experiment is
+  // turned on, ARC cannot be used.
+  {
+    ScopedArcFeature feature(true);
+    EXPECT_FALSE(IsArcAvailable());
+  }
+}
+
 // Test --arc-available with EnableARC feature combination.
 TEST_F(ArcUtilTest, IsArcAvailable_Installed) {
   auto* command_line = base::CommandLine::ForCurrentProcess();
@@ -71,12 +85,31 @@ TEST_F(ArcUtilTest, IsArcAvailable_Installed) {
     ScopedArcFeature feature(false);
     EXPECT_FALSE(IsArcAvailable());
   }
+
+  // If ARC is installed, IsArcAvailable() should return true when EnableARC
+  // feature is set.
+  command_line->InitFromArgv({"", "--arc-availability=installed"});
+
+  // Not available, by-default, too.
+  EXPECT_FALSE(IsArcAvailable());
+
+  {
+    ScopedArcFeature feature(true);
+    EXPECT_TRUE(IsArcAvailable());
+  }
+  {
+    ScopedArcFeature feature(false);
+    EXPECT_FALSE(IsArcAvailable());
+  }
 }
 
-TEST_F(ArcUtilTest, IsArcAvailable_OfficialSupport) {
+TEST_F(ArcUtilTest, IsArcAvailable_OfficiallySupported) {
   // Regardless of FeatureList, IsArcAvailable() should return true.
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->InitFromArgv({"", "--enable-arc"});
+  EXPECT_TRUE(IsArcAvailable());
+
+  command_line->InitFromArgv({"", "--arc-availability=officially-supported"});
   EXPECT_TRUE(IsArcAvailable());
 }
 
