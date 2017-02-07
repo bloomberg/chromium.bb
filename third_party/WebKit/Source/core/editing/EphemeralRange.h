@@ -115,11 +115,6 @@ class CORE_TEMPLATE_CLASS_EXPORT EphemeralRangeTemplate final {
 
   RangeTraversal nodes() const;
 
-  DEFINE_INLINE_TRACE() {
-    visitor->trace(m_startPosition);
-    visitor->trace(m_endPosition);
-  }
-
   // |node| should be in-document and valid for anchor node of
   // |PositionTemplate<Strategy>|.
   static EphemeralRangeTemplate<Strategy> rangeOfContents(

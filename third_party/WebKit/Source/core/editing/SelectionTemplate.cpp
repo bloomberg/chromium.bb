@@ -57,6 +57,12 @@ bool SelectionTemplate<Strategy>::operator!=(
 }
 
 template <typename Strategy>
+DEFINE_TRACE(SelectionTemplate<Strategy>) {
+  visitor->trace(m_base);
+  visitor->trace(m_extent);
+}
+
+template <typename Strategy>
 const PositionTemplate<Strategy>& SelectionTemplate<Strategy>::base() const {
   DCHECK(assertValid());
   DCHECK(!m_base.isOrphan()) << m_base;

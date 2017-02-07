@@ -778,6 +778,14 @@ bool VisibleSelectionTemplate<Strategy>::operator==(
   return equalSelectionsAlgorithm<Strategy>(*this, other);
 }
 
+template <typename Strategy>
+DEFINE_TRACE(VisibleSelectionTemplate<Strategy>) {
+  visitor->trace(m_base);
+  visitor->trace(m_extent);
+  visitor->trace(m_start);
+  visitor->trace(m_end);
+}
+
 #ifndef NDEBUG
 
 template <typename Strategy>

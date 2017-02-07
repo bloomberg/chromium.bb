@@ -199,7 +199,7 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   void showTreeForThisInFlatTree() const;
 #endif
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_anchorNode); }
+  DECLARE_TRACE();
 
  private:
   bool isAfterAnchorOrAfterChildren() const {

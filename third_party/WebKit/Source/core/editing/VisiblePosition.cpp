@@ -66,6 +66,11 @@ VisiblePositionTemplate<Strategy>::VisiblePositionTemplate(
 }
 
 template <typename Strategy>
+DEFINE_TRACE(VisiblePositionTemplate<Strategy>) {
+  visitor->trace(m_positionWithAffinity);
+}
+
+template <typename Strategy>
 VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(
     const PositionWithAffinityTemplate<Strategy>& positionWithAffinity) {
   if (positionWithAffinity.isNull())

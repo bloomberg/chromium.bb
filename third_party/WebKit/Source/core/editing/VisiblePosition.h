@@ -111,7 +111,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate final {
   static VisiblePositionTemplate<Strategy> inParentBeforeNode(const Node&);
   static VisiblePositionTemplate<Strategy> lastPositionInNode(Node*);
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_positionWithAffinity); }
+  DECLARE_TRACE();
 
 #ifndef NDEBUG
   void showTreeForThis() const;

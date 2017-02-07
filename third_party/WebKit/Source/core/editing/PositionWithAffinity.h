@@ -42,7 +42,7 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionWithAffinityTemplate {
   Node* anchorNode() const { return m_position.anchorNode(); }
   Document* document() const { return m_position.document(); }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_position); }
+  DECLARE_TRACE();
 
  private:
   PositionTemplate<Strategy> m_position;

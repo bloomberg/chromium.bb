@@ -51,6 +51,11 @@ bool canBeAnchorNode<EditingInFlatTreeStrategy>(Node* node) {
 #endif
 
 template <typename Strategy>
+DEFINE_TRACE(PositionTemplate<Strategy>) {
+  visitor->trace(m_anchorNode);
+}
+
+template <typename Strategy>
 const TreeScope* PositionTemplate<Strategy>::commonAncestorTreeScope(
     const PositionTemplate<Strategy>& a,
     const PositionTemplate<Strategy>& b) {

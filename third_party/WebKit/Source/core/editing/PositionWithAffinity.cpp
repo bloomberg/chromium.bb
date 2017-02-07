@@ -20,6 +20,11 @@ template <typename Strategy>
 PositionWithAffinityTemplate<Strategy>::~PositionWithAffinityTemplate() {}
 
 template <typename Strategy>
+DEFINE_TRACE(PositionWithAffinityTemplate<Strategy>) {
+  visitor->trace(m_position);
+}
+
+template <typename Strategy>
 bool PositionWithAffinityTemplate<Strategy>::operator==(
     const PositionWithAffinityTemplate& other) const {
   if (isNull())

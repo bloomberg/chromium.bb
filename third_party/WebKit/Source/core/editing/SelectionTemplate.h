@@ -96,10 +96,7 @@ class CORE_EXPORT SelectionTemplate final {
   bool assertValid() const;
   bool assertValidFor(const Document&) const;
 
-  DEFINE_INLINE_TRACE() {
-    visitor->trace(m_base);
-    visitor->trace(m_extent);
-  }
+  DECLARE_TRACE();
 
   void printTo(std::ostream*, const char* type) const;
 #ifndef NDEBUG

@@ -137,12 +137,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   void setWithoutValidation(const PositionTemplate<Strategy>&,
                             const PositionTemplate<Strategy>&);
 
-  DEFINE_INLINE_TRACE() {
-    visitor->trace(m_base);
-    visitor->trace(m_extent);
-    visitor->trace(m_start);
-    visitor->trace(m_end);
-  }
+  DECLARE_TRACE();
 
   void updateIfNeeded();
 
