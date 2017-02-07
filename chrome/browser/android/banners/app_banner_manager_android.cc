@@ -44,7 +44,7 @@ std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
   if (!manifest.IsEmpty()) {
     shortcut_info->UpdateFromManifest(manifest);
     shortcut_info->manifest_url = manifest_url;
-    shortcut_info->best_icon_url = icon_url;
+    shortcut_info->best_primary_icon_url = icon_url;
     shortcut_info->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
   }
   return shortcut_info;
@@ -279,9 +279,9 @@ bool AppBannerManagerAndroid::CheckPlatformAndId(const std::string& platform,
   const bool correct_platform = (platform == "play");
   if (correct_platform && !id.empty())
     return true;
-  ReportStatus(web_contents(),
-               correct_platform ? NO_ID_SPECIFIED
-                                : PLATFORM_NOT_SUPPORTED_ON_ANDROID);
+  ReportStatus(
+      web_contents(),
+      correct_platform ? NO_ID_SPECIFIED : PLATFORM_NOT_SUPPORTED_ON_ANDROID);
   return false;
 }
 
@@ -306,7 +306,6 @@ jint GetHomescreenLanguageOption(JNIEnv* env,
   return AppBannerSettingsHelper::GetHomescreenLanguageOption();
 }
 
-
 // static
 ScopedJavaLocalRef<jobject> GetJavaBannerManagerForWebContents(
     JNIEnv* env,
@@ -314,8 +313,8 @@ ScopedJavaLocalRef<jobject> GetJavaBannerManagerForWebContents(
     const JavaParamRef<jobject>& java_web_contents) {
   AppBannerManagerAndroid* manager = AppBannerManagerAndroid::FromWebContents(
       content::WebContents::FromJavaWebContents(java_web_contents));
-  return manager? ScopedJavaLocalRef<jobject>(manager->GetJavaBannerManager())
-                : ScopedJavaLocalRef<jobject>();
+  return manager ? ScopedJavaLocalRef<jobject>(manager->GetJavaBannerManager())
+                 : ScopedJavaLocalRef<jobject>();
 }
 
 // static

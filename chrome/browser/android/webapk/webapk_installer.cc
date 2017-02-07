@@ -38,7 +38,8 @@ namespace {
 
 // The default WebAPK server URL.
 const char kDefaultServerUrl[] =
-    "https://webapk.googleapis.com/v1/webApks/?alt=proto&key=AIzaSyAoI6v-F31-3t9NunLYEiKcPIqgTJIUZBw";
+    "https://webapk.googleapis.com/v1/webApks/"
+    "?alt=proto&key=AIzaSyAoI6v-F31-3t9NunLYEiKcPIqgTJIUZBw";
 
 // The MIME type of the POST data sent to the server.
 const char kProtoMimeType[] = "application/x-protobuf";
@@ -67,9 +68,8 @@ GURL GetServerUrl() {
 // Returns the scope from |info| if it is specified. Otherwise, returns the
 // default scope.
 GURL GetScope(const ShortcutInfo& info) {
-  return (info.scope.is_valid())
-      ? info.scope
-      : ShortcutHelper::GetScopeFromURL(info.url);
+  return (info.scope.is_valid()) ? info.scope
+                                 : ShortcutHelper::GetScopeFromURL(info.url);
 }
 
 // Converts a color from the format specified in content::Manifest to a CSS
@@ -95,7 +95,7 @@ std::string getCurrentAbi() {
 #elif defined(__arm__)
   return "armeabi";
 #elif defined(__i386__)
-  return  "x86";
+  return "x86";
 #elif defined(__mips__)
   return "mips";
 #elif defined(__x86_64__)
@@ -126,12 +126,10 @@ std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground(
 
   webapk::WebAppManifest* web_app_manifest = webapk->mutable_manifest();
   web_app_manifest->set_name(base::UTF16ToUTF8(shortcut_info.name));
-  web_app_manifest->set_short_name(
-      base::UTF16ToUTF8(shortcut_info.short_name));
+  web_app_manifest->set_short_name(base::UTF16ToUTF8(shortcut_info.short_name));
   web_app_manifest->set_start_url(shortcut_info.url.spec());
   web_app_manifest->set_orientation(
-      content::WebScreenOrientationLockTypeToString(
-          shortcut_info.orientation));
+      content::WebScreenOrientationLockTypeToString(shortcut_info.orientation));
   web_app_manifest->set_display_mode(
       content::WebDisplayModeToString(shortcut_info.display));
   web_app_manifest->set_background_color(
@@ -142,9 +140,10 @@ std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground(
   scope->assign(GetScope(shortcut_info).spec());
 
   webapk::Image* best_image = web_app_manifest->add_icons();
-  std::string best_icon_url = shortcut_info.best_icon_url.spec();
-  best_image->set_src(best_icon_url);
-  auto it = icon_url_to_murmur2_hash.find(best_icon_url);
+  std::string best_primary_icon_url =
+      shortcut_info.best_primary_icon_url.spec();
+  best_image->set_src(best_primary_icon_url);
+  auto it = icon_url_to_murmur2_hash.find(best_primary_icon_url);
   if (it != icon_url_to_murmur2_hash.end())
     best_image->set_hash(it->second);
   std::vector<unsigned char> png_bytes;
@@ -152,7 +151,7 @@ std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground(
   best_image->set_image_data(&png_bytes.front(), png_bytes.size());
 
   for (const auto& entry : icon_url_to_murmur2_hash) {
-    if (entry.first == shortcut_info.best_icon_url.spec())
+    if (entry.first == shortcut_info.best_primary_icon_url.spec())
       continue;
     webapk::Image* image = web_app_manifest->add_icons();
     image->set_src(entry.first);
@@ -240,9 +239,9 @@ void WebApkInstaller::UpdateAsync(
   // The installer will delete itself when it is done.
   WebApkInstaller* installer =
       new WebApkInstaller(context, shortcut_info, shortcut_icon);
-  installer->UpdateAsync(
-      webapk_package, webapk_version, icon_url_to_murmur2_hash,
-      is_manifest_stale, finish_callback);
+  installer->UpdateAsync(webapk_package, webapk_version,
+                         icon_url_to_murmur2_hash, is_manifest_stale,
+                         finish_callback);
 }
 
 // staic
@@ -260,9 +259,9 @@ void WebApkInstaller::UpdateAsyncForTesting(
     const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
     bool is_manifest_stale,
     const FinishCallback& finish_callback) {
-  installer->UpdateAsync(
-      webapk_package, webapk_version, icon_url_to_murmur2_hash,
-      is_manifest_stale, finish_callback);
+  installer->UpdateAsync(webapk_package, webapk_version,
+                         icon_url_to_murmur2_hash, is_manifest_stale,
+                         finish_callback);
 }
 
 void WebApkInstaller::SetTimeoutMs(int timeout_ms) {
@@ -307,14 +306,13 @@ bool WebApkInstaller::StartInstallingDownloadedWebApk(
 bool WebApkInstaller::StartUpdateUsingDownloadedWebApk(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jstring>& java_file_path) {
-  return Java_WebApkInstaller_updateAsyncFromNative(
-      env, java_ref_, java_file_path);
+  return Java_WebApkInstaller_updateAsyncFromNative(env, java_ref_,
+                                                    java_file_path);
 }
 
 bool WebApkInstaller::CanUseGooglePlayInstallService() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_WebApkInstaller_canUseGooglePlayInstallService(
-      env, java_ref_);
+  return Java_WebApkInstaller_canUseGooglePlayInstallService(env, java_ref_);
 }
 
 bool WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay(
@@ -361,8 +359,8 @@ WebApkInstaller::WebApkInstaller(content::BrowserContext* browser_context,
 
 void WebApkInstaller::CreateJavaRef() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_ref_.Reset(Java_WebApkInstaller_create(
-      env, reinterpret_cast<intptr_t>(this)));
+  java_ref_.Reset(
+      Java_WebApkInstaller_create(env, reinterpret_cast<intptr_t>(this)));
 }
 
 void WebApkInstaller::InstallAsync(const FinishCallback& finish_callback) {
@@ -396,7 +394,7 @@ void WebApkInstaller::UpdateAsync(
       base::Bind(&BuildWebApkProtoInBackground, shortcut_info_, shortcut_icon_,
                  icon_url_to_murmur2_hash, is_manifest_stale),
       base::Bind(&WebApkInstaller::SendUpdateWebApkRequest,
-                  weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -411,8 +409,7 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string response_string;
   source->GetResponseAsString(&response_string);
 
-  std::unique_ptr<webapk::WebApkResponse> response(
-      new webapk::WebApkResponse);
+  std::unique_ptr<webapk::WebApkResponse> response(new webapk::WebApkResponse);
   if (!response->ParseFromString(response_string)) {
     OnFailure();
     return;
@@ -427,8 +424,8 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
   if (CanUseGooglePlayInstallService()) {
     int version = 1;
     base::StringToInt(response->version(), &version);
-    if (!InstallOrUpdateWebApkFromGooglePlay(
-        response->package_name(), version, response->token())) {
+    if (!InstallOrUpdateWebApkFromGooglePlay(response->package_name(), version,
+                                             response->token())) {
       OnFailure();
     }
     return;
@@ -439,7 +436,7 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
 
 void WebApkInstaller::DownloadAppIconAndComputeMurmur2Hash() {
   // Safeguard. WebApkIconHasher crashes if asked to fetch an invalid URL.
-  if (!shortcut_info_.best_icon_url.is_valid()) {
+  if (!shortcut_info_.best_primary_icon_url.is_valid()) {
     OnFailure();
     return;
   }
@@ -450,7 +447,7 @@ void WebApkInstaller::DownloadAppIconAndComputeMurmur2Hash() {
 
   icon_hasher_.reset(new WebApkIconHasher());
   icon_hasher_->DownloadAndComputeMurmur2Hash(
-      request_context_getter_, shortcut_info_.best_icon_url,
+      request_context_getter_, shortcut_info_.best_primary_icon_url,
       base::Bind(&WebApkInstaller::OnGotIconMurmur2Hash,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -468,7 +465,7 @@ void WebApkInstaller::OnGotIconMurmur2Hash(
 
   std::map<std::string, std::string> icon_url_to_murmur2_hash;
   for (const std::string& icon_url : shortcut_info_.icon_urls) {
-    if (icon_url != shortcut_info_.best_icon_url.spec())
+    if (icon_url != shortcut_info_.best_primary_icon_url.spec())
       icon_url_to_murmur2_hash[icon_url] = "";
     else
       icon_url_to_murmur2_hash[icon_url] = icon_murmur2_hash;
@@ -508,10 +505,9 @@ void WebApkInstaller::SendRequest(std::unique_ptr<webapk::WebApk> request_proto,
   std::string serialized_request;
   request_proto->SerializeToString(&serialized_request);
   url_fetcher_->SetUploadData(kProtoMimeType, serialized_request);
-  url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
-                             net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  url_fetcher_->SetLoadFlags(
+      net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SEND_COOKIES |
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA);
   url_fetcher_->Start();
 }
 
@@ -529,14 +525,15 @@ void WebApkInstaller::OnGotWebApkDownloadUrl(const GURL& download_url,
 }
 
 void WebApkInstaller::OnCreatedSubDirAndSetPermissions(
-    const GURL& download_url, const base::FilePath& output_dir) {
+    const GURL& download_url,
+    const base::FilePath& output_dir) {
   if (output_dir.empty()) {
     OnFailure();
     return;
   }
 
-  DownloadWebApk(output_dir.AppendASCII(webapk_package_ + ".apk"),
-                 download_url, true);
+  DownloadWebApk(output_dir.AppendASCII(webapk_package_ + ".apk"), download_url,
+                 true);
 }
 
 void WebApkInstaller::DownloadWebApk(const base::FilePath& output_path,
@@ -549,8 +546,8 @@ void WebApkInstaller::DownloadWebApk(const base::FilePath& output_path,
   downloader_.reset(new FileDownloader(
       download_url, output_path, true, request_context_getter_,
       base::Bind(&WebApkInstaller::OnWebApkDownloaded,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 output_path, download_url, retry_if_fails)));
+                 weak_ptr_factory_.GetWeakPtr(), output_path, download_url,
+                 retry_if_fails)));
 }
 
 void WebApkInstaller::OnWebApkDownloaded(const base::FilePath& file_path,
@@ -568,8 +565,8 @@ void WebApkInstaller::OnWebApkDownloaded(const base::FilePath& file_path,
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&WebApkInstaller::DownloadWebApk,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   file_path, download_url, false),
+                   weak_ptr_factory_.GetWeakPtr(), file_path, download_url,
+                   false),
         base::TimeDelta::FromSeconds(2));
     return;
   }
@@ -599,8 +596,8 @@ void WebApkInstaller::OnWebApkMadeWorldReadable(
       base::android::ConvertUTF8ToJavaString(env, webapk_package_);
   bool success = false;
   if (task_type_ == INSTALL) {
-    success = StartInstallingDownloadedWebApk(env, java_file_path,
-                                              java_package_name);
+    success =
+        StartInstallingDownloadedWebApk(env, java_file_path, java_package_name);
   } else if (task_type_ == UPDATE) {
     success = StartUpdateUsingDownloadedWebApk(env, java_file_path);
     if (success) {

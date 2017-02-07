@@ -30,7 +30,7 @@ namespace {
 // Returns whether the given |url| is within the scope of the |scope| url.
 bool IsInScope(const GURL& url, const GURL& scope) {
   return base::StartsWith(url.spec(), scope.spec(),
-                         base::CompareCase::SENSITIVE);
+                          base::CompareCase::SENSITIVE);
 }
 
 }  // anonymous namespace
@@ -40,18 +40,17 @@ jlong Initialize(JNIEnv* env,
                  const JavaParamRef<jstring>& java_scope_url,
                  const JavaParamRef<jstring>& java_web_manifest_url) {
   GURL scope(base::android::ConvertJavaStringToUTF8(env, java_scope_url));
-  GURL web_manifest_url(base::android::ConvertJavaStringToUTF8(
-      env, java_web_manifest_url));
+  GURL web_manifest_url(
+      base::android::ConvertJavaStringToUTF8(env, java_web_manifest_url));
   WebApkUpdateDataFetcher* fetcher =
       new WebApkUpdateDataFetcher(env, obj, scope, web_manifest_url);
   return reinterpret_cast<intptr_t>(fetcher);
 }
 
-WebApkUpdateDataFetcher::WebApkUpdateDataFetcher(
-    JNIEnv* env,
-    jobject obj,
-    const GURL& scope,
-    const GURL& web_manifest_url)
+WebApkUpdateDataFetcher::WebApkUpdateDataFetcher(JNIEnv* env,
+                                                 jobject obj,
+                                                 const GURL& scope,
+                                                 const GURL& web_manifest_url)
     : content::WebContentsObserver(nullptr),
       scope_(scope),
       web_manifest_url_(web_manifest_url),
@@ -61,8 +60,7 @@ WebApkUpdateDataFetcher::WebApkUpdateDataFetcher(
   java_ref_.Reset(env, obj);
 }
 
-WebApkUpdateDataFetcher::~WebApkUpdateDataFetcher() {
-}
+WebApkUpdateDataFetcher::~WebApkUpdateDataFetcher() {}
 
 // static
 bool WebApkUpdateDataFetcher::Register(JNIEnv* env) {
@@ -122,9 +120,8 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
   InstallableManager* installable_manager =
       InstallableManager::FromWebContents(web_contents());
   installable_manager->GetData(
-      params,
-      base::Bind(&WebApkUpdateDataFetcher::OnDidGetInstallableData,
-                 weak_ptr_factory_.GetWeakPtr()));
+      params, base::Bind(&WebApkUpdateDataFetcher::OnDidGetInstallableData,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApkUpdateDataFetcher::OnDidGetInstallableData(
@@ -143,8 +140,8 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
   // observing too. It is based on our assumption that it is invalid for
   // web developers to change the Web Manifest location. When it does
   // change, we will treat the new Web Manifest as the one of another WebAPK.
-  if (data.error_code != NO_ERROR_DETECTED ||
-      data.manifest.IsEmpty() || web_manifest_url_ != data.manifest_url ||
+  if (data.error_code != NO_ERROR_DETECTED || data.manifest.IsEmpty() ||
+      web_manifest_url_ != data.manifest_url ||
       !AreWebManifestUrlsWebApkCompatible(data.manifest)) {
     OnWebManifestNotWebApkCompatible();
     return;
@@ -152,35 +149,34 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
 
   info_.UpdateFromManifest(data.manifest);
   info_.manifest_url = data.manifest_url;
-  info_.best_icon_url = data.primary_icon_url;
-  best_icon_ = *data.primary_icon;
+  info_.best_primary_icon_url = data.primary_icon_url;
+  best_primary_icon_ = *data.primary_icon;
 
   icon_hasher_.reset(new WebApkIconHasher());
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   icon_hasher_->DownloadAndComputeMurmur2Hash(
-      profile->GetRequestContext(),
-      data.primary_icon_url,
+      profile->GetRequestContext(), data.primary_icon_url,
       base::Bind(&WebApkUpdateDataFetcher::OnGotIconMurmur2Hash,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApkUpdateDataFetcher::OnGotIconMurmur2Hash(
-    const std::string& best_icon_murmur2_hash) {
+    const std::string& best_primary_icon_murmur2_hash) {
   icon_hasher_.reset();
 
-  if (best_icon_murmur2_hash.empty()) {
+  if (best_primary_icon_murmur2_hash.empty()) {
     OnWebManifestNotWebApkCompatible();
     return;
   }
 
-  OnDataAvailable(info_, best_icon_murmur2_hash, best_icon_);
+  OnDataAvailable(info_, best_primary_icon_murmur2_hash, best_primary_icon_);
 }
 
 void WebApkUpdateDataFetcher::OnDataAvailable(
     const ShortcutInfo& info,
-    const std::string& best_icon_murmur2_hash,
-    const SkBitmap& best_icon_bitmap) {
+    const std::string& best_primary_icon_murmur2_hash,
+    const SkBitmap& best_primary_icon) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> java_url =
@@ -191,21 +187,23 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
       base::android::ConvertUTF16ToJavaString(env, info.name);
   ScopedJavaLocalRef<jstring> java_short_name =
       base::android::ConvertUTF16ToJavaString(env, info.short_name);
-  ScopedJavaLocalRef<jstring> java_best_icon_url =
-      base::android::ConvertUTF8ToJavaString(env, info.best_icon_url.spec());
-  ScopedJavaLocalRef<jstring> java_best_icon_murmur2_hash =
-      base::android::ConvertUTF8ToJavaString(env, best_icon_murmur2_hash);
-  ScopedJavaLocalRef<jobject> java_best_bitmap =
-      gfx::ConvertToJavaBitmap(&best_icon_bitmap);
+  ScopedJavaLocalRef<jstring> java_best_primary_icon_url =
+      base::android::ConvertUTF8ToJavaString(env,
+                                             info.best_primary_icon_url.spec());
+  ScopedJavaLocalRef<jstring> java_best_primary_icon_murmur2_hash =
+      base::android::ConvertUTF8ToJavaString(env,
+                                             best_primary_icon_murmur2_hash);
+  ScopedJavaLocalRef<jobject> java_best_primary_icon =
+      gfx::ConvertToJavaBitmap(&best_primary_icon);
 
   ScopedJavaLocalRef<jobjectArray> java_icon_urls =
       base::android::ToJavaArrayOfStrings(env, info.icon_urls);
 
   Java_WebApkUpdateDataFetcher_onDataAvailable(
       env, java_ref_, java_url, java_scope, java_name, java_short_name,
-      java_best_icon_url, java_best_icon_murmur2_hash, java_best_bitmap,
-      java_icon_urls, info.display, info.orientation, info.theme_color,
-      info.background_color);
+      java_best_primary_icon_url, java_best_primary_icon_murmur2_hash,
+      java_best_primary_icon, java_icon_urls, info.display, info.orientation,
+      info.theme_color, info.background_color);
 }
 
 void WebApkUpdateDataFetcher::OnWebManifestNotWebApkCompatible() {

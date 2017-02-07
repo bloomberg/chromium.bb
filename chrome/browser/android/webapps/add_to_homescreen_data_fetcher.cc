@@ -240,7 +240,7 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
   weak_observer_->OnUserTitleAvailable(shortcut_info_.user_title);
 
   if (data.primary_icon) {
-    shortcut_info_.best_icon_url = data.primary_icon_url;
+    shortcut_info_.best_primary_icon_url = data.primary_icon_url;
 
     CreateLauncherIcon(*(data.primary_icon));
     return;
@@ -296,19 +296,17 @@ void AddToHomescreenDataFetcher::CreateLauncherIconFromFaviconInBackground(
                           bitmap_result.bitmap_data->size(), &raw_icon);
   }
 
-  shortcut_info_.best_icon_url = bitmap_result.icon_url;
+  shortcut_info_.best_primary_icon_url = bitmap_result.icon_url;
   CreateLauncherIconInBackground(raw_icon);
 }
 
 void AddToHomescreenDataFetcher::CreateLauncherIcon(const SkBitmap& raw_icon) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    content::BrowserThread::GetBlockingPool()
-        ->PostWorkerTaskWithShutdownBehavior(
-            FROM_HERE,
-            base::Bind(
-                &AddToHomescreenDataFetcher::CreateLauncherIconInBackground,
-                this, raw_icon),
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
+      FROM_HERE,
+      base::Bind(&AddToHomescreenDataFetcher::CreateLauncherIconInBackground,
+                 this, raw_icon),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
 
 void AddToHomescreenDataFetcher::CreateLauncherIconInBackground(
@@ -323,7 +321,7 @@ void AddToHomescreenDataFetcher::CreateLauncherIconInBackground(
   }
 
   if (is_generated)
-    shortcut_info_.best_icon_url = GURL();
+    shortcut_info_.best_primary_icon_url = GURL();
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,

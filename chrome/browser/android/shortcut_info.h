@@ -53,7 +53,7 @@ struct ShortcutInfo {
   Source source;
   int64_t theme_color;
   int64_t background_color;
-  GURL best_icon_url;
+  GURL best_primary_icon_url;
   GURL best_badge_icon_url;
   std::vector<std::string> icon_urls;
 };

@@ -46,8 +46,7 @@ void GetHomescreenIconAndSplashImageSizes() {
   ScopedJavaLocalRef<jintArray> java_size_array =
       Java_ShortcutHelper_getHomeScreenIconAndSplashImageSizes(env);
   std::vector<int> sizes;
-  base::android::JavaIntArrayToIntVector(
-      env, java_size_array.obj(), &sizes);
+  base::android::JavaIntArrayToIntVector(env, java_size_array.obj(), &sizes);
 
   // Check that the size returned is what is expected.
   DCHECK(sizes.size() == 5);
@@ -64,7 +63,7 @@ void GetHomescreenIconAndSplashImageSizes() {
   DCHECK(g_minimum_splash_image_size <= g_ideal_splash_image_size);
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
 // static
 void ShortcutHelper::AddToLauncherWithSkBitmap(
@@ -111,8 +110,9 @@ void ShortcutHelper::AddWebappWithSkBitmap(
       base::android::ConvertUTF16ToJavaString(env, info.name);
   ScopedJavaLocalRef<jstring> java_short_name =
       base::android::ConvertUTF16ToJavaString(env, info.short_name);
-  ScopedJavaLocalRef<jstring> java_best_icon_url =
-      base::android::ConvertUTF8ToJavaString(env, info.best_icon_url.spec());
+  ScopedJavaLocalRef<jstring> java_best_primary_icon_url =
+      base::android::ConvertUTF8ToJavaString(env,
+                                             info.best_primary_icon_url.spec());
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (icon_bitmap.getSize())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
@@ -124,16 +124,15 @@ void ShortcutHelper::AddWebappWithSkBitmap(
   uintptr_t callback_pointer =
       reinterpret_cast<uintptr_t>(new base::Closure(splash_image_callback));
 
-  Java_ShortcutHelper_addWebapp(env, java_webapp_id, java_url, java_scope_url,
-                                java_user_title, java_name, java_short_name,
-                                java_best_icon_url, java_bitmap, info.display,
-                                info.orientation, info.source, info.theme_color,
-                                info.background_color, callback_pointer);
+  Java_ShortcutHelper_addWebapp(
+      env, java_webapp_id, java_url, java_scope_url, java_user_title, java_name,
+      java_short_name, java_best_primary_icon_url, java_bitmap, info.display,
+      info.orientation, info.source, info.theme_color, info.background_color,
+      callback_pointer);
 }
 
-void ShortcutHelper::AddShortcutWithSkBitmap(
-    const ShortcutInfo& info,
-    const SkBitmap& icon_bitmap) {
+void ShortcutHelper::AddShortcutWithSkBitmap(const ShortcutInfo& info,
+                                             const SkBitmap& icon_bitmap) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_url =
       base::android::ConvertUTF8ToJavaString(env, info.url.spec());
@@ -198,9 +197,8 @@ void ShortcutHelper::FetchSplashScreenImage(
 }
 
 // static
-void ShortcutHelper::StoreWebappSplashImage(
-    const std::string& webapp_id,
-    const SkBitmap& splash_image) {
+void ShortcutHelper::StoreWebappSplashImage(const std::string& webapp_id,
+                                            const SkBitmap& splash_image) {
   if (splash_image.drawsNothing())
     return;
 
@@ -266,20 +264,19 @@ std::string ShortcutHelper::QueryWebApkPackage(const GURL& url) {
 
   std::string webapk_package_name = "";
   if (java_webapk_package_name.obj()) {
-    webapk_package_name = base::android::ConvertJavaStringToUTF8(
-        env, java_webapk_package_name);
+    webapk_package_name =
+        base::android::ConvertJavaStringToUTF8(env, java_webapk_package_name);
   }
   return webapk_package_name;
 }
 
 // static
-bool ShortcutHelper::IsWebApkInstalled(
-    content::BrowserContext* browser_context,
-    const GURL& start_url,
-    const GURL& manifest_url) {
+bool ShortcutHelper::IsWebApkInstalled(content::BrowserContext* browser_context,
+                                       const GURL& start_url,
+                                       const GURL& manifest_url) {
   return !QueryWebApkPackage(start_url).empty() ||
-      WebApkInstallService::Get(browser_context)
-      ->IsInstallInProgress(manifest_url);
+         WebApkInstallService::Get(browser_context)
+             ->IsInstallInProgress(manifest_url);
 }
 
 GURL ShortcutHelper::GetScopeFromURL(const GURL& url) {
