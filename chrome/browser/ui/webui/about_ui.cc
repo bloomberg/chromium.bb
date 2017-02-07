@@ -30,6 +30,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -322,15 +323,14 @@ class ChromeOSCreditsHandler
       return;
     }
     // Load local Chrome OS credits from the disk.
-    BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
-        base::Bind(&ChromeOSCreditsHandler::LoadCreditsFileOnBlockingPool,
-                   this),
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::BACKGROUND),
+        base::Bind(&ChromeOSCreditsHandler::LoadCreditsFileAsync, this),
         base::Bind(&ChromeOSCreditsHandler::ResponseOnUIThread, this));
   }
 
-  void LoadCreditsFileOnBlockingPool() {
-    DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  void LoadCreditsFileAsync() {
     base::FilePath credits_file_path(chrome::kChromeOSCreditsPath);
     if (!base::ReadFileToString(credits_file_path, &contents_)) {
       // File with credits not found, ResponseOnUIThread will load credits
