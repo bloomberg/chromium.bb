@@ -64,6 +64,9 @@ class PingLoaderTest : public ::testing::Test {
       EXPECT_EQ(destinationURL.getString(),
                 pingRequest.httpHeaderField("Ping-To"));
     }
+    // Serve the ping request, since it will otherwise bleed in to the next
+    // test, and once begun there is no way to cancel it directly.
+    Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
     return pingRequest;
   }
 
