@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/test/mock_callback.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/mock_media_router.h"
@@ -485,7 +486,7 @@ TEST_F(PresentationServiceDelegateImplTest, SinksObserverCantRegister) {
       main_frame_process_id_, main_frame_routing_id_, &listener1_));
 }
 
-TEST_F(PresentationServiceDelegateImplTest, ConnectToOffscreenPresentation) {
+TEST_F(PresentationServiceDelegateImplTest, ConnectToPresentation) {
   content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
   ASSERT_TRUE(main_frame);
   int render_process_id = main_frame->GetProcess()->GetID();
@@ -494,6 +495,18 @@ TEST_F(PresentationServiceDelegateImplTest, ConnectToOffscreenPresentation) {
   GURL presentation_url = GURL("http://www.example.com/presentation.html");
   content::PresentationSessionInfo session_info(presentation_url,
                                                 presentation_id);
+
+  base::MockCallback<
+      base::Callback<void(const content::PresentationSessionInfo&)>>
+      mock_callback;
+  EXPECT_CALL(mock_callback, Run(_));
+  MediaRoute media_route(
+      "route_id", MediaSourceForPresentationUrl(session_info.presentation_url),
+      "mediaSinkId", "", true, "", true);
+  media_route.set_offscreen_presentation(true);
+  delegate_impl_->OnStartSessionSucceeded(render_process_id, render_frame_id,
+                                          mock_callback.Get(), session_info,
+                                          media_route);
 
   OffscreenPresentationManagerFactory::GetInstanceForTest()->SetTestingFactory(
       profile(), &BuildMockOffscreenPresentationManager);
@@ -508,9 +521,16 @@ TEST_F(PresentationServiceDelegateImplTest, ConnectToOffscreenPresentation) {
 
   content::PresentationConnectionPtr connection_ptr;
   content::PresentationConnectionRequest connection_request;
-  delegate_impl_->ConnectToOffscreenPresentation(
-      render_process_id, render_frame_id, session_info,
-      std::move(connection_ptr), std::move(connection_request));
+  delegate_impl_->ConnectToPresentation(render_process_id, render_frame_id,
+                                        session_info, std::move(connection_ptr),
+                                        std::move(connection_request));
+
+  EXPECT_CALL(*mock_offscreen_manager,
+              UnregisterOffscreenPresentationController(
+                  presentation_id,
+                  RenderFrameHostId(render_process_id, render_frame_id)));
+  EXPECT_CALL(router_, DetachRoute("route_id"));
+  delegate_impl_->Reset(render_process_id, render_frame_id);
 }
 
 #if !defined(OS_ANDROID)

@@ -133,7 +133,7 @@ class PresentationServiceDelegateImpl
       const content::PresentationSessionInfo& connection,
       const content::PresentationConnectionStateChangedCallback&
           state_changed_cb) override;
-  void ConnectToOffscreenPresentation(
+  void ConnectToPresentation(
       int render_process_id,
       int render_frame_id,
       const content::PresentationSessionInfo& session,
@@ -184,6 +184,8 @@ class PresentationServiceDelegateImpl
                            DefaultPresentationRequestObserver);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
                            DefaultPresentationUrlCallback);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
+                           ConnectToPresentation);
 
   explicit PresentationServiceDelegateImpl(content::WebContents* web_contents);
 

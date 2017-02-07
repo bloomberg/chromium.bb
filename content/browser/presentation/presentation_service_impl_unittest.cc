@@ -140,7 +140,7 @@ class MockPresentationServiceDelegate
                     const content::PresentationConnectionStateChangedCallback&
                         state_changed_cb));
 
-  void ConnectToOffscreenPresentation(
+  void ConnectToPresentation(
       int render_process_id,
       int render_frame_id,
       const content::PresentationSessionInfo& session,
@@ -523,8 +523,7 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrls) {
   run_loop.Run();
 }
 
-TEST_F(PresentationServiceImplTest,
-       ListenForConnectionStateChange) {
+TEST_F(PresentationServiceImplTest, ListenForConnectionStateChange) {
   content::PresentationSessionInfo connection(presentation_url1_,
                                               kPresentationId);
   content::PresentationConnectionStateChangedCallback state_changed_cb;

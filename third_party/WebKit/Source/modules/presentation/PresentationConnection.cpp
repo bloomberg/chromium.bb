@@ -165,8 +165,7 @@ void PresentationConnection::bindProxy(
   DCHECK(proxy);
   // TODO(zhaobin): Restore to DCHECK(!m_proxy) when reconnect() is properly
   // implemented.
-  if (!m_proxy)
-    m_proxy = std::move(proxy);
+  m_proxy = std::move(proxy);
 }
 
 // static

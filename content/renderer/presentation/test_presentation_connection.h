@@ -25,6 +25,8 @@ class TestPresentationConnection : public blink::WebPresentationConnection {
                void(const uint8_t* data, size_t length));
   MOCK_METHOD1(didChangeState, void(blink::WebPresentationConnectionState));
 
+  blink::WebPresentationConnectionProxy* proxy();
+
  private:
   std::unique_ptr<blink::WebPresentationConnectionProxy> proxy_;
 };
