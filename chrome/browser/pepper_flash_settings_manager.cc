@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -125,9 +126,8 @@ class PepperFlashSettingsManager::Core
 
   void InitializeOnIOThread();
   void DeauthorizeContentLicensesOnIOThread(uint32_t request_id);
-  void DeauthorizeContentLicensesOnBlockingPool(
-      uint32_t request_id,
-      const base::FilePath& profile_path);
+  void DeauthorizeContentLicensesAsync(uint32_t request_id,
+                                       const base::FilePath& profile_path);
   void DeauthorizeContentLicensesInPlugin(uint32_t request_id, bool success);
   void GetPermissionSettingsOnIOThread(
       uint32_t request_id,
@@ -442,9 +442,11 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnIOThread(
   }
 
 #if defined(OS_CHROMEOS)
-  BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(&Core::DeauthorizeContentLicensesOnBlockingPool, this,
-                 request_id, browser_context_path_));
+  base::PostTaskWithTraits(FROM_HERE,
+                           base::TaskTraits().MayBlock().WithPriority(
+                               base::TaskPriority::BACKGROUND),
+                           base::Bind(&Core::DeauthorizeContentLicensesAsync,
+                                      this, request_id, browser_context_path_));
 #else
   DeauthorizeContentLicensesInPlugin(request_id, true);
 #endif
@@ -453,7 +455,7 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnIOThread(
 // TODO(raymes): This is temporary code to migrate ChromeOS devices to the new
 // scheme for generating device IDs. Delete this once we are sure most ChromeOS
 // devices have been migrated.
-void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnBlockingPool(
+void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesAsync(
     uint32_t request_id,
     const base::FilePath& profile_path) {
   // ChromeOS used to store the device ID in a file but this is no longer used.
