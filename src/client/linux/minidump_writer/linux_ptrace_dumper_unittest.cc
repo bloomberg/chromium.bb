@@ -80,8 +80,8 @@ pid_t SetupChildProcess(int number_of_threads) {
 
     string helper_path(GetHelperBinary());
     if (helper_path.empty()) {
-      ADD_FAILURE() << "Couldn't find helper binary";
-      return -1;
+      fprintf(stderr, "Couldn't find helper binary\n");
+      _exit(1);
     }
 
     // Pass the pipe fd and the number of threads as arguments.
@@ -94,8 +94,9 @@ pid_t SetupChildProcess(int number_of_threads) {
           NULL);
     // Kill if we get here.
     printf("Errno from exec: %d", errno);
-    ADD_FAILURE() << "Exec of " << helper_path << " failed: " << strerror(errno);
-    return -1;
+    std::string err_str = "Exec of  " + helper_path + " failed";
+    perror(err_str.c_str());
+    _exit(1);
   }
   close(fds[1]);
 

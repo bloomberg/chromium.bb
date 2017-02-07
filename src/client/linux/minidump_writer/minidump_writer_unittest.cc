@@ -241,7 +241,8 @@ TEST(MinidumpWriterTest, StacksSkippedIfRequested) {
   // pass an invalid principal mapping address, which will force
   // WriteMinidump to not dump any thread stacks.
   ASSERT_TRUE(WriteMinidump(templ.c_str(), child, &context, sizeof(context),
-                            true, 0x0102030405060708, false));
+                            true, static_cast<uintptr_t>(0x0102030405060708ull),
+                            false));
 
   // Read the minidump. And ensure that no thread memory was dumped.
   Minidump minidump(templ);
@@ -286,7 +287,12 @@ TEST(MinidumpWriterTest, StacksAreSanitizedIfRequested) {
   Minidump minidump(templ);
   ASSERT_TRUE(minidump.Read());
 
-  const uintptr_t defaced = 0X0DEFACED0DEFACEDull;
+  const uintptr_t defaced =
+#if defined(__LP64__)
+      0x0defaced0defaced;
+#else
+      0x0defaced;
+#endif
   MinidumpThreadList *threads = minidump.GetThreadList();
   for (unsigned int i = 0; i < threads->thread_count(); ++i) {
     MinidumpThread *thread = threads->GetThreadAtIndex(i);
