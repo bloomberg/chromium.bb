@@ -76,13 +76,6 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   bool collectFallbackHintChars(const Deque<HolesQueueItem>&,
                                 Vector<UChar32>& hint) const;
 
-  void insertRunIntoShapeResult(
-      ShapeResult*,
-      std::unique_ptr<ShapeResult::RunInfo> runToInsert,
-      unsigned startGlyph,
-      unsigned numGlyphs,
-      hb_buffer_t*);
-
   const UChar* m_normalizedBuffer;
   unsigned m_normalizedBufferLength;
   TextDirection m_textDirection;
