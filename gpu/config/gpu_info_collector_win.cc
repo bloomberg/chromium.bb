@@ -33,7 +33,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/trace_event/trace_event.h"
-#include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
@@ -44,51 +43,6 @@
 namespace gpu {
 
 namespace {
-
-// This must be kept in sync with histograms.xml.
-enum DisplayLinkInstallationStatus {
-  DISPLAY_LINK_NOT_INSTALLED,
-  DISPLAY_LINK_7_1_OR_EARLIER,
-  DISPLAY_LINK_7_2_OR_LATER,
-  DISPLAY_LINK_INSTALLATION_STATUS_MAX
-};
-
-// Returns the display link driver version or an invalid version if it is
-// not installed.
-base::Version DisplayLinkVersion() {
-  base::win::RegKey key;
-
-  if (key.Open(HKEY_LOCAL_MACHINE, L"SOFTWARE", KEY_READ | KEY_WOW64_64KEY))
-    return base::Version();
-
-  if (key.OpenKey(L"DisplayLink", KEY_READ | KEY_WOW64_64KEY))
-    return base::Version();
-
-  if (key.OpenKey(L"Core", KEY_READ | KEY_WOW64_64KEY))
-    return base::Version();
-
-  base::string16 version;
-  if (key.ReadValue(L"Version", &version))
-    return base::Version();
-
-  return base::Version(base::UTF16ToASCII(version));
-}
-
-// Returns whether Lenovo dCute is installed.
-bool IsLenovoDCuteInstalled() {
-  base::win::RegKey key;
-
-  if (key.Open(HKEY_LOCAL_MACHINE, L"SOFTWARE", KEY_READ | KEY_WOW64_64KEY))
-    return false;
-
-  if (key.OpenKey(L"Lenovo", KEY_READ | KEY_WOW64_64KEY))
-    return false;
-
-  if (key.OpenKey(L"Lenovo dCute", KEY_READ | KEY_WOW64_64KEY))
-    return false;
-
-  return true;
-}
 
 void DeviceIDToVendorAndDevice(const std::wstring& id,
                                uint32_t* vendor_id,
@@ -318,7 +272,6 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   int vertex_shader_minor_version = 0;
   int pixel_shader_major_version = 0;
   int pixel_shader_minor_version = 0;
-  gpu_info->adapter_luid = 0;
   if (RE2::FullMatch(gpu_info->gl_renderer,
                      "ANGLE \\(.*\\)") &&
       RE2::PartialMatch(gpu_info->gl_renderer,
@@ -340,15 +293,6 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
         base::StringPrintf("%d.%d",
                            pixel_shader_major_version,
                            pixel_shader_minor_version);
-
-    // ANGLE's EGL vendor strings are of the form:
-    // Google, Inc. (adapter LUID: 0123456789ABCDEF)
-    // The LUID is optional and identifies the GPU adapter ANGLE is using.
-    const char* egl_vendor =
-        eglQueryString(gl::GLSurfaceEGL::GetHardwareDisplay(), EGL_VENDOR);
-    RE2::PartialMatch(egl_vendor,
-                      " \\(adapter LUID: ([0-9A-Fa-f]{16})\\)",
-                      RE2::Hex(&gpu_info->adapter_luid));
 
     // DirectX diagnostics are collected asynchronously because it takes a
     // couple of seconds.
@@ -392,24 +336,6 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   // nvd3d9wrap.dll is loaded into all processes when Optimus is enabled.
   HMODULE nvd3d9wrap = GetModuleHandleW(L"nvd3d9wrap.dll");
   gpu_info->optimus = nvd3d9wrap != NULL;
-
-  gpu_info->lenovo_dcute = IsLenovoDCuteInstalled();
-
-  gpu_info->display_link_version = DisplayLinkVersion();
-
-  if (!gpu_info->display_link_version .IsValid()) {
-    UMA_HISTOGRAM_ENUMERATION("GPU.DisplayLinkInstallationStatus",
-                              DISPLAY_LINK_NOT_INSTALLED,
-                              DISPLAY_LINK_INSTALLATION_STATUS_MAX);
-  } else if (gpu_info->display_link_version < base::Version("7.2")) {
-    UMA_HISTOGRAM_ENUMERATION("GPU.DisplayLinkInstallationStatus",
-                              DISPLAY_LINK_7_1_OR_EARLIER,
-                              DISPLAY_LINK_INSTALLATION_STATUS_MAX);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("GPU.DisplayLinkInstallationStatus",
-                              DISPLAY_LINK_7_2_OR_LATER,
-                              DISPLAY_LINK_INSTALLATION_STATUS_MAX);
-  }
 
   // Taken from http://www.nvidia.com/object/device_ids.html
   DISPLAY_DEVICE dd;

@@ -78,11 +78,8 @@ struct GpuInfo {
   mojo.common.mojom.TimeDelta initialization_time;
   bool optimus;
   bool amd_switchable;
-  bool lenovo_dcute;
-  mojo.common.mojom.Version? display_link_version;
   GpuDevice gpu;
   array<GpuDevice> secondary_gpus;
-  uint64 adapter_luid;
   string driver_vendor;
   string driver_version;
   string driver_date;

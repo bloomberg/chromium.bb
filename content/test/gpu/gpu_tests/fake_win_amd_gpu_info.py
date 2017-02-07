@@ -36,7 +36,6 @@ FAKE_GPU_INFO = {
         },
     'aux_attributes':
         {
-            'adapter_luid': 0.0,
             'amd_switchable': False,
             'basic_info_state': 1,
             'context_info_state': 1,
@@ -85,7 +84,6 @@ FAKE_GPU_INFO = {
             'in_process_gpu': False,
             'initialization_time': 2.503214,
             'jpeg_decode_accelerator_supported': False,
-            'lenovo_dcute': False,
             'max_msaa_samples': '4',
             'max_resolution_height': 1088,
             'max_resolution_width': 1920,

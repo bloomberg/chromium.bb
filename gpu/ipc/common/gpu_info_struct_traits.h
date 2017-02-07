@@ -145,14 +145,6 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.amd_switchable;
   }
 
-  static bool lenovo_dcute(const gpu::GPUInfo& input) {
-    return input.lenovo_dcute;
-  }
-
-  static const base::Version& display_link_version(const gpu::GPUInfo& input) {
-    return input.display_link_version;
-  }
-
   static const gpu::GPUInfo::GPUDevice& gpu(const gpu::GPUInfo& input) {
     return input.gpu;
   }
@@ -160,10 +152,6 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static const std::vector<gpu::GPUInfo::GPUDevice>& secondary_gpus(
       const gpu::GPUInfo& input) {
     return input.secondary_gpus;
-  }
-
-  static uint64_t adapter_luid(const gpu::GPUInfo& input) {
-    return input.adapter_luid;
   }
 
   static const std::string& driver_vendor(const gpu::GPUInfo& input) {

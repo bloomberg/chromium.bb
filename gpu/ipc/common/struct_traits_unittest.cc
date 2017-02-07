@@ -127,11 +127,8 @@ TEST_F(StructTraitsTest, GpuInfo) {
   const base::TimeDelta initialization_time = base::TimeDelta::Max();
   const bool optimus = true;
   const bool amd_switchable = true;
-  const bool lenovo_dcute = true;
-  const base::Version display_link_version("1.2.3.4");
   const gpu::GPUInfo::GPUDevice gpu;
   const std::vector<gpu::GPUInfo::GPUDevice> secondary_gpus;
-  const uint64_t adapter_luid = 0x10de;
   const std::string driver_vendor = "driver_vendor";
   const std::string driver_version = "driver_version";
   const std::string driver_date = "driver_date";
@@ -177,11 +174,8 @@ TEST_F(StructTraitsTest, GpuInfo) {
   input.initialization_time = initialization_time;
   input.optimus = optimus;
   input.amd_switchable = amd_switchable;
-  input.lenovo_dcute = lenovo_dcute;
-  input.display_link_version = display_link_version;
   input.gpu = gpu;
   input.secondary_gpus = secondary_gpus;
-  input.adapter_luid = adapter_luid;
   input.driver_vendor = driver_vendor;
   input.driver_version = driver_version;
   input.driver_date = driver_date;
@@ -226,8 +220,6 @@ TEST_F(StructTraitsTest, GpuInfo) {
 
   EXPECT_EQ(optimus, output.optimus);
   EXPECT_EQ(amd_switchable, output.amd_switchable);
-  EXPECT_EQ(lenovo_dcute, output.lenovo_dcute);
-  EXPECT_TRUE(display_link_version.CompareTo(output.display_link_version) == 0);
   EXPECT_EQ(gpu.vendor_id, output.gpu.vendor_id);
   EXPECT_EQ(gpu.device_id, output.gpu.device_id);
   EXPECT_EQ(gpu.active, output.gpu.active);
@@ -243,7 +235,6 @@ TEST_F(StructTraitsTest, GpuInfo) {
     EXPECT_EQ(expected_gpu.vendor_string, actual_gpu.vendor_string);
     EXPECT_EQ(expected_gpu.device_string, actual_gpu.device_string);
   }
-  EXPECT_EQ(adapter_luid, output.adapter_luid);
   EXPECT_EQ(driver_vendor, output.driver_vendor);
   EXPECT_EQ(driver_version, output.driver_version);
   EXPECT_EQ(driver_date, output.driver_date);
@@ -303,7 +294,6 @@ TEST_F(StructTraitsTest, EmptyGpuInfo) {
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   gpu::GPUInfo output;
   proxy->EchoGpuInfo(input, &output);
-  EXPECT_FALSE(output.display_link_version.IsValid());
 }
 
 TEST_F(StructTraitsTest, Mailbox) {

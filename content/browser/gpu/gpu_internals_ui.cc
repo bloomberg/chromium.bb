@@ -144,14 +144,6 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
       "Optimus", new base::FundamentalValue(gpu_info.optimus)));
   basic_info->Append(NewDescriptionValuePair(
       "AMD switchable", new base::FundamentalValue(gpu_info.amd_switchable)));
-  if (gpu_info.lenovo_dcute) {
-    basic_info->Append(NewDescriptionValuePair(
-        "Lenovo dCute", new base::FundamentalValue(true)));
-  }
-  if (gpu_info.display_link_version.IsValid()) {
-    basic_info->Append(NewDescriptionValuePair(
-        "DisplayLink Version", gpu_info.display_link_version.GetString()));
-  }
 #if defined(OS_WIN)
   std::string compositor =
       ui::win::IsAeroGlassEnabled() ? "Aero Glass" : "none";
