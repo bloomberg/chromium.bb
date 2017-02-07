@@ -1039,8 +1039,9 @@ struct TargetNodeTraits<clang::UnresolvedUsingValueDecl> {
 template <typename TargetNode>
 class RewriterBase : public MatchFinder::MatchCallback {
  public:
-  explicit RewriterBase(std::set<Replacement>* replacements)
-      : replacements_(replacements) {}
+  explicit RewriterBase(std::set<Replacement>* replacements,
+                        RenameCategory category)
+      : replacements_(replacements), edit_tracker_(category) {}
 
   const TargetNode& GetTargetNode(const MatchFinder::MatchResult& result) {
     const TargetNode* target_node = result.Nodes.getNodeAs<TargetNode>(
@@ -1126,12 +1127,43 @@ class RewriterBase : public MatchFinder::MatchCallback {
     edit_tracker_.Add(*result.SourceManager, loc, old_name, new_name);
   }
 
-  const EditTracker& edit_tracker() const { return edit_tracker_; }
+  const EditTracker* edit_tracker() const { return &edit_tracker_; }
 
  private:
   std::set<Replacement>* const replacements_;
   EditTracker edit_tracker_;
 };
+
+template <typename DeclNode>
+RenameCategory GetCategory();
+template <>
+RenameCategory GetCategory<clang::FieldDecl>() {
+  return RenameCategory::kField;
+}
+template <>
+RenameCategory GetCategory<clang::VarDecl>() {
+  return RenameCategory::kVariable;
+}
+template <>
+RenameCategory GetCategory<clang::FunctionDecl>() {
+  return RenameCategory::kFunction;
+}
+template <>
+RenameCategory GetCategory<clang::CXXMethodDecl>() {
+  return RenameCategory::kFunction;
+}
+template <>
+RenameCategory GetCategory<clang::EnumConstantDecl>() {
+  return RenameCategory::kEnumValue;
+}
+template <>
+RenameCategory GetCategory<clang::NamedDecl>() {
+  return RenameCategory::kUnresolved;
+}
+template <>
+RenameCategory GetCategory<clang::UsingDecl>() {
+  return RenameCategory::kUnresolved;
+}
 
 template <typename DeclNode, typename TargetNode>
 class DeclRewriterBase : public RewriterBase<TargetNode> {
@@ -1139,7 +1171,7 @@ class DeclRewriterBase : public RewriterBase<TargetNode> {
   using Base = RewriterBase<TargetNode>;
 
   explicit DeclRewriterBase(std::set<Replacement>* replacements)
-      : Base(replacements) {}
+      : Base(replacements, GetCategory<DeclNode>()) {}
 
   void run(const MatchFinder::MatchResult& result) override {
     const DeclNode* decl = result.Nodes.getNodeAs<DeclNode>("decl");
@@ -1326,7 +1358,7 @@ class UnresolvedRewriterBase : public RewriterBase<TargetNode> {
   using Base = RewriterBase<TargetNode>;
 
   explicit UnresolvedRewriterBase(std::set<Replacement>* replacements)
-      : RewriterBase<TargetNode>(replacements) {}
+      : RewriterBase<TargetNode>(replacements, RenameCategory::kUnresolved) {}
 
   void run(const MatchFinder::MatchResult& result) override {
     const TargetNode& node = Base::GetTargetNode(result);
@@ -1844,13 +1876,32 @@ int main(int argc, const char* argv[]) {
     return result;
 
   // Supplemental data for the Blink rename rebase helper.
-  // TODO(dcheng): There's a lot of match rewriters missing from this list.
+  std::vector<const EditTracker*> all_edit_trackers{
+      field_decl_rewriter.edit_tracker(),
+      var_decl_rewriter.edit_tracker(),
+      enum_member_decl_rewriter.edit_tracker(),
+      member_rewriter.edit_tracker(),
+      decl_ref_rewriter.edit_tracker(),
+      enum_member_ref_rewriter.edit_tracker(),
+      member_ref_rewriter.edit_tracker(),
+      function_decl_rewriter.edit_tracker(),
+      function_ref_rewriter.edit_tracker(),
+      method_decl_rewriter.edit_tracker(),
+      method_ref_rewriter.edit_tracker(),
+      method_member_rewriter.edit_tracker(),
+      constructor_initializer_rewriter.edit_tracker(),
+      unresolved_lookup_rewriter.edit_tracker(),
+      unresolved_member_rewriter.edit_tracker(),
+      unresolved_dependent_member_rewriter.edit_tracker(),
+      unresolved_using_value_decl_rewriter.edit_tracker(),
+      using_decl_rewriter.edit_tracker(),
+      dependent_scope_decl_ref_expr_rewriter.edit_tracker(),
+      cxx_dependent_scope_member_expr_rewriter.edit_tracker(),
+      gmock_member_rewriter.edit_tracker(),
+  };
   llvm::outs() << "==== BEGIN TRACKED EDITS ====\n";
-  field_decl_rewriter.edit_tracker().SerializeTo("var", llvm::outs());
-  var_decl_rewriter.edit_tracker().SerializeTo("var", llvm::outs());
-  enum_member_decl_rewriter.edit_tracker().SerializeTo("enu", llvm::outs());
-  function_decl_rewriter.edit_tracker().SerializeTo("fun", llvm::outs());
-  method_decl_rewriter.edit_tracker().SerializeTo("fun", llvm::outs());
+  for (const EditTracker* edit_tracker : all_edit_trackers)
+    edit_tracker->SerializeTo(llvm::outs());
   llvm::outs() << "==== END TRACKED EDITS ====\n";
 
   // Serialization format is documented in tools/clang/scripts/run_tool.py
