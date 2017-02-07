@@ -173,9 +173,9 @@ void FaviconHelper::EnsureIconIsAvailable(
   // TODO(treib): Optimize this by creating a FaviconService::HasFavicon method
   // so that we don't have to actually get the image.
   ScopedJavaGlobalRef<jobject> j_scoped_callback(env, j_availability_callback);
-  favicon_base::FaviconImageCallback callback_runner =
-      base::Bind(&OnFaviconImageResultAvailable, j_scoped_callback, profile,
-                 web_contents, page_url, icon_url, icon_type, j_is_temporary);
+  favicon_base::FaviconImageCallback callback_runner = base::Bind(
+      &FaviconHelper::OnFaviconImageResultAvailable, j_scoped_callback, profile,
+      web_contents, page_url, icon_url, icon_type, j_is_temporary);
   favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
   favicon::GetFaviconImageForPageURL(service, page_url, icon_type,
@@ -249,9 +249,8 @@ void FaviconHelper::OnFaviconDownloaded(
 
   JNIEnv* env = AttachCurrentThread();
   Java_IconAvailabilityCallback_onIconAvailabilityChecked(
-      env, j_availability_callback, success);
+      env, j_availability_callback, /*newly_available=*/success);
 }
-
 
 void FaviconHelper::OnFaviconImageResultAvailable(
     const ScopedJavaGlobalRef<jobject>& j_availability_callback,
@@ -263,17 +262,20 @@ void FaviconHelper::OnFaviconImageResultAvailable(
     bool is_temporary,
     const favicon_base::FaviconImageResult& result) {
   // If there already is a favicon, return immediately.
-  if (!result.image.IsEmpty()) {
+  // Can |web_contents| be null here? crbug.com/688249
+  if (!result.image.IsEmpty() || !web_contents) {
+    // Either the image already exists in the FaviconService, or it doesn't and
+    // we can't download it. Either way, it's not *newly* available.
     JNIEnv* env = AttachCurrentThread();
     Java_IconAvailabilityCallback_onIconAvailabilityChecked(
-        env, j_availability_callback, false);
+        env, j_availability_callback, /*newly_available=*/false);
     return;
   }
 
   web_contents->DownloadImage(
       icon_url, true, 0, false,
-      base::Bind(OnFaviconDownloaded, j_availability_callback, profile,
-                 page_url, icon_type, is_temporary));
+      base::Bind(&FaviconHelper::OnFaviconDownloaded, j_availability_callback,
+                 profile, page_url, icon_type, is_temporary));
 }
 
 bool FaviconHelper::RegisterFaviconHelper(JNIEnv* env) {
