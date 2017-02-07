@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "remoting/client/host_experiment_sender.h"
 #include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -56,6 +57,8 @@ class ChromotingClient : public SignalStrategy::Listener,
 
   void set_protocol_config(
       std::unique_ptr<protocol::CandidateSessionConfig> config);
+
+  void set_host_experiment_config(const std::string& experiment_config);
 
   // Used to set fake/mock objects for tests which use the ChromotingClient.
   void SetConnectionToHostForTests(
@@ -138,6 +141,8 @@ class ChromotingClient : public SignalStrategy::Listener,
 
   // True if |protocol::Capabilities| message has been received.
   bool host_capabilities_received_ = false;
+
+  std::unique_ptr<HostExperimentSender> host_experiment_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingClient);
 };

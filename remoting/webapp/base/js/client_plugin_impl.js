@@ -16,6 +16,14 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+/**
+ * @type {string} The host configuration which will be sent to host to control
+ *     its experiment behavior. We do not have a short term plan to support host
+ *     experiment in WebApp, so this variable can only be controlled by
+ *     developer console, and it's for debugging purpose only.
+ */
+remoting.hostConfiguration = '';
+
 /** @constructor */
 remoting.ClientPluginMessage = function() {
   /** @type {string} */
@@ -456,7 +464,8 @@ remoting.ClientPluginImpl.prototype.connectWithExperiments_ = function(
       clientPairingId: credentialsProvider.getPairingInfo().clientId,
       clientPairedSecret: credentialsProvider.getPairingInfo().sharedSecret,
       keyFilter: keyFilter,
-      experiments: experiments.join(" ")
+      experiments: experiments.join(" "),
+      hostConfiguration: remoting.hostConfiguration
     }
   }));
 };

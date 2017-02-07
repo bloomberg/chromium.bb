@@ -668,6 +668,10 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   client_.reset(new ChromotingClient(&context_, this, video_renderer_.get(),
                                      audio_player_->GetWeakPtr()));
+  std::string host_experiment_config;
+  if (data.GetString("hostConfiguration", &host_experiment_config)) {
+    client_->set_host_experiment_config(host_experiment_config);
+  }
 
   // Setup the signal strategy.
   signal_strategy_.reset(new DelegatingSignalStrategy(

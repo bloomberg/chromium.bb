@@ -31,7 +31,8 @@ ChromotingClient::ChromotingClient(
     ClientUserInterface* user_interface,
     protocol::VideoRenderer* video_renderer,
     base::WeakPtr<protocol::AudioStub> audio_consumer)
-    : user_interface_(user_interface), video_renderer_(video_renderer) {
+    : user_interface_(user_interface),
+      video_renderer_(video_renderer) {
   DCHECK(client_context->main_task_runner()->BelongsToCurrentThread());
 
   audio_decode_task_runner_ = client_context->audio_decode_task_runner();
@@ -45,7 +46,16 @@ ChromotingClient::~ChromotingClient() {
 
 void ChromotingClient::set_protocol_config(
     std::unique_ptr<protocol::CandidateSessionConfig> config) {
+  DCHECK(!connection_)
+      << "set_protocol_config() cannot be called after Start().";
   protocol_config_ = std::move(config);
+}
+
+void ChromotingClient::set_host_experiment_config(
+    const std::string& experiment_config) {
+  DCHECK(!connection_)
+      << "set_host_experiment_config() cannot be called after Start().";
+  host_experiment_sender_.reset(new HostExperimentSender(experiment_config));
 }
 
 void ChromotingClient::SetConnectionToHostForTests(
@@ -60,7 +70,7 @@ void ChromotingClient::Start(
     const std::string& host_jid,
     const std::string& capabilities) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!session_manager_);  // Start must be called more than once.
+  DCHECK(!session_manager_);  // Start must not be called more than once.
 
   host_jid_ = NormalizeJid(host_jid);
   local_capabilities_ = capabilities;
@@ -244,12 +254,14 @@ bool ChromotingClient::OnSignalStrategyIncomingStanza(
 
 void ChromotingClient::StartConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  connection_->Connect(
-      session_manager_->Connect(
-          host_jid_, base::MakeUnique<protocol::NegotiatingClientAuthenticator>(
-                         NormalizeJid(signal_strategy_->GetLocalJid()),
-                         host_jid_, client_auth_config_)),
-      transport_context_, this);
+  auto session = session_manager_->Connect(
+      host_jid_, base::MakeUnique<protocol::NegotiatingClientAuthenticator>(
+                     NormalizeJid(signal_strategy_->GetLocalJid()), host_jid_,
+                     client_auth_config_));
+  if (host_experiment_sender_) {
+    session->AddPlugin(host_experiment_sender_.get());
+  }
+  connection_->Connect(std::move(session), transport_context_, this);
 }
 
 void ChromotingClient::OnChannelsConnected() {
