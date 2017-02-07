@@ -17,7 +17,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
     return new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(event => {
         assert_equals(sensorObject.state, 'errored');
-        assert_equals(event.error.name, 'NotFoundError');
+        assert_equals(event.error.name, 'NotReadableError');
         sensorObject.onerror = null;
         resolve();
       }, reject);

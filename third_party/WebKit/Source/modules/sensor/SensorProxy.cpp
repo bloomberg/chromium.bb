@@ -190,7 +190,8 @@ void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
                                   SensorClientRequest clientRequest) {
   DCHECK_EQ(Initializing, m_state);
   if (!params) {
-    handleSensorError(NotFoundError, "Sensor is not present on the platform.");
+    handleSensorError(NotReadableError,
+                      "Sensor is not present on the platform.");
     return;
   }
   const size_t kReadBufferSize = sizeof(ReadingBuffer);
