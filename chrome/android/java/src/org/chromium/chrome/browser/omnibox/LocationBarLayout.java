@@ -2250,11 +2250,14 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     /**
-     * Update the fading background view that shows when the omnibox is focused.
+     * Update the fading background view that shows when the omnibox is focused. If Chrome Home is
+     * enabled, this method is a no-op.
      * @param visible Whether the background should be made visible.
      */
     private void updateFadingBackgroundView(boolean visible) {
-        if (getToolbarDataProvider() == null) return;
+        // If Chrome Home is enabled (the bottom sheet is not null), it will be controlling the
+        // fading view, so block any initialization and updating here.
+        if (getToolbarDataProvider() == null || mBottomSheet != null) return;
 
         if (mFadingView == null) initFadingOverlayView();
 
