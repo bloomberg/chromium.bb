@@ -39,7 +39,6 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory),
-      tracked_scroll_object_(NULL),
       load_complete_pending_(false) {
   ui::win::CreateATLModuleIfNeeded();
   Initialize(initial_tree);
@@ -51,11 +50,6 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
   // destructor, otherwise our overrides of functions like
   // OnNodeWillBeDeleted won't be called.
   tree_.reset(NULL);
-
-  if (tracked_scroll_object_) {
-    tracked_scroll_object_->Release();
-    tracked_scroll_object_ = NULL;
-  }
   ui::GetIAccessible2UsageObserverList().RemoveObserver(this);
 }
 
@@ -213,21 +207,6 @@ BrowserAccessibilityEvent::Result
   LONG child_id = -target->unique_id();
   ::NotifyWinEvent(win_event_type, hwnd, OBJID_CLIENT, child_id);
 
-  // If this is a layout complete notification (sent when a container scrolls)
-  // and there is a descendant tracked object, send a notification on it.
-  // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
-  if (event_type == ui::AX_EVENT_LAYOUT_COMPLETE &&
-      tracked_scroll_object_ &&
-      tracked_scroll_object_->IsDescendantOf(target)) {
-    (new BrowserAccessibilityEventWin(
-        BrowserAccessibilityEvent::FromScroll,
-        ui::AX_EVENT_NONE,
-        IA2_EVENT_VISIBLE_DATA_CHANGED,
-        tracked_scroll_object_))->Fire();
-    tracked_scroll_object_->Release();
-    tracked_scroll_object_ = NULL;
-  }
-
   return BrowserAccessibilityEvent::Sent;
 }
 
@@ -264,22 +243,6 @@ void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
     return;
   if (!obj->IsNative())
     return;
-}
-
-void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
-                                                         ui::AXNode* node) {
-  DCHECK(node);
-  BrowserAccessibility* obj = GetFromAXNode(node);
-  if (obj && obj->IsNative()) {
-    if (obj == tracked_scroll_object_) {
-      tracked_scroll_object_->Release();
-      tracked_scroll_object_ = NULL;
-    }
-  }
-
-  // Call the inherited function at the bottom, otherwise our call to
-  // |GetFromAXNode|, above, will fail!
-  BrowserAccessibilityManager::OnNodeWillBeDeleted(tree, node);
 }
 
 void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
@@ -329,14 +292,6 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
           changes[i].type == AXTreeDelegate::SUBTREE_CREATED);
     }
   }
-}
-
-void BrowserAccessibilityManagerWin::TrackScrollingObject(
-    BrowserAccessibilityWin* node) {
-  if (tracked_scroll_object_)
-    tracked_scroll_object_->Release();
-  tracked_scroll_object_ = node;
-  tracked_scroll_object_->AddRef();
 }
 
 }  // namespace content

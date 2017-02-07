@@ -1072,7 +1072,6 @@ STDMETHODIMP BrowserAccessibilityWin::scrollTo(IA2ScrollType scroll_type) {
       break;
   }
 
-  manager()->ToBrowserAccessibilityManagerWin()->TrackScrollingObject(this);
   return S_OK;
 }
 
@@ -1096,7 +1095,6 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
   }
 
   manager()->ScrollToPoint(*this, scroll_to);
-  manager()->ToBrowserAccessibilityManagerWin()->TrackScrollingObject(this);
 
   return S_OK;
 }
@@ -2655,7 +2653,16 @@ STDMETHODIMP BrowserAccessibilityWin::scrollSubstringToPoint(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_SUBSTRING_TO_POINT);
   AddAccessibilityModeFlags(ACCESSIBILITY_MODE_FLAG_SCREEN_READER |
                             ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES);
- // TODO(dmazzoni): adjust this for the start and end index, too.
+  if (start_index > end_index)
+    std::swap(start_index, end_index);
+  LONG length = end_index - start_index + 1;
+  DCHECK_GE(length, 0);
+
+  gfx::Rect string_bounds = GetPageBoundsForRange(start_index, length);
+  string_bounds -= GetPageBoundsRect().OffsetFromOrigin();
+  x -= string_bounds.x();
+  y -= string_bounds.y();
+
   return scrollToPoint(coordinate_type, x, y);
 }
 
@@ -3587,7 +3594,6 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToSubstring(
 
   manager()->ScrollToMakeVisible(*this, GetPageBoundsForRange(
       start_index, end_index - start_index));
-  manager()->ToBrowserAccessibilityManagerWin()->TrackScrollingObject(this);
 
   return S_OK;
 }

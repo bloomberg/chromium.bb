@@ -1172,8 +1172,7 @@ base::string16 BrowserAccessibility::GetInnerText() const {
   return text;
 }
 
-void BrowserAccessibility::FixEmptyBounds(gfx::RectF* bounds) const
-{
+void BrowserAccessibility::FixEmptyBounds(gfx::RectF* bounds) const {
   if (bounds->width() > 0 && bounds->height() > 0)
     return;
 

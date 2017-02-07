@@ -1505,9 +1505,15 @@ void AXObject::scrollToMakeVisibleWithSubFocus(const IntRect& subfocus) const {
   newSubfocus.move(newElementRect.x(), newElementRect.y());
   newSubfocus.move(-scrollParentRect.x(), -scrollParentRect.y());
 
-  // Recursively make sure the scroll parent itself is visible.
-  if (scrollParent->parentObject())
+  if (scrollParent->parentObject()) {
+    // Recursively make sure the scroll parent itself is visible.
     scrollParent->scrollToMakeVisibleWithSubFocus(newSubfocus);
+  } else {
+    // To minimize the number of notifications, only fire one on the topmost
+    // object that has been scrolled.
+    axObjectCache().postNotification(const_cast<AXObject*>(this),
+                                     AXObjectCacheImpl::AXLocationChanged);
+  }
 }
 
 void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const {
@@ -1569,6 +1575,13 @@ void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const {
       offsetY = 0;
     }
   }
+
+  // To minimize the number of notifications, only fire one on the topmost
+  // object that has been scrolled.
+  DCHECK(objects[0]);
+  // TODO(nektar): Switch to postNotification(objects[0] and remove |getNode|.
+  axObjectCache().postNotification(objects[0]->getNode(),
+                                   AXObjectCacheImpl::AXLocationChanged);
 }
 
 void AXObject::setSequentialFocusNavigationStartingPoint() {

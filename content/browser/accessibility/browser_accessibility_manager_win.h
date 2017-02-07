@@ -65,7 +65,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
  protected:
   // AXTreeDelegate methods.
-  void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
@@ -75,11 +74,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
  private:
   // Give BrowserAccessibilityManager::Create access to our constructor.
   friend class BrowserAccessibilityManager;
-
-  // Track the most recent object that has been asked to scroll and
-  // post a notification directly on it when it reaches its destination.
-  // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
-  BrowserAccessibilityWin* tracked_scroll_object_;
 
   // Keep track of if we got a "load complete" event but were unable to fire
   // it because of no HWND, because otherwise JAWS can get very confused.

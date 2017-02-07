@@ -68,8 +68,8 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
       base::win::ScopedComPtr<IAccessibleText>* input_text);
   void SetUpTextareaField(
       base::win::ScopedComPtr<IAccessibleText>* textarea_text);
-  void SetUpSampleParagraph(
-      base::win::ScopedComPtr<IAccessibleText>* paragraph_text);
+  template <typename Interface>
+  void SetUpSampleParagraph(base::win::ScopedComPtr<Interface>* com_interface);
 
   static base::win::ScopedComPtr<IAccessible> GetAccessibleFromVariant(
       IAccessible* parent,
@@ -227,11 +227,13 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
 }
 
 // Loads a page with  a paragraph of sample text.
+template <typename Interface>
 void AccessibilityWinBrowserTest::SetUpSampleParagraph(
-    base::win::ScopedComPtr<IAccessibleText>* paragraph_text) {
-  ASSERT_NE(nullptr, paragraph_text);
+    base::win::ScopedComPtr<Interface>* com_interface) {
+  ASSERT_NE(nullptr, com_interface);
   LoadInitialAccessibilityTreeFromHtml(
-      "<!DOCTYPE html><html><body>"
+      "<!DOCTYPE html><html>"
+      "<body style=\"overflow: scroll; margin-top: 100vh\">"
       "<p><b>Game theory</b> is \"the study of "
       "<a href=\"#\" title=\"Mathematical model\">mathematical models</a> "
       "of conflict and<br>cooperation between intelligent rational "
@@ -251,7 +253,7 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraph(
   LONG paragraph_role = 0;
   ASSERT_HRESULT_SUCCEEDED(paragraph->role(&paragraph_role));
   ASSERT_EQ(IA2_ROLE_PARAGRAPH, paragraph_role);
-  ASSERT_HRESULT_SUCCEEDED(paragraph.QueryInterface(paragraph_text->Receive()));
+  ASSERT_HRESULT_SUCCEEDED(paragraph.QueryInterface(com_interface->Receive()));
 }
 
 // Static helpers ------------------------------------------------
@@ -1080,6 +1082,37 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestCharacterExtents) {
       EXPECT_LT(0, height) << "at offset " << offset;
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollToPoint) {
+  base::win::ScopedComPtr<IAccessible2> paragraph;
+  SetUpSampleParagraph(&paragraph);
+
+  LONG prev_x, prev_y, x, y, width, height;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  ASSERT_HRESULT_SUCCEEDED(
+      paragraph->accLocation(&prev_x, &prev_y, &width, &height, childid_self));
+  AccessibilityNotificationWaiter location_changed_waiter(
+      shell()->web_contents(), ACCESSIBILITY_MODE_COMPLETE,
+      ui::AX_EVENT_LOCATION_CHANGED);
+  EXPECT_HRESULT_SUCCEEDED(
+      paragraph->scrollToPoint(IA2_COORDTYPE_PARENT_RELATIVE, 0, 0));
+  location_changed_waiter.WaitForNotification();
+
+  ASSERT_HRESULT_SUCCEEDED(
+      paragraph->accLocation(&x, &y, &width, &height, childid_self));
+  EXPECT_EQ(prev_x, x);
+  EXPECT_GT(prev_y, y);
+
+  prev_x = x;
+  prev_y = y;
+  EXPECT_HRESULT_SUCCEEDED(
+      paragraph->scrollToPoint(IA2_COORDTYPE_SCREEN_RELATIVE, 0, 0));
+  location_changed_waiter.WaitForNotification();
+  ASSERT_HRESULT_SUCCEEDED(
+      paragraph->accLocation(&x, &y, &width, &height, childid_self));
+  EXPECT_EQ(prev_x, x);
+  EXPECT_EQ(prev_y, y);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetCaretOffset) {

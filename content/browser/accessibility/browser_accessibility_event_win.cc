@@ -39,6 +39,9 @@ BrowserAccessibilityEvent* BrowserAccessibilityEvent::Create(
     case ui::AX_EVENT_LOAD_COMPLETE:
       win_event_type = IA2_EVENT_DOCUMENT_LOAD_COMPLETE;
       break;
+    case ui::AX_EVENT_LOCATION_CHANGED:
+      win_event_type = IA2_EVENT_VISIBLE_DATA_CHANGED;
+      break;
     case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
       win_event_type = EVENT_SYSTEM_SCROLLINGEND;
       break;
