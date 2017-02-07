@@ -214,8 +214,8 @@ std::unique_ptr<installer::ArchivePatchHelper> CreateChromeArchiveHelper(
 
 // Returns the MSI product ID from the ClientState key that is populated for MSI
 // installs.  This property is encoded in a value name whose format is
-// "EnterpriseId<GUID>" where <GUID> is the MSI product id.  <GUID> is in the
-// format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.  The id will be returned if
+// "EnterpriseProduct<GUID>" where <GUID> is the MSI product id.  <GUID> is in
+// the format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX.  The id will be returned if
 // found otherwise this method will return an empty string.
 //
 // This format is strange and its provenance is shrouded in mystery but it has
@@ -226,8 +226,8 @@ base::string16 FindMsiProductId(const InstallerState& installer_state,
   BrowserDistribution* dist = product.distribution();
   DCHECK(dist);
 
-  base::win::RegistryValueIterator value_iter(reg_root,
-                                              dist->GetStateKey().c_str());
+  base::win::RegistryValueIterator value_iter(
+      reg_root, dist->GetStateKey().c_str(), KEY_WOW64_32KEY);
   for (; value_iter.Valid(); ++value_iter) {
     base::string16 value_name(value_iter.Name());
     if (base::StartsWith(value_name, kMsiProductIdPrefix,
