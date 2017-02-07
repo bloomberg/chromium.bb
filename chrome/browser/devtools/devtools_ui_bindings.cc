@@ -1138,16 +1138,13 @@ void DevToolsUIBindings::FilePathsChanged(
     const std::vector<std::string>& changed_paths,
     const std::vector<std::string>& added_paths,
     const std::vector<std::string>& removed_paths) {
-  base::ListValue list;
-  for (auto path : changed_paths)
-    list.AppendString(path);
-  for (auto path : added_paths)
-    list.AppendString(path);
-  for (auto path : removed_paths)
-    list.AppendString(path);
+  base::ListValue changed, added, removed;
+  changed.AppendStrings(changed_paths);
+  added.AppendStrings(added_paths);
+  removed.AppendStrings(removed_paths);
 
-  CallClientFunction("DevToolsAPI.fileSystemFilesChanged",
-                     &list, NULL, NULL);
+  CallClientFunction("DevToolsAPI.fileSystemFilesChangedAddedRemoved", &changed,
+                     &added, &removed);
 }
 
 void DevToolsUIBindings::IndexingTotalWorkCalculated(

@@ -211,7 +211,11 @@ function test()
                 dumpWorkspaceUISourceCodes();
 
                 dir.addFile("bar.js", "");
-                InspectorFrontendHost.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemFilesChanged, ["/var/www4/html/bar.js"]);
+                InspectorFrontendHost.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemFilesChangedAddedRemoved, {
+                    changed: [],
+                    added:["/var/www4/html/bar.js"],
+                    removed: []
+                });
 
                 InspectorTest.addResult("-- File added externally --");
                 dumpWorkspaceUISourceCodes();
@@ -236,7 +240,7 @@ function test()
             function dumpGitFolders()
             {
                 var isolatedFileSystem = Workspace.isolatedFileSystemManager.fileSystem("file:///var/www3");
-                var folders = isolatedFileSystem.gitFolders();
+                var folders = isolatedFileSystem.initialGitFolders();
                 folders.sort();
                 for (var gitFolder of folders)
                     InspectorTest.addResult(gitFolder);
@@ -280,6 +284,33 @@ function test()
                 InspectorTest.addResult("    modification time: " + metadata.modificationTime.toISOString());
             }
         },
+
+        function testFileRename(next)
+        {
+            var fs = new InspectorTest.TestFileSystem("file:///var/www3");
+            var file = fs.root.mkdir("test").addFile("hello.js", "123456");
+            fs.reportCreated(function() { });
+            InspectorTest.waitForScriptSource("hello.js", onUISourceCode);
+            var uiSourceCode;
+            var originalURL;
+            function onUISourceCode(sourceCode)
+            {
+                uiSourceCode = sourceCode;
+                originalURL = uiSourceCode.url();
+                InspectorTest.addResult('URL before rename: ' + originalURL);
+                uiSourceCode.rename('goodbye.js', renamed);
+            }
+
+            function renamed()
+            {
+                InspectorTest.addResult('URL after rename: ' + uiSourceCode.url());
+                if (uiSourceCode.project().workspace().uiSourceCodeForURL(originalURL))
+                    InspectorTest.addResult('ERROR: Still found original URL in workspace.');
+                if (!uiSourceCode.project().workspace().uiSourceCodeForURL(uiSourceCode.url()))
+                    InspectorTest.addResult('ERROR: Could not find new URL in workspace.');
+                next();
+            }
+        }
     ]);
 };
 </script>
