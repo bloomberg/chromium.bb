@@ -109,7 +109,12 @@ void FakeSecurityKeyIpcClient::OnInvalidSession() {
 
 void FakeSecurityKeyIpcClient::OnChannelConnected(int32_t peer_pid) {
   ipc_channel_connected_ = true;
-  channel_event_callback_.Run();
+
+  // We don't always want to fire this event as only a subset of tests care
+  // about the channel being connected.  Tests that do care can register for it.
+  if (on_channel_connected_callback_) {
+    on_channel_connected_callback_.Run();
+  }
 }
 
 void FakeSecurityKeyIpcClient::OnChannelError() {

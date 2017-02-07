@@ -75,6 +75,10 @@ class FakeSecurityKeyIpcClient : public SecurityKeyIpcClient {
     security_key_response_payload_ = response_payload;
   }
 
+  void set_on_channel_connected_callback(const base::Closure& callback) {
+    on_channel_connected_callback_ = callback;
+  }
+
  private:
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -92,6 +96,9 @@ class FakeSecurityKeyIpcClient : public SecurityKeyIpcClient {
 
   // Called when a change in the IPC channel state has occurred.
   base::Closure channel_event_callback_;
+
+  // Called when the IPC Channel is connected.
+  base::Closure on_channel_connected_callback_;
 
   // Used for sending/receiving security key messages between processes.
   std::unique_ptr<IPC::Channel> client_channel_;

@@ -16,7 +16,6 @@
 #include "ipc/ipc_channel.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "remoting/host/client_session_details.h"
 #include "remoting/host/security_key/fake_security_key_ipc_client.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
@@ -45,6 +44,9 @@ class SecurityKeyIpcServerTest : public testing::Test,
   void SendRequestToClient(int connection_id, const std::string& data);
 
  protected:
+  // testing::Test interface.
+  void TearDown() override;
+
   // Returns a unique IPC channel name which prevents conflicts when running
   // tests concurrently.
   std::string GetUniqueTestChannelName();
@@ -52,14 +54,15 @@ class SecurityKeyIpcServerTest : public testing::Test,
   // Waits until the current |run_loop_| instance is signaled, then resets it.
   void WaitForOperationComplete();
 
+  // Waits until all tasks have been run on the current message loop.
+  void RunPendingTasks();
+
   // ClientSessionControl overrides:
   ClientSessionControl* session_control() override { return nullptr; }
   uint32_t desktop_session_id() const override { return peer_session_id_; }
 
   // IPC tests require a valid MessageLoop to run.
   base::MessageLoopForIO message_loop_;
-
-  mojo::edk::ScopedIPCSupport ipc_support_;
 
   // Used to allow |message_loop_| to run during tests.  The instance is reset
   // after each stage of the tests has been completed.
@@ -82,9 +85,7 @@ class SecurityKeyIpcServerTest : public testing::Test,
 };
 
 SecurityKeyIpcServerTest::SecurityKeyIpcServerTest()
-    : ipc_support_(message_loop_.task_runner(),
-                   mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST),
-      run_loop_(new base::RunLoop()) {
+    : run_loop_(new base::RunLoop()) {
 #if defined(OS_WIN)
   EXPECT_TRUE(ProcessIdToSessionId(
       GetCurrentProcessId(), reinterpret_cast<DWORD*>(&peer_session_id_)));
@@ -111,6 +112,15 @@ void SecurityKeyIpcServerTest::WaitForOperationComplete() {
   run_loop_.reset(new base::RunLoop());
 }
 
+void SecurityKeyIpcServerTest::RunPendingTasks() {
+  // Run until there are no pending work items in the queue.
+  base::RunLoop().RunUntilIdle();
+}
+
+void SecurityKeyIpcServerTest::TearDown() {
+  RunPendingTasks();
+}
+
 void SecurityKeyIpcServerTest::SendRequestToClient(int connection_id,
                                                    const std::string& data) {
   last_connection_id_received_ = connection_id;
@@ -135,9 +145,9 @@ TEST_F(SecurityKeyIpcServerTest, HandleSingleSecurityKeyRequest) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_handle));
   WaitForOperationComplete();
 
+  ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
   ASSERT_FALSE(fake_ipc_client.invalid_session_error());
   ASSERT_TRUE(fake_ipc_client.connection_ready());
-  ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Send a request from the IPC client to the IPC server.
   std::string request_data("Blergh!");
@@ -489,16 +499,15 @@ TEST_F(SecurityKeyIpcServerTest, IpcConnectionFailsFromInvalidSession) {
       security_key_ipc_server_->CreateChannel(channel_handle, request_timeout));
 
   // Create a fake client and attempt to connect to the IPC server channel.
-  FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(
-      &SecurityKeyIpcServerTest::OperationComplete, base::Unretained(this)));
+  FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(&base::DoNothing));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_handle));
-  WaitForOperationComplete();
-  WaitForOperationComplete();
   WaitForOperationComplete();
 
   // Verify the connection failed.
   ASSERT_TRUE(fake_ipc_client.invalid_session_error());
   ASSERT_FALSE(fake_ipc_client.connection_ready());
+
+  RunPendingTasks();
   ASSERT_FALSE(fake_ipc_client.ipc_channel_connected());
 }
 #endif  // defined(OS_WIN)

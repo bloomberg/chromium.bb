@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "remoting/host/security_key/fake_security_key_ipc_server.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,6 +56,9 @@ class SecurityKeyIpcClientTest : public testing::Test {
   // Waits until the current |run_loop_| instance is signaled, then resets it.
   void WaitForOperationComplete();
 
+  // Waits until all tasks have been run on the current message loop.
+  void RunPendingTasks();
+
   // Sets up an active IPC connection between |security_key_ipc_client_|
   // and |fake_ipc_server_|.  |expect_connected| defines whether the operation
   // is result in a usable IPC connection.  |expect_error| defines whether the
@@ -73,8 +75,6 @@ class SecurityKeyIpcClientTest : public testing::Test {
 
   // IPC tests require a valid MessageLoop to run.
   base::MessageLoopForIO message_loop_;
-
-  mojo::edk::ScopedIPCSupport ipc_support_;
 
   // Used to allow |message_loop_| to run during tests.  The instance is reset
   // after each stage of the tests has been completed.
@@ -110,9 +110,7 @@ class SecurityKeyIpcClientTest : public testing::Test {
 };
 
 SecurityKeyIpcClientTest::SecurityKeyIpcClientTest()
-    : ipc_support_(message_loop_.task_runner(),
-                   mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST),
-      run_loop_(new base::RunLoop()),
+    : run_loop_(new base::RunLoop()),
       fake_ipc_server_(
           kTestConnectionId,
           /*client_session_details=*/nullptr,
@@ -161,6 +159,11 @@ void SecurityKeyIpcClientTest::WaitForOperationComplete() {
   run_loop_.reset(new base::RunLoop());
 }
 
+void SecurityKeyIpcClientTest::RunPendingTasks() {
+  // Run until there are no pending work items in the queue.
+  base::RunLoop().RunUntilIdle();
+}
+
 void SecurityKeyIpcClientTest::SendMessageToClient(int connection_id,
                                                    const std::string& data) {
   last_connection_id_received_ = connection_id;
@@ -200,6 +203,8 @@ void SecurityKeyIpcClientTest::EstablishConnection(bool expect_connected,
       base::Bind(&SecurityKeyIpcClientTest::OperationComplete,
                  base::Unretained(this), /*failed=*/true));
   WaitForOperationComplete();
+  RunPendingTasks();
+
   ASSERT_EQ(expect_connected, connection_established_);
   ASSERT_EQ(expect_error, operation_failed_);
 }
