@@ -1048,7 +1048,7 @@ bool InProcessCommandBuffer::CanWaitUnverifiedSyncToken(
 void InProcessCommandBuffer::DidCreateAcceleratedSurfaceChildWindow(
     SurfaceHandle parent_window,
     SurfaceHandle child_window) {
-  // TODO(fsamuel): Implement this.
+  ::SetParent(child_window, parent_window);
 }
 #endif
 
