@@ -583,19 +583,9 @@ void RenderWidgetHostViewChildFrame::SetActive(bool active) {
 void RenderWidgetHostViewChildFrame::ShowDefinitionForSelection() {
 }
 
-bool RenderWidgetHostViewChildFrame::SupportsSpeech() const {
-  return false;
-}
-
 void RenderWidgetHostViewChildFrame::SpeakSelection() {
 }
 
-bool RenderWidgetHostViewChildFrame::IsSpeaking() const {
-  return false;
-}
-
-void RenderWidgetHostViewChildFrame::StopSpeaking() {
-}
 #endif  // defined(OS_MACOSX)
 
 void RenderWidgetHostViewChildFrame::RegisterFrameSwappedCallback(

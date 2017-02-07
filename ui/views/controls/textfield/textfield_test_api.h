@@ -41,6 +41,10 @@ class TextfieldTestApi {
     return textfield_->scheduled_text_edit_command_;
   }
 
+  ViewsTextServicesContextMenu* text_services_context_menu() const {
+    return textfield_->text_services_context_menu_.get();
+  }
+
   bool IsCursorBlinkTimerRunning() const {
     return textfield_->cursor_blink_timer_.IsRunning();
   }

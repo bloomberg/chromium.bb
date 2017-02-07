@@ -641,14 +641,29 @@ void Label::ShowContextMenuForView(View* source,
       source_type));
 }
 
-bool Label::GetDecoratedWordAtPoint(const gfx::Point& point,
-                                    gfx::DecoratedText* decorated_word,
-                                    gfx::Point* baseline_point) {
+bool Label::GetDecoratedWordAndBaselineAtPoint(
+    const gfx::Point& point,
+    gfx::DecoratedText* decorated_word,
+    gfx::Point* baseline_point) {
   gfx::RenderText* render_text = GetRenderTextForSelectionController();
   return render_text
-             ? render_text->GetDecoratedWordAtPoint(point, decorated_word,
-                                                    baseline_point)
+             ? render_text->GetDecoratedWordAndBaselineAtPoint(
+                   point, decorated_word, baseline_point)
              : false;
+}
+
+bool Label::GetDecoratedTextAndBaselineFromSelection(
+    gfx::DecoratedText* decorated_text,
+    gfx::Point* baseline_point) {
+  if (!selectable())
+    return false;
+
+  gfx::RenderText* render_text = GetRenderTextForSelectionController();
+  if (!render_text)
+    return false;
+
+  return render_text->GetDecoratedTextAndBaselineForRange(
+      render_text->selection(), decorated_text, baseline_point);
 }
 
 gfx::RenderText* Label::GetRenderTextForSelectionController() {

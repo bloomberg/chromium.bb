@@ -3998,9 +3998,84 @@ TEST_P(RenderTextTest, SubpixelRenderingSuppressed) {
     EXPECT_FALSE(GetRendererPaint().isLCDRenderText());
 }
 
-// Verify GetDecoratedWordAtPoint returns the correct baseline point and
-// decorated word for an LTR string.
-TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_LTR) {
+// Verify GetDecoratedTextAndBaselineForRange returns the correct baseline
+// point and decorated word.
+TEST_P(RenderTextHarfBuzzTest, GetDecoratedTextAndBaselineForRange) {
+  const base::string16 text = ASCIIToUTF16("yellow boxfish");
+  const Range kWordOneRange = Range(0, 6);
+  const Range kWordTwoRange = Range(7, 14);
+  const Range kTextRange = Range(0, 14);
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(Rect(100, 30));
+  render_text->SetText(text);
+  render_text->ApplyWeight(Font::Weight::NORMAL, kWordOneRange);
+  render_text->ApplyWeight(Font::Weight::SEMIBOLD, kWordTwoRange);
+  render_text->ApplyStyle(UNDERLINE, true, kWordOneRange);
+  render_text->ApplyStyle(STRIKE, true, Range(6, 7));
+  render_text->ApplyStyle(ITALIC, true, kWordTwoRange);
+
+  const std::vector<RenderText::FontSpan> font_spans =
+      render_text->GetFontSpansForTesting();
+  DecoratedText decorated_text;
+  Point baseline_point;
+
+  // Tests the range of the first word.
+  DecoratedText expected_text_1;
+  expected_text_1.text = ASCIIToUTF16("yellow");
+  for (size_t i = 0; i < expected_text_1.text.length(); i++) {
+    expected_text_1.attributes.push_back(CreateRangedAttribute(
+        font_spans, i, i, Font::Weight::NORMAL, UNDERLINE_MASK));
+  }
+
+  const Rect left_glyph_1 =
+      render_text->GetCursorBounds(SelectionModel(0, CURSOR_FORWARD), false);
+
+  EXPECT_TRUE(render_text->GetDecoratedTextAndBaselineForRange(
+      kWordOneRange, &decorated_text, &baseline_point));
+  VerifyDecoratedWordsAreEqual(expected_text_1, decorated_text);
+  EXPECT_TRUE(left_glyph_1.Contains(baseline_point));
+
+  // Tests the range of the second word.
+  DecoratedText expected_text_2;
+  expected_text_2.text = ASCIIToUTF16("boxfish");
+  for (size_t i = 0; i < expected_text_2.text.length(); i++) {
+    expected_text_2.attributes.push_back(CreateRangedAttribute(
+        font_spans, i, i, Font::Weight::SEMIBOLD, ITALIC_MASK));
+  }
+
+  const Rect left_glyph_2 = render_text->GetCursorBounds(
+      SelectionModel(kWordTwoRange.start(), CURSOR_FORWARD), false);
+
+  EXPECT_TRUE(render_text->GetDecoratedTextAndBaselineForRange(
+      kWordTwoRange, &decorated_text, &baseline_point));
+  VerifyDecoratedWordsAreEqual(expected_text_2, decorated_text);
+  EXPECT_TRUE(left_glyph_2.Contains(baseline_point));
+
+  // Tests the range of the entire text.
+  DecoratedText expected_text_3;
+  expected_text_3.text = ASCIIToUTF16("yellow boxfish");
+  expected_text_3.attributes.insert(expected_text_3.attributes.begin(),
+                                    expected_text_1.attributes.begin(),
+                                    expected_text_1.attributes.end());
+
+  expected_text_3.attributes.push_back(CreateRangedAttribute(
+      font_spans, 6, 6, Font::Weight::NORMAL, STRIKE_MASK));
+
+  for (size_t i = kWordTwoRange.start(); i < kWordTwoRange.end(); i++) {
+    expected_text_3.attributes.push_back(CreateRangedAttribute(
+        font_spans, i, i, Font::Weight::SEMIBOLD, ITALIC_MASK));
+  }
+
+  EXPECT_TRUE(render_text->GetDecoratedTextAndBaselineForRange(
+      kTextRange, &decorated_text, &baseline_point));
+  VerifyDecoratedWordsAreEqual(expected_text_3, decorated_text);
+  EXPECT_TRUE(left_glyph_1.Contains(baseline_point));
+}
+
+// Verify GetDecoratedWordAndBaselineAtPoint returns the correct baseline point
+// and decorated word for an LTR string.
+TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAndBaselineAtPoint_LTR) {
   const base::string16 ltr = ASCIIToUTF16("  ab  c ");
   const int kWordOneStartIndex = 2;
   const int kWordTwoStartIndex = 6;
@@ -4046,14 +4121,14 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_LTR) {
 
   {
     SCOPED_TRACE(base::StringPrintf("Query to the left of text bounds"));
-    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+    EXPECT_TRUE(render_text->GetDecoratedWordAndBaselineAtPoint(
         Point(-5, cursor_y), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
     EXPECT_TRUE(left_glyph_word_1.Contains(baseline_point));
   }
   {
     SCOPED_TRACE(base::StringPrintf("Query to the right of text bounds"));
-    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+    EXPECT_TRUE(render_text->GetDecoratedWordAndBaselineAtPoint(
         Point(105, cursor_y), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_2, decorated_word);
     EXPECT_TRUE(left_glyph_word_2.Contains(baseline_point));
@@ -4066,8 +4141,8 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_LTR) {
         render_text->GetCursorBounds(SelectionModel(i, CURSOR_FORWARD), false)
             .origin();
 
-    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(query, &decorated_word,
-                                                     &baseline_point));
+    EXPECT_TRUE(render_text->GetDecoratedWordAndBaselineAtPoint(
+        query, &decorated_word, &baseline_point));
 
     if (i < kWordTwoStartIndex) {
       VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
@@ -4079,9 +4154,10 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_LTR) {
   }
 }
 
-// Verify GetDecoratedWordAtPoint returns the correct baseline point and
+// Verify GetDecoratedWordAndBaselineAtPoint returns the correct baseline point
+// and
 // decorated word for an RTL string.
-TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_RTL) {
+TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAndBaselineAtPoint_RTL) {
   const base::string16 rtl = WideToUTF16(
       L" "
       L"\x0634\x0632"
@@ -4130,14 +4206,14 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_RTL) {
 
   {
     SCOPED_TRACE(base::StringPrintf("Query to the left of text bounds"));
-    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+    EXPECT_TRUE(render_text->GetDecoratedWordAndBaselineAtPoint(
         Point(-5, cursor_y), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_2, decorated_word);
     EXPECT_TRUE(left_glyph_word_2.Contains(baseline_point));
   }
   {
     SCOPED_TRACE(base::StringPrintf("Query to the right of text bounds"));
-    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+    EXPECT_TRUE(render_text->GetDecoratedWordAndBaselineAtPoint(
         Point(105, cursor_y), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
     EXPECT_TRUE(left_glyph_word_1.Contains(baseline_point));
@@ -4152,8 +4228,8 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_RTL) {
         render_text->GetCursorBounds(SelectionModel(i, CURSOR_FORWARD), false)
             .top_right();
 
-    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(query, &decorated_word,
-                                                     &baseline_point));
+    EXPECT_TRUE(render_text->GetDecoratedWordAndBaselineAtPoint(
+        query, &decorated_word, &baseline_point));
     if (i < kWordTwoStartIndex) {
       VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
       EXPECT_TRUE(left_glyph_word_1.Contains(baseline_point));
@@ -4164,8 +4240,9 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_RTL) {
   }
 }
 
-// Test that GetDecoratedWordAtPoint behaves correctly for multiline text.
-TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_Multiline) {
+// Test that GetDecoratedWordAndBaselineAtPoint behaves correctly for multiline
+// text.
+TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAndBaselineAtPoint_Multiline) {
   const base::string16 text = ASCIIToUTF16("a b\n..\ncd.");
   const size_t kWordOneIndex = 0;    // Index of character 'a'.
   const size_t kWordTwoIndex = 2;    // Index of character 'b'.
@@ -4215,36 +4292,36 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_Multiline) {
   Point baseline_point;
   {
     // Query to the left of the first line.
-    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+    EXPECT_TRUE(render_text->GetDecoratedWordAndBaselineAtPoint(
         Point(-5, GetCursorYForTesting(0)), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
     EXPECT_TRUE(left_glyph_word_1.Contains(baseline_point));
   }
   {
     // Query on the second line.
-    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+    EXPECT_TRUE(render_text->GetDecoratedWordAndBaselineAtPoint(
         Point(5, GetCursorYForTesting(1)), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_2, decorated_word);
     EXPECT_TRUE(left_glyph_word_2.Contains(baseline_point));
   }
   {
     // Query at the center point of the character 'c'.
-    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+    EXPECT_TRUE(render_text->GetDecoratedWordAndBaselineAtPoint(
         left_glyph_word_3.CenterPoint(), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_3, decorated_word);
     EXPECT_TRUE(left_glyph_word_3.Contains(baseline_point));
   }
   {
     // Query to the right of the third line.
-    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+    EXPECT_TRUE(render_text->GetDecoratedWordAndBaselineAtPoint(
         Point(505, GetCursorYForTesting(2)), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_3, decorated_word);
     EXPECT_TRUE(left_glyph_word_3.Contains(baseline_point));
   }
 }
 
-// Verify the boolean return value of GetDecoratedWordAtPoint.
-TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_Return) {
+// Verify the boolean return value of GetDecoratedWordAndBaselineAtPoint.
+TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAndBaselineAtPoint_Return) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(ASCIIToUTF16("..."));
 
@@ -4255,21 +4332,21 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_Return) {
   Point query =
       render_text->GetCursorBounds(SelectionModel(0, CURSOR_FORWARD), false)
           .origin();
-  EXPECT_FALSE(render_text->GetDecoratedWordAtPoint(query, &decorated_word,
-                                                    &baseline_point));
+  EXPECT_FALSE(render_text->GetDecoratedWordAndBaselineAtPoint(
+      query, &decorated_word, &baseline_point));
 
   render_text->SetText(ASCIIToUTF16("abc"));
   query = render_text->GetCursorBounds(SelectionModel(0, CURSOR_FORWARD), false)
               .origin();
-  EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(query, &decorated_word,
-                                                   &baseline_point));
+  EXPECT_TRUE(render_text->GetDecoratedWordAndBaselineAtPoint(
+      query, &decorated_word, &baseline_point));
 
   // False should be returned for obscured text.
   render_text->SetObscured(true);
   query = render_text->GetCursorBounds(SelectionModel(0, CURSOR_FORWARD), false)
               .origin();
-  EXPECT_FALSE(render_text->GetDecoratedWordAtPoint(query, &decorated_word,
-                                                    &baseline_point));
+  EXPECT_FALSE(render_text->GetDecoratedWordAndBaselineAtPoint(
+      query, &decorated_word, &baseline_point));
 }
 
 // Tests text selection made at end points of individual lines of multiline

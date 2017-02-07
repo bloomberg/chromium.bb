@@ -185,14 +185,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Brings up the dictionary showing a definition for the selected text.
   virtual void ShowDefinitionForSelection() = 0;
 
-  // Returns |true| if Mac OS X text to speech is supported.
-  virtual bool SupportsSpeech() const = 0;
-  // Tells the view to speak the currently selected text.
+  // Tells the view to speak the currently selected text. If there is no
+  // selection, read everything.
   virtual void SpeakSelection() = 0;
-  // Returns |true| if text is currently being spoken by Mac OS X.
-  virtual bool IsSpeaking() const = 0;
-  // Stops speaking, if it is currently in progress.
-  virtual void StopSpeaking() = 0;
+
 #endif  // defined(OS_MACOSX)
 };
 

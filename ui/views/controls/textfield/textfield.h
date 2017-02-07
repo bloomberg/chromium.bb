@@ -38,6 +38,7 @@ namespace views {
 
 class MenuRunner;
 class TextfieldController;
+class ViewsTextServicesContextMenu;
 
 // A views/skia textfield implementation. No platform-specific code is used.
 class VIEWS_EXPORT Textfield : public View,
@@ -264,9 +265,12 @@ class VIEWS_EXPORT Textfield : public View,
                            const gfx::Point& p) override;
 
   // WordLookupClient overrides:
-  bool GetDecoratedWordAtPoint(const gfx::Point& point,
-                               gfx::DecoratedText* decorated_word,
-                               gfx::Point* baseline_point) override;
+  bool GetDecoratedWordAndBaselineAtPoint(const gfx::Point& point,
+                                          gfx::DecoratedText* decorated_word,
+                                          gfx::Point* baseline_point) override;
+  bool GetDecoratedTextAndBaselineFromSelection(
+      gfx::DecoratedText* decorated_text,
+      gfx::Point* baseline_point) override;
 
   // SelectionControllerDelegate overrides:
   bool HasTextBeingDragged() const override;
@@ -522,6 +526,7 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Context menu related members.
   std::unique_ptr<ui::SimpleMenuModel> context_menu_contents_;
+  std::unique_ptr<ViewsTextServicesContextMenu> text_services_context_menu_;
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   // Used to bind callback functions to this object.
