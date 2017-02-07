@@ -1378,6 +1378,7 @@ split_static_library("browser") {
     "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
     "//chrome/browser/net:probe_message_proto",
     "//chrome/browser/resources:component_extension_resources",
+    "//chrome/browser/ssl:proto",
     "//chrome/browser/ui",
     "//chrome/common/net",
     "//chrome/installer/util:with_no_strings",

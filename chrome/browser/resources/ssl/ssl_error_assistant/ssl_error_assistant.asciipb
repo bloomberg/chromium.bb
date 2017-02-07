@@ -2,17 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Placeholder for list of known certificates that are treated as captive
-# portal certificates.
+# Placeholder list for SPKI hashes of certificates that are treated as captive
+# portal certificates. See chrome/browser/ssl/ssl_error_assistant.proto for the
+# full format.
 
 # TODO(crbug.com/640835): Populate this with full list.
 version_id: 1
 
-# See chrome/browser/ssl/tls_error_assistant.proto for the full format.
+# https://captive-portal.badssl.com leaf:
 captive_portal_cert {
-
-  # Sha256 hash of the certificate's public key. The fingerprint is prefixed
-  # with "sha256/" and encoded in base64 (same format as
-  # src/net/http/transport_security_state_static.pins)
-  sha256_hash: "sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+  sha256_hash: "sha256/fjZPHewEHTrMDX3I1ecEIeoy3WFxHyGplOLv28kIbtI="
 }

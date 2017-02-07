@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
+#include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "components/ssl_errors/error_classification.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -40,16 +41,17 @@ namespace network_time {
 class NetworkTimeTracker;
 }
 
-// This class is responsible for deciding what type of interstitial to show for
-// an SSL validation error. The display of the interstitial might be delayed by
-// a few seconds while trying to determine the cause of the error. During this
-// window, the class will: check for a clock error, wait for a name-mismatch
-// suggested URL, or wait for a captive portal result to arrive. If there is a
-// name mismatch error and a corresponding suggested URL result arrives in this
-// window, the user is redirected to the suggested URL.
-// Failing that, if a captive portal detected result arrives in the time window,
-// a captive portal error page is shown. If none of these potential error
-// causes match, an SSL interstitial is shown.
+// This class is responsible for deciding what type of interstitial to display
+// for an SSL validation error and actually displaying it. The display of the
+// interstitial might be delayed by a few seconds while trying to determine the
+// cause of the error. During this window, the class will:
+// - Check for a clock error
+// - Check for a known captive portal certificate SPKI
+// - Wait for a name-mismatch suggested URL
+// - or Wait for a captive portal result to arrive.
+// Based on the result of these checks, SSLErrorHandler will show a customized
+// interstitial, redirect to a different suggested URL, or, if all else fails,
+// show the normal SSL interstitial.
 //
 // This class should only be used on the UI thread because its implementation
 // uses captive_portal::CaptivePortalService which can only be accessed on the
@@ -72,6 +74,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
     WWW_MISMATCH_URL_AVAILABLE,
     WWW_MISMATCH_URL_NOT_AVAILABLE,
     SHOW_BAD_CLOCK,
+    CAPTIVE_PORTAL_CERT_FOUND,
     SSL_ERROR_HANDLER_EVENT_COUNT
   };
 
@@ -108,6 +111,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
           callback);
 
   // Testing methods.
+  static void ResetConfigForTesting();
   static void SetInterstitialDelayForTesting(const base::TimeDelta& delay);
   // The callback pointer must remain valid for the duration of error handling.
   static void SetInterstitialTimerStartedCallbackForTesting(
@@ -115,7 +119,12 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   static void SetClockForTesting(base::Clock* testing_clock);
   static void SetNetworkTimeTrackerForTesting(
       network_time::NetworkTimeTracker* tracker);
+  static void SetErrorAssistantProtoForTesting(
+      const chrome_browser_ssl::SSLErrorAssistantConfig& config_proto);
   static std::string GetHistogramNameForTesting();
+  static void SetErrorAssistantConfig(
+      std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
+          config_proto);
   bool IsTimerRunningForTesting() const;
 
  protected:

@@ -13,6 +13,8 @@ message CaptivePortalCert {
   // with "sha256/" and encoded in base64 (same format as
   // src/net/http/transport_security_state_static.pins)
   // Example: sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+  //
+  // NOTE: Only leaf certs must be added here.
   optional string sha256_hash = 1;
 }
 

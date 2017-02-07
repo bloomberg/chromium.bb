@@ -10,12 +10,14 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
+#include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "chrome/common/features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -42,6 +44,8 @@ namespace {
 
 const char kCertDateErrorHistogram[] =
     "interstitial.ssl_error_handler.cert_date_error_delay";
+
+const net::SHA256HashValue kCertPublicKeyHashValue = {{0x01, 0x02}};
 
 // Runs |quit_closure| on the UI thread once a URL request has been
 // seen. Returns a request that hangs.
@@ -187,16 +191,21 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
 
 }  // namespace
 
-class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
+template <net::CertStatus cert_status>
+class SSLErrorHandlerCertStatusTestBase
+    : public ChromeRenderViewHostTestHarness {
  public:
-  SSLErrorHandlerNameMismatchTest() : field_trial_list_(nullptr) {}
+  SSLErrorHandlerCertStatusTestBase() : field_trial_list_(nullptr) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    SSLErrorHandler::ResetConfigForTesting();
     SSLErrorHandler::SetInterstitialDelayForTesting(base::TimeDelta());
     ssl_info_.cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-    ssl_info_.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+    ssl_info_.cert_status = cert_status;
+    ssl_info_.public_key_hashes.push_back(
+        net::HashValue(kCertPublicKeyHashValue));
 
     delegate_ =
         new TestSSLErrorHandlerDelegate(profile(), web_contents(), ssl_info_);
@@ -218,11 +227,14 @@ class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
   void TearDown() override {
     EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
     error_handler_.reset(nullptr);
+    SSLErrorHandler::ResetConfigForTesting();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
   TestSSLErrorHandler* error_handler() { return error_handler_.get(); }
   TestSSLErrorHandlerDelegate* delegate() { return delegate_; }
+
+  const net::SSLInfo& ssl_info() { return ssl_info_; }
 
  private:
   net::SSLInfo ssl_info_;
@@ -230,8 +242,13 @@ class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
   TestSSLErrorHandlerDelegate* delegate_;
   base::FieldTrialList field_trial_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerNameMismatchTest);
+  DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerCertStatusTestBase);
 };
+
+using SSLErrorHandlerNameMismatchTest =
+    SSLErrorHandlerCertStatusTestBase<net::CERT_STATUS_COMMON_NAME_INVALID>;
+using SSLErrorHandlerAuthorityInvalidTest =
+    SSLErrorHandlerCertStatusTestBase<net::CERT_STATUS_AUTHORITY_INVALID>;
 
 class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -246,6 +263,7 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    SSLErrorHandler::ResetConfigForTesting();
 
     field_trial_test()->SetNetworkQueriesWithVariationsService(
         false, 0.0,
@@ -286,6 +304,7 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
       EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
       error_handler_.reset(nullptr);
     }
+    SSLErrorHandler::ResetConfigForTesting();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -679,3 +698,157 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryHangs) {
   // Shut down the server to cancel the pending request.
   ASSERT_TRUE(test_server()->ShutdownAndWaitUntilComplete());
 }
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+
+// Tests that a certificate marked as a known captive portal certificate causes
+// the captive portal interstitial to be shown.
+TEST_F(SSLErrorHandlerNameMismatchTest, CaptivePortalCertificateList_Enabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "CaptivePortalCertificateList" /* enabled */, "" /* disabled */);
+
+  base::HistogramTester histograms;
+
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
+
+  chrome_browser_ssl::SSLErrorAssistantConfig config_proto;
+  config_proto.add_captive_portal_cert()->set_sha256_hash(
+      "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  config_proto.add_captive_portal_cert()->set_sha256_hash(
+      ssl_info().public_key_hashes[0].ToString());
+  config_proto.add_captive_portal_cert()->set_sha256_hash(
+      "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  SSLErrorHandler::SetErrorAssistantProtoForTesting(config_proto);
+
+  error_handler()->StartHandlingError();
+
+  // Timer shouldn't start for a known captive portal certificate.
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_FALSE(delegate()->captive_portal_checked());
+  EXPECT_FALSE(delegate()->ssl_interstitial_shown());
+  EXPECT_TRUE(delegate()->captive_portal_interstitial_shown());
+  EXPECT_FALSE(delegate()->suggested_url_checked());
+
+  // A buggy SSL error handler might have incorrectly started the timer. Run to
+  // completion to ensure the timer is expired.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_FALSE(delegate()->captive_portal_checked());
+  EXPECT_FALSE(delegate()->ssl_interstitial_shown());
+  EXPECT_TRUE(delegate()->captive_portal_interstitial_shown());
+  EXPECT_FALSE(delegate()->suggested_url_checked());
+
+  // Check that the histogram for the captive portal cert was recorded.
+  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 3);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::HANDLE_ALL, 1);
+  histograms.ExpectBucketCount(
+      SSLErrorHandler::GetHistogramNameForTesting(),
+      SSLErrorHandler::SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE, 1);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::CAPTIVE_PORTAL_CERT_FOUND, 1);
+}
+
+// Tests that a certificate marked as a known captive portal certificate does
+// not cause the captive portal interstitial to be shown, if the feature is
+// disabled.
+TEST_F(SSLErrorHandlerNameMismatchTest, CaptivePortalCertificateList_Disabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "" /* enabled */, "CaptivePortalCertificateList" /* disabled */);
+
+  base::HistogramTester histograms;
+
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
+
+  chrome_browser_ssl::SSLErrorAssistantConfig config_proto;
+  config_proto.add_captive_portal_cert()->set_sha256_hash(
+      "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  config_proto.add_captive_portal_cert()->set_sha256_hash(
+      ssl_info().public_key_hashes[0].ToString());
+  config_proto.add_captive_portal_cert()->set_sha256_hash(
+      "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  SSLErrorHandler::SetErrorAssistantProtoForTesting(config_proto);
+
+  error_handler()->StartHandlingError();
+
+  // Timer shouldn't start for a known captive portal certificate.
+  EXPECT_TRUE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_TRUE(delegate()->captive_portal_checked());
+  EXPECT_FALSE(delegate()->ssl_interstitial_shown());
+  EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
+  EXPECT_FALSE(delegate()->suggested_url_checked());
+
+  // A buggy SSL error handler might have incorrectly started the timer. Run to
+  // completion to ensure the timer is expired.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_TRUE(delegate()->captive_portal_checked());
+  EXPECT_TRUE(delegate()->ssl_interstitial_shown());
+  EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
+  EXPECT_FALSE(delegate()->suggested_url_checked());
+
+  // Check that the histogram for the captive portal cert was recorded.
+  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::HANDLE_ALL, 1);
+  histograms.ExpectBucketCount(
+      SSLErrorHandler::GetHistogramNameForTesting(),
+      SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
+}
+
+// Tests that an error other than name mismatch does not cause a captive portal
+// interstitial to be shown, even if the certificate is marked as a known
+// captive portal certificate.
+TEST_F(SSLErrorHandlerAuthorityInvalidTest,
+       CaptivePortalCertificateList_ShouldShowGenericInterstitial) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "CaptivePortalCertificateList" /* enabled */, "" /* disabled */);
+
+  base::HistogramTester histograms;
+
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_EQ(1u, ssl_info().public_key_hashes.size());
+
+  chrome_browser_ssl::SSLErrorAssistantConfig config_proto;
+  config_proto.add_captive_portal_cert()->set_sha256_hash(
+      "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  config_proto.add_captive_portal_cert()->set_sha256_hash(
+      ssl_info().public_key_hashes[0].ToString());
+  config_proto.add_captive_portal_cert()->set_sha256_hash(
+      "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  SSLErrorHandler::SetErrorAssistantProtoForTesting(config_proto);
+
+  error_handler()->StartHandlingError();
+
+  // Timer should start for captive portal detection.
+  EXPECT_TRUE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_TRUE(delegate()->captive_portal_checked());
+  EXPECT_FALSE(delegate()->ssl_interstitial_shown());
+  EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
+  EXPECT_FALSE(delegate()->suggested_url_checked());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_TRUE(delegate()->captive_portal_checked());
+  EXPECT_TRUE(delegate()->ssl_interstitial_shown());
+  EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
+  EXPECT_FALSE(delegate()->suggested_url_checked());
+
+  // Check that the histogram for the captive portal cert was recorded.
+  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::HANDLE_ALL, 1);
+  histograms.ExpectBucketCount(
+      SSLErrorHandler::GetHistogramNameForTesting(),
+      SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
+}
+
+#endif  // BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
