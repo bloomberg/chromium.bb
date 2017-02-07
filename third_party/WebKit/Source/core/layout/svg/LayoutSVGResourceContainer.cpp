@@ -230,8 +230,7 @@ void LayoutSVGResourceContainer::registerResource() {
     LayoutObject* layoutObject = pendingClient->layoutObject();
     if (!layoutObject)
       continue;
-    DCHECK(layoutObject->isSVG() && (resourceType() != FilterResourceType ||
-                                     !layoutObject->isSVGRoot()));
+    DCHECK(layoutObject->isSVG());
 
     StyleDifference diff;
     diff.setNeedsFullLayout();
