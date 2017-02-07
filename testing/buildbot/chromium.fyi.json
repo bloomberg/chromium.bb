@@ -11357,13 +11357,17 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.browser_tests.filter"
+          "--ozone-platform=headless",
+          "--override-use-gl-with-osmesa-for-tests",
+          "--run-in-mash",
+          "--service-overrides=src/chrome/app/mash/mash_service_overrides.json",
+          "--test-launcher-filter-file=src/testing/buildbot/filters/mojo.fyi.browser_tests.filter",
+          "--use-test-config"
         ],
-        "hard_timeout": 60,
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": false
         },
-        "test": "mash_browser_tests"
+        "test": "browser_tests"
       }
     ]
   },
@@ -11374,13 +11378,15 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.browser_tests.filter"
+          "--override-use-gl-with-osmesa-for-tests",
+          "--run-in-mash",
+          "--service-overrides=src/chrome/app/mash/mash_service_overrides.json",
+          "--test-launcher-filter-file=src/testing/buildbot/filters/mojo.fyi.browser_tests.filter"
         ],
-        "hard_timeout": 60,
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": false
         },
-        "test": "mash_browser_tests"
+        "test": "browser_tests"
       },
       {
         "swarming": {

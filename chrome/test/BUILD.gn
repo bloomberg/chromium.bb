@@ -1175,10 +1175,6 @@ if (!is_android) {
     data_deps = [
       ":browser_tests",
     ]
-
-    if (use_aura) {
-      data_deps += [ "//chrome/app/mash:mash_service_overrides" ]
-    }
   }
 }
 
