@@ -108,7 +108,6 @@ crbug.com/689153 virtual/stable/http/tests/navigation/response204.html [ Timeout
 crbug.com/689153 virtual/mojo-loading/http/tests/navigation/response204.html [ Timeout ]
 
 # This test seems to be partially failing without PlzNavigate as well.
-Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html [ Failure ]
 
 # These tests are flaky.
 Bug(none) http/tests/misc/window-open-then-write.html [ Timeout ]

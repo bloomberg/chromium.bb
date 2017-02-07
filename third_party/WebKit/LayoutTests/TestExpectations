@@ -2159,7 +2159,6 @@ crbug.com/508730 crbug.com/472300 external/wpt/html/semantics/embedded-content/m
 crbug.com/508730 crbug.com/472300 external/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrack/removeCue.html [ Failure ]
 crbug.com/508730 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/cloneNode.html [ Failure ]
 crbug.com/508730 external/wpt/html/browsers/browsing-the-web/read-media/pageload-image.html [ Failure ]
-crbug.com/508730 external/wpt/html/browsers/browsing-the-web/read-media/pageload-video.html [ Failure ]
 crbug.com/508730 external/wpt/html/webappapis/scripting/processing-model-2/compile-error-data-url.html [ Failure ]
 crbug.com/508730 external/wpt/workers/data-url.html [ Failure ]
 
@@ -2459,7 +2458,6 @@ crbug.com/678499 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 crbug.com/680050 inspector/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
 
 # When WebAssembly is exposed in V8 (soon), this test has the wrong number of expected Object.getOwnPropertyNames() for global object.
-crbug.com/575167 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html [ NeedsManualRebaseline ]
 
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Failure Pass ]
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass ]

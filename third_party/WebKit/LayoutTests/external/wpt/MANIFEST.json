@@ -3787,11 +3787,6 @@
      {}
     ]
    ],
-   "./MANIFEST.json": [
-    [
-     {}
-    ]
-   ],
    "./README.md": [
     [
      {}
@@ -6477,11 +6472,6 @@
      {}
     ]
    ],
-   "html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/browsers/origin/cross-origin-objects/cross-origin-objects-expected.txt": [
     [
      {}
@@ -6903,6 +6893,11 @@
     ]
    ],
    "html/dom/dynamic-markup-insertion/document-write/013.js": [
+    [
+     {}
+    ]
+   ],
+   "html/dom/dynamic-markup-insertion/document-write/empty.html": [
     [
      {}
     ]
@@ -12707,6 +12702,11 @@
      {}
     ]
    ],
+   "html/semantics/links/linktypes/alternate-import.css": [
+    [
+     {}
+    ]
+   ],
    "html/semantics/links/linktypes/alternate.css": [
     [
      {}
@@ -14053,11 +14053,6 @@
     ]
    ],
    "pointerevents/pointerevent_attributes_nohover_pointers-manual-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "pointerevents/pointerevent_releasepointercapture_events_to_original_target-manual-expected.txt": [
     [
      {}
     ]
@@ -23126,14 +23121,6 @@
      {}
     ]
    ],
-   "html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html": [
-    [
-     "/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html",
-     {
-      "timeout": "long"
-     }
-    ]
-   ],
    "html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html": [
     [
      "/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html",
@@ -24163,6 +24150,12 @@
    "html/dom/dynamic-markup-insertion/document-write/script_013.html": [
     [
      "/html/dom/dynamic-markup-insertion/document-write/script_013.html",
+     {}
+    ]
+   ],
+   "html/dom/dynamic-markup-insertion/document-write/write-active-document.html": [
+    [
+     "/html/dom/dynamic-markup-insertion/document-write/write-active-document.html",
      {}
     ]
    ],
@@ -25594,6 +25587,12 @@
      {}
     ]
    ],
+   "html/semantics/embedded-content/the-iframe-element/iframe-synchronously-discard.html": [
+    [
+     "/html/semantics/embedded-content/the-iframe-element/iframe-synchronously-discard.html",
+     {}
+    ]
+   ],
    "html/semantics/embedded-content/the-iframe-element/iframe_javascript_url_01.htm": [
     [
      "/html/semantics/embedded-content/the-iframe-element/iframe_javascript_url_01.htm",
@@ -25669,6 +25668,12 @@
    "html/semantics/embedded-content/the-img-element/nonexistent-image.html": [
     [
      "/html/semantics/embedded-content/the-img-element/nonexistent-image.html",
+     {}
+    ]
+   ],
+   "html/semantics/embedded-content/the-img-element/not-rendered-dimension-getter.html": [
+    [
+     "/html/semantics/embedded-content/the-img-element/not-rendered-dimension-getter.html",
      {}
     ]
    ],
@@ -28647,6 +28652,12 @@
    "html/webappapis/scripting/event-loops/task_microtask_ordering.html": [
     [
      "/html/webappapis/scripting/event-loops/task_microtask_ordering.html",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/body-exposed-window-event-handlers.html": [
+    [
+     "/html/webappapis/scripting/events/body-exposed-window-event-handlers.html",
      {}
     ]
    ],
@@ -34451,16 +34462,12 @@
    "89af73c41d456ee93bd40921e96414c1908fc48c",
    "support"
   ],
-  "./MANIFEST.json": [
-   "3364d99562a170daf89ad09865f224bc7813fb9e",
-   "support"
-  ],
   "./README.md": [
    "47d52ff4a87b49dec2fb5ceb98211fb1b9af34fb",
    "support"
   ],
   "./check_stability.py": [
-   "81b2d6b1f7aa7d8c237fb715e7b91c235276befd",
+   "1f1090e0caffce4acb4cd151a7841ec2b0c2ab12",
    "support"
   ],
   "./ci_built_diff.sh": [
@@ -34612,11 +34619,11 @@
    "testharness"
   ],
   "FileAPI/reading-data-section/FileReader-multiple-reads.html": [
-   "8ff4ca7492de72b1764365a302fd74356b8ced21",
+   "32bad4f4ea2ac1104fa2828ef7370a2fdee11a5a",
    "testharness"
   ],
   "FileAPI/reading-data-section/filereader_abort.html": [
-   "24891122dd1a2aea40bfa59a2e19431c449122a9",
+   "b1a3335d10f661aee31df179e5e81d2071b38edd",
    "testharness"
   ],
   "FileAPI/reading-data-section/filereader_error.html": [
@@ -36556,7 +36563,7 @@
    "testharness"
   ],
   "dom/events/EventTarget-dispatchEvent-expected.txt": [
-   "f1c321223977fc3aed215fe3dc64cf842fa0558f",
+   "103c88a2a76fba190a3ccefd0867698ee0af9c4a",
    "support"
   ],
   "dom/events/EventTarget-dispatchEvent-returnvalue.html": [
@@ -37016,7 +37023,7 @@
    "support"
   ],
   "dom/nodes/Document-createEvent-expected.txt": [
-   "782f3ea80f40f8b1323b10fa6874da5ada7664e9",
+   "6fb89355db5fee22062b30c9bed9ae786add2ea1",
    "support"
   ],
   "dom/nodes/Document-createEvent.html": [
@@ -37464,7 +37471,7 @@
    "testharness"
   ],
   "dom/nodes/NodeList-Iterable.html": [
-   "0f809f6016bd766de6cfc5a36588c0e3ef76ffa4",
+   "5f5ff52322f53a282b7b1cf37f452f58c274de92",
    "testharness"
   ],
   "dom/nodes/ParentNode-append.html": [
@@ -39112,7 +39119,7 @@
    "testharness"
   ],
   "hr-time/idlharness-expected.txt": [
-   "ed498ef97d19552f6e4d376ea49c099136614d69",
+   "bb9c7549a8514d7906753a36550f1f51cdf85ca9",
    "support"
   ],
   "hr-time/idlharness.html": [
@@ -39568,11 +39575,11 @@
    "support"
   ],
   "html/browsers/browsing-the-web/read-media/pageload-image.html": [
-   "ab8233f67d7c4b694243d60b435100cad19cae17",
+   "b6710a9c29c09b52db31c9379e933649982dfe09",
    "testharness"
   ],
   "html/browsers/browsing-the-web/read-media/pageload-video.html": [
-   "c3d7d9a9c75a0174a179b65c46a207910835387c",
+   "2d8749e1d5f585ba60ce0a20367d116d126df475",
    "testharness"
   ],
   "html/browsers/browsing-the-web/read-text/load-text-plain.html": [
@@ -40655,14 +40662,6 @@
    "302b651285dd9e4367a90ce48070a3854ad3d0a2",
    "support"
   ],
-  "html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions-expected.txt": [
-   "5074e545dc1000b55718c5c6bd9de0a7b6832a9c",
-   "support"
-  ],
-  "html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html": [
-   "9f9f6d11d0444daf297a75ce1301e7300aef94f0",
-   "testharness"
-  ],
   "html/browsers/origin/cross-origin-objects/cross-origin-objects-expected.txt": [
    "94b45bfb4fbf4ebd1b3c126df025440d176209ac",
    "support"
@@ -40672,7 +40671,7 @@
    "testharness"
   ],
   "html/browsers/origin/cross-origin-objects/cross-origin-objects.html": [
-   "4397388c56189b03b7cf2fb195449fff6c895c81",
+   "4acb7047fa505deba20030e6ee83e9e4b55349a8",
    "testharness"
   ],
   "html/browsers/origin/cross-origin-objects/frame.html": [
@@ -41619,6 +41618,10 @@
    "f4c6db3136e0860d38fe21193a0012eb5e4842ef",
    "testharness"
   ],
+  "html/dom/dynamic-markup-insertion/document-write/empty.html": [
+   "b1149d9764ff4a9a7e8698f7a56ed003796d8582",
+   "support"
+  ],
   "html/dom/dynamic-markup-insertion/document-write/iframe_001.html": [
    "1c9c5a787612667df557c57cb1ec5e101a38dfab",
    "testharness"
@@ -41729,6 +41732,10 @@
   ],
   "html/dom/dynamic-markup-insertion/document-write/script_013.html": [
    "0c45797b8e51b33aa49148eff24e021b69c372d9",
+   "testharness"
+  ],
+  "html/dom/dynamic-markup-insertion/document-write/write-active-document.html": [
+   "66d780431c740841834f0af67d20d28ac5178d9b",
    "testharness"
   ],
   "html/dom/dynamic-markup-insertion/document-writeln/document.writeln-01.xhtml": [
@@ -47471,6 +47478,10 @@
    "d45f7b847e30fe8e3c2e03ef838b55d11ef4592f",
    "testharness"
   ],
+  "html/semantics/embedded-content/the-iframe-element/iframe-synchronously-discard.html": [
+   "8f2c79784636cd93a2a40c89c5d8298d4e0b7ec8",
+   "testharness"
+  ],
   "html/semantics/embedded-content/the-iframe-element/iframe-with-base-ref.html": [
    "9e04580af238e0aea1f124e1748b0a008ddb8a0b",
    "support"
@@ -47605,6 +47616,10 @@
   ],
   "html/semantics/embedded-content/the-img-element/nonexistent-image.html": [
    "ed3a4e8ec0ffe8411176c91de37e965f252534cd",
+   "testharness"
+  ],
+  "html/semantics/embedded-content/the-img-element/not-rendered-dimension-getter.html": [
+   "3752b0f4f5b31ca0bf55b99a400dd8cd7a12b8a7",
    "testharness"
   ],
   "html/semantics/embedded-content/the-img-element/resources/cat.jpg": [
@@ -48731,8 +48746,12 @@
    "966681ecc3eb32b75867711fc938c3f903b5f572",
    "reftest"
   ],
+  "html/semantics/links/linktypes/alternate-import.css": [
+   "07b1c2d78ec359fe1a036080d2019cbfe277f11c",
+   "support"
+  ],
   "html/semantics/links/linktypes/alternate.css": [
-   "b4bc9956adc0edad4e9759161bead825ec2f36bb",
+   "61295dd4d20d8cabcd4c2bcb51f47107682ad033",
    "support"
   ],
   "html/semantics/links/linktypes/contains.json": [
@@ -50339,6 +50358,10 @@
    "3907beccfe4fddca1b2326f737bde4e87979926e",
    "testharness"
   ],
+  "html/webappapis/scripting/events/body-exposed-window-event-handlers.html": [
+   "d5c9f5ddded8fa916f7e63a90d45fc9e01aa34a6",
+   "testharness"
+  ],
   "html/webappapis/scripting/events/body-onload.html": [
    "c8e48064f18b1d1eb13e151b69ee60b8d68f4dab",
    "testharness"
@@ -51184,7 +51207,7 @@
    "testharness"
   ],
   "navigation-timing/nav2_test_attributes_values.html": [
-   "75e8c32b7ed8c25742fe6a4358fd2abe1af813f6",
+   "f13d01f6c6cfa90b2bd92312b3c2e1c1b3aeed59",
    "testharness"
   ],
   "navigation-timing/nav2_test_document_open.html": [
@@ -51192,7 +51215,7 @@
    "testharness"
   ],
   "navigation-timing/nav2_test_instance_accessors.html": [
-   "49311fe1f5609f84eeb5fbcd6118f769a5c4a65e",
+   "c4960ce93c9379763845fb2cae9249d4e4c18376",
    "testharness"
   ],
   "navigation-timing/nav2_test_navigate_within_document.html": [
@@ -51412,7 +51435,7 @@
    "manual"
   ],
   "pointerevents/pointerevent_lostpointercapture_for_disconnected_node-manual.html": [
-   "04281aadb5dc8700ea999317090273113539ca49",
+   "be37ae30b37e73c9281757bc4a7bbe296f3ed76b",
    "manual"
   ],
   "pointerevents/pointerevent_lostpointercapture_is_first-manual.html": [
@@ -51475,12 +51498,8 @@
    "84cf51a88c825b491594d6e91cd103fbea30cc60",
    "manual"
   ],
-  "pointerevents/pointerevent_releasepointercapture_events_to_original_target-manual-expected.txt": [
-   "db71b38ed1cc9a31aacc65da39425c43cc5c1f7e",
-   "support"
-  ],
   "pointerevents/pointerevent_releasepointercapture_events_to_original_target-manual.html": [
-   "b2de73875ec86676b22a6b6b77f5837dbc47271d",
+   "3f75075494c8ea9197bb9af0c08b5b85ef2c52ac",
    "manual"
   ],
   "pointerevents/pointerevent_releasepointercapture_invalid_pointerid-manual.html": [
@@ -57316,7 +57335,7 @@
    "testharness"
   ],
   "workers/semantics/interface-objects/002.worker.js": [
-   "b3df65dd764a792ef0a1f8aa7aca24d7fa1ca5e4",
+   "e067c76ffd47b09d97484a6cbd3d86a29102df9d",
    "testharness"
   ],
   "workers/semantics/interface-objects/003.html": [
