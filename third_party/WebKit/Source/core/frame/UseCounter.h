@@ -1454,6 +1454,7 @@ class CORE_EXPORT UseCounter {
     V8TextDetector_Detect_Method = 1801,
     CSSValueOnDemand = 1802,
     ServiceWorkerNavigationPreload = 1803,
+    FullscreenRequestWithPendingElement = 1804,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

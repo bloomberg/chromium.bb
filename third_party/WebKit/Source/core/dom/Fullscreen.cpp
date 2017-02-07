@@ -481,6 +481,10 @@ void Fullscreen::requestFullscreen(Element& element,
 
     // 5. Return, and run the remaining steps asynchronously.
     // 6. Optionally, perform some animation.
+    if (from(document).m_pendingFullscreenElement) {
+      UseCounter::count(document,
+                        UseCounter::FullscreenRequestWithPendingElement);
+    }
     from(document).m_pendingFullscreenElement = &element;
     document.frame()->chromeClient().enterFullscreen(*document.frame());
 
