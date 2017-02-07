@@ -736,7 +736,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
       // computation of font-relative lengths.
       state.style()->setTextAutosizingMultiplier(
           element->computedStyle()->textAutosizingMultiplier());
-      state.style()->setUnique();
+      state.style()->setUnique(true);
     }
 
     if (state.hasDirAutoAttribute())

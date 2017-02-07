@@ -2539,7 +2539,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   bool emptyState() const { return m_nonInheritedData.m_emptyState; }
   void setEmptyState(bool b) {
-    setUnique();
+    setUnique(true);
     m_nonInheritedData.m_emptyState = b;
   }
 
@@ -2612,7 +2612,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // A unique style is one that has matches something that makes it impossible
   // to share.
   bool unique() const { return m_nonInheritedData.m_unique; }
-  void setUnique() { m_nonInheritedData.m_unique = true; }
+  void setUnique(bool v) { m_nonInheritedData.m_unique = v; }
 
   float textAutosizingMultiplier() const {
     return m_styleInheritedData->textAutosizingMultiplier;

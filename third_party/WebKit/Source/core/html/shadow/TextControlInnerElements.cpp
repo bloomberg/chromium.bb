@@ -87,7 +87,7 @@ PassRefPtr<ComputedStyle> EditingViewPortElement::customStyleForLayoutObject() {
   // We don't want the shadow dom to be editable, so we set this block to
   // read-only in case the input itself is editable.
   style->setUserModify(READ_ONLY);
-  style->setUnique();
+  style->setUnique(true);
 
   if (const ComputedStyle* parentStyle = parentComputedStyle())
     StyleAdjuster::adjustStyleForAlignment(*style, *parentStyle);
