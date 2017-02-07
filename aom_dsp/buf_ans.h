@@ -88,8 +88,13 @@ static INLINE void buf_rabs_write(struct BufAnsCoder *const c, uint8_t val,
 #endif
 }
 
+// Buffer one symbol for encoding using rANS.
+// cum_prob: The cumulative probability before this symbol (the offset of
+// the symbol in the symbol cycle)
+// prob: The probability of this symbol (l_s from the paper)
+// RANS_PRECISION takes the place of m from the paper.
 static INLINE void buf_rans_write(struct BufAnsCoder *const c,
-                                  const struct rans_sym *const sym) {
+                                  aom_cdf_prob cum_prob, aom_cdf_prob prob) {
   assert(c->offset <= c->size);
 #if !ANS_MAX_SYMBOLS
   if (c->offset == c->size) {
@@ -97,8 +102,8 @@ static INLINE void buf_rans_write(struct BufAnsCoder *const c,
   }
 #endif
   c->buf[c->offset].method = ANS_METHOD_RANS;
-  c->buf[c->offset].val_start = sym->cum_prob;
-  c->buf[c->offset].prob = sym->prob;
+  c->buf[c->offset].val_start = cum_prob;
+  c->buf[c->offset].prob = prob;
   ++c->offset;
 #if ANS_MAX_SYMBOLS
   if (c->offset == c->size) aom_buf_ans_flush(c);

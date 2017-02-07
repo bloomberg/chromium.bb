@@ -60,10 +60,7 @@ void aom_buf_ans_flush(struct BufAnsCoder *const c) {
   }
   for (offset = offset - 1; offset >= 0; --offset) {
     if (c->buf[offset].method == ANS_METHOD_RANS) {
-      struct rans_sym sym;
-      sym.prob = c->buf[offset].prob;
-      sym.cum_prob = c->buf[offset].val_start;
-      rans_write(&c->ans, &sym);
+      rans_write(&c->ans, c->buf[offset].val_start, c->buf[offset].prob);
     } else {
       rabs_write(&c->ans, (uint8_t)c->buf[offset].val_start,
                  (AnsP8)c->buf[offset].prob);

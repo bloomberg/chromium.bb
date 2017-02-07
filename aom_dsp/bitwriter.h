@@ -186,12 +186,11 @@ static INLINE void aom_write_tree_record(aom_writer *w,
 static INLINE void aom_write_cdf(aom_writer *w, int symb,
                                  const aom_cdf_prob *cdf, int nsymbs) {
 #if CONFIG_ANS
-  struct rans_sym s;
   (void)nsymbs;
   assert(cdf);
-  s.cum_prob = symb > 0 ? cdf[symb - 1] : 0;
-  s.prob = cdf[symb] - s.cum_prob;
-  buf_rans_write(w, &s);
+  const aom_cdf_prob cum_prob = symb > 0 ? cdf[symb - 1] : 0;
+  const aom_cdf_prob prob = cdf[symb] - cum_prob;
+  buf_rans_write(w, cum_prob, prob);
 #elif CONFIG_DAALA_EC
   daala_write_symbol(w, symb, cdf, nsymbs);
 #else

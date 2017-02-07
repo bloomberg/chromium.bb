@@ -124,24 +124,20 @@ static INLINE void rabs_write(struct AnsCoder *ans, int value, AnsP8 p0) {
   ans->state = quotient * ANS_P8_PRECISION + remainder + (value ? p0 : 0);
 }
 
-struct rans_sym {
-  aom_cdf_prob prob;
-  aom_cdf_prob cum_prob;  // not-inclusive
-};
-
-// rANS with normalization
-// sym->prob takes the place of l_s from the paper
-// ANS_P10_PRECISION is m
-static INLINE void rans_write(struct AnsCoder *ans,
-                              const struct rans_sym *const sym) {
-  const aom_cdf_prob p = sym->prob;
-  unsigned quot, rem;
-  while (ans->state >= L_BASE / RANS_PRECISION * IO_BASE * p) {
+// Encode one symbol using rANS.
+// cum_prob: The cumulative probability before this symbol (the offset of
+// the symbol in the symbol cycle)
+// prob: The probability of this symbol (l_s from the paper)
+// RANS_PRECISION takes the place of m from the paper.
+static INLINE void rans_write(struct AnsCoder *ans, aom_cdf_prob cum_prob,
+                              aom_cdf_prob prob) {
+  unsigned quotient, remainder;
+  while (ans->state >= L_BASE / RANS_PRECISION * IO_BASE * prob) {
     ans->buf[ans->buf_offset++] = ans->state % IO_BASE;
     ans->state /= IO_BASE;
   }
-  ANS_DIVREM(quot, rem, ans->state, p);
-  ans->state = quot * RANS_PRECISION + rem + sym->cum_prob;
+  ANS_DIVREM(quotient, remainder, ans->state, prob);
+  ans->state = quotient * RANS_PRECISION + remainder + cum_prob;
 }
 
 #undef ANS_DIV8

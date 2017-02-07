@@ -87,6 +87,11 @@ const aom_cdf_prob spareto65[] = { 8320, 6018, 4402, 3254, 4259,
 const int kRansSymbols =
     static_cast<int>(sizeof(spareto65) / sizeof(spareto65[0]));
 
+struct rans_sym {
+  aom_cdf_prob prob;
+  aom_cdf_prob cum_prob;  // not-inclusive
+};
+
 std::vector<int> ans_encode_build_vals(rans_sym *const tab, int iters) {
   aom_cdf_prob sum = 0;
   for (int i = 0; i < kRansSymbols; ++i) {
@@ -128,7 +133,7 @@ bool check_rans(const std::vector<int> &sym_vec, const rans_sym *const tab,
   std::clock_t start = std::clock();
   for (std::vector<int>::const_iterator it = sym_vec.begin();
        it != sym_vec.end(); ++it) {
-    buf_rans_write(&a, &tab[*it]);
+    buf_rans_write(&a, tab[*it].cum_prob, tab[*it].prob);
   }
   aom_buf_ans_flush(&a);
   std::clock_t enc_time = std::clock() - start;
