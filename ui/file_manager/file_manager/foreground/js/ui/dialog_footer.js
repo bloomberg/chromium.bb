@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * Footer shown when the Files.app is opened as a file/folder selecting dialog.
+ * Footer shown when the Files app is opened as a file/folder selecting dialog.
  * @param {DialogType} dialogType Dialog type.
  * @param {!Element} container Container of the dialog footer.
  * @param {!Element} filenameInput Filename input element.

@@ -40,7 +40,7 @@ function imageOpen(path) {
     },
     function(actualFilesAfter) {
       chrome.test.assertEq(expectedFilesAfter, actualFilesAfter);
-      // Open a file in Files.app.
+      // Open a file in the Files app.
       remoteCall.callRemoteTestUtil(
           'openFile', appId, ['My Desktop Background.png'], this.next);
     },
@@ -56,7 +56,7 @@ function imageOpen(path) {
           galleryAppId, 800, 600, 'My Desktop Background').then(this.next);
     },
     function() {
-      // Open another file in Files.app.
+      // Open another file in the Files app.
       remoteCall.callRemoteTestUtil(
           'openFile', appId, ['image3.jpg'], this.next);
     },

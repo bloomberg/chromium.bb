@@ -822,7 +822,7 @@ DirectoryModel.prototype.findIndexByEntry_ = function(entry) {
 /**
  * Called when rename is done successfully.
  * Note: conceptually, DirectoryModel should work without this, because entries
- * can be renamed by other systems anytime and Files.app should reflect it
+ * can be renamed by other systems anytime and the Files app should reflect it
  * correctly.
  * TODO(hidehiko): investigate more background, and remove this if possible.
  *

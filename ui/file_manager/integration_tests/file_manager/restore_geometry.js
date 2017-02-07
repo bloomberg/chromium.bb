@@ -79,7 +79,7 @@ testcase.restoreGeometryMaximizedState = function() {
     function() {
       remoteCall.closeWindowAndWait(appId).then(this.next);
     },
-    // Open a Files.app window again.
+    // Open a Files app window again.
     function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },

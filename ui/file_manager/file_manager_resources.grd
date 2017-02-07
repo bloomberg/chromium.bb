@@ -130,7 +130,7 @@
       <include name="IDR_FILE_MANAGER_IMG_UI_DRIVE_WELCOME_PEOPLE" file="file_manager/foreground/images/files/ui/drive_banner_people.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_UI_2X_DRIVE_WELCOME_PEOPLE" file="file_manager/foreground/images/files/ui/2x/drive_banner_people.png" type="BINDATA" />
 
-      <!-- VideoPlayer.app pages and scripts. -->
+      <!-- The VideoPlayer app pages and scripts. -->
       <include name="IDR_VIDEO_PLAYER_MANIFEST" file="video_player/manifest.json" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER" file="video_player/video_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_JS" file="video_player/js/video_player_scripts.js" flattenhtml="true" type="BINDATA" />
@@ -144,7 +144,7 @@
       <include name="IDR_VIDEO_PLAYER_ICON_256" file="video_player/images/icon/video-player-256.png" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_ICON_FAVICON_32" file="video_player/images/icon/video-player-favicon-32.png" type="BINDATA" />
 
-      <!-- AudioPlayer.app pages and scripts. -->
+      <!-- The AudioPlayer app pages and scripts. -->
       <include name="IDR_AUDIO_PLAYER_MANIFEST" file="audio_player/manifest.json" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_BACKGROUND_JS" file="audio_player/js/background_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_ELEMENTS_AUDIO_PLAYER_CSS" file="audio_player/elements/audio_player.css" flattenhtml="true" type="BINDATA" />
@@ -174,7 +174,7 @@
       <include name="IDR_AUDIO_PLAYER_ICON_128" file="audio_player/icons/audio-player-128.png" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_ICON_256" file="audio_player/icons/audio-player-256.png" type="BINDATA" />
 
-      <!-- Gallery.app pages and scripts. -->
+      <!-- The Gallery app pages and scripts. -->
       <include name="IDR_GALLERY_MANIFEST" file="gallery/manifest.json" type="BINDATA" />
       <include name="IDR_GALLERY" file="gallery/gallery.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GALLERY_JS" file="gallery/js/gallery_scripts.js" flattenhtml="true" type="BINDATA" />

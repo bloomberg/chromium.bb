@@ -112,8 +112,8 @@ LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
   this.queryId_ = queryId;
 
   // Request an instance of volume manager to ensure that all volumes are
-  // initialized. When user searches while background page of Files.app is not
-  // running, it happens that this method is executed before all volumes are
+  // initialized. When user searches while background page of the Files app is
+  // not running, it happens that this method is executed before all volumes are
   // initialized. In this method, chrome.fileManagerPrivate.searchDriveMetadata
   // resolves url internally, and it fails if filesystem of the url is not
   // initialized.

@@ -357,7 +357,8 @@ class SingleEntryPropertiesGetterForDrive {
       for (size_t i = 0; i < drive_apps.size(); ++i) {
         const drive::DriveAppInfo& app_info = drive_apps[i];
         if (default_task.app_id == app_info.app_id) {
-          // The drive app is set as default. Files.app should use the doc icon.
+          // The drive app is set as default. The Files app should use the doc
+          // icon.
           const GURL doc_icon = drive::util::FindPreferredIcon(
               app_info.document_icons, drive::util::kPreferredIconSize);
           properties_->custom_icon_url.reset(new std::string(doc_icon.spec()));

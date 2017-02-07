@@ -52,7 +52,7 @@ testcase.searchBoxFocus = function() {
 };
 
 /**
- * Tests the tab focus behavior of Files.app when no file is selected.
+ * Tests the tab focus behavior of the Files app when no file is selected.
  */
 testcase.tabindexFocus = function() {
   var appId;
@@ -101,7 +101,7 @@ testcase.tabindexFocus = function() {
 };
 
 /**
- * Tests the tab focus behavior of Files.app when no file is selected in
+ * Tests the tab focus behavior of the Files app when no file is selected in
  * Downloads directory.
  */
 testcase.tabindexFocusDownloads = function() {
@@ -145,7 +145,7 @@ testcase.tabindexFocusDownloads = function() {
 };
 
 /**
- * Tests the tab focus behavior of Files.app when a directory is selected.
+ * Tests the tab focus behavior of the Files app when a directory is selected.
  */
 testcase.tabindexFocusDirectorySelected = function() {
   var appId;
@@ -223,7 +223,7 @@ testcase.tabindexFocusDirectorySelected = function() {
  *     test runs. The window ID is passed as an argument. If null, do nothing as
  *     initialization.
  * @param {!Array<string>} initialElements Selectors of the elements which
- *     shows the Files.app is ready. After all the elements show up, the
+ *     shows the Files app is ready. After all the elements show up, the
  *     tabfocus tests starts.
  * @param {Array<string>} expectedTabOrder Array with the IDs of the element
  *     with the corresponding order of expected tab-indexes.

@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * Extension ID of Files.app.
+ * Extension ID of the Files app.
  * @type {string}
  * @const
  */

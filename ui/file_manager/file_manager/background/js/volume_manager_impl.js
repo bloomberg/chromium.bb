@@ -85,8 +85,8 @@ VolumeManagerImpl.prototype.addVolumeMetadata_ = function(volumeMetadata) {
         // error, since users can do nothing in this situation.
         // We show Removable and Provided volumes regardless of mount error so
         // that users can unmount or format the volume.
-        // TODO(fukino): Once Files.app get ready, show erroneous Drive volume
-        // so that users can see auth warning banner on the volume.
+        // TODO(fukino): Once the Files app gets ready, show erroneous Drive
+        // volume so that users can see auth warning banner on the volume.
         // crbug.com/517772.
         var shouldShow = true;
         switch (volumeInfo.volumeType) {

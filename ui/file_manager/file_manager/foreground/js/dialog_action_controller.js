@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * Controler for handling behaviors of Files.app opened as a file/folder
+ * Controler for handling behaviors of the Files app opened as a file/folder
  * selection dialog.
  *
  * @param {DialogType} dialogType Dialog type.

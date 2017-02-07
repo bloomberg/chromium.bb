@@ -346,7 +346,7 @@ GalleryItem.prototype.saveToFile = function(
 GalleryItem.prototype.getEntryToWrite_ = function(
     overwrite, fallbackDirectory, volumeManager) {
   return new Promise(function(resolve, reject) {
-    // Since in-place editing is not supported on MTP volume, Gallery.app
+    // Since in-place editing is not supported on MTP volume, the Gallery app
     // handles MTP volume as read only volume.
     if (this.locationInfo_.isReadOnly ||
         GalleryUtil.isOnMTPVolume(this.entry_, volumeManager)) {

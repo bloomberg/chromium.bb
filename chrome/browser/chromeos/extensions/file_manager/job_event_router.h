@@ -25,7 +25,7 @@
 
 namespace file_manager {
 
-// Files.app's event router handling job related events.
+// Files app's event router handling job related events.
 class JobEventRouter : public drive::JobListObserver {
  public:
   explicit JobEventRouter(const base::TimeDelta& event_delay);

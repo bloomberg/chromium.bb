@@ -316,7 +316,7 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
     var task = tasks[i];
     var taskParts = task.taskId.split('|');
 
-    // Skip internal Files.app's handlers.
+    // Skip internal Files app's handlers.
     if (taskParts[0] === id &&
         (taskParts[2] === 'select' || taskParts[2] === 'open')) {
       continue;

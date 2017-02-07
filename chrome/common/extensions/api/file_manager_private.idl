@@ -890,7 +890,7 @@ interface Functions {
       DOMString name,
       ValidatePathNameLengthCallback callback);
 
-  // Changes the zoom factor of the Files.app.
+  // Changes the zoom factor of the Files app.
   // |operation| Zooming mode.
   static void zoom(ZoomOperationType operation);
 

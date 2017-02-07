@@ -124,7 +124,7 @@ test.util.sync.closeWindow = function(appId) {
 };
 
 /**
- * Gets a document in the Files.app's window, including iframes.
+ * Gets a document in the Files app's window, including iframes.
  *
  * @param {Window} contentWindow Window to be used.
  * @param {string=} opt_iframeQuery Query for the iframe.

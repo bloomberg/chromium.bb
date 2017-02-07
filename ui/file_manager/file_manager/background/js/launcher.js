@@ -8,7 +8,7 @@
 var launcher = {};
 
 /**
- * Type of a Files.app's instance launch.
+ * Type of a Files app's instance launch.
  * @enum {number}
  */
 var LaunchType = {
@@ -119,7 +119,7 @@ launcher.launchFileManager = function(
           continue;
 
         // The isFocused() method should always be available, but in case
-        // Files.app's failed on some error, wrap it with try catch.
+        // the Files app's failed on some error, wrap it with try catch.
         try {
           if (window.appWindows[key].contentWindow.isFocused()) {
             if (opt_callback)

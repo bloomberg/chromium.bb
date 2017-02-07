@@ -41,7 +41,7 @@ ExifEncoder.prototype = {__proto__: ImageEncoder.MetadataEncoder.prototype};
 ImageEncoder.registerMetadataEncoder(ExifEncoder, 'image/jpeg');
 
 /**
- * Software name of Gallery.app.
+ * Software name of the Gallery app.
  * @type {string}
  * @const
  */

@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * Extension ID of Files.app.
+ * Extension ID of the Files app.
  * @type {string}
  * @const
  */
@@ -206,12 +206,12 @@ var SHARED_WITH_ME_ENTRY_SET = [
 ];
 
 /**
- * Opens a Files.app's main window.
+ * Opens a Files app's main window.
  *
  * TODO(mtomasz): Pass a volumeId or an enum value instead of full paths.
  *
- * @param {Object} appState App state to be passed with on opening Files.app.
- *     Can be null.
+ * @param {Object} appState App state to be passed with on opening the Files
+ *     app. Can be null.
  * @param {?string} initialRoot Root path to be used as a default current
  *     directory during initialization. Can be null, for no default path.
  * @param {function(string)=} opt_callback Callback with the app id.
@@ -259,7 +259,7 @@ function openAndWaitForClosingDialog(
   return remoteCall.waitForWindow('dialog#').then(function(windowId) {
     return remoteCall.waitForElement(windowId, '#file-list').
         then(function() {
-          // Wait for initialization of Files.app.
+          // Wait for initialization of the Files app.
           return remoteCall.waitForFiles(
               windowId, TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET));
         }).
@@ -287,14 +287,14 @@ function openAndWaitForClosingDialog(
 }
 
 /**
- * Opens a Files.app's main window and waits until it is initialized. Fills
+ * Opens a Files app's main window and waits until it is initialized. Fills
  * the window with initial files. Should be called for the first window only.
  *
  * TODO(hirono): Add parameters to specify the entry set to be prepared.
  * TODO(mtomasz): Pass a volumeId or an enum value instead of full paths.
  *
- * @param {Object} appState App state to be passed with on opening Files.app.
- *     Can be null.
+ * @param {Object} appState App state to be passed with on opening the Files
+ *     app. Can be null.
  * @param {?string} initialRoot Root path to be used as a default current
  *     directory during initialization. Can be null, for no default path.
  * @param {function(string, Array<Array<string>>)=} opt_callback Callback with

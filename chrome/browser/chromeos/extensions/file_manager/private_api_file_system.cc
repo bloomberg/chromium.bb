@@ -192,7 +192,7 @@ storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
   // loop or later, so at least during this invocation it should alive.
   //
   // TODO(yawano): change ERROR_BEHAVIOR_ABORT to ERROR_BEHAVIOR_SKIP after
-  //     error messages of individual operations become appear in the Files.app
+  //     error messages of individual operations become appear in the Files app
   //     UI.
   storage::FileSystemOperationRunner::OperationID* operation_id =
       new storage::FileSystemOperationRunner::OperationID;

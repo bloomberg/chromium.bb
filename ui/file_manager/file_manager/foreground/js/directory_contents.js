@@ -563,7 +563,7 @@ DirectoryContents.prototype.replaceContextFileList = function() {
       for (var i = 0; i < entries.length; i++) {
         var url = entries[i].toURL();
         var newMetadata = newMetadatas[i];
-        // If Files.app fails to obtain both old and new modificationTime,
+        // If the Files app fails to obtain both old and new modificationTime,
         // regard the entry as not updated.
         if ((this.metadataSnapshot_[url] &&
              this.metadataSnapshot_[url].modificationTime &&

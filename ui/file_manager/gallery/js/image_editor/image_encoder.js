@@ -8,7 +8,7 @@
 function ImageEncoder() {}
 
 /**
- * The value 360 px is enough in Files.app grid view for HiDPI devices.
+ * The value 360 px is enough in the Files app grid view for HiDPI devices.
  * @const {number}
  */
 ImageEncoder.MAX_THUMBNAIL_DIMENSION = 360;

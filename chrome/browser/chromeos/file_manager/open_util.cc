@@ -51,7 +51,8 @@ void ExecuteFileTaskForUrl(Profile* profile,
 
   file_tasks::ExecuteFileTask(
       profile,
-      GetFileManagerMainPageUrl(),  // Executing task on behalf of Files.app.
+      GetFileManagerMainPageUrl(),  // Executing task on behalf of the Files
+                                    // app.
       task, std::vector<FileSystemURL>(1, file_system_context->CrackURL(url)),
       base::Bind(&IgnoreFileTaskExecuteResult));
 }

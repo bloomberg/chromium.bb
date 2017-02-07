@@ -546,7 +546,7 @@ namespace fileSystemProvider {
   interface Functions {
     // Mounts a file system with the given <code>fileSystemId</code> and
     // <code>displayName</code>. <code>displayName</code> will be shown in the
-    // left panel of Files.app. <code>displayName</code> can contain any
+    // left panel of the Files app. <code>displayName</code> can contain any
     // characters including '/', but cannot be an empty string.
     // <code>displayName</code> must be descriptive but doesn't have to be
     // unique. The <code>fileSystemId</code> must not be an empty string.

@@ -48,7 +48,7 @@
 //
 // The tests cover following scenarios:
 // - Performing file system operations on external file systems from an
-//   app with fileManagerPrivate permission (i.e. Files.app).
+//   app with fileManagerPrivate permission (i.e. The Files app).
 // - Performing read/write operations from file handler extensions. These
 //   extensions need a file browser extension to give them permissions to access
 //   files. This also includes file handler extensions in filesystem API.

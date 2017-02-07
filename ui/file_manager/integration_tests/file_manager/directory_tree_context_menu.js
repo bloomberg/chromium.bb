@@ -105,7 +105,7 @@ function navigateWithDirectoryTree(windowId, path) {
     return remoteCall.callRemoteTestUtil('fakeMouseClick', windowId,
         [`[full-path-for-testing="${path}"]`]);
   }).then(function() {
-    // Wait until Files.app is navigated to the path.
+    // Wait until the Files app is navigated to the path.
     return remoteCall.waitUntilCurrentDirectoryIsChanged(
         windowId, `/Downloads${path}`);
   });

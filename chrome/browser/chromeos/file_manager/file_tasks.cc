@@ -120,8 +120,8 @@ void KeepOnlyFileManagerInternalTasks(std::vector<FullTaskDescriptor>* tasks) {
   tasks->swap(filtered);
 }
 
-// Returns true if the given task is a handler by built-in apps like Files.app
-// itself or QuickOffice etc. They are used as the initial default app.
+// Returns true if the given task is a handler by built-in apps like the Files
+// app itself or QuickOffice etc. They are used as the initial default app.
 bool IsFallbackFileHandler(const file_tasks::TaskDescriptor& task) {
   if (task.task_type != file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER &&
       task.task_type != file_tasks::TASK_TYPE_FILE_HANDLER)

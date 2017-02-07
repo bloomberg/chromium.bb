@@ -93,7 +93,7 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
   this.appState_ = appState;
 
   // Get similar windows, it means with the same initial url, eg. different
-  // main windows of Files.app.
+  // main windows of the Files app.
   var similarWindows = window.getSimilarWindows(this.url_);
 
   // Restore maximized windows, to avoid hiding them to tray, which can be

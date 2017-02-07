@@ -98,7 +98,7 @@ function testExifEncodeAndDecode() {
   // GPS latitude ref
   assertEquals('N\0', parsedMetadata.ifd.gps[0x1].value);
 
-  // Software should be set as Gallery.app
+  // Software should be set as the Gallery app
   assertEquals('Chrome OS Gallery App\0',
       parsedMetadata.ifd.image[0x131].value);
 
