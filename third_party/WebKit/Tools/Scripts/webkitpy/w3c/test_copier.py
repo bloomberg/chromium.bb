@@ -146,13 +146,13 @@ class TestCopier(object):
                 # FIXME: This block should really be a separate function, but the early-continues make that difficult.
 
                 if filename.startswith('.') or filename.endswith('.pl'):
-                    _log.info('Skipping: %s', path_full)
-                    _log.info('  Reason: Hidden files and perl scripts are not necessary.')
+                    _log.debug('Skipping: %s', path_full)
+                    _log.debug('  Reason: Hidden files and perl scripts are not necessary.')
                     continue
                 if filename == 'OWNERS' or filename == 'reftest.list':
                     # See http://crbug.com/584660 and http://crbug.com/582838.
-                    _log.info('Skipping: %s', path_full)
-                    _log.info('  Reason: This file may cause Chromium presubmit to fail.')
+                    _log.debug('Skipping: %s', path_full)
+                    _log.debug('  Reason: This file may cause Chromium presubmit to fail.')
                     continue
                 if self.path_too_long(path_full):
                     _log.warning('Skipping: %s', path_full)

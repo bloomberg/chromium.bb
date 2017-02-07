@@ -154,10 +154,6 @@ class TestCopierTest(LoggingTestCase):
         self.assertLog([
             'WARNING: Skipping: %s\n' % long_file_path,
             'WARNING:   Reason: Long path. Max length 140; see http://crbug.com/609871.\n',
-            'INFO: Skipping: /blink/w3c/dir/reftest.list\n',
-            'INFO:   Reason: This file may cause Chromium presubmit to fail.\n',
-            'INFO: Skipping: /blink/w3c/dir/OWNERS\n',
-            'INFO:   Reason: This file may cause Chromium presubmit to fail.\n',
         ])
 
     def test_should_try_to_convert_positive_cases(self):
