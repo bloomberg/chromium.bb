@@ -29,6 +29,7 @@ Loaded modules:
     dom_extension
     elements
     emulation
+    event_listeners
     extensions
     host
     inline_editor
@@ -56,6 +57,7 @@ Loaded modules:
     dom_extension
     elements
     emulation
+    event_listeners
     extensions
     host
     inline_editor
@@ -87,6 +89,7 @@ Loaded modules:
     dom_extension
     elements
     emulation
+    event_listeners
     extensions
     host
     inline_editor
@@ -121,6 +124,7 @@ Loaded modules:
     dom_extension
     elements
     emulation
+    event_listeners
     extensions
     host
     inline_editor

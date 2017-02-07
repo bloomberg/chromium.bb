@@ -355,7 +355,7 @@ InspectorTest.expandAndDumpEventListeners = function(eventListenersView, callbac
     if (force)
         listenersArrived();
     else
-        InspectorTest.addSniffer(Components.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
+        InspectorTest.addSniffer(EventListeners.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
 }
 
 InspectorTest.dumpNavigatorView = function(navigatorView, dumpIcons)
