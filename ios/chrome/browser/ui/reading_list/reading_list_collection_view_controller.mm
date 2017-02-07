@@ -25,14 +25,13 @@
 #import "ios/chrome/browser/ui/favicon_view.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/browser/ui/url_loader.h"
-#include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "net/base/network_change_notifier.h"
@@ -44,17 +43,6 @@
 #endif
 
 namespace {
-
-NSString* const kEmptyReadingListBackgroundIcon = @"reading_list_empty_state";
-NSString* const kBeginBoldMarker = @"BEGIN_BOLD_FONT";
-NSString* const kEndBoldMarker = @"END_BOLD_FONT";
-
-// Background view constants.
-const CGFloat kTextImageSpacing = 10;
-const CGFloat kTextHorizontalMargin = 32;
-const CGFloat kImageWidth = 60;
-const CGFloat kImageHeight = 44;
-const CGFloat kFontSize = 16;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierUnread = kSectionIdentifierEnumZero,
@@ -96,8 +84,6 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 // modifications should be taken into account.
 @property(nonatomic, assign) BOOL shouldMonitorModel;
 
-// Returns the UIView to be displayed when the reading list is empty.
-- (UIView*)emptyCollectionBackground;
 // Handles "Done" button touches.
 - (void)donePressed;
 // Loads all the items in all sections.
@@ -210,7 +196,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     _readingListModel = model;
     _largeIconService = largeIconService;
     _readingListDownloadService = readingListDownloadService;
-    _emptyCollectionBackground = [self emptyCollectionBackground];
+    _emptyCollectionBackground =
+        [[ReadingListEmptyCollectionBackground alloc] init];
 
     _shouldMonitorModel = YES;
     _modelHasBeenModified = NO;
@@ -401,85 +388,6 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 #pragma mark - Private methods
-
-- (UIView*)emptyCollectionBackground {
-  UIView* emptyCollectionBackground = [[UIView alloc] initWithFrame:CGRectZero];
-
-  NSString* rawText = nil;
-  if (IsCompact())
-    rawText = l10n_util::GetNSString(IDS_IOS_READING_LIST_EMPTY_MESSAGE_IPHONE);
-  else
-    rawText = l10n_util::GetNSString(IDS_IOS_READING_LIST_EMPTY_MESSAGE_IPAD);
-
-  rawText = [[rawText stringByAppendingString:@"\n\n"]
-      stringByAppendingString:l10n_util::GetNSString(
-                                  IDS_IOS_READING_LIST_EMPTY_OFFLINE)];
-
-  NSRange tagRange;
-  NSString* untaggedString =
-      ParseStringWithTag(rawText, &tagRange, kBeginBoldMarker, kEndBoldMarker);
-
-  NSMutableParagraphStyle* paragraphStyle =
-      [[NSMutableParagraphStyle alloc] init];
-  // This headIndent is needed to prevent a flicker of the text on iPhone 6+
-  // when the user scrolls the empty collection.
-  paragraphStyle.headIndent = 1;
-  NSDictionary* attributes = @{
-    NSFontAttributeName :
-        [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:kFontSize],
-    NSForegroundColorAttributeName : [[MDCPalette greyPalette] tint700],
-    NSParagraphStyleAttributeName : paragraphStyle
-  };
-
-  NSMutableAttributedString* baseAttributedString =
-      [[NSMutableAttributedString alloc] initWithString:untaggedString
-                                             attributes:attributes];
-
-  [baseAttributedString addAttribute:NSFontAttributeName
-                               value:[[MDFRobotoFontLoader sharedInstance]
-                                         mediumFontOfSize:kFontSize]
-                               range:tagRange];
-
-  UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
-  label.attributedText = baseAttributedString;
-  label.numberOfLines = 0;
-  label.textAlignment = NSTextAlignmentCenter;
-  [label setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [emptyCollectionBackground addSubview:label];
-
-  UIImageView* imageView = [[UIImageView alloc] init];
-  imageView.image = [UIImage imageNamed:kEmptyReadingListBackgroundIcon];
-  [imageView setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [emptyCollectionBackground addSubview:imageView];
-
-  [NSLayoutConstraint activateConstraints:@[
-    [[imageView heightAnchor] constraintEqualToConstant:kImageHeight],
-    [[imageView widthAnchor] constraintEqualToConstant:kImageWidth],
-    [[emptyCollectionBackground centerXAnchor]
-        constraintEqualToAnchor:label.centerXAnchor],
-    [[emptyCollectionBackground centerXAnchor]
-        constraintEqualToAnchor:imageView.centerXAnchor],
-    [label.topAnchor constraintEqualToAnchor:imageView.bottomAnchor
-                                    constant:kTextImageSpacing]
-  ]];
-
-  // Position the top of the image at 40% from the top.
-  NSLayoutConstraint* verticalAlignment =
-      [NSLayoutConstraint constraintWithItem:imageView
-                                   attribute:NSLayoutAttributeTop
-                                   relatedBy:NSLayoutRelationEqual
-                                      toItem:emptyCollectionBackground
-                                   attribute:NSLayoutAttributeBottom
-                                  multiplier:0.4
-                                    constant:0];
-  [emptyCollectionBackground addConstraints:@[ verticalAlignment ]];
-
-  ApplyVisualConstraintsWithMetrics(@[ @"H:|-(margin)-[textLabel]-(margin)-|" ],
-                                    @{ @"textLabel" : label },
-                                    @{ @"margin" : @(kTextHorizontalMargin) });
-
-  return emptyCollectionBackground;
-}
 
 - (void)donePressed {
   if ([self.editor isEditing]) {
