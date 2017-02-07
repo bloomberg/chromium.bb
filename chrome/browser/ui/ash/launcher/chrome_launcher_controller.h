@@ -11,11 +11,11 @@
 
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_item_types.h"
+#include "ash/public/cpp/shelf_application_menu_item.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -42,10 +42,6 @@ class Image;
 namespace ui {
 class BaseWindow;
 }
-
-// A list of the elements which makes up a simple menu description.
-using ChromeLauncherAppMenuItems =
-    std::vector<std::unique_ptr<ChromeLauncherAppMenuItem>>;
 
 // ChromeLauncherController manages the launcher items needed for content
 // windows. Launcher items have a type, an optional app id, and a controller.
@@ -193,9 +189,8 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // Get the list of all running incarnations of this item.
   // |event_flags| specifies the flags which were set by the event which
   // triggered this menu generation. It can be used to generate different lists.
-  virtual ChromeLauncherAppMenuItems GetApplicationList(
-      const ash::ShelfItem& item,
-      int event_flags) = 0;
+  virtual ash::ShelfAppMenuItemList GetAppMenuItems(const ash::ShelfItem& item,
+                                                    int event_flags) = 0;
 
   // Get the list of all tabs which belong to a certain application type.
   virtual std::vector<content::WebContents*> GetV1ApplicationsFromAppId(

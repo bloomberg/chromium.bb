@@ -31,9 +31,10 @@ ShelfItemDelegate::PerformedAction WindowWatcherShelfItemDelegate::ItemSelected(
   return kExistingWindowActivated;
 }
 
-ui::SimpleMenuModel* WindowWatcherShelfItemDelegate::CreateApplicationMenu(
+ShelfAppMenuItemList WindowWatcherShelfItemDelegate::GetAppMenuItems(
     int event_flags) {
-  return nullptr;
+  // Return an empty item list to avoid showing an application menu.
+  return ShelfAppMenuItemList();
 }
 
 void WindowWatcherShelfItemDelegate::Close() {}

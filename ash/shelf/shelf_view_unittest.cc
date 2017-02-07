@@ -2004,36 +2004,6 @@ class InkDropSpy : public views::InkDrop {
   DISALLOW_COPY_AND_ASSIGN(InkDropSpy);
 };
 
-// A menu model that contains minimum number of items needed for a menu to be
-// shown on a shelf item.
-class TestShelfMenuModel : public ui::SimpleMenuModel,
-                           public ui::SimpleMenuModel::Delegate {
- public:
-  TestShelfMenuModel() : ui::SimpleMenuModel(this) { Build(); }
-  ~TestShelfMenuModel() override {}
-
- private:
-  void Build() {
-    // A menu is expected to have at least 6 items. Three spacing separators,
-    // one title, and at least two more items.
-    AddSeparator(ui::SPACING_SEPARATOR);
-    AddItem(0, base::ASCIIToUTF16("Title"));
-    AddSeparator(ui::SPACING_SEPARATOR);
-    AddItem(1, base::ASCIIToUTF16("Item 1"));
-    AddItem(2, base::ASCIIToUTF16("Item 2"));
-    AddSeparator(ui::SPACING_SEPARATOR);
-  }
-
-  // ui::SimpleMenuModel::Delegate:
-  bool IsCommandIdChecked(int command_id) const override { return false; }
-  bool IsCommandIdEnabled(int command_id) const override {
-    return command_id != 0;
-  }
-  void ExecuteCommand(int command_id, int event_flags) override {}
-
-  DISALLOW_COPY_AND_ASSIGN(TestShelfMenuModel);
-};
-
 // A ShelfItemDelegate that returns a menu for the shelf item.
 class ListMenuShelfItemDelegate : public TestShelfItemDelegate {
  public:
@@ -2042,8 +2012,12 @@ class ListMenuShelfItemDelegate : public TestShelfItemDelegate {
 
  private:
   // TestShelfItemDelegate:
-  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override {
-    return new TestShelfMenuModel;
+  ShelfAppMenuItemList GetAppMenuItems(int event_flags) override {
+    ShelfAppMenuItemList items;
+    base::string16 title = base::ASCIIToUTF16("title");
+    items.push_back(base::MakeUnique<ShelfApplicationMenuItem>(title));
+    items.push_back(base::MakeUnique<ShelfApplicationMenuItem>(title));
+    return items;
   }
 
   DISALLOW_COPY_AND_ASSIGN(ListMenuShelfItemDelegate);

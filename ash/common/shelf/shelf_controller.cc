@@ -53,36 +53,6 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
   void set_title(const base::string16& title) { title_ = title; }
 
  private:
-  // This application menu model for ShelfItemDelegateMus lists open windows.
-  class ShelfMenuModelMus : public ui::SimpleMenuModel,
-                            public ui::SimpleMenuModel::Delegate {
-   public:
-    explicit ShelfMenuModelMus(ShelfItemDelegateMus* item_delegate)
-        : ui::SimpleMenuModel(this), item_delegate_(item_delegate) {
-      AddSeparator(ui::SPACING_SEPARATOR);
-      AddItem(0, item_delegate_->title());
-      AddSeparator(ui::SPACING_SEPARATOR);
-      for (const auto& window : item_delegate_->window_id_to_title())
-        AddItem(window.first, window.second);
-      AddSeparator(ui::SPACING_SEPARATOR);
-    }
-    ~ShelfMenuModelMus() override {}
-
-    // ui::SimpleMenuModel::Delegate:
-    bool IsCommandIdChecked(int command_id) const override { return false; }
-    bool IsCommandIdEnabled(int command_id) const override {
-      return command_id > 0;
-    }
-    void ExecuteCommand(int command_id, int event_flags) override {
-      NOTIMPLEMENTED();
-    }
-
-   private:
-    ShelfItemDelegateMus* item_delegate_;
-
-    DISALLOW_COPY_AND_ASSIGN(ShelfMenuModelMus);
-  };
-
   // ShelfItemDelegate:
   ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override {
@@ -97,8 +67,13 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
     return kNoAction;
   }
 
-  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override {
-    return new ShelfMenuModelMus(this);
+  ShelfAppMenuItemList GetAppMenuItems(int event_flags) override {
+    ShelfAppMenuItemList items;
+    for (const auto& window : window_id_to_title_) {
+      items.push_back(
+          base::MakeUnique<ShelfApplicationMenuItem>(window.second));
+    }
+    return items;
   }
 
   void Close() override { NOTIMPLEMENTED(); }

@@ -181,11 +181,11 @@ void ChromeLauncherControllerMus::AdditionalUserAddedToSession(
   NOTIMPLEMENTED();
 }
 
-ChromeLauncherAppMenuItems ChromeLauncherControllerMus::GetApplicationList(
+ash::ShelfAppMenuItemList ChromeLauncherControllerMus::GetAppMenuItems(
     const ash::ShelfItem& item,
     int event_flags) {
   NOTIMPLEMENTED();
-  return ChromeLauncherAppMenuItems();
+  return ash::ShelfAppMenuItemList();
 }
 
 std::vector<content::WebContents*>

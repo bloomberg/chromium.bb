@@ -46,11 +46,10 @@ class AppWindowLauncherItemController : public LauncherItemController,
   void Launch(ash::LaunchSource source, int event_flags) override;
   ash::ShelfItemDelegate::PerformedAction Activate(
       ash::LaunchSource source) override;
-  ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
   AppWindowLauncherItemController* AsAppWindowLauncherItemController() override;
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
-  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override;
+  ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
   void Close() override;
 
   // aura::WindowObserver overrides:

@@ -6,11 +6,10 @@
 #define ASH_COMMON_SHELF_SHELF_ITEM_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "base/strings/string16.h"
+#include "ash/public/cpp/shelf_application_menu_item.h"
 
 namespace ui {
 class Event;
-class SimpleMenuModel;
 }
 
 namespace ash {
@@ -43,16 +42,9 @@ class ASH_EXPORT ShelfItemDelegate {
   // Returns the action performed by selecting the item.
   virtual PerformedAction ItemSelected(const ui::Event& event) = 0;
 
-  // Returns the application menu model for the specified item. There are three
-  // possible return values:
-  //  - A return of NULL indicates that no menu is wanted for this item.
-  //  - A return of a menu with one item means that only the name of the
-  //    application/item was added and there are no active applications.
-  //    Note: This is useful for hover menus which also show context help.
-  //  - A list containing the title and the active list of items.
-  // The caller takes ownership of the returned model.
+  // Returns any application menu items that should appear for this shelf item.
   // |event_flags| specifies the flags of the event which triggered this menu.
-  virtual ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) = 0;
+  virtual ShelfAppMenuItemList GetAppMenuItems(int event_flags) = 0;
 
   // Closes all windows associated with this item.
   virtual void Close() = 0;

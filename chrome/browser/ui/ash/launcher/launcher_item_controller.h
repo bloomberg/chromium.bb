@@ -16,10 +16,6 @@
 
 class AppWindowLauncherItemController;
 class ChromeLauncherController;
-class ChromeLauncherAppMenuItem;
-
-using ChromeLauncherAppMenuItems =
-    std::vector<std::unique_ptr<ChromeLauncherAppMenuItem>>;
 
 // LauncherItemController is used by ChromeLauncherController to track one
 // or more windows associated with a shelf item.
@@ -58,9 +54,6 @@ class LauncherItemController : public ash::ShelfItemDelegate {
   // item, or launches the item if it is not currently open.
   // Returns the action performed by activating the item.
   virtual PerformedAction Activate(ash::LaunchSource source) = 0;
-
-  // Called to retrieve the list of running applications.
-  virtual ChromeLauncherAppMenuItems GetApplicationList(int event_flags) = 0;
 
   // Returns nullptr if class is not AppWindowLauncherItemController.
   virtual AppWindowLauncherItemController* AsAppWindowLauncherItemController();

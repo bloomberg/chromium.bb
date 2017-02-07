@@ -13,7 +13,8 @@ namespace ash {
 
 class WmWindow;
 
-// ShelfItemDelegate for the items created by ShelfWindowWatcher.
+// ShelfItemDelegate for the items created by ShelfWindowWatcher, for example:
+// The Chrome OS settings window, task manager window, and panel windows.
 class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
  public:
   ShelfWindowWatcherItemDelegate(ShelfID id, WmWindow* window);
@@ -23,7 +24,7 @@ class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
   // ShelfItemDelegate overrides:
   ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
-  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override;
+  ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
   void Close() override;
 
   ShelfID id_;

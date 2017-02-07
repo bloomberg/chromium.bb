@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
-#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
@@ -225,20 +224,6 @@ class LauncherPlatformAppBrowserTest
     return controller_->GetLauncherItemController(id);
   }
 
-  // Returns the number of menu items, ignoring separators.
-  int GetNumApplicationMenuItems(const ash::ShelfItem& item) {
-    const int event_flags = 0;
-    std::unique_ptr<ui::SimpleMenuModel> menu(
-        new LauncherApplicationMenuItemModel(
-            controller_->GetApplicationList(item, event_flags)));
-    int num_items = 0;
-    for (int i = 0; i < menu->GetItemCount(); ++i) {
-      if (menu->GetTypeAt(i) != ui::MenuModel::TYPE_SEPARATOR)
-        ++num_items;
-    }
-    return num_items;
-  }
-
   ChromeLauncherControllerImpl* controller_;
 
  private:
@@ -278,10 +263,9 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
   size_t NumberOfDetectedLauncherBrowsers(bool show_all_tabs) {
     LauncherItemController* item_controller =
       controller_->GetBrowserShortcutLauncherItemController();
-    int items = item_controller->GetApplicationList(
-        show_all_tabs ? ui::EF_SHIFT_DOWN : 0).size();
-    // If we have at least one item, we have also a title which we remove here.
-    return items ? (items - 1) : 0;
+    return item_controller
+        ->GetAppMenuItems(show_all_tabs ? ui::EF_SHIFT_DOWN : 0)
+        .size();
   }
 
   const Extension* LoadAndLaunchExtension(
@@ -551,37 +535,32 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleWindows) {
   int item_count = shelf_model()->item_count();
 
-  // First run app.
+  // Run the application; a shelf item should be added with one app menu item.
   const Extension* extension = LoadAndLaunchPlatformApp("launch", "Launched");
   AppWindow* window1 = CreateAppWindow(browser()->profile(), extension);
-  ++item_count;
-  ASSERT_EQ(item_count, shelf_model()->item_count());
+  ASSERT_EQ(item_count + 1, shelf_model()->item_count());
   const ash::ShelfItem& item1 = GetLastLauncherItem();
   ash::ShelfID item_id = item1.id;
   EXPECT_EQ(ash::TYPE_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
-  EXPECT_EQ(2, GetNumApplicationMenuItems(item1));  // Title + 1 window
+  EXPECT_EQ(1u, controller_->GetAppMenuItems(item1, 0).size());  // 1 window
 
-  // Add second window.
+  // Add a second window; confirm the shelf item stays; check the app menu.
   AppWindow* window2 = CreateAppWindow(browser()->profile(), extension);
-  // Confirm item stays.
-  ASSERT_EQ(item_count, shelf_model()->item_count());
+  ASSERT_EQ(item_count + 1, shelf_model()->item_count());
   const ash::ShelfItem& item2 = *shelf_model()->ItemByID(item_id);
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
-  EXPECT_EQ(3, GetNumApplicationMenuItems(item2));  // Title + 2 windows
+  EXPECT_EQ(2u, controller_->GetAppMenuItems(item2, 0).size());  // 2 windows
 
-  // Close second window.
+  // Close the second window; confirm the shelf item stays; check the app menu.
   CloseAppWindow(window2);
-  // Confirm item stays.
-  ASSERT_EQ(item_count, shelf_model()->item_count());
+  ASSERT_EQ(item_count + 1, shelf_model()->item_count());
   const ash::ShelfItem& item3 = *shelf_model()->ItemByID(item_id);
   EXPECT_EQ(ash::STATUS_ACTIVE, item3.status);
-  EXPECT_EQ(2, GetNumApplicationMenuItems(item3));  // Title + 1 window
+  EXPECT_EQ(1u, controller_->GetAppMenuItems(item3, 0).size());  // 1 window
 
-  // Close first window.
+  // Close the first window; the shelf item should be removed.
   CloseAppWindow(window1);
-  // Confirm item is removed.
-  --item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
 }
 

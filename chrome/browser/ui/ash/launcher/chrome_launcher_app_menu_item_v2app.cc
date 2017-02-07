@@ -11,20 +11,13 @@ ChromeLauncherAppMenuItemV2App::ChromeLauncherAppMenuItemV2App(
     const gfx::Image* icon,
     const std::string& app_id,
     ChromeLauncherController* launcher_controller,
-    int app_index,
-    bool has_leading_separator)
-    : ChromeLauncherAppMenuItem(title, icon, has_leading_separator),
+    int app_index)
+    : ash::ShelfApplicationMenuItem(title, icon),
       launcher_controller_(launcher_controller),
       app_id_(app_id),
-      app_index_(app_index) {
-}
+      app_index_(app_index) {}
 
-ChromeLauncherAppMenuItemV2App::~ChromeLauncherAppMenuItemV2App() {
-}
-
-bool ChromeLauncherAppMenuItemV2App::IsEnabled() const {
-  return true;
-}
+ChromeLauncherAppMenuItemV2App::~ChromeLauncherAppMenuItemV2App() {}
 
 void ChromeLauncherAppMenuItemV2App::Execute(int event_flags) {
   // Note: At this time there is only a single app running at any point. as

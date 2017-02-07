@@ -26,9 +26,9 @@ ShelfItemDelegate::PerformedAction TestShelfItemDelegate::ItemSelected(
   return kNoAction;
 }
 
-ui::SimpleMenuModel* TestShelfItemDelegate::CreateApplicationMenu(
-    int event_flags) {
-  return nullptr;
+ShelfAppMenuItemList TestShelfItemDelegate::GetAppMenuItems(int event_flags) {
+  // Return an empty item list to avoid showing an application menu.
+  return ShelfAppMenuItemList();
 }
 
 void TestShelfItemDelegate::Close() {}

@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "ui/aura/window.h"
 #include "ui/base/base_window.h"
@@ -50,10 +49,9 @@ ArcAppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   }
 }
 
-ChromeLauncherAppMenuItems
-ArcAppWindowLauncherItemController::GetApplicationList(int event_flags) {
-  ChromeLauncherAppMenuItems items =
-      AppWindowLauncherItemController::GetApplicationList(event_flags);
+ash::ShelfAppMenuItemList ArcAppWindowLauncherItemController::GetAppMenuItems(
+    int event_flags) {
+  ash::ShelfAppMenuItemList items;
   base::string16 app_title = LauncherControllerHelper::GetAppTitle(
       launcher_controller()->profile(), app_id());
   for (auto it = windows().begin(); it != windows().end(); ++it) {
@@ -64,8 +62,7 @@ ArcAppWindowLauncherItemController::GetApplicationList(int event_flags) {
     items.push_back(base::MakeUnique<ChromeLauncherAppMenuItemV2App>(
         ((window && !window->GetTitle().empty()) ? window->GetTitle()
                                                  : app_title),
-        &image, app_id(), launcher_controller(), i,
-        i == 0 /* has_leading_separator */));
+        &image, app_id(), launcher_controller(), i));
   }
   return items;
 }

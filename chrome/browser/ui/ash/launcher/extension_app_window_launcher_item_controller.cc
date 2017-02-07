@@ -8,7 +8,6 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
@@ -67,21 +66,9 @@ void ExtensionAppWindowLauncherItemController::AddAppWindow(
   window_to_app_window_[app_window->GetBaseWindow()] = app_window;
 }
 
-void ExtensionAppWindowLauncherItemController::OnWindowRemoved(
-    ui::BaseWindow* window) {
-  WindowToAppWindow::iterator it = window_to_app_window_.find(window);
-  if (it == window_to_app_window_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  window_to_app_window_.erase(it);
-}
-
-ChromeLauncherAppMenuItems
-ExtensionAppWindowLauncherItemController::GetApplicationList(int event_flags) {
-  ChromeLauncherAppMenuItems items =
-      AppWindowLauncherItemController::GetApplicationList(event_flags);
+ash::ShelfAppMenuItemList
+ExtensionAppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
+  ash::ShelfAppMenuItemList items;
   int index = 0;
   for (const auto* window : windows()) {
     extensions::AppWindow* app_window = window_to_app_window_[window];
@@ -99,9 +86,19 @@ ExtensionAppWindowLauncherItemController::GetApplicationList(int event_flags) {
     items.push_back(base::MakeUnique<ChromeLauncherAppMenuItemV2App>(
         app_window->GetTitle(),
         &result,  // Will be copied
-        app_id(), launcher_controller(), index,
-        index == 0 /* has_leading_separator */));
+        app_id(), launcher_controller(), index));
     ++index;
   }
   return items;
+}
+
+void ExtensionAppWindowLauncherItemController::OnWindowRemoved(
+    ui::BaseWindow* window) {
+  WindowToAppWindow::iterator it = window_to_app_window_.find(window);
+  if (it == window_to_app_window_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  window_to_app_window_.erase(it);
 }

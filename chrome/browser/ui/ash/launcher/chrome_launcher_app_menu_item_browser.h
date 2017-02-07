@@ -5,27 +5,23 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_APP_MENU_ITEM_BROWSER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_APP_MENU_ITEM_BROWSER_H_
 
+#include "ash/public/cpp/shelf_application_menu_item.h"
 #include "base/macros.h"
-#include "base/values.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class Browser;
 
-// A menu item controller for a running browser. It gets created when an
-// application list gets created. It's main purpose is to add the activation
-// method to the |ChromeLauncherAppMenuItem| class.
-class ChromeLauncherAppMenuItemBrowser : public content::NotificationObserver,
-                                         public ChromeLauncherAppMenuItem {
+// A shelf application menu item for a running browser.
+class ChromeLauncherAppMenuItemBrowser : public ash::ShelfApplicationMenuItem,
+                                         public content::NotificationObserver {
  public:
   ChromeLauncherAppMenuItemBrowser(const base::string16 title,
                                    const gfx::Image* icon,
-                                   Browser* browser,
-                                   bool has_leading_separator);
+                                   Browser* browser);
   ~ChromeLauncherAppMenuItemBrowser() override;
 
-  bool IsEnabled() const override;
+  // ash::ShelfApplicationMenuItem:
   void Execute(int event_flags) override;
 
  private:

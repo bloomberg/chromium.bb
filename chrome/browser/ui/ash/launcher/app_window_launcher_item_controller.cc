@@ -9,7 +9,6 @@
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -84,37 +83,6 @@ AppWindowLauncherItemController::Activate(ash::LaunchSource source) {
   return kExistingWindowActivated;
 }
 
-ui::SimpleMenuModel* AppWindowLauncherItemController::CreateApplicationMenu(
-    int event_flags) {
-  return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
-}
-
-void AppWindowLauncherItemController::Close() {
-  // Note: Closing windows may affect the contents of app_windows_.
-  WindowList windows_to_close = windows_;
-  for (auto* window : windows_)
-    window->Close();
-}
-
-void AppWindowLauncherItemController::ActivateIndexedApp(size_t index) {
-  if (index >= windows_.size())
-    return;
-  auto it = windows_.begin();
-  std::advance(it, index);
-  ShowAndActivateOrMinimize(*it);
-}
-
-ChromeLauncherAppMenuItems AppWindowLauncherItemController::GetApplicationList(
-    int event_flags) {
-  ChromeLauncherAppMenuItems items;
-  // Add the application name to the menu.
-  base::string16 app_title = LauncherControllerHelper::GetAppTitle(
-      launcher_controller()->profile(), app_id());
-  items.push_back(
-      base::MakeUnique<ChromeLauncherAppMenuItem>(app_title, nullptr, false));
-  return items;
-}
-
 AppWindowLauncherItemController*
 AppWindowLauncherItemController::AsAppWindowLauncherItemController() {
   return this;
@@ -132,9 +100,29 @@ AppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   if (windows_.size() >= 1 && window_to_show->IsActive() &&
       event.type() == ui::ET_KEY_RELEASED) {
     return ActivateOrAdvanceToNextAppWindow(window_to_show);
-  } else {
-    return ShowAndActivateOrMinimize(window_to_show);
   }
+
+  return ShowAndActivateOrMinimize(window_to_show);
+}
+
+ash::ShelfAppMenuItemList AppWindowLauncherItemController::GetAppMenuItems(
+    int event_flags) {
+  return ash::ShelfAppMenuItemList();
+}
+
+void AppWindowLauncherItemController::Close() {
+  // Note: Closing windows may affect the contents of app_windows_.
+  WindowList windows_to_close = windows_;
+  for (auto* window : windows_)
+    window->Close();
+}
+
+void AppWindowLauncherItemController::ActivateIndexedApp(size_t index) {
+  if (index >= windows_.size())
+    return;
+  auto it = windows_.begin();
+  std::advance(it, index);
+  ShowAndActivateOrMinimize(*it);
 }
 
 void AppWindowLauncherItemController::OnWindowPropertyChanged(
@@ -159,7 +147,7 @@ AppWindowLauncherItemController::ShowAndActivateOrMinimize(
     ui::BaseWindow* app_window) {
   // Either show or minimize windows when shown from the launcher.
   return launcher_controller()->ActivateWindowOrMinimizeIfActive(
-      app_window, GetApplicationList(0).size() == 2);
+      app_window, GetAppMenuItems(0).size() == 1);
 }
 
 ash::ShelfItemDelegate::PerformedAction

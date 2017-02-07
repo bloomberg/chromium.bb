@@ -30,7 +30,7 @@ class ExtensionAppWindowLauncherItemController
   void AddAppWindow(extensions::AppWindow* app_window);
 
   // LauncherItemController overrides:
-  ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
+  ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
 
  protected:
   // AppWindowLauncherItemController:

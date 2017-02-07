@@ -35,14 +35,13 @@ class ArcAppDeferredLauncherItemController : public LauncherItemController {
   // ash::ShelfItemDelegate
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
-  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override;
+  ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
   void Close() override;
 
   // LauncherItemController overrides:
   void Launch(ash::LaunchSource source, int event_flags) override;
   ash::ShelfItemDelegate::PerformedAction Activate(
       ash::LaunchSource source) override;
-  ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
 
  private:
   // The flags of the event that caused the ARC app to be activated. These will

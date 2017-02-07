@@ -11,16 +11,15 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
+#include "ash/public/cpp/shelf_application_menu_item.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
-#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -145,22 +144,28 @@ BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   }
 
   return launcher_controller()->ActivateWindowOrMinimizeIfActive(
-      last_browser->window(), GetApplicationList(0).size() == 2);
+      last_browser->window(), GetAppMenuItems(0).size() == 1);
 }
 
-void BrowserShortcutLauncherItemController::Close() {
-  for (auto* browser : GetListOfActiveBrowsers())
-    browser->window()->Close();
+ash::ShelfItemDelegate::PerformedAction
+BrowserShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
+  if (event.flags() & ui::EF_CONTROL_DOWN) {
+    chrome::NewEmptyWindow(launcher_controller()->profile());
+    return kNewWindowCreated;
+  }
+
+  // In case of a keyboard event, we were called by a hotkey. In that case we
+  // activate the next item in line if an item of our list is already active.
+  if (event.type() == ui::ET_KEY_RELEASED)
+    return ActivateOrAdvanceToNextBrowser();
+
+  return Activate(ash::LAUNCH_FROM_UNKNOWN);
 }
 
-ChromeLauncherAppMenuItems
-BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
-  ChromeLauncherAppMenuItems items;
+ash::ShelfAppMenuItemList
+BrowserShortcutLauncherItemController::GetAppMenuItems(int event_flags) {
+  ash::ShelfAppMenuItemList items;
   bool found_tabbed_browser = false;
-  // Add the application name to the menu.
-  base::string16 app_title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  items.push_back(
-      base::MakeUnique<ChromeLauncherAppMenuItem>(app_title, nullptr, false));
   for (auto* browser : GetListOfActiveBrowsers()) {
     TabStripModel* tab_strip = browser->tab_strip_model();
     if (tab_strip->active_index() == -1)
@@ -173,7 +178,7 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
       gfx::Image app_icon = GetBrowserListIcon(web_contents);
       base::string16 title = GetBrowserListTitle(web_contents);
       items.push_back(base::MakeUnique<ChromeLauncherAppMenuItemBrowser>(
-          title, &app_icon, browser, items.size() == 1));
+          title, &app_icon, browser));
     } else {
       for (int index = 0; index  < tab_strip->count(); ++index) {
         content::WebContents* web_contents =
@@ -182,10 +187,8 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
             launcher_controller()->GetAppListIcon(web_contents);
         base::string16 title =
             launcher_controller()->GetAppListTitle(web_contents);
-        // Check if we need to insert a separator in front.
-        bool leading_separator = !index;
         items.push_back(base::MakeUnique<ChromeLauncherAppMenuItemTab>(
-            title, &app_icon, web_contents, leading_separator));
+            title, &app_icon, web_contents));
       }
     }
   }
@@ -196,25 +199,9 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
   return items;
 }
 
-ash::ShelfItemDelegate::PerformedAction
-BrowserShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
-  if (event.flags() & ui::EF_CONTROL_DOWN) {
-    chrome::NewEmptyWindow(launcher_controller()->profile());
-    return kNewWindowCreated;
-  }
-
-  // In case of a keyboard event, we were called by a hotkey. In that case we
-  // activate the next item in line if an item of our list is already active.
-  if (event.type() == ui::ET_KEY_RELEASED) {
-    return ActivateOrAdvanceToNextBrowser();
-  }
-
-  return Activate(ash::LAUNCH_FROM_UNKNOWN);
-}
-
-ui::SimpleMenuModel*
-BrowserShortcutLauncherItemController::CreateApplicationMenu(int event_flags) {
-  return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
+void BrowserShortcutLauncherItemController::Close() {
+  for (auto* browser : GetListOfActiveBrowsers())
+    browser->window()->Close();
 }
 
 bool BrowserShortcutLauncherItemController::IsListOfActiveBrowserEmpty() {

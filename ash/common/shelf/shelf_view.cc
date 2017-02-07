@@ -14,6 +14,7 @@
 #include "ash/common/shelf/overflow_bubble.h"
 #include "ash/common/shelf/overflow_bubble_view.h"
 #include "ash/common/shelf/overflow_button.h"
+#include "ash/common/shelf/shelf_application_menu_model.h"
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_delegate.h"
@@ -26,6 +27,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/auto_reset.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -1613,18 +1615,21 @@ bool ShelfView::ShowListMenuForView(const ShelfItem& item,
                                     const ui::Event& event,
                                     views::InkDrop* ink_drop) {
   ShelfItemDelegate* item_delegate = model_->GetShelfItemDelegate(item.id);
-  std::unique_ptr<ui::MenuModel> list_menu_model(
-      item_delegate->CreateApplicationMenu(event.flags()));
+  ShelfAppMenuItemList menu_items =
+      item_delegate->GetAppMenuItems(event.flags());
 
-  // Make sure we have a menu and it has at least two items in addition to the
-  // application title and the 3 spacing separators.
-  if (!list_menu_model.get() || list_menu_model->GetItemCount() <= 5)
+  // The application list menu should only show for two or more items; return
+  // false here to ensure that other behavior is triggered (eg. activating or
+  // minimizing a single associated window, or launching a pinned shelf item).
+  if (menu_items.size() < 2)
     return false;
 
   ink_drop->AnimateToState(views::InkDropState::ACTIVATED);
   context_menu_id_ = item.id;
-  ShowMenu(std::move(list_menu_model), source, gfx::Point(), false,
-           ui::GetMenuSourceTypeForEvent(event), ink_drop);
+  ShowMenu(base::MakeUnique<ShelfApplicationMenuModel>(item.title,
+                                                       std::move(menu_items)),
+           source, gfx::Point(), false, ui::GetMenuSourceTypeForEvent(event),
+           ink_drop);
   return true;
 }
 

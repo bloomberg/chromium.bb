@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shelf/shelf_application_menu_model.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/shelf/shelf_item_types.h"
@@ -59,7 +60,6 @@
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -255,7 +255,7 @@ class TestV2AppLauncherItemController : public LauncherItemController {
  public:
   TestV2AppLauncherItemController(const std::string& app_id,
                                   ChromeLauncherController* controller)
-      : LauncherItemController(app_id, "", controller) {}
+      : LauncherItemController(app_id, std::string(), controller) {}
 
   ~TestV2AppLauncherItemController() override {}
 
@@ -265,22 +265,19 @@ class TestV2AppLauncherItemController : public LauncherItemController {
       ash::LaunchSource source) override {
     return kExistingWindowActivated;
   }
-  void Close() override {}
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override {
     return kExistingWindowActivated;
   }
-  ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override {
-    ChromeLauncherAppMenuItems items;
-    items.push_back(base::MakeUnique<ChromeLauncherAppMenuItem>(
-        base::string16(), nullptr, false));
-    items.push_back(base::MakeUnique<ChromeLauncherAppMenuItem>(
-        base::string16(), nullptr, false));
+  ash::ShelfAppMenuItemList GetAppMenuItems(int event_flags) override {
+    ash::ShelfAppMenuItemList items;
+    items.push_back(
+        base::MakeUnique<ash::ShelfApplicationMenuItem>(base::string16()));
+    items.push_back(
+        base::MakeUnique<ash::ShelfApplicationMenuItem>(base::string16()));
     return items;
   }
-  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override {
-    return NULL;
-  }
+  void Close() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestV2AppLauncherItemController);
@@ -2776,51 +2773,15 @@ TEST_F(ChromeLauncherControllerImplTest, PendingInsertionOrder) {
   EXPECT_EQ(expected_launchers, actual_launchers);
 }
 
-// Checks the created menus and menu lists for correctness. It uses the given
-// |controller| to create the objects for the given |item| and checks the
-// found item count against the |expected_items|. The |title| list contains the
-// menu titles in the order of their appearance in the menu (not including the
-// application name).
-bool CheckMenuCreation(ChromeLauncherControllerImpl* controller,
-                       const ash::ShelfItem& item,
-                       size_t expected_items,
-                       base::string16 title[],
-                       bool is_browser) {
-  ChromeLauncherAppMenuItems items = controller->GetApplicationList(item, 0);
-  // A new behavior has been added: Only show menus if there is at least one
-  // item available.
-  if (expected_items < 1 && is_browser) {
-    EXPECT_EQ(0u, items.size());
-    return items.size() == 0;
-  }
-  // There should be one item in there: The title.
-  EXPECT_EQ(expected_items + 1, items.size());
-  EXPECT_FALSE(items[0]->IsEnabled());
-  for (size_t i = 0; i < expected_items; i++) {
-    EXPECT_EQ(title[i], items[1 + i]->title());
-    // Check that the first real item has a leading separator.
-    if (i == 1)
-      EXPECT_TRUE(items[i]->HasLeadingSeparator());
-    else
-      EXPECT_FALSE(items[i]->HasLeadingSeparator());
-  }
-
-  std::unique_ptr<ui::SimpleMenuModel> menu(
-      new LauncherApplicationMenuItemModel(
-          controller->GetApplicationList(item, 0)));
-  // The first element in the menu is a spacing separator. On some systems
-  // (e.g. Windows) such things do not exist. As such we check the existence
-  // and adjust dynamically.
-  int first_item = menu->GetTypeAt(0) == ui::MenuModel::TYPE_SEPARATOR ? 1 : 0;
-  int expected_menu_items = first_item +
-                            (expected_items ? (expected_items + 3) : 2);
-  EXPECT_EQ(expected_menu_items, menu->GetItemCount());
-  EXPECT_FALSE(menu->IsEnabledAt(first_item));
-  if (expected_items) {
-    EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR,
-              menu->GetTypeAt(first_item + 1));
-  }
-  return items.size() == expected_items + 1;
+// Ensure |controller| creates the expected menu items for the given shelf item.
+void CheckAppMenu(ChromeLauncherControllerImpl* controller,
+                  const ash::ShelfItem& item,
+                  size_t expected_item_count,
+                  base::string16 expected_item_titles[]) {
+  ash::ShelfAppMenuItemList items = controller->GetAppMenuItems(item, 0);
+  ASSERT_EQ(expected_item_count, items.size());
+  for (size_t i = 0; i < expected_item_count; i++)
+    EXPECT_EQ(expected_item_titles[i], items[i]->title());
 }
 
 // Check that browsers get reflected correctly in the launcher menu.
@@ -2835,8 +2796,7 @@ TEST_F(ChromeLauncherControllerImplTest, BrowserMenuGeneration) {
   item_browser.type = ash::TYPE_BROWSER_SHORTCUT;
   item_browser.id =
       launcher_controller_->GetShelfIDForAppID(extension_misc::kChromeAppId);
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 0, NULL, true));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 0, nullptr);
 
   // Now make the created browser() visible by showing its browser window.
   browser()->window()->Show();
@@ -2844,8 +2804,7 @@ TEST_F(ChromeLauncherControllerImplTest, BrowserMenuGeneration) {
   NavigateAndCommitActiveTabWithTitle(browser(), GURL("http://test1"), title1);
   base::string16 one_menu_item[] = { title1 };
 
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 1, one_menu_item, true));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 1, one_menu_item);
 
   // Create one more browser/window and check that one more was added.
   std::unique_ptr<Browser> browser2(
@@ -2859,8 +2818,7 @@ TEST_F(ChromeLauncherControllerImplTest, BrowserMenuGeneration) {
   // Check that the list contains now two entries - make furthermore sure that
   // the active item is the first entry.
   base::string16 two_menu_items[] = {title1, title2};
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 2, two_menu_items, true));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 2, two_menu_items);
 
   // Apparently we have to close all tabs we have.
   chrome::CloseTab(browser2.get());
@@ -2880,16 +2838,14 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 
   // Check that the menu is empty.
   chrome::NewTab(browser());
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 0, NULL, true));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 0, nullptr);
 
   // Show the created |browser()| by showing its window.
   browser()->window()->Show();
   base::string16 title1 = ASCIIToUTF16("Test1");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL("http://test1"), title1);
   base::string16 one_menu_item1[] = { title1 };
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 1, one_menu_item1, true));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 1, one_menu_item1);
 
   // Create a browser for another user and check that it is not included in the
   // users running browser list.
@@ -2900,20 +2856,17 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
   std::unique_ptr<Browser> browser2(
       CreateBrowserAndTabWithProfile(profile2, user2, "http://test2"));
   base::string16 one_menu_item2[] = { ASCIIToUTF16(user2) };
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 1, one_menu_item1, true));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 1, one_menu_item1);
 
   // Switch to the other user and make sure that only that browser window gets
   // shown.
   SwitchActiveUser(account_id2);
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 1, one_menu_item2, true));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 1, one_menu_item2);
 
   // Transferred browsers of other users should not show up in the list.
   chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
       browser()->window()->GetNativeWindow(), account_id2);
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 1, one_menu_item2, true));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 1, one_menu_item2);
 
   chrome::CloseTab(browser2.get());
 }
@@ -2950,16 +2903,14 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuGeneration) {
   ash::ShelfItem item_gmail;
   item_gmail.type = ash::TYPE_APP_SHORTCUT;
   item_gmail.id = gmail_id;
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_gmail, 0, NULL, false));
+  CheckAppMenu(launcher_controller_.get(), item_gmail, 0, nullptr);
 
   // Set the gmail URL to a new tab.
   base::string16 title1 = ASCIIToUTF16("Test1");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title1);
 
   base::string16 one_menu_item[] = { title1 };
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_gmail, 1, one_menu_item, false));
+  CheckAppMenu(launcher_controller_.get(), item_gmail, 1, one_menu_item);
 
   // Create one empty tab.
   chrome::NewTab(browser());
@@ -2974,24 +2925,20 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuGeneration) {
   base::string16 title3 = ASCIIToUTF16("Test3");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title3);
   base::string16 two_menu_items[] = {title1, title3};
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_gmail, 2, two_menu_items, false));
+  CheckAppMenu(launcher_controller_.get(), item_gmail, 2, two_menu_items);
 
   // Even though the item is in the V1 app list, it should also be in the
   // browser list.
   base::string16 browser_menu_item[] = {title3};
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 1, browser_menu_item, false));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 1, browser_menu_item);
 
   // Test that closing of (all) the item(s) does work (and all menus get
   // updated properly).
   launcher_controller_->Close(item_gmail.id);
 
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_gmail, 0, NULL, false));
+  CheckAppMenu(launcher_controller_.get(), item_gmail, 0, nullptr);
   base::string16 browser_menu_item2[] = { title2 };
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 1, browser_menu_item2, false));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 1, browser_menu_item2);
 }
 
 // Check the multi profile case where only user related apps should show up.
@@ -3019,16 +2966,14 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
   ash::ShelfItem item_gmail;
   item_gmail.type = ash::TYPE_APP_SHORTCUT;
   item_gmail.id = gmail_id;
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_gmail, 0, NULL, false));
+  CheckAppMenu(launcher_controller_.get(), item_gmail, 0, nullptr);
 
   // Set the gmail URL to a new tab.
   base::string16 title1 = ASCIIToUTF16("Test1");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title1);
 
   base::string16 one_menu_item[] = { title1 };
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_gmail, 1, one_menu_item, false));
+  CheckAppMenu(launcher_controller_.get(), item_gmail, 1, one_menu_item);
 
   // Create a second profile and switch to that user.
   std::string user2 = "user2";
@@ -3038,19 +2983,15 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
   SwitchActiveUser(account_id2);
 
   // No item should have content yet.
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 0, NULL, true));
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_gmail, 0, NULL, false));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 0, nullptr);
+  CheckAppMenu(launcher_controller_.get(), item_gmail, 0, nullptr);
 
   // Transfer the browser of the first user - it should still not show up.
   chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
       browser()->window()->GetNativeWindow(), account_id2);
 
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_browser, 0, NULL, true));
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_gmail, 0, NULL, false));
+  CheckAppMenu(launcher_controller_.get(), item_browser, 0, nullptr);
+  CheckAppMenu(launcher_controller_.get(), item_gmail, 0, nullptr);
 }
 
 // Check that V2 applications are creating items properly in the launcher when
@@ -3284,34 +3225,24 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuExecution) {
   item_gmail.type = ash::TYPE_APP_SHORTCUT;
   item_gmail.id = gmail_id;
   base::string16 two_menu_items[] = {title1, title2};
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_gmail, 2, two_menu_items, false));
+  CheckAppMenu(launcher_controller_.get(), item_gmail, 2, two_menu_items);
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  // Execute the second item in the list (which shouldn't do anything since that
-  // item is per definition already the active tab).
+  // Execute the second item in the menu, after the title and two separators,
+  // this shouldn't do anything since that item is already the active tab.
   {
-    std::unique_ptr<ui::SimpleMenuModel> menu(
-        new LauncherApplicationMenuItemModel(
-            launcher_controller_->GetApplicationList(item_gmail, 0)));
-    // The first element in the menu is a spacing separator. On some systems
-    // (e.g. Windows) such things do not exist. As such we check the existence
-    // and adjust dynamically.
-    int first_item =
-        (menu->GetTypeAt(0) == ui::MenuModel::TYPE_SEPARATOR) ? 1 : 0;
-    menu->ActivatedAt(first_item + 3);
+    ash::ShelfApplicationMenuModel menu(
+        base::string16(), launcher_controller_->GetAppMenuItems(item_gmail, 0));
+    menu.ActivatedAt(4);
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
-  // Execute the first item.
+  // Execute the first item in the menu, after the title and two separators,
+  // this should activate the other tab.
   {
-    std::unique_ptr<ui::SimpleMenuModel> menu(
-        new LauncherApplicationMenuItemModel(
-            launcher_controller_->GetApplicationList(item_gmail, 0)));
-    int first_item =
-        (menu->GetTypeAt(0) == ui::MenuModel::TYPE_SEPARATOR) ? 1 : 0;
-    menu->ActivatedAt(first_item + 2);
+    ash::ShelfApplicationMenuModel menu(
+        base::string16(), launcher_controller_->GetAppMenuItems(item_gmail, 0));
+    menu.ActivatedAt(3);
   }
-  // Now the active tab should be the second item.
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
 }
 
@@ -3335,22 +3266,21 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuDeletionExecution) {
   item_gmail.type = ash::TYPE_APP_SHORTCUT;
   item_gmail.id = gmail_id;
   base::string16 two_menu_items[] = {title1, title2};
-  EXPECT_TRUE(CheckMenuCreation(
-      launcher_controller_.get(), item_gmail, 2, two_menu_items, false));
+  CheckAppMenu(launcher_controller_.get(), item_gmail, 2, two_menu_items);
 
   int tabs = browser()->tab_strip_model()->count();
   // Activate the proper tab through the menu item.
   {
-    ChromeLauncherAppMenuItems items =
-        launcher_controller_->GetApplicationList(item_gmail, 0);
+    ash::ShelfAppMenuItemList items =
+        launcher_controller_->GetAppMenuItems(item_gmail, 0);
     items[1]->Execute(0);
     EXPECT_EQ(tabs, browser()->tab_strip_model()->count());
   }
 
   // Delete one tab through the menu item.
   {
-    ChromeLauncherAppMenuItems items =
-        launcher_controller_->GetApplicationList(item_gmail, 0);
+    ash::ShelfAppMenuItemList items =
+        launcher_controller_->GetAppMenuItems(item_gmail, 0);
     items[1]->Execute(ui::EF_SHIFT_DOWN);
     EXPECT_EQ(--tabs, browser()->tab_strip_model()->count());
   }
@@ -3429,7 +3359,7 @@ TEST_F(ChromeLauncherControllerImplTest, GmailMatching) {
   ash::ShelfItem item_gmail;
   item_gmail.type = ash::TYPE_APP_SHORTCUT;
   item_gmail.id = gmail_id;
-  EXPECT_EQ(2U, launcher_controller_->GetApplicationList(item_gmail, 0).size());
+  EXPECT_EQ(1U, launcher_controller_->GetAppMenuItems(item_gmail, 0).size());
 }
 
 // Tests that the Gmail extension does not match the offline verison.

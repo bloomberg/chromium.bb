@@ -37,9 +37,9 @@ ArcAppDeferredLauncherItemController::ItemSelected(const ui::Event& event) {
   return ash::ShelfItemDelegate::kNoAction;
 }
 
-ui::SimpleMenuModel*
-ArcAppDeferredLauncherItemController::CreateApplicationMenu(int event_flags) {
-  return nullptr;
+ash::ShelfAppMenuItemList ArcAppDeferredLauncherItemController::GetAppMenuItems(
+    int event_flags) {
+  return ash::ShelfAppMenuItemList();
 }
 
 void ArcAppDeferredLauncherItemController::Close() {
@@ -53,9 +53,4 @@ void ArcAppDeferredLauncherItemController::Launch(ash::LaunchSource source,
 ash::ShelfItemDelegate::PerformedAction
 ArcAppDeferredLauncherItemController::Activate(ash::LaunchSource source) {
   return ash::ShelfItemDelegate::kNoAction;
-}
-
-ChromeLauncherAppMenuItems
-ArcAppDeferredLauncherItemController::GetApplicationList(int event_flags) {
-  return ChromeLauncherAppMenuItems();
 }

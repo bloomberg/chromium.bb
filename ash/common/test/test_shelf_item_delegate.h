@@ -6,7 +6,6 @@
 #define ASH_COMMON_TEST_TEST_SHELF_ITEM_DELEGATE_H_
 
 #include "ash/common/shelf/shelf_item_delegate.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -24,7 +23,7 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
   // ShelfItemDelegate:
   ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
-  ui::SimpleMenuModel* CreateApplicationMenu(int event_flags) override;
+  ShelfAppMenuItemList GetAppMenuItems(int event_flags) override;
   void Close() override;
 
  private:

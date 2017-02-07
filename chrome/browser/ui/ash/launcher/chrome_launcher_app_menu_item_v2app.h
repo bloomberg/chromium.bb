@@ -7,26 +7,22 @@
 
 #include <string>
 
+#include "ash/public/cpp/shelf_application_menu_item.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 
 class ChromeLauncherController;
 
-// A menu item controller for a running V2 application. It gets created when an
-// application list gets created. It's main purpose is to add the activation
-// method to the |ChromeLauncherAppMenuItem| class.
-class ChromeLauncherAppMenuItemV2App : public ChromeLauncherAppMenuItem {
+// A shelf application menu item for a running V2 application.
+class ChromeLauncherAppMenuItemV2App : public ash::ShelfApplicationMenuItem {
  public:
-  ChromeLauncherAppMenuItemV2App(
-      const base::string16 title,
-      const gfx::Image* icon,
-      const std::string& app_id,
-      ChromeLauncherController* launcher_controller,
-      int app_index,
-      bool has_leading_separator);
+  ChromeLauncherAppMenuItemV2App(const base::string16 title,
+                                 const gfx::Image* icon,
+                                 const std::string& app_id,
+                                 ChromeLauncherController* launcher_controller,
+                                 int app_index);
   ~ChromeLauncherAppMenuItemV2App() override;
 
-  bool IsEnabled() const override;
+  // ash::ShelfApplicationMenuItem:
   void Execute(int event_flags) override;
 
  private:

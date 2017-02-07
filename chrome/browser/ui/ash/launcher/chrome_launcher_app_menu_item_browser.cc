@@ -16,10 +16,8 @@
 ChromeLauncherAppMenuItemBrowser::ChromeLauncherAppMenuItemBrowser(
     const base::string16 title,
     const gfx::Image* icon,
-    Browser* browser,
-    bool has_leading_separator)
-    : ChromeLauncherAppMenuItem(title, icon, has_leading_separator),
-      browser_(browser) {
+    Browser* browser)
+    : ash::ShelfApplicationMenuItem(title, icon), browser_(browser) {
   DCHECK(browser);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSING,
@@ -27,10 +25,6 @@ ChromeLauncherAppMenuItemBrowser::ChromeLauncherAppMenuItemBrowser(
 }
 
 ChromeLauncherAppMenuItemBrowser::~ChromeLauncherAppMenuItemBrowser() {}
-
-bool ChromeLauncherAppMenuItemBrowser::IsEnabled() const {
-  return true;
-}
 
 void ChromeLauncherAppMenuItemBrowser::Execute(int event_flags) {
   if (browser_) {
