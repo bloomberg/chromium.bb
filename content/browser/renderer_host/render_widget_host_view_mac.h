@@ -170,6 +170,11 @@ struct TextInputState;
   // key down event.
   BOOL suppressNextEscapeKeyUp_;
 
+  // This is used to indicate if a stylus is currently in the proximity of the
+  // tablet.
+  bool isStylusEnteringProximity_;
+  blink::WebPointerProperties::PointerType pointerType_;
+
   // The set of key codes from key down events that we haven't seen the matching
   // key up events yet.
   // Used for filtering out non-matching NSKeyUp events.

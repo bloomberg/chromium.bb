@@ -23,7 +23,11 @@ class CONTENT_EXPORT WebKeyboardEventBuilder {
 
 class CONTENT_EXPORT WebMouseEventBuilder {
  public:
-  static blink::WebMouseEvent Build(NSEvent* event, NSView* view);
+  static blink::WebMouseEvent Build(
+      NSEvent* event,
+      NSView* view,
+      blink::WebPointerProperties::PointerType pointerType =
+          blink::WebPointerProperties::PointerType::Mouse);
 };
 
 class CONTENT_EXPORT WebMouseWheelEventBuilder {

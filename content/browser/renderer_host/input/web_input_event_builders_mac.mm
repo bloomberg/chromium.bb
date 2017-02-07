@@ -252,7 +252,10 @@ blink::WebKeyboardEvent WebKeyboardEventBuilder::Build(NSEvent* event) {
 
 // WebMouseEvent --------------------------------------------------------------
 
-blink::WebMouseEvent WebMouseEventBuilder::Build(NSEvent* event, NSView* view) {
+blink::WebMouseEvent WebMouseEventBuilder::Build(
+    NSEvent* event,
+    NSView* view,
+    blink::WebPointerProperties::PointerType pointerType) {
   blink::WebInputEvent::Type event_type = blink::WebInputEvent::Type::Undefined;
   int click_count = 0;
   blink::WebMouseEvent::Button button = blink::WebMouseEvent::Button::NoButton;
@@ -318,11 +321,11 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(NSEvent* event, NSView* view) {
   result.button = button;
   SetWebEventLocationFromEventInView(&result, event, view);
 
-  // For NSMouseExited and NSMouseEntered, they do not have a subtype. Styluses
-  // and mouses share the same cursor, so we will set their pointerType as
-  // Unknown for now.
+  // For NSMouseExited and NSMouseEntered events, they do not have a subtype.
+  // We decide their pointer types by checking if we recevied a
+  // NSTabletProximity event.
   if (type == NSMouseExited || type == NSMouseEntered) {
-    result.pointerType = blink::WebPointerProperties::PointerType::Unknown;
+    result.pointerType = pointerType;
     return result;
   }
 
@@ -352,6 +355,11 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(NSEvent* event, NSView* view) {
     if (twist < 0)
       twist += 360;
     result.twist = twist;
+  } else {
+    event_type = [event isEnteringProximity]
+                      ? blink::WebInputEvent::MouseMove
+                      : blink::WebInputEvent::MouseLeave;
+    result.setType(event_type);
   }
   return result;
 }

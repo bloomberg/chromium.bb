@@ -82,6 +82,10 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
   // This method left intentionally blank.
 }
 
+- (void)tabletEvent:(NSEvent*)theEvent {
+  // This method left intentionally blank.
+}
+
 - (void)mouseDown:(NSEvent*)theEvent {
   dragging_ = YES;
   [self mouseEvent:theEvent];
@@ -198,6 +202,10 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
   NSRect new_rect(NSRectFromCGRect(rect.ToCGRect()));
   new_rect.origin.y = NSHeight([self bounds]) - NSMaxY(new_rect);
   return new_rect;
+}
+
+- (void)tabletProximity:(NSEvent*)theEvent {
+  [self tabletEvent:theEvent];
 }
 
 @end

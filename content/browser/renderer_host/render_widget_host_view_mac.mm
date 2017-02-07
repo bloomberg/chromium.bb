@@ -1731,6 +1731,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     canBeKeyView_ = YES;
     opaque_ = YES;
     pinchHasReachedZoomThreshold_ = false;
+    isStylusEnteringProximity_ = false;
 
     // OpenGL support:
     if ([self respondsToSelector:
@@ -1878,10 +1879,20 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       return;
   }
 
+  // Set the pointer type when we are receiving a NSMouseEntered event and the
+  // following NSMouseExited event should have the same pointer type.
+  NSEventType type = [theEvent type];
+  if (type == NSMouseEntered) {
+    pointerType_ = isStylusEnteringProximity_
+                       ? blink::WebPointerProperties::PointerType::Pen
+                       : blink::WebPointerProperties::PointerType::Mouse;
+  }
+
   if ([self shouldIgnoreMouseEvent:theEvent]) {
     // If this is the first such event, send a mouse exit to the host view.
     if (!mouseEventWasIgnored_ && renderWidgetHostView_->render_widget_host_) {
-      WebMouseEvent exitEvent = WebMouseEventBuilder::Build(theEvent, self);
+      WebMouseEvent exitEvent =
+          WebMouseEventBuilder::Build(theEvent, self, pointerType_);
       exitEvent.setType(WebInputEvent::MouseLeave);
       exitEvent.button = WebMouseEvent::Button::NoButton;
       renderWidgetHostView_->ForwardMouseEvent(exitEvent);
@@ -1894,7 +1905,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     // If this is the first mouse event after a previous event that was ignored
     // due to the hitTest, send a mouse enter event to the host view.
     if (renderWidgetHostView_->render_widget_host_) {
-      WebMouseEvent enterEvent = WebMouseEventBuilder::Build(theEvent, self);
+      WebMouseEvent enterEvent =
+          WebMouseEventBuilder::Build(theEvent, self, pointerType_);
       enterEvent.setType(WebInputEvent::MouseMove);
       enterEvent.button = WebMouseEvent::Button::NoButton;
       ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
@@ -1916,8 +1928,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   // popup. A click outside the text field would cause the text field to drop
   // the focus, and then EditorClientImpl::textFieldDidEndEditing() would cancel
   // the popup anyway, so we're OK.
-
-  NSEventType type = [theEvent type];
   if (type == NSLeftMouseDown)
     hasOpenMouseDown_ = YES;
   else if (type == NSLeftMouseUp)
@@ -1934,7 +1944,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     [self finishComposingText];
   }
 
-  WebMouseEvent event = WebMouseEventBuilder::Build(theEvent, self);
+  WebMouseEvent event =
+      WebMouseEventBuilder::Build(theEvent, self, pointerType_);
   ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   if (renderWidgetHostView_->ShouldRouteEvent(event)) {
@@ -1944,6 +1955,11 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   } else {
     renderWidgetHostView_->ProcessMouseEvent(event, latency_info);
   }
+}
+
+- (void)tabletEvent:(NSEvent*)theEvent {
+  if ([theEvent type] == NSTabletProximity)
+    isStylusEnteringProximity_ = [theEvent isEnteringProximity];
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
