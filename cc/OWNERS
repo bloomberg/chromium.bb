@@ -60,3 +60,6 @@ ajuma@chromium.org
 per-file *.isolate=maruel@chromium.org
 per-file *.isolate=tandrii@chromium.org
 per-file *.isolate=vadimsh@chromium.org
+
+# TEAM: graphics-dev@chromium.org
+# COMPONENT: Internals>Compositing
