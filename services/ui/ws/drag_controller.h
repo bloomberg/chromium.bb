@@ -14,7 +14,13 @@
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window_observer.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace ui {
+class PointerEvent;
+
 namespace ws {
 
 namespace test {

@@ -22,7 +22,7 @@ struct CloneTraits<WTF::Vector<T>, false> {
     WTF::Vector<T> result;
     result.reserveCapacity(input.size());
     for (const auto& element : input)
-      result.append(internal::Clone(element));
+      result.push_back(internal::Clone(element));
 
     return result;
   }

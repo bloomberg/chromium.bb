@@ -25,12 +25,6 @@ class UsbDevice;
 namespace mojo {
 
 template <>
-struct TypeConverter<device::UsbDeviceFilter, device::usb::DeviceFilterPtr> {
-  static device::UsbDeviceFilter Convert(
-      const device::usb::DeviceFilterPtr& mojo_filter);
-};
-
-template <>
 struct TypeConverter<device::usb::TransferDirection,
                      device::UsbEndpointDirection> {
   static device::usb::TransferDirection Convert(

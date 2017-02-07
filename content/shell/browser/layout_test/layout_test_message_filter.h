@@ -17,6 +17,7 @@ class GURL;
 
 namespace base {
 class DictionaryValue;
+class NullableString16;
 }
 
 namespace net {

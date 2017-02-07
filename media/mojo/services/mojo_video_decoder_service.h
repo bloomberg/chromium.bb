@@ -14,6 +14,7 @@
 
 namespace media {
 
+class DecoderBuffer;
 class MojoDecoderBufferReader;
 class MojoMediaClient;
 class VideoDecoder;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/non_persistent_notification_handler.h"
 
+#include "base/strings/nullable_string16.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 

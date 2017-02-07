@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "services/service_manager/public/cpp/identity.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
@@ -36,7 +37,6 @@ class ClientDiscardableSharedMemoryManager;
 
 namespace service_manager {
 class Connector;
-class Identity;
 }
 
 namespace wm {

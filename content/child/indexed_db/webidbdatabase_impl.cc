@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"

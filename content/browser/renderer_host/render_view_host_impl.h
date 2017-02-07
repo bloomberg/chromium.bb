@@ -32,6 +32,7 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/mojo/window_open_disposition.mojom.h"
 
 namespace content {
 

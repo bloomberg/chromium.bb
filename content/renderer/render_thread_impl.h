@@ -71,6 +71,7 @@ class Thread;
 namespace cc {
 class BeginFrameSource;
 class CompositorFrameSink;
+class FrameSinkId;
 class TaskGraphRunner;
 }
 

@@ -48,6 +48,7 @@
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;

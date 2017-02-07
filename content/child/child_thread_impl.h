@@ -27,6 +27,7 @@
 #include "ipc/message_router.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "services/service_manager/public/cpp/service_info.h"
 
 namespace base {
 class MessageLoop;

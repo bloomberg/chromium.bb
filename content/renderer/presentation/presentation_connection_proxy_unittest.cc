@@ -10,6 +10,7 @@
 #include "content/renderer/presentation/presentation_connection_proxy.h"
 #include "content/renderer/presentation/test_presentation_connection.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnection.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
 

@@ -16,6 +16,10 @@
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
+namespace base {
+class NullableString16;
+}
+
 namespace content {
 
 class DesktopNotificationDelegate;

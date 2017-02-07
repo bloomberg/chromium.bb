@@ -6,6 +6,7 @@
 #define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_TEST_MOCK_RENDERER_SCHEDULER_H_
 
 #include "base/macros.h"
+#include "cc/output/begin_frame_args.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

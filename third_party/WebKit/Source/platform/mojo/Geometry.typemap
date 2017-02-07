@@ -4,8 +4,10 @@
 
 mojom = "//ui/gfx/geometry/mojo/geometry.mojom"
 public_headers = [ "//third_party/WebKit/public/platform/WebSize.h" ]
-traits_headers =
-    [ "//third_party/WebKit/Source/platform/mojo/GeometryStructTraits.h" ]
+traits_headers = [
+  "//third_party/WebKit/Source/platform/mojo/GeometryStructTraits.h",
+  "//ui/gfx/geometry/mojo/geometry_struct_traits.h",
+]
 
 # Note: consumers of this typemap must themselves depend on platform.
 deps = [

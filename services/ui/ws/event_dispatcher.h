@@ -24,6 +24,7 @@ namespace ui {
 class Event;
 class KeyEvent;
 class LocatedEvent;
+class PointerEvent;
 
 namespace ws {
 

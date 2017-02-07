@@ -690,6 +690,10 @@ def IsFloatKind(kind):
   return kind.spec == FLOAT.spec
 
 
+def IsDoubleKind(kind):
+  return kind.spec == DOUBLE.spec
+
+
 def IsIntegralKind(kind):
   return (kind.spec == BOOL.spec or
           kind.spec == INT8.spec or

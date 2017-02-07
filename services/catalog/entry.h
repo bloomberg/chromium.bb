@@ -16,6 +16,7 @@
 #include "services/service_manager/public/interfaces/resolver.mojom.h"
 
 namespace base {
+class DictionaryValue;
 class Value;
 }
 

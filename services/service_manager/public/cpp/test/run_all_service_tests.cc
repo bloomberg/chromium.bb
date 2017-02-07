@@ -6,6 +6,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/threading/thread.h"
+#include "base/values.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "services/catalog/catalog.h"
