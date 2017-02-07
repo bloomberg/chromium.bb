@@ -340,7 +340,7 @@ function runTests() {
             chrome.test.callbackPass(function(fileEntry) {
               fileEntry.file(chrome.test.callbackPass(function(file) {
                 var fileReader = new FileReader();
-                fileReader.onerror = chrome.test.callbackPass(function(e) {
+                fileReader.onabort = chrome.test.callbackPass(function(e) {
                   chrome.test.assertEq(
                       'AbortError', fileReader.error.name);
                 });
@@ -371,7 +371,7 @@ function runTests() {
             chrome.test.callbackPass(function(fileEntry) {
               fileEntry.file(chrome.test.callbackPass(function(file) {
                 var fileReader = new FileReader();
-                fileReader.onerror = chrome.test.callbackPass(function(e) {
+                fileReader.onabort = chrome.test.callbackPass(function(e) {
                   chrome.test.assertEq(
                       'AbortError', fileReader.error.name);
                   // Confirm that the file is closed on the provider side.
@@ -413,7 +413,7 @@ function runTests() {
               fileEntry.file(chrome.test.callbackPass(function(file) {
                 var fileReader = new FileReader();
                 var fileReader2 = new FileReader();
-                fileReader.onerror = chrome.test.callbackPass(function(e) {
+                fileReader.onabort = chrome.test.callbackPass(function(e) {
                   chrome.test.assertEq(
                       'AbortError', fileReader.error.name);
                   // Confirm that the file is closed on the provider side.

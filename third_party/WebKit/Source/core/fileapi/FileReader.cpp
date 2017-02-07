@@ -343,7 +343,6 @@ void FileReader::abort() {
   ThrottlingController::FinishReaderType finalStep =
       ThrottlingController::removeReader(getExecutionContext(), this);
 
-  fireEvent(EventTypeNames::error);
   fireEvent(EventTypeNames::abort);
   fireEvent(EventTypeNames::loadend);
 
