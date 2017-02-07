@@ -11,28 +11,11 @@
 
 #import <UIKit/UIKit.h>
 
-namespace web {
-class WebState;
-}
+#import "ios/clean/chrome/browser/ui/web_contents/web_contents_consumer.h"
 
 // A view controller for displaying a web view with no other controls or
 // decoration.
-@interface WebContentsViewController : UIViewController
-
-// Designated initializer. |webState| must not be null.
-- (instancetype)initWithWebState:(web::WebState*)webState
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
-
-- (instancetype)initWithCoder:(NSCoder*)aCoder NS_UNAVAILABLE;
-
-- (instancetype)initWithNibName:(NSString*)nibNameOrNil
-                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
-
-// The webState the receiver was initialized with.
-@property(nonatomic, readonly) web::WebState* webState;
-
+@interface WebContentsViewController : UIViewController<WebContentsConsumer>
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_WEB_CONTENTS_WEB_CONTENTS_VIEW_CONTROLLER_H_

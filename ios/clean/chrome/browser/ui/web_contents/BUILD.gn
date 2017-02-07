@@ -4,8 +4,8 @@
 
 source_set("web_contents") {
   sources = [
-    "web_contents_view_controller.h",
-    "web_contents_view_controller.mm",
+    "web_contents_mediator.h",
+    "web_contents_mediator.mm",
     "web_coordinator.h",
     "web_coordinator.mm",
   ]
@@ -13,10 +13,40 @@ source_set("web_contents") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":web_contents_ui",
     "//ios/clean/chrome/browser",
     "//ios/shared/chrome/browser/coordinator_context",
     "//ios/web",
     "//ui/base",
     "//url",
+  ]
+}
+
+source_set("web_contents_ui") {
+  sources = [
+    "web_contents_consumer.h",
+    "web_contents_view_controller.h",
+    "web_contents_view_controller.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "web_contents_mediator_unittest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":web_contents",
+    ":web_contents_ui",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test/base",
+    "//ios/web:test_support",
+    "//testing/gtest",
   ]
 }
