@@ -109,6 +109,9 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
         assert !mIsDestroyed;
         mIsDestroyed = true;
 
+        if (mTileRemovedSnackbarController != null) {
+            mTab.getSnackbarManager().dismissSnackbars(mTileRemovedSnackbarController);
+        }
         mMostVisitedSites.destroy();
     }
 

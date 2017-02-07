@@ -7,6 +7,6 @@
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle" >
-    <solid android:color="#a0ffffff" />
-    <corners android:radius="@dimen/most_visited_bg_corner_radius" />
+    <solid android:color="#000" />
+    <corners android:radius="@dimen/tile_view_bg_corner_radius" />
 </shape>

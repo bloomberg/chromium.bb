@@ -30,7 +30,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
-import org.chromium.chrome.browser.ntp.MostVisitedItemView;
 import org.chromium.chrome.browser.ntp.MostVisitedTileType;
 import org.chromium.chrome.browser.ntp.TitleUtil;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
@@ -137,7 +136,7 @@ public class TileGroup implements MostVisitedURLsObserver {
         mObserver = observer;
 
         Resources resources = mContext.getResources();
-        mDesiredIconSize = resources.getDimensionPixelSize(R.dimen.most_visited_icon_size);
+        mDesiredIconSize = resources.getDimensionPixelSize(R.dimen.tile_view_icon_size);
         // On ldpi devices, mDesiredIconSize could be even smaller than ICON_MIN_SIZE_PX.
         mMinIconSize = Math.min(mDesiredIconSize, ICON_MIN_SIZE_PX);
         int desiredIconSizeDp =
@@ -300,9 +299,8 @@ public class TileGroup implements MostVisitedURLsObserver {
     }
 
     private View buildTileView(Tile tile, ViewGroup parentView, boolean trackLoadTask) {
-        MostVisitedItemView view =
-                (MostVisitedItemView) LayoutInflater.from(parentView.getContext())
-                        .inflate(R.layout.most_visited_item, parentView, false);
+        TileView view = (TileView) LayoutInflater.from(parentView.getContext())
+                                .inflate(R.layout.tile_view, parentView, false);
         view.setTitle(TitleUtil.getTitleForDisplay(tile.getTitle(), tile.getUrl()));
         view.setOfflineAvailable(tile.isOfflineAvailable());
         view.setIcon(tile.getIcon());

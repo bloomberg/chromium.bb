@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp;
+package org.chromium.chrome.browser.suggestions;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -17,10 +17,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.MathUtils;
 
 /**
- * A layout that arranges most visited items in a grid.
+ * A layout that arranges tiles in a grid.
  */
-public class MostVisitedLayout extends FrameLayout {
-
+public class TileGridLayout extends FrameLayout {
     private static final int MAX_COLUMNS = 4;
 
     private int mVerticalSpacing;
@@ -34,16 +33,16 @@ public class MostVisitedLayout extends FrameLayout {
      * @param context The view context in which this item will be shown.
      * @param attrs The attributes of the XML tag that is inflating the view.
      */
-    public MostVisitedLayout(Context context, AttributeSet attrs) {
+    public TileGridLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         Resources res = getResources();
-        mVerticalSpacing = res.getDimensionPixelOffset(R.dimen.most_visited_vertical_spacing);
-        mMinHorizontalSpacing = res.getDimensionPixelOffset(
-                R.dimen.most_visited_min_horizontal_spacing);
-        mMaxHorizontalSpacing = res.getDimensionPixelOffset(
-                R.dimen.most_visited_max_horizontal_spacing);
-        mMaxWidth = res.getDimensionPixelOffset(R.dimen.most_visited_layout_max_width);
+        mVerticalSpacing = res.getDimensionPixelOffset(R.dimen.tile_grid_layout_vertical_spacing);
+        mMinHorizontalSpacing =
+                res.getDimensionPixelOffset(R.dimen.tile_grid_layout_min_horizontal_spacing);
+        mMaxHorizontalSpacing =
+                res.getDimensionPixelOffset(R.dimen.tile_grid_layout_max_horizontal_spacing);
+        mMaxWidth = res.getDimensionPixelOffset(R.dimen.tile_grid_layout_max_width);
     }
 
     /**
@@ -76,7 +75,7 @@ public class MostVisitedLayout extends FrameLayout {
     public void updateIconView(String url, Drawable icon) {
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
-            MostVisitedItemView tileView = (MostVisitedItemView) getChildAt(i);
+            TileView tileView = (TileView) getChildAt(i);
             if (TextUtils.equals(url, tileView.getUrl())) {
                 tileView.setIcon(icon);
                 break;
@@ -104,8 +103,8 @@ public class MostVisitedLayout extends FrameLayout {
         int childHeight = getChildAt(0).getMeasuredHeight();
         int childWidth = getChildAt(0).getMeasuredWidth();
         int numColumns = MathUtils.clamp(
-                (gridWidth + mMinHorizontalSpacing) / (childWidth + mMinHorizontalSpacing),
-                1, MAX_COLUMNS);
+                (gridWidth + mMinHorizontalSpacing) / (childWidth + mMinHorizontalSpacing), 1,
+                MAX_COLUMNS);
 
         // Ensure column spacing isn't greater than mMaxHorizontalSpacing.
         int gridWidthMinusColumns = Math.max(0, gridWidth - numColumns * childWidth);

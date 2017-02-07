@@ -59,13 +59,13 @@ public class MainActivityWithURLTest extends ChromeTabbedActivityTestBase {
     }
 
     /**
-     * Launch a NTP for most_visited and make sure it loads correctly. This makes sure
+     * Launch a NTP and make sure it loads correctly. This makes sure the
      * NTP loading complete notification is received.
      */
     @SmallTest
     @Feature({"Navigation"})
     public void testNewTabPageLaunch() throws Exception {
-        // Launch chrome with NTP for most_visited
+        // Launch chrome with NTP.
         startMainActivityWithURL(UrlConstants.NTP_URL);
         String currentUrl = getActivity().getActivityTab().getUrl();
         assertNotNull(currentUrl);

@@ -113,9 +113,9 @@
     <color name="snippets_list_header_text_color">#646464</color>
     <color name="snippets_headline_text_color">#333333</color>
 
-    <!-- Most Visited colors. -->
-    <color name="most_visited_text">#6f6f6f</color>
-    <color name="most_visited_offline_badge_tint">#4285f4</color>
+    <!-- Site suggestion tile colors. -->
+    <color name="tile_view_text">#6f6f6f</color>
+    <color name="tile_view_offline_badge_tint">#4285f4</color>
 
     <!-- Contextual Search colors -->
     <color name="contextual_search_promo_text_color">#333333</color>

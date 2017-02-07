@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.MostVisitedLayout;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
@@ -73,12 +72,12 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
      * The {@code ViewHolder} for the {@link TileGrid}.
      */
     public static class ViewHolder extends NewTabPageViewHolder {
-        private final MostVisitedLayout mLayout;
+        private final TileGridLayout mLayout;
 
         public ViewHolder(ViewGroup parentView) {
             super(LayoutInflater.from(parentView.getContext())
                             .inflate(R.layout.suggestions_site_tile_grid, parentView, false));
-            mLayout = (MostVisitedLayout) itemView;
+            mLayout = (TileGridLayout) itemView;
         }
 
         public void onBindViewHolder(TileGroup tileGroup) {

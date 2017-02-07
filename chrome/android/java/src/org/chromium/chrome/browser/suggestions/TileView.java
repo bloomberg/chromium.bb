@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp;
+package org.chromium.chrome.browser.suggestions;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -16,16 +16,16 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 
 /**
- * The view for a most visited item. Displays the title of the page beneath a large icon. If a large
- * icon isn't available, displays a rounded rectangle with a single letter in its place.
+ * The view for a site suggestion tile. Displays the title of the site beneath a large icon. If a
+ * large icon isn't available, displays a rounded rectangle with a single letter in its place.
  */
-public class MostVisitedItemView extends FrameLayout {
+public class TileView extends FrameLayout {
     private String mUrl;
 
     /**
      * Constructor for inflating from XML.
      */
-    public MostVisitedItemView(Context context, AttributeSet attrs) {
+    public TileView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -33,22 +33,22 @@ public class MostVisitedItemView extends FrameLayout {
      * Sets the title text.
      */
     public void setTitle(String title) {
-        ((TextView) findViewById(R.id.most_visited_title)).setText(title);
+        ((TextView) findViewById(R.id.tile_view_title)).setText(title);
     }
 
     /**
      * Sets the icon, or null to clear it.
      */
     public void setIcon(@Nullable Drawable icon) {
-        ((ImageView) findViewById(R.id.most_visited_icon)).setImageDrawable(icon);
+        ((ImageView) findViewById(R.id.tile_view_icon)).setImageDrawable(icon);
     }
 
     /**
      * Sets whether the page is available offline.
      */
     public void setOfflineAvailable(boolean offlineAvailable) {
-        findViewById(R.id.offline_badge).setVisibility(
-                offlineAvailable ? View.VISIBLE : View.INVISIBLE);
+        findViewById(R.id.offline_badge)
+                .setVisibility(offlineAvailable ? View.VISIBLE : View.INVISIBLE);
     }
 
     /**

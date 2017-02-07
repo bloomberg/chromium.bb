@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
-import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
@@ -102,7 +101,6 @@ public class NewTabPage
     private final TileGroup.Delegate mTileGroupDelegate;
 
     private TabObserver mTabObserver;
-    private SnackbarController mMostVisitedItemRemovedController;
     private LogoBridge mLogoBridge;
     private boolean mSearchProviderHasLogo;
     private String mOnLogoClickUrl;
@@ -630,9 +628,6 @@ public class NewTabPage
         if (mSnippetsBridge != null) {
             mSnippetsBridge.destroy();
             mSnippetsBridge = null;
-        }
-        if (mMostVisitedItemRemovedController != null) {
-            mTab.getSnackbarManager().dismissSnackbars(mMostVisitedItemRemovedController);
         }
         mNewTabPageManager.onDestroy();
         mTileGroupDelegate.destroy();

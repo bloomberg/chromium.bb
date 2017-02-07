@@ -3,19 +3,19 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<!-- A most visited item, for display on the new tab page. -->
-<org.chromium.chrome.browser.ntp.MostVisitedItemView
+<!-- A site suggestion tile. -->
+<org.chromium.chrome.browser.suggestions.TileView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
-    android:layout_width="@dimen/most_visited_tile_width"
+    android:layout_width="@dimen/tile_view_width"
     android:layout_height="wrap_content"
     android:paddingStart="4dp"
     android:paddingEnd="4dp" >
 
     <ImageView
-        android:id="@+id/most_visited_icon"
-        android:layout_width="@dimen/most_visited_icon_size"
-        android:layout_height="@dimen/most_visited_icon_size"
+        android:id="@+id/tile_view_icon"
+        android:layout_width="@dimen/tile_view_icon_size"
+        android:layout_height="@dimen/tile_view_icon_size"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginTop="12dp"
@@ -23,25 +23,25 @@
 
     <org.chromium.chrome.browser.widget.TintedImageView
         android:id="@+id/offline_badge"
-        android:layout_width="@dimen/most_visited_offline_badge_size"
-        android:layout_height="@dimen/most_visited_offline_badge_size"
+        android:layout_width="@dimen/tile_view_offline_badge_size"
+        android:layout_height="@dimen/tile_view_offline_badge_size"
         android:layout_marginStart="48dp"
         android:visibility="gone"
         android:background="@drawable/offline_badge_background"
         android:contentDescription="@string/accessibility_ntp_offline_badge"
-        chrome:tint="@color/most_visited_offline_badge_tint"
+        chrome:tint="@color/tile_view_offline_badge_tint"
         android:src="@drawable/offline_pin_round" />
 
     <View
-        android:layout_width="@dimen/most_visited_icon_size"
-        android:layout_height="@dimen/most_visited_icon_size"
+        android:layout_width="@dimen/tile_view_icon_size"
+        android:layout_height="@dimen/tile_view_icon_size"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginTop="12dp"
-        android:background="@drawable/most_visited_item_highlight" />
+        android:background="@drawable/tile_view_highlight" />
 
     <TextView
-        android:id="@+id/most_visited_title"
+        android:id="@+id/tile_view_title"
         android:layout_width="72dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="66dp"
@@ -49,7 +49,7 @@
         android:gravity="center_horizontal"
         android:lines="2"
         android:lineSpacingMultiplier="1.17"
-        android:textColor="@color/most_visited_text"
+        android:textColor="@color/tile_view_text"
         android:textSize="12sp" />
 
-</org.chromium.chrome.browser.ntp.MostVisitedItemView>
+</org.chromium.chrome.browser.suggestions.TileView>

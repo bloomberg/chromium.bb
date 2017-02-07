@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.Tile;
+import org.chromium.chrome.browser.suggestions.TileGridLayout;
 import org.chromium.chrome.browser.suggestions.TileGroup;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -72,8 +73,8 @@ public class NewTabPageView
     private LogoView mSearchProviderLogoView;
     private View mSearchBoxView;
     private ImageView mVoiceSearchButton;
-    private MostVisitedLayout mMostVisitedLayout;
-    private View mMostVisitedPlaceholder;
+    private TileGridLayout mTileGridLayout;
+    private View mTileGridPlaceholder;
     private View mNoSearchLogoSpacer;
 
     private OnSearchBoxScrollListener mSearchBoxScrollListener;
@@ -99,7 +100,7 @@ public class NewTabPageView
 
     /** Flag used to request some layout changes after the next layout pass is completed. */
     private boolean mTileCountChanged;
-    private boolean mSnapshotMostVisitedChanged;
+    private boolean mSnapshotTileGridChanged;
     private boolean mNewTabPageRecyclerViewChanged;
     private int mSnapshotWidth;
     private int mSnapshotHeight;
@@ -212,9 +213,8 @@ public class NewTabPageView
             }
         });
 
-        mMostVisitedLayout =
-                (MostVisitedLayout) mNewTabPageLayout.findViewById(R.id.most_visited_layout);
-        mMostVisitedLayout.setMaxRows(
+        mTileGridLayout = (TileGridLayout) mNewTabPageLayout.findViewById(R.id.tile_grid_layout);
+        mTileGridLayout.setMaxRows(
                 searchProviderHasLogo ? MAX_TILE_ROWS_WITH_LOGO : MAX_TILE_ROWS_WITHOUT_LOGO);
         mTileGroup = new TileGroup(
                 mManager, mContextMenuManager, mTileGroupDelegate, /* observer = */ this);
@@ -472,7 +472,7 @@ public class NewTabPageView
                 if (logo == null && fromCache) return;
                 mSearchProviderLogoView.setMananger(mManager);
                 mSearchProviderLogoView.updateLogo(logo);
-                mSnapshotMostVisitedChanged = true;
+                mSnapshotTileGridChanged = true;
             }
         });
     }
@@ -488,26 +488,26 @@ public class NewTabPageView
 
         // Set a bit more top padding if there is no logo.
         int paddingTop = getResources().getDimensionPixelSize(hasLogo
-                        ? R.dimen.most_visited_layout_padding_top
-                        : R.dimen.most_visited_layout_no_logo_padding_top);
-        mMostVisitedLayout.setPadding(0, paddingTop, 0, mMostVisitedLayout.getPaddingBottom());
+                        ? R.dimen.tile_grid_layout_padding_top
+                        : R.dimen.tile_grid_layout_no_logo_padding_top);
+        mTileGridLayout.setPadding(0, paddingTop, 0, mTileGridLayout.getPaddingBottom());
 
         // Hide or show all the views above the Most Visited items.
         int visibility = hasLogo ? View.VISIBLE : View.GONE;
         int childCount = mNewTabPageLayout.getChildCount();
         for (int i = 0; i < childCount; i++) {
             View child = mNewTabPageLayout.getChildAt(i);
-            if (child == mMostVisitedLayout) break;
+            if (child == mTileGridLayout) break;
             // Don't change the visibility of a ViewStub as that will automagically inflate it.
             if (child instanceof ViewStub) continue;
             child.setVisibility(visibility);
         }
 
-        updateMostVisitedPlaceholderVisibility();
+        updateTileGridPlaceholderVisibility();
 
         onUrlFocusAnimationChanged();
 
-        mSnapshotMostVisitedChanged = true;
+        mSnapshotTileGridChanged = true;
     }
 
     /**
@@ -687,7 +687,7 @@ public class NewTabPageView
     boolean shouldCaptureThumbnail() {
         if (getWidth() == 0 || getHeight() == 0) return false;
 
-        return mNewTabPageRecyclerViewChanged || mSnapshotMostVisitedChanged
+        return mNewTabPageRecyclerViewChanged || mSnapshotTileGridChanged
                 || getWidth() != mSnapshotWidth || getHeight() != mSnapshotHeight
                 || mRecyclerView.computeVerticalScrollOffset() != mSnapshotScrollY;
     }
@@ -702,7 +702,7 @@ public class NewTabPageView
         mSnapshotWidth = getWidth();
         mSnapshotHeight = getHeight();
         mSnapshotScrollY = mRecyclerView.computeVerticalScrollOffset();
-        mSnapshotMostVisitedChanged = false;
+        mSnapshotTileGridChanged = false;
         mNewTabPageRecyclerViewChanged = false;
     }
 
@@ -733,25 +733,25 @@ public class NewTabPageView
      * Shows the most visited placeholder ("Nothing to see here") if there are no most visited
      * items and there is no search provider logo.
      */
-    private void updateMostVisitedPlaceholderVisibility() {
+    private void updateTileGridPlaceholderVisibility() {
         boolean showPlaceholder = mTileGroup.hasReceivedData()
-                && mMostVisitedLayout.getChildCount() == 0 && !mSearchProviderHasLogo;
+                && mTileGridLayout.getChildCount() == 0 && !mSearchProviderHasLogo;
 
         mNoSearchLogoSpacer.setVisibility(
                 (mSearchProviderHasLogo || showPlaceholder) ? View.GONE : View.INVISIBLE);
 
         if (showPlaceholder) {
-            if (mMostVisitedPlaceholder == null) {
-                ViewStub mostVisitedPlaceholderStub = (ViewStub) mNewTabPageLayout
-                        .findViewById(R.id.most_visited_placeholder_stub);
+            if (mTileGridPlaceholder == null) {
+                ViewStub placeholderStub =
+                        (ViewStub) mNewTabPageLayout.findViewById(R.id.tile_grid_placeholder_stub);
 
-                mMostVisitedPlaceholder = mostVisitedPlaceholderStub.inflate();
+                mTileGridPlaceholder = placeholderStub.inflate();
             }
-            mMostVisitedLayout.setVisibility(GONE);
-            mMostVisitedPlaceholder.setVisibility(VISIBLE);
-        } else if (mMostVisitedPlaceholder != null) {
-            mMostVisitedLayout.setVisibility(VISIBLE);
-            mMostVisitedPlaceholder.setVisibility(GONE);
+            mTileGridLayout.setVisibility(GONE);
+            mTileGridPlaceholder.setVisibility(VISIBLE);
+        } else if (mTileGridPlaceholder != null) {
+            mTileGridLayout.setVisibility(VISIBLE);
+            mTileGridPlaceholder.setVisibility(GONE);
         }
     }
 
@@ -805,8 +805,8 @@ public class NewTabPageView
 
     @Override
     public void onTileDataChanged() {
-        mTileGroup.renderTileViews(mMostVisitedLayout, !mLoadHasCompleted);
-        mSnapshotMostVisitedChanged = true;
+        mTileGroup.renderTileViews(mTileGridLayout, !mLoadHasCompleted);
+        mSnapshotTileGridChanged = true;
     }
 
     @Override
@@ -814,13 +814,13 @@ public class NewTabPageView
         // If the number of tile rows change while the URL bar is focused, the icons'
         // position will be wrong. Schedule the translation to be updated.
         if (mUrlFocusChangePercent == 1f) mTileCountChanged = true;
-        updateMostVisitedPlaceholderVisibility();
+        updateTileGridPlaceholderVisibility();
     }
 
     @Override
     public void onTileIconChanged(Tile tile) {
-        mMostVisitedLayout.updateIconView(tile.getUrl(), tile.getIcon());
-        mSnapshotMostVisitedChanged = true;
+        mTileGridLayout.updateIconView(tile.getUrl(), tile.getIcon());
+        mSnapshotTileGridChanged = true;
     }
 
     @Override

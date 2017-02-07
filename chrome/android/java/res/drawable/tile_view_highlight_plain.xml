@@ -4,6 +4,9 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
 -->
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_pressed="true" android:drawable="@drawable/most_visited_item_highlight_plain" />
-</selector>
+
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle" >
+    <solid android:color="#a0ffffff" />
+    <corners android:radius="@dimen/tile_view_bg_corner_radius" />
+</shape>

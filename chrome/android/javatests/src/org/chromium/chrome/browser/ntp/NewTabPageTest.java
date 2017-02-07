@@ -63,7 +63,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     private Tab mTab;
     private NewTabPage mNtp;
     private View mFakebox;
-    private ViewGroup mMostVisitedLayout;
+    private ViewGroup mTileGridLayout;
     private String[] mFakeMostVisitedUrls;
     private FakeMostVisitedSites mFakeMostVisitedSites;
     private EmbeddedTestServer mTestServer;
@@ -108,8 +108,8 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         assertTrue(mTab.getNativePage() instanceof NewTabPage);
         mNtp = (NewTabPage) mTab.getNativePage();
         mFakebox = mNtp.getView().findViewById(R.id.search_box);
-        mMostVisitedLayout = (ViewGroup) mNtp.getView().findViewById(R.id.most_visited_layout);
-        assertEquals(mFakeMostVisitedUrls.length, mMostVisitedLayout.getChildCount());
+        mTileGridLayout = (ViewGroup) mNtp.getView().findViewById(R.id.tile_grid_layout);
+        assertEquals(mFakeMostVisitedUrls.length, mTileGridLayout.getChildCount());
     }
 
     @MediumTest
@@ -118,7 +118,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     public void testRender() throws IOException {
         ViewRenderer viewRenderer = new ViewRenderer(getActivity(),
                 "chrome/test/data/android/render_tests", "NewTabPageTest");
-        viewRenderer.renderAndCompare(mMostVisitedLayout, "most_visited");
+        viewRenderer.renderAndCompare(mTileGridLayout, "most_visited");
         viewRenderer.renderAndCompare(mFakebox, "fakebox");
         viewRenderer.renderAndCompare(mNtp.getView().getRootView(), "new_tab_page");
 
@@ -234,7 +234,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
             @Override
             public void run() {
-                View mostVisitedItem = mMostVisitedLayout.getChildAt(0);
+                View mostVisitedItem = mTileGridLayout.getChildAt(0);
                 singleClickView(mostVisitedItem);
             }
         });
@@ -248,7 +248,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature({"NewTabPage"})
     public void testOpenMostVisitedItemInNewTab() throws InterruptedException {
-        invokeContextMenuAndOpenInANewTab(mMostVisitedLayout.getChildAt(0),
+        invokeContextMenuAndOpenInANewTab(mTileGridLayout.getChildAt(0),
                 ContextMenuManager.ID_OPEN_IN_NEW_TAB, false, mFakeMostVisitedUrls[0]);
     }
 
@@ -258,7 +258,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature({"NewTabPage"})
     public void testOpenMostVisitedItemInIncognitoTab() throws InterruptedException {
-        invokeContextMenuAndOpenInANewTab(mMostVisitedLayout.getChildAt(0),
+        invokeContextMenuAndOpenInANewTab(mTileGridLayout.getChildAt(0),
                 ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB, true, mFakeMostVisitedUrls[0]);
     }
 
@@ -268,10 +268,10 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature({"NewTabPage"})
     public void testRemoveMostVisitedItem() {
-        View mostVisitedItem = mMostVisitedLayout.getChildAt(0);
+        View mostVisitedItem = mTileGridLayout.getChildAt(0);
         ArrayList<View> views = new ArrayList<>();
-        mMostVisitedLayout.findViewsWithText(views, FAKE_MOST_VISITED_TITLES[0],
-                View.FIND_VIEWS_WITH_TEXT);
+        mTileGridLayout.findViewsWithText(
+                views, FAKE_MOST_VISITED_TITLES[0], View.FIND_VIEWS_WITH_TEXT);
         assertEquals(1, views.size());
 
         TestTouchUtils.longClickView(getInstrumentation(), mostVisitedItem);
