@@ -1352,8 +1352,6 @@ EVENT_TYPE(HTTP2_SESSION_SEND_SETTINGS)
 // The following parameters are attached:
 //   {
 //     "host": <The host-port string>,
-//     "clear_persisted": <Boolean indicating whether to clear all persisted
-//                         settings data for the given host>,
 //   }
 EVENT_TYPE(HTTP2_SESSION_RECV_SETTINGS)
 
@@ -1361,7 +1359,6 @@ EVENT_TYPE(HTTP2_SESSION_RECV_SETTINGS)
 // The following parameters are attached:
 //   {
 //     "id":    <The setting id>,
-//     "flags": <The setting flags>,
 //     "value": <The setting value>,
 //   }
 EVENT_TYPE(HTTP2_SESSION_RECV_SETTING)
@@ -1369,17 +1366,16 @@ EVENT_TYPE(HTTP2_SESSION_RECV_SETTING)
 // The receipt of a RST_STREAM frame.
 // The following parameters are attached:
 //   {
-//     "stream_id": <The stream ID for the window update>,
-//     "status": <The reason for the RST_STREAM>,
+//     "stream_id":  <The stream ID for the RST_STREAM>,
+//     "error_code": <Error code>,
 //   }
 EVENT_TYPE(HTTP2_SESSION_RECV_RST_STREAM)
 
 // Sending of a RST_STREAM
 // The following parameters are attached:
 //   {
-//     "stream_id": <The stream ID for the window update>,
-//     "status": <The reason for the RST_STREAM>,
-//     "description": <The textual description for the RST_STREAM>,
+//     "stream_id":  <The stream ID for the RST_STREAM>,
+//     "error_code": <Error code>,
 //   }
 EVENT_TYPE(HTTP2_SESSION_SEND_RST_STREAM)
 
@@ -1397,7 +1393,8 @@ EVENT_TYPE(HTTP2_SESSION_PING)
 //     "last_accepted_stream_id": <Last stream id accepted by the server, duh>,
 //     "active_streams":          <Number of active streams>,
 //     "unclaimed_streams":       <Number of unclaimed push streams>,
-//     "status":                  <The reason for the GOAWAY>,
+//     "error_code":              <Error code>,
+//     "debug_data":              <Additional debug data>,
 //   }
 EVENT_TYPE(HTTP2_SESSION_RECV_GOAWAY)
 

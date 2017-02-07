@@ -160,24 +160,6 @@ std::unique_ptr<base::Value> NetLogSpdyInitializedCallback(
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogSpdySettingsCallback(
-    const HostPortPair& host_port_pair,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  dict->SetString("host", host_port_pair.ToString());
-  return std::move(dict);
-}
-
-std::unique_ptr<base::Value> NetLogSpdySettingCallback(
-    SpdySettingsIds id,
-    uint32_t value,
-    NetLogCaptureMode /* capture_mode */) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  dict->SetInteger("id", id);
-  dict->SetInteger("value", value);
-  return std::move(dict);
-}
-
 std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
     const SettingsMap* settings,
     NetLogCaptureMode /* capture_mode */) {
@@ -187,10 +169,32 @@ std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
        it != settings->end(); ++it) {
     const SpdySettingsIds id = it->first;
     const uint32_t value = it->second;
-    settings_list->AppendString(
-        base::StringPrintf("[id:%u value:%u]", id, value));
+    const char* settings_string;
+    SettingsIdToString(id, &settings_string);
+    settings_list->AppendString(base::StringPrintf("[id:%u (%s) value:%u]", id,
+                                                   settings_string, value));
   }
   dict->Set("settings", std::move(settings_list));
+  return std::move(dict);
+}
+
+std::unique_ptr<base::Value> NetLogSpdyRecvSettingsCallback(
+    const HostPortPair& host_port_pair,
+    NetLogCaptureMode /* capture_mode */) {
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  dict->SetString("host", host_port_pair.ToString());
+  return std::move(dict);
+}
+
+std::unique_ptr<base::Value> NetLogSpdyRecvSettingCallback(
+    SpdySettingsIds id,
+    uint32_t value,
+    NetLogCaptureMode /* capture_mode */) {
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  const char* settings_string;
+  SettingsIdToString(id, &settings_string);
+  dict->SetString("id", base::StringPrintf("%u (%s)", id, settings_string));
+  dict->SetInteger("value", value);
   return std::move(dict);
 }
 
@@ -228,22 +232,26 @@ std::unique_ptr<base::Value> NetLogSpdyDataCallback(
 
 std::unique_ptr<base::Value> NetLogSpdyRecvRstStreamCallback(
     SpdyStreamId stream_id,
-    int error_code,
+    SpdyErrorCode error_code,
     NetLogCaptureMode /* capture_mode */) {
   auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
-  dict->SetInteger("status", error_code);
+  dict->SetString(
+      "error_code",
+      base::StringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
   return std::move(dict);
 }
 
 std::unique_ptr<base::Value> NetLogSpdySendRstStreamCallback(
     SpdyStreamId stream_id,
-    int error_code,
+    SpdyErrorCode error_code,
     const std::string* description,
     NetLogCaptureMode /* capture_mode */) {
   auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
-  dict->SetInteger("error_code", error_code);
+  dict->SetString(
+      "error_code",
+      base::StringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
   dict->SetString("description", *description);
   return std::move(dict);
 }
@@ -272,7 +280,9 @@ std::unique_ptr<base::Value> NetLogSpdyRecvGoAwayCallback(
                    static_cast<int>(last_stream_id));
   dict->SetInteger("active_streams", active_streams);
   dict->SetInteger("unclaimed_streams", unclaimed_streams);
-  dict->SetInteger("error_code", static_cast<int>(error_code));
+  dict->SetString(
+      "error_code",
+      base::StringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
   dict->SetString("debug_data",
                   ElideGoAwayDebugDataForNetLog(capture_mode, debug_data));
   return std::move(dict);
@@ -2181,7 +2191,7 @@ void SpdySession::OnSettings() {
   if (net_log_.IsCapturing()) {
     net_log_.AddEvent(
         NetLogEventType::HTTP2_SESSION_RECV_SETTINGS,
-        base::Bind(&NetLogSpdySettingsCallback, host_port_pair()));
+        base::Bind(&NetLogSpdyRecvSettingsCallback, host_port_pair()));
   }
 
   // Send an acknowledgment of the setting.
@@ -2200,7 +2210,7 @@ void SpdySession::OnSetting(SpdySettingsIds id, uint32_t value) {
 
   // Log the setting.
   net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_SETTING,
-                    base::Bind(&NetLogSpdySettingCallback, id, value));
+                    base::Bind(&NetLogSpdyRecvSettingCallback, id, value));
 }
 
 void SpdySession::OnSendCompressedFrame(
@@ -2406,7 +2416,7 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id,
     it->second->LogStreamError(
         ERR_HTTP_1_1_REQUIRED,
         base::StringPrintf(
-            "SPDY session closed because of stream with error_code: %d",
+            "SPDY session closed because of stream with error_code: %u",
             error_code));
     DoDrainSession(ERR_HTTP_1_1_REQUIRED, "HTTP_1_1_REQUIRED for stream.");
   } else {
@@ -2414,7 +2424,7 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id,
         PROTOCOL_ERROR_RST_STREAM_FOR_NON_ACTIVE_STREAM);
     it->second->LogStreamError(
         ERR_SPDY_PROTOCOL_ERROR,
-        base::StringPrintf("SPDY stream closed with error_code: %d",
+        base::StringPrintf("SPDY stream closed with error_code: %u",
                            error_code));
     // TODO(mbelshe): Map from Spdy-protocol errors to something sensical.
     //                For now, it doesn't matter much - it is a protocol error.
