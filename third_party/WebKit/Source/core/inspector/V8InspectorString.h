@@ -45,6 +45,12 @@ class CORE_EXPORT StringUtil {
   static String fromDouble(double number) {
     return Decimal::fromDouble(number).toString();
   }
+  static size_t find(const String& s, const char* needle) {
+    return s.find(needle);
+  }
+  static size_t find(const String& s, const String& needle) {
+    return s.find(needle);
+  }
   static const size_t kNotFound = WTF::kNotFound;
   static void builderAppend(StringBuilder& builder, const String& s) {
     builder.append(s);

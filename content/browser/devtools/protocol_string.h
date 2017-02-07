@@ -52,6 +52,12 @@ class CONTENT_EXPORT StringUtil {
       s = "0" + s;
     return s;
   }
+  static size_t find(const String& s, const char* needle) {
+    return s.find(needle);
+  }
+  static size_t find(const String& s, const String& needle) {
+    return s.find(needle);
+  }
   static const size_t kNotFound = static_cast<size_t>(-1);
   static void builderAppend(StringBuilder& builder, const String& s) {
     builder.append(s);

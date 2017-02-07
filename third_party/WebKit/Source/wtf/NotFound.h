@@ -26,6 +26,8 @@
 #ifndef NotFound_h
 #define NotFound_h
 
+#include <stddef.h>
+
 namespace WTF {
 const size_t kNotFound = static_cast<size_t>(-1);
 }
