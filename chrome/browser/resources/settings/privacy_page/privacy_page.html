@@ -447,6 +447,11 @@
                 label="$i18n{siteSettingsProtectedContentEnable}">
             </settings-toggle-button>
           </div>
+<if expr="chromeos">
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.PROTECTED_CONTENT}}">
+          </category-setting-exceptions>
+</if>
         </settings-subpage>
       </template>
 </if>

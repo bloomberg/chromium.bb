@@ -28,6 +28,9 @@ settings.ContentSettingsTypes = {
   BACKGROUND_SYNC: 'background-sync',
   USB_DEVICES: 'usb-chooser-data',
   ZOOM_LEVELS: 'zoom-levels',
+// <if expr="chromeos">
+  PROTECTED_CONTENT: 'protectedContent',
+// </if>
 };
 
 /**

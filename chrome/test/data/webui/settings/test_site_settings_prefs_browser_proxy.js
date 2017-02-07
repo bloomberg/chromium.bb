@@ -192,6 +192,8 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
       pref = this.prefs_.exceptions.pdf_documents;
     else if (contentType == settings.ContentSettingsTypes.PLUGINS)
       pref = this.prefs_.exceptions.plugins;
+    else if (contentType == settings.ContentSettingsTypes.PROTECTED_CONTENT)
+      pref = this.prefs_.exceptions.protectedContent;
     else if (contentType == settings.ContentSettingsTypes.POPUPS)
       pref = this.prefs_.exceptions.popups;
     else if (contentType == settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS)

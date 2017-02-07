@@ -61,6 +61,7 @@ cr.define('site_list', function() {
           mic: [],
           notifications: [],
           plugins: [],
+          protectedContent: [],
           popups: [],
           unsandboxed_plugins: [],
         }
@@ -150,6 +151,7 @@ cr.define('site_list', function() {
           mic: [],
           notifications: [],
           plugins: [],
+          protectedContent: [],
           popups: [],
           unsandboxed_plugins: [],
         }
@@ -204,6 +206,7 @@ cr.define('site_list', function() {
             },
           ],
           plugins: [],
+          protectedContent: [],
           popups: [],
           unsandboxed_plugins: [],
         }
