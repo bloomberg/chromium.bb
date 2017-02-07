@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/app_session.h"
@@ -416,13 +417,12 @@ void KioskAppManager::OnReadImmutableAttributes(
         status = CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE;
       } else if (!ownership_established_) {
         bool* owner_present = new bool(false);
-        content::BrowserThread::PostBlockingPoolTaskAndReply(
-            FROM_HERE,
-            base::Bind(&CheckOwnerFilePresence,
-                       owner_present),
+        base::PostTaskWithTraitsAndReply(
+            FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                           base::TaskPriority::BACKGROUND),
+            base::Bind(&CheckOwnerFilePresence, owner_present),
             base::Bind(&KioskAppManager::OnOwnerFileChecked,
-                       base::Unretained(this),
-                       callback,
+                       base::Unretained(this), callback,
                        base::Owned(owner_present)));
         return;
       }
