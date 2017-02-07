@@ -15,8 +15,6 @@ action("aggregate_vector_icons") {
     "account_child_circle.icon",
     "account_circle.icon",
     "apps.icon",
-    "bar_close.1x.icon",
-    "bar_close.icon",
     "blocked_badge.icon",
     "business.icon",
     "check_circle.1x.icon",

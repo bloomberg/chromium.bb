@@ -30,8 +30,8 @@
 #include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -129,7 +129,7 @@ FindBarView::FindBarView(FindBarHost* host)
 
   find_previous_button_->SetIcon(kCaretUpIcon);
   find_next_button_->SetIcon(kCaretDownIcon);
-  close_button_->SetIcon(gfx::VectorIconId::BAR_CLOSE);
+  close_button_->SetIcon(ui::kCloseIcon);
 
   find_previous_button_->set_id(VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON);
   find_previous_button_->SetFocusForPlatform();

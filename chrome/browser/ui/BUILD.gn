@@ -1193,6 +1193,7 @@ split_static_library("ui") {
       "//components/web_modal",
       "//device/bluetooth",
       "//mash/public/interfaces",
+      "//ui/vector_icons",
     ]
   }
 

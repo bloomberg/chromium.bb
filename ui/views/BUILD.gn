@@ -454,6 +454,7 @@ component("views") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/vector_icons",
     "//ui/views/resources",
   ]
 

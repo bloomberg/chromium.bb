@@ -23,9 +23,9 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -166,7 +166,7 @@ void InfoBarView::ViewHierarchyChanged(
     }
 
     close_button_ = new views::VectorIconButton(this);
-    close_button_->SetIcon(gfx::VectorIconId::BAR_CLOSE);
+    close_button_->SetIcon(ui::kCloseIcon);
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->SetFocusForPlatform();

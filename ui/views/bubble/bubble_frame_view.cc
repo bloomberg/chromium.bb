@@ -20,10 +20,10 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/vector_icons/vector_icons.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/vector_icon_button.h"
 #include "ui/views/controls/image_view.h"
@@ -112,7 +112,7 @@ Button* BubbleFrameView::CreateCloseButton(VectorIconButtonDelegate* delegate) {
   ImageButton* close_button = nullptr;
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     VectorIconButton* close = new VectorIconButton(delegate);
-    close->SetIcon(gfx::VectorIconId::BAR_CLOSE);
+    close->SetIcon(ui::kCloseIcon);
     close_button = close;
   } else {
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
