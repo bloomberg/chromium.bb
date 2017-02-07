@@ -30,7 +30,7 @@ void GvrDevice::GetVRDevice(
   if (delegate) {
     delegate->CreateVRDisplayInfo(callback, id());
   } else {
-    callback.Run(nullptr);
+    callback.Run(mojom::VRDisplayInfoPtr(nullptr));
   }
 }
 

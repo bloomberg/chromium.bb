@@ -22,7 +22,7 @@ VRDisplayImpl::VRDisplayImpl(device::VRDevice* device, VRServiceImpl* service)
 
 void VRDisplayImpl::OnVRDisplayInfoCreated(
     mojom::VRDisplayInfoPtr display_info) {
-  if (service_->client()) {
+  if (service_->client() && display_info) {
     service_->client()->OnDisplayConnected(binding_.CreateInterfacePtrAndBind(),
                                            mojo::MakeRequest(&client_),
                                            std::move(display_info));
