@@ -312,6 +312,14 @@ void LayoutBox::styleDidChange(StyleDifference diff,
   updateShapeOutsideInfoAfterStyleChange(*style(), oldStyle);
   updateGridPositionAfterStyleChange(oldStyle);
 
+  // When we're no longer a flex item because we're now absolutely positioned,
+  // we need to clear the override size so we're not affected by it anymore.
+  // This technically covers too many cases (even when out-of-flow did not
+  // change) but that should be harmless.
+  if (isOutOfFlowPositioned() && parent() &&
+      parent()->styleRef().isDisplayFlexibleOrGridBox())
+    clearOverrideSize();
+
   if (LayoutMultiColumnSpannerPlaceholder* placeholder =
           this->spannerPlaceholder())
     placeholder->layoutObjectInFlowThreadStyleDidChange(oldStyle);
