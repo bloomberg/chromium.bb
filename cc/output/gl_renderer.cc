@@ -2285,7 +2285,6 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     gl_->Uniform1f(program->lut_size_location(), lut.size);
     gl_->ActiveTexture(GL_TEXTURE0);
   }
-  DCHECK_NE(program->yuv_and_resource_matrix_location(), -1);
   float yuv_to_rgb_matrix[16] = {0};
   ComputeYUVToRGBMatrices(quad->color_space, quad->bits_per_channel,
                           quad->resource_multiplier, quad->resource_offset,
