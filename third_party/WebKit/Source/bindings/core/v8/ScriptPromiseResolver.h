@@ -126,12 +126,19 @@ class CORE_EXPORT ScriptPromiseResolver
     m_state = newState;
 
     ScriptState::Scope scope(m_scriptState.get());
-    // TODO(aobzhirov): Converting value to the wrapper can trigger assert
-    // if the script is forbidden.
-    // The script check below will be unreachable in this case.
-    m_value.set(m_scriptState->isolate(),
-                ToV8(value, m_scriptState->context()->Global(),
-                     m_scriptState->isolate()));
+
+    // Calling ToV8 in a ScriptForbiddenScope will trigger a RELEASE_ASSERT and
+    // cause a crash. ToV8 just invokes a constructor for wrapper creation,
+    // which is safe (no author script can be run). Adding AllowUserAgentScript
+    // directly inside createWrapper could cause a perf impact (calling
+    // isMainThread() every time a wrapper is created is expensive). Ideally,
+    // resolveOrReject shouldn't be called inside a ScriptForbiddenScope.
+    {
+      ScriptForbiddenScope::AllowUserAgentScript allowScript;
+      m_value.set(m_scriptState->isolate(),
+                  ToV8(value, m_scriptState->context()->Global(),
+                       m_scriptState->isolate()));
+    }
 
     if (getExecutionContext()->isContextSuspended()) {
       // Retain this object until it is actually resolved or rejected.
