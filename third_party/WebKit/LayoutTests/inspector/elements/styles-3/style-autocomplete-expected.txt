@@ -25,3 +25,7 @@ Running: testValueUnprefixed
 
 Running: testValueSubstring
 
+Running: testNameVariables
+
+Running: testValueVariables
+
