@@ -1,16 +1,23 @@
 <!DOCTYPE html>
-<!-- FIXME: Move this test out of chromium/ when PHP is no longer needed
-     to set the Link header (crbug.com/347864).
--->
+<title>Service Worker: Registration using Link header</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
-<script src="../resources/test-helpers.js"></script>
+<script src="resources/test-helpers.sub.js"></script>
 <body>
 <script>
+function get_newest_worker(registration) {
+  if (registration.installing)
+    return registration.installing;
+  if (registration.waiting)
+    return registration.waiting;
+  if (registration.active)
+    return registration.active;
+}
+
 promise_test(function(t) {
     var scope = normalizeURL('resources/blank.html?fetch');
     var header = '<empty-worker.js>; rel=serviceworker; scope="' + scope + '"';
-    var resource = 'resources/link-header.php?Link=' +
+    var resource = 'resources/link-header.py?Link=' +
         encodeURIComponent(header);
     return with_iframe(scope)
       .then(frame =>
@@ -18,13 +25,16 @@ promise_test(function(t) {
                       fetch(resource)]))
       .then(([registration, response]) => {
           assert_equals(registration.scope, scope);
+          assert_equals(get_newest_worker(registration).scriptURL,
+                        normalizeURL('resources/empty-worker.js'));
+          return registration.unregister();
         });
   }, 'fetch can trigger service worker installation');
 
 promise_test(function(t) {
     var scope = normalizeURL('resources/blank.html?iframe');
     var header = '<empty-worker.js>; rel=serviceworker; scope="' + scope + '"';
-    var resource = 'resources/link-header.php?Link=' +
+    var resource = 'resources/link-header.py?Link=' +
         encodeURIComponent(header);
     return with_iframe(scope)
       .then(frame =>
@@ -32,13 +42,16 @@ promise_test(function(t) {
                        with_iframe(resource)]))
       .then(([registration, frame]) => {
           assert_equals(registration.scope, scope);
+          assert_equals(get_newest_worker(registration).scriptURL,
+                        normalizeURL('resources/empty-worker.js'));
+          return registration.unregister();
         });
   }, 'An iframe can trigger service worker installation');
 
 promise_test(function(t) {
     var scope = normalizeURL('resources/blank.html?css');
     var header = '<empty-worker.js>; rel=serviceworker; scope="' + scope + '"';
-    var resource = 'resources/link-header.php?Link=' +
+    var resource = 'resources/link-header.py?Link=' +
         encodeURIComponent(header);
     return with_iframe(scope)
       .then(frame => {
@@ -51,6 +64,9 @@ promise_test(function(t) {
         })
       .then(registration => {
           assert_equals(registration.scope, scope);
+          assert_equals(get_newest_worker(registration).scriptURL,
+                        normalizeURL('resources/empty-worker.js'));
+          return registration.unregister();
         });
   }, 'A stylesheet can trigger service worker installation');
 

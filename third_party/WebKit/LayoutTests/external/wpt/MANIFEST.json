@@ -3787,6 +3787,11 @@
      {}
     ]
    ],
+   "./MANIFEST.json": [
+    [
+     {}
+    ]
+   ],
    "./README.md": [
     [
      {}
@@ -3893,6 +3898,11 @@
     ]
    ],
    "FileAPI/idlharness.idl": [
+    [
+     {}
+    ]
+   ],
+   "FileAPI/reading-data-section/filereader_abort-expected.txt": [
     [
      {}
     ]
@@ -6923,6 +6933,11 @@
     ]
    ],
    "html/dom/dynamic-markup-insertion/document-write/original-id.json": [
+    [
+     {}
+    ]
+   ],
+   "html/dom/dynamic-markup-insertion/document-write/write-active-document-expected.txt": [
     [
      {}
     ]
@@ -13452,6 +13467,11 @@
      {}
     ]
    ],
+   "html/webappapis/scripting/events/body-exposed-window-event-handlers-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/webappapis/scripting/events/contains.json": [
     [
      {}
@@ -14958,6 +14978,11 @@
     ]
    ],
    "service-workers/service-worker/resources/invalid-header-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/link-header.py": [
     [
      {}
     ]
@@ -30485,6 +30510,12 @@
      {}
     ]
    ],
+   "service-workers/service-worker/register-link-header.https.html": [
+    [
+     "/service-workers/service-worker/register-link-header.https.html",
+     {}
+    ]
+   ],
    "service-workers/service-worker/register-same-scope-different-script-url.https.html": [
     [
      "/service-workers/service-worker/register-same-scope-different-script-url.https.html",
@@ -34462,6 +34493,10 @@
    "89af73c41d456ee93bd40921e96414c1908fc48c",
    "support"
   ],
+  "./MANIFEST.json": [
+   "21d1c98975a9d9bd1ca6e949f027331227cfe568",
+   "support"
+  ],
   "./README.md": [
    "47d52ff4a87b49dec2fb5ceb98211fb1b9af34fb",
    "support"
@@ -34621,6 +34656,10 @@
   "FileAPI/reading-data-section/FileReader-multiple-reads.html": [
    "32bad4f4ea2ac1104fa2828ef7370a2fdee11a5a",
    "testharness"
+  ],
+  "FileAPI/reading-data-section/filereader_abort-expected.txt": [
+   "6b7d9ce30d01a65662252c7f041bc804ca7be1cf",
+   "support"
   ],
   "FileAPI/reading-data-section/filereader_abort.html": [
    "b1a3335d10f661aee31df179e5e81d2071b38edd",
@@ -41733,6 +41772,10 @@
   "html/dom/dynamic-markup-insertion/document-write/script_013.html": [
    "0c45797b8e51b33aa49148eff24e021b69c372d9",
    "testharness"
+  ],
+  "html/dom/dynamic-markup-insertion/document-write/write-active-document-expected.txt": [
+   "4a0a7a7c2c9826da0d42c938abf4ba95499c31b9",
+   "support"
   ],
   "html/dom/dynamic-markup-insertion/document-write/write-active-document.html": [
    "66d780431c740841834f0af67d20d28ac5178d9b",
@@ -50358,6 +50401,10 @@
    "3907beccfe4fddca1b2326f737bde4e87979926e",
    "testharness"
   ],
+  "html/webappapis/scripting/events/body-exposed-window-event-handlers-expected.txt": [
+   "d20f665d2ab2fdd631e2296c7b9a94738e8c3272",
+   "support"
+  ],
   "html/webappapis/scripting/events/body-exposed-window-event-handlers.html": [
    "d5c9f5ddded8fa916f7e63a90d45fc9e01aa34a6",
    "testharness"
@@ -52658,6 +52705,10 @@
    "fcd2a244ad1f12c954c231c479f89beaa3c145e6",
    "testharness"
   ],
+  "service-workers/service-worker/register-link-header.https.html": [
+   "fa97635d3a16a0f2a0a0bae8e4b81c8b5100d9cd",
+   "testharness"
+  ],
   "service-workers/service-worker/register-same-scope-different-script-url.https.html": [
    "7c32948fe5ff738a38b08ff2d2497ddb63f0a8ef",
    "testharness"
@@ -53004,6 +53055,10 @@
   ],
   "service-workers/service-worker/resources/invalid-header-worker.js": [
    "eaa7fd4f6d2d92af8c27895fc9060296804ece21",
+   "support"
+  ],
+  "service-workers/service-worker/resources/link-header.py": [
+   "5717930bd579b9a63f1b3619195d65b46aa044cf",
    "support"
   ],
   "service-workers/service-worker/resources/load_worker.js": [
