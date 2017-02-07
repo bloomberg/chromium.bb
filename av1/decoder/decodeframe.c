@@ -338,8 +338,8 @@ static void inverse_transform_block(MACROBLOCKD *xd, int plane,
 }
 
 #if CONFIG_PVQ
-static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
-                                 int16_t *dqcoeff, int16_t *quant, int pli,
+static int av1_pvq_decode_helper(od_dec_ctx *dec, tran_low_t *ref_coeff,
+                                 tran_low_t *dqcoeff, int16_t *quant, int pli,
                                  int bs, TX_TYPE tx_type, int xdec,
                                  PVQ_SKIP_TYPE ac_dc_coded) {
   unsigned int flags;  // used for daala's stream analyzer.
@@ -356,8 +356,8 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
   int eob = 0;
   int i;
   int use_activity_masking = dec->use_activity_masking;
-  DECLARE_ALIGNED(16, int16_t, dqcoeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
-  DECLARE_ALIGNED(16, int16_t, ref_coeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
+  DECLARE_ALIGNED(16, tran_low_t, dqcoeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
+  DECLARE_ALIGNED(16, tran_low_t, ref_coeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
 
   od_coeff ref_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX];
   od_coeff out_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX];

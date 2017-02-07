@@ -109,8 +109,8 @@ const int *const OD_BAND_OFFSETS[OD_TXSIZES + 1] = {
  * @param [in]     src     source coefficient block
  * @param [int]    int     source vector row stride
  */
-static void od_band_from_raster(const band_layout *layout, int16_t *dst,
- const int16_t *src, int stride, TX_TYPE tx_type) {
+static void od_band_from_raster(const band_layout *layout, tran_low_t *dst,
+ const tran_low_t *src, int stride, TX_TYPE tx_type) {
   int i;
   int len;
   len = layout->band_offsets[layout->nb_bands];
@@ -127,8 +127,8 @@ static void od_band_from_raster(const band_layout *layout, int16_t *dst,
  * @param [in]     src     source vector
  * @param [int]    stride  destination vector row stride
  */
-static void od_raster_from_band(const band_layout *layout, int16_t *dst,
- int stride, TX_TYPE tx_type, const int16_t *src) {
+static void od_raster_from_band(const band_layout *layout, tran_low_t *dst,
+ int stride, TX_TYPE tx_type, const tran_low_t *src) {
   int i;
   int len;
   len = layout->band_offsets[layout->nb_bands];
@@ -153,8 +153,8 @@ static const band_layout *const OD_LAYOUTS[] = {&OD_LAYOUT4, &OD_LAYOUT8,
  * @param [in]     src        source coefficient block
  * @param [in]     stride     source vector row stride
  */
-void od_raster_to_coding_order(int16_t *dst, int n, TX_TYPE ty_type,
- const int16_t *src, int stride) {
+void od_raster_to_coding_order(tran_low_t *dst, int n, TX_TYPE ty_type,
+ const tran_low_t *src, int stride) {
   int bs;
   /* dst + 1 because DC is not included for 4x4 blocks. */
   od_band_from_raster(OD_LAYOUTS[0], dst + 1, src, stride, ty_type);
@@ -185,8 +185,8 @@ void od_raster_to_coding_order(int16_t *dst, int n, TX_TYPE ty_type,
  * @param [in]     src        source vector
  * @param [in]     n          block size (along one side)
  */
-void od_coding_order_to_raster(int16_t *dst, int stride, TX_TYPE ty_type,
- const int16_t *src, int n) {
+void od_coding_order_to_raster(tran_low_t *dst, int stride, TX_TYPE ty_type,
+ const tran_low_t *src, int n) {
   int bs;
   /* src + 1 because DC is not included for 4x4 blocks. */
   od_raster_from_band(OD_LAYOUTS[0], dst, stride, ty_type, src + 1);
