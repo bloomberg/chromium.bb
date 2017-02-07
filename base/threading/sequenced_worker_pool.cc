@@ -977,7 +977,7 @@ void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
     DCHECK(thread_being_created_);
     thread_being_created_ = false;
     auto result = threads_.insert(
-        std::make_pair(PlatformThread::CurrentId(), WrapUnique(this_worker)));
+        std::make_pair(this_worker->tid(), WrapUnique(this_worker)));
     DCHECK(result.second);
 
     while (true) {

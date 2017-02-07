@@ -30,8 +30,9 @@
 //   MyThreadRunner runner;
 //   DelegateSimpleThread thread(&runner, "good_name_here");
 //   thread.Start();
-//   // The newly created thread will invoke runner->Run(), and run until it
-//   // returns.
+//   // Start will return after the Thread has been successfully started and
+//   // initialized.  The newly created thread will invoke runner->Run(), and
+//   // run until it returns.
 //   thread.Join();  // Wait until the thread has exited.  You *MUST* Join!
 //   // The SimpleThread object is still valid, however you may not call Join
 //   // or Start again.
@@ -47,7 +48,6 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -96,8 +96,14 @@ class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
   // Subclasses should override the Run method.
   virtual void Run() = 0;
 
-  // Return the thread id.
-  PlatformThreadId GetTid() const;
+  // Return the thread id, only valid after Start().
+  PlatformThreadId tid() { return tid_; }
+
+  // Return True if Start() has ever been called.
+  bool HasBeenStarted();
+
+  // Return True if Join() has ever been called.
+  bool HasBeenJoined() { return joined_; }
 
   // Overridden from PlatformThread::Delegate:
   void ThreadMain() override;
@@ -106,20 +112,10 @@ class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
   const std::string name_prefix_;
   std::string name_;
   const Options options_;
-
-  // PlatformThread handle, reset after Join.
-  PlatformThreadHandle thread_;
-
-  // Signaled once |tid_| is set.
-  mutable WaitableEvent id_event_;
-
-  // The backing thread's id.
-  PlatformThreadId tid_ = kInvalidThreadId;
-
-#if DCHECK_IS_ON()
-  bool has_been_started_ = false;
-  bool has_been_joined_ = false;
-#endif
+  PlatformThreadHandle thread_;  // PlatformThread handle, reset after Join.
+  WaitableEvent event_;          // Signaled if Start() was ever called.
+  PlatformThreadId tid_ = kInvalidThreadId;  // The backing thread's id.
+  bool joined_ = false;                      // True if Join has been called.
 
   DISALLOW_COPY_AND_ASSIGN(SimpleThread);
 };
