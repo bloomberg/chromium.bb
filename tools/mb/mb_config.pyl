@@ -175,7 +175,7 @@
       'EarlGreyiOS': 'ios',
       'GomaCanaryiOS': 'ios',
       'ios-simulator': 'ios',
-      'Headless Linux (dbg)': '//build/args/bots/chromium.fyi/headless_linux_dbg.gn',
+      'Headless Linux (dbg)': 'headless_linux_debug_bot',
       'MD Top Chrome ChromeOS material-hybrid': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome ChromeOS non-material': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome Win material': 'debug_bot',
@@ -543,8 +543,7 @@
       'linux_chromium_dbg_32_ng': 'debug_trybot_x86',
       'linux_chromium_dbg_ng': 'debug_trybot',
       'linux_chromium_gn_upload': 'gn_linux_upload',
-      'linux_chromium_headless_dbg': '//build/args/bots/tryserver.chromium.linux/linux_chromium_headless_dbg.gn',
-      'linux_chromium_headless_rel': '//build/args/bots/tryserver.chromium.linux/linux_chromium_headless_rel.gn',
+      'linux_chromium_headless_rel': 'headless_linux_release_trybot',
       'linux_chromium_ozone_compile_only_ng': 'ozone_linux_release_trybot',
 
       # This is intentionally a release_bot and not a release_trybot;
@@ -1263,6 +1262,14 @@
       'gn_linux_upload', 'official', 'goma',
     ],
 
+    'headless_linux_debug_bot': [
+      'debug_bot', 'headless',
+    ],
+
+    'headless_linux_release_trybot': [
+      'release_trybot', 'headless',
+    ],
+
     # The 'ios' config is just used for auditing. iOS bots
     # actually use the ios recipes, not the chromium recipe, and look
     # up their GN arguments via files checked in under //ios/build/bots.
@@ -1712,6 +1719,10 @@
 
     'mac_hermetic_toolchain': {
       'gn_args': 'use_system_xcode=false',
+    },
+
+    'headless': {
+      'args_file': '//build/args/headless.gn',
     },
 
     'hybrid': {
