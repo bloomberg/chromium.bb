@@ -37,10 +37,6 @@
 #include "media/formats/mp4/box_definitions.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif
-
 namespace media {
 namespace {
 
@@ -219,18 +215,6 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
       base::Bind(&ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB,
                  BindToCurrentLoop(init_cb), media_log_);
 
-  bool requires_restart_for_external_output_surface = false;
-#if !defined(OS_ANDROID)
-  if (config.is_encrypted()) {
-    DVLOG(1) << "Encrypted stream not supported.";
-    bound_init_cb.Run(false);
-    return;
-  }
-#else
-  requires_restart_for_external_output_surface =
-      base::android::BuildInfo::GetInstance()->sdk_int() < 23;
-#endif
-
   bool previously_initialized = config_.IsValidConfig();
   DVLOG(1) << (previously_initialized ? "Reinitializing" : "Initializing")
            << " GVD with config: " << config.AsHumanReadableString();
@@ -252,6 +236,14 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   VideoDecodeAccelerator::Capabilities capabilities =
       factories_->GetVideoDecodeAcceleratorCapabilities();
+  if (config.is_encrypted() &&
+      !(capabilities.flags &
+        VideoDecodeAccelerator::Capabilities::SUPPORTS_ENCRYPTED_STREAMS)) {
+    DVLOG(1) << "Encrypted stream not supported.";
+    bound_init_cb.Run(false);
+    return;
+  }
+
   if (!IsProfileSupported(capabilities, config.profile(), config.coded_size(),
                           config.is_encrypted())) {
     DVLOG(1) << "Unsupported profile " << GetProfileName(config.profile())
@@ -312,10 +304,14 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   init_cb_ = bound_init_cb;
 
-  const bool supports_external_output_surface =
-      (capabilities.flags & VideoDecodeAccelerator::Capabilities::
-                                SUPPORTS_EXTERNAL_OUTPUT_SURFACE) != 0;
+  const bool supports_external_output_surface = !!(
+      capabilities.flags &
+      VideoDecodeAccelerator::Capabilities::SUPPORTS_EXTERNAL_OUTPUT_SURFACE);
   if (supports_external_output_surface && !request_surface_cb_.is_null()) {
+    const bool requires_restart_for_external_output_surface =
+        !(capabilities.flags & VideoDecodeAccelerator::Capabilities::
+                                   SUPPORTS_SET_EXTERNAL_OUTPUT_SURFACE);
+
     // If we have a surface request callback we should call it and complete
     // initialization with the returned surface.
     request_surface_cb_.Run(

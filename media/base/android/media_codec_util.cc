@@ -265,6 +265,12 @@ bool MediaCodecUtil::IsSurfaceViewOutputSupported() {
 }
 
 // static
+bool MediaCodecUtil::IsSetOutputSurfaceSupported() {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_MediaCodecUtil_isSetOutputSurfaceSupported(env);
+}
+
+// static
 bool MediaCodecUtil::CodecNeedsFlushWorkaround(MediaCodecBridge* codec) {
   int sdk_int = base::android::BuildInfo::GetInstance()->sdk_int();
   std::string codec_name = codec->GetName();

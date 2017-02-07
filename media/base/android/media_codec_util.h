@@ -82,6 +82,9 @@ class MEDIA_EXPORT MediaCodecUtil {
   // Indicates if SurfaceView and MediaCodec work well together on this device.
   static bool IsSurfaceViewOutputSupported();
 
+  // Indicates if MediaCodec.setOutputSurface() works on this device.
+  static bool IsSetOutputSurfaceSupported();
+
   // Indicates if the decoder is known to fail when flushed. (b/8125974,
   // b/8347958)
   // When true, the client should work around the issue by releasing the

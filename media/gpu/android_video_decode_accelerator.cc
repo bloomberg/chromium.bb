@@ -1495,20 +1495,19 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     profiles.push_back(profile);
   }
 
-  capabilities.flags =
-      VideoDecodeAccelerator::Capabilities::SUPPORTS_DEFERRED_INITIALIZATION;
-  capabilities.flags |=
-      VideoDecodeAccelerator::Capabilities::NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
+  capabilities.flags = Capabilities::SUPPORTS_DEFERRED_INITIALIZATION |
+                       Capabilities::NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE |
+                       Capabilities::SUPPORTS_ENCRYPTED_STREAMS;
 
   // If we're using threaded texture mailboxes the COPY_REQUIRED flag must be
   // set on the video frames (http://crbug.com/582170), and SurfaceView output
   // is disabled (http://crbug.com/582170).
   if (gpu_preferences.enable_threaded_texture_mailboxes) {
-    capabilities.flags |=
-        VideoDecodeAccelerator::Capabilities::REQUIRES_TEXTURE_COPY;
+    capabilities.flags |= Capabilities::REQUIRES_TEXTURE_COPY;
   } else if (MediaCodecUtil::IsSurfaceViewOutputSupported()) {
-    capabilities.flags |=
-        VideoDecodeAccelerator::Capabilities::SUPPORTS_EXTERNAL_OUTPUT_SURFACE;
+    capabilities.flags |= Capabilities::SUPPORTS_EXTERNAL_OUTPUT_SURFACE;
+    if (MediaCodecUtil::IsSetOutputSurfaceSupported())
+      capabilities.flags |= Capabilities::SUPPORTS_SET_EXTERNAL_OUTPUT_SURFACE;
   }
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)

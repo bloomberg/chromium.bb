@@ -80,6 +80,13 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
       // If set, video frames will have COPY_REQUIRED flag which will cause
       // an extra texture copy during composition.
       REQUIRES_TEXTURE_COPY = 1 << 3,
+
+      // Whether the VDA supports encrypted streams or not.
+      SUPPORTS_ENCRYPTED_STREAMS = 1 << 4,
+
+      // If set the decoder does not require a restart in order to switch to
+      // using an external output surface.
+      SUPPORTS_SET_EXTERNAL_OUTPUT_SURFACE = 1 << 5,
     };
 
     SupportedProfiles supported_profiles;

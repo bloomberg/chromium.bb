@@ -481,6 +481,18 @@ class MediaCodecUtil {
     }
 
     /**
+     * Provides a way to blacklist MediaCodec.setOutputSurface() on devices.
+     * @return true if setOutputSurface() is expected to work.
+     */
+    @CalledByNative
+    static boolean isSetOutputSurfaceSupported() {
+        // All Huawei devices based on this processor will immediately hang during
+        // MediaCodec.setOutputSurface().  http://crbug.com/683401
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && !Build.HARDWARE.equalsIgnoreCase("hi6210sft");
+    }
+
+    /**
      * Find HW encoder with given MIME type.
      * @param mime MIME type of the media.
      * @return HWEncoderProperties object.
