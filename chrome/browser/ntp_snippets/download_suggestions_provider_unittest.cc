@@ -90,6 +90,11 @@ std::ostream& operator<<(std::ostream& os, const CategoryStatus& value) {
 
 namespace {
 
+const int kDefaultMaxDownloadAgeHours = 6 * 7 * 24;
+
+// Tue, 31 Jan 2017 13:00:00 UTC
+const base::Time now = base::Time::FromJavaTime(1485867600000);
+
 // TODO(vitaliii): Move this and outputting functions above to common file and
 // replace remaining |Property(&ContentSuggestion::url, GURL("some_url"))|.
 // See crbug.com/655513.
@@ -142,12 +147,6 @@ std::vector<OfflinePageItem> CreateDummyOfflinePages(
   }
 
   return result;
-}
-
-OfflinePageItem CreateDummyOfflinePage(int id, base::Time time) {
-  OfflinePageItem item = CreateDummyOfflinePage(id);
-  item.creation_time = time;
-  return item;
 }
 
 std::unique_ptr<FakeDownloadItem> CreateDummyAssetDownload(int id) {
@@ -473,40 +472,49 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldSortSuggestions) {
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
 
-  base::Time now = base::Time::Now();
-  base::Time yesterday = now - base::TimeDelta::FromDays(1);
-  base::Time tomorrow = now + base::TimeDelta::FromDays(1);
-  base::Time next_week = now + base::TimeDelta::FromDays(7);
+  std::vector<OfflinePageItem> offline_pages = CreateDummyOfflinePages({0, 1});
 
-  (*offline_pages_model()->mutable_items())
-      .push_back(CreateDummyOfflinePage(1, yesterday));
-  (*offline_pages_model()->mutable_items())
-      .push_back(CreateDummyOfflinePage(2, tomorrow));
+  offline_pages[0].url = GURL("http://dummy.com/0");
+  offline_pages[0].creation_time = now - base::TimeDelta::FromMinutes(10);
+  offline_pages[0].last_access_time = offline_pages[0].creation_time;
 
+  offline_pages[1].url = GURL("http://dummy.com/1");
+  offline_pages[1].creation_time = now - base::TimeDelta::FromMinutes(5);
+  offline_pages[1].last_access_time = offline_pages[1].creation_time;
+
+  *(offline_pages_model()->mutable_items()) = offline_pages;
+
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  test_clock->SetNow(now);
   EXPECT_CALL(*observer(),
               OnNewSuggestions(_, downloads_category(),
-                               ElementsAre(HasUrl("http://dummy.com/2"),
-                                           HasUrl("http://dummy.com/1"))));
+                               ElementsAre(HasUrl("http://dummy.com/1"),
+                                           HasUrl("http://dummy.com/0"))));
   CreateLoadedProvider(/*show_assets=*/true, /*show_offline_pages=*/true,
-                       base::MakeUnique<base::DefaultClock>());
+                       std::move(test_clock));
 
-  std::vector<std::unique_ptr<FakeDownloadItem>> asset_downloads;
-  asset_downloads.push_back(CreateDummyAssetDownload(3, next_week));
-  asset_downloads.push_back(CreateDummyAssetDownload(4, now));
+  std::vector<std::unique_ptr<FakeDownloadItem>> asset_downloads =
+      CreateDummyAssetDownloads({2, 3});
+
+  asset_downloads[0]->SetURL(GURL("http://download.com/2"));
+  asset_downloads[0]->SetStartTime(now - base::TimeDelta::FromMinutes(3));
+
+  asset_downloads[1]->SetURL(GURL("http://download.com/3"));
+  asset_downloads[1]->SetStartTime(now - base::TimeDelta::FromMinutes(7));
 
   EXPECT_CALL(*observer(),
               OnNewSuggestions(_, downloads_category(),
-                               ElementsAre(HasUrl("http://download.com/3"),
-                                           HasUrl("http://dummy.com/2"),
-                                           HasUrl("http://dummy.com/1"))));
+                               ElementsAre(HasUrl("http://download.com/2"),
+                                           HasUrl("http://dummy.com/1"),
+                                           HasUrl("http://dummy.com/0"))));
   FireDownloadCreated(asset_downloads[0].get());
 
   EXPECT_CALL(*observer(),
               OnNewSuggestions(_, downloads_category(),
-                               ElementsAre(HasUrl("http://download.com/3"),
-                                           HasUrl("http://dummy.com/2"),
-                                           HasUrl("http://download.com/4"),
-                                           HasUrl("http://dummy.com/1"))));
+                               ElementsAre(HasUrl("http://download.com/2"),
+                                           HasUrl("http://dummy.com/1"),
+                                           HasUrl("http://download.com/3"),
+                                           HasUrl("http://dummy.com/0"))));
   FireDownloadCreated(asset_downloads[1].get());
 }
 
@@ -1033,27 +1041,31 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldNotShowOutdatedDownloads) {
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
 
-  const int kDefaultMaxDownloadAgeHours = 6 * 7 * 24;
-
-  base::Time now;
-  ASSERT_TRUE(base::Time::FromString("Tue, 31 Jan 2017 13:00:00", &now));
   const base::Time not_outdated =
       now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) +
       base::TimeDelta::FromSeconds(1);
   const base::Time outdated =
       now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) -
       base::TimeDelta::FromSeconds(1);
+
   *(offline_pages_model()->mutable_items()) = CreateDummyOfflinePages({0, 1});
+
   offline_pages_model()->mutable_items()->at(0).url =
       GURL("http://dummy.com/0");
   offline_pages_model()->mutable_items()->at(0).creation_time = not_outdated;
+  offline_pages_model()->mutable_items()->at(0).last_access_time = not_outdated;
+
   offline_pages_model()->mutable_items()->at(1).url =
       GURL("http://dummy.com/1");
   offline_pages_model()->mutable_items()->at(1).creation_time = outdated;
+  offline_pages_model()->mutable_items()->at(1).last_access_time = outdated;
+
   *(downloads_manager()->mutable_items()) = CreateDummyAssetDownloads({0, 1});
+
   downloads_manager()->mutable_items()->at(0)->SetURL(
       GURL("http://download.com/0"));
   downloads_manager()->mutable_items()->at(0)->SetStartTime(not_outdated);
+
   downloads_manager()->mutable_items()->at(1)->SetURL(
       GURL("http://download.com/1"));
   downloads_manager()->mutable_items()->at(1)->SetStartTime(outdated);
@@ -1067,4 +1079,40 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldNotShowOutdatedDownloads) {
   test_clock->SetNow(now);
   CreateLoadedProvider(/*show_assets=*/true, /*show_offline_pages=*/true,
                        std::move(test_clock));
+}
+
+TEST_F(DownloadSuggestionsProviderTest,
+       ShouldShowRecentlyVisitedOfflinePageDownloads) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+
+  const base::Time not_outdated =
+      now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) +
+      base::TimeDelta::FromSeconds(1);
+  const base::Time outdated =
+      now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) -
+      base::TimeDelta::FromSeconds(1);
+
+  std::vector<OfflinePageItem> offline_pages = CreateDummyOfflinePages({0, 1});
+
+  offline_pages[0].url = GURL("http://dummy.com/0");
+  offline_pages[0].creation_time = outdated;
+  offline_pages[0].last_access_time = not_outdated;
+
+  offline_pages[1].url = GURL("http://dummy.com/1");
+  offline_pages[1].creation_time = outdated;
+  offline_pages[1].last_access_time = offline_pages[1].creation_time;
+
+  *(offline_pages_model()->mutable_items()) = offline_pages;
+
+  // Even though page 0 was created long time ago, it should be reported because
+  // it has been visited recently.
+  EXPECT_CALL(
+      *observer(),
+      OnNewSuggestions(_, downloads_category(),
+                       UnorderedElementsAre(HasUrl("http://dummy.com/0"))));
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  test_clock->SetNow(now);
+  CreateProvider(/*show_assets=*/false, /*show_offline_pages=*/true,
+                 std::move(test_clock));
 }

@@ -141,9 +141,10 @@ class DownloadSuggestionsProvider
   ntp_snippets::ContentSuggestion ConvertDownloadItem(
       const content::DownloadItem& download_item) const;
 
-  // Returns true if a download published time is considered too old for the
-  // download to be shown.
-  bool IsDownloadOutdated(const base::Time& published_time);
+  // Returns true if a download published and last visited times are considered
+  // too old for the download to be shown.
+  bool IsDownloadOutdated(const base::Time& published_time,
+                          const base::Time& last_visited_time);
 
   // Adds |item| to the internal asset download cache if all of the following
   // holds:
