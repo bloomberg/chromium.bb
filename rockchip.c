@@ -130,7 +130,8 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo,
 		drv_bo_from_format(bo, aligned_width, height, format);
 		bo->total_size = bo->strides[0] * aligned_height
 				 + w_mbs * h_mbs * 128;
-	} else if (has_modifier(modifiers, count,
+	} else if (width <= 2560 &&
+		   has_modifier(modifiers, count,
 				DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)) {
 		/* If the caller has decided they can use AFBC, always
 		 * pick that */
