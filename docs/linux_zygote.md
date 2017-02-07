@@ -3,10 +3,20 @@ and forks itself in response. Generally they are used because forking a process
 after some expensive setup has been performed can save time and share extra
 memory pages.
 
-On Linux, for Chromium, this is not the point, and measurements suggest that the
-time and memory savings are minimal or negative.
+More specifically, on Linux, it allows to:
+ * Amortize the runtime and memory cost of the dynamic loader's relocations,
+   which is respectively ~6 MB and 60 ms/GHz per process.
+   See [Appendix A](#appendix-a-runtime-impact-of-relocations) and
+   [Appendix B](#appendix-b-memory-impact-of-relocations).
+ * Amortize the runtime and memory cost for initializing common
+   libraries, such as ICU, NSS, the V8 snapshot and anything else in
+   `ContentMainRunnerImpl::Initialize()`. With the above, this saves
+   up to ~8 MB per process. See [Appendix C](#appendix-c-overall-memory-impact).
 
-We use it because it's the only reasonable way to keep a reference to a binary
+Security-wise, the Zygote is responsible for setting up and bookkeeping the
+[namespace sandbox](linux_sandboxing.md).
+
+Furthermore it is the only reasonable way to keep a reference to a binary
 and a set of shared libraries that can be exec'ed. In the model used on Windows
 and Mac, renderers are exec'ed as needed from the chrome binary. However, if the
 chrome binary, or any of its shared libraries are updated while Chrome is
@@ -34,3 +44,37 @@ Signaling the zygote for a new renderer happens in
 You can use the `--zygote-cmd-prefix` flag to debug the zygote process. If you
 use `--renderer-cmd-prefix` then the zygote will be bypassed and renderers will
 be exec'ed afresh every time.
+
+## Appendix A: Runtime impact of relocations
+Measured on a Z620:
+
+    $ LD_DEBUG=statistics /opt/google/chrome-beta/chrome --help
+    runtime linker statistics:
+      total startup time in dynamic loader: 73899158 clock cycles
+        time needed for relocation: 56836478 clock cycles (76.9%)
+           number of relocations: 4271
+           number of relocations from cache: 11347
+           number of relative relocations: 502740
+        time needed to load objects: 15789844 clock cycles (21.3%)
+
+56836478 clock cycles -> ~56 ms/GHz
+
+## Appendix B: Memory impact of relocations
+
+    $ readelf -WS /opt/google/chrome-beta/chrome
+    [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
+    ...
+    [25] .data.rel.ro      PROGBITS        0000000006a8b590 6a8a590 5b5500 00  WA  0   0 16
+    ...
+    Note: 0x5b5500  -> 5.98 MB
+
+Actual impact in terms of memory pages that get shared due to CoW:
+
+    $ cat /proc/.../smaps
+    7fbdd1c81000-7fbdd2233000 r--p 06a5d000 fc:00 665771     /opt/google/chrome-unstable/chrome
+    ...
+    Shared_Dirty:       5796 kB
+
+## Appendix C: Overall memory impact
+    $ cat /proc/$PID_OF_ZYGOTE/smaps | grep Shared_Dirty | awk '{TOTAL += $2} END {print TOTAL}'
+    8092  # KB for dirty pages shared with other processes (mostly forked child processes).
