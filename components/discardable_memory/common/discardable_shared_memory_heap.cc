@@ -426,7 +426,9 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
           ->GetTracingProcessId();
   base::trace_event::MemoryAllocatorDumpGuid shared_segment_guid =
       GetSegmentGUIDForTracing(tracing_process_id, segment_id);
-  pmd->CreateWeakSharedGlobalAllocatorDump(shared_segment_guid);
+  // TODO(ssid): Make this weak once the GUID created is consistent
+  // crbug.com/661257.
+  pmd->CreateSharedGlobalAllocatorDump(shared_segment_guid);
 
   // The size is added to the global dump so that it gets propagated to both the
   // dumps associated.
