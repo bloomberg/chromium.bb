@@ -1552,9 +1552,9 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   // Verify that the response had a URL for us.
   GURL gurl = GetUrlFromHeaderBlock(headers);
   if (!gurl.is_valid()) {
-    EnqueueResetStreamFrame(stream_id, request_priority,
-                            ERROR_CODE_PROTOCOL_ERROR,
-                            "Pushed stream url was invalid: " + gurl.spec());
+    EnqueueResetStreamFrame(
+        stream_id, request_priority, ERROR_CODE_PROTOCOL_ERROR,
+        "Pushed stream url was invalid: " + gurl.possibly_invalid_spec());
     return;
   }
 
