@@ -43,7 +43,7 @@ class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidatorOzone
           CompositorOverlayCandidateValidatorOzone*)>;
   // List callbacks used to instantiate OverlayProcessor::Strategy
   // as defined by |strategies_string| paramter in the constructor.
-  std::vector<StrategyInstantiator> strategies_instantiators;
+  std::vector<StrategyInstantiator> strategies_instantiators_;
   bool software_mirror_active_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorOverlayCandidateValidatorOzone);

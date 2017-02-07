@@ -59,13 +59,13 @@ CompositorOverlayCandidateValidatorOzone::
        base::SplitStringPiece(strategies_string, ",", base::TRIM_WHITESPACE,
                               base::SPLIT_WANT_NONEMPTY)) {
     if (strategy_name == "single-fullscreen") {
-      strategies_instantiators.push_back(
+      strategies_instantiators_.push_back(
           base::Bind(MakeOverlayStrategy<cc::OverlayStrategyFullscreen>));
     } else if (strategy_name == "single-on-top") {
-      strategies_instantiators.push_back(
+      strategies_instantiators_.push_back(
           base::Bind(MakeOverlayStrategy<cc::OverlayStrategySingleOnTop>));
     } else if (strategy_name == "underlay") {
-      strategies_instantiators.push_back(
+      strategies_instantiators_.push_back(
           base::Bind(MakeOverlayStrategy<cc::OverlayStrategyUnderlay>));
     } else {
       LOG(WARNING) << "Unrecognized overlay strategy " << strategy_name;
@@ -78,7 +78,7 @@ CompositorOverlayCandidateValidatorOzone::
 
 void CompositorOverlayCandidateValidatorOzone::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
-  for (auto& instantiator : strategies_instantiators)
+  for (auto& instantiator : strategies_instantiators_)
     strategies->push_back(instantiator.Run(this));
 }
 
