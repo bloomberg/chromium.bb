@@ -16,7 +16,7 @@ namespace media_router {
 
 MediaSinksObserver::MediaSinksObserver(MediaRouter* router,
                                        const MediaSource& source,
-                                       const url::Origin& origin)
+                                       const GURL& origin)
     : source_(source), origin_(origin), router_(router), initialized_(false) {
   DCHECK(router_);
 }
@@ -38,9 +38,8 @@ bool MediaSinksObserver::Init() {
   return initialized_;
 }
 
-void MediaSinksObserver::OnSinksUpdated(
-    const std::vector<MediaSink>& sinks,
-    const std::vector<url::Origin>& origins) {
+void MediaSinksObserver::OnSinksUpdated(const std::vector<MediaSink>& sinks,
+                                        const std::vector<GURL>& origins) {
 #if DCHECK_IS_ON()
   base::AutoReset<bool> reset_in_on_sinks_updated(&in_on_sinks_updated_, true);
 #endif

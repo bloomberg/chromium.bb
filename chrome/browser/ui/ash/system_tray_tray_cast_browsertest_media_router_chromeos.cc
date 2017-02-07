@@ -118,25 +118,23 @@ IN_PROC_BROWSER_TEST_F(SystemTrayTrayCastMediaRouterChromeOSTest,
 
   // The tray should be hidden when there are no sinks.
   EXPECT_FALSE(test_api.IsTrayVisible());
-  media_sinks_observer()->OnSinksUpdated(zero_sinks,
-                                         std::vector<url::Origin>());
+  media_sinks_observer()->OnSinksUpdated(zero_sinks, std::vector<GURL>());
   // Flush mojo messages from the chrome object to the ash object.
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(test_api.IsTrayVisible());
   EXPECT_FALSE(test_api.IsTraySelectViewVisible());
 
   // The tray should be visible with any more than zero sinks.
-  media_sinks_observer()->OnSinksUpdated(one_sink, std::vector<url::Origin>());
+  media_sinks_observer()->OnSinksUpdated(one_sink, std::vector<GURL>());
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(test_api.IsTrayVisible());
-  media_sinks_observer()->OnSinksUpdated(two_sinks, std::vector<url::Origin>());
+  media_sinks_observer()->OnSinksUpdated(two_sinks, std::vector<GURL>());
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(test_api.IsTrayVisible());
   EXPECT_TRUE(test_api.IsTraySelectViewVisible());
 
   // And if all of the sinks go away, it should be hidden again.
-  media_sinks_observer()->OnSinksUpdated(zero_sinks,
-                                         std::vector<url::Origin>());
+  media_sinks_observer()->OnSinksUpdated(zero_sinks, std::vector<GURL>());
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(test_api.IsTrayVisible());
   EXPECT_FALSE(test_api.IsTraySelectViewVisible());
@@ -154,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(SystemTrayTrayCastMediaRouterChromeOSTest,
   // Setup the sinks.
   const std::vector<media_router::MediaSink> sinks = {
       MakeSink("remote_sink", "name"), MakeSink("local_sink", "name")};
-  media_sinks_observer()->OnSinksUpdated(sinks, std::vector<url::Origin>());
+  media_sinks_observer()->OnSinksUpdated(sinks, std::vector<GURL>());
   content::RunAllPendingInMessageLoop();
 
   // Create route combinations. More details below.

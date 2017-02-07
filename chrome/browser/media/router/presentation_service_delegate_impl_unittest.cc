@@ -151,9 +151,8 @@ class PresentationServiceDelegateImplTest
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
 
     // Should not trigger callback since request doesn't match.
-    PresentationRequest different_request(RenderFrameHostId(100, 200),
-                                          {presentation_url2_},
-                                          url::Origin(GURL(kFrameUrl)));
+    PresentationRequest different_request(
+        RenderFrameHostId(100, 200), {presentation_url2_}, GURL(kFrameUrl));
     MediaRoute* media_route = new MediaRoute("differentRouteId", source2_,
                                              "mediaSinkId", "", true, "", true);
     media_route->set_incognito(incognito);
@@ -322,7 +321,7 @@ TEST_F(PresentationServiceDelegateImplTest, SetDefaultPresentationUrl) {
   EXPECT_EQ(presentation_url1_, request1.presentation_urls()[0]);
   EXPECT_EQ(RenderFrameHostId(main_frame_process_id_, main_frame_routing_id_),
             request1.render_frame_host_id());
-  EXPECT_EQ(url::Origin(frame_url), request1.frame_origin());
+  EXPECT_EQ(frame_url, request1.frame_url());
 
   // Set to a new default presentation URL
   std::vector<GURL> new_urls = {presentation_url2_};
@@ -334,7 +333,7 @@ TEST_F(PresentationServiceDelegateImplTest, SetDefaultPresentationUrl) {
   EXPECT_EQ(presentation_url2_, request2.presentation_urls()[0]);
   EXPECT_EQ(RenderFrameHostId(main_frame_process_id_, main_frame_routing_id_),
             request2.render_frame_host_id());
-  EXPECT_EQ(url::Origin(frame_url), request2.frame_origin());
+  EXPECT_EQ(frame_url, request2.frame_url());
 
   // Remove default presentation URL.
   delegate_impl_->SetDefaultPresentationUrls(main_frame_process_id_,
@@ -368,7 +367,7 @@ TEST_F(PresentationServiceDelegateImplTest,
   std::vector<GURL> request1_urls = {presentation_url1_};
   PresentationRequest observed_request1(
       RenderFrameHostId(main_frame_process_id_, main_frame_routing_id_),
-      request1_urls, url::Origin(frame_url));
+      request1_urls, frame_url);
   EXPECT_CALL(observer, OnDefaultPresentationChanged(Equals(observed_request1)))
       .Times(1);
   delegate_impl_->SetDefaultPresentationUrls(
@@ -384,7 +383,7 @@ TEST_F(PresentationServiceDelegateImplTest,
   std::vector<GURL> request2_urls = {presentation_url2_};
   PresentationRequest observed_request2(
       RenderFrameHostId(main_frame_process_id_, main_frame_routing_id_),
-      request2_urls, url::Origin(frame_url));
+      request2_urls, frame_url);
   EXPECT_CALL(observer, OnDefaultPresentationChanged(Equals(observed_request2)))
       .Times(1);
   delegate_impl_->SetDefaultPresentationUrls(

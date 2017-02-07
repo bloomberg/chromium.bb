@@ -277,7 +277,7 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
   query_result_manager_->AddObserver(this);
 
   // Use a placeholder URL as origin for mirroring.
-  url::Origin origin{GURL(chrome::kChromeUIMediaRouterURL)};
+  GURL origin(chrome::kChromeUIMediaRouterURL);
 
   // Desktop mirror mode is always available.
   query_result_manager_->SetSourcesForCastMode(
@@ -318,7 +318,8 @@ void MediaRouterUI::OnDefaultPresentationChanged(
   std::vector<MediaSource> sources = presentation_request.GetMediaSources();
   presentation_request_.reset(new PresentationRequest(presentation_request));
   query_result_manager_->SetSourcesForCastMode(
-      MediaCastMode::DEFAULT, sources, presentation_request_->frame_origin());
+      MediaCastMode::DEFAULT, sources,
+      presentation_request_->frame_url().GetOrigin());
   // Register for MediaRoute updates.  NOTE(mfoltz): If there are multiple
   // sources that can be connected to via the dialog, this will break.  We will
   // need to observe multiple sources (keyed by sinks) in that case.  As this is
@@ -390,7 +391,7 @@ void MediaRouterUI::UIInitialized() {
 bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
                                 MediaCastMode cast_mode) {
   MediaSource::Id source_id;
-  url::Origin origin;
+  GURL origin;
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   base::TimeDelta timeout;
   bool incognito;
@@ -408,7 +409,7 @@ bool MediaRouterUI::SetRouteParameters(
     const MediaSink::Id& sink_id,
     MediaCastMode cast_mode,
     MediaSource::Id* source_id,
-    url::Origin* origin,
+    GURL* origin,
     std::vector<MediaRouteResponseCallback>* route_response_callbacks,
     base::TimeDelta* timeout,
     bool* incognito) {
@@ -438,9 +439,8 @@ bool MediaRouterUI::SetRouteParameters(
   }
 
   current_route_request_id_ = ++route_request_counter_;
-  *origin = for_default_source
-                ? presentation_request_->frame_origin()
-                : url::Origin(GURL(chrome::kChromeUIMediaRouterURL));
+  *origin = for_default_source ? presentation_request_->frame_url().GetOrigin()
+                               : GURL(chrome::kChromeUIMediaRouterURL);
   DVLOG(1) << "DoCreateRoute: origin: " << *origin;
 
   // There are 3 cases. In cases (1) and (3) the MediaRouterUI will need to be
@@ -486,7 +486,7 @@ bool MediaRouterUI::SetRouteParameters(
 bool MediaRouterUI::ConnectRoute(const MediaSink::Id& sink_id,
                                  const MediaRoute::Id& route_id) {
   MediaSource::Id source_id;
-  url::Origin origin;
+  GURL origin;
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   base::TimeDelta timeout;
   bool incognito;
@@ -652,7 +652,7 @@ void MediaRouterUI::OnSearchSinkResponseReceived(
   handler_->ReturnSearchResult(found_sink_id);
 
   MediaSource::Id source_id;
-  url::Origin origin;
+  GURL origin;
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   base::TimeDelta timeout;
   bool incognito;
@@ -707,8 +707,7 @@ void MediaRouterUI::SendIssueForUnableToCast(MediaCastMode cast_mode) {
 }
 
 GURL MediaRouterUI::GetFrameURL() const {
-  return presentation_request_ ? presentation_request_->frame_origin().GetURL()
-                               : GURL();
+  return presentation_request_ ? presentation_request_->frame_url() : GURL();
 }
 
 std::string MediaRouterUI::GetPresentationRequestSourceName() const {

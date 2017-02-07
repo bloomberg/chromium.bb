@@ -114,7 +114,7 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
   MediaSink CreateSinkCompatibleWithAllSources() {
     MediaSink sink("sinkId", "sinkName", MediaSink::GENERIC);
     for (auto* observer : media_sinks_observers_)
-      observer->OnSinksUpdated({sink}, std::vector<url::Origin>());
+      observer->OnSinksUpdated({sink}, std::vector<GURL>());
     return sink;
   }
 
@@ -170,7 +170,7 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
   CreateMediaRouterUI(profile());
   PresentationRequest presentation_request(
       RenderFrameHostId(0, 0), {GURL("https://presentationurl.com")},
-      url::Origin(GURL("https://frameurl.fakeurl")));
+      GURL("https://frameurl.fakeurl"));
   media_router_ui_->OnDefaultPresentationChanged(presentation_request);
   std::vector<MediaRouteResponseCallback> callbacks;
   EXPECT_CALL(
@@ -208,9 +208,9 @@ TEST_F(MediaRouterUITest, RouteCreationParametersCantBeCreated) {
 TEST_F(MediaRouterUITest, RouteRequestFromIncognito) {
   CreateMediaRouterUI(profile()->GetOffTheRecordProfile());
 
-  PresentationRequest presentation_request(
-      RenderFrameHostId(0, 0), {GURL("https://foo.url.com/")},
-      url::Origin(GURL("https://frameUrl")));
+  PresentationRequest presentation_request(RenderFrameHostId(0, 0),
+                                           {GURL("https://foo.url.com/")},
+                                           GURL("https://frameUrl"));
   media_router_ui_->OnDefaultPresentationChanged(presentation_request);
 
   EXPECT_CALL(
@@ -477,7 +477,7 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoSinks) {
   create_session_request_.reset(new CreatePresentationConnectionRequest(
       RenderFrameHostId(0, 0), {GURL("http://google.com/presentation"),
                                 GURL("http://google.com/presentation2")},
-      url::Origin(GURL("http://google.com")),
+      GURL("http://google.com"),
       base::Bind(&PresentationRequestCallbacks::Success,
                  base::Unretained(&request_callbacks)),
       base::Bind(&PresentationRequestCallbacks::Error,
@@ -495,8 +495,7 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
   PresentationRequestCallbacks request_callbacks(expected_error);
   GURL presentation_url("http://google.com/presentation");
   create_session_request_.reset(new CreatePresentationConnectionRequest(
-      RenderFrameHostId(0, 0), {presentation_url},
-      url::Origin(GURL("http://google.com")),
+      RenderFrameHostId(0, 0), {presentation_url}, GURL("http://google.com"),
       base::Bind(&PresentationRequestCallbacks::Success,
                  base::Unretained(&request_callbacks)),
       base::Bind(&PresentationRequestCallbacks::Error,
@@ -507,7 +506,7 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
   // presentation url to cause a NotFoundError.
   std::vector<MediaSink> sinks;
   sinks.emplace_back("sink id", "sink name", MediaSink::GENERIC);
-  std::vector<url::Origin> origins;
+  std::vector<GURL> origins;
   for (auto* observer : media_sinks_observers_) {
     if (observer->source().id() != presentation_url.spec()) {
       observer->OnSinksUpdated(sinks, origins);
@@ -526,8 +525,7 @@ TEST_F(MediaRouterUITest, AbortErrorOnClose) {
   PresentationRequestCallbacks request_callbacks(expected_error);
   GURL presentation_url("http://google.com/presentation");
   create_session_request_.reset(new CreatePresentationConnectionRequest(
-      RenderFrameHostId(0, 0), {presentation_url},
-      url::Origin(GURL("http://google.com")),
+      RenderFrameHostId(0, 0), {presentation_url}, GURL("http://google.com"),
       base::Bind(&PresentationRequestCallbacks::Success,
                  base::Unretained(&request_callbacks)),
       base::Bind(&PresentationRequestCallbacks::Error,
@@ -538,7 +536,7 @@ TEST_F(MediaRouterUITest, AbortErrorOnClose) {
   // a NotFoundError.
   std::vector<MediaSink> sinks;
   sinks.emplace_back("sink id", "sink name", MediaSink::GENERIC);
-  std::vector<url::Origin> origins;
+  std::vector<GURL> origins;
   MediaSource::Id presentation_source_id =
       MediaSourceForPresentationUrl(presentation_url).id();
   for (auto* observer : media_sinks_observers_) {

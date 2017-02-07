@@ -10,13 +10,11 @@ define('media_router_bindings', [
     'extensions/common/mojo/keep_alive.mojom',
     'mojo/common/time.mojom',
     'mojo/public/js/bindings',
-    'url/mojo/origin.mojom',
 ], function(frameInterfaces,
             mediaRouterMojom,
             keepAliveMojom,
             timeMojom,
-            bindings,
-            originMojom) {
+            bindings) {
   'use strict';
 
   /**
@@ -145,43 +143,6 @@ define('media_router_bindings', [
     }
   }
 
-  // TODO(crbug.com/688177): remove this conversion.
-  /**
-   * Converts Mojo origin to string.
-   * @param {!originMojom.Origin} Mojo origin
-   * @return {string}
-   */
-  function mojoOriginToString_(origin) {
-    return origin.unique ? '' :
-        `${origin.scheme}:\/\/${origin.host}` +
-        `${origin.port ? `:${origin.port}` : ''}/`
-  }
-
-  // TODO(crbug.com/688177): remove this conversion.
-  /**
-   * Converts string to Mojo origin.
-   * @param {string} origin
-   * @return {!originMojom.Origin}
-   */
-  function stringToMojoOrigin_(origin) {
-    var url = new URL(origin);
-    var mojoOrigin = {};
-    mojoOrigin.scheme = url.protocol.replace(':', '');
-    mojoOrigin.host = url.hostname;
-    var port = url.port ? Number.parseInt(url.port) : 0;
-    switch (mojoOrigin.scheme) {
-      case 'http':
-        mojoOrigin.port = port || 80;
-        break;
-      case 'https':
-        mojoOrigin.port = port || 443;
-        break;
-      default:
-        throw new Error('Scheme must be http or https');
-    }
-    return new originMojom.Origin(mojoOrigin);
-  }
-
   /**
    * Parses the given route request Error object and converts it to the
    * corresponding result code.
@@ -293,7 +254,7 @@ define('media_router_bindings', [
   MediaRouter.prototype.onSinksReceived = function(sourceUrn, sinks,
       origins) {
     this.service_.onSinksReceived(sourceUrn, sinks.map(sinkToMojo_),
-        origins.map(stringToMojoOrigin_));
+        origins);
   };
 
   /**
@@ -611,7 +572,7 @@ define('media_router_bindings', [
    * @param {!string} sinkId Media sink ID.
    * @param {!string} presentationId Presentation ID from the site
    *     requesting presentation. TODO(mfoltz): Remove.
-   * @param {!originMojom.Origin} origin Origin of site requesting presentation.
+   * @param {!string} origin Origin of site requesting presentation.
    * @param {!number} tabId ID of tab requesting presentation.
    * @param {!TimeDelta} timeout If positive, the timeout duration for the
    *     request. Otherwise, the default duration will be used.
@@ -626,7 +587,7 @@ define('media_router_bindings', [
                timeout, incognito) {
     this.handlers_.onBeforeInvokeHandler();
     return this.handlers_.createRoute(
-        sourceUrn, sinkId, presentationId, mojoOriginToString_(origin), tabId,
+        sourceUrn, sinkId, presentationId, origin, tabId,
         Math.floor(timeout.microseconds / 1000), incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
@@ -642,7 +603,7 @@ define('media_router_bindings', [
    * validating same-origin/tab scope.
    * @param {!string} sourceUrn Media source to render.
    * @param {!string} presentationId Presentation ID to join.
-   * @param {!originMojom.Origin} origin Origin of site requesting join.
+   * @param {!string} origin Origin of site requesting join.
    * @param {!number} tabId ID of tab requesting join.
    * @param {!TimeDelta} timeout If positive, the timeout duration for the
    *     request. Otherwise, the default duration will be used.
@@ -657,7 +618,7 @@ define('media_router_bindings', [
                incognito) {
     this.handlers_.onBeforeInvokeHandler();
     return this.handlers_.joinRoute(
-        sourceUrn, presentationId, mojoOriginToString_(origin), tabId,
+        sourceUrn, presentationId, origin, tabId,
         Math.floor(timeout.microseconds / 1000), incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
@@ -674,7 +635,7 @@ define('media_router_bindings', [
    * @param {!string} sourceUrn Media source to render.
    * @param {!string} routeId Route ID to join.
    * @param {!string} presentationId Presentation ID to join.
-   * @param {!originMojom.Origin} origin Origin of site requesting join.
+   * @param {!string} origin Origin of site requesting join.
    * @param {!number} tabId ID of tab requesting join.
    * @param {!TimeDelta} timeout If positive, the timeout duration for the
    *     request. Otherwise, the default duration will be used.
@@ -689,7 +650,7 @@ define('media_router_bindings', [
                timeout, incognito) {
     this.handlers_.onBeforeInvokeHandler();
     return this.handlers_.connectRouteByRouteId(
-        sourceUrn, routeId, presentationId, mojoOriginToString_(origin), tabId,
+        sourceUrn, routeId, presentationId, origin, tabId,
         Math.floor(timeout.microseconds / 1000), incognito)
         .then(function(route) {
           return toSuccessRouteResponse_(route);

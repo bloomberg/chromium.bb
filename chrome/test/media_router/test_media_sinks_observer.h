@@ -21,7 +21,7 @@ class TestMediaSinksObserver : public MediaSinksObserver {
  public:
   TestMediaSinksObserver(MediaRouter* router,
                          const MediaSource& source,
-                         const url::Origin& origin);
+                         const GURL& origin);
   ~TestMediaSinksObserver() override;
 
   // MediaSinksObserver implementation.

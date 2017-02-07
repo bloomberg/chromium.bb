@@ -14,7 +14,7 @@ PresentationMediaSinksObserver::PresentationMediaSinksObserver(
     MediaRouter* router,
     content::PresentationScreenAvailabilityListener* listener,
     const MediaSource& source,
-    const url::Origin& origin)
+    const GURL& origin)
     : MediaSinksObserver(router, source, origin),
       listener_(listener),
       previous_availablity_(UNKNOWN) {

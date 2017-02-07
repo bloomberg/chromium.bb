@@ -75,12 +75,20 @@ const MediaRoute* MediaRouterAndroid::FindRouteBySource(
 void MediaRouterAndroid::CreateRoute(
     const MediaSource::Id& source_id,
     const MediaSink::Id& sink_id,
-    const url::Origin& origin,
+    const GURL& origin,
     content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   // TODO(avayvod): Implement timeouts (crbug.com/583036).
+  if (!origin.is_valid()) {
+    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
+    for (const MediaRouteResponseCallback& callback : callbacks)
+      callback.Run(*result);
+    return;
+  }
+
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
 
   int tab_id = -1;
@@ -103,10 +111,8 @@ void MediaRouterAndroid::CreateRoute(
           base::android::ConvertUTF8ToJavaString(env, sink_id);
   ScopedJavaLocalRef<jstring> jpresentation_id =
           base::android::ConvertUTF8ToJavaString(env, presentation_id);
-  // TODO(crbug.com/685358): Unique origins should not be considered
-  // same-origin.
   ScopedJavaLocalRef<jstring> jorigin =
-      base::android::ConvertUTF8ToJavaString(env, origin.GetURL().spec());
+          base::android::ConvertUTF8ToJavaString(env, origin.spec());
 
   Java_ChromeMediaRouter_createRoute(env, java_media_router_, jsource_id,
                                      jsink_id, jpresentation_id, jorigin,
@@ -116,7 +122,7 @@ void MediaRouterAndroid::CreateRoute(
 void MediaRouterAndroid::ConnectRouteByRouteId(
     const MediaSource::Id& source,
     const MediaRoute::Id& route_id,
-    const url::Origin& origin,
+    const GURL& origin,
     content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
@@ -127,12 +133,20 @@ void MediaRouterAndroid::ConnectRouteByRouteId(
 void MediaRouterAndroid::JoinRoute(
     const MediaSource::Id& source_id,
     const std::string& presentation_id,
-    const url::Origin& origin,
+    const GURL& origin,
     content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   // TODO(avayvod): Implement timeouts (crbug.com/583036).
+  if (!origin.is_valid()) {
+    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
+    for (const MediaRouteResponseCallback& callback : callbacks)
+      callback.Run(*result);
+    return;
+  }
+
   int tab_id = -1;
   TabAndroid* tab = web_contents
       ? TabAndroid::FromWebContents(web_contents) : nullptr;
@@ -140,7 +154,7 @@ void MediaRouterAndroid::JoinRoute(
     tab_id = tab->GetAndroidId();
 
   DVLOG(2) << "JoinRoute: " << source_id << ", " << presentation_id << ", "
-           << origin.GetURL().spec() << ", " << tab_id;
+           << origin.spec() << ", " << tab_id;
 
   int request_id = route_requests_.Add(base::MakeUnique<MediaRouteRequest>(
       MediaSource(source_id), presentation_id, callbacks));
@@ -151,7 +165,7 @@ void MediaRouterAndroid::JoinRoute(
   ScopedJavaLocalRef<jstring> jpresentation_id =
           base::android::ConvertUTF8ToJavaString(env, presentation_id);
   ScopedJavaLocalRef<jstring> jorigin =
-      base::android::ConvertUTF8ToJavaString(env, origin.GetURL().spec());
+          base::android::ConvertUTF8ToJavaString(env, origin.spec());
 
   Java_ChromeMediaRouter_joinRoute(env, java_media_router_, jsource_id,
                                    jpresentation_id, jorigin, tab_id,
@@ -334,7 +348,7 @@ void MediaRouterAndroid::OnSinksReceived(
   if (it != sinks_observers_.end()) {
     // TODO(imcheng): Pass origins to OnSinksUpdated (crbug.com/594858).
     for (auto& observer : *it->second)
-      observer.OnSinksUpdated(sinks_converted, std::vector<url::Origin>());
+      observer.OnSinksUpdated(sinks_converted, std::vector<GURL>());
   }
 }
 

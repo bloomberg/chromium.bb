@@ -10,7 +10,7 @@
 
 #include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/render_frame_host_id.h"
-#include "url/origin.h"
+#include "url/gurl.h"
 
 namespace media_router {
 
@@ -20,7 +20,7 @@ class PresentationRequest {
  public:
   PresentationRequest(const RenderFrameHostId& render_frame_host_id,
                       const std::vector<GURL>& presentation_urls,
-                      const url::Origin& frame_origin);
+                      const GURL& frame_url);
   PresentationRequest(const PresentationRequest& other);
   ~PresentationRequest();
 
@@ -35,7 +35,7 @@ class PresentationRequest {
   const std::vector<GURL>& presentation_urls() const {
     return presentation_urls_;
   }
-  const url::Origin& frame_origin() const { return frame_origin_; }
+  const GURL& frame_url() const { return frame_url_; }
 
  private:
   // ID of RenderFrameHost that initiated the request.
@@ -44,8 +44,10 @@ class PresentationRequest {
   // URLs of presentation.
   const std::vector<GURL> presentation_urls_;
 
-  // Origin of frame from which the request was initiated.
-  const url::Origin frame_origin_;
+  // URL of frame from which the request was initiated.
+  // TODO(crbug.com/632623): Convert this to url::Origin as only the origin or
+  // hostname is used.
+  const GURL frame_url_;
 };
 
 }  // namespace media_router
