@@ -104,7 +104,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_MenuBorderColor:
       return GetBorderColor("GtkMenu#menu");
     case ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
-      return GetBgColor("GtkMenu#menu GtkMenuItem#menuitem:focus");
+      return GetBgColor("GtkMenu#menu GtkMenuItem#menuitem:hover");
     case ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor:
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem GtkLabel#label");
     case ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor:

@@ -61,6 +61,7 @@ class VIEWS_EXPORT Label : public View,
   void SetDisabledColor(SkColor color);
 
   SkColor enabled_color() const { return actual_enabled_color_; }
+  SkColor disabled_color() const { return actual_disabled_color_; }
 
   // Sets the background color. This won't be explicitly drawn, but the label
   // will force the text color to be readable over it.
@@ -202,8 +203,6 @@ class VIEWS_EXPORT Label : public View,
       gfx::ElideBehavior elide_behavior) const;
 
   void PaintText(gfx::Canvas* canvas);
-
-  SkColor disabled_color() const { return actual_disabled_color_; }
 
   // View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

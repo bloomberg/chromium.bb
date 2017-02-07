@@ -23,6 +23,8 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -185,9 +187,14 @@ views::ImageButton* CreateBackButton(views::ButtonListener* listener) {
 // A custom button that allows for setting a background color when hovered over.
 class BackgroundColorHoverButton : public views::LabelButton {
  public:
-  BackgroundColorHoverButton(views::ButtonListener* listener,
+  BackgroundColorHoverButton(ProfileChooserView* profile_chooser_view,
                              const base::string16& text)
-      : views::LabelButton(listener, text) {
+      : views::LabelButton(profile_chooser_view, text),
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+        profile_chooser_view_(profile_chooser_view),
+#endif
+        title_(nullptr),
+        subtitle_(nullptr) {
     SetImageLabelSpacing(switches::IsMaterialDesignUserMenu()
                              ? (kMaterialMenuEdgeMargin - 2)
                              : views::kItemLabelSpacing);
@@ -202,26 +209,92 @@ class BackgroundColorHoverButton : public views::LabelButton {
     }
   }
 
-  BackgroundColorHoverButton(views::ButtonListener* listener,
+  BackgroundColorHoverButton(ProfileChooserView* profile_chooser_view,
                              const base::string16& text,
                              const gfx::ImageSkia& icon)
-      : BackgroundColorHoverButton(listener, text) {
+      : BackgroundColorHoverButton(profile_chooser_view, text) {
     SetMinSize(gfx::Size(
         icon.width(), kButtonHeight + views::kRelatedControlVerticalSpacing));
     SetImage(STATE_NORMAL, icon);
   }
 
+  // Overrides the main label associated with this button.  If unset,
+  // label() will be used instead.  |label| should be drawn over this
+  // button, but it is not necessary that it be a child view.
+  void set_title(views::Label* label) { title_ = label; }
+
+  // Sets a secondary label associated with this button.  |label|
+  // should be drawn over this button, but it is not necessary that it
+  // be a child view.
+  void set_subtitle(views::Label* label) { subtitle_ = label; }
+
   ~BackgroundColorHoverButton() override {}
 
  private:
-  // views::LabelButton:
-  void OnPaint(gfx::Canvas* canvas) override {
-    if ((state() == STATE_PRESSED) ||
-        (state() == STATE_HOVERED)) {
-      canvas->DrawColor(profiles::kHoverColor);
-    }
-    LabelButton::OnPaint(canvas);
+  // views::View:
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
+    // The first time the theme changes, the state will not be hovered
+    // or pressed and the colors will be initialized.  It's okay to
+    // reset the colors when the theme changes and the button is NOT
+    // hovered or pressed because the labels will be in a normal state.
+    if (state() == STATE_HOVERED || state() == STATE_PRESSED)
+      return;
+
+    LabelButton::OnNativeThemeChanged(theme);
+    views::Label* title = title_ ? title_ : label();
+    normal_title_color_ = title->enabled_color();
+    if (subtitle_)
+      normal_subtitle_color_ = subtitle_->disabled_color();
   }
+
+  // views::CustomButton:
+  void StateChanged(ButtonState old_state) override {
+    LabelButton::StateChanged(old_state);
+
+    views::Label* title = title_ ? title_ : label();
+
+    bool was_prelight =
+        old_state == STATE_HOVERED || old_state == STATE_PRESSED;
+    bool is_prelight = state() == STATE_HOVERED || state() == STATE_PRESSED;
+    if (was_prelight && !is_prelight) {
+      // The pointer is no longer over this button.  Set the
+      // background and text colors back to their normal states.
+      set_background(nullptr);
+      title->SetEnabledColor(normal_title_color_);
+      if (subtitle_)
+        subtitle_->SetDisabledColor(normal_subtitle_color_);
+    } else if (!was_prelight && is_prelight) {
+      // The pointer moved over this button.  Set the background and
+      // text colors back to their hovered states.
+      SkColor bg_color = profiles::kHoverColor;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+      if (ThemeServiceFactory::GetForProfile(
+              profile_chooser_view_->browser()->profile())
+              ->UsingSystemTheme()) {
+        // When using the system (GTK) theme, use the selected menuitem colors.
+        bg_color = GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+        title->SetEnabledColor(GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
+        if (subtitle_) {
+          subtitle_->SetDisabledColor(GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_MenuItemSubtitleColor));
+        }
+      }
+#endif
+      set_background(views::Background::CreateSolidBackground(bg_color));
+    }
+  }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  ProfileChooserView* profile_chooser_view_;
+#endif
+
+  views::Label* title_;
+  SkColor normal_title_color_;
+
+  views::Label* subtitle_;
+  SkColor normal_subtitle_color_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundColorHoverButton);
 };
@@ -1657,8 +1730,9 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
                            views::kRelatedControlVerticalSpacing, 0));
 
   // Container for the profile photo and avatar/user name.
-  current_profile_card_ =
+  BackgroundColorHoverButton* current_profile_card =
       new BackgroundColorHoverButton(this, base::string16());
+  current_profile_card_ = current_profile_card;
 
   // Profile picture, left-aligned.
   EditableProfilePhoto* current_profile_photo = new EditableProfilePhoto(
@@ -1667,6 +1741,7 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
   // Profile name, left-aligned to the right of profile icon.
   views::Label* current_profile_name = new views::Label(
       profiles::GetAvatarNameForProfile(browser_->profile()->GetPath()));
+  current_profile_card->set_title(current_profile_name);
   current_profile_name->SetFontList(
       ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
           1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM));
@@ -1715,6 +1790,7 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
       view->AddChildView(manage_accounts_button_);
     } else {
       views::Label* email_label = new views::Label(avatar_item.username);
+      current_profile_card->set_subtitle(email_label);
       email_label->SetElideBehavior(gfx::ELIDE_EMAIL);
       email_label->SetEnabled(false);
       email_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

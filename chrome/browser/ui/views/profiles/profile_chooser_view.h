@@ -63,6 +63,8 @@ class ProfileChooserView : public content::WebContentsDelegate,
   static bool IsShowing();
   static void Hide();
 
+  const Browser* browser() const { return browser_; }
+
  private:
   friend class ProfileChooserViewExtensionsTest;
 
