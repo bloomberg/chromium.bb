@@ -31,6 +31,8 @@ class SubresourceFilterComponentInstallerTraits
  private:
   friend class SubresourceFilterComponentInstallerTest;
 
+  static std::string GetInstallerTag();
+
   // ComponentInstallerTraits implementation.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;

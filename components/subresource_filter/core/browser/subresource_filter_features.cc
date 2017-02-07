@@ -33,6 +33,8 @@ const char kActivationListSocialEngineeringAdsInterstitial[] =
     "social_engineering_ads_interstitial";
 const char kActivationListPhishingInterstitial[] = "phishing_interstitial";
 
+const char kRulesetFlavorParameterName[] = "ruleset_flavor";
+
 const char kPerformanceMeasurementRateParameterName[] =
     "performance_measurement_rate";
 
@@ -91,6 +93,12 @@ bool ShouldSuppressNotifications() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kSafeBrowsingSubresourceFilter, kSuppressNotificationsParameterName,
       false /* default value */);
+}
+
+std::string GetRulesetFlavor() {
+  return variations::GetVariationParamValueByFeature(
+      subresource_filter::kSafeBrowsingSubresourceFilter,
+      subresource_filter::kRulesetFlavorParameterName);
 }
 
 }  // namespace subresource_filter

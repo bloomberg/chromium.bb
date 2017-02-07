@@ -115,9 +115,30 @@ std::string SubresourceFilterComponentInstallerTraits::GetName() const {
   return kSubresourceFilterSetFetcherManifestName;
 }
 
+// static
+std::string SubresourceFilterComponentInstallerTraits::GetInstallerTag() {
+  std::string ruleset_flavor = subresource_filter::GetRulesetFlavor();
+  if (ruleset_flavor.empty())
+    return ruleset_flavor;
+
+  // We allow 4 ruleset flavor identifiers: a, b, c, d
+  if (ruleset_flavor.size() == 1 && ruleset_flavor.at(0) >= 'a' &&
+      ruleset_flavor.at(0) <= 'd')
+    return ruleset_flavor;
+
+  // Return 'invalid' for any cases where we encounter an invalid installer
+  // tag. This allows us to verify that no clients are encountering invalid
+  // installer tags in the field.
+  return "invalid";
+}
+
 update_client::InstallerAttributes
 SubresourceFilterComponentInstallerTraits::GetInstallerAttributes() const {
-  return update_client::InstallerAttributes();
+  update_client::InstallerAttributes attributes;
+  std::string installer_tag = GetInstallerTag();
+  if (!installer_tag.empty())
+    attributes["tag"] = installer_tag;
+  return attributes;
 }
 
 std::vector<std::string>

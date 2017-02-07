@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_SUBRESOURCE_FILTER_FEATURES_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_SUBRESOURCE_FILTER_FEATURES_H_
+#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_H_
+#define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_H_
 
 #include "base/feature_list.h"
 #include "components/subresource_filter/core/common/activation_level.h"
@@ -29,6 +29,8 @@ extern const char kActivationScopeNoSites[];
 extern const char kActivationListsParameterName[];
 extern const char kActivationListSocialEngineeringAdsInterstitial[];
 extern const char kActivationListPhishingInterstitial[];
+
+extern const char kRulesetFlavorParameterName[];
 
 extern const char kPerformanceMeasurementRateParameterName[];
 
@@ -59,6 +61,10 @@ double GetPerformanceMeasurementRate();
 // should be suppressed in the UI.
 bool ShouldSuppressNotifications();
 
+// Returns the ruleset flavor, or the empty string if the default ruleset should
+// be used.
+std::string GetRulesetFlavor();
+
 }  // namespace subresource_filter
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_SUBRESOURCE_FILTER_FEATURES_H_
+#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_H_
