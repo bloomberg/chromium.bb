@@ -19,10 +19,10 @@ PerfTestRunner.measureRunsPerSecond({
     description: "Measures performance of inserting a style elemenet ocntaining bootstrap's CSS into an iframe.",
     run:function() {
         var testDoc = document.getElementsByTagName("iframe")[0].contentDocument;
-        testDoc.documentElement.innerHTML = "";
         var style = testDoc.createElement("style");
         style.textContent = styleText;
         testDoc.documentElement.appendChild(style);
+        testDoc.documentElement.removeChild(testDoc.documentElement.lastElementChild);
     }
 });
 </script>
