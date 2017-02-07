@@ -823,8 +823,8 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForNonPrintable) {
     {{DomCode::NUMPAD0, EF_NONE, XKB_KEY_KP_0, '0'}, VKEY_NUMPAD0},
     {{DomCode::NUMPAD9, EF_NONE, XKB_KEY_KP_9, '9'}, VKEY_NUMPAD9},
     // Verify AltGr+V & AltGr+W on de(neo) layout.
-    {{DomCode::US_W, EF_ALTGR_DOWN, XKB_KEY_BackSpace, 8}, VKEY_BACKSPACE},
-    {{DomCode::US_V, EF_ALTGR_DOWN, XKB_KEY_Return, 13}, VKEY_ENTER},
+    {{DomCode::US_W, EF_ALTGR_DOWN, XKB_KEY_BackSpace, 8}, VKEY_BACK},
+    {{DomCode::US_V, EF_ALTGR_DOWN, XKB_KEY_Return, 13}, VKEY_RETURN},
   };
   for (const auto& e : kVkeyTestCase) {
     SCOPED_TRACE(static_cast<int>(e.test.dom_code));
