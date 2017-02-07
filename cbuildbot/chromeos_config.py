@@ -1625,14 +1625,16 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       build_timeout=(15 * 60 + 50) * 60,
       # Need to re-enable platform_SyncCrash after issue crosbug/658864 is
       # fixed. Need to re-enable network_VPNConnect.* tests after issue
-      # crosbug/585936 is fixed. According to crosbug/653496 security_OpenFDs
-      # will not work for non-official builds, so we need to leave it
-      # permanently disabled.
+      # crosbug/585936 is fixed. Need to re-enable
+      # power_DarkResumeShutdownServer after issue crosbug/689598 is fixed.
+      # According to crosbug/653496 security_OpenFDs will not work for
+      # non-official builds, so we need to leave it permanently disabled.
       useflags=append_useflags(['-cros-debug',
                                 '-tests_security_OpenFDs',
                                 '-tests_platform_SyncCrash',
                                 '-tests_network_VPNConnect.l2tpipsec_xauth',
-                                '-tests_network_VPNConnect.l2tpipsec_psk']),
+                                '-tests_network_VPNConnect.l2tpipsec_psk',
+                                '-tests_power_DarkResumeShutdownServer']),
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,

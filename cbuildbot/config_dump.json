@@ -635,6 +635,7 @@
                 "-tests_network_VPNConnect.l2tpipsec_psk",
                 "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
+                "-tests_power_DarkResumeShutdownServer",
                 "-tests_security_OpenFDs",
                 "chrome_internal",
                 "next_gcc"
@@ -693,6 +694,7 @@
                 "-tests_network_VPNConnect.l2tpipsec_psk",
                 "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
+                "-tests_power_DarkResumeShutdownServer",
                 "-tests_security_OpenFDs",
                 "chrome_internal",
                 "clang",
@@ -737,6 +739,7 @@
                 "-tests_network_VPNConnect.l2tpipsec_psk",
                 "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
+                "-tests_power_DarkResumeShutdownServer",
                 "-tests_security_OpenFDs",
                 "chrome_internal"
             ],
@@ -1116,6 +1119,7 @@
                 "-tests_network_VPNConnect.l2tpipsec_psk",
                 "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
+                "-tests_power_DarkResumeShutdownServer",
                 "-tests_security_OpenFDs",
                 "chrome_internal"
             ],
