@@ -88,20 +88,20 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
     }
 
     @Override
-    public void onLoadingComplete(Tile[] items) {
+    public void onLoadingComplete(Tile[] tiles) {
         assert !mIsDestroyed;
 
-        int tileTypes[] = new int[items.length];
-        int sources[] = new int[items.length];
-        String tileUrls[] = new String[items.length];
+        int types[] = new int[tiles.length];
+        int sources[] = new int[tiles.length];
+        String urls[] = new String[tiles.length];
 
-        for (int i = 0; i < items.length; i++) {
-            tileTypes[i] = items[i].getTileType();
-            sources[i] = items[i].getSource();
-            tileUrls[i] = items[i].getUrl();
+        for (int i = 0; i < tiles.length; i++) {
+            types[i] = tiles[i].getType();
+            sources[i] = tiles[i].getSource();
+            urls[i] = tiles[i].getUrl();
         }
 
-        mMostVisitedSites.recordPageImpression(tileTypes, sources, tileUrls);
+        mMostVisitedSites.recordPageImpression(types, sources, urls);
     }
 
     @Override
@@ -157,7 +157,7 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
         NewTabPageUma.recordExplicitUserNavigation(
                 tile.getUrl(), NewTabPageUma.RAPPOR_ACTION_VISITED_SUGGESTED_TILE);
         mMostVisitedSites.recordOpenedMostVisitedItem(
-                tile.getIndex(), tile.getTileType(), tile.getSource());
+                tile.getIndex(), tile.getType(), tile.getSource());
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)

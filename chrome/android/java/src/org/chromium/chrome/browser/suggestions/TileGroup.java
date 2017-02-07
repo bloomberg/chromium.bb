@@ -263,7 +263,6 @@ public class TileGroup implements MostVisitedURLsObserver {
             String url = urls[i];
             String title = titles[i];
             String whitelistIconPath = whitelistIconPaths[i];
-            int source = sources[i];
             boolean offlineAvailable = offlineUrls != null && offlineUrls.contains(url);
 
             // Look for an existing tile to reuse.
@@ -285,7 +284,7 @@ public class TileGroup implements MostVisitedURLsObserver {
 
             // If nothing can be reused, create a new tile.
             if (tile == null) {
-                tile = new Tile(title, url, whitelistIconPath, offlineAvailable, i, source);
+                tile = new Tile(title, url, whitelistIconPath, offlineAvailable, i, sources[i]);
             }
             mTiles[i] = tile;
         }
@@ -344,8 +343,8 @@ public class TileGroup implements MostVisitedURLsObserver {
                 mIconGenerator.setBackgroundColor(fallbackColor);
                 icon = mIconGenerator.generateIconForUrl(mTile.getUrl());
                 mTile.setIcon(new BitmapDrawable(mContext.getResources(), icon));
-                mTile.setTileType(isFallbackColorDefault ? MostVisitedTileType.ICON_DEFAULT
-                                                         : MostVisitedTileType.ICON_COLOR);
+                mTile.setType(isFallbackColorDefault ? MostVisitedTileType.ICON_DEFAULT
+                                                     : MostVisitedTileType.ICON_COLOR);
             } else {
                 RoundedBitmapDrawable roundedIcon =
                         RoundedBitmapDrawableFactory.create(mContext.getResources(), icon);
@@ -356,7 +355,7 @@ public class TileGroup implements MostVisitedURLsObserver {
                 roundedIcon.setAntiAlias(true);
                 roundedIcon.setFilterBitmap(true);
                 mTile.setIcon(roundedIcon);
-                mTile.setTileType(MostVisitedTileType.ICON_REAL);
+                mTile.setType(MostVisitedTileType.ICON_REAL);
             }
             mObserver.onTileIconChanged(mTile);
             if (mTrackLoadTask) mObserver.onLoadTaskCompleted();

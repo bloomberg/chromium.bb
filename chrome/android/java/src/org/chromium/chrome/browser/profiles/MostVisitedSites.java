@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.profiles;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ntp.MostVisitedTileType.MostVisitedTileTypeEnum;
+import org.chromium.chrome.browser.ntp.NTPTileSource.NTPTileSourceEnum;
 
 /**
  * Methods to bridge into native history to provide most recent urls, titles and thumbnails.
@@ -119,10 +121,12 @@ public class MostVisitedSites {
     /**
      * Records the opening of a Most Visited Item.
      * @param index The index of the item that was opened.
-     * @param tileType The visual type of the item. Valid values are listed in MostVisitedTileType.
+     * @param type The visual type of the item as defined in {@code MostVisitedTileType}.
+     * @param source The {@code NTPTileSource} that generated this item.
      */
-    public void recordOpenedMostVisitedItem(int index, int tileType, int source) {
-        nativeRecordOpenedMostVisitedItem(mNativeMostVisitedSitesBridge, index, tileType, source);
+    public void recordOpenedMostVisitedItem(
+            int index, @MostVisitedTileTypeEnum int type, @NTPTileSourceEnum int source) {
+        nativeRecordOpenedMostVisitedItem(mNativeMostVisitedSitesBridge, index, type, source);
     }
 
     private native long nativeInit(Profile profile);
