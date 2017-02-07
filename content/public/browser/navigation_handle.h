@@ -166,10 +166,12 @@ class CONTENT_EXPORT NavigationHandle {
   // there will be one entry in the list).
   virtual const std::vector<GURL>& GetRedirectChain() = 0;
 
-  // Whether the navigation has committed. This returns true for either
-  // successful commits or error pages that replace the previous page
-  // (distinguished by |IsErrorPage|), and false for errors that leave the user
-  // on the previous page.
+  // Whether the navigation has committed. Navigations that end up being
+  // downloads or return 204/205 response codes do not commit (i.e. the
+  // WebContents stays at the existing URL).
+  // This returns true for either successful commits or error pages that
+  // replace the previous page (distinguished by |IsErrorPage|), and false for
+  // errors that leave the user on the previous page.
   virtual bool HasCommitted() = 0;
 
   // Whether the navigation resulted in an error page.
