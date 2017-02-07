@@ -104,6 +104,11 @@ class RemoveFlakesOMatic(object):
         if not self._has_pass_expectation(expectations):
             return False
 
+        # Don't check lines that have expectations for directories, since
+        # the flakiness of all sub-tests isn't as easy to check.
+        if self._is_directory(test_expectation_line.path):
+            return False
+
         # The line can be deleted if the only expectation on the line that appears in the actual
         # results is the PASS expectation.
         builders_checked = []
@@ -190,6 +195,12 @@ class RemoveFlakesOMatic(object):
                                      'NEEDSMANUALREBASELINE', 'SLOW',
                                      'SKIP')
         return any(s in expectations for s in unstrippable_expectations)
+
+    def _is_directory(self, path):
+        """Checks whether a path relative to the layout tests directory is a directory."""
+        filesystem = self._host.filesystem
+        abs_path = filesystem.join(self._port.layout_tests_dir(), path)
+        return filesystem.isdir(abs_path)
 
     def _get_builder_results_by_path(self):
         """Returns a dictionary of results for each builder.
