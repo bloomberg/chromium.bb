@@ -681,8 +681,19 @@ commit_changes(struct ivi_layout *layout)
 		 * If the view's layer or surface is invisible, we do not need
 		 * to update its properties.
 		 */
-		if (!ivilayer->prop.visibility || !ivisurf->prop.visibility)
+		if (!ivilayer->prop.visibility || !ivisurf->prop.visibility) {
+			/*
+			* If ivilayer or ivisurf of ivi_view is made invisible
+			* in this commit_changes call, we have to damage
+			* the weston_view below this ivi_view. Otherwise content
+			* of this ivi_view will stay visible.
+			*/
+			if ((ivilayer->prop.event_mask | ivisurf->prop.event_mask) &&
+			    IVI_NOTIFICATION_VISIBILITY)
+				weston_view_damage_below(ivi_view->view);
+
 			continue;
+		}
 
 		update_prop(ivi_view);
 	}
