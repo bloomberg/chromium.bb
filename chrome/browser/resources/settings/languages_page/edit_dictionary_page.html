@@ -39,10 +39,11 @@
       <iron-a11y-keys id="keys" keys="enter esc"
           on-keys-pressed="onKeysPress_"></iron-a11y-keys>
       <div class="start">
-        <paper-input id="newWord" no-label-float
+        <paper-input id="newWord" no-label-float value="{{newWordValue_}}"
             label="$i18n{addDictionaryWordLabel}"></paper-input>
       </div>
-      <paper-button class="secondary-button" on-tap="onAddWordTap_">
+      <paper-button class="secondary-button" on-tap="onAddWordTap_"
+          disabled="[[!validateWord_(newWordValue_)]]">
         $i18n{addDictionaryWordButton}
       </paper-button>
     </div>

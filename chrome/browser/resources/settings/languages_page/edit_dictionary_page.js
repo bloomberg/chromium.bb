@@ -10,6 +10,9 @@ Polymer({
   is: 'settings-edit-dictionary-page',
 
   properties: {
+    /** @private {string} */
+    newWordValue_: String,
+
     /** @private {!Array<string>} */
     words_: {
       type: Array,
@@ -29,6 +32,16 @@ Polymer({
 
     // Add a key handler for the paper-input.
     this.$.keys.target = this.$.newWord;
+  },
+
+  /**
+   * Check if the new word text-field is empty.
+   * @private
+   * @param {string} value
+   * @return {boolean} true if value is empty, false otherwise.
+   */
+  validateWord_: function(value) {
+    return !!value.trim();
   },
 
   /**
@@ -82,8 +95,8 @@ Polymer({
    */
   addWordFromInput_: function() {
     // Spaces are allowed, but removing leading and trailing whitespace.
-    var word = this.$.newWord.value.trim();
-    this.$.newWord.value = '';
+    var word = this.newWordValue_.trim();
+    this.newWordValue_ = '';
     if (!word)
       return;
 
