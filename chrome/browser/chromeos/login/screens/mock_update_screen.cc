@@ -17,22 +17,22 @@ MockUpdateScreen::MockUpdateScreen(BaseScreenDelegate* base_screen_delegate,
 MockUpdateScreen::~MockUpdateScreen() {
 }
 
-MockUpdateView::MockUpdateView() : model_(nullptr) {
+MockUpdateView::MockUpdateView() {
   EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));
 }
 
 MockUpdateView::~MockUpdateView() {
-  if (model_)
-    model_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
-void MockUpdateView::Bind(UpdateModel& model) {
-  model_ = &model;
-  MockBind(model);
+void MockUpdateView::Bind(UpdateScreen* screen) {
+  screen_ = screen;
+  MockBind(screen);
 }
 
 void MockUpdateView::Unbind() {
-  model_ = nullptr;
+  screen_ = nullptr;
   MockUnbind();
 }
 

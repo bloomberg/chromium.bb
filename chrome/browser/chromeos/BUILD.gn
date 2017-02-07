@@ -822,8 +822,6 @@ source_set("chromeos") {
     "login/screens/terms_of_service_screen.cc",
     "login/screens/terms_of_service_screen.h",
     "login/screens/terms_of_service_screen_actor.h",
-    "login/screens/update_model.cc",
-    "login/screens/update_model.h",
     "login/screens/update_screen.cc",
     "login/screens/update_screen.h",
     "login/screens/update_view.h",

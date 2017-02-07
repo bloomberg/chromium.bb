@@ -8,7 +8,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/update_model.h"
+#include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
@@ -21,13 +21,11 @@ const char kJsScreenPath[] = "login.UpdateScreen";
 
 namespace chromeos {
 
-UpdateScreenHandler::UpdateScreenHandler()
-    : BaseScreenHandler(kJsScreenPath), model_(nullptr), show_on_init_(false) {
-}
+UpdateScreenHandler::UpdateScreenHandler() : BaseScreenHandler(kJsScreenPath) {}
 
 UpdateScreenHandler::~UpdateScreenHandler() {
-  if (model_)
-    model_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
 void UpdateScreenHandler::DeclareLocalizedValues(
@@ -76,13 +74,13 @@ void UpdateScreenHandler::Show() {
 void UpdateScreenHandler::Hide() {
 }
 
-void UpdateScreenHandler::Bind(UpdateModel& model) {
-  model_ = &model;
-  BaseScreenHandler::SetBaseScreen(model_);
+void UpdateScreenHandler::Bind(UpdateScreen* screen) {
+  screen_ = screen;
+  BaseScreenHandler::SetBaseScreen(screen_);
 }
 
 void UpdateScreenHandler::Unbind() {
-  model_ = nullptr;
+  screen_ = nullptr;
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
