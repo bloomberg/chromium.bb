@@ -1036,6 +1036,14 @@
                   '|ui/base/native_theme/resources/'\
                   '|chrome/app/theme/'
     },
+    'ui_strings': {
+      'filepath': 'chrome/app/generated_resources.grd'\
+                  '|chrome/app/google_chrome_strings.grd'\
+                  '|chrome/android/java/strings/android_chrome_strings.grd'\
+                  '|chrome/app/settings_strings.grdp'\
+                  '|ios/chrome/app/strings/ios(_.+)*_strings.grd'\
+                  '|ui/strings/ui_strings.grd',
+    },
     'valgrind': {
       'filepath': 'valgrind',
     },
@@ -2082,6 +2090,7 @@
     'ui_compositor': ['cc-bugs@chromium.org'],
     'ui_display_win': ['robliao+watch@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
+    'ui_strings': ['srahim+watch@chromium.org'],
     'valgrind': ['bruening+watch@chromium.org',
                  'glider+watch@chromium.org'],
     'version_assembly': ['caitkp+watch@chromium.org',
