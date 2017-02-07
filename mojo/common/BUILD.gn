@@ -77,16 +77,6 @@ test("mojo_common_unittests") {
   ]
 }
 
-test("mojo_common_perftests") {
-  deps = [
-    ":common",
-    "//base",
-    "//mojo/edk/test:run_all_perftests",
-    "//mojo/public/cpp/test_support:test_utils",
-    "//testing/gtest",
-  ]
-}
-
 source_set("struct_traits") {
   sources = [
     "common_custom_types_struct_traits.cc",

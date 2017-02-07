@@ -723,7 +723,6 @@ group("gn_only") {
   if (!is_ios) {
     deps += [
       "//media/mojo:media_mojo_unittests",
-      "//mojo/common:mojo_common_perftests",
       "//services:service_unittests",
     ]
   }
