@@ -123,6 +123,7 @@ void BluetoothAdvertisementBlueZ::Unregister(
       ->UnregisterAdvertisement(
           adapter_path_, provider_->object_path(), success_callback,
           base::Bind(&UnregisterErrorCallbackConnector, error_callback));
+  provider_.reset();
 }
 
 void BluetoothAdvertisementBlueZ::Released() {
