@@ -17,14 +17,6 @@ class CORE_EXPORT InputDeviceCapabilities final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // This return a static local InputDeviceCapabilities pointer which has
-  // firesTouchEvents set to be true.
-  static InputDeviceCapabilities* firesTouchEventsSourceCapabilities();
-
-  // This return a static local InputDeviceCapabilities pointer which has
-  // firesTouchEvents set to be false.
-  static InputDeviceCapabilities* doesntFireTouchEventsSourceCapabilities();
-
   static InputDeviceCapabilities* create(bool firesTouchEvents) {
     return new InputDeviceCapabilities(firesTouchEvents);
   }
@@ -46,6 +38,30 @@ class CORE_EXPORT InputDeviceCapabilities final
   // avoid handling both touch and mouse events dispatched for a single user
   // action.
   bool m_firesTouchEvents;
+};
+
+// Grouping constant-valued InputDeviceCapabilities objects together,
+// which is kept and used by each 'view' (DOMWindow) that dispatches
+// events parameterized over InputDeviceCapabilities.
+//
+// TODO(sof): lazily instantiate InputDeviceCapabilities instances upon
+// UIEvent access instead. This would allow internal tracking of such
+// capabilities by value.
+class InputDeviceCapabilitiesConstants final
+    : public GarbageCollected<InputDeviceCapabilitiesConstants> {
+ public:
+  // Returns an InputDeviceCapabilities which has
+  // |firesTouchEvents| set to value of |firesTouch|.
+  InputDeviceCapabilities* firesTouchEvents(bool firesTouch);
+
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_firesTouchEvents);
+    visitor->trace(m_doesntFireTouchEvents);
+  }
+
+ private:
+  Member<InputDeviceCapabilities> m_firesTouchEvents;
+  Member<InputDeviceCapabilities> m_doesntFireTouchEvents;
 };
 
 }  // namespace blink

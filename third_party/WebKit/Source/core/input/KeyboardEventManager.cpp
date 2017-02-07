@@ -11,6 +11,7 @@
 #include "core/html/HTMLDialogElement.h"
 #include "core/input/EventHandler.h"
 #include "core/input/EventHandlingUtil.h"
+#include "core/input/InputDeviceCapabilities.h"
 #include "core/input/ScrollManager.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
@@ -394,9 +395,11 @@ void KeyboardEventManager::defaultTabEventHandler(KeyboardEvent* event) {
   if (m_frame->document()->inDesignMode())
     return;
 
-  if (page->focusController().advanceFocus(
-          focusType,
-          InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities()))
+  if (page->focusController().advanceFocus(focusType,
+                                           m_frame->document()
+                                               ->domWindow()
+                                               ->getInputDeviceCapabilities()
+                                               ->firesTouchEvents(false)))
     event->setDefaultHandled();
 }
 

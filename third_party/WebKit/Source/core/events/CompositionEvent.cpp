@@ -26,6 +26,8 @@
 
 #include "core/events/CompositionEvent.h"
 
+#include "core/input/InputDeviceCapabilities.h"
+
 namespace blink {
 
 CompositionEvent::CompositionEvent() {}
@@ -33,15 +35,15 @@ CompositionEvent::CompositionEvent() {}
 CompositionEvent::CompositionEvent(const AtomicString& type,
                                    AbstractView* view,
                                    const String& data)
-    : UIEvent(
-          type,
-          true,
-          true,
-          ComposedMode::Composed,
-          TimeTicks::Now(),
-          view,
-          0,
-          InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities()),
+    : UIEvent(type,
+              true,
+              true,
+              ComposedMode::Composed,
+              TimeTicks::Now(),
+              view,
+              0,
+              view ? view->getInputDeviceCapabilities()->firesTouchEvents(false)
+                   : nullptr),
       m_data(data) {}
 
 CompositionEvent::CompositionEvent(const AtomicString& type,

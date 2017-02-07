@@ -33,6 +33,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/HTMLElement.h"
+#include "core/input/InputDeviceCapabilities.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Histogram.h"
 
@@ -218,7 +219,8 @@ TouchEvent::TouchEvent(const WebTouchEvent& event,
           0,
           static_cast<PlatformEvent::Modifiers>(event.modifiers()),
           TimeTicks::FromSeconds(event.timeStampSeconds()),
-          InputDeviceCapabilities::firesTouchEventsSourceCapabilities()),
+          view ? view->getInputDeviceCapabilities()->firesTouchEvents(true)
+               : nullptr),
       m_touches(touches),
       m_targetTouches(targetTouches),
       m_changedTouches(changedTouches),

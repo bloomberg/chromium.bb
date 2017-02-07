@@ -17,6 +17,7 @@
 namespace blink {
 
 class Document;
+class InputDeviceCapabilitiesConstants;
 class Location;
 class LocalDOMWindow;
 class MessageEvent;
@@ -101,6 +102,8 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
   bool isSecureContext() const;
 
+  InputDeviceCapabilitiesConstants* getInputDeviceCapabilities();
+
  protected:
   explicit DOMWindow(Frame&);
 
@@ -112,6 +115,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
  private:
   Member<Frame> m_frame;
+  Member<InputDeviceCapabilitiesConstants> m_inputCapabilities;
   mutable Member<Location> m_location;
 
   // Set to true when close() has been called. Needed for

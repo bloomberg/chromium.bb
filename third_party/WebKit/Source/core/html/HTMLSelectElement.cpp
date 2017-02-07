@@ -60,6 +60,7 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/FormController.h"
 #include "core/input/EventHandler.h"
+#include "core/input/InputDeviceCapabilities.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
@@ -1351,10 +1352,8 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event) {
       toMouseEvent(event)->button() ==
           static_cast<short>(WebPointerProperties::Button::Left)) {
     InputDeviceCapabilities* sourceCapabilities =
-        toMouseEvent(event)->fromTouch()
-            ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities()
-            : InputDeviceCapabilities::
-                  doesntFireTouchEventsSourceCapabilities();
+        document().domWindow()->getInputDeviceCapabilities()->firesTouchEvents(
+            toMouseEvent(event)->fromTouch());
     focus(FocusParams(SelectionBehaviorOnFocus::Restore, WebFocusTypeNone,
                       sourceCapabilities));
     if (layoutObject() && layoutObject()->isMenuList() &&

@@ -25,6 +25,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/editing/InputMethodController.h"
+#include "core/input/InputDeviceCapabilities.h"
 #include "platform/WindowsKeyboardCodes.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebInputEvent.h"
@@ -96,7 +97,9 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
           0,
           static_cast<PlatformEvent::Modifiers>(key.modifiers()),
           TimeTicks::FromSeconds(key.timeStampSeconds()),
-          InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities()),
+          domWindow
+              ? domWindow->getInputDeviceCapabilities()->firesTouchEvents(false)
+              : nullptr),
       m_keyEvent(WTF::makeUnique<WebKeyboardEvent>(key)),
       // TODO(crbug.com/482880): Fix this initialization to lazy initialization.
       m_code(Platform::current()->domCodeStringFromEnum(key.domCode)),

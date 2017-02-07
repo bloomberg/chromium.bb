@@ -29,6 +29,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/input/InputDeviceCapabilities.h"
 #include "core/layout/LayoutObject.h"
 #include "core/paint/PaintLayer.h"
 #include "core/svg/SVGElement.h"
@@ -163,10 +164,10 @@ MouseEvent::MouseEvent(const AtomicString& eventType,
           detail,
           static_cast<PlatformEvent::Modifiers>(event.modifiers()),
           TimeTicks::FromSeconds(event.timeStampSeconds()),
-          event.fromTouch()
-              ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities()
-              : InputDeviceCapabilities::
-                    doesntFireTouchEventsSourceCapabilities()),
+          abstractView
+              ? abstractView->getInputDeviceCapabilities()->firesTouchEvents(
+                    event.fromTouch())
+              : nullptr),
       m_screenLocation(event.globalX, event.globalY),
       m_movementDelta(flooredIntPoint(event.movementInRootFrame())),
       m_positionType(PositionType::Position),
@@ -207,10 +208,10 @@ MouseEvent::MouseEvent(const AtomicString& eventType,
           detail,
           modifiers,
           platformTimeStamp,
-          syntheticEventType == FromTouch
-              ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities()
-              : InputDeviceCapabilities::
-                    doesntFireTouchEventsSourceCapabilities()),
+          abstractView
+              ? abstractView->getInputDeviceCapabilities()->firesTouchEvents(
+                    syntheticEventType == FromTouch)
+              : nullptr),
       m_screenLocation(screenX, screenY),
       m_movementDelta(movementX, movementY),
       m_positionType(syntheticEventType == Positionless

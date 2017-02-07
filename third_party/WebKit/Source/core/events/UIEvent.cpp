@@ -22,6 +22,8 @@
 
 #include "core/events/UIEvent.h"
 
+#include "core/input/InputDeviceCapabilities.h"
+
 namespace blink {
 
 UIEvent::UIEvent() : m_detail(0), m_sourceCapabilities(nullptr) {}
