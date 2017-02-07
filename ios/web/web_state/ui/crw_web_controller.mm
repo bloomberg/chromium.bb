@@ -2034,11 +2034,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _containerView.reset(
         [[CRWWebControllerContainerView alloc] initWithDelegate:self]);
 
-    // Compute and set the frame of the containerView.
+    // This will be resized later, but matching the final frame will minimize
+    // re-rendering. Use the screen size because the application's key window
+    // may still be nil.
+    // TODO(crbug.com/688259): Stop subtracting status bar height.
     CGFloat statusBarHeight =
         [[UIApplication sharedApplication] statusBarFrame].size.height;
-    CGRect containerViewFrame =
-        [UIApplication sharedApplication].keyWindow.bounds;
+    CGRect containerViewFrame = [UIScreen mainScreen].bounds;
     containerViewFrame.origin.y += statusBarHeight;
     containerViewFrame.size.height -= statusBarHeight;
     _containerView.get().frame = containerViewFrame;
