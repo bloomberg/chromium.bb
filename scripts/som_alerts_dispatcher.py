@@ -12,6 +12,7 @@ import json
 from chromite.cbuildbot import topology
 from chromite.cbuildbot import tree_status
 from chromite.lib import cidb
+from chromite.lib import classifier
 from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -127,15 +128,27 @@ def GenerateAlertStage(build, stage, exceptions,
   logs_links = []
   notes = []
 
-  # Generate links to the logs of the stage.
+  # Generate links to the logs of the stage and use them for classification.
   if logdog_prefix and annotation_steps and stage['name'] in annotation_steps:
     annotation = annotation_steps[stage['name']]
     AddLogsLink(logdog_client, 'stdout', build['waterfall'],
                 logdog_prefix, annotation.stdout_stream, logs_links)
     AddLogsLink(logdog_client, 'stderr', build['waterfall'],
                 logdog_prefix, annotation.stderr_stream, logs_links)
+
+    # Use the logs in an attempt to classify the failure.
+    if annotation.stdout_stream and annotation.stdout_stream.name:
+      path = '%s/+/%s' % (logdog_prefix, annotation.stdout_stream.name)
+      try:
+        logs = logdog_client.GetLines(build['waterfall'], path)
+        classification = classifier.ClassifyFailure(stage['name'], logs)
+        for c in classification or []:
+          notes.append('Classification: %s' % (c))
+      except Exception as e:
+        logging.exception('Could not classify logs: %s', e)
+        notes.append('Warning: unable to classify logs: %s' % (e))
   else:
-    notes.append('stage logs unavailable')
+    notes.append('Warning: stage logs unavailable')
 
   # Copy the links from the buildbot build JSON.
   stage_links = []
@@ -150,15 +163,16 @@ def GenerateAlertStage(build, stage, exceptions,
       logging.warn('Could not find stage %s in: %s',
                    stage['name'], ', '.join(buildbot['steps'].keys()))
   else:
-    notes.append('stage details unavailable')
+    notes.append('Warning: stage details unavailable')
 
   # Limit the number of links that will be displayed for a single stage.
   # Let there be one extra since it doesn't make sense to have a line
   # saying there is one more.
   # TODO: Move this to frontend so they can be unhidden by clicking.
   if len(stage_links) > MAX_STAGE_LINKS + 1:
-    notes.append('... and %d more URLs' %
-                 (len(stage_links) - MAX_STAGE_LINKS))
+    # Insert at the beginning of the notes which come right after the links.
+    notes.insert(0, '... and %d more URLs' % (len(stage_links) -
+                                              MAX_STAGE_LINKS))
     del stage_links[MAX_STAGE_LINKS:]
 
   # Add all exceptions recording in CIDB as notes.
