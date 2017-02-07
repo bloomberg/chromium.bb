@@ -515,7 +515,8 @@ void MenuController::Cancel(ExitType type) {
 
   if (!showing_) {
     // This occurs if we're in the process of notifying the delegate for a drop
-    // and the delegate cancels us.
+    // and the delegate cancels us. Or if the releasing of ViewsDelegate causes
+    // an immediate shutdown.
     return;
   }
 
@@ -544,18 +545,21 @@ void MenuController::Cancel(ExitType type) {
     return;
   }
 
+  // If |type| is EXIT_ALL we update the state of the menu to not showing. For
+  // dragging this ensures that the correct visual state is reported until the
+  // drag operation completes. For non-dragging cases it is possible that the
+  // release of ViewsDelegate leads immediately to shutdown, which can trigger
+  // nested calls to Cancel. We want to reject these to prevent attempting a
+  // nested tear down of this and |delegate_|.
+  if (type == EXIT_ALL)
+    showing_ = false;
+
   // On Windows and Linux the destruction of this menu's Widget leads to the
   // teardown of the platform specific drag-and-drop Widget. Do not shutdown
   // while dragging, leave the Widget hidden until drag-and-drop has completed,
   // at which point all menus will be destroyed.
-  //
-  // If |type| is EXIT_ALL we update the state of the menu to not showing. So
-  // that during the completion of a drag we are not incorrectly reporting the
-  // visual state.
   if (!drag_in_progress_)
     ExitAsyncRun();
-  else if (type == EXIT_ALL)
-    showing_ = false;
 }
 
 void MenuController::AddNestedDelegate(

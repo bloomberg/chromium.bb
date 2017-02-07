@@ -21,9 +21,40 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/menu_test_utils.h"
 #include "ui/views/test/test_views.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+
+// Accepts a MenuRunnerImpl to release when this is. Simulates shutdown
+// occurring immediately during the release of ViewsDelegate.
+class DeletingTestViewsDelegate : public views::TestViewsDelegate {
+ public:
+  DeletingTestViewsDelegate() : menu_runner_(nullptr) {}
+  ~DeletingTestViewsDelegate() override{};
+
+  void set_menu_runner(views::internal::MenuRunnerImpl* menu_runner) {
+    menu_runner_ = menu_runner;
+  }
+
+  // views::ViewsDelegate:
+  void ReleaseRef() override;
+
+ private:
+  // Not owned, deletes itself.
+  views::internal::MenuRunnerImpl* menu_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeletingTestViewsDelegate);
+};
+
+void DeletingTestViewsDelegate::ReleaseRef() {
+  if (menu_runner_)
+    menu_runner_->Release();
+}
+
+}  // namespace
 
 namespace views {
 namespace test {
@@ -417,6 +448,63 @@ TEST_F(MenuRunnerImplTest, MenuRunnerDestroyedWithNoActiveController) {
   // traces. So regressions will be caught with the same stack trace.
   if (menu_controller.controller())
     menu_controller.controller()->CancelAll();
+  EXPECT_EQ(nullptr, menu_controller.controller());
+}
+
+// Test class which overrides the ViewsDelegate. Allowing to simulate shutdown
+// during its release.
+class MenuRunnerDestructionTest : public MenuRunnerTest {
+ public:
+  MenuRunnerDestructionTest() {}
+  ~MenuRunnerDestructionTest() override {}
+
+  DeletingTestViewsDelegate* views_delegate() { return views_delegate_; }
+
+  base::WeakPtr<internal::MenuRunnerImpl> MenuRunnerAsWeakPtr(
+      internal::MenuRunnerImpl* menu_runner);
+
+  // ViewsTestBase:
+  void SetUp() override;
+
+ private:
+  // Not owned
+  DeletingTestViewsDelegate* views_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuRunnerDestructionTest);
+};
+
+base::WeakPtr<internal::MenuRunnerImpl>
+MenuRunnerDestructionTest::MenuRunnerAsWeakPtr(
+    internal::MenuRunnerImpl* menu_runner) {
+  return menu_runner->weak_factory_.GetWeakPtr();
+}
+
+void MenuRunnerDestructionTest::SetUp() {
+  std::unique_ptr<DeletingTestViewsDelegate> views_delegate(
+      new DeletingTestViewsDelegate);
+  views_delegate_ = views_delegate.get();
+  set_views_delegate(std::move(views_delegate));
+  MenuRunnerTest::SetUp();
+}
+
+// Tests that when ViewsDelegate is released that a nested Cancel of the
+// MenuRunner does not occur.
+TEST_F(MenuRunnerDestructionTest, MenuRunnerDestroyedDuringReleaseRef) {
+  internal::MenuRunnerImpl* menu_runner =
+      new internal::MenuRunnerImpl(menu_item_view());
+  EXPECT_EQ(MenuRunner::NORMAL_EXIT,
+            menu_runner->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                                   MENU_ANCHOR_TOPLEFT, MenuRunner::ASYNC));
+
+  views_delegate()->set_menu_runner(menu_runner);
+
+  base::WeakPtr<internal::MenuRunnerImpl> ref(MenuRunnerAsWeakPtr(menu_runner));
+  MenuControllerTestApi menu_controller;
+  // This will release the ref on ViewsDelegate. The test version will release
+  // |menu_runner| simulating device shutdown.
+  menu_controller.controller()->CancelAll();
+  // Both the |menu_runner| and |menu_controller| should have been deleted.
+  EXPECT_EQ(nullptr, ref);
   EXPECT_EQ(nullptr, menu_controller.controller());
 }
 

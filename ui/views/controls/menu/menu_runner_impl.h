@@ -23,6 +23,12 @@ class MenuController;
 class MenuDelegate;
 class MenuItemView;
 
+namespace test {
+
+class MenuRunnerDestructionTest;
+
+}  // namespace test
+
 namespace internal {
 
 // A menu runner implementation that uses views::MenuItemView to show a menu.
@@ -49,6 +55,8 @@ class VIEWS_EXPORT MenuRunnerImpl
   void SiblingMenuCreated(MenuItemView* menu) override;
 
  private:
+  friend class ::views::test::MenuRunnerDestructionTest;
+
   ~MenuRunnerImpl() override;
 
   // Cleans up after the menu is no longer showing. |result| is the menu that
