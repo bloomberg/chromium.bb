@@ -4461,6 +4461,7 @@ test("unit_tests") {
       "../browser/signin/signin_manager_unittest.cc",
     ]
     sources += [
+      "../browser/task_manager/providers/arc/arc_process_filter_unittest.cc",
       "base/ash_test_environment_chrome.cc",
       "base/ash_test_environment_chrome.h",
     ]

@@ -2224,6 +2224,8 @@ split_static_library("browser") {
       "metrics/perf/windowed_incognito_observer.h",
       "policy/default_geolocation_policy_handler.cc",
       "policy/default_geolocation_policy_handler.h",
+      "task_manager/providers/arc/arc_process_filter.cc",
+      "task_manager/providers/arc/arc_process_filter.h",
       "task_manager/providers/arc/arc_process_task.cc",
       "task_manager/providers/arc/arc_process_task.h",
       "task_manager/providers/arc/arc_process_task_provider.cc",
