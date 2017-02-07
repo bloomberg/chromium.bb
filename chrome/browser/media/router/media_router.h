@@ -26,6 +26,10 @@ namespace content {
 class WebContents;
 }
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace media_router {
 
 class IssuesObserver;
@@ -78,7 +82,7 @@ class MediaRouter : public KeyedService {
   virtual void CreateRoute(
       const MediaSource::Id& source_id,
       const MediaSink::Id& sink_id,
-      const GURL& origin,
+      const url::Origin& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       base::TimeDelta timeout,
@@ -100,7 +104,7 @@ class MediaRouter : public KeyedService {
   virtual void ConnectRouteByRouteId(
       const MediaSource::Id& source_id,
       const MediaRoute::Id& route_id,
-      const GURL& origin,
+      const url::Origin& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       base::TimeDelta timeout,
@@ -120,7 +124,7 @@ class MediaRouter : public KeyedService {
   virtual void JoinRoute(
       const MediaSource::Id& source,
       const std::string& presentation_id,
-      const GURL& origin,
+      const url::Origin& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       base::TimeDelta timeout,

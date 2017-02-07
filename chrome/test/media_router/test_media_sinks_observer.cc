@@ -12,7 +12,7 @@ namespace media_router {
 
 TestMediaSinksObserver::TestMediaSinksObserver(MediaRouter* router,
                                                const MediaSource& source,
-                                               const GURL& origin)
+                                               const url::Origin& origin)
     : MediaSinksObserver(router, source, origin) {}
 
 TestMediaSinksObserver::~TestMediaSinksObserver() {

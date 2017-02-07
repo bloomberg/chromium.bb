@@ -104,6 +104,7 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//mojo/common:common_custom_types",
+    "//url/mojo:url_mojom_origin",
   ]
 }
 

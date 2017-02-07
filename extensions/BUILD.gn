@@ -56,6 +56,7 @@ grit("extensions_renderer_resources") {
     "//extensions/common:mojo__generator",
     "//extensions/common/api:mojom__generator",
     "//mojo/common:common_custom_types__generator",
+    "//url/mojo:url_mojom_origin__generator",
   ]
 }
 
