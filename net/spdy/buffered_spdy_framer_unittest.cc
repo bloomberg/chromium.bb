@@ -127,10 +127,10 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   }
 
   // Convenience function which runs a framer simulation with particular input.
-  void SimulateInFramer(const unsigned char* input, size_t size) {
+  void SimulateInFramer(const SpdySerializedFrame& frame) {
+    const char* input_ptr = frame.data();
+    size_t input_remaining = frame.size();
     buffered_spdy_framer_.set_visitor(this);
-    size_t input_remaining = size;
-    const char* input_ptr = reinterpret_cast<const char*>(input);
     while (input_remaining > 0 &&
            buffered_spdy_framer_.spdy_framer_error() ==
                SpdyFramer::SPDY_NO_ERROR) {
@@ -187,9 +187,7 @@ TEST_F(BufferedSpdyFramerTest, OnSetting) {
   SpdySerializedFrame control_frame(framer.SerializeSettings(settings_ir));
   TestBufferedSpdyVisitor visitor;
 
-  visitor.SimulateInFramer(
-      reinterpret_cast<unsigned char*>(control_frame.data()),
-      control_frame.size());
+  visitor.SimulateInFramer(control_frame);
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(2, visitor.setting_count_);
 }
@@ -207,14 +205,35 @@ TEST_F(BufferedSpdyFramerTest, HeaderListTooLarge) {
   EXPECT_TRUE(control_frame);
 
   TestBufferedSpdyVisitor visitor;
-  visitor.SimulateInFramer(
-      reinterpret_cast<unsigned char*>(control_frame.get()->data()),
-      control_frame.get()->size());
+  visitor.SimulateInFramer(*control_frame);
 
   EXPECT_EQ(1, visitor.error_count_);
   EXPECT_EQ(0, visitor.headers_frame_count_);
   EXPECT_EQ(0, visitor.push_promise_frame_count_);
   EXPECT_EQ(SpdyHeaderBlock(), visitor.headers_);
+}
+
+TEST_F(BufferedSpdyFramerTest, ValidHeadersAfterInvalidHeaders) {
+  SpdyHeaderBlock headers;
+  headers["invalid"] = "\r\n\r\n";
+
+  SpdyHeaderBlock headers2;
+  headers["alpha"] = "beta";
+
+  SpdyTestUtil spdy_test_util;
+  SpdySerializedFrame headers_frame(
+      spdy_test_util.ConstructSpdyReply(1, std::move(headers)));
+  SpdySerializedFrame headers_frame2(
+      spdy_test_util.ConstructSpdyReply(2, std::move(headers2)));
+
+  TestBufferedSpdyVisitor visitor;
+  visitor.SimulateInFramer(headers_frame);
+  EXPECT_EQ(1, visitor.error_count_);
+  EXPECT_EQ(0, visitor.headers_frame_count_);
+
+  visitor.SimulateInFramer(headers_frame2);
+  EXPECT_EQ(1, visitor.error_count_);
+  EXPECT_EQ(1, visitor.headers_frame_count_);
 }
 
 TEST_F(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
@@ -230,9 +249,7 @@ TEST_F(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor;
-  visitor.SimulateInFramer(
-      reinterpret_cast<unsigned char*>(control_frame.get()->data()),
-      control_frame.get()->size());
+  visitor.SimulateInFramer(*control_frame);
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1, visitor.headers_frame_count_);
   EXPECT_EQ(0, visitor.push_promise_frame_count_);
@@ -249,9 +266,7 @@ TEST_F(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
   EXPECT_TRUE(control_frame.get() != NULL);
 
   TestBufferedSpdyVisitor visitor;
-  visitor.SimulateInFramer(
-      reinterpret_cast<unsigned char*>(control_frame.get()->data()),
-      control_frame.get()->size());
+  visitor.SimulateInFramer(*control_frame);
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(0, visitor.headers_frame_count_);
   EXPECT_EQ(1, visitor.push_promise_frame_count_);
@@ -266,9 +281,7 @@ TEST_F(BufferedSpdyFramerTest, GoAwayDebugData) {
       framer.CreateGoAway(2u, ERROR_CODE_FRAME_SIZE_ERROR, "foo"));
 
   TestBufferedSpdyVisitor visitor;
-  visitor.SimulateInFramer(
-      reinterpret_cast<unsigned char*>(goaway_frame.get()->data()),
-      goaway_frame.get()->size());
+  visitor.SimulateInFramer(*goaway_frame);
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1, visitor.goaway_count_);
   EXPECT_EQ(2u, visitor.goaway_last_accepted_stream_id_);
@@ -289,9 +302,7 @@ TEST_F(BufferedSpdyFramerTest, OnAltSvc) {
   SpdySerializedFrame altsvc_frame(framer.SerializeFrame(altsvc_ir));
 
   TestBufferedSpdyVisitor visitor;
-  visitor.SimulateInFramer(
-      reinterpret_cast<unsigned char*>(altsvc_frame.data()),
-      altsvc_frame.size());
+  visitor.SimulateInFramer(altsvc_frame);
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1, visitor.altsvc_count_);
   EXPECT_EQ(altsvc_stream_id, visitor.altsvc_stream_id_);

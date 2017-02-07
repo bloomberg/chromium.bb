@@ -101,6 +101,7 @@ void BufferedSpdyFramer::OnHeaderFrameEnd(SpdyStreamId stream_id,
   if (coalescer_->error_seen()) {
     visitor_->OnStreamError(stream_id,
                             "Could not parse Spdy Control Frame Header.");
+    control_frame_fields_.reset();
     return;
   }
   DCHECK(control_frame_fields_.get());
