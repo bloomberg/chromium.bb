@@ -28,17 +28,16 @@ FocusableRoundedBorder::~FocusableRoundedBorder() {}
 // likely diverge in future.
 // TODO(ellyjones): Diverge it by adding soft focus rings.
 void FocusableRoundedBorder::Paint(const View& view, gfx::Canvas* canvas) {
-  cc::PaintFlags paint;
-  paint.setStyle(cc::PaintFlags::kStroke_Style);
-  paint.setStrokeWidth(kThickness);
-  paint.setColor(GetCurrentColor(view));
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kThickness);
+  flags.setColor(GetCurrentColor(view));
+  flags.setAntiAlias(true);
 
   float half_thickness = kThickness / 2.0f;
   gfx::RectF bounds(view.GetLocalBounds());
   bounds.Inset(half_thickness, half_thickness);
-  canvas->DrawRoundRect(bounds, ui::NativeThemeMac::kButtonCornerRadius,
-                        paint);
+  canvas->DrawRoundRect(bounds, ui::NativeThemeMac::kButtonCornerRadius, flags);
 }
 
 }  // namespace views

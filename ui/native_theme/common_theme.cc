@@ -344,15 +344,15 @@ void CommonThemePaintMenuItemBackground(
     NativeTheme::State state,
     const gfx::Rect& rect,
     const NativeTheme::MenuItemExtraParams& menu_item) {
-  cc::PaintFlags paint;
+  cc::PaintFlags flags;
   switch (state) {
     case NativeTheme::kNormal:
     case NativeTheme::kDisabled:
-      paint.setColor(
+      flags.setColor(
           theme->GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor));
       break;
     case NativeTheme::kHovered:
-      paint.setColor(theme->GetSystemColor(
+      flags.setColor(theme->GetSystemColor(
           NativeTheme::kColorId_FocusedMenuItemBackgroundColor));
       break;
     default:
@@ -361,10 +361,10 @@ void CommonThemePaintMenuItemBackground(
   }
   if (menu_item.corner_radius > 0) {
     const SkScalar radius = SkIntToScalar(menu_item.corner_radius);
-    canvas->drawRoundRect(gfx::RectToSkRect(rect), radius, radius, paint);
+    canvas->drawRoundRect(gfx::RectToSkRect(rect), radius, radius, flags);
     return;
   }
-  canvas->drawRect(gfx::RectToSkRect(rect), paint);
+  canvas->drawRect(gfx::RectToSkRect(rect), flags);
 }
 
 }  // namespace ui

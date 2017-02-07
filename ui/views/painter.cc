@@ -70,17 +70,17 @@ void SolidRoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   gfx::RectF border_rect_f(gfx::ScaleToEnclosingRect(gfx::Rect(size), scale));
   const SkScalar scaled_corner_radius = SkFloatToScalar(radius_ * scale);
 
-  cc::PaintFlags paint;
-  paint.setAntiAlias(true);
-  paint.setStyle(cc::PaintFlags::kFill_Style);
-  paint.setColor(bg_color_);
-  canvas->DrawRoundRect(border_rect_f, scaled_corner_radius, paint);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setColor(bg_color_);
+  canvas->DrawRoundRect(border_rect_f, scaled_corner_radius, flags);
 
   border_rect_f.Inset(gfx::InsetsF(0.5f));
-  paint.setStyle(cc::PaintFlags::kStroke_Style);
-  paint.setStrokeWidth(1);
-  paint.setColor(stroke_color_);
-  canvas->DrawRoundRect(border_rect_f, scaled_corner_radius, paint);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(1);
+  flags.setColor(stroke_color_);
+  canvas->DrawRoundRect(border_rect_f, scaled_corner_radius, flags);
 }
 
 // DashedFocusPainter ----------------------------------------------------------
@@ -205,7 +205,7 @@ gfx::Size GradientPainter::GetMinimumSize() const {
 }
 
 void GradientPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  cc::PaintFlags paint;
+  cc::PaintFlags flags;
   SkPoint p[2];
   p[0].iset(0, 0);
   if (horizontal_)
@@ -213,13 +213,13 @@ void GradientPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   else
     p[1].iset(0, size.height());
 
-  paint.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
+  flags.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
       p, colors_.get(), pos_.get(), count_, SkShader::kClamp_TileMode)));
-  paint.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
 
   canvas->sk_canvas()->drawRectCoords(SkIntToScalar(0), SkIntToScalar(0),
                                       SkIntToScalar(size.width()),
-                                      SkIntToScalar(size.height()), paint);
+                                      SkIntToScalar(size.height()), flags);
 }
 
 // ImagePainter ---------------------------------------------------------------

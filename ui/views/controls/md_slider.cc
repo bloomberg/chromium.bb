@@ -60,16 +60,16 @@ void MdSlider::OnPaint(gfx::Canvas* canvas) {
   // Extra space used to hide slider ends behind the thumb.
   const int extra_padding = 1;
 
-  cc::PaintFlags slider_paint;
-  slider_paint.setAntiAlias(true);
-  slider_paint.setColor(current_thumb_color);
+  cc::PaintFlags slider_flags;
+  slider_flags.setAntiAlias(true);
+  slider_flags.setColor(current_thumb_color);
   canvas->DrawRoundRect(
       gfx::Rect(content.x(), y, full + extra_padding, kLineThickness),
-      kSliderRoundedRadius, slider_paint);
-  slider_paint.setColor(kDisabledColor);
+      kSliderRoundedRadius, slider_flags);
+  slider_flags.setColor(kDisabledColor);
   canvas->DrawRoundRect(gfx::Rect(x + kThumbRadius - extra_padding, y,
                                   empty + extra_padding, kLineThickness),
-                        kSliderRoundedRadius, slider_paint);
+                        kSliderRoundedRadius, slider_flags);
 
   gfx::Point thumb_center(x, content.height() / 2);
 
@@ -85,17 +85,17 @@ void MdSlider::OnPaint(gfx::Canvas* canvas) {
   }
 
   // Paint the thumb of the slider.
-  cc::PaintFlags paint;
-  paint.setColor(current_thumb_color);
-  paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+  cc::PaintFlags flags;
+  flags.setColor(current_thumb_color);
+  flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
 
   if (!is_active_) {
-    paint.setStrokeWidth(kThumbStroke);
-    paint.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(kThumbStroke);
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
   }
   canvas->DrawCircle(
       thumb_center,
-      is_active_ ? kThumbRadius : (kThumbRadius - kThumbStroke / 2), paint);
+      is_active_ ? kThumbRadius : (kThumbRadius - kThumbStroke / 2), flags);
 }
 
 const char* MdSlider::GetClassName() const {

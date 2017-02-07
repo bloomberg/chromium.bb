@@ -105,10 +105,10 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
         TableColumnAlignmentToCanvasAlignment(columns[i].column.alignment));
 
     if (paint_sort_indicator) {
-      cc::PaintFlags paint;
-      paint.setColor(text_color);
-      paint.setStyle(cc::PaintFlags::kFill_Style);
-      paint.setAntiAlias(true);
+      cc::PaintFlags flags;
+      flags.setColor(text_color);
+      flags.setStyle(cc::PaintFlags::kFill_Style);
+      flags.setAntiAlias(true);
 
       int indicator_x = 0;
       ui::TableColumn::Alignment alignment = columns[i].column.alignment;
@@ -156,7 +156,7 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
             SkIntToScalar(indicator_y + kSortIndicatorSize));
       }
       indicator_path.close();
-      canvas->DrawPath(indicator_path, paint);
+      canvas->DrawPath(indicator_path, flags);
     }
   }
 }

@@ -600,10 +600,10 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
 
   const SkColor grouping_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TableGroupingIndicatorColor);
-  cc::PaintFlags grouping_paint;
-  grouping_paint.setColor(grouping_color);
-  grouping_paint.setStyle(cc::PaintFlags::kFill_Style);
-  grouping_paint.setAntiAlias(true);
+  cc::PaintFlags grouping_flags;
+  grouping_flags.setColor(grouping_color);
+  grouping_flags.setStyle(cc::PaintFlags::kFill_Style);
+  grouping_flags.setAntiAlias(true);
   const int group_indicator_x = GetMirroredXInView(GetCellBounds(0, 0).x() +
       kTextHorizontalPadding + kGroupingIndicatorSize / 2);
   for (int i = region.min_row; i < region.max_row; ) {
@@ -624,13 +624,13 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
                            kGroupingIndicatorSize,
                            last_cell_bounds.y() - start_cell_bounds.y()),
                        grouping_color);
-      canvas->DrawCircle(gfx::Point(group_indicator_x,
-                                    last_cell_bounds.CenterPoint().y()),
-                         kGroupingIndicatorSize / 2, grouping_paint);
+      canvas->DrawCircle(
+          gfx::Point(group_indicator_x, last_cell_bounds.CenterPoint().y()),
+          kGroupingIndicatorSize / 2, grouping_flags);
     }
-    canvas->DrawCircle(gfx::Point(group_indicator_x,
-                                  start_cell_bounds.CenterPoint().y()),
-                       kGroupingIndicatorSize / 2, grouping_paint);
+    canvas->DrawCircle(
+        gfx::Point(group_indicator_x, start_cell_bounds.CenterPoint().y()),
+        kGroupingIndicatorSize / 2, grouping_flags);
     i = last + 1;
   }
 }

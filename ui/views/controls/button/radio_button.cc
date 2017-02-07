@@ -148,9 +148,9 @@ void RadioButton::SetChecked(bool checked) {
 }
 
 void RadioButton::PaintFocusRing(gfx::Canvas* canvas,
-                                 const cc::PaintFlags& paint) {
+                                 const cc::PaintFlags& flags) {
   canvas->DrawCircle(gfx::RectF(image()->bounds()).CenterPoint(),
-                     image()->width() / 2, paint);
+                     image()->width() / 2, flags);
 }
 
 const gfx::VectorIcon& RadioButton::GetVectorIcon() const {

@@ -47,13 +47,13 @@ void PaintArc(Canvas* canvas,
   SkPath path;
   path.arcTo(RectToSkRect(oval), start_angle, sweep, true);
 
-  cc::PaintFlags paint;
-  paint.setColor(color);
-  paint.setStrokeCap(cc::PaintFlags::kRound_Cap);
-  paint.setStrokeWidth(stroke_width);
-  paint.setStyle(cc::PaintFlags::kStroke_Style);
-  paint.setAntiAlias(true);
-  canvas->DrawPath(path, paint);
+  cc::PaintFlags flags;
+  flags.setColor(color);
+  flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
+  flags.setStrokeWidth(stroke_width);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setAntiAlias(true);
+  canvas->DrawPath(path, flags);
 }
 
 void CalculateWaitingAngles(const base::TimeDelta& elapsed_time,

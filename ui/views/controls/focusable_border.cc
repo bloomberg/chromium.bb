@@ -39,9 +39,9 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
   if (ui::MaterialDesignController::IsSecondaryUiMaterial() && view.HasFocus())
     return;
 
-  cc::PaintFlags paint;
-  paint.setStyle(cc::PaintFlags::kStroke_Style);
-  paint.setColor(GetCurrentColor(view));
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setColor(GetCurrentColor(view));
 
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     gfx::ScopedCanvas scoped(canvas);
@@ -54,15 +54,15 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
     path.addRoundRect(gfx::RectFToSkRect(rect), corner_radius_px,
                       corner_radius_px);
     const int kStrokeWidthPx = 1;
-    paint.setStrokeWidth(SkIntToScalar(kStrokeWidthPx));
-    paint.setAntiAlias(true);
-    canvas->DrawPath(path, paint);
+    flags.setStrokeWidth(SkIntToScalar(kStrokeWidthPx));
+    flags.setAntiAlias(true);
+    canvas->DrawPath(path, flags);
   } else {
     SkPath path;
     path.addRect(gfx::RectToSkRect(view.GetLocalBounds()),
                  SkPath::kCW_Direction);
-    paint.setStrokeWidth(SkIntToScalar(2));
-    canvas->DrawPath(path, paint);
+    flags.setStrokeWidth(SkIntToScalar(2));
+    canvas->DrawPath(path, flags);
   }
 }
 

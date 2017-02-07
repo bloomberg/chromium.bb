@@ -62,8 +62,9 @@ class RenderTextTestApi {
  public:
   RenderTextTestApi(RenderText* render_text) : render_text_(render_text) {}
 
-  static SkPaint& GetRendererPaint(internal::SkiaTextRenderer* renderer) {
-    return renderer->paint_;
+  static cc::PaintFlags& GetRendererPaint(
+      internal::SkiaTextRenderer* renderer) {
+    return renderer->flags_;
   }
 
   // Callers should ensure that the associated RenderText object is a
@@ -443,7 +444,7 @@ class RenderTextTest : public testing::Test,
     return nullptr;
   }
 
-  SkPaint& GetRendererPaint() {
+  cc::PaintFlags& GetRendererPaint() {
     return test::RenderTextTestApi::GetRendererPaint(renderer());
   }
 

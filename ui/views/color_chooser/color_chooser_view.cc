@@ -103,10 +103,10 @@ void DrawGradientRect(const gfx::Rect& rect, SkColor start_color,
     points[1].iset(rect.width() + 1, 0);
   else
     points[1].iset(0, rect.height() + 1);
-  cc::PaintFlags paint;
-  paint.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
+  cc::PaintFlags flags;
+  flags.setShader(cc::WrapSkShader(SkGradientShader::MakeLinear(
       points, colors, NULL, 2, SkShader::kClamp_TileMode)));
-  canvas->DrawRect(rect, paint);
+  canvas->DrawRect(rect, flags);
 }
 
 }  // namespace
@@ -211,11 +211,11 @@ void ColorChooserView::HueView::OnPaint(gfx::Canvas* canvas) {
       SkIntToScalar(width()) - SK_ScalarHalf,
       SkIntToScalar(level_ - kHueIndicatorSize));
 
-  cc::PaintFlags indicator_paint;
-  indicator_paint.setColor(SK_ColorBLACK);
-  indicator_paint.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawPath(left_indicator_path, indicator_paint);
-  canvas->DrawPath(right_indicator_path, indicator_paint);
+  cc::PaintFlags indicator_flags;
+  indicator_flags.setColor(SK_ColorBLACK);
+  indicator_flags.setStyle(cc::PaintFlags::kFill_Style);
+  canvas->DrawPath(left_indicator_path, indicator_flags);
+  canvas->DrawPath(right_indicator_path, indicator_flags);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

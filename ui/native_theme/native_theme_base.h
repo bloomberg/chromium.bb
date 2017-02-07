@@ -169,15 +169,15 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                     int x,
                     int y1,
                     int y2,
-                    const cc::PaintFlags& paint) const;
+                    const cc::PaintFlags& flags) const;
   void DrawHorizLine(cc::PaintCanvas* canvas,
                      int x1,
                      int x2,
                      int y,
-                     const cc::PaintFlags& paint) const;
+                     const cc::PaintFlags& flags) const;
   void DrawBox(cc::PaintCanvas* canvas,
                const gfx::Rect& rect,
-               const cc::PaintFlags& paint) const;
+               const cc::PaintFlags& flags) const;
   SkScalar Clamp(SkScalar value,
                  SkScalar min,
                  SkScalar max) const;

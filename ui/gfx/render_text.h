@@ -90,7 +90,7 @@ class GFX_EXPORT SkiaTextRenderer {
   // lengths and colors; to support text selection appearances.
   class DiagonalStrike {
    public:
-    DiagonalStrike(Canvas* canvas, Point start, const cc::PaintFlags& paint);
+    DiagonalStrike(Canvas* canvas, Point start, const cc::PaintFlags& flags);
     ~DiagonalStrike();
 
     void AddPiece(int length, SkColor color);
@@ -101,7 +101,7 @@ class GFX_EXPORT SkiaTextRenderer {
 
     Canvas* canvas_;
     const Point start_;
-    cc::PaintFlags paint_;
+    cc::PaintFlags flags_;
     int total_length_;
     std::vector<Piece> pieces_;
 
@@ -110,7 +110,7 @@ class GFX_EXPORT SkiaTextRenderer {
 
   Canvas* canvas_;
   cc::PaintCanvas* canvas_skia_;
-  cc::PaintFlags paint_;
+  cc::PaintFlags flags_;
   SkScalar underline_thickness_;
   SkScalar underline_position_;
   std::unique_ptr<DiagonalStrike> diagonal_;
@@ -196,10 +196,10 @@ sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
                                      bool italic,
                                      Font::Weight weight);
 
-// Applies the given FontRenderParams to a Skia |paint|.
+// Applies the given FontRenderParams to the PaintFlags.
 void ApplyRenderParams(const FontRenderParams& params,
                        bool subpixel_rendering_suppressed,
-                       cc::PaintFlags* paint);
+                       cc::PaintFlags* flags);
 
 }  // namespace internal
 

@@ -69,19 +69,19 @@ void FocusRing::Layout() {
 }
 
 void FocusRing::OnPaint(gfx::Canvas* canvas) {
-  cc::PaintFlags paint;
-  paint.setAntiAlias(true);
-  paint.setColor(
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setColor(
       SkColorSetA(GetNativeTheme()->GetSystemColor(
                       override_color_id_ != ui::NativeTheme::kColorId_NumColors
                           ? override_color_id_
                           : ui::NativeTheme::kColorId_FocusedBorderColor),
                   0x66));
-  paint.setStyle(cc::PaintFlags::kStroke_Style);
-  paint.setStrokeWidth(kFocusHaloThicknessDp);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kFocusHaloThicknessDp);
   gfx::RectF rect(GetLocalBounds());
   rect.Inset(gfx::InsetsF(kFocusHaloThicknessDp / 2.f));
-  canvas->DrawRoundRect(rect, kFocusHaloCornerRadiusDp, paint);
+  canvas->DrawRoundRect(rect, kFocusHaloCornerRadiusDp, flags);
 }
 
 FocusRing::FocusRing()

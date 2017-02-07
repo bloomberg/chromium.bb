@@ -101,11 +101,11 @@ class MenuScrollButton : public View {
     path.lineTo(SkIntToScalar(x_left), SkIntToScalar(y_bottom));
     path.lineTo(SkIntToScalar(x_right), SkIntToScalar(y_bottom));
     path.lineTo(SkIntToScalar(x), SkIntToScalar(y));
-    cc::PaintFlags paint;
-    paint.setStyle(cc::PaintFlags::kFill_Style);
-    paint.setAntiAlias(true);
-    paint.setColor(config.arrow_color);
-    canvas->DrawPath(path, paint);
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setAntiAlias(true);
+    flags.setColor(config.arrow_color);
+    canvas->DrawPath(path, flags);
   }
 
  private:

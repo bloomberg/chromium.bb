@@ -24,17 +24,17 @@ gfx::Size RoundRectPainter::GetMinimumSize() const {
 }
 
 void RoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  cc::PaintFlags paint;
-  paint.setColor(border_color_);
-  paint.setStyle(cc::PaintFlags::kStroke_Style);
-  paint.setStrokeWidth(kBorderWidth);
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setColor(border_color_);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kBorderWidth);
+  flags.setAntiAlias(true);
   gfx::Rect rect(size);
   rect.Inset(0, 0, kBorderWidth, kBorderWidth);
   SkRect skia_rect = gfx::RectToSkRect(rect);
   skia_rect.offset(kBorderWidth / 2.f, kBorderWidth / 2.f);
   canvas->sk_canvas()->drawRoundRect(skia_rect, SkIntToScalar(corner_radius_),
-                                     SkIntToScalar(corner_radius_), paint);
+                                     SkIntToScalar(corner_radius_), flags);
 }
 
 }  // namespace views

@@ -258,21 +258,21 @@ class GFX_EXPORT Canvas {
   // NOTE: if you need a single pixel line, use DrawLine.
   void DrawRect(const RectF& rect, SkColor color, SkBlendMode mode);
 
-  // Draws the given rectangle with the given |paint| parameters.
+  // Draws the given rectangle with the given |flags| parameters.
   // DEPRECATED in favor of the RectF version below.
   // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawRect(const Rect& rect, const cc::PaintFlags& paint);
+  void DrawRect(const Rect& rect, const cc::PaintFlags& flags);
 
-  // Draws the given rectangle with the given |paint| parameters.
-  void DrawRect(const RectF& rect, const cc::PaintFlags& paint);
+  // Draws the given rectangle with the given |flags| parameters.
+  void DrawRect(const RectF& rect, const cc::PaintFlags& flags);
 
-  // Draw the given point with the given |paint| parameters.
+  // Draw the given point with the given |flags| parameters.
   // DEPRECATED in favor of the RectF version below.
   // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawPoint(const Point& p, const cc::PaintFlags& paint);
+  void DrawPoint(const Point& p, const cc::PaintFlags& flags);
 
-  // Draw the given point with the given |paint| parameters.
-  void DrawPoint(const PointF& p, const cc::PaintFlags& paint);
+  // Draw the given point with the given |flags| parameters.
+  void DrawPoint(const PointF& p, const cc::PaintFlags& flags);
 
   // Draws a single pixel line with the specified color.
   // DEPRECATED in favor of the RectF version below.
@@ -282,41 +282,41 @@ class GFX_EXPORT Canvas {
   // Draws a single pixel line with the specified color.
   void DrawLine(const PointF& p1, const PointF& p2, SkColor color);
 
-  // Draws a line with the given |paint| parameters.
+  // Draws a line with the given |flags| parameters.
   // DEPRECATED in favor of the RectF version below.
   // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawLine(const Point& p1, const Point& p2, const cc::PaintFlags& paint);
+  void DrawLine(const Point& p1, const Point& p2, const cc::PaintFlags& flags);
 
-  // Draws a line with the given |paint| parameters.
+  // Draws a line with the given |flags| parameters.
   void DrawLine(const PointF& p1,
                 const PointF& p2,
-                const cc::PaintFlags& paint);
+                const cc::PaintFlags& flags);
 
-  // Draws a circle with the given |paint| parameters.
+  // Draws a circle with the given |flags| parameters.
   // DEPRECATED in favor of the RectF version below.
   // TODO(funkysidd): Remove this (http://crbug.com/553726)
   void DrawCircle(const Point& center_point,
                   int radius,
-                  const cc::PaintFlags& paint);
+                  const cc::PaintFlags& flags);
 
-  // Draws a circle with the given |paint| parameters.
+  // Draws a circle with the given |flags| parameters.
   void DrawCircle(const PointF& center_point,
                   float radius,
-                  const cc::PaintFlags& paint);
+                  const cc::PaintFlags& flags);
 
   // Draws the given rectangle with rounded corners of |radius| using the
-  // given |paint| parameters. DEPRECATED in favor of the RectF version below.
+  // given |flags| parameters. DEPRECATED in favor of the RectF version below.
   // TODO(mgiuca): Remove this (http://crbug.com/553726).
-  void DrawRoundRect(const Rect& rect, int radius, const cc::PaintFlags& paint);
+  void DrawRoundRect(const Rect& rect, int radius, const cc::PaintFlags& flags);
 
   // Draws the given rectangle with rounded corners of |radius| using the
-  // given |paint| parameters.
+  // given |flags| parameters.
   void DrawRoundRect(const RectF& rect,
                      float radius,
-                     const cc::PaintFlags& paint);
+                     const cc::PaintFlags& flags);
 
-  // Draws the given path using the given |paint| parameters.
-  void DrawPath(const SkPath& path, const cc::PaintFlags& paint);
+  // Draws the given path using the given |flags| parameters.
+  void DrawPath(const SkPath& path, const cc::PaintFlags& flags);
 
   // Draws an image with the origin at the specified location. The upper left
   // corner of the bitmap is rendered at the specified location.
@@ -324,19 +324,19 @@ class GFX_EXPORT Canvas {
   // Thus, x is 2 pixels if canvas scale = 2 & |x| = 1.
   void DrawImageInt(const ImageSkia&, int x, int y);
 
-  // Helper for DrawImageInt(..., paint) that constructs a temporary paint and
-  // calls paint.setAlpha(alpha).
+  // Helper for DrawImageInt(..., flags) that constructs a temporary flags and
+  // calls flags.setAlpha(alpha).
   void DrawImageInt(const ImageSkia&, int x, int y, uint8_t alpha);
 
   // Draws an image with the origin at the specified location, using the
-  // specified paint. The upper left corner of the bitmap is rendered at the
+  // specified flags. The upper left corner of the bitmap is rendered at the
   // specified location.
   // Parameters are specified relative to current canvas scale not in pixels.
   // Thus, |x| is 2 pixels if canvas scale = 2 & |x| = 1.
   void DrawImageInt(const ImageSkia& image,
                     int x,
                     int y,
-                    const cc::PaintFlags& paint);
+                    const cc::PaintFlags& flags);
 
   // Draws a portion of an image in the specified location. The src parameters
   // correspond to the region of the bitmap to draw in the region defined
@@ -370,7 +370,7 @@ class GFX_EXPORT Canvas {
                     int dest_w,
                     int dest_h,
                     bool filter,
-                    const cc::PaintFlags& paint);
+                    const cc::PaintFlags& flags);
 
   // Same as the DrawImageInt functions above. Difference being this does not
   // do any scaling, i.e. it does not scale the output by the device scale
@@ -383,7 +383,7 @@ class GFX_EXPORT Canvas {
                            int dest_w,
                            int dest_h,
                            bool filter,
-                           const cc::PaintFlags& paint);
+                           const cc::PaintFlags& flags);
 
   // Draws an |image| with the top left corner at |x| and |y|, clipped to
   // |path|.
@@ -393,7 +393,7 @@ class GFX_EXPORT Canvas {
                        int x,
                        int y,
                        const SkPath& path,
-                       const cc::PaintFlags& paint);
+                       const cc::PaintFlags& flags);
 
   // Draws text with the specified color, fonts and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the
@@ -449,7 +449,7 @@ class GFX_EXPORT Canvas {
                     int w,
                     int h);
 
-  // Helper for TileImageInt().  Initializes |paint| for tiling |image| with the
+  // Helper for TileImageInt().  Initializes |flags| for tiling |image| with the
   // given parameters.  Returns false if the provided image does not have a
   // representation for the current scale.
   bool InitPaintFlagsForTiling(const ImageSkia& image,
@@ -459,7 +459,7 @@ class GFX_EXPORT Canvas {
                                float tile_scale_y,
                                int dest_x,
                                int dest_y,
-                               cc::PaintFlags* paint);
+                               cc::PaintFlags* flags);
 
   // Apply transformation on the canvas.
   void Transform(const Transform& transform);
@@ -492,7 +492,7 @@ class GFX_EXPORT Canvas {
                           int dest_w,
                           int dest_h,
                           bool filter,
-                          const cc::PaintFlags& paint,
+                          const cc::PaintFlags& flags,
                           bool remove_image_scale);
 
   // The device scale factor at which drawing on this canvas occurs.

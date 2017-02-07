@@ -76,11 +76,11 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
   // Draw background.
   SkPath background_path;
   AddPossiblyRoundRectToPath(content_bounds, &background_path);
-  cc::PaintFlags background_paint;
-  background_paint.setStyle(cc::PaintFlags::kFill_Style);
-  background_paint.setAntiAlias(true);
-  background_paint.setColor(GetBackgroundColor());
-  canvas->DrawPath(background_path, background_paint);
+  cc::PaintFlags background_flags;
+  background_flags.setStyle(cc::PaintFlags::kFill_Style);
+  background_flags.setAntiAlias(true);
+  background_flags.setColor(GetBackgroundColor());
+  canvas->DrawPath(background_path, background_flags);
 
   // Draw slice.
   SkPath slice_path;
@@ -93,11 +93,11 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
   slice_bounds.set_width(slice_width);
   AddPossiblyRoundRectToPath(slice_bounds, &slice_path);
 
-  cc::PaintFlags slice_paint;
-  slice_paint.setStyle(cc::PaintFlags::kFill_Style);
-  slice_paint.setAntiAlias(true);
-  slice_paint.setColor(GetForegroundColor());
-  canvas->DrawPath(slice_path, slice_paint);
+  cc::PaintFlags slice_flags;
+  slice_flags.setStyle(cc::PaintFlags::kFill_Style);
+  slice_flags.setAntiAlias(true);
+  slice_flags.setColor(GetForegroundColor());
+  canvas->DrawPath(slice_path, slice_flags);
 }
 
 void ProgressBar::SetValue(double value) {
@@ -151,11 +151,11 @@ void ProgressBar::OnPaintIndeterminate(gfx::Canvas* canvas) {
   // Draw background.
   SkPath background_path;
   AddPossiblyRoundRectToPath(content_bounds, &background_path);
-  cc::PaintFlags background_paint;
-  background_paint.setStyle(cc::PaintFlags::kFill_Style);
-  background_paint.setAntiAlias(true);
-  background_paint.setColor(GetBackgroundColor());
-  canvas->DrawPath(background_path, background_paint);
+  cc::PaintFlags background_flags;
+  background_flags.setStyle(cc::PaintFlags::kFill_Style);
+  background_flags.setAntiAlias(true);
+  background_flags.setColor(GetBackgroundColor());
+  canvas->DrawPath(background_path, background_flags);
 
   // Draw slice.
   SkPath slice_path;
@@ -199,11 +199,11 @@ void ProgressBar::OnPaintIndeterminate(gfx::Canvas* canvas) {
   slice_bounds.set_width(bar2_end_x - bar2_start_x);
   AddPossiblyRoundRectToPath(slice_bounds, &slice_path);
 
-  cc::PaintFlags slice_paint;
-  slice_paint.setStyle(cc::PaintFlags::kFill_Style);
-  slice_paint.setAntiAlias(true);
-  slice_paint.setColor(GetForegroundColor());
-  canvas->DrawPath(slice_path, slice_paint);
+  cc::PaintFlags slice_flags;
+  slice_flags.setStyle(cc::PaintFlags::kFill_Style);
+  slice_flags.setAntiAlias(true);
+  slice_flags.setColor(GetForegroundColor());
+  canvas->DrawPath(slice_path, slice_flags);
 }
 
 }  // namespace views

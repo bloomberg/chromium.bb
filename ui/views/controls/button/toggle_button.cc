@@ -78,15 +78,15 @@ class ToggleButton::ThumbView : public InkDropHostView {
                         ui::NativeTheme::kColorId_LabelEnabledColor),
                     0x99));
     shadows.push_back(shadow.Scale(dsf));
-    cc::PaintFlags thumb_paint;
-    thumb_paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadows));
-    thumb_paint.setAntiAlias(true);
+    cc::PaintFlags thumb_flags;
+    thumb_flags.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadows));
+    thumb_flags.setAntiAlias(true);
     const SkColor thumb_on_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_ProminentButtonColor);
     const SkColor thumb_off_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DialogBackground);
     const SkAlpha blend = static_cast<SkAlpha>(SK_AlphaOPAQUE * color_ratio_);
-    thumb_paint.setColor(
+    thumb_flags.setColor(
         color_utils::AlphaBlend(thumb_on_color, thumb_off_color, blend));
 
     // We want the circle to have an integer pixel diameter and to be aligned
@@ -97,7 +97,7 @@ class ToggleButton::ThumbView : public InkDropHostView {
     thumb_bounds.Scale(dsf);
     thumb_bounds = gfx::RectF(gfx::ToEnclosingRect(thumb_bounds));
     canvas->DrawCircle(thumb_bounds.CenterPoint(), thumb_bounds.height() / 2.f,
-                       thumb_paint);
+                       thumb_flags);
   }
 
   // Color ratio between 0 and 1 that controls the thumb color.
@@ -197,13 +197,13 @@ void ToggleButton::OnPaint(gfx::Canvas* canvas) {
   gfx::RectF track_rect(GetTrackBounds());
   track_rect.Scale(dsf);
   track_rect = gfx::RectF(gfx::ToEnclosingRect(track_rect));
-  cc::PaintFlags track_paint;
-  track_paint.setAntiAlias(true);
+  cc::PaintFlags track_flags;
+  track_flags.setAntiAlias(true);
   const double color_ratio = slide_animation_.GetCurrentValue();
-  track_paint.setColor(color_utils::AlphaBlend(
+  track_flags.setColor(color_utils::AlphaBlend(
       GetTrackColor(true), GetTrackColor(false),
       static_cast<SkAlpha>(SK_AlphaOPAQUE * color_ratio)));
-  canvas->DrawRoundRect(track_rect, track_rect.height() / 2, track_paint);
+  canvas->DrawRoundRect(track_rect, track_rect.height() / 2, track_flags);
   canvas->Restore();
 
   Painter::PaintFocusPainter(this, canvas, focus_painter_.get());

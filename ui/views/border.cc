@@ -88,16 +88,16 @@ RoundedRectBorder::RoundedRectBorder(int thickness,
     : thickness_(thickness), corner_radius_(corner_radius), color_(color) {}
 
 void RoundedRectBorder::Paint(const View& view, gfx::Canvas* canvas) {
-  cc::PaintFlags paint;
-  paint.setStrokeWidth(thickness_);
-  paint.setColor(color_);
-  paint.setStyle(cc::PaintFlags::kStroke_Style);
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setStrokeWidth(thickness_);
+  flags.setColor(color_);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setAntiAlias(true);
 
   float half_thickness = thickness_ / 2.0f;
   gfx::RectF bounds(view.GetLocalBounds());
   bounds.Inset(half_thickness, half_thickness);
-  canvas->DrawRoundRect(bounds, corner_radius_, paint);
+  canvas->DrawRoundRect(bounds, corner_radius_, flags);
 }
 
 gfx::Insets RoundedRectBorder::GetInsets() const {

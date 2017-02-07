@@ -52,21 +52,21 @@ gfx::Size OverlayScrollBar::Thumb::GetPreferredSize() const {
 }
 
 void OverlayScrollBar::Thumb::OnPaint(gfx::Canvas* canvas) {
-  cc::PaintFlags fill_paint;
-  fill_paint.setStyle(cc::PaintFlags::kFill_Style);
-  fill_paint.setColor(SK_ColorBLACK);
+  cc::PaintFlags fill_flags;
+  fill_flags.setStyle(cc::PaintFlags::kFill_Style);
+  fill_flags.setColor(SK_ColorBLACK);
   gfx::RectF fill_bounds(GetLocalBounds());
   fill_bounds.Inset(gfx::InsetsF(IsHorizontal() ? kThumbHoverOffset : 0,
                                  IsHorizontal() ? 0 : kThumbHoverOffset, 0, 0));
   fill_bounds.Inset(gfx::InsetsF(kThumbStroke, kThumbStroke,
                                  IsHorizontal() ? 0 : kThumbStroke,
                                  IsHorizontal() ? kThumbStroke : 0));
-  canvas->DrawRect(fill_bounds, fill_paint);
+  canvas->DrawRect(fill_bounds, fill_flags);
 
-  cc::PaintFlags stroke_paint;
-  stroke_paint.setStyle(cc::PaintFlags::kStroke_Style);
-  stroke_paint.setColor(SK_ColorWHITE);
-  stroke_paint.setStrokeWidth(kThumbStroke);
+  cc::PaintFlags stroke_flags;
+  stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
+  stroke_flags.setColor(SK_ColorWHITE);
+  stroke_flags.setStrokeWidth(kThumbStroke);
   gfx::RectF stroke_bounds(fill_bounds);
   stroke_bounds.Inset(gfx::InsetsF(kThumbStroke / 2.f));
   // The stroke doesn't apply to the far edge of the thumb.
@@ -80,7 +80,7 @@ void OverlayScrollBar::Thumb::OnPaint(gfx::Canvas* canvas) {
   } else {
     path.lineTo(gfx::PointFToSkPoint(stroke_bounds.bottom_right()));
   }
-  canvas->DrawPath(path, stroke_paint);
+  canvas->DrawPath(path, stroke_flags);
 }
 
 void OverlayScrollBar::Thumb::OnBoundsChanged(

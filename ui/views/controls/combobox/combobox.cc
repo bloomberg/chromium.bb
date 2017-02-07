@@ -857,14 +857,14 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
     path.rLineTo(2 * kEpsilon, 0);
     path.rLineTo(height, -height);
     path.close();
-    cc::PaintFlags paint;
+    cc::PaintFlags flags;
     SkColor arrow_color = GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_ButtonEnabledColor);
     if (!enabled())
       arrow_color = SkColorSetA(arrow_color, gfx::kDisabledControlAlpha);
-    paint.setColor(arrow_color);
-    paint.setAntiAlias(true);
-    canvas->DrawPath(path, paint);
+    flags.setColor(arrow_color);
+    flags.setAntiAlias(true);
+    canvas->DrawPath(path, flags);
   } else {
     canvas->DrawImageInt(arrow_image_, arrow_bounds.x(), arrow_bounds.y());
   }

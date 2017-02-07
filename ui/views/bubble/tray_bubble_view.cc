@@ -113,11 +113,11 @@ TrayBubbleContentMask::~TrayBubbleContentMask() {
 
 void TrayBubbleContentMask::OnPaintLayer(const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer()->size());
-  cc::PaintFlags paint;
-  paint.setAlpha(255);
-  paint.setStyle(cc::PaintFlags::kFill_Style);
+  cc::PaintFlags flags;
+  flags.setAlpha(255);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
   gfx::Rect rect(layer()->bounds().size());
-  recorder.canvas()->DrawRoundRect(rect, corner_radius_, paint);
+  recorder.canvas()->DrawRoundRect(rect, corner_radius_, flags);
 }
 
 void TrayBubbleContentMask::OnDeviceScaleFactorChanged(
