@@ -404,9 +404,16 @@ bool ImageBuffer::getImageData(Multiply multiplied,
   // use N32 at this time.
   SkColorType colorType =
       useF16Workaround ? kN32_SkColorType : kRGBA_8888_SkColorType;
-  SkImageInfo info =
-      SkImageInfo::Make(rect.width(), rect.height(), colorType, alphaType,
-                        SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named));
+
+  // Only use sRGB when the surface has a color space.  Converting untagged
+  // pixels to a particular color space is not well-defined in Skia.
+  sk_sp<SkColorSpace> colorSpace = nullptr;
+  if (m_surface->colorSpace()) {
+    colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+  }
+
+  SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(), colorType,
+                                       alphaType, std::move(colorSpace));
 
   snapshot->readPixels(info, result.data(), bytesPerPixel * rect.width(),
                        rect.x(), rect.y());
