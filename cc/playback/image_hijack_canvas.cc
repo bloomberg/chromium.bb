@@ -105,6 +105,7 @@ class ScopedImagePaint {
     SkPaint scratch_paint = paint;
     scratch_paint.setShader(
         decoded_image.image()->makeShader(xy[0], xy[1], &matrix));
+    scratch_paint.setFilterQuality(decoded_image.filter_quality());
     return ScopedImagePaint(std::move(scoped_lock), std::move(scratch_paint));
   }
 
