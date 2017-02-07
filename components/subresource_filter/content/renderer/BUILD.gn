@@ -4,8 +4,6 @@
 
 static_library("renderer") {
   sources = [
-    "document_subresource_filter.cc",
-    "document_subresource_filter.h",
     "subresource_filter_agent.cc",
     "subresource_filter_agent.h",
     "unverified_ruleset_dealer.cc",
@@ -25,7 +23,6 @@ static_library("renderer") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "document_subresource_filter_unittest.cc",
     "subresource_filter_agent_unittest.cc",
   ]
   deps = [
@@ -35,7 +32,6 @@ source_set("unit_tests") {
     "//components/subresource_filter/content/common",
     "//components/subresource_filter/core/common",
     "//components/subresource_filter/core/common:test_support",
-    "//content/public/renderer",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
