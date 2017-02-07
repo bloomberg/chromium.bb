@@ -7,6 +7,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/platform_util_internal.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -57,9 +58,11 @@ void OpenItem(Profile* profile,
               OpenItemType item_type,
               const OpenOperationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&VerifyAndOpenItemOnBlockingThread, full_path,
-                            item_type, callback));
+  base::PostTaskWithTraits(FROM_HERE,
+                           base::TaskTraits().MayBlock().WithPriority(
+                               base::TaskPriority::BACKGROUND),
+                           base::Bind(&VerifyAndOpenItemOnBlockingThread,
+                                      full_path, item_type, callback));
 }
 
 }  // namespace platform_util
