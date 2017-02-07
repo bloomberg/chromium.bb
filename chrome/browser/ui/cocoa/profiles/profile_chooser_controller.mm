@@ -1594,7 +1594,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       showLock = item.signed_in &&
           profiles::IsLockAvailable(browser_->profile());
     } else {
-      [otherProfiles addObject:[self createOtherProfileView:i]];
+      NSButton* otherProfileView = [self createOtherProfileView:i];
+      if (!firstProfileView_) {
+        firstProfileView_ = otherProfileView;
+      }
+      [otherProfiles addObject:otherProfileView];
     }
   }
   if (!currentProfileView)  // Guest windows don't have an active profile.
@@ -2955,6 +2959,14 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=
           IncognitoModePrefs::DISABLED;
   return incognitoAvailable && !browser_->profile()->IsGuestSession();
+}
+
+- (void)showWindow:(id)sender {
+  [super showWindow:sender];
+  NSEvent *event = [[NSApplication sharedApplication] currentEvent];
+  if (firstProfileView_ && [event type] == NSKeyDown) {
+    [[self window] makeFirstResponder:firstProfileView_];
+  }
 }
 
 @end

@@ -48,6 +48,7 @@ class GaiaWebContentsDelegate;
   // current profile. It is set in |showAccountRemovalView| and used in
   // |removeAccount|.
   std::string accountIdToRemove_;
+  NSButton *firstProfileView_;
 
   // Active view mode.
   profiles::BubbleViewMode viewMode_;
