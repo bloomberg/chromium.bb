@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -41,19 +42,40 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::WebViewContainingText;
 
 namespace {
 char kURL1[] = "http://firstURL";
 char kURL2[] = "http://secondURL";
 char kURL3[] = "http://thirdURL";
-char kResponse1[] = "Test Page 1";
-char kResponse2[] = "Test Page 2";
-char kResponse3[] = "Test Page 3";
+char kTitle1[] = "Page 1";
+char kTitle2[] = "Page 2";
+char kResponse1[] = "Test Page 1 content";
+char kResponse2[] = "Test Page 2 content";
+char kResponse3[] = "Test Page 3 content";
 
-// Matcher for entry in history for URL.
-id<GREYMatcher> HistoryEntryWithUrl(const GURL& url) {
-  NSString* url_spec = base::SysUTF8ToNSString(url.spec());
-  return grey_allOf(grey_text(url_spec), grey_sufficientlyVisible(), nil);
+// Matcher for entry in history for URL and title.
+id<GREYMatcher> HistoryEntry(const GURL& url, const std::string& title) {
+  NSString* url_spec_text = base::SysUTF8ToNSString(url.spec());
+  NSString* title_text = base::SysUTF8ToNSString(title);
+
+  MatchesBlock matches = ^BOOL(HistoryEntryCell* cell) {
+    return [cell.textLabel.text isEqual:title_text] &&
+           [cell.detailTextLabel.text isEqual:url_spec_text];
+  };
+
+  DescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:@"view containing URL text: "];
+    [description appendText:url_spec_text];
+    [description appendText:@" title text: "];
+    [description appendText:title_text];
+  };
+
+  return grey_allOf(
+      grey_kindOfClass([HistoryEntryCell class]),
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
+      grey_sufficientlyVisible(), nil);
 }
 // Matcher for the history button in the tools menu.
 id<GREYMatcher> HistoryButton() {
@@ -183,8 +205,12 @@ void MockSignIn() {
 + (void)setUp {
   [super setUp];
   std::map<GURL, std::string> responses;
-  responses[web::test::HttpServer::MakeUrl(kURL1)] = kResponse1;
-  responses[web::test::HttpServer::MakeUrl(kURL2)] = kResponse2;
+  const char kPageFormat[] = "<head><title>%s</title></head><body>%s</body>";
+  responses[web::test::HttpServer::MakeUrl(kURL1)] =
+      base::StringPrintf(kPageFormat, kTitle1, kResponse1);
+  responses[web::test::HttpServer::MakeUrl(kURL2)] =
+      base::StringPrintf(kPageFormat, kTitle2, kResponse2);
+  // Page 3 does not have <title> tag, so URL will be its title.
   responses[web::test::HttpServer::MakeUrl(kURL3)] = kResponse3;
   web::test::SetUpSimpleHttpServer(responses);
 }
@@ -232,19 +258,36 @@ void MockSignIn() {
   [self openHistoryPanel];
 
   // Assert that history displays three entries.
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL1)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL2)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL3)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3, _URL3.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap a history entry and assert that navigation to that entry's URL occurs.
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL1)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       performAction:grey_tap()];
-  id<GREYMatcher> webViewMatcher =
-      chrome_test_util::WebViewContainingText(kResponse1);
-  [[EarlGrey selectElementWithMatcher:webViewMatcher]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kResponse1)]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that history is not changed after performing back navigation.
+// TODO(crbug.com/688047): Enable this test.
+- (void)DISABLED_testHistoryUpdateAfterBackNavigation {
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey loadURL:_URL2];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kResponse1)]
+      assertWithMatcher:grey_notNil()];
+
+  [self openHistoryPanel];
+
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -277,8 +320,8 @@ void MockSignIn() {
       selectElementWithMatcher:grey_kindOfClass([TransparentLinkButton class])]
       performAction:grey_tap()];
   chrome_test_util::AssertMainTabCount(2);
-  id<GREYMatcher> webViewMatcher = chrome_test_util::WebViewContainingText(
-      "Sync and view tabs and history across devices");
+  id<GREYMatcher> webViewMatcher =
+      WebViewContainingText("Sync and view tabs and history across devices");
   [[EarlGrey selectElementWithMatcher:webViewMatcher]
       assertWithMatcher:grey_notNil()];
 }
@@ -294,11 +337,11 @@ void MockSignIn() {
       [NSString stringWithFormat:@"%s", _URL1.path().c_str()];
   [[EarlGrey selectElementWithMatcher:grey_keyWindow()]
       performAction:grey_typeText(searchString)];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL1)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL2)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL3)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3, _URL3.GetContent())]
       assertWithMatcher:grey_nil()];
 }
 
@@ -308,35 +351,35 @@ void MockSignIn() {
   [self openHistoryPanel];
 
   // Assert that three history elements are present.
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL1)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL2)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL3)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3, _URL3.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Enter edit mode, select a history element, and press delete.
   [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL1)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:DeleteHistoryEntriesButton()]
       performAction:grey_tap()];
 
   // Assert that the deleted entry is gone and the other two remain.
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL1)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL2)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL3)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3, _URL3.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Enter edit mode, select both remaining entries, and press delete.
   [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL2)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL3)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3, _URL3.GetContent())]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:DeleteHistoryEntriesButton()]
       performAction:grey_tap()];
@@ -383,7 +426,7 @@ void MockSignIn() {
   [self openHistoryPanel];
 
   // Long press on the history element.
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL1)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       performAction:grey_longPress()];
 
   // Select "Open in New Tab" and confirm that new tab is opened with selected
@@ -403,7 +446,7 @@ void MockSignIn() {
   [self openHistoryPanel];
 
   // Long press on the history element.
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL1)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       performAction:grey_longPress()];
 
   // Select "Open in New Incognito Tab" and confirm that new tab is opened in
@@ -430,7 +473,7 @@ void MockSignIn() {
   [self openHistoryPanel];
 
   // Long press on the history element.
-  [[EarlGrey selectElementWithMatcher:HistoryEntryWithUrl(_URL1)]
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       performAction:grey_longPress()];
 
   // Tap "Copy URL" and wait for the URL to be copied to the pasteboard.
@@ -460,21 +503,15 @@ void MockSignIn() {
 
 - (void)loadTestURLs {
   [ChromeEarlGrey loadURL:_URL1];
-  id<GREYMatcher> response1Matcher =
-      chrome_test_util::WebViewContainingText(kResponse1);
-  [[EarlGrey selectElementWithMatcher:response1Matcher]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kResponse1)]
       assertWithMatcher:grey_notNil()];
 
   [ChromeEarlGrey loadURL:_URL2];
-  id<GREYMatcher> response2Matcher =
-      chrome_test_util::WebViewContainingText(kResponse2);
-  [[EarlGrey selectElementWithMatcher:response2Matcher]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kResponse2)]
       assertWithMatcher:grey_notNil()];
 
   [ChromeEarlGrey loadURL:_URL3];
-  id<GREYMatcher> response3Matcher =
-      chrome_test_util::WebViewContainingText(kResponse3);
-  [[EarlGrey selectElementWithMatcher:response3Matcher]
+  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kResponse3)]
       assertWithMatcher:grey_notNil()];
 }
 
