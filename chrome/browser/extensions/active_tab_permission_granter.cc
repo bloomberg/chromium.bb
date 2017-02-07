@@ -6,8 +6,8 @@
 
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -139,12 +139,14 @@ void ActiveTabPermissionGranter::RevokeForTesting() {
   ClearActiveExtensionsAndNotify();
 }
 
-void ActiveTabPermissionGranter::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (details.is_in_page)
+void ActiveTabPermissionGranter::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Important: sub-frames don't get granted!
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSamePage()) {
     return;
-  DCHECK(details.is_main_frame);  // important: sub-frames don't get granted!
+  }
 
   // Only clear the granted permissions for cross-origin navigations.
   //
@@ -157,8 +159,9 @@ void ActiveTabPermissionGranter::DidNavigateMainFrame(
   if (FeatureSwitch::scripts_require_action()->IsEnabled()) {
     const content::NavigationEntry* navigation_entry =
         web_contents()->GetController().GetVisibleEntry();
-    if (!navigation_entry || (navigation_entry->GetURL().GetOrigin() !=
-                              details.previous_url.GetOrigin())) {
+    if (!navigation_entry ||
+        (navigation_entry->GetURL().GetOrigin() !=
+            navigation_handle->GetPreviousURL().GetOrigin())) {
       ClearActiveExtensionsAndNotify();
     }
   } else {

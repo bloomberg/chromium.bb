@@ -46,9 +46,8 @@ class ActiveTabPermissionGranter
 
  private:
   // content::WebContentsObserver implementation.
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
 
   // extensions::ExtensionRegistryObserver implementation.
