@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromisePropertyBase.h"
 #include "bindings/core/v8/ToV8.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 
@@ -105,7 +106,7 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolve(
     NOTREACHED();
     return;
   }
-  DCHECK(!ScriptForbiddenScope::isScriptForbidden());
+  CHECK(!ScriptForbiddenScope::isScriptForbidden());
   if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
     return;
   m_resolved = value;
