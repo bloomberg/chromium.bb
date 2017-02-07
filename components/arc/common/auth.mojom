@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 6
+// Next MinVersion: 7
 
 module arc.mojom;
 
@@ -66,7 +66,7 @@ enum ArcSignInFailureReason {
 // These values describe the type of the Chrome account to provision.
 [Extensible]
 enum ChromeAccountType {
-  // Next value: 3
+  // Next value: 4
   UNKNOWN = 0,
 
   // Chrome login account type is a user account.
@@ -74,19 +74,28 @@ enum ChromeAccountType {
 
   // Chrome login account type is a robot (service) account.
   ROBOT_ACCOUNT = 2,
+
+  // Chrome login account type is an Active Directory account.
+  ACTIVE_DIRECTORY_ACCOUNT = 3,
 };
 
 // The necessary information for Android to sign in and provision itself.
 struct AccountInfo {
-  // The authorization code that can be used in Android to sign in. If it is
-  // null, sign-in will be skipped.
-  string? auth_code;
+  // The authorization code that can be used in Android to sign in when
+  // account_type is USER_ACCOUNT or ROBOT_ACCOUNT. If it is null in these
+  // cases, sign-in will be skipped.
+  string? auth_code@0;
+
+  // If account_type is ACTIVE_DIRECTORY_ACCOUNT, this contains an enrollment
+  // token for a Managed Google Play account. If it is null in this case,
+  // sign-in will be skipped.
+  [MinVersion=6] string? enrollment_token@3;
 
   // The type of Chrome account to provision.
-  ChromeAccountType account_type;
+  ChromeAccountType account_type@1;
 
   // Whether the account is managed from Chrome OS.
-  bool is_managed;
+  bool is_managed@2;
 };
 
 // Next Method ID: 7.

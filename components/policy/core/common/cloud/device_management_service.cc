@@ -54,6 +54,7 @@ const int kInternalServerError = 500;
 const int kServiceUnavailable = 503;
 const int kPolicyNotFound = 902;
 const int kDeprovisioned = 903;
+const int kArcDisabled = 904;
 
 // Delay after first unsuccessful upload attempt. After each additional failure,
 // the delay increases exponentially. Can be changed for testing to prevent
@@ -150,6 +151,10 @@ const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
       return dm_protocol::kValueRequestCheckAndroidManagement;
     case DeviceManagementRequestJob::TYPE_CERT_BASED_REGISTRATION:
       return dm_protocol::kValueRequestCertBasedRegister;
+    case DeviceManagementRequestJob::TYPE_ACTIVE_DIRECTORY_ENROLL_PLAY_USER:
+      return dm_protocol::kValueRequestActiveDirectoryEnrollPlayUser;
+    case DeviceManagementRequestJob::TYPE_ACTIVE_DIRECTORY_PLAY_ACTIVITY:
+      return dm_protocol::kValueRequestActiveDirectoryPlayActivity;
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";
@@ -344,6 +349,9 @@ void DeviceManagementRequestJobImpl::HandleResponse(
       return;
     case kDeviceIdConflict:
       ReportError(DM_STATUS_SERVICE_DEVICE_ID_CONFLICT);
+      return;
+    case kArcDisabled:
+      ReportError(DM_STATUS_SERVICE_ARC_DISABLED);
       return;
     default:
       // Handle all unknown 5xx HTTP error codes as temporary and any other

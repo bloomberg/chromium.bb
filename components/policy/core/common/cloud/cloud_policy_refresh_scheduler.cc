@@ -281,6 +281,9 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
       // Need a re-registration, no use in retrying.
       CancelRefresh();
       return;
+    case DM_STATUS_SERVICE_ARC_DISABLED:
+      // This doesn't occur during policy refresh, don't change the schedule.
+      return;
   }
 
   NOTREACHED() << "Invalid client status " << client_->status();

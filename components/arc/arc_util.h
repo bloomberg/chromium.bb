@@ -36,6 +36,10 @@ void SetArcAvailableCommandLineForTesting(base::CommandLine* command_line);
 // Returns true if ARC should run under Kiosk mode.
 bool IsArcKioskMode();
 
+// Returns true if it is allowed to use ARC with Active Directory managed
+// devices.
+bool IsArcAllowedForActiveDirectoryUsers();
+
 // Checks if opt-in verification was disabled by switch in command line.
 // In most cases, it is disabled for testing purpose.
 bool IsArcOptInVerificationDisabled();

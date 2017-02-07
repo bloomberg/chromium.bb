@@ -55,12 +55,17 @@ bool IsArcAllowedForProfile(const Profile* profile) {
     return false;
   }
 
-  // Do not allow for public session. Communicating with Play Store requires
-  // GAIA account. An exception is Kiosk mode, which uses different application
-  // install mechanism. cf) crbug.com/605545
+  // Play Store requires an appropriate application install mechanism. Normal
+  // users do this through GAIA, but Kiosk and Active Directory users use
+  // different application install mechanism. ARC is not allowed otherwise
+  // (e.g. in public sessions). cf) crbug.com/605545
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if ((!user || !user->HasGaiaAccount()) && !IsArcKioskMode()) {
+  const bool has_gaia_account = user && user->HasGaiaAccount();
+  const bool is_arc_active_directory_user =
+      user && user->IsActiveDirectoryUser() &&
+      IsArcAllowedForActiveDirectoryUsers();
+  if (!has_gaia_account && !is_arc_active_directory_user && !IsArcKioskMode()) {
     VLOG(1) << "Users without GAIA accounts are not supported in ARC.";
     return false;
   }

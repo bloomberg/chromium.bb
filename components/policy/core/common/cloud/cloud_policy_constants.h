@@ -43,6 +43,8 @@ POLICY_EXPORT extern const char kValueRequestDeviceAttributeUpdate[];
 POLICY_EXPORT extern const char kValueRequestGcmIdUpdate[];
 POLICY_EXPORT extern const char kValueRequestCheckAndroidManagement[];
 POLICY_EXPORT extern const char kValueRequestCertBasedRegister[];
+POLICY_EXPORT extern const char kValueRequestActiveDirectoryEnrollPlayUser[];
+POLICY_EXPORT extern const char kValueRequestActiveDirectoryPlayActivity[];
 
 // Policy type strings for the policy_type field in PolicyFetchRequest.
 POLICY_EXPORT extern const char kChromeDevicePolicyType[];
@@ -109,6 +111,8 @@ enum DeviceManagementStatus {
   DM_STATUS_CANNOT_SIGN_REQUEST = 15,
   // Service error: Policy not found. Error code defined by the DM folks.
   DM_STATUS_SERVICE_POLICY_NOT_FOUND = 902,
+  // Service error: ARC is not enabled on this domain.
+  DM_STATUS_SERVICE_ARC_DISABLED = 904,
 };
 
 // List of modes that the device can be locked into.

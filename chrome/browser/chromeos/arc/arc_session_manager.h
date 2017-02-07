@@ -34,7 +34,7 @@ class PrefRegistrySyncable;
 namespace arc {
 
 class ArcAndroidManagementChecker;
-class ArcAuthCodeFetcher;
+class ArcAuthInfoFetcher;
 class ArcAuthContext;
 class ArcSessionRunner;
 class ArcTermsOfServiceNegotiator;
@@ -209,7 +209,7 @@ class ArcSessionManager : public ArcSessionObserver,
   ArcSupportHost* support_host() { return support_host_.get(); }
 
   // TODO(hidehiko): Get rid of the getter by migration between ArcAuthContext
-  // and ArcAuthCodeFetcher.
+  // and ArcAuthInfoFetcher.
   ArcAuthContext* auth_context() { return context_.get(); }
 
   void StartArc();

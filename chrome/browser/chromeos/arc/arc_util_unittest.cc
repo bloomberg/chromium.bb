@@ -38,7 +38,8 @@ class ScopedLogIn {
       user_manager::UserType user_type = user_manager::USER_TYPE_REGULAR)
       : fake_user_manager_(fake_user_manager), account_id_(account_id) {
     switch (user_type) {
-      case user_manager::USER_TYPE_REGULAR:
+      case user_manager::USER_TYPE_REGULAR:  // fallthrough
+      case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
         LogIn();
         break;
       case user_manager::USER_TYPE_ARC_KIOSK_APP:
@@ -151,6 +152,30 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_NonPrimaryProfile) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
+  EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryEnabled) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported-with-active-directory"});
+  ScopedLogIn login(
+      GetFakeUserManager(),
+      AccountId::AdFromObjGuid("f04557de-5da2-40ce-ae9d-b8874d8da96e"),
+      user_manager::USER_TYPE_ACTIVE_DIRECTORY);
+  EXPECT_FALSE(chromeos::ProfileHelper::Get()
+                   ->GetUserByProfile(profile())
+                   ->HasGaiaAccount());
+  EXPECT_TRUE(IsArcAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryDisabled) {
+  ScopedLogIn login(
+      GetFakeUserManager(),
+      AccountId::AdFromObjGuid("f04557de-5da2-40ce-ae9d-b8874d8da96e"),
+      user_manager::USER_TYPE_ACTIVE_DIRECTORY);
+  EXPECT_FALSE(chromeos::ProfileHelper::Get()
+                   ->GetUserByProfile(profile())
+                   ->HasGaiaAccount());
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
 }
 

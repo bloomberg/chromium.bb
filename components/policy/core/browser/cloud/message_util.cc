@@ -48,6 +48,9 @@ int GetIDSForDMStatus(DeviceManagementStatus status) {
       return IDS_POLICY_DM_STATUS_SERVICE_POLICY_NOT_FOUND;
     case DM_STATUS_CANNOT_SIGN_REQUEST:
       return IDS_POLICY_DM_STATUS_CANNOT_SIGN_REQUEST;
+    case DM_STATUS_SERVICE_ARC_DISABLED:
+      // This error is never shown on the UI.
+      return IDS_POLICY_DM_STATUS_UNKNOWN_ERROR;
   }
   NOTREACHED() << "Unhandled DM status " << status;
   return IDS_POLICY_DM_STATUS_UNKNOWN_ERROR;
