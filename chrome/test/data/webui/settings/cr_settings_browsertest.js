@@ -724,6 +724,10 @@ TEST_F('CrSettingsDevicePageTest', 'PowerTest', function() {
   mocha.grep(assert(device_page_tests.TestNames.Power)).run();
 });
 
+TEST_F('CrSettingsDevicePageTest', 'StylusTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.Stylus)).run();
+});
+
 /**
  * Test fixture for device-page.
  * @constructor

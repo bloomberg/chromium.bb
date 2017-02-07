@@ -48,7 +48,7 @@ void OptionsStylusHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_SETTINGS_STYLUS_ENABLE_STYLUS_TOOLS));
   localized_strings->SetString(
       "stylusFindMoreApps",
-      l10n_util::GetStringUTF16(IDS_SETTINGS_STYLUS_FIND_MORE_APPS));
+      l10n_util::GetStringUTF16(IDS_SETTINGS_STYLUS_FIND_MORE_APPS_PRIMARY));
   localized_strings->SetString(
       "stylusNoteTakingApp",
       l10n_util::GetStringUTF16(IDS_OPTIONS_STYLUS_NOTE_TAKING_APP_LABEL));

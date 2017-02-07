@@ -584,7 +584,14 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"stylusTitle", IDS_SETTINGS_STYLUS_TITLE},
       {"stylusEnableStylusTools", IDS_SETTINGS_STYLUS_ENABLE_STYLUS_TOOLS},
       {"stylusAutoOpenStylusTools", IDS_SETTINGS_STYLUS_AUTO_OPEN_STYLUS_TOOLS},
-      {"stylusFindMoreApps", IDS_SETTINGS_STYLUS_FIND_MORE_APPS}};
+      {"stylusFindMoreAppsPrimary", IDS_SETTINGS_STYLUS_FIND_MORE_APPS_PRIMARY},
+      {"stylusFindMoreAppsSecondary",
+       IDS_SETTINGS_STYLUS_FIND_MORE_APPS_SECONDARY},
+      {"stylusNoteTakingApp", IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_LABEL},
+      {"stylusNoteTakingAppNoneAvailable",
+       IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_NONE_AVAILABLE},
+      {"stylusNoteTakingAppWaitingForAndroid",
+       IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_WAITING_FOR_ANDROID}};
   AddLocalizedStringsBulk(html_source, stylus_strings,
                           arraysize(stylus_strings));
 

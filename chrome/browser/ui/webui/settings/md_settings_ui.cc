@@ -58,6 +58,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_power_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_stylus_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/fingerprint_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
@@ -129,6 +130,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
       base::MakeUnique<chromeos::settings::PointerHandler>());
   AddSettingsPageUIHandler(
       base::MakeUnique<chromeos::settings::StorageHandler>());
+  AddSettingsPageUIHandler(
+      base::MakeUnique<chromeos::settings::StylusHandler>());
   AddSettingsPageUIHandler(
       base::MakeUnique<chromeos::settings::InternetHandler>());
 #else

@@ -2636,8 +2636,20 @@
     <message name="IDS_SETTINGS_STYLUS_ENABLE_STYLUS_TOOLS" desc="Toggle that lets the user enable or disable the stylus tools.">
       Show stylus tools in the shelf
     </message>
-    <message name="IDS_SETTINGS_STYLUS_FIND_MORE_APPS" desc="URL label that opens up the Play Store to a curated list of stylus applications.">
-      Find more stylus applications
+    <message name="IDS_SETTINGS_STYLUS_FIND_MORE_APPS_PRIMARY" desc="Primary URL label that opens up the Play Store to a curated list of stylus applications.">
+      Find more stylus apps
+    </message>
+    <message name="IDS_SETTINGS_STYLUS_FIND_MORE_APPS_SECONDARY" desc="Secondary (below the primary) URL label that opens up the Play Store to a curated list of stylus applications.">
+      Open Google Play
+    </message>
+    <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_LABEL" desc="Label describing a dropdown that lets the user pick their default note-taking applications. The dropdown contains a list of all available choices. The user can install additional apps, so the contents of the dropdown is dynamic.">
+      Note-taking app
+    </message>
+    <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_NONE_AVAILABLE" desc="Secondary label used when there are no note-taking applications available.">
+      None available
+    </message>
+    <message name="IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_WAITING_FOR_ANDROID" desc="Secondary label used when the list of note-taking apps is not yet available, because the internal android container has not yet finished starting.">
+      Loading apps...
     </message>
 
     <!-- Display -->

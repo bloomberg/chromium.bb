@@ -1,20 +1,37 @@
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-stylus">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared md-select">
+      .settings-box > .secondary {
+        align-items: center;
+        display: flex;
+        /* 'secondary' class applies a top margin. This breaks centering. */
+        margin-top: 0;
+      }
 
-    <div class="settings-box">
+      settings-toggle-button {
+        width: 100%;
+      }
+
+      paper-spinner {
+        margin-left: 12px;
+        @apply(--cr-icon-height-width);
+      }
+    </style>
+
+    <div class="settings-box continuation">
       <settings-toggle-button class="start"
           pref="{{prefs.settings.enable_stylus_tools}}"
           label="$i18n{stylusEnableStylusTools}">
       </settings-toggle-button>
     </div>
 
-    <div class="settings-box continuation">
+    <div class="settings-box">
       <settings-toggle-button class="start"
           pref="{{prefs.settings.launch_palette_on_eject_event}}"
           label="$i18n{stylusAutoOpenStylusTools}"
@@ -22,16 +39,44 @@
       </settings-toggle-button>
     </div>
 
+    <div class="settings-box">
+      <div class="start">$i18n{stylusNoteTakingApp}</div>
+
+      <div id="no-apps" class="secondary"
+          hidden$="[[!showNoApps_(appChoices_, waitingForAndroid_)]]">
+        $i18n{stylusNoteTakingAppNoneAvailable}
+      </div>
+
+      <div id="waiting" class="secondary" hidden$="[[!waitingForAndroid_]]">
+        $i18n{stylusNoteTakingAppWaitingForAndroid}
+        <paper-spinner active></paper-spinner>
+      </div>
+
+      <div id="select-app" class="md-select-wrapper"
+          hidden$="[[!showApps_(appChoices_, waitingForAndroid_)]]">
+        <select id="menu" class="md-select"
+            disabled="[[!prefs.settings.enable_stylus_tools.value]]"
+            on-change="onSelectedAppChanged_">
+          <template is="dom-repeat" items="[[appChoices_]]">
+            <option value="[[item.value]]" selected$="[[item.preferred]]">
+              [[item.name]]
+            </option>
+          </template>
+        </select>
+        <span class="md-select-underline"></span>
+      </div>
+    </div>
+
     <!-- TODO(scottchen): Make a proper a[href].settings-box with
          icon-external (see: https://crbug.com/684005)-->
-    <div class="settings-box">
-      <!-- TODO(jdufault): This should launch an intent (using the
-        enable-intent-picker flag) that opens up the play store to a curated
-        list of apps. -->
-      <a target="_blank"
-         href="https://play.google.com/store/apps/collection/promotion_30023cb_stylus_apps">
-        $i18n{stylusFindMoreApps}
-      </a>
+    <div class="settings-box two-line" on-tap="onFindAppsTap_" actionable>
+      <div class="start">
+        $i18n{stylusFindMoreAppsPrimary}
+        <div class="secondary">
+          $i18n{stylusFindMoreAppsSecondary}
+        </div>
+      </div>
+      <button class="icon-external" is="paper-icon-button-light"></button>
     </div>
 
   </template>

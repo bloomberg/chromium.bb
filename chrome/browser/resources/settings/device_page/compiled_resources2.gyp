@@ -44,7 +44,9 @@
     {
       'target_name': 'stylus',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '../prefs/compiled_resources2.gyp:prefs_types',
+        'device_page_browser_proxy'
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
