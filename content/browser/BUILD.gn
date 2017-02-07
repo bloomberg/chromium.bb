@@ -671,6 +671,8 @@ source_set("browser") {
     "gpu/gpu_data_manager_impl_private.h",
     "gpu/gpu_internals_ui.cc",
     "gpu/gpu_internals_ui.h",
+    "gpu/gpu_main_thread_factory.cc",
+    "gpu/gpu_main_thread_factory.h",
     "gpu/gpu_process_host.cc",
     "gpu/gpu_process_host.h",
     "gpu/gpu_process_host_ui_shim.cc",

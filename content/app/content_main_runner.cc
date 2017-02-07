@@ -113,7 +113,7 @@
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER) && !defined(CHROME_MULTIPLE_DLL_CHILD)
-#include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/gpu/gpu_main_thread_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)
@@ -376,8 +376,7 @@ static void RegisterMainThreadFactories() {
       CreateInProcessUtilityThread);
   RenderProcessHostImpl::RegisterRendererMainThreadFactory(
       CreateInProcessRendererThread);
-  GpuProcessHost::RegisterGpuMainThreadFactory(
-      CreateInProcessGpuThread);
+  content::RegisterGpuMainThreadFactory(CreateInProcessGpuThread);
 #else
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kSingleProcess)) {

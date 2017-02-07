@@ -56,10 +56,6 @@ class InterfaceProvider;
 
 namespace content {
 class BrowserChildProcessHostImpl;
-class InProcessChildThreadParams;
-
-typedef base::Thread* (*GpuMainThreadFactoryFunction)(
-    const InProcessChildThreadParams&, const gpu::GpuPreferences&);
 
 class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public IPC::Sender,
@@ -110,9 +106,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   CONTENT_EXPORT static void SendOnIO(GpuProcessKind kind,
                                       bool force_create,
                                       IPC::Message* message);
-
-  CONTENT_EXPORT static void RegisterGpuMainThreadFactory(
-      GpuMainThreadFactoryFunction create);
 
   service_manager::InterfaceProvider* GetRemoteInterfaces();
 

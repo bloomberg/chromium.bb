@@ -30,6 +30,7 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -422,8 +423,6 @@ void GpuProcessHost::SendOnIO(GpuProcessKind kind,
   }
 }
 
-GpuMainThreadFactoryFunction g_gpu_main_thread_factory = NULL;
-
 GpuProcessHost::EstablishChannelRequest::EstablishChannelRequest()
     : client_id(0) {}
 
@@ -431,11 +430,6 @@ GpuProcessHost::EstablishChannelRequest::EstablishChannelRequest(
     const EstablishChannelRequest& other) = default;
 
 GpuProcessHost::EstablishChannelRequest::~EstablishChannelRequest() {}
-
-void GpuProcessHost::RegisterGpuMainThreadFactory(
-    GpuMainThreadFactoryFunction create) {
-  g_gpu_main_thread_factory = create;
-}
 
 service_manager::InterfaceProvider* GpuProcessHost::GetRemoteInterfaces() {
   return process_->child_connection()->GetRemoteInterfaces();
@@ -596,8 +590,8 @@ bool GpuProcessHost::Init() {
   gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
   if (in_process_) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    DCHECK(g_gpu_main_thread_factory);
-    in_process_gpu_thread_.reset(g_gpu_main_thread_factory(
+    DCHECK(GetGpuMainThreadFactory());
+    in_process_gpu_thread_.reset(GetGpuMainThreadFactory()(
         InProcessChildThreadParams(
             base::ThreadTaskRunnerHandle::Get(),
             process_->child_connection()->service_token()),
