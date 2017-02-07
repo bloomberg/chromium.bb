@@ -275,30 +275,17 @@ struct zcr_remote_shell_v1_interface {
 					 const char *notification_id);
 };
 
-#define ZCR_REMOTE_SHELL_V1_ACTIVATED 0
-#define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED 1
+#define ZCR_REMOTE_SHELL_V1_ACTIVATED	0
+#define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED	1
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
  */
-#define ZCR_REMOTE_SHELL_V1_ACTIVATED_SINCE_VERSION 1
+#define ZCR_REMOTE_SHELL_V1_ACTIVATED_SINCE_VERSION	1
 /**
  * @ingroup iface_zcr_remote_shell_v1
  */
-#define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED_SINCE_VERSION 1
-
-/**
- * @ingroup iface_zcr_remote_shell_v1
- */
-#define ZCR_REMOTE_SHELL_V1_DESTROY_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_shell_v1
- */
-#define ZCR_REMOTE_SHELL_V1_GET_REMOTE_SURFACE_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_shell_v1
- */
-#define ZCR_REMOTE_SHELL_V1_GET_NOTIFICATION_SURFACE_SINCE_VERSION 1
+#define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED_SINCE_VERSION	1
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
@@ -386,7 +373,7 @@ struct zcr_remote_surface_v1_interface {
 	/**
 	 * set a rectangular shadow
 	 *
-	 * Request that surface needs a rectangular shadow.
+	 * [Deprecated] Request that surface needs a rectangular shadow.
 	 *
 	 * This is only a request that the surface should have a
 	 * rectangular shadow. The compositor may choose to ignore this
@@ -552,6 +539,26 @@ struct zcr_remote_surface_v1_interface {
 	void (*unset_system_modal)(struct wl_client *client,
 				   struct wl_resource *resource);
 	/**
+	 * set a rectangular shadow
+	 *
+	 * Request that surface needs a rectangular shadow.
+	 *
+	 * This is only a request that the surface should have a
+	 * rectangular shadow. The compositor may choose to ignore this
+	 * request.
+	 *
+	 * The arguments are given in the remote surface coordinate space
+	 * and specifies inner bounds of the shadow. Specifying zero width
+	 * and height will disable the shadow.
+	 * @since 2
+	 */
+	void (*set_rectangular_surface_shadow)(struct wl_client *client,
+					       struct wl_resource *resource,
+					       int32_t x,
+					       int32_t y,
+					       int32_t width,
+					       int32_t height);
+	/**
 	 * ack a configure event
 	 *
 	 * When a configure event is received, if a client commits the
@@ -576,7 +583,7 @@ struct zcr_remote_surface_v1_interface {
 	 * indicates which configure event the client really is responding
 	 * to.
 	 * @param serial the serial from the configure event
-	 * @since 2
+	 * @since 3
 	 */
 	void (*ack_configure)(struct wl_client *client,
 			      struct wl_resource *resource,
@@ -588,7 +595,7 @@ struct zcr_remote_surface_v1_interface {
 	 * of the surface starts. The compositor may assume that subsequent
 	 * set_window_geometry requests are position updates until it
 	 * receives a unset_moving request.
-	 * @since 2
+	 * @since 3
 	 */
 	void (*set_moving)(struct wl_client *client,
 			   struct wl_resource *resource);
@@ -598,113 +605,28 @@ struct zcr_remote_surface_v1_interface {
 	 * Notifies the compositor when an interactive, user-driven move
 	 * of the surface stops. The compositor may choose to stop the move
 	 * regardless of this request.
-	 * @since 2
+	 * @since 3
 	 */
 	void (*unset_moving)(struct wl_client *client,
 			     struct wl_resource *resource);
 };
 
-#define ZCR_REMOTE_SURFACE_V1_CLOSE 0
-#define ZCR_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED 1
-#define ZCR_REMOTE_SURFACE_V1_CONFIGURE 2
+#define ZCR_REMOTE_SURFACE_V1_CLOSE	0
+#define ZCR_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED	1
+#define ZCR_REMOTE_SURFACE_V1_CONFIGURE	2
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
  */
-#define ZCR_REMOTE_SURFACE_V1_CLOSE_SINCE_VERSION 1
+#define ZCR_REMOTE_SURFACE_V1_CLOSE_SINCE_VERSION	1
 /**
  * @ingroup iface_zcr_remote_surface_v1
  */
-#define ZCR_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED_SINCE_VERSION 1
+#define ZCR_REMOTE_SURFACE_V1_STATE_TYPE_CHANGED_SINCE_VERSION	1
 /**
  * @ingroup iface_zcr_remote_surface_v1
  */
-#define ZCR_REMOTE_SURFACE_V1_CONFIGURE_SINCE_VERSION 2
-
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_DESTROY_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_SET_APP_ID_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_SET_WINDOW_GEOMETRY_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_SET_SCALE_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_BACKGROUND_OPACITY_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_SET_TITLE_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_SET_TOP_INSET_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_ACTIVATE_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_MAXIMIZE_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_MINIMIZE_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_RESTORE_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_FULLSCREEN_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_UNFULLSCREEN_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_PIN_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_UNPIN_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_SET_SYSTEM_MODAL_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL_SINCE_VERSION 1
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_ACK_CONFIGURE_SINCE_VERSION 2
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_SET_MOVING_SINCE_VERSION 2
-/**
- * @ingroup iface_zcr_remote_surface_v1
- */
-#define ZCR_REMOTE_SURFACE_V1_UNSET_MOVING_SINCE_VERSION 2
+#define ZCR_REMOTE_SURFACE_V1_CONFIGURE_SINCE_VERSION	3
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
@@ -753,11 +675,6 @@ struct zcr_notification_surface_v1_interface {
 			struct wl_resource *resource);
 };
 
-
-/**
- * @ingroup iface_zcr_notification_surface_v1
- */
-#define ZCR_NOTIFICATION_SURFACE_V1_DESTROY_SINCE_VERSION 1
 
 #ifdef  __cplusplus
 }

@@ -878,7 +878,7 @@ void shell_surface_set_toplevel(wl_client* client, wl_resource* resource) {
     return;
 
   shell_surface->SetFrame(true);
-  shell_surface->SetRectangularShadow(true);
+  shell_surface->SetRectangularShadowEnabled(true);
   shell_surface->SetEnabled(true);
 }
 
@@ -930,7 +930,7 @@ void shell_surface_set_transient(wl_client* client,
     shell_surface->SetFrame(true);
     shell_surface->SetParent(parent_shell_surface);
   }
-  shell_surface->SetRectangularShadow(true);
+  shell_surface->SetRectangularShadowEnabled(true);
   shell_surface->SetEnabled(true);
 }
 
@@ -1888,17 +1888,15 @@ void remote_surface_set_scale(wl_client* client,
   GetUserDataAs<ShellSurface>(resource)->SetScale(wl_fixed_to_double(scale));
 }
 
-void remote_surface_set_rectangular_shadow(wl_client* client,
-                                           wl_resource* resource,
-                                           int32_t x,
-                                           int32_t y,
-                                           int32_t width,
-                                           int32_t height) {
+void remote_surface_set_rectangular_shadow_DEPRECATED(wl_client* client,
+                                                      wl_resource* resource,
+                                                      int32_t x,
+                                                      int32_t y,
+                                                      int32_t width,
+                                                      int32_t height) {
   ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
   gfx::Rect content_bounds(x, y, width, height);
-
-  shell_surface->SetRectangularShadowContentBounds(content_bounds);
-  shell_surface->SetRectangularShadow(!content_bounds.IsEmpty());
+  shell_surface->SetRectangularShadow_DEPRECATED(content_bounds);
 }
 
 void remote_surface_set_rectangular_shadow_background_opacity(
@@ -1967,12 +1965,37 @@ void remote_surface_unset_system_modal(wl_client* client,
   GetUserDataAs<ShellSurface>(resource)->SetSystemModal(false);
 }
 
+void remote_surface_set_rectangular_surface_shadow(wl_client* client,
+                                                   wl_resource* resource,
+                                                   int32_t x,
+                                                   int32_t y,
+                                                   int32_t width,
+                                                   int32_t height) {
+  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
+  gfx::Rect content_bounds(x, y, width, height);
+  shell_surface->SetRectangularSurfaceShadow(content_bounds);
+}
+
+void remote_surface_ack_configure(wl_client* client,
+                                  wl_resource* resource,
+                                  uint32_t serial) {
+  NOTIMPLEMENTED();
+}
+
+void remote_surface_set_moving(wl_client* client, wl_resource* resource) {
+  NOTIMPLEMENTED();
+}
+
+void remote_surface_unset_moving(wl_client* client, wl_resource* resource) {
+  NOTIMPLEMENTED();
+}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
     remote_surface_set_window_geometry,
     remote_surface_set_scale,
-    remote_surface_set_rectangular_shadow,
+    remote_surface_set_rectangular_shadow_DEPRECATED,
     remote_surface_set_rectangular_shadow_background_opacity,
     remote_surface_set_title,
     remote_surface_set_top_inset,
@@ -1985,7 +2008,11 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_pin,
     remote_surface_unpin,
     remote_surface_set_system_modal,
-    remote_surface_unset_system_modal};
+    remote_surface_unset_system_modal,
+    remote_surface_set_rectangular_surface_shadow,
+    remote_surface_ack_configure,
+    remote_surface_set_moving,
+    remote_surface_unset_moving};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -2272,7 +2299,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 1;
+const uint32_t remote_shell_version = 2;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

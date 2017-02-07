@@ -592,24 +592,34 @@ void ShellSurface::SetGeometry(const gfx::Rect& geometry) {
   pending_geometry_ = geometry;
 }
 
-void ShellSurface::SetRectangularShadow(bool enabled) {
-  TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadow", "enabled", enabled);
-
+void ShellSurface::SetRectangularShadowEnabled(bool enabled) {
+  TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadowEnabled", "enabled",
+               enabled);
+  shadow_underlay_in_surface_ = false;
   shadow_enabled_ = enabled;
 }
 
-void ShellSurface::SetRectangularShadowContentBounds(
+void ShellSurface::SetRectangularShadow_DEPRECATED(
     const gfx::Rect& content_bounds) {
-  TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadowContentBounds",
+  TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadow_DEPRECATED",
                "content_bounds", content_bounds.ToString());
-
+  shadow_underlay_in_surface_ = false;
   shadow_content_bounds_ = content_bounds;
+  shadow_enabled_ = !content_bounds.IsEmpty();
+}
+
+void ShellSurface::SetRectangularSurfaceShadow(
+    const gfx::Rect& content_bounds) {
+  TRACE_EVENT1("exo", "ShellSurface::SetRectangularSurfaceShadow",
+               "content_bounds", content_bounds.ToString());
+  shadow_underlay_in_surface_ = true;
+  shadow_content_bounds_ = content_bounds;
+  shadow_enabled_ = !content_bounds.IsEmpty();
 }
 
 void ShellSurface::SetRectangularShadowBackgroundOpacity(float opacity) {
   TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadowBackgroundOpacity",
                "opacity", opacity);
-
   shadow_background_opacity_ = opacity;
 }
 
@@ -1424,10 +1434,18 @@ void ShellSurface::UpdateShadow() {
       shadow_underlay_->Hide();
   } else {
     wm::SetShadowElevation(window, wm::ShadowElevation::MEDIUM);
+    gfx::Rect shadow_content_bounds =
+        gfx::ScaleToEnclosedRect(shadow_content_bounds_, 1.f / scale_);
+    gfx::Rect shadow_underlay_bounds = shadow_content_bounds_;
+    if (shadow_underlay_bounds.IsEmpty())
+      shadow_underlay_bounds = gfx::Rect(surface_->window()->bounds().size());
 
-    gfx::Rect shadow_content_bounds = shadow_content_bounds_;
-    if (shadow_content_bounds.IsEmpty())
-      shadow_content_bounds = window->bounds();
+    if (!shadow_underlay_in_surface_) {
+      shadow_content_bounds = shadow_content_bounds_;
+      if (shadow_content_bounds.IsEmpty()) {
+        shadow_content_bounds = window->bounds();
+      }
+    }
 
     // TODO(oshima): Adjust the coordinates from client screen to
     // chromeos screen when multi displays are supported.
@@ -1450,8 +1468,13 @@ void ShellSurface::UpdateShadow() {
       shadow_underlay_->Init(ui::LAYER_SOLID_COLOR);
       shadow_underlay_->layer()->SetColor(SK_ColorBLACK);
       DCHECK(shadow_underlay_->layer()->fills_bounds_opaquely());
-      window->AddChild(shadow_underlay_);
-      window->StackChildAtBottom(shadow_underlay_);
+      if (shadow_underlay_in_surface_) {
+        surface_->window()->AddChild(shadow_underlay_);
+        surface_->window()->StackChildAtBottom(shadow_underlay_);
+      } else {
+        window->AddChild(shadow_underlay_);
+        window->StackChildAtBottom(shadow_underlay_);
+      }
     }
 
     bool underlay_capture_events =
@@ -1469,14 +1492,19 @@ void ShellSurface::UpdateShadow() {
     if ((widget_->IsFullscreen() || underlay_capture_events) &&
         ash::wm::GetWindowState(window)->allow_set_bounds_in_maximized() &&
         window->layer()->GetTargetTransform().IsIdentity()) {
-      gfx::Point origin;
-      origin -= window->bounds().origin().OffsetFromOrigin();
-      shadow_bounds.set_origin(origin);
-      shadow_bounds.set_size(window->parent()->bounds().size());
+      if (shadow_underlay_in_surface_) {
+        shadow_underlay_bounds = gfx::Rect(surface_->window()->bounds().size());
+      } else {
+        gfx::Point origin;
+        origin -= window->bounds().origin().OffsetFromOrigin();
+        shadow_bounds.set_origin(origin);
+        shadow_bounds.set_size(window->parent()->bounds().size());
+      }
       shadow_underlay_opacity = 1.0f;
     }
 
-    gfx::Rect shadow_underlay_bounds = shadow_bounds;
+    if (!shadow_underlay_in_surface_)
+      shadow_underlay_bounds = shadow_bounds;
 
     // Constrain the underlay bounds to the client area in case shell surface
     // frame is enabled.
@@ -1508,7 +1536,12 @@ void ShellSurface::UpdateShadow() {
       shadow_overlay_->Init(ui::LAYER_NOT_DRAWN);
       shadow_overlay_->layer()->Add(shadow->layer());
       window->AddChild(shadow_overlay_);
-      window->StackChildAbove(shadow_overlay_, shadow_underlay_);
+
+      if (shadow_underlay_in_surface_) {
+        window->StackChildBelow(shadow_overlay_, surface_->window());
+      } else {
+        window->StackChildAbove(shadow_overlay_, shadow_underlay_);
+      }
       shadow_overlay_->Show();
     }
     shadow_overlay_->SetBounds(shadow_bounds);

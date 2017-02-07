@@ -147,12 +147,18 @@ class ShellSurface : public SurfaceDelegate,
   // for the surface from the user's perspective.
   void SetGeometry(const gfx::Rect& geometry);
 
-  // Enable/disable rectangular shadow.
-  void SetRectangularShadow(bool enabled);
+  // Enable/disable rectangular shadow that uses the widget bounds as a content
+  // bounds.
+  void SetRectangularShadowEnabled(bool enabled);
 
-  // Set the content bounds for the shadow. Shell surface geometry will be
+  // [Deprecated] Set the content bounds for the shadow. Shell surface geometry
+  // will be
   // used if bounds are empty.
-  void SetRectangularShadowContentBounds(const gfx::Rect& content_bounds);
+  void SetRectangularShadow_DEPRECATED(const gfx::Rect& content_bounds);
+
+  // Set the content bounds for the shadow in the surface's coordinates.
+  // Setting empty bounds will disable the shadow.
+  void SetRectangularSurfaceShadow(const gfx::Rect& content_bounds);
 
   // Set the pacity of the background for the window that has a shadow.
   void SetRectangularShadowBackgroundOpacity(float opacity);
@@ -241,6 +247,8 @@ class ShellSurface : public SurfaceDelegate,
   aura::Window* shadow_overlay() { return shadow_overlay_; }
   aura::Window* shadow_underlay() { return shadow_underlay_; }
 
+  Surface* surface_for_testing() { return surface_; }
+
  private:
   class ScopedConfigure;
   class ScopedAnimationsDisabled;
@@ -321,6 +329,7 @@ class ShellSurface : public SurfaceDelegate,
   std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;
   int top_inset_height_ = 0;
   int pending_top_inset_height_ = 0;
+  bool shadow_underlay_in_surface_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };
