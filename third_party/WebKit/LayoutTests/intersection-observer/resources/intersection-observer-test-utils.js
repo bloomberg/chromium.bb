@@ -86,6 +86,11 @@ function checkLastEntry(entries, i, expected) {
     checkRect(
         entries[i].rootBounds, expected.slice(8, 12),
         'entries[' + i + '].rootBounds');
+    if (expected.length > 12) {
+      assert_equals(
+          entries[i].isIntersecting, expected[12],
+          'entries[' + i + '].isIntersecting');
+    }
   }
 }
 

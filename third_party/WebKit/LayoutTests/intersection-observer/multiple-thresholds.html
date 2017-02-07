@@ -44,53 +44,53 @@ runTestCycle(function() {
 function step0() {
   document.scrollingElement.scrollTop = 120;
   runTestCycle(step1, "document.scrollingElement.scrollTop = 120");
-  checkLastEntry(entries, 0, [8, 108, 708, 808, 0, 0, 0, 0, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 0, [8, 108, 708, 808, 0, 0, 0, 0, 0, 785, 0, 600, false]);
 }
 
 function step1() {
   document.scrollingElement.scrollTop = 160;
   runTestCycle(step2, "document.scrollingElement.scrollTop = 160");
-  checkLastEntry(entries, 1, [8, 108, 588, 688, 8, 108, 588, 600, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 1, [8, 108, 588, 688, 8, 108, 588, 600, 0, 785, 0, 600, true]);
 }
 
 function step2() {
   document.scrollingElement.scrollTop = 200;
   runTestCycle(step3, "document.scrollingElement.scrollTop = 200");
-  checkLastEntry(entries, 2, [8, 108, 548, 648, 8, 108, 548, 600, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 2, [8, 108, 548, 648, 8, 108, 548, 600, 0, 785, 0, 600, true]);
 }
 
 function step3() {
   document.scrollingElement.scrollTop = 240;
   runTestCycle(step4, "document.scrollingElement.scrollTop = 240");
-  checkLastEntry(entries, 3, [8, 108, 508, 608, 8, 108, 508, 600, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 3, [8, 108, 508, 608, 8, 108, 508, 600, 0, 785, 0, 600, true]);
 }
 
 function step4() {
   document.scrollingElement.scrollTop = 740;
   runTestCycle(step5, "document.scrollingElement.scrollTop = 740");
-  checkLastEntry(entries, 4, [8, 108, 468, 568, 8, 108, 468, 568, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 4, [8, 108, 468, 568, 8, 108, 468, 568, 0, 785, 0, 600, true]);
 }
 
 function step5() {
   document.scrollingElement.scrollTop = 760;
   runTestCycle(step6, "document.scrollingElement.scrollTop = 760");
-  checkLastEntry(entries, 5, [8, 108, -32, 68, 8, 108, 0, 68, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 5, [8, 108, -32, 68, 8, 108, 0, 68, 0, 785, 0, 600, true]);
 }
 
 function step6() {
   document.scrollingElement.scrollTop = 800;
   runTestCycle(step7, "document.scrollingElement.scrollTop = 800");
-  checkLastEntry(entries, 6, [8, 108, -52, 48, 8, 108, 0, 48, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 6, [8, 108, -52, 48, 8, 108, 0, 48, 0, 785, 0, 600, true]);
 }
 
 function step7() {
-  checkLastEntry(entries, 7, [8, 108, -92, 8, 8, 108, 0, 8, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 7, [8, 108, -92, 8, 8, 108, 0, 8, 0, 785, 0, 600, true]);
   document.scrollingElement.scrollTop = 820;
   runTestCycle(step8, "document.scrollingElement.scrollTop = 820");
 }
 
 function step8() {
-  checkLastEntry(entries, 8, [8, 108, -112, -12, 0, 0, 0, 0, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 8, [8, 108, -112, -12, 0, 0, 0, 0, 0, 785, 0, 600, false]);
   document.scrollingElement.scrollTop = 0;
 }
 </script>

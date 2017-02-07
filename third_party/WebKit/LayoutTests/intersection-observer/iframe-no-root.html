@@ -48,7 +48,7 @@ iframe.onload = function() {
 function step0() {
   document.scrollingElement.scrollTop = 200;
   runTestCycle(step1, "document.scrollingElement.scrollTop = 200");
-  checkLastEntry(entries, 0, [8, 108, 208, 308, 0, 0, 0, 0, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 0, [8, 108, 208, 308, 0, 0, 0, 0, 0, 785, 0, 600, false]);
 }
 
 function step1() {
@@ -60,11 +60,11 @@ function step1() {
 function step2() {
   document.scrollingElement.scrollTop = 100;
   runTestCycle(step3, "document.scrollingElement.scrollTop = 100");
-  checkLastEntry(entries, 1, [8, 108, -42, 58, 8, 108, 0, 58, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 1, [8, 108, -42, 58, 8, 108, 0, 58, 0, 785, 0, 600, true]);
 }
 
 function step3() {
-  checkLastEntry(entries, 2, [8, 108, -42, 58, 0, 0, 0, 0, 0, 785, 0, 600, target]);
+  checkLastEntry(entries, 2, [8, 108, -42, 58, 0, 0, 0, 0, 0, 785, 0, 600, false]);
   document.scrollingElement.scrollTop = 0;
 }
 </script>

@@ -54,13 +54,13 @@ runTestCycle(function() {
 function step0() {
   document.scrollingElement.scrollLeft = 100;
   runTestCycle(step1, "document.scrollingElement.scrollLeft = 100");
-  checkLastEntry(entries, 0, [1012, 1112, 708, 808, 0, 0, 0, 0, -30, 942, -10, 819, target]);
+  checkLastEntry(entries, 0, [1012, 1112, 708, 808, 0, 0, 0, 0, -30, 942, -10, 819, false]);
 }
 
 function step1() {
   document.scrollingElement.scrollTop = 800;
   runTestCycle(step2, "document.scrollingElement.scrollTop = 800");
-  checkLastEntry(entries, 1, [912, 1012, 708, 808, 912, 942, 708, 808, -30, 942, -10, 819, target]);
+  checkLastEntry(entries, 1, [912, 1012, 708, 808, 912, 942, 708, 808, -30, 942, -10, 819, true]);
 }
 
 function step2() {
@@ -72,6 +72,6 @@ function step2() {
 function step3() {
   document.scrollingElement.scrollLeft = 0;
   document.scrollingElement.scrollTop = 0;
-  checkLastEntry(entries, 2, [912, 1012, -192, -92, 0, 0, 0, 0, -30, 942, -10, 819, target]);
+  checkLastEntry(entries, 2, [912, 1012, -192, -92, 0, 0, 0, 0, -30, 942, -10, 819, false]);
 }
 </script>

@@ -56,7 +56,7 @@ runTestCycle(function() {
 function step0() {
   document.scrollingElement.scrollTop = 600;
   runTestCycle(step1, "document.scrollingElement.scrollTop = 600.");
-  checkLastEntry(entries, 0, [11, 111, 1011, 1111, 0, 0, 0, 0, 11, 111, 711, 911, target]);
+  checkLastEntry(entries, 0, [11, 111, 1011, 1111, 0, 0, 0, 0, 11, 111, 711, 911, false]);
 }
 
 function step1() {
@@ -68,7 +68,7 @@ function step1() {
 function step2() {
   document.scrollingElement.scrollTop = 0;
   runTestCycle(step3, "document.scrollingElement.scrollTop = 0.");
-  checkLastEntry(entries, 1, [11, 111, 261, 361, 11, 111, 261, 311, 11, 111, 111, 311, target]);
+  checkLastEntry(entries, 1, [11, 111, 261, 361, 11, 111, 261, 311, 11, 111, 111, 311, true]);
 }
 
 function step3() {
@@ -80,11 +80,11 @@ function step3() {
 function step4() {
   root.scrollTop = 150;
   runTestCycle(step5, "root.scrollTop = 150 with root scrolled out of view.");
-  checkLastEntry(entries, 2, [11, 111, 1011, 1111, 0, 0, 0, 0, 11, 111, 711, 911, target]);
+  checkLastEntry(entries, 2, [11, 111, 1011, 1111, 0, 0, 0, 0, 11, 111, 711, 911, false]);
 }
 
 // This tests that notifications are generated even when the root element is off screen.
 function step5() {
-  checkLastEntry(entries, 3, [11, 111, 861, 961, 11, 111, 861, 911, 11, 111, 711, 911, target]);
+  checkLastEntry(entries, 3, [11, 111, 861, 961, 11, 111, 861, 911, 11, 111, 711, 911, true]);
 }
 </script>

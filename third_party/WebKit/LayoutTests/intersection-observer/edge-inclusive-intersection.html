@@ -45,13 +45,13 @@ runTestCycle(function() {
 
 function step0() {
   runTestCycle(step1, "Set transform=translateY(200px) on target.");
-  checkLastEntry(entries, 0, [8, 108, 258, 358, 0, 0, 0, 0, 8, 208, 8, 208, target]);
+  checkLastEntry(entries, 0, [8, 108, 258, 358, 0, 0, 0, 0, 8, 208, 8, 208, false]);
   target.style.transform = "translateY(200px)";
 }
 
 function step1() {
   runTestCycle(step2, "Set transform=translateY(201px) on target.");
-  checkLastEntry(entries, 1, [8, 108, 208, 308, 8, 108, 208, 208, 8, 208, 8, 208, target]);
+  checkLastEntry(entries, 1, [8, 108, 208, 308, 8, 108, 208, 208, 8, 208, 8, 208, true]);
   target.style.transform = "translateY(201px)";
 }
 
@@ -64,6 +64,6 @@ function step2() {
 }
 
 function step3() {
-  checkLastEntry(entries, 3, [8, 308, 193, 193, 8, 208, 193, 193, 8, 208, 8, 208, target]);
+  checkLastEntry(entries, 3, [8, 308, 193, 193, 8, 208, 193, 193, 8, 208, 8, 208, true]);
 }
 </script>

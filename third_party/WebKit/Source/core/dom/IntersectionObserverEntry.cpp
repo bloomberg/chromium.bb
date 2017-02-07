@@ -14,13 +14,15 @@ IntersectionObserverEntry::IntersectionObserverEntry(
     const IntRect& boundingClientRect,
     const IntRect* rootBounds,
     const IntRect& intersectionRect,
+    bool isIntersecting,
     Element* target)
     : m_time(time),
       m_intersectionRatio(intersectionRatio),
       m_boundingClientRect(ClientRect::create(boundingClientRect)),
       m_rootBounds(rootBounds ? ClientRect::create(*rootBounds) : nullptr),
       m_intersectionRect(ClientRect::create(intersectionRect)),
-      m_target(target)
+      m_target(target),
+      m_isIntersecting(isIntersecting)
 
 {}
 

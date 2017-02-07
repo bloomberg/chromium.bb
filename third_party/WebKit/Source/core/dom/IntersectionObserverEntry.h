@@ -26,6 +26,7 @@ class IntersectionObserverEntry final
                             const IntRect& boundingClientRect,
                             const IntRect* rootBounds,
                             const IntRect& intersectionRect,
+                            bool isIntersecting,
                             Element*);
 
   double time() const { return m_time; }
@@ -33,6 +34,7 @@ class IntersectionObserverEntry final
   ClientRect* boundingClientRect() const { return m_boundingClientRect; }
   ClientRect* rootBounds() const { return m_rootBounds; }
   ClientRect* intersectionRect() const { return m_intersectionRect; }
+  bool isIntersecting() const { return m_isIntersecting; }
   Element* target() const { return m_target.get(); }
 
   DECLARE_VIRTUAL_TRACE();
@@ -44,6 +46,7 @@ class IntersectionObserverEntry final
   Member<ClientRect> m_rootBounds;
   Member<ClientRect> m_intersectionRect;
   Member<Element> m_target;
+  bool m_isIntersecting;
 };
 
 }  // namespace blink

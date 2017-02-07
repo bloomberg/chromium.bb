@@ -14,6 +14,7 @@
     readonly attribute ClientRect? rootBounds;
     readonly attribute ClientRect boundingClientRect;
     readonly attribute ClientRect intersectionRect;
+    readonly attribute boolean isIntersecting;
     readonly attribute double intersectionRatio;
     readonly attribute Element target;
 };

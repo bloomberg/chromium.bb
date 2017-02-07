@@ -75,7 +75,7 @@ void IntersectionObservation::computeIntersectionObservations(
         m_shouldReportRootBounds ? &snappedRootBounds : nullptr;
     IntersectionObserverEntry* newEntry = new IntersectionObserverEntry(
         timestamp, newVisibleRatio, geometry.targetIntRect(), rootBoundsPointer,
-        geometry.intersectionIntRect(), target());
+        geometry.intersectionIntRect(), geometry.doesIntersect(), target());
     observer()->enqueueIntersectionObserverEntry(*newEntry);
     setLastThresholdIndex(newThresholdIndex);
   }
