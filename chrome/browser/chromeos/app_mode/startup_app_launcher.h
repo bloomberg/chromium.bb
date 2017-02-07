@@ -105,7 +105,7 @@ class StartupAppLauncher : public base::SupportsWeakPtr<StartupAppLauncher>,
   void OnExtensionUpdateCheckFinished();
 
   void StartLoadingOAuthFile();
-  static void LoadOAuthFileOnBlockingPool(KioskOAuthParams* auth_params);
+  static void LoadOAuthFileAsync(KioskOAuthParams* auth_params);
   void OnOAuthFileLoaded(KioskOAuthParams* auth_params);
 
   void OnKioskAppDataLoadStatusChanged(const std::string& app_id);

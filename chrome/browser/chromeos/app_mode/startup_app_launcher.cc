@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -117,18 +118,16 @@ void StartupAppLauncher::StartLoadingOAuthFile() {
   delegate_->OnLoadingOAuthFile();
 
   KioskOAuthParams* auth_params = new KioskOAuthParams();
-  BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE,
-      base::Bind(&StartupAppLauncher::LoadOAuthFileOnBlockingPool,
-                 auth_params),
-      base::Bind(&StartupAppLauncher::OnOAuthFileLoaded,
-                 AsWeakPtr(),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&StartupAppLauncher::LoadOAuthFileAsync, auth_params),
+      base::Bind(&StartupAppLauncher::OnOAuthFileLoaded, AsWeakPtr(),
                  base::Owned(auth_params)));
 }
 
 // static.
-void StartupAppLauncher::LoadOAuthFileOnBlockingPool(
-    KioskOAuthParams* auth_params) {
+void StartupAppLauncher::LoadOAuthFileAsync(KioskOAuthParams* auth_params) {
   int error_code = JSONFileValueDeserializer::JSON_NO_ERROR;
   std::string error_msg;
   base::FilePath user_data_dir;
