@@ -56,30 +56,6 @@ bool UseMd() {
   return MaterialDesignController::IsSystemTrayMenuMaterial();
 }
 
-const int kPublicAccountLogoutButtonBorderImagesNormal[] = {
-    IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND,
-};
-
-const int kPublicAccountLogoutButtonBorderImagesHovered[] = {
-    IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_LABEL_BUTTON_HOVER_BACKGROUND,
-    IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
-    IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,
-};
-
 // When a hover border is used, it is starting this many pixels before the icon
 // position.
 const int kTrayUserTileHoverBorderInset = 10;
@@ -490,29 +466,9 @@ void UserView::OnDidChangeFocus(View* focused_before, View* focused_now) {
 }
 
 void UserView::AddLogoutButton(LoginStatus login) {
-  const base::string16 title =
-      user::GetLocalizedSignOutStringForStatus(login, true);
-  auto* logout_button =
-      TrayPopupUtils::CreateTrayPopupBorderlessButton(this, title);
-  logout_button->SetAccessibleName(title);
-  logout_button_ = logout_button;
-  if (UseMd()) {
-    AddChildView(TrayPopupUtils::CreateVerticalSeparator());
-  } else if (login == LoginStatus::PUBLIC) {
-    // In public account mode, the logout button border has a custom color.
-    std::unique_ptr<TrayPopupLabelButtonBorder> border(
-        new TrayPopupLabelButtonBorder());
-    border->SetPainter(false, views::Button::STATE_NORMAL,
-                       views::Painter::CreateImageGridPainter(
-                           kPublicAccountLogoutButtonBorderImagesNormal));
-    border->SetPainter(false, views::Button::STATE_HOVERED,
-                       views::Painter::CreateImageGridPainter(
-                           kPublicAccountLogoutButtonBorderImagesHovered));
-    border->SetPainter(false, views::Button::STATE_PRESSED,
-                       views::Painter::CreateImageGridPainter(
-                           kPublicAccountLogoutButtonBorderImagesHovered));
-    logout_button_->SetBorder(std::move(border));
-  }
+  AddChildView(TrayPopupUtils::CreateVerticalSeparator());
+  logout_button_ = TrayPopupUtils::CreateTrayPopupBorderlessButton(
+      this, user::GetLocalizedSignOutStringForStatus(login, true));
   AddChildView(logout_button_);
 }
 

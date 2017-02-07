@@ -39,14 +39,8 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
 
   SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 
-  SetFocusForPlatform();
-  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
-
-  SetInkDropMode(InkDropMode::ON);
-  set_has_ink_drop_action_on_click(true);
-  set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
-  set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
+  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  TrayPopupUtils::ConfigureTrayPopupButton(this);
 }
 
 SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,

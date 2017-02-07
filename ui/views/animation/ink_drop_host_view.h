@@ -53,6 +53,11 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // subclasses/clients to specify the flavor of ink drop.
   void SetInkDropMode(InkDropMode ink_drop_mode);
 
+  void set_ink_drop_visible_opacity(float visible_opacity) {
+    ink_drop_visible_opacity_ = visible_opacity;
+  }
+  float ink_drop_visible_opacity() const { return ink_drop_visible_opacity_; }
+
  protected:
   static constexpr int kInkDropSmallCornerRadius = 2;
   static constexpr int kInkDropLargeCornerRadius = 4;
@@ -63,11 +68,6 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // Returns a large ink drop size based on the |small_size| that works well
   // with the SquareInkDropRipple animation durations.
   static gfx::Size CalculateLargeInkDropSize(const gfx::Size& small_size);
-
-  void set_ink_drop_visible_opacity(float visible_opacity) {
-    ink_drop_visible_opacity_ = visible_opacity;
-  }
-  float ink_drop_visible_opacity() const { return ink_drop_visible_opacity_; }
 
   // Returns the default InkDropRipple centered on |center_point|.
   std::unique_ptr<InkDropRipple> CreateDefaultInkDropRipple(
