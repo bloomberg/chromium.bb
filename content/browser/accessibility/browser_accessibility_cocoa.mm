@@ -2160,29 +2160,35 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   }
 
   if ([attribute isEqualToString:@"AXLeftWordTextMarkerRangeForTextMarker"]) {
-    AXPlatformPositionInstance position =
+    AXPlatformPositionInstance endPosition =
         CreatePositionFromTextMarker(parameter);
-    if (position->IsNullPosition())
+    if (endPosition->IsNullPosition())
       return nil;
 
+    AXPlatformPositionInstance startWordPosition =
+        endPosition->CreatePreviousWordStartPosition();
+    AXPlatformPositionInstance endWordPosition =
+        endPosition->CreatePreviousWordEndPosition();
     AXPlatformPositionInstance startPosition =
-        position->CreatePreviousWordStartPosition();
-    AXPlatformPositionInstance endPosition =
-        startPosition->CreateNextWordEndPosition();
+        *startWordPosition <= *endWordPosition ? std::move(endWordPosition)
+                                               : std::move(startWordPosition);
     AXPlatformRange range(std::move(startPosition), std::move(endPosition));
     return CreateTextMarkerRange(std::move(range));
   }
 
   if ([attribute isEqualToString:@"AXRightWordTextMarkerRangeForTextMarker"]) {
-    AXPlatformPositionInstance position =
+    AXPlatformPositionInstance startPosition =
         CreatePositionFromTextMarker(parameter);
-    if (position->IsNullPosition())
+    if (startPosition->IsNullPosition())
       return nil;
 
+    AXPlatformPositionInstance endWordPosition =
+        startPosition->CreateNextWordEndPosition();
+    AXPlatformPositionInstance startWordPosition =
+        startPosition->CreateNextWordStartPosition();
     AXPlatformPositionInstance endPosition =
-        position->CreateNextWordEndPosition();
-    AXPlatformPositionInstance startPosition =
-        endPosition->CreatePreviousWordStartPosition();
+        *startWordPosition <= *endWordPosition ? std::move(startWordPosition)
+                                               : std::move(endWordPosition);
     AXPlatformRange range(std::move(startPosition), std::move(endPosition));
     return CreateTextMarkerRange(std::move(range));
   }
