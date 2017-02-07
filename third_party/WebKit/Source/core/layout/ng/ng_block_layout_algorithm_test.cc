@@ -91,9 +91,8 @@ class NGBlockLayoutAlgorithmTest
                                  NGLogicalSize(LayoutUnit(), LayoutUnit()));
     NGBlockLayoutAlgorithm algorithm(/* layout_object */ nullptr, style_.get(),
                                      first_child, space);
-    MinAndMaxContentSizes sizes;
-    EXPECT_TRUE(algorithm.ComputeMinAndMaxContentSizes(&sizes));
-    return sizes;
+    EXPECT_TRUE(algorithm.ComputeMinAndMaxContentSizes().has_value());
+    return *algorithm.ComputeMinAndMaxContentSizes();
   }
 
   RefPtr<ComputedStyle> style_;

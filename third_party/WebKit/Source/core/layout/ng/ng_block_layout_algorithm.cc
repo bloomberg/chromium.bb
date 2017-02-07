@@ -274,14 +274,13 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
   DCHECK(style_);
 }
 
-bool NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes(
-    MinAndMaxContentSizes* sizes) const {
-  sizes->min_content = LayoutUnit();
-  sizes->max_content = LayoutUnit();
+Optional<MinAndMaxContentSizes>
+NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes() const {
+  MinAndMaxContentSizes sizes;
 
   // Size-contained elements don't consider their contents for intrinsic sizing.
   if (Style().containsSize())
-    return true;
+    return sizes;
 
   // TODO: handle floats & orthogonal children.
   for (NGBlockNode* node = first_child_; node; node = node->NextSibling()) {
@@ -293,12 +292,12 @@ bool NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes(
     MinAndMaxContentSizes child_sizes =
         ComputeMinAndMaxContentContribution(node->Style(), child_minmax);
 
-    sizes->min_content = std::max(sizes->min_content, child_sizes.min_content);
-    sizes->max_content = std::max(sizes->max_content, child_sizes.max_content);
+    sizes.min_content = std::max(sizes.min_content, child_sizes.min_content);
+    sizes.max_content = std::max(sizes.max_content, child_sizes.max_content);
   }
 
-  sizes->max_content = std::max(sizes->min_content, sizes->max_content);
-  return true;
+  sizes.max_content = std::max(sizes.min_content, sizes.max_content);
+  return sizes;
 }
 
 NGLogicalOffset NGBlockLayoutAlgorithm::CalculateRelativeOffset(
@@ -315,12 +314,8 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateRelativeOffset(
 
 RefPtr<NGPhysicalFragment> NGBlockLayoutAlgorithm::Layout() {
   WTF::Optional<MinAndMaxContentSizes> sizes;
-  if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style())) {
-    // TODO(ikilpatrick): Change ComputeMinAndMaxContentSizes to return
-    // MinAndMaxContentSizes.
-    sizes = MinAndMaxContentSizes();
-    ComputeMinAndMaxContentSizes(&*sizes);
-  }
+  if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style()))
+    sizes = ComputeMinAndMaxContentSizes();
 
   border_and_padding_ =
       ComputeBorders(Style()) + ComputePadding(ConstraintSpace(), Style());

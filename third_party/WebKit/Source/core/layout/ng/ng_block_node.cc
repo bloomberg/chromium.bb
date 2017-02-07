@@ -139,8 +139,10 @@ MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizes() {
   if (!first_child || first_child->Type() == kLegacyBlock) {
     NGBlockLayoutAlgorithm minmax_algorithm(
         layout_box_, &Style(), toNGBlockNode(FirstChild()), constraint_space);
-    if (minmax_algorithm.ComputeMinAndMaxContentSizes(&sizes))
-      return sizes;
+    Optional<MinAndMaxContentSizes> maybe_sizes =
+        minmax_algorithm.ComputeMinAndMaxContentSizes();
+    if (maybe_sizes.has_value())
+      return *maybe_sizes;
   }
 
   // Have to synthesize this value.

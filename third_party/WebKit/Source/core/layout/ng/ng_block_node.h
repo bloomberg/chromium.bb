@@ -39,9 +39,11 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   LayoutObject* GetLayoutObject() override;
 
   // Computes the value of min-content and max-content for this box.
-  // If the underlying layout algorithm returns NotImplemented from
-  // ComputeMinAndMaxContentSizes, this function will synthesize these sizes
-  // using Layout with special constraint spaces.
+  // If the underlying layout algorithm's ComputeMinAndMaxContentSizes returns
+  // no value, this function will synthesize these sizes using Layout with
+  // special constraint spaces -- infinite available size for max content, zero
+  // available size for min content, and percentage resolution size zero for
+  // both.
   MinAndMaxContentSizes ComputeMinAndMaxContentSizes();
 
   const ComputedStyle& Style() const;

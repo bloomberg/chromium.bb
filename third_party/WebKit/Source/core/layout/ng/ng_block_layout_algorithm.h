@@ -40,7 +40,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                          NGConstraintSpace* space,
                          NGBreakToken* break_token = nullptr);
 
-  bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) const override;
+  Optional<MinAndMaxContentSizes> ComputeMinAndMaxContentSizes() const override;
   RefPtr<NGPhysicalFragment> Layout() override;
 
  private:

@@ -6,8 +6,10 @@
 #define NGLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_units.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -29,12 +31,11 @@ class CORE_EXPORT NGLayoutAlgorithm {
 
   // Computes the min-content and max-content intrinsic sizes for the given box.
   // The result will not take any min-width, max-width or width properties into
-  // account. Implementations can return false, in which case the caller is
-  // expected to synthesize this value from the overflow rect returned from
-  // Layout called with a available width of 0 and LayoutUnit::max(),
-  // respectively.
-  virtual bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) const {
-    return false;
+  // account. If the return value is empty, the caller is expected to synthesize
+  // this value from the overflow rect returned from Layout called with an
+  // available width of 0 and LayoutUnit::max(), respectively.
+  virtual Optional<MinAndMaxContentSizes> ComputeMinAndMaxContentSizes() const {
+    return WTF::nullopt;
   }
 };
 
