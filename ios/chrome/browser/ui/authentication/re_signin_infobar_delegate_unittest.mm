@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -24,12 +22,15 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // View that intercepts and stores chrome commands sent up the responder chain.
 @interface CatchExecuteCommandView : UIView {
-  base::mac::ObjCPropertyReleaser propertyReleaser_CatchExecuteCommandView_;
 }
 // Command sent up the responder chain and intercepted by this view.
-@property(nonatomic, retain) id command;
+@property(nonatomic, strong) id command;
 @end
 
 @implementation CatchExecuteCommandView
@@ -39,8 +40,6 @@
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    propertyReleaser_CatchExecuteCommandView_.Init(
-        self, [CatchExecuteCommandView class]);
   }
   return self;
 }
@@ -179,9 +178,9 @@ TEST_F(ReSignInInfoBarDelegateTest, TestAccept) {
           chrome_browser_state_.get())));
   InfoBarIOS* infobarIOS = static_cast<InfoBarIOS*>(infobar.get());
   infobarIOS->Layout(CGRectZero);
-  base::scoped_nsobject<CatchExecuteCommandView> view(
-      [[CatchExecuteCommandView alloc] initWithFrame:CGRectZero]);
-  [view.get() addSubview:infobarIOS->view()];
+  CatchExecuteCommandView* view =
+      [[CatchExecuteCommandView alloc] initWithFrame:CGRectZero];
+  [view addSubview:infobarIOS->view()];
 
   ReSignInInfoBarDelegate* delegate =
       static_cast<ReSignInInfoBarDelegate*>(infobarIOS->delegate());
@@ -204,9 +203,9 @@ TEST_F(ReSignInInfoBarDelegateTest, TestInfoBarDismissed) {
           chrome_browser_state_.get())));
   InfoBarIOS* infobarIOS = static_cast<InfoBarIOS*>(infobar.get());
   infobarIOS->Layout(CGRectZero);
-  base::scoped_nsobject<CatchExecuteCommandView> view(
-      [[CatchExecuteCommandView alloc] initWithFrame:CGRectZero]);
-  [view.get() addSubview:infobarIOS->view()];
+  CatchExecuteCommandView* view =
+      [[CatchExecuteCommandView alloc] initWithFrame:CGRectZero];
+  [view addSubview:infobarIOS->view()];
 
   ReSignInInfoBarDelegate* delegate =
       static_cast<ReSignInInfoBarDelegate*>(infobarIOS->delegate());

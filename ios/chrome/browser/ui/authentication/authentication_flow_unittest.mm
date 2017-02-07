@@ -7,7 +7,6 @@
 #include <memory>
 
 #import "base/mac/scoped_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -25,6 +24,10 @@
 #import "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/ocmock_extensions.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -46,12 +49,10 @@ class AuthenticationFlowTest : public PlatformTest {
         [identityService->GetAllIdentitiesSortedForDisplay() objectAtIndex:0];
     identity2_ =
         [identityService->GetAllIdentitiesSortedForDisplay() objectAtIndex:1];
-    sign_in_completion_.reset(
-        ^(BOOL success) {
-          finished_ = true;
-          signed_in_success_ = success;
-        },
-        base::scoped_policy::RETAIN);
+    sign_in_completion_ = ^(BOOL success) {
+      finished_ = true;
+      signed_in_success_ = success;
+    };
     finished_ = false;
     signed_in_success_ = false;
   }
@@ -67,7 +68,7 @@ class AuthenticationFlowTest : public PlatformTest {
   }
 
   AuthenticationFlowPerformer* GetAuthenticationFlowPerformer() {
-    return static_cast<AuthenticationFlowPerformer*>(performer_.get());
+    return static_cast<AuthenticationFlowPerformer*>(performer_);
   }
 
   // Creates a new AuthenticationFlow with default values for fields that are
@@ -75,16 +76,15 @@ class AuthenticationFlowTest : public PlatformTest {
   void CreateAuthenticationFlow(ShouldClearData shouldClearData,
                                 PostSignInAction postSignInAction) {
     ChromeIdentity* identity = identity1_;
-    view_controller_.reset(
-        [[OCMockObject niceMockForClass:[UIViewController class]] retain]);
-    authentication_flow_.reset([[AuthenticationFlow alloc]
-            initWithBrowserState:browser_state_.get()
-                        identity:identity
-                 shouldClearData:shouldClearData
-                postSignInAction:postSignInAction
-        presentingViewController:view_controller_]);
-    performer_.reset([[OCMockObject
-        mockForClass:[AuthenticationFlowPerformer class]] retain]);
+    view_controller_ = [OCMockObject niceMockForClass:[UIViewController class]];
+    authentication_flow_ =
+        [[AuthenticationFlow alloc] initWithBrowserState:browser_state_.get()
+                                                identity:identity
+                                         shouldClearData:shouldClearData
+                                        postSignInAction:postSignInAction
+                                presentingViewController:view_controller_];
+    performer_ =
+        [OCMockObject mockForClass:[AuthenticationFlowPerformer class]];
     [authentication_flow_
         setPerformerForTesting:GetAuthenticationFlowPerformer()];
   }
@@ -101,13 +101,13 @@ class AuthenticationFlowTest : public PlatformTest {
   }
 
   web::TestWebThreadBundle thread_bundle_;
-  base::scoped_nsobject<AuthenticationFlow> authentication_flow_;
+  AuthenticationFlow* authentication_flow_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   ChromeIdentity* identity1_;
   ChromeIdentity* identity2_;
-  base::scoped_nsobject<OCMockObject> performer_;
-  base::mac::ScopedBlock<signin_ui::CompletionCallback> sign_in_completion_;
-  base::scoped_nsobject<UIViewController> view_controller_;
+  OCMockObject* performer_;
+  signin_ui::CompletionCallback sign_in_completion_;
+  UIViewController* view_controller_;
 
   // State of the flow
   bool finished_;
@@ -253,7 +253,7 @@ TEST_F(AuthenticationFlowTest, TestFailFetchManagedStatus) {
              forIdentity:identity1_];
 
   [[[performer_ expect] andDo:^(NSInvocation* invocation) {
-    ProceduralBlock completionBlock;
+    __unsafe_unretained ProceduralBlock completionBlock;
     [invocation getArgument:&completionBlock atIndex:3];
     completionBlock();
   }] showAuthenticationError:[OCMArg any]

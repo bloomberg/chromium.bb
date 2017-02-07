@@ -82,6 +82,7 @@ source_set("authentication") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "authentication_flow_unittest.mm",
