@@ -9,6 +9,8 @@ namespace component_updater {
 
 extern const char kUpdaterDefaultUrl[];
 extern const char kUpdaterFallbackUrl[];
+extern const char kUpdaterDefaultUrlAlt[];
+extern const char kUpdaterFallbackUrlAlt[];
 
 }  // namespace component_updater
 
