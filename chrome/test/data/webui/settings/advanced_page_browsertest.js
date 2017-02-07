@@ -48,7 +48,7 @@ TEST_F('SettingsAdvancedPageBrowserTest', 'MAYBE_Load', function() {
         sections = sections.concat(['dateTime', 'a11y']);
 
       for (var i = 0; i < sections.length; i++) {
-        var section = self.getSection(page, sections[i], true /* advanced */);
+        var section = self.getSection(page, sections[i]);
         expectTrue(!!section);
         self.verifySubpagesHidden(section);
       }

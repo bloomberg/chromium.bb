@@ -62,6 +62,11 @@ SettingsPageBrowserTest.prototype = {
     var pageType = 'settings-' + type + '-page';
     var page = settingsMain.$$(pageType);
     assertTrue(!!page);
+    var idleRender = page.$$('template[is=settings-idle-render]');
+    if (idleRender) {
+      idleRender.get();
+      Polymer.dom.flush();
+    }
     return page;
   },
 

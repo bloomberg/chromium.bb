@@ -176,7 +176,7 @@ cr.define('settings_main_page', function() {
         assertEquals(
             expectedBasic, page.$$('#basicPage').style.display);
         assertEquals(
-            expectedAdvanced, page.$$('#advancedPage').style.display);
+            expectedAdvanced, page.$.advancedPageTemplate.get().style.display);
       }
 
       // TODO(michaelpg): It would be better not to drill into

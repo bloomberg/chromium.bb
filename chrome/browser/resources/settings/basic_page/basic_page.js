@@ -29,6 +29,7 @@ Polymer({
     advancedToggleExpanded: {
       type: Boolean,
       notify: true,
+      observer: 'advancedToggleExpandedChanged_',
     },
 
     /**
@@ -101,7 +102,7 @@ Polymer({
 
     if (this.pageVisibility.advancedSettings !== false) {
       assert(whenSearchDone === settings.getSearchManager().search(
-          query, assert(this.$$('#advancedPage'))));
+          query, assert(this.$.advancedPageTemplate.get())));
     }
 
     return whenSearchDone;
@@ -128,6 +129,15 @@ Polymer({
    */
   onSubpageExpanded_: function() {
     this.hasExpandedSection_ = true;
+  },
+
+  /**
+   * Render the advanced page now (don't wait for idle).
+   * @private
+   */
+  advancedToggleExpandedChanged_: function() {
+    if (this.advancedToggleExpanded)
+      this.$.advancedPageTemplate.get();
   },
 
   /**
