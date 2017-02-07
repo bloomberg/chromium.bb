@@ -3448,27 +3448,25 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
           content_initiated));
 }
 
-void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
-  WebDataSource* ds = frame->provisionalDataSource();
-
+void RenderFrameImpl::didStartProvisionalLoad(
+    blink::WebDataSource* data_source) {
   // In fast/loader/stop-provisional-loads.html, we abort the load before this
   // callback is invoked.
-  if (!ds)
+  if (!data_source)
     return;
 
   TRACE_EVENT2("navigation,benchmark,rail",
                "RenderFrameImpl::didStartProvisionalLoad", "id", routing_id_,
-               "url", ds->getRequest().url().string().utf8());
-  DocumentState* document_state = DocumentState::FromDataSource(ds);
+               "url", data_source->getRequest().url().string().utf8());
+  DocumentState* document_state = DocumentState::FromDataSource(data_source);
   NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
       document_state->navigation_state());
-  bool is_top_most = !frame->parent();
+  bool is_top_most = !frame_->parent();
   if (is_top_most) {
     render_view_->set_navigation_gesture(
         WebUserGestureIndicator::isProcessingUserGesture() ?
             NavigationGestureUser : NavigationGestureAuto);
-  } else if (ds->replacesCurrentHistoryItem()) {
+  } else if (data_source->replacesCurrentHistoryItem()) {
     // Subframe navigations that don't add session history items must be
     // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
     // handle loading of error pages.
@@ -3480,15 +3478,16 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
   DCHECK(!navigation_start.is_null());
 
   for (auto& observer : render_view_->observers())
-    observer.DidStartProvisionalLoad(frame);
+    observer.DidStartProvisionalLoad(frame_);
   for (auto& observer : observers_)
-    observer.DidStartProvisionalLoad();
+    observer.DidStartProvisionalLoad(data_source);
 
   std::vector<GURL> redirect_chain;
-  GetRedirectChain(ds, &redirect_chain);
-  CHECK(!redirect_chain.empty());
+  GetRedirectChain(data_source, &redirect_chain);
+
   Send(new FrameHostMsg_DidStartProvisionalLoad(
-      routing_id_, ds->getRequest().url(), redirect_chain, navigation_start));
+      routing_id_, data_source->getRequest().url(), redirect_chain,
+      navigation_start));
 }
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(

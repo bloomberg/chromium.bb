@@ -96,9 +96,9 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
                             replaces_current_history_item);
   }
 
-  void didStartProvisionalLoad(blink::WebLocalFrame* frame) override {
-    test_client()->didStartProvisionalLoad(frame);
-    Base::didStartProvisionalLoad(frame);
+  void didStartProvisionalLoad(blink::WebDataSource* data_source) override {
+    test_client()->didStartProvisionalLoad(data_source);
+    Base::didStartProvisionalLoad(data_source);
   }
 
   void didReceiveServerRedirectForProvisionalLoad(

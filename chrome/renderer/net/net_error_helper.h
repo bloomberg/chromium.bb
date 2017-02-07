@@ -56,7 +56,7 @@ class NetErrorHelper
   void TrackClick(int tracking_id) override;
 
   // RenderFrameObserver implementation.
-  void DidStartProvisionalLoad() override;
+  void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
   void DidFinishLoad() override;

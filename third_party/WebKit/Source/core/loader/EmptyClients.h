@@ -260,7 +260,7 @@ class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
   void dispatchDidHandleOnloadEvents() override {}
   void dispatchDidReceiveServerRedirectForProvisionalLoad() override {}
   void dispatchWillCommitProvisionalLoad() override {}
-  void dispatchDidStartProvisionalLoad() override {}
+  void dispatchDidStartProvisionalLoad(DocumentLoader*) override {}
   void dispatchDidReceiveTitle(const String&) override {}
   void dispatchDidChangeIcons(IconType) override {}
   void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) override {}

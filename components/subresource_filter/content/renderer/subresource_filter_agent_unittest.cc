@@ -121,13 +121,13 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   }
 
   void StartLoadWithoutSettingActivationLevel() {
-    agent_as_rfo()->DidStartProvisionalLoad();
+    agent_as_rfo()->DidStartProvisionalLoad(nullptr);
     agent_as_rfo()->DidCommitProvisionalLoad(
         true /* is_new_navigation */, false /* is_same_page_navigation */);
   }
 
   void PerformSamePageNavigationWithoutSettingActivationLevel() {
-    agent_as_rfo()->DidStartProvisionalLoad();
+    agent_as_rfo()->DidStartProvisionalLoad(nullptr);
     agent_as_rfo()->DidCommitProvisionalLoad(
         true /* is_new_navigation */, true /* is_same_page_navigation */);
     // No DidFinishLoad is called in this case.
@@ -135,7 +135,7 @@ class SubresourceFilterAgentTest : public ::testing::Test {
 
   void StartLoadAndSetActivationLevel(ActivationLevel activation_level,
                                       bool measure_performance = false) {
-    agent_as_rfo()->DidStartProvisionalLoad();
+    agent_as_rfo()->DidStartProvisionalLoad(nullptr);
     EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
         SubresourceFilterMsg_ActivateForProvisionalLoad(
             0, activation_level, GURL(), measure_performance)));
@@ -394,11 +394,11 @@ TEST_F(SubresourceFilterAgentTest,
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestBothURLsPathSuffix));
   ExpectNoSubresourceFilterGetsInjected();
-  agent_as_rfo()->DidStartProvisionalLoad();
+  agent_as_rfo()->DidStartProvisionalLoad(nullptr);
   EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
       SubresourceFilterMsg_ActivateForProvisionalLoad(
           0, ActivationLevel::ENABLED, GURL(), true)));
-  agent_as_rfo()->DidStartProvisionalLoad();
+  agent_as_rfo()->DidStartProvisionalLoad(nullptr);
   agent_as_rfo()->DidCommitProvisionalLoad(true /* is_new_navigation */,
                                            false /* is_same_page_navigation */);
   FinishLoad();

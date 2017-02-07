@@ -27,7 +27,8 @@ DistillerJsRenderFrameObserver::DistillerJsRenderFrameObserver(
 
 DistillerJsRenderFrameObserver::~DistillerJsRenderFrameObserver() {}
 
-void DistillerJsRenderFrameObserver::DidStartProvisionalLoad() {
+void DistillerJsRenderFrameObserver::DidStartProvisionalLoad(
+    blink::WebDataSource* data_source) {
   RegisterMojoInterface();
 }
 

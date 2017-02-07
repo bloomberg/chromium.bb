@@ -1243,11 +1243,20 @@ void NavigatorImpl::DidStartMainFrameNavigation(
   bool has_browser_initiated_pending_entry =
       pending_entry && !pending_entry->is_renderer_initiated();
 
+  // PlzNavigate
+  // A pending navigation entry is created in OnBeginNavigation(). The renderer
+  // sends a provisional load notification after that. We don't want to create
+  // a duplicate navigation entry here.
+  bool renderer_provisional_load_to_pending_url =
+      pending_entry && pending_entry->is_renderer_initiated() &&
+      (pending_entry->GetURL() == url);
+
   // If there is a transient entry, creating a new pending entry will result
   // in deleting it, which leads to inconsistent state.
   bool has_transient_entry = !!controller_->GetTransientEntry();
 
-  if (!has_browser_initiated_pending_entry && !has_transient_entry) {
+  if (!has_browser_initiated_pending_entry && !has_transient_entry &&
+      !renderer_provisional_load_to_pending_url) {
     std::unique_ptr<NavigationEntryImpl> entry =
         NavigationEntryImpl::FromNavigationEntry(
             controller_->CreateNavigationEntry(

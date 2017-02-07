@@ -28,7 +28,7 @@ crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-initi
 
 # https://crbug.com/625765: Need to solve duplicate output from
 # WebFrameTestClient::willSendRequest() that causes text failures.
-crbug.com/625765 http/tests/loading/redirect-methods.html [ Crash Failure ]
+#crbug.com/625765 http/tests/loading/redirect-methods.html [ Crash Failure ]
 crbug.com/625765 virtual/mojo-loading/http/tests/loading/redirect-methods.html [ Crash Failure ]
 
 # https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
@@ -54,31 +54,8 @@ crbug.com/576270 virtual/mojo-loading/http/tests/security/mixedContent/redirect-
 # https://crbug.com/638900: Failing due to flipped order of callbacks to
 # WebFrameClient::didStartProvisionalLoad() and
 # WebFrameClient::didFinishDocumentLoad().
-crbug.com/638900 fast/loader/subframe-removes-itself.html [ Failure ]
-crbug.com/638900 http/tests/loading/css-no-cache-revalidation.html [ Failure ]
 crbug.com/638900 http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
-crbug.com/638900 http/tests/loading/image-picture-download-after-shrink.html [ Failure ]
-crbug.com/638900 http/tests/loading/image-picture-no-download-after-picture-removal.html [ Failure ]
-crbug.com/638900 http/tests/loading/image-picture-no-download-after-removal.html [ Failure ]
-crbug.com/638900 http/tests/loading/image-picture-no-download-after-source-removal.html [ Failure ]
-crbug.com/638900 http/tests/loading/redirect-with-no-location-crash.html [ Failure ]
-crbug.com/638900 http/tests/loading/simple-subframe.html [ Failure ]
-crbug.com/638900 http/tests/loading/slow-parsing-subframe.html [ Failure ]
-crbug.com/638900 http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
-crbug.com/638900 http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
-crbug.com/638900 virtual/stable/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
-crbug.com/638900 virtual/stable/http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
-crbug.com/638900 virtual/mojo-loading/http/tests/loading/css-no-cache-revalidation.html [ Failure ]
 crbug.com/638900 virtual/mojo-loading/http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
-crbug.com/638900 virtual/mojo-loading/http/tests/loading/image-picture-download-after-shrink.html [ Failure ]
-crbug.com/638900 virtual/mojo-loading/http/tests/loading/image-picture-no-download-after-picture-removal.html [ Failure ]
-crbug.com/638900 virtual/mojo-loading/http/tests/loading/image-picture-no-download-after-removal.html [ Failure ]
-crbug.com/638900 virtual/mojo-loading/http/tests/loading/image-picture-no-download-after-source-removal.html [ Failure ]
-crbug.com/638900 virtual/mojo-loading/http/tests/loading/redirect-with-no-location-crash.html [ Failure ]
-crbug.com/638900 virtual/mojo-loading/http/tests/loading/simple-subframe.html [ Failure ]
-crbug.com/638900 virtual/mojo-loading/http/tests/loading/slow-parsing-subframe.html [ Failure ]
-crbug.com/638900 virtual/mojo-loading/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
-crbug.com/638900 virtual/mojo-loading/http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
 
 # https://crbug.com/640631: Failing due to difference in WebFrameClient
 # callback sequence on renderer-initiated failed navigations.

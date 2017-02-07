@@ -405,9 +405,12 @@ void FrameLoaderClientImpl::dispatchWillCommitProvisionalLoad() {
     m_webFrame->client()->willCommitProvisionalLoad(m_webFrame);
 }
 
-void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad() {
-  if (m_webFrame->client())
-    m_webFrame->client()->didStartProvisionalLoad(m_webFrame);
+void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad(
+    DocumentLoader* loader) {
+  if (m_webFrame->client()) {
+    m_webFrame->client()->didStartProvisionalLoad(
+        WebDataSourceImpl::fromDocumentLoader(loader));
+  }
   if (WebDevToolsAgentImpl* devTools = devToolsAgent())
     devTools->didStartProvisionalLoad(m_webFrame->frame());
 }

@@ -25,7 +25,7 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
   ~OverlayJsRenderFrameObserver() override;
 
   // RenderFrameObserver implementation.
-  void DidStartProvisionalLoad() override;
+  void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
   void DidClearWindowObject() override;
   void DidFinishLoad() override;
 

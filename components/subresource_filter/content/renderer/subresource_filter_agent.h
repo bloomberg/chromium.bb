@@ -70,7 +70,7 @@ class SubresourceFilterAgent
 
   // content::RenderFrameObserver:
   void OnDestruct() override;
-  void DidStartProvisionalLoad() override;
+  void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
   void DidFinishLoad() override;

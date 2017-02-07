@@ -7346,21 +7346,16 @@ class TestHistoryWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   TestHistoryWebFrameClient() {
     m_replacesCurrentHistoryItem = false;
-    m_frame = nullptr;
   }
 
-  void didStartProvisionalLoad(WebLocalFrame* frame) {
-    WebDataSource* ds = frame->provisionalDataSource();
-    m_replacesCurrentHistoryItem = ds->replacesCurrentHistoryItem();
-    m_frame = frame;
+  void didStartProvisionalLoad(WebDataSource* dataSource) {
+    m_replacesCurrentHistoryItem = dataSource->replacesCurrentHistoryItem();
   }
 
   bool replacesCurrentHistoryItem() { return m_replacesCurrentHistoryItem; }
-  WebFrame* frame() { return m_frame; }
 
  private:
   bool m_replacesCurrentHistoryItem;
-  WebFrame* m_frame;
 };
 
 // Tests that the first navigation in an initially blank subframe will result in
@@ -7380,17 +7375,14 @@ TEST_P(ParameterizedWebFrameTest, FirstBlankSubframeNavigation) {
 
   WebFrame* iframe = frame->firstChild();
   ASSERT_EQ(&client, toWebLocalFrameImpl(iframe)->client());
-  EXPECT_EQ(iframe, client.frame());
 
   std::string url1 = m_baseURL + "history.html";
   FrameTestHelpers::loadFrame(iframe, url1);
-  EXPECT_EQ(iframe, client.frame());
   EXPECT_EQ(url1, iframe->document().url().string().utf8());
   EXPECT_TRUE(client.replacesCurrentHistoryItem());
 
   std::string url2 = m_baseURL + "find.html";
   FrameTestHelpers::loadFrame(iframe, url2);
-  EXPECT_EQ(iframe, client.frame());
   EXPECT_EQ(url2, iframe->document().url().string().utf8());
   EXPECT_FALSE(client.replacesCurrentHistoryItem());
 }
@@ -7417,12 +7409,10 @@ TEST_P(ParameterizedWebFrameTest, FirstNonBlankSubframeNavigation) {
           "document.body.appendChild(f)");
 
   WebFrame* iframe = frame->firstChild();
-  EXPECT_EQ(iframe, client.frame());
   EXPECT_EQ(url1, iframe->document().url().string().utf8());
 
   std::string url2 = m_baseURL + "find.html";
   FrameTestHelpers::loadFrame(iframe, url2);
-  EXPECT_EQ(iframe, client.frame());
   EXPECT_EQ(url2, iframe->document().url().string().utf8());
   EXPECT_FALSE(client.replacesCurrentHistoryItem());
 }
@@ -10075,7 +10065,7 @@ class CallbackOrderingWebFrameClient
     EXPECT_EQ(0, m_callbackCount++);
     FrameTestHelpers::TestWebFrameClient::didStartLoading(toDifferentDocument);
   }
-  void didStartProvisionalLoad(WebLocalFrame*) override {
+  void didStartProvisionalLoad(WebDataSource*) override {
     EXPECT_EQ(1, m_callbackCount++);
   }
   void didCommitProvisionalLoad(WebLocalFrame*,

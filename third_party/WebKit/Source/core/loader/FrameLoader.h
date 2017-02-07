@@ -267,6 +267,11 @@ class CORE_EXPORT FrameLoader final {
   std::unique_ptr<TracedValue> toTracedValue() const;
   void takeObjectSnapshot() const;
 
+  DocumentLoader* createDocumentLoader(const ResourceRequest&,
+                                       const FrameLoadRequest&,
+                                       FrameLoadType,
+                                       NavigationType);
+
   Member<LocalFrame> m_frame;
   AtomicString m_requiredCSP;
 

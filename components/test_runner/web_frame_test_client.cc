@@ -29,6 +29,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -412,16 +413,25 @@ void WebFrameTestClient::loadErrorPage(int reason) {
   }
 }
 
-void WebFrameTestClient::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
-  test_runner()->tryToSetTopLoadingFrame(frame);
+void WebFrameTestClient::didStartProvisionalLoad(
+    blink::WebDataSource* data_source) {
+  // PlzNavigate
+  // A provisional load notification is received when a frame navigation is
+  // sent to the browser. We don't want to log it again during commit.
+  if (delegate_->IsNavigationInitiatedByRenderer(data_source->getRequest()))
+    return;
+
+  test_runner()->tryToSetTopLoadingFrame(
+      web_frame_test_proxy_base_->web_frame());
 
   if (test_runner()->shouldDumpFrameLoadCallbacks()) {
-    PrintFrameDescription(delegate_, frame);
+    PrintFrameDescription(delegate_, web_frame_test_proxy_base_->web_frame());
     delegate_->PrintMessage(" - didStartProvisionalLoadForFrame\n");
   }
 
   if (test_runner()->shouldDumpUserGestureInFrameLoadCallbacks()) {
-    PrintFrameuserGestureStatus(delegate_, frame,
+    PrintFrameuserGestureStatus(delegate_,
+                                web_frame_test_proxy_base_->web_frame(),
                                 " - in didStartProvisionalLoadForFrame\n");
   }
 }

@@ -25,7 +25,8 @@ OverlayJsRenderFrameObserver::OverlayJsRenderFrameObserver(
 
 OverlayJsRenderFrameObserver::~OverlayJsRenderFrameObserver() {}
 
-void OverlayJsRenderFrameObserver::DidStartProvisionalLoad() {
+void OverlayJsRenderFrameObserver::DidStartProvisionalLoad(
+    blink::WebDataSource* data_source) {
   RegisterMojoInterface();
 }
 

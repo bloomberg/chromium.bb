@@ -131,18 +131,16 @@ void SubresourceFilterAgent::OnDestruct() {
   delete this;
 }
 
-void SubresourceFilterAgent::DidStartProvisionalLoad() {
+void SubresourceFilterAgent::DidStartProvisionalLoad(
+    blink::WebDataSource* data_source) {
   // With PlzNavigate, DidStartProvisionalLoad and DidCommitProvisionalLoad will
   // both be called in response to the one commit IPC from the browser. That
   // means that they will come after OnActivateForProvisionalLoad. So we have to
   // have extra logic to check that the response to OnActivateForProvisionalLoad
   // isn't removed in that case.
-  blink::WebDataSource* ds =
-      render_frame() ? render_frame()->GetWebFrame()->provisionalDataSource()
-                     : nullptr;
   if (!content::IsBrowserSideNavigationEnabled() ||
-      (!ds ||
-       static_cast<GURL>(ds->getRequest().url()) !=
+      (!data_source ||
+       static_cast<GURL>(data_source->getRequest().url()) !=
            url_for_provisional_load_)) {
     activation_level_for_provisional_load_ = ActivationLevel::DISABLED;
     measure_performance_ = false;

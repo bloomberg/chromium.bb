@@ -251,7 +251,8 @@ void ChromeRenderFrameObserver::DidFinishLoad() {
   }
 }
 
-void ChromeRenderFrameObserver::DidStartProvisionalLoad() {
+void ChromeRenderFrameObserver::DidStartProvisionalLoad(
+    blink::WebDataSource* data_source) {
   // Let translate_helper do any preparatory work for loading a URL.
   if (!translate_helper_)
     return;

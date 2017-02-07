@@ -1730,26 +1730,44 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
 
   if (!checkLoadCanStart(frameLoadRequest, type, navigationPolicy,
                          navigationType)) {
-    // PlzNavigate: if the navigation is a commit of a client-handled
-    // navigation, record that there is no longer a navigation handled by the
-    // client.
-    if (m_isNavigationHandledByClient &&
-        !frameLoadRequest.resourceRequest().checkForBrowserSideNavigation()) {
-      m_isNavigationHandledByClient = false;
+    if (m_isNavigationHandledByClient) {
+      // PlzNavigate: if the navigation is a commit of a client-handled
+      // navigation, record that there is no longer a navigation handled by the
+      // client.
+      if (!frameLoadRequest.resourceRequest().checkForBrowserSideNavigation()) {
+        m_isNavigationHandledByClient = false;
+      } else {
+        DocumentLoader* loader = createDocumentLoader(
+            resourceRequest, frameLoadRequest, type, navigationType);
+        // PlzNavigate: If the navigation is handled by the client, then the
+        // didFinishDocumentLoad() event occurs before the
+        // didStartProvisionalLoad() notification which occurs after the
+        // navigation
+        // is committed. This causes a number of layout tests to fail. We
+        // workaround this by invoking the didStartProvisionalLoad()
+        // notification
+        // here. Consumers of the didStartProvisionalLoad() notification rely on
+        // the provisional loader and save navigation state in it. We want to
+        // avoid
+        // this dependency on the provisional loader. For now we create a
+        // temporary
+        // loader and pass it to the didStartProvisionalLoad() function.
+        // TODO(ananta)
+        // We should get rid of the dependency on the DocumentLoader in
+        // consumers
+        // of
+        // the didStartProvisionalLoad() notification.
+        client()->dispatchDidStartProvisionalLoad(loader);
+        DCHECK(loader);
+        loader->setSentDidFinishLoad();
+        loader->detachFromFrame();
+      }
     }
     return;
   }
 
-  m_provisionalDocumentLoader = client()->createDocumentLoader(
-      m_frame, resourceRequest,
-      frameLoadRequest.substituteData().isValid()
-          ? frameLoadRequest.substituteData()
-          : defaultSubstituteDataForURL(resourceRequest.url()),
-      frameLoadRequest.clientRedirect());
-  m_provisionalDocumentLoader->setLoadType(type);
-  m_provisionalDocumentLoader->setNavigationType(navigationType);
-  m_provisionalDocumentLoader->setReplacesCurrentHistoryItem(
-      type == FrameLoadTypeReplaceCurrentItem);
+  m_provisionalDocumentLoader = createDocumentLoader(
+      resourceRequest, frameLoadRequest, type, navigationType);
 
   // PlzNavigate: We need to ensure that script initiated navigations are
   // honored.
@@ -1771,8 +1789,12 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
 
   m_provisionalDocumentLoader->appendRedirect(
       m_provisionalDocumentLoader->getRequest().url());
-  client()->dispatchDidStartProvisionalLoad();
+  // TODO(ananta)
+  // We should get rid of the dependency on the DocumentLoader in consumers of
+  // the didStartProvisionalLoad() notification.
+  client()->dispatchDidStartProvisionalLoad(m_provisionalDocumentLoader);
   DCHECK(m_provisionalDocumentLoader);
+
   m_provisionalDocumentLoader->startLoadingMainResource();
 
   takeObjectSnapshot();
@@ -1961,6 +1983,24 @@ std::unique_ptr<TracedValue> FrameLoader::toTracedValue() const {
 inline void FrameLoader::takeObjectSnapshot() const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("loading", "FrameLoader", this,
                                       toTracedValue());
+}
+
+DocumentLoader* FrameLoader::createDocumentLoader(
+    const ResourceRequest& request,
+    const FrameLoadRequest& frameLoadRequest,
+    FrameLoadType loadType,
+    NavigationType navigationType) {
+  DocumentLoader* loader = client()->createDocumentLoader(
+      m_frame, request, frameLoadRequest.substituteData().isValid()
+                            ? frameLoadRequest.substituteData()
+                            : defaultSubstituteDataForURL(request.url()),
+      frameLoadRequest.clientRedirect());
+
+  loader->setLoadType(loadType);
+  loader->setNavigationType(navigationType);
+  loader->setReplacesCurrentHistoryItem(loadType ==
+                                        FrameLoadTypeReplaceCurrentItem);
+  return loader;
 }
 
 }  // namespace blink

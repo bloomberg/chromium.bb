@@ -34,7 +34,7 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
 
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void DidStartProvisionalLoad() override;
+  void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
   void DidFinishLoad() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;

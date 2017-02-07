@@ -66,9 +66,9 @@ namespace {
 // suggestions.  If it takes too long, just use the local error page.
 const int kNavigationCorrectionFetchTimeoutSec = 3;
 
-NetErrorHelperCore::PageType GetLoadingPageType(RenderFrame* render_frame) {
-  blink::WebFrame* web_frame = render_frame->GetWebFrame();
-  GURL url = web_frame->provisionalDataSource()->getRequest().url();
+NetErrorHelperCore::PageType GetLoadingPageType(
+    blink::WebDataSource* data_source) {
+  GURL url = data_source->getRequest().url();
   if (!url.is_valid() || url.spec() != kUnreachableWebDataURL)
     return NetErrorHelperCore::NON_ERROR_PAGE;
   return NetErrorHelperCore::ERROR_PAGE;
@@ -118,9 +118,10 @@ void NetErrorHelper::TrackClick(int tracking_id) {
   core_->TrackClick(tracking_id);
 }
 
-void NetErrorHelper::DidStartProvisionalLoad() {
+void NetErrorHelper::DidStartProvisionalLoad(
+    blink::WebDataSource* data_source) {
   core_->OnStartLoad(GetFrameType(render_frame()),
-                     GetLoadingPageType(render_frame()));
+                     GetLoadingPageType(data_source));
 }
 
 void NetErrorHelper::DidCommitProvisionalLoad(bool is_new_navigation,

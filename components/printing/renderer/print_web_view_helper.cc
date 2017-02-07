@@ -937,7 +937,8 @@ bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(
          scripting_throttler_.IsAllowed(frame);
 }
 
-void PrintWebViewHelper::DidStartProvisionalLoad() {
+void PrintWebViewHelper::DidStartProvisionalLoad(
+    blink::WebDataSource* data_source) {
   is_loading_ = true;
 }
 

@@ -187,7 +187,8 @@ void ExtensionFrameHelper::DidMatchCSS(
       stopped_matching_selectors);
 }
 
-void ExtensionFrameHelper::DidStartProvisionalLoad() {
+void ExtensionFrameHelper::DidStartProvisionalLoad(
+    blink::WebDataSource* data_source) {
   if (!delayed_main_world_script_initialization_)
     return;
 
