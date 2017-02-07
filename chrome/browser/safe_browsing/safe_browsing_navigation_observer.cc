@@ -107,13 +107,14 @@ SafeBrowsingNavigationObserver::~SafeBrowsingNavigationObserver() {}
 // DidRedirectNavigation, and DidFinishNavigation too.
 void SafeBrowsingNavigationObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  NavigationEvent nav_event;
+  std::unique_ptr<NavigationEvent> nav_event =
+      base::MakeUnique<NavigationEvent>();
   auto it = navigation_handle_map_.find(navigation_handle);
   // It is possible to see multiple DidStartNavigation(..) with the same
   // navigation_handle (e.g. cross-process transfer). If that's the case,
   // we need to copy the is_user_initiated field.
   if (it != navigation_handle_map_.end()) {
-    nav_event.is_user_initiated = it->second.is_user_initiated;
+    nav_event->is_user_initiated = it->second->is_user_initiated;
   } else {
     // If this is the first time we see this navigation_handle, create a new
     // NavigationEvent, and decide if it is triggered by user.
@@ -121,7 +122,7 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
          !SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
              last_user_gesture_timestamp_)) ||
         !navigation_handle->IsRendererInitiated()) {
-      nav_event.is_user_initiated = true;
+      nav_event->is_user_initiated = true;
       if (has_user_gesture_) {
         manager_->OnUserGestureConsumed(web_contents(),
                                         last_user_gesture_timestamp_);
@@ -132,7 +133,7 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
 
   // All the other fields are reconstructed based on current content of
   // navigation_handle.
-  nav_event.frame_id = navigation_handle->GetFrameTreeNodeId();
+  nav_event->frame_id = navigation_handle->GetFrameTreeNodeId();
 
   // If there was a URL previously committed in the current RenderFrameHost,
   // set it as the source url of this navigation. Otherwise, this is the
@@ -144,26 +145,27 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
   // (https://crbug.com/651895).
   content::RenderFrameHost* current_frame_host =
       navigation_handle->GetWebContents()->FindFrameByFrameTreeNodeId(
-          nav_event.frame_id);
+          nav_event->frame_id);
   // For browser initiated navigation (e.g. from address bar or bookmark), we
   // don't fill the source_url to prevent attributing navigation to the last
   // committed navigation.
   if (navigation_handle->IsRendererInitiated() && current_frame_host &&
       current_frame_host->GetLastCommittedURL().is_valid()) {
-    nav_event.source_url = SafeBrowsingNavigationObserverManager::ClearEmptyRef(
-        current_frame_host->GetLastCommittedURL());
+    nav_event->source_url =
+        SafeBrowsingNavigationObserverManager::ClearEmptyRef(
+            current_frame_host->GetLastCommittedURL());
   }
-  nav_event.original_request_url =
+  nav_event->original_request_url =
       SafeBrowsingNavigationObserverManager::ClearEmptyRef(
           navigation_handle->GetURL());
 
-  nav_event.source_tab_id =
+  nav_event->source_tab_id =
       SessionTabHelper::IdForTab(navigation_handle->GetWebContents());
 
   if (navigation_handle->IsInMainFrame()) {
-    nav_event.source_main_frame_url = nav_event.source_url;
+    nav_event->source_main_frame_url = nav_event->source_url;
   } else {
-    nav_event.source_main_frame_url =
+    nav_event->source_main_frame_url =
         SafeBrowsingNavigationObserverManager::ClearEmptyRef(
             navigation_handle->GetWebContents()->GetLastCommittedURL());
   }
@@ -178,8 +180,7 @@ void SafeBrowsingNavigationObserver::DidRedirectNavigation(
     NOTREACHED();
     return;
   }
-
-  NavigationEvent* nav_event = &navigation_handle_map_[navigation_handle];
+  NavigationEvent* nav_event = navigation_handle_map_[navigation_handle].get();
   nav_event->server_redirect_urls.push_back(
       SafeBrowsingNavigationObserverManager::ClearEmptyRef(
           navigation_handle->GetURL()));
@@ -199,14 +200,16 @@ void SafeBrowsingNavigationObserver::DidFinishNavigation(
     navigation_handle_map_.erase(navigation_handle);
     return;
   }
-  NavigationEvent* nav_event = &navigation_handle_map_[navigation_handle];
+  NavigationEvent* nav_event = navigation_handle_map_[navigation_handle].get();
 
   nav_event->has_committed = navigation_handle->HasCommitted();
   nav_event->target_tab_id =
       SessionTabHelper::IdForTab(navigation_handle->GetWebContents());
   nav_event->last_updated = base::Time::Now();
 
-  manager_->RecordNavigationEvent(nav_event->GetDestinationUrl(), nav_event);
+  manager_->RecordNavigationEvent(
+      nav_event->GetDestinationUrl(),
+      std::move(navigation_handle_map_[navigation_handle]));
   navigation_handle_map_.erase(navigation_handle);
 }
 

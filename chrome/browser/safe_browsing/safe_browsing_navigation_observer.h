@@ -83,7 +83,8 @@ class SafeBrowsingNavigationObserver : public base::SupportsUserData::Data,
   ~SafeBrowsingNavigationObserver() override;
 
  private:
-  typedef std::unordered_map<content::NavigationHandle*, NavigationEvent>
+  typedef std::unordered_map<content::NavigationHandle*,
+                             std::unique_ptr<NavigationEvent>>
       NavigationHandleMap;
 
   // content::WebContentsObserver:

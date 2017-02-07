@@ -47,23 +47,23 @@ class SBNavigationObserverTest : public BrowserWithTestWindowTest {
                              bool expected_is_user_initiated,
                              bool expected_has_committed,
                              bool expected_has_server_redirect,
-                             const NavigationEvent& actual_nav_event) {
-    EXPECT_EQ(expected_source_url, actual_nav_event.source_url);
+                             NavigationEvent* actual_nav_event) {
+    EXPECT_EQ(expected_source_url, actual_nav_event->source_url);
     EXPECT_EQ(expected_source_main_frame_url,
-              actual_nav_event.source_main_frame_url);
+              actual_nav_event->source_main_frame_url);
     EXPECT_EQ(expected_original_request_url,
-              actual_nav_event.original_request_url);
-    EXPECT_EQ(expected_destination_url, actual_nav_event.GetDestinationUrl());
-    EXPECT_EQ(expected_source_tab, actual_nav_event.source_tab_id);
-    EXPECT_EQ(expected_target_tab, actual_nav_event.target_tab_id);
-    EXPECT_EQ(expected_is_user_initiated, actual_nav_event.is_user_initiated);
-    EXPECT_EQ(expected_has_committed, actual_nav_event.has_committed);
+              actual_nav_event->original_request_url);
+    EXPECT_EQ(expected_destination_url, actual_nav_event->GetDestinationUrl());
+    EXPECT_EQ(expected_source_tab, actual_nav_event->source_tab_id);
+    EXPECT_EQ(expected_target_tab, actual_nav_event->target_tab_id);
+    EXPECT_EQ(expected_is_user_initiated, actual_nav_event->is_user_initiated);
+    EXPECT_EQ(expected_has_committed, actual_nav_event->has_committed);
     EXPECT_EQ(expected_has_server_redirect,
-              !actual_nav_event.server_redirect_urls.empty());
+              !actual_nav_event->server_redirect_urls.empty());
   }
 
-  SafeBrowsingNavigationObserverManager::NavigationMap* navigation_map() {
-    return navigation_observer_manager_->navigation_map();
+  NavigationEventList* navigation_event_list() {
+    return navigation_observer_manager_->navigation_event_list();
   }
 
   SafeBrowsingNavigationObserverManager::UserGestureMap* user_gesture_map() {
@@ -78,12 +78,14 @@ class SBNavigationObserverTest : public BrowserWithTestWindowTest {
     navigation_observer_manager_->RecordHostToIpMapping(host, ip);
   }
 
-  NavigationEvent CreateNavigationEvent(const GURL& destination_url,
-                                        const base::Time& timestamp) {
-    NavigationEvent nav_event;
-    nav_event.original_request_url = destination_url;
-    nav_event.last_updated = timestamp;
-    return nav_event;
+  std::unique_ptr<NavigationEvent> CreateNavigationEventUniquePtr(
+      const GURL& destination_url, const base::Time& timestamp) {
+    std::unique_ptr<NavigationEvent> nav_event_ptr =
+        base::MakeUnique<NavigationEvent>();
+    nav_event_ptr->original_request_url = destination_url;
+    nav_event_ptr->source_url = GURL("http://dummy.com");
+    nav_event_ptr->last_updated = timestamp;
+    return nav_event_ptr;
   }
 
   void CleanUpNavigationEvents() {
@@ -106,6 +108,46 @@ class SBNavigationObserverTest : public BrowserWithTestWindowTest {
   DISALLOW_COPY_AND_ASSIGN(SBNavigationObserverTest);
 };
 
+TEST_F(SBNavigationObserverTest, TestNavigationEventList) {
+  NavigationEventList events(3);
+
+  EXPECT_EQ(nullptr,
+            events.FindNavigationEvent(GURL("http://invalid.com"), GURL(), -1));
+  EXPECT_EQ(0U, events.CleanUpNavigationEvents());
+  EXPECT_EQ(0U, events.Size());
+
+  // Add 2 events to the list.
+  base::Time now = base::Time::Now();
+  base::Time one_hour_ago =
+      base::Time::FromDoubleT(now.ToDoubleT() - 60.0 * 60.0);
+  events.RecordNavigationEvent(
+      CreateNavigationEventUniquePtr(GURL("http://foo1.com"), one_hour_ago));
+  events.RecordNavigationEvent(
+      CreateNavigationEventUniquePtr(GURL("http://foo1.com"), now));
+  EXPECT_EQ(2U, events.Size());
+  // FindNavigationEvent should return the latest matching event.
+  EXPECT_EQ(now,
+            events.FindNavigationEvent(GURL("http://foo1.com"), GURL(), -1)
+                ->last_updated);
+  // One event should get removed.
+  EXPECT_EQ(1U, events.CleanUpNavigationEvents());
+  EXPECT_EQ(1U, events.Size());
+
+  // Add 3 more events, previously recorded events should be overridden.
+  events.RecordNavigationEvent(
+      CreateNavigationEventUniquePtr(GURL("http://foo3.com"), one_hour_ago));
+  events.RecordNavigationEvent(
+      CreateNavigationEventUniquePtr(GURL("http://foo4.com"), one_hour_ago));
+  events.RecordNavigationEvent(
+      CreateNavigationEventUniquePtr(GURL("http://foo5.com"), now));
+  ASSERT_EQ(3U, events.Size());
+  EXPECT_EQ(GURL("http://foo3.com"), events.Get(0)->original_request_url);
+  EXPECT_EQ(GURL("http://foo4.com"), events.Get(1)->original_request_url);
+  EXPECT_EQ(GURL("http://foo5.com"), events.Get(2)->original_request_url);
+  EXPECT_EQ(2U, events.CleanUpNavigationEvents());
+  EXPECT_EQ(1U, events.Size());
+}
+
 TEST_F(SBNavigationObserverTest, BasicNavigationAndCommit) {
   // Navigation in current tab.
   content::NavigationController* controller =
@@ -116,9 +158,8 @@ TEST_F(SBNavigationObserverTest, BasicNavigationAndCommit) {
                              ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
   CommitPendingLoad(controller);
   int tab_id = SessionTabHelper::IdForTab(controller->GetWebContents());
-  auto nav_map = navigation_map();
-  ASSERT_EQ(1U, nav_map->size());
-  ASSERT_EQ(1U, nav_map->at(GURL("http://foo/1")).size());
+  auto nav_list = navigation_event_list();
+  ASSERT_EQ(1U, nav_list->Size());
   VerifyNavigationEvent(GURL(),                // source_url
                         GURL(),                // source_main_frame_url
                         GURL("http://foo/1"),  // original_request_url
@@ -128,7 +169,7 @@ TEST_F(SBNavigationObserverTest, BasicNavigationAndCommit) {
                         true,                  // is_user_initiated
                         true,                  // has_committed
                         false,                 // has_server_redirect
-                        nav_map->at(GURL("http://foo/1")).at(0));
+                        nav_list->Get(0U));
 }
 
 TEST_F(SBNavigationObserverTest, ServerRedirect) {
@@ -141,9 +182,8 @@ TEST_F(SBNavigationObserverTest, ServerRedirect) {
   rfh_tester->SimulateNavigationCommit(redirect);
   int tab_id = SessionTabHelper::IdForTab(
       browser()->tab_strip_model()->GetWebContentsAt(0));
-  auto nav_map = navigation_map();
-  ASSERT_EQ(1U, nav_map->size());
-  ASSERT_EQ(1U, nav_map->at(redirect).size());
+  auto nav_list = navigation_event_list();
+  ASSERT_EQ(1U, nav_list->Size());
   VerifyNavigationEvent(GURL("http://foo/0"),       // source_url
                         GURL("http://foo/0"),       // source_main_frame_url
                         GURL("http://foo/3"),       // original_request_url
@@ -153,11 +193,12 @@ TEST_F(SBNavigationObserverTest, ServerRedirect) {
                         false,                      // is_user_initiated
                         true,                       // has_committed
                         true,                       // has_server_redirect
-                        nav_map->at(GURL("http://redirect/1")).at(0));
+                        nav_list->Get(0U));
 }
 
 TEST_F(SBNavigationObserverTest, TestCleanUpStaleNavigationEvents) {
-  // Sets up navigation_map() such that it includes fresh, stale and invalid
+  // Sets up navigation_event_list() such that it includes fresh, stale and
+  // invalid
   // navigation events.
   base::Time now = base::Time::Now();  // Fresh
   base::Time one_hour_ago =
@@ -168,24 +209,19 @@ TEST_F(SBNavigationObserverTest, TestCleanUpStaleNavigationEvents) {
       base::Time::FromDoubleT(now.ToDoubleT() + 60.0 * 60.0);  // Invalid
   GURL url_0("http://foo/0");
   GURL url_1("http://foo/1");
-  navigation_map()->insert(
-      std::make_pair(url_0, std::vector<NavigationEvent>()));
-  navigation_map()->at(url_0).push_back(
-      CreateNavigationEvent(url_0, one_hour_ago));
-  navigation_map()->at(url_0).push_back(CreateNavigationEvent(url_0, now));
-  navigation_map()->at(url_0).push_back(
-      CreateNavigationEvent(url_0, one_minute_ago));
-  navigation_map()->at(url_0).push_back(
-      CreateNavigationEvent(url_0, in_an_hour));
-  navigation_map()->insert(
-      std::make_pair(url_1, std::vector<NavigationEvent>()));
-  navigation_map()->at(url_1).push_back(
-      CreateNavigationEvent(url_0, one_hour_ago));
-  navigation_map()->at(url_1).push_back(
-      CreateNavigationEvent(url_0, one_hour_ago));
-  ASSERT_EQ(2U, navigation_map()->size());
-  ASSERT_EQ(4U, navigation_map()->at(url_0).size());
-  ASSERT_EQ(2U, navigation_map()->at(url_1).size());
+  navigation_event_list()->RecordNavigationEvent(
+      CreateNavigationEventUniquePtr(url_0, in_an_hour));
+  navigation_event_list()->RecordNavigationEvent(
+      CreateNavigationEventUniquePtr(url_0, one_hour_ago));
+  navigation_event_list()->RecordNavigationEvent(
+      CreateNavigationEventUniquePtr(url_1, one_hour_ago));
+  navigation_event_list()->RecordNavigationEvent(
+      CreateNavigationEventUniquePtr(url_1, one_hour_ago));
+  navigation_event_list()->RecordNavigationEvent(
+      CreateNavigationEventUniquePtr(url_0, one_minute_ago));
+  navigation_event_list()->RecordNavigationEvent(
+      CreateNavigationEventUniquePtr(url_0, now));
+  ASSERT_EQ(6U, navigation_event_list()->Size());
 
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kNavigationEventCleanUpHistogramName, 0);
@@ -194,9 +230,9 @@ TEST_F(SBNavigationObserverTest, TestCleanUpStaleNavigationEvents) {
   CleanUpNavigationEvents();
 
   // Verifies all stale and invalid navigation events are removed.
-  ASSERT_EQ(1U, navigation_map()->size());
-  EXPECT_EQ(navigation_map()->end(), navigation_map()->find(url_1));
-  EXPECT_EQ(2U, navigation_map()->at(url_0).size());
+  ASSERT_EQ(2U, navigation_event_list()->Size());
+  EXPECT_EQ(nullptr,
+            navigation_event_list()->FindNavigationEvent(url_1, GURL(), -1));
   EXPECT_THAT(histograms.GetAllSamples(kNavigationEventCleanUpHistogramName),
               testing::ElementsAre(base::Bucket(4, 1)));
 }
