@@ -17274,6 +17274,12 @@
      {}
     ]
    ],
+   "IndexedDB/clone-before-keypath-eval.html": [
+    [
+     "/IndexedDB/clone-before-keypath-eval.html",
+     {}
+    ]
+   ],
    "IndexedDB/close-in-upgradeneeded.html": [
     [
      "/IndexedDB/close-in-upgradeneeded.html",
@@ -34733,6 +34739,10 @@
    "95f44900d9565baf718be23bafd33e48e6f4fc52",
    "testharness"
   ],
+  "IndexedDB/clone-before-keypath-eval.html": [
+   "9191c591c5c820c0e6c91c21ba339b98ffc42b5a",
+   "testharness"
+  ],
   "IndexedDB/close-in-upgradeneeded.html": [
    "949f5e8a429a7524c9a68ef0d19baf04dadbd84a",
    "testharness"
@@ -35818,7 +35828,7 @@
    "testharness"
   ],
   "IndexedDB/idbversionchangeevent.htm": [
-   "0db27a811017a52b05dd669f99b2accdeecb5c0d",
+   "1c84321376076ef84257aaa6d05306c005484f2d",
    "testharness"
   ],
   "IndexedDB/idbworker.js": [
