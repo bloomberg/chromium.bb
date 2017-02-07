@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/cocoa/handoff_active_url_observer_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
 HandoffActiveURLObserver::HandoffActiveURLObserver(
@@ -48,9 +49,11 @@ void HandoffActiveURLObserver::ActiveTabChanged(
   delegate_->HandoffActiveURLChanged(new_contents);
 }
 
-void HandoffActiveURLObserver::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void HandoffActiveURLObserver::DidFinishNavigation(
+     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+    return;
+
   delegate_->HandoffActiveURLChanged(web_contents());
 }
 

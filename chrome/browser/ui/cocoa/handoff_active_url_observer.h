@@ -39,9 +39,8 @@ class HandoffActiveURLObserver : public chrome::BrowserListObserver,
                         int reason) override;
 
   // content::WebContentsObserver
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // Updates the active browser.
   void SetActiveBrowser(Browser* active_browser);
