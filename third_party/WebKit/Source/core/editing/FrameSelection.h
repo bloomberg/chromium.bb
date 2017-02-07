@@ -90,7 +90,6 @@ class CORE_EXPORT FrameSelection final
     DoNotUpdateAppearance = 1 << 4,
     DoNotClearStrategy = 1 << 5,
     DoNotAdjustInFlatTree = 1 << 6,
-    HandleVisible = 1 << 7,
   };
   // Union of values in SetSelectionOption and EUserTriggered
   typedef unsigned SetSelectionOptions;
@@ -137,15 +136,19 @@ class CORE_EXPORT FrameSelection final
   // TODO(yosin): We should use |SelectionInDOMTree| version instead of
   // |VisibleSelection| version.
   void setSelection(const VisibleSelection&,
+                    HandleVisibility = HandleVisibility::NotVisible,
                     SetSelectionOptions = CloseTyping | ClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded,
                     TextGranularity = CharacterGranularity);
+  void setSelection(const VisibleSelection&, SetSelectionOptions);
   // TODO(yosin): We should use |SelectionInFlatTree| version instead of
   // |VisibleSelectionInFlatTree| version.
   void setSelection(const VisibleSelectionInFlatTree&,
+                    HandleVisibility = HandleVisibility::NotVisible,
                     SetSelectionOptions = CloseTyping | ClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded,
                     TextGranularity = CharacterGranularity);
+  void setSelection(const VisibleSelectionInFlatTree&, SetSelectionOptions);
   bool setSelectedRange(
       const EphemeralRange&,
       TextAffinity,
@@ -297,6 +300,7 @@ class CORE_EXPORT FrameSelection final
 
   template <typename Strategy>
   void setSelectionAlgorithm(const VisibleSelectionTemplate<Strategy>&,
+                             HandleVisibility,
                              SetSelectionOptions,
                              CursorAlignOnScroll,
                              TextGranularity);

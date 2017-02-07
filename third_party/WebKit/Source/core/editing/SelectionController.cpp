@@ -691,14 +691,10 @@ void SelectionController::setNonDirectionalSelectionIfNeeded(
       selection().isHandleVisible() == isHandleVisible)
     return;
 
-  const FrameSelection::SetSelectionOptions options =
-      isHandleVisible
-          ? FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle |
-                FrameSelection::HandleVisible
-          : FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle;
-
-  selection().setSelection(newSelection, options, CursorAlignOnScroll::IfNeeded,
-                           granularity);
+  selection().setSelection(
+      newSelection, handleVisibility,
+      FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle,
+      CursorAlignOnScroll::IfNeeded, granularity);
 }
 
 void SelectionController::setCaretAtHitTestResult(

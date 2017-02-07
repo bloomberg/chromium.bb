@@ -168,15 +168,16 @@ void FrameSelection::moveCaretSelection(const IntPoint& point) {
       visiblePositionForContentsPoint(point, frame());
   SelectionInDOMTree::Builder builder;
   builder.setIsDirectional(selection().isDirectional());
+  builder.setIsHandleVisible(true);
   if (position.isNotNull())
     builder.collapse(position.toPositionWithAffinity());
-  setSelection(builder.build(),
-               CloseTyping | ClearTypingStyle | UserTriggered | HandleVisible);
+  setSelection(builder.build(), CloseTyping | ClearTypingStyle | UserTriggered);
 }
 
 template <typename Strategy>
 void FrameSelection::setSelectionAlgorithm(
     const VisibleSelectionTemplate<Strategy>& newSelection,
+    HandleVisibility handleVisibility,
     SetSelectionOptions options,
     CursorAlignOnScroll align,
     TextGranularity granularity) {
@@ -188,9 +189,6 @@ void FrameSelection::setSelectionAlgorithm(
     m_granularityStrategy->Clear();
   bool closeTyping = options & CloseTyping;
   bool shouldClearTypingStyle = options & ClearTypingStyle;
-  const HandleVisibility handleVisibility = options & HandleVisible
-                                                ? HandleVisibility::Visible
-                                                : HandleVisibility::NotVisible;
   EUserTriggered userTriggered = selectionOptionsToUserTriggered(options);
 
   // TODO(editing-dev): We should rename variable |s| to another name to avoid
@@ -304,8 +302,10 @@ void FrameSelection::setSelection(const SelectionInDOMTree& newSelection,
         .document()
         ->updateStyleAndLayoutIgnorePendingStylesheets();
   }
-  setSelection(createVisibleSelection(newSelection), options, align,
-               granularity);
+  setSelection(createVisibleSelection(newSelection),
+               newSelection.isHandleVisible() ? HandleVisibility::Visible
+                                              : HandleVisibility::NotVisible,
+               options, align, granularity);
 }
 
 // TODO(yosin): We will make |selectionInFlatTree| version of |SetSelection()|
@@ -322,25 +322,40 @@ void FrameSelection::setSelection(const SelectionInFlatTree& newSelection,
         .document()
         ->updateStyleAndLayoutIgnorePendingStylesheets();
   }
-  setSelection(createVisibleSelection(newSelection), options, align,
-               granularity);
+  setSelection(createVisibleSelection(newSelection),
+               newSelection.isHandleVisible() ? HandleVisibility::Visible
+                                              : HandleVisibility::NotVisible,
+               options, align, granularity);
 }
 
 void FrameSelection::setSelection(const VisibleSelection& newSelection,
+                                  HandleVisibility handleVisibility,
                                   SetSelectionOptions options,
                                   CursorAlignOnScroll align,
                                   TextGranularity granularity) {
-  setSelectionAlgorithm<EditingStrategy>(newSelection, options, align,
-                                         granularity);
+  setSelectionAlgorithm<EditingStrategy>(newSelection, handleVisibility,
+                                         options, align, granularity);
+}
+
+void FrameSelection::setSelection(const VisibleSelection& newSelection,
+                                  SetSelectionOptions options) {
+  setSelection(newSelection, HandleVisibility::NotVisible, options);
 }
 
 void FrameSelection::setSelection(
     const VisibleSelectionInFlatTree& newSelection,
+    HandleVisibility handleVisibility,
     SetSelectionOptions options,
     CursorAlignOnScroll align,
     TextGranularity granularity) {
-  setSelectionAlgorithm<EditingInFlatTreeStrategy>(newSelection, options, align,
-                                                   granularity);
+  setSelectionAlgorithm<EditingInFlatTreeStrategy>(
+      newSelection, handleVisibility, options, align, granularity);
+}
+
+void FrameSelection::setSelection(
+    const VisibleSelectionInFlatTree& newSelection,
+    SetSelectionOptions options) {
+  setSelection(newSelection, HandleVisibility::NotVisible, options);
 }
 
 static bool removingNodeRemovesPosition(Node& node, const Position& position) {
@@ -691,7 +706,7 @@ bool FrameSelection::modify(EAlteration alter,
     return false;
   }
 
-  setSelection(selectionModifier.selection(),
+  setSelection(selectionModifier.selection(), HandleVisibility::NotVisible,
                CloseTyping | ClearTypingStyle | UserTriggered,
                alter == AlterationMove ? CursorAlignOnScroll::Always
                                        : CursorAlignOnScroll::IfNeeded);
@@ -1359,10 +1374,9 @@ void FrameSelection::moveRangeSelectionExtent(const IntPoint& contentsPoint) {
 
   VisibleSelection newSelection =
       granularityStrategy()->updateExtent(contentsPoint, m_frame);
-  setSelection(newSelection,
+  setSelection(newSelection, HandleVisibility::Visible,
                FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle |
-                   FrameSelection::DoNotClearStrategy | UserTriggered |
-                   FrameSelection::HandleVisible,
+                   FrameSelection::DoNotClearStrategy | UserTriggered,
                CursorAlignOnScroll::IfNeeded, CharacterGranularity);
 }
 
@@ -1383,11 +1397,8 @@ void FrameSelection::moveRangeSelection(const VisiblePosition& basePosition,
   if (newSelection.isNone())
     return;
 
-  SetSelectionOptions options = CloseTyping | ClearTypingStyle;
-  if (isHandleVisible())
-    options |= HandleVisible;
-  setSelection(newSelection, options, CursorAlignOnScroll::IfNeeded,
-               granularity);
+  setSelection(newSelection, m_handleVisibility, CloseTyping | ClearTypingStyle,
+               CursorAlignOnScroll::IfNeeded, granularity);
 }
 
 void FrameSelection::updateIfNeeded() {
