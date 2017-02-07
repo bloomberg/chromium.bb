@@ -255,7 +255,7 @@ config("compiler") {
     # when turning clang on or off. (defines are passed via the command line,
     # and build system rebuild things when their commandline changes). Nothing
     # should ever read this define.
-    defines += [ "CR_CLANG_REVISION=$clang_revision" ]
+    defines += [ "CR_CLANG_REVISION=\"$clang_revision\"" ]
   }
 
   # Non-Mac Posix compiler flags setup.
