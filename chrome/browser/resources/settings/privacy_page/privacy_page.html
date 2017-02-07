@@ -444,9 +444,13 @@
             $i18n{siteSettingsProtectedContentExplanation}
           </div>
           <div class="settings-box first">
+            <!-- TODO(dschuyler): change i18n to i18nStr. -->
             <settings-toggle-button class="start"
                 pref="{{prefs.settings.privacy.drm_enabled}}"
-                label="$i18n{siteSettingsProtectedContentEnable}">
+                label="[[getStringTernary_(
+                    prefs.settings.privacy.drm_enabled.value,
+                    '$i18n{siteSettingsProtectedContentEnable}',
+                    '$i18n{siteSettingsBlocked}')]]">
             </settings-toggle-button>
           </div>
 <if expr="chromeos">

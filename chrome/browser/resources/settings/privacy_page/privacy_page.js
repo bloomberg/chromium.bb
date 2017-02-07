@@ -173,4 +173,15 @@ Polymer({
         'documentation/en/flashplayer/help/settings_manager07.html');
   },
 // </if>
+
+  /**
+   * Works like a ternary operator. E.g. (value ? trueLabel: falseLabel).
+   * @param {boolean} value
+   * @param {string} trueLabel True label (for example, 'Allow DRM').
+   * @param {string} falseLabel False label (for example, 'Blocked').
+   * @private
+   */
+  getStringTernary_: function(value, trueLabel, falseLabel) {
+    return value ? trueLabel : falseLabel;
+  },
 });
