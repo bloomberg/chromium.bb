@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -211,17 +212,18 @@ void ContentTranslateDriver::NavigationEntryCommitted(
                  0));
 }
 
-void ContentTranslateDriver::DidNavigateAnyFrame(
-    content::RenderFrameHost* render_frame_host,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void ContentTranslateDriver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted())
+    return;
+
   // Let the LanguageState clear its state.
   const bool reload =
-      ui::PageTransitionCoreTypeIs(details.entry->GetTransitionType(),
-                                   ui::PAGE_TRANSITION_RELOAD) ||
-      details.type == content::NAVIGATION_TYPE_SAME_PAGE;
+      navigation_handle->GetReloadType() != content::ReloadType::NONE ||
+      navigation_handle->IsSamePage();
   translate_manager_->GetLanguageState().DidNavigate(
-      details.is_in_page, details.is_main_frame, reload);
+      navigation_handle->IsSamePage(), navigation_handle->IsInMainFrame(),
+      reload);
 }
 
 void ContentTranslateDriver::OnPageAway(int page_seq_no) {
