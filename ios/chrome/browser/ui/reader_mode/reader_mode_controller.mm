@@ -7,9 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/infobar.h"
@@ -23,6 +21,10 @@
 #import "ios/chrome/browser/ui/reader_mode/reader_mode_view.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_state/web_state.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @protocol ReaderModeCheckerObserverBridgeProtocol
 - (void)pageIsDistillable;
@@ -96,7 +98,7 @@ class InfoBarManagerObserverBridge : infobars::InfoBarManager::Observer {
   infobars::InfoBar* infobar_;
   web::WebState* _webState;
 }
-@property(readonly, nonatomic) id<ReaderModeControllerDelegate> delegate;
+@property(weak, readonly, nonatomic) id<ReaderModeControllerDelegate> delegate;
 
 // Triggers a distillation and returns a DistillerViewer to keep as a handle to
 // the running distillation.
@@ -142,7 +144,6 @@ class InfoBarManagerObserverBridge : infobars::InfoBarManager::Observer {
 - (void)dealloc {
   if (_webState)
     [self detachFromWebState];
-  [super dealloc];
 }
 
 - (void)detachFromWebState {
@@ -160,7 +161,7 @@ class InfoBarManagerObserverBridge : infobars::InfoBarManager::Observer {
 
 - (std::unique_ptr<dom_distiller::DistillerViewer>)startDistillation {
   DCHECK(_webState);
-  base::WeakNSObject<ReaderModeController> weakSelf(self);
+  __weak ReaderModeController* weakSelf = self;
   GURL pageURL = _webState->GetLastCommittedURL();
   ios::ChromeBrowserState* browserState =
       ios::ChromeBrowserState::FromBrowserState(_webState->GetBrowserState());
@@ -168,7 +169,7 @@ class InfoBarManagerObserverBridge : infobars::InfoBarManager::Observer {
       dom_distiller::DomDistillerServiceFactory::GetForBrowserState(
           browserState),
       browserState->GetPrefs(), pageURL,
-      base::BindBlock(^(
+      base::BindBlockArc(^(
           const GURL& pageURL, const std::string& html,
           const std::vector<dom_distiller::DistillerViewer::ImageInfo>& images,
           const std::string& title) {
@@ -191,7 +192,7 @@ class InfoBarManagerObserverBridge : infobars::InfoBarManager::Observer {
 - (ReaderModeView*)readerModeViewWithFrame:(CGRect)frame {
   DCHECK(_checker->CanSwitchToReaderMode());
   ReaderModeView* view =
-      [[[ReaderModeView alloc] initWithFrame:frame delegate:self] autorelease];
+      [[ReaderModeView alloc] initWithFrame:frame delegate:self];
   [view assignDistillerViewer:[self startDistillation]];
   return view;
 }
@@ -200,14 +201,13 @@ class InfoBarManagerObserverBridge : infobars::InfoBarManager::Observer {
 
 - (void)showInfoBar:(const std::string&)html forURL:(const GURL&)url {
   DCHECK(_webState);
-  base::WeakNSProtocol<id<ReaderModeControllerDelegate>> weakDelegate(
-      self.delegate);
+  __weak id<ReaderModeControllerDelegate> weakDelegate = self.delegate;
 
   // Non reference version of the variables needed.
   const std::string html_non_ref(html);
   const GURL url_non_ref(url);
   auto infoBarDelegate =
-      base::MakeUnique<ReaderModeInfoBarDelegate>(base::BindBlock(^{
+      base::MakeUnique<ReaderModeInfoBarDelegate>(base::BindBlockArc(^{
         [weakDelegate loadReaderModeHTML:base::SysUTF8ToNSString(html_non_ref)
                                   forURL:url_non_ref];
       }));

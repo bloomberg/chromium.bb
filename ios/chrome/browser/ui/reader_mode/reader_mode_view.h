@@ -35,7 +35,7 @@ class DistillerViewer;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
 // The view's delegate.
-@property(nonatomic, readonly) id<ReaderModeViewDelegate> delegate;
+@property(weak, nonatomic, readonly) id<ReaderModeViewDelegate> delegate;
 
 // Takes ownership of the viewer as it is the only handle to the distillation:
 // When freed it cancels the distillation, if it is not finished yet. The

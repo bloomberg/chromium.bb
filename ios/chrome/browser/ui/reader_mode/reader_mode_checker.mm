@@ -12,8 +12,13 @@
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/grit/components_resources.h"
 #include "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
+#include "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 ReaderModeCheckerObserver::ReaderModeCheckerObserver(
     ReaderModeChecker* readerModeChecker)

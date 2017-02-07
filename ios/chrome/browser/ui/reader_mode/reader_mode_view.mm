@@ -4,11 +4,13 @@
 
 #import "ios/chrome/browser/ui/reader_mode/reader_mode_view.h"
 
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
 #import "ios/chrome/browser/ui/material_components/activity_indicator.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const CGFloat kCloseButtonSize = 40;
@@ -19,11 +21,10 @@ const CGFloat kMinHeight = kMinWidth;
 
 @interface ReaderModeView ()<MDCActivityIndicatorDelegate> {
   std::unique_ptr<dom_distiller::DistillerViewer> _viewer;
-  base::mac::ObjCPropertyReleaser _propertyReleaser_ReaderModeView;
 }
-@property(nonatomic, retain) MDCActivityIndicator* activityIndicator;
+@property(nonatomic, strong) MDCActivityIndicator* activityIndicator;
 @property(nonatomic, copy) ProceduralBlock animateOutCompletionBlock;
-@property(nonatomic, retain) UIButton* closeButton;
+@property(nonatomic, strong) UIButton* closeButton;
 
 @end
 
@@ -37,7 +38,6 @@ const CGFloat kMinHeight = kMinWidth;
                      delegate:(id<ReaderModeViewDelegate>)delegate {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_ReaderModeView.Init(self, [ReaderModeView class]);
     _delegate = delegate;
 
     self.backgroundColor = [UIColor whiteColor];
@@ -45,7 +45,7 @@ const CGFloat kMinHeight = kMinWidth;
     self.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
-    _closeButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
+    _closeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     [_closeButton addTarget:self
                      action:@selector(close)
            forControlEvents:UIControlEventTouchUpInside];

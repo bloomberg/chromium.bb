@@ -6,6 +6,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 ReaderModeInfoBarDelegate::ReaderModeInfoBarDelegate(
     const base::Closure& callback)
     : callback_(callback) {}

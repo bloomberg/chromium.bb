@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("reader_mode") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "reader_mode_checker.h",
     "reader_mode_checker.mm",
