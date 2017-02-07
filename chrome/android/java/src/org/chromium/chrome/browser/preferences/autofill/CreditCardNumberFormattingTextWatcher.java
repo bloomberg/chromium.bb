@@ -8,6 +8,8 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 
+import org.chromium.chrome.browser.autofill.PersonalDataManager;
+
 /**
  * Watch a TextView and if a credit card number is entered, it will format the number.
  * Disable formatting when user:
@@ -94,7 +96,19 @@ public class CreditCardNumberFormattingTextWatcher implements TextWatcher {
     }
 
     public static void insertSeparators(Editable s) {
-        final int[] positions = {4, 9, 14 };
+        int[] positions;
+        if (PersonalDataManager.getInstance()
+                    .getBasicCardPaymentType(s.toString(), false)
+                    .equals("amex")) {
+            positions = new int[2];
+            positions[0] = 4;
+            positions[1] = 11;
+        } else {
+            positions = new int[3];
+            positions[0] = 4;
+            positions[1] = 9;
+            positions[2] = 14;
+        }
         for (int i : positions) {
             if (s.length() > i) {
                 s.insert(i, SEPARATOR);
