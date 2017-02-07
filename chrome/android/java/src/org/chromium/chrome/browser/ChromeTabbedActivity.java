@@ -79,6 +79,7 @@ import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -295,6 +296,15 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         }
     }
 
+    /**
+     * Return whether the passed in class name matches any of the supported tabbed mode activities.
+     */
+    public static boolean isTabbedModeClassName(String className) {
+        return TextUtils.equals(className, ChromeTabbedActivity.class.getName())
+                || TextUtils.equals(className, MultiInstanceChromeTabbedActivity.class.getName())
+                || TextUtils.equals(className, ChromeTabbedActivity2.class.getName());
+    }
+
     @Override
     public void initializeCompositor() {
         try {
@@ -440,7 +450,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             if (info == null) continue;
             String className = DocumentUtils.getTaskClassName(task, pm);
 
-            if (TextUtils.equals(className, ChromeTabbedActivity.class.getName())) {
+            if (isTabbedModeClassName(className)) {
                 tabbedModeTaskIds.add(info.id);
             }
         }

@@ -149,7 +149,7 @@ public class IncognitoNotificationService extends IntentService {
             // It is not easily possible to distinguish between tasks sitting on top of
             // ChromeLauncherActivity, so we treat them all as likely ChromeTabbedActivities and
             // close them to be on the cautious side of things.
-            if ((TextUtils.equals(className, ChromeTabbedActivity.class.getName())
+            if ((ChromeTabbedActivity.isTabbedModeClassName(className)
                     || TextUtils.equals(className, ChromeLauncherActivity.class.getName()))
                     && !visibleTaskIds.contains(info.id)) {
                 task.finishAndRemoveTask();
