@@ -41,6 +41,8 @@ class SearchBoxClientFactoryImpl
   chrome::mojom::SearchBox* GetSearchBox() override;
 
  private:
+  void OnConnectionError();
+
   content::WebContents* web_contents_;
   chrome::mojom::SearchBoxAssociatedPtr search_box_;
 
@@ -60,6 +62,9 @@ chrome::mojom::SearchBox* SearchBoxClientFactoryImpl::GetSearchBox() {
   if (id != last_connected_rfh_) {
     if (IsRenderedInInstantProcess(web_contents_)) {
       frame->GetRemoteAssociatedInterfaces()->GetInterface(&search_box_);
+      search_box_.set_connection_error_handler(
+          base::Bind(&SearchBoxClientFactoryImpl::OnConnectionError,
+                     base::Unretained(this)));
     } else {
       // Renderer is not an instant process. We'll create a connection that
       // drops all messages.
@@ -68,6 +73,13 @@ chrome::mojom::SearchBox* SearchBoxClientFactoryImpl::GetSearchBox() {
     last_connected_rfh_ = id;
   }
   return search_box_.get();
+}
+
+void SearchBoxClientFactoryImpl::OnConnectionError() {
+  search_box_.reset();
+  last_connected_rfh_ = std::make_pair(
+      content::ChildProcessHost::kInvalidUniqueID,
+      MSG_ROUTING_NONE);
 }
 
 }  // namespace
