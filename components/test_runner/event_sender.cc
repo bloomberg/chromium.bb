@@ -2671,7 +2671,8 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& raw_event,
     mainFrameWidget()->dragTargetDrop(current_drag_data_, client_point,
                                       screen_point, event->modifiers());
   } else {
-    mainFrameWidget()->dragTargetDragLeave();
+    mainFrameWidget()->dragTargetDragLeave(blink::WebPoint(),
+                                           blink::WebPoint());
   }
   current_drag_data_.reset();
   mainFrameWidget()->dragSourceEndedAt(client_point, screen_point,

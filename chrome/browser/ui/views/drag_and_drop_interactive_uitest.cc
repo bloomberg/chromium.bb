@@ -934,12 +934,8 @@ void DragAndDropBrowserTest::DragImageBetweenFrames_Step2(
     {  // Verify dragleave DOM event.
       std::string dragleave_event;
 
-      // TODO(paulmeyer): https://crbug.com/669695: Need to unify coordinates
-      // passed to dragend when OOPIFs are present or not.
-      state->expected_dom_event_data.set_expected_client_position(
-          "<no expectation>");
-      state->expected_dom_event_data.set_expected_page_position(
-          "<no expectation>");
+      state->expected_dom_event_data.set_expected_client_position("(355, 150)");
+      state->expected_dom_event_data.set_expected_page_position("(355, 150)");
 
       EXPECT_TRUE(
           dragleave_event_waiter.WaitForNextMatchingEvent(&dragleave_event));
@@ -1025,8 +1021,8 @@ void DragAndDropBrowserTest::DragImageBetweenFrames_Step3(
     state->expected_dom_event_data.set_expected_drop_effect("copy");
     state->expected_dom_event_data.set_expected_mime_types("");
 
-    // TODO(paulmeyer): https://crbug.com/669695: Need to unify coordinates
-    // passed to dragend when OOPIFs are present or not.
+    // TODO: https://crbug.com/686136: dragEnd coordinates for non-OOPIF
+    // scenarios are currently broken.
     state->expected_dom_event_data.set_expected_client_position(
         "<no expectation>");
     state->expected_dom_event_data.set_expected_page_position(

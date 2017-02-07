@@ -23,6 +23,7 @@
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -291,12 +292,29 @@ void PromiseWriterHelper(const DropData& drop_data,
   if (operation == (NSDragOperationMove | NSDragOperationCopy))
     operation &= ~NSDragOperationMove;
 
-  // TODO(paulmeyer):  In the OOPIF case, should |localPoint| be converted to
-  // the coordinates local to |dragStartRWH_|?
+  // |localPoint| and |screenPoint| are in the root coordinate space, for
+  // non-root RenderWidgetHosts they need to be transformed.
+  gfx::Point transformedPoint = gfx::Point(localPoint.x, localPoint.y);
+  gfx::Point transformedScreenPoint = gfx::Point(screenPoint.x, screenPoint.y);
+  if (dragStartRWH_ && contents_->GetRenderWidgetHostView()) {
+    content::RenderWidgetHostViewBase* contentsViewBase =
+        static_cast<content::RenderWidgetHostViewBase*>(
+            contents_->GetRenderWidgetHostView());
+    content::RenderWidgetHostViewBase* dragStartViewBase =
+        static_cast<content::RenderWidgetHostViewBase*>(
+            dragStartRWH_->GetView());
+    contentsViewBase->TransformPointToCoordSpaceForView(
+        gfx::Point(localPoint.x, localPoint.y), dragStartViewBase,
+        &transformedPoint);
+    contentsViewBase->TransformPointToCoordSpaceForView(
+        gfx::Point(screenPoint.x, screenPoint.y), dragStartViewBase,
+        &transformedScreenPoint);
+  }
+
   contents_->DragSourceEndedAt(
-      localPoint.x, localPoint.y, screenPoint.x, screenPoint.y,
-      static_cast<blink::WebDragOperation>(operation),
-      dragStartRWH_.get());
+      transformedPoint.x(), transformedPoint.y(), transformedScreenPoint.x(),
+      transformedScreenPoint.y(),
+      static_cast<blink::WebDragOperation>(operation), dragStartRWH_.get());
 
   // Make sure the pasteboard owner isn't us.
   [pasteboard_ declareTypes:[NSArray array] owner:nil];

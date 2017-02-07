@@ -1733,11 +1733,14 @@ void RenderWidget::OnDragTargetDragOver(const gfx::Point& client_point,
   Send(new DragHostMsg_UpdateDragCursor(routing_id(), operation));
 }
 
-void RenderWidget::OnDragTargetDragLeave() {
+void RenderWidget::OnDragTargetDragLeave(const gfx::Point& client_point,
+                                         const gfx::Point& screen_point) {
   if (!GetWebWidget())
     return;
   DCHECK(GetWebWidget()->isWebFrameWidget());
-  static_cast<WebFrameWidget*>(GetWebWidget())->dragTargetDragLeave();
+  static_cast<WebFrameWidget*>(GetWebWidget())
+      ->dragTargetDragLeave(ConvertWindowPointToViewport(client_point),
+                            screen_point);
 }
 
 void RenderWidget::OnDragTargetDrop(const DropData& drop_data,

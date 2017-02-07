@@ -365,7 +365,8 @@ void WebContentsViewAndroid::OnDragUpdated(const gfx::Point& location,
 }
 
 void WebContentsViewAndroid::OnDragExited() {
-  web_contents_->GetRenderViewHost()->GetWidget()->DragTargetDragLeave();
+  web_contents_->GetRenderViewHost()->GetWidget()->DragTargetDragLeave(
+      gfx::Point(), gfx::Point());
 }
 
 void WebContentsViewAndroid::OnPerformDrop(DropData* drop_data,

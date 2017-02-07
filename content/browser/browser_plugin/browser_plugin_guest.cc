@@ -865,7 +865,7 @@ void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,
       break;
     case blink::WebDragStatusLeave:
       embedder->DragLeftGuest(this);
-      widget->DragTargetDragLeave();
+      widget->DragTargetDragLeave(gfx::Point(), gfx::Point());
       ignore_dragged_url_ = true;
       break;
     case blink::WebDragStatusDrop:

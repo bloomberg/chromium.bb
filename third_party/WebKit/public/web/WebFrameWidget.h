@@ -101,7 +101,8 @@ class WebFrameWidget : public WebWidget {
       const WebPoint& screenPoint,
       WebDragOperationsMask operationsAllowed,
       int modifiers) = 0;
-  virtual void dragTargetDragLeave() = 0;
+  virtual void dragTargetDragLeave(const WebPoint& pointInViewport,
+                                   const WebPoint& screenPoint) = 0;
   virtual void dragTargetDrop(const WebDragData&,
                               const WebPoint& pointInViewport,
                               const WebPoint& screenPoint,

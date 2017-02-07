@@ -32,7 +32,9 @@ IPC_MESSAGE_ROUTED4(DragMsg_TargetDragOver,
                     blink::WebDragOperationsMask /* ops_allowed */,
                     int /* key_modifiers */)
 
-IPC_MESSAGE_ROUTED0(DragMsg_TargetDragLeave)
+IPC_MESSAGE_ROUTED2(DragMsg_TargetDragLeave,
+                    gfx::Point /* client_point */,
+                    gfx::Point /* screen_point */)
 
 IPC_MESSAGE_ROUTED4(DragMsg_TargetDrop,
                     content::DropData /* drop_data */,

@@ -1373,8 +1373,9 @@ void RenderWidgetHostImpl::DragTargetDragOver(
                                   operations_allowed, key_modifiers));
 }
 
-void RenderWidgetHostImpl::DragTargetDragLeave() {
-  Send(new DragMsg_TargetDragLeave(GetRoutingID()));
+void RenderWidgetHostImpl::DragTargetDragLeave(const gfx::Point& client_point,
+                                               const gfx::Point& screen_point) {
+  Send(new DragMsg_TargetDragLeave(GetRoutingID(), client_point, screen_point));
 }
 
 void RenderWidgetHostImpl::DragTargetDrop(const DropData& drop_data,

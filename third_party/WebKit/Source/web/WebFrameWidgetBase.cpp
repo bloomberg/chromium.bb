@@ -72,14 +72,17 @@ WebDragOperation WebFrameWidgetBase::dragTargetDragOver(
                                    modifiers);
 }
 
-void WebFrameWidgetBase::dragTargetDragLeave() {
+void WebFrameWidgetBase::dragTargetDragLeave(const WebPoint& pointInViewport,
+                                             const WebPoint& screenPoint) {
   DCHECK(m_currentDragData);
 
   if (ignoreInputEvents()) {
     cancelDrag();
     return;
   }
-  DragData dragData(m_currentDragData.get(), IntPoint(), IntPoint(),
+
+  WebPoint pointInRootFrame(viewportToRootFrame(pointInViewport));
+  DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
                     static_cast<DragOperation>(m_operationsAllowed));
 
   page()->dragController().dragExited(&dragData, *toCoreFrame(localRoot()));
@@ -109,7 +112,7 @@ void WebFrameWidgetBase::dragTargetDrop(const WebDragData& webDragData,
 
   if (m_dragOperation == WebDragOperationNone) {
     // IPC RACE CONDITION: do not allow this drop.
-    dragTargetDragLeave();
+    dragTargetDragLeave(pointInViewport, screenPoint);
     return;
   }
 

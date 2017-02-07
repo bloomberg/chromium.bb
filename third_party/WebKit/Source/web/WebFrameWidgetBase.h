@@ -51,7 +51,8 @@ class WebFrameWidgetBase : public WebFrameWidget {
                                       const WebPoint& screenPoint,
                                       WebDragOperationsMask operationsAllowed,
                                       int modifiers) override;
-  void dragTargetDragLeave() override;
+  void dragTargetDragLeave(const WebPoint& pointInViewport,
+                           const WebPoint& screenPoint) override;
   void dragTargetDrop(const WebDragData&,
                       const WebPoint& pointInViewport,
                       const WebPoint& screenPoint,

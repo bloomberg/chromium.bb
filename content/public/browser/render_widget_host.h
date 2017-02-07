@@ -276,7 +276,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
       const gfx::Point& screen_pt,
       blink::WebDragOperationsMask operations_allowed,
       int key_modifiers) {}
-  virtual void DragTargetDragLeave() {}
+  virtual void DragTargetDragLeave(const gfx::Point& client_point,
+                                   const gfx::Point& screen_point) {}
   virtual void DragTargetDrop(const DropData& drop_data,
                               const gfx::Point& client_pt,
                               const gfx::Point& screen_pt,
