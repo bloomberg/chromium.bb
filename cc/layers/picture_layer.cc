@@ -141,10 +141,10 @@ void PictureLayer::SetIsMask(bool is_mask) {
   is_mask_ = is_mask;
 }
 
-sk_sp<PaintRecord> PictureLayer::GetPicture() const {
-  // We could either flatten the RecordingSource into a single
-  // PaintRecord, or paint a fresh one depending on what we intend to do with
-  // the record. For now we just paint a fresh one to get consistent results.
+sk_sp<SkPicture> PictureLayer::GetPicture() const {
+  // We could either flatten the RecordingSource into a single SkPicture, or
+  // paint a fresh one depending on what we intend to do with it.  For now we
+  // just paint a fresh one to get consistent results.
   if (!DrawsContent())
     return nullptr;
 

@@ -41,9 +41,9 @@ WebDisplayItemListImpl::WebDisplayItemListImpl(
 
 void WebDisplayItemListImpl::appendDrawingItem(
     const blink::WebRect& visual_rect,
-    sk_sp<const cc::PaintRecord> picture) {
+    sk_sp<const cc::PaintRecord> record) {
   display_item_list_->CreateAndAppendDrawingItem<cc::DrawingDisplayItem>(
-      visual_rect, std::move(picture));
+      visual_rect, std::move(record));
 }
 
 void WebDisplayItemListImpl::appendClipItem(

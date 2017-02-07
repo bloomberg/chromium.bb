@@ -43,19 +43,19 @@ class MaskContentLayerClient : public ContentLayerClient {
     PaintCanvas* canvas =
         recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_)));
 
-    PaintFlags paint;
-    paint.setStyle(PaintFlags::kStroke_Style);
-    paint.setStrokeWidth(SkIntToScalar(2));
-    paint.setColor(SK_ColorWHITE);
+    PaintFlags flags;
+    flags.setStyle(PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(SkIntToScalar(2));
+    flags.setColor(SK_ColorWHITE);
 
     canvas->clear(SK_ColorTRANSPARENT);
     gfx::Rect inset_rect(bounds_);
     while (!inset_rect.IsEmpty()) {
       inset_rect.Inset(3, 3, 2, 2);
       canvas->drawRect(
-          SkRect::MakeXYWH(inset_rect.x(), inset_rect.y(),
-                           inset_rect.width(), inset_rect.height()),
-          paint);
+          SkRect::MakeXYWH(inset_rect.x(), inset_rect.y(), inset_rect.width(),
+                           inset_rect.height()),
+          flags);
       inset_rect.Inset(3, 3, 2, 2);
     }
 
@@ -165,18 +165,18 @@ class CheckerContentLayerClient : public ContentLayerClient {
     PaintCanvas* canvas =
         recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_)));
 
-    PaintFlags paint;
-    paint.setStyle(PaintFlags::kStroke_Style);
-    paint.setStrokeWidth(SkIntToScalar(4));
-    paint.setColor(color_);
+    PaintFlags flags;
+    flags.setStyle(PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(SkIntToScalar(4));
+    flags.setColor(color_);
     canvas->clear(SK_ColorTRANSPARENT);
     if (vertical_) {
       for (int i = 4; i < bounds_.width(); i += 16) {
-        canvas->drawLine(i, 0, i, bounds_.height(), paint);
+        canvas->drawLine(i, 0, i, bounds_.height(), flags);
       }
     } else {
       for (int i = 4; i < bounds_.height(); i += 16) {
-        canvas->drawLine(0, i, bounds_.width(), i, paint);
+        canvas->drawLine(0, i, bounds_.width(), i, flags);
       }
     }
 
@@ -208,14 +208,12 @@ class CircleContentLayerClient : public ContentLayerClient {
     PaintCanvas* canvas =
         recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_)));
 
-    PaintFlags paint;
-    paint.setStyle(PaintFlags::kFill_Style);
-    paint.setColor(SK_ColorWHITE);
+    PaintFlags flags;
+    flags.setStyle(PaintFlags::kFill_Style);
+    flags.setColor(SK_ColorWHITE);
     canvas->clear(SK_ColorTRANSPARENT);
-    canvas->drawCircle(bounds_.width() / 2,
-                       bounds_.height() / 2,
-                       bounds_.width() / 4,
-                       paint);
+    canvas->drawCircle(bounds_.width() / 2, bounds_.height() / 2,
+                       bounds_.width() / 4, flags);
 
     auto display_list = make_scoped_refptr(new DisplayItemList);
     display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(

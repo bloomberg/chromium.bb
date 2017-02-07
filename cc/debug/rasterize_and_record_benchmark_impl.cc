@@ -207,7 +207,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
 
   const RasterSource* layer_raster_source = layer->GetRasterSource();
   rasterize_results_.total_memory_usage +=
-      layer_raster_source->GetPictureMemoryUsage();
+      layer_raster_source->GetMemoryUsage();
 }
 
 RasterizeAndRecordBenchmarkImpl::RasterizeResults::RasterizeResults()

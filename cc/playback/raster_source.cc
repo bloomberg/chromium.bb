@@ -217,7 +217,7 @@ sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
   return recorder.finishRecordingAsPicture();
 }
 
-size_t RasterSource::GetPictureMemoryUsage() const {
+size_t RasterSource::GetMemoryUsage() const {
   if (!display_list_)
     return 0;
   return display_list_->ApproximateMemoryUsage() +

@@ -192,13 +192,13 @@ TEST(RecordingSourceTest, NoDiscardableImages) {
   sk_sp<SkImage> non_discardable_image =
       SkImage::MakeFromBitmap(non_discardable_bitmap);
 
-  recording_source->add_draw_rect_with_paint(gfx::Rect(0, 0, 256, 256),
+  recording_source->add_draw_rect_with_flags(gfx::Rect(0, 0, 256, 256),
                                              simple_paint);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(128, 128, 512, 512),
+  recording_source->add_draw_rect_with_flags(gfx::Rect(128, 128, 512, 512),
                                              simple_paint);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(512, 0, 256, 256),
+  recording_source->add_draw_rect_with_flags(gfx::Rect(512, 0, 256, 256),
                                              simple_paint);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(0, 512, 256, 256),
+  recording_source->add_draw_rect_with_flags(gfx::Rect(0, 512, 256, 256),
                                              simple_paint);
   recording_source->add_draw_image(non_discardable_image, gfx::Point(128, 0));
   recording_source->add_draw_image(non_discardable_image, gfx::Point(0, 128));

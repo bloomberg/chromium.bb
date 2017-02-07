@@ -1061,16 +1061,16 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
     input_handler_client_->ReconcileElasticOverscrollAndRootScroll();
 
   if (const char* client_name = GetClientNameForMetrics()) {
-    size_t total_picture_memory = 0;
+    size_t total_memory = 0;
     for (const PictureLayerImpl* layer : active_tree()->picture_layers())
-      total_picture_memory += layer->GetRasterSource()->GetPictureMemoryUsage();
-    if (total_picture_memory != 0) {
+      total_memory += layer->GetRasterSource()->GetMemoryUsage();
+    if (total_memory != 0) {
       // GetClientNameForMetrics only returns one non-null value over the
       // lifetime of the process, so this histogram name is runtime constant.
       UMA_HISTOGRAM_COUNTS(
           base::StringPrintf("Compositing.%s.PictureMemoryUsageKb",
                              client_name),
-          base::saturated_cast<int>(total_picture_memory / 1024));
+          base::saturated_cast<int>(total_memory / 1024));
     }
     // GetClientNameForMetrics only returns one non-null value over the lifetime
     // of the process, so this histogram name is runtime constant.

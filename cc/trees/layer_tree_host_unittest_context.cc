@@ -610,9 +610,9 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
     root_->SetIsDrawable(true);
 
     // Paint non-solid color.
-    PaintFlags paint;
-    paint.setColor(SkColorSetARGB(100, 80, 200, 200));
-    client_.add_draw_rect(gfx::Rect(5, 5), paint);
+    PaintFlags flags;
+    flags.setColor(SkColorSetARGB(100, 80, 200, 200));
+    client_.add_draw_rect(gfx::Rect(5, 5), flags);
 
     layer_ = FakePictureLayer::Create(&client_);
     layer_->SetBounds(gfx::Size(10, 10));
@@ -689,9 +689,9 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
 
   void SetupTree() override {
     // Paint non-solid color.
-    PaintFlags paint;
-    paint.setColor(SkColorSetARGB(100, 80, 200, 200));
-    client_.add_draw_rect(gfx::Rect(5, 5), paint);
+    PaintFlags flags;
+    flags.setColor(SkColorSetARGB(100, 80, 200, 200));
+    client_.add_draw_rect(gfx::Rect(5, 5), flags);
 
     scoped_refptr<FakePictureLayer> picture_layer =
         FakePictureLayer::Create(&client_);
@@ -1603,9 +1603,9 @@ class LayerTreeHostContextTestLoseWorkerContextDuringPrepareTiles
     : public LayerTreeTest {
  protected:
   void SetupTree() override {
-    PaintFlags paint;
+    PaintFlags flags;
     client_.set_fill_with_nonsolid_color(true);
-    client_.add_draw_rect(gfx::Rect(5, 5), paint);
+    client_.add_draw_rect(gfx::Rect(5, 5), flags);
 
     scoped_refptr<FakePictureLayer> picture_layer =
         FakePictureLayer::Create(&client_);

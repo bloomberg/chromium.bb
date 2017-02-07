@@ -328,8 +328,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   virtual ScrollbarLayerInterface* ToScrollbarLayer();
 
-  // TODO(enne): rename this to PaintRecord
-  virtual sk_sp<PaintRecord> GetPicture() const;
+  virtual sk_sp<SkPicture> GetPicture() const;
 
   // Constructs a LayerImpl of the correct runtime type for this Layer type.
   virtual std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);

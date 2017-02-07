@@ -21,9 +21,9 @@ namespace cc {
 
 DrawingDisplayItem::DrawingDisplayItem() : DisplayItem(DRAWING) {}
 
-DrawingDisplayItem::DrawingDisplayItem(sk_sp<const PaintRecord> picture)
+DrawingDisplayItem::DrawingDisplayItem(sk_sp<const PaintRecord> record)
     : DisplayItem(DRAWING) {
-  SetNew(std::move(picture));
+  SetNew(std::move(record));
 }
 
 DrawingDisplayItem::DrawingDisplayItem(const DrawingDisplayItem& item)
@@ -34,8 +34,8 @@ DrawingDisplayItem::DrawingDisplayItem(const DrawingDisplayItem& item)
 DrawingDisplayItem::~DrawingDisplayItem() {
 }
 
-void DrawingDisplayItem::SetNew(sk_sp<const PaintRecord> picture) {
-  picture_ = std::move(picture);
+void DrawingDisplayItem::SetNew(sk_sp<const PaintRecord> record) {
+  picture_ = std::move(record);
 }
 
 DISABLE_CFI_PERF

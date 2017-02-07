@@ -24,15 +24,15 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilled(
   auto recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(size);
 
-  PaintFlags red_paint;
-  red_paint.setColor(SK_ColorRED);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(size), red_paint);
+  PaintFlags red_flags;
+  red_flags.setColor(SK_ColorRED);
+  recording_source->add_draw_rect_with_flags(gfx::Rect(size), red_flags);
 
-  PaintFlags salmon_pink_paint;
-  salmon_pink_paint.setColor(SK_ColorRED);
-  salmon_pink_paint.setAlpha(128);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(size),
-                                             salmon_pink_paint);
+  PaintFlags salmon_pink_flags;
+  salmon_pink_flags.setColor(SK_ColorRED);
+  salmon_pink_flags.setAlpha(128);
+  recording_source->add_draw_rect_with_flags(gfx::Rect(size),
+                                             salmon_pink_flags);
 
   recording_source->Rerecord();
 
@@ -45,15 +45,15 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledLCD(
   auto recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(size);
 
-  PaintFlags red_paint;
-  red_paint.setColor(SK_ColorRED);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(size), red_paint);
+  PaintFlags red_flags;
+  red_flags.setColor(SK_ColorRED);
+  recording_source->add_draw_rect_with_flags(gfx::Rect(size), red_flags);
 
   gfx::Size smaller_size(size.width() - 10, size.height() - 10);
-  PaintFlags green_paint;
-  green_paint.setColor(SK_ColorGREEN);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(smaller_size),
-                                             green_paint);
+  PaintFlags green_flags;
+  green_flags.setColor(SK_ColorGREEN);
+  recording_source->add_draw_rect_with_flags(gfx::Rect(smaller_size),
+                                             green_flags);
 
   recording_source->Rerecord();
 
@@ -65,9 +65,9 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledSolidColor(
   auto recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(size);
 
-  PaintFlags red_paint;
-  red_paint.setColor(SK_ColorRED);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(size), red_paint);
+  PaintFlags red_flags;
+  red_flags.setColor(SK_ColorRED);
+  recording_source->add_draw_rect_with_flags(gfx::Rect(size), red_flags);
   recording_source->Rerecord();
   auto raster_source =
       make_scoped_refptr(new FakeRasterSource(recording_source.get(), false));
@@ -84,15 +84,15 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreatePartiallyFilled(
   auto recording_source =
       FakeRecordingSource::CreateRecordingSource(recorded_viewport, size);
 
-  PaintFlags red_paint;
-  red_paint.setColor(SK_ColorRED);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(size), red_paint);
+  PaintFlags red_flags;
+  red_flags.setColor(SK_ColorRED);
+  recording_source->add_draw_rect_with_flags(gfx::Rect(size), red_flags);
 
   gfx::Size smaller_size(size.width() - 10, size.height() - 10);
-  PaintFlags green_paint;
-  green_paint.setColor(SK_ColorGREEN);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(smaller_size),
-                                             green_paint);
+  PaintFlags green_flags;
+  green_flags.setColor(SK_ColorGREEN);
+  recording_source->add_draw_rect_with_flags(gfx::Rect(smaller_size),
+                                             green_flags);
 
   recording_source->Rerecord();
   recording_source->SetRecordedViewport(recorded_viewport);

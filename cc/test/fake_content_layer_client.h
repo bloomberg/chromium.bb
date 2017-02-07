@@ -26,16 +26,16 @@ class FakeContentLayerClient : public ContentLayerClient {
   struct ImageData {
     ImageData(sk_sp<const SkImage> image,
               const gfx::Point& point,
-              const PaintFlags& paint);
+              const PaintFlags& flags);
     ImageData(sk_sp<const SkImage> image,
               const gfx::Transform& transform,
-              const PaintFlags& paint);
+              const PaintFlags& flags);
     ImageData(const ImageData& other);
     ~ImageData();
     sk_sp<const SkImage> image;
     gfx::Point point;
     gfx::Transform transform;
-    PaintFlags paint;
+    PaintFlags flags;
   };
 
   FakeContentLayerClient();
@@ -51,25 +51,25 @@ class FakeContentLayerClient : public ContentLayerClient {
     fill_with_nonsolid_color_ = nonsolid;
   }
 
-  void add_draw_rect(const gfx::Rect& rect, const PaintFlags& paint) {
-    draw_rects_.push_back(std::make_pair(gfx::RectF(rect), paint));
+  void add_draw_rect(const gfx::Rect& rect, const PaintFlags& flags) {
+    draw_rects_.push_back(std::make_pair(gfx::RectF(rect), flags));
   }
 
-  void add_draw_rectf(const gfx::RectF& rect, const PaintFlags& paint) {
-    draw_rects_.push_back(std::make_pair(rect, paint));
+  void add_draw_rectf(const gfx::RectF& rect, const PaintFlags& flags) {
+    draw_rects_.push_back(std::make_pair(rect, flags));
   }
 
   void add_draw_image(sk_sp<const SkImage> image,
                       const gfx::Point& point,
-                      const PaintFlags& paint) {
-    ImageData data(std::move(image), point, paint);
+                      const PaintFlags& flags) {
+    ImageData data(std::move(image), point, flags);
     draw_images_.push_back(data);
   }
 
   void add_draw_image_with_transform(sk_sp<const SkImage> image,
                                      const gfx::Transform& transform,
-                                     const PaintFlags& paint) {
-    ImageData data(std::move(image), transform, paint);
+                                     const PaintFlags& flags) {
+    ImageData data(std::move(image), transform, flags);
     draw_images_.push_back(data);
   }
 

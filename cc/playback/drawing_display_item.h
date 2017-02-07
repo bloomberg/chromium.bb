@@ -23,7 +23,7 @@ namespace cc {
 class CC_EXPORT DrawingDisplayItem : public DisplayItem {
  public:
   DrawingDisplayItem();
-  explicit DrawingDisplayItem(sk_sp<const PaintRecord> picture);
+  explicit DrawingDisplayItem(sk_sp<const PaintRecord> record);
   explicit DrawingDisplayItem(const DrawingDisplayItem& item);
   ~DrawingDisplayItem() override;
 
@@ -38,7 +38,7 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
   void CloneTo(DrawingDisplayItem* item) const;
 
  private:
-  void SetNew(sk_sp<const PaintRecord> picture);
+  void SetNew(sk_sp<const PaintRecord> record);
 
   sk_sp<const PaintRecord> picture_;
 };

@@ -11,8 +11,8 @@ namespace cc {
 
 using PaintFlags = SkPaint;
 
-inline const SkPaint& ToSkPaint(const PaintFlags& paint) {
-  return paint;
+inline const SkPaint& ToSkPaint(const PaintFlags& flags) {
+  return flags;
 }
 
 }  // namespace cc
