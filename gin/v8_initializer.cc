@@ -191,36 +191,6 @@ static const OpenedFileMap::mapped_type OpenFileIfNecessary(
   return opened;
 }
 
-#if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
-bool VerifyV8StartupFile(base::MemoryMappedFile** file,
-                         const unsigned char* fingerprint) {
-  unsigned char output[crypto::kSHA256Length];
-  crypto::SHA256HashString(
-      base::StringPiece(reinterpret_cast<const char*>((*file)->data()),
-                        (*file)->length()),
-      output, sizeof(output));
-  if (!memcmp(fingerprint, output, sizeof(output))) {
-    return true;
-  }
-
-  // TODO(oth): Remove this temporary diagnostics for http://crbug.com/501799
-  uint64_t input[sizeof(output)];
-  memcpy(input, fingerprint, sizeof(input));
-
-  base::debug::Alias(output);
-  base::debug::Alias(input);
-
-  const uint64_t* o64 = reinterpret_cast<const uint64_t*>(output);
-  const uint64_t* f64 = reinterpret_cast<const uint64_t*>(fingerprint);
-  LOG(FATAL) << "Natives length " << (*file)->length()
-             << " H(computed) " << o64[0] << o64[1] << o64[2] << o64[3]
-             << " H(expected) " << f64[0] << f64[1] << f64[2] << f64[3];
-
-  delete *file;
-  *file = NULL;
-  return false;
-}
-#endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
 bool GenerateEntropy(unsigned char* buffer, size_t amount) {
@@ -231,35 +201,28 @@ bool GenerateEntropy(unsigned char* buffer, size_t amount) {
 }  // namespace
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-#if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
-// Defined in gen/gin/v8_snapshot_fingerprint.cc
-extern const unsigned char g_natives_fingerprint[];
-extern const unsigned char g_snapshot_fingerprint[];
-#endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
+
+namespace {
 
 enum LoadV8FileResult {
   V8_LOAD_SUCCESS = 0,
   V8_LOAD_FAILED_OPEN,
   V8_LOAD_FAILED_MAP,
-  V8_LOAD_FAILED_VERIFY,
+  V8_LOAD_FAILED_VERIFY,  // Deprecated.
   V8_LOAD_MAX_VALUE
 };
 
-static LoadV8FileResult MapVerify(const OpenedFileMap::mapped_type& file_region,
-#if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
-                                  const unsigned char* fingerprint,
-#endif
-                                  base::MemoryMappedFile** mmapped_file_out) {
+static LoadV8FileResult MapOpenedFile(
+    const OpenedFileMap::mapped_type& file_region,
+    base::MemoryMappedFile** mmapped_file_out) {
   if (file_region.first == base::kInvalidPlatformFile)
     return V8_LOAD_FAILED_OPEN;
   if (!MapV8File(file_region.first, file_region.second, mmapped_file_out))
     return V8_LOAD_FAILED_MAP;
-#if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
-  if (!VerifyV8StartupFile(mmapped_file_out, fingerprint))
-    return V8_LOAD_FAILED_VERIFY;
-#endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
   return V8_LOAD_SUCCESS;
 }
+
+}  // namespace
 
 // static
 void V8Initializer::LoadV8Snapshot() {
@@ -267,11 +230,8 @@ void V8Initializer::LoadV8Snapshot() {
     return;
 
   OpenFileIfNecessary(kSnapshotFileName);
-  LoadV8FileResult result = MapVerify(GetOpenedFile(kSnapshotFileName),
-#if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
-                                      g_snapshot_fingerprint,
-#endif
-                                      &g_mapped_snapshot);
+  LoadV8FileResult result = MapOpenedFile(GetOpenedFile(kSnapshotFileName),
+                                          &g_mapped_snapshot);
   // V8 can't start up without the source of the natives, but it can
   // start up (slower) without the snapshot.
   UMA_HISTOGRAM_ENUMERATION("V8.Initializer.LoadV8Snapshot.Result", result,
@@ -283,11 +243,8 @@ void V8Initializer::LoadV8Natives() {
     return;
 
   OpenFileIfNecessary(kNativesFileName);
-  LoadV8FileResult result = MapVerify(GetOpenedFile(kNativesFileName),
-#if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
-                                      g_natives_fingerprint,
-#endif
-                                      &g_mapped_natives);
+  LoadV8FileResult result = MapOpenedFile(GetOpenedFile(kNativesFileName),
+                                          &g_mapped_natives);
   if (result != V8_LOAD_SUCCESS) {
     LOG(FATAL) << "Couldn't mmap v8 natives data file, status code is "
                << static_cast<int>(result);
@@ -314,10 +271,6 @@ void V8Initializer::LoadV8SnapshotFromFD(base::PlatformFile snapshot_pf,
   LoadV8FileResult result = V8_LOAD_SUCCESS;
   if (!MapV8File(snapshot_pf, snapshot_region, &g_mapped_snapshot))
     result = V8_LOAD_FAILED_MAP;
-#if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
-  if (!VerifyV8StartupFile(&g_mapped_snapshot, g_snapshot_fingerprint))
-    result = V8_LOAD_FAILED_VERIFY;
-#endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
   if (result == V8_LOAD_SUCCESS) {
     g_opened_files.Get()[kSnapshotFileName] =
         std::make_pair(snapshot_pf, snapshot_region);
@@ -345,11 +298,6 @@ void V8Initializer::LoadV8NativesFromFD(base::PlatformFile natives_pf,
   if (!MapV8File(natives_pf, natives_region, &g_mapped_natives)) {
     LOG(FATAL) << "Couldn't mmap v8 natives data file";
   }
-#if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
-  if (!VerifyV8StartupFile(&g_mapped_natives, g_natives_fingerprint)) {
-    LOG(FATAL) << "Couldn't verify contents of v8 natives data file";
-  }
-#endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
   g_opened_files.Get()[kNativesFileName] =
       std::make_pair(natives_pf, natives_region);
 }
