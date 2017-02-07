@@ -55,7 +55,6 @@ class FlatDomTreeExtractorBrowserTest
 
     extractor_.reset(new FlatDomTreeExtractor(devtools_client_.get()));
 
-    devtools_client_->GetDOM()->Enable();
     std::vector<std::string> css_whitelist = {
         "color",       "display",      "font-style", "font-family",
         "margin-left", "margin-right", "margin-top", "margin-bottom"};
@@ -911,7 +910,6 @@ class FlatDomTreeExtractorBrowserTest
                                                                 << i;
     }
 
-    devtools_client_->GetDOM()->Disable();
     FinishAsynchronousTest();
   }
 

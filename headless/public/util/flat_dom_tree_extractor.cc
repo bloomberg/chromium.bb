@@ -26,6 +26,7 @@ void FlatDomTreeExtractor::ExtractDomTree(
 
   callback_ = std::move(callback);
 
+  devtools_client_->GetDOM()->Enable();
   devtools_client_->GetDOM()->GetFlattenedDocument(
       dom::GetFlattenedDocumentParams::Builder()
           .SetDepth(-1)
@@ -62,6 +63,7 @@ void FlatDomTreeExtractor::MaybeExtractDomTree() {
     }
     ExtractLayoutTreeNodes();
     ExtractComputedStyles();
+    devtools_client_->GetDOM()->Disable();
 
     work_in_progress_ = false;
 
