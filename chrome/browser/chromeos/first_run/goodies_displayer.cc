@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -35,7 +36,6 @@ GoodiesDisplayerTestInfo* g_test_info = nullptr;
 // for any device over kMaxDaysAfterOobeForGoodies days old, to avoid showing
 // Goodies after update on older devices.
 bool CheckGoodiesPrefAgainstOobeTimestamp() {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   const int days_since_oobe =
       g_test_info ? g_test_info->days_since_oobe
                   : StartupUtils::GetTimeSinceOobeFlagFileCreation().InDays();
@@ -83,8 +83,9 @@ bool GoodiesDisplayer::Init() {
   const bool can_show = g_browser_process->local_state()->GetBoolean(
       prefs::kCanShowOobeGoodiesPage);
   if (can_show) {
-    base::PostTaskAndReplyWithResult(
-        content::BrowserThread::GetBlockingPool(), FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::BACKGROUND),
         base::Bind(&CheckGoodiesPrefAgainstOobeTimestamp),
         base::Bind(&UpdateGoodiesPrefCantShow));
   }
