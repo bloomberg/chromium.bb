@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
@@ -20,6 +21,14 @@ WebDatabaseTable::TypeKey GetKey() {
   static int table_key = 0;
   return reinterpret_cast<void*>(&table_key);
 }
+
+// Entries in the |Signin.TokenTable.ReadTokenFromDBResult| histogram.
+enum ReadOneTokenResult {
+  READ_ONE_TOKEN_SUCCESS,
+  READ_ONE_TOKEN_DB_SUCCESS_DECRYPT_FAILED,
+  READ_ONE_TOKEN_DB_FAILED_BAD_ENTRY,
+  READ_ONE_TOKEN_MAX_VALUE
+};
 
 }  // namespace
 
@@ -93,10 +102,18 @@ bool TokenServiceTable::GetAllTokens(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT service, encrypted_token FROM token_service"));
 
-  if (!s.is_valid())
-    return false;
+  UMA_HISTOGRAM_BOOLEAN("Signin.TokenTable.GetAllTokensSqlStatementValidity",
+                        s.is_valid());
 
+  if (!s.is_valid()) {
+    LOG(ERROR) << "Failed to load tokens (invalid SQL statement).";
+    return false;
+  }
+
+  bool read_all_tokens_result = true;
   while (s.Step()) {
+    ReadOneTokenResult read_token_result = READ_ONE_TOKEN_MAX_VALUE;
+
     std::string encrypted_token;
     std::string decrypted_token;
     std::string service;
@@ -104,12 +121,25 @@ bool TokenServiceTable::GetAllTokens(
     bool entry_ok = !service.empty() &&
                     s.ColumnBlobAsString(1, &encrypted_token);
     if (entry_ok) {
-      OSCrypt::DecryptString(encrypted_token, &decrypted_token);
-      (*tokens)[service] = decrypted_token;
+      if (OSCrypt::DecryptString(encrypted_token, &decrypted_token)) {
+        (*tokens)[service] = decrypted_token;
+        read_token_result = READ_ONE_TOKEN_SUCCESS;
+      } else {
+        // Chrome relies on native APIs to encrypt and decrypt the tokens which
+        // may fail (see http://crbug.com/686485).
+        LOG(ERROR) << "Failed to decrypt token for service " << service;
+        read_token_result = READ_ONE_TOKEN_DB_SUCCESS_DECRYPT_FAILED;
+        read_all_tokens_result = false;
+      }
     } else {
-      NOTREACHED();
-      return false;
+      LOG(ERROR) << "Bad token entry for service " << service;
+      read_token_result = READ_ONE_TOKEN_DB_FAILED_BAD_ENTRY;
+      read_all_tokens_result = false;
     }
+    DCHECK_LT(read_token_result, READ_ONE_TOKEN_MAX_VALUE);
+    UMA_HISTOGRAM_ENUMERATION("Signin.TokenTable.ReadTokenFromDBResult",
+                              read_token_result,
+                              READ_ONE_TOKEN_MAX_VALUE);
   }
-  return true;
+  return read_all_tokens_result;
 }
