@@ -367,3 +367,14 @@ source_set("unit_tests") {
     deps -= [ "//components/metrics/public/cpp:call_stack_unit_tests" ]
   }
 }
+
+# Convenience testing target
+test("metrics_unittests") {
+  sources = [
+    "//components/test/run_all_unittests.cc",
+  ]
+  deps = [
+    ":unit_tests",
+    "//components/test:test_support",
+  ]
+}
