@@ -21,4 +21,6 @@ public final class ChromeRestriction {
     public static final String RESTRICTION_TYPE_DAYDREAM = "Daydream";
     /** Specifies the test is only valid on a non-Daydream-ready device */
     public static final String RESTRICTION_TYPE_NON_DAYDREAM = "Non-Daydream";
+    /** Specifies the test is only valid if the current VR viewer is Daydream View */
+    public static final String RESTRICTION_TYPE_DAYDREAM_VIEW = "Daydream_View";
 }

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DAYDREAM_VIEW;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_NON_DAYDREAM;
 
 import android.content.pm.ActivityInfo;
@@ -130,7 +131,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
      * NFC tag is scanned on a Daydream-ready device. Requires that the phone
      * is unlocked.
      */
-    @Restriction(RESTRICTION_TYPE_DAYDREAM)
+    @Restriction({RESTRICTION_TYPE_DAYDREAM, RESTRICTION_TYPE_DAYDREAM_VIEW})
     @MediumTest
     public void testSimNfcSupported() {
         enterVrModeNfc(true);

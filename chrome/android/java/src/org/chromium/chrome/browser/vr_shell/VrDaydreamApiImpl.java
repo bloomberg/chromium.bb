@@ -7,11 +7,17 @@ package org.chromium.chrome.browser.vr_shell;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.os.StrictMode;
 
 import com.google.vr.ndk.base.DaydreamApi;
 import com.google.vr.ndk.base.GvrApi;
+
+import junit.framework.Assert;
+
+import org.chromium.ui.base.WindowAndroid;
+
 
 /**
  * A wrapper for DaydreamApi. Note that we have to recreate the DaydreamApi instance each time we
@@ -19,20 +25,20 @@ import com.google.vr.ndk.base.GvrApi;
  */
 public class VrDaydreamApiImpl implements VrDaydreamApi {
     private static final String TAG = "VrDaydreamApiImpl";
-    private final Activity mActivity;
+    private final Context mContext;
 
-    public VrDaydreamApiImpl(Activity activity) {
-        mActivity = activity;
+    public VrDaydreamApiImpl(Context context) {
+        mContext = context;
     }
 
     @Override
     public boolean isDaydreamReadyDevice() {
-        return DaydreamApi.isDaydreamReadyPlatform(mActivity);
+        return DaydreamApi.isDaydreamReadyPlatform(mContext);
     }
 
     @Override
     public boolean registerDaydreamIntent(final PendingIntent pendingIntent) {
-        DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        DaydreamApi daydreamApi = DaydreamApi.create(mContext);
         if (daydreamApi == null) return false;
         daydreamApi.registerDaydreamIntent(pendingIntent);
         daydreamApi.close();
@@ -41,7 +47,7 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
 
     @Override
     public boolean unregisterDaydreamIntent() {
-        DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        DaydreamApi daydreamApi = DaydreamApi.create(mContext);
         if (daydreamApi == null) return false;
         daydreamApi.unregisterDaydreamIntent();
         daydreamApi.close();
@@ -55,7 +61,7 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
 
     @Override
     public boolean launchInVr(final PendingIntent pendingIntent) {
-        DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        DaydreamApi daydreamApi = DaydreamApi.create(mContext);
         if (daydreamApi == null) return false;
         daydreamApi.launchInVr(pendingIntent);
         daydreamApi.close();
@@ -64,16 +70,18 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
 
     @Override
     public boolean exitFromVr(int requestCode, final Intent intent) {
-        DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        DaydreamApi daydreamApi = DaydreamApi.create(mContext);
         if (daydreamApi == null) return false;
-        daydreamApi.exitFromVr(mActivity, requestCode, intent);
+        Activity activity = WindowAndroid.activityFromContext(mContext);
+        Assert.assertNotNull(activity);
+        daydreamApi.exitFromVr(activity, requestCode, intent);
         daydreamApi.close();
         return true;
     }
 
     @Override
     public Boolean isDaydreamCurrentViewer() {
-        DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        DaydreamApi daydreamApi = DaydreamApi.create(mContext);
         if (daydreamApi == null) return false;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         // If this is the first time any app reads the daydream config file, daydream may create its
@@ -91,7 +99,7 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
 
     @Override
     public void launchVrHomescreen() {
-        DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        DaydreamApi daydreamApi = DaydreamApi.create(mContext);
         if (daydreamApi == null) return;
         daydreamApi.launchVrHomescreen();
         daydreamApi.close();
