@@ -227,13 +227,16 @@ class MaterialKeyboardStatusRowView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(MaterialKeyboardStatusRowView);
 };
 
-ImeListView::ImeListView(SystemTrayItem* owner,
-                         bool show_keyboard_toggle,
-                         SingleImeBehavior single_ime_behavior)
+ImeListView::ImeListView(SystemTrayItem* owner)
     : TrayDetailsView(owner),
       last_item_selected_with_keyboard_(false),
       should_focus_ime_after_selection_with_keyboard_(false),
-      current_ime_view_(nullptr) {
+      current_ime_view_(nullptr) {}
+
+ImeListView::~ImeListView() {}
+
+void ImeListView::Init(bool show_keyboard_toggle,
+                       SingleImeBehavior single_ime_behavior) {
   SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   IMEInfoList list;
   delegate->GetAvailableIMEList(&list);
@@ -241,8 +244,6 @@ ImeListView::ImeListView(SystemTrayItem* owner,
   delegate->GetCurrentIMEProperties(&property_list);
   Update(list, property_list, show_keyboard_toggle, single_ime_behavior);
 }
-
-ImeListView::~ImeListView() {}
 
 void ImeListView::Update(const IMEInfoList& list,
                          const IMEPropertyInfoList& property_list,

@@ -152,8 +152,8 @@ class ImeTitleView : public views::View, public views::ButtonListener {
     SetLayoutManager(box_layout);
     auto title_label =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
-    title_label->SetBorder(views::CreateEmptyBorder(
-        0, kMenuEdgeEffectivePadding, kTrayMenuBottomRowPadding, 0));
+    title_label->SetBorder(
+        views::CreateEmptyBorder(0, kMenuEdgeEffectivePadding, 1, 0));
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
     style.SetupLabel(title_label);
@@ -336,10 +336,7 @@ class ImeButtonsView : public views::View,
 // The list view that contains the selected IME and property items.
 class ImeMenuListView : public ImeListView {
  public:
-  ImeMenuListView(SystemTrayItem* owner,
-                  bool show_keyboard_toggle,
-                  SingleImeBehavior single_ime_behavior)
-      : ImeListView(owner, show_keyboard_toggle, single_ime_behavior) {
+  ImeMenuListView(SystemTrayItem* owner) : ImeListView(owner) {
     set_should_focus_ime_after_selection_with_keyboard(true);
   }
 
@@ -437,8 +434,9 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
   }
 
   // Adds IME list to the bubble.
-  ime_list_view_ = new ImeMenuListView(nullptr, ShouldShowKeyboardToggle(),
-                                       ImeListView::SHOW_SINGLE_IME);
+  ime_list_view_ = new ImeMenuListView(nullptr);
+  ime_list_view_->Init(ShouldShowKeyboardToggle(),
+                       ImeListView::SHOW_SINGLE_IME);
   bubble_view->AddChildView(ime_list_view_);
 
   if (ShouldShowEmojiHandwritingVoiceButtons()) {

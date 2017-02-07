@@ -111,21 +111,11 @@ class IMEDefaultView : public TrayItemMore {
 
 class IMEDetailedView : public ImeListView {
  public:
-  IMEDetailedView(SystemTrayItem* owner,
-                  LoginStatus login,
-                  bool show_keyboard_toggle)
-      : ImeListView(owner, show_keyboard_toggle, ImeListView::HIDE_SINGLE_IME),
+  IMEDetailedView(SystemTrayItem* owner, LoginStatus login)
+      : ImeListView(owner),
         login_(login),
         settings_(nullptr),
-        settings_button_(nullptr) {
-    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
-    IMEInfoList list;
-    delegate->GetAvailableIMEList(&list);
-    IMEPropertyInfoList property_list;
-    delegate->GetCurrentIMEProperties(&property_list);
-    Update(list, property_list, show_keyboard_toggle,
-           ImeListView::HIDE_SINGLE_IME);
-  }
+        settings_button_(nullptr) {}
 
   ~IMEDetailedView() override {}
 
@@ -300,8 +290,8 @@ views::View* TrayIME::CreateDefaultView(LoginStatus status) {
 
 views::View* TrayIME::CreateDetailedView(LoginStatus status) {
   CHECK(detailed_ == NULL);
-  detailed_ =
-      new tray::IMEDetailedView(this, status, ShouldShowKeyboardToggle());
+  detailed_ = new tray::IMEDetailedView(this, status);
+  detailed_->Init(ShouldShowKeyboardToggle(), ImeListView::HIDE_SINGLE_IME);
   return detailed_;
 }
 

@@ -22,11 +22,12 @@ class ImeListView : public TrayDetailsView {
     HIDE_SINGLE_IME
   };
 
-  ImeListView(SystemTrayItem* owner,
-              bool show_keyboard_toggle,
-              SingleImeBehavior single_ime_behavior);
+  ImeListView(SystemTrayItem* owner);
 
   ~ImeListView() override;
+
+  // Initializes the contents of a newly-instantiated ImeListView.
+  void Init(bool show_keyboard_toggle, SingleImeBehavior single_ime_behavior);
 
   // Updates the view.
   virtual void Update(const IMEInfoList& list,
