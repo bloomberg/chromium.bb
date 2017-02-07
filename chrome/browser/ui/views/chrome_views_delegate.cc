@@ -542,8 +542,12 @@ ChromeViewsDelegate::GetBlockingPoolTaskRunner() {
 }
 
 gfx::Insets ChromeViewsDelegate::GetDialogButtonInsets() const {
-  return gfx::Insets(LayoutDelegate::Get()->GetMetric(
-      LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN));
+  const LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  const int top = layout_delegate->GetMetric(
+      LayoutDelegate::Metric::DIALOG_BUTTON_TOP_SPACING);
+  const int margin = layout_delegate->GetMetric(
+      LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN);
+  return gfx::Insets(top, margin, margin, margin);
 }
 
 int ChromeViewsDelegate::GetDialogCloseButtonMargin() const {
