@@ -16,6 +16,9 @@ var Manager = (function() {
     this.players_ = {};
     this.audioComponents_ = [];
     this.clientRenderer_ = clientRenderer;
+
+    this.hidePlayersButton = document.getElementById('hide-players-button');
+    this.hidePlayersButton.onclick = this.hidePlayers_.bind(this);
   }
 
   Manager.prototype = {
@@ -76,6 +79,12 @@ var Manager = (function() {
       var playerRemoved = this.players_[id];
       delete this.players_[id];
       this.clientRenderer_.playerRemoved(this.players_, playerRemoved);
+    },
+
+    hidePlayers_: function() {
+      util.object.forEach(this.players_, function(playerInfo, id) {
+        this.removePlayer(id);
+      }, this);
     },
 
     updatePlayerInfoNoRecord: function(id, timestamp, key, value) {
