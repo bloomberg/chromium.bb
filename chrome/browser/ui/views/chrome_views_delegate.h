@@ -63,6 +63,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   scoped_refptr<base::TaskRunner> GetBlockingPoolTaskRunner() override;
 
   gfx::Insets GetDialogButtonInsets() const override;
+  int GetDialogCloseButtonMargin() const override;
   int GetDialogRelatedButtonHorizontalSpacing() const override;
   int GetDialogRelatedControlVerticalSpacing() const override;
   gfx::Insets GetDialogFrameViewInsets() const override;

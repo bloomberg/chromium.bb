@@ -201,6 +201,10 @@ class VIEWS_EXPORT ViewsDelegate {
   // DialogClientView's content view.
   virtual gfx::Insets GetDialogButtonInsets() const;
 
+  // Returns the distance between a dialog's edge and the close button in the
+  // upper trailing corner.
+  virtual int GetDialogCloseButtonMargin() const;
+
   // Returns the spacing between a pair of related horizontal buttons, used for
   // dialog layout.
   virtual int GetDialogRelatedButtonHorizontalSpacing() const;

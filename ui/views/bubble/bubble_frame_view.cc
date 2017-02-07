@@ -31,6 +31,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/resources/grit/views_resources.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
@@ -44,14 +45,6 @@ const SkColor kFootnoteBackgroundColor = SkColorSetRGB(245, 245, 245);
 
 // Color of the top border of the footnote.
 const SkColor kFootnoteBorderColor = SkColorSetRGB(229, 229, 229);
-
-constexpr int kClosePaddingRight = 7;
-constexpr int kClosePaddingTop = 7;
-
-// The MD spec states that the center of the "x" should be 16x16 from the top
-// right of the dialog.
-constexpr int kClosePaddingRightMd = 4;
-constexpr int kClosePaddingTopMd = 4;
 
 // Get the |vertical| or horizontal amount that |available_bounds| overflows
 // |window_bounds|.
@@ -321,15 +314,11 @@ void BubbleFrameView::Layout() {
     return;
 
   // The close button is positioned somewhat closer to the edge of the bubble.
-  gfx::Point close_position = contents_bounds.top_right();
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    close_position += gfx::Vector2d(-close_->width() - kClosePaddingRightMd,
-                                    kClosePaddingTopMd);
-  } else {
-    close_position +=
-        gfx::Vector2d(-close_->width() - kClosePaddingRight, kClosePaddingTop);
-  }
-  close_->SetPosition(close_position);
+  const int close_margin =
+      ViewsDelegate::GetInstance()->GetDialogCloseButtonMargin();
+  close_->SetPosition(
+      gfx::Point(contents_bounds.right() - close_margin - close_->width(),
+                 contents_bounds.y() + close_margin));
 
   gfx::Size title_icon_pref_size(title_icon_->GetPreferredSize());
   int padding = 0;

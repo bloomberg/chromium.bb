@@ -131,6 +131,10 @@ gfx::Insets ViewsDelegate::GetDialogButtonInsets() const {
                      kButtonHEdgeMarginNew);
 }
 
+int ViewsDelegate::GetDialogCloseButtonMargin() const {
+  return kCloseButtonMargin;
+}
+
 int ViewsDelegate::GetDialogRelatedButtonHorizontalSpacing() const {
   return kRelatedButtonHSpacing;
 }

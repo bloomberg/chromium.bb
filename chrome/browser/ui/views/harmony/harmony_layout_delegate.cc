@@ -19,6 +19,10 @@ int HarmonyLayoutDelegate::GetMetric(Metric metric) const {
   switch (metric) {
     case Metric::DIALOG_BUTTON_MARGIN:
       return kHarmonyLayoutUnit;
+    case Metric::DIALOG_CLOSE_BUTTON_MARGIN:
+      // TODO(pkasting): The "- 4" here is a hack that matches the extra padding
+      // in vector_icon_button.cc and should be removed when that padding is.
+      return (kHarmonyLayoutUnit / 2) - 4;
     case Metric::PANEL_CONTENT_MARGIN:
       return kHarmonyLayoutUnit;
     case Metric::RELATED_BUTTON_HORIZONTAL_SPACING:

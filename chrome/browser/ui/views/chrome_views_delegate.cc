@@ -546,6 +546,11 @@ gfx::Insets ChromeViewsDelegate::GetDialogButtonInsets() const {
       LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN));
 }
 
+int ChromeViewsDelegate::GetDialogCloseButtonMargin() const {
+  return LayoutDelegate::Get()->GetMetric(
+      LayoutDelegate::Metric::DIALOG_CLOSE_BUTTON_MARGIN);
+}
+
 int ChromeViewsDelegate::GetDialogRelatedButtonHorizontalSpacing() const {
   return LayoutDelegate::Get()->GetMetric(
       LayoutDelegate::Metric::RELATED_BUTTON_HORIZONTAL_SPACING);

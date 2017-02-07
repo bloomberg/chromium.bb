@@ -13,6 +13,9 @@ class LayoutDelegate {
     // Horizontal or vertical margin between the edge of a dialog and a
     // contained button.
     DIALOG_BUTTON_MARGIN,
+    // Horizontal or vertical margin between the edge of a dialog and the close
+    // button in the upper trailing corner.
+    DIALOG_CLOSE_BUTTON_MARGIN,
     // Horizontal or vertical margin between the edge of a panel and the
     // contained content.
     PANEL_CONTENT_MARGIN,

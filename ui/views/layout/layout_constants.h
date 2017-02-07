@@ -70,6 +70,9 @@ constexpr int kButtonVEdgeMarginNew = 20;
 // left or right of a button (when using new style dialogs).
 constexpr int kButtonHEdgeMarginNew = 20;
 
+// Spacing between the edge of the window and the edge of the close button.
+const int kCloseButtonMargin = 7;
+
 // Horizontal spacing between buttons that are logically related.
 constexpr int kRelatedButtonHSpacing = 6;
 
