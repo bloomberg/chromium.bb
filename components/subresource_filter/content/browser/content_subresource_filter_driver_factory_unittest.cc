@@ -602,6 +602,39 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
   }
 };
 
+// Only main frames with http/https schemes should activate, unless the
+// activation scope is for all sites.
+TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
+       ActivateForSupportedUrlScheme) {
+  const ActivationScopeTestData& test_data = GetParam();
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
+      test_data.activation_scope,
+      kActivationListSocialEngineeringAdsInterstitial);
+
+  const char* unsupported_urls[] = {
+      "data:text/html,<p>Hello", "ftp://example.com/", "chrome://settings",
+      "chrome-extension://some-extension", "file:///var/www/index.html"};
+  const char* supported_urls[] = {"http://example.test",
+                                  "https://example.test"};
+  for (const auto url : unsupported_urls) {
+    SCOPED_TRACE(url);
+    RedirectChainMatchPattern expected_pattern = EMPTY;
+    NavigateAndExpectActivation({test_data.url_matches_activation_list},
+                                {GURL(url)}, expected_pattern,
+                                false /* expected_activation */);
+  }
+  for (const auto url : supported_urls) {
+    SCOPED_TRACE(url);
+    RedirectChainMatchPattern expected_pattern =
+        test_data.url_matches_activation_list ? NO_REDIRECTS_HIT : EMPTY;
+    NavigateAndExpectActivation({test_data.url_matches_activation_list},
+                                {GURL(url)}, expected_pattern,
+                                test_data.expected_activation);
+  }
+};
+
 INSTANTIATE_TEST_CASE_P(NoSocEngHit,
                         ContentSubresourceFilterDriverFactoryThreatTypeTest,
                         ::testing::ValuesIn(kActivationListTestData));

@@ -147,8 +147,13 @@ bool ContentSubresourceFilterDriverFactory::ShouldActivateForMainFrameURL(
     const GURL& url) const {
   switch (GetCurrentActivationScope()) {
     case ActivationScope::ALL_SITES:
-      return !IsWhitelisted(url);
+      return url.SchemeIsHTTPOrHTTPS() && !IsWhitelisted(url);
     case ActivationScope::ACTIVATION_LIST:
+      // The logic to ensure only http/https URLs are activated lives in
+      // AddActivationListMatch to ensure the activation list only has relevant
+      // entries.
+      DCHECK(url.SchemeIsHTTPOrHTTPS() ||
+             !DidURLMatchCurrentActivationList(url));
       return DidURLMatchCurrentActivationList(url) && !IsWhitelisted(url);
     default:
       return false;
@@ -315,7 +320,7 @@ bool ContentSubresourceFilterDriverFactory::DidURLMatchCurrentActivationList(
 void ContentSubresourceFilterDriverFactory::AddActivationListMatch(
     const GURL& url,
     ActivationList match_type) {
-  if (!url.host().empty() && url.SchemeIsHTTPOrHTTPS())
+  if (url.has_host() && url.SchemeIsHTTPOrHTTPS())
     activation_list_matches_[DistillURLToHostAndPath(url)].insert(match_type);
 }
 
