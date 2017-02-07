@@ -515,8 +515,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::kHistogramParseStartToFirstMeaningfulPaint, 0);
 }
 
+// Flaky on Linux (timing out or failing in an expectation) crbug.com/657022
+#if defined(OS_LINUX)
+#define MAYBE_NoStatePrefetchObserverCacheable \
+  DISABLED_NoStatePrefetchObserverCacheable
+#else
+#define MAYBE_NoStatePrefetchObserverCacheable NoStatePrefetchObserverCacheable
+#endif
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       NoStatePrefetchObserverCacheable) {
+                       MAYBE_NoStatePrefetchObserverCacheable) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
@@ -529,8 +536,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 1);
 }
 
+// Flaky on Linux (timing out or failing in an expectation) crbug.com/657022
+#if defined(OS_LINUX)
+#define MAYBE_NoStatePrefetchObserverNoStore \
+  DISABLED_NoStatePrefetchObserverNoStore
+#else
+#define MAYBE_NoStatePrefetchObserverNoStore NoStatePrefetchObserverNoStore
+#endif
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       NoStatePrefetchObserverNoStore) {
+                       MAYBE_NoStatePrefetchObserverNoStore) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
