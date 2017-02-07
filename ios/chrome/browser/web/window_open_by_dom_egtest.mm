@@ -60,10 +60,9 @@ const char kTestURL[] =
   AssertMainTabCount(1);
 }
 
-// Tests that |sessionStorage| content is available for windows opened by DOM
-// via |target="_blank"| links.
-// TODO(crbug.com/681434): Enable this test.
-- (void)DISABLED_testLinkWithBlankTargetSessionStorage {
+// Tests that sessionStorage content is available for windows opened by DOM via
+// target="_blank" links.
+- (void)testLinkWithBlankTargetSessionStorage {
   using chrome_test_util::ExecuteJavaScript;
 
   NSError* error = nil;

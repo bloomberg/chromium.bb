@@ -279,7 +279,9 @@ id<GREYMatcher> GoButtonMatcher() {
 // Tests that clicking a link with URL changed by onclick uses the href of the
 // anchor tag instead of the one specified in JavaScript. Also verifies a new
 // tab is opened by target '_blank'.
-- (void)testBrowsingPreventDefaultWithLinkOpenedByJavascript {
+// TODO(crbug.com/688223): WKWebView does not open a new window as expected by
+// this test.
+- (void)DISABLED_testBrowsingPreventDefaultWithLinkOpenedByJavascript {
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL URL = web::test::HttpServer::MakeUrl(

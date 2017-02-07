@@ -289,7 +289,6 @@ class WebStateImpl;
 - (NSUInteger)observerCount;
 - (void)setURLOnStartLoading:(const GURL&)url;
 - (void)simulateLoadRequestWithURL:(const GURL&)URL;
-- (NSString*)externalRequestWindowName;
 
 // Returns the header height.
 - (CGFloat)headerHeight;

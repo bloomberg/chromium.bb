@@ -116,35 +116,9 @@ using web::WebStateImpl;
 
 namespace web {
 NSString* const kContainerViewID = @"Container View";
-const char* kWindowNameSeparator = "#";
 NSString* const kUserIsInteractingKey = @"userIsInteracting";
 NSString* const kOriginURLKey = @"originURL";
 NSString* const kLogJavaScript = @"LogJavascript";
-
-struct NewWindowInfo {
-  GURL url;
-  base::scoped_nsobject<NSString> window_name;
-  web::ReferrerPolicy referrer_policy;
-  bool user_is_interacting;
-  NewWindowInfo(GURL url,
-                NSString* window_name,
-                web::ReferrerPolicy referrer_policy,
-                bool user_is_interacting);
-  ~NewWindowInfo();
-};
-
-NewWindowInfo::NewWindowInfo(GURL target_url,
-                             NSString* target_window_name,
-                             web::ReferrerPolicy target_referrer_policy,
-                             bool target_user_is_interacting)
-    : url(target_url),
-      window_name([target_window_name copy]),
-      referrer_policy(target_referrer_policy),
-      user_is_interacting(target_user_is_interacting) {
-}
-
-NewWindowInfo::~NewWindowInfo() {
-}
 
 // Struct to capture data about a user interaction. Records the time of the
 // interaction and the main document URL at that time.
@@ -389,7 +363,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // YES if the web process backing _wkWebView is believed to currently be dead.
   BOOL _webProcessIsDead;
 
-  std::unique_ptr<web::NewWindowInfo> _externalRequest;
   // Object for loading POST requests with body.
   base::scoped_nsobject<CRWJSPOSTRequestLoader> _POSTRequestLoader;
 
@@ -809,8 +782,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Returns YES if the popup should be blocked, NO otherwise.
 - (BOOL)shouldBlockPopupWithURL:(const GURL&)popupURL
                       sourceURL:(const GURL&)sourceURL;
-// Tries to open a popup with the given new window information.
-- (void)openPopupWithInfo:(const web::NewWindowInfo&)windowInfo;
 
 // Used in webView:didReceiveAuthenticationChallenge:completionHandler: to
 // reply with NSURLSessionAuthChallengeDisposition and credentials.
@@ -890,9 +861,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Handles 'document.submit' message.
 - (BOOL)handleDocumentSubmitMessage:(base::DictionaryValue*)message
                             context:(NSDictionary*)context;
-// Handles 'externalRequest' message.
-- (BOOL)handleExternalRequestMessage:(base::DictionaryValue*)message
-                             context:(NSDictionary*)context;
 // Handles 'form.activity' message.
 - (BOOL)handleFormActivityMessage:(base::DictionaryValue*)message
                           context:(NSDictionary*)context;
@@ -908,9 +876,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Handles 'navigator.credentials.notifyFailedSignIn' message.
 - (BOOL)handleSignInFailedMessage:(base::DictionaryValue*)message
                           context:(NSDictionary*)context;
-// Handles 'resetExternalRequest' message.
-- (BOOL)handleResetExternalRequestMessage:(base::DictionaryValue*)message
-                                  context:(NSDictionary*)context;
 // Handles 'window.error' message.
 - (BOOL)handleWindowErrorMessage:(base::DictionaryValue*)message
                          context:(NSDictionary*)context;
@@ -2536,8 +2501,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         @selector(handleDocumentFaviconsMessage:context:);
     (*handlers)["document.submit"] =
         @selector(handleDocumentSubmitMessage:context:);
-    (*handlers)["externalRequest"] =
-        @selector(handleExternalRequestMessage:context:);
     (*handlers)["form.activity"] =
         @selector(handleFormActivityMessage:context:);
     (*handlers)["navigator.credentials.request"] =
@@ -2548,8 +2511,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         @selector(handleSignedOutMessage:context:);
     (*handlers)["navigator.credentials.notifyFailedSignIn"] =
         @selector(handleSignInFailedMessage:context:);
-    (*handlers)["resetExternalRequest"] =
-        @selector(handleResetExternalRequestMessage:context:);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
     (*handlers)["window.hashchange"] =
         @selector(handleWindowHashChangeMessage:context:);
@@ -2757,39 +2718,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return YES;
 }
 
-- (BOOL)handleExternalRequestMessage:(base::DictionaryValue*)message
-                             context:(NSDictionary*)context {
-  std::string href;
-  std::string target;
-  std::string referrerPolicy;
-  if (!message->GetString("href", &href)) {
-    DLOG(WARNING) << "JS message parameter not found: href";
-    return NO;
-  }
-  if (!message->GetString("target", &target)) {
-    DLOG(WARNING) << "JS message parameter not found: target";
-    return NO;
-  }
-  if (!message->GetString("referrerPolicy", &referrerPolicy)) {
-    DLOG(WARNING) << "JS message parameter not found: referrerPolicy";
-    return NO;
-  }
-  // Round-trip the href through NSURL; this URL will be compared as a
-  // string against a UIWebView-provided NSURL later, and must match exactly
-  // for the new window to trigger, so the escaping needs to be NSURL-style.
-  // TODO(stuartmorgan): Comparing against a URL whose exact formatting we
-  // don't control is fundamentally fragile; try to find another
-  // way of handling this.
-  DCHECK(context[web::kUserIsInteractingKey]);
-  NSString* windowName =
-      base::SysUTF8ToNSString(href + web::kWindowNameSeparator + target);
-  _externalRequest.reset(new web::NewWindowInfo(
-      net::GURLWithNSURL(net::NSURLWithGURL(GURL(href))), windowName,
-      web::ReferrerPolicyFromString(referrerPolicy),
-      [context[web::kUserIsInteractingKey] boolValue]));
-  return YES;
-}
-
 - (BOOL)handleFormActivityMessage:(base::DictionaryValue*)message
                           context:(NSDictionary*)context {
   std::string formName;
@@ -2901,12 +2829,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         static_cast<int>(request_id),
         net::GURLWithNSURL(context[web::kOriginURLKey]));
   }
-  return YES;
-}
-
-- (BOOL)handleResetExternalRequestMessage:(base::DictionaryValue*)message
-                                  context:(NSDictionary*)context {
-  _externalRequest.reset();
   return YES;
 }
 
@@ -3247,26 +3169,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   BOOL isNavigationTypeLinkActivated =
       action.navigationType == WKNavigationTypeLinkActivated;
 
-  // Check if the request should be delayed.
-  if (_externalRequest && _externalRequest->url == requestURL) {
-    // Links that can't be shown in a tab by Chrome but can be handled by
-    // external apps (e.g. tel:, mailto:) are opened directly despite the target
-    // attribute on the link. We don't open a new tab for them because Mobile
-    // Safari doesn't do that (and sites are expecting us to do the same) and
-    // also because there would be nothing shown in that new tab; it would
-    // remain on about:blank (see crbug.com/240178)
-    if ([CRWWebController webControllerCanShow:requestURL] ||
-        ![_delegate openExternalURL:requestURL
-                        linkClicked:isNavigationTypeLinkActivated]) {
-      web::NewWindowInfo windowInfo = *_externalRequest;
-      dispatch_async(dispatch_get_main_queue(), ^{
-        [self openPopupWithInfo:windowInfo];
-      });
-    }
-    _externalRequest.reset();
-    return NO;
-  }
-
   // Check if the link navigation leads to a launch of an external app.
   // TODO(crbug.com/607780): Revise the logic of allowing external app launch
   // and move it to externalAppLauncher.
@@ -3510,33 +3412,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return [_delegate webController:self
           shouldBlockPopupWithURL:popupURL
                         sourceURL:sourceURL];
-}
-
-- (void)openPopupWithInfo:(const web::NewWindowInfo&)windowInfo {
-  const GURL url(windowInfo.url);
-  web::NavigationItem* item = [self currentNavItem];
-  const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
-  NSString* windowName = windowInfo.window_name.get();
-  web::Referrer referrer(currentURL, windowInfo.referrer_policy);
-  base::WeakNSObject<CRWWebController> weakSelf(self);
-  void (^showPopupHandler)() = ^{
-    CRWWebController* child = [[weakSelf delegate] webPageOrderedOpen:url
-                                                             referrer:referrer
-                                                           windowName:windowName
-                                                         inBackground:NO];
-    DCHECK(!child || child.sessionController.openedByDOM);
-  };
-
-  BOOL showPopup = windowInfo.user_is_interacting ||
-                   (![self shouldBlockPopupWithURL:url sourceURL:currentURL]);
-  if (showPopup) {
-    showPopupHandler();
-  } else if ([_delegate
-                 respondsToSelector:@selector(webController:didBlockPopup:)]) {
-    web::BlockedPopupInfo blockedPopupInfo(url, referrer, windowName,
-                                           showPopupHandler);
-    [_delegate webController:self didBlockPopup:blockedPopupInfo];
-  }
 }
 
 #pragma mark -
@@ -5434,12 +5309,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)simulateLoadRequestWithURL:(const GURL&)URL {
   _lastRegisteredRequestURL = URL;
   _loadPhase = web::LOAD_REQUESTED;
-}
-
-- (NSString*)externalRequestWindowName {
-  if (!_externalRequest || !_externalRequest->window_name)
-    return @"";
-  return _externalRequest->window_name;
 }
 
 - (web::WebViewDocumentType)documentTypeFromMIMEType:(NSString*)MIMEType {

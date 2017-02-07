@@ -547,44 +547,6 @@ goog.require('__crWeb.message');
     return hasFrame_(window, node.target);
   };
 
-  var getTargetLink_ = function(target) {
-    var node = target;
-    // Find the closest ancester that is a link.
-    while (node) {
-      if (node instanceof HTMLAnchorElement)
-        break;
-      node = node.parentNode;
-    }
-    return node;
-  };
-
-  var setExternalRequest_ = function(href, target) {
-    if (typeof(target) == 'undefined' || target == '_blank' || target == '') {
-      target = '' + Date.now() + '-' + Math.random();
-    }
-    if (typeof(href) == 'undefined') {
-      // W3C recommended behavior.
-      href = 'about:blank';
-    }
-    invokeOnHost_({'command': 'externalRequest',
-                      'href': href,
-                    'target': target,
-            'referrerPolicy': getReferrerPolicy_()});
-  };
-
-  var resetExternalRequest_ = function() {
-    invokeOnHost_({'command': 'resetExternalRequest'});
-  };
-
-  var clickBubbleListener_ = function(evt) {
-    if (evt['defaultPrevented']) {
-      resetExternalRequest_();
-    }
-    // Remove the listener.
-    evt.currentTarget.removeEventListener(
-        'click', clickBubbleListener_, false);
-  };
-
   var getComputedWebkitTouchCallout_ = function(element) {
     return window.getComputedStyle(element, null)['webkitTouchCallout'];
   };
@@ -593,51 +555,6 @@ goog.require('__crWeb.message');
   if (__gCrWeb.message) {
     __gCrWeb.message.invokeQueues();
   }
-
-  document.addEventListener('click', function(evt) {
-    var node = getTargetLink_(evt.target);
-
-    if (!node)
-      return;
-
-    if (isInternaLink_(node)) {
-      return;
-    }
-    setExternalRequest_(node.href, node.target);
-    // Add listener to the target and its immediate ancesters. These event
-    // listeners will be removed if they get called. The listeners for some
-    // elements might never be removed, but if multiple identical event
-    // listeners are registered on the same event target with the same
-    // parameters the duplicate instances are discarded.
-    for (var level = 0; level < 5; ++level) {
-      if (node && node != document) {
-        node.addEventListener('click', clickBubbleListener_, false);
-        node = node.parentNode;
-      } else {
-        break;
-      }
-    }
-  }, true);
-
-  // Intercept clicks on anchors (links) during bubbling phase so that the
-  // browser can handle target type appropriately.
-  document.addEventListener('click', function(evt) {
-    var node = getTargetLink_(evt.target);
-
-    if (!node)
-      return;
-
-    if (isInternaLink_(node)) {
-      return;
-    } else {
-      // Resets the external request if it has been canceled, otherwise
-      // updates the href in case it has been changed.
-      if (evt['defaultPrevented'])
-        resetExternalRequest_();
-      else
-        setExternalRequest_(node.href, node.target);
-    }
-  }, false);
 
   // Capture form submit actions.
   document.addEventListener('submit', function(evt) {
