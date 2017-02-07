@@ -68,14 +68,14 @@ TEST_F(CreatePresentationConnectionRequestTest, Getters) {
   content::PresentationError error(content::PRESENTATION_ERROR_UNKNOWN,
                                    "Unknown error.");
   CreatePresentationConnectionRequest request(
-      render_frame_host_id_, presentation_urls_, GURL(kFrameUrl),
+      render_frame_host_id_, presentation_urls_, url::Origin(GURL(kFrameUrl)),
       base::Bind(&CreatePresentationConnectionRequestTest::FailOnSuccess,
                  base::Unretained(this)),
       base::Bind(&CreatePresentationConnectionRequestTest::OnError,
                  base::Unretained(this), error));
 
-  PresentationRequest presentation_request(render_frame_host_id_,
-                                           presentation_urls_, GURL(kFrameUrl));
+  PresentationRequest presentation_request(
+      render_frame_host_id_, presentation_urls_, url::Origin(GURL(kFrameUrl)));
   EXPECT_TRUE(request.presentation_request().Equals(presentation_request));
   // Since we didn't explicitly call Invoke*, the error callback will be
   // invoked when |request| is destroyed.
@@ -85,7 +85,7 @@ TEST_F(CreatePresentationConnectionRequestTest, SuccessCallback) {
   content::PresentationSessionInfo session_info(presentation_url_,
                                                 kPresentationId);
   CreatePresentationConnectionRequest request(
-      render_frame_host_id_, {presentation_url_}, GURL(kFrameUrl),
+      render_frame_host_id_, {presentation_url_}, url::Origin(GURL(kFrameUrl)),
       base::Bind(&CreatePresentationConnectionRequestTest::OnSuccess,
                  base::Unretained(this), session_info),
       base::Bind(&CreatePresentationConnectionRequestTest::FailOnError,
@@ -101,7 +101,7 @@ TEST_F(CreatePresentationConnectionRequestTest, ErrorCallback) {
       content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
       "This is an error message");
   CreatePresentationConnectionRequest request(
-      render_frame_host_id_, presentation_urls_, GURL(kFrameUrl),
+      render_frame_host_id_, presentation_urls_, url::Origin(GURL(kFrameUrl)),
       base::Bind(&CreatePresentationConnectionRequestTest::FailOnSuccess,
                  base::Unretained(this)),
       base::Bind(&CreatePresentationConnectionRequestTest::OnError,

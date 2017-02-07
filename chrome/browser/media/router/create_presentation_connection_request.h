@@ -16,12 +16,14 @@
 #include "chrome/browser/media/router/render_frame_host_id.h"
 #include "content/public/browser/presentation_service_delegate.h"
 
-class GURL;
-
 namespace content {
 struct PresentationError;
 struct PresentationSessionInfo;
 }  // namespace content
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace media_router {
 
@@ -42,13 +44,14 @@ class CreatePresentationConnectionRequest {
       content::PresentationSessionErrorCallback;
   // |presentation_url|: The presentation URL of the request. Must be a valid
   //                     URL.
-  // |frame_url|: The URL of the frame that initiated the presentation request.
+  // |frame_origin|: The origin of the frame that initiated the presentation
+  // request.
   // |success_cb|: Callback to invoke when the request succeeds. Must be valid.
   // |erorr_cb|: Callback to invoke when the request fails. Must be valid.
   CreatePresentationConnectionRequest(
       const RenderFrameHostId& render_frame_host_id,
       const std::vector<GURL>& presentation_urls,
-      const GURL& frame_url,
+      const url::Origin& frame_origin,
       const PresentationSessionSuccessCallback& success_cb,
       const PresentationSessionErrorCallback& error_cb);
   ~CreatePresentationConnectionRequest();

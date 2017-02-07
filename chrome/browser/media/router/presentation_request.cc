@@ -11,10 +11,10 @@ namespace media_router {
 PresentationRequest::PresentationRequest(
     const RenderFrameHostId& render_frame_host_id,
     const std::vector<GURL>& presentation_urls,
-    const GURL& frame_url)
+    const url::Origin& frame_origin)
     : render_frame_host_id_(render_frame_host_id),
       presentation_urls_(presentation_urls),
-      frame_url_(frame_url) {
+      frame_origin_(frame_origin) {
   DCHECK(!presentation_urls_.empty());
 }
 
@@ -26,7 +26,8 @@ PresentationRequest::~PresentationRequest() = default;
 bool PresentationRequest::Equals(const PresentationRequest& other) const {
   return render_frame_host_id_ == other.render_frame_host_id_ &&
          presentation_urls_ == other.presentation_urls_ &&
-         frame_url_ == other.frame_url_;
+         ((frame_origin_.unique() && other.frame_origin_.unique()) ||
+          (frame_origin_ == other.frame_origin_));
 }
 
 std::vector<MediaSource> PresentationRequest::GetMediaSources() const {
