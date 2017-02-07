@@ -63,7 +63,8 @@ if (is_linux && target_sysroot_dir != "") {
       import("//build_overrides/build.gni")
       if (build_with_chromium) {
         import("//ui/ozone/ozone.gni")
-        if (use_ozone && !is_chromecast) {
+        import("//ui/base/ui_features.gni")
+        if (use_ozone && use_xkbcommon) {
           sysroot = "//build/linux/debian_jessie_amd64-sysroot"
         }
       }
