@@ -129,17 +129,11 @@ TEST(SimpleThreadTest, CreateAndJoin) {
   EXPECT_EQ(0, stack_int);
 
   DelegateSimpleThread thread(&runner, "int_setter");
-  EXPECT_FALSE(thread.HasBeenStarted());
-  EXPECT_FALSE(thread.HasBeenJoined());
   EXPECT_EQ(0, stack_int);
 
   thread.Start();
-  EXPECT_TRUE(thread.HasBeenStarted());
-  EXPECT_FALSE(thread.HasBeenJoined());
-
   thread.Join();
-  EXPECT_TRUE(thread.HasBeenStarted());
-  EXPECT_TRUE(thread.HasBeenJoined());
+
   EXPECT_EQ(7, stack_int);
 }
 
@@ -165,16 +159,11 @@ TEST(SimpleThreadTest, NonJoinableStartAndDieOnJoin) {
   options.joinable = false;
   DelegateSimpleThread thread(&runner, "non_joinable", options);
 
-  EXPECT_FALSE(thread.HasBeenStarted());
   thread.Start();
-  EXPECT_TRUE(thread.HasBeenStarted());
 
-  // Note: this is not quite the same as |thread.HasBeenStarted()| which
-  // represents ThreadMain() getting ready to invoke Run() whereas
-  // |runner.WaitUntilStarted()| ensures Run() was actually invoked.
+  // Wait until Run() is invoked.
   runner.WaitUntilStarted();
 
-  EXPECT_FALSE(thread.HasBeenJoined());
   EXPECT_DCHECK_DEATH({ thread.Join(); });
 }
 
