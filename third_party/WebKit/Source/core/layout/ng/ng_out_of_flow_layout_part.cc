@@ -68,22 +68,30 @@ void NGOutOfFlowLayoutPart::Run() {
   container_builder_->GetAndClearOutOfFlowDescendantCandidates(
       &out_of_flow_candidates, &out_of_flow_candidate_positions);
 
-  size_t position_index = 0;
+  while (out_of_flow_candidates.size() > 0) {
+    size_t position_index = 0;
 
-  for (auto& descendant : out_of_flow_candidates) {
-    NGStaticPosition static_position =
-        out_of_flow_candidate_positions[position_index++];
+    for (auto& descendant : out_of_flow_candidates) {
+      NGStaticPosition static_position =
+          out_of_flow_candidate_positions[position_index++];
 
-    if (IsContainingBlockForAbsoluteDescendant(container_style_,
-                                               descendant->Style())) {
-      NGLogicalOffset offset;
-      RefPtr<NGPhysicalFragment> physical_fragment =
-          LayoutDescendant(*descendant, static_position, &offset);
-      // TODO(atotic) Need to adjust size of overflow rect per spec.
-      container_builder_->AddChild(std::move(physical_fragment), offset);
-    } else {
-      container_builder_->AddOutOfFlowDescendant(descendant, static_position);
+      if (IsContainingBlockForAbsoluteDescendant(container_style_,
+                                                 descendant->Style())) {
+        NGLogicalOffset offset;
+        RefPtr<NGPhysicalFragment> physical_fragment =
+            LayoutDescendant(*descendant, static_position, &offset);
+        // TODO(atotic) Need to adjust size of overflow rect per spec.
+        container_builder_->AddChild(std::move(physical_fragment), offset);
+      } else {
+        container_builder_->AddOutOfFlowDescendant(descendant, static_position);
+      }
     }
+    // Sweep any descendants that might have been added.
+    // This happens when an absolute container has a fixed child.
+    out_of_flow_candidates.clear();
+    out_of_flow_candidate_positions.clear();
+    container_builder_->GetAndClearOutOfFlowDescendantCandidates(
+        &out_of_flow_candidates, &out_of_flow_candidate_positions);
   }
 }
 
