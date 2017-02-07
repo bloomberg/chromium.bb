@@ -349,15 +349,13 @@ DOM_KEY_MAP_DECLARATION {
   // ======================================================
 
   //          Key                     Enum                      Value
-  //          "LaunchCalculator" is equivalent to "Launch Application 2":
-  DOM_KEY_MAP("LaunchCalculator",     LAUNCH_CALCULATOR,        0x0B01),
+  DOM_KEY_MAP("LaunchApplication1",   LAUNCH_MY_COMPUTER,       0x0B06),
+  DOM_KEY_MAP("LaunchApplication2",   LAUNCH_CALCULATOR,        0x0B01),
   DOM_KEY_MAP("LaunchCalendar",       LAUNCH_CALENDAR,          0x0B02),
   DOM_KEY_MAP("LaunchContacts",       LAUNCH_CONTACTS,          0x0B0C),
   DOM_KEY_MAP("LaunchMail",           LAUNCH_MAIL,              0x0B03),
   DOM_KEY_MAP("LaunchMediaPlayer",    LAUNCH_MEDIA_PLAYER,      0x0B04),
   DOM_KEY_MAP("LaunchMusicPlayer",    LAUNCH_MUSIC_PLAYER,      0x0B05),
-  //          "LaunchMyComputer" is equivalent to "Launch Application 1":
-  DOM_KEY_MAP("LaunchMyComputer",     LAUNCH_MY_COMPUTER,       0x0B06),
   DOM_KEY_MAP("LaunchPhone",          LAUNCH_PHONE,             0x0B0D),
   DOM_KEY_MAP("LaunchScreenSaver",    LAUNCH_SCREEN_SAVER,      0x0B07),
   DOM_KEY_MAP("LaunchSpreadsheet",    LAUNCH_SPREADSHEET,       0x0B08),
