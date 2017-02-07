@@ -14,8 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_service.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -63,21 +63,22 @@ history::HistoryAddPageArgs
 HistoryTabHelper::CreateHistoryAddPageArgs(
     const GURL& virtual_url,
     base::Time timestamp,
-    bool did_replace_entry,
     int nav_entry_id,
-    const content::FrameNavigateParams& params) {
+    content::NavigationHandle* navigation_handle) {
   // Clicks on content suggestions on the NTP should not contribute to the
   // Most Visited tiles in the NTP.
   const bool consider_for_ntp_most_visited =
-      params.referrer.url != kChromeContentSuggestionsReferrer;
+      navigation_handle->GetReferrer().url != kChromeContentSuggestionsReferrer;
 
   history::HistoryAddPageArgs add_page_args(
-      params.url, timestamp, history::ContextIDForWebContents(web_contents()),
-      nav_entry_id, params.referrer.url, params.redirects, params.transition,
-      history::SOURCE_BROWSED, did_replace_entry,
-      consider_for_ntp_most_visited);
-  if (ui::PageTransitionIsMainFrame(params.transition) &&
-      virtual_url != params.url) {
+      navigation_handle->GetURL(), timestamp,
+      history::ContextIDForWebContents(web_contents()),
+      nav_entry_id, navigation_handle->GetReferrer().url,
+      navigation_handle->GetRedirectChain(),
+      navigation_handle->GetPageTransition(), history::SOURCE_BROWSED,
+      navigation_handle->DidReplaceEntry(), consider_for_ntp_most_visited);
+  if (ui::PageTransitionIsMainFrame(navigation_handle->GetPageTransition()) &&
+      virtual_url != navigation_handle->GetURL()) {
     // Hack on the "virtual" URL so that it will appear in history. For some
     // types of URLs, we will display a magic URL that is different from where
     // the page is actually navigated. We want the user to see in history what
@@ -91,20 +92,19 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
   return add_page_args;
 }
 
-void HistoryTabHelper::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  // Allow the new page to set the title again.
-  received_page_title_ = false;
-}
+void HistoryTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted())
+    return;
 
-void HistoryTabHelper::DidNavigateAnyFrame(
-    content::RenderFrameHost* render_frame_host,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+  if (navigation_handle->IsInMainFrame()) {
+    // Allow the new page to set the title again.
+    received_page_title_ = false;
+  }
+
   // Update history. Note that this needs to happen after the entry is complete,
   // which WillNavigate[Main,Sub]Frame will do before this function is called.
-  if (!params.should_update_history)
+  if (!navigation_handle->ShouldUpdateHistory())
     return;
 
   // Most of the time, the displayURL matches the loaded URL, but for about:
@@ -115,8 +115,8 @@ void HistoryTabHelper::DidNavigateAnyFrame(
       web_contents()->GetController().GetLastCommittedEntry();
   const history::HistoryAddPageArgs& add_page_args =
       CreateHistoryAddPageArgs(
-          web_contents()->GetURL(), details.entry->GetTimestamp(),
-          details.did_replace_entry, last_committed->GetUniqueID(), params);
+          web_contents()->GetURL(), last_committed->GetTimestamp(),
+          last_committed->GetUniqueID(), navigation_handle);
 
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(

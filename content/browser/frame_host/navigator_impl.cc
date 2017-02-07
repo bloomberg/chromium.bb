@@ -138,6 +138,7 @@ NavigationController* NavigatorImpl::GetController() {
 void NavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
+    const std::vector<GURL>& redirect_chain,
     const base::TimeTicks& navigation_start) {
   bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
@@ -198,12 +199,14 @@ void NavigatorImpl::DidStartProvisionalLoad(
     started_from_context_menu = pending_entry->has_started_from_context_menu();
   }
 
+  std::vector<GURL> validated_redirect_chain = redirect_chain;
+  for (size_t i = 0; i < validated_redirect_chain.size(); ++i)
+    render_process_host->FilterURL(false, &validated_redirect_chain[i]);
   render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
-      validated_url, render_frame_host->frame_tree_node(),
-      is_renderer_initiated,
+      validated_url, validated_redirect_chain,
+      render_frame_host->frame_tree_node(), is_renderer_initiated,
       false,  // is_same_page
-      navigation_start, pending_nav_entry_id,
-      started_from_context_menu));
+      navigation_start, pending_nav_entry_id, started_from_context_menu));
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(
@@ -669,7 +672,7 @@ void NavigatorImpl::DidNavigate(
     delegate_->DidCommitProvisionalLoad(render_frame_host,
                                         params.url,
                                         transition_type);
-    navigation_handle->DidCommitNavigation(params, is_navigation_within_page,
+    navigation_handle->DidCommitNavigation(params, details.did_replace_entry,
                                            details.previous_url,
                                            render_frame_host);
     navigation_handle.reset();

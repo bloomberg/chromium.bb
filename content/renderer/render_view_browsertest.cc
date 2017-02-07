@@ -1996,7 +1996,7 @@ TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
 
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  base::TimeTicks transmitted_start = std::get<1>(host_nav_params);
+  base::TimeTicks transmitted_start = std::get<2>(host_nav_params);
   EXPECT_FALSE(transmitted_start.is_null());
   EXPECT_LE(lower_bound_navigation_start, transmitted_start);
 }
@@ -2012,7 +2012,7 @@ TEST_F(RenderViewImplTest, BrowserNavigationStart) {
                     RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  EXPECT_EQ(common_params.navigation_start, std::get<1>(nav_params));
+  EXPECT_EQ(common_params.navigation_start, std::get<2>(nav_params));
 }
 
 // Sanity check for the Navigation Timing API |navigationStart| override. We
@@ -2052,9 +2052,9 @@ TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
   FrameHostMsg_DidStartProvisionalLoad::Param nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
   if (!IsBrowserSideNavigationEnabled())
-    EXPECT_GT(std::get<1>(nav_params), common_params.navigation_start);
+    EXPECT_GT(std::get<2>(nav_params), common_params.navigation_start);
   else
-    EXPECT_EQ(common_params.navigation_start, std::get<1>(nav_params));
+    EXPECT_EQ(common_params.navigation_start, std::get<2>(nav_params));
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForReload) {
@@ -2081,11 +2081,11 @@ TEST_F(RenderViewImplTest, NavigationStartForReload) {
   if (!IsBrowserSideNavigationEnabled()) {
     // The browser navigation_start should not be used because beforeunload was
     // fired during Navigate.
-    EXPECT_PRED2(TimeTicksGT, std::get<1>(host_nav_params),
+    EXPECT_PRED2(TimeTicksGT, std::get<2>(host_nav_params),
                  common_params.navigation_start);
   } else {
     // PlzNavigate: the browser navigation_start is always used.
-    EXPECT_EQ(common_params.navigation_start, std::get<1>(host_nav_params));
+    EXPECT_EQ(common_params.navigation_start, std::get<2>(host_nav_params));
   }
 }
 
@@ -2110,12 +2110,12 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   if (!IsBrowserSideNavigationEnabled()) {
     // The browser navigation_start should not be used because beforeunload was
     // fired during GoToOffsetWithParams.
-    EXPECT_PRED2(TimeTicksGT, std::get<1>(host_nav_params),
+    EXPECT_PRED2(TimeTicksGT, std::get<2>(host_nav_params),
                  common_params_back.navigation_start);
   } else {
     // PlzNavigate: the browser navigation_start is always used.
     EXPECT_EQ(common_params_back.navigation_start,
-              std::get<1>(host_nav_params));
+              std::get<2>(host_nav_params));
   }
   render_thread_->sink().ClearMessages();
 
@@ -2129,11 +2129,11 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params2 =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
   if (!IsBrowserSideNavigationEnabled()) {
-    EXPECT_PRED2(TimeTicksGT, std::get<1>(host_nav_params2),
+    EXPECT_PRED2(TimeTicksGT, std::get<2>(host_nav_params2),
                  common_params_forward.navigation_start);
   } else {
     EXPECT_EQ(common_params_forward.navigation_start,
-              std::get<1>(host_nav_params2));
+              std::get<2>(host_nav_params2));
   }
 }
 
@@ -2152,7 +2152,7 @@ TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
 
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  EXPECT_EQ(std::get<1>(host_nav_params), common_params.navigation_start);
+  EXPECT_EQ(std::get<2>(host_nav_params), common_params.navigation_start);
 }
 
 TEST_F(RenderViewImplTest, PreferredSizeZoomed) {

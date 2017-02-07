@@ -385,9 +385,16 @@ void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
   // TODO(nasko): Update the NavigationHandle creation to ensure that the
   // proper values are specified for is_same_page.
   FrameTreeNode* frame_tree_node = frame_tree_node_;
+
+  std::vector<GURL> redirect_chain;
+  if (!begin_params_.client_side_redirect_url.is_empty())
+    redirect_chain.push_back(begin_params_.client_side_redirect_url);
+  redirect_chain.push_back(common_params_.url);
+
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
       NavigationHandleImpl::Create(
-        common_params_.url, frame_tree_node_, !browser_initiated_,
+        common_params_.url, redirect_chain, frame_tree_node_,
+        !browser_initiated_,
         false,  // is_same_page
         common_params_.navigation_start, pending_nav_entry_id,
         false);  // started_in_context_menu

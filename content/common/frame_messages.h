@@ -354,6 +354,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::BeginNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(searchable_form_url)
   IPC_STRUCT_TRAITS_MEMBER(searchable_form_encoding)
   IPC_STRUCT_TRAITS_MEMBER(initiator_origin)
+  IPC_STRUCT_TRAITS_MEMBER(client_side_redirect_url)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::StartNavigationParams)
@@ -978,8 +979,9 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_RenderProcessGone,
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameFocused)
 
 // Sent when the renderer starts a provisional load for a frame.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_DidStartProvisionalLoad,
+IPC_MESSAGE_ROUTED3(FrameHostMsg_DidStartProvisionalLoad,
                     GURL /* url */,
+                    std::vector<GURL> /* redirect_chain */,
                     base::TimeTicks /* navigation_start */)
 
 // Sent when the renderer fails a provisional load with an error.

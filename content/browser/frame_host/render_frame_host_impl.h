@@ -669,6 +669,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       base::TimeTicks ui_timestamp);
   void OnDidStartProvisionalLoad(
       const GURL& url,
+      const std::vector<GURL>& redirect_chain,
       const base::TimeTicks& navigation_start);
   void OnDidFailProvisionalLoadWithError(
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);

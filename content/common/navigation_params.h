@@ -171,6 +171,10 @@ struct CONTENT_EXPORT BeginNavigationParams {
   // the origin of the document that triggered the navigation. This parameter
   // can be null during browser-initiated navigations.
   base::Optional<url::Origin> initiator_origin;
+
+  // If the transition type is a client side redirect, then this holds the URL
+  // of the page that had the client side redirect.
+  GURL client_side_redirect_url;
 };
 
 // Provided by the browser -----------------------------------------------------

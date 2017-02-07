@@ -1131,14 +1131,15 @@ void RenderFrameHostImpl::OnDocumentOnLoadCompleted(
 
 void RenderFrameHostImpl::OnDidStartProvisionalLoad(
     const GURL& url,
+    const std::vector<GURL>& redirect_chain,
     const base::TimeTicks& navigation_start) {
   // TODO(clamy): Check if other navigation methods (OpenURL,
   // DidFailProvisionalLoad, ...) should also be ignored if the RFH is no longer
   // active.
   if (!is_active())
     return;
-  frame_tree_node_->navigator()->DidStartProvisionalLoad(this, url,
-                                                         navigation_start);
+  frame_tree_node_->navigator()->DidStartProvisionalLoad(
+      this, url, redirect_chain, navigation_start);
 }
 
 void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
@@ -3404,7 +3405,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
     }
 
     return NavigationHandleImpl::Create(
-        params.url, frame_tree_node_, is_renderer_initiated,
+        params.url, params.redirects, frame_tree_node_, is_renderer_initiated,
         params.was_within_same_page, base::TimeTicks::Now(),
         pending_nav_entry_id, false);  // started_from_context_menu
   }
@@ -3456,7 +3457,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
   // pending_nav_entry_id. If the previous handle was a prematurely aborted
   // navigation loaded via LoadDataWithBaseURL, propagate the entry id.
   return NavigationHandleImpl::Create(
-      params.url, frame_tree_node_, is_renderer_initiated,
+      params.url, params.redirects, frame_tree_node_, is_renderer_initiated,
       params.was_within_same_page, base::TimeTicks::Now(),
       entry_id_for_data_nav, false);  // started_from_context_menu
 }

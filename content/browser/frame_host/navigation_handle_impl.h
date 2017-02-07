@@ -76,12 +76,15 @@ class ServiceWorkerNavigationHandle;
 // the RenderFrameHost still apply.
 class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
  public:
+  // If |redirect_chain| is empty, then the redirect chain will be created to
+  // start with |url|. Otherwise |redirect_chain| is used as the starting point.
   // |navigation_start| comes from the DidStartProvisionalLoad IPC, which tracks
   // both renderer-initiated and browser-initiated navigation start.
   // PlzNavigate: This value always comes from the CommonNavigationParams
   // associated with this navigation.
   static std::unique_ptr<NavigationHandleImpl> Create(
       const GURL& url,
+      const std::vector<GURL>& redirect_chain,
       FrameTreeNode* frame_tree_node,
       bool is_renderer_initiated,
       bool is_same_page,
@@ -111,6 +114,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsSamePage() override;
   bool HasCommitted() override;
   bool IsErrorPage() override;
+  bool DidReplaceEntry() override;
+  bool ShouldUpdateHistory() override;
   const GURL& GetPreviousURL() override;
   net::HostPortPair GetSocketAddress() override;
   const net::HttpResponseHeaders* GetResponseHeaders() override;
@@ -278,9 +283,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Called when the navigation was committed in |render_frame_host|. This will
   // update the |state_|.
+  // |did_replace_entry| is true if the committed entry has replaced the
+  // existing one. A non-user initiated redirect causes such replacement.
   void DidCommitNavigation(
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      bool same_page,
+      bool did_replace_entry,
       const GURL& previous_url,
       RenderFrameHostImpl* render_frame_host);
 
@@ -326,6 +333,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   };
 
   NavigationHandleImpl(const GURL& url,
+                       const std::vector<GURL>& redirect_chain,
                        FrameTreeNode* frame_tree_node,
                        bool is_renderer_initiated,
                        bool is_same_page,
@@ -372,6 +380,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const bool is_renderer_initiated_;
   const bool is_same_page_;
   bool was_redirected_;
+  bool did_replace_entry_;
+  bool should_update_history_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
 

@@ -3471,8 +3471,11 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
   for (auto& observer : observers_)
     observer.DidStartProvisionalLoad();
 
+  std::vector<GURL> redirect_chain;
+  GetRedirectChain(ds, &redirect_chain);
+  CHECK(!redirect_chain.empty());
   Send(new FrameHostMsg_DidStartProvisionalLoad(
-      routing_id_, ds->getRequest().url(), navigation_start));
+      routing_id_, ds->getRequest().url(), redirect_chain, navigation_start));
 }
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
@@ -6245,6 +6248,9 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
     begin_navigation_params.searchable_form_encoding =
         web_searchable_form_data.encoding().utf8();
   }
+
+  if (info.isClientRedirect)
+    begin_navigation_params.client_side_redirect_url = frame_->document().url();
 
   Send(new FrameHostMsg_BeginNavigation(
       routing_id_, MakeCommonNavigationParams(info), begin_navigation_params));

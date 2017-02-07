@@ -177,6 +177,14 @@ class CONTENT_EXPORT NavigationHandle {
   // GetNetErrorCode will be net::OK.
   virtual bool IsErrorPage() = 0;
 
+  // True if the committed entry has replaced the existing one. A non-user
+  // initiated redirect causes such replacement.
+  virtual bool DidReplaceEntry() = 0;
+
+  // Returns true if the browser history should be updated. Otherwise only
+  // the session history will be updated. E.g., on unreachable urls.
+  virtual bool ShouldUpdateHistory() = 0;
+
   // The previous main frame URL that the user was on. This may be empty if
   // there was no last committed entry.
   virtual const GURL& GetPreviousURL() = 0;

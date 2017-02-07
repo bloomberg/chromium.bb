@@ -112,7 +112,7 @@ void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
   }
 
   OnDidStartLoading(true);
-  OnDidStartProvisionalLoad(url, base::TimeTicks::Now());
+  OnDidStartProvisionalLoad(url, std::vector<GURL>(), base::TimeTicks::Now());
   SimulateWillStartRequest(ui::PAGE_TRANSITION_LINK);
 }
 
@@ -213,7 +213,8 @@ void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
 void TestRenderFrameHost::SimulateNavigationErrorPageCommit() {
   CHECK(navigation_handle());
   GURL error_url = GURL(kUnreachableWebDataURL);
-  OnDidStartProvisionalLoad(error_url, base::TimeTicks::Now());
+  OnDidStartProvisionalLoad(error_url, std::vector<GURL>(),
+                            base::TimeTicks::Now());
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
@@ -321,7 +322,8 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // DidStartProvisionalLoad may delete the pending entry that holds |url|,
   // so we keep a copy of it to use below.
   GURL url_copy(url);
-  OnDidStartProvisionalLoad(url_copy, base::TimeTicks::Now());
+  OnDidStartProvisionalLoad(url_copy, std::vector<GURL>(),
+                            base::TimeTicks::Now());
   SimulateWillStartRequest(transition);
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;

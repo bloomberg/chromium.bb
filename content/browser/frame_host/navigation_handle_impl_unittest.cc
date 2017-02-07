@@ -68,7 +68,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     test_handle_ = NavigationHandleImpl::Create(
-        GURL(), main_test_rfh()->frame_tree_node(),
+        GURL(), std::vector<GURL>(), main_test_rfh()->frame_tree_node(),
         true,   // is_renderer_initiated
         false,  // is_same_page
         base::TimeTicks::Now(), 0,

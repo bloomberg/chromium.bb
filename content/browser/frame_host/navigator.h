@@ -52,6 +52,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void DidStartProvisionalLoad(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
+      const std::vector<GURL>& redirect_chain,
       const base::TimeTicks& navigation_start) {};
 
   // The RenderFrameHostImpl has failed a provisional load.

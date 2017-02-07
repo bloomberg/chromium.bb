@@ -434,6 +434,7 @@ TEST_F(WebContentsImplTest, DirectNavigationToViewSourceWebUI) {
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->OnMessageReceived(
       FrameHostMsg_DidStartProvisionalLoad(1, kRewrittenURL,
+                                           std::vector<GURL>(),
                                            base::TimeTicks::Now()));
   main_test_rfh()->SendNavigateWithParams(&params);
 

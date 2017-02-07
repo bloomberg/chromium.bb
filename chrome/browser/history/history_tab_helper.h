@@ -35,21 +35,16 @@ class HistoryTabHelper : public content::WebContentsObserver,
   history::HistoryAddPageArgs CreateHistoryAddPageArgs(
       const GURL& virtual_url,
       base::Time timestamp,
-      bool did_replace_entry,
       int nav_entry_id,
-      const content::FrameNavigateParams& params);
+      content::NavigationHandle* navigation_handle);
 
  private:
   explicit HistoryTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<HistoryTabHelper>;
 
   // content::WebContentsObserver implementation.
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
-  void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
-                           const content::LoadCommittedDetails& details,
-                           const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
   void WebContentsDestroyed() override;
 
