@@ -3570,8 +3570,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     }
     case CSSPropertyRotate: {
       if (!style.rotate())
-        return CSSPrimitiveValue::create(0,
-                                         CSSPrimitiveValue::UnitType::Degrees);
+        return CSSIdentifierValue::create(CSSValueNone);
 
       CSSValueList* list = CSSValueList::createSpaceSeparated();
       if (style.rotate()->x() != 0 || style.rotate()->y() != 0 ||

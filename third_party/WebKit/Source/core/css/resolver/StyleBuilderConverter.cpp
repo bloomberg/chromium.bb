@@ -1287,6 +1287,11 @@ PassRefPtr<TranslateTransformOperation> StyleBuilderConverter::convertTranslate(
 }
 
 Rotation StyleBuilderConverter::convertRotation(const CSSValue& value) {
+  if (value.isIdentifierValue()) {
+    DCHECK_EQ(toCSSIdentifierValue(value).getValueID(), CSSValueNone);
+    return Rotation(FloatPoint3D(0, 0, 1), 0);
+  }
+
   const CSSValueList& list = toCSSValueList(value);
   ASSERT(list.length() == 1 || list.length() == 4);
   double x = 0;
@@ -1305,6 +1310,11 @@ Rotation StyleBuilderConverter::convertRotation(const CSSValue& value) {
 PassRefPtr<RotateTransformOperation> StyleBuilderConverter::convertRotate(
     StyleResolverState& state,
     const CSSValue& value) {
+  if (value.isIdentifierValue()) {
+    DCHECK_EQ(toCSSIdentifierValue(value).getValueID(), CSSValueNone);
+    return nullptr;
+  }
+
   return RotateTransformOperation::create(convertRotation(value),
                                           TransformOperation::Rotate3D);
 }

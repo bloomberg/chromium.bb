@@ -9,6 +9,7 @@ expect = expect.bind(this, 'scale', 'scale');
 expect('initial').parsesAs('initial').isComputedTo('none');
 expect('inherit').parsesAs('inherit');
 
+expect('none').parsesAs('none').isComputedTo('none');
 expect('1').parsesAs('1').isComputedTo('1');
 expect('1 -2.3').parsesAs('1 -2.3').isComputedTo('1 -2.3');
 expect('1 -2.3 4').parsesAs('1 -2.3 4').isComputedTo('1 -2.3 4');

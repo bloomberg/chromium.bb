@@ -6,13 +6,13 @@ assertCSSResponsive({
   from: 'translateX(10em)',
   to: 'translateX(100px)',
   configurations: [{
-    state: {fontSize: '2px'},
+    state: {'font-size': '2px'},
     expect: [
       {at: 0.25, is: 'translateX(40px)'},
       {at: 0.75, is: 'translateX(80px)'},
     ],
   }, {
-    state: {fontSize: '6px'},
+    state: {'font-size' '6px'},
     expect: [
       {at: 0.25, is: 'translateX(70px)'},
       {at: 0.75, is: 'translateX(90px)'},

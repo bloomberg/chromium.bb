@@ -70,6 +70,9 @@ function assertCSSResponsive(options) {
         return createElement('div', container, 'target');
       },
       setValue(target, property, value) {
+        test(function() {
+          assert_true(CSS.supports(property, value), 'CSS.supports ' + property + ' ' + value);
+        });
         target.style[property] = value;
       },
       getAnimatedValue(target, property) {

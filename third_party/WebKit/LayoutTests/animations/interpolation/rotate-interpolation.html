@@ -23,6 +23,19 @@
 <script>
 assertInterpolation({
   property: 'rotate',
+  from: 'none',
+  to: '30deg',
+}, [
+  {at: -1, is: '-30deg'},
+  {at: 0, is: 'none'},
+  {at: 0.25, is: '7.5deg'},
+  {at: 0.75, is: '22.5deg'},
+  {at: 1, is: '30deg'},
+  {at: 2, is: '60deg'},
+]);
+
+assertInterpolation({
+  property: 'rotate',
   from: neutralKeyframe,
   to: '30deg',
 }, [
@@ -40,7 +53,7 @@ assertInterpolation({
   to: '30deg',
 }, [
   {at: -1, is: '-30deg'},
-  {at: 0, is: '0deg'},
+  {at: 0, is: 'none'},
   {at: 0.25, is: '7.5deg'},
   {at: 0.75, is: '22.5deg'},
   {at: 1, is: '30deg'},
@@ -115,14 +128,14 @@ assertInterpolation({
 assertInterpolation({
   property: 'rotate',
   from: '1 1 0 90deg',
-  to: '0 1 1 180deg',
+  to: '0 1 1 135deg',
 }, [
-  {at: -1, is: '0.41 -0.41 -0.82 120deg'},
+  {at: -1, is: '0.67 -0.06 -0.74 124.97deg'},
   {at: 0, is: '1 1 0 90deg'},
-  {at: 0.25, is: '0.8 0.27 -0.53 82.76deg'},
-  {at: 0.75, is: '0.27 -0.54 -0.8 138.89deg'},
-  {at: 1, is: '0 1 1 180deg'},
-  {at: 2, is: '0.71 0 -0.71 90deg'},
+  {at: 0.25, is: '0.54 0.8 0.26 94.83deg'},
+  {at: 0.75, is: '0.17 0.78 0.61 118.68deg'},
+  {at: 1, is: '0 1 1 135deg'},
+  {at: 2, is: '0.52 -0.29 -0.81 151.04deg'},
 ]);
 
 assertInterpolation({

@@ -4,6 +4,7 @@
 
 #include "core/css/properties/CSSPropertyAPIRotate.h"
 
+#include "core/CSSValueKeywords.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -14,6 +15,11 @@ const CSSValue* CSSPropertyAPIRotate::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext* context) {
   DCHECK(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
+
+  CSSValueID id = range.peek().id();
+  if (id == CSSValueNone)
+    return CSSPropertyParserHelpers::consumeIdent(range);
+
   CSSValueList* list = CSSValueList::createSpaceSeparated();
 
   for (unsigned i = 0; i < 3; i++) {  // 3 dimensions of rotation

@@ -236,7 +236,7 @@ position: static
 r: 0px
 resize: none
 right: auto
-rotate: 0deg
+rotate: none
 rx: auto
 ry: auto
 scale: none

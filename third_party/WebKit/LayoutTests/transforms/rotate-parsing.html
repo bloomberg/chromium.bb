@@ -6,9 +6,10 @@
 <script>
 expect = expect.bind(this, 'rotate', 'rotate');
 
-expect('initial').parsesAs('initial').isComputedTo('0deg');
+expect('initial').parsesAs('initial').isComputedTo('none');
 expect('inherit').parsesAs('inherit');
 
+expect('none').parsesAs('none').isComputedTo('none');
 expect('10deg').parsesAs('10deg').isComputedTo('10deg');
 expect('0 0 1 10deg').parsesAs('0 0 1 10deg').isComputedTo('10deg');
 expect('-1.5 2 3 10deg').parsesAs('-1.5 2 3 10deg').isComputedTo('-1.5 2 3 10deg');
@@ -21,7 +22,6 @@ expect('calc(1turn - 270deg)').parsesAs('calc(90deg)').isComputedTo('90deg');
 expect('0 calc(0.5 + 0.5) 1 calc(1turn - 270deg + 400grad)').parsesAs('0 1 1 calc(450deg)').isComputedTo('0 1 1 450deg');
 
 expect('2').isInvalid();
-expect('none').isInvalid();
 expect('1 2deg').isInvalid();
 expect('1 2 45deg').isInvalid();
 expect('1 2 3 4 45deg').isInvalid();
