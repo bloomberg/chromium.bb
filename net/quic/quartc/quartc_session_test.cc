@@ -454,20 +454,20 @@ class QuartcSessionTest : public ::testing::Test,
   std::unique_ptr<QuartcSessionForTest> server_peer_;
 };
 
-TEST_F(QuartcSessionTest, DISABLED_StreamConnection) {
+TEST_F(QuartcSessionTest, StreamConnection) {
   CreateClientAndServerSessions();
   StartHandshake();
   TestStreamConnection();
 }
 
-TEST_F(QuartcSessionTest, DISABLED_ClientRejection) {
+TEST_F(QuartcSessionTest, ClientRejection) {
   CreateClientAndServerSessions(false /*client_handshake_success*/,
                                 true /*server_handshake_success*/);
   StartHandshake();
   TestDisconnectAfterFailedHandshake();
 }
 
-TEST_F(QuartcSessionTest, DISABLED_ServerRejection) {
+TEST_F(QuartcSessionTest, ServerRejection) {
   CreateClientAndServerSessions(true /*client_handshake_success*/,
                                 false /*server_handshake_success*/);
   StartHandshake();
@@ -481,7 +481,7 @@ TEST_F(QuartcSessionTest, CannotCreateDataStreamBeforeHandshake) {
   EXPECT_EQ(nullptr, client_peer_->CreateOutgoingStream(kDefaultStreamParam));
 }
 
-TEST_F(QuartcSessionTest, DISABLED_CloseQuartcStream) {
+TEST_F(QuartcSessionTest, CloseQuartcStream) {
   CreateClientAndServerSessions();
   StartHandshake();
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed() &&
