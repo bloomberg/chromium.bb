@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,52 +34,69 @@ class ShareTargetPrefHelperUnittest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 };
 
+constexpr char kNameKey[] = "name";
 constexpr char kUrlTemplateKey[] = "url_template";
 
 TEST_F(ShareTargetPrefHelperUnittest, AddMultipleShareTargets) {
   // Add a share target to prefs that wasn't previously stored.
-  std::string manifest_url = "https://www.sharetarget.com/manifest.json";
-  base::Optional<std::string> url_template =
-      base::Optional<std::string>("share/?title={title}");
+  GURL manifest_url("https://www.sharetarget.com/manifest.json");
+  content::Manifest::ShareTarget share_target;
+  std::string url_template = "share/?title={title}";
+  share_target.url_template =
+      base::NullableString16(base::ASCIIToUTF16(url_template), false);
+  content::Manifest manifest;
+  manifest.share_target =
+      base::Optional<content::Manifest::ShareTarget>(share_target);
 
-  UpdateShareTargetInPrefs(manifest_url, url_template, pref_service());
+  UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
   const base::DictionaryValue* share_target_dict =
       pref_service()->GetDictionary(prefs::kWebShareVisitedTargets);
   EXPECT_EQ(1UL, share_target_dict->size());
   const base::DictionaryValue* share_target_info_dict = nullptr;
   ASSERT_TRUE(share_target_dict->GetDictionaryWithoutPathExpansion(
-      manifest_url, &share_target_info_dict));
+      manifest_url.spec(), &share_target_info_dict));
   EXPECT_EQ(1UL, share_target_info_dict->size());
   std::string url_template_in_dict;
   EXPECT_TRUE(share_target_info_dict->GetString(kUrlTemplateKey,
                                                 &url_template_in_dict));
-  EXPECT_EQ(url_template_in_dict, url_template);
+  EXPECT_EQ(url_template, url_template_in_dict);
 
   // Add second share target to prefs that wasn't previously stored.
-  manifest_url = "https://www.sharetarget2.com/manifest.json";
-  url_template = base::Optional<std::string>("share/?title={title}");
+  manifest_url = GURL("https://www.sharetarget2.com/manifest.json");
+  std::string name = "Share Target Name";
+  manifest.name = base::NullableString16(base::ASCIIToUTF16(name), false);
 
-  UpdateShareTargetInPrefs(manifest_url, url_template, pref_service());
+  UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
   share_target_dict =
       pref_service()->GetDictionary(prefs::kWebShareVisitedTargets);
   EXPECT_EQ(2UL, share_target_dict->size());
   ASSERT_TRUE(share_target_dict->GetDictionaryWithoutPathExpansion(
-      manifest_url, &share_target_info_dict));
-  EXPECT_EQ(1UL, share_target_info_dict->size());
+      manifest_url.spec(), &share_target_info_dict));
+  EXPECT_EQ(2UL, share_target_info_dict->size());
   EXPECT_TRUE(share_target_info_dict->GetString(kUrlTemplateKey,
                                                 &url_template_in_dict));
-  EXPECT_EQ(url_template_in_dict, url_template);
+  EXPECT_EQ(url_template, url_template_in_dict);
+  std::string name_in_dict;
+  EXPECT_TRUE(share_target_info_dict->GetString(kNameKey, &name_in_dict));
+  EXPECT_EQ(name, name_in_dict);
 }
 
 TEST_F(ShareTargetPrefHelperUnittest, AddShareTargetTwice) {
   const char kManifestUrl[] = "https://www.sharetarget.com/manifest.json";
-  const base::Optional<std::string> kUrlTemplate =
-      base::Optional<std::string>("share/?title={title}");
+  const char kUrlTemplate[] = "share/?title={title}";
 
   // Add a share target to prefs that wasn't previously stored.
-  UpdateShareTargetInPrefs(kManifestUrl, kUrlTemplate, pref_service());
+  GURL manifest_url(kManifestUrl);
+  content::Manifest::ShareTarget share_target;
+  share_target.url_template =
+      base::NullableString16(base::ASCIIToUTF16(kUrlTemplate), false);
+  content::Manifest manifest;
+  manifest.share_target =
+      base::Optional<content::Manifest::ShareTarget>(share_target);
+
+  UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
   const base::DictionaryValue* share_target_dict =
       pref_service()->GetDictionary(prefs::kWebShareVisitedTargets);
@@ -90,11 +108,11 @@ TEST_F(ShareTargetPrefHelperUnittest, AddShareTargetTwice) {
   std::string url_template_in_dict;
   EXPECT_TRUE(share_target_info_dict->GetString(kUrlTemplateKey,
                                                 &url_template_in_dict));
-  EXPECT_EQ(url_template_in_dict, kUrlTemplate);
+  EXPECT_EQ(kUrlTemplate, url_template_in_dict);
 
   // Add same share target to prefs that was previously stored; shouldn't
   // duplicate it.
-  UpdateShareTargetInPrefs(kManifestUrl, kUrlTemplate, pref_service());
+  UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
   share_target_dict =
       pref_service()->GetDictionary(prefs::kWebShareVisitedTargets);
@@ -104,46 +122,51 @@ TEST_F(ShareTargetPrefHelperUnittest, AddShareTargetTwice) {
   EXPECT_EQ(1UL, share_target_info_dict->size());
   EXPECT_TRUE(share_target_info_dict->GetString(kUrlTemplateKey,
                                                 &url_template_in_dict));
-  EXPECT_EQ(url_template_in_dict, kUrlTemplate);
+  EXPECT_EQ(kUrlTemplate, url_template_in_dict);
 }
 
 TEST_F(ShareTargetPrefHelperUnittest, UpdateShareTarget) {
   // Add a share target to prefs that wasn't previously stored.
-  std::string manifest_url = "https://www.sharetarget.com/manifest.json";
-  base::Optional<std::string> url_template =
-      base::Optional<std::string>("share/?title={title}");
+  GURL manifest_url("https://www.sharetarget.com/manifest.json");
+  content::Manifest::ShareTarget share_target;
+  std::string url_template = "share/?title={title}";
+  share_target.url_template =
+      base::NullableString16(base::ASCIIToUTF16(url_template), false);
+  content::Manifest manifest;
+  manifest.share_target =
+      base::Optional<content::Manifest::ShareTarget>(share_target);
 
-  UpdateShareTargetInPrefs(manifest_url, url_template, pref_service());
+  UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
   const base::DictionaryValue* share_target_dict =
       pref_service()->GetDictionary(prefs::kWebShareVisitedTargets);
   EXPECT_EQ(1UL, share_target_dict->size());
   const base::DictionaryValue* share_target_info_dict = nullptr;
   ASSERT_TRUE(share_target_dict->GetDictionaryWithoutPathExpansion(
-      manifest_url, &share_target_info_dict));
+      manifest_url.spec(), &share_target_info_dict));
   EXPECT_EQ(1UL, share_target_info_dict->size());
   std::string url_template_in_dict;
   EXPECT_TRUE(share_target_info_dict->GetString(kUrlTemplateKey,
                                                 &url_template_in_dict));
-  EXPECT_EQ(url_template_in_dict, url_template);
+  EXPECT_EQ(url_template, url_template_in_dict);
 
   // Add same share target to prefs that was previously stored, with new
   // url_template_in_dict; should update the value.
-  manifest_url = "https://www.sharetarget.com/manifest.json";
-  url_template =
-      base::Optional<std::string>("share/?title={title}&text={text}");
+  url_template = "share/?title={title}&text={text}";
+  manifest.share_target.value().url_template =
+      base::NullableString16(base::ASCIIToUTF16(url_template), false);
 
-  UpdateShareTargetInPrefs(manifest_url, url_template, pref_service());
+  UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
   share_target_dict =
       pref_service()->GetDictionary(prefs::kWebShareVisitedTargets);
   EXPECT_EQ(1UL, share_target_dict->size());
   ASSERT_TRUE(share_target_dict->GetDictionaryWithoutPathExpansion(
-      manifest_url, &share_target_info_dict));
+      manifest_url.spec(), &share_target_info_dict));
   EXPECT_EQ(1UL, share_target_info_dict->size());
   EXPECT_TRUE(share_target_info_dict->GetString(kUrlTemplateKey,
                                                 &url_template_in_dict));
-  EXPECT_EQ(url_template_in_dict, url_template);
+  EXPECT_EQ(url_template, url_template_in_dict);
 }
 
 TEST_F(ShareTargetPrefHelperUnittest, DontAddNonShareTarget) {
@@ -151,7 +174,8 @@ TEST_F(ShareTargetPrefHelperUnittest, DontAddNonShareTarget) {
   const base::Optional<std::string> kUrlTemplate;
 
   // Don't add a site that has a null template.
-  UpdateShareTargetInPrefs(kManifestUrl, kUrlTemplate, pref_service());
+  UpdateShareTargetInPrefs(GURL(kManifestUrl), content::Manifest(),
+                           pref_service());
 
   const base::DictionaryValue* share_target_dict =
       pref_service()->GetDictionary(prefs::kWebShareVisitedTargets);
@@ -163,29 +187,33 @@ TEST_F(ShareTargetPrefHelperUnittest, DontAddNonShareTarget) {
 
 TEST_F(ShareTargetPrefHelperUnittest, RemoveShareTarget) {
   // Add a share target to prefs that wasn't previously stored.
-  std::string manifest_url = "https://www.sharetarget.com/manifest.json";
-  base::Optional<std::string> url_template =
-      base::Optional<std::string>("share/?title={title}");
+  GURL manifest_url("https://www.sharetarget.com/manifest.json");
+  content::Manifest::ShareTarget share_target;
+  std::string url_template = "share/?title={title}";
+  share_target.url_template =
+      base::NullableString16(base::ASCIIToUTF16(url_template), false);
+  content::Manifest manifest;
+  manifest.share_target =
+      base::Optional<content::Manifest::ShareTarget>(share_target);
 
-  UpdateShareTargetInPrefs(manifest_url, url_template, pref_service());
+  UpdateShareTargetInPrefs(manifest_url, manifest, pref_service());
 
   const base::DictionaryValue* share_target_dict =
       pref_service()->GetDictionary(prefs::kWebShareVisitedTargets);
   EXPECT_EQ(1UL, share_target_dict->size());
   const base::DictionaryValue* share_target_info_dict = nullptr;
   ASSERT_TRUE(share_target_dict->GetDictionaryWithoutPathExpansion(
-      manifest_url, &share_target_info_dict));
+      manifest_url.spec(), &share_target_info_dict));
   EXPECT_EQ(1UL, share_target_info_dict->size());
   std::string url_template_in_dict;
   EXPECT_TRUE(share_target_info_dict->GetString(kUrlTemplateKey,
                                                 &url_template_in_dict));
-  EXPECT_EQ(url_template_in_dict, url_template);
+  EXPECT_EQ(url_template, url_template_in_dict);
 
   // Share target already added now has null template. Remove from prefs.
-  manifest_url = "https://www.sharetarget.com/manifest.json";
-  url_template = base::nullopt;
+  manifest_url = GURL("https://www.sharetarget.com/manifest.json");
 
-  UpdateShareTargetInPrefs(manifest_url, url_template, pref_service());
+  UpdateShareTargetInPrefs(manifest_url, content::Manifest(), pref_service());
 
   share_target_dict =
       pref_service()->GetDictionary(prefs::kWebShareVisitedTargets);

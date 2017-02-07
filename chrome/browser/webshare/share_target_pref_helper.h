@@ -7,15 +7,19 @@
 
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "content/public/common/manifest.h"
 
+class GURL;
 class PrefService;
 
-// Adds the Web Share target |share_target_origin| with template |url_template|
-// to |pref_service| under kWebShareVisitedTargets. If |url_template| is null,
-// this function will remove |share_target_origin| from kWebShareVisitedTargets,
-// if it is there.
-void UpdateShareTargetInPrefs(base::StringPiece manifest_url,
-                           base::Optional<std::string> url_template,
-                           PrefService* pref_service);
+// Adds the Web Share target defined by |manifest_url| to |pref_service| under
+// kWebShareVisitedTargets. It maps the key |manifest_url| to a dictionary that
+// contains a dictionary of the attributes of the share_target field, as well as
+// the name field in |manifest|. If the |manifest| doesn't contain a
+// share_target field, or it does but there is no url_template field, this will
+// remove |manifest_url| from kWebShareVisitedTargets, if it is there.
+void UpdateShareTargetInPrefs(const GURL& manifest_url,
+                              const content::Manifest& manifest,
+                              PrefService* pref_service);
 
 #endif // CHROME_BROWSER_WEBSHARE_SHARE_TARGET_PREF_HELPER_H_

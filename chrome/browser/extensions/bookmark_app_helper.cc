@@ -585,21 +585,8 @@ void BookmarkAppHelper::OnDidGetManifest(const GURL& manifest_url,
 
   UpdateWebAppInfoFromManifest(manifest, &web_app_info_);
 
-  if (!ChromeOriginTrialPolicy().IsFeatureDisabled("WebShare")) {
-    const std::string& manifest_url_string = manifest_url.spec();
-
-    base::Optional<std::string> url_template;
-    if (manifest.share_target.has_value() &&
-        !manifest.share_target.value().url_template.is_null()) {
-      url_template = base::Optional<std::string>(base::UTF16ToUTF8(
-          manifest.share_target.value().url_template.string()));
-    }
-
-    // Add this site as a share target, if it declares a url_template in its
-    // manifest, or remove if it doesn't.
-    UpdateShareTargetInPrefs(manifest_url_string, std::move(url_template),
-                             profile_->GetPrefs());
-  }
+  if (!ChromeOriginTrialPolicy().IsFeatureDisabled("WebShare"))
+    UpdateShareTargetInPrefs(manifest_url, manifest, profile_->GetPrefs());
 
   // Add urls from the WebApplicationInfo.
   std::vector<GURL> web_app_info_icon_urls;
