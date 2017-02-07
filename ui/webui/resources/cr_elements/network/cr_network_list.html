@@ -11,13 +11,25 @@
       :host {
         display: inline-flex;
       }
+
       #container {
         max-height: 1000px;
         min-height: 50px;
         overflow-y: auto;
       }
+
+      /* Override scrollable border-bottom-color */
+      #container[no-bottom-scroll-border] {
+        border-bottom-color: transparent;
+      }
+
+      iron-list > *:not(:first-of-type) {
+        border-top: var(--cr-separator-line);
+      }
+
     </style>
-    <div id="container" class="layout vertical flex" scrollable>
+    <div id="container" class="layout vertical flex" scrollable
+        no-bottom-scroll-border$="[[noBottomScrollBorder]]">
       <iron-list id="networkList" selection-enabled items="[[listItems_]]"
           scroll-target="container" selected-item="{{selectedItem}}">
         <template>

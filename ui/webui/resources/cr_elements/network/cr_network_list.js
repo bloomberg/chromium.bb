@@ -70,12 +70,7 @@ Polymer({
   /** @private */
   updateListItems_: function() {
     this.saveScroll(this.$.networkList);
-
-    var customItems = this.customItems.slice();
-    if (customItems.length > 0)
-      customItems[0].isFirstCustomItem = true;
-    this.listItems_ = this.networks.concat(customItems);
-
+    this.listItems_ = this.networks.concat(this.customItems);
     this.restoreScroll(this.$.networkList);
     this.updateScrollableContents();
   },

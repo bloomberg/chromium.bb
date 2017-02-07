@@ -11,8 +11,10 @@
       }
     </style>
     <cr-network-list class ="flex" on-selected="onNetworkListItemSelected_"
+        on-network-connected="onNetworkConnected_"
         networks="[[networkStateList_]]" custom-items="[[customItems]]"
-        show-buttons="[[showButtons]]">
+        show-buttons="[[showButtons]]"
+        no-bottom-scroll-border="[[noBottomScrollBorder]]">
     </cr-network-list>
   </template>
   <script src="cr_network_select.js"></script>

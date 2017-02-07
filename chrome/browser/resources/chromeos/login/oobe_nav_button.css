@@ -15,7 +15,7 @@
   height: 32px; /* = 28 + border (2px + 2px) */
   margin: 0;
   min-width: 92px; /* = 88 + border (2px + 2px) */
-  padding: 0;
+  padding: 0 16px;
 }
 
 #button:not([focused]) {
@@ -26,15 +26,13 @@
 }
 
 #text {
-  -webkit-padding-end: 16px;
   text-transform: none;
 }
 
 iron-icon {
   --iron-icon-height: 12px;
   --iron-icon-width: 12px;
-  -webkit-padding-end: 8px;
-  -webkit-padding-start: 16px;
+  padding: 0 8px;
 }
 
 #button[disabled] #text,
@@ -42,3 +40,6 @@ iron-icon {
   color: rgba(0, 0, 0, 0.34);
 }
 
+paper-button[disabled] {
+  background: transparent;
+}

@@ -184,15 +184,19 @@
       </div>
       <div class="footer layout vertical">
         <cr-network-select id="networkSelect"
-            on-network-connected="onNetworkConnected_"
+            on-default-network-changed="onDefaultNetworkChanged_"
             on-network-item-selected="onNetworkListNetworkItemSelected_"
             on-custom-item-selected="onNetworkListCustomItemSelected_"
-            custom-items="[[_getNetworkCustomItems()]]">
+            custom-items="[[_getNetworkCustomItems()]]"
+            no-bottom-scroll-border>
         </cr-network-select>
       </div>
-      <div class="bottom-buttons layout horizontal start-justified">
+      <div class="bottom-buttons layout horizontal justified">
         <oobe-back-button on-tap="onNetworkSelectionBackButtonPressed_">
         </oobe-back-button>
+        <oobe-next-button disabled="[[!isConnected_]]"
+            on-tap="onSelectedNetworkConnected_">
+        </oobe-next-button>
       </div>
     </oobe-dialog>
   </template>

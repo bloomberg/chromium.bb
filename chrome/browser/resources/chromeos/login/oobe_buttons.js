@@ -39,6 +39,23 @@ Polymer({
 });
 
 Polymer({
+  is: 'oobe-next-button',
+
+  properties: {
+    disabled: {type: Boolean, value: false, reflectToAttribute: true},
+  },
+
+  focus: function() {
+    this.$.button.focus();
+  },
+
+  onClick_: function(e) {
+    if (this.disabled)
+      e.stopPropagation();
+  }
+});
+
+Polymer({
   is: 'oobe-welcome-secondary-button',
 
   properties: {

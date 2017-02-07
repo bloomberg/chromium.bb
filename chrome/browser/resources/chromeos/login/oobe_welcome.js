@@ -107,6 +107,15 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /**
+     * True when connected to a network.
+     * @private
+     */
+    isConnected_: {
+      type: Boolean,
+      value: false,
+    }
   },
 
   /** @override */
@@ -296,14 +305,15 @@ Polymer({
   },
 
   /**
-   * This gets called when a network enters the 'Connected' state.
-   *
-   * @param {!{detail: !CrOnc.NetworkStateProperties}} event
+   * This gets called whenever the default network changes.
+   * @param {!{detail: ?CrOnc.NetworkStateProperties}} event
    * @private
    */
-  onNetworkConnected_: function(event) {
+  onDefaultNetworkChanged_: function(event) {
     var state = event.detail;
-    if (state.GUID != this.networkLastSelectedGuid_)
+    this.isConnected_ =
+        !!state && state.ConnectionState == CrOnc.ConnectionState.CONNECTED;
+    if (!state || state.GUID != this.networkLastSelectedGuid_)
       return;
 
     // Duplicate asynchronous event may be delivered to some other screen,

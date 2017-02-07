@@ -3543,8 +3543,11 @@ Press any key to continue exploring.
     <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Note:<ph name="END_BOLD">&lt;/strong&gt;</ph> Only enable if you know what you are doing or if you have been asked to do so, as collection of data may reduce performance.
   </message>
 
-  <message name="IDS_EULA_BACK_BUTTON" desc="Back button shown on EULA screen.">
+  <message name="IDS_EULA_BACK_BUTTON" desc="Back button shown on EULA/OOBE screens.">
     Back
+  </message>
+  <message name="IDS_EULA_NEXT_BUTTON" desc="Next button shown on EULA/OOBE screens.">
+    Next
   </message>
   <message name="IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON" desc="Accept button text below EULA terms of service">
     Accept and continue

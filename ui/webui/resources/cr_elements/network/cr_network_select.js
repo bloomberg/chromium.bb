@@ -52,7 +52,7 @@ Polymer({
       type: Array,
       value: function() {
         return [];
-      }
+      },
     },
 
   },
@@ -97,7 +97,6 @@ Polymer({
   /**
    * Request the list of visible networks. May be called externally to force a
    * refresh and list update (e.g. when the element is shown).
-   * @private
    */
   refreshNetworks: function() {
     var filter = {
@@ -115,6 +114,12 @@ Polymer({
    */
   getNetworksCallback_: function(states) {
     this.networkStateList_ = states;
+    var defaultState = (this.networkStateList_.length > 0 &&
+                        this.networkStateList_[0].ConnectionState ==
+                            CrOnc.ConnectionState.CONNECTED) ?
+        this.networkStateList_[0] :
+        null;
+    this.defaultNetworkChanged_(defaultState);
   },
 
   /**
@@ -139,5 +144,22 @@ Polymer({
       if (lastError && lastError != 'connecting')
         console.error('networkingPrivate.startConnect error: ' + lastError);
     });
+  },
+
+  /**
+   * Event triggered when a cr-network-list-item becomes connected.
+   * @param {!{target: HTMLElement, detail: !CrOnc.NetworkStateProperties}} e
+   * @private
+   */
+  onNetworkConnected_: function(e) {
+    this.defaultNetworkChanged_(e.detail);
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state
+   * @private
+   */
+  defaultNetworkChanged_: function(state) {
+    this.fire('default-network-changed', state);
   },
 });
