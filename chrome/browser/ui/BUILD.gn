@@ -2285,6 +2285,10 @@ split_static_library("ui") {
       "webui/snippets_internals_message_handler.h",
       "webui/snippets_internals_ui.cc",
       "webui/snippets_internals_ui.h",
+      "webui/webapks_handler.cc",
+      "webui/webapks_handler.h",
+      "webui/webapks_ui.cc",
+      "webui/webapks_ui.h",
     ]
     if (enable_vr_shell || enable_webvr) {
       if (enable_vr_shell) {

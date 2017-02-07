@@ -69,7 +69,6 @@ public class WebApkValidator {
     public static String findWebApkPackage(Context context, List<ResolveInfo> infos) {
         for (ResolveInfo info : infos) {
             if (info.activityInfo != null
-                    && info.activityInfo.packageName.startsWith(WEBAPK_PACKAGE_PREFIX)
                     && isValidWebApk(context, info.activityInfo.packageName)) {
                 return info.activityInfo.packageName;
             }
@@ -83,10 +82,13 @@ public class WebApkValidator {
      * @param webappPackageName The package name to check
      * @return true iff the WebAPK is installed and passes security checks
      */
-    private static boolean isValidWebApk(Context context, String webappPackageName) {
+    public static boolean isValidWebApk(Context context, String webappPackageName) {
         if (sExpectedSignature == null) {
             Log.wtf(TAG, "WebApk validation failure - expected signature not set."
                     + "missing call to WebApkValidator.initWithBrowserHostSignature");
+        }
+        if (!webappPackageName.startsWith(WEBAPK_PACKAGE_PREFIX)) {
+            return false;
         }
         // check signature
         PackageInfo packageInfo = null;

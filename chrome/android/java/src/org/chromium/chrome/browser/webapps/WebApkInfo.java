@@ -55,7 +55,18 @@ public class WebApkInfo extends WebappInfo {
 
         String url = urlFromIntent(intent);
         int source = sourceFromIntent(intent);
+        return create(webApkPackageName, url, source);
+    }
 
+    /**
+     * Constructs a WebApkInfo from the passed in parameters and <meta-data> in the WebAPK's Android
+     * manifest.
+     *
+     * @param webApkPackageName The package name of the WebAPK.
+     * @param url Url that the WebAPK should navigate to when launched.
+     * @param source Source that the WebAPK was launched from.
+     */
+    public static WebApkInfo create(String webApkPackageName, String url, int source) {
         // Unlike non-WebAPK web apps, WebAPK ids are predictable. A malicious actor may send an
         // intent with a valid start URL and arbitrary other data. Only use the start URL, the
         // package name and the ShortcutSource from the launch intent and extract the remaining data

@@ -111,6 +111,7 @@ const char kChromeUINativeBookmarksURL[] = "chrome-native://bookmarks/";
 const char kChromeUINativePhysicalWebDiagnosticsURL[] =
     "chrome-native://physical-web-diagnostics/";
 const char kChromeUINativeRecentTabsURL[] = "chrome-native://recent-tabs/";
+const char kChromeUIWebApksURL[] = "chrome://webapks/";
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -286,6 +287,7 @@ const char kChromeUIOfflineInternalsHost[] = "offline-internals";
 const char kChromeUIPhysicalWebDiagnosticsHost[] = "physical-web-diagnostics";
 const char kChromeUIPopularSitesInternalsHost[] = "popular-sites-internals";
 const char kChromeUISnippetsInternalsHost[] = "snippets-internals";
+const char kChromeUIWebApksHost[] = "webapks";
 #endif
 
 #if defined(ENABLE_VR_SHELL) || defined(ENABLE_WEBVR)
@@ -689,6 +691,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIOfflineInternalsHost,
     kChromeUIPopularSitesInternalsHost,
     kChromeUISnippetsInternalsHost,
+    kChromeUIWebApksHost,
 #endif
 #if defined(OS_CHROMEOS)
     kChromeUICertificateManagerHost,

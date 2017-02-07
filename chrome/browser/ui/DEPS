@@ -5,6 +5,7 @@ include_rules = [
   "+components/toolbar",
   "+components/url_formatter",
   "+components/version_ui",
+  "+components/webapks_ui",
   "-chrome/browser/ui/views",
   "+mash/public/interfaces",
 ]

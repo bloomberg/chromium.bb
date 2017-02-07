@@ -2870,6 +2870,8 @@ split_static_library("browser") {
       "android/webapk/chrome_webapk_host.h",
       "android/webapk/webapk_icon_hasher.cc",
       "android/webapk/webapk_icon_hasher.h",
+      "android/webapk/webapk_info.cc",
+      "android/webapk/webapk_info.h",
       "android/webapk/webapk_install_service.cc",
       "android/webapk/webapk_install_service.h",
       "android/webapk/webapk_install_service_factory.cc",

@@ -1348,6 +1348,7 @@ group("extra_resources") {
     "//chrome/browser/resources:settings_resources",
     "//chrome/browser/resources:task_scheduler_internals_resources",
     "//chrome/browser/resources:translate_internals_resources",
+    "//chrome/browser/resources:webapks_ui_resources",
   ]
 
   if (is_chromeos) {

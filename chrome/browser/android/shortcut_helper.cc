@@ -5,6 +5,7 @@
 #include "chrome/browser/android/shortcut_helper.h"
 
 #include <jni.h>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -288,6 +289,13 @@ GURL ShortcutHelper::GetScopeFromURL(const GURL& url) {
   return GURL(base::android::ConvertJavaStringToUTF16(env, java_scope_url));
 }
 
+void ShortcutHelper::RetrieveWebApks(const WebApkInfoCallback& callback) {
+  uintptr_t callback_pointer =
+      reinterpret_cast<uintptr_t>(new WebApkInfoCallback(callback));
+  Java_ShortcutHelper_retrieveWebApks(base::android::AttachCurrentThread(),
+                                      callback_pointer);
+}
+
 // Callback used by Java when the shortcut has been created.
 // |splash_image_callback| is a pointer to a base::Closure allocated in
 // AddShortcutWithSkBitmap, so reinterpret_cast it back and run it.
@@ -303,6 +311,44 @@ void OnWebappDataStored(JNIEnv* env,
       reinterpret_cast<base::Closure*>(jsplash_image_callback);
   splash_image_callback->Run();
   delete splash_image_callback;
+}
+
+void OnWebApksRetrieved(JNIEnv* env,
+                        const JavaParamRef<jclass>& clazz,
+                        const jlong jcallback_pointer,
+                        const JavaParamRef<jobjectArray>& jshort_names,
+                        const JavaParamRef<jobjectArray>& jpackage_names,
+                        const JavaParamRef<jintArray>& jshell_apk_versions,
+                        const JavaParamRef<jintArray>& jversion_codes) {
+  DCHECK(jcallback_pointer);
+  std::vector<std::string> short_names;
+  base::android::AppendJavaStringArrayToStringVector(env, jshort_names,
+                                                     &short_names);
+  std::vector<std::string> package_names;
+  base::android::AppendJavaStringArrayToStringVector(env, jpackage_names,
+                                                     &package_names);
+  std::vector<int> shell_apk_versions;
+  base::android::JavaIntArrayToIntVector(env, jshell_apk_versions,
+                                         &shell_apk_versions);
+  std::vector<int> version_codes;
+  base::android::JavaIntArrayToIntVector(env, jversion_codes, &version_codes);
+
+  DCHECK(short_names.size() == package_names.size());
+  DCHECK(short_names.size() == shell_apk_versions.size());
+  DCHECK(short_names.size() == version_codes.size());
+
+  std::vector<WebApkInfo> webapk_list;
+  webapk_list.reserve(short_names.size());
+  for (size_t i = 0; i < short_names.size(); ++i) {
+    webapk_list.push_back(WebApkInfo(std::move(short_names[i]),
+                                     std::move(package_names[i]),
+                                     shell_apk_versions[i], version_codes[i]));
+  }
+
+  ShortcutHelper::WebApkInfoCallback* webapk_list_callback =
+      reinterpret_cast<ShortcutHelper::WebApkInfoCallback*>(jcallback_pointer);
+  webapk_list_callback->Run(webapk_list);
+  delete webapk_list_callback;
 }
 
 bool ShortcutHelper::RegisterShortcutHelper(JNIEnv* env) {

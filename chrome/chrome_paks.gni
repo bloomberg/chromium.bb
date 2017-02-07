@@ -168,6 +168,10 @@ template("chrome_extra_paks") {
       ]
       deps += [ "//extensions:extensions_resources" ]
     }
+    if (is_android) {
+      sources += [ "$root_gen_dir/chrome/webapks_ui_resources.pak" ]
+      deps += [ "//chrome/browser/resources:webapks_ui_resources" ]
+    }
   }
 }
 

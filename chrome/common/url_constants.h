@@ -100,6 +100,7 @@ extern const char kChromeUINativeNewTabURL[];
 extern const char kChromeUINativeBookmarksURL[];
 extern const char kChromeUINativePhysicalWebDiagnosticsURL[];
 extern const char kChromeUINativeRecentTabsURL[];
+extern const char kChromeUIWebApksURL[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -265,6 +266,7 @@ extern const char kChromeUIOfflineInternalsURL[];
 extern const char kChromeUIPhysicalWebDiagnosticsHost[];
 extern const char kChromeUIPopularSitesInternalsHost[];
 extern const char kChromeUISnippetsInternalsHost[];
+extern const char kChromeUIWebApksHost[];
 #endif
 
 #if defined(ENABLE_VR_SHELL) || defined(ENABLE_WEBVR)
