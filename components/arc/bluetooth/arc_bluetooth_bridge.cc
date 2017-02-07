@@ -1069,7 +1069,13 @@ void ArcBluetoothBridge::ConnectLEDevice(
 
   BluetoothDevice* device =
       bluetooth_adapter_->GetDevice(remote_addr->To<std::string>());
-  DCHECK(device);
+
+  if (!device) {
+    LOG(ERROR) << "Unknown device " << remote_addr->To<std::string>();
+    OnGattConnectError(std::move(remote_addr),
+                       BluetoothDevice::ConnectErrorCode::ERROR_FAILED);
+    return;
+  }
 
   if (device->IsConnected()) {
     bluetooth_instance->OnLEConnectionStateChange(std::move(remote_addr), true);
@@ -1095,9 +1101,8 @@ void ArcBluetoothBridge::DisconnectLEDevice(
 
   BluetoothDevice* device =
       bluetooth_adapter_->GetDevice(remote_addr->To<std::string>());
-  DCHECK(device);
 
-  if (!device->IsConnected()) {
+  if (!device || !device->IsConnected()) {
     bluetooth_instance->OnLEConnectionStateChange(std::move(remote_addr),
                                                   false);
     return;
@@ -1202,6 +1207,13 @@ void ArcBluetoothBridge::GetGattDB(mojom::BluetoothAddressPtr remote_addr) {
   BluetoothDevice* device =
       bluetooth_adapter_->GetDevice(remote_addr->To<std::string>());
   std::vector<mojom::BluetoothGattDBElementPtr> db;
+
+  if (!device) {
+    LOG(ERROR) << "Unknown device " << remote_addr->To<std::string>();
+    bluetooth_instance->OnGetGattDB(std::move(remote_addr), std::move(db));
+    return;
+  }
+
   for (auto* service : device->GetGattServices()) {
     mojom::BluetoothGattDBElementPtr service_element = CreateGattDBElement(
         service->IsPrimary()
@@ -1408,8 +1420,11 @@ void ArcBluetoothBridge::ReadRemoteRssi(
     const ReadRemoteRssiCallback& callback) {
   BluetoothDevice* device =
       bluetooth_adapter_->GetDevice(remote_addr->To<std::string>());
-  base::Optional<int8_t> rssi = device->GetInquiryRSSI();
-  callback.Run(rssi.value_or(mojom::kUnknownPower));
+  if (!device) {
+    callback.Run(mojom::kUnknownPower);
+    return;
+  }
+  callback.Run(device->GetInquiryRSSI().value_or(mojom::kUnknownPower));
 }
 
 void ArcBluetoothBridge::OpenBluetoothSocket(
@@ -1585,6 +1600,12 @@ void ArcBluetoothBridge::GetSdpRecords(mojom::BluetoothAddressPtr remote_addr,
                                        const BluetoothUUID& target_uuid) {
   BluetoothDevice* device =
       bluetooth_adapter_->GetDevice(remote_addr->To<std::string>());
+  if (!device) {
+    OnGetServiceRecordsError(std::move(remote_addr), target_uuid,
+                             bluez::BluetoothServiceRecordBlueZ::ErrorCode::
+                                 ERROR_DEVICE_DISCONNECTED);
+    return;
+  }
 
   bluez::BluetoothDeviceBlueZ* device_bluez =
       static_cast<bluez::BluetoothDeviceBlueZ*>(device);
