@@ -1,5 +1,5 @@
 Upstream cherry-picks, most recent cherry-picks at end of list:
-
+  831274fba4b14c542458ce5a3d0135b49499299a - lavc/flacdsp.c : Avoid undefined operations in non debug builds
 
 Autorename:
   autorename_* files are renamed copies of various files that would cause
