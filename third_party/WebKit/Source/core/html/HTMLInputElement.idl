@@ -79,19 +79,17 @@ interface HTMLInputElement : HTMLElement {
     readonly attribute NodeList labels;
 
     void select();
-    // FIXME: selectionStart and selectionEnd should be unsigned long.
-    [RaisesException, ImplementedAs=selectionStartForBinding] attribute long selectionStart;
-    [RaisesException, ImplementedAs=selectionEndForBinding] attribute long selectionEnd;
+    [RaisesException, ImplementedAs=selectionStartForBinding] attribute unsigned long selectionStart;
+    [RaisesException, ImplementedAs=selectionEndForBinding] attribute unsigned long selectionEnd;
     [RaisesException, ImplementedAs=selectionDirectionForBinding] attribute DOMString selectionDirection;
     [RaisesException] void setRangeText(DOMString replacement);
     [RaisesException] void setRangeText(DOMString replacement,
                                         unsigned long start,
                                         unsigned long end,
                                         optional SelectionMode selectionMode = "preserve");
-    // FIXME: The start and end arguments should be unsigned long and should not have [Default=Undefined].
     [RaisesException, ImplementedAs=setSelectionRangeForBinding]
-    void setSelectionRange([Default=Undefined] optional long start,
-                           [Default=Undefined] optional long end,
+    void setSelectionRange(unsigned long start,
+                           unsigned long end,
                            optional DOMString direction);
 
     // obsolete members

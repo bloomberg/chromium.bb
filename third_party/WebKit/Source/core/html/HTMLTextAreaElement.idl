@@ -52,20 +52,17 @@ interface HTMLTextAreaElement : HTMLElement {
     readonly attribute NodeList labels;
 
     void select();
-    // TODO(foolip): selectionStart and selectionEnd should be unsigned long.
-    attribute long selectionStart;
-    attribute long selectionEnd;
+    attribute unsigned long selectionStart;
+    attribute unsigned long selectionEnd;
     attribute DOMString selectionDirection;
     [RaisesException] void setRangeText(DOMString replacement);
     [RaisesException] void setRangeText(DOMString replacement,
                                         unsigned long start,
                                         unsigned long end,
                                         optional SelectionMode selectionMode = "preserve");
-    // TODO(foolip): The start and end arguments should be unsigned long and
-    // should not be optional.
     [ImplementedAs=setSelectionRangeForBinding]
-    void setSelectionRange([Default=Undefined] optional long start,
-                           [Default=Undefined] optional long end,
+    void setSelectionRange(unsigned long start,
+                           unsigned long end,
                            optional DOMString direction);
 
     // HTML autocapitalize proposal

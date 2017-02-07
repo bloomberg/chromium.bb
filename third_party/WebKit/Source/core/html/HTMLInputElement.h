@@ -156,15 +156,17 @@ class CORE_EXPORT HTMLInputElement : public TextControlElement {
   // delay the 'input' event with EventQueueScope.
   void setValueFromRenderer(const String&);
 
-  int selectionStartForBinding(ExceptionState&) const;
-  int selectionEndForBinding(ExceptionState&) const;
+  unsigned selectionStartForBinding(ExceptionState&) const;
+  unsigned selectionEndForBinding(ExceptionState&) const;
   String selectionDirectionForBinding(ExceptionState&) const;
-  void setSelectionStartForBinding(int, ExceptionState&);
-  void setSelectionEndForBinding(int, ExceptionState&);
+  void setSelectionStartForBinding(unsigned, ExceptionState&);
+  void setSelectionEndForBinding(unsigned, ExceptionState&);
   void setSelectionDirectionForBinding(const String&, ExceptionState&);
-  void setSelectionRangeForBinding(int start, int end, ExceptionState&);
-  void setSelectionRangeForBinding(int start,
-                                   int end,
+  void setSelectionRangeForBinding(unsigned start,
+                                   unsigned end,
+                                   ExceptionState&);
+  void setSelectionRangeForBinding(unsigned start,
+                                   unsigned end,
                                    const String& direction,
                                    ExceptionState&);
 

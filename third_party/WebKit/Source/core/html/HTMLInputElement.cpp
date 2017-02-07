@@ -549,7 +549,7 @@ bool HTMLInputElement::canStartSelection() const {
   return TextControlElement::canStartSelection();
 }
 
-int HTMLInputElement::selectionStartForBinding(
+unsigned HTMLInputElement::selectionStartForBinding(
     ExceptionState& exceptionState) const {
   if (!m_inputType->supportsSelectionAPI()) {
     UseCounter::count(document(), UseCounter::InputSelectionGettersThrow);
@@ -562,7 +562,7 @@ int HTMLInputElement::selectionStartForBinding(
   return TextControlElement::selectionStart();
 }
 
-int HTMLInputElement::selectionEndForBinding(
+unsigned HTMLInputElement::selectionEndForBinding(
     ExceptionState& exceptionState) const {
   if (!m_inputType->supportsSelectionAPI()) {
     UseCounter::count(document(), UseCounter::InputSelectionGettersThrow);
@@ -589,7 +589,7 @@ String HTMLInputElement::selectionDirectionForBinding(
 }
 
 void HTMLInputElement::setSelectionStartForBinding(
-    int start,
+    unsigned start,
     ExceptionState& exceptionState) {
   if (!m_inputType->supportsSelectionAPI()) {
     exceptionState.throwDOMException(InvalidStateError,
@@ -602,7 +602,7 @@ void HTMLInputElement::setSelectionStartForBinding(
 }
 
 void HTMLInputElement::setSelectionEndForBinding(
-    int end,
+    unsigned end,
     ExceptionState& exceptionState) {
   if (!m_inputType->supportsSelectionAPI()) {
     exceptionState.throwDOMException(InvalidStateError,
@@ -628,8 +628,8 @@ void HTMLInputElement::setSelectionDirectionForBinding(
 }
 
 void HTMLInputElement::setSelectionRangeForBinding(
-    int start,
-    int end,
+    unsigned start,
+    unsigned end,
     ExceptionState& exceptionState) {
   if (!m_inputType->supportsSelectionAPI()) {
     exceptionState.throwDOMException(InvalidStateError,
@@ -642,8 +642,8 @@ void HTMLInputElement::setSelectionRangeForBinding(
 }
 
 void HTMLInputElement::setSelectionRangeForBinding(
-    int start,
-    int end,
+    unsigned start,
+    unsigned end,
     const String& direction,
     ExceptionState& exceptionState) {
   if (!m_inputType->supportsSelectionAPI()) {

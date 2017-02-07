@@ -71,11 +71,11 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
 
   VisiblePosition visiblePositionForIndex(int) const;
   int indexForVisiblePosition(const VisiblePosition&) const;
-  int selectionStart() const;
-  int selectionEnd() const;
+  unsigned selectionStart() const;
+  unsigned selectionEnd() const;
   const AtomicString& selectionDirection() const;
-  void setSelectionStart(int);
-  void setSelectionEnd(int);
+  void setSelectionStart(unsigned);
+  void setSelectionEnd(unsigned);
   void setSelectionDirection(const String&);
   void select();
   virtual void setRangeText(const String& replacement, ExceptionState&);
@@ -86,14 +86,14 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
                             ExceptionState&);
   // Web-exposed setSelectionRange() function. This schedule to dispatch
   // 'select' event.
-  void setSelectionRangeForBinding(int start,
-                                   int end,
+  void setSelectionRangeForBinding(unsigned start,
+                                   unsigned end,
                                    const String& direction = "none");
   // Blink-internal version of setSelectionRange(). This translates "none"
   // direction to "forward" on platforms without "none" direction.
   // This returns true if it updated cached selection and/or FrameSelection.
-  bool setSelectionRange(int start,
-                         int end,
+  bool setSelectionRange(unsigned start,
+                         unsigned end,
                          TextFieldSelectionDirection = SelectionHasNoDirection);
   Range* selection() const;
 
@@ -157,19 +157,18 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   void copyNonAttributePropertiesFromElement(const Element&) override;
 
  private:
-  int computeSelectionStart() const;
-  int computeSelectionEnd() const;
+  unsigned computeSelectionStart() const;
+  unsigned computeSelectionEnd() const;
   TextFieldSelectionDirection computeSelectionDirection() const;
-  void cacheSelection(int start,
-                      int end,
+  void cacheSelection(unsigned start,
+                      unsigned end,
                       TextFieldSelectionDirection direction) {
-    DCHECK_GE(start, 0);
     DCHECK_LE(start, end);
     m_cachedSelectionStart = start;
     m_cachedSelectionEnd = end;
     m_cachedSelectionDirection = direction;
   }
-  static int indexForPosition(HTMLElement* innerEditor, const Position&);
+  static unsigned indexForPosition(HTMLElement* innerEditor, const Position&);
 
   void dispatchFocusEvent(Element* oldFocusedElement,
                           WebFocusType,
@@ -198,8 +197,8 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   bool m_wasChangedSinceLastFormControlChangeEvent = false;
   bool m_lastChangeWasUserEdit;
 
-  int m_cachedSelectionStart;
-  int m_cachedSelectionEnd;
+  unsigned m_cachedSelectionStart;
+  unsigned m_cachedSelectionEnd;
   TextFieldSelectionDirection m_cachedSelectionDirection;
 
   FRIEND_TEST_ALL_PREFIXES(TextControlElementTest, IndexForPosition);

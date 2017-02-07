@@ -135,8 +135,10 @@ cvox.ChromeVoxEditableElement.prototype.moveCursorToNextCharacter = function() {
 cvox.ChromeVoxEditableElement.prototype.moveCursorToPreviousCharacter =
     function() {
   var node = this.node;
-  node.selectionStart--;
-  node.selectionEnd = node.selectionStart;
+  if (node.selectionStart > 0) {
+    node.selectionStart--;
+    node.selectionEnd = node.selectionStart;
+  }
   cvox.ChromeVoxEventWatcher.handleTextChanged(true);
   return true;
 };

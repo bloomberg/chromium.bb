@@ -78,16 +78,16 @@ void TextControlElementTest::forceLayoutFlag() {
 }
 
 TEST_F(TextControlElementTest, SetSelectionRange) {
-  EXPECT_EQ(0, textControl().selectionStart());
-  EXPECT_EQ(0, textControl().selectionEnd());
+  EXPECT_EQ(0u, textControl().selectionStart());
+  EXPECT_EQ(0u, textControl().selectionEnd());
 
   textControl().setInnerEditorValue("Hello, text form.");
-  EXPECT_EQ(0, textControl().selectionStart());
-  EXPECT_EQ(0, textControl().selectionEnd());
+  EXPECT_EQ(0u, textControl().selectionStart());
+  EXPECT_EQ(0u, textControl().selectionEnd());
 
   textControl().setSelectionRange(1, 3);
-  EXPECT_EQ(1, textControl().selectionStart());
-  EXPECT_EQ(3, textControl().selectionEnd());
+  EXPECT_EQ(1u, textControl().selectionStart());
+  EXPECT_EQ(3u, textControl().selectionEnd());
 }
 
 TEST_F(TextControlElementTest, SetSelectionRangeDoesNotCauseLayout) {
@@ -119,9 +119,9 @@ TEST_F(TextControlElementTest, IndexForPosition) {
       toHTMLInputElement(document().getElementById("input"));
   input->setValue("Hello");
   HTMLElement* innerEditor = input->innerEditorElement();
-  EXPECT_EQ(5, TextControlElement::indexForPosition(
-                   innerEditor,
-                   Position(innerEditor, PositionAnchorType::AfterAnchor)));
+  EXPECT_EQ(5u, TextControlElement::indexForPosition(
+                    innerEditor,
+                    Position(innerEditor, PositionAnchorType::AfterAnchor)));
 }
 
 }  // namespace blink

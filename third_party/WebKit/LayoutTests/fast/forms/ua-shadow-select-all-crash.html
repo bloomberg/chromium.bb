@@ -8,7 +8,7 @@ if (window.testRunner)
     window.testRunner.dumpAsText();
 var button1 = document.getElementById('button1');
 var input1 = document.getElementById('input1');
-input1.setSelectionRange(0);
+input1.setSelectionRange(0, 0);
 input1.type = 'week';
 var oSelection = window.getSelection();
 document.execCommand('SelectAll');

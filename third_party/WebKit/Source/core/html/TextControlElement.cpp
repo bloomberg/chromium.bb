@@ -181,12 +181,12 @@ void TextControlElement::updatePlaceholderVisibility() {
       true);
 }
 
-void TextControlElement::setSelectionStart(int start) {
+void TextControlElement::setSelectionStart(unsigned start) {
   setSelectionRangeForBinding(start, std::max(start, selectionEnd()),
                               selectionDirection());
 }
 
-void TextControlElement::setSelectionEnd(int end) {
+void TextControlElement::setSelectionEnd(unsigned end) {
   setSelectionRangeForBinding(std::min(end, selectionStart()), end,
                               selectionDirection());
 }
@@ -196,7 +196,7 @@ void TextControlElement::setSelectionDirection(const String& direction) {
 }
 
 void TextControlElement::select() {
-  setSelectionRangeForBinding(0, std::numeric_limits<int>::max());
+  setSelectionRangeForBinding(0, std::numeric_limits<unsigned>::max());
   // Avoid SelectionBehaviorOnFocus::Restore, which scrolls containers to show
   // the selection.
   focus(FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
@@ -319,8 +319,8 @@ void TextControlElement::setRangeText(const String& replacement,
 }
 
 void TextControlElement::setSelectionRangeForBinding(
-    int start,
-    int end,
+    unsigned start,
+    unsigned end,
     const String& directionString) {
   TextFieldSelectionDirection direction = SelectionHasNoDirection;
   if (directionString == "forward")
@@ -331,18 +331,16 @@ void TextControlElement::setSelectionRangeForBinding(
     scheduleSelectEvent();
 }
 
-static Position positionForIndex(HTMLElement* innerEditor, int index) {
-  DCHECK_GE(index, 0);
+static Position positionForIndex(HTMLElement* innerEditor, unsigned index) {
   if (index == 0) {
     Node* node = NodeTraversal::next(*innerEditor, innerEditor);
     if (node && node->isTextNode())
       return Position(node, 0);
     return Position(innerEditor, 0);
   }
-  int remainingCharactersToMoveForward = index;
+  unsigned remainingCharactersToMoveForward = index;
   Node* lastBrOrText = innerEditor;
   for (Node& node : NodeTraversal::descendantsOf(*innerEditor)) {
-    DCHECK_GE(remainingCharactersToMoveForward, 0);
     if (node.hasTagName(brTag)) {
       if (remainingCharactersToMoveForward == 0)
         return Position::beforeNode(&node);
@@ -353,7 +351,7 @@ static Position positionForIndex(HTMLElement* innerEditor, int index) {
 
     if (node.isTextNode()) {
       Text& text = toText(node);
-      if (remainingCharactersToMoveForward < static_cast<int>(text.length()))
+      if (remainingCharactersToMoveForward < text.length())
         return Position(&text, remainingCharactersToMoveForward);
       remainingCharactersToMoveForward -= text.length();
       lastBrOrText = &node;
@@ -365,8 +363,8 @@ static Position positionForIndex(HTMLElement* innerEditor, int index) {
   return lastPositionInOrAfterNode(lastBrOrText);
 }
 
-int TextControlElement::indexForPosition(HTMLElement* innerEditor,
-                                         const Position& passedPosition) {
+unsigned TextControlElement::indexForPosition(HTMLElement* innerEditor,
+                                              const Position& passedPosition) {
   if (!innerEditor || !innerEditor->contains(passedPosition.anchorNode()) ||
       passedPosition.isNull())
     return 0;
@@ -374,7 +372,7 @@ int TextControlElement::indexForPosition(HTMLElement* innerEditor,
   if (Position::beforeNode(innerEditor) == passedPosition)
     return 0;
 
-  int index = 0;
+  unsigned index = 0;
   Node* startNode = passedPosition.computeNodeBeforePosition();
   if (!startNode)
     startNode = passedPosition.computeContainerNode();
@@ -396,20 +394,18 @@ int TextControlElement::indexForPosition(HTMLElement* innerEditor,
     }
   }
 
-  DCHECK_GE(index, 0);
   return index;
 }
 
 bool TextControlElement::setSelectionRange(
-    int start,
-    int end,
+    unsigned start,
+    unsigned end,
     TextFieldSelectionDirection direction) {
   if (openShadowRoot() || !isTextControl())
     return false;
-  const int editorValueLength = static_cast<int>(innerEditorValue().length());
-  DCHECK_GE(editorValueLength, 0);
-  end = std::max(std::min(end, editorValueLength), 0);
-  start = std::min(std::max(start, 0), end);
+  const unsigned editorValueLength = innerEditorValue().length();
+  end = std::min(end, editorValueLength);
+  start = std::min(start, end);
   LocalFrame* frame = document().frame();
   if (direction == SelectionHasNoDirection && frame &&
       frame->editor().behavior().shouldConsiderSelectionAsDirectional())
@@ -478,7 +474,7 @@ int TextControlElement::indexForVisiblePosition(
                                    range->endPosition());
 }
 
-int TextControlElement::selectionStart() const {
+unsigned TextControlElement::selectionStart() const {
   if (!isTextControl())
     return 0;
   if (document().focusedElement() != this)
@@ -487,14 +483,14 @@ int TextControlElement::selectionStart() const {
   return computeSelectionStart();
 }
 
-int TextControlElement::computeSelectionStart() const {
+unsigned TextControlElement::computeSelectionStart() const {
   DCHECK(isTextControl());
   if (LocalFrame* frame = document().frame())
     return indexForPosition(innerEditorElement(), frame->selection().start());
   return 0;
 }
 
-int TextControlElement::selectionEnd() const {
+unsigned TextControlElement::selectionEnd() const {
   if (!isTextControl())
     return 0;
   if (document().focusedElement() != this)
@@ -502,7 +498,7 @@ int TextControlElement::selectionEnd() const {
   return computeSelectionEnd();
 }
 
-int TextControlElement::computeSelectionEnd() const {
+unsigned TextControlElement::computeSelectionEnd() const {
   DCHECK(isTextControl());
   if (LocalFrame* frame = document().frame())
     return indexForPosition(innerEditorElement(), frame->selection().end());

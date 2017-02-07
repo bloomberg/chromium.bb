@@ -13,10 +13,16 @@
 <script type="text/javascript">
 description('Tests for selectionStart and selectionEnd on read-only INPUT and TEXTAREA. <br/> <a href="https://bugs.webkit.org/show_bug.cgi?id=25444">bug 25444</a>: SelectionStart, selectionEnd properties return wrong values when the selection is in a form input.');
 
+// See https://heycam.github.io/webidl/#abstract-opdef-converttoint
+function toUInt32(x) {
+    var y = Math.pow(2, 32);
+    return x - Math.floor(x / y) * y;
+}
+
 function startTest(element, start, end) {
     element.setSelectionRange(start, end);
 
-    start = start < 0 ? 0 : start;
+    start = toUInt32(start);
     end = end > 10 ? 10 : end;
     start = start > end ? end : start;
 

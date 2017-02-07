@@ -235,7 +235,7 @@ shouldBe("nonNumericPolicy('document.images.item(x)')", "'any type allowed (but 
 // HTMLInputElement
 
 shouldBe("nonNumericPolicy('document.createElement(\"input\").setSelectionRange(x, 0)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('document.createElement(\"input\").setSelectionRange(0, x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('document.createElement(\"input\").setSelectionRange(0, x)')", "'any type allowed (but not omitted)'");
 
 // HTMLOptionsCollection
 
@@ -265,7 +265,7 @@ shouldBe("nonNumericPolicy('createHTMLTableSectionElement().deleteRow(x)')", "'a
 // HTMLInputElement
 
 shouldBe("nonNumericPolicy('document.createElement(\"textarea\").setSelectionRange(x, 0)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('document.createElement(\"textarea\").setSelectionRange(0, x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('document.createElement(\"textarea\").setSelectionRange(0, x)')", "'any type allowed (but not omitted)'");
 
 // HTMLCanvasElement
 
@@ -402,8 +402,8 @@ Here are other examples of numeric types in function parameters and settable att
 ../../../../WebCore/html/HTMLInputElement.idl:                 attribute long            maxLength;
 ../../../../WebCore/html/HTMLInputElement.idl:                 attribute unsigned long   size; // Changed string -> long as part of DOM level 2
 ../../../../WebCore/html/HTMLInputElement.idl:                 attribute long            tabIndex;
-../../../../WebCore/html/HTMLInputElement.idl:                 attribute long            selectionStart;
-../../../../WebCore/html/HTMLInputElement.idl:                 attribute long            selectionEnd;
+../../../../WebCore/html/HTMLInputElement.idl:                 attribute unsigned long   selectionStart;
+../../../../WebCore/html/HTMLInputElement.idl:                 attribute unsigned long   selectionEnd;
 ../../../../WebCore/html/HTMLLIElement.idl:        attribute long value;
 ../../../../WebCore/html/HTMLMediaElement.idl:    attribute unsigned long playCount
 ../../../../WebCore/html/HTMLMediaElement.idl:    attribute unsigned long currentLoop;
@@ -424,8 +424,8 @@ Here are other examples of numeric types in function parameters and settable att
 ../../../../WebCore/html/HTMLTextAreaElement.idl:                 attribute  long                 cols;
 ../../../../WebCore/html/HTMLTextAreaElement.idl:                 attribute  long                 rows;
 ../../../../WebCore/html/HTMLTextAreaElement.idl:                 attribute  long                 tabIndex;
-../../../../WebCore/html/HTMLTextAreaElement.idl:                 attribute long selectionStart;
-../../../../WebCore/html/HTMLTextAreaElement.idl:                 attribute long selectionEnd;
+../../../../WebCore/html/HTMLTextAreaElement.idl:                 attribute unsigned long selectionStart;
+../../../../WebCore/html/HTMLTextAreaElement.idl:                 attribute unsigned long selectionEnd;
 ../../../../WebCore/html/HTMLVideoElement.idl:        attribute long width;
 ../../../../WebCore/html/HTMLVideoElement.idl:        attribute long height;
 
