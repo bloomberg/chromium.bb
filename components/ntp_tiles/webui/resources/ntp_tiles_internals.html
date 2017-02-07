@@ -44,10 +44,15 @@ found in the LICENSE file.
         </tr>
       </tbody>
       <tbody jsselect="suggestionsService">
-        <tr>
+        <tr jsdisplay="$this">
+          <td class="detail">
+            <input id="suggestions-fetch" type="submit" value="Fetch"></input>
+          </td>
+          <td class="value" jscontent="status"></td>
+        </tr>
+        <tr jsdisplay="!$this">
           <td class="detail">enabled</td>
-          <td class="value" jsdisplay="$this">yes</td>
-          <td class="value" jsdisplay="!$this">no</td>
+          <td class="value">no</td>
         </tr>
       </tbody>
       <tbody jsselect="popular">
@@ -65,6 +70,12 @@ found in the LICENSE file.
         <tr jsdisplay="$this">
           <td class="detail">Version</td>
           <td class="value"><input id="override-version" type="text" jsvalues="values:overrideVersion;placeholder:version"></td>
+        </tr>
+        <tr jsdisplay="$this">
+          <td class="detail">
+            <input id="popular-view-json" type="submit", value="View JSON"></input>
+          </td>
+          <td class="value"><pre id="popular-json-value" jscontent="json"></pre></td>
         </tr>
         <tr jsdisplay="!$this">
           <td class="detail">enabled</td>

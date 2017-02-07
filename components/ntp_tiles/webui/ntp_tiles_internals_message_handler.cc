@@ -6,8 +6,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_util.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/task_runner_util.h"
 #include "base/values.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/pref_names.h"
@@ -18,13 +22,25 @@
 
 namespace ntp_tiles {
 
+namespace {
+
+std::string FormatJson(const base::Value& value) {
+  std::string pretty_printed;
+  bool ok = base::JSONWriter::WriteWithOptions(
+      value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &pretty_printed);
+  DCHECK(ok);
+  return pretty_printed;
+}
+
+}  // namespace
+
 NTPTilesInternalsMessageHandlerClient::NTPTilesInternalsMessageHandlerClient() =
     default;
 NTPTilesInternalsMessageHandlerClient::
     ~NTPTilesInternalsMessageHandlerClient() = default;
 
 NTPTilesInternalsMessageHandler::NTPTilesInternalsMessageHandler()
-    : client_(nullptr), site_count_(8) {}
+    : client_(nullptr), site_count_(8), weak_ptr_factory_(this) {}
 
 NTPTilesInternalsMessageHandler::~NTPTilesInternalsMessageHandler() = default;
 
@@ -40,6 +56,16 @@ void NTPTilesInternalsMessageHandler::RegisterMessages(
   client_->RegisterMessageCallback(
       "update", base::Bind(&NTPTilesInternalsMessageHandler::HandleUpdate,
                            base::Unretained(this)));
+
+  client_->RegisterMessageCallback(
+      "fetchSuggestions",
+      base::Bind(&NTPTilesInternalsMessageHandler::HandleFetchSuggestions,
+                 base::Unretained(this)));
+
+  client_->RegisterMessageCallback(
+      "viewPopularSitesJson",
+      base::Bind(&NTPTilesInternalsMessageHandler::HandleViewPopularSitesJson,
+                 base::Unretained(this)));
 }
 
 void NTPTilesInternalsMessageHandler::HandleRegisterForEvents(
@@ -49,10 +75,11 @@ void NTPTilesInternalsMessageHandler::HandleRegisterForEvents(
   }
   DCHECK(args->empty());
 
-  SendSourceInfo();
-
+  suggestions_status_.clear();
+  popular_sites_json_.clear();
   most_visited_sites_ = client_->MakeMostVisitedSites();
   most_visited_sites_->SetMostVisitedURLsObserver(this, site_count_);
+  SendSourceInfo();
 }
 
 void NTPTilesInternalsMessageHandler::HandleUpdate(
@@ -67,7 +94,9 @@ void NTPTilesInternalsMessageHandler::HandleUpdate(
 
   PrefService* prefs = client_->GetPrefs();
 
-  if (client_->DoesSourceExist(ntp_tiles::NTPTileSource::POPULAR)) {
+  if (most_visited_sites_->DoesSourceExist(ntp_tiles::NTPTileSource::POPULAR)) {
+    popular_sites_json_.clear();
+
     std::string url;
     dict->GetString("popular.overrideURL", &url);
     if (url.empty()) {
@@ -102,20 +131,53 @@ void NTPTilesInternalsMessageHandler::HandleUpdate(
   SendSourceInfo();
 }
 
+void NTPTilesInternalsMessageHandler::HandleFetchSuggestions(
+    const base::ListValue* args) {
+  DCHECK_EQ(0u, args->GetSize());
+  if (!most_visited_sites_->DoesSourceExist(
+          ntp_tiles::NTPTileSource::SUGGESTIONS_SERVICE)) {
+    return;
+  }
+
+  if (most_visited_sites_->suggestions()->FetchSuggestionsData()) {
+    suggestions_status_ = "fetching...";
+  } else {
+    suggestions_status_ = "history sync is disabled, or not yet initialized";
+  }
+  SendSourceInfo();
+}
+
+void NTPTilesInternalsMessageHandler::HandleViewPopularSitesJson(
+    const base::ListValue* args) {
+  DCHECK_EQ(0u, args->GetSize());
+  if (!most_visited_sites_->DoesSourceExist(
+          ntp_tiles::NTPTileSource::POPULAR)) {
+    return;
+  }
+
+  popular_sites_json_ = FormatJson(
+      *most_visited_sites_->popular_sites()->GetCachedJson());
+  SendSourceInfo();
+}
+
 void NTPTilesInternalsMessageHandler::SendSourceInfo() {
   PrefService* prefs = client_->GetPrefs();
   base::DictionaryValue value;
 
-  value.SetBoolean("topSites",
-                   client_->DoesSourceExist(NTPTileSource::TOP_SITES));
-  value.SetBoolean(
-      "suggestionsService",
-      client_->DoesSourceExist(NTPTileSource::SUGGESTIONS_SERVICE));
-  value.SetBoolean("whitelist",
-                   client_->DoesSourceExist(NTPTileSource::WHITELIST));
+  value.SetBoolean("topSites", most_visited_sites_->DoesSourceExist(
+                                   NTPTileSource::TOP_SITES));
+  value.SetBoolean("whitelist", most_visited_sites_->DoesSourceExist(
+                                    NTPTileSource::WHITELIST));
 
-  if (client_->DoesSourceExist(NTPTileSource::POPULAR)) {
-    auto popular_sites = client_->MakePopularSites();
+  if (most_visited_sites_->DoesSourceExist(
+          NTPTileSource::SUGGESTIONS_SERVICE)) {
+    value.SetString("suggestionsService.status", suggestions_status_);
+  } else {
+    value.SetBoolean("suggestionsService", false);
+  }
+
+  if (most_visited_sites_->DoesSourceExist(NTPTileSource::POPULAR)) {
+    auto popular_sites = most_visited_sites_->popular_sites();
     value.SetString("popular.url", popular_sites->GetURLToFetch().spec());
     value.SetString("popular.country", popular_sites->GetCountryToFetch());
     value.SetString("popular.version", popular_sites->GetVersionToFetch());
@@ -129,6 +191,8 @@ void NTPTilesInternalsMessageHandler::SendSourceInfo() {
     value.SetString(
         "popular.overrideVersion",
         prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideVersion));
+
+    value.SetString("popular.json", popular_sites_json_);
   } else {
     value.SetBoolean("popular", false);
   }

@@ -17,7 +17,6 @@ class PrefService;
 namespace base {
 class Value;
 class ListValue;
-class SequencedWorkerPool;
 }  // namespace base
 
 namespace ntp_tiles {
@@ -27,9 +26,6 @@ class PopularSites;
 // Implemented by embedders to hook up PopularSitesInternalsMessageHandler.
 class PopularSitesInternalsMessageHandlerClient {
  public:
-  // Returns the blocking pool for hte embedder.
-  virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
-
   // Returns the PrefService for the embedder and containing WebUI page.
   virtual PrefService* GetPrefs() = 0;
 

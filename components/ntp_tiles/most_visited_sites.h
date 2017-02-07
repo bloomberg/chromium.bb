@@ -101,6 +101,19 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   ~MostVisitedSites() override;
 
+  // Returns true if this object was created with a non-null provider for the
+  // given NTP tile source. That source may or may not actually provide tiles,
+  // depending on its configuration and the priority of different sources.
+  bool DoesSourceExist(NTPTileSource source) const;
+
+  // Returns the corresponding object passed at construction.
+  history::TopSites* top_sites() { return top_sites_.get(); }
+  suggestions::SuggestionsService* suggestions() {
+    return suggestions_service_;
+  }
+  PopularSites* popular_sites() { return popular_sites_.get(); }
+  MostVisitedSitesSupervisor* supervisor() { return supervisor_.get(); }
+
   // Sets the observer, and immediately fetches the current suggestions.
   // Does not take ownership of |observer|, which must outlive this object and
   // must not be null.

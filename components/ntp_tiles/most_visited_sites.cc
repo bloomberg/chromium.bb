@@ -78,6 +78,21 @@ MostVisitedSites::~MostVisitedSites() {
     supervisor_->SetObserver(nullptr);
 }
 
+bool MostVisitedSites::DoesSourceExist(NTPTileSource source) const {
+  switch (source) {
+    case NTPTileSource::TOP_SITES:
+      return top_sites_ != nullptr;
+    case NTPTileSource::SUGGESTIONS_SERVICE:
+      return suggestions_service_ != nullptr;
+    case NTPTileSource::POPULAR:
+      return popular_sites_ != nullptr;
+    case NTPTileSource::WHITELIST:
+      return supervisor_ != nullptr;
+  }
+  NOTREACHED();
+  return false;
+}
+
 void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
                                                   int num_sites) {
   DCHECK(observer);

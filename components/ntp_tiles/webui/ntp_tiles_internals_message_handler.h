@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 
 namespace base {
@@ -39,6 +40,8 @@ class NTPTilesInternalsMessageHandler : public MostVisitedSites::Observer {
   // Callbacks registered in RegisterMessages().
   void HandleRegisterForEvents(const base::ListValue* args);
   void HandleUpdate(const base::ListValue* args);
+  void HandleFetchSuggestions(const base::ListValue* args);
+  void HandleViewPopularSitesJson(const base::ListValue* args);
 
   void SendSourceInfo();
   void SendTiles(const NTPTilesVector& tiles);
@@ -52,6 +55,11 @@ class NTPTilesInternalsMessageHandler : public MostVisitedSites::Observer {
 
   int site_count_;
   std::unique_ptr<MostVisitedSites> most_visited_sites_;
+
+  std::string suggestions_status_;
+  std::string popular_sites_json_;
+
+  base::WeakPtrFactory<NTPTilesInternalsMessageHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPTilesInternalsMessageHandler);
 };

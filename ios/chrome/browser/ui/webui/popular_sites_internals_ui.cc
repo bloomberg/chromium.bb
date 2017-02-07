@@ -31,7 +31,6 @@ class IOSPopularSitesInternalsMessageHandlerBridge
   void RegisterMessages() override;
 
   // ntp_tiles::PopularSitesInternalsMessageHandlerClient
-  base::SequencedWorkerPool* GetBlockingPool() override;
   std::unique_ptr<ntp_tiles::PopularSites> MakePopularSites() override;
   PrefService* GetPrefs() override;
   void RegisterMessageCallback(
@@ -48,11 +47,6 @@ class IOSPopularSitesInternalsMessageHandlerBridge
 
 void IOSPopularSitesInternalsMessageHandlerBridge::RegisterMessages() {
   handler_.RegisterMessages();
-}
-
-base::SequencedWorkerPool*
-IOSPopularSitesInternalsMessageHandlerBridge::GetBlockingPool() {
-  return web::WebThread::GetBlockingPool();
 }
 
 std::unique_ptr<ntp_tiles::PopularSites>

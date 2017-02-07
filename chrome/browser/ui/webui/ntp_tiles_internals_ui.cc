@@ -9,7 +9,6 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
-#include "chrome/browser/ntp_tiles/chrome_popular_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
@@ -45,7 +44,6 @@ class ChromeNTPTilesInternalsMessageHandlerClient
   bool SupportsNTPTiles() override;
   bool DoesSourceExist(ntp_tiles::NTPTileSource source) override;
   std::unique_ptr<ntp_tiles::MostVisitedSites> MakeMostVisitedSites() override;
-  std::unique_ptr<ntp_tiles::PopularSites> MakePopularSites() override;
   PrefService* GetPrefs() override;
   void RegisterMessageCallback(
       const std::string& message,
@@ -90,15 +88,6 @@ std::unique_ptr<ntp_tiles::MostVisitedSites>
 ChromeNTPTilesInternalsMessageHandlerClient::MakeMostVisitedSites() {
   return ChromeMostVisitedSitesFactory::NewForProfile(
       Profile::FromWebUI(web_ui()));
-}
-
-std::unique_ptr<ntp_tiles::PopularSites>
-ChromeNTPTilesInternalsMessageHandlerClient::MakePopularSites() {
-#if defined(OS_ANDROID)
-  return ChromePopularSitesFactory::NewForProfile(Profile::FromWebUI(web_ui()));
-#else
-  return nullptr;
-#endif
 }
 
 PrefService* ChromeNTPTilesInternalsMessageHandlerClient::GetPrefs() {
