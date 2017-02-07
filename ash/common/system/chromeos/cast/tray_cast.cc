@@ -15,7 +15,6 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
-#include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -43,6 +42,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -420,7 +420,7 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
   }
 
   scroll_content()->SizeToPreferredSize();
-  static_cast<views::View*>(scroller())->Layout();
+  scroller()->Layout();
 }
 
 views::View* CastDetailedView::AddToReceiverList(

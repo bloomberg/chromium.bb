@@ -23,6 +23,7 @@ namespace views {
 class BoxLayout;
 class CustomButton;
 class ProgressBar;
+class ScrollView;
 }  // namespace views
 
 namespace ash {
@@ -30,7 +31,6 @@ namespace test {
 class TrayDetailsViewTest;
 }  // namespace test
 
-class FixedSizedScrollView;
 class ScrollBorder;
 class SystemTrayItem;
 class TriView;
@@ -52,7 +52,7 @@ class ASH_EXPORT TrayDetailsView : public views::View,
 
   SystemTrayItem* owner() { return owner_; }
   SpecialPopupRow* title_row() { return title_row_; }
-  FixedSizedScrollView* scroller() { return scroller_; }
+  views::ScrollView* scroller() { return scroller_; }
   views::View* scroll_content() { return scroll_content_; }
 
  protected:
@@ -124,7 +124,7 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   SystemTrayItem* owner_;
   views::BoxLayout* box_layout_;
   SpecialPopupRow* title_row_;  // Not used in material design.
-  FixedSizedScrollView* scroller_;
+  views::ScrollView* scroller_;
   views::View* scroll_content_;
   views::ProgressBar* progress_bar_;
 

@@ -370,8 +370,6 @@ component("ash") {
     "common/system/tray/default_system_tray_delegate.h",
     "common/system/tray/fixed_sized_image_view.cc",
     "common/system/tray/fixed_sized_image_view.h",
-    "common/system/tray/fixed_sized_scroll_view.cc",
-    "common/system/tray/fixed_sized_scroll_view.h",
     "common/system/tray/hover_highlight_view.cc",
     "common/system/tray/hover_highlight_view.h",
     "common/system/tray/ime_info.cc",

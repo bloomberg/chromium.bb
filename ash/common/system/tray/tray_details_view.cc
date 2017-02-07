@@ -6,7 +6,6 @@
 
 #include "ash/common/ash_view_ids.h"
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
@@ -363,8 +362,8 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
 void TrayDetailsView::CreateScrollableList() {
   DCHECK(!scroller_);
   scroll_content_ = new ScrollContentsView();
-  scroller_ = new FixedSizedScrollView;
-  scroller_->SetContentsView(scroll_content_);
+  scroller_ = new views::ScrollView;
+  scroller_->SetContents(scroll_content_);
   // Make the |scroller_| have a layer to clip |scroll_content_|'s children.
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
   scroller_->SetPaintToLayer();
@@ -492,39 +491,9 @@ views::Button* TrayDetailsView::CreateBackButton() {
 }
 
 void TrayDetailsView::Layout() {
-  if (UseMd()) {
-    views::View::Layout();
-    if (scroller_ && !scroller_->is_bounded())
-      scroller_->ClipHeightTo(0, scroller_->height());
-    return;
-  }
-
-  if (bounds().IsEmpty()) {
-    views::View::Layout();
-    return;
-  }
-
-  if (scroller_) {
-    scroller_->set_fixed_size(gfx::Size());
-    gfx::Size size = GetPreferredSize();
-
-    // Set the scroller to fill the space above the bottom row, so that the
-    // bottom row of the detailed view will always stay just above the title
-    // row.
-    gfx::Size scroller_size = scroll_content_->GetPreferredSize();
-    scroller_->set_fixed_size(
-        gfx::Size(width() + scroller_->GetScrollBarLayoutWidth(),
-                  scroller_size.height() - (size.height() - height())));
-  }
-
   views::View::Layout();
-
-  if (title_row_) {
-    // Always make sure the title row is bottom-aligned in non-MD.
-    gfx::Rect fbounds = title_row_->bounds();
-    fbounds.set_y(height() - title_row_->height());
-    title_row_->SetBoundsRect(fbounds);
-  }
+  if (scroller_ && !scroller_->is_bounded())
+    scroller_->ClipHeightTo(0, scroller_->height());
 }
 
 int TrayDetailsView::GetHeightForWidth(int width) const {

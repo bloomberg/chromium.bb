@@ -11,7 +11,6 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
-#include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/system_tray_controller.h"
@@ -42,6 +41,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -345,19 +345,7 @@ class ImeMenuListView : public ImeListView {
  protected:
   void Layout() override {
     gfx::Range height_range = GetImeListViewRange();
-    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      scroller()->ClipHeightTo(height_range.start(), height_range.end());
-    } else {
-      uint32_t current_height = scroll_content()->height();
-      int minimum_menu_width = GetMinimumMenuWidth();
-      if (current_height > height_range.end()) {
-        scroller()->SetFixedSize(
-            gfx::Size(minimum_menu_width, height_range.end()));
-      } else if (current_height < height_range.start()) {
-        scroller()->SetFixedSize(
-            gfx::Size(minimum_menu_width, height_range.start()));
-      }
-    }
+    scroller()->ClipHeightTo(height_range.start(), height_range.end());
     ImeListView::Layout();
   }
 
