@@ -441,6 +441,9 @@
 <if expr="chromeos or is_win">
       <template is="dom-if" route-path="/content/protectedContent" no-search>
         <settings-subpage page-title="$i18n{siteSettingsProtectedContent}">
+          <div class="settings-box first two-line">
+            $i18n{siteSettingsProtectedContentExplanation}
+          </div>
           <div class="settings-box first">
             <settings-toggle-button class="start"
                 pref="{{prefs.settings.privacy.drm_enabled}}"
