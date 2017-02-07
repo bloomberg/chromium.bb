@@ -26,9 +26,6 @@ static const char* MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM =
 static const char* CONCURRENT_TABS_TIME_HISTOGRAM =
     "Media.Audible.ConcurrentTabsTime";
 
-static const char* ADD_TAB_USER_ACTION = "Media.Audible.AddTab";
-static const char* REMOVE_TAB_USER_ACTION = "Media.Audible.RemoveTab";
-
 class AudibleMetricsTest : public testing::Test {
  public:
   AudibleMetricsTest() = default;
@@ -95,8 +92,6 @@ TEST_F(AudibleMetricsTest, CreateAndKillDoesNothing) {
     EXPECT_EQ(0, samples->TotalCount());
   }
 
-  EXPECT_EQ(0, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(0, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
 }
 
 TEST_F(AudibleMetricsTest, AudibleStart) {
@@ -124,8 +119,6 @@ TEST_F(AudibleMetricsTest, AudibleStart) {
     EXPECT_EQ(0, samples->TotalCount());
   }
 
-  EXPECT_EQ(1, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(0, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
 }
 
 TEST_F(AudibleMetricsTest, AudibleStartAndStop) {
@@ -153,9 +146,6 @@ TEST_F(AudibleMetricsTest, AudibleStartAndStop) {
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
     EXPECT_EQ(0, samples->TotalCount());
   }
-
-  EXPECT_EQ(1, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(1, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
 }
 
 TEST_F(AudibleMetricsTest, AddSameTabIsNoOp) {
@@ -186,9 +176,6 @@ TEST_F(AudibleMetricsTest, AddSameTabIsNoOp) {
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
     EXPECT_EQ(0, samples->TotalCount());
   }
-
-  EXPECT_EQ(1, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(0, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
 }
 
 TEST_F(AudibleMetricsTest, RemoveUnknownTabIsNoOp) {
@@ -201,9 +188,6 @@ TEST_F(AudibleMetricsTest, RemoveUnknownTabIsNoOp) {
       MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM)->TotalCount());
   EXPECT_EQ(0, GetHistogramSamplesSinceTestStart(
       CONCURRENT_TABS_TIME_HISTOGRAM)->TotalCount());
-
-  EXPECT_EQ(0, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(0, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
 }
 
 TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionIsIncremental) {
@@ -220,9 +204,6 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionIsIncremental) {
   EXPECT_EQ(1, samples->GetCount(2));
   EXPECT_EQ(1, samples->GetCount(3));
   EXPECT_EQ(1, samples->GetCount(4));
-
-  EXPECT_EQ(4, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(0, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
 }
 
 TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionKeepTrackOfRemovedTabs) {
@@ -240,9 +221,6 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionKeepTrackOfRemovedTabs) {
   EXPECT_EQ(2, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(1));
   EXPECT_EQ(1, samples->GetCount(2));
-
-  EXPECT_EQ(4, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(3, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
 }
 
 TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionIsNotCountedTwice) {
@@ -269,9 +247,6 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionIsNotCountedTwice) {
   EXPECT_EQ(1, samples->GetCount(2));
   EXPECT_EQ(1, samples->GetCount(3));
   EXPECT_EQ(1, samples->GetCount(4));
-
-  EXPECT_EQ(8, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(4, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
 }
 
 TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
@@ -287,9 +262,6 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
     EXPECT_EQ(1, samples->GetCount(1));
   }
 
-  EXPECT_EQ(2, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(0, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
-
   // Added again: ignored.
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
@@ -302,9 +274,6 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
     EXPECT_EQ(1, samples->GetCount(0));
     EXPECT_EQ(1, samples->GetCount(1));
   }
-
-  EXPECT_EQ(2, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(0, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
 
   // Removing both.
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
@@ -319,9 +288,6 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
     EXPECT_EQ(1, samples->GetCount(1));
   }
 
-  EXPECT_EQ(2, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(2, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
-
   // Adding them after removed, it is counted.
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
   audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
@@ -334,9 +300,6 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
     EXPECT_EQ(2, samples->GetCount(0));
     EXPECT_EQ(2, samples->GetCount(1));
   }
-
-  EXPECT_EQ(4, user_action_tester().GetActionCount(ADD_TAB_USER_ACTION));
-  EXPECT_EQ(2, user_action_tester().GetActionCount(REMOVE_TAB_USER_ACTION));
 }
 
 TEST_F(AudibleMetricsTest, ConcurrentTabsTimeRequiresTwoAudibleTabs) {

@@ -4,6 +4,8 @@
 
 #include "content/browser/media/audible_metrics.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/time/default_tick_clock.h"
@@ -37,8 +39,6 @@ void AudibleMetrics::SetClockForTest(
 }
 
 void AudibleMetrics::AddAudibleWebContents(const WebContents* web_contents) {
-  base::RecordAction(base::UserMetricsAction("Media.Audible.AddTab"));
-
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Media.Audible.ConcurrentTabsWhenStarting", audible_web_contents_.size(),
       1, 10, 11);
@@ -62,8 +62,6 @@ void AudibleMetrics::AddAudibleWebContents(const WebContents* web_contents) {
 }
 
 void AudibleMetrics::RemoveAudibleWebContents(const WebContents* web_contents) {
-  base::RecordAction(base::UserMetricsAction("Media.Audible.RemoveTab"));
-
   audible_web_contents_.erase(web_contents);
 
   if (audible_web_contents_.size() <= 1 &&

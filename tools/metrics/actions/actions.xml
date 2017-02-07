@@ -8916,11 +8916,13 @@ should be able to be added at any place in this file.
 <action name="Media.Audible.AddTab">
   <owner>mlamouri@chromium.org</owner>
   <description>A tab became audible.</description>
+  <obsolete>Removed 02/2017</obsolete>
 </action>
 
 <action name="Media.Audible.RemoveTab">
   <owner>mlamouri@chromium.org</owner>
   <description>A tab is no longer audible.</description>
+  <obsolete>Removed 02/2017</obsolete>
 </action>
 
 <action name="Media.Controls.Cast">
