@@ -1,9 +1,17 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <canvas id="canvas" width=600 height=300>
-<script src="resources/canvas-2d-imageData-create-nonfinite.js"></script>
-</body>
+<script>
+test(function(t) {
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+
+    assert_throws(null, function() {ctx.createImageData(Infinity, Infinity);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
+    assert_throws(null, function() {ctx.createImageData(Infinity, 10);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
+    assert_throws(null, function() {ctx.createImageData(-Infinity, 10);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
+    assert_throws(null, function() {ctx.createImageData(10, Infinity);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
+    assert_throws(null, function() {ctx.createImageData(10, -Infinity);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
+    assert_throws(null, function() {ctx.createImageData(NaN, 10);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
+    assert_throws(null, function() {ctx.createImageData(10, NaN);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
+}, 'Test the argument bounds of canvas createImageData.');
+</script> 

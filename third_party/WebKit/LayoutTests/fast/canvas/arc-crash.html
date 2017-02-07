@@ -1,15 +1,10 @@
-<html>
-<head>
-<script type="text/javascript">
-function debug(str) {
-    var c = document.getElementById('console')
-    c.appendChild(document.createTextNode(str + '\n'));
-}
-
-function runTests() {
-    debug("This tests that we don't crash when passing inf as a parameter to arc");
-    var canvas = document.getElementById("test");
-    var context = canvas.getContext("2d");
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<canvas id="test" width="100" height="100"></canvas><br />
+<script>
+test(function(t) {
+    var canvas = document.getElementById('test');
+    var context = canvas.getContext('2d');
     context.fillStyle = '#f00';
     context.fillRect(0, 0, canvas.width, canvas.height);
     try {
@@ -28,18 +23,5 @@ function runTests() {
     }
     context.fillStyle = '#0f0';
     context.fillRect(0, 0, canvas.width, canvas.height);
-    debug("Test passed.");
-    if (window.testRunner)
-        testRunner.dumpAsText();
-}
+}, "This tests that we don't crash when passing inf as a parameter to arc");
 </script>
-<title>borkedness</title>
-</head>
-<body>
-   <canvas id="test" width="100" height="100"></canvas><br />
-   <pre id="console"></pre>
-   <script>
-   runTests();
-   </script>
-</body>
-</html>

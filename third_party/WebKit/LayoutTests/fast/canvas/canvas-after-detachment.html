@@ -1,20 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <div id="parent">
 <canvas id="mycanvas" width="200" height="200"></canvas>
-</div>
 <script>
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
-
-var data;
-function runTest()
-{
+test(function(t) {
     var parent = document.getElementById("parent");
     var canvas = document.getElementById('mycanvas');
     var ctx = canvas.getContext('2d');
@@ -23,10 +12,10 @@ function runTest()
 
     var imageData;
     imageData = ctx.getImageData(100, 100, 1, 1);
-    data = imageData.data;
-    shouldBe('data[0]', '255');
-    shouldBe('data[1]', '0');
-    shouldBe('data[2]', '0');
+    var data = imageData.data;
+    assert_equals(data[0], 255);
+    assert_equals(data[1], 0);
+    assert_equals(data[2], 0);
 
     parent.removeChild(canvas);
     // GC makes sure canvas element is removed.
@@ -35,16 +24,8 @@ function runTest()
 
     imageData = ctx.getImageData(100, 100, 1, 1);
     data = imageData.data;
-    // The context is valid although the canvas is detached from document.
-    shouldBe('data[0]', '255');
-    shouldBe('data[1]', '0');
-    shouldBe('data[2]', '0');
-
-    if (window.testRunner)
-        testRunner.notifyDone();
-}
-
-runTest();
+    assert_equals(data[0], 255);
+    assert_equals(data[1], 0);
+    assert_equals(data[2], 0);
+}, 'Test that the context is valid although the canvas is detached from document.');
 </script>
-</body>
-</html>
