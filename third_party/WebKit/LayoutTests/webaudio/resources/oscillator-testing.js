@@ -67,9 +67,6 @@ var thresholdDiffCount = 0;
 // An AudioBuffer for the reference (expected) result.
 var reference = 0;
 
-// The actual rendered data produced by the test.
-var renderedData = 0;
-
 // Signal power of the reference
 var signalPower = 0;
 
@@ -109,22 +106,25 @@ function calculateSNR(sPower, nPower)
     return 10 * Math.log10(sPower / nPower);
 }
 
-function loadReferenceAndRunTest(oscType) {
-    var bufferLoader = new BufferLoader(
+function loadReferenceAndRunTest(context, oscType, task, should) {
+     var bufferLoader = new BufferLoader(
         context,
         [ "../Oscillator/oscillator-" + oscType + "-expected.wav" ],
         function (bufferList) {
             reference = bufferList[0].getChannelData(0);
             generateExponentialOscillatorSweep(context, oscType);
-            context.oncomplete = checkResult;
+            context.oncomplete = () => {
+              checkResult(event, should);
+              task.done();
+            };
             context.startRendering();
         });
 
     bufferLoader.load();
 }
 
-function checkResult (event) {
-    renderedData = event.renderedBuffer.getChannelData(0);
+function checkResult (event, should) {
+    let renderedData = event.renderedBuffer.getChannelData(0);
     // Compute signal to noise ratio between the result and the reference. Also keep track
     // of the max difference (and position).
 
@@ -148,30 +148,15 @@ function checkResult (event) {
     }
 
     var snr = calculateSNR(signalPower, noisePower);
-    if (snr >= thresholdSNR) {
-        testPassed("Exceeded SNR threshold of " + thresholdSNR + " dB");
-    } else {
-        testFailed("Expected SNR of " + thresholdSNR + " dB, but actual SNR is " + snr + " dB");
-    }
+    should(snr, "SNR")
+        .beGreaterThanOrEqualTo(thresholdSNR);
+    should(maxError * waveScaleFactor, "Maximum difference in ulp (16-bits)")
+        .beLessThanOrEqualTo(thresholdDiff * waveScaleFactor);
 
-    if (maxError <= thresholdDiff) {
-        testPassed("Maximum difference below threshold of "
-                   + (thresholdDiff * waveScaleFactor) + " ulp (16-bits)");
-    } else {
-        testFailed("Maximum difference of " + (maxError * waveScaleFactor) + " at "
-                   + errorPosition + " exceeded threshold of " + (thresholdDiff * waveScaleFactor)
-                   + " ulp (16-bits)");
-    }
-
-    if (diffCount <= thresholdDiffCount) {
-        testPassed("Number of differences between actual and expected result is less than " + thresholdDiffCount
-                   + " out of " + renderedData.length);
-    } else {
-        testFailed(diffCount + " differences found but expected no more than " + thresholdDiffCount
-                   + " out of " + renderedData.length);
-    }
-
-    finishJSTest();
+    should(diffCount,
+           "Number of differences between actual and expected result out of "
+           + renderedData.length + " frames")
+        .beLessThanOrEqualTo(thresholdDiffCount);
 }
 
 function setThresholds(thresholds) {
@@ -180,10 +165,8 @@ function setThresholds(thresholds) {
     thresholdDiffCount = thresholds.diffCount;
 }
 
-function runTest(oscType) {
-    window.jsTestIsAsync = true;
-    context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
-    loadReferenceAndRunTest(oscType);
+function runTest(context, oscType, description, task, should) {
+  loadReferenceAndRunTest(context, oscType, task, should);
 }
 
 function createNewReference(oscType) {
@@ -207,7 +190,6 @@ return {
     thresholdDiffCount: thresholdDiffCount,
     waveScaleFactor: waveScaleFactor,
     setThresholds: setThresholds,
-    loadReferenceAndRunTest: loadReferenceAndRunTest,
     runTest: runTest,
     createNewReference: createNewReference,
 };
