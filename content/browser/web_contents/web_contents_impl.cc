@@ -74,7 +74,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
-#include "content/browser/screen_orientation/screen_orientation.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
@@ -930,6 +929,11 @@ WebContentsView* WebContentsImpl::GetView() const {
   return view_.get();
 }
 
+ScreenOrientationProvider* WebContentsImpl::GetScreenOrientationProvider()
+    const {
+  return screen_orientation_provider_.get();
+}
+
 SkColor WebContentsImpl::GetThemeColor() const {
   return theme_color_;
 }
@@ -1589,7 +1593,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
                  NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  NotificationService::AllBrowserContextsAndSources());
 
-  screen_orientation_.reset(new ScreenOrientation(this));
+  screen_orientation_provider_.reset(new ScreenOrientationProvider(this));
 
   manifest_manager_host_.reset(new ManifestManagerHost(this));
 
@@ -2436,10 +2440,6 @@ WebContentsImpl::GetGeolocationServiceContext() {
 
 device::WakeLockServiceContext* WebContentsImpl::GetWakeLockServiceContext() {
   return wake_lock_service_context_.get();
-}
-
-ScreenOrientationProvider* WebContentsImpl::GetScreenOrientationProvider() {
-  return screen_orientation_.get()->GetScreenOrientationProvider();
 }
 
 void WebContentsImpl::OnShowValidationMessage(

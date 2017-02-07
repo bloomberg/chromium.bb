@@ -47,7 +47,6 @@ class InterstitialPage;
 class PageState;
 class RenderFrameHost;
 class RenderFrameHostImpl;
-class ScreenOrientationProvider;
 class SessionStorageNamespace;
 class WebContents;
 struct AXEventNotificationDetails;
@@ -186,9 +185,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Gets the WakeLockServiceContext associated with this delegate.
   virtual device::WakeLockServiceContext* GetWakeLockServiceContext();
-
-  // Gets the ScreenOrientationProvider associated with this delegate.
-  virtual ScreenOrientationProvider* GetScreenOrientationProvider();
 
   // Notification that the frame wants to go into fullscreen mode.
   // |origin| represents the origin of the frame that requests fullscreen.

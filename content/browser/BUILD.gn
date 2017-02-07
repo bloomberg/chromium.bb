@@ -76,7 +76,6 @@ source_set("browser") {
     "//device/geolocation/public/interfaces",
     "//device/nfc:mojo_bindings",
     "//device/power_save_blocker",
-    "//device/screen_orientation/public/interfaces",
     "//device/sensors",
     "//device/vibration",
     "//device/vr",
@@ -1209,8 +1208,6 @@ source_set("browser") {
     "resolve_proxy_msg_helper.h",
     "resource_context_impl.cc",
     "resource_context_impl.h",
-    "screen_orientation/screen_orientation.cc",
-    "screen_orientation/screen_orientation.h",
     "screen_orientation/screen_orientation_delegate_win.cc",
     "screen_orientation/screen_orientation_delegate_win.h",
     "service_manager/merge_dictionary.cc",
@@ -1802,6 +1799,7 @@ source_set("browser") {
     deps -= [ "//device/battery" ]
     deps += [
       "//content/public/android:jni",
+      "//device/screen_orientation/public/interfaces",
       "//media",
       "//media/capture/content/android",
       "//media/capture/video/android",

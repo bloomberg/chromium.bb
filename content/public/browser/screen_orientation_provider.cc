@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/screen_orientation_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -19,7 +20,9 @@ using device::mojom::ScreenOrientationLockResult;
 ScreenOrientationDelegate* ScreenOrientationProvider::delegate_ = nullptr;
 
 ScreenOrientationProvider::ScreenOrientationProvider(WebContents* web_contents)
-    : WebContentsObserver(web_contents), lock_applied_(false) {}
+    : WebContentsObserver(web_contents),
+      lock_applied_(false),
+      bindings_(web_contents, this) {}
 
 ScreenOrientationProvider::~ScreenOrientationProvider() {
 }
@@ -106,9 +109,9 @@ void ScreenOrientationProvider::OnOrientationChange() {
 
 void ScreenOrientationProvider::NotifyLockResult(
     ScreenOrientationLockResult result) {
-  if (!pending_callback_.is_null()) {
+  if (!pending_callback_.is_null())
     base::ResetAndReturn(&pending_callback_).Run(result);
-  }
+
   pending_lock_orientation_.reset();
 }
 
@@ -128,6 +131,15 @@ void ScreenOrientationProvider::DidToggleFullscreenModeForTab(
     return;
 
   DCHECK(!entered_fullscreen);
+  UnlockOrientation();
+}
+
+void ScreenOrientationProvider::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() || navigation_handle->IsSamePage()) {
+    return;
+  }
   UnlockOrientation();
 }
 

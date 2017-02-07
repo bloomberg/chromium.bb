@@ -6,10 +6,13 @@
 #define CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_PROVIDER_H_
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation_lock_types.mojom.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
@@ -18,24 +21,20 @@ namespace content {
 class ScreenOrientationDelegate;
 class WebContents;
 
-using LockOrientationCallback =
-    base::Callback<void(device::mojom::ScreenOrientationLockResult)>;
-
 // Handles screen orientation lock/unlock. Platforms which wish to provide
 // custom implementations can provide a factory for ScreenOrientationDelegate.
-class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
+class CONTENT_EXPORT ScreenOrientationProvider
+    : NON_EXPORTED_BASE(public device::mojom::ScreenOrientation),
+      public WebContentsObserver {
  public:
   ScreenOrientationProvider(WebContents* web_contents);
 
   ~ScreenOrientationProvider() override;
 
-  // Lock the screen orientation to |orientation|, |callback| is the callback
-  // that should be invoked when this request receives a result.
+  // device::mojom::ScreenOrientation:
   void LockOrientation(blink::WebScreenOrientationLockType orientation,
-                       const LockOrientationCallback& callback);
-
-  // Unlock the screen orientation.
-  void UnlockOrientation();
+                       const LockOrientationCallback& callback) override;
+  void UnlockOrientation() override;
 
   // Inform about a screen orientation update. It is called to let the provider
   // know if a lock has been resolved.
@@ -48,6 +47,7 @@ class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
   // WebContentsObserver
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
  private:
   // Calls on |on_result_callback_| with |result|, followed by resetting
@@ -69,11 +69,13 @@ class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
   // Whether the ScreenOrientationProvider currently has a lock applied.
   bool lock_applied_;
 
-  // Locks that require orientation changes are not completed until
+  // Lock that require orientation changes are not completed until
   // OnOrientationChange.
   base::Optional<blink::WebScreenOrientationLockType> pending_lock_orientation_;
 
   LockOrientationCallback pending_callback_;
+
+  WebContentsFrameBindingSet<device::mojom::ScreenOrientation> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationProvider);
 };
