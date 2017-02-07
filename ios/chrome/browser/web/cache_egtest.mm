@@ -217,7 +217,6 @@ class ScopedBlockPopupsPref {
 
 // Tests caching behavior when opening new tab. New tab should not use the
 // cached page.
-// TODO(crbug.com/644646): Monitor this test for flakiness.
 - (void)testCachingBehaviorOnOpenNewTab {
   web::test::SetUpHttpServer(base::MakeUnique<CacheTestResponseProvider>());
 
