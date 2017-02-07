@@ -84,6 +84,7 @@ class MockMinidumpUnloadedModuleList : public MinidumpUnloadedModuleList {
  public:
   MockMinidumpUnloadedModuleList() : MinidumpUnloadedModuleList(NULL) {}
 
+  ~MockMinidumpUnloadedModuleList() {}
   MOCK_CONST_METHOD0(Copy, CodeModules*());
   MOCK_CONST_METHOD1(GetModuleForAddress,
                      const MinidumpUnloadedModule*(uint64_t));
@@ -400,11 +401,13 @@ TEST_F(MinidumpProcessorTest, TestUnloadedModules) {
   EXPECT_CALL(memory_list, GetMemoryRegionForAddress(_)).
     Times(0);
 
+  MockMinidumpUnloadedModuleList* unloaded_module_list_copy =
+      new MockMinidumpUnloadedModuleList();
   EXPECT_CALL(unloaded_module_list, Copy()).
-      WillOnce(Return(&unloaded_module_list));
+      WillOnce(Return(unloaded_module_list_copy));
 
   MockMinidumpUnloadedModule unloaded_module;
-  EXPECT_CALL(unloaded_module_list, GetModuleForAddress(kExpectedEIP)).
+  EXPECT_CALL(*unloaded_module_list_copy, GetModuleForAddress(kExpectedEIP)).
       WillOnce(Return(&unloaded_module));
 
   MinidumpProcessor processor(reinterpret_cast<SymbolSupplier*>(NULL), NULL);

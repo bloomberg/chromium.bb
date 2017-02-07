@@ -64,6 +64,7 @@ void ProcessState::Clear() {
   modules_with_corrupt_symbols_.clear();
   delete modules_;
   modules_ = NULL;
+  delete unloaded_modules_;
   unloaded_modules_ = NULL;
 }
 
