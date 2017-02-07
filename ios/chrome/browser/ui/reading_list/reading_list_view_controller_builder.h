@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller_container.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -21,7 +21,7 @@ class ChromeBrowserState;
 // A builder class that constructs ReadingListViewControllers.
 @interface ReadingListViewControllerBuilder : NSObject
 
-+ (ReadingListViewControllerContainer*)
++ (ReadingListViewController*)
 readingListViewControllerInBrowserState:(ios::ChromeBrowserState*)browserState
                                  loader:(id<UrlLoader>)loader;
 

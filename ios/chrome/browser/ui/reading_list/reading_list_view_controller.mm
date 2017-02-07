@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller_container.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
@@ -58,9 +58,8 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 };
 }
 
-@interface ReadingListViewControllerContainer ()<
-    ReadingListToolbarActions,
-    ReadingListToolbarHeightDelegate> {
+@interface ReadingListViewController ()<ReadingListToolbarActions,
+                                        ReadingListToolbarHeightDelegate> {
   // Toolbar with the actions.
   ReadingListToolbar* _toolbar;
   // This constraint control the expanded mode of the toolbar.
@@ -88,7 +87,7 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 
 @end
 
-@implementation ReadingListViewControllerContainer
+@implementation ReadingListViewController
 
 @synthesize readingListCollectionViewController =
     _readingListCollectionViewController;
@@ -205,7 +204,7 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
   }
   const GURL entryURL = entry->URL();
 
-  __weak ReadingListViewControllerContainer* weakSelf = self;
+  __weak ReadingListViewController* weakSelf = self;
 
   _alertCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self
@@ -375,7 +374,7 @@ readingListCollectionViewController:
 #pragma mark - UIResponder
 
 - (NSArray*)keyCommands {
-  __weak ReadingListViewControllerContainer* weakSelf = self;
+  __weak ReadingListViewController* weakSelf = self;
   return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
                                    modifierFlags:Cr_UIKeyModifierNone
                                            title:nil

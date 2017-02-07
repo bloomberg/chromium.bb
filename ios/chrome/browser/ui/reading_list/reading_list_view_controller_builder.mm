@@ -18,7 +18,7 @@
 
 @implementation ReadingListViewControllerBuilder
 
-+ (ReadingListViewControllerContainer*)
++ (ReadingListViewController*)
 readingListViewControllerInBrowserState:(ios::ChromeBrowserState*)browserState
                                  loader:(id<UrlLoader>)loader {
   ReadingListModel* model =
@@ -28,11 +28,11 @@ readingListViewControllerInBrowserState:(ios::ChromeBrowserState*)browserState
   ReadingListDownloadService* rlservice =
       ReadingListDownloadServiceFactory::GetInstance()->GetForBrowserState(
           browserState);
-  ReadingListViewControllerContainer* vc =
-      [[ReadingListViewControllerContainer alloc] initWithModel:model
-                                                         loader:loader
-                                               largeIconService:service
-                                     readingListDownloadService:rlservice];
+  ReadingListViewController* vc =
+      [[ReadingListViewController alloc] initWithModel:model
+                                                loader:loader
+                                      largeIconService:service
+                            readingListDownloadService:rlservice];
   return vc;
 }
 

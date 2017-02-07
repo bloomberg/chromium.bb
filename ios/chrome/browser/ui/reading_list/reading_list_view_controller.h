@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_VIEW_CONTROLLER_CONTAINER_H_
-#define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_VIEW_CONTROLLER_CONTAINER_H_
+#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_VIEW_CONTROLLER_H_
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
@@ -17,10 +17,10 @@ class ReadingListDownloadService;
 class ReadingListModel;
 @protocol UrlLoader;
 
-// Container for the Reading List View Controller and the toolbar. It handles
-// the interactions between the two. It also acts as a ReadingList delegate,
-// opening entries and displaying context menu.
-@interface ReadingListViewControllerContainer
+// Container for the ReadingList Collection View Controller and the toolbar. It
+// handles the interactions between the two. It also acts as a ReadingList
+// delegate, opening entries and displaying context menu.
+@interface ReadingListViewController
     : UIViewController<ReadingListCollectionViewControllerDelegate>
 
 - (instancetype)initWithModel:(ReadingListModel*)model
@@ -36,4 +36,4 @@ class ReadingListModel;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_VIEW_CONTROLLER_CONTAINER_H_
+#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_VIEW_CONTROLLER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller_container.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
@@ -110,26 +110,26 @@ class MockFaviconService : public favicon::FaviconService {
 
 @end
 
-#pragma mark - ReadingListViewControllerContainerTest
+#pragma mark - ReadingListViewControllerTest
 
-class ReadingListViewControllerContainerTest : public web::WebTestWithWebState {
+class ReadingListViewControllerTest : public web::WebTestWithWebState {
  public:
-  ReadingListViewControllerContainerTest() {
+  ReadingListViewControllerTest() {
     loader_mock_.reset([[UrlLoaderStub alloc] init]);
     mock_favicon_service_.reset(new MockFaviconService());
 
     reading_list_model_.reset(new ReadingListModelImpl(nullptr, nullptr));
     large_icon_service_.reset(new favicon::LargeIconService(
         mock_favicon_service_.get(), base::ThreadTaskRunnerHandle::Get()));
-    container_.reset([[ReadingListViewControllerContainer alloc]
+    container_.reset([[ReadingListViewController alloc]
                      initWithModel:reading_list_model_.get()
                             loader:loader_mock_
                   largeIconService:large_icon_service_.get()
         readingListDownloadService:nil]);
   }
-  ~ReadingListViewControllerContainerTest() override {}
+  ~ReadingListViewControllerTest() override {}
 
-  ReadingListViewControllerContainer* GetContainer() { return container_; }
+  ReadingListViewController* GetContainer() { return container_; }
 
   ReadingListModel* GetReadingListModel() { return reading_list_model_.get(); }
   UrlLoaderStub* GetLoaderStub() { return loader_mock_; }
@@ -143,7 +143,7 @@ class ReadingListViewControllerContainerTest : public web::WebTestWithWebState {
   }
 
  private:
-  base::scoped_nsobject<ReadingListViewControllerContainer> container_;
+  base::scoped_nsobject<ReadingListViewController> container_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   base::scoped_nsobject<UrlLoaderStub> loader_mock_;
   std::unique_ptr<favicon::LargeIconService> large_icon_service_;
@@ -152,7 +152,7 @@ class ReadingListViewControllerContainerTest : public web::WebTestWithWebState {
 
 // Tests that the implementation of ReadingListCollectionViewController
 // openItemAtIndexPath opens the entry.
-TEST_F(ReadingListViewControllerContainerTest, OpenItem) {
+TEST_F(ReadingListViewControllerTest, OpenItem) {
   // Setup.
   GURL url("https://chromium.org");
   std::string title("Chromium");
