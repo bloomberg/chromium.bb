@@ -405,12 +405,15 @@ size_t DiscardableSharedMemoryManager::GetBytesAllocated() {
 
 void DiscardableSharedMemoryManager::OnMemoryStateChange(
     base::MemoryState state) {
+  // Don't use SetMemoryLimit() as it frees up existing allocations.
+  // OnPurgeMemory() is called to actually free up memory.
+  base::AutoLock lock(lock_);
   switch (state) {
     case base::MemoryState::NORMAL:
-      SetMemoryLimit(default_memory_limit_);
+      memory_limit_ = default_memory_limit_;
       break;
     case base::MemoryState::THROTTLED:
-      SetMemoryLimit(0);
+      memory_limit_ = 0;
       break;
     case base::MemoryState::SUSPENDED:
     // Note that SUSPENDED never occurs in the main browser process so far.
@@ -419,6 +422,11 @@ void DiscardableSharedMemoryManager::OnMemoryStateChange(
       NOTREACHED();
       break;
   }
+}
+
+void DiscardableSharedMemoryManager::OnPurgeMemory() {
+  base::AutoLock lock(lock_);
+  ReduceMemoryUsageUntilWithinLimit(0);
 }
 
 void DiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(

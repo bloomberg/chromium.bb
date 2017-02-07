@@ -107,6 +107,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
 
   // base::MemoryCoordinatorClient implementation:
   void OnMemoryStateChange(base::MemoryState state) override;
+  void OnPurgeMemory() override;
 
   void AllocateLockedDiscardableSharedMemory(
       int client_id,
