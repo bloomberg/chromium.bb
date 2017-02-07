@@ -19,6 +19,7 @@ class CORE_EXPORT PerformanceNavigationTiming final
   enum class NavigationType { Navigate, Reload, BackForward, Prerender };
 
   PerformanceNavigationTiming(double timeOrigin,
+                              const String& requestedUrl,
                               double unloadEventStart,
                               double unloadEventEnd,
                               double loadEventStart,

@@ -389,7 +389,8 @@ void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
       getNavigationType(documentLoader->getNavigationType(), frame->document());
 
   m_navigationTiming = new PerformanceNavigationTiming(
-      timeOrigin(), documentLoadTiming.unloadEventStart(),
+      timeOrigin(), navigationTimingInfo->initialURL().getString(),
+      documentLoadTiming.unloadEventStart(),
       documentLoadTiming.unloadEventEnd(), documentLoadTiming.loadEventStart(),
       documentLoadTiming.loadEventEnd(), documentLoadTiming.redirectCount(),
       documentTiming ? documentTiming->domInteractive() : 0,

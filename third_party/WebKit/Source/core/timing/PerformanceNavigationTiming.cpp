@@ -11,6 +11,7 @@ namespace blink {
 
 PerformanceNavigationTiming::PerformanceNavigationTiming(
     double timeOrigin,
+    const String& requestedUrl,
     double unloadEventStart,
     double unloadEventEnd,
     double loadEventStart,
@@ -47,7 +48,7 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
                                                               // Create an enum
                                                               // for this.
                                 allowRedirectDetails,
-                                "document",
+                                requestedUrl,
                                 "navigation",
                                 timeOrigin),
       m_timeOrigin(timeOrigin),
