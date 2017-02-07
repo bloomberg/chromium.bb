@@ -13,12 +13,12 @@
 #include "base/logging.h"
 #include "components/web_restrictions/browser/web_restrictions_mojo_implementation.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/frame_navigate_params.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace android_webview {
@@ -152,14 +152,12 @@ void AwRenderViewHostExt::RenderFrameCreated(
                  AwBrowserContext::GetDefault()->GetWebRestrictionProvider()));
 }
 
-void AwRenderViewHostExt::DidNavigateAnyFrame(
-    content::RenderFrameHost* render_frame_host,
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void AwRenderViewHostExt::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
   DCHECK(CalledOnValidThread());
 
   AwBrowserContext::FromWebContents(web_contents())
-      ->AddVisitedURLs(params.redirects);
+      ->AddVisitedURLs(navigation_handle->GetRedirectChain());
 }
 
 void AwRenderViewHostExt::OnPageScaleFactorChanged(float page_scale_factor) {

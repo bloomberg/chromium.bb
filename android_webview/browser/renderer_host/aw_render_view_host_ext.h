@@ -16,11 +16,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 
-namespace content {
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
-}  // namespace content
-
 namespace android_webview {
 
 class AwRenderViewHostExtClient {
@@ -87,9 +82,8 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
   void RenderFrameCreated(content::RenderFrameHost* frame_host) override;
-  void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
-                           const content::LoadCommittedDetails& details,
-                           const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void OnPageScaleFactorChanged(float page_scale_factor) override;
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
