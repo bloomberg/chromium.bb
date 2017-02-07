@@ -998,15 +998,21 @@ static float minWordFragmentWidthForBreakAll(LayoutText* layoutText,
                                              const Font& font,
                                              TextDirection textDirection,
                                              int start,
-                                             int length) {
+                                             int length,
+                                             EWordBreak breakAllOrBreakWord) {
   DCHECK_GT(length, 0);
   LazyLineBreakIterator breakIterator(layoutText->text(), style.locale());
   int nextBreakable = -1;
   float min = std::numeric_limits<float>::max();
   int end = start + length;
   for (int i = start; i < end;) {
-    breakIterator.isBreakable(i + 1, nextBreakable, LineBreakType::BreakAll);
-    int fragmentLength = (nextBreakable > i ? nextBreakable : length) - i;
+    int fragmentLength;
+    if (breakAllOrBreakWord == EWordBreak::BreakAllWordBreak) {
+      breakIterator.isBreakable(i + 1, nextBreakable, LineBreakType::BreakAll);
+      fragmentLength = (nextBreakable > i ? nextBreakable : length) - i;
+    } else {
+      fragmentLength = U16_LENGTH(layoutText->codepointAt(i));
+    }
     // The correct behavior is to measure width without re-shaping, but we
     // reshape each fragment here because a) the current line breaker does not
     // support it, b) getCharacterRange() can reshape if the text is too long
@@ -1094,11 +1100,16 @@ void LayoutText::computePreferredLogicalWidths(
   int lastWordBoundary = 0;
   float cachedWordTrailingSpaceWidth[2] = {0, 0};  // LTR, RTL
 
-  bool breakAll = (styleToUse.wordBreak() == BreakAllWordBreak ||
-                   styleToUse.wordBreak() == BreakWordBreak) &&
-                  styleToUse.autoWrap();
-  bool keepAll =
-      styleToUse.wordBreak() == KeepAllWordBreak && styleToUse.autoWrap();
+  EWordBreak breakAllOrBreakWord = EWordBreak::NormalWordBreak;
+  LineBreakType lineBreakType = LineBreakType::Normal;
+  if (styleToUse.autoWrap()) {
+    if (styleToUse.wordBreak() == BreakAllWordBreak ||
+        styleToUse.wordBreak() == BreakWordBreak) {
+      breakAllOrBreakWord = styleToUse.wordBreak();
+    } else if (styleToUse.wordBreak() == KeepAllWordBreak) {
+      lineBreakType = LineBreakType::KeepAll;
+    }
+  }
 
   Hyphenation* hyphenation =
       styleToUse.autoWrap() ? styleToUse.getHyphenation() : nullptr;
@@ -1194,9 +1205,7 @@ void LayoutText::computePreferredLogicalWidths(
       continue;
     }
 
-    bool hasBreak = breakIterator.isBreakable(
-        i, nextBreakable,
-        keepAll ? LineBreakType::KeepAll : LineBreakType::Normal);
+    bool hasBreak = breakIterator.isBreakable(i, nextBreakable, lineBreakType);
     bool betweenWords = true;
     int j = i;
     while (c != newlineCharacter && c != spaceCharacter &&
@@ -1274,12 +1283,13 @@ void LayoutText::computePreferredLogicalWidths(
         }
       }
 
-      if (breakAll) {
+      if (breakAllOrBreakWord != EWordBreak::NormalWordBreak) {
         // Because sum of character widths may not be equal to the word width,
         // we need to measure twice; once with normal break for max width,
         // another with break-all for min width.
-        currMinWidth = minWordFragmentWidthForBreakAll(
-            this, styleToUse, f, textDirection, i, wordLen);
+        currMinWidth =
+            minWordFragmentWidthForBreakAll(this, styleToUse, f, textDirection,
+                                            i, wordLen, breakAllOrBreakWord);
       } else {
         currMinWidth += w;
       }
