@@ -145,7 +145,7 @@ PASS MutationObserver interface object length
 PASS MutationObserver interface object name 
 FAIL MutationObserver interface: existence and properties of interface prototype object assert_equals: class string of MutationObserver.prototype expected "[object MutationObserverPrototype]" but got "[object MutationObserver]"
 PASS MutationObserver interface: existence and properties of interface prototype object's "constructor" property 
-FAIL MutationObserver interface: operation observe(Node,MutationObserverInit) assert_equals: property has wrong .length expected 1 but got 2
+PASS MutationObserver interface: operation observe(Node,MutationObserverInit) 
 PASS MutationObserver interface: operation disconnect() 
 PASS MutationObserver interface: operation takeRecords() 
 PASS MutationRecord interface: existence and properties of interface object 
