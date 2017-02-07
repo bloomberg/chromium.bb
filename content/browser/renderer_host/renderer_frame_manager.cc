@@ -167,21 +167,8 @@ void RendererFrameManager::OnMemoryPressure(
   }
 }
 
-void RendererFrameManager::OnMemoryStateChange(base::MemoryState state) {
-  switch (state) {
-    case base::MemoryState::NORMAL:
-      // It is not necessary to purge here.
-      break;
-    case base::MemoryState::THROTTLED:
-      PurgeMemory(kCriticalPressurePercentage);
-      break;
-    case base::MemoryState::SUSPENDED:
-      // Note that SUSPENDED never occurs in the main browser process so far.
-      // Fall through.
-    case base::MemoryState::UNKNOWN:
-      NOTREACHED();
-      break;
-  }
+void RendererFrameManager::OnPurgeMemory() {
+  PurgeMemory(kCriticalPressurePercentage);
 }
 
 void RendererFrameManager::PurgeMemory(int percentage) {

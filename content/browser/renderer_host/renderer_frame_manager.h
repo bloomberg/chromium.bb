@@ -58,7 +58,7 @@ class CONTENT_EXPORT RendererFrameManager :
   ~RendererFrameManager() override;
 
   // base::MemoryCoordinatorClient implementation:
-  void OnMemoryStateChange(base::MemoryState state) override;
+  void OnPurgeMemory() override;
 
   void CullUnlockedFrames(size_t saved_frame_limit);
 
