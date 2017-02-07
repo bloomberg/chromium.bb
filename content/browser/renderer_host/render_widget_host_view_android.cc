@@ -1413,8 +1413,7 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   ui::WindowAndroidCompositor* compositor =
       view_.GetWindowAndroid()->GetCompositor();
   if (compositor) {
-    delegated_frame_host_->RegisterFrameSinkHierarchy(
-        compositor->GetFrameSinkId());
+    delegated_frame_host_->AttachToCompositor(compositor);
   }
 }
 
@@ -1439,7 +1438,7 @@ void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
   // If the DFH has already been destroyed, it will have cleaned itself up.
   // This happens in some WebView cases.
   if (delegated_frame_host_)
-    delegated_frame_host_->UnregisterFrameSinkHierarchy();
+    delegated_frame_host_->DetachFromCompositor();
   DCHECK(!begin_frame_source_);
 }
 
@@ -1824,8 +1823,7 @@ void RenderWidgetHostViewAndroid::OnAttachCompositor() {
   if (observing_root_window_) {
     ui::WindowAndroidCompositor* compositor =
         view_.GetWindowAndroid()->GetCompositor();
-    delegated_frame_host_->RegisterFrameSinkHierarchy(
-        compositor->GetFrameSinkId());
+    delegated_frame_host_->AttachToCompositor(compositor);
   }
 }
 
@@ -1834,7 +1832,7 @@ void RenderWidgetHostViewAndroid::OnDetachCompositor() {
   DCHECK(using_browser_compositor_);
   RunAckCallbacks();
   overscroll_controller_.reset();
-  delegated_frame_host_->UnregisterFrameSinkHierarchy();
+  delegated_frame_host_->DetachFromCompositor();
 }
 
 void RenderWidgetHostViewAndroid::OnBeginFrame(const cc::BeginFrameArgs& args) {

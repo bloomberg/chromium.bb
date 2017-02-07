@@ -466,6 +466,7 @@ void CompositorImpl::SetVisible(bool visible) {
 
     host_->SetVisible(false);
     host_->ReleaseCompositorFrameSink();
+    has_compositor_frame_sink_ = false;
     pending_swapbuffers_ = 0;
     display_.reset();
   } else {
@@ -532,6 +533,11 @@ void CompositorImpl::RequestNewCompositorFrameSink() {
 
 void CompositorImpl::DidInitializeCompositorFrameSink() {
   compositor_frame_sink_request_pending_ = false;
+  has_compositor_frame_sink_ = true;
+  for (auto& frame_sink_id : pending_child_frame_sink_ids_)
+    AddChildFrameSink(frame_sink_id);
+
+  pending_child_frame_sink_ids_.clear();
 }
 
 void CompositorImpl::DidFailToInitializeCompositorFrameSink() {
@@ -706,6 +712,7 @@ void CompositorImpl::DidReceiveCompositorFrameAck() {
 
 void CompositorImpl::DidLoseCompositorFrameSink() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidLoseCompositorFrameSink");
+  has_compositor_frame_sink_ = false;
   client_->OnSwapBuffersCompleted(0);
 }
 
@@ -733,6 +740,28 @@ void CompositorImpl::SetNeedsAnimate() {
 
 cc::FrameSinkId CompositorImpl::GetFrameSinkId() {
   return frame_sink_id_;
+}
+
+void CompositorImpl::AddChildFrameSink(const cc::FrameSinkId& frame_sink_id) {
+  if (has_compositor_frame_sink_) {
+    ui::ContextProviderFactory::GetInstance()
+        ->GetSurfaceManager()
+        ->RegisterFrameSinkHierarchy(frame_sink_id_, frame_sink_id);
+  } else {
+    pending_child_frame_sink_ids_.insert(frame_sink_id);
+  }
+}
+
+void CompositorImpl::RemoveChildFrameSink(
+    const cc::FrameSinkId& frame_sink_id) {
+  auto it = pending_child_frame_sink_ids_.find(frame_sink_id);
+  if (it != pending_child_frame_sink_ids_.end()) {
+    pending_child_frame_sink_ids_.erase(it);
+    return;
+  }
+  ui::ContextProviderFactory::GetInstance()
+      ->GetSurfaceManager()
+      ->UnregisterFrameSinkHierarchy(frame_sink_id_, frame_sink_id);
 }
 
 bool CompositorImpl::HavePendingReadbacks() {

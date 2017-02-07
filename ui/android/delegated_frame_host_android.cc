@@ -78,7 +78,7 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
 DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
   DestroyDelegatedContent();
   surface_factory_.reset();
-  UnregisterFrameSinkHierarchy();
+  DetachFromCompositor();
   surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
   background_layer_->RemoveFromParent();
 }
@@ -203,22 +203,21 @@ void DelegatedFrameHostAndroid::UpdateContainerSizeinDIP(
   UpdateBackgroundLayer();
 }
 
-void DelegatedFrameHostAndroid::RegisterFrameSinkHierarchy(
-    const cc::FrameSinkId& parent_id) {
-  if (registered_parent_frame_sink_id_.is_valid())
-    UnregisterFrameSinkHierarchy();
-  registered_parent_frame_sink_id_ = parent_id;
+void DelegatedFrameHostAndroid::AttachToCompositor(
+    WindowAndroidCompositor* compositor) {
+  if (registered_parent_compositor_)
+    DetachFromCompositor();
   surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
-  surface_manager_->RegisterFrameSinkHierarchy(parent_id, frame_sink_id_);
+  compositor->AddChildFrameSink(frame_sink_id_);
+  registered_parent_compositor_ = compositor;
 }
 
-void DelegatedFrameHostAndroid::UnregisterFrameSinkHierarchy() {
-  if (!registered_parent_frame_sink_id_.is_valid())
+void DelegatedFrameHostAndroid::DetachFromCompositor() {
+  if (!registered_parent_compositor_)
     return;
   surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
-  surface_manager_->UnregisterFrameSinkHierarchy(
-      registered_parent_frame_sink_id_, frame_sink_id_);
-  registered_parent_frame_sink_id_ = cc::FrameSinkId();
+  registered_parent_compositor_->RemoveChildFrameSink(frame_sink_id_);
+  registered_parent_compositor_ = nullptr;
 }
 
 void DelegatedFrameHostAndroid::ReturnResources(

@@ -69,8 +69,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   // Called when this DFH is attached/detached from a parent browser compositor
   // and needs to be attached to the surface hierarchy.
-  void RegisterFrameSinkHierarchy(const cc::FrameSinkId& parent_id);
-  void UnregisterFrameSinkHierarchy();
+  void AttachToCompositor(WindowAndroidCompositor* compositor);
+  void DetachFromCompositor();
 
  private:
   // cc::SurfaceFactoryClient implementation.
@@ -85,7 +85,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   cc::SurfaceManager* surface_manager_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
-  cc::FrameSinkId registered_parent_frame_sink_id_;
+  WindowAndroidCompositor* registered_parent_compositor_ = nullptr;
   Client* client_;
 
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;

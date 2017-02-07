@@ -103,6 +103,8 @@ class CONTENT_EXPORT CompositorImpl
       std::unique_ptr<cc::CopyOutputRequest> request) override;
   void SetNeedsAnimate() override;
   cc::FrameSinkId GetFrameSinkId() override;
+  void AddChildFrameSink(const cc::FrameSinkId& frame_sink_id) override;
+  void RemoveChildFrameSink(const cc::FrameSinkId& frame_sink_id) override;
 
   void SetVisible(bool visible);
   void CreateLayerTreeHost();
@@ -165,6 +167,9 @@ class CONTENT_EXPORT CompositorImpl
   bool compositor_frame_sink_request_pending_;
 
   gpu::Capabilities gpu_capabilities_;
+  bool has_compositor_frame_sink_ = false;
+  std::unordered_set<cc::FrameSinkId, cc::FrameSinkIdHash>
+      pending_child_frame_sink_ids_;
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
