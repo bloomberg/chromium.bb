@@ -123,7 +123,7 @@ class WindowServer : public ServerWindowDelegate,
   // Returns true if OnTreeMessagedClient() was invoked for id.
   bool DidTreeMessageClient(ClientSpecificId id) const;
 
-  // Returns the WindowTree that has |id| as a root.
+  // Returns the WindowTree that has |window| as a root.
   WindowTree* GetTreeWithRoot(const ServerWindow* window) {
     return const_cast<WindowTree*>(
         const_cast<const WindowServer*>(this)->GetTreeWithRoot(window));

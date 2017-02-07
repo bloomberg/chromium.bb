@@ -612,6 +612,7 @@ class WindowEventTargetingHelper {
   // Creates a secondary tree, embedded as a child of |embed_window|. The
   // resulting |window| is setup for event targeting, with bounds
   // |window_bounds|.
+  // TODO(sky): rename and cleanup. This doesn't really create a new tree.
   void CreateSecondaryTree(ServerWindow* embed_window,
                            const gfx::Rect& window_bounds,
                            TestWindowTreeClient** out_client,
@@ -640,6 +641,7 @@ class WindowEventTargetingHelper {
   TestDisplayBinding* display_binding_ = nullptr;
   // Owned by WindowServer's DisplayManager.
   Display* display_ = nullptr;
+  ClientSpecificId next_primary_tree_window_id_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(WindowEventTargetingHelper);
 };
@@ -676,7 +678,7 @@ ClientWindowId ClientWindowIdForWindow(WindowTree* tree,
 ServerWindow* NewWindowInTree(WindowTree* tree, ClientWindowId* client_id);
 ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
                                         ServerWindow* parent,
-                                        ClientWindowId* client_id);
+                                        ClientWindowId* client_id = nullptr);
 
 }  // namespace test
 }  // namespace ws

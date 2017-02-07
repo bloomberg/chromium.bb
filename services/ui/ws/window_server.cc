@@ -596,7 +596,7 @@ void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
 
   EventDispatcher* event_dispatcher =
       display_root->window_manager_state()->event_dispatcher();
-  if (window != event_dispatcher->mouse_cursor_source_window())
+  if (window != event_dispatcher->GetWindowForMouseCursor())
     return;
 
   event_dispatcher->UpdateNonClientAreaForCurrentWindow();

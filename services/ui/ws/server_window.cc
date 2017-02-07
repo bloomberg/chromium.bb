@@ -31,8 +31,10 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       transient_parent_(nullptr),
       is_modal_(false),
       visible_(false),
-      cursor_id_(mojom::Cursor::CURSOR_NULL),
-      non_client_cursor_id_(mojom::Cursor::CURSOR_NULL),
+      // Default to POINTER as CURSOR_NULL doesn't change the cursor, it leaves
+      // the last non-null cursor.
+      cursor_id_(mojom::Cursor::POINTER),
+      non_client_cursor_id_(mojom::Cursor::POINTER),
       opacity_(1),
       can_focus_(true),
       properties_(properties),

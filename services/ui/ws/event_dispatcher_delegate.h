@@ -14,10 +14,9 @@ class Point;
 }
 
 namespace ui {
-class Event;
-}
 
-namespace ui {
+class Event;
+
 namespace ws {
 
 class Accelerator;

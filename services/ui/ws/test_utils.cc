@@ -513,15 +513,16 @@ ServerWindow* WindowEventTargetingHelper::CreatePrimaryTree(
     const gfx::Rect& root_window_bounds,
     const gfx::Rect& window_bounds) {
   WindowTree* wm_tree = window_server()->GetTreeWithId(1);
-  const ClientWindowId embed_window_id(
-      WindowIdToTransportId(WindowId(wm_tree->id(), 1)));
+  const ClientWindowId embed_window_id(WindowIdToTransportId(
+      WindowId(wm_tree->id(), next_primary_tree_window_id_++)));
   EXPECT_TRUE(wm_tree->NewWindow(embed_window_id, ServerWindow::Properties()));
   EXPECT_TRUE(wm_tree->SetWindowVisibility(embed_window_id, true));
   EXPECT_TRUE(wm_tree->AddWindow(FirstRootId(wm_tree), embed_window_id));
   display_->root_window()->SetBounds(root_window_bounds);
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request(&client);
-  wm_client_->Bind(std::move(client_request));
+  ws_test_helper_.window_server_delegate()->last_client()->Bind(
+      std::move(client_request));
   const uint32_t embed_flags = 0;
   wm_tree->Embed(embed_window_id, std::move(client), embed_flags);
   ServerWindow* embed_window = wm_tree->GetWindowByClientId(embed_window_id);
@@ -547,7 +548,7 @@ void WindowEventTargetingHelper::CreateSecondaryTree(
   ASSERT_TRUE(tree1 != nullptr);
   const ClientWindowId child1_id(
       WindowIdToTransportId(WindowId(tree1->id(), 1)));
-  EXPECT_TRUE(tree1->NewWindow(child1_id, ServerWindow::Properties()));
+  ASSERT_TRUE(tree1->NewWindow(child1_id, ServerWindow::Properties()));
   ServerWindow* child1 = tree1->GetWindowByClientId(child1_id);
   ASSERT_TRUE(child1);
   EXPECT_TRUE(tree1->AddWindow(ClientWindowIdForWindow(tree1, embed_window),
@@ -634,7 +635,8 @@ ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
     return nullptr;
   if (!tree->AddWindow(parent_client_id, client_window_id))
     return nullptr;
-  *client_id = client_window_id;
+  if (client_id)
+    *client_id = client_window_id;
   return tree->GetWindowByClientId(client_window_id);
 }
 

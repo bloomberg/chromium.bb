@@ -65,12 +65,6 @@ class WindowManagerStateTest : public testing::Test {
   TestWindowTreeClient* wm_client() {
     return window_event_targeting_helper_.wm_client();
   }
-  TestWindowTreeClient* last_tree_client() {
-    return window_event_targeting_helper_.last_window_tree_client();
-  }
-  WindowTree* last_tree() {
-    return window_event_targeting_helper_.last_binding()->tree();
-  }
   WindowManagerState* window_manager_state() { return window_manager_state_; }
   WindowServer* window_server() {
     return window_event_targeting_helper_.window_server();
@@ -571,22 +565,28 @@ TEST(WindowManagerStateShutdownTest, DestroyTreeBeforeDisplay) {
 }
 
 TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
-  TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, window_server()->display_manager()->displays().size());
   Display* display = *(window_server()->display_manager()->displays().begin());
   DisplayTestApi display_test_api(display);
-  // This test assumes the default is not a pointer, otherwise it can't detect
-  // the change.
-  EXPECT_NE(ui::mojom::Cursor::POINTER, display_test_api.last_cursor());
+  const ClientWindowId child_window_id(11);
+  window_tree()->NewWindow(child_window_id, ServerWindow::Properties());
+  ServerWindow* child_window =
+      window_tree()->GetWindowByClientId(child_window_id);
+  window_tree()->AddWindow(FirstRootId(window_tree()), child_window_id);
+  child_window->SetVisible(true);
+  child_window->SetBounds(gfx::Rect(0, 0, 20, 20));
+  child_window->parent()->SetPredefinedCursor(ui::mojom::Cursor::COPY);
+  EXPECT_EQ(ui::mojom::Cursor::COPY, display_test_api.last_cursor());
+  // Move the mouse outside the bounds of the child, so that the mouse is not
+  // over any valid windows. Cursor should change to POINTER.
   ui::PointerEvent move(
-      ui::ET_POINTER_MOVED, gfx::Point(), gfx::Point(), 0, 0, 0,
+      ui::ET_POINTER_MOVED, gfx::Point(25, 25), gfx::Point(25, 25), 0, 0, 0,
       ui::PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
       base::TimeTicks());
   window_manager_state()->ProcessEvent(move);
   // The event isn't over a valid target, which should trigger resetting the
   // cursor to POINTER.
   EXPECT_EQ(ui::mojom::Cursor::POINTER, display_test_api.last_cursor());
-  EXPECT_TRUE(tracker->changes()->empty());
 }
 
 }  // namespace test

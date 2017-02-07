@@ -92,9 +92,11 @@ ui::mojom::Cursor EventDispatcher::GetCurrentMouseCursor() const {
   if (!mouse_cursor_source_window_)
     return ui::mojom::Cursor::POINTER;
 
-  return mouse_cursor_in_non_client_area_
-             ? mouse_cursor_source_window_->non_client_cursor()
-             : mouse_cursor_source_window_->cursor();
+  if (mouse_cursor_in_non_client_area_)
+    return mouse_cursor_source_window_->non_client_cursor();
+
+  const ServerWindow* window = GetWindowForMouseCursor();
+  return window ? window->cursor() : ui::mojom::Cursor::POINTER;
 }
 
 bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
@@ -195,6 +197,22 @@ void EventDispatcher::ReleaseCaptureBlockedByAnyModalWindow() {
 
   if (modal_window_controller_.IsWindowBlocked(capture_window_))
     SetCaptureWindow(nullptr, kInvalidClientId);
+}
+
+const ServerWindow* EventDispatcher::GetWindowForMouseCursor() const {
+  if (mouse_cursor_in_non_client_area_ || !mouse_cursor_source_window_)
+    return mouse_cursor_source_window_;
+
+  // Return the ancestor (starting at |mouse_cursor_source_window_|) whose
+  // client id differs. In other words, return the first window ancestor that is
+  // an embed root. This is done to match the behavior of aura, which sets the
+  // cursor on the root.
+  const ClientSpecificId target_client_id = delegate_->GetEventTargetClientId(
+      mouse_cursor_source_window_, mouse_cursor_in_non_client_area_);
+  const ServerWindow* window = mouse_cursor_source_window_;
+  while (window && window->id().client_id == target_client_id)
+    window = window->parent();
+  return window;
 }
 
 void EventDispatcher::UpdateNonClientAreaForCurrentWindow() {

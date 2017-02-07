@@ -114,6 +114,11 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
     return mouse_cursor_source_window_;
   }
 
+  // Returns the window the mouse cursor is taken from. This does not take
+  // into account drags. In other words if there is a drag on going the mouse
+  // comes comes from a different window.
+  const ServerWindow* GetWindowForMouseCursor() const;
+
   // If the mouse cursor is still over |mouse_cursor_source_window_|, updates
   // whether we are in the non-client area. Used when
   // |mouse_cursor_source_window_| has changed its properties.
