@@ -257,7 +257,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
 
   def testIgnoreExtractDependenciesError(self):
-    """Igore errors when failing to extract dependencies."""
+    """Ignore errors when failing to extract dependencies."""
     self.PatchObject(commands, 'ExtractDependencies',
                      side_effect=Exception('unmet dependency'))
     self.RunTestsWithBotId('x86-generic-paladin')
