@@ -884,7 +884,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyVariable(
   const CSSCustomPropertyDeclaration& declaration =
       toCSSCustomPropertyDeclaration(value);
   const AtomicString& name = declaration.name();
-  const PropertyRegistry::Registration* registration = nullptr;
+  const PropertyRegistration* registration = nullptr;
   const PropertyRegistry* registry = state.document().propertyRegistry();
   if (registry)
     registration = registry->registration(name);

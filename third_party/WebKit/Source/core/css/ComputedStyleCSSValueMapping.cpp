@@ -1945,7 +1945,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     const ComputedStyle& style,
     const PropertyRegistry* registry) {
   if (registry) {
-    const PropertyRegistry::Registration* registration =
+    const PropertyRegistration* registration =
         registry->registration(customPropertyName);
     if (registration) {
       const CSSValue* result = style.getRegisteredVariable(

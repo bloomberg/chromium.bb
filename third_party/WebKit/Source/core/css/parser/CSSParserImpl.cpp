@@ -84,7 +84,7 @@ MutableStylePropertySet::SetResult CSSParserImpl::parseVariableValue(
     const CSSCustomPropertyDeclaration* parsedDeclaration =
         toCSSCustomPropertyDeclaration(parser.m_parsedProperties[0].value());
     if (parsedDeclaration->value() && registry) {
-      const PropertyRegistry::Registration* registration =
+      const PropertyRegistration* registration =
           registry->registration(propertyName);
       // TODO(timloh): This is a bit wasteful, we parse the registered property
       // to validate but throw away the result.

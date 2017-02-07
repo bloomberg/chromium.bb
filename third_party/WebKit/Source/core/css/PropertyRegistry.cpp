@@ -14,12 +14,13 @@ void PropertyRegistry::registerProperty(
     PassRefPtr<CSSVariableData> initialVariableData,
     InterpolationTypes interpolationTypes) {
   DCHECK(!registration(name));
-  m_registrations.set(name, new Registration(syntax, inherits, initial,
-                                             std::move(initialVariableData),
-                                             std::move(interpolationTypes)));
+  m_registrations.set(name,
+                      new PropertyRegistration(syntax, inherits, initial,
+                                               std::move(initialVariableData),
+                                               std::move(interpolationTypes)));
 }
 
-const PropertyRegistry::Registration* PropertyRegistry::registration(
+const PropertyRegistration* PropertyRegistry::registration(
     const AtomicString& name) const {
   return m_registrations.get(name);
 }

@@ -164,9 +164,8 @@ InterpolationValue CSSInterpolationType::maybeConvertSingleInternal(
   return maybeConvertValue(*value, &state, conversionCheckers);
 }
 
-const PropertyRegistry::Registration* getRegistration(
-    const StyleResolverState& state,
-    const AtomicString& propertyName) {
+const PropertyRegistration* getRegistration(const StyleResolverState& state,
+                                            const AtomicString& propertyName) {
   const PropertyRegistry* registry = state.document().propertyRegistry();
   if (registry) {
     return registry->registration(propertyName);
@@ -199,8 +198,7 @@ CSSInterpolationType::maybeConvertCustomPropertyDeclarationInternal(
   const AtomicString& name = declaration.name();
   DCHECK_EQ(getProperty().customPropertyName(), name);
 
-  const PropertyRegistry::Registration* registration =
-      getRegistration(state, name);
+  const PropertyRegistration* registration = getRegistration(state, name);
 
   if (!declaration.value()) {
     // Unregistered custom properties inherit:
@@ -262,8 +260,7 @@ InterpolationValue CSSInterpolationType::maybeConvertUnderlyingValue(
 
   const PropertyHandle property = getProperty();
   const AtomicString& name = property.customPropertyName();
-  const PropertyRegistry::Registration* registration =
-      getRegistration(state, name);
+  const PropertyRegistration* registration = getRegistration(state, name);
   if (!registration) {
     return nullptr;
   }
@@ -316,7 +313,7 @@ void CSSInterpolationType::applyCustomPropertyValue(
   ComputedStyle& style = *state.style();
   const PropertyHandle property = getProperty();
   const AtomicString& propertyName = property.customPropertyName();
-  const PropertyRegistry::Registration* registration =
+  const PropertyRegistration* registration =
       getRegistration(state, propertyName);
   DCHECK(registration);
   if (registration->inherits()) {

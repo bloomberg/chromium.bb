@@ -40,7 +40,7 @@
 
 namespace blink {
 
-static const PropertyRegistry::Registration* getRegistration(
+static const PropertyRegistration* getRegistration(
     const PropertyRegistry* registry,
     const PropertyHandle& property) {
   DCHECK(property.isCSSCustomProperty());

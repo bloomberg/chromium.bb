@@ -45,7 +45,7 @@ CSSVariableData* CSSVariableResolver::valueForCustomProperty(
   }
 
   DCHECK(m_registry || !RuntimeEnabledFeatures::cssVariables2Enabled());
-  const PropertyRegistry::Registration* registration =
+  const PropertyRegistration* registration =
       m_registry ? m_registry->registration(name) : nullptr;
 
   CSSVariableData* variableData = nullptr;
