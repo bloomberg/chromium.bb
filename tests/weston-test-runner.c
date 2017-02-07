@@ -88,6 +88,7 @@ list_tests(void)
 		fprintf(stderr, "	%s\n", t->name);
 }
 
+/* iteration is valid only if test_data is not NULL */
 static int
 exec_and_report_test(const struct weston_test *t, void *test_data, int iteration)
 {
@@ -143,7 +144,10 @@ exec_and_report_test(const struct weston_test *t, void *test_data, int iteration
 	}
 }
 
-/* Returns number of tests and number of pass / fail in param args */
+/* Returns number of tests and number of pass / fail in param args.
+ * Even non-iterated tests go through here, they simply have n_elements = 1 and
+ * table_data = NULL.
+ */
 static int
 iterate_test(const struct weston_test *t, int *passed, int *skipped)
 {
