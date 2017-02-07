@@ -2,27 +2,19 @@
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 <script src="../resources/delay-testing.js"></script>
 </head>
 
 <body>
-
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Tests attribute and maximum allowed delay of DelayNode.");
+let audit = Audit.createTaskRunner();
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-    
-    window.jsTestIsAsync = true;
+audit.define("test", function (task, should) {
+    task.describe("Tests attribute and maximum allowed delay of DelayNode");
         
     // Create offline audio context.
     var context = new OfflineAudioContext(1, sampleRate * renderLengthSeconds, sampleRate);
@@ -32,25 +24,32 @@ function runTest() {
     bufferSource.buffer = toneBuffer;
 
     window.context = context;
-    shouldThrow("context.createDelay(180)");
-    shouldThrow("context.createDelay(0)");
-    shouldThrow("context.createDelay(-1)");
-    shouldThrow("context.createDelay(NaN)");
-
+    should(() => context.createDelay(180))
+      .throw();
+    should(() => context.createDelay(0))
+      .throw();
+    should(() => context.createDelay(-1))
+      .throw();
+    should(() => context.createDelay(NaN))
+      .throw();
+;
     var delay = context.createDelay(179);
     delay.delayTime.value = delayTimeSeconds;
     window.delay = delay;
-    shouldBeTrue("delay.delayTime.value === 0.5");
+    should(delay.delayTime.value,
+      "delay.delayTime.value = " + delayTimeSeconds)
+      .beEqualTo(delayTimeSeconds);
 
     bufferSource.connect(delay);
     delay.connect(context.destination);
     bufferSource.start(0);
     
-    context.oncomplete = checkDelayedResult(toneBuffer);
-    context.startRendering();
-}
+    context.startRendering()
+      .then(buffer => checkDelayedResult(buffer, toneBuffer, should))
+      .then(() => task.done());
+});
 
-runTest();
+audit.run();
 
 </script>
 

@@ -2,55 +2,53 @@
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 <script src="../resources/delay-testing.js"></script>
 </head>
 
 <body>
-
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Tests attribute and basic functionality of Delay.");
+let audit = Audit.createTaskRunner();
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-    
-    window.jsTestIsAsync = true;
-        
+audit.define("test", function (task, should) {
+    task.describe("Tests attribute and basic functionality of DelayNode");
+
     // Create offline audio context.
-    var context = new OfflineAudioContext(1, sampleRate * renderLengthSeconds, sampleRate);
-    var toneBuffer = createToneBuffer(context, 20, 20 * toneLengthSeconds, sampleRate); // 20Hz tone
+    let context = new OfflineAudioContext(1, sampleRate * renderLengthSeconds, sampleRate);
+    let toneBuffer = createToneBuffer(context, 20, 20 * toneLengthSeconds, sampleRate); // 20Hz tone
     
-    var bufferSource = context.createBufferSource();
+    let bufferSource = context.createBufferSource();
     bufferSource.buffer = toneBuffer;
 
-    var delay = context.createDelay();
+    let delay = context.createDelay();
     
     window.delay = delay;
-    shouldBeTrue("delay.numberOfInputs === 1");
-    shouldBeTrue("delay.numberOfOutputs === 1");
-    shouldBeTrue("delay.delayTime.defaultValue === 0.0");
-    shouldBeTrue("delay.delayTime.value === 0.0");
+    should(delay.numberOfInputs, "delay.numberOfInputs")
+      .beEqualTo(1);
+    should(delay.numberOfOutputs, "delay.numberOfOutputs")
+      .beEqualTo(1);
+    should(delay.delayTime.defaultValue, "delay.delayTime.defaultValue")
+      .beEqualTo(0.0);
+    should(delay.delayTime.value, "delay.delayTime.value")
+      .beEqualTo(0.0);
 
     delay.delayTime.value = delayTimeSeconds;
-    shouldBeTrue("delay.delayTime.value === 0.5");
+    should(delay.delayTime.value, "delay.delayTime.value = " + delayTimeSeconds)
+      .beEqualTo(delayTimeSeconds);
 
     bufferSource.connect(delay);
     delay.connect(context.destination);
     bufferSource.start(0);
     
-    context.oncomplete = checkDelayedResult(toneBuffer);
-    context.startRendering();
-}
+    context.startRendering()
+      .then(buffer => checkDelayedResult(buffer, toneBuffer, should))
+      .then(task.done.bind(task));
+});
 
-runTest();
+audit.run();
 
 </script>
 
