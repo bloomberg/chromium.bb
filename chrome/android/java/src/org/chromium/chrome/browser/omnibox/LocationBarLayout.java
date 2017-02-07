@@ -559,7 +559,9 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             int decorHeight = getWindowDelegate().getDecorViewHeight();
             int availableViewportHeight = Math.min(mTempRect.height(), decorHeight);
             int availableListHeight = availableViewportHeight - anchorBottomRelativeToContent;
-            int desiredHeight = Math.min(availableListHeight, getIdealHeight());
+            // If the bottom sheet is used, the suggestions should consume all available space.
+            int desiredHeight = mBottomSheet != null
+                    ? availableListHeight : Math.min(availableListHeight, getIdealHeight());
             if (layoutParams.height != desiredHeight) {
                 layoutParams.height = desiredHeight;
                 updateLayout = true;
