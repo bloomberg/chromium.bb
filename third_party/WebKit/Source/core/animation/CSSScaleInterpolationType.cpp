@@ -206,8 +206,8 @@ PairwiseInterpolationValue CSSScaleInterpolationType::maybeMergeSingles(
 
 InterpolationValue
 CSSScaleInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
-  return Scale(state.style()->scale()).createInterpolationValue();
+    const ComputedStyle& style) const {
+  return Scale(style.scale()).createInterpolationValue();
 }
 
 void CSSScaleInterpolationType::composite(

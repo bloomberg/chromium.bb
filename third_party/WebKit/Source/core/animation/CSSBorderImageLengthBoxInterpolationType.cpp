@@ -263,8 +263,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertValue(
 
 InterpolationValue CSSBorderImageLengthBoxInterpolationType::
     maybeConvertStandardPropertyUnderlyingValue(
-        const StyleResolverState& state) const {
-  const ComputedStyle& style = *state.style();
+        const ComputedStyle& style) const {
   return convertBorderImageLengthBox(
       BorderImageLengthBoxPropertyFunctions::getBorderImageLengthBox(
           cssProperty(), style),

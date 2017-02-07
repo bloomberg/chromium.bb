@@ -219,8 +219,7 @@ InterpolationValue CSSImageSliceInterpolationType::maybeConvertValue(
 
 InterpolationValue
 CSSImageSliceInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
-  const ComputedStyle& style = *state.style();
+    const ComputedStyle& style) const {
   return convertImageSlice(
       ImageSlicePropertyFunctions::getImageSlice(cssProperty(), style),
       style.effectiveZoom());

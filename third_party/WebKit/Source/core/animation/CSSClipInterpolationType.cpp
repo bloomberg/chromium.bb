@@ -224,10 +224,10 @@ InterpolationValue CSSClipInterpolationType::maybeConvertValue(
 
 InterpolationValue
 CSSClipInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
-  if (state.style()->hasAutoClip())
+    const ComputedStyle& style) const {
+  if (style.hasAutoClip())
     return nullptr;
-  return createClipValue(state.style()->clip(), state.style()->effectiveZoom());
+  return createClipValue(style.clip(), style.effectiveZoom());
 }
 
 PairwiseInterpolationValue CSSClipInterpolationType::maybeMergeSingles(

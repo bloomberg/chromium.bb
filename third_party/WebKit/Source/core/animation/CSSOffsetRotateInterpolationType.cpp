@@ -142,8 +142,8 @@ PairwiseInterpolationValue CSSOffsetRotateInterpolationType::maybeMergeSingles(
 
 InterpolationValue
 CSSOffsetRotateInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
-  return convertOffsetRotate(state.style()->offsetRotation());
+    const ComputedStyle& style) const {
+  return convertOffsetRotate(style.offsetRotation());
 }
 
 void CSSOffsetRotateInterpolationType::composite(

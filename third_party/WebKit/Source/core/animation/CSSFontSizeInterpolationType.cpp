@@ -129,8 +129,8 @@ InterpolationValue CSSFontSizeInterpolationType::maybeConvertValue(
 
 InterpolationValue
 CSSFontSizeInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
-  return convertFontSize(state.style()->specifiedFontSize());
+    const ComputedStyle& style) const {
+  return convertFontSize(style.specifiedFontSize());
 }
 
 void CSSFontSizeInterpolationType::applyStandardPropertyValue(

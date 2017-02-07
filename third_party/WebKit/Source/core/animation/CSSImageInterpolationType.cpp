@@ -221,10 +221,9 @@ InterpolationValue CSSImageInterpolationType::maybeConvertValue(
 
 InterpolationValue
 CSSImageInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
+    const ComputedStyle& style) const {
   return maybeConvertStyleImage(
-      ImagePropertyFunctions::getStyleImage(cssProperty(), *state.style()),
-      true);
+      ImagePropertyFunctions::getStyleImage(cssProperty(), style), true);
 }
 
 void CSSImageInterpolationType::composite(

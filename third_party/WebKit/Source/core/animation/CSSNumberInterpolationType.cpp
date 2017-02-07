@@ -81,9 +81,9 @@ InterpolationValue CSSNumberInterpolationType::maybeConvertValue(
 
 InterpolationValue
 CSSNumberInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
+    const ComputedStyle& style) const {
   double underlyingNumber;
-  if (!NumberPropertyFunctions::getNumber(cssProperty(), *state.style(),
+  if (!NumberPropertyFunctions::getNumber(cssProperty(), style,
                                           underlyingNumber))
     return nullptr;
   return createNumberValue(underlyingNumber);

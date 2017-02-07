@@ -228,8 +228,8 @@ PairwiseInterpolationValue CSSTransformInterpolationType::maybeMergeSingles(
 
 InterpolationValue
 CSSTransformInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
-  return convertTransform(state.style()->transform());
+    const ComputedStyle& style) const {
+  return convertTransform(style.transform());
 }
 
 void CSSTransformInterpolationType::composite(

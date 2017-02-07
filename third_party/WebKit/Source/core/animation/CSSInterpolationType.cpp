@@ -257,7 +257,7 @@ InterpolationValue CSSInterpolationType::maybeConvertUnderlyingValue(
     const InterpolationEnvironment& environment) const {
   const StyleResolverState& state = environment.state();
   if (!getProperty().isCSSCustomProperty()) {
-    return maybeConvertStandardPropertyUnderlyingValue(state);
+    return maybeConvertStandardPropertyUnderlyingValue(*state.style());
   }
 
   const PropertyHandle property = getProperty();

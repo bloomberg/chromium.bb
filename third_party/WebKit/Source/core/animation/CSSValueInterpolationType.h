@@ -26,7 +26,7 @@ class CSSValueInterpolationType : public CSSInterpolationType {
   }
 
   InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
-      const StyleResolverState&) const final {
+      const ComputedStyle&) const final {
     return nullptr;
   }
 

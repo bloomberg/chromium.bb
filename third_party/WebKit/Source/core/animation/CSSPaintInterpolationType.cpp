@@ -90,12 +90,11 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertValue(
 
 InterpolationValue
 CSSPaintInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
+    const ComputedStyle& style) const {
   // TODO(alancutter): Support capturing and animating with the visited paint
   // color.
   StyleColor underlyingColor;
-  if (!PaintPropertyFunctions::getColor(cssProperty(), *state.style(),
-                                        underlyingColor))
+  if (!PaintPropertyFunctions::getColor(cssProperty(), style, underlyingColor))
     return nullptr;
   return InterpolationValue(
       CSSColorInterpolationType::createInterpolableColor(underlyingColor));

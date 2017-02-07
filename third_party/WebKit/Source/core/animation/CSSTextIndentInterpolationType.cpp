@@ -178,8 +178,7 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertValue(
 
 InterpolationValue
 CSSTextIndentInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
-  const ComputedStyle& style = *state.style();
+    const ComputedStyle& style) const {
   return createValue(style.textIndent(), IndentMode(style),
                      style.effectiveZoom());
 }

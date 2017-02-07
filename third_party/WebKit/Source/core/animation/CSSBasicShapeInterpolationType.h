@@ -15,7 +15,7 @@ class CSSBasicShapeInterpolationType : public CSSInterpolationType {
       : CSSInterpolationType(property) {}
 
   InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
-      const StyleResolverState&) const final;
+      const ComputedStyle&) const final;
   PairwiseInterpolationValue maybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end) const final;

@@ -151,9 +151,9 @@ PairwiseInterpolationValue CSSImageListInterpolationType::maybeMergeSingles(
 
 InterpolationValue
 CSSImageListInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
+    const ComputedStyle& style) const {
   StyleImageList underlyingImageList;
-  ImageListPropertyFunctions::getImageList(cssProperty(), *state.style(),
+  ImageListPropertyFunctions::getImageList(cssProperty(), style,
                                            underlyingImageList);
   return maybeConvertStyleImageList(underlyingImageList);
 }

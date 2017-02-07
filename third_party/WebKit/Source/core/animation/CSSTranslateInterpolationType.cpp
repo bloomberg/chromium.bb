@@ -139,9 +139,8 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertValue(
 
 InterpolationValue
 CSSTranslateInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
-  return convertTranslateOperation(state.style()->translate(),
-                                   state.style()->effectiveZoom());
+    const ComputedStyle& style) const {
+  return convertTranslateOperation(style.translate(), style.effectiveZoom());
 }
 
 void CSSTranslateInterpolationType::applyStandardPropertyValue(

@@ -154,8 +154,8 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertValue(
 
 InterpolationValue
 CSSVisibilityInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
-  return createVisibilityValue(state.style()->visibility());
+    const ComputedStyle& style) const {
+  return createVisibilityValue(style.visibility());
 }
 
 PairwiseInterpolationValue CSSVisibilityInterpolationType::maybeMergeSingles(

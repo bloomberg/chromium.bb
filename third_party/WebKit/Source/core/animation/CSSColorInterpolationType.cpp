@@ -243,10 +243,10 @@ InterpolationValue CSSColorInterpolationType::convertStyleColorPair(
 
 InterpolationValue
 CSSColorInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
+    const ComputedStyle& style) const {
   return convertStyleColorPair(
-      ColorPropertyFunctions::getUnvisitedColor(cssProperty(), *state.style()),
-      ColorPropertyFunctions::getVisitedColor(cssProperty(), *state.style()));
+      ColorPropertyFunctions::getUnvisitedColor(cssProperty(), style),
+      ColorPropertyFunctions::getVisitedColor(cssProperty(), style));
 }
 
 void CSSColorInterpolationType::applyStandardPropertyValue(

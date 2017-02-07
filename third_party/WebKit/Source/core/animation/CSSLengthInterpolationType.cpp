@@ -109,13 +109,13 @@ PairwiseInterpolationValue CSSLengthInterpolationType::maybeMergeSingles(
 
 InterpolationValue
 CSSLengthInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
-    const StyleResolverState& state) const {
+    const ComputedStyle& style) const {
   Length underlyingLength;
-  if (!LengthPropertyFunctions::getLength(cssProperty(), *state.style(),
+  if (!LengthPropertyFunctions::getLength(cssProperty(), style,
                                           underlyingLength))
     return nullptr;
-  return LengthInterpolationFunctions::maybeConvertLength(
-      underlyingLength, effectiveZoom(*state.style()));
+  return LengthInterpolationFunctions::maybeConvertLength(underlyingLength,
+                                                          effectiveZoom(style));
 }
 
 const CSSValue* CSSLengthInterpolationType::createCSSValue(

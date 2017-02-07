@@ -37,7 +37,7 @@ class CSSInterpolationType : public InterpolationType {
   InterpolationValue maybeConvertUnderlyingValue(
       const InterpolationEnvironment&) const final;
   virtual InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
-      const StyleResolverState&) const = 0;
+      const ComputedStyle&) const = 0;
 
   void apply(const InterpolableValue&,
              const NonInterpolableValue*,
