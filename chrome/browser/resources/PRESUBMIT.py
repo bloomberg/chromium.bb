@@ -91,12 +91,26 @@ def IsBoolean(new_content_lines, metric_name, input_api):
       any(input_api.re.search(type_re, match.group(i)) for i in (1, 3)))
 
 
+def RunVulcanizeTests(input_api, output_api):
+  presubmit_path = input_api.PresubmitLocalPath()
+  tests = [input_api.os_path.join(presubmit_path, 'vulcanize_gn_test.py')]
+  return input_api.canned_checks.RunUnitTests(input_api, output_api, tests)
+
+
+def _CheckChangeOnUploadOrCommit(input_api, output_api):
+  results = CheckUserActionUpdate(input_api, output_api, ACTION_XML_PATH)
+  affected = input_api.AffectedFiles()
+  if any(f for f in affected if f.LocalPath().endswith('vulcanize_gn.py')):
+    results += RunVulcanizeTests(input_api, output_api)
+  return results
+
+
 def CheckChangeOnUpload(input_api, output_api):
-  return CheckUserActionUpdate(input_api, output_api, ACTION_XML_PATH)
+  return _CheckChangeOnUploadOrCommit(input_api, output_api)
 
 
 def CheckChangeOnCommit(input_api, output_api):
-  return CheckUserActionUpdate(input_api, output_api, ACTION_XML_PATH)
+  return _CheckChangeOnUploadOrCommit(input_api, output_api)
 
 
 def PostUploadHook(cl, change, output_api):
