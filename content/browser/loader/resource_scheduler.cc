@@ -354,7 +354,9 @@ class ResourceScheduler::Client {
         using_spdy_proxy_(false),
         in_flight_delayable_count_(0),
         total_layout_blocking_count_(0),
-        priority_requests_delayable_(priority_requests_delayable) {}
+        priority_requests_delayable_(priority_requests_delayable),
+        has_pending_start_task_(false),
+        weak_ptr_factory_(this) {}
 
   ~Client() {}
 
@@ -377,10 +379,9 @@ class ResourceScheduler::Client {
       EraseInFlightRequest(request);
 
       // Removing this request may have freed up another to load.
-      LoadAnyStartablePendingRequests(
-          has_html_body_
-          ? RequestStartTrigger::COMPLETION_POST_BODY
-          : RequestStartTrigger::COMPLETION_PRE_BODY);
+      ScheduleLoadAnyStartablePendingRequests(
+          has_html_body_ ? RequestStartTrigger::COMPLETION_POST_BODY
+                         : RequestStartTrigger::COMPLETION_PRE_BODY);
     }
   }
 
@@ -453,7 +454,7 @@ class ResourceScheduler::Client {
 
     if (new_priority_params.priority > old_priority_params.priority) {
       // Check if this request is now able to load at its new priority.
-      LoadAnyStartablePendingRequests(
+      ScheduleLoadAnyStartablePendingRequests(
           RequestStartTrigger::REQUEST_REPRIORITIZED);
     }
   }
@@ -719,6 +720,24 @@ class ResourceScheduler::Client {
     return START_REQUEST;
   }
 
+  // It is common for a burst of messages to come from the renderer which
+  // trigger starting pending requests. Naively, this would result in O(n*m)
+  // behavior for n pending requests and m <= n messages, as
+  // LoadAnyStartablePendingRequest is O(n) for n pending requests. To solve
+  // this, just post a task to the end of the queue to call the method,
+  // coalescing the m messages into a single call to
+  // LoadAnyStartablePendingRequests.
+  // TODO(csharrison): Reconsider this if IPC batching becomes an easy to use
+  // pattern.
+  void ScheduleLoadAnyStartablePendingRequests(RequestStartTrigger trigger) {
+    if (has_pending_start_task_)
+      return;
+    has_pending_start_task_ = true;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&Client::LoadAnyStartablePendingRequests,
+                              weak_ptr_factory_.GetWeakPtr(), trigger));
+  }
+
   void LoadAnyStartablePendingRequests(RequestStartTrigger trigger) {
     // We iterate through all the pending requests, starting with the highest
     // priority one. For each entry, one of three things can happen:
@@ -728,6 +747,7 @@ class ResourceScheduler::Client {
     //     the previous request still in the list.
     // 3) We do not start the request, same as above, but StartRequest() tells
     //     us there's no point in checking any further requests.
+    has_pending_start_task_ = false;
     RequestQueue::NetQueue::iterator request_iter =
         pending_requests_.GetNextHighestIterator();
 
@@ -771,6 +791,10 @@ class ResourceScheduler::Client {
   // True if requests to servers that support priorities (e.g., H2/QUIC) can
   // be delayed.
   bool priority_requests_delayable_;
+
+  bool has_pending_start_task_;
+
+  base::WeakPtrFactory<ResourceScheduler::Client> weak_ptr_factory_;
 };
 
 ResourceScheduler::ResourceScheduler()
