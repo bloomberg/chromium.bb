@@ -7,3 +7,5 @@ vmiura@chromium.org
 # GPU memory buffer tests.
 per-file *gpu_memory_buffer*=reveman@chromium.org
 
+
+# COMPONENT: Internals>GPU
