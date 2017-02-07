@@ -2820,7 +2820,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       RenderThreadImpl::current()->SharedMainThreadContextProvider());
 
   scoped_refptr<media::MediaLog> media_log(
-      new RenderMediaLog(url::Origin(frame_->getSecurityOrigin()).GetURL()));
+      new RenderMediaLog(url::Origin(frame_->getSecurityOrigin()).GetURL(),
+                         frame_->timerTaskRunner()));
 
 #if defined(OS_ANDROID)
   if (UseWebMediaPlayerImpl(url) && !media_surface_manager_)
@@ -6139,7 +6140,8 @@ WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
 
   return new WebMediaPlayerMS(
       frame_, client, GetWebMediaPlayerDelegate(),
-      new RenderMediaLog(url::Origin(security_origin).GetURL()),
+      new RenderMediaLog(url::Origin(security_origin).GetURL(),
+                         frame_->timerTaskRunner()),
       CreateRendererFactory(), render_thread->GetIOTaskRunner(),
       compositor_task_runner, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(), render_thread->GetGpuFactories(),

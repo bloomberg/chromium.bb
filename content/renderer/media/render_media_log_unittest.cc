@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/view_messages.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/media/render_media_log.h"
@@ -18,7 +19,8 @@ namespace content {
 class RenderMediaLogTest : public testing::Test {
  public:
   RenderMediaLogTest()
-      : log_(new RenderMediaLog(GURL("http://foo.com"))),
+      : log_(new RenderMediaLog(GURL("http://foo.com"),
+                                base::ThreadTaskRunnerHandle::Get())),
         tick_clock_(new base::SimpleTestTickClock()),
         task_runner_(new base::TestMockTimeTaskRunner()) {
     log_->SetTickClockForTesting(std::unique_ptr<base::TickClock>(tick_clock_));
