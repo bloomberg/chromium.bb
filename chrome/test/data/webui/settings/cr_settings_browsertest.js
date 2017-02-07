@@ -417,12 +417,38 @@ CrSettingsResetPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     'test_browser_proxy.js',
     'test_lifetime_browser_proxy.js',
+    'test_reset_browser_proxy.js',
     'reset_page_test.js',
   ]),
 };
 
 TEST_F('CrSettingsResetPageTest', 'ResetPage', function() {
-  settings_reset_page.registerTests();
+  mocha.run();
+});
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/reset_page/reset_profile_banner.html
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsResetProfileBannerTest() {}
+
+CrSettingsResetProfileBannerTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/reset_page/reset_profile_banner.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'test_reset_browser_proxy.js',
+    'reset_profile_banner_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsResetProfileBannerTest', 'ResetProfileBanner', function() {
   mocha.run();
 });
 

@@ -7,8 +7,6 @@ cr.define('settings_reset_page', function() {
   var TestNames = {
     PowerwashDialogAction: 'PowerwashDialogAction',
     PowerwashDialogOpenClose: 'PowerwashDialogOpenClose',
-    ResetBannerClose: 'ResetBannerClose',
-    ResetBannerReset: 'ResetBannerReset',
     ResetProfileDialogAction: 'ResetProfileDialogAction',
     ResetProfileDialogOpenClose: 'ResetProfileDialogOpenClose',
     ResetProfileDialogOriginUnknown: 'ResetProfileDialogOriginUnknown',
@@ -16,119 +14,6 @@ cr.define('settings_reset_page', function() {
     ResetProfileDialogOriginTriggeredReset:
         'ResetProfileDialogOriginTriggeredReset',
   };
-
-  /**
-   * @constructor
-   * @implements {settings.ResetBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
-   */
-  var TestResetBrowserProxy = function() {
-    settings.TestBrowserProxy.call(this, [
-      'performResetProfileSettings',
-      'onHideResetProfileDialog',
-      'onHideResetProfileBanner',
-      'onShowResetProfileDialog',
-      'showReportedSettings',
-      'getTriggeredResetToolName',
-      'onPowerwashDialogShow',
-    ]);
-  };
-
-  TestResetBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
-
-    /** @override */
-    performResetProfileSettings: function(sendSettings, requestOrigin) {
-      this.methodCalled('performResetProfileSettings', requestOrigin);
-      return Promise.resolve();
-    },
-
-    /** @override */
-    onHideResetProfileDialog: function() {
-      this.methodCalled('onHideResetProfileDialog');
-    },
-
-    /** @override */
-    onHideResetProfileBanner: function() {
-      this.methodCalled('onHideResetProfileBanner');
-    },
-
-    /** @override */
-    onShowResetProfileDialog: function() {
-      this.methodCalled('onShowResetProfileDialog');
-    },
-
-    /** @override */
-    showReportedSettings: function() {
-      this.methodCalled('showReportedSettings');
-    },
-
-    /** @override */
-    getTriggeredResetToolName: function() {
-      this.methodCalled('getTriggeredResetToolName');
-      return Promise.resolve('WonderfulAV');
-    },
-
-    /** @override */
-    onPowerwashDialogShow: function() {
-      this.methodCalled('onPowerwashDialogShow');
-    },
-  };
-
-  function registerBannerTests() {
-    suite('BannerTests', function() {
-      var resetBanner = null;
-      var browserProxy = null;
-
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-            'chrome://md-settings/reset_page/reset_profile_banner.html');
-      });
-
-      setup(function() {
-        browserProxy = new TestResetBrowserProxy();
-        settings.ResetBrowserProxyImpl.instance_ = browserProxy;
-        PolymerTest.clearBody();
-        resetBanner = document.createElement('settings-reset-profile-banner');
-        document.body.appendChild(resetBanner);
-      });
-
-      teardown(function() { resetBanner.remove(); });
-
-      // Tests that the reset profile banner
-      //  - opens the reset profile dialog when the reset button is clicked.
-      //  - reset happens when clicking on the dialog's reset button.
-      //  - the reset profile dialog is closed after reset is done.
-      test(TestNames.ResetBannerReset, function() {
-        var dialog = resetBanner.$$('settings-reset-profile-dialog');
-        assertFalse(!!dialog);
-        MockInteractions.tap(resetBanner.$.reset);
-        Polymer.dom.flush();
-        assertTrue(resetBanner.showResetProfileDialog_)
-        dialog = resetBanner.$$('settings-reset-profile-dialog');
-        assertTrue(!!dialog);
-
-        MockInteractions.tap(dialog.$.reset);
-
-        return browserProxy.whenCalled('performResetProfileSettings')
-            .then(PolymerTest.flushTasks)
-            .then(function() {
-              assertFalse(resetBanner.showResetProfileDialog_);
-              dialog = resetBanner.$$('settings-reset-profile-dialog');
-              assertFalse(!!dialog);
-            });
-      });
-
-      // Tests that the reset profile banner removes itself from the DOM when
-      // the close button is clicked and that |onHideResetProfileBanner| is
-      // called.
-      test(TestNames.ResetBannerClose, function() {
-        MockInteractions.tap(resetBanner.$.close);
-        assertFalse(!!resetBanner.parentNode);
-        return browserProxy.whenCalled('onHideResetProfileBanner');
-      });
-    });
-  }
 
   function registerDialogTests() {
     suite('DialogTests', function() {
@@ -146,7 +31,7 @@ cr.define('settings_reset_page', function() {
           settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
         }
 
-        resetPageBrowserProxy = new TestResetBrowserProxy();
+        resetPageBrowserProxy = new reset_page.TestResetBrowserProxy();
         settings.ResetBrowserProxyImpl.instance_ = resetPageBrowserProxy;
 
         PolymerTest.clearBody();
@@ -319,10 +204,5 @@ cr.define('settings_reset_page', function() {
     });
   }
 
-  return {
-    registerTests: function() {
-      registerBannerTests();
-      registerDialogTests();
-    },
-  };
+  registerDialogTests();
 });
