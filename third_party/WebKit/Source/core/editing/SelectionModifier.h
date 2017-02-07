@@ -57,8 +57,6 @@ class SelectionModifier {
                                  unsigned verticalDistance,
                                  VerticalDirection);
 
-  DECLARE_VIRTUAL_TRACE();
-
  private:
   // TODO(yosin): We should move |EPositionType| to "SelectionModifier.cpp",
   // it is only used for implementing |modify()|.

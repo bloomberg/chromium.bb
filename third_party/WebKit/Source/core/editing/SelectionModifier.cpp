@@ -869,9 +869,4 @@ LayoutUnit SelectionModifier::lineDirectionPointForBlockDirectionNavigation(
   return x;
 }
 
-DEFINE_TRACE(SelectionModifier) {
-  visitor->trace(m_frame);
-  visitor->trace(m_selection);
-}
-
 }  // namespace blink

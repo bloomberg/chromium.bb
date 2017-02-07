@@ -66,11 +66,6 @@ class WorkerOrWorkletScriptController::ExecutionState final {
 
   ~ExecutionState() { m_controller->m_executionState = m_outerState; }
 
-  DEFINE_INLINE_TRACE() {
-    visitor->trace(m_errorEventFromImportedScript);
-    visitor->trace(m_controller);
-  }
-
   bool hadException;
   String errorMessage;
   std::unique_ptr<SourceLocation> m_location;

@@ -333,8 +333,4 @@ CSSVariableResolver::CSSVariableResolver(const StyleResolverState& state)
       m_nonInheritedVariables(state.style()->nonInheritedVariables()),
       m_registry(state.document().propertyRegistry()) {}
 
-DEFINE_TRACE(CSSVariableResolver) {
-  visitor->trace(m_registry);
-}
-
 }  // namespace blink

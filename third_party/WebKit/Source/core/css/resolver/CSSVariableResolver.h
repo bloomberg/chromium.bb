@@ -37,8 +37,6 @@ class CSSVariableResolver {
 
   static void computeRegisteredVariables(const StyleResolverState&);
 
-  DECLARE_TRACE();
-
  private:
   CSSVariableResolver(const StyleResolverState&);
 
