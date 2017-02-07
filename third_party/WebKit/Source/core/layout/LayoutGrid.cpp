@@ -547,13 +547,6 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(
   if (needsToFulfillMinimumSize)
     ++repetitions;
 
-  // Clamp the number of repetitions so we don't end up with too many tracks.
-  if (repetitions > kGridMaxTracks) {
-    DCHECK_GT(autoRepeatTrackListLength, 0u);
-    repetitions =
-        (kGridMaxTracks - trackSizes.size()) / autoRepeatTrackListLength;
-  }
-
   return repetitions * autoRepeatTrackListLength;
 }
 
@@ -594,12 +587,35 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
   return emptyTrackIndexes;
 }
 
+size_t LayoutGrid::clampAutoRepeatTracks(GridTrackSizingDirection direction,
+                                         size_t autoRepeatTracks) const {
+  if (!autoRepeatTracks)
+    return 0;
+
+  size_t insertionPoint = direction == ForColumns
+                              ? styleRef().gridAutoRepeatColumnsInsertionPoint()
+                              : styleRef().gridAutoRepeatRowsInsertionPoint();
+
+  if (insertionPoint == 0)
+    return std::min<size_t>(autoRepeatTracks, kGridMaxTracks);
+
+  if (insertionPoint >= kGridMaxTracks)
+    return 0;
+
+  return std::min(autoRepeatTracks,
+                  static_cast<size_t>(kGridMaxTracks) - insertionPoint);
+}
+
 void LayoutGrid::placeItemsOnGrid(Grid& grid,
                                   SizingOperation sizingOperation) const {
   size_t autoRepeatRows =
       computeAutoRepeatTracksCount(ForRows, sizingOperation);
   size_t autoRepeatColumns =
       computeAutoRepeatTracksCount(ForColumns, sizingOperation);
+
+  autoRepeatRows = clampAutoRepeatTracks(ForRows, autoRepeatRows);
+  autoRepeatColumns = clampAutoRepeatTracks(ForColumns, autoRepeatColumns);
+
   if (autoRepeatRows != grid.autoRepeatTracks(ForRows) ||
       autoRepeatColumns != grid.autoRepeatTracks(ForColumns)) {
     grid.setNeedsItemsPlacement(true);

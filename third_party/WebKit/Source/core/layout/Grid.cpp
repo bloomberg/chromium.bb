@@ -81,6 +81,10 @@ bool Grid::hasAnyGridItemPaintOrder() const {
 
 void Grid::setAutoRepeatTracks(size_t autoRepeatRows,
                                size_t autoRepeatColumns) {
+  DCHECK_GE(static_cast<unsigned>(kGridMaxTracks),
+            numTracks(ForRows) + autoRepeatRows);
+  DCHECK_GE(static_cast<unsigned>(kGridMaxTracks),
+            numTracks(ForColumns) + autoRepeatColumns);
   m_autoRepeatRows = autoRepeatRows;
   m_autoRepeatColumns = autoRepeatColumns;
 }
