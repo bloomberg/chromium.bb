@@ -930,7 +930,10 @@ void FrameSelection::selectAll() {
       return;
   }
 
-  setSelection(SelectionInDOMTree::Builder().selectAllChildren(*root).build());
+  setSelection(SelectionInDOMTree::Builder()
+                   .selectAllChildren(*root)
+                   .setIsHandleVisible(isHandleVisible())
+                   .build());
   selectFrameElementInParentIfFullySelected();
   notifyLayoutObjectOfSelectionChange(UserTriggered);
 }

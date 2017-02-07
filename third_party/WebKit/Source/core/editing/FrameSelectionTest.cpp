@@ -308,6 +308,33 @@ TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
                                        "selctable.";
 }
 
+TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
+  setBodyContent("<div id=sample>abc</div>");
+  Element* sample = document().getElementById("sample");
+  const Position endOfText(sample->firstChild(), 3);
+  selection().setSelection(SelectionInDOMTree::Builder()
+                               .collapse(endOfText)
+                               .setIsHandleVisible(false)
+                               .build());
+  EXPECT_FALSE(selection().isHandleVisible());
+  selection().selectAll();
+  EXPECT_FALSE(selection().isHandleVisible())
+      << "If handles weren't present before"
+         "selectAll. Then they shouldn't be present"
+         "after it.";
+
+  selection().setSelection(SelectionInDOMTree::Builder()
+                               .collapse(endOfText)
+                               .setIsHandleVisible(true)
+                               .build());
+  EXPECT_TRUE(selection().isHandleVisible());
+  selection().selectAll();
+  EXPECT_TRUE(selection().isHandleVisible())
+      << "If handles were present before"
+         "selectAll. Then they should be present"
+         "after it.";
+}
+
 TEST_F(FrameSelectionTest, updateIfNeededAndFrameCaret) {
   setBodyContent("<style id=sample></style>");
   document().setDesignMode("on");
