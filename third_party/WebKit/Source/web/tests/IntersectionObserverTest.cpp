@@ -127,4 +127,39 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   EXPECT_EQ(observerCallback->callCount(), 3);
 }
 
+TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
+  webView().resize(WebSize(800, 600));
+  SimRequest mainResource("https://example.com/", "text/html");
+  loadURL("https://example.com/");
+  mainResource.complete(
+      "<div id='leading-space' style='height: 700px;'></div>"
+      "<div id='target'></div>"
+      "<div id='trailing-space' style='height: 700px;'></div>");
+
+  IntersectionObserverInit observerInit;
+  DummyExceptionStateForTesting exceptionState;
+  TestIntersectionObserverCallback* observerCallback =
+      new TestIntersectionObserverCallback(document());
+  IntersectionObserver* observer = IntersectionObserver::create(
+      observerInit, *observerCallback, exceptionState);
+  ASSERT_FALSE(exceptionState.hadException());
+
+  Element* target = document().getElementById("target");
+  ASSERT_TRUE(target);
+  observer->observe(target, exceptionState);
+
+  compositor().beginFrame();
+  testing::runPendingTasks();
+  EXPECT_EQ(observerCallback->callCount(), 1);
+
+  // If disconnect() is called while an observer has unsent notifications,
+  // those notifications should be discarded.
+  document().view()->layoutViewportScrollableArea()->setScrollOffset(
+      ScrollOffset(0, 300), ProgrammaticScroll);
+  compositor().beginFrame();
+  observer->disconnect();
+  testing::runPendingTasks();
+  EXPECT_EQ(observerCallback->callCount(), 1);
+}
+
 }  // namespace blink
