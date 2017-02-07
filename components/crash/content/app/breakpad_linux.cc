@@ -100,6 +100,7 @@ ExceptionHandler* g_breakpad = nullptr;
 #if defined(ADDRESS_SANITIZER)
 const char* g_asan_report_str = nullptr;
 #endif
+
 #if defined(OS_ANDROID)
 #define G_DUMPS_SUPPRESSED_MAGIC 0x5AFECEDE
 uint32_t g_dumps_suppressed = 0;
@@ -1157,16 +1158,41 @@ void LoadDataFromFile(google_breakpad::PageAllocator& allocator,
   LoadDataFromFD(allocator, *fd, true, file_data, size);
 }
 
+// Concatenates a |prefix| and a |number| to get a string like "--foo=123" or
+// "/dev/fd/4". Safe to run in a compromised context. The returned memory is
+// internally owned by |allocator|.
+char* StringFromPrefixAndUint(const char* prefix,
+                              uint64_t number,
+                              google_breakpad::PageAllocator* allocator) {
+  // Convert the number to a string.
+  char number_buf[kUint64StringSize];
+  const unsigned number_len = my_uint64_len(number);
+  my_uint64tos(number_buf, number, number_len);
+  number_buf[number_len] = '\0';
+
+  // Concatenate the prefix and number.
+  size_t output_len = my_strlen(prefix) + my_strlen(number_buf) + 1;
+  char* output = reinterpret_cast<char*>(allocator->Alloc(output_len));
+  my_strlcpy(output, prefix, output_len);
+  my_strlcat(output, number_buf, output_len);
+  return output;
+}
+
 // Spawn the appropriate upload process for the current OS:
 // - generic Linux invokes wget.
-// - ChromeOS invokes crash_reporter.
+// - Chrome OS invokes crash_reporter. Crashes are uploaded by a separate
+//   crash_sender script that runs periodically.
 // |dumpfile| is the path to the dump data file.
 // |mime_boundary| is only used on Linux.
 // |exe_buf| is only used on CrOS and is the crashing process' name.
+// |upload_status_fd| is the file descriptor of a pipe that will receive:
+// - On Linux, the crash report id
+// - On Chrome OS, the magic crash complete string.
 void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
                                   const char* dumpfile,
                                   const char* mime_boundary,
                                   const char* exe_buf,
+                                  int upload_status_fd,
                                   google_breakpad::PageAllocator* allocator) {
 #if defined(OS_CHROMEOS)
   // CrOS uses crash_reporter instead of wget to report crashes,
@@ -1174,16 +1200,13 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
   // crashing process.
   static const char kCrashReporterBinary[] = "/sbin/crash_reporter";
 
-  char pid_buf[kUint64StringSize];
-  uint64_t pid_str_length = my_uint64_len(info.pid);
-  my_uint64tos(pid_buf, info.pid, pid_str_length);
-  pid_buf[pid_str_length] = '\0';
-
-  char uid_buf[kUint64StringSize];
-  uid_t uid = geteuid();
-  uint64_t uid_str_length = my_uint64_len(uid);
-  my_uint64tos(uid_buf, uid, uid_str_length);
-  uid_buf[uid_str_length] = '\0';
+  // crash_reporter writes output to stdout. Connect it to the status pipe fd.
+  if (sys_dup2(upload_status_fd, STDOUT_FILENO) == -1) {
+    const char err[] = "dup2 failed\n";
+    WriteLog(err, sizeof(err) - 1);
+    // Continue anyway, as crash_report may succeed even if we can't read its
+    // status.
+  }
 
   const char kChromeFlag[] = "--chrome=";
   size_t buf_len = my_strlen(dumpfile) + sizeof(kChromeFlag);
@@ -1192,19 +1215,8 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
   my_strlcat(chrome_flag, kChromeFlag, buf_len);
   my_strlcat(chrome_flag, dumpfile, buf_len);
 
-  const char kPidFlag[] = "--pid=";
-  buf_len = my_strlen(pid_buf) + sizeof(kPidFlag);
-  char* pid_flag = reinterpret_cast<char*>(allocator->Alloc(buf_len));
-  pid_flag[0] = '\0';
-  my_strlcat(pid_flag, kPidFlag, buf_len);
-  my_strlcat(pid_flag, pid_buf, buf_len);
-
-  const char kUidFlag[] = "--uid=";
-  buf_len = my_strlen(uid_buf) + sizeof(kUidFlag);
-  char* uid_flag = reinterpret_cast<char*>(allocator->Alloc(buf_len));
-  uid_flag[0] = '\0';
-  my_strlcat(uid_flag, kUidFlag, buf_len);
-  my_strlcat(uid_flag, uid_buf, buf_len);
+  char* pid_flag = StringFromPrefixAndUint("--pid=", info.pid, allocator);
+  char* uid_flag = StringFromPrefixAndUint("--uid=", geteuid(), allocator);
 
   const char kExeBuf[] = "--exe=";
   buf_len = my_strlen(exe_buf) + sizeof(kExeBuf);
@@ -1223,7 +1235,9 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
   };
   static const char msg[] = "Cannot upload crash dump: cannot exec "
                             "/sbin/crash_reporter\n";
-#else
+
+#else  // defined(OS_CHROMEOS)
+
   // Compress |dumpfile| with gzip.
   const pid_t gzip_child = sys_fork();
   if (gzip_child < 0) {
@@ -1293,6 +1307,10 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
   my_strlcpy(post_file, post_file_msg, post_file_size);
   my_strlcat(post_file, dumpfile, post_file_size);
 
+  // Write the wget status output to the status pipe file descriptor path.
+  char* status_fd_path =
+      StringFromPrefixAndUint("/dev/fd/", upload_status_fd, allocator);
+
   static const char kWgetBinary[] = "/usr/bin/wget";
   const char* args[] = {
     kWgetBinary,
@@ -1302,13 +1320,14 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
     kUploadURL,
     "--timeout=10",  // Set a timeout so we don't hang forever.
     "--tries=1",     // Don't retry if the upload fails.
-    "-O",  // output reply to fd 3
-    "/dev/fd/3",
+    "-O",  // Output reply to the file descriptor path.
+    status_fd_path,
     nullptr,
   };
   static const char msg[] = "Cannot upload crash dump: cannot exec "
                             "/usr/bin/wget\n";
-#endif
+#endif  // defined(OS_CHROMEOS)
+
   execve(args[0], const_cast<char**>(args), environ);
   WriteLog(msg, sizeof(msg) - 1);
   sys__exit(1);
@@ -1352,9 +1371,13 @@ size_t WaitForCrashReportUploadProcess(int fd, size_t bytes_to_read,
 // |buf| should be |expected_len| + 1 characters in size and nullptr terminated.
 bool IsValidCrashReportId(const char* buf, size_t bytes_read,
                           size_t expected_len) {
-  if (bytes_read != expected_len)
+  if (bytes_read != expected_len) {
+    static const char msg[] = "Unexpected crash report id length\n";
+    WriteLog(msg, sizeof(msg) - 1);
     return false;
+  }
 #if defined(OS_CHROMEOS)
+  // See kSuccessMagic in platform2/crash-reporter/chrome_collector.cc.
   return my_strcmp(buf, "_sys_cr_finished") == 0;
 #else
   for (size_t i = 0; i < bytes_read; ++i) {
@@ -1372,7 +1395,7 @@ void HandleCrashReportId(const char* buf, size_t bytes_read,
   if (!IsValidCrashReportId(buf, bytes_read, expected_len)) {
 #if defined(OS_CHROMEOS)
     static const char msg[] =
-        "System crash-reporter failed to process crash report.";
+        "System crash_reporter failed to process crash report.";
 #else
     static const char msg[] = "Failed to get crash dump id.";
 #endif
@@ -1446,6 +1469,27 @@ const char* GetCrashingProcessName(const BreakpadInfo& info,
   return "chrome-crash-unknown-process";
 }
 #endif
+
+// Attempts to close all open file descriptors other than stdin, stdout and
+// stderr (0, 1, and 2).
+void CloseAllFileDescriptors() {
+  const int fd = sys_open("/proc/self/fd", O_DIRECTORY | O_RDONLY, 0);
+  if (fd < 0) {
+    for (unsigned i = 3; i < 8192; ++i)
+      IGNORE_RET(sys_close(i));
+  } else {
+    google_breakpad::DirectoryReader reader(fd);
+    const char* name;
+    while (reader.GetNextEntry(&name)) {
+      int i;
+      if (my_strtoui(&i, name) && i > 2 && i != fd)
+        IGNORE_RET(sys_close(i));
+      reader.PopEntry();
+    }
+
+    IGNORE_RET(sys_close(fd));
+  }
+}
 
 void HandleCrashDump(const BreakpadInfo& info) {
   int dumpfd;
@@ -1779,22 +1823,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
     // hold them open for too long.
     //
     // Thus, we have to loop and try and close everything.
-    const int fd = sys_open("/proc/self/fd", O_DIRECTORY | O_RDONLY, 0);
-    if (fd < 0) {
-      for (unsigned i = 3; i < 8192; ++i)
-        IGNORE_RET(sys_close(i));
-    } else {
-      google_breakpad::DirectoryReader reader(fd);
-      const char* name;
-      while (reader.GetNextEntry(&name)) {
-        int i;
-        if (my_strtoui(&i, name) && i > 2 && i != fd)
-          IGNORE_RET(sys_close(i));
-        reader.PopEntry();
-      }
-
-      IGNORE_RET(sys_close(fd));
-    }
+    CloseAllFileDescriptors();
 
     IGNORE_RET(sys_setsid());
 
@@ -1805,15 +1834,15 @@ void HandleCrashDump(const BreakpadInfo& info) {
       const pid_t upload_child = sys_fork();
       if (!upload_child) {
         // Upload process.
-        IGNORE_RET(sys_close(fds[0]));
-        IGNORE_RET(sys_dup2(fds[1], 3));
+        IGNORE_RET(sys_close(fds[0]));  // Close read end of pipe.
+        // Write status to the pipe.
         ExecUploadProcessOrTerminate(info, temp_file, mime_boundary, exe_buf,
-                                     &allocator);
+                                     fds[1], &allocator);
       }
 
       // Helper process.
       if (upload_child > 0) {
-        IGNORE_RET(sys_close(fds[1]));
+        IGNORE_RET(sys_close(fds[1]));  // Close write end of pipe.
 
         const size_t kCrashIdLength = 16;
         char id_buf[kCrashIdLength + 1];
