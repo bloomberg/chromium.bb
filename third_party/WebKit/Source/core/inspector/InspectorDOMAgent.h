@@ -328,7 +328,7 @@ class CORE_EXPORT InspectorDOMAgent final
 
   Response pushDocumentUponHandlelessOperation();
 
-  Member<InspectorRevalidateDOMTask> revalidateTask();
+  InspectorRevalidateDOMTask* revalidateTask();
 
   v8::Isolate* m_isolate;
   Member<InspectedFrames> m_inspectedFrames;

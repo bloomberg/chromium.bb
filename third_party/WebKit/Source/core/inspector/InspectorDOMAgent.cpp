@@ -2049,7 +2049,7 @@ void InspectorDOMAgent::characterDataModified(CharacterData* characterData) {
   frontend()->characterDataModified(id, characterData->data());
 }
 
-Member<InspectorRevalidateDOMTask> InspectorDOMAgent::revalidateTask() {
+InspectorRevalidateDOMTask* InspectorDOMAgent::revalidateTask() {
   if (!m_revalidateTask)
     m_revalidateTask = new InspectorRevalidateDOMTask(this);
   return m_revalidateTask.get();
