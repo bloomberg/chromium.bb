@@ -34,8 +34,7 @@ namespace storage {
 class STORAGE_EXPORT QuotaManagerProxy
     : public base::RefCountedThreadSafe<QuotaManagerProxy> {
  public:
-  typedef QuotaManager::GetUsageAndQuotaCallback
-      GetUsageAndQuotaCallback;
+  typedef QuotaManager::UsageAndQuotaCallback UsageAndQuotaCallback;
 
   virtual void RegisterClient(QuotaClient* client);
   virtual void NotifyStorageAccessed(QuotaClient::ID client_id,
@@ -52,11 +51,10 @@ class STORAGE_EXPORT QuotaManagerProxy
                                     const GURL& origin,
                                     StorageType type,
                                     bool enabled);
-  virtual void GetUsageAndQuota(
-      base::SequencedTaskRunner* original_task_runner,
-      const GURL& origin,
-      StorageType type,
-      const GetUsageAndQuotaCallback& callback);
+  virtual void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
+                                const GURL& origin,
+                                StorageType type,
+                                const UsageAndQuotaCallback& callback);
 
   // This method may only be called on the IO thread.
   // It may return NULL if the manager has already been deleted.

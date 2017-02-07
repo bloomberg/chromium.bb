@@ -14,12 +14,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_names.mojom.h"
 #include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
+#include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace headless {
@@ -84,6 +86,17 @@ HeadlessContentBrowserClient::GetServiceManifestOverlay(
   }
 
   return manifest;
+}
+
+void HeadlessContentBrowserClient::GetQuotaSettings(
+    content::BrowserContext* context,
+    content::StoragePartition* partition,
+    const storage::OptionalQuotaSettingsCallback& callback) {
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&storage::CalculateNominalDynamicSettings,
+                 partition->GetPath(), context->IsOffTheRecord()),
+      callback);
 }
 
 }  // namespace headless

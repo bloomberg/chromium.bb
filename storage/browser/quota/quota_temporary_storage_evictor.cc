@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -29,15 +30,10 @@ const int64_t kMBytes = 1024 * 1024;
 const double kUsageRatioToStartEviction = 0.7;
 const int kThresholdOfErrorsToStopEviction = 5;
 const int kHistogramReportIntervalMinutes = 60;
-const double kMustRemainAvailableRatio = 0.1;
-const int64_t kDefaultMustRemainAvailableSpace = 1024 * kMBytes;
 const double kDiskSpaceShortageAllowanceRatio = 0.5;
 }
 
 namespace storage {
-
-const int QuotaTemporaryStorageEvictor::
-    kMinAvailableToStartEvictionNotSpecified = -1;
 
 QuotaTemporaryStorageEvictor::EvictionRoundStatistics::EvictionRoundStatistics()
     : in_round(false),
@@ -52,11 +48,9 @@ QuotaTemporaryStorageEvictor::EvictionRoundStatistics::EvictionRoundStatistics()
 QuotaTemporaryStorageEvictor::QuotaTemporaryStorageEvictor(
     QuotaEvictionHandler* quota_eviction_handler,
     int64_t interval_ms)
-    : min_available_to_start_eviction_(
-          kMinAvailableToStartEvictionNotSpecified),
-      quota_eviction_handler_(quota_eviction_handler),
+    : quota_eviction_handler_(quota_eviction_handler),
       interval_ms_(interval_ms),
-      repeated_eviction_(true),
+      timer_disabled_for_testing_(false),
       weak_factory_(this) {
   DCHECK(quota_eviction_handler);
 }
@@ -142,6 +136,8 @@ void QuotaTemporaryStorageEvictor::OnEvictionRoundFinished() {
 
 void QuotaTemporaryStorageEvictor::Start() {
   DCHECK(CalledOnValidThread());
+
+  base::AutoReset<bool> auto_reset(&timer_disabled_for_testing_, false);
   StartEvictionTimerWithDelay(0);
 
   if (histogram_timer_.IsRunning())
@@ -153,7 +149,7 @@ void QuotaTemporaryStorageEvictor::Start() {
 }
 
 void QuotaTemporaryStorageEvictor::StartEvictionTimerWithDelay(int delay_ms) {
-  if (eviction_timer_.IsRunning())
+  if (eviction_timer_.IsRunning() || timer_disabled_for_testing_)
     return;
   eviction_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
                         this, &QuotaTemporaryStorageEvictor::ConsiderEviction);
@@ -161,66 +157,49 @@ void QuotaTemporaryStorageEvictor::StartEvictionTimerWithDelay(int delay_ms) {
 
 void QuotaTemporaryStorageEvictor::ConsiderEviction() {
   OnEvictionRoundStarted();
-
-  if (min_available_to_start_eviction_ ==
-      kMinAvailableToStartEvictionNotSpecified) {
-    quota_eviction_handler_->AsyncGetVolumeInfo(
-        base::Bind(&QuotaTemporaryStorageEvictor::OnGotVolumeInfo,
-                   weak_factory_.GetWeakPtr()));
-  } else {
-    quota_eviction_handler_->GetUsageAndQuotaForEviction(
-        base::Bind(&QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction,
-                   weak_factory_.GetWeakPtr(),
-                   min_available_to_start_eviction_));
-  }
+  quota_eviction_handler_->GetEvictionRoundInfo(
+      base::Bind(&QuotaTemporaryStorageEvictor::OnGotEvictionRoundInfo,
+                 weak_factory_.GetWeakPtr()));
 }
 
-void QuotaTemporaryStorageEvictor::OnGotVolumeInfo(
-    bool success, uint64_t available_space, uint64_t total_size) {
-  // Compute how much to keep free as a function of total disk size.
-  int64_t must_remain_available_space = success ?
-      static_cast<int64_t>(total_size * kMustRemainAvailableRatio) :
-      kDefaultMustRemainAvailableSpace;
-
-  quota_eviction_handler_->GetUsageAndQuotaForEviction(
-      base::Bind(&QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction,
-                 weak_factory_.GetWeakPtr(), must_remain_available_space));
-}
-
-void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
-    int64_t must_remain_available_space,
+void QuotaTemporaryStorageEvictor::OnGotEvictionRoundInfo(
     QuotaStatusCode status,
-    const UsageAndQuota& qau) {
-  DCHECK(CalledOnValidThread());
+    const QuotaSettings& settings,
+    int64_t available_space,
+    int64_t total_space,
+    int64_t current_usage,
+    bool current_usage_is_complete) {
+  DCHECK_GE(current_usage, 0);
 
-  int64_t usage = qau.global_limited_usage;
-  DCHECK_GE(usage, 0);
+  // Note: if there is no storage pressure, |current_usage|
+  // may not be fully calculated and may be 0.
 
   if (status != kQuotaStatusOk)
     ++statistics_.num_errors_on_getting_usage_and_quota;
 
   int64_t usage_overage = std::max(
-      static_cast<int64_t>(0),
-      usage - static_cast<int64_t>(qau.quota * kUsageRatioToStartEviction));
-
-  int64_t diskspace_shortage = std::max(
-      static_cast<int64_t>(0),
-      must_remain_available_space - qau.available_disk_space);
+      INT64_C(0),
+      current_usage - static_cast<int64_t>(settings.pool_size *
+                                           kUsageRatioToStartEviction));
+  int64_t diskspace_shortage =
+      std::max(INT64_C(0),
+               settings.should_remain_available - available_space);
+  DCHECK(current_usage_is_complete || diskspace_shortage == 0);
 
   // If we're using so little that freeing all of it wouldn't help,
   // don't let the low space condition cause us to delete it all.
-  if (usage < static_cast<int64_t>(diskspace_shortage *
-                                   kDiskSpaceShortageAllowanceRatio)) {
+  if (current_usage < static_cast<int64_t>(diskspace_shortage *
+                                           kDiskSpaceShortageAllowanceRatio)) {
     diskspace_shortage = 0;
   }
 
   if (!round_statistics_.is_initialized) {
     round_statistics_.usage_overage_at_round = usage_overage;
     round_statistics_.diskspace_shortage_at_round = diskspace_shortage;
-    round_statistics_.usage_on_beginning_of_round = usage;
+    round_statistics_.usage_on_beginning_of_round = current_usage;
     round_statistics_.is_initialized = true;
   }
-  round_statistics_.usage_on_end_of_round = usage;
+  round_statistics_.usage_on_end_of_round = current_usage;
 
   int64_t amount_to_evict = std::max(usage_overage, diskspace_shortage);
   if (status == kQuotaStatusOk && amount_to_evict > 0) {
@@ -228,33 +207,31 @@ void QuotaTemporaryStorageEvictor::OnGotUsageAndQuotaForEviction(
     // TODO(michaeln): if the reason for eviction is low physical disk space,
     // make 'unlimited' origins subject to eviction too.
     quota_eviction_handler_->GetEvictionOrigin(
-        kStorageTypeTemporary, in_progress_eviction_origins_, qau.quota,
+        kStorageTypeTemporary, in_progress_eviction_origins_,
+        settings.pool_size,
         base::Bind(&QuotaTemporaryStorageEvictor::OnGotEvictionOrigin,
                    weak_factory_.GetWeakPtr()));
-  } else {
-    if (repeated_eviction_) {
-      // No action required, sleep for a while and check again later.
-      if (statistics_.num_errors_on_getting_usage_and_quota <
-          kThresholdOfErrorsToStopEviction) {
-        StartEvictionTimerWithDelay(interval_ms_);
-      } else {
-        // TODO(dmikurube): Try restarting eviction after a while.
-        LOG(WARNING) << "Stopped eviction of temporary storage due to errors "
-                        "in GetUsageAndQuotaForEviction.";
-      }
-    }
-    OnEvictionRoundFinished();
+    return;
   }
 
-  // TODO(dmikurube): Add error handling for the case status != kQuotaStatusOk.
+  // No action required, sleep for a while and check again later.
+  if (statistics_.num_errors_on_getting_usage_and_quota <
+      kThresholdOfErrorsToStopEviction) {
+    StartEvictionTimerWithDelay(interval_ms_);
+  } else {
+    // TODO(dmikurube): Add error handling for the case status is not OK.
+    // TODO(dmikurube): Try restarting eviction after a while.
+    LOG(WARNING) << "Stopped eviction of temporary storage due to errors";
+  }
+
+  OnEvictionRoundFinished();
 }
 
 void QuotaTemporaryStorageEvictor::OnGotEvictionOrigin(const GURL& origin) {
   DCHECK(CalledOnValidThread());
 
   if (origin.is_empty()) {
-    if (repeated_eviction_)
-      StartEvictionTimerWithDelay(interval_ms_);
+    StartEvictionTimerWithDelay(interval_ms_);
     OnEvictionRoundFinished();
     return;
   }
@@ -284,10 +261,8 @@ void QuotaTemporaryStorageEvictor::OnEvictionComplete(
     ConsiderEviction();
   } else {
     ++statistics_.num_errors_on_evicting_origin;
-    if (repeated_eviction_) {
-      // Sleep for a while and retry again until we see too many errors.
-      StartEvictionTimerWithDelay(interval_ms_);
-    }
+    // Sleep for a while and retry again until we see too many errors.
+    StartEvictionTimerWithDelay(interval_ms_);
     OnEvictionRoundFinished();
   }
 }

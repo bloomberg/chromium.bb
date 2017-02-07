@@ -47,6 +47,8 @@ include_rules = [
 
   "+services/service_manager/public/cpp",
 
+  "+storage/browser/quota",
+
   "+ui/gfx",
   "+ui/gl",
 

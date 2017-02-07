@@ -51,10 +51,6 @@ class STORAGE_EXPORT SpecialStoragePolicy
   // Durable storage is not subject to storage pressure eviction.
   virtual bool IsStorageDurable(const GURL& origin) = 0;
 
-  // Some origins (e.g. installed apps) have access to the size of the remaining
-  // disk capacity.
-  virtual bool CanQueryDiskSize(const GURL& origin) = 0;
-
   // Checks if the origin contains per-site isolated storage.
   virtual bool HasIsolatedStorage(const GURL& origin) = 0;
 

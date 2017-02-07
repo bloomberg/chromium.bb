@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <tuple>
 #include <vector>
 
 #include "base/bind.h"
@@ -44,7 +45,6 @@ using storage::QuotaClient;
 using storage::QuotaManager;
 using storage::QuotaStatusCode;
 using storage::StorageType;
-using storage::UsageAndQuota;
 using storage::UsageInfo;
 using storage::UsageInfoEntries;
 
@@ -59,41 +59,25 @@ const StorageType kSync = kStorageTypeSyncable;
 
 const int kAllClients = QuotaClient::kAllClientsMask;
 
+// Values in bytes.
 const int64_t kAvailableSpaceForApp = 13377331U;
-
-const int64_t kMinimumPreserveForSystem =
-    QuotaManager::kMinimumPreserveForSystem;
-const int kPerHostTemporaryPortion = QuotaManager::kPerHostTemporaryPortion;
+const int64_t kMustRemainAvailableForSystem = kAvailableSpaceForApp / 2;
+const int64_t kDefaultPoolSize = 1000;
+const int64_t kDefaultPerHostQuota = 200;
 
 const GURL kTestEvictionOrigin = GURL("http://test.eviction.policy/result");
 
 // Returns a deterministic value for the amount of available disk space.
 int64_t GetAvailableDiskSpaceForTest() {
-  return kAvailableSpaceForApp + kMinimumPreserveForSystem;
+  return kAvailableSpaceForApp + kMustRemainAvailableForSystem;
 }
 
-bool GetVolumeInfoForTests(const base::FilePath&,
-                           uint64_t* available, uint64_t* total) {
-  *available = static_cast<uint64_t>(GetAvailableDiskSpaceForTest());
-  *total = *available * 2;
-  return true;
+std::tuple<int64_t, int64_t> GetVolumeInfoForTests(
+    const base::FilePath& unused) {
+  int64_t available = static_cast<uint64_t>(GetAvailableDiskSpaceForTest());
+  int64_t total = available * 2;
+  return std::make_tuple(total, available);
 }
-
-class TestEvictionPolicy : public storage::QuotaEvictionPolicy {
- public:
-  TestEvictionPolicy() {}
-  ~TestEvictionPolicy() override {}
-
-  // Overridden from storage::QuotaEvictionPolicy:
-  void GetEvictionOrigin(const scoped_refptr<storage::SpecialStoragePolicy>&
-                             special_storage_policy,
-                         const std::set<GURL>& exceptions,
-                         const std::map<GURL, int64_t>& usage_map,
-                         int64_t global_quota,
-                         const storage::GetOriginCallback& callback) override {
-    callback.Run(kTestEvictionOrigin);
-  }
-};
 
 }  // namespace
 
@@ -126,7 +110,11 @@ class QuotaManagerTest : public testing::Test {
     quota_manager_ = new QuotaManager(is_incognito, data_dir_.GetPath(),
                                       base::ThreadTaskRunnerHandle::Get().get(),
                                       base::ThreadTaskRunnerHandle::Get().get(),
-                                      mock_special_storage_policy_.get());
+                                      mock_special_storage_policy_.get(),
+                                      storage::GetQuotaSettingsFunc());
+    SetQuotaSettings(kDefaultPoolSize, kDefaultPerHostQuota,
+                     is_incognito ? INT64_C(0) : kMustRemainAvailableForSystem);
+
     // Don't (automatically) start the eviction for testing.
     quota_manager_->eviction_disabled_ = true;
     // Don't query the hard disk for remaining capacity.
@@ -173,21 +161,15 @@ class QuotaManagerTest : public testing::Test {
                                  weak_factory_.GetWeakPtr()));
   }
 
-  void GetTemporaryGlobalQuota() {
-    quota_status_ = kQuotaStatusUnknown;
-    quota_ = -1;
-    quota_manager_->GetTemporaryGlobalQuota(
-        base::Bind(&QuotaManagerTest::DidGetQuota,
-                   weak_factory_.GetWeakPtr()));
-  }
-
-  void SetTemporaryGlobalQuota(int64_t new_quota) {
-    quota_status_ = kQuotaStatusUnknown;
-    quota_ = -1;
-    quota_manager_->SetTemporaryGlobalOverrideQuota(
-        new_quota,
-        base::Bind(&QuotaManagerTest::DidGetQuota,
-                   weak_factory_.GetWeakPtr()));
+  void SetQuotaSettings(int64_t pool_size,
+                        int64_t per_host_quota,
+                        int64_t must_remain_available) {
+    storage::QuotaSettings settings;
+    settings.pool_size = pool_size;
+    settings.per_host_quota = per_host_quota;
+    settings.must_remain_available = must_remain_available;
+    settings.refresh_interval = base::TimeDelta::Max();
+    quota_manager_->SetQuotaSettings(settings);
   }
 
   void GetPersistentHostQuota(const std::string& host) {
@@ -272,22 +254,21 @@ class QuotaManagerTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
-  void GetAvailableSpace() {
-    quota_status_ = kQuotaStatusUnknown;
+  void GetStorageCapacity() {
     available_space_ = -1;
-    quota_manager_->GetAvailableSpace(
-        base::Bind(&QuotaManagerTest::DidGetAvailableSpace,
-                   weak_factory_.GetWeakPtr()));
+    total_space_ = -1;
+    quota_manager_->GetStorageCapacity(base::Bind(
+        &QuotaManagerTest::DidGetStorageCapacity, weak_factory_.GetWeakPtr()));
   }
 
-  void GetUsageAndQuotaForEviction() {
+  void GetEvictionRoundInfo() {
     quota_status_ = kQuotaStatusUnknown;
-    usage_ = -1;
-    unlimited_usage_ = -1;
-    quota_ = -1;
+    settings_ = storage::QuotaSettings();
     available_space_ = -1;
-    quota_manager_->GetUsageAndQuotaForEviction(
-        base::Bind(&QuotaManagerTest::DidGetUsageAndQuotaForEviction,
+    total_space_ = -1;
+    usage_ = -1;
+    quota_manager_->GetEvictionRoundInfo(
+        base::Bind(&QuotaManagerTest::DidGetEvictionRoundInfo,
                    weak_factory_.GetWeakPtr()));
   }
 
@@ -295,12 +276,6 @@ class QuotaManagerTest : public testing::Test {
     ASSERT_TRUE(origins != NULL);
     origins->clear();
     quota_manager_->GetCachedOrigins(type, origins);
-  }
-
-  bool GetVolumeInfo(const base::FilePath& path,
-                     uint64_t* available_space,
-                     uint64_t* total_size) {
-    return QuotaManager::GetVolumeInfo(path, available_space, total_size);
   }
 
   void NotifyStorageAccessed(QuotaClient* client,
@@ -373,8 +348,8 @@ class QuotaManagerTest : public testing::Test {
     quota_ = quota;
   }
 
-  void DidGetAvailableSpace(QuotaStatusCode status, int64_t available_space) {
-    quota_status_ = status;
+  void DidGetStorageCapacity(int64_t total_space, int64_t available_space) {
+    total_space_ = total_space;
     available_space_ = available_space;
   }
 
@@ -395,12 +370,17 @@ class QuotaManagerTest : public testing::Test {
     quota_status_ = status;
   }
 
-  void DidGetUsageAndQuotaForEviction(QuotaStatusCode status,
-                                      const UsageAndQuota& usage_and_quota) {
+  void DidGetEvictionRoundInfo(QuotaStatusCode status,
+                               const storage::QuotaSettings& settings,
+                               int64_t available_space,
+                               int64_t total_space,
+                               int64_t global_usage,
+                               bool global_usage_is_complete) {
     quota_status_ = status;
-    limited_usage_ = usage_and_quota.global_limited_usage;
-    quota_ = usage_and_quota.quota;
-    available_space_ = usage_and_quota.available_disk_space;
+    settings_ = settings;
+    available_space_ = available_space;
+    total_space_ = total_space;
+    usage_ = global_usage;
   }
 
   void DidGetEvictionOrigin(const GURL& origin) {
@@ -445,6 +425,7 @@ class QuotaManagerTest : public testing::Test {
   int64_t limited_usage() const { return limited_usage_; }
   int64_t unlimited_usage() const { return unlimited_usage_; }
   int64_t quota() const { return quota_; }
+  int64_t total_space() const { return total_space_; }
   int64_t available_space() const { return available_space_; }
   const GURL& eviction_origin() const { return eviction_origin_; }
   const std::set<GURL>& modified_origins() const { return modified_origins_; }
@@ -453,6 +434,7 @@ class QuotaManagerTest : public testing::Test {
   const OriginInfoTableEntries& origin_info_entries() const {
     return origin_info_entries_;
   }
+  const storage::QuotaSettings& settings() const { return settings_; }
   base::FilePath profile_path() const { return data_dir_.GetPath(); }
   int status_callback_count() const { return status_callback_count_; }
   void reset_status_callback_count() { status_callback_count_ = 0; }
@@ -475,12 +457,14 @@ class QuotaManagerTest : public testing::Test {
   int64_t limited_usage_;
   int64_t unlimited_usage_;
   int64_t quota_;
+  int64_t total_space_;
   int64_t available_space_;
   GURL eviction_origin_;
   std::set<GURL> modified_origins_;
   StorageType modified_origins_type_;
   QuotaTableEntries quota_entries_;
   OriginInfoTableEntries origin_info_entries_;
+  storage::QuotaSettings settings_;
   int status_callback_count_;
 
   int additional_callback_count_;
@@ -633,20 +617,17 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_MultiOrigins) {
       QuotaClient::kFileSystem));
 
   // This time explicitly sets a temporary global quota.
-  SetTemporaryGlobalQuota(100);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(100, quota());
+  const int kPoolSize = 100;
+  const int kPerHostQuota = 20;
+  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
 
-  const int kPerHostQuota = 100 / kPerHostTemporaryPortion;
-
   // The host's quota should be its full portion of the global quota
-  // since global usage is under the global quota.
+  // since there's plenty of diskspace.
   EXPECT_EQ(kPerHostQuota, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://bar.com/"), kTemp);
@@ -662,39 +643,39 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
     { "http://bar.com/",              kTemp, 2 },
     { "http://bar.com/",              kPerm, 4 },
     { "http://unlimited/",            kPerm, 8 },
-    { "http://installed/",            kPerm, 16 },
   };
   static const MockOriginData kData2[] = {
     { "https://foo.com/",             kTemp, 128 },
     { "http://example.com/",          kPerm, 256 },
     { "http://unlimited/",            kTemp, 512 },
-    { "http://installed/",            kTemp, 1024 },
   };
   mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
-  mock_special_storage_policy()->GrantQueryDiskSize(GURL("http://installed/"));
   RegisterClient(CreateClient(kData1, arraysize(kData1),
       QuotaClient::kFileSystem));
   RegisterClient(CreateClient(kData2, arraysize(kData2),
       QuotaClient::kDatabase));
 
-  const int64_t kTempQuotaBase =
-      GetAvailableDiskSpaceForTest() / kPerHostTemporaryPortion;
+  const int64_t kPoolSize = GetAvailableDiskSpaceForTest();
+  const int64_t kPerHostQuota = kPoolSize / 5;
+  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(1 + 128, usage());
+  EXPECT_EQ(kPerHostQuota, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://bar.com/"), kPerm);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4, usage());
+  EXPECT_EQ(0, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://unlimited/"), kTemp);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(512, usage());
-  EXPECT_EQ(std::min(kAvailableSpaceForApp, kTempQuotaBase) + usage(), quota());
+  EXPECT_EQ(kAvailableSpaceForApp + usage(), quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://unlimited/"), kPerm);
   base::RunLoop().RunUntilIdle();
@@ -702,33 +683,16 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
   EXPECT_EQ(8, usage());
   EXPECT_EQ(kAvailableSpaceForApp + usage(), quota());
 
-  GetAvailableSpace();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_LE(0, available_space());
-
-  GetUsageAndQuotaForWebApps(GURL("http://installed/"), kTemp);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(1024, usage());
-  EXPECT_EQ(std::min(kAvailableSpaceForApp, kTempQuotaBase) + usage(), quota());
-
-  GetUsageAndQuotaForWebApps(GURL("http://installed/"), kPerm);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(16, usage());
-  EXPECT_EQ(usage(), quota());  // Over-budget case.
-
   GetGlobalUsage(kTemp);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(1 + 2 + 128 + 512 + 1024, usage());
+  EXPECT_EQ(1 + 2 + 128 + 512, usage());
   EXPECT_EQ(512, unlimited_usage());
 
   GetGlobalUsage(kPerm);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(4 + 8 + 16 + 256, usage());
+  EXPECT_EQ(4 + 8 + 256, usage());
   EXPECT_EQ(8, unlimited_usage());
 }
 
@@ -781,10 +745,10 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
   };
   RegisterClient(CreateClient(kData, arraysize(kData),
       QuotaClient::kFileSystem));
-  SetTemporaryGlobalQuota(100);
-  base::RunLoop().RunUntilIdle();
 
-  const int kPerHostQuota = 100 / QuotaManager::kPerHostTemporaryPortion;
+  const int kPoolSize = 100;
+  const int kPerHostQuota = 20;
+  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
@@ -815,8 +779,9 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_NukeManager) {
   };
   RegisterClient(CreateClient(kData, arraysize(kData),
       QuotaClient::kFileSystem));
-  SetTemporaryGlobalQuota(100);
-  base::RunLoop().RunUntilIdle();
+  const int kPoolSize = 100;
+  const int kPerHostQuota = 20;
+  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
 
   set_additional_callback_count(0);
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
@@ -842,22 +807,28 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Overbudget) {
   };
   RegisterClient(CreateClient(kData, arraysize(kData),
       QuotaClient::kFileSystem));
-  SetTemporaryGlobalQuota(100);
-  base::RunLoop().RunUntilIdle();
+  const int kPoolSize = 100;
+  const int kPerHostQuota = 20;
+  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
 
-  const int kPerHostQuota = 100 / QuotaManager::kPerHostTemporaryPortion;
+  // Provided diskspace is not tight, global usage does not affect the
+  // quota calculations for an individual origin, so despite global usage
+  // in excess of our poolsize, we still get the nominal quota value.
+  GetStorageCapacity();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_LE(kMustRemainAvailableForSystem, available_space());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage1/"), kTemp);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(1, usage());
-  EXPECT_EQ(1, quota());  // should be clamped to our current usage
+  EXPECT_EQ(kPerHostQuota, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage10/"), kTemp);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
-  EXPECT_EQ(10, quota());
+  EXPECT_EQ(kPerHostQuota, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage200/"), kTemp);
   base::RunLoop().RunUntilIdle();
@@ -878,16 +849,13 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
   RegisterClient(client);
 
   // Test when not overbugdet.
-  SetTemporaryGlobalQuota(1000);
-  base::RunLoop().RunUntilIdle();
+  const int kPerHostQuotaFor1000 = 200;
+  SetQuotaSettings(1000, kPerHostQuotaFor1000, kMustRemainAvailableForSystem);
 
   GetGlobalUsage(kTemp);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(10 + 50 + 4000, usage());
   EXPECT_EQ(4000, unlimited_usage());
-
-  const int kPerHostQuotaFor1000 =
-      1000 / QuotaManager::kPerHostTemporaryPortion;
 
   GetUsageAndQuotaForWebApps(GURL("http://usage10/"), kTemp);
   base::RunLoop().RunUntilIdle();
@@ -914,11 +882,8 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
   EXPECT_EQ(QuotaManager::kNoLimit, quota());
 
   // Test when overbugdet.
-  SetTemporaryGlobalQuota(100);
-  base::RunLoop().RunUntilIdle();
-
-  const int kPerHostQuotaFor100 =
-      100 / QuotaManager::kPerHostTemporaryPortion;
+  const int kPerHostQuotaFor100 = 20;
+  SetQuotaSettings(100, kPerHostQuotaFor100, kMustRemainAvailableForSystem);
 
   GetUsageAndQuotaForWebApps(GURL("http://usage10/"), kTemp);
   base::RunLoop().RunUntilIdle();
@@ -957,7 +922,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
-  EXPECT_EQ(10, quota());  // should be clamped to our current usage
+  EXPECT_EQ(kPerHostQuotaFor100, quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://usage50/"), kTemp);
   base::RunLoop().RunUntilIdle();
@@ -1043,14 +1008,7 @@ TEST_F(QuotaManagerTest, GetAndSetPersistentUsageAndQuota) {
   EXPECT_EQ(0, usage());
   EXPECT_EQ(100, quota());
 
-  // For installed app GetUsageAndQuotaForWebApps returns the capped quota.
-  mock_special_storage_policy()->GrantQueryDiskSize(GURL("http://installed/"));
-  SetPersistentHostQuota("installed", kAvailableSpaceForApp + 100);
-  GetUsageAndQuotaForWebApps(GURL("http://installed/"), kPerm);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kAvailableSpaceForApp, quota());
-
-  // Ditto for unlimited apps.
+  // The actual space avaialble is given to 'unlimited' origins as their quota.
   mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
   GetUsageAndQuotaForWebApps(GURL("http://unlimited/"), kPerm);
   base::RunLoop().RunUntilIdle();
@@ -1072,22 +1030,14 @@ TEST_F(QuotaManagerTest, GetSyncableQuota) {
   EXPECT_LE(kAvailableSpaceForApp,
             QuotaManager::kSyncableStorageDefaultHostQuota);
 
-  // For installed apps the quota manager should return
+  // For unlimited origins the quota manager should return
   // kAvailableSpaceForApp as syncable quota (because of the pre-condition).
-  mock_special_storage_policy()->GrantQueryDiskSize(GURL("http://installed/"));
-  GetUsageAndQuotaForWebApps(GURL("http://installed/"), kSync);
+  mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
+  GetUsageAndQuotaForWebApps(GURL("http://unlimited/"), kSync);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(0, usage());
   EXPECT_EQ(kAvailableSpaceForApp, quota());
-
-  // If it's not installed (which shouldn't happen in real case) it
-  // should just return the default host quota for syncable.
-  GetUsageAndQuotaForWebApps(GURL("http://foo/"), kSync);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(0, usage());
-  EXPECT_EQ(QuotaManager::kSyncableStorageDefaultHostQuota, quota());
 }
 
 TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_MultiOrigins) {
@@ -1294,20 +1244,11 @@ TEST_F(QuotaManagerTest, GetUsage_WithDeleteOrigin) {
   EXPECT_EQ(predelete_host_pers, usage());
 }
 
-TEST_F(QuotaManagerTest, GetAvailableSpaceTest) {
-  GetAvailableSpace();
+TEST_F(QuotaManagerTest, GetStorageCapacity) {
+  GetStorageCapacity();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_LE(0, total_space());
   EXPECT_LE(0, available_space());
-}
-
-TEST_F(QuotaManagerTest, SetTemporaryStorageEvictionPolicy) {
-  quota_manager()->SetTemporaryStorageEvictionPolicy(
-      base::WrapUnique(new TestEvictionPolicy));
-
-  GetEvictionOrigin(kTemp);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kTestEvictionOrigin, eviction_origin());
 }
 
 TEST_F(QuotaManagerTest, EvictOriginData) {
@@ -1401,11 +1342,11 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
   histograms.ExpectBucketCount(
       QuotaManager::kEvictedOriginAccessedCountHistogram, 0, 1);
   histograms.ExpectTotalCount(
-      QuotaManager::kEvictedOriginTimeSinceAccessHistogram, 1);
+      QuotaManager::kEvictedOriginDaysSinceAccessHistogram, 1);
 
   // First eviction has no 'last' time to compare to.
   histograms.ExpectTotalCount(
-      QuotaManager::kTimeBetweenRepeatedOriginEvictionsHistogram, 0);
+      QuotaManager::kDaysBetweenRepeatedOriginEvictionsHistogram, 0);
 
   client->AddOriginAndNotify(kOrigin, kTemp, 100);
 
@@ -1426,11 +1367,11 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
   histograms.ExpectBucketCount(
       QuotaManager::kEvictedOriginAccessedCountHistogram, 1, 1);
   histograms.ExpectTotalCount(
-      QuotaManager::kEvictedOriginTimeSinceAccessHistogram, 2);
+      QuotaManager::kEvictedOriginDaysSinceAccessHistogram, 2);
 
   // Second eviction should log a 'time between repeated eviction' sample.
   histograms.ExpectTotalCount(
-      QuotaManager::kTimeBetweenRepeatedOriginEvictionsHistogram, 1);
+      QuotaManager::kDaysBetweenRepeatedOriginEvictionsHistogram, 1);
 
   client->AddOriginAndNotify(kOrigin, kTemp, 100);
 
@@ -1441,7 +1382,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
 
   // Deletion from non-eviction source should not log a histogram sample.
   histograms.ExpectTotalCount(
-      QuotaManager::kTimeBetweenRepeatedOriginEvictionsHistogram, 1);
+      QuotaManager::kDaysBetweenRepeatedOriginEvictionsHistogram, 1);
 }
 
 TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
@@ -1528,7 +1469,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
   EXPECT_EQ(predelete_host_pers, usage());
 }
 
-TEST_F(QuotaManagerTest, GetUsageAndQuotaForEviction) {
+TEST_F(QuotaManagerTest, GetEvictionRoundInfo) {
   static const MockOriginData kData[] = {
     { "http://foo.com/",   kTemp,       1 },
     { "http://foo.com:1/", kTemp,      20 },
@@ -1541,14 +1482,15 @@ TEST_F(QuotaManagerTest, GetUsageAndQuotaForEviction) {
       QuotaClient::kFileSystem);
   RegisterClient(client);
 
-  SetTemporaryGlobalQuota(10000000);
-  base::RunLoop().RunUntilIdle();
+  const int kPoolSize = 10000000;
+  const int kPerHostQuota = kPoolSize / 5;
+  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
 
-  GetUsageAndQuotaForEviction();
+  GetEvictionRoundInfo();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(21, limited_usage());
-  EXPECT_EQ(10000000, quota());
+  EXPECT_EQ(21, usage());
+  EXPECT_EQ(kPoolSize, settings().pool_size);
   EXPECT_LE(0, available_space());
 }
 
@@ -1801,14 +1743,17 @@ TEST_F(QuotaManagerTest, GetCachedOrigins) {
   GetCachedOrigins(kTemp, &origins);
   EXPECT_TRUE(origins.empty());
 
-  // No matter how we make queries the quota manager tries to cache all
-  // the origins at startup.
   GetHostUsage("a.com", kTemp);
   base::RunLoop().RunUntilIdle();
   GetCachedOrigins(kTemp, &origins);
-  EXPECT_EQ(3U, origins.size());
+  EXPECT_EQ(2U, origins.size());
 
   GetHostUsage("b.com", kTemp);
+  base::RunLoop().RunUntilIdle();
+  GetCachedOrigins(kTemp, &origins);
+  EXPECT_EQ(2U, origins.size());
+
+  GetHostUsage("c.com", kTemp);
   base::RunLoop().RunUntilIdle();
   GetCachedOrigins(kTemp, &origins);
   EXPECT_EQ(3U, origins.size());
@@ -2267,44 +2212,44 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_Incognito) {
   RegisterClient(CreateClient(kData, arraysize(kData),
       QuotaClient::kFileSystem));
 
+  // Query global usage to warmup the usage tracker caching.
+  GetGlobalUsage(kTemp);
+  GetGlobalUsage(kPerm);
+  base::RunLoop().RunUntilIdle();
+
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(80, usage());
   EXPECT_EQ(0, quota());
 
-  SetTemporaryGlobalQuota(100);
+  const int kPoolSize = 1000;
+  const int kPerHostQuota = kPoolSize / 5;
+  SetQuotaSettings(kPoolSize, kPerHostQuota, INT64_C(0));
+
+  GetStorageCapacity();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kPoolSize, total_space());
+  EXPECT_EQ(kPoolSize - 80 - 10, available_space());
+
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
-  EXPECT_LE(std::min(static_cast<int64_t>(100 / kPerHostTemporaryPortion),
-                     QuotaManager::kIncognitoDefaultQuotaLimit),
-            quota());
+  EXPECT_LE(kPerHostQuota, quota());
 
   mock_special_storage_policy()->AddUnlimited(GURL("http://foo.com/"));
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(80, usage());
-  EXPECT_EQ(QuotaManager::kIncognitoDefaultQuotaLimit, quota());
+  EXPECT_EQ(available_space() + usage(), quota());
 
   GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10, usage());
-  EXPECT_EQ(QuotaManager::kIncognitoDefaultQuotaLimit, quota());
-}
-
-TEST_F(QuotaManagerTest, GetVolumeInfo) {
-  // We aren't actually testing that it's correct, just that it's sane.
-  base::FilePath tmp_dir;
-  ASSERT_TRUE(base::GetTempDir(&tmp_dir));
-  uint64_t available_space = 0;
-  uint64_t total_size = 0;
-  EXPECT_TRUE(GetVolumeInfo(tmp_dir, &available_space, &total_size));
-  EXPECT_GT(available_space, 0u) << tmp_dir.value();
-  EXPECT_GT(total_size, 0u) << tmp_dir.value();
+  EXPECT_EQ(available_space() + usage(), quota());
 }
 
 }  // namespace content

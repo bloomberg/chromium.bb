@@ -27,7 +27,7 @@ class QuotaTemporaryStorageEvictorTest;
 namespace storage {
 
 class QuotaEvictionHandler;
-struct UsageAndQuota;
+struct QuotaSettings;
 
 class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
  public:
@@ -78,40 +78,22 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   void ReportPerHourHistogram();
   void Start();
 
-  void reset_min_available_disk_space_to_start_eviction() {
-    min_available_to_start_eviction_ =
-        kMinAvailableToStartEvictionNotSpecified;
-  }
-  void set_min_available_disk_space_to_start_eviction(int64_t value) {
-    min_available_to_start_eviction_ = value;
-  }
-
  private:
   friend class content::QuotaTemporaryStorageEvictorTest;
 
   void StartEvictionTimerWithDelay(int delay_ms);
   void ConsiderEviction();
-  void OnGotVolumeInfo(bool success,
-                       uint64_t available_space,
-                       uint64_t total_size);
-  void OnGotUsageAndQuotaForEviction(
-      int64_t must_remain_available_space,
-      QuotaStatusCode status,
-      const UsageAndQuota& quota_and_usage);
+  void OnGotEvictionRoundInfo(QuotaStatusCode status,
+                              const QuotaSettings& settings,
+                              int64_t available_space,
+                              int64_t total_space,
+                              int64_t current_usage,
+                              bool current_usage_is_complete);
   void OnGotEvictionOrigin(const GURL& origin);
   void OnEvictionComplete(QuotaStatusCode status);
 
   void OnEvictionRoundStarted();
   void OnEvictionRoundFinished();
-
-  // This is only used for tests.
-  void set_repeated_eviction(bool repeated_eviction) {
-    repeated_eviction_ = repeated_eviction;
-  }
-
-  static const int kMinAvailableToStartEvictionNotSpecified;
-
-  int64_t min_available_to_start_eviction_;
 
   // Not owned; quota_eviction_handler owns us.
   QuotaEvictionHandler* quota_eviction_handler_;
@@ -124,7 +106,7 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
   std::set<GURL> in_progress_eviction_origins_;
 
   int64_t interval_ms_;
-  bool repeated_eviction_;
+  bool timer_disabled_for_testing_;
 
   base::OneShotTimer eviction_timer_;
   base::RepeatingTimer histogram_timer_;

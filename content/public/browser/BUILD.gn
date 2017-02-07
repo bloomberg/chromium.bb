@@ -297,6 +297,9 @@ source_set("browser_sources") {
 
     # We expose skia headers in the public API.
     "//skia",
+
+    # We expose storage headers for quota in the public API.
+    "//storage/browser",
     "//third_party/WebKit/public:mojo_bindings",
   ]
   deps = [
@@ -309,7 +312,6 @@ source_set("browser_sources") {
     "//media",
     "//net",
     "//ppapi/c",
-    "//storage/browser",
     "//ui/accessibility",
     "//ui/base",
     "//ui/events",

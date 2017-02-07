@@ -165,6 +165,15 @@ void ClientUsageTracker::UpdateUsageCache(const GURL& origin, int64_t delta) {
                                 AsWeakPtr(), origin));
 }
 
+int64_t ClientUsageTracker::GetCachedUsage() const {
+  int64_t usage = 0;
+  for (const auto& host_and_usage_map : cached_usage_by_host_) {
+    for (const auto& origin_and_usage : host_and_usage_map.second)
+      usage += origin_and_usage.second;
+  }
+  return usage;
+}
+
 void ClientUsageTracker::GetCachedHostsUsage(
     std::map<std::string, int64_t>* host_usage) const {
   DCHECK(host_usage);

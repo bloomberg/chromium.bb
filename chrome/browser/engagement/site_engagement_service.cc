@@ -20,7 +20,6 @@
 #include "base/values.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "chrome/browser/engagement/site_engagement_score.h"

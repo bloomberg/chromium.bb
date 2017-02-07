@@ -26,10 +26,6 @@ bool MockSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   return base::ContainsKey(session_only_, origin);
 }
 
-bool MockSpecialStoragePolicy::CanQueryDiskSize(const GURL& origin) {
-  return base::ContainsKey(can_query_disk_size_, origin);
-}
-
 bool MockSpecialStoragePolicy::HasIsolatedStorage(const GURL& origin) {
   return base::ContainsKey(isolated_, origin);
 }

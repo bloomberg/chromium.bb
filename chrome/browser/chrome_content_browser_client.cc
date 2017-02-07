@@ -45,7 +45,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/engagement/site_engagement_eviction_policy.h"
 #include "chrome/browser/field_trial_recorder.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -413,6 +412,8 @@ namespace {
 // Cached version of the locale so we can return the locale on the I/O
 // thread.
 base::LazyInstance<std::string> g_io_thread_application_locale;
+
+const storage::QuotaSettings* g_default_quota_settings;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // TODO(teravest): Add renderer-side API-specific checking for these APIs so
@@ -2176,12 +2177,20 @@ ChromeContentBrowserClient::CreateQuotaPermissionContext() {
   return new ChromeQuotaPermissionContext();
 }
 
-std::unique_ptr<storage::QuotaEvictionPolicy>
-ChromeContentBrowserClient::GetTemporaryStorageEvictionPolicy(
-    content::BrowserContext* context) {
-  return SiteEngagementEvictionPolicy::IsEnabled()
-             ? base::MakeUnique<SiteEngagementEvictionPolicy>(context)
-             : nullptr;
+void ChromeContentBrowserClient::GetQuotaSettings(
+    content::BrowserContext* context,
+    content::StoragePartition* partition,
+    const storage::OptionalQuotaSettingsCallback& callback) {
+  if (g_default_quota_settings) {
+    // For debugging tests harness can inject settings.
+    callback.Run(*g_default_quota_settings);
+    return;
+  }
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&storage::CalculateNominalDynamicSettings,
+                 partition->GetPath(), context->IsOffTheRecord()),
+      callback);
 }
 
 void ChromeContentBrowserClient::AllowCertificateError(
@@ -3421,4 +3430,10 @@ bool ChromeContentBrowserClient::
     RedirectNonUINonIOBrowserThreadsToTaskScheduler() {
   return variations::GetVariationParamValue(
              "BrowserScheduler", "RedirectNonUINonIOBrowserThreads") == "true";
+}
+
+//static
+void ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(
+    const storage::QuotaSettings* settings) {
+  g_default_quota_settings = settings;
 }

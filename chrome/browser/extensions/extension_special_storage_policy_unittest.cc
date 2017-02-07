@@ -251,23 +251,6 @@ TEST_F(ExtensionSpecialStoragePolicyTest, AppWithUnlimitedStorage) {
   EXPECT_FALSE(policy_->IsStorageUnlimited(GURL("https://bar.wildcards/")));
 }
 
-TEST_F(ExtensionSpecialStoragePolicyTest, CanQueryDiskSize) {
-  const GURL kHttpUrl("http://foo");
-  const GURL kExtensionUrl("chrome-extension://bar");
-  scoped_refptr<Extension> regular_app(CreateRegularApp());
-  scoped_refptr<Extension> protected_app(CreateProtectedApp());
-  scoped_refptr<Extension> unlimited_app(CreateUnlimitedApp());
-  policy_->GrantRightsForExtension(regular_app.get(), NULL);
-  policy_->GrantRightsForExtension(protected_app.get(), NULL);
-  policy_->GrantRightsForExtension(unlimited_app.get(), NULL);
-
-  EXPECT_FALSE(policy_->CanQueryDiskSize(kHttpUrl));
-  EXPECT_FALSE(policy_->CanQueryDiskSize(kExtensionUrl));
-  EXPECT_TRUE(policy_->CanQueryDiskSize(regular_app->url()));
-  EXPECT_TRUE(policy_->CanQueryDiskSize(protected_app->url()));
-  EXPECT_TRUE(policy_->CanQueryDiskSize(unlimited_app->url()));
-}
-
 TEST_F(ExtensionSpecialStoragePolicyTest, HasIsolatedStorage) {
   const GURL kHttpUrl("http://foo");
   const GURL kExtensionUrl("chrome-extension://bar");

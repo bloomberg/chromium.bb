@@ -39,7 +39,6 @@ class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   bool IsStorageProtected(const GURL& origin) override;
   bool IsStorageUnlimited(const GURL& origin) override;
   bool IsStorageSessionOnly(const GURL& origin) override;
-  bool CanQueryDiskSize(const GURL& origin) override;
   bool HasIsolatedStorage(const GURL& origin) override;
   bool HasSessionOnlyOrigins() override;
   bool IsStorageDurable(const GURL& origin) override;
@@ -88,7 +87,6 @@ class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
 
   base::Lock lock_;  // Synchronize all access to the collections.
   SpecialCollection protected_apps_;
-  SpecialCollection installed_apps_;
   SpecialCollection unlimited_extensions_;
   SpecialCollection file_handler_extensions_;
   SpecialCollection isolated_extensions_;

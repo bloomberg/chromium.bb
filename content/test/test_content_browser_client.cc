@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "storage/browser/quota/quota_settings.h"
 
 namespace content {
 
@@ -21,6 +22,13 @@ base::FilePath TestContentBrowserClient::GetDefaultDownloadDirectory() {
     CHECK(result);
   }
   return download_dir_.GetPath();
+}
+
+void TestContentBrowserClient::GetQuotaSettings(
+    BrowserContext* context,
+    StoragePartition* partition,
+    const storage::OptionalQuotaSettingsCallback& callback) {
+  callback.Run(storage::GetHardCodedSettings(100 * 1024 * 1024));
 }
 
 }  // namespace content

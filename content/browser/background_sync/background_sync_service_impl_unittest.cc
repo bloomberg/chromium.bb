@@ -133,9 +133,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     // Creates a StoragePartition so that the BackgroundSyncManager can
     // use it to access the BrowserContext.
     storage_partition_impl_.reset(new StoragePartitionImpl(
-        embedded_worker_helper_->browser_context(), base::FilePath(), nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr));
+        embedded_worker_helper_->browser_context(), base::FilePath(), nullptr));
     embedded_worker_helper_->context_wrapper()->set_storage_partition(
         storage_partition_impl_.get());
   }

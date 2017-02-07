@@ -18,6 +18,7 @@
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/test/base/test_switches.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_function.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -40,15 +41,10 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
  public:
   SyncFileSystemApiTest()
       : mock_remote_service_(NULL),
-        real_minimum_preserved_space_(0),
         real_default_quota_(0) {}
 
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-
-    real_minimum_preserved_space_ =
-        storage::QuotaManager::kMinimumPreserveForSystem;
-    storage::QuotaManager::kMinimumPreserveForSystem = 0;
 
     // TODO(calvinlo): Update test code after default quota is made const
     // (http://crbug.com/155488).
@@ -58,8 +54,6 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
   }
 
   void TearDownInProcessBrowserTestFixture() override {
-    storage::QuotaManager::kMinimumPreserveForSystem =
-        real_minimum_preserved_space_;
     storage::QuotaManager::kSyncableStorageDefaultHostQuota =
         real_default_quota_;
     ExtensionApiTest::TearDownInProcessBrowserTestFixture();
@@ -81,7 +75,6 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
 
  private:
   ::testing::NiceMock<MockRemoteFileSyncService>* mock_remote_service_;
-  int64_t real_minimum_preserved_space_;
   int64_t real_default_quota_;
 };
 

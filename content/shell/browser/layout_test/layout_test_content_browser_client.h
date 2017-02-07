@@ -37,6 +37,10 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
                                       int child_process_id) override;
   BrowserMainParts* CreateBrowserMainParts(
       const MainFunctionParams& parameters) override;
+  void GetQuotaSettings(
+      content::BrowserContext* context,
+      content::StoragePartition* partition,
+      const storage::OptionalQuotaSettingsCallback& callback) override;
 
   PlatformNotificationService* GetPlatformNotificationService() override;
 

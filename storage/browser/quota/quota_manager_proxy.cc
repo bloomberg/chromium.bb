@@ -20,7 +20,7 @@ namespace {
 
 void DidGetUsageAndQuota(
     base::SequencedTaskRunner* original_task_runner,
-    const QuotaManagerProxy::GetUsageAndQuotaCallback& callback,
+    const QuotaManagerProxy::UsageAndQuotaCallback& callback,
     QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
@@ -130,7 +130,7 @@ void QuotaManagerProxy::GetUsageAndQuota(
     base::SequencedTaskRunner* original_task_runner,
     const GURL& origin,
     StorageType type,
-    const GetUsageAndQuotaCallback& callback) {
+    const UsageAndQuotaCallback& callback) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
         FROM_HERE, base::Bind(&QuotaManagerProxy::GetUsageAndQuota, this,

@@ -44,14 +44,13 @@ MockQuotaManager::MockQuotaManager(
                    profile_path,
                    io_thread,
                    db_thread,
-                   special_storage_policy),
-      weak_factory_(this) {
-}
+                   special_storage_policy,
+                   storage::GetQuotaSettingsFunc()),
+      weak_factory_(this) {}
 
-void MockQuotaManager::GetUsageAndQuota(
-    const GURL& origin,
-    storage::StorageType type,
-    const GetUsageAndQuotaCallback& callback) {
+void MockQuotaManager::GetUsageAndQuota(const GURL& origin,
+                                        storage::StorageType type,
+                                        const UsageAndQuotaCallback& callback) {
   StorageInfo& info = usage_and_quota_map_[std::make_pair(origin, type)];
   callback.Run(storage::kQuotaStatusOk, info.usage, info.quota);
 }
