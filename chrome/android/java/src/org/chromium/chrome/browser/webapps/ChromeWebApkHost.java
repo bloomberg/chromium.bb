@@ -15,6 +15,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -112,7 +113,8 @@ public class ChromeWebApkHost {
      * from Google Play is possible.
      */
     public static boolean isGooglePlayInstallEnabledByChromeFeature() {
-        return isEnabled() && nativeCanUseGooglePlayToInstallWebApk();
+        return isEnabled() && LibraryLoader.isInitialized()
+                && nativeCanUseGooglePlayToInstallWebApk();
     }
 
     /**
