@@ -1211,9 +1211,8 @@ public class ImeTest extends ContentShellTestBase {
 
         finishComposingText();
         waitAndVerifyUpdateSelection(1, 1, 1, -1, -1);
-        // TODO(changwan): reduce the number of selection changes.
         waitForEventLogs(
-                "compositionupdate(a),input,compositionend(a),selectionchange,selectionchange");
+                "compositionend(a)");
     }
 
     @MediumTest
@@ -1228,9 +1227,7 @@ public class ImeTest extends ContentShellTestBase {
 
         finishComposingText();
         waitAndVerifyUpdateSelection(1, 1, 1, -1, -1);
-        // TODO(changwan): reduce the number of selection changes.
-        waitForEventLogs("compositionupdate(a),input,compositionend(a),selectionchange,"
-                + "selectionchange,selectionchange");
+        waitForEventLogs("compositionend(a)");
     }
 
     @MediumTest

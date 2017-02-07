@@ -51,10 +51,6 @@ class WebAutofillClient {
   // Called the first time the user interacts with the page after a load.
   virtual void firstUserGestureObserved() {}
 
-  // Informs the client whether or not any subsequent text changes should be
-  // ignored.
-  virtual void setIgnoreTextChanges(bool ignore) {}
-
   virtual void didAssociateFormControlsDynamically() {}
   virtual void ajaxSucceeded() {}
 

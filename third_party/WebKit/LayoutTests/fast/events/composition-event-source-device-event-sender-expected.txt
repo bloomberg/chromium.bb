@@ -9,9 +9,6 @@ PASS event.sourceCapabilities.firesTouchEvents is false
 compositionupdate
 PASS event.sourceCapabilities is non-null.
 PASS event.sourceCapabilities.firesTouchEvents is false
-compositionupdate
-PASS event.sourceCapabilities is non-null.
-PASS event.sourceCapabilities.firesTouchEvents is false
 compositionend
 PASS event.sourceCapabilities is non-null.
 PASS event.sourceCapabilities.firesTouchEvents is false

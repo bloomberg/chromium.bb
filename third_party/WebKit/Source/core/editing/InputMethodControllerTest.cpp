@@ -953,7 +953,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
                document().title().utf8().data());
 
   document().setTitle(emptyString);
-  controller().finishComposingText(InputMethodController::KeepSelection);
+  controller().commitText("bar", underlines, 0);
   // Last pair of InputEvent should also be inside composition scope.
   EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;",
                document().title().utf8().data());
@@ -993,9 +993,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForConfirm) {
   // Confirm the ongoing composition.
   document().setTitle(emptyString);
   controller().finishComposingText(InputMethodController::KeepSelection);
-  EXPECT_STREQ(
-      "beforeinput.data:hello;input.data:hello;compositionend.data:hello;",
-      document().title().utf8().data());
+  EXPECT_STREQ("compositionend.data:hello;", document().title().utf8().data());
 }
 
 TEST_F(InputMethodControllerTest, CompositionInputEventForDelete) {

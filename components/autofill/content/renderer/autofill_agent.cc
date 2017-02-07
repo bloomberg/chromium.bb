@@ -300,10 +300,6 @@ void AutofillAgent::FocusChangeComplete() {
   }
 }
 
-void AutofillAgent::setIgnoreTextChanges(bool ignore) {
-  ignore_text_changes_ = ignore;
-}
-
 void AutofillAgent::FormControlElementClicked(
     const WebFormControlElement& element,
     bool was_focused) {

@@ -264,22 +264,37 @@ bool InputMethodController::finishComposingText(
   if (!hasComposition())
     return false;
 
+  const String& composing = composingText();
+
   if (confirmBehavior == KeepSelection) {
     PlainTextRange oldOffsets = getSelectionOffsets();
     Editor::RevealSelectionScope revealSelectionScope(&editor());
 
-    bool result = replaceComposition(composingText());
+    clear();
+    dispatchCompositionEndEvent(frame(), composing);
 
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited. see http://crbug.com/590369 for more details.
     document().updateStyleAndLayoutIgnorePendingStylesheets();
-
     setSelectionOffsets(oldOffsets);
-    return result;
+    return true;
   }
 
-  return replaceCompositionAndMoveCaret(composingText(), 0,
-                                        Vector<CompositionUnderline>());
+  Element* rootEditableElement = frame().selection().rootEditableElement();
+  if (!rootEditableElement)
+    return false;
+  PlainTextRange compositionRange =
+      PlainTextRange::create(*rootEditableElement, *m_compositionRange);
+  if (compositionRange.isNull())
+    return false;
+
+  clear();
+
+  if (!moveCaret(compositionRange.end()))
+    return false;
+
+  dispatchCompositionEndEvent(frame(), composing);
+  return true;
 }
 
 bool InputMethodController::commitText(
