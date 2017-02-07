@@ -696,7 +696,7 @@ need to be translated for each locale.-->
         To exit calibration press Esc.
       </message>
       <message name="IDS_DISPLAY_TOUCH_CALIBRATION_HINT_LABEL_TEXT" desc="Title of the hint message to inform the user what the next step is in touch calibration is">
-        Define your touchscreen
+       Calibrate your touchscreen
       </message>
       <message name="IDS_DISPLAY_TOUCH_CALIBRATION_HINT_SUBLABEL_TEXT" desc="Message to inform the user what the next step is in touch calibration is">
         Tap the touch targets on your screen.

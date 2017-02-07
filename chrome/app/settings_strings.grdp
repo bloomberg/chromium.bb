@@ -2720,10 +2720,10 @@
       Off
     </message>
     <message name="IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TITLE" desc="In Device Settings > Displays, the label for initiating touch calibration.">
-      Calibrate
+      Calibrate touchscreen
     </message>
     <message name="IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TEXT" desc="In Device Settings > Displays, the sublabel for initiating touch calibration.">
-      Define the boundaries of your touchscreen over the display
+      Set up and adjust the accuracy of your touchscreen
     </message>
 
     <!-- Storage -->
