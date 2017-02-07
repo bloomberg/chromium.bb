@@ -150,13 +150,12 @@ crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
 
-# TODO(glebl): remove once new float/margin collapsing algorithm checked in.
-
-
 #### css2.1/20110323
-#### Passed: 112
-#### Skipped: 297
+#### Passed: 110
+#### Skipped: 299
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-002.htm [ Skip ]
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-zero-height-wrap-001.htm [ Skip ]
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-zero-height-wrap-002.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-003.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-004.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-005.htm [ Skip ]
@@ -455,8 +454,9 @@ crbug.com/635619 virtual/layout_ng/css2.1/20110323/width-non-replaced-inline-001
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/width-replaced-element-001.htm [ Skip ]
 
 #### fast/block/basic
-#### Passed: 3
-#### Skipped: 29
+#### Passed: 2
+#### Skipped: 30
+crbug.com/635619 virtual/layout_ng/fast/block/float/floats-not-cleared-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/003.html [ Skip ]

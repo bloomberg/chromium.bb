@@ -101,7 +101,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // Calculates offset for the provided fragment which is relative to the
   // fragment's parent.
   NGLogicalOffset CalculateRelativeOffset(const NGBoxFragment& fragment);
-
   NGLogicalOffset GetChildSpaceOffset() const {
     return NGLogicalOffset(border_and_padding_.inline_start, content_size_);
   }

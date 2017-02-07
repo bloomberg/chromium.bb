@@ -14,7 +14,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
       percentage_resolution_size_(parent_space->PercentageResolutionSize()),
       fragmentainer_space_available_(NGSizeIndefinite),
       writing_mode_(parent_space->WritingMode()),
-      parent_writing_mode_(writing_mode_),
+      parent_writing_mode_(parent_space->WritingMode()),
       is_fixed_size_inline_(false),
       is_fixed_size_block_(false),
       is_shrink_to_fit_(false),
@@ -117,17 +117,10 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetWritingMode(
 }
 
 NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
-  // Exclusions do not pass the formatting context boundary.
-  std::shared_ptr<NGExclusions> exclusions(
-      is_new_fc_ ? std::make_shared<NGExclusions>() : exclusions_);
-
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
   bool is_in_parallel_flow = (parent_writing_mode_ == kHorizontalTopBottom) ==
                              (writing_mode_ == kHorizontalTopBottom);
-
-  NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
-  NGLogicalOffset bfc_offset = is_new_fc_ ? NGLogicalOffset() : bfc_offset_;
 
   if (is_in_parallel_flow) {
     return new NGConstraintSpace(
@@ -141,7 +134,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-        margin_strut, bfc_offset, exclusions);
+        margin_strut_, bfc_offset_, exclusions_);
   }
 
   return new NGConstraintSpace(
@@ -155,7 +148,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-      margin_strut, bfc_offset, exclusions);
+      margin_strut_, bfc_offset_, exclusions_);
 }
 
 }  // namespace blink

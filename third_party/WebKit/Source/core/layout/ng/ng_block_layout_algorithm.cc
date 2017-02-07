@@ -25,12 +25,29 @@
 namespace blink {
 namespace {
 
+// Whether child's constraint space should shrink to its intrinsic width.
+// This is needed for buttons, select, input, floats and orthogonal children.
+// See LayoutBox::sizesLogicalWidthToFitContent for the rationale behind this.
+bool ShouldShrinkToFit(const NGConstraintSpace& parent_space,
+                       const ComputedStyle& child_style) {
+  NGWritingMode child_writing_mode =
+      FromPlatformWritingMode(child_style.getWritingMode());
+  // Whether the child and the containing block are parallel to each other.
+  // Example: vertical-rl and vertical-lr
+  bool is_in_parallel_flow =
+      (parent_space.WritingMode() == kHorizontalTopBottom) ==
+      (child_writing_mode == kHorizontalTopBottom);
+
+  return child_style.display() == EDisplay::InlineBlock ||
+         child_style.isFloating() || !is_in_parallel_flow;
+}
+
 // Updates the fragment's BFC offset if it's not already set.
 void UpdateFragmentBfcOffset(const NGLogicalOffset& offset,
                              const NGConstraintSpace& space,
                              NGFragmentBuilder* builder) {
   NGLogicalOffset fragment_offset =
-      space.IsNewFormattingContext() ? NGLogicalOffset() : offset;
+      space.IsNewFormattingContext() ? space.BfcOffset() : offset;
   if (!builder->BfcOffset())
     builder->SetBfcOffset(fragment_offset);
 }
@@ -379,7 +396,8 @@ RefPtr<NGPhysicalFragment> NGBlockLayoutAlgorithm::Layout() {
   // Margins collapsing:
   //   Do not collapse margins between parent and its child if there is
   //   border/padding between them.
-  if (border_and_padding_.block_start) {
+  if (border_and_padding_.block_start ||
+      ConstraintSpace().IsNewFormattingContext()) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
     builder_->SetBfcOffset(curr_bfc_offset_);
     curr_margin_strut_ = NGMarginStrut();
@@ -702,29 +720,26 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
 
 NGConstraintSpace*
 NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() {
-  // TODO(layout-ng): Orthogonal children should also shrink to fit (in *their*
-  // inline axis)
   DCHECK(current_child_);
   if (current_child_->Type() == NGLayoutInputNode::kLegacyInline) {
     // TODO(kojii): Setup space_builder_ appropriately for inline child.
     return space_builder_->ToConstraintSpace();
+    // Calculate margins in parent's writing mode.
   }
+  curr_child_margins_ = CalculateMargins(*space_builder_->ToConstraintSpace(),
+                                         CurrentChildStyle());
 
   const ComputedStyle& current_child_style = CurrentChildStyle();
-  bool shrink_to_fit = current_child_style.display() == EDisplay::InlineBlock ||
-                       current_child_style.isFloating();
   bool is_new_bfc = IsNewFormattingContextForInFlowBlockLevelChild(
       ConstraintSpace(), current_child_style);
   space_builder_->SetIsNewFormattingContext(is_new_bfc)
-      .SetIsShrinkToFit(shrink_to_fit)
+      .SetIsShrinkToFit(
+          ShouldShrinkToFit(ConstraintSpace(), CurrentChildStyle()))
       .SetWritingMode(
           FromPlatformWritingMode(current_child_style.getWritingMode()))
       .SetTextDirection(current_child_style.direction());
   LayoutUnit space_available = SpaceAvailableForCurrentChild();
   space_builder_->SetFragmentainerSpaceAvailable(space_available);
-
-  curr_child_margins_ = CalculateMargins(*space_builder_->ToConstraintSpace(),
-                                         current_child_style);
 
   // Clearance :
   // - Collapse margins

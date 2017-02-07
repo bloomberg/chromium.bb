@@ -6,6 +6,7 @@
 #define NGBlockNode_h
 
 #include "core/CoreExport.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/ng/ng_layout_input_node.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "platform/heap/Handle.h"
@@ -13,7 +14,6 @@
 namespace blink {
 
 class ComputedStyle;
-class LayoutBox;
 class LayoutObject;
 class NGBreakToken;
 class NGConstraintSpace;
@@ -58,6 +58,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   bool IsLayoutFinished() const {
     return fragment_ && !fragment_->BreakToken();
   }
+
+  // Used for debugging purposes only.
+  const LayoutBox* LegacyLayoutBox() const { return layout_box_; }
 
   DECLARE_VIRTUAL_TRACE();
 
