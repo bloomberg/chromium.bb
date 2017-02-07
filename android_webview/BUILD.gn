@@ -757,6 +757,14 @@ android_library("android_webview_platform_services_java") {
   ]
 }
 
+android_library("android_webview_commandline_java") {
+  java_files = [ "java/src/org/chromium/android_webview/command_line/CommandLineUtil.java" ]
+
+  deps = [
+    "//base:base_java",
+  ]
+}
+
 # Keep crash services separate from other WebView code to keep their deps clean
 # (and make them easy to move).
 android_library("android_webview_crash_services_java") {
@@ -767,6 +775,8 @@ android_library("android_webview_crash_services_java") {
     "java/src/org/chromium/android_webview/crash/MinidumpUploadJobService.java",
   ]
   deps = [
+    ":android_webview_commandline_java",
+    ":android_webview_platform_services_java",
     "//base:base_java",
     "//components/minidump_uploader:minidump_uploader_java",
   ]

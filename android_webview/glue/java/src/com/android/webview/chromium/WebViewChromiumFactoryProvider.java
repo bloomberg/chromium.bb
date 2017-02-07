@@ -16,7 +16,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
-import android.os.StrictMode;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -49,6 +48,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.android_webview.PlatformServiceBridge;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
+import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
@@ -59,7 +59,6 @@ import org.chromium.base.PathService;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.NativeLibraries;
@@ -85,11 +84,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     private static final String CHROMIUM_PREFS_NAME = "WebViewChromiumPrefs";
     private static final String VERSION_CODE_PREF = "lastVersionCodeUsed";
-    private static final String COMMAND_LINE_FILE = "/data/local/tmp/webview-command-line";
     private static final String HTTP_AUTH_DATABASE_FILE = "http_auth.db";
-    // same switch as kEnableCrashReporterForTesting in //base/base_switches.h
-    public static final String CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH =
-            "enable-crash-reporter-for-testing";
 
     private class WebViewChromiumRunQueue {
         public WebViewChromiumRunQueue() {
@@ -209,7 +204,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         initialize(delegate);
     }
 
-    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private void initialize(WebViewDelegate webViewDelegate) {
         mWebViewDelegate = webViewDelegate;
         Context ctx = mWebViewDelegate.getApplication().getApplicationContext();
@@ -227,14 +221,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         // WebView needs to make sure to always use the wrapped application context.
         ContextUtils.initApplicationContext(ResourcesContextWrapperFactory.get(ctx));
 
-        if (isBuildDebuggable()) {
-            // Suppress the StrictMode violation as this codepath is only hit on debuggable builds.
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            CommandLine.initFromFile(COMMAND_LINE_FILE);
-            StrictMode.setThreadPolicy(oldPolicy);
-        } else {
-            CommandLine.init(null);
-        }
+        CommandLineUtil.initCommandLine();
 
         boolean multiProcess = false;
         if (BuildInfo.isAtLeastO()) {
@@ -288,10 +275,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             throw new IllegalArgumentException(
                     "WebView cannot be used with device protected storage");
         }
-    }
-
-    private static boolean isBuildDebuggable() {
-        return !Build.TYPE.equals("user");
     }
 
     /**
@@ -433,7 +416,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         AwBrowserProcess.start();
 
         final boolean enableMinidumpUploadingForTesting = CommandLine.getInstance().hasSwitch(
-                CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+                CommandLineUtil.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
         if (enableMinidumpUploadingForTesting) {
             AwBrowserProcess.handleMinidumps(webViewPackageName, true /* enabled */);
         }
@@ -451,7 +434,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     }
                 });
 
-        if (isBuildDebuggable()) {
+        if (CommandLineUtil.isBuildDebuggable()) {
             setWebContentsDebuggingEnabled(true);
         }
 
@@ -547,7 +530,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     @Override
                     public void setWebContentsDebuggingEnabled(boolean enable) {
                         // Web Contents debugging is always enabled on debug builds.
-                        if (!isBuildDebuggable()) {
+                        if (!CommandLineUtil.isBuildDebuggable()) {
                             WebViewChromiumFactoryProvider.this.setWebContentsDebuggingEnabled(
                                     enable);
                         }

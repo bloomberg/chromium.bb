@@ -103,6 +103,7 @@ instrumentation_test_apk("android_webview_test_apk") {
   deps = [
     "//android_webview:android_webview_crash_services_java",
     "//android_webview:android_webview_java",
+    "//android_webview:android_webview_platform_services_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//components/minidump_uploader:minidump_uploader_java",
