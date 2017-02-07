@@ -12,8 +12,7 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
     GpuCompositorFrameSinkDelegate* delegate,
     cc::SurfaceManager* surface_manager,
     const cc::FrameSinkId& frame_sink_id,
-    std::unique_ptr<cc::Display> display,
-    std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
+    cc::Display* display,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest
         compositor_frame_sink_private_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
@@ -21,8 +20,9 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
       support_(this,
                surface_manager,
                frame_sink_id,
-               std::move(display),
-               std::move(begin_frame_source)),
+               display,
+               true /* handles_frame_sink_id_invalidation */,
+               true /* needs_sync_points */),
       surface_manager_(surface_manager),
       surface_tracker_(frame_sink_id),
       client_(std::move(client)),

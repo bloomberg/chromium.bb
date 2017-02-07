@@ -26,12 +26,16 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
       public SurfaceFactoryClient,
       public BeginFrameObserver {
  public:
-  CompositorFrameSinkSupport(
-      CompositorFrameSinkSupportClient* client,
-      SurfaceManager* surface_manager,
-      const FrameSinkId& frame_sink_id,
-      std::unique_ptr<Display> display,
-      std::unique_ptr<BeginFrameSource> display_begin_frame_source);
+  // |display| is nullptr if the CompositorFrameSinkSupport submits
+  // CompositorFrames to a offscreen texutre/bitmap instead of a
+  // DisplayCompositor. e.g. OffscreenCanvasCompositorFrameSink and
+  // GpuOffscreenCompositorFrameSink.
+  CompositorFrameSinkSupport(CompositorFrameSinkSupportClient* client,
+                             SurfaceManager* surface_manager,
+                             const FrameSinkId& frame_sink_id,
+                             Display* display,
+                             bool handles_frame_sink_id_invalidation,
+                             bool needs_sync_points);
 
   ~CompositorFrameSinkSupport() override;
 
@@ -46,8 +50,9 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void Satisfy(const SurfaceSequence& sequence);
   void AddChildFrameSink(const FrameSinkId& child_frame_sink_id);
   void RemoveChildFrameSink(const FrameSinkId& child_frame_sink_id);
+  void ForceReclaimResources();
 
-  Display* display() { return display_.get(); }
+  Display* display() { return display_; }
 
  private:
   void DidReceiveCompositorFrameAck();
@@ -74,14 +79,8 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   CompositorFrameSinkSupportClient* const client_;
 
   SurfaceManager* const surface_manager_;
-
   const FrameSinkId frame_sink_id_;
-
-  // GpuCompositorFrameSink holds a Display and its BeginFrameSource if it
-  // created with non-null gpu::SurfaceHandle. In the window server, the display
-  // root window's CompositorFrameSink will have a valid gpu::SurfaceHandle.
-  std::unique_ptr<BeginFrameSource> display_begin_frame_source_;
-  std::unique_ptr<Display> display_;
+  Display* const display_;
 
   SurfaceFactory surface_factory_;
   // Counts the number of CompositorFrames that have been submitted and have not
@@ -100,6 +99,18 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   // Whether or not a frame observer has been added.
   bool added_frame_observer_ = false;
+
+  // TODO(staraz): Remove this flag once ui::Compositor no longer needs
+  // RegisterFrameSinkId().
+  // A SurfaceSequence's validity is bound to the lifetime of the parent
+  // FrameSink that created it. We track the lifetime of FrameSink's through
+  // RegisterFrameSinkId and InvalidateFrameSink. During startup and GPU
+  // restart, a SurfaceSequence created by the top most layer compositor may be
+  // used prior to the creation of the associated CompositorFrameSinkSupport.
+  // CompositorFrameSinkSupport is created asynchronously when a new GPU channel
+  // is established. Once we switch to SurfaceReferences, this ordering concern
+  // goes away and we can remove this bool.
+  const bool handles_frame_sink_id_invalidation_;
 
   // The set of BeginFrame children of this CompositorFrameSink.
   std::unordered_set<FrameSinkId, FrameSinkIdHash> child_frame_sinks_;
