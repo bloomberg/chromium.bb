@@ -226,7 +226,8 @@
 
 - (void)updateDeviceSharingManager {
   if (!self.deviceSharingManager) {
-    self.deviceSharingManager = [[DeviceSharingManager alloc] init];
+    self.deviceSharingManager =
+        [[[DeviceSharingManager alloc] init] autorelease];
   }
   [self.deviceSharingManager updateBrowserState:_browserState];
 
