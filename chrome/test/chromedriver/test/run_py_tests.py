@@ -80,6 +80,9 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     'ChromeExtensionsCapabilityTest.testCanInspectBackgroundPage',
     'ChromeExtensionsCapabilityTest.testCanLaunchApp',
     'MobileEmulationCapabilityTest.testDeviceMetricsWithStandardWidth',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1673
+    'ChromeDownloadDirTest.testFileDownloadWithGet',
+    'ChromeDriverPageLoadTimeoutTest.*',
 ]
 _VERSION_SPECIFIC_FILTER['55'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
@@ -175,6 +178,8 @@ _ANDROID_NEGATIVE_FILTER['chromium'] = (
         'ChromeDriverTest.testHoverOverElement',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1478
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1673
+        'ChromeDriverPageLoadTimeoutTest.testPageLoadTimeoutCrossDomain',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
