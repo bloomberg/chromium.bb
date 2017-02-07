@@ -76,7 +76,7 @@ void AddToHomescreenManager::AddShortcut(
 
 void AddToHomescreenManager::Start(content::WebContents* web_contents) {
   bool check_webapk_compatible = false;
-  if (ChromeWebApkHost::AreWebApkEnabled() &&
+  if (ChromeWebApkHost::CanInstallWebApk() &&
       InstallableManager::IsContentSecure(web_contents)) {
     check_webapk_compatible = true;
   } else {

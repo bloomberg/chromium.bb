@@ -51,4 +51,10 @@ public interface GooglePlayWebApkInstallDelegate {
      * @param event The result of the install.
      */
     void onGotInstallEvent(String packageName, @InstallerPackageEvent int event);
+
+    /**
+     * Checks whether Google Play Install API is available.
+     * @param callback The callback to invoke when the check is done.
+     */
+    void canInstallWebApk(Callback<Boolean> callback);
 }

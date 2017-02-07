@@ -54,7 +54,7 @@ bool AppBannerInfoBarDelegateAndroid::Create(
     std::unique_ptr<SkBitmap> icon,
     int event_request_id,
     webapk::InstallSource webapk_install_source) {
-  bool is_webapk = ChromeWebApkHost::AreWebApkEnabled();
+  bool is_webapk = ChromeWebApkHost::CanInstallWebApk();
   std::string webapk_package_name = "";
   const GURL& url = shortcut_info->url;
   if (is_webapk)

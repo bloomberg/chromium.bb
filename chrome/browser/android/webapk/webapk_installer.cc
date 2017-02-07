@@ -424,10 +424,12 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
   if (CanUseGooglePlayInstallService()) {
     int version = 1;
     base::StringToInt(response->version(), &version);
-    if (!InstallOrUpdateWebApkFromGooglePlay(response->package_name(), version,
-                                             response->token())) {
-      OnFailure();
-    }
+    // TODO(hanxi): crbug.com/688759. Remove the return value of
+    // InstallOrUpdateWebApkFromGooglePlay(), since a callback will be called
+    // asynchronously after the install or upidate has either failed or
+    // completed.
+    InstallOrUpdateWebApkFromGooglePlay(response->package_name(), version,
+                                        response->token());
     return;
   }
 
