@@ -107,6 +107,8 @@ void V8CustomEvent::initCustomEventMethodEpilogueCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     CustomEvent* impl) {
   ASSERT(info.Length() >= 3);
+  if (impl->isBeingDispatched())
+    return;
   v8::Local<v8::Value> detail = info[3];
   if (!detail.IsEmpty())
     storeDetail(ScriptState::current(info.GetIsolate()), impl, info.Holder(),
