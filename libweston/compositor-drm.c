@@ -1206,10 +1206,10 @@ drm_plane_state_coords_for_view(struct drm_plane_state *state,
 				struct weston_view *ev)
 {
 	struct drm_output *output = state->output;
-	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
+	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
 	pixman_region32_t dest_rect, src_rect;
 	pixman_box32_t *box, tbox;
-	wl_fixed_t sx1, sy1, sx2, sy2;
+	float sxf1, syf1, sxf2, syf2;
 
 	/* Update the base weston_plane co-ordinates. */
 	box = pixman_region32_extents(&ev->transform.boundingbox);
@@ -1241,51 +1241,44 @@ drm_plane_state_coords_for_view(struct drm_plane_state *state,
 	pixman_region32_intersect(&src_rect, &ev->transform.boundingbox,
 				  &output->base.region);
 	box = pixman_region32_extents(&src_rect);
+	weston_view_from_global_float(ev, box->x1, box->y1, &sxf1, &syf1);
+	weston_surface_to_buffer_float(ev->surface, sxf1, syf1, &sxf1, &syf1);
+	weston_view_from_global_float(ev, box->x2, box->y2, &sxf2, &syf2);
+	weston_surface_to_buffer_float(ev->surface, sxf2, syf2, &sxf2, &syf2);
+	pixman_region32_fini(&src_rect);
 
-	/* Accounting for any transformations made to this particular surface
-	 * view, find the source rectangle to use. */
-	weston_view_from_global_fixed(ev,
-				      wl_fixed_from_int(box->x1),
-				      wl_fixed_from_int(box->y1),
-				      &sx1, &sy1);
-	weston_view_from_global_fixed(ev,
-				      wl_fixed_from_int(box->x2),
-				      wl_fixed_from_int(box->y2),
-				      &sx2, &sy2);
+	/* Buffer transforms may mean that x2 is to the left of x1, and/or that
+	 * y2 is above y1. */
+	if (sxf2 < sxf1) {
+		double tmp = sxf1;
+		sxf1 = sxf2;
+		sxf2 = tmp;
+	}
+	if (syf2 < syf1) {
+		double tmp = syf1;
+		syf1 = syf2;
+		syf2 = tmp;
+	}
+
+	/* Shift from S23.8 wl_fixed to U16.16 KMS fixed-point encoding. */
+	state->src_x = wl_fixed_from_double(sxf1) << 8;
+	state->src_y = wl_fixed_from_double(syf1) << 8;
+	state->src_w = wl_fixed_from_double(sxf2 - sxf1) << 8;
+	state->src_h = wl_fixed_from_double(syf2 - syf1) << 8;
 
 	/* Clamp our source co-ordinates to surface bounds; it's possible
 	 * for intermediate translations to give us slightly incorrect
 	 * co-ordinates if we have, for example, multiple zooming
 	 * transformations. View bounding boxes are also explicitly rounded
 	 * greedily. */
-	if (sx1 < 0)
-		sx1 = 0;
-	if (sy1 < 0)
-		sy1 = 0;
-	if (sx2 > wl_fixed_from_int(ev->surface->width))
-		sx2 = wl_fixed_from_int(ev->surface->width);
-	if (sy2 > wl_fixed_from_int(ev->surface->height))
-		sy2 = wl_fixed_from_int(ev->surface->height);
-
-	tbox.x1 = sx1;
-	tbox.y1 = sy1;
-	tbox.x2 = sx2;
-	tbox.y2 = sy2;
-	pixman_region32_fini(&src_rect);
-
-	/* Apply viewport transforms in reverse, to get the source co-ordinates
-	 * in buffer space. */
-	tbox = weston_transformed_rect(wl_fixed_from_int(ev->surface->width),
-				       wl_fixed_from_int(ev->surface->height),
-				       viewport->buffer.transform,
-				       viewport->buffer.scale,
-				       tbox);
-
-	/* Shift from S23.8 wl_fixed to U16.16 KMS fixed-point encoding. */
-	state->src_x = tbox.x1 << 8;
-	state->src_y = tbox.y1 << 8;
-	state->src_w = (tbox.x2 - tbox.x1) << 8;
-	state->src_h = (tbox.y2 - tbox.y1) << 8;
+	if (state->src_x < 0)
+		state->src_x = 0;
+	if (state->src_y < 0)
+		state->src_y = 0;
+	if (state->src_w > (uint32_t) ((buffer->width << 16) - state->src_x))
+		state->src_w = (buffer->width << 16) - state->src_x;
+	if (state->src_h > (uint32_t) ((buffer->height << 16) - state->src_y))
+		state->src_h = (buffer->height << 16) - state->src_y;
 }
 
 /**
