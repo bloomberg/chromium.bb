@@ -58,6 +58,14 @@ ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {
   g_child_memory_coordinator = nullptr;
 }
 
+void ChildMemoryCoordinatorImpl::PurgeMemory() {
+  base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
+  // TODO(bashi): Remove following notification when all clients implement
+  // OnPurgeMemory();
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
+      base::MemoryState::SUSPENDED);
+}
+
 void ChildMemoryCoordinatorImpl::OnStateChange(mojom::MemoryState state) {
   base::MemoryState base_state = ToBaseMemoryState(state);
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("memory-infra"),

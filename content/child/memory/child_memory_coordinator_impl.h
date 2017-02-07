@@ -35,6 +35,9 @@ class CONTENT_EXPORT ChildMemoryCoordinatorImpl
                              ChildMemoryCoordinatorDelegate* delegate);
   ~ChildMemoryCoordinatorImpl() override;
 
+  // Requests purging memory to clients.
+  void PurgeMemory();
+
   // mojom::ChildMemoryCoordinator implementations:
   void OnStateChange(mojom::MemoryState state) override;
 

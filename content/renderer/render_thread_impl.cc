@@ -1670,10 +1670,7 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
     return;
 
   if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend)) {
-    // TODO(tasak): After enabling MemoryCoordinator, remove this Notify
-    // and follow MemoryCoordinator's request.
-    base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
-        base::MemoryState::SUSPENDED);
+    memory_coordinator_->PurgeMemory();
   }
   // Since purging is not a synchronous task (e.g. v8 GC, oilpan GC, ...),
   // we need to wait until the task is finished. So wait 15 seconds and
