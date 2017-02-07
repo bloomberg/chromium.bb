@@ -282,6 +282,9 @@ NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
     personal_hosts.insert(tile.url.host());
 
   for (const auto& whitelist : supervisor_->whitelists()) {
+    if (whitelist_tiles.size() >= num_whitelist_tiles)
+      break;
+
     // Skip blacklisted sites.
     if (top_sites_ && top_sites_->IsBlacklisted(whitelist.entry_point))
       continue;
@@ -300,10 +303,7 @@ NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
     tile.url = whitelist.entry_point;
     tile.source = NTPTileSource::WHITELIST;
     tile.whitelist_icon_path = whitelist.large_icon_path;
-
     whitelist_tiles.push_back(std::move(tile));
-    if (whitelist_tiles.size() >= num_whitelist_tiles)
-      break;
   }
 
   return whitelist_tiles;
