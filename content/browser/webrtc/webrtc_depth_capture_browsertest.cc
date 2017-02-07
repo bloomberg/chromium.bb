@@ -17,6 +17,10 @@ namespace {
 
 static const char kGetDepthStreamAndCallCreateImageBitmap[] =
     "getDepthStreamAndCallCreateImageBitmap";
+static const char kGetDepthStreamAndCameraCalibration[] =
+    "getDepthStreamAndCameraCalibration";
+static const char kGetBothStreamsAndCheckForFeaturesPresence[] =
+    "getBothStreamsAndCheckForFeaturesPresence";
 
 void RemoveSwitchFromCommandLine(base::CommandLine* command_line,
                                  const std::string& switch_value) {
@@ -72,6 +76,38 @@ IN_PROC_BROWSER_TEST_F(WebRtcDepthCaptureBrowserTest,
 
   ExecuteJavascriptAndWaitForOk(base::StringPrintf(
       "%s({video: true});", kGetDepthStreamAndCallCreateImageBitmap));
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcDepthCaptureBrowserTest,
+                       GetDepthStreamAndCameraCalibration) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII("--enable-blink-features",
+                                  "MediaGetSettings,MediaCaptureDepth");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(
+      embedded_test_server()->GetURL("/media/getusermedia-depth-capture.html"));
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk(base::StringPrintf(
+      "%s({video: true});", kGetDepthStreamAndCameraCalibration));
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcDepthCaptureBrowserTest,
+                       GetBothStreamsAndCheckForFeaturesPresence) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII("--enable-blink-features",
+                                  "MediaGetSettings,MediaCaptureDepth");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(
+      embedded_test_server()->GetURL("/media/getusermedia-depth-capture.html"));
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk(base::StringPrintf(
+      "%s({video: true});", kGetBothStreamsAndCheckForFeaturesPresence));
 }
 
 }  // namespace content

@@ -231,6 +231,11 @@ struct WebMediaTrackConstraintSet {
   StringConstraint deviceId;
   BooleanConstraint disableLocalEcho;
   StringConstraint groupId;
+  // https://w3c.github.io/mediacapture-depth/#mediatrackconstraints
+  DoubleConstraint depthNear;
+  DoubleConstraint depthFar;
+  DoubleConstraint focalLengthX;
+  DoubleConstraint focalLengthY;
   // Constraints not exposed in Blink at the moment, only through
   // the legacy name interface.
   StringConstraint mediaStreamSource;  // tab, screen, desktop, system

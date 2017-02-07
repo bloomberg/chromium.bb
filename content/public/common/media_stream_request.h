@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/video_facing.h"
+#include "media/capture/video/video_capture_device_descriptor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -68,6 +69,9 @@ enum MediaStreamRequestResult {
   MEDIA_DEVICE_KILL_SWITCH_ON = 13,
   NUM_MEDIA_REQUEST_RESULTS
 };
+
+using CameraCalibration =
+    media::VideoCaptureDeviceDescriptor::CameraCalibration;
 
 // Convenience predicates to determine whether the given type represents some
 // audio or some video device.
@@ -161,6 +165,9 @@ struct CONTENT_EXPORT MediaStreamDevice {
   // exists (e.g. webcam w/mic), then the value of this member will be all
   // zeros.
   AudioDeviceParameters matched_output;
+
+  // This field is optional and available only for some camera models.
+  base::Optional<CameraCalibration> camera_calibration;
 };
 
 class CONTENT_EXPORT MediaStreamDevices

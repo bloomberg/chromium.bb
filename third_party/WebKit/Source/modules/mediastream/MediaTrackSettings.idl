@@ -18,4 +18,13 @@ dictionary MediaTrackSettings {
     long channelCount;
     DOMString deviceId;
     DOMString groupId;
+    // Media Capture Depth Stream Extensions
+    // https://w3c.github.io/mediacapture-depth/#mediatracksettings-dictionary
+    // TODO(aleksandar.stojiljkovic): depthNear, depthFar, focalLengthX and
+    // focalLengthY attributes should be declared as partial dictionary but IDL
+    // parser can't support it yet. Please see: http://crbug.com/579896.
+    [RuntimeEnabled=MediaCaptureDepth] double depthNear;
+    [RuntimeEnabled=MediaCaptureDepth] double depthFar;
+    [RuntimeEnabled=MediaCaptureDepth] double focalLengthX;
+    [RuntimeEnabled=MediaCaptureDepth] double focalLengthY;
 };

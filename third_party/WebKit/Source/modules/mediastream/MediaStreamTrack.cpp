@@ -228,6 +228,17 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
   if (platformSettings.hasHeight()) {
     settings.setHeight(platformSettings.height);
   }
+  if (RuntimeEnabledFeatures::mediaCaptureDepthEnabled() &&
+      m_component->source()->type() == MediaStreamSource::TypeVideo) {
+    if (platformSettings.hasDepthNear())
+      settings.setDepthNear(platformSettings.depthNear);
+    if (platformSettings.hasDepthFar())
+      settings.setDepthFar(platformSettings.depthFar);
+    if (platformSettings.hasFocalLengthX())
+      settings.setFocalLengthX(platformSettings.focalLengthX);
+    if (platformSettings.hasFocalLengthY())
+      settings.setFocalLengthY(platformSettings.focalLengthY);
+  }
   settings.setDeviceId(platformSettings.deviceId);
   if (platformSettings.hasFacingMode()) {
     switch (platformSettings.facingMode) {

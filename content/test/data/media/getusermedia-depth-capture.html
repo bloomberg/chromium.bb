@@ -36,6 +36,86 @@
     failedCallback);
   }
 
+  function getDepthStreamAndCameraCalibration() {
+    console.log('Calling getDepthStreamAndCameraCalibration');
+    getFake16bitStream().then(function(stream) {
+      var depth_track = stream.getVideoTracks()[0];
+      if (!depth_track)
+        return failTest("No depth_track");
+      var settings = depth_track.getSettings();
+      if (settings && settings.depthNear == 0 && settings.depthFar == 65.535 &&
+          settings.focalLengthX == 135.0 &&  settings.focalLengthY == 135.6) {
+        reportTestSuccess();
+      } else {
+        failTest("Unexpected depth_track settings:" + JSON.stringify(settings));
+      }
+    },
+    failedCallback);
+  }
+
+  function getBothStreamsAndCheckForFeaturesPresence() {
+    console.log('Calling getBothStreamsAndCheckForFeaturesPresence');
+    getConstraintsForDevice("fake_device_0")
+    .then(function(constraints) {
+      if (!constraints)
+        return failTest("No fake video device found.");
+      return navigator.mediaDevices.getUserMedia(constraints);
+    }).then(function(video_stream) {
+      getFake16bitStream().then(function(depth_stream) {
+        if (video_stream.getVideoTracks().length != 1) {
+          return failTest("Expected one video track, got " +
+                          video_stream.getVideoTracks().length);
+        }
+        if (depth_stream.getVideoTracks().length != 1) {
+          return failTest("Expected one depth track, got " +
+                          depth_stream.getVideoTracks().length);
+        }
+        var video_track = video_stream.getVideoTracks()[0];
+        var depth_track = depth_stream.getVideoTracks()[0];
+
+        // We have specified the fields in getUserMedia constraints. Expect that
+        // both tracks have them in constraints and settings.
+        var expected_fields = ["deviceId", "height", "width"];
+        for (var field in expected_fields) {
+          var expected_field = expected_fields[field];
+          if (video_track.getSettings()[expected_field] === undefined) {
+            return failTest(expected_field +
+                            " missing from video track getSettings().");
+          }
+          if (video_track.getConstraints()[expected_field] === undefined) {
+            return failTest(expected_field +
+                            " missing from video track getConstraints().");
+          }
+          if (depth_track.getSettings()[expected_field] === undefined) {
+            return failTest(expected_field +
+                            " missing from depth track getSettings().");
+          }
+          if (depth_track.getConstraints()[expected_field] === undefined) {
+            return failTest(expected_field +
+                            " missing from depth track getConstraints().");
+          }
+        }
+
+        var depth_fields = ["depthNear", "depthFar", "focalLengthX",
+                            "focalLengthY"];
+        for (var field in depth_fields) {
+          var depth_field = depth_fields[field];
+          if (video_track.getSettings()[depth_field] !== undefined) {
+            return failTest(depth_field +
+                            " present in video track getSettings().");
+          }
+          if (depth_track.getSettings()[depth_field] === undefined) {
+            return failTest(depth_field +
+                            " missing from depth track getSettings().");
+          }
+        }
+        reportTestSuccess();
+      },
+      failedCallback);
+    },
+    failedCallback);
+  }
+
   function depthStreamToRGBAUint8Texture() {
     console.log('Calling depthStreamToRGBAUint8Texture');
     getFake16bitStream().then(function(stream) {

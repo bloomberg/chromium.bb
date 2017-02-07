@@ -670,6 +670,22 @@ void copyConstraintSet(const MediaTrackConstraintSet& constraintsIn,
     copyStringConstraint(constraintsIn.groupId(), nakedTreatment,
                          constraintBuffer.groupId);
   }
+  if (constraintsIn.hasDepthNear()) {
+    copyDoubleConstraint(constraintsIn.depthNear(), nakedTreatment,
+                         constraintBuffer.depthNear);
+  }
+  if (constraintsIn.hasDepthFar()) {
+    copyDoubleConstraint(constraintsIn.depthFar(), nakedTreatment,
+                         constraintBuffer.depthFar);
+  }
+  if (constraintsIn.hasFocalLengthX()) {
+    copyDoubleConstraint(constraintsIn.focalLengthX(), nakedTreatment,
+                         constraintBuffer.focalLengthX);
+  }
+  if (constraintsIn.hasFocalLengthY()) {
+    copyDoubleConstraint(constraintsIn.focalLengthY(), nakedTreatment,
+                         constraintBuffer.focalLengthY);
+  }
 }
 
 WebMediaConstraints convertConstraintsToWeb(

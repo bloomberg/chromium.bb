@@ -469,6 +469,41 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioAndVideo) {
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 }
 
+TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithDepthVideo) {
+  // Video device on index 1 is depth video capture device.  The number of fake
+  // devices is 2.
+  physical_video_devices_.clear();
+  video_capture_device_factory_->set_number_of_devices(2);
+  video_capture_device_factory_->GetDeviceDescriptors(&physical_video_devices_);
+  // We specify to generate both audio and video stream.
+  StreamControls controls(true, true);
+  std::string source_id = content::GetHMACForMediaDeviceID(
+      browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(), origin_,
+      physical_video_devices_[1].device_id);
+  // |source_id| is related to depth device (the device on index 1). As we can
+  // generate only one video stream using GenerateStreamAndWaitForResult, we
+  // use controls.video.source_id to specify that the stream is depth video.
+  // See also MediaStreamManager::GenerateStream and other tests here.
+  controls.video.device_id = source_id;
+
+  SetupFakeUI(true);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
+
+  // There are two fake devices. We specified the generation and expect to get
+  // one audio and one depth video stream.
+  EXPECT_EQ(host_->audio_devices_.size(), 1u);
+  EXPECT_EQ(host_->video_devices_.size(), 1u);
+  // host_->video_devices_[0] contains the information about generated video
+  // stream device (the depth device).
+  const base::Optional<CameraCalibration> calibration =
+      host_->video_devices_[0].device.camera_calibration;
+  EXPECT_TRUE(calibration);
+  EXPECT_EQ(calibration->focal_length_x, 135.0);
+  EXPECT_EQ(calibration->focal_length_y, 135.6);
+  EXPECT_EQ(calibration->depth_near, 0.0);
+  EXPECT_EQ(calibration->depth_far, 65.535);
+}
+
 // This test generates two streams with video only using the same render frame
 // id. The same capture device with the same device and session id is expected
 // to be used.

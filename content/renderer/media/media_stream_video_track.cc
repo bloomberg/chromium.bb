@@ -301,31 +301,39 @@ void MediaStreamVideoTrack::Stop() {
 
 void MediaStreamVideoTrack::getSettings(
     blink::WebMediaStreamTrack::Settings& settings) {
-  if (source_) {
-    const media::VideoCaptureFormat* format = source_->GetCurrentFormat();
-    if (format) {
-      settings.frameRate = format->frame_rate;
-      settings.width = format->frame_size.width();
-      settings.height = format->frame_size.height();
-    }
-    switch (source_->device_info().device.video_facing) {
-      case media::MEDIA_VIDEO_FACING_NONE:
-        settings.facingMode = blink::WebMediaStreamTrack::FacingMode::None;
-        break;
-      case media::MEDIA_VIDEO_FACING_USER:
-        settings.facingMode = blink::WebMediaStreamTrack::FacingMode::User;
-        break;
-      case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
-        settings.facingMode =
-            blink::WebMediaStreamTrack::FacingMode::Environment;
-        break;
-      default:
-        settings.facingMode = blink::WebMediaStreamTrack::FacingMode::None;
-        break;
-    }
-  }
   // TODO(hta): Extract the real value.
   settings.deviceId = blink::WebString("video device ID");
+  if (!source_)
+    return;
+
+  const media::VideoCaptureFormat* format = source_->GetCurrentFormat();
+  if (format) {
+    settings.frameRate = format->frame_rate;
+    settings.width = format->frame_size.width();
+    settings.height = format->frame_size.height();
+  }
+  switch (source_->device_info().device.video_facing) {
+    case media::MEDIA_VIDEO_FACING_NONE:
+      settings.facingMode = blink::WebMediaStreamTrack::FacingMode::None;
+      break;
+    case media::MEDIA_VIDEO_FACING_USER:
+      settings.facingMode = blink::WebMediaStreamTrack::FacingMode::User;
+      break;
+    case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
+      settings.facingMode = blink::WebMediaStreamTrack::FacingMode::Environment;
+      break;
+    default:
+      settings.facingMode = blink::WebMediaStreamTrack::FacingMode::None;
+      break;
+  }
+  const base::Optional<CameraCalibration> calibration =
+      source_->device_info().device.camera_calibration;
+  if (calibration) {
+    settings.depthNear = calibration->depth_near;
+    settings.depthFar = calibration->depth_far;
+    settings.focalLengthX = calibration->focal_length_x;
+    settings.focalLengthY = calibration->focal_length_y;
+  }
 }
 
 void MediaStreamVideoTrack::OnReadyStateChanged(

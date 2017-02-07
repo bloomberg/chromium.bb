@@ -48,6 +48,10 @@ class WebMediaStreamTrack {
     bool hasWidth() { return width >= 0; }
     bool hasHeight() { return height >= 0; }
     bool hasFacingMode() { return facingMode != FacingMode::None; }
+    bool hasFocalLengthX() { return focalLengthX >= 0.0; }
+    bool hasFocalLengthY() { return focalLengthY >= 0.0; }
+    bool hasDepthNear() { return depthNear >= 0.0; }
+    bool hasDepthFar() { return depthFar >= 0.0; }
     // The variables are read from
     // MediaStreamTrack::GetSettings only.
     double frameRate = -1.0;
@@ -55,6 +59,11 @@ class WebMediaStreamTrack {
     long height = -1;
     WebString deviceId;
     FacingMode facingMode = FacingMode::None;
+    // Media Capture Depth Stream Extensions.
+    double focalLengthX = -1.0;
+    double focalLengthY = -1.0;
+    double depthNear = -1.0;
+    double depthFar = -1.0;
   };
 
   class TrackData {

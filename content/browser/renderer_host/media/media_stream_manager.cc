@@ -207,17 +207,6 @@ MediaDeviceType ConvertToMediaDeviceType(MediaStreamType stream_type) {
   return NUM_MEDIA_DEVICE_TYPES;
 }
 
-MediaStreamDevices ConvertToMediaStreamDevices(
-    MediaStreamType stream_type,
-    const MediaDeviceInfoArray& device_infos) {
-  MediaStreamDevices devices;
-  for (const auto& info : device_infos) {
-    devices.emplace_back(stream_type, info.device_id, info.label);
-  }
-
-  return devices;
-}
-
 }  // namespace
 
 
@@ -945,13 +934,12 @@ void MediaStreamManager::PostRequestToUI(
     if (!fake_ui_)
       fake_ui_.reset(new FakeMediaStreamUIProxy());
 
-    MediaStreamDevices devices;
-    for (const auto& info : enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
-      devices.emplace_back(audio_type, info.device_id, info.label);
-    }
-    for (const auto& info : enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT]) {
-      devices.emplace_back(video_type, info.device_id, info.label);
-    }
+    MediaStreamDevices devices = ConvertToMediaStreamDevices(
+        request->audio_type(), enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]);
+    MediaStreamDevices video_devices = ConvertToMediaStreamDevices(
+        request->video_type(), enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT]);
+    devices.reserve(devices.size() + video_devices.size());
+    devices.insert(devices.end(), video_devices.begin(), video_devices.end());
 
     fake_ui_->SetAvailableDevices(devices);
 
@@ -1748,5 +1736,22 @@ void MediaStreamManager::FlushVideoCaptureThreadForTesting() {
   video_capture_thread_.FlushForTesting();
 }
 #endif
+
+MediaStreamDevices MediaStreamManager::ConvertToMediaStreamDevices(
+    MediaStreamType stream_type,
+    const MediaDeviceInfoArray& device_infos) {
+  MediaStreamDevices devices;
+  for (const auto& info : device_infos)
+    devices.emplace_back(stream_type, info.device_id, info.label);
+
+  if (stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
+    return devices;
+
+  for (auto& device : devices) {
+    device.camera_calibration =
+        video_capture_manager()->GetCameraCalibration(device.id);
+  }
+  return devices;
+}
 
 }  // namespace content

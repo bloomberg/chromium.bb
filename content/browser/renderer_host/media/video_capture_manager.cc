@@ -1091,6 +1091,9 @@ void VideoCaptureManager::OnDevicesInfoEnumerated(
   for (const auto& it : devices_info_cache_) {
     devices.emplace_back(it.descriptor);
     descriptors_and_formats.emplace_back(it.descriptor, it.supported_formats);
+  }
+
+  if (!descriptors_and_formats.empty()) {
     MediaInternals::GetInstance()->UpdateVideoCaptureDeviceCapabilities(
         descriptors_and_formats);
   }
@@ -1285,6 +1288,14 @@ void VideoCaptureManager::DoTakePhoto(
   device_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoCaptureDevice::TakePhoto,
                             base::Unretained(device), base::Passed(&callback)));
+}
+
+base::Optional<CameraCalibration> VideoCaptureManager::GetCameraCalibration(
+    const std::string& device_id) {
+  VideoCaptureManager::DeviceInfo* info = GetDeviceInfoById(device_id);
+  if (!info)
+    return base::Optional<CameraCalibration>();
+  return info->descriptor.camera_calibration;
 }
 
 #if defined(OS_ANDROID)

@@ -139,6 +139,7 @@ LongTaskObserver status=experimental, origin_trial_feature_name=LongTaskObserver
 FractionalScrollOffsets
 LoadingWithMojo
 MediaCapture
+MediaCaptureDepth status=experimental
 MediaCaptureFromCanvas status=stable
 MediaCaptureFromVideo status=experimental
 MediaConstraints status=stable

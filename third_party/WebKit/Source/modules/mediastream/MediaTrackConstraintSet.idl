@@ -27,4 +27,13 @@ dictionary MediaTrackConstraintSet {
     // with https://www.w3.org/TR/2013/WD-mediacapture-streams-20130903/
     Dictionary mandatory;
     sequence<Dictionary> _optional;
+    // Media Capture Depth Stream Extensions
+    // https://w3c.github.io/mediacapture-depth/#mediatrackconstraints
+    // TODO(aleksandar.stojiljkovic): depthNear, depthFar, focalLengthX and
+    // focalLengthY attributes should be declared as partial dictionary but IDL
+    // parser can't support it yet. Please see: http://crbug.com/579896.
+    [RuntimeEnabled=MediaCaptureDepth] ConstrainDouble depthNear;
+    [RuntimeEnabled=MediaCaptureDepth] ConstrainDouble depthFar;
+    [RuntimeEnabled=MediaCaptureDepth] ConstrainDouble focalLengthX;
+    [RuntimeEnabled=MediaCaptureDepth] ConstrainDouble focalLengthY;
 };

@@ -15,11 +15,14 @@
 
 namespace {
 
+static const size_t kDepthDeviceIndex = 1;
+static const char kDepthDeviceId[] = "/dev/video1";
+
 // Factory has one device by default; I420. If there are more, the second device
 // is of Y16 format while the rest are I420.
 media::VideoPixelFormat GetPixelFormat(const std::string& device_id) {
-  return (device_id == "/dev/video1") ? media::PIXEL_FORMAT_Y16
-                                      : media::PIXEL_FORMAT_I420;
+  return (device_id == kDepthDeviceId) ? media::PIXEL_FORMAT_Y16
+                                       : media::PIXEL_FORMAT_I420;
 }
 }
 
@@ -82,6 +85,18 @@ void FakeVideoCaptureDeviceFactory::GetDeviceDescriptors(
 #endif
                                      );
   }
+
+  // Video device on index 1 (kDepthDeviceIndex) is depth video capture device.
+  // Fill the camera calibration information only for it.
+  if (device_descriptors->size() <= kDepthDeviceIndex)
+    return;
+  VideoCaptureDeviceDescriptor& depth_device(
+      (*device_descriptors)[kDepthDeviceIndex]);
+  depth_device.camera_calibration.emplace();
+  depth_device.camera_calibration->focal_length_x = 135.0;
+  depth_device.camera_calibration->focal_length_y = 135.6;
+  depth_device.camera_calibration->depth_near = 0.0;
+  depth_device.camera_calibration->depth_far = 65.535;
 }
 
 void FakeVideoCaptureDeviceFactory::GetSupportedFormats(

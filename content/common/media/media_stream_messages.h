@@ -53,6 +53,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::StreamDeviceInfo)
   IPC_STRUCT_TRAITS_MEMBER(device.matched_output.sample_rate)
   IPC_STRUCT_TRAITS_MEMBER(device.matched_output.channel_layout)
   IPC_STRUCT_TRAITS_MEMBER(device.matched_output.frames_per_buffer)
+  IPC_STRUCT_TRAITS_MEMBER(device.camera_calibration)
   IPC_STRUCT_TRAITS_MEMBER(session_id)
 IPC_STRUCT_TRAITS_END()
 

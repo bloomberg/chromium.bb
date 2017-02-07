@@ -347,6 +347,22 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   }
 }
 
+TEST_F(FakeVideoCaptureDeviceTest, GetCameraCalibration) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kUseFakeDeviceForMediaStream, "device-count=2");
+  std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors(
+      EnumerateDevices());
+  ASSERT_EQ(2u, descriptors->size());
+  ASSERT_FALSE(descriptors->at(0).camera_calibration);
+  const VideoCaptureDeviceDescriptor& depth_device = descriptors->at(1);
+  EXPECT_EQ("/dev/video1", depth_device.device_id);
+  ASSERT_TRUE(depth_device.camera_calibration);
+  EXPECT_EQ(135.0, depth_device.camera_calibration->focal_length_x);
+  EXPECT_EQ(135.6, depth_device.camera_calibration->focal_length_y);
+  EXPECT_EQ(0.0, depth_device.camera_calibration->depth_near);
+  EXPECT_EQ(65.535, depth_device.camera_calibration->depth_far);
+}
+
 TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   std::unique_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(
       FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS, 30.0));
