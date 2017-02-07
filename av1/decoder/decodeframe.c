@@ -236,9 +236,13 @@ static void read_ext_tx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
 static REFERENCE_MODE read_frame_reference_mode(
     const AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (is_compound_reference_allowed(cm)) {
+#if CONFIG_REF_ADAPT
+    return aom_rb_read_bit(rb) ? REFERENCE_MODE_SELECT : SINGLE_REFERENCE;
+#else
     return aom_rb_read_bit(rb)
                ? REFERENCE_MODE_SELECT
                : (aom_rb_read_bit(rb) ? COMPOUND_REFERENCE : SINGLE_REFERENCE);
+#endif  // CONFIG_REF_ADAPT
   } else {
     return SINGLE_REFERENCE;
   }

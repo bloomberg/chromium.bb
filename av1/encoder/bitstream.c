@@ -4462,10 +4462,14 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 
   if (cpi->allow_comp_inter_inter) {
     const int use_hybrid_pred = cm->reference_mode == REFERENCE_MODE_SELECT;
+#if !CONFIG_REF_ADAPT
     const int use_compound_pred = cm->reference_mode != SINGLE_REFERENCE;
+#endif  // !CONFIG_REF_ADAPT
 
     aom_wb_write_bit(wb, use_hybrid_pred);
+#if !CONFIG_REF_ADAPT
     if (!use_hybrid_pred) aom_wb_write_bit(wb, use_compound_pred);
+#endif  // !CONFIG_REF_ADAPT
   }
 
   write_tile_info(cm, wb);
