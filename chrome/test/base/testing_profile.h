@@ -178,6 +178,13 @@ class TestingProfile : public Profile {
   // Creates the favicon service. Consequent calls would recreate the service.
   void CreateFaviconService();
 
+  // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
+  // This bypasses the BrowserContextDependencyManager, and in particular, it
+  // destroys any previously-created HistoryService. That means any other
+  // KeyedServices that depend on HistoryService may be left with dangling
+  // pointers.
+  // Instead, use Builder::AddTestingFactory to inject your own factories.
+  // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
   // Creates the history service. If |delete_file| is true, the history file is
   // deleted first, then the HistoryService is created. As TestingProfile
   // deletes the directory containing the files used by HistoryService, this
@@ -186,6 +193,12 @@ class TestingProfile : public Profile {
   // for testing error conditions. Returns true on success.
   bool CreateHistoryService(bool delete_file, bool no_db) WARN_UNUSED_RESULT;
 
+  // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
+  // This bypasses the BrowserContextDependencyManager and thus may leave other
+  // KeyedServices with dangling pointers; see above. It's also usually not
+  // necessary to explicitly destroy the HistoryService; it'll be destroyed
+  // along with the TestingProfile anyway.
+  // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
   // Shuts down and nulls out the reference to HistoryService.
   void DestroyHistoryService();
 

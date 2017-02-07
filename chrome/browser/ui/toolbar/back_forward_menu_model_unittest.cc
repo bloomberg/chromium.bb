@@ -565,6 +565,4 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
 
   // Make sure the browser deconstructor doesn't have problems.
   browser->tab_strip_model()->CloseAllTabs();
-  // This is required to prevent the message loop from hanging.
-  profile()->DestroyHistoryService();
 }

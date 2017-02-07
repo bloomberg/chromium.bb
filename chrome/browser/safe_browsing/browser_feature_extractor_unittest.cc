@@ -97,7 +97,6 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     extractor_.reset();
     host_.reset();
     db_manager_ = NULL;
-    profile()->DestroyHistoryService();
     ChromeRenderViewHostTestHarness::TearDown();
     ASSERT_EQ(0, num_pending_);
   }

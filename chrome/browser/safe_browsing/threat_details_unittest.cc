@@ -207,11 +207,6 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
                                                 false /* no_db */));
   }
 
-  void TearDown() override {
-    profile()->DestroyHistoryService();
-    ChromeRenderViewHostTestHarness::TearDown();
-  }
-
   static bool ResourceLessThan(
       const ClientSafeBrowsingReportRequest::Resource* lhs,
       const ClientSafeBrowsingReportRequest::Resource* rhs) {
