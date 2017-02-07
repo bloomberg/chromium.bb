@@ -529,21 +529,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd', 'intel'], bug=679691)
 
     # Mac Intel
-
-    # ASAN only
-    self.Fail(
-      'conformance/more/functions/copyTexImage2D.html',
-      ['mac', 'intel', 'asan'], bug=680845)
-    self.Fail(
-      'conformance/more/functions/copyTexSubImage2D.html',
-      ['mac', 'intel', 'asan'], bug=680845)
-    self.Fail(
-      'deqp/functional/gles3/negativetextureapi.html',
-      ['mac', 'intel', 'asan'], bug=680845)
-    self.Fail(
-      'deqp/functional/gles3/texturespecification/basic_copyteximage2d.html',
-      ['mac', 'intel', 'asan'], bug=680845)
-
     self.Fail(
       'conformance2/textures/canvas/tex-2d-rgb9_e5-rgb-float.html',
       ['sierra', 'intel'], bug=663188)
@@ -667,6 +652,17 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Fixed on OSX 10.11
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac', 'intel'], bug=618464)
+
+    # Mac ASAN only
+    self.Fail('conformance/more/functions/copyTexImage2D.html',
+        ['mac', 'asan'], bug=681641)
+    self.Fail('conformance/more/functions/copyTexSubImage2D.html',
+        ['mac', 'asan'], bug=681641)
+    self.Fail('deqp/functional/gles3/negativetextureapi.html',
+        ['mac', 'asan'], bug=681641)
+    self.Fail(
+        'deqp/functional/gles3/texturespecification/basic_copyteximage2d.html',
+        ['mac', 'asan'], bug=681641)
 
     # Linux only.
     self.Flaky('conformance/textures/video/' +
