@@ -293,7 +293,7 @@ def GenerateAlertsSummary(db, builds=None,
                  len(slaves), len(slave_stages))
 
     # Look for failing and inflight (signifying timeouts) slave builds.
-    for slave in slaves:
+    for slave in sorted(slaves, key=lambda s: s['builder_name']):
       alert = GenerateBuildAlert(slave, slave_stages, exceptions,
                                  build_tuple[2], now,
                                  logdog_client, milo_client)
