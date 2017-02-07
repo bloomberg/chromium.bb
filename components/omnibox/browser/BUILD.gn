@@ -3,48 +3,25 @@
 # found in the LICENSE file.
 
 import("//third_party/protobuf/proto_library.gni")
+import("//ui/vector_icons/vector_icons.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-action("aggregate_vector_icons") {
-  visibility = [ ":*" ]
-
-  script = "//ui/gfx/vector_icons/aggregate_vector_icons.py"
+aggregate_vector_icons("omnibox_vector_icons") {
+  icon_directory = "vector_icons"
 
   icons = [
-    "vector_icons/calculator.1x.icon",
-    "vector_icons/calculator.icon",
-    "vector_icons/extension_app.1x.icon",
-    "vector_icons/extension_app.icon",
-    "vector_icons/http.icon",
-    "vector_icons/keyword_search.icon",
-    "vector_icons/search.icon",
-    "vector_icons/star.1x.icon",
-    "vector_icons/star.icon",
-  ]
-
-  output_cc = "$target_gen_dir/vector_icons.cc"
-  output_h = "$target_gen_dir/vector_icons.h"
-
-  inputs = icons
-  inputs += [
-    "vector_icons/vector_icons.cc.template",
-    "vector_icons/vector_icons.h.template",
-  ]
-  outputs = [
-    output_cc,
-    output_h,
-  ]
-
-  response_file_contents = rebase_path(icons, root_build_dir)
-
-  args = [
-    "--working_directory=" + rebase_path("./vector_icons"),
-    "--file_list={{response_file_name}}",
-    "--output_cc=" + rebase_path(output_cc, root_build_dir),
-    "--output_h=" + rebase_path(output_h, root_build_dir),
+    "calculator.1x.icon",
+    "calculator.icon",
+    "extension_app.1x.icon",
+    "extension_app.icon",
+    "http.icon",
+    "keyword_search.icon",
+    "search.icon",
+    "star.1x.icon",
+    "star.icon",
   ]
 }
 
@@ -188,8 +165,8 @@ static_library("browser") {
   ]
 
   if (!is_android && !is_ios) {
-    sources += get_target_outputs(":aggregate_vector_icons")
-    deps += [ ":aggregate_vector_icons" ]
+    sources += get_target_outputs(":omnibox_vector_icons")
+    deps += [ ":omnibox_vector_icons" ]
   }
 
   # TODO(brettw) Fix the include cycle and remove this line.
