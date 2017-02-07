@@ -225,7 +225,7 @@ void CandidateView::SetHighlighted(bool highlighted) {
   SchedulePaint();
 }
 
-void CandidateView::StateChanged() {
+void CandidateView::StateChanged(ButtonState old_state) {
   shortcut_label_->SetEnabled(state() != STATE_DISABLED);
   if (state() == STATE_PRESSED)
     SetHighlighted(true);

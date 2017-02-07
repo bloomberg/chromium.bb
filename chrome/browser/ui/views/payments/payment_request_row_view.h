@@ -18,7 +18,7 @@ class PaymentRequestRowView : public views::CustomButton {
   ~PaymentRequestRowView() override;
 
   // views::CustomButton:
-  void StateChanged() override;
+  void StateChanged(ButtonState old_state) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestRowView);

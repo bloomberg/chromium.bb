@@ -41,7 +41,7 @@ class UI_CHROMEOS_EXPORT CandidateView : public views::CustomButton {
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, ShortcutSettingTest);
 
   // Overridden from views::CustomButton:
-  void StateChanged() override;
+  void StateChanged(ButtonState old_state) override;
 
   // Overridden from View:
   const char* GetClassName() const override;

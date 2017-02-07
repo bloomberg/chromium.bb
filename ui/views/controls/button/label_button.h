@@ -129,7 +129,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // CustomButton:
-  void StateChanged() override;
+  void StateChanged(ButtonState old_state) override;
 
   // Fills |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;

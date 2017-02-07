@@ -142,7 +142,7 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // the current node_data. CustomButton's implementation of StateChanged() does
   // nothing; this method is provided for subclasses that wish to do something
   // on state changes.
-  virtual void StateChanged();
+  virtual void StateChanged(ButtonState old_state);
 
   // Returns true if the event is one that can trigger notifying the listener.
   // This implementation returns true if the left mouse button is down.

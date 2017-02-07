@@ -345,7 +345,7 @@ bool MenuButton::ShouldEnterPushedState(const ui::Event& event) {
   return IsTriggerableEventType(event);
 }
 
-void MenuButton::StateChanged() {
+void MenuButton::StateChanged(ButtonState old_state) {
   if (pressed_lock_count_ != 0) {
     // The button's state was changed while it was supposed to be locked in a
     // pressed state. This shouldn't happen, but conceivably could if a caller
@@ -356,7 +356,7 @@ void MenuButton::StateChanged() {
     else if (state() == STATE_DISABLED)
       should_disable_after_press_ = true;
   } else {
-    LabelButton::StateChanged();
+    LabelButton::StateChanged(old_state);
   }
 }
 

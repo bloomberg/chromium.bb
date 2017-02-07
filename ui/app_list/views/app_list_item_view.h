@@ -125,7 +125,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
                               ui::MenuSourceType source_type) override;
 
   // views::CustomButton overrides:
-  void StateChanged() override;
+  void StateChanged(ButtonState old_state) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
 
   // views::View overrides:

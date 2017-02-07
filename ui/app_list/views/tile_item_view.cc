@@ -89,7 +89,7 @@ void TileItemView::SetTitle(const base::string16& title) {
   SetAccessibleName(title);
 }
 
-void TileItemView::StateChanged() {
+void TileItemView::StateChanged(ButtonState old_state) {
   UpdateBackgroundColor();
 }
 

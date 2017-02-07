@@ -458,7 +458,7 @@ std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()
                    gfx::RectF(image()->GetMirroredBounds()).CenterPoint());
 }
 
-void LabelButton::StateChanged() {
+void LabelButton::StateChanged(ButtonState old_state) {
   const gfx::Size previous_image_size(image_->GetPreferredSize());
   UpdateImage();
   ResetLabelEnabledColor();

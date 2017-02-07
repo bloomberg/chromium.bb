@@ -20,7 +20,7 @@ PaymentRequestRowView::PaymentRequestRowView(
 PaymentRequestRowView::~PaymentRequestRowView() {}
 
 // views::CustomButton:
-void PaymentRequestRowView::StateChanged() {
+void PaymentRequestRowView::StateChanged(ButtonState old_state) {
   if (state() == views::Button::STATE_HOVERED ||
       state() == views::Button::STATE_PRESSED) {
     set_background(views::Background::CreateSolidBackground(SK_ColorLTGRAY));

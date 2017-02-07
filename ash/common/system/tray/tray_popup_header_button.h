@@ -34,7 +34,7 @@ class ASH_EXPORT TrayPopupHeaderButton : public views::ToggleImageButton {
   gfx::Size GetPreferredSize() const override;
 
   // Overridden from views::CustomButton:
-  void StateChanged() override;
+  void StateChanged(ButtonState old_state) override;
 
   void Initialize(const gfx::ImageSkia& icon, int accessible_name_id);
 

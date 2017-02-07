@@ -135,8 +135,8 @@ std::unique_ptr<views::InkDropRipple> MdTextButton::CreateInkDropRipple()
           ink_drop_visible_opacity()));
 }
 
-void MdTextButton::StateChanged() {
-  LabelButton::StateChanged();
+void MdTextButton::StateChanged(ButtonState old_state) {
+  LabelButton::StateChanged(old_state);
   UpdateColors();
 }
 

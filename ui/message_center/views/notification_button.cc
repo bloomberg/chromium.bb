@@ -109,7 +109,7 @@ void NotificationButton::ViewHierarchyChanged(
   views::View::ViewHierarchyChanged(details);
 }
 
-void NotificationButton::StateChanged() {
+void NotificationButton::StateChanged(ButtonState old_state) {
   if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
     set_background(views::Background::CreateSolidBackground(
         message_center::kHoveredButtonBackgroundColor));

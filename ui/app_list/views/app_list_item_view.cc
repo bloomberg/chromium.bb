@@ -306,7 +306,7 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
                                   views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
-void AppListItemView::StateChanged() {
+void AppListItemView::StateChanged(ButtonState old_state) {
   if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
     shadow_animator_.animation()->Show();
     // Show the hover/tap highlight: for tap, lighter highlight replaces darker

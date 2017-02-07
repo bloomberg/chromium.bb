@@ -37,7 +37,7 @@ class NotificationButton : public views::CustomButton {
       const ViewHierarchyChangedDetails& details) override;
 
   // Overridden from views::CustomButton:
-  void StateChanged() override;
+  void StateChanged(ButtonState old_state) override;
 
  private:
   views::ImageView* icon_;

@@ -450,7 +450,7 @@ class EditableProfilePhoto : public views::LabelButton {
 
  private:
   // views::CustomButton:
-  void StateChanged() override {
+  void StateChanged(ButtonState old_state) override {
     if (photo_overlay_) {
       photo_overlay_->SetVisible(
           state() == STATE_PRESSED || state() == STATE_HOVERED || HasFocus());

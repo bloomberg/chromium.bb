@@ -100,8 +100,9 @@ void CustomButton::SetState(ButtonState state) {
     }
   }
 
+  ButtonState old_state = state_;
   state_ = state;
-  StateChanged();
+  StateChanged(old_state);
   SchedulePaint();
 }
 
@@ -437,8 +438,7 @@ CustomButton::CustomButton(ButtonListener* listener)
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);
 }
 
-void CustomButton::StateChanged() {
-}
+void CustomButton::StateChanged(ButtonState old_state) {}
 
 bool CustomButton::IsTriggerableEvent(const ui::Event& event) {
   return event.type() == ui::ET_GESTURE_TAP_DOWN ||

@@ -126,7 +126,7 @@ class VolumeButton : public ButtonListenerActionableView {
   }
 
   // views::CustomButton:
-  void StateChanged() override {
+  void StateChanged(ButtonState old_state) override {
     if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
       if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
         set_background(

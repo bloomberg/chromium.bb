@@ -263,7 +263,7 @@ class InfoIcon : public views::ImageButton {
   }
 
   // views::CustomButton
-  void StateChanged() override {
+  void StateChanged(ButtonState old_state) override {
     if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
       set_background(views::Background::CreateSolidBackground(
           kTrayPopupHoverBackgroundColor));

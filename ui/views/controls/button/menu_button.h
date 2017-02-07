@@ -96,7 +96,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // Overridden from CustomButton:
   bool IsTriggerableEvent(const ui::Event& event) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
-  void StateChanged() override;
+  void StateChanged(ButtonState old_state) override;
   void NotifyClick(const ui::Event& event) override;
 
   // Offset of the associated menu position.
