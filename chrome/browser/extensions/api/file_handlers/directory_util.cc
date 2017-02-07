@@ -13,7 +13,8 @@
 #include "storage/browser/fileapi/file_system_url.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/file_handlers/non_native_file_system_delegate.h"
 #endif
 
 namespace extensions {
@@ -40,8 +41,10 @@ void EntryIsDirectory(Profile* profile,
                       const base::FilePath& path,
                       const base::Callback<void(bool)>& callback) {
 #if defined(OS_CHROMEOS)
-  if (file_manager::util::IsUnderNonNativeLocalPath(profile, path)) {
-    file_manager::util::IsNonNativeLocalPathDirectory(profile, path, callback);
+  NonNativeFileSystemDelegate* delegate =
+      ExtensionsAPIClient::Get()->GetNonNativeFileSystemDelegate();
+  if (delegate && delegate->IsUnderNonNativeLocalPath(profile, path)) {
+    delegate->IsNonNativeLocalPathDirectory(profile, path, callback);
     return;
   }
 #endif

@@ -16,7 +16,8 @@
 #include "storage/browser/fileapi/file_system_url.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/file_handlers/non_native_file_system_delegate.h"
 #endif
 
 using content::BrowserThread;
@@ -133,11 +134,13 @@ void GetMimeTypeForLocalPath(
     const base::FilePath& local_path,
     const base::Callback<void(const std::string&)>& callback) {
 #if defined(OS_CHROMEOS)
-  if (file_manager::util::IsUnderNonNativeLocalPath(profile, local_path)) {
+  NonNativeFileSystemDelegate* delegate =
+      ExtensionsAPIClient::Get()->GetNonNativeFileSystemDelegate();
+  if (delegate && delegate->IsUnderNonNativeLocalPath(profile, local_path)) {
     // For non-native files, try to get the MIME type from metadata. If not
     // available, then try to guess from the extension. Never sniff (because
     // it can be very slow).
-    file_manager::util::GetNonNativeLocalPathMimeType(
+    delegate->GetNonNativeLocalPathMimeType(
         profile,
         local_path,
         base::Bind(&OnGetMimeTypeFromMetadataForNonNativeLocalPathCompleted,

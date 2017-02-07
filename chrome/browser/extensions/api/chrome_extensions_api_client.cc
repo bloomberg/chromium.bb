@@ -35,6 +35,7 @@
 #include "printing/features/features.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/api/file_handlers/non_native_file_system_delegate_chromeos.h"
 #include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
 #include "chrome/browser/extensions/clipboard_extension_helper_chromeos.h"
 #endif
@@ -168,6 +169,15 @@ MetricsPrivateDelegate* ChromeExtensionsAPIClient::GetMetricsPrivateDelegate() {
 }
 
 #if defined(OS_CHROMEOS)
+NonNativeFileSystemDelegate*
+ChromeExtensionsAPIClient::GetNonNativeFileSystemDelegate() {
+  if (!non_native_file_system_delegate_) {
+    non_native_file_system_delegate_ =
+        base::MakeUnique<NonNativeFileSystemDelegateChromeOS>();
+  }
+  return non_native_file_system_delegate_.get();
+}
+
 void ChromeExtensionsAPIClient::SaveImageDataToClipboard(
     const std::vector<char>& image_data,
     api::clipboard::ImageType type,

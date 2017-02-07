@@ -218,6 +218,8 @@ static_library("extensions") {
     "api/file_handlers/directory_util.h",
     "api/file_handlers/mime_util.cc",
     "api/file_handlers/mime_util.h",
+    "api/file_handlers/non_native_file_system_delegate_chromeos.cc",
+    "api/file_handlers/non_native_file_system_delegate_chromeos.h",
     "api/file_system/file_system_api.cc",
     "api/file_system/file_system_api.h",
     "api/font_settings/font_settings_api.cc",

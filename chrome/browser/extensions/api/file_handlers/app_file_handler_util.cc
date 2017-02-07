@@ -8,8 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/granted_file_entry.h"
@@ -20,7 +22,7 @@
 #include "storage/common/fileapi/file_system_types.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
+#include "extensions/browser/api/file_handlers/non_native_file_system_delegate.h"
 #endif
 
 namespace extensions {
@@ -32,11 +34,10 @@ const char kSecurityError[] = "Security error";
 
 namespace {
 
-bool FileHandlerCanHandleFileWithExtension(
-    const FileHandlerInfo& handler,
-    const base::FilePath& path) {
+bool FileHandlerCanHandleFileWithExtension(const FileHandlerInfo& handler,
+                                           const base::FilePath& path) {
   for (std::set<std::string>::const_iterator extension =
-       handler.extensions.begin();
+           handler.extensions.begin();
        extension != handler.extensions.end(); ++extension) {
     if (*extension == "*")
       return true;
@@ -46,10 +47,10 @@ bool FileHandlerCanHandleFileWithExtension(
     base::FilePath::StringType handler_extention(
         base::FilePath::kExtensionSeparator +
         base::FilePath::FromUTF8Unsafe(*extension).value());
-    if (base::FilePath::CompareEqualIgnoreCase(
-            handler_extention, path.Extension()) ||
-        base::FilePath::CompareEqualIgnoreCase(
-            handler_extention, path.FinalExtension())) {
+    if (base::FilePath::CompareEqualIgnoreCase(handler_extention,
+                                               path.Extension()) ||
+        base::FilePath::CompareEqualIgnoreCase(handler_extention,
+                                               path.FinalExtension())) {
       return true;
     }
 
@@ -63,9 +64,8 @@ bool FileHandlerCanHandleFileWithExtension(
   return false;
 }
 
-bool FileHandlerCanHandleFileWithMimeType(
-    const FileHandlerInfo& handler,
-    const std::string& mime_type) {
+bool FileHandlerCanHandleFileWithMimeType(const FileHandlerInfo& handler,
+                                          const std::string& mime_type) {
   for (std::set<std::string>::const_iterator type = handler.types.begin();
        type != handler.types.end(); ++type) {
     if (net::MatchesMimeType(*type, mime_type))
@@ -93,9 +93,10 @@ bool PrepareNativeLocalFileForWritableApp(const base::FilePath& path,
 }
 
 // Checks whether a list of paths are all OK for writing and calls a provided
-// on_success or on_failure callback when done. A file is OK for writing if it
-// is not a symlink, is not in a blacklisted path and can be opened for writing;
-// files are created if they do not exist.
+// on_success or on_failure callback when done. A path is OK for writing if it
+// is not a symlink, is not in a blacklisted path and can be opened for writing.
+// Creates files if they do not exist, but fails for non-existent directory
+// paths. On Chrome OS, also fails for non-local files that don't already exist.
 class WritableFileChecker
     : public base::RefCountedThreadSafe<WritableFileChecker> {
  public:
@@ -149,28 +150,32 @@ WritableFileChecker::WritableFileChecker(
       on_failure_(on_failure) {}
 
 void WritableFileChecker::Check() {
-    outstanding_tasks_ = paths_.size();
-    for (const auto& path : paths_) {
-      bool is_directory = directory_paths_.find(path) != directory_paths_.end();
+  outstanding_tasks_ = paths_.size();
+  for (const auto& path : paths_) {
+    bool is_directory = directory_paths_.find(path) != directory_paths_.end();
 #if defined(OS_CHROMEOS)
-      if (file_manager::util::IsUnderNonNativeLocalPath(profile_, path)) {
-        if (is_directory) {
-          file_manager::util::IsNonNativeLocalPathDirectory(
-              profile_, path,
-              base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
-        } else {
-          file_manager::util::PrepareNonNativeLocalFileForWritableApp(
-              profile_, path,
-              base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
-        }
-        continue;
+    NonNativeFileSystemDelegate* delegate =
+        ExtensionsAPIClient::Get()->GetNonNativeFileSystemDelegate();
+    if (delegate && delegate->IsUnderNonNativeLocalPath(profile_, path)) {
+      if (is_directory) {
+        delegate->IsNonNativeLocalPathDirectory(
+            profile_,
+            path,
+            base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
+      } else {
+        delegate->PrepareNonNativeLocalFileForWritableApp(
+            profile_,
+            path,
+            base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
       }
-#endif
-      content::BrowserThread::PostTaskAndReplyWithResult(
-          content::BrowserThread::FILE, FROM_HERE,
-          base::Bind(&PrepareNativeLocalFileForWritableApp, path, is_directory),
-          base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
+      continue;
     }
+#endif
+    content::BrowserThread::PostTaskAndReplyWithResult(
+        content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&PrepareNativeLocalFileForWritableApp, path, is_directory),
+        base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
+  }
 }
 
 WritableFileChecker::~WritableFileChecker() {}
@@ -254,21 +259,18 @@ bool FileHandlerCanHandleEntry(const FileHandlerInfo& handler,
          FileHandlerCanHandleFileWithExtension(handler, entry.path);
 }
 
-GrantedFileEntry CreateFileEntry(
-    Profile* profile,
-    const Extension* extension,
-    int renderer_id,
-    const base::FilePath& path,
-    bool is_directory) {
+GrantedFileEntry CreateFileEntry(Profile* profile,
+                                 const Extension* extension,
+                                 int renderer_id,
+                                 const base::FilePath& path,
+                                 bool is_directory) {
   GrantedFileEntry result;
   storage::IsolatedContext* isolated_context =
       storage::IsolatedContext::GetInstance();
   DCHECK(isolated_context);
 
   result.filesystem_id = isolated_context->RegisterFileSystemForPath(
-      storage::kFileSystemTypeNativeForPlatformApp,
-      std::string(),
-      path,
+      storage::kFileSystemTypeNativeForPlatformApp, std::string(), path,
       &result.registered_name);
 
   content::ChildProcessSecurityPolicy* policy =
@@ -331,14 +333,13 @@ bool ValidateFileEntryAndGetPath(const std::string& filesystem_name,
   storage::IsolatedContext* context = storage::IsolatedContext::GetInstance();
   base::FilePath relative_path =
       base::FilePath::FromUTF8Unsafe(filesystem_path);
-  base::FilePath virtual_path = context->CreateVirtualRootPath(filesystem_id)
-      .Append(relative_path);
+  base::FilePath virtual_path =
+      context->CreateVirtualRootPath(filesystem_id).Append(relative_path);
   storage::FileSystemType type;
   storage::FileSystemMountOption mount_option;
   std::string cracked_id;
-  if (!context->CrackVirtualPath(
-          virtual_path, &filesystem_id, &type, &cracked_id, file_path,
-          &mount_option)) {
+  if (!context->CrackVirtualPath(virtual_path, &filesystem_id, &type,
+                                 &cracked_id, file_path, &mount_option)) {
     *error = kInvalidParameters;
     return false;
   }
