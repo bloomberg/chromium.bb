@@ -81,7 +81,7 @@ console-dir-es6.html:47 MapIterator
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
     [[Entries]]: Array(1)
-        0: Array(2)
+        0: {Object => Object}
         length: 1
 console-dir-es6.html:45 SetIterator
     __proto__: Set Iterator
@@ -105,7 +105,7 @@ console-dir-es6.html:47 SetIterator
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
     [[Entries]]: Array(1)
-        0: Array(2)
+        0: Object
         length: 1
 console-dir-es6.html:85 Array(27)
     0: class 

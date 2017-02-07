@@ -24,10 +24,10 @@ console-format-es6-2.html:11 MapIterator {42, Object {foo: 2}}
 console-format-es6-2.html:12 [MapIterator]
 globals[1]
 MapIterator {42, Object {foo: 2}}
-console-format-es6-2.html:11 MapIterator {[41, 42], [Object, Object]}
+console-format-es6-2.html:11 MapIterator {41 => 42, Object {foo: 1} => Object {foo: 2}}
 console-format-es6-2.html:12 [MapIterator]
 globals[2]
-MapIterator {[41, 42], [Object, Object]}
+MapIterator {41 => 42, Object {foo: 1} => Object {foo: 2}}
 console-format-es6-2.html:11 SetIterator {41, Object {foo: 1}}
 console-format-es6-2.html:12 [SetIterator]
 globals[3]
@@ -36,10 +36,10 @@ console-format-es6-2.html:11 SetIterator {41, Object {foo: 1}}
 console-format-es6-2.html:12 [SetIterator]
 globals[4]
 SetIterator {41, Object {foo: 1}}
-console-format-es6-2.html:11 SetIterator {[41, 41], [Object, Object]}
+console-format-es6-2.html:11 SetIterator {41, Object {foo: 1}}
 console-format-es6-2.html:12 [SetIterator]
 globals[5]
-SetIterator {[41, 41], [Object, Object]}
+SetIterator {41, Object {foo: 1}}
 console-format-es6-2.html:11 MapIterator {Object {foo: 2}}
 console-format-es6-2.html:12 [MapIterator]
 globals[6]
@@ -95,28 +95,28 @@ MapIterator {42, Object {foo: 2}}
         0: 42
         1: Object
         length: 2
-console-format-es6-2.html:11 MapIterator {[41, 42], [Object, Object]}
+console-format-es6-2.html:11 MapIterator {41 => 42, Object {foo: 1} => Object {foo: 2}}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
     [[Entries]]: Array(2)
-        0: Array(2)
-        1: Array(2)
+        0: {41 => 42}
+        1: {Object => Object}
         length: 2
 console-format-es6-2.html:12 [MapIterator]
     0: MapIterator
     length: 1
     __proto__: Array(0)
 globals[2]
-MapIterator {[41, 42], [Object, Object]}
+MapIterator {41 => 42, Object {foo: 1} => Object {foo: 2}}
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
     [[Entries]]: Array(2)
-        0: Array(2)
-        1: Array(2)
+        0: {41 => 42}
+        1: {Object => Object}
         length: 2
 console-format-es6-2.html:11 SetIterator {41, Object {foo: 1}}
     __proto__: Set Iterator
@@ -164,28 +164,28 @@ SetIterator {41, Object {foo: 1}}
         0: 41
         1: Object
         length: 2
-console-format-es6-2.html:11 SetIterator {[41, 41], [Object, Object]}
+console-format-es6-2.html:11 SetIterator {41, Object {foo: 1}}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
     [[Entries]]: Array(2)
-        0: Array(2)
-        1: Array(2)
+        0: 41
+        1: Object
         length: 2
 console-format-es6-2.html:12 [SetIterator]
     0: SetIterator
     length: 1
     __proto__: Array(0)
 globals[5]
-SetIterator {[41, 41], [Object, Object]}
+SetIterator {41, Object {foo: 1}}
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
     [[Entries]]: Array(2)
-        0: Array(2)
-        1: Array(2)
+        0: 41
+        1: Object
         length: 2
 console-format-es6-2.html:11 MapIterator {Object {foo: 2}}
     __proto__: Map Iterator
