@@ -20,6 +20,13 @@ secondary_source = "//build/secondary/"
 # being built as part of Chrome vs. being built standalone. In this case, the
 # Chrome defaults should go here. There should be no overrides here for
 # values declared in the main Chrome repository.
+#
+# Important note for defining defaults: This file is executed before the
+# BUILDCONFIG.gn file. That file sets up the global variables like "is_ios".
+# This means that the default_args can not depend on the platform,
+# architecture, or other build parameters. If you really need that, the other
+# repo should define a flag that toggles on a behavior that implements the
+# additional logic required by Chrome to set the variables.
 default_args = {
   v8_extra_library_files = [
     # Dependencies used by the extra libraries. Putting them here causes them
