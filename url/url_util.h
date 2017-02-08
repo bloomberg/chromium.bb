@@ -98,6 +98,14 @@ URL_EXPORT const std::vector<std::string>& GetNoAccessSchemes();
 URL_EXPORT void AddCORSEnabledScheme(const char* new_scheme);
 URL_EXPORT const std::vector<std::string>& GetCORSEnabledSchemes();
 
+// Adds an application-defined scheme to the list of web schemes that can be
+// used by web to store data (e.g. cookies, local storage, ...). This is
+// to differentiate them from schemes that can store data but are not used on
+// web (e.g. application's internal schemes) or schemes that are used on web but
+// cannot store data.
+URL_EXPORT void AddWebStorageScheme(const char* new_scheme);
+URL_EXPORT const std::vector<std::string>& GetWebStorageSchemes();
+
 // Sets a flag to prevent future calls to Add*Scheme from succeeding.
 //
 // This is designed to help prevent errors for multithreaded applications.

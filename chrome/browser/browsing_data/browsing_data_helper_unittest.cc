@@ -61,18 +61,16 @@ class BrowsingDataHelperTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataHelperTest);
 };
 
-TEST_F(BrowsingDataHelperTest, WebSafeSchemesAreWebSafe) {
+TEST_F(BrowsingDataHelperTest, WebStorageSchemesAreWebSchemes) {
   EXPECT_TRUE(IsWebScheme(url::kHttpScheme));
   EXPECT_TRUE(IsWebScheme(url::kHttpsScheme));
+  EXPECT_TRUE(IsWebScheme(url::kFileScheme));
   EXPECT_TRUE(IsWebScheme(url::kFtpScheme));
-  EXPECT_TRUE(IsWebScheme(url::kDataScheme));
-  EXPECT_TRUE(IsWebScheme("feed"));
-  EXPECT_TRUE(IsWebScheme(url::kBlobScheme));
-  EXPECT_TRUE(IsWebScheme(url::kFileSystemScheme));
-  EXPECT_FALSE(IsWebScheme("invalid-scheme-i-just-made-up"));
+  EXPECT_TRUE(IsWebScheme(url::kWsScheme));
+  EXPECT_TRUE(IsWebScheme(url::kWssScheme));
 }
 
-TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotWebSafe) {
+TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotWebSchemes) {
   EXPECT_FALSE(IsWebScheme(extensions::kExtensionScheme));
   EXPECT_FALSE(IsWebScheme(url::kAboutScheme));
   EXPECT_FALSE(IsWebScheme(content::kChromeDevToolsScheme));
@@ -82,15 +80,13 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotWebSafe) {
   EXPECT_FALSE(IsWebScheme(content::kViewSourceScheme));
 }
 
-TEST_F(BrowsingDataHelperTest, WebSafeSchemesAreNotExtensions) {
+TEST_F(BrowsingDataHelperTest, WebStorageSchemesAreNotExtensions) {
   EXPECT_FALSE(IsExtensionScheme(url::kHttpScheme));
   EXPECT_FALSE(IsExtensionScheme(url::kHttpsScheme));
+  EXPECT_FALSE(IsExtensionScheme(url::kFileScheme));
   EXPECT_FALSE(IsExtensionScheme(url::kFtpScheme));
-  EXPECT_FALSE(IsExtensionScheme(url::kDataScheme));
-  EXPECT_FALSE(IsExtensionScheme("feed"));
-  EXPECT_FALSE(IsExtensionScheme(url::kBlobScheme));
-  EXPECT_FALSE(IsExtensionScheme(url::kFileSystemScheme));
-  EXPECT_FALSE(IsExtensionScheme("invalid-scheme-i-just-made-up"));
+  EXPECT_FALSE(IsExtensionScheme(url::kWsScheme));
+  EXPECT_FALSE(IsExtensionScheme(url::kWssScheme));
 }
 
 TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotAllExtension) {
@@ -102,6 +98,23 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotAllExtension) {
   EXPECT_FALSE(IsExtensionScheme(url::kJavaScriptScheme));
   EXPECT_FALSE(IsExtensionScheme(url::kMailToScheme));
   EXPECT_FALSE(IsExtensionScheme(content::kViewSourceScheme));
+}
+
+TEST_F(BrowsingDataHelperTest, SchemesThatCantStoreDataDontMatchAnything) {
+  EXPECT_FALSE(IsWebScheme(url::kDataScheme));
+  EXPECT_FALSE(IsExtensionScheme(url::kDataScheme));
+
+  EXPECT_FALSE(IsWebScheme("feed"));
+  EXPECT_FALSE(IsExtensionScheme("feed"));
+
+  EXPECT_FALSE(IsWebScheme(url::kBlobScheme));
+  EXPECT_FALSE(IsExtensionScheme(url::kBlobScheme));
+
+  EXPECT_FALSE(IsWebScheme(url::kFileSystemScheme));
+  EXPECT_FALSE(IsExtensionScheme(url::kFileSystemScheme));
+
+  EXPECT_FALSE(IsWebScheme("invalid-scheme-i-just-made-up"));
+  EXPECT_FALSE(IsExtensionScheme("invalid-scheme-i-just-made-up"));
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

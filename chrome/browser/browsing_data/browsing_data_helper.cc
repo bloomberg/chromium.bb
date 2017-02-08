@@ -4,22 +4,18 @@
 
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/url_constants.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "extensions/common/constants.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
+#include "url/url_util.h"
 
 // Static
 bool BrowsingDataHelper::IsWebScheme(const std::string& scheme) {
-  // All "web safe" schemes are valid, except `chrome-extension://`
-  // and `chrome-devtools://`.
-  content::ChildProcessSecurityPolicy* policy =
-      content::ChildProcessSecurityPolicy::GetInstance();
-  return (policy->IsWebSafeScheme(scheme) &&
-          !BrowsingDataHelper::IsExtensionScheme(scheme) &&
-          scheme != content::kChromeDevToolsScheme);
+  const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
+  return std::find(schemes.begin(), schemes.end(), scheme) != schemes.end();
 }
 
 // Static
