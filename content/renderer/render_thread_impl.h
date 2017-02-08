@@ -497,6 +497,10 @@ class CONTENT_EXPORT RenderThreadImpl
   };
   void GetRendererMemoryMetrics(RendererMemoryMetrics* memory_metrics) const;
 
+  bool NeedsToRecordFirstActivePaint() const {
+    return needs_to_record_first_active_paint_;
+  }
+
  protected:
   RenderThreadImpl(
       const InProcessChildThreadParams& params,
@@ -767,6 +771,7 @@ class CONTENT_EXPORT RenderThreadImpl
   base::CancelableClosure record_purge_suspend_metric_closure_;
   RendererMemoryMetrics purge_and_suspend_memory_metrics_;
   base::CancelableClosure record_purge_suspend_growth_metric_closure_;
+  bool needs_to_record_first_active_paint_;
 
   int32_t client_id_;
 

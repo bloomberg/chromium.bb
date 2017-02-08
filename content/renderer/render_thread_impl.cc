@@ -897,6 +897,7 @@ void RenderThreadImpl::Init(
   record_purge_suspend_growth_metric_closure_.Reset(
       base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
                  base::Unretained(this)));
+  needs_to_record_first_active_paint_ = false;
 
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 
@@ -1641,6 +1642,7 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
 
   if (backgrounded) {
     renderer_scheduler_->OnRendererBackgrounded();
+    needs_to_record_first_active_paint_ = false;
   } else {
     renderer_scheduler_->OnRendererForegrounded();
     // TODO(tasak): after enabling MemoryCoordinator, remove this Notify
@@ -1680,6 +1682,7 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
   GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
       FROM_HERE, record_purge_suspend_metric_closure_.callback(),
       base::TimeDelta::FromSeconds(15));
+  needs_to_record_first_active_paint_ = true;
 }
 
 // TODO(tasak): Replace the following GetMallocUsage() with memory-infra

@@ -375,6 +375,8 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       text_input_client_observer_(new TextInputClientObserver(this)),
 #endif
       focused_pepper_plugin_(nullptr),
+      time_to_first_active_paint_recorded_(true),
+      was_shown_time_(base::TimeTicks::Now()),
       weak_ptr_factory_(this) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   if (!swapped_out)
@@ -773,6 +775,7 @@ void RenderWidget::OnWasShown(bool needs_repainting,
   if (!GetWebWidget())
     return;
 
+  was_shown_time_ = base::TimeTicks::Now();
   // See OnWasHidden
   SetHidden(false);
   for (auto& observer : render_frames_)
@@ -929,6 +932,18 @@ void RenderWidget::RequestScheduleAnimation() {
 
 void RenderWidget::UpdateVisualState() {
   GetWebWidget()->updateAllLifecyclePhases();
+
+  if (time_to_first_active_paint_recorded_)
+    return;
+
+  RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
+  if (!render_thread_impl->NeedsToRecordFirstActivePaint())
+    return;
+
+  time_to_first_active_paint_recorded_ = true;
+  base::TimeDelta sample = base::TimeTicks::Now() - was_shown_time_;
+  UMA_HISTOGRAM_TIMES("PurgeAndSuspend.Experimental.TimeToFirstActivePaint",
+                      sample);
 }
 
 void RenderWidget::WillBeginCompositorFrame() {
@@ -1882,9 +1897,10 @@ void RenderWidget::SetHidden(bool hidden) {
   // throttled acks are released in case frame production ceases.
   is_hidden_ = hidden;
 
-  if (is_hidden_)
+  if (is_hidden_) {
     RenderThreadImpl::current()->WidgetHidden();
-  else
+    time_to_first_active_paint_recorded_ = false;
+  } else
     RenderThreadImpl::current()->WidgetRestored();
 
   if (render_widget_scheduling_state_)
