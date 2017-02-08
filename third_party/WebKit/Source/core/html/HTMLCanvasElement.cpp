@@ -27,6 +27,9 @@
 
 #include "core/html/HTMLCanvasElement.h"
 
+#include <math.h>
+#include <v8.h>
+#include <memory>
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
@@ -53,6 +56,7 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -77,9 +81,6 @@
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/PtrUtil.h"
-#include <math.h>
-#include <memory>
-#include <v8.h>
 
 namespace blink {
 
@@ -270,6 +271,8 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(
   m_context = factory->create(this, attributes, document());
   if (!m_context)
     return nullptr;
+
+  InspectorInstrumentation::didCreateCanvasContext(&document());
 
   if (m_context->is3d()) {
     updateExternallyAllocatedMemory();

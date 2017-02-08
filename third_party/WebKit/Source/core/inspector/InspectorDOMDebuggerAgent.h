@@ -90,6 +90,7 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
   void didRemoveDOMNode(Node*);
   void willModifyDOMAttr(Element*, const AtomicString&, const AtomicString&);
   void willSendXMLHttpOrFetchNetworkRequest(const String& url);
+  void didCreateCanvasContext();
   void didFireWebGLError(const String& errorName);
   void didFireWebGLWarning();
   void didFireWebGLErrorOrWarning(const String& message);

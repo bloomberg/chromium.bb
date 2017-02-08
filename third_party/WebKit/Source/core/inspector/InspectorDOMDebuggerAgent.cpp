@@ -63,6 +63,7 @@ static const char webglErrorFiredEventName[] = "webglErrorFired";
 static const char webglWarningFiredEventName[] = "webglWarningFired";
 static const char webglErrorNameProperty[] = "webglErrorName";
 static const char scriptBlockedByCSPEventName[] = "scriptBlockedByCSP";
+static const char canvasContextCreatedEventName[] = "canvasContextCreated";
 
 namespace DOMDebuggerAgentState {
 static const char eventListenerBreakpoints[] = "eventListenerBreakpoints";
@@ -772,6 +773,11 @@ void InspectorDOMDebuggerAgent::willSendXMLHttpOrFetchNetworkRequest(
       toV8InspectorStringView(
           v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::XHR),
       toV8InspectorStringView(json));
+}
+
+void InspectorDOMDebuggerAgent::didCreateCanvasContext() {
+  pauseOnNativeEventIfNeeded(
+      preparePauseOnNativeEventData(canvasContextCreatedEventName, 0), true);
 }
 
 void InspectorDOMDebuggerAgent::didAddBreakpoint() {

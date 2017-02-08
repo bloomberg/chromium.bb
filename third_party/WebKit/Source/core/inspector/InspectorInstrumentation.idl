@@ -126,6 +126,9 @@ class XMLHttpRequest;
     void willSendXMLHttpOrFetchNetworkRequest(ExecutionContext*, const String& url);
 
     [DOMDebugger]
+    void didCreateCanvasContext(Document*);
+
+    [DOMDebugger]
     void didFireWebGLError(Element*, const String& errorName);
 
     [DOMDebugger]
