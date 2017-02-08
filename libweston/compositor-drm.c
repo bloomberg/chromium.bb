@@ -2465,7 +2465,8 @@ drm_output_enable(struct weston_output *base)
 	output->base.subpixel = drm_subpixel_to_wayland(output->connector->subpixel);
 
 	find_and_parse_output_edid(b, output, output->connector);
-	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS)
+	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
+	    output->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
 		output->base.connection_internal = 1;
 
 	weston_plane_init(&output->cursor_plane, b->compositor,
