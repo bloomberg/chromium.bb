@@ -65,9 +65,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_PRESSED_CENTER" file="common/shelf/status_tray_vertical_pressed_center.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_PRESSED_TOP" file="common/shelf/status_tray_vertical_pressed_top.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_BG_VERTICAL_TOP" file="common/shelf/status_tray_vertical_normal_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER" file="common/tray_popup_label_button_border.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_POPUP_LABEL_BUTTON_HOVER_BACKGROUND" file="common/tray_popup_label_button_hover_background.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND" file="common/tray_popup_label_button_normal_background.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WARNING_ICON" file="common/alert_small.png" />
 

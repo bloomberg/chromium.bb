@@ -17,8 +17,6 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
-#include "ash/common/system/tray/tray_popup_label_button.h"
-#include "ash/common/system/tray/tray_popup_label_button_border.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/user/button_from_view.h"
 #include "ash/common/system/user/login_status.h"

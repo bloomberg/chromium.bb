@@ -34,7 +34,6 @@ namespace ash {
 class SystemTrayItem;
 class ThrobberView;
 class TrayPopupHeaderButton;
-class TrayPopupLabelButton;
 
 namespace tray {
 
@@ -72,15 +71,12 @@ class NetworkStateListDetailedView
   void CreateNetworkExtra();
 
   // Update UI components.
-  void UpdateHeaderButtons();
   void UpdateTechnologyButton(TrayPopupHeaderButton* button,
                               const chromeos::NetworkTypePattern& technology);
 
   void UpdateNetworkList();
 
   bool OrderChild(views::View* view, int index);
-
-  void UpdateNetworkExtra();
 
   // Adds a settings entry when logged in, and an entry for changing proxy
   // settings otherwise.
@@ -133,18 +129,6 @@ class NetworkStateListDetailedView
 
   // Not used for material design.
   views::ImageButton* info_icon_;
-
-  // Not used for material design.
-  TrayPopupHeaderButton* button_wifi_;
-
-  // Not used for material design.
-  TrayPopupHeaderButton* button_mobile_;
-
-  TrayPopupLabelButton* other_wifi_;
-  TrayPopupLabelButton* turn_on_wifi_;
-  TrayPopupLabelButton* other_mobile_;
-  TrayPopupLabelButton* settings_;
-  TrayPopupLabelButton* proxy_settings_;
 
   // Only used in material design.
   views::CustomButton* info_button_md_;

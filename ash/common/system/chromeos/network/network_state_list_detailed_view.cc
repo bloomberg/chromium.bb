@@ -28,7 +28,6 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
-#include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
@@ -102,23 +101,6 @@ views::View* CreateInfoBubbleLine(const base::string16& text_label,
   view->AddChildView(CreateInfoBubbleLabel(base::UTF8ToUTF16(": ")));
   view->AddChildView(CreateInfoBubbleLabel(base::UTF8ToUTF16(text_string)));
   return view;
-}
-
-bool PolicyProhibitsUnmanaged() {
-  if (!LoginState::IsInitialized() || !LoginState::Get()->IsUserLoggedIn())
-    return false;
-  bool policy_prohibites_unmanaged = false;
-  const base::DictionaryValue* global_network_config =
-      NetworkHandler::Get()
-          ->managed_network_configuration_handler()
-          ->GetGlobalConfigFromPolicy(
-              std::string() /* no username hash, device policy */);
-  if (global_network_config) {
-    global_network_config->GetBooleanWithoutPathExpansion(
-        ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
-        &policy_prohibites_unmanaged);
-  }
-  return policy_prohibites_unmanaged;
 }
 
 // TODO(varkha): Consolidate with a similar method in tray_bluetooth.cc.
@@ -339,13 +321,6 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
       login_(login),
       prev_wifi_scanning_state_(false),
       info_icon_(nullptr),
-      button_wifi_(nullptr),
-      button_mobile_(nullptr),
-      other_wifi_(nullptr),
-      turn_on_wifi_(nullptr),
-      other_mobile_(nullptr),
-      settings_(nullptr),
-      proxy_settings_(nullptr),
       info_button_md_(nullptr),
       settings_button_md_(nullptr),
       proxy_settings_button_md_(nullptr),
@@ -373,8 +348,6 @@ NetworkStateListDetailedView::~NetworkStateListDetailedView() {
 
 void NetworkStateListDetailedView::Update() {
   UpdateNetworkList();
-  UpdateHeaderButtons();
-  UpdateNetworkExtra();
   Layout();
 }
 
@@ -383,13 +356,6 @@ void NetworkStateListDetailedView::Update() {
 void NetworkStateListDetailedView::Init() {
   Reset();
   info_icon_ = nullptr;
-  button_wifi_ = nullptr;
-  button_mobile_ = nullptr;
-  other_wifi_ = nullptr;
-  turn_on_wifi_ = nullptr;
-  other_mobile_ = nullptr;
-  settings_ = nullptr;
-  proxy_settings_ = nullptr;
   info_button_md_ = nullptr;
   settings_button_md_ = nullptr;
   proxy_settings_button_md_ = nullptr;
@@ -416,56 +382,16 @@ NetworkStateListDetailedView::GetViewType() const {
 
 void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
                                                        const ui::Event& event) {
-  if (UseMd()) {
-    if (sender == info_button_md_) {
-      ToggleInfoBubble();
-      return;
-    } else if (sender == settings_button_md_) {
-      ShowSettings();
-    } else if (sender == proxy_settings_button_md_) {
-      WmShell::Get()->system_tray_controller()->ShowProxySettings();
-    }
-
-    if (owner()->system_tray())
-      owner()->system_tray()->CloseSystemBubble();
-    return;
-  }
-
-  if (sender == info_icon_) {
+  if (sender == info_button_md_) {
     ToggleInfoBubble();
     return;
+  } else if (sender == settings_button_md_) {
+    ShowSettings();
+  } else if (sender == proxy_settings_button_md_) {
+    WmShell::Get()->system_tray_controller()->ShowProxySettings();
   }
 
-  // If the info bubble was visible, close it when some other item is clicked.
-  ResetInfoBubble();
-  bool close_bubble = false;
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  if (sender == button_wifi_) {
-    bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi());
-    handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), !enabled,
-                                  chromeos::network_handler::ErrorCallback());
-  } else if (sender == turn_on_wifi_) {
-    handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), true,
-                                  chromeos::network_handler::ErrorCallback());
-  } else if (sender == button_mobile_) {
-    ToggleMobile();
-  } else if (sender == settings_) {
-    ShowSettings();
-    close_bubble = true;
-  } else if (sender == proxy_settings_) {
-    WmShell::Get()->system_tray_controller()->ShowProxySettings();
-    close_bubble = true;
-  } else if (sender == other_mobile_) {
-    WmShell::Get()->system_tray_controller()->ShowNetworkCreate(
-        shill::kTypeCellular);
-    close_bubble = true;
-  } else if (sender == other_wifi_) {
-    OnOtherWifiClicked();
-    close_bubble = true;
-  } else {
-    NOTREACHED();
-  }
-  if (close_bubble && owner()->system_tray())
+  if (owner()->system_tray())
     owner()->system_tray()->CloseSystemBubble();
 }
 
@@ -500,98 +426,37 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
 }
 
 void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
-  if (UseMd()) {
-    if (login_ == LoginStatus::LOCKED)
-      return;
-
-    DCHECK(!info_button_md_);
-    tri_view()->SetContainerVisible(TriView::Container::END, true);
-
-    info_button_md_ = new SystemMenuButton(
-        this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuInfoIcon,
-        IDS_ASH_STATUS_TRAY_NETWORK_INFO);
-    tri_view()->AddView(TriView::Container::END, info_button_md_);
-
-    if (login_ != LoginStatus::NOT_LOGGED_IN) {
-      DCHECK(!settings_button_md_);
-      settings_button_md_ = new SystemMenuButton(
-          this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
-          IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS);
-
-      // Allow the user to access settings only if user is logged in
-      // and showing settings is allowed. There are situations (supervised user
-      // creation flow) when session is started but UI flow continues within
-      // login UI, i.e., no browser window is yet avaialable.
-      if (!WmShell::Get()->system_tray_delegate()->ShouldShowSettings())
-        settings_button_md_->SetEnabled(false);
-
-      tri_view()->AddView(TriView::Container::END, settings_button_md_);
-    } else {
-      proxy_settings_button_md_ = new SystemMenuButton(
-          this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
-          IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS);
-      tri_view()->AddView(TriView::Container::END, proxy_settings_button_md_);
-    }
-
+  if (login_ == LoginStatus::LOCKED)
     return;
+
+  DCHECK(!info_button_md_);
+  tri_view()->SetContainerVisible(TriView::Container::END, true);
+
+  info_button_md_ = new SystemMenuButton(
+      this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuInfoIcon,
+      IDS_ASH_STATUS_TRAY_NETWORK_INFO);
+  tri_view()->AddView(TriView::Container::END, info_button_md_);
+
+  if (login_ != LoginStatus::NOT_LOGGED_IN) {
+    DCHECK(!settings_button_md_);
+    settings_button_md_ = new SystemMenuButton(
+        this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
+        IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS);
+
+    // Allow the user to access settings only if user is logged in
+    // and showing settings is allowed. There are situations (supervised user
+    // creation flow) when session is started but UI flow continues within
+    // login UI, i.e., no browser window is yet avaialable.
+    if (!WmShell::Get()->system_tray_delegate()->ShouldShowSettings())
+      settings_button_md_->SetEnabled(false);
+
+    tri_view()->AddView(TriView::Container::END, settings_button_md_);
+  } else {
+    proxy_settings_button_md_ = new SystemMenuButton(
+        this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
+        IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS);
+    tri_view()->AddView(TriView::Container::END, proxy_settings_button_md_);
   }
-
-  if (list_type_ != LIST_TYPE_VPN) {
-    NetworkStateHandler* network_state_handler =
-        NetworkHandler::Get()->network_state_handler();
-    button_wifi_ = new TrayPopupHeaderButton(
-        this, IDR_AURA_UBER_TRAY_WIFI_ENABLED, IDR_AURA_UBER_TRAY_WIFI_DISABLED,
-        IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER,
-        IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER, IDS_ASH_STATUS_TRAY_WIFI);
-    button_wifi_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISABLE_WIFI));
-    button_wifi_->SetToggledTooltipText(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_WIFI));
-    title_row()->AddViewToRowNonMd(button_wifi_, true);
-    if (network_state_handler->IsTechnologyProhibited(
-            NetworkTypePattern::WiFi())) {
-      button_wifi_->SetEnabled(false);
-      button_wifi_->SetToggledTooltipText(l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY));
-    }
-
-    button_mobile_ =
-        new TrayPopupHeaderButton(this, IDR_AURA_UBER_TRAY_CELLULAR_ENABLED,
-                                  IDR_AURA_UBER_TRAY_CELLULAR_DISABLED,
-                                  IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER,
-                                  IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER,
-                                  IDS_ASH_STATUS_TRAY_CELLULAR);
-    button_mobile_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISABLE_MOBILE));
-    button_mobile_->SetToggledTooltipText(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_MOBILE));
-    if (network_state_handler->IsTechnologyProhibited(
-            NetworkTypePattern::Cellular())) {
-      button_mobile_->SetEnabled(false);
-      button_mobile_->SetToggledTooltipText(l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY));
-    }
-    title_row()->AddViewToRowNonMd(button_mobile_, true);
-  }
-
-  views::View* info_throbber_container = new views::View();
-  InfoThrobberLayout* info_throbber_layout = new InfoThrobberLayout;
-  info_throbber_container->SetLayoutManager(info_throbber_layout);
-  title_row()->AddViewToRowNonMd(info_throbber_container, true);
-
-  if (list_type_ != LIST_TYPE_VPN) {
-    // Place the throbber behind the info icon so that the icon receives
-    // click / touch events. The info icon is hidden when the throbber is
-    // active.
-    scanning_throbber_ = new ScanningThrobber();
-    info_throbber_container->AddChildView(scanning_throbber_);
-  }
-
-  info_icon_ = new InfoIcon(this);
-  info_icon_->SetFocusBehavior(FocusBehavior::ALWAYS);
-  info_icon_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
-  info_throbber_container->AddChildView(info_icon_);
 }
 
 void NetworkStateListDetailedView::ShowSettings() {
@@ -603,96 +468,6 @@ void NetworkStateListDetailedView::ShowSettings() {
 
 void NetworkStateListDetailedView::CreateNetworkExtra() {
   DCHECK(!UseMd());
-  if (login_ == LoginStatus::LOCKED)
-    return;
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
-  views::View* bottom_row = new views::View();
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kTrayMenuBottomRowPadding,
-      kTrayMenuBottomRowPadding, kTrayMenuBottomRowPaddingBetweenItems);
-  layout->SetDefaultFlex(1);
-  bottom_row->SetLayoutManager(layout);
-
-  if (list_type_ != LIST_TYPE_VPN) {
-    other_wifi_ = new TrayPopupLabelButton(
-        this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_WIFI));
-    bottom_row->AddChildView(other_wifi_);
-    if (PolicyProhibitsUnmanaged()) {
-      other_wifi_->SetEnabled(false);
-      other_wifi_->SetTooltipText(l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED_OTHER));
-    }
-
-    turn_on_wifi_ = new TrayPopupLabelButton(
-        this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_TURN_ON_WIFI));
-    if (NetworkHandler::Get()->network_state_handler()->IsTechnologyProhibited(
-            NetworkTypePattern::WiFi())) {
-      turn_on_wifi_->SetEnabled(false);
-      turn_on_wifi_->SetTooltipText(l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_TECHNOLOGY_ENFORCED_BY_POLICY));
-    }
-    bottom_row->AddChildView(turn_on_wifi_);
-
-    other_mobile_ = new TrayPopupLabelButton(
-        this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_MOBILE));
-    bottom_row->AddChildView(other_mobile_);
-  }
-
-  CreateSettingsEntry();
-
-  // Both settings_ and proxy_settings_ can be null. This happens when
-  // we're logged in but showing settings page is not enabled.
-  // Example: supervised user creation flow where user session is active
-  // but all action happens on the login window.
-  // Allowing opening proxy settigns dialog will break assumption in
-  //  SystemTrayDelegateChromeOS::ChangeProxySettings(), see CHECK.
-  if (settings_ || proxy_settings_)
-    bottom_row->AddChildView(settings_ ? settings_ : proxy_settings_);
-
-  AddChildView(bottom_row);
-}
-
-void NetworkStateListDetailedView::UpdateHeaderButtons() {
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  if (button_wifi_)
-    UpdateTechnologyButton(button_wifi_, NetworkTypePattern::WiFi());
-  if (button_mobile_)
-    UpdateTechnologyButton(button_mobile_, NetworkTypePattern::Mobile());
-  if (proxy_settings_)
-    proxy_settings_->SetEnabled(handler->DefaultNetwork() != nullptr);
-
-  if (list_type_ != LIST_TYPE_VPN && !UseMd()) {
-    // Update Wifi Scanning throbber.
-    bool scanning =
-        NetworkHandler::Get()->network_state_handler()->GetScanningByType(
-            NetworkTypePattern::WiFi());
-    if (scanning != prev_wifi_scanning_state_) {
-      prev_wifi_scanning_state_ = scanning;
-      if (scanning) {
-        SetScanningStateForThrobberView(true);
-
-        // Start animation on the |scanning_throbber_| indicator.
-        scanning_throbber_->Start();
-
-        // Since the |scanning_throbber_| view is behind the |info_icon_|
-        // view, the tooltip text for |info_icon_| will be used for both.
-        info_icon_->SetTooltipText(l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE));
-      } else {
-        SetScanningStateForThrobberView(false);
-
-        // Stop animation on the |scanning_throbber_| indicator.
-        scanning_throbber_->Stop();
-        info_icon_->SetTooltipText(
-            l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
-      }
-    }
-  }
-
-  if (!UseMd())
-    static_cast<views::View*>(title_row())->Layout();
 }
 
 void NetworkStateListDetailedView::SetScanningStateForThrobberView(
@@ -761,83 +536,8 @@ bool NetworkStateListDetailedView::OrderChild(views::View* view, int index) {
   return false;
 }
 
-void NetworkStateListDetailedView::UpdateNetworkExtra() {
-  if (login_ == LoginStatus::LOCKED)
-    return;
-
-  View* layout_parent = nullptr;  // All these buttons have the same parent.
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  if (other_wifi_) {
-    DCHECK(turn_on_wifi_);
-    NetworkStateHandler::TechnologyState state =
-        handler->GetTechnologyState(NetworkTypePattern::WiFi());
-    if (state == NetworkStateHandler::TECHNOLOGY_UNAVAILABLE) {
-      turn_on_wifi_->SetVisible(false);
-      other_wifi_->SetVisible(false);
-    } else {
-      if (state == NetworkStateHandler::TECHNOLOGY_AVAILABLE) {
-        turn_on_wifi_->SetVisible(true);
-        turn_on_wifi_->SetEnabled(true);
-        other_wifi_->SetVisible(false);
-      } else if (state == NetworkStateHandler::TECHNOLOGY_ENABLED) {
-        turn_on_wifi_->SetVisible(false);
-        other_wifi_->SetVisible(true);
-      } else {
-        // Initializing or Enabling
-        turn_on_wifi_->SetVisible(true);
-        turn_on_wifi_->SetEnabled(false);
-        other_wifi_->SetVisible(false);
-      }
-    }
-    layout_parent = other_wifi_->parent();
-  }
-
-  if (other_mobile_) {
-    bool show_other_mobile = false;
-    NetworkStateHandler::TechnologyState state =
-        handler->GetTechnologyState(NetworkTypePattern::Mobile());
-    if (state != NetworkStateHandler::TECHNOLOGY_UNAVAILABLE) {
-      const chromeos::DeviceState* device =
-          handler->GetDeviceStateByType(NetworkTypePattern::Mobile());
-      show_other_mobile = (device && device->support_network_scan());
-    }
-    if (show_other_mobile) {
-      other_mobile_->SetVisible(true);
-      other_mobile_->SetEnabled(state ==
-                                NetworkStateHandler::TECHNOLOGY_ENABLED);
-    } else {
-      other_mobile_->SetVisible(false);
-    }
-    if (!layout_parent)
-      layout_parent = other_wifi_->parent();
-  }
-
-  if (layout_parent)
-    layout_parent->Layout();
-}
-
 void NetworkStateListDetailedView::CreateSettingsEntry() {
   DCHECK(!UseMd());
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  bool show_settings =
-      WmShell::Get()->system_tray_delegate()->ShouldShowSettings();
-  if (login_ != LoginStatus::NOT_LOGGED_IN) {
-    // Allow user access settings only if user is logged in
-    // and showing settings is allowed. There're situations (supervised user
-    // creation flow) when session is started but UI flow continues within
-    // login UI i.e. no browser window is yet avaialable.
-    if (show_settings) {
-      settings_ = new TrayPopupLabelButton(
-          this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS));
-      if (list_type_ == LIST_TYPE_VPN)
-        settings_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    }
-  } else {
-    // Allow users to change proxy settings only when not logged in.
-    proxy_settings_ = new TrayPopupLabelButton(
-        this,
-        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS));
-  }
 }
 
 void NetworkStateListDetailedView::ToggleInfoBubble() {
