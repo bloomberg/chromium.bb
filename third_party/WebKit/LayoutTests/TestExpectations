@@ -2260,6 +2260,12 @@ crbug.com/657748 external/csswg-test/css-display-3/display-contents-text-only-00
 
 # ====== End of display: contents tests ======
 
+crbug.com/642376 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ NeedsRebaseline ]
+crbug.com/642376 virtual/gpu/fast/canvas/canvas-arc-circumference.html [ NeedsRebaseline ]
+crbug.com/642376 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsRebaseline ]
+crbug.com/642376 virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
+crbug.com/642376 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+
 crbug.com/676229 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
 
 crbug.com/678346 [ Win7 Debug ] fast/dom/shadow/selections-in-shadow.html [ Pass Timeout ]

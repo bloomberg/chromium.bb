@@ -258,9 +258,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // Updating to a correct SkPMColor lerp will require layout test rebaselines.
 #define SK_SUPPORT_LEGACY_BROKEN_LERP
 
-// Enabling the screenspace AA tessellating path renderer needs rebaselines.
-#define SK_DISABLE_SCREENSPACE_TESS_AA_PATH_RENDERER
-
 #ifndef    SK_SUPPORT_LEGACY_AAA
 #   define SK_SUPPORT_LEGACY_AAA
 #endif
