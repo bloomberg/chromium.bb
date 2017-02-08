@@ -27,6 +27,10 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 const CGFloat kTitleVerticalSpacing = 2.0f;
@@ -111,16 +115,16 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 }  // autofill
 
 @interface CardUnmaskPromptViewIOS ()<UITextFieldDelegate> {
-  base::scoped_nsobject<UIBarButtonItem> _cancelButton;
-  base::scoped_nsobject<UIBarButtonItem> _verifyButton;
-  base::scoped_nsobject<CVCItem> _CVCItem;
-  base::scoped_nsobject<StatusItem> _statusItem;
-  base::scoped_nsobject<StorageSwitchItem> _storageSwitchItem;
+  UIBarButtonItem* _cancelButton;
+  UIBarButtonItem* _verifyButton;
+  CVCItem* _CVCItem;
+  StatusItem* _statusItem;
+  StorageSwitchItem* _storageSwitchItem;
 
   // The tooltip is added as a child of the collection view rather than the
   // StorageSwitchContentView to allow it to overflow the bounds of the switch
   // view.
-  base::scoped_nsobject<StorageSwitchTooltip> _storageSwitchTooltip;
+  StorageSwitchTooltip* _storageSwitchTooltip;
 
   // Owns |self|.
   autofill::CardUnmaskPromptViewBridge* _bridge;  // weak
@@ -144,15 +148,14 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
 
-  UILabel* titleLabel =
-      [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
+  UILabel* titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
   titleLabel.text =
       SysUTF16ToNSString(_bridge->GetController()->GetWindowTitle());
   titleLabel.font = [UIFont boldSystemFontOfSize:16];
   titleLabel.accessibilityTraits |= UIAccessibilityTraitHeader;
   [titleLabel sizeToFit];
 
-  UIView* titleView = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+  UIView* titleView = [[UIView alloc] initWithFrame:CGRectZero];
   [titleView addSubview:titleLabel];
   CGRect titleBounds = titleView.bounds;
   titleBounds.origin.y -= kTitleVerticalSpacing;
@@ -164,20 +167,20 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   [self showCVCInputForm];
 
   // Add the navigation buttons.
-  _cancelButton.reset([[UIBarButtonItem alloc]
-      initWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-              style:UIBarButtonItemStylePlain
-             target:self
-             action:@selector(onCancel:)]);
+  _cancelButton =
+      [[UIBarButtonItem alloc] initWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                                       style:UIBarButtonItemStylePlain
+                                      target:self
+                                      action:@selector(onCancel:)];
   self.navigationItem.leftBarButtonItem = _cancelButton;
 
   NSString* verifyButtonText =
       SysUTF16ToNSString(_bridge->GetController()->GetOkButtonLabel());
-  _verifyButton.reset([[UIBarButtonItem alloc]
-      initWithTitle:verifyButtonText
-              style:UIBarButtonItemStylePlain
-             target:self
-             action:@selector(onVerify:)]);
+  _verifyButton =
+      [[UIBarButtonItem alloc] initWithTitle:verifyButtonText
+                                       style:UIBarButtonItemStylePlain
+                                      target:self
+                                      action:@selector(onVerify:)];
   [_verifyButton setTitleTextAttributes:@{
     NSForegroundColorAttributeName : [[MDCPalette cr_bluePalette] tint600]
   }
@@ -211,27 +214,27 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   NSString* instructions =
       SysUTF16ToNSString(controller->GetInstructionsMessage());
   int CVCImageResourceID = controller->GetCvcImageRid();
-  _CVCItem.reset([[CVCItem alloc] initWithType:ItemTypeCVC]);
-  _CVCItem.get().instructionsText = instructions;
-  _CVCItem.get().CVCImageResourceID = CVCImageResourceID;
+  _CVCItem = [[CVCItem alloc] initWithType:ItemTypeCVC];
+  _CVCItem.instructionsText = instructions;
+  _CVCItem.CVCImageResourceID = CVCImageResourceID;
   [model addItem:_CVCItem toSectionWithIdentifier:SectionIdentifierMain];
 
   if (controller->CanStoreLocally()) {
-    _storageSwitchItem.reset(
-        [[StorageSwitchItem alloc] initWithType:ItemTypeStorageSwitch]);
-    _storageSwitchItem.get().on = controller->GetStoreLocallyStartState();
+    _storageSwitchItem =
+        [[StorageSwitchItem alloc] initWithType:ItemTypeStorageSwitch];
+    _storageSwitchItem.on = controller->GetStoreLocallyStartState();
     [model addItem:_storageSwitchItem
         toSectionWithIdentifier:SectionIdentifierMain];
 
-    _storageSwitchTooltip.reset([[StorageSwitchTooltip alloc] init]);
+    _storageSwitchTooltip = [[StorageSwitchTooltip alloc] init];
     [_storageSwitchTooltip setHidden:YES];
     [self.collectionView addSubview:_storageSwitchTooltip];
   } else {
-    _storageSwitchItem.reset();
+    _storageSwitchItem = nil;
   }
 
   // No status item when loading the model.
-  _statusItem.reset();
+  _statusItem = nil;
 }
 
 #pragma mark - Private
@@ -244,7 +247,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   [_verifyButton setEnabled:NO];
 
   [self loadModel];
-  _CVCItem.get().errorMessage = errorMessage;
+  _CVCItem.errorMessage = errorMessage;
   // If the server requested a new expiration date, show the date input. If it
   // didn't and there was an error, show the "New card?" link which will show
   // the date inputs on click. This link is intended to remind the user that
@@ -253,10 +256,10 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   // we're not requesting a new date. Because if we're asking the user for both,
   // we don't know which is incorrect.
   if (_bridge->GetController()->ShouldRequestExpirationDate()) {
-    _CVCItem.get().showDateInput = YES;
+    _CVCItem.showDateInput = YES;
   } else if (errorMessage) {
-    _CVCItem.get().showNewCardButton = YES;
-    _CVCItem.get().showCVCInputError = YES;
+    _CVCItem.showNewCardButton = YES;
+    _CVCItem.showCVCInputError = YES;
   }
 }
 
@@ -287,9 +290,9 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 
 - (void)updateWithStatus:(StatusItemState)state text:(NSString*)text {
   if (!_statusItem) {
-    _statusItem.reset([[StatusItem alloc] initWithType:ItemTypeStatus]);
-    _statusItem.get().text = text;
-    _statusItem.get().state = state;
+    _statusItem = [[StatusItem alloc] initWithType:ItemTypeStatus];
+    _statusItem.text = text;
+    _statusItem.state = state;
     // Remove all the present items to replace them with the status item.
     [self.collectionViewModel
         removeSectionWithIdentifier:SectionIdentifierMain];
@@ -298,9 +301,9 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
               toSectionWithIdentifier:SectionIdentifierMain];
     [self.collectionView reloadData];
   } else {
-    _statusItem.get().text = text;
-    _statusItem.get().state = state;
-    [self reconfigureCellsForItems:@[ _statusItem.get() ]
+    _statusItem.text = text;
+    _statusItem.state = state;
+    [self reconfigureCellsForItems:@[ _statusItem ]
            inSectionWithIdentifier:SectionIdentifierMain];
     [self.collectionViewLayout invalidateLayout];
   }
@@ -333,7 +336,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 - (void)layoutTooltipFromButton:(UIButton*)button {
   const CGRect buttonFrameInCollectionView =
       [self.collectionView convertRect:button.bounds fromView:button];
-  CGRect tooltipFrame = _storageSwitchTooltip.get().frame;
+  CGRect tooltipFrame = _storageSwitchTooltip.frame;
 
   // First, set the width and use sizeToFit to have the label flow the text and
   // set the height appropriately.
@@ -342,17 +345,17 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
       CGRectGetMinX(buttonFrameInCollectionView) - 2 * kTooltipMargin;
   const CGFloat kMaxTooltipWidth = 210;
   tooltipFrame.size.width = MIN(availableWidth, kMaxTooltipWidth);
-  _storageSwitchTooltip.get().frame = tooltipFrame;
+  _storageSwitchTooltip.frame = tooltipFrame;
   [_storageSwitchTooltip sizeToFit];
 
   // Then use the size to position the tooltip appropriately, based on the
   // button position.
-  tooltipFrame = _storageSwitchTooltip.get().frame;
+  tooltipFrame = _storageSwitchTooltip.frame;
   tooltipFrame.origin.x = CGRectGetMinX(buttonFrameInCollectionView) -
                           kTooltipMargin - CGRectGetWidth(tooltipFrame);
   tooltipFrame.origin.y = CGRectGetMaxY(buttonFrameInCollectionView) -
                           CGRectGetHeight(tooltipFrame);
-  _storageSwitchTooltip.get().frame = tooltipFrame;
+  _storageSwitchTooltip.frame = tooltipFrame;
 }
 
 - (BOOL)inputCVCIsValid:(CVCItem*)item {
@@ -412,7 +415,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
     if ((!CVC.monthInput.isFirstResponder || CVC.monthInput.text.length == 0) &&
         (!CVC.yearInput.isFirstResponder || CVC.yearInput.text.length == 0) &&
         (!CVC.CVCInput.isFirstResponder || CVC.CVCInput.text.length == 0)) {
-      if (_CVCItem.get().showDateInput) {
+      if (_CVCItem.showDateInput) {
         [CVC.monthInput becomeFirstResponder];
       } else {
         [CVC.CVCInput becomeFirstResponder];
@@ -428,7 +431,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   DCHECK(controller);
 
   // The controller requires a 4-digit year. Convert if necessary.
-  NSString* yearText = _CVCItem.get().yearText;
+  NSString* yearText = _CVCItem.yearText;
   if (yearText.length == 2) {
     NSInteger inputYear = yearText.integerValue;
     NSInteger currentYear =
@@ -439,10 +442,10 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
     yearText = [@(inputYear) stringValue];
   }
 
-  controller->OnUnmaskResponse(
-      base::SysNSStringToUTF16(_CVCItem.get().CVCText),
-      base::SysNSStringToUTF16(_CVCItem.get().monthText),
-      base::SysNSStringToUTF16(yearText), _storageSwitchItem.get().on);
+  controller->OnUnmaskResponse(base::SysNSStringToUTF16(_CVCItem.CVCText),
+                               base::SysNSStringToUTF16(_CVCItem.monthText),
+                               base::SysNSStringToUTF16(yearText),
+                               _storageSwitchItem.on);
 }
 
 - (void)onCancel:(id)sender {
@@ -464,23 +467,23 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 
 - (void)onStorageSwitchChanged:(UISwitch*)switchView {
   // Update the item.
-  _storageSwitchItem.get().on = switchView.on;
+  _storageSwitchItem.on = switchView.on;
 }
 
 - (void)onNewCardLinkTapped:(UIButton*)button {
   _bridge->GetController()->NewCardLinkClicked();
-  _CVCItem.get().instructionsText =
+  _CVCItem.instructionsText =
       SysUTF16ToNSString(_bridge->GetController()->GetInstructionsMessage());
-  _CVCItem.get().monthText = @"";
-  _CVCItem.get().yearText = @"";
-  _CVCItem.get().CVCText = @"";
-  _CVCItem.get().errorMessage = @"";
-  _CVCItem.get().showDateInput = YES;
-  _CVCItem.get().showNewCardButton = NO;
-  _CVCItem.get().showDateInputError = NO;
-  _CVCItem.get().showCVCInputError = NO;
+  _CVCItem.monthText = @"";
+  _CVCItem.yearText = @"";
+  _CVCItem.CVCText = @"";
+  _CVCItem.errorMessage = @"";
+  _CVCItem.showDateInput = YES;
+  _CVCItem.showNewCardButton = NO;
+  _CVCItem.showDateInputError = NO;
+  _CVCItem.showCVCInputError = NO;
 
-  [self reconfigureCellsForItems:@[ _CVCItem.get() ]
+  [self reconfigureCellsForItems:@[ _CVCItem ]
          inSectionWithIdentifier:SectionIdentifierMain];
   [self.collectionViewLayout invalidateLayout];
 
@@ -490,23 +493,23 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 #pragma mark - UITextField Events
 
 - (void)monthInputDidChange:(UITextField*)textField {
-  _CVCItem.get().monthText = textField.text;
+  _CVCItem.monthText = textField.text;
   [self inputsDidChange:_CVCItem];
   [self updateDateErrorState:_CVCItem];
 }
 
 - (void)yearInputDidChange:(UITextField*)textField {
-  _CVCItem.get().yearText = textField.text;
+  _CVCItem.yearText = textField.text;
   [self inputsDidChange:_CVCItem];
   [self updateDateErrorState:_CVCItem];
 }
 
 - (void)CVCInputDidChange:(UITextField*)textField {
-  _CVCItem.get().CVCText = textField.text;
+  _CVCItem.CVCText = textField.text;
   [self inputsDidChange:_CVCItem];
   if (_bridge->GetController()->InputCvcIsValid(
           base::SysNSStringToUTF16(textField.text))) {
-    _CVCItem.get().showCVCInputError = NO;
+    _CVCItem.showCVCInputError = NO;
     [self updateDateErrorState:_CVCItem];
   }
 }
