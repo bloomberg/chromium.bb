@@ -454,6 +454,11 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
     return r.new_password_marked_by_site;
   }
 
+  static const base::string16& confirmation_password_element(
+      const autofill::PasswordForm& r) {
+    return r.confirmation_password_element;
+  }
+
   static bool preferred(const autofill::PasswordForm& r) { return r.preferred; }
 
   static const base::Time& date_created(const autofill::PasswordForm& r) {
