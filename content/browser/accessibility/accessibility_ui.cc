@@ -331,9 +331,10 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
       base::ASCIIToUTF16("*"),
       AccessibilityTreeFormatter::Filter::ALLOW));
   formatter->SetFilters(filters);
-  formatter->FormatAccessibilityTree(
-      web_contents->GetRootBrowserAccessibilityManager()->GetRoot(),
-      &accessibility_contents_utf16);
+  auto* ax_mgr = web_contents->GetOrCreateRootBrowserAccessibilityManager();
+  DCHECK(ax_mgr);
+  formatter->FormatAccessibilityTree(ax_mgr->GetRoot(),
+                                     &accessibility_contents_utf16);
   result->Set("tree",
               new base::StringValue(
                   base::UTF16ToUTF8(accessibility_contents_utf16)));
