@@ -597,4 +597,42 @@ IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_EnabledRecentlyLogged) {
   EXPECT_EQ(last_time_sent_logs, GetLastTimeSentReport());
 }
 
+IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_MultipleLaunches) {
+  exit_code_to_report_ = kSwReporterNothingFound;
+  base::test::ScopedFeatureList scoped_feature_list;
+  EnableSBExtendedReporting();
+  SetLastTimeSentReport(kDaysBetweenReporterLogsSent + 3);
+
+  const base::FilePath path1(L"path1");
+  const base::FilePath path2(L"path2");
+  SwReporterQueue invocations;
+  for (const auto& path : {path1, path2}) {
+    auto invocation = SwReporterInvocation::FromFilePath(path);
+    invocation.supported_behaviours =
+        SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS;
+    invocations.push(invocation);
+  }
+  RunReporterQueue(invocations);
+
+  // SBER is enabled and last time logs were sent was more than
+  // |kDaysBetweenReporterLogsSent| day ago, so we should send logs in this run.
+  {
+    SCOPED_TRACE("first launch");
+    TestPartialLaunchCycle({path1});
+    ExpectLoggingSwitches(std::set<std::string>(std::begin(kExpectedSwitches),
+                                                std::end(kExpectedSwitches)));
+    ExpectLastReportSentInTheLastHour();
+  }
+
+  // Logs should also be sent for the next run, even though LastTimeSentReport
+  // is now recent, because the run is part of the same set of invocations.
+  {
+    SCOPED_TRACE("second launch");
+    TestReporterLaunchCycle({path2});
+    ExpectLoggingSwitches(std::set<std::string>(std::begin(kExpectedSwitches),
+                                                std::end(kExpectedSwitches)));
+    ExpectLastReportSentInTheLastHour();
+  }
+}
+
 }  // namespace safe_browsing

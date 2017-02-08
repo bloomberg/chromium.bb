@@ -913,6 +913,19 @@ class ReporterRunner : public chrome::BrowserListObserver {
          // Also make sure the kSwReporterLastTimeTriggered value is not set in
          // the future.
          last_time_triggered > now)) {
+      const base::Time last_time_sent_logs = base::Time::FromInternalValue(
+          local_state->GetInt64(prefs::kSwReporterLastTimeSentReport));
+      const base::Time next_time_send_logs =
+          last_time_sent_logs +
+          base::TimeDelta::FromDays(kDaysBetweenReporterLogsSent);
+      // Send the logs for this whole queue of invocations if the last send is
+      // in the future or if logs have been sent at least
+      // |kSwReporterLastTimeSentReport| days ago. The former is intended as a
+      // measure for failure recovery, in case the time in local state is
+      // incorrectly set to the future.
+      in_logs_upload_period_ =
+          last_time_sent_logs > now || next_time_send_logs <= now;
+
       DCHECK(current_invocations_.empty());
       current_invocations_ = pending_invocations_;
       ScheduleNextInvocation();
@@ -925,8 +938,8 @@ class ReporterRunner : public chrome::BrowserListObserver {
   }
 
   // Returns true if the experiment to send reporter logs is enabled, the user
-  // opted into Safe Browsing extended reporting, and logs have been sent at
-  // least |kSwReporterLastTimeSentReport| days ago.
+  // opted into Safe Browsing extended reporting, and this queue of invocations
+  // started during the logs upload interval.
   bool ShouldSendReporterLogs(const std::string& suffix,
                               const PrefService& local_state) {
     UMAHistogramReporter uma(suffix);
@@ -934,22 +947,12 @@ class ReporterRunner : public chrome::BrowserListObserver {
       uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_SBER_DISABLED);
       return false;
     }
-
-    const base::Time now = base::Time::Now();
-    const base::Time last_time_sent_logs = base::Time::FromInternalValue(
-        local_state.GetInt64(prefs::kSwReporterLastTimeSentReport));
-    const base::Time next_time_send_logs =
-        last_time_sent_logs +
-        base::TimeDelta::FromDays(kDaysBetweenReporterLogsSent);
-    // Send the logs if the last send is the future or if the interval has
-    // passed. The former is intended as a measure for failure recovery, in
-    // case the time in local state is incorrectly set to the future.
-    if (last_time_sent_logs > now || next_time_send_logs <= now) {
-      uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_ENABLED);
-      return true;
+    if (!in_logs_upload_period_) {
+      uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_RECENTLY_SENT_LOGS);
+      return false;
     }
-    uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_RECENTLY_SENT_LOGS);
-    return false;
+    uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_ENABLED);
+    return true;
   }
 
   // Appends switches to the next invocation that depend on the user current
@@ -1008,6 +1011,10 @@ class ReporterRunner : public chrome::BrowserListObserver {
   // changed to a different value when a prompt is pending and the reporter
   // should be run before adding the global error to the Chrome menu.
   int days_between_reporter_runs_ = kDaysBetweenSuccessfulSwReporterRuns;
+
+  // This will be true if the current queue of invocations started at a time
+  // when logs should be uploaded.
+  bool in_logs_upload_period_ = false;
 
   // A single leaky instance.
   static ReporterRunner* instance_;
