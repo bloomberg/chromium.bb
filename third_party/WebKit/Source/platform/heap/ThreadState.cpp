@@ -231,6 +231,8 @@ void ThreadState::runTerminationGC() {
   // Set the terminate flag on all heap pages of this thread. This is used to
   // ensure we don't trace pages on other threads that are not part of the
   // thread local GC.
+  // TODO(haraken): Remove this. This is not needed once we remove a thread-
+  // local termination GC.
   prepareForThreadStateTermination();
 
   ProcessHeap::crossThreadPersistentRegion().prepareForThreadStateTermination(
@@ -242,7 +244,8 @@ void ThreadState::runTerminationGC() {
   int currentCount = getPersistentRegion()->numberOfPersistents();
   ASSERT(currentCount >= 0);
   while (currentCount != oldCount) {
-    collectGarbageForTerminatingThread();
+    collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep,
+                   BlinkGC::ThreadTerminationGC);
     // Release the thread-local static persistents that were
     // instantiated while running the termination GC.
     releaseStaticPersistentNodes();

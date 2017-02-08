@@ -81,6 +81,7 @@ class PLATFORM_EXPORT BlinkGC final {
     ForcedGC,
     MemoryPressureGC,
     PageNavigationGC,
+    ThreadTerminationGC,
     NumberOfGCReason,
   };
 
