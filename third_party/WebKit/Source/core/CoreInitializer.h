@@ -46,7 +46,6 @@ class CORE_EXPORT CoreInitializer {
 
   // Should be called by clients before trying to create Frames.
   virtual void initialize();
-  virtual void shutdown();
 
  protected:
   bool isInitialized() const { return m_isInitialized; }

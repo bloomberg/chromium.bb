@@ -437,13 +437,6 @@ void V8Initializer::initializeMainThread() {
       WTF::makeUnique<MainThreadDebugger>(isolate));
 }
 
-void V8Initializer::shutdownMainThread() {
-  ASSERT(isMainThread());
-  v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-  V8PerIsolateData::willBeDestroyed(isolate);
-  V8PerIsolateData::destroy(isolate);
-}
-
 static void reportFatalErrorInWorker(const char* location,
                                      const char* message) {
   // FIXME: We temporarily deal with V8 internal error situations such as

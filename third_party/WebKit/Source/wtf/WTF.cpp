@@ -43,7 +43,6 @@ namespace WTF {
 extern void initializeThreading();
 
 bool s_initialized;
-bool s_shutdown;
 void (*s_callOnMainThreadFunction)(MainThreadFunction, void*);
 ThreadIdentifier s_mainThreadIdentifier;
 
@@ -60,10 +59,9 @@ bool isMainThread() {
 }
 
 void initialize(void (*callOnMainThreadFunction)(MainThreadFunction, void*)) {
-  // WTF, and Blink in general, cannot handle being re-initialized, even if
-  // shutdown first.  Make that explicit here.
+  // WTF, and Blink in general, cannot handle being re-initialized.
+  // Make that explicit here.
   RELEASE_ASSERT(!s_initialized);
-  RELEASE_ASSERT(!s_shutdown);
   s_initialized = true;
   initializeThreading();
 
@@ -71,16 +69,6 @@ void initialize(void (*callOnMainThreadFunction)(MainThreadFunction, void*)) {
   s_mainThreadIdentifier = currentThread();
   AtomicString::init();
   StringStatics::init();
-}
-
-void shutdown() {
-  RELEASE_ASSERT(s_initialized);
-  RELEASE_ASSERT(!s_shutdown);
-  s_shutdown = true;
-}
-
-bool isShutdown() {
-  return s_shutdown;
 }
 
 }  // namespace WTF

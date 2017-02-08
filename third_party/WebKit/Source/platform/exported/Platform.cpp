@@ -104,35 +104,6 @@ void Platform::initialize(Platform* platform) {
   }
 }
 
-void Platform::shutdown() {
-  ASSERT(isMainThread());
-  if (s_platform->m_mainThread) {
-    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-        FontCacheMemoryDumpProvider::instance());
-    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-        PartitionAllocMemoryDumpProvider::instance());
-    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-        BlinkGCMemoryDumpProvider::instance());
-    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-        MemoryCacheDumpProvider::instance());
-
-    ASSERT(s_gcTaskRunner);
-    delete s_gcTaskRunner;
-    s_gcTaskRunner = nullptr;
-  }
-
-  // Detach the main thread before starting the shutdown sequence
-  // so that the main thread won't get involved in a GC during the shutdown.
-  ThreadState::detachMainThread();
-
-  ProcessHeap::shutdown();
-
-  WTF::shutdown();
-
-  s_platform->m_mainThread = nullptr;
-  s_platform = nullptr;
-}
-
 void Platform::setCurrentPlatformForTesting(Platform* platform) {
   ASSERT(platform);
   s_platform = platform;

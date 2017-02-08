@@ -127,7 +127,6 @@ class CallbackStackMemoryPool final {
   static CallbackStackMemoryPool& instance();
 
   void initialize();
-  void shutdown();
   CallbackStack::Item* allocate();
   void free(CallbackStack::Item*);
 

@@ -25,12 +25,6 @@ void CallbackStackMemoryPool::initialize() {
   CHECK(m_pooledMemory);
 }
 
-void CallbackStackMemoryPool::shutdown() {
-  WTF::FreePages(m_pooledMemory, kBlockBytes * kPooledBlockCount);
-  m_pooledMemory = nullptr;
-  m_freeListFirst = 0;
-}
-
 CallbackStack::Item* CallbackStackMemoryPool::allocate() {
   MutexLocker locker(m_mutex);
   // Allocate from a free list if available.

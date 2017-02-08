@@ -120,7 +120,6 @@ class PLATFORM_EXPORT ProcessHeap {
 
  public:
   static void init();
-  static void shutdown();
 
   static CrossThreadPersistentRegion& crossThreadPersistentRegion();
 
@@ -154,7 +153,6 @@ class PLATFORM_EXPORT ProcessHeap {
   static void resetHeapCounters();
 
  private:
-  static bool s_shutdownComplete;
   static size_t s_totalAllocatedSpace;
   static size_t s_totalAllocatedObjectSize;
   static size_t s_totalMarkedObjectSize;

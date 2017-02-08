@@ -54,15 +54,6 @@ DatabaseManager& DatabaseManager::manager() {
   return *s_databaseManager;
 }
 
-void DatabaseManager::terminateDatabaseThread() {
-  DCHECK(isMainThread());
-  if (!s_databaseManager)
-    return;
-  for (const Member<DatabaseContext>& context :
-       s_databaseManager->m_contextMap.values())
-    context->stopDatabases();
-}
-
 DatabaseManager::DatabaseManager()
 {
 }

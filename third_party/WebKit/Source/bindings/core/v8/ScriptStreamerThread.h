@@ -23,7 +23,6 @@ class CORE_EXPORT ScriptStreamerThread {
 
  public:
   static void init();
-  static void shutdown();
   static ScriptStreamerThread* shared();
 
   void postTask(std::unique_ptr<CrossThreadClosure>);

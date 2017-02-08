@@ -30,24 +30,6 @@ void ScriptStreamerThread::init() {
   s_sharedThread = new ScriptStreamerThread();
 }
 
-void ScriptStreamerThread::shutdown() {
-  ASSERT(s_sharedThread);
-  ScriptStreamerThread* toDelete;
-  {
-    MutexLocker locker(*s_mutex);
-    toDelete = s_sharedThread;
-    // The background thread can now safely check s_sharedThread; if it's
-    // not 0, we're not shutting down.
-    s_sharedThread = 0;
-  }
-  // This will run the pending tasks into completion. We shouldn't hold the
-  // mutex while doing that.
-  delete toDelete;
-  // Now it's safe to delete s_mutex, since there are no tasks that could
-  // access it later.
-  delete s_mutex;
-}
-
 ScriptStreamerThread* ScriptStreamerThread::shared() {
   return s_sharedThread;
 }

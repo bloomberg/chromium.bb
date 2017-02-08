@@ -48,7 +48,6 @@ class DatabaseManager {
 
  public:
   static DatabaseManager& manager();
-  static void terminateDatabaseThread();
 
   // These 2 methods are for DatabaseContext (un)registration, and should only
   // be called by the DatabaseContext constructor and destructor.

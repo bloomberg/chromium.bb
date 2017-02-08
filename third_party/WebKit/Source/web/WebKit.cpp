@@ -91,23 +91,6 @@ void initialize(Platform* platform) {
   }
 }
 
-void shutdown() {
-  ThreadState::current()->cleanupMainThread();
-
-  // currentThread() is null if we are running on a thread without a message
-  // loop.
-  if (WebThread* currentThread = Platform::current()->currentThread()) {
-    currentThread->removeTaskObserver(s_endOfTaskRunner);
-    s_endOfTaskRunner = nullptr;
-  }
-
-  modulesInitializer().shutdown();
-
-  V8Initializer::shutdownMainThread();
-
-  Platform::shutdown();
-}
-
 v8::Isolate* mainThreadIsolate() {
   return V8PerIsolateData::mainThreadIsolate();
 }

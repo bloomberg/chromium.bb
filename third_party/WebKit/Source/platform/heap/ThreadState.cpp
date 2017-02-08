@@ -198,13 +198,11 @@ ThreadState::~ThreadState() {
 }
 
 void ThreadState::attachMainThread() {
-  RELEASE_ASSERT(!ProcessHeap::s_shutdownComplete);
   s_threadSpecific = new WTF::ThreadSpecific<ThreadState*>();
   new (s_mainThreadStateStorage) ThreadState();
 }
 
 void ThreadState::attachCurrentThread() {
-  RELEASE_ASSERT(!ProcessHeap::s_shutdownComplete);
   new ThreadState();
 }
 
@@ -261,33 +259,6 @@ void ThreadState::runTerminationGC() {
   // Add pages to the orphaned page pool to ensure any global GCs from this
   // point on will not trace objects on this thread's arenas.
   cleanupPages();
-}
-
-void ThreadState::cleanupMainThread() {
-  ASSERT(isMainThread());
-
-  releaseStaticPersistentNodes();
-
-  // Finish sweeping before shutting down V8. Otherwise, some destructor
-  // may access V8 and cause crashes.
-  completeSweep();
-
-  // It is unsafe to trigger GCs after this point because some
-  // destructor may access already-detached V8 and cause crashes.
-  // Also it is useless. So we forbid GCs.
-  enterGCForbiddenScope();
-}
-
-void ThreadState::detachMainThread() {
-  // Enter a safe point before trying to acquire threadAttachMutex
-  // to avoid dead lock if another thread is preparing for GC, has acquired
-  // threadAttachMutex and waiting for other threads to pause or reach a
-  // safepoint.
-  ThreadState* state = mainThreadState();
-  ASSERT(!state->isSweepingInProgress());
-
-  state->heap().detach(state);
-  state->~ThreadState();
 }
 
 void ThreadState::detachCurrentThread() {

@@ -48,12 +48,6 @@ BLINK_EXPORT void initialize(Platform*);
 // initialize must have been called first.
 BLINK_EXPORT v8::Isolate* mainThreadIsolate();
 
-// Once shutdown, the Platform passed to initialize will no longer
-// be accessed. No other WebKit objects should be in use when this function is
-// called. Any background threads created by WebKit are promised to be
-// terminated by the time this function returns.
-BLINK_EXPORT void shutdown();
-
 // Alters the rendering of content to conform to a fixed set of rules.
 BLINK_EXPORT void setLayoutTestMode(bool);
 BLINK_EXPORT bool layoutTestMode();

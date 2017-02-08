@@ -144,14 +144,4 @@ void CoreInitializer::initialize() {
   ScriptStreamerThread::init();
 }
 
-void CoreInitializer::shutdown() {
-  // Shutdown V8-related background threads before V8 is ramped down. Note
-  // that this will wait the thread to stop its operations.
-  ScriptStreamerThread::shutdown();
-
-  ASSERT(Platform::current());
-
-  WorkerThread::terminateAndWaitForAllWorkers();
-}
-
 }  // namespace blink

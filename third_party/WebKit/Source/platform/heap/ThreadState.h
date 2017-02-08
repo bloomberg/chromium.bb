@@ -168,8 +168,6 @@ class PLATFORM_EXPORT ThreadState {
   bool isTerminating() { return m_isTerminating; }
 
   static void attachMainThread();
-  static void detachMainThread();
-  void cleanupMainThread();
 
   // Associate ThreadState object with the current thread. After this
   // call thread can start using the garbage collected heap infrastructure.

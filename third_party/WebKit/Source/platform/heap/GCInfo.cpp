@@ -62,11 +62,6 @@ void GCInfoTable::init() {
   resize();
 }
 
-void GCInfoTable::shutdown() {
-  WTF::Partitions::fastFree(s_gcInfoTable);
-  s_gcInfoTable = nullptr;
-}
-
 #if DCHECK_IS_ON()
 void assertObjectHasGCInfo(const void* payload, size_t gcInfoIndex) {
   ASSERT(HeapObjectHeader::fromPayload(payload)->checkHeader());

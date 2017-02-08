@@ -136,7 +136,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Initialize platform and wtf. If you need to initialize the entire Blink,
   // you should use blink::initialize.
   static void initialize(Platform*);
-  static void shutdown();
   static Platform* current();
 
   // Used to switch the current platform only for testing.

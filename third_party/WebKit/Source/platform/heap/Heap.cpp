@@ -101,7 +101,6 @@ void ThreadHeap::flushHeapDoesNotContainCache() {
 }
 
 void ProcessHeap::init() {
-  s_shutdownComplete = false;
   s_totalAllocatedSpace = 0;
   s_totalAllocatedObjectSize = 0;
   s_totalMarkedObjectSize = 0;
@@ -115,28 +114,12 @@ void ProcessHeap::resetHeapCounters() {
   s_totalMarkedObjectSize = 0;
 }
 
-void ProcessHeap::shutdown() {
-  ASSERT(!s_shutdownComplete);
-
-  {
-    // The main thread must be the last thread that gets detached.
-    MutexLocker locker(ThreadHeap::allHeapsMutex());
-    RELEASE_ASSERT(ThreadHeap::allHeaps().isEmpty());
-  }
-
-  CallbackStackMemoryPool::instance().shutdown();
-  GCInfoTable::shutdown();
-  ASSERT(ProcessHeap::totalAllocatedSpace() == 0);
-  s_shutdownComplete = true;
-}
-
 CrossThreadPersistentRegion& ProcessHeap::crossThreadPersistentRegion() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistentRegion, persistentRegion,
                                   new CrossThreadPersistentRegion());
   return persistentRegion;
 }
 
-bool ProcessHeap::s_shutdownComplete = false;
 size_t ProcessHeap::s_totalAllocatedSpace = 0;
 size_t ProcessHeap::s_totalAllocatedObjectSize = 0;
 size_t ProcessHeap::s_totalMarkedObjectSize = 0;

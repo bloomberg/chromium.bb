@@ -167,7 +167,6 @@ class GCInfoTable {
   PLATFORM_EXPORT static void ensureGCInfoIndex(const GCInfo*, size_t*);
 
   static void init();
-  static void shutdown();
 
   static size_t gcInfoIndex() { return s_gcInfoIndex; }
 
