@@ -1,5 +1,4 @@
-jdonnelly@chromium.org
-krb@chromium.org
+mathp@chromium.org
 rouslan@chromium.org
 
 per-file *.mojom=set noparent
