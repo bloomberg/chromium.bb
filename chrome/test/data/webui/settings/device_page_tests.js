@@ -609,48 +609,6 @@ cr.define('device_page_tests', function() {
               .updatePowerStatusCalled_);
         });
 
-        test('battery status', function() {
-          var icon = powerRow.querySelector('iron-icon');
-          assertEquals('settings:battery-unknown', icon.icon);
-
-          // Start at 50%.
-          var batteryStatus = {
-            charging: false,
-            calculating: false,
-            percent: 50,
-            statusText: '5 hours left',
-          };
-          cr.webUIListenerCallback(
-              'battery-status-changed', Object.assign({}, batteryStatus));
-          setPowerSources([], '', false);
-          assertEquals(icon.icon, 'settings:battery-50');
-
-          // Update to charging.
-          var powerSource = {
-            id: '1',
-            type: settings.PowerDeviceType.DEDICATED_CHARGER,
-            description: 'AC adapter',
-          };
-          batteryStatus.charging = true;
-          batteryStatus.percent = 65;
-          cr.webUIListenerCallback(
-              'battery-status-changed', Object.assign({}, batteryStatus));
-          setPowerSources([powerSource], powerSource.id, false);
-          assertEquals(icon.icon, 'settings:battery-charging-60');
-
-          // Update with a low-power charger.
-          setPowerSources([powerSource], powerSource.id, true);
-          assertEquals(icon.icon, 'settings:battery-unreliable');
-
-          // Update with no charger and a critical battery level.
-          batteryStatus.charging = false;
-          batteryStatus.percent = 2;
-          cr.webUIListenerCallback(
-              'battery-status-changed', Object.assign({}, batteryStatus));
-          setPowerSources([], '', false);
-          assertEquals(icon.icon, 'settings:battery-alert');
-        });
-
         test('power sources', function() {
           var batteryStatus = {
             charging: false,

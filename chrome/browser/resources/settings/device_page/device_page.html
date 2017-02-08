@@ -2,7 +2,6 @@
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="device_page_browser_proxy.html">
@@ -11,7 +10,6 @@
 <link rel="import" href="pointers.html">
 <link rel="import" href="storage.html">
 <link rel="import" href="stylus.html">
-<link rel="import" href="../icons.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
@@ -25,8 +23,6 @@
       <neon-animatable id="main" route-path="default">
         <div id="pointersRow" class="settings-box first"
             on-tap="onPointersTap_" actionable>
-          <iron-icon icon="[[getPointersIcon_(hasMouse_, hasTouchpad_)]]">
-          </iron-icon>
           <div class="middle">
             [[getPointersTitle_(hasMouse_, hasTouchpad_)]]
           </div>
@@ -34,33 +30,28 @@
         </div>
         <div id="keyboardRow" class="settings-box" on-tap="onKeyboardTap_"
             actionable>
-          <iron-icon icon="settings:keyboard"></iron-icon>
           <div class="middle">$i18n{keyboardTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"></button>
         </div>
         <template is="dom-if" if="[[hasStylus_]]">
           <div id="stylusRow" class="settings-box" on-tap="onStylusTap_"
               actionable>
-            <iron-icon icon="settings:note"></iron-icon>
             <div class="middle">$i18n{stylusTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"></button>
           </div>
         </template>
         <div id="displayRow" class="settings-box" on-tap="onDisplayTap_"
             actionable>
-          <iron-icon icon="settings:desktop-windows"></iron-icon>
           <div class="middle">$i18n{displayTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"></button>
         </div>
         <div id="storageRow" class="settings-box" on-tap="onStorageTap_"
             actionable>
-          <iron-icon icon="settings:storage"></iron-icon>
           <div class="middle">$i18n{storageTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"></button>
         </div>
         <template is="dom-if" if="[[enablePowerSettings_]]">
           <div id="powerRow" class="settings-box two-line">
-            <iron-icon icon="[[batteryIcon_]]"></iron-icon>
             <div class="middle">
               <div>[[powerLabel_]]</div>
               <div class="secondary">[[batteryStatus_.statusText]]</div>

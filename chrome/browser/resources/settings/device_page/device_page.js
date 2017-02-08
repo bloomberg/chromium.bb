@@ -71,13 +71,6 @@ Polymer({
     powerSources_: Array,
 
     /** @private */
-    batteryIcon_: {
-      type: String,
-      computed: 'computeBatteryIcon_(batteryStatus_, lowPowerCharger_)',
-      value: 'settings:battery-unknown',
-    },
-
-    /** @private */
     powerLabel_: {
       type: String,
       computed: 'computePowerLabel_(powerSources_, batteryStatus_.calculating)',
@@ -140,61 +133,12 @@ Polymer({
   },
 
   /**
-   * @return {string}
-   * @private
-   */
-  getPointersIcon_: function() {
-    if (this.hasMouse_)
-      return 'settings:mouse';
-    if (this.hasTouchpad_)
-      return 'settings:touch-app';
-    return '';
-  },
-
-  /**
    * @param {*} lhs
    * @param {*} rhs
    * @return {boolean}
    */
   isEqual_: function(lhs, rhs) {
     return lhs === rhs;
-  },
-
-  /**
-   * @param {!settings.BatteryStatus} batteryStatus
-   * @param {boolean} lowPowerCharger
-   * @return {string}
-   */
-  computeBatteryIcon_: function(batteryStatus, lowPowerCharger) {
-    var iconPrefix = 'settings:battery-';
-
-    if (batteryStatus.calculating)
-      return iconPrefix + 'unknown';
-
-    if (lowPowerCharger)
-      return iconPrefix + 'unreliable';
-
-    if (!batteryStatus.charging && batteryStatus.percent < 5)
-      return iconPrefix + 'alert';
-
-    // Compute the rest of the icon: iconPrefix + '[charging-]<percent>'.
-    if (batteryStatus.charging)
-      iconPrefix += 'charging-';
-
-    // Show the highest level icon that doesn't go over the actual percentage.
-    if (batteryStatus.percent < 30)
-      return iconPrefix + '20';
-    if (batteryStatus.percent < 50)
-      return iconPrefix + '30';
-    if (batteryStatus.percent < 60)
-      return iconPrefix + '50';
-    if (batteryStatus.percent < 80)
-      return iconPrefix + '60';
-    if (batteryStatus.percent < 90)
-      return iconPrefix + '80';
-    if (batteryStatus.percent < 100)
-      return iconPrefix + '90';
-    return iconPrefix + 'full';
   },
 
   /**
