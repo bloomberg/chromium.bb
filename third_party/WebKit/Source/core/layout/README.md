@@ -1,7 +1,7 @@
-# `Source/core/layout`
+# Blink Layout
 
-This directory contains implementation of layout objects. It covers the
-following document lifecycle states:
+The `Source/core/layout` directory contains the implementation of layout objects.
+It covers the following document lifecycle states:
 
 * LayoutSubtreeChange (`InLayoutSubtreeChange` and `LayoutSubtreeChangeClean`)
 * PreLayout (`InPreLayout`)
@@ -11,7 +11,10 @@ following document lifecycle states:
 Note that a new Blink layout system is under development. See the
 [LayoutNG design document](https://docs.google.com/document/d/1uxbDh4uONFQOiGuiumlJBLGgO4KDWB8ZEkp7Rd47fw4/preview).
 
-## Overflow and scrolling
+The layout code is maintained by the
+[layout team](http://dev.chromium.org/blink/layout-team).
+
+## Scroll origin vs. offset vs. position
 
 When a LayoutBox has scrollable overflow, it is associated with a PaintLayerScrollableArea.
 PaintLayerScrollableArea uses a "scroll origin" to represent the location of the top/left
@@ -61,7 +64,7 @@ the box (the vertical scrollbar is the `|/|` part):
                     |          |/|          |
                     |          |/|          |
                     |__________|/|__________|
-    
+
                           overflow rect
                     |<--------------------->|
 
@@ -79,7 +82,7 @@ the box (the vertical scrollbar is the `|/|` part):
       vertical-rl   |            |          |/|
                     |            |          |/|
                     |____________|__________|/|
-    
+
                           overflow rect
                     |<--------------------->|
 
@@ -283,6 +286,11 @@ TODO(wkorman): Provide an overview of scrolling. For now, the BlinkOn talk
 on
 [Scrolling in Blink](https://docs.google.com/presentation/d/1pwx0qBW4wSmYAOJxq2gb3SMvSTCHz2L2TFx_bjsvm8E/preview)
 is a good overview.
+
+*Root layer scrolling* is an ongoing refactoring of Blink's scrolling
+architecture, which makes the root `PaintLayer` responsible for the scrolling
+that was previously done by `FrameView`.  For more details, see:
+[Root Layer Scrolling](https://bit.ly/root-layer-scrolling).
 
 ## Glossaries
 
