@@ -357,18 +357,13 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
       new message_center::MessageCenterBubble(message_center(),
                                               message_center_tray_.get());
 
-  int max_height;
-  if (IsHorizontalAlignment(shelf_alignment())) {
-    max_height = shelf()->GetIdealBounds().y();
-  } else {
-    // Assume the status area and bubble bottoms are aligned when vertical.
-    gfx::Rect bounds_in_root =
-        status_area_window_->GetRootWindow()->ConvertRectFromScreen(
-            status_area_window_->GetBoundsInScreen());
-    max_height = bounds_in_root.bottom();
-  }
-  message_center_bubble->SetMaxHeight(
-      std::max(0, max_height - GetTrayConstant(TRAY_SPACING)));
+  // In the horizontal case, message center starts from the top of the shelf.
+  // In the vertical case, it starts from the bottom of WebNotificationTray.
+  const int max_height = IsHorizontalAlignment(shelf_alignment())
+                             ? shelf()->GetIdealBounds().y()
+                             : GetBoundsInScreen().bottom();
+  message_center_bubble->SetMaxHeight(max_height);
+
   if (show_settings)
     message_center_bubble->SetSettingsVisible();
 
