@@ -92,6 +92,7 @@ public class LayoutManagerChrome
             if (type == TabLaunchType.FROM_RESTORE) return;
             if (type == TabLaunchType.FROM_REPARENTING) return;
             if (type == TabLaunchType.FROM_EXTERNAL_APP) return;
+            if (type == TabLaunchType.FROM_LAUNCHER_SHORTCUT) return;
 
             tabCreating(getTabModelSelector().getCurrentTabId(), tab.getUrl(), tab.isIncognito());
         }

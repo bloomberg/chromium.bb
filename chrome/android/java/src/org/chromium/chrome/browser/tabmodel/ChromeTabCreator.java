@@ -303,6 +303,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             case FROM_CHROME_UI:
             case FROM_LONGPRESS_FOREGROUND:
             case FROM_LONGPRESS_BACKGROUND:
+            case FROM_LAUNCHER_SHORTCUT:
                 transition = PageTransition.AUTO_TOPLEVEL;
                 break;
             default:

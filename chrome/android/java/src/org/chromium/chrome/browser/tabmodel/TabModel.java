@@ -55,7 +55,10 @@ public interface TabModel extends TabList {
         /**
          * Changed windows by moving from one activity to another. Will be opened in the foreground.
          */
-        FROM_REPARENTING
+        FROM_REPARENTING,
+
+        /** Opened from a launcher shortcut. */
+        FROM_LAUNCHER_SHORTCUT,
     }
 
     /**

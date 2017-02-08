@@ -938,7 +938,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     if (url == null || url.equals(UrlConstants.NTP_URL)) {
                         if (fromLauncherShortcut) {
                             getTabCreator(true).launchUrl(
-                                    UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP);
+                                    UrlConstants.NTP_URL, TabLaunchType.FROM_LAUNCHER_SHORTCUT);
                             recordLauncherShortcutAction(true);
                             reportNewTabShortcutUsed(true);
                         } else {
@@ -1500,7 +1500,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             loadUrlParams.setVerbatimHeaders(headers);
             return getTabCreator(isIncognito).createNewTab(
                     loadUrlParams,
-                    fromLauncherShortcut ? TabLaunchType.FROM_EXTERNAL_APP
+                    fromLauncherShortcut ? TabLaunchType.FROM_LAUNCHER_SHORTCUT
                             : TabLaunchType.FROM_LINK,
                     null,
                     intent);
