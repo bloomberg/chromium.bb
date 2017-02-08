@@ -335,6 +335,9 @@ const aom_prob av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1] = {
   }
 };
 
+// Default probabilities for signaling Intra mode for Y plane -- used only for
+// inter frames. ('av1_kf_y_mode_prob' is used for intra-only frames).
+// Context used: block size group.
 static const aom_prob default_if_y_probs[BLOCK_SIZE_GROUPS][INTRA_MODES - 1] = {
   { 65, 32, 18, 144, 162, 194, 41, 51, 98 },   // block_size < 8x8
   { 132, 68, 18, 165, 217, 196, 45, 40, 78 },  // block_size < 16x16
@@ -342,6 +345,9 @@ static const aom_prob default_if_y_probs[BLOCK_SIZE_GROUPS][INTRA_MODES - 1] = {
   { 221, 135, 38, 194, 248, 121, 96, 85, 29 }  // block_size >= 32x32
 };
 
+// Default probabilities for signaling Intra mode for UV plane -- common for
+// both intra and inter frames.
+// Context used: Intra mode used by Y plane of the same block.
 static const aom_prob default_uv_probs[INTRA_MODES][INTRA_MODES - 1] = {
   { 120, 7, 76, 176, 208, 126, 28, 54, 103 },   // y = dc
   { 48, 12, 154, 155, 139, 90, 34, 117, 119 },  // y = v
