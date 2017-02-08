@@ -28,9 +28,10 @@
   </div>
 </div>
 
-
-<div class="table container" style="display: block; float: left; height: 98px;">
-  <div class="td" style="height: 90px;" style="display: block;">
+<!-- crbug.com/690087: We use 99px instead of 100px because we end up discarding 1px when trying
+     to allocate the spare pixels to the table. -->
+<div class="table container" style="display: block; float: left; height: 99px;">
+  <div class="td" style="height: 91px;" style="display: block;">
     <div class="item"></div>
   </div>
 </div>

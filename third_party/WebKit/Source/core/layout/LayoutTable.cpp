@@ -451,12 +451,13 @@ void LayoutTable::layoutSection(LayoutTableSection& section,
     layouter.setChildNeedsLayout(&section);
   if (!section.needsLayout())
     markChildForPaginationRelayoutIfNeeded(section, layouter);
-  section.layoutIfNeeded();
-  int sectionLogicalHeight = section.calcRowLogicalHeight();
-  section.setLogicalHeight(LayoutUnit(sectionLogicalHeight));
+  if (section.needsLayout()) {
+    section.layout();
+    section.setLogicalHeight(LayoutUnit(section.calcRowLogicalHeight()));
+  }
   if (view()->layoutState()->isPaginated())
     updateFragmentationInfoForChild(section);
-  setLogicalHeight(logicalHeight() + sectionLogicalHeight);
+  setLogicalHeight(logicalHeight() + section.logicalHeight());
 }
 
 LayoutUnit LayoutTable::logicalHeightFromStyle() const {
@@ -501,8 +502,8 @@ void LayoutTable::distributeExtraLogicalHeight(int extraLogicalHeight) {
     extraLogicalHeight -=
         section->distributeExtraLogicalHeightToRows(extraLogicalHeight);
 
-  // FIXME: We really would like to enable this ASSERT to ensure that all the
-  // extra space has been distributed.
+  // crbug.com/690087: We really would like to enable this ASSERT to ensure that
+  // all the extra space has been distributed.
   // However our current distribution algorithm does not round properly and thus
   // we can have some remaining height.
   // ASSERT(!topSection() || !extraLogicalHeight);
