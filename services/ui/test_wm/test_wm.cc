@@ -39,6 +39,8 @@ class TestWM : public service_manager::Service,
   TestWM() {}
 
   ~TestWM() override {
+    default_capture_client_.reset();
+
     // WindowTreeHost uses state from WindowTreeClient, so destroy it first.
     window_tree_host_.reset();
 
@@ -147,6 +149,7 @@ class TestWM : public service_manager::Service,
   void OnWmDisplayRemoved(aura::WindowTreeHostMus* window_tree_host) override {
     DCHECK_EQ(window_tree_host, window_tree_host_.get());
     root_ = nullptr;
+    default_capture_client_.reset();
     window_tree_host_.reset();
   }
   void OnWmDisplayModified(const display::Display& display) override {}
