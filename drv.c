@@ -518,10 +518,18 @@ int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 		switch (format) {
 		case DRM_FORMAT_NV12:
 		case DRM_FORMAT_YVU420:
-			stride = stride / 2;
+		case DRM_FORMAT_YVU420_ANDROID:
+			stride = DIV_ROUND_UP(stride, 2);
 			break;
 		}
 	}
+
+	/*
+	 * The stride of Android YV12 buffers is required to be aligned to 16 bytes
+	 * (see <system/graphics.h>).
+	 */
+	if (format == DRM_FORMAT_YVU420_ANDROID)
+		stride = ALIGN(stride, 16);
 
 	return stride;
 }
@@ -580,6 +588,7 @@ size_t drv_num_planes_from_format(uint32_t format)
 	case DRM_FORMAT_NV12:
 		return 2;
 	case DRM_FORMAT_YVU420:
+	case DRM_FORMAT_YVU420_ANDROID:
 		return 3;
 	}
 
@@ -596,6 +605,7 @@ uint32_t drv_size_from_format(uint32_t format, uint32_t stride,
 	switch (format) {
 	case DRM_FORMAT_NV12:
 	case DRM_FORMAT_YVU420:
+	case DRM_FORMAT_YVU420_ANDROID:
 		vertical_subsampling = (plane == 0) ? 1 : 2;
 		break;
 	default:

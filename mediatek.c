@@ -18,7 +18,8 @@
 
 static const uint32_t supported_formats[] = {
 	DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888, DRM_FORMAT_RGB565,
-	DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888, DRM_FORMAT_YVU420
+	DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888, DRM_FORMAT_YVU420,
+	DRM_FORMAT_YVU420_ANDROID
 };
 
 static int mediatek_init(struct driver *drv)
@@ -85,7 +86,7 @@ static uint32_t mediatek_resolve_format(uint32_t format)
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
-		return DRM_FORMAT_YVU420;
+		return DRM_FORMAT_YVU420_ANDROID;
 	default:
 		return format;
 	}

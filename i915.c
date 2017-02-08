@@ -24,7 +24,8 @@ static const uint32_t tileable_formats[] = {
 };
 
 static const uint32_t linear_only_formats[] = {
-	DRM_FORMAT_GR88, DRM_FORMAT_R8, DRM_FORMAT_YVU420
+	DRM_FORMAT_GR88, DRM_FORMAT_R8, DRM_FORMAT_YVU420,
+	DRM_FORMAT_YVU420_ANDROID
 };
 
 struct i915_device
@@ -413,7 +414,7 @@ static uint32_t i915_resolve_format(uint32_t format)
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
-		return DRM_FORMAT_YVU420;
+		return DRM_FORMAT_YVU420_ANDROID;
 	default:
 		return format;
 	}

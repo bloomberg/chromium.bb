@@ -80,7 +80,7 @@ uint32_t cros_gralloc_convert_format(int format)
 	case HAL_PIXEL_FORMAT_YCbCr_420_888:
 		return DRM_FORMAT_FLEX_YCbCr_420_888;
 	case HAL_PIXEL_FORMAT_YV12:
-		return DRM_FORMAT_YVU420;
+		return DRM_FORMAT_YVU420_ANDROID;
 	}
 
 	return DRM_FORMAT_NONE;

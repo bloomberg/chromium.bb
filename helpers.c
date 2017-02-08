@@ -28,6 +28,7 @@ int drv_bpp_from_format(uint32_t format, size_t plane)
 	case DRM_FORMAT_R8:
 	case DRM_FORMAT_RGB332:
 	case DRM_FORMAT_YVU420:
+	case DRM_FORMAT_YVU420_ANDROID:
 		return 8;
 
 	/*
@@ -106,11 +107,11 @@ int drv_bpp_from_format(uint32_t format, size_t plane)
 
 /*
  * This function fills in the buffer object given driver aligned dimensions
- * and a format.  This function assumes there is just one kernel buffer per
- * buffer object.
+ * (in pixels) and a format. This function assumes there is just one kernel
+ * buffer per buffer object.
  */
-int drv_bo_from_format(struct bo *bo, uint32_t width, uint32_t height,
-		       uint32_t format)
+int drv_bo_from_format(struct bo *bo, uint32_t aligned_width,
+		       uint32_t aligned_height, uint32_t format)
 {
 
 	size_t p, num_planes;
@@ -118,17 +119,18 @@ int drv_bo_from_format(struct bo *bo, uint32_t width, uint32_t height,
 
 	num_planes = drv_num_planes_from_format(format);
 	assert(num_planes);
+	bo->total_size = 0;
 
 	for (p = 0; p < num_planes; p++) {
-		bo->strides[p] = drv_stride_from_format(format, width, p);
+		bo->strides[p] = drv_stride_from_format(format, aligned_width,
+							p);
 		bo->sizes[p] = drv_size_from_format(format, bo->strides[p],
-						    height, p);
+						    bo->height, p);
 		bo->offsets[p] = offset;
 		offset += bo->sizes[p];
+		bo->total_size += drv_size_from_format(format, bo->strides[p],
+				                       aligned_height, p);
 	}
-
-	bo->total_size = bo->offsets[bo->num_planes - 1] +
-			 bo->sizes[bo->num_planes - 1];
 
 	return 0;
 }
