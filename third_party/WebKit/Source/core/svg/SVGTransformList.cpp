@@ -43,7 +43,7 @@ SVGTransformList::~SVGTransformList() {}
 SVGTransform* SVGTransformList::consolidate() {
   AffineTransform matrix;
   if (!concatenate(matrix))
-    return SVGTransform::create();
+    return nullptr;
 
   return initialize(SVGTransform::create(matrix));
 }
