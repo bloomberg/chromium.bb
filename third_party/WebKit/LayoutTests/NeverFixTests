@@ -218,6 +218,16 @@ external/wpt/magnetometer [ WontFix ]
 external/wpt/preload [ WontFix ]
 external/wpt/upgrade-insecure-requests [ WontFix ]
 
+# WPT manual tests without automation
+external/wpt/html/semantics/forms/constraints/tooShort-input-email-add-manual.html [ WontFix ]
+external/wpt/html/semantics/forms/constraints/tooShort-input-password-add-manual.html [ WontFix ]
+external/wpt/html/semantics/forms/constraints/tooShort-input-search-add-manual.html [ WontFix ]
+external/wpt/html/semantics/forms/constraints/tooShort-input-tel-add-manual.html [ WontFix ]
+external/wpt/html/semantics/forms/constraints/tooShort-input-text-add-manual.html [ WontFix ]
+external/wpt/html/semantics/forms/constraints/tooShort-input-url-add-manual.html [ WontFix ]
+external/wpt/html/semantics/forms/constraints/tooShort-textarea-add-manual.html [ WontFix ]
+external/wpt/selection/dir-manual.html [ WontFix ]
+
 # Temporary disabling of all encrypted-media WPT tests while enabling
 # https only. Once the switch is complete (and the WPT tests renamed so they
 # run using https), they can be re-enabled.

@@ -942,8 +942,8 @@ crbug.com/688911 inspector/console/console-format-es6-2.html [ NeedsManualRebase
 crbug.com/490511 external/wpt/html/browsers/offline/application-cache-api/api_update.html [ Failure Pass ]
 crbug.com/490511 [ Linux Win ] external/wpt/html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type.html [ Failure ]
 crbug.com/108417 external/wpt/html/rendering/non-replaced-elements/tables/table-border-1.html [ Failure ]
-crbug.com/490511 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0/color.html [ Failure Pass ]
-crbug.com/490511 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0/width.html [ Failure Pass ]
+crbug.com/490511 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0/color.html [ Failure ]
+crbug.com/490511 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0/width.html [ Failure ]
 crbug.com/490511 external/wpt/html/rendering/replaced-elements/embedded-content-rendering-rules/canvas-fallback.html [ Failure ]
 crbug.com/490511 external/wpt/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
 crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/invalid-src.html [ Skip ]
@@ -1845,7 +1845,6 @@ crbug.com/626703 external/wpt/streams/writable-streams/close.serviceworker.https
 crbug.com/626703 external/wpt/service-workers/service-worker/registration-useCache.https.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/close.sharedworker.html [ Timeout ]
 crbug.com/626703 external/csswg-test/css-flexbox-1/layout-algorithm_algo-cross-line-001.html [ Failure ]
-crbug.com/626703 external/wpt/dom/nodes/Document-characterSet-normalization.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/allow-scripts-flag-changing-2.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-iframe-element/cross_origin_parentage.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_007.htm [ Timeout ]
@@ -1892,8 +1891,6 @@ crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/add
 crbug.com/626703 external/wpt/user-timing/test_user_timing_mark_and_measure_exception_when_invoke_with_timing_attributes.html [ Failure ]
 crbug.com/626703 external/wpt/web-animations/interfaces/KeyframeEffect/composite.html [ Failure ]
 crbug.com/626703 external/wpt/web-animations/animation-model/combining-effects/effect-composition.html [ Failure ]
-crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure ]
-crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird.html [ Failure ]
 crbug.com/626703 external/wpt/web-animations/interfaces/KeyframeEffect/copy-contructor.html [ Failure ]
 crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/spacing-keyframes-filters.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/moving-documents.html [ Timeout ]
@@ -1918,11 +1915,14 @@ crbug.com/626703 external/wpt/streams/readable-streams/pipe-through.html [ Failu
 crbug.com/626703 external/wpt/streams/readable-streams/readable-stream-reader.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/tee.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/templated.html [ Failure Timeout ]
-crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-timeout.html [ Timeout ]
-crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-multiple-calls.html [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-exception.html [ Timeout ]
-crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-invoked.html [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-iframe.html [ Timeout ]
+crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-invoked.html [ Timeout ]
+crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-multiple-calls.html [ Timeout ]
+crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-timeout.html [ Timeout ]
+crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/basic.html [ Timeout ]
+crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/callback-idle-periods.html [ Timeout ]
+crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/callback-timeout-with-raf.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html [ Timeout ]
 crbug.com/626703 external/csswg-test/css-display-3/display-contents-before-after-001.html [ Failure ]
 crbug.com/626703 external/csswg-test/css-display-3/display-contents-before-after-002.html [ Failure ]
@@ -1944,15 +1944,7 @@ crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash ]
 
 # Manual tests that have not been automated.
 crbug.com/626703 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/html/semantics/forms/constraints/tooShort-input-email-add-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/html/semantics/forms/constraints/tooShort-input-password-add-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/html/semantics/forms/constraints/tooShort-input-search-add-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/html/semantics/forms/constraints/tooShort-input-tel-add-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/html/semantics/forms/constraints/tooShort-input-text-add-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/html/semantics/forms/constraints/tooShort-input-url-add-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/html/semantics/forms/constraints/tooShort-textarea-add-manual.html [ Timeout ]
 crbug.com/626703 external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/selection/dir-manual.html [ Timeout ]
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 external/wpt/html/syntax/parsing/template/creating-an-element-for-the-token/template-owner-document.html [ Pass Timeout ]
@@ -2129,11 +2121,6 @@ crbug.com/666628 virtual/mojo-loading/http/tests/inspector-enabled/console-stack
 crbug.com/619427 [ Mac Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
 crbug.com/667371 inspector/elements/styles-1/color-aware-property-value-edit.html [ Pass Failure ]
-
-# Newly imported tests that time out.
-crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/callback-idle-periods.html [ Timeout ]
-crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/callback-timeout-with-raf.html [ Timeout ]
-crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/basic.html [ Timeout ]
 
 # [css-ui] Imported tests from W3C suite.
 crbug.com/669473 external/csswg-test/css-ui-3/box-sizing-014.html [ Failure ]
