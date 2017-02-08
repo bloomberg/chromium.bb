@@ -18,6 +18,11 @@
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#endif
+
 namespace {
 
 const char kCallbackId[] = "test-callback-id";
@@ -30,7 +35,13 @@ namespace settings {
 
 class SiteSettingsHandlerTest : public testing::Test {
  public:
-  SiteSettingsHandlerTest() : handler_(&profile_) {}
+  SiteSettingsHandlerTest() : handler_(&profile_) {
+#if defined(OS_CHROMEOS)
+    mock_user_manager_ = new chromeos::MockUserManager;
+    user_manager_enabler_.reset(
+        new chromeos::ScopedUserManagerEnabler(mock_user_manager_));
+#endif
+  }
 
   void SetUp() override {
     handler()->set_web_ui(web_ui());
@@ -212,6 +223,10 @@ class SiteSettingsHandlerTest : public testing::Test {
   TestingProfile* incognito_profile_;
   content::TestWebUI web_ui_;
   SiteSettingsHandler handler_;
+#if defined(OS_CHROMEOS)
+  chromeos::MockUserManager* mock_user_manager_;  // Not owned.
+  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+#endif
 };
 
 TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {

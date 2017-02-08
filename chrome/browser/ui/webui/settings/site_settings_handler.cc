@@ -37,6 +37,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
+#if defined(OS_CHROMEOS)
+#include "components/user_manager/user_manager.h"
+#endif
+
 namespace settings {
 
 namespace {
@@ -374,8 +378,15 @@ void SiteSettingsHandler::HandleSetDefaultValueForContentType(
   ContentSetting default_setting;
   CHECK(content_settings::ContentSettingFromString(setting, &default_setting));
 
+  Profile* profile = profile_;
+#if defined(OS_CHROMEOS)
+  // ChromeOS special case: in Guest mode, settings are opened in Incognito
+  // mode so we need the original profile to actually modify settings.
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
+    profile = profile->GetOriginalProfile();
+#endif
   HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
+      HostContentSettingsMapFactory::GetForProfile(profile);
   map->SetDefaultContentSetting(
       static_cast<ContentSettingsType>(static_cast<int>(
           site_settings::ContentSettingsTypeFromGroupName(content_type))),
