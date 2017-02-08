@@ -7,13 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [347, 211, 10, 17],
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [381, 11, 1, 16],
           "reason": "caret"
         },
         {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [43, 36, 10, 16],
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [378, 11, 1, 16],
           "reason": "caret"
         }
       ]

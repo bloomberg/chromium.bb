@@ -9,18 +9,18 @@
     {
       "name": "LayoutTextControl INPUT id='root'",
       "position": [7, 7],
-      "bounds": [70, 24],
+      "bounds": [66, 24],
       "drawsContent": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 70, 24],
+          "rect": [0, 0, 66, 24],
           "reason": "subtree"
         },
         {
           "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 68, 22],
+          "rect": [0, 0, 64, 22],
           "reason": "full"
         }
       ]
@@ -28,13 +28,13 @@
     {
       "name": "LayoutBlockFlow DIV id='inner-editor'",
       "position": [3, 4],
-      "bounds": [64, 16],
+      "bounds": [60, 16],
       "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [64, 16],
+      "bounds": [60, 16],
       "shouldFlattenTransform": false
     },
     {
@@ -51,12 +51,12 @@
     },
     {
       "name": "Overflow Controls Host Layer",
-      "bounds": [64, 16]
+      "bounds": [60, 16]
     },
     {
       "name": "Horizontal Scrollbar Layer",
       "position": [0, 16],
-      "bounds": [64, 0],
+      "bounds": [60, 0],
       "drawsContent": true
     }
   ],

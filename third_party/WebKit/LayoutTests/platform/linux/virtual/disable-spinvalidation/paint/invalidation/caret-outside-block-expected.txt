@@ -7,13 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [347, 211, 10, 17],
-          "reason": "caret"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [43, 36, 10, 16],
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [791, 8, 1, 19],
           "reason": "caret"
         }
       ]

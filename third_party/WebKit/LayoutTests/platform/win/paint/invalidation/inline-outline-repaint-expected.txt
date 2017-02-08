@@ -20,21 +20,6 @@
           "object": "LayoutText #text",
           "rect": [8, 166, 92, 35],
           "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [45, 183, 3, 19],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [45, 183, 3, 19],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [45, 183, 3, 19],
-          "reason": "invalidate paint rectangle"
         }
       ]
     }
@@ -43,10 +28,6 @@
     {
       "object": "LayoutText #text",
       "reason": "layoutObject removal"
-    },
-    {
-      "object": "Caret",
-      "reason": "invalidate paint rectangle"
     },
     {
       "object": "LayoutBlockFlow DIV",
@@ -58,11 +39,7 @@
     },
     {
       "object": "Caret",
-      "reason": "invalidate paint rectangle"
-    },
-    {
-      "object": "Caret",
-      "reason": "invalidate paint rectangle"
+      "reason": "caret"
     },
     {
       "object": "LayoutInline SPAN id='test'",
