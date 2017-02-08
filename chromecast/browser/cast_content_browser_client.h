@@ -46,6 +46,7 @@ class MediaPipelineBackendManager;
 struct MediaPipelineDeviceParams;
 class MediaResourceTracker;
 class VideoPlaneController;
+class VideoModeSwitcher;
 class VideoResolutionPolicy;
 }
 
@@ -80,6 +81,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       DisableQuicClosure disable_quic_closure,
       media::VideoPlaneController* video_plane_controller,
       CastWindowManager* window_manager);
+
+  virtual media::VideoModeSwitcher* GetVideoModeSwitcher();
 
 #if !defined(OS_ANDROID)
   // Gets object for enforcing video resolution policy restrictions.

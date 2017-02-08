@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/base/task_runner_impl.h"
+#include "chromecast/media/base/video_mode_switcher.h"
 #include "chromecast/media/base/video_resolution_policy.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
@@ -29,17 +30,30 @@ namespace {
 // Maximum difference between audio frame PTS and video frame PTS
 // for frames read from the DemuxerStream.
 const base::TimeDelta kMaxDeltaFetcher(base::TimeDelta::FromMilliseconds(2000));
+
+void VideoModeSwitchCompletionCb(const ::media::PipelineStatusCB& init_cb,
+                                 bool success) {
+  if (!success) {
+    LOG(ERROR) << "Video mode switch failed.";
+    init_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
+    return;
+  }
+  VLOG(1) << "Video mode switched successfully.";
+  init_cb.Run(::media::PIPELINE_OK);
+}
 }  // namespace
 
 CastRenderer::CastRenderer(
     const CreateMediaPipelineBackendCB& create_backend_cb,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const std::string& audio_device_id,
+    VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy,
     MediaResourceTracker* media_resource_tracker)
     : create_backend_cb_(create_backend_cb),
       task_runner_(task_runner),
       audio_device_id_(audio_device_id),
+      video_mode_switcher_(video_mode_switcher),
       video_resolution_policy_(video_resolution_policy),
       media_resource_tracker_(media_resource_tracker),
       client_(nullptr),
@@ -154,9 +168,29 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
   }
 
   client_ = client;
-  init_cb.Run(::media::PIPELINE_OK);
 
-  if (video_stream) {
+  if (video_stream && video_mode_switcher_) {
+    std::vector<::media::VideoDecoderConfig> video_configs;
+    video_configs.push_back(video_stream->video_decoder_config());
+    auto mode_switch_completion_cb =
+        base::Bind(&CastRenderer::OnVideoInitializationFinished,
+                   weak_factory_.GetWeakPtr(), init_cb);
+    video_mode_switcher_->SwitchMode(
+        video_configs,
+        base::Bind(&VideoModeSwitchCompletionCb, mode_switch_completion_cb));
+  } else if (video_stream) {
+    // No mode switch needed.
+    OnVideoInitializationFinished(init_cb, ::media::PIPELINE_OK);
+  } else {
+    init_cb.Run(::media::PIPELINE_OK);
+  }
+}
+
+void CastRenderer::OnVideoInitializationFinished(
+    const ::media::PipelineStatusCB& init_cb,
+    ::media::PipelineStatus status) {
+  init_cb.Run(status);
+  if (status == ::media::PIPELINE_OK) {
     // Force compositor to treat video as opaque (needed for overlay codepath).
     OnVideoOpacityChange(true);
   }

@@ -23,6 +23,7 @@ namespace media {
 class BalancedMediaTaskRunnerFactory;
 class CastCdmContext;
 class MediaPipelineImpl;
+class VideoModeSwitcher;
 
 class CastRenderer : public ::media::Renderer,
                      public VideoResolutionPolicy::Observer {
@@ -30,6 +31,7 @@ class CastRenderer : public ::media::Renderer,
   CastRenderer(const CreateMediaPipelineBackendCB& create_backend_cb,
                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                const std::string& audio_device_id,
+               VideoModeSwitcher* video_mode_switcher,
                VideoResolutionPolicy* video_resolution_policy,
                MediaResourceTracker* media_resource_tracker);
   ~CastRenderer() final;
@@ -60,9 +62,13 @@ class CastRenderer : public ::media::Renderer,
   void OnVideoOpacityChange(bool opaque);
   void CheckVideoResolutionPolicy();
 
+  void OnVideoInitializationFinished(const ::media::PipelineStatusCB& init_cb,
+                                     ::media::PipelineStatus status);
+
   const CreateMediaPipelineBackendCB create_backend_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::string audio_device_id_;
+  VideoModeSwitcher* video_mode_switcher_;
   VideoResolutionPolicy* video_resolution_policy_;
   MediaResourceTracker* media_resource_tracker_;
   // Must outlive |pipeline_| to properly count resource usage.

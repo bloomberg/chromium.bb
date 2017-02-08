@@ -86,6 +86,7 @@ static std::unique_ptr<service_manager::Service> CreateMediaService(
                      base::Unretained(browser_client)),
           base::Bind(&CastContentBrowserClient::CreateCdmFactory,
                      base::Unretained(browser_client)),
+          browser_client->GetVideoModeSwitcher(),
           browser_client->GetVideoResolutionPolicy(),
           browser_client->media_resource_tracker()));
   return std::unique_ptr<service_manager::Service>(
@@ -136,6 +137,10 @@ std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     CastWindowManager* window_manager) {
   return base::MakeUnique<CastServiceSimple>(browser_context, pref_service,
                                              window_manager);
+}
+
+media::VideoModeSwitcher* CastContentBrowserClient::GetVideoModeSwitcher() {
+  return nullptr;
 }
 
 #if !defined(OS_ANDROID)

@@ -34,6 +34,8 @@ source_set("base") {
     "media_codec_support.h",
     "media_resource_tracker.cc",
     "media_resource_tracker.h",
+    "video_mode_switcher.cc",
+    "video_mode_switcher.h",
     "video_plane_controller.cc",
     "video_plane_controller.h",
   ]
