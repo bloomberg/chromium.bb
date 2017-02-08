@@ -312,8 +312,7 @@ shared_library("libwebviewchromium") {
   deps = [
     ":webview_entry_point",
   ]
-  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-  configs += [ "//build/config/android:hide_all_but_jni" ]
+  configs -= [ "//build/config/android:hide_native_jni_exports" ]
 }
 
 if (android_64bit_target_cpu) {
@@ -335,8 +334,7 @@ if (android_64bit_target_cpu) {
     deps = [
       ":webview_entry_point",
     ]
-    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-    configs += [ "//build/config/android:hide_all_but_jni" ]
+    configs -= [ "//build/config/android:hide_native_jni_exports" ]
   }
 }
 
