@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/first_run/first_run_chrome_signin_view_controller.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -22,6 +21,10 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kSignInButtonAccessibilityIdentifier =
     @"SignInButtonAccessibilityIdentifier";
 NSString* const kSignInSkipButtonAccessibilityIdentifier =
@@ -29,9 +32,9 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 
 @interface FirstRunChromeSigninViewController ()<
     ChromeSigninViewControllerDelegate> {
-  TabModel* _tabModel;  // weak
-  base::scoped_nsobject<FirstRunConfiguration> _firstRunConfig;
-  ChromeIdentity* _identity;
+  __weak TabModel* _tabModel;
+  FirstRunConfiguration* _firstRunConfig;
+  __weak ChromeIdentity* _identity;
   BOOL _hasRecordedSigninStarted;
 }
 
@@ -50,7 +53,7 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
              signInIdentity:identity];
   if (self) {
     _tabModel = tabModel;
-    _firstRunConfig.reset([firstRunConfig retain]);
+    _firstRunConfig = firstRunConfig;
     _identity = identity;
     self.delegate = self;
   }
@@ -60,7 +63,6 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 - (void)dealloc {
   self.delegate = nil;
   _tabModel = nil;
-  [super dealloc];
 }
 
 - (void)viewDidLoad {

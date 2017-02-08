@@ -7,7 +7,6 @@
 #import <WebKit/WebKit.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -16,15 +15,19 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/web/public/web_view_creation_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface StaticFileViewController ()<UIScrollViewDelegate> {
   ios::ChromeBrowserState* _browserState;  // weak
-  base::scoped_nsobject<NSURL> _URL;
+  NSURL* _URL;
   // YES if the header has been configured for RTL.
   BOOL _headerLaidOutForRTL;
   // The web view used to display the static content.
-  base::scoped_nsobject<WKWebView> _webView;
+  WKWebView* _webView;
   // The header.
-  base::scoped_nsobject<MDCAppBar> _appBar;
+  MDCAppBar* _appBar;
 }
 
 @end
@@ -37,17 +40,16 @@
   DCHECK(URL);
   self = [super init];
   if (self) {
-    _appBar.reset([[MDCAppBar alloc] init]);
+    _appBar = [[MDCAppBar alloc] init];
     [self addChildViewController:[_appBar headerViewController]];
     _browserState = browserState;
-    _URL.reset([URL retain]);
+    _URL = URL;
   }
   return self;
 }
 
 - (void)dealloc {
   [_webView scrollView].delegate = nil;
-  [super dealloc];
 }
 
 #pragma mark - UIViewController
@@ -55,7 +57,7 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  _webView.reset([web::BuildWKWebView(self.view.bounds, _browserState) retain]);
+  _webView = web::BuildWKWebView(self.view.bounds, _browserState);
   [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                 UIViewAutoresizingFlexibleHeight];
 

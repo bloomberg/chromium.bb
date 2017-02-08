@@ -5,9 +5,7 @@
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view.h"
 
 #include "base/i18n/rtl.h"
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #include "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
@@ -22,6 +20,10 @@
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -70,34 +72,32 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 }  // namespace
 
 @interface WelcomeToChromeView () {
-  // Backing objects for properties of the same name.
-  base::WeakNSProtocol<id<WelcomeToChromeViewDelegate>> _delegate;
-  base::scoped_nsobject<UIView> _containerView;
-  base::scoped_nsobject<UILabel> _titleLabel;
-  base::scoped_nsobject<UIImageView> _imageView;
-  base::scoped_nsobject<UILabel> _TOSLabel;
-  base::scoped_nsobject<LabelLinkController> _TOSLabelLinkController;
-  base::scoped_nsobject<UIButton> _checkBoxButton;
-  base::scoped_nsobject<UILabel> _optInLabel;
-  base::scoped_nsobject<PrimaryActionButton> _OKButton;
+  UIView* _containerView;
+  UILabel* _titleLabel;
+  UIImageView* _imageView;
+  UILabel* _TOSLabel;
+  LabelLinkController* _TOSLabelLinkController;
+  UIButton* _checkBoxButton;
+  UILabel* _optInLabel;
+  PrimaryActionButton* _OKButton;
 }
 
 // Subview properties are lazily instantiated upon their first use.
 
 // A container view used to layout and center subviews.
-@property(nonatomic, readonly) UIView* containerView;
+@property(strong, nonatomic, readonly) UIView* containerView;
 // The "Welcome to Chrome" label that appears at the top of the view.
-@property(nonatomic, readonly) UILabel* titleLabel;
+@property(strong, nonatomic, readonly) UILabel* titleLabel;
 // The Chrome logo image view.
-@property(nonatomic, readonly) UIImageView* imageView;
+@property(strong, nonatomic, readonly) UIImageView* imageView;
 // The "Terms of Service" label.
-@property(nonatomic, readonly) UILabel* TOSLabel;
+@property(strong, nonatomic, readonly) UILabel* TOSLabel;
 // The stats reporting opt-in label.
-@property(nonatomic, readonly) UILabel* optInLabel;
+@property(strong, nonatomic, readonly) UILabel* optInLabel;
 // The stats reporting opt-in checkbox button.
-@property(nonatomic, readonly) UIButton* checkBoxButton;
+@property(strong, nonatomic, readonly) UIButton* checkBoxButton;
 // The "Accept & Continue" button.
-@property(nonatomic, readonly) PrimaryActionButton* OKButton;
+@property(strong, nonatomic, readonly) PrimaryActionButton* OKButton;
 
 // Subview layout methods.  They must be called in the order declared here, as
 // subsequent subview layouts depend on the layouts that precede them.
@@ -134,6 +134,8 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 
 @implementation WelcomeToChromeView
 
+@synthesize delegate = _delegate;
+
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
@@ -162,7 +164,7 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
   self.imageView.center = CGPointMake(CGRectGetMidX(self.containerView.bounds),
                                       CGRectGetMidY(self.containerView.bounds));
 
-  base::WeakNSObject<WelcomeToChromeView> weakSelf(self);
+  __weak WelcomeToChromeView* weakSelf = self;
   [UIView animateWithDuration:kAnimationDuration
                         delay:kAnimationDelay
                       options:UIViewAnimationCurveEaseInOut
@@ -179,14 +181,6 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 
 #pragma mark - Accessors
 
-- (id<WelcomeToChromeViewDelegate>)delegate {
-  return _delegate;
-}
-
-- (void)setDelegate:(id<WelcomeToChromeViewDelegate>)delegate {
-  _delegate.reset(delegate);
-}
-
 - (BOOL)isCheckBoxSelected {
   return self.checkBoxButton.selected;
 }
@@ -198,15 +192,15 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 
 - (UIView*)containerView {
   if (!_containerView) {
-    _containerView.reset([[UIView alloc] initWithFrame:CGRectZero]);
+    _containerView = [[UIView alloc] initWithFrame:CGRectZero];
     [_containerView setBackgroundColor:[UIColor whiteColor]];
   }
-  return _containerView.get();
+  return _containerView;
 }
 
 - (UILabel*)titleLabel {
   if (!_titleLabel) {
-    _titleLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_titleLabel setBackgroundColor:[UIColor whiteColor]];
     [_titleLabel setNumberOfLines:0];
     [_titleLabel setLineBreakMode:NSLineBreakByWordWrapping];
@@ -214,41 +208,41 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
     [_titleLabel
         setText:l10n_util::GetNSString(IDS_IOS_FIRSTRUN_WELCOME_TO_CHROME)];
   }
-  return _titleLabel.get();
+  return _titleLabel;
 }
 
 - (UIImageView*)imageView {
   if (!_imageView) {
     UIImage* image = [UIImage imageNamed:kAppLogoImageName];
-    _imageView.reset([[UIImageView alloc] initWithImage:image]);
+    _imageView = [[UIImageView alloc] initWithImage:image];
     [_imageView setBackgroundColor:[UIColor whiteColor]];
   }
-  return _imageView.get();
+  return _imageView;
 }
 
 - (UILabel*)TOSLabel {
   if (!_TOSLabel) {
-    _TOSLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    _TOSLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_TOSLabel setNumberOfLines:0];
     [_TOSLabel setTextAlignment:NSTextAlignmentCenter];
   }
-  return _TOSLabel.get();
+  return _TOSLabel;
 }
 
 - (UILabel*)optInLabel {
   if (!_optInLabel) {
-    _optInLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    _optInLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_optInLabel setNumberOfLines:0];
     [_optInLabel
         setText:l10n_util::GetNSString(IDS_IOS_FIRSTRUN_NEW_OPT_IN_LABEL)];
     [_optInLabel setTextAlignment:NSTextAlignmentNatural];
   }
-  return _optInLabel.get();
+  return _optInLabel;
 }
 
 - (UIButton*)checkBoxButton {
   if (!_checkBoxButton) {
-    _checkBoxButton.reset([[UIButton alloc] initWithFrame:CGRectZero]);
+    _checkBoxButton = [[UIButton alloc] initWithFrame:CGRectZero];
     [_checkBoxButton setBackgroundColor:[UIColor clearColor]];
     [_checkBoxButton addTarget:self
                         action:@selector(checkBoxButtonWasTapped)
@@ -263,12 +257,12 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
     [_checkBoxButton setImage:[UIImage imageNamed:kCheckBoxCheckedImageName]
                      forState:UIControlStateSelected];
   }
-  return _checkBoxButton.get();
+  return _checkBoxButton;
 }
 
 - (PrimaryActionButton*)OKButton {
   if (!_OKButton) {
-    _OKButton.reset([[PrimaryActionButton alloc] initWithFrame:CGRectZero]);
+    _OKButton = [[PrimaryActionButton alloc] initWithFrame:CGRectZero];
     [_OKButton addTarget:self
                   action:@selector(OKButtonWasTapped)
         forControlEvents:UIControlEventTouchUpInside];
@@ -281,7 +275,7 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
     SetA11yLabelAndUiAutomationName(
         _OKButton, IDS_IOS_FIRSTRUN_OPT_IN_ACCEPT_BUTTON, @"Accept & Continue");
   }
-  return _OKButton.get();
+  return _OKButton;
 }
 
 #pragma mark - Layout
@@ -359,16 +353,16 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
       linkTextRange.length++;
   }
 
-  base::WeakNSObject<WelcomeToChromeView> weakSelf(self);
+  __weak WelcomeToChromeView* weakSelf = self;
   ProceduralBlockWithURL action = ^(const GURL& url) {
-    base::scoped_nsobject<WelcomeToChromeView> strongSelf([weakSelf retain]);
+    WelcomeToChromeView* strongSelf = weakSelf;
     if (!strongSelf)
       return;
     [[strongSelf delegate] welcomeToChromeViewDidTapTOSLink:strongSelf];
   };
 
-  _TOSLabelLinkController.reset(
-      [[LabelLinkController alloc] initWithLabel:_TOSLabel action:action]);
+  _TOSLabelLinkController =
+      [[LabelLinkController alloc] initWithLabel:_TOSLabel action:action];
   [_TOSLabelLinkController
       addLinkWithRange:linkTextRange
                    url:GURL("internal://terms-of-service")];

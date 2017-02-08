@@ -23,7 +23,7 @@
 // The first view shown to the user after fresh installs.
 @interface WelcomeToChromeView : UIView
 
-@property(nonatomic, assign) id<WelcomeToChromeViewDelegate> delegate;
+@property(nonatomic, weak) id<WelcomeToChromeViewDelegate> delegate;
 
 // Whether the stats reporting check box is selected.
 @property(nonatomic, assign, getter=isCheckBoxSelected) BOOL checkBoxSelected;

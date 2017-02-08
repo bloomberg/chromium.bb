@@ -5,12 +5,10 @@
 #include "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 
 #include "base/i18n/rtl.h"
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
+
 #include "base/strings/sys_string_conversions.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
@@ -33,6 +31,10 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kUMAMetricsButtonAccessibilityIdentifier =
     @"UMAMetricsButtonAccessibilityIdentifier";
 
@@ -47,9 +49,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 
 @interface WelcomeToChromeViewController ()<WelcomeToChromeViewDelegate> {
   ios::ChromeBrowserState* browserState_;  // weak
-  TabModel* tabModel_;                     // weak
-  base::mac::ObjCPropertyReleaser
-      propertyReleaser_WelcomeToChromeViewController_;
+  __weak TabModel* tabModel_;
 }
 
 // The animation which occurs at launch has run.
@@ -81,8 +81,6 @@ const BOOL kDefaultStatsCheckboxValue = YES;
   if (self) {
     browserState_ = browserState;
     tabModel_ = tabModel;
-    propertyReleaser_WelcomeToChromeViewController_.Init(
-        self, [WelcomeToChromeViewController class]);
   }
   return self;
 }
@@ -99,8 +97,8 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 }
 
 - (void)loadView {
-  base::scoped_nsobject<WelcomeToChromeView> welcomeToChromeView(
-      [[WelcomeToChromeView alloc] initWithFrame:CGRectZero]);
+  WelcomeToChromeView* welcomeToChromeView =
+      [[WelcomeToChromeView alloc] initWithFrame:CGRectZero];
   [welcomeToChromeView setDelegate:self];
   [welcomeToChromeView
       setCheckBoxSelected:[[self class] defaultStatsCheckboxValue]];
@@ -130,19 +128,18 @@ const BOOL kDefaultStatsCheckboxValue = YES;
   std::string tos = GetTermsOfServicePath();
   NSString* path = [[base::mac::FrameworkBundle() bundlePath]
       stringByAppendingPathComponent:base::SysUTF8ToNSString(tos)];
-  base::scoped_nsobject<NSURLComponents> components(
-      [[NSURLComponents alloc] init]);
+  NSURLComponents* components = [[NSURLComponents alloc] init];
   [components setScheme:@"file"];
   [components setHost:@""];
   [components setPath:path];
-  return [[components URL] retain];
+  return [components URL];
 }
 
 // Displays the file at the given URL in a StaticFileViewController.
 - (void)openStaticFileWithURL:(NSURL*)url title:(NSString*)title {
-  base::scoped_nsobject<StaticFileViewController> staticViewController(
+  StaticFileViewController* staticViewController =
       [[StaticFileViewController alloc] initWithBrowserState:browserState_
-                                                         URL:url]);
+                                                         URL:url];
   [staticViewController setTitle:title];
   [self.navigationController pushViewController:staticViewController
                                        animated:YES];
@@ -152,7 +149,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 
 - (void)welcomeToChromeViewDidTapTOSLink:(WelcomeToChromeView*)view {
   NSString* title = l10n_util::GetNSString(IDS_IOS_FIRSTRUN_TERMS_TITLE);
-  base::scoped_nsobject<NSURL> tosUrl([self newTermsOfServiceUrl]);
+  NSURL* tosUrl = [self newTermsOfServiceUrl];
   [self openStaticFileWithURL:tosUrl title:title];
 }
 
@@ -160,18 +157,17 @@ const BOOL kDefaultStatsCheckboxValue = YES;
   GetApplicationContext()->GetLocalState()->SetBoolean(
       metrics::prefs::kMetricsReportingEnabled, view.checkBoxSelected);
 
-  base::scoped_nsobject<FirstRunConfiguration> firstRunConfig(
-      [[FirstRunConfiguration alloc] init]);
+  FirstRunConfiguration* firstRunConfig = [[FirstRunConfiguration alloc] init];
   bool hasSSOAccounts = ios::GetChromeBrowserProvider()
                             ->GetChromeIdentityService()
                             ->HasIdentities();
   [firstRunConfig setHasSSOAccount:hasSSOAccounts];
-  base::scoped_nsobject<FirstRunChromeSigninViewController> signInController(
+  FirstRunChromeSigninViewController* signInController =
       [[FirstRunChromeSigninViewController alloc]
           initWithBrowserState:browserState_
                       tabModel:tabModel_
                 firstRunConfig:firstRunConfig
-                signInIdentity:nil]);
+                signInIdentity:nil];
 
   CATransition* transition = [CATransition animation];
   transition.duration = kFadeOutAnimationDuration;

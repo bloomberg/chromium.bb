@@ -24,6 +24,10 @@
 #include "ios/web/public/web_thread.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kChromeFirstRunUIWillFinishNotification =
     @"kChromeFirstRunUIWillFinishNotification";
 
@@ -66,7 +70,7 @@ NSString* InsertNewlineBeforeNthToLastWord(NSString* text, int index) {
                         count++;
                         *stop = count == index;
                       }];
-  NSMutableString* textWithNewline = [[text mutableCopy] autorelease];
+  NSMutableString* textWithNewline = [text mutableCopy];
   [textWithNewline insertString:@"\n" atIndex:range.location];
   return textWithNewline;
 }

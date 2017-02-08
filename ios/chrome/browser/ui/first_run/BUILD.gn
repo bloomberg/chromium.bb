@@ -23,6 +23,7 @@ bundle_data("assets") {
 }
 
 source_set("first_run") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "first_run_chrome_signin_view_controller.h",
     "first_run_chrome_signin_view_controller.mm",
