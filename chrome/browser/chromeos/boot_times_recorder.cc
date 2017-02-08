@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -209,28 +210,26 @@ bool BootTimesRecorder::Stats::UptimeDouble(double* result) const {
 }
 
 void BootTimesRecorder::Stats::RecordStats(const std::string& name) const {
-  BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&BootTimesRecorder::Stats::RecordStatsImpl,
-                 base::Owned(new Stats(*this)),
-                 name));
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&BootTimesRecorder::Stats::RecordStatsAsync,
+                 base::Owned(new Stats(*this)), name));
 }
 
 void BootTimesRecorder::Stats::RecordStatsWithCallback(
     const std::string& name,
     const base::Closure& callback) const {
-  BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE,
-      base::Bind(&BootTimesRecorder::Stats::RecordStatsImpl,
-                 base::Owned(new Stats(*this)),
-                 name),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&BootTimesRecorder::Stats::RecordStatsAsync,
+                 base::Owned(new Stats(*this)), name),
       callback);
 }
 
-void BootTimesRecorder::Stats::RecordStatsImpl(
+void BootTimesRecorder::Stats::RecordStatsAsync(
     const base::FilePath::StringType& name) const {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   const base::FilePath log_path(kLogPath);
   const base::FilePath uptime_output =
       log_path.Append(base::FilePath(kUptimePrefix + name));

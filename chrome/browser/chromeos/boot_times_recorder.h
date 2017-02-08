@@ -130,8 +130,8 @@ class BootTimesRecorder : public content::NotificationObserver,
                                  const base::Closure& callback) const;
 
    private:
-    // Runs on BlockingPool
-    void RecordStatsImpl(const std::string& name) const;
+    // Runs asynchronously when RecordStats(WithCallback) is called.
+    void RecordStatsAsync(const std::string& name) const;
 
     std::string uptime_;
     std::string disk_;
