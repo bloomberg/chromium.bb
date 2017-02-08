@@ -5,6 +5,7 @@
 #include "ios/web/web_thread_impl.h"
 
 #include <string>
+#include <utility>
 
 #include "base/atomicops.h"
 #include "base/bind.h"
@@ -335,10 +336,10 @@ bool WebThread::PostBlockingPoolTask(const tracked_objects::Location& from_here,
 // static
 bool WebThread::PostBlockingPoolTaskAndReply(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    const base::Closure& reply) {
-  return g_globals.Get().blocking_pool->PostTaskAndReply(from_here, task,
-                                                         reply);
+    base::Closure task,
+    base::Closure reply) {
+  return g_globals.Get().blocking_pool->PostTaskAndReply(
+      from_here, std::move(task), std::move(reply));
 }
 
 // static
@@ -440,10 +441,10 @@ bool WebThread::PostNonNestableDelayedTask(
 // static
 bool WebThread::PostTaskAndReply(ID identifier,
                                  const tracked_objects::Location& from_here,
-                                 const base::Closure& task,
-                                 const base::Closure& reply) {
+                                 base::Closure task,
+                                 base::Closure reply) {
   return GetTaskRunnerForThread(identifier)
-      ->PostTaskAndReply(from_here, task, reply);
+      ->PostTaskAndReply(from_here, std::move(task), std::move(reply));
 }
 
 // static

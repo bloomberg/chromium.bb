@@ -6,8 +6,9 @@
 #define IOS_WEB_PUBLIC_WEB_THREAD_H_
 
 #include <string>
+#include <utility>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -116,19 +117,19 @@ class WebThread {
 
   static bool PostTaskAndReply(ID identifier,
                                const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               const base::Closure& reply);
+                               base::Closure task,
+                               base::Closure reply);
 
   template <typename ReturnType, typename ReplyArgType>
   static bool PostTaskAndReplyWithResult(
       ID identifier,
       const tracked_objects::Location& from_here,
-      const base::Callback<ReturnType(void)>& task,
-      const base::Callback<void(ReplyArgType)>& reply) {
+      base::Callback<ReturnType()> task,
+      base::Callback<void(ReplyArgType)> reply) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         GetTaskRunnerForThread(identifier);
-    return base::PostTaskAndReplyWithResult(task_runner.get(), from_here, task,
-                                            reply);
+    return base::PostTaskAndReplyWithResult(task_runner.get(), from_here,
+                                            std::move(task), std::move(reply));
   }
 
   template <class T>
@@ -163,8 +164,8 @@ class WebThread {
                                    const base::Closure& task);
   static bool PostBlockingPoolTaskAndReply(
       const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      const base::Closure& reply);
+      base::Closure task,
+      base::Closure reply);
   static bool PostBlockingPoolSequencedTask(
       const std::string& sequence_token_name,
       const tracked_objects::Location& from_here,

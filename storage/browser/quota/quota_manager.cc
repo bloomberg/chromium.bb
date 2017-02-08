@@ -1638,16 +1638,15 @@ void QuotaManager::DeleteOnCorrectThread() const {
 
 void QuotaManager::PostTaskAndReplyWithResultForDBThread(
     const tracked_objects::Location& from_here,
-    const base::Callback<bool(QuotaDatabase*)>& task,
-    const base::Callback<void(bool)>& reply) {
+    base::Callback<bool(QuotaDatabase*)> task,
+    base::Callback<void(bool)> reply) {
   // Deleting manager will post another task to DB thread to delete
   // |database_|, therefore we can be sure that database_ is alive when this
   // task runs.
   base::PostTaskAndReplyWithResult(
-      db_thread_.get(),
-      from_here,
-      base::Bind(task, base::Unretained(database_.get())),
-      reply);
+      db_thread_.get(), from_here,
+      base::Bind(std::move(task), base::Unretained(database_.get())),
+      std::move(reply));
 }
 
 // static

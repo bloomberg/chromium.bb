@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_BROWSER_THREAD_H_
 
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/location.h"
@@ -119,22 +120,21 @@ class CONTENT_EXPORT BrowserThread {
       const base::Closure& task,
       base::TimeDelta delay);
 
-  static bool PostTaskAndReply(
-      ID identifier,
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      const base::Closure& reply);
+  static bool PostTaskAndReply(ID identifier,
+                               const tracked_objects::Location& from_here,
+                               base::Closure task,
+                               base::Closure reply);
 
   template <typename ReturnType, typename ReplyArgType>
   static bool PostTaskAndReplyWithResult(
       ID identifier,
       const tracked_objects::Location& from_here,
-      const base::Callback<ReturnType(void)>& task,
-      const base::Callback<void(ReplyArgType)>& reply) {
+      base::Callback<ReturnType()> task,
+      base::Callback<void(ReplyArgType)> reply) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         GetTaskRunnerForThread(identifier);
-    return base::PostTaskAndReplyWithResult(task_runner.get(), from_here, task,
-                                            reply);
+    return base::PostTaskAndReplyWithResult(task_runner.get(), from_here,
+                                            std::move(task), std::move(reply));
   }
 
   template <class T>
@@ -176,8 +176,8 @@ class CONTENT_EXPORT BrowserThread {
                                    const base::Closure& task);
   static bool PostBlockingPoolTaskAndReply(
       const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      const base::Closure& reply);
+      base::Closure task,
+      base::Closure reply);
   static bool PostBlockingPoolSequencedTask(
       const std::string& sequence_token_name,
       const tracked_objects::Location& from_here,

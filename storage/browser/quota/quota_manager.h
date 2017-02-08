@@ -401,8 +401,8 @@ class STORAGE_EXPORT QuotaManager
 
   void PostTaskAndReplyWithResultForDBThread(
       const tracked_objects::Location& from_here,
-      const base::Callback<bool(QuotaDatabase*)>& task,
-      const base::Callback<void(bool)>& reply);
+      base::Callback<bool(QuotaDatabase*)> task,
+      base::Callback<void(bool)> reply);
 
   static std::tuple<int64_t, int64_t> CallGetVolumeInfo(
       GetVolumeInfoFn get_volume_info_fn,

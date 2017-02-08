@@ -5,6 +5,7 @@
 #include "content/browser/browser_thread_impl.h"
 
 #include <string>
+#include <utility>
 
 #include "base/atomicops.h"
 #include "base/bind.h"
@@ -538,10 +539,10 @@ bool BrowserThread::PostBlockingPoolTask(
 // static
 bool BrowserThread::PostBlockingPoolTaskAndReply(
     const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    const base::Closure& reply) {
+    base::Closure task,
+    base::Closure reply) {
   return g_globals.Get().blocking_pool->PostTaskAndReply(
-      from_here, task, reply);
+      from_here, std::move(task), std::move(reply));
 }
 
 // static
@@ -653,13 +654,12 @@ bool BrowserThread::PostNonNestableDelayedTask(
 }
 
 // static
-bool BrowserThread::PostTaskAndReply(
-    ID identifier,
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    const base::Closure& reply) {
+bool BrowserThread::PostTaskAndReply(ID identifier,
+                                     const tracked_objects::Location& from_here,
+                                     base::Closure task,
+                                     base::Closure reply) {
   return GetTaskRunnerForThread(identifier)
-      ->PostTaskAndReply(from_here, task, reply);
+      ->PostTaskAndReply(from_here, std::move(task), std::move(reply));
 }
 
 // static
