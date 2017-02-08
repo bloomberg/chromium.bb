@@ -304,31 +304,39 @@
         </div>
       </div>
     </section>
-<if expr="chromeos or is_win">
     <!-- Protected Content filter -->
     <section guest-visibility="disabled">
       <h3 i18n-content="protectedContentTabLabel"
           class="content-settings-header"></h3>
       <div>
+        <div class="checkbox">
+          <label>
+            <input pref="webkit.webprefs.encrypted_media_enabled"
+                type="checkbox">
+            <span i18n-content="protectedContentEnableCheckbox"></span>
+          </label>
+        </div>
+<if expr="chromeos or is_win">
         <div class="settings-row">
           <p i18n-content="protectedContentInfo"></p>
         </div>
         <div class="checkbox">
           <label>
             <input pref="settings.privacy.drm_enabled" type="checkbox">
-            <span i18n-content="protectedContentEnable"></span>
+            <span i18n-content="protectedContentEnableIdentifiersCheckbox">
+            </span>
           </label>
         </div>
-  <if expr="chromeos">
+</if>
+<if expr="chromeos">
         <div class="settings-row">
           <button id="protected-content-exceptions"
               class="exceptions-list-button" contentType="protectedContent"
               i18n-content="manageExceptions"></button>
         </div>
-  </if>
+</if>
       </div>
     </section>
-</if>
     <!-- Microphone filter -->
     <section id="media-stream-mic">
       <h3 i18n-content="mediaStreamMicTabLabel"></h3>
