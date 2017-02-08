@@ -63,56 +63,80 @@ struct GPU_EXPORT TextureUnit {
   // glBindTexture
   scoped_refptr<TextureRef> bound_texture_2d_array;
 
-  scoped_refptr<TextureRef> GetInfoForSamplerType(
-      GLenum type) {
+  TextureRef* GetInfoForSamplerType(GLenum type) {
     switch (type) {
       case GL_SAMPLER_2D:
       case GL_SAMPLER_2D_SHADOW:
       case GL_INT_SAMPLER_2D:
       case GL_UNSIGNED_INT_SAMPLER_2D:
-        return bound_texture_2d;
+        return bound_texture_2d.get();
       case GL_SAMPLER_CUBE:
       case GL_SAMPLER_CUBE_SHADOW:
       case GL_INT_SAMPLER_CUBE:
       case GL_UNSIGNED_INT_SAMPLER_CUBE:
-        return bound_texture_cube_map;
+        return bound_texture_cube_map.get();
       case GL_SAMPLER_EXTERNAL_OES:
-        return bound_texture_external_oes;
+        return bound_texture_external_oes.get();
       case GL_SAMPLER_2D_RECT_ARB:
-        return bound_texture_rectangle_arb;
+        return bound_texture_rectangle_arb.get();
       case GL_SAMPLER_3D:
       case GL_INT_SAMPLER_3D:
       case GL_UNSIGNED_INT_SAMPLER_3D:
-        return bound_texture_3d;
+        return bound_texture_3d.get();
       case GL_SAMPLER_2D_ARRAY:
       case GL_SAMPLER_2D_ARRAY_SHADOW:
       case GL_INT_SAMPLER_2D_ARRAY:
       case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
-        return bound_texture_2d_array;
+        return bound_texture_2d_array.get();
+      default:
+        NOTREACHED();
+        return nullptr;
     }
-
-    NOTREACHED();
-    return nullptr;
   }
 
-  scoped_refptr<TextureRef>& GetInfoForTarget(GLenum target) {
+  TextureRef* GetInfoForTarget(GLenum target) {
     switch (target) {
       case GL_TEXTURE_2D:
-        return bound_texture_2d;
+        return bound_texture_2d.get();
       case GL_TEXTURE_CUBE_MAP:
-        return bound_texture_cube_map;
+        return bound_texture_cube_map.get();
       case GL_TEXTURE_EXTERNAL_OES:
-        return bound_texture_external_oes;
+        return bound_texture_external_oes.get();
       case GL_TEXTURE_RECTANGLE_ARB:
-        return bound_texture_rectangle_arb;
+        return bound_texture_rectangle_arb.get();
       case GL_TEXTURE_3D:
-        return bound_texture_3d;
+        return bound_texture_3d.get();
       case GL_TEXTURE_2D_ARRAY:
-        return bound_texture_2d_array;
+        return bound_texture_2d_array.get();
+      default:
+        NOTREACHED();
+        return nullptr;
     }
+  }
 
-    NOTREACHED();
-    return bound_texture_2d;
+  void SetInfoForTarget(GLenum target, TextureRef* texture_ref) {
+    switch (target) {
+      case GL_TEXTURE_2D:
+        bound_texture_2d = texture_ref;
+        break;
+      case GL_TEXTURE_CUBE_MAP:
+        bound_texture_cube_map = texture_ref;
+        break;
+      case GL_TEXTURE_EXTERNAL_OES:
+        bound_texture_external_oes = texture_ref;
+        break;
+      case GL_TEXTURE_RECTANGLE_ARB:
+        bound_texture_rectangle_arb = texture_ref;
+        break;
+      case GL_TEXTURE_3D:
+        bound_texture_3d = texture_ref;
+        break;
+      case GL_TEXTURE_2D_ARRAY:
+        bound_texture_2d_array = texture_ref;
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 };
 
