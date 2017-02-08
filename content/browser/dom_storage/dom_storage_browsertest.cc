@@ -3,8 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "content/browser/dom_storage/dom_storage_context_wrapper.h"
+#include "content/browser/dom_storage/local_storage_context_mojo.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -43,6 +47,24 @@ class MojoDOMStorageBrowserTest : public DOMStorageBrowserTest {
     ContentBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kMojoLocalStorage);
   }
+
+  void Flush() {
+    // First make sure a connection to the database was set up.
+    LocalStorageContextMojo* context =
+        static_cast<DOMStorageContextWrapper*>(
+            BrowserContext::GetDefaultStoragePartition(
+                shell()->web_contents()->GetBrowserContext())
+                ->GetDOMStorageContext())
+            ->mojo_state_.get();
+    base::RunLoop run_loop;
+    context->RunWhenConnected(run_loop.QuitClosure());
+    run_loop.Run();
+    // Then process any tasks that are currently queued, to ensure
+    // LevelDBWrapperImpl methods get called.
+    base::RunLoop().RunUntilIdle();
+    // And finally flush all the now queued up changes to leveldb.
+    context->Flush();
+  }
 };
 
 static const bool kIncognito = true;
@@ -56,12 +78,35 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, SanityCheckIncognito) {
   SimpleTest(GetTestUrl("dom_storage", "sanity_check.html"), kIncognito);
 }
 
+IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, PRE_DataPersists) {
+  SimpleTest(GetTestUrl("dom_storage", "store_data.html"), kNotIncognito);
+}
+
+// http://crbug.com/654704 PRE_ tests aren't supported on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_DataPersists DISABLED_DataPersists
+#else
+#define MAYBE_DataPersists DataPersists
+#endif
+IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, MAYBE_DataPersists) {
+  SimpleTest(GetTestUrl("dom_storage", "verify_data.html"), kNotIncognito);
+}
+
 IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, SanityCheck) {
   SimpleTest(GetTestUrl("dom_storage", "sanity_check.html"), kNotIncognito);
 }
 
 IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, SanityCheckIncognito) {
   SimpleTest(GetTestUrl("dom_storage", "sanity_check.html"), kIncognito);
+}
+
+IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, PRE_DataPersists) {
+  SimpleTest(GetTestUrl("dom_storage", "store_data.html"), kNotIncognito);
+  Flush();
+}
+
+IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, MAYBE_DataPersists) {
+  SimpleTest(GetTestUrl("dom_storage", "verify_data.html"), kNotIncognito);
 }
 
 }  // namespace content

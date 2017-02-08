@@ -48,6 +48,8 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   leveldb::mojom::LevelDBDatabaseAssociatedRequest DatabaseRequestForTesting();
 
  private:
+  friend class MojoDOMStorageBrowserTest;
+
   class LevelDBWrapperHolder;
 
   // Runs |callback| immediately if already connected to a database, otherwise

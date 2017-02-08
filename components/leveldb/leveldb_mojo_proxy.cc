@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 
 namespace leveldb {
 
@@ -184,6 +185,7 @@ void LevelDBMojoProxy::OpenFileHandleImpl(OpaqueDir* dir,
                                           std::string name,
                                           uint32_t open_flags,
                                           base::File* output_file) {
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   base::File file;
   filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   bool completed =
@@ -201,6 +203,7 @@ void LevelDBMojoProxy::SyncDirectoryImpl(
     OpaqueDir* dir,
     std::string name,
     filesystem::mojom::FileError* out_error) {
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   filesystem::mojom::DirectoryPtr target;
   bool completed = dir->directory->OpenDirectory(
       name, MakeRequest(&target),
@@ -217,6 +220,7 @@ void LevelDBMojoProxy::SyncDirectoryImpl(
 void LevelDBMojoProxy::FileExistsImpl(OpaqueDir* dir,
                                       std::string name,
                                       bool* exists) {
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   bool completed = dir->directory->Exists(name, &error, exists);
   DCHECK(completed);
@@ -227,6 +231,7 @@ void LevelDBMojoProxy::GetChildrenImpl(
     std::string name,
     std::vector<std::string>* out_contents,
     filesystem::mojom::FileError* out_error) {
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   filesystem::mojom::DirectoryPtr target;
   filesystem::mojom::DirectoryRequest proxy(&target);
   bool completed = dir->directory->OpenDirectory(
@@ -252,6 +257,7 @@ void LevelDBMojoProxy::DeleteImpl(OpaqueDir* dir,
                                   std::string name,
                                   uint32_t delete_flags,
                                   filesystem::mojom::FileError* out_error) {
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   bool completed = dir->directory->Delete(name, delete_flags, out_error);
   DCHECK(completed);
 }
@@ -259,6 +265,7 @@ void LevelDBMojoProxy::DeleteImpl(OpaqueDir* dir,
 void LevelDBMojoProxy::CreateDirImpl(OpaqueDir* dir,
                                      std::string name,
                                      filesystem::mojom::FileError* out_error) {
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   bool completed = dir->directory->OpenDirectory(
       name, nullptr,
       filesystem::mojom::kFlagRead | filesystem::mojom::kFlagWrite |
@@ -272,6 +279,7 @@ void LevelDBMojoProxy::GetFileSizeImpl(
     const std::string& path,
     uint64_t* file_size,
     filesystem::mojom::FileError* out_error) {
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   filesystem::mojom::FileInformationPtr info;
   bool completed = dir->directory->StatFile(path, out_error, &info);
   DCHECK(completed);
@@ -283,6 +291,7 @@ void LevelDBMojoProxy::RenameFileImpl(OpaqueDir* dir,
                                       const std::string& old_path,
                                       const std::string& new_path,
                                       filesystem::mojom::FileError* out_error) {
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   bool completed = dir->directory->Rename(old_path, new_path, out_error);
   DCHECK(completed);
 }
@@ -291,6 +300,7 @@ void LevelDBMojoProxy::LockFileImpl(OpaqueDir* dir,
                                     const std::string& path,
                                     filesystem::mojom::FileError* out_error,
                                     OpaqueLock** out_lock) {
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   // Since a lock is associated with a file descriptor, we need to open and
   // have a persistent file on the other side of the connection.
   filesystem::mojom::FilePtr target;
@@ -317,6 +327,7 @@ void LevelDBMojoProxy::LockFileImpl(OpaqueDir* dir,
 
 void LevelDBMojoProxy::UnlockFileImpl(std::unique_ptr<OpaqueLock> lock,
                                       filesystem::mojom::FileError* out_error) {
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   lock->lock_file->Unlock(out_error);
 }
 

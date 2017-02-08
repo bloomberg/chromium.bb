@@ -81,6 +81,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
   friend class DOMStorageMessageFilter;  // for access to context()
   friend class SessionStorageNamespaceImpl;  // ditto
   friend class base::RefCountedThreadSafe<DOMStorageContextWrapper>;
+  friend class MojoDOMStorageBrowserTest;
 
   ~DOMStorageContextWrapper() override;
   DOMStorageContextImpl* context() const { return context_.get(); }

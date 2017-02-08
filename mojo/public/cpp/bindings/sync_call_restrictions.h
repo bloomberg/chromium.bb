@@ -15,6 +15,10 @@
 #define ENABLE_SYNC_CALL_RESTRICTIONS 0
 #endif
 
+namespace leveldb {
+class LevelDBMojoProxy;
+}
+
 namespace ui {
 class Gpu;
 }
@@ -52,6 +56,8 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to mojo/OWNERS first.
   // BEGIN ALLOWED USAGE.
   friend class ui::Gpu;  // http://crbug.com/620058
+  // LevelDBMojoProxy makes same-process sync calls from the DB thread.
+  friend class leveldb::LevelDBMojoProxy;
   // END ALLOWED USAGE.
 
   // BEGIN USAGE THAT NEEDS TO BE FIXED.

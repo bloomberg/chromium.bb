@@ -134,7 +134,7 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
         connector, context_->task_runner(),
         data_path.empty() ? data_path
                           : data_path.AppendASCII(kLocalStorageDirectory),
-        base::FilePath() /* storage_dir */));
+        storage_dir));
   }
 
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {

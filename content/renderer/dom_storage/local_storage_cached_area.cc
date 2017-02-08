@@ -151,7 +151,6 @@ void LocalStorageCachedArea::RemoveItem(const base::string16& key,
 void LocalStorageCachedArea::Clear(const GURL& page_url,
                                    const std::string& storage_area_id) {
   // No need to prime the cache in this case.
-
   Reset();
   map_ = new DOMStorageMap(kPerStorageAreaQuota);
   ignore_all_mutations_ = true;

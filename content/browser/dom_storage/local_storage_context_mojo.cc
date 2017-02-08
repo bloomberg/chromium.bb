@@ -271,6 +271,11 @@ void LocalStorageContextMojo::DeleteStorageForPhysicalOrigin(
 }
 
 void LocalStorageContextMojo::Flush() {
+  if (connection_state_ != CONNECTION_FINISHED) {
+    RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::Flush,
+                                    weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
   for (const auto& it : level_db_wrappers_)
     it.second->level_db_wrapper()->ScheduleImmediateCommit();
 }
