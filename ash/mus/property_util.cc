@@ -6,6 +6,8 @@
 
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/mus/property_converter.h"
+#include "ui/aura/window.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -60,6 +62,16 @@ bool ShouldEnableImmersive(const InitProperties& properties) {
   auto iter =
       properties.find(ui::mojom::WindowManager::kDisableImmersive_InitProperty);
   return iter == properties.end() || !mojo::ConvertTo<bool>(iter->second);
+}
+
+void ApplyProperties(
+    aura::Window* window,
+    aura::PropertyConverter* property_converter,
+    const std::map<std::string, std::vector<uint8_t>>& properties) {
+  for (auto& property_pair : properties) {
+    property_converter->SetPropertyFromTransportValue(
+        window, property_pair.first, &property_pair.second);
+  }
 }
 
 }  // namespace mus

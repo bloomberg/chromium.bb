@@ -69,6 +69,8 @@ views::View* BrowserNonClientFrameView::GetProfileSwitcherView() const {
   return nullptr;
 }
 
+void BrowserNonClientFrameView::UpdateClientArea() {}
+
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
                                                   bool is_visible) {
   // UpdateTaskbarDecoration() calls DrawTaskbarDecoration(), but that does

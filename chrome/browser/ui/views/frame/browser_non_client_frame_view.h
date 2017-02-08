@@ -57,6 +57,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns the profile switcher button, if this frame has any.
   virtual views::View* GetProfileSwitcherView() const;
 
+  // Provided for mus. Updates the client-area of the WindowTreeHostMus.
+  virtual void UpdateClientArea();
+
   // Overriden from views::View.
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 

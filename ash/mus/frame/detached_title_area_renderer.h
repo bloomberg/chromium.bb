@@ -5,41 +5,72 @@
 #ifndef ASH_MUS_FRAME_DETACHED_TITLE_AREA_RENDERER_H_
 #define ASH_MUS_FRAME_DETACHED_TITLE_AREA_RENDERER_H_
 
+#include <stdint.h>
+
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "ui/views/widget/widget_delegate.h"
 
+namespace aura {
+class Window;
+}
+
 namespace ash {
+
 namespace mus {
 
-class DetachedTitleAreaRendererHost;
+class WindowManager;
 
 // DetachedTitleAreaRenderer contains a HeaderView in a widget. It's intended to
 // be used when the title area needs to be rendered in a window different from
 // the normal window the title area renders to (such as in immersive mode).
-class DetachedTitleAreaRenderer : public views::WidgetDelegate {
+//
+// DetachedTitleAreaRenderer comes in two variants.
+// DetachedTitleAreaRendererForClient is used for clients that need to draw
+// into the non-client area of the widget. For example, Chrome browser windows
+// draw into the non-client area of tabbed browser widgets (the tab strip
+// is in the non-client area). In such a case
+// DetachedTitleAreaRendererForClient is used.
+// If the client does not need to draw to the non-client area then
+// DetachedTitleAreaRendererInternal is used (and ash controls the whole
+// immersive experience). Which is used is determined by
+// |kRenderParentTitleArea_Property|. If |kRenderParentTitleArea_Property| is
+// false DetachedTitleAreaRendererInternal is used.
+
+// DetachedTitleAreaRendererInternal owns the widget it creates.
+class DetachedTitleAreaRendererForInternal {
  public:
-  // Used to indicate why this is being created.
-  enum class Source {
-    // This is being created at the request of a client, specifically because
-    // of kRenderParentTitleArea_Property set on a client owned window.
-    CLIENT,
+  // |frame| is the Widget the decorations are configured from.
+  explicit DetachedTitleAreaRendererForInternal(views::Widget* frame);
+  ~DetachedTitleAreaRendererForInternal();
 
-    // Mash is creating this class to host an immersive reveal. Note that CLIENT
-    // is also likely used for an immersive reveal, but for CLIENT the client
-    // is completely controlling the reveal and not mash. In other words for
-    // CLIENT ImmersiveFullscreenController is not running in mash.
-    MASH,
-  };
+  views::Widget* widget() { return widget_.get(); }
 
-  // Creates a widget to render the title area and shows it. |frame| is the
-  // widget whose frame state is rendered to. This object is deleted explicitly
-  // by calling Destroy().
-  DetachedTitleAreaRenderer(DetachedTitleAreaRendererHost* host,
-                            views::Widget* frame,
-                            const gfx::Rect& bounds,
-                            Source source);
+ private:
+  std::unique_ptr<views::Widget> widget_;
 
-  void Destroy();
+  DISALLOW_COPY_AND_ASSIGN(DetachedTitleAreaRendererForInternal);
+};
+
+// Used when the client wants to control, and possibly render to, the widget
+// hosting the frame decorations. In this mode the client owns the window
+// backing the widget and controls the lifetime of the window.
+class DetachedTitleAreaRendererForClient : public views::WidgetDelegate {
+ public:
+  DetachedTitleAreaRendererForClient(
+      aura::Window* parent,
+      std::map<std::string, std::vector<uint8_t>>* properties,
+      WindowManager* window_manager);
+
+  static DetachedTitleAreaRendererForClient* ForWindow(aura::Window* window);
+
+  void Attach(views::Widget* frame);
+  void Detach();
+
+  bool is_attached() const { return is_attached_; }
 
   views::Widget* widget() { return widget_; }
 
@@ -49,13 +80,14 @@ class DetachedTitleAreaRenderer : public views::WidgetDelegate {
   void DeleteDelegate() override;
 
  private:
-  ~DetachedTitleAreaRenderer() override;
+  ~DetachedTitleAreaRendererForClient() override;
 
-  DetachedTitleAreaRendererHost* host_;
-  views::Widget* frame_;
   views::Widget* widget_;
 
-  DISALLOW_COPY_AND_ASSIGN(DetachedTitleAreaRenderer);
+  // Has Attach() been called?
+  bool is_attached_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(DetachedTitleAreaRendererForClient);
 };
 
 }  // namespace mus

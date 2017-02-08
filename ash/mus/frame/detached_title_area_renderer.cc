@@ -5,36 +5,61 @@
 #include "ash/mus/frame/detached_title_area_renderer.h"
 
 #include "ash/common/frame/header_view.h"
-#include "ash/mus/frame/detached_title_area_renderer_host.h"
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm_window.h"
+#include "ash/mus/property_util.h"
+#include "ash/mus/window_manager.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/property_utils.h"
 #include "ui/aura/window.h"
+#include "ui/base/class_property.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::mus::DetachedTitleAreaRendererForClient*);
+
 namespace ash {
 namespace mus {
+namespace {
 
-DetachedTitleAreaRenderer::DetachedTitleAreaRenderer(
-    DetachedTitleAreaRendererHost* host,
-    views::Widget* frame,
-    const gfx::Rect& bounds,
-    Source source)
-    : host_(host), frame_(frame), widget_(new views::Widget) {
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.delegate = this;
-  params.name = "DetachedTitleAreaRenderer";
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  views::NativeWidgetAura* native_widget =
-      new views::NativeWidgetAura(widget_, true);
-  params.native_widget = native_widget;
-  // TODO: making the reveal window a sibling is likely problematic.
-  // http://crbug.com/640392, see also comment in GetVisibleBoundsInScreen().
-  params.parent = frame->GetNativeView()->parent();
-  params.bounds = bounds;
-  widget_->Init(params);
-  params.parent->StackChildAbove(widget_->GetNativeView(),
-                                 frame->GetNativeView());
-  HeaderView* header_view = new HeaderView(frame_);
+DEFINE_UI_CLASS_PROPERTY_KEY(DetachedTitleAreaRendererForClient*,
+                             kDetachedTitleAreaRendererKey,
+                             nullptr);
+
+// Used to indicate why this is being created. See header for description of
+// types.
+enum class Source {
+  CLIENT,
+  INTERNAL,
+};
+
+// Configures the common InitParams.
+std::unique_ptr<views::Widget::InitParams> CreateInitParams(
+    const char* debug_name) {
+  std::unique_ptr<views::Widget::InitParams> params =
+      base::MakeUnique<views::Widget::InitParams>(
+          views::Widget::InitParams::TYPE_POPUP);
+  params->name = debug_name;
+  params->activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  return params;
+}
+
+// Configures properties common to both types.
+void ConfigureCommonWidgetProperties(views::Widget* widget) {
+  aura::Window* window = widget->GetNativeView();
+  // Default animations conflict with the reveal animation, so turn off the
+  // default animation.
+  window->SetProperty(aura::client::kAnimationsDisabledKey, true);
+  WmWindow::Get(window)->GetWindowState()->set_ignored_by_shelf(true);
+}
+
+void CreateHeaderView(views::Widget* frame,
+                      views::Widget* detached_widget,
+                      Source source) {
+  HeaderView* header_view = new HeaderView(frame);
   if (source == Source::CLIENT) {
     // HeaderView behaves differently when the widget it is associated with is
     // fullscreen (HeaderView is normally the
@@ -42,32 +67,81 @@ DetachedTitleAreaRenderer::DetachedTitleAreaRenderer(
     // the client HeaderView is not the ImmersiveFullscreenControllerDelegate.
     header_view->set_is_immersive_delegate(false);
   }
-  widget_->SetContentsView(header_view);
-  widget_->GetRootView()->SetSize(bounds.size());
-  widget_->ShowInactive();
+  header_view->set_is_immersive_delegate(false);
+  detached_widget->SetContentsView(header_view);
 }
 
-void DetachedTitleAreaRenderer::Destroy() {
-  host_ = nullptr;
-  if (widget_)
-    widget_->CloseNow();
+}  // namespace
+
+DetachedTitleAreaRendererForInternal::DetachedTitleAreaRendererForInternal(
+    views::Widget* frame)
+    : widget_(base::MakeUnique<views::Widget>()) {
+  std::unique_ptr<views::Widget::InitParams> params =
+      CreateInitParams("DetachedTitleAreaRendererForInternal");
+  params->ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params->parent = frame->GetNativeView()->parent();
+  widget_->Init(*params);
+  aura::client::GetTransientWindowClient()->AddTransientChild(
+      frame->GetNativeView(), widget_->GetNativeView());
+  CreateHeaderView(frame, widget_.get(), Source::INTERNAL);
+  ConfigureCommonWidgetProperties(widget_.get());
 }
 
-views::Widget* DetachedTitleAreaRenderer::GetWidget() {
+DetachedTitleAreaRendererForInternal::~DetachedTitleAreaRendererForInternal() {}
+
+DetachedTitleAreaRendererForClient::DetachedTitleAreaRendererForClient(
+    aura::Window* parent,
+    std::map<std::string, std::vector<uint8_t>>* properties,
+    WindowManager* window_manager)
+    : widget_(new views::Widget) {
+  std::unique_ptr<views::Widget::InitParams> params =
+      CreateInitParams("DetachedTitleAreaRendererForClient");
+  views::NativeWidgetAura* native_widget =
+      new views::NativeWidgetAura(widget_, true);
+  aura::SetWindowType(native_widget->GetNativeWindow(),
+                      ui::mojom::WindowType::POPUP);
+  ApplyProperties(native_widget->GetNativeWindow(),
+                  window_manager->property_converter(), *properties);
+  native_widget->GetNativeView()->SetProperty(kDetachedTitleAreaRendererKey,
+                                              this);
+  params->delegate = this;
+  params->native_widget = native_widget;
+  params->parent = parent;
+  widget_->Init(*params);
+  ConfigureCommonWidgetProperties(widget_);
+}
+
+// static
+DetachedTitleAreaRendererForClient*
+DetachedTitleAreaRendererForClient::ForWindow(aura::Window* window) {
+  return window->GetProperty(kDetachedTitleAreaRendererKey);
+}
+
+void DetachedTitleAreaRendererForClient::Attach(views::Widget* frame) {
+  DCHECK(!is_attached_);
+  is_attached_ = true;
+  CreateHeaderView(frame, widget_, Source::CLIENT);
+  frame->GetNativeView()->parent()->AddChild(widget_->GetNativeView());
+}
+
+void DetachedTitleAreaRendererForClient::Detach() {
+  is_attached_ = false;
+  widget_->SetContentsView(new views::View());
+}
+
+views::Widget* DetachedTitleAreaRendererForClient::GetWidget() {
   return widget_;
 }
 
-const views::Widget* DetachedTitleAreaRenderer::GetWidget() const {
+const views::Widget* DetachedTitleAreaRendererForClient::GetWidget() const {
   return widget_;
 }
 
-void DetachedTitleAreaRenderer::DeleteDelegate() {
-  if (host_)
-    host_->OnDetachedTitleAreaRendererDestroyed(this);
+void DetachedTitleAreaRendererForClient::DeleteDelegate() {
   delete this;
 }
 
-DetachedTitleAreaRenderer::~DetachedTitleAreaRenderer() {}
+DetachedTitleAreaRendererForClient::~DetachedTitleAreaRendererForClient() {}
 
 }  // namespace mus
 }  // namespace ash

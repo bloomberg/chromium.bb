@@ -9,6 +9,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/mus/disconnected_app_handler.h"
+#include "ash/mus/frame/detached_title_area_renderer.h"
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/window_manager.h"
@@ -38,6 +39,21 @@ bool IsFullscreen(aura::PropertyConverter* property_converter,
              WindowManager::kShowState_Property, transport_data, &show_state) &&
          (static_cast<ui::WindowShowState>(show_state) ==
           ui::SHOW_STATE_FULLSCREEN);
+}
+
+bool ShouldRenderTitleArea(
+    aura::PropertyConverter* property_converter,
+    const std::map<std::string, std::vector<uint8_t>>& properties) {
+  auto iter = properties.find(
+      ui::mojom::WindowManager::kRenderParentTitleArea_Property);
+  if (iter == properties.end())
+    return false;
+
+  aura::PropertyConverter::PrimitiveType value = 0;
+  return property_converter->GetPropertyValueFromTransportValue(
+             ui::mojom::WindowManager::kRenderParentTitleArea_Property,
+             iter->second, &value) &&
+         value == 1;
 }
 
 // Returns the RootWindowController where new top levels are created.
@@ -135,16 +151,27 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
     return non_client_frame_controller->window();
   }
 
-  aura::Window* window = new aura::Window(nullptr);
-  aura::SetWindowType(window, window_type);
-  // Apply properties before Init(), that way they are sent to the server at
-  // the time the window is created.
   aura::PropertyConverter* property_converter =
       window_manager->property_converter();
-  for (auto& property_pair : *properties) {
-    property_converter->SetPropertyFromTransportValue(
-        window, property_pair.first, &property_pair.second);
+
+  if (window_type == ui::mojom::WindowType::POPUP &&
+      ShouldRenderTitleArea(property_converter, *properties)) {
+    // Pick a parent so display information is obtained. Will pick the real one
+    // once transient parent found.
+    aura::Window* unparented_control_container =
+        root_window_controller->GetWindow()
+            ->GetChildByShellWindowId(kShellWindowId_UnparentedControlContainer)
+            ->aura_window();
+    // DetachedTitleAreaRendererForClient is owned by the client.
+    DetachedTitleAreaRendererForClient* renderer =
+        new DetachedTitleAreaRendererForClient(unparented_control_container,
+                                               properties, window_manager);
+    return renderer->widget()->GetNativeView();
   }
+
+  aura::Window* window = new aura::Window(nullptr);
+  aura::SetWindowType(window, window_type);
+  ApplyProperties(window, property_converter, *properties);
   window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(bounds);
 

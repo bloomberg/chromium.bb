@@ -48,3 +48,7 @@ ImmersiveRevealedLock* ImmersiveModeControllerStub::GetRevealedLock(
 void ImmersiveModeControllerStub::OnFindBarVisibleBoundsChanged(
     const gfx::Rect& new_visible_bounds_in_screen) {
 }
+
+views::Widget* ImmersiveModeControllerStub::GetRevealWidget() {
+  return nullptr;
+}

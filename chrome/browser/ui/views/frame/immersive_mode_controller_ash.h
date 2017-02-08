@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
@@ -26,7 +27,8 @@ class ImmersiveModeControllerAsh
     : public ImmersiveModeController,
       public ash::ImmersiveFullscreenControllerDelegate,
       public ash::wm::WindowStateObserver,
-      public content::NotificationObserver {
+      public content::NotificationObserver,
+      public aura::WindowObserver {
  public:
   ImmersiveModeControllerAsh();
   ~ImmersiveModeControllerAsh() override;
@@ -46,6 +48,7 @@ class ImmersiveModeControllerAsh
       WARN_UNUSED_RESULT;
   void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds_in_screen) override;
+  views::Widget* GetRevealWidget() override;
 
  private:
   // Enables or disables observers for window restore and entering / exiting
@@ -81,6 +84,11 @@ class ImmersiveModeControllerAsh
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // aura::WindowObserver override:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   std::unique_ptr<ash::ImmersiveFullscreenController> controller_;
 

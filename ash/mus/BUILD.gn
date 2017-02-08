@@ -38,7 +38,6 @@ source_set("lib") {
     "frame/custom_frame_view_mus.h",
     "frame/detached_title_area_renderer.cc",
     "frame/detached_title_area_renderer.h",
-    "frame/detached_title_area_renderer_host.h",
     "keyboard_ui_mus.cc",
     "keyboard_ui_mus.h",
     "move_event_handler.cc",

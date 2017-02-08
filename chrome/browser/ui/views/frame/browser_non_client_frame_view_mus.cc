@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/frame/browser_header_painter_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -182,6 +183,52 @@ views::View* BrowserNonClientFrameViewMus::GetProfileSwitcherView() const {
 #endif
 }
 
+void BrowserNonClientFrameViewMus::UpdateClientArea() {
+  std::vector<gfx::Rect> additional_client_area;
+  int top_container_offset = 0;
+  ImmersiveModeController* immersive_mode_controller =
+      browser_view()->immersive_mode_controller();
+  // Frame decorations (the non-client area) are visible if not in immersive
+  // mode, or in immersive mode *and* the reveal widget is showing.
+  const bool show_frame_decorations = !immersive_mode_controller->IsEnabled() ||
+                                      immersive_mode_controller->IsRevealed();
+  if (browser_view()->IsTabStripVisible() && show_frame_decorations) {
+    gfx::Rect tab_strip_bounds(GetBoundsForTabStrip(tab_strip_));
+    if (!tab_strip_bounds.IsEmpty() && tab_strip_->max_x()) {
+      tab_strip_bounds.set_width(tab_strip_->max_x());
+      if (immersive_mode_controller->IsEnabled()) {
+        top_container_offset =
+            immersive_mode_controller->GetTopContainerVerticalOffset(
+                browser_view()->top_container()->size());
+        tab_strip_bounds.set_y(tab_strip_bounds.y() + top_container_offset);
+        tab_strip_bounds.Intersect(gfx::Rect(size()));
+      }
+      additional_client_area.push_back(tab_strip_bounds);
+    }
+  }
+  aura::WindowTreeHostMus* window_tree_host_mus =
+      static_cast<aura::WindowTreeHostMus*>(
+          GetWidget()->GetNativeWindow()->GetHost());
+  if (show_frame_decorations) {
+    window_tree_host_mus->SetClientArea(
+        views::WindowManagerFrameValues::instance().normal_insets,
+        additional_client_area);
+    views::Widget* reveal_widget = immersive_mode_controller->GetRevealWidget();
+    if (reveal_widget) {
+      // In immersive mode the reveal widget needs the same client area as
+      // the Browser widget. This way mus targets the window manager (ash) for
+      // clicks in the frame decoration.
+      static_cast<aura::WindowTreeHostMus*>(
+          reveal_widget->GetNativeWindow()->GetHost())
+          ->SetClientArea(
+              views::WindowManagerFrameValues::instance().normal_insets,
+              additional_client_area);
+    }
+  } else {
+    window_tree_host_mus->SetClientArea(gfx::Insets(), additional_client_area);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::NonClientFrameView:
 
@@ -335,21 +382,6 @@ void BrowserNonClientFrameViewMus::UpdateProfileIcons() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMus, private:
-
-void BrowserNonClientFrameViewMus::UpdateClientArea() {
-  std::vector<gfx::Rect> additional_client_area;
-  if (tab_strip_) {
-    gfx::Rect tab_strip_bounds(GetBoundsForTabStrip(tab_strip_));
-    if (!tab_strip_bounds.IsEmpty() && tab_strip_->max_x()) {
-      tab_strip_bounds.set_width(tab_strip_->max_x());
-      additional_client_area.push_back(tab_strip_bounds);
-    }
-  }
-  static_cast<aura::WindowTreeHostMus*>(
-      GetWidget()->GetNativeWindow()->GetHost())
-      ->SetClientArea(views::WindowManagerFrameValues::instance().normal_insets,
-                      additional_client_area);
-}
 
 void BrowserNonClientFrameViewMus::TabStripMaxXChanged(TabStrip* tab_strip) {
   UpdateClientArea();

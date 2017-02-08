@@ -29,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/mus/window_manager_delegate.h"
@@ -79,8 +80,7 @@ class EmptyDraggableNonClientFrameView : public views::NonClientFrameView {
 // top container contains a DetachedTitleAreaRenderer, which handles drawing and
 // events.
 class ImmersiveFullscreenControllerDelegateMus
-    : public ImmersiveFullscreenControllerDelegate,
-      public DetachedTitleAreaRendererHost {
+    : public ImmersiveFullscreenControllerDelegate {
  public:
   ImmersiveFullscreenControllerDelegateMus(views::Widget* frame,
                                            aura::Window* frame_window)
@@ -126,12 +126,6 @@ class ImmersiveFullscreenControllerDelegateMus
     return result;
   }
 
-  // DetachedTitleAreaRendererHost:
-  void OnDetachedTitleAreaRendererDestroyed(
-      DetachedTitleAreaRenderer* renderer) override {
-    title_area_renderer_ = nullptr;
-  }
-
  private:
   void CreateTitleAreaWindow() {
     if (GetTitleAreaWindow())
@@ -144,16 +138,13 @@ class ImmersiveFullscreenControllerDelegateMus
     bounds.set_height(
         NonClientFrameController::GetPreferredClientAreaInsets().top());
     bounds.set_y(bounds.y() - bounds.height());
-    title_area_renderer_ = new DetachedTitleAreaRenderer(
-        this, frame_, bounds, DetachedTitleAreaRenderer::Source::MASH);
+    title_area_renderer_ =
+        base::MakeUnique<DetachedTitleAreaRendererForInternal>(frame_);
+    title_area_renderer_->widget()->SetBounds(bounds);
+    title_area_renderer_->widget()->ShowInactive();
   }
 
-  void DestroyTitleAreaWindow() {
-    if (!GetTitleAreaWindow())
-      return;
-    title_area_renderer_->Destroy();
-    title_area_renderer_ = nullptr;
-  }
+  void DestroyTitleAreaWindow() { title_area_renderer_.reset(); }
 
   aura::Window* GetTitleAreaWindow() {
     return const_cast<aura::Window*>(
@@ -172,7 +163,7 @@ class ImmersiveFullscreenControllerDelegateMus
   // The ui::Window associated with |frame_|.
   aura::Window* frame_window_;
 
-  DetachedTitleAreaRenderer* title_area_renderer_ = nullptr;
+  std::unique_ptr<DetachedTitleAreaRendererForInternal> title_area_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveFullscreenControllerDelegateMus);
 };
@@ -336,6 +327,8 @@ NonClientFrameController::NonClientFrameController(
                                               : gfx::Insets();
   window_manager_client_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
       window_, gfx::Vector2d(shadow_inset, shadow_inset), extended_hit_region);
+
+  aura::client::GetTransientWindowClient()->AddObserver(this);
 }
 
 // static
@@ -369,16 +362,9 @@ void NonClientFrameController::SetClientArea(
 }
 
 NonClientFrameController::~NonClientFrameController() {
+  aura::client::GetTransientWindowClient()->RemoveObserver(this);
   if (window_)
     window_->RemoveObserver(this);
-  if (detached_title_area_renderer_)
-    detached_title_area_renderer_->Destroy();
-}
-
-void NonClientFrameController::OnDetachedTitleAreaRendererDestroyed(
-    DetachedTitleAreaRenderer* renderer) {
-  DCHECK_EQ(detached_title_area_renderer_, renderer);
-  detached_title_area_renderer_ = nullptr;
 }
 
 base::string16 NonClientFrameController::GetWindowTitle() const {
@@ -416,21 +402,6 @@ views::ClientView* NonClientFrameController::CreateClientView(
   return new ClientViewMus(widget, GetContentsView(), this);
 }
 
-void NonClientFrameController::OnWindowHierarchyChanged(
-    const HierarchyChangeParams& params) {
-  if (params.new_parent != window_ ||
-      !params.target->GetProperty(kRenderTitleAreaProperty)) {
-    return;
-  }
-  if (detached_title_area_renderer_) {
-    detached_title_area_renderer_->Destroy();
-    detached_title_area_renderer_ = nullptr;
-  }
-  detached_title_area_renderer_ =
-      new DetachedTitleAreaRenderer(this, widget_, params.target->bounds(),
-                                    DetachedTitleAreaRenderer::Source::CLIENT);
-}
-
 void NonClientFrameController::OnWindowPropertyChanged(aura::Window* window,
                                                        const void* key,
                                                        intptr_t old) {
@@ -454,6 +425,42 @@ void NonClientFrameController::OnWindowDestroyed(aura::Window* window) {
   window_->RemoveObserver(this);
   window_ = nullptr;
 }
+
+void NonClientFrameController::OnTransientChildWindowAdded(
+    aura::Window* parent,
+    aura::Window* transient_child) {
+  if (parent != window_ ||
+      !transient_child->GetProperty(kRenderTitleAreaProperty)) {
+    return;
+  }
+
+  DetachedTitleAreaRendererForClient* renderer =
+      DetachedTitleAreaRendererForClient::ForWindow(transient_child);
+  if (!renderer || renderer->is_attached())
+    return;
+
+  renderer->Attach(widget_);
+}
+
+void NonClientFrameController::OnTransientChildWindowRemoved(
+    aura::Window* parent,
+    aura::Window* transient_child) {
+  if (parent != window_)
+    return;
+
+  DetachedTitleAreaRendererForClient* renderer =
+      DetachedTitleAreaRendererForClient::ForWindow(transient_child);
+  if (renderer)
+    renderer->Detach();
+}
+
+void NonClientFrameController::OnWillRestackTransientChildAbove(
+    aura::Window* parent,
+    aura::Window* transient_child) {}
+
+void NonClientFrameController::OnDidRestackTransientChildAbove(
+    aura::Window* parent,
+    aura::Window* transient_child) {}
 
 }  // namespace mus
 }  // namespace ash

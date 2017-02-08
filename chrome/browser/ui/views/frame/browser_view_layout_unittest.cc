@@ -112,6 +112,7 @@ class MockImmersiveModeController : public ImmersiveModeController {
   }
   void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds) override {}
+  views::Widget* GetRevealWidget() override { return nullptr; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockImmersiveModeController);
