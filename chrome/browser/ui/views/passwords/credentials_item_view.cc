@@ -59,6 +59,14 @@ void CircularImageView::OnPaint(gfx::Canvas* canvas) {
   ImageView::OnPaint(canvas);
 }
 
+// An ImageView that consumes the mouse events.
+class InfoImageView : public views::ImageView {
+ public:
+  // View:
+  bool OnMousePressed(const ui::MouseEvent& event) override { return true; }
+  bool OnMouseDragged(const ui::MouseEvent& event) override { return true; }
+};
+
 }  // namespace
 
 CredentialsItemView::CredentialsItemView(
@@ -110,7 +118,7 @@ CredentialsItemView::CredentialsItemView(
   }
 
   if (form_->is_public_suffix_match) {
-    info_icon_ = new views::ImageView;
+    info_icon_ = new InfoImageView;
     info_icon_->SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::INFO_OUTLINE,
                                                kInfoIconSize,
                                                gfx::kChromeIconGrey));

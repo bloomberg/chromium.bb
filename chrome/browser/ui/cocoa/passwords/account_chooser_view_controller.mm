@@ -39,6 +39,22 @@ constexpr CGFloat kCredentialHeight =
 // Maximum height of the credential list. The unit is one row height.
 constexpr CGFloat kMaxHeightAccounts = 3.5;
 
+}  // namespace
+
+// An image view that consumes the mouse click.
+@interface InfoImageView : NSImageView
+@end
+
+@implementation InfoImageView
+- (void)mouseDown:(NSEvent*)theEvent {
+  if (theEvent.type != NSLeftMouseDown) {
+    [super mouseDown:theEvent];
+  }
+}
+@end
+
+namespace {
+
 NSImageView* IconForPSL(const NSRect& parentRect, const std::string& tooltip) {
   NSImage* image = gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
       gfx::VectorIconId::INFO_OUTLINE, gfx::kChromeIconGrey));
@@ -48,7 +64,7 @@ NSImageView* IconForPSL(const NSRect& parentRect, const std::string& tooltip) {
       NSMinY(parentRect) + (NSHeight(parentRect) - kInfoIconSize) / 2,
       kInfoIconSize, kInfoIconSize);
   base::scoped_nsobject<NSImageView> icon(
-      [[NSImageView alloc] initWithFrame:rect]);
+      [[InfoImageView alloc] initWithFrame:rect]);
   [icon setImage:image];
   [icon setToolTip:base::SysUTF8ToNSString(tooltip)];
   return icon.autorelease();
