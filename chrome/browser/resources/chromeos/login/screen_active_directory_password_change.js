@@ -41,9 +41,9 @@ login.createScreen('ActiveDirectoryPasswordChangeScreen', 'ad-password-change',
      * @param {string} username Name of user that should change the password.
      */
     show: function(username) {
-      // We'll get here after the successful Active Directory authentication.
-      // It assumes session is about to start so hides login screen controls.
-      Oobe.getInstance().headerHidden = true;
+      // Active Directory password change screen is similar to Active Directory
+      // login screen. So we restore bottom bar controls.
+      Oobe.getInstance().headerHidden = false;
       Oobe.showScreen({id: SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE});
       this.adPasswordChanged_.reset();
       this.adPasswordChanged_.username = username;
