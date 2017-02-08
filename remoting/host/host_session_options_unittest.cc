@@ -7,7 +7,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
-namespace protocol {
 
 TEST(HostSessionOptionsTest, ShouldBeAbleToAppendOptions) {
   HostSessionOptions options;
@@ -52,5 +51,4 @@ TEST(HostSessionOptionsTest, ImportAndExport) {
   ASSERT_EQ(options.Export(), other.Export());
 }
 
-}  // namespace protocol
 }  // namespace remoting

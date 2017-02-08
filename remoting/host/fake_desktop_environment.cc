@@ -55,8 +55,9 @@ void FakeScreenControls::SetScreenResolution(
 }
 
 FakeDesktopEnvironment::FakeDesktopEnvironment(
-    scoped_refptr<base::SingleThreadTaskRunner> capture_thread)
-    : capture_thread_(std::move(capture_thread)) {}
+    scoped_refptr<base::SingleThreadTaskRunner> capture_thread,
+    const DesktopEnvironmentOptions& options)
+    : capture_thread_(std::move(capture_thread)), options_(options) {}
 
 FakeDesktopEnvironment::~FakeDesktopEnvironment() = default;
 
@@ -103,6 +104,10 @@ uint32_t FakeDesktopEnvironment::GetDesktopSessionId() const {
   return UINT32_MAX;
 }
 
+const DesktopEnvironmentOptions& FakeDesktopEnvironment::options() const {
+  return options_;
+}
+
 FakeDesktopEnvironmentFactory::FakeDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> capture_thread)
     : capture_thread_(std::move(capture_thread)) {}
@@ -114,7 +119,7 @@ std::unique_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control,
     const DesktopEnvironmentOptions& options) {
   std::unique_ptr<FakeDesktopEnvironment> result(
-      new FakeDesktopEnvironment(capture_thread_));
+      new FakeDesktopEnvironment(capture_thread_, options));
   result->set_frame_generator(frame_generator_);
   last_desktop_environment_ = result->AsWeakPtr();
   return std::move(result);

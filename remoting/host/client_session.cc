@@ -68,6 +68,7 @@ ClientSession::ClientSession(
       lossless_video_color_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
           kDisableI444SwitchName)),
       weak_factory_(this) {
+  connection_->session()->AddPlugin(&host_experiment_session_plugin_);
   connection_->SetEventHandler(this);
 
   // Create a manager for the configured extensions, if any.
@@ -241,10 +242,13 @@ void ClientSession::OnConnectionAuthenticated() {
   // Notify EventHandler.
   event_handler_->OnSessionAuthenticated(this);
 
+  DesktopEnvironmentOptions options = desktop_environment_options_;
+  options.ApplyHostSessionOptions(HostSessionOptions(
+      host_experiment_session_plugin_.configuration()));
   // Create the desktop environment. Drop the connection if it could not be
   // created for any reason (for instance the curtain could not initialize).
-  desktop_environment_ = desktop_environment_factory_->Create(
-      weak_factory_.GetWeakPtr(), desktop_environment_options_);
+  desktop_environment_ =
+      desktop_environment_factory_->Create(weak_factory_.GetWeakPtr(), options);
   if (!desktop_environment_) {
     DisconnectSession(protocol::HOST_CONFIGURATION_ERROR);
     return;

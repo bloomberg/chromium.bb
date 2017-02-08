@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/protocol/fake_authenticator.h"
 #include "remoting/protocol/session_plugin.h"
@@ -104,9 +105,24 @@ void FakeSession::ProcessTransportInfo(
   transport_->ProcessTransportInfo(transport_info.get());
 }
 
-// TODO(zijiehe): Supports SessionPlugin in FakeSession.
 void FakeSession::AddPlugin(SessionPlugin* plugin) {
-  NOTIMPLEMENTED();
+  DCHECK(plugin);
+  for (const auto& message : attachments_) {
+    if (message) {
+      JingleMessage jingle_message;
+      jingle_message.AddAttachment(
+          base::MakeUnique<buzz::XmlElement>(*message));
+      plugin->OnIncomingMessage(*(jingle_message.attachments));
+    }
+  }
+}
+
+void FakeSession::SetAttachment(size_t round,
+                                std::unique_ptr<buzz::XmlElement> attachment) {
+  while (attachments_.size() <= round) {
+    attachments_.emplace_back();
+  }
+  attachments_[round] = std::move(attachment);
 }
 
 }  // namespace protocol

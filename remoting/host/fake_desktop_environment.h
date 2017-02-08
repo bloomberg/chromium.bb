@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
@@ -73,7 +74,8 @@ class FakeDesktopEnvironment
       public base::SupportsWeakPtr<FakeDesktopEnvironment> {
  public:
   explicit FakeDesktopEnvironment(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_thread);
+      scoped_refptr<base::SingleThreadTaskRunner> capture_thread,
+      const DesktopEnvironmentOptions& options);
   ~FakeDesktopEnvironment() override;
 
   // Sets frame generator to be used for protocol::FakeDesktopCapturer created
@@ -82,6 +84,8 @@ class FakeDesktopEnvironment
       protocol::FakeDesktopCapturer::FrameGenerator frame_generator) {
     frame_generator_ = frame_generator;
   }
+
+  const DesktopEnvironmentOptions& options() const;
 
   // DesktopEnvironment implementation.
   std::unique_ptr<AudioCapturer> CreateAudioCapturer() override;
@@ -103,6 +107,8 @@ class FakeDesktopEnvironment
   protocol::FakeDesktopCapturer::FrameGenerator frame_generator_;
 
   base::WeakPtr<FakeInputInjector> last_input_injector_;
+
+  const DesktopEnvironmentOptions options_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopEnvironment);
 };

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -28,6 +29,7 @@
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/protocol/fake_connection_to_client.h"
 #include "remoting/protocol/fake_desktop_capturer.h"
+#include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -36,10 +38,10 @@
 
 namespace remoting {
 
+using protocol::FakeSession;
 using protocol::MockClientStub;
 using protocol::MockHostStub;
 using protocol::MockInputStub;
-using protocol::MockSession;
 using protocol::MockVideoStub;
 using protocol::SessionConfig;
 using protocol::test::EqualsClipboardEvent;
@@ -96,15 +98,18 @@ protocol::ClipboardEvent MakeClipboardEvent(const std::string& text) {
 
 class ClientSessionTest : public testing::Test {
  public:
-  ClientSessionTest() : client_jid_("user@domain/rest-of-jid") {}
+  ClientSessionTest() = default;
 
   void SetUp() override;
   void TearDown() override;
 
+ protected:
+  // Creates the client session from a FakeSession instance.
+  void CreateClientSession(std::unique_ptr<protocol::FakeSession> session);
+
   // Creates the client session.
   void CreateClientSession();
 
- protected:
   // Notifies the client session that the client connection has been
   // authenticated and channels have been connected. This effectively enables
   // the input pipe line and starts video capturing.
@@ -112,10 +117,6 @@ class ClientSessionTest : public testing::Test {
 
   // Fakes video size notification from the VideoStream.
   void NotifyVideoSize();
-
-  // Creates expectations to send an extension message and to disconnect
-  // afterwards.
-  void SetSendMessageAndDisconnectExpectation(const std::string& message_type);
 
   // Message loop that will process all ClientSession tasks.
   base::MessageLoop message_loop_;
@@ -137,10 +138,6 @@ class ClientSessionTest : public testing::Test {
   // ClientSession::EventHandler mock for use in tests.
   MockClientSessionEventHandler session_event_handler_;
 
-  // Storage for values to be returned by the protocol::Session mock.
-  std::unique_ptr<SessionConfig> session_config_;
-  const std::string client_jid_;
-
   // Stubs returned to |client_session_| components by |connection_|.
   MockClientStub client_stub_;
 
@@ -157,7 +154,6 @@ void ClientSessionTest::SetUp() {
 
   desktop_environment_factory_.reset(
       new FakeDesktopEnvironmentFactory(message_loop_.task_runner()));
-  session_config_ = SessionConfig::ForTest();
 }
 
 void ClientSessionTest::TearDown() {
@@ -173,11 +169,9 @@ void ClientSessionTest::TearDown() {
   run_loop_.Run();
 }
 
-void ClientSessionTest::CreateClientSession() {
-  // Mock protocol::Session APIs called directly by ClientSession.
-  std::unique_ptr<protocol::MockSession> session(new MockSession());
-  EXPECT_CALL(*session, config()).WillRepeatedly(ReturnRef(*session_config_));
-  EXPECT_CALL(*session, jid()).WillRepeatedly(ReturnRef(client_jid_));
+void ClientSessionTest::CreateClientSession(
+    std::unique_ptr<protocol::FakeSession> session) {
+  DCHECK(session);
 
   // Mock protocol::ConnectionToClient APIs called directly by ClientSession.
   // HostStub is not touched by ClientSession, so we can safely pass nullptr.
@@ -191,6 +185,10 @@ void ClientSessionTest::CreateClientSession() {
                         desktop_environment_factory_.get(),
                         DesktopEnvironmentOptions::CreateDefault(),
                         base::TimeDelta(), nullptr, extensions_));
+}
+
+void ClientSessionTest::CreateClientSession() {
+  CreateClientSession(base::MakeUnique<protocol::FakeSession>());
 }
 
 void ClientSessionTest::ConnectClientSession() {
@@ -430,5 +428,63 @@ TEST_F(ClientSessionTest, Extensions) {
   // ext3 was sent a message but not instantiated.
   EXPECT_FALSE(extension3.was_instantiated());
 }
+
+TEST_F(ClientSessionTest, ForwardHostSessionOptions1) {
+  auto session = base::MakeUnique<protocol::FakeSession>();
+  auto configuration = base::MakeUnique<buzz::XmlElement>(
+      buzz::QName(kChromotingXmlNamespace, "host-configuration"));
+  configuration->SetBodyText("Detect-Updated-Region:true");
+  session->SetAttachment(0, std::move(configuration));
+  CreateClientSession(std::move(session));
+  ConnectClientSession();
+  ASSERT_TRUE(desktop_environment_factory_->last_desktop_environment()
+                  ->options()
+                  .desktop_capture_options()
+                  ->detect_updated_region());
+}
+
+TEST_F(ClientSessionTest, ForwardHostSessionOptions2) {
+  auto session = base::MakeUnique<protocol::FakeSession>();
+  auto configuration = base::MakeUnique<buzz::XmlElement>(
+      buzz::QName(kChromotingXmlNamespace, "host-configuration"));
+  configuration->SetBodyText("Detect-Updated-Region:false");
+  session->SetAttachment(0, std::move(configuration));
+  CreateClientSession(std::move(session));
+  ConnectClientSession();
+  ASSERT_FALSE(desktop_environment_factory_->last_desktop_environment()
+                   ->options()
+                   .desktop_capture_options()
+                   ->detect_updated_region());
+}
+
+#if defined(OS_WIN)
+TEST_F(ClientSessionTest, ForwardDirectXHostSessionOptions1) {
+  auto session = base::MakeUnique<protocol::FakeSession>();
+  auto configuration = base::MakeUnique<buzz::XmlElement>(
+      buzz::QName(kChromotingXmlNamespace, "host-configuration"));
+  configuration->SetBodyText("DirectX-Capturer:true");
+  session->SetAttachment(0, std::move(configuration));
+  CreateClientSession(std::move(session));
+  ConnectClientSession();
+  ASSERT_TRUE(desktop_environment_factory_->last_desktop_environment()
+                  ->options()
+                  .desktop_capture_options()
+                  ->allow_directx_capturer());
+}
+
+TEST_F(ClientSessionTest, ForwardDirectXHostSessionOptions2) {
+  auto session = base::MakeUnique<protocol::FakeSession>();
+  auto configuration = base::MakeUnique<buzz::XmlElement>(
+      buzz::QName(kChromotingXmlNamespace, "host-configuration"));
+  configuration->SetBodyText("DirectX-Capturer:false");
+  session->SetAttachment(0, std::move(configuration));
+  CreateClientSession(std::move(session));
+  ConnectClientSession();
+  ASSERT_FALSE(desktop_environment_factory_->last_desktop_environment()
+                   ->options()
+                   .desktop_capture_options()
+                   ->allow_directx_capturer());
+}
+#endif
 
 }  // namespace remoting

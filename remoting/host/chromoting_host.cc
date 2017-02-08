@@ -256,15 +256,14 @@ void ChromotingHost::OnIncomingSession(
         video_encode_task_runner_, audio_task_runner_));
   }
 
-  DesktopEnvironmentOptions options = desktop_environment_options_;
-  // TODO(zijiehe): Apply HostSessionOptions to options.
   // Create a ClientSession object.
   std::vector<HostExtension*> extension_ptrs;
   for (const auto& extension : extensions_)
     extension_ptrs.push_back(extension.get());
   clients_.push_back(base::MakeUnique<ClientSession>(
-      this, std::move(connection), desktop_environment_factory_, options,
-      max_session_duration_, pairing_registry_, extension_ptrs));
+      this, std::move(connection), desktop_environment_factory_,
+      desktop_environment_options_, max_session_duration_, pairing_registry_,
+      extension_ptrs));
 }
 
 }  // namespace remoting

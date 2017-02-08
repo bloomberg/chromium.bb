@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_HOST_SESSION_OPTIONS_H_
-#define REMOTING_PROTOCOL_HOST_SESSION_OPTIONS_H_
+#ifndef REMOTING_HOST_HOST_SESSION_OPTIONS_H_
+#define REMOTING_HOST_HOST_SESSION_OPTIONS_H_
 
 #include <map>
 #include <string>
@@ -12,7 +12,6 @@
 #include "base/optional.h"
 
 namespace remoting {
-namespace protocol {
 
 // Session based host options sending from client. This class parses and stores
 // session configuration from client side to control the behavior of other host
@@ -21,6 +20,8 @@ class HostSessionOptions final {
  public:
   HostSessionOptions();
   ~HostSessionOptions();
+
+  HostSessionOptions(const std::string& parameter);
 
   // Appends one key-value pair into current instance.
   void Append(const std::string& key, const std::string& value);
@@ -46,7 +47,6 @@ class HostSessionOptions final {
   DISALLOW_COPY_AND_ASSIGN(HostSessionOptions);
 };
 
-}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_HOST_SESSION_OPTIONS_H_
+#endif  // REMOTING_HOST_HOST_SESSION_OPTIONS_H_

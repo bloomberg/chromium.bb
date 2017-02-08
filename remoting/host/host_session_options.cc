@@ -11,7 +11,6 @@
 #include "base/strings/string_util.h"
 
 namespace remoting {
-namespace protocol {
 
 namespace {
 
@@ -34,6 +33,10 @@ bool KeyIsValid(const std::string& key) {
 
 HostSessionOptions::HostSessionOptions() = default;
 HostSessionOptions::~HostSessionOptions() = default;
+
+HostSessionOptions::HostSessionOptions(const std::string& parameter) {
+  Import(parameter);
+}
 
 void HostSessionOptions::Append(const std::string& key,
                                 const std::string& value) {
@@ -80,5 +83,4 @@ void HostSessionOptions::Import(const std::string& parameter) {
   }
 }
 
-}  // namespace protocol
 }  // namespace remoting
