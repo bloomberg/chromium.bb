@@ -1603,7 +1603,7 @@
     Reset
   </message>
   <message name="IDS_SETTINGS_RESET_VIEW_REPORTED_SETTINGS" desc="Label of a link that when clicked displays the settings that will be reported to Google for analysis.">
-    View reported settings
+    View report settings
   </message>
 
   <!-- Search Page -->
