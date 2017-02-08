@@ -111,6 +111,10 @@ ChromotingJniRuntime::~ChromotingJniRuntime() {
       FROM_HERE, base::Bind(&ChromotingJniRuntime::DetachFromVmAndSignal,
                             base::Unretained(this), &done_event));
   done_event.Wait();
+
+  // Block until tasks blocking shutdown have completed their execution.
+  base::TaskScheduler::GetInstance()->Shutdown();
+
   base::android::LibraryLoaderExitHook();
   base::android::DetachFromVM();
 }

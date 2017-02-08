@@ -1670,6 +1670,9 @@ int HostProcessMain() {
   // Run the main (also UI) message loop until the host no longer needs it.
   base::RunLoop().Run();
 
+  // Block until tasks blocking shutdown have completed their execution.
+  base::TaskScheduler::GetInstance()->Shutdown();
+
   return exit_code;
 }
 

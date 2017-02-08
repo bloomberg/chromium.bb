@@ -200,6 +200,9 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   // Run the loop until channel is alive.
   run_loop.Run();
 
+  // Block until tasks blocking shutdown have completed their execution.
+  base::TaskScheduler::GetInstance()->Shutdown();
+
   return kSuccessExitCode;
 }
 
