@@ -158,6 +158,7 @@ MemoryInfoInWorkers status=experimental
 MiddleClickAutoscroll status=experimental
 MobileLayoutTheme
 ModuleScripts status=test
+MojoJS status=test
 NavigatorContentUtils
 WebNFC status=experimental
 NetworkInformation status=stable

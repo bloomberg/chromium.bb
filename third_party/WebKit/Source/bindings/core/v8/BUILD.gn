@@ -129,6 +129,14 @@ generated_core_dictionary_files = [
   "$blink_core_output_dir/imagebitmap/ImageBitmapOptions.h",
   "$blink_core_output_dir/input/InputDeviceCapabilitiesInit.cpp",
   "$blink_core_output_dir/input/InputDeviceCapabilitiesInit.h",
+  "$blink_core_output_dir/mojo/MojoCreateMessagePipeResult.cpp",
+  "$blink_core_output_dir/mojo/MojoCreateMessagePipeResult.h",
+  "$blink_core_output_dir/mojo/MojoHandleSignals.cpp",
+  "$blink_core_output_dir/mojo/MojoHandleSignals.h",
+  "$blink_core_output_dir/mojo/MojoReadMessageFlags.cpp",
+  "$blink_core_output_dir/mojo/MojoReadMessageFlags.h",
+  "$blink_core_output_dir/mojo/MojoReadMessageResult.cpp",
+  "$blink_core_output_dir/mojo/MojoReadMessageResult.h",
   "$blink_core_output_dir/offscreencanvas/ImageEncodeOptions.cpp",
   "$blink_core_output_dir/offscreencanvas/ImageEncodeOptions.h",
   "$blink_core_output_dir/page/scrolling/ScrollStateInit.cpp",
@@ -221,6 +229,8 @@ generated_core_testing_callback_function_files = [
 ]
 
 generated_core_callback_function_files = [
+  "$bindings_core_v8_output_dir/MojoWatchCallback.cpp",
+  "$bindings_core_v8_output_dir/MojoWatchCallback.h",
   "$bindings_core_v8_output_dir/PerformanceObserverCallback.cpp",
   "$bindings_core_v8_output_dir/PerformanceObserverCallback.h",
 ]

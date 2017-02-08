@@ -1,0 +1,14 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+callback MojoWatchCallback = void (MojoResult result);
+
+[
+    RuntimeEnabled=MojoJS,
+] interface MojoHandle {
+    void close();
+    [CallWith=ScriptState] MojoWatcher watch(MojoHandleSignals signals, MojoWatchCallback callback);
+    MojoResult writeMessage(BufferSource buffer, sequence<MojoHandle> handles);
+    MojoReadMessageResult readMessage(optional MojoReadMessageFlags flags);
+};
