@@ -17244,6 +17244,12 @@
      {}
     ]
    ],
+   "FileAPI/url/blob-url-in-sandboxed-iframe.html": [
+    [
+     "/FileAPI/url/blob-url-in-sandboxed-iframe.html",
+     {}
+    ]
+   ],
    "FileAPI/url/origin.sub.html": [
     [
      "/FileAPI/url/origin.sub.html",
@@ -34716,6 +34722,10 @@
   "FileAPI/support/url-origin.html": [
    "18972f4ed024eb5e1494ac466426ae32b3f5525f",
    "support"
+  ],
+  "FileAPI/url/blob-url-in-sandboxed-iframe.html": [
+   "ea6ccb6eb5b6370b9c524833bf267adf71b0cdf2",
+   "testharness"
   ],
   "FileAPI/url/origin.sub.html": [
    "427ede39094dacc910250495bc39ae5ad5826279",
