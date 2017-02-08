@@ -704,7 +704,8 @@ void LayoutBlock::markFixedPositionObjectForLayoutIfNeeded(
     LayoutUnit newLeft = computedValues.m_position;
     if (newLeft != box->logicalLeft())
       layoutScope.setChildNeedsLayout(child);
-  } else if (hasStaticBlockPosition) {
+  }
+  if (hasStaticBlockPosition) {
     LogicalExtentComputedValues computedValues;
     box->computeLogicalHeight(computedValues);
     LayoutUnit newTop = computedValues.m_position;
