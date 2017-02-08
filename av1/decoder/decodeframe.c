@@ -508,7 +508,10 @@ static void predict_and_reconstruct_intra_block(
   if (mbmi->sb_type < BLOCK_8X8)
     if (plane == 0) mode = xd->mi[0]->bmi[block_idx].as_mode;
 #endif
-
+#if CONFIG_PALETTE && CONFIG_PALETTE_THROUGHPUT
+  if (mbmi->palette_mode_info.palette_size[plane > 0] && plane <= 1)
+    av1_decode_palette_tokens(xd, plane, tx_size, row, col, r);
+#endif  // CONFIG_PALETTE && CONFIG_PALETTE_THROUGHPUT
   av1_predict_intra_block(xd, pd->width, pd->height, txsize_to_bsize[tx_size],
                           mode, dst, pd->dst.stride, dst, pd->dst.stride, col,
                           row, plane);
@@ -1560,6 +1563,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       int plane;
 
 #if CONFIG_PALETTE
+      // TODO(fangwen): Make CONFIG_COEF_INTERLEAVE work with
+      // CONFIG_PALETTE_THROUGHPUT
       for (plane = 0; plane <= 1; ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane])
           av1_decode_palette_tokens(xd, plane, r);
@@ -1647,12 +1652,12 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #else
   if (!is_inter_block(mbmi)) {
     int plane;
-#if CONFIG_PALETTE
+#if CONFIG_PALETTE && !CONFIG_PALETTE_THROUGHPUT
     for (plane = 0; plane <= 1; ++plane) {
       if (mbmi->palette_mode_info.palette_size[plane])
         av1_decode_palette_tokens(xd, plane, r);
     }
-#endif  // CONFIG_PALETTE
+#endif  // CONFIG_PALETTE && !CONFIG_PALETTE_THROUGHPUT
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       const TX_SIZE tx_size = plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
@@ -1672,7 +1677,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       int row, col;
       const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
       const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
-
 #if CONFIG_CB4X4
       if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
         continue;
