@@ -397,9 +397,9 @@ void FrameView::ScrollbarManager::setHasHorizontalScrollbar(bool hasScrollbar) {
   if (hasScrollbar) {
     m_hBar = createScrollbar(HorizontalScrollbar);
     m_scrollableArea->layoutBox()->document().view()->addChild(m_hBar.get());
+    m_hBarIsAttached = 1;
     m_scrollableArea->didAddScrollbar(*m_hBar, HorizontalScrollbar);
     m_hBar->styleChanged();
-    m_hBarIsAttached = 1;
   } else {
     m_hBarIsAttached = 0;
     destroyScrollbar(HorizontalScrollbar);
@@ -415,9 +415,9 @@ void FrameView::ScrollbarManager::setHasVerticalScrollbar(bool hasScrollbar) {
   if (hasScrollbar) {
     m_vBar = createScrollbar(VerticalScrollbar);
     m_scrollableArea->layoutBox()->document().view()->addChild(m_vBar.get());
+    m_vBarIsAttached = 1;
     m_scrollableArea->didAddScrollbar(*m_vBar, VerticalScrollbar);
     m_vBar->styleChanged();
-    m_vBarIsAttached = 1;
   } else {
     m_vBarIsAttached = 0;
     destroyScrollbar(VerticalScrollbar);
