@@ -437,18 +437,7 @@ void Font::getTextIntercepts(const TextRunPaintInfo& runInfo,
   if (shouldSkipDrawing())
     return;
 
-  if (runInfo.cachedTextBlob && runInfo.cachedTextBlob->get()) {
-    SkScalar boundsArray[2] = {std::get<0>(bounds), std::get<1>(bounds)};
-    int numIntervals = paint.getTextBlobIntercepts(
-        runInfo.cachedTextBlob->get(), boundsArray, nullptr);
-    if (!numIntervals)
-      return;
-    DCHECK_EQ(numIntervals % 2, 0);
-    intercepts.resize(numIntervals / 2);
-    paint.getTextBlobIntercepts(runInfo.cachedTextBlob->get(), boundsArray,
-                                reinterpret_cast<SkScalar*>(intercepts.data()));
-    return;
-  }
+  DCHECK(!runInfo.cachedTextBlob);
 
   GlyphBuffer glyphBuffer;
   // Compute skip-ink exceptions in the GlyphBuffer.
