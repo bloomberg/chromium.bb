@@ -60,6 +60,8 @@
 #include "extensions/features/features.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+#include "net/http/transport_security_state.h"
+#include "net/url_request/url_request_context.h"
 #include "third_party/re2/src/re2/re2.h"
 
 #if defined(OS_ANDROID)
@@ -221,6 +223,22 @@ bool ChromePasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
 bool ChromePasswordManagerClient::IsFillingEnabledForCurrentPage() const {
   return !DidLastPageLoadEncounterSSLErrors() &&
          IsPasswordManagementEnabledForCurrentPage();
+}
+
+bool ChromePasswordManagerClient::IsHSTSActiveForHost(
+    const GURL& origin) const {
+  if (!origin.is_valid())
+    return false;
+
+  net::TransportSecurityState* security_state =
+      profile_->GetRequestContext()
+          ->GetURLRequestContext()
+          ->transport_security_state();
+
+  if (!security_state)
+    return false;
+
+  return security_state->ShouldUpgradeToSSL(origin.host());
 }
 
 bool ChromePasswordManagerClient::OnCredentialManagerUsed() {

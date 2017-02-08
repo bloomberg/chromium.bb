@@ -19,6 +19,10 @@ bool PasswordManagerClient::IsFillingEnabledForCurrentPage() const {
   return true;
 }
 
+bool PasswordManagerClient::IsHSTSActiveForHost(const GURL& origin) const {
+  return false;
+}
+
 bool PasswordManagerClient::OnCredentialManagerUsed() {
   return true;
 }

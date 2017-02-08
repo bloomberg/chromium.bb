@@ -19,6 +19,8 @@ namespace autofill {
 class AutofillManager;
 }
 
+class GURL;
+
 namespace password_manager {
 
 class LogManager;
@@ -62,6 +64,10 @@ class PasswordManagerClient {
   // Checks if filling is enabled for the current page. Filling is disabled when
   // password manager is disabled, or in the presence of SSL errors on a page.
   virtual bool IsFillingEnabledForCurrentPage() const;
+
+  // Checks whether HTTP Strict Transport Security (HSTS) is active for the host
+  // of the given origin.
+  virtual bool IsHSTSActiveForHost(const GURL& origin) const;
 
   // Checks if the Credential Manager API is allowed to run on the page. It's
   // not allowed while prerendering and the pre-rendered WebContents will be
