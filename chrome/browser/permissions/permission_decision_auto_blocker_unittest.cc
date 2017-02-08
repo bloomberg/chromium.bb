@@ -29,17 +29,20 @@ bool FilterAll(const GURL& url) {
   return true;
 }
 
-}  // namespace
-
 class MockSafeBrowsingDatabaseManager
     : public safe_browsing::TestSafeBrowsingDatabaseManager {
  public:
-  explicit MockSafeBrowsingDatabaseManager(bool perform_callback)
-      : perform_callback_(perform_callback) {}
+  explicit MockSafeBrowsingDatabaseManager(bool perform_callback, bool enabled)
+      : perform_callback_(perform_callback), enabled_(enabled) {}
 
   bool CheckApiBlacklistUrl(
       const GURL& url,
       safe_browsing::SafeBrowsingDatabaseManager::Client* client) override {
+    // Return true when able to synchronously determine that the url is safe.
+    if (!enabled_) {
+      return true;
+    }
+
     if (perform_callback_) {
       safe_browsing::ThreatMetadata metadata;
       const auto& blacklisted_permissions = permissions_blacklist_.find(url);
@@ -70,10 +73,13 @@ class MockSafeBrowsingDatabaseManager
 
  private:
   bool perform_callback_;
+  bool enabled_;
   std::map<GURL, std::set<std::string>> permissions_blacklist_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
+
+}  // namespace
 
 class PermissionDecisionAutoBlockerUnitTest
     : public ChromeRenderViewHostTestHarness {
@@ -89,6 +95,7 @@ class PermissionDecisionAutoBlockerUnitTest
         base::MakeUnique<base::SimpleTestClock>();
     clock_ = clock.get();
     autoblocker_->SetClockForTesting(std::move(clock));
+    callback_was_run_ = false;
   }
 
   void SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(
@@ -121,6 +128,7 @@ class PermissionDecisionAutoBlockerUnitTest
   PermissionDecisionAutoBlocker* autoblocker() { return autoblocker_; }
 
   void SetLastEmbargoStatus(base::Closure quit_closure, bool status) {
+    callback_was_run_ = true;
     last_embargoed_status_ = status;
     if (quit_closure) {
       quit_closure.Run();
@@ -129,6 +137,8 @@ class PermissionDecisionAutoBlockerUnitTest
   }
 
   bool last_embargoed_status() { return last_embargoed_status_; }
+
+  bool callback_was_run() { return callback_was_run_; }
 
   base::SimpleTestClock* clock() { return clock_; }
 
@@ -145,6 +155,7 @@ class PermissionDecisionAutoBlockerUnitTest
   base::test::ScopedFeatureList feature_list_;
   base::SimpleTestClock* clock_;
   bool last_embargoed_status_;
+  bool callback_was_run_;
 };
 
 TEST_F(PermissionDecisionAutoBlockerUnitTest, RemoveCountsByUrl) {
@@ -256,13 +267,15 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestUpdateEmbargoBlacklist) {
   GURL url("https://www.google.com");
 
   scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
-      new MockSafeBrowsingDatabaseManager(true /* perform_callback */);
+      new MockSafeBrowsingDatabaseManager(true /* perform_callback */,
+                                          true /* enabled */);
   std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
   db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
   SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
                                                      2000 /* timeout in ms */);
 
   UpdateEmbargoedStatus(content::PermissionType::GEOLOCATION, url);
+  EXPECT_TRUE(callback_was_run());
   EXPECT_TRUE(last_embargoed_status());
 }
 
@@ -379,13 +392,15 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingTimeout) {
   clock()->SetNow(base::Time::Now());
 
   scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
-      new MockSafeBrowsingDatabaseManager(false /* perform_callback */);
+      new MockSafeBrowsingDatabaseManager(false /* perform_callback */,
+                                          true /* enabled */);
   std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
   db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
   SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
                                                      0 /* timeout in ms */);
 
   UpdateEmbargoedStatus(content::PermissionType::GEOLOCATION, url);
+  EXPECT_TRUE(callback_was_run());
   EXPECT_FALSE(last_embargoed_status());
   EXPECT_FALSE(
       autoblocker()->IsUnderEmbargo(content::PermissionType::GEOLOCATION, url));
@@ -395,6 +410,7 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingTimeout) {
 
   clock()->Advance(base::TimeDelta::FromDays(1));
   UpdateEmbargoedStatus(content::PermissionType::GEOLOCATION, url);
+  EXPECT_TRUE(callback_was_run());
   EXPECT_TRUE(last_embargoed_status());
 
   clock()->Advance(base::TimeDelta::FromDays(1));
@@ -472,4 +488,20 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest,
                      url, content::PermissionType::GEOLOCATION));
   EXPECT_EQ(50, autoblocker()->GetIgnoreCount(
                     url, content::PermissionType::GEOLOCATION));
+}
+
+// Test that a blacklisted permission should not be autoblocked if the database
+// manager is disabled.
+TEST_F(PermissionDecisionAutoBlockerUnitTest, TestDisabledDatabaseManager) {
+  GURL url("https://www.google.com");
+  scoped_refptr<MockSafeBrowsingDatabaseManager> db_manager =
+      new MockSafeBrowsingDatabaseManager(true /* perform_callback */,
+                                          false /* enabled */);
+  std::set<std::string> blacklisted_permissions{"GEOLOCATION"};
+  db_manager->BlacklistUrlPermissions(url, blacklisted_permissions);
+  SetSafeBrowsingDatabaseManagerAndTimeoutForTesting(db_manager,
+                                                     2000 /* timeout in ms */);
+  UpdateEmbargoedStatus(content::PermissionType::GEOLOCATION, url);
+  EXPECT_TRUE(callback_was_run());
+  EXPECT_FALSE(last_embargoed_status());
 }

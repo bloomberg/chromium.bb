@@ -41,7 +41,7 @@ PermissionBlacklistClient::PermissionBlacklistClient(
       callback_(callback),
       timeout_(timeout),
       is_active_(true) {
-  // Balanced by a call to Release() in OnCheckApiBlacklistUrlResult().
+  // Balanced by a call to Release() in EvaluateBlacklistResultOnUiThread().
   AddRef();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
@@ -61,14 +61,16 @@ void PermissionBlacklistClient::StartCheck(const GURL& request_origin) {
       FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_),
       base::Bind(&PermissionBlacklistClient::OnCheckApiBlacklistUrlResult, this,
                  request_origin, empty_metadata));
-  db_manager_->CheckApiBlacklistUrl(request_origin, this);
+  // If CheckApiBlacklistUrl returns true, no asynchronous call to |this| will
+  // be made, so just directly call through to OnCheckApiBlacklistUrlResult.
+  if (db_manager_->CheckApiBlacklistUrl(request_origin, this))
+    OnCheckApiBlacklistUrlResult(request_origin, empty_metadata);
 }
 
 void PermissionBlacklistClient::OnCheckApiBlacklistUrlResult(
     const GURL& url,
     const safe_browsing::ThreatMetadata& metadata) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
   if (timer_->IsRunning())
     timer_->Stop();
   else

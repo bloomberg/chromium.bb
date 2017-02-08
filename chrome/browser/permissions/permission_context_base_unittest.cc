@@ -55,6 +55,8 @@ const char kPermissionsKillSwitchTestGroup[] = "TestGroup";
 const char* const kPromptGroupName = kPermissionsKillSwitchTestGroup;
 const char kPromptTrialName[] = "PermissionPromptsUX";
 
+namespace {
+
 class MockSafeBrowsingDatabaseManager
     : public safe_browsing::TestSafeBrowsingDatabaseManager {
  public:
@@ -95,6 +97,8 @@ class MockSafeBrowsingDatabaseManager
 
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
+
+}  // namespace
 
 class TestPermissionContext : public PermissionContextBase {
  public:
