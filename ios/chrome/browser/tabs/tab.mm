@@ -514,6 +514,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (instancetype)initWithWebState:(std::unique_ptr<web::WebState>)webState
                            model:(TabModel*)parentModel {
+  return [self initWithWebState:std::move(webState)
+                          model:parentModel
+               attachTabHelpers:YES];
+}
+
+- (instancetype)initWithWebState:(std::unique_ptr<web::WebState>)webState
+                           model:(TabModel*)parentModel
+                attachTabHelpers:(BOOL)attachTabHelpers {
   DCHECK(webState);
   self = [super init];
   if (self) {
@@ -542,88 +550,93 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                 delegate:self]);
 
     [self initNativeAppNavigationController];
-    // IOSChromeSessionTabHelper comes first because it sets up the tab ID, and
-    // other helpers may rely on that.
-    IOSChromeSessionTabHelper::CreateForWebState(self.webState);
 
-    NetworkActivityIndicatorTabHelper::CreateForWebState(self.webState,
-                                                         self.tabId);
-    IOSChromeSyncedTabDelegate::CreateForWebState(self.webState);
-    InfoBarManagerImpl::CreateForWebState(self.webState);
-    IOSSecurityStateTabHelper::CreateForWebState(self.webState);
-    RepostFormTabHelper::CreateForWebState(self.webState);
-    BlockedPopupTabHelper::CreateForWebState(self.webState);
+    if (attachTabHelpers) {
+      // IOSChromeSessionTabHelper comes first because it sets up the tab ID,
+      // and other helpers may rely on that.
+      IOSChromeSessionTabHelper::CreateForWebState(self.webState);
 
-    if (reading_list::switches::IsReadingListEnabled()) {
-      ReadingListModel* model =
-          ReadingListModelFactory::GetForBrowserState(browserState_);
-      ReadingListWebStateObserver::FromWebState(self.webState, model);
-    }
+      NetworkActivityIndicatorTabHelper::CreateForWebState(self.webState,
+                                                           self.tabId);
+      IOSChromeSyncedTabDelegate::CreateForWebState(self.webState);
+      InfoBarManagerImpl::CreateForWebState(self.webState);
+      IOSSecurityStateTabHelper::CreateForWebState(self.webState);
+      RepostFormTabHelper::CreateForWebState(self.webState);
+      BlockedPopupTabHelper::CreateForWebState(self.webState);
 
-    tabInfoBarObserver_.reset(new TabInfoBarObserver(self));
-    tabInfoBarObserver_->SetShouldObserveInfoBarManager(true);
+      if (reading_list::switches::IsReadingListEnabled()) {
+        ReadingListModel* model =
+            ReadingListModelFactory::GetForBrowserState(browserState_);
+        ReadingListWebStateObserver::FromWebState(self.webState, model);
+      }
 
-    if (AccountConsistencyService* account_consistency_service =
-            ios::AccountConsistencyServiceFactory::GetForBrowserState(
-                browserState_)) {
-      account_consistency_service->SetWebStateHandler(self.webState, self);
-    }
-    ChromeIOSTranslateClient::CreateForWebState(self.webState);
-    if (experimental_flags::IsAutoReloadEnabled()) {
-      autoReloadBridge_.reset([[AutoReloadBridge alloc] initWithTab:self]);
-    }
-    printObserver_.reset(new PrintObserver(self.webState));
+      tabInfoBarObserver_.reset(new TabInfoBarObserver(self));
+      tabInfoBarObserver_->SetShouldObserveInfoBarManager(true);
 
-    base::scoped_nsprotocol<id<PasswordsUiDelegate>> passwordsUiDelegate(
-        [[PasswordsUiDelegateImpl alloc] init]);
-    passwordController_.reset([[PasswordController alloc]
-           initWithWebState:self.webState
-        passwordsUiDelegate:passwordsUiDelegate]);
-    password_manager::PasswordGenerationManager* passwordGenerationManager =
-        [passwordController_ passwordGenerationManager];
-    autofillController_.reset([[AutofillController alloc]
-             initWithBrowserState:browserState_
-        passwordGenerationManager:passwordGenerationManager
-                         webState:self.webState]);
-    suggestionController_.reset([[FormSuggestionController alloc]
-        initWithWebState:self.webState
-               providers:[self suggestionProviders]]);
-    inputAccessoryViewController_.reset(
-        [[FormInputAccessoryViewController alloc]
-            initWithWebState:self.webState
-                   providers:[self accessoryViewProviders]]);
+      if (AccountConsistencyService* account_consistency_service =
+              ios::AccountConsistencyServiceFactory::GetForBrowserState(
+                  browserState_)) {
+        account_consistency_service->SetWebStateHandler(self.webState, self);
+      }
+      ChromeIOSTranslateClient::CreateForWebState(self.webState);
+      if (experimental_flags::IsAutoReloadEnabled()) {
+        autoReloadBridge_.reset([[AutoReloadBridge alloc] initWithTab:self]);
+      }
+      printObserver_.reset(new PrintObserver(self.webState));
 
-    ios::ChromeBrowserState* original_browser_state =
-        ios::ChromeBrowserState::FromBrowserState(
-            self.webState->GetBrowserState())
-            ->GetOriginalChromeBrowserState();
-    favicon::WebFaviconDriver::CreateForWebState(
-        self.webState,
-        ios::FaviconServiceFactory::GetForBrowserState(
-            original_browser_state, ServiceAccessType::IMPLICIT_ACCESS),
-        ios::HistoryServiceFactory::GetForBrowserState(
-            original_browser_state, ServiceAccessType::IMPLICIT_ACCESS),
-        ios::BookmarkModelFactory::GetForBrowserState(original_browser_state));
-    history::WebStateTopSitesObserver::CreateForWebState(
-        self.webState,
-        ios::TopSitesFactory::GetForBrowserState(original_browser_state).get());
-    [self setShouldObserveFaviconChanges:YES];
-
-    if (parentModel && parentModel.syncedWindowDelegate) {
-      IOSChromeSessionTabHelper::FromWebState(self.webState)
-          ->SetWindowID(parentModel.sessionID);
-    }
-
-    // Create the ReaderModeController immediately so it can register for
-    // WebState changes.
-    if (experimental_flags::IsReaderModeEnabled()) {
-      readerModeController_.reset([[ReaderModeController alloc]
+      base::scoped_nsprotocol<id<PasswordsUiDelegate>> passwordsUiDelegate(
+          [[PasswordsUiDelegateImpl alloc] init]);
+      passwordController_.reset([[PasswordController alloc]
+             initWithWebState:self.webState
+          passwordsUiDelegate:passwordsUiDelegate]);
+      password_manager::PasswordGenerationManager* passwordGenerationManager =
+          [passwordController_ passwordGenerationManager];
+      autofillController_.reset([[AutofillController alloc]
+               initWithBrowserState:browserState_
+          passwordGenerationManager:passwordGenerationManager
+                           webState:self.webState]);
+      suggestionController_.reset([[FormSuggestionController alloc]
           initWithWebState:self.webState
-                  delegate:self]);
-    }
+                 providers:[self suggestionProviders]]);
+      inputAccessoryViewController_.reset(
+          [[FormInputAccessoryViewController alloc]
+              initWithWebState:self.webState
+                     providers:[self accessoryViewProviders]]);
 
-    // Allow the embedder to attach tab helpers.
-    ios::GetChromeBrowserProvider()->AttachTabHelpers(self.webState, self);
+      ios::ChromeBrowserState* original_browser_state =
+          ios::ChromeBrowserState::FromBrowserState(
+              self.webState->GetBrowserState())
+              ->GetOriginalChromeBrowserState();
+      favicon::WebFaviconDriver::CreateForWebState(
+          self.webState,
+          ios::FaviconServiceFactory::GetForBrowserState(
+              original_browser_state, ServiceAccessType::IMPLICIT_ACCESS),
+          ios::HistoryServiceFactory::GetForBrowserState(
+              original_browser_state, ServiceAccessType::IMPLICIT_ACCESS),
+          ios::BookmarkModelFactory::GetForBrowserState(
+              original_browser_state));
+      history::WebStateTopSitesObserver::CreateForWebState(
+          self.webState,
+          ios::TopSitesFactory::GetForBrowserState(original_browser_state)
+              .get());
+      [self setShouldObserveFaviconChanges:YES];
+
+      if (parentModel && parentModel.syncedWindowDelegate) {
+        IOSChromeSessionTabHelper::FromWebState(self.webState)
+            ->SetWindowID(parentModel.sessionID);
+      }
+
+      // Create the ReaderModeController immediately so it can register for
+      // WebState changes.
+      if (experimental_flags::IsReaderModeEnabled()) {
+        readerModeController_.reset([[ReaderModeController alloc]
+            initWithWebState:self.webState
+                    delegate:self]);
+      }
+
+      // Allow the embedder to attach tab helpers.
+      ios::GetChromeBrowserProvider()->AttachTabHelpers(self.webState, self);
+    }
 
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -2219,27 +2232,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 #pragma mark - TestingSupport
 
 @implementation Tab (TestingSupport)
-
-- (void)replaceWebState:(std::unique_ptr<web::WebStateImpl>)webState {
-  // Stop observing the old InfoBarManager and FaviconDriver since they will
-  // be deleted with the old web controller.
-  [self setShouldObserveInfoBarManager:NO];
-  [self setShouldObserveFaviconChanges:NO];
-  [self.webController setDelegate:nil];
-  // Set the new web state.
-  webStateImpl_ = std::move(webState);
-  [self.webController setDelegate:self];
-  webStateObserver_.reset(
-      new web::WebStateObserverBridge(webStateImpl_.get(), self));
-  // SessionTabHelper comes first because it sets up the tab ID, and other
-  // helpers may rely on that.
-  IOSChromeSessionTabHelper::CreateForWebState(webStateImpl_.get());
-  IOSChromeSyncedTabDelegate::CreateForWebState(webStateImpl_.get());
-  // Start observing the new web controller's InfoBarManager and FaviconDriver.
-  [self setShouldObserveInfoBarManager:YES];
-  [self setShouldObserveFaviconChanges:YES];
-  findInPageController_.reset();
-}
 
 - (void)replaceExternalAppLauncher:(id)externalAppLauncher {
   externalAppLauncher_.reset([externalAppLauncher retain]);

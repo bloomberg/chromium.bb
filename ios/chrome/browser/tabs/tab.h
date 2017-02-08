@@ -165,7 +165,13 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Create a new tab with given web state and tab model. All must be non-nil.
 - (instancetype)initWithWebState:(std::unique_ptr<web::WebState>)webState
+                           model:(TabModel*)parentModel;
+
+// Create a new tab with given web state and tab model, optionally attaching
+// the tab helpers (controlled by |attachTabHelpers|). All must be non-nil.
+- (instancetype)initWithWebState:(std::unique_ptr<web::WebState>)webState
                            model:(TabModel*)parentModel
+                attachTabHelpers:(BOOL)attachTabHelpers
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

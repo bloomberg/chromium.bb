@@ -194,25 +194,21 @@ class TabTest : public BlockCleanupTest {
 
     mock_web_controller_ =
         [OCMockObject niceMockForClass:[CRWWebController class]];
-    std::unique_ptr<WebStateImpl> web_state_impl;
-    web_state_impl.reset(new WebStateImpl(browser_state));
+    auto web_state_impl = base::MakeUnique<WebStateImpl>(browser_state);
     web_state_impl->SetWebController(mock_web_controller_);
     web_state_impl->GetNavigationManagerImpl().InitializeSession(
         @"window1", @"opener", NO, 0);
     web_state_impl_ = web_state_impl.get();
-    [[[(OCMockObject*)mock_web_controller_ stub]
+    [[[static_cast<OCMockObject*>(mock_web_controller_) stub]
         andReturnValue:OCMOCK_VALUE(web_state_impl_)] webStateImpl];
     web_controller_view_.reset([[UIView alloc] init]);
-    [[[(OCMockObject*)mock_web_controller_ stub]
+    [[[static_cast<OCMockObject*>(mock_web_controller_) stub]
         andReturn:web_controller_view_.get()] view];
-    tab_.reset([[Tab alloc] initWithWindowName:nil
-                                        opener:nullptr
-                                   openedByDOM:NO
-                                         model:nil
-                                  browserState:browser_state]);
+    tab_.reset([[Tab alloc] initWithWebState:std::move(web_state_impl)
+                                       model:nil
+                            attachTabHelpers:NO]);
     web::NavigationManager::WebLoadParams params(GURL("chrome://version/"));
     [[tab_ webController] loadWithParams:params];
-    [tab_ replaceWebState:std::move(web_state_impl)];
 
     // There should be no entries in the history at this point.
     history::QueryResults results;

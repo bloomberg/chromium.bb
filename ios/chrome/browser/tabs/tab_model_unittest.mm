@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/sessions/session_window.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -64,29 +65,26 @@ using web::WebStateImpl;
               lastVisitedTimestamp:(double)lastVisitedTimestamp
                       browserState:(ios::ChromeBrowserState*)browserState
                           tabModel:(TabModel*)tabModel {
-  self = [super initWithWindowName:windowName
-                            opener:nil
-                       openedByDOM:NO
-                             model:tabModel
-                      browserState:browserState];
-  if (self) {
-    id webControllerMock =
-        [OCMockObject niceMockForClass:[CRWWebController class]];
+  id webControllerMock =
+      [OCMockObject niceMockForClass:[CRWWebController class]];
 
-    auto webStateImpl = base::MakeUnique<WebStateImpl>(browserState);
-    webStateImpl->SetWebController(webControllerMock);
-    webStateImpl->GetNavigationManagerImpl().InitializeSession(
-        windowName, @"opener", NO, -1);
-    [webStateImpl->GetNavigationManagerImpl().GetSessionController()
-        setLastVisitedTimestamp:lastVisitedTimestamp];
+  auto webStateImpl = base::MakeUnique<WebStateImpl>(browserState);
+  webStateImpl->SetWebController(webControllerMock);
+  webStateImpl->GetNavigationManagerImpl().InitializeSession(windowName,
+                                                             @"opener", NO, -1);
+  [webStateImpl->GetNavigationManagerImpl().GetSessionController()
+      setLastVisitedTimestamp:lastVisitedTimestamp];
 
-    WebStateImpl* webStateImplPtr = webStateImpl.get();
-    [[[webControllerMock stub] andReturnValue:OCMOCK_VALUE(webStateImplPtr)]
-        webStateImpl];
-    BOOL yes = YES;
-    [[[webControllerMock stub] andReturnValue:OCMOCK_VALUE(yes)] isViewAlive];
+  WebStateImpl* webStateImplPtr = webStateImpl.get();
+  [[[webControllerMock stub] andReturnValue:OCMOCK_VALUE(webStateImplPtr)]
+      webStateImpl];
+  BOOL yes = YES;
+  [[[webControllerMock stub] andReturnValue:OCMOCK_VALUE(yes)] isViewAlive];
 
-    [self replaceWebState:std::move(webStateImpl)];
+  if ((self = [super initWithWebState:std::move(webStateImpl)
+                                model:tabModel
+                     attachTabHelpers:NO])) {
+    IOSChromeSessionTabHelper::CreateForWebState(self.webState);
   }
   return self;
 }
