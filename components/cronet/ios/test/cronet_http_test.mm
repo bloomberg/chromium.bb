@@ -322,6 +322,39 @@ TEST_F(HttpTest, SetSystemCookie) {
   EXPECT_TRUE([[delegate_ responseBody] containsString:cookieValue]);
 }
 
+TEST_F(HttpTest, SystemCookieWithNullCreationTime) {
+  const char kCookieHeader[] = "Cookie";
+  NSString* cookieName = [NSString
+      stringWithFormat:@"SetSystemCookie-%@", [[NSUUID UUID] UUIDString]];
+  NSString* cookieValue = [[NSUUID UUID] UUIDString];
+  NSHTTPCookieStorage* systemCookieStorage =
+      [NSHTTPCookieStorage sharedHTTPCookieStorage];
+  NSURL* echoCookieUrl =
+      net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL(kCookieHeader)));
+  NSHTTPCookie* nullCreationTimeCookie = [NSHTTPCookie cookieWithProperties:@{
+    NSHTTPCookiePath : [echoCookieUrl path],
+    NSHTTPCookieName : cookieName,
+    NSHTTPCookieValue : cookieValue,
+    NSHTTPCookieDomain : [echoCookieUrl host],
+    @"Created" : [NSNumber numberWithDouble:0.0],
+  }];
+  [systemCookieStorage setCookie:nullCreationTimeCookie];
+  NSHTTPCookie* normalCookie = [NSHTTPCookie cookieWithProperties:@{
+    NSHTTPCookiePath : [echoCookieUrl path],
+    NSHTTPCookieName : [cookieName stringByAppendingString:@"-normal"],
+    NSHTTPCookieValue : cookieValue,
+    NSHTTPCookieDomain : [echoCookieUrl host],
+  }];
+  [systemCookieStorage setCookie:normalCookie];
+  StartDataTaskAndWaitForCompletion([session_ dataTaskWithURL:echoCookieUrl]);
+  [systemCookieStorage deleteCookie:nullCreationTimeCookie];
+  [systemCookieStorage deleteCookie:normalCookie];
+  EXPECT_EQ(nil, [delegate_ error]);
+  // Verify that cookie set in system store was sent to the serever.
+  EXPECT_TRUE([[delegate_ responseBody] containsString:cookieName]);
+  EXPECT_TRUE([[delegate_ responseBody] containsString:cookieValue]);
+}
+
 TEST_F(HttpTest, FilterOutRequest) {
   NSURL* url =
       net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL("User-Agent")));

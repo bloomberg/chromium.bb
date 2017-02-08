@@ -2,9 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//ios/build/config.gni")
+import("//ios/features.gni")
 import("//testing/test.gni")
 import("//url/features.gni")
+
+buildflag_header("ios_net_features") {
+  header = "ios_net_features.h"
+  flags = [ "CRONET_BUILD=$is_cronet_build" ]
+}
 
 group("all_tests") {
   testonly = true
@@ -15,6 +22,7 @@ group("all_tests") {
 
 source_set("net") {
   deps = [
+    ":ios_net_features",
     "//base",
     "//net",
     "//url:url_features",

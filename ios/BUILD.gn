@@ -4,12 +4,9 @@
 
 assert(!is_component_build, "component build is unsupported on iOS")
 
-declare_args() {
-  # Control whether cronet is build (this is usually set by the script
-  # components/cronet/tools/cr_cronet.py as cronet requires specific
-  # gn args to build correctly).
-  is_cronet_build = false
+import("//ios/features.gni")
 
+declare_args() {
   # TODO(brettw) bug 684096: Remove these. These are to prevent unused
   # override warnings on iOS from the setting of the default_args in the
   # toplevel //.gn file. Since iOS doesn't compile V8, GN complains that
