@@ -393,8 +393,6 @@ blink_core_sources("html") {
     "parser/HTMLParserScriptRunner.cpp",
     "parser/HTMLParserScriptRunner.h",
     "parser/HTMLParserScriptRunnerHost.h",
-    "parser/HTMLParserThread.cpp",
-    "parser/HTMLParserThread.h",
     "parser/HTMLPreloadScanner.cpp",
     "parser/HTMLPreloadScanner.h",
     "parser/HTMLResourcePreloader.cpp",

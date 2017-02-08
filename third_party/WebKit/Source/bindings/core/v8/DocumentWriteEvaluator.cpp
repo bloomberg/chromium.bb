@@ -8,7 +8,6 @@
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/frame/Location.h"
-#include "core/html/parser/HTMLParserThread.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 
