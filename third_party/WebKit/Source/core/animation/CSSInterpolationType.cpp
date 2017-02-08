@@ -250,9 +250,9 @@ CSSInterpolationType::maybeConvertCustomPropertyDeclarationInternal(
 
 InterpolationValue CSSInterpolationType::maybeConvertUnderlyingValue(
     const InterpolationEnvironment& environment) const {
-  const StyleResolverState& state = environment.state();
+  const ComputedStyle& style = environment.style();
   if (!getProperty().isCSSCustomProperty()) {
-    return maybeConvertStandardPropertyUnderlyingValue(*state.style());
+    return maybeConvertStandardPropertyUnderlyingValue(style);
   }
 
   const PropertyHandle property = getProperty();
@@ -261,7 +261,7 @@ InterpolationValue CSSInterpolationType::maybeConvertUnderlyingValue(
     return nullptr;
   }
   const CSSValue* underlyingValue =
-      state.style()->getRegisteredVariable(name, m_registration->inherits());
+      style.getRegisteredVariable(name, m_registration->inherits());
   if (!underlyingValue) {
     underlyingValue = m_registration->initial();
   }
