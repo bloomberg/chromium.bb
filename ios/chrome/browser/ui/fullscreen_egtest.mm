@@ -28,6 +28,10 @@
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // TODO(crbug.com/638674): Move this to a shared location as it is a duplicate
@@ -180,7 +184,7 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   __block bool finished = false;
   chrome_test_util::GetCurrentWebState()->ExecuteJavaScript(
-      base::UTF8ToUTF16(script), base::BindBlock(^(const base::Value*) {
+      base::UTF8ToUTF16(script), base::BindBlockArc(^(const base::Value*) {
         finished = true;
       }));
 
