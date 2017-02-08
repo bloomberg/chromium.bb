@@ -309,6 +309,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             // {@link #onTitleUpdated()}. The following assignment is to keep |mCurrentMetadata| up
             // to date as |mPageMetadata| may have changed.
             mCurrentMetadata = getMetadata();
+            mMediaSessionActions = null;
 
             if (isNotificationHiddingOrHidden()) return;
 
@@ -316,6 +317,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             mNotificationInfoBuilder.setNotificationLargeIcon(mFavicon);
             mNotificationInfoBuilder.setMediaSessionImage(mPageMediaImage);
             mNotificationInfoBuilder.setMetadata(mCurrentMetadata);
+            mNotificationInfoBuilder.setMediaSessionActions(mMediaSessionActions);
             showNotification();
         }
 

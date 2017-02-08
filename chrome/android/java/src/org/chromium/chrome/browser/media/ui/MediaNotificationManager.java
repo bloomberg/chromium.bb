@@ -546,6 +546,15 @@ public class MediaNotificationManager {
         return manager.mNotificationBuilder;
     }
 
+    @VisibleForTesting
+    @Nullable
+    static MediaNotificationInfo getMediaNotificationInfoForTesting(
+            int notificationId) {
+        MediaNotificationManager manager = getManager(notificationId);
+
+        return (manager == null) ? null : manager.mMediaNotificationInfo;
+    }
+
     private static boolean isRunningN() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
     }
