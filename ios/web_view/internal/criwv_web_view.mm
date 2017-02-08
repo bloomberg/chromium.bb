@@ -114,9 +114,14 @@
   _webState->Stop();
 }
 
-- (void)loadURL:(NSURL*)URL {
-  web::NavigationManager::WebLoadParams params(net::GURLWithNSURL(URL));
+- (void)loadRequest:(NSURLRequest*)request {
+  DCHECK_EQ(nil, request.HTTPBodyStream)
+      << "request.HTTPBodyStream is not supported.";
+
+  web::NavigationManager::WebLoadParams params(net::GURLWithNSURL(request.URL));
   params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  params.extra_headers.reset([request.allHTTPHeaderFields copy]);
+  params.post_data.reset([request.HTTPBody copy]);
   _webState->GetNavigationManager()->LoadURLWithParams(params);
 }
 

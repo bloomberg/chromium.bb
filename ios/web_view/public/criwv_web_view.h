@@ -54,8 +54,9 @@
 // Stops loading the current page.
 - (void)stopLoading;
 
-// Loads the given |url| in this web view.
-- (void)loadURL:(NSURL*)url;
+// Loads the given URL request in this web view.
+// Unlike WKWebView, this method supports HTTPBody.
+- (void)loadRequest:(NSURLRequest*)request;
 
 // Evaluates a JavaScript string.
 // The completion handler is invoked when script evaluation completes.

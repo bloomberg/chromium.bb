@@ -126,7 +126,9 @@
                                 UIViewAutoresizingFlexibleHeight];
   [_containerView addSubview:_webView];
 
-  [_webView loadURL:[NSURL URLWithString:@"https://www.google.com/"]];
+  NSURLRequest* request = [NSURLRequest
+      requestWithURL:[NSURL URLWithString:@"https://www.google.com/"]];
+  [_webView loadRequest:request];
 }
 
 - (UIBarPosition)positionForBar:(id<UIBarPositioning>)bar {
@@ -153,7 +155,9 @@
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField*)field {
-  [_webView loadURL:[NSURL URLWithString:[field text]]];
+  NSURLRequest* request =
+      [NSURLRequest requestWithURL:[NSURL URLWithString:[field text]]];
+  [_webView loadRequest:request];
   [field resignFirstResponder];
   [self updateToolbar];
   return YES;
