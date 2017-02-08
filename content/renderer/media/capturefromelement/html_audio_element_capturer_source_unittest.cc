@@ -6,7 +6,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
-#include "content/renderer/media/html_audio_element_capturer_source.h"
+#include "content/renderer/media/capturefromelement/html_audio_element_capturer_source.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/audio_parameters.h"

@@ -1551,14 +1551,12 @@ test("content_unittests") {
       "../browser/webrtc/webrtc_eventlog_host_unittest.cc",
       "../browser/webrtc/webrtc_internals_unittest.cc",
       "../renderer/media/audio_repetition_detector_unittest.cc",
-      "../renderer/media/audio_track_recorder_unittest.cc",
-      "../renderer/media/canvas_capture_handler_unittest.cc",
+      "../renderer/media/capturefromelement/canvas_capture_handler_unittest.cc",
+      "../renderer/media/capturefromelement/html_audio_element_capturer_source_unittest.cc",
+      "../renderer/media/capturefromelement/html_video_element_capturer_source_unittest.cc",
       "../renderer/media/gpu/rtc_video_decoder_unittest.cc",
       "../renderer/media/gpu/rtc_video_encoder_unittest.cc",
-      "../renderer/media/html_audio_element_capturer_source_unittest.cc",
-      "../renderer/media/html_video_element_capturer_source_unittest.cc",
       "../renderer/media/media_devices_event_dispatcher_unittest.cc",
-      "../renderer/media/media_recorder_handler_unittest.cc",
       "../renderer/media/media_stream_audio_processor_unittest.cc",
       "../renderer/media/media_stream_audio_unittest.cc",
       "../renderer/media/media_stream_constraints_util_unittest.cc",
@@ -1575,11 +1573,13 @@ test("content_unittests") {
       "../renderer/media/mock_media_stream_video_source.cc",
       "../renderer/media/mock_media_stream_video_source.h",
       "../renderer/media/peer_connection_tracker_unittest.cc",
+      "../renderer/media/recorder/audio_track_recorder_unittest.cc",
+      "../renderer/media/recorder/media_recorder_handler_unittest.cc",
+      "../renderer/media/recorder/video_track_recorder_unittest.cc",
       "../renderer/media/rtc_data_channel_handler_unittest.cc",
       "../renderer/media/rtc_peer_connection_handler_unittest.cc",
       "../renderer/media/speech_recognition_audio_sink_unittest.cc",
       "../renderer/media/user_media_client_impl_unittest.cc",
-      "../renderer/media/video_track_recorder_unittest.cc",
       "../renderer/media/webrtc/media_stream_remote_video_source_unittest.cc",
       "../renderer/media/webrtc/media_stream_track_metrics_unittest.cc",
       "../renderer/media/webrtc/media_stream_video_webrtc_sink_unittest.cc",
@@ -1617,9 +1617,9 @@ test("content_unittests") {
 
     if (is_chromecast) {
       sources -= [
-        "../renderer/media/audio_track_recorder_unittest.cc",
-        "../renderer/media/media_recorder_handler_unittest.cc",
-        "../renderer/media/video_track_recorder_unittest.cc",
+        "../renderer/media/recorder/audio_track_recorder_unittest.cc",
+        "../renderer/media/recorder/media_recorder_handler_unittest.cc",
+        "../renderer/media/recorder/video_track_recorder_unittest.cc",
       ]
     }
   }

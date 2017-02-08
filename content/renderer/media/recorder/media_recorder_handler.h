@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_MEDIA_RECORDER_HANDLER_H_
-#define CONTENT_RENDERER_MEDIA_MEDIA_RECORDER_HANDLER_H_
+#ifndef CONTENT_RENDERER_MEDIA_RECORDER_MEDIA_RECORDER_HANDLER_H_
+#define CONTENT_RENDERER_MEDIA_RECORDER_MEDIA_RECORDER_HANDLER_H_
 
 #include <memory>
 
@@ -13,7 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/video_track_recorder.h"
+#include "content/renderer/media/recorder/video_track_recorder.h"
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandler.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 
@@ -114,4 +114,4 @@ class CONTENT_EXPORT MediaRecorderHandler final
 };
 
 }  // namespace content
-#endif  // CONTENT_RENDERER_MEDIA_MEDIA_RECORDER_HANDLER_H_
+#endif  // CONTENT_RENDERER_MEDIA_RECORDER_MEDIA_RECORDER_HANDLER_H_
