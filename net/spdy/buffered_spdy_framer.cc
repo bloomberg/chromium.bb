@@ -22,8 +22,6 @@ size_t kGoAwayDebugDataMaxSize = 1024;
 BufferedSpdyFramer::BufferedSpdyFramer()
     : spdy_framer_(SpdyFramer::ENABLE_COMPRESSION),
       visitor_(NULL),
-      header_buffer_valid_(false),
-      header_stream_id_(SpdyFramer::kInvalidStream),
       frames_received_(0) {}
 
 BufferedSpdyFramer::~BufferedSpdyFramer() {
@@ -65,14 +63,13 @@ void BufferedSpdyFramer::OnHeaders(SpdyStreamId stream_id,
   }
   control_frame_fields_->fin = fin;
 
-  InitHeaderStreaming(stream_id);
+  DCHECK_NE(stream_id, SpdyFramer::kInvalidStream);
 }
 
 void BufferedSpdyFramer::OnDataFrameHeader(SpdyStreamId stream_id,
                                            size_t length,
                                            bool fin) {
   frames_received_++;
-  header_stream_id_ = stream_id;
   visitor_->OnDataFrameHeader(stream_id, length, fin);
 }
 
@@ -190,7 +187,7 @@ void BufferedSpdyFramer::OnPushPromise(SpdyStreamId stream_id,
   control_frame_fields_->stream_id = stream_id;
   control_frame_fields_->promised_stream_id = promised_stream_id;
 
-  InitHeaderStreaming(stream_id);
+  DCHECK_NE(stream_id, SpdyFramer::kInvalidStream);
 }
 
 void BufferedSpdyFramer::OnAltSvc(
@@ -333,13 +330,6 @@ SpdySerializedFrame* BufferedSpdyFramer::CreatePriority(
 
 SpdyPriority BufferedSpdyFramer::GetHighestPriority() const {
   return spdy_framer_.GetHighestPriority();
-}
-
-void BufferedSpdyFramer::InitHeaderStreaming(SpdyStreamId stream_id) {
-  header_buffer_.clear();
-  header_buffer_valid_ = true;
-  header_stream_id_ = stream_id;
-  DCHECK_NE(header_stream_id_, SpdyFramer::kInvalidStream);
 }
 
 }  // namespace net

@@ -236,15 +236,9 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   int frames_received() const { return frames_received_; }
 
  private:
-  void InitHeaderStreaming(SpdyStreamId stream_id);
-
   SpdyFramer spdy_framer_;
   BufferedSpdyFramerVisitorInterface* visitor_;
 
-  // Header block streaming state:
-  std::string header_buffer_;
-  bool header_buffer_valid_;
-  SpdyStreamId header_stream_id_;
   int frames_received_;
 
   // Collection of fields from control frames that we need to
