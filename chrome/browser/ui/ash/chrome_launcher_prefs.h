@@ -17,10 +17,6 @@ class LauncherControllerHelper;
 class PrefService;
 class Profile;
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace sync_preferences {
 class PrefServiceSyncable;
 }
@@ -31,6 +27,8 @@ class PrefRegistrySyncable;
 
 namespace ash {
 namespace launcher {
+
+class AppLauncherId;
 
 // Path within the dictionary entries in the prefs::kPinnedLauncherApps list
 // specifying the extension ID of the app to be pinned by that entry.
@@ -51,45 +49,8 @@ extern const char kShelfAlignmentBottom[];
 extern const char kShelfAlignmentLeft[];
 extern const char kShelfAlignmentRight[];
 
-// A unique chrome launcher id used to identify a shelf item. This class is a
-// wrapper for the chrome launcher identifier. |app_launcher_id_| includes the
-// |app_id| and the |launch_id|. The |app_id| is the application id associated
-// with a set of windows. The |launch_id| is an id that can be passed to an app
-// when launched in order to support multiple shelf items per app. This id is
-// used together with the |app_id| to uniquely identify each shelf item that
-// has the same |app_id|. The |app_id| must not be empty.
-class AppLauncherId {
- public:
-  AppLauncherId(const std::string& app_id, const std::string& launch_id);
-  // Creates an AppLauncherId with an empty |launch_id|.
-  explicit AppLauncherId(const std::string& app_id);
-  // Empty constructor for pre-allocating.
-  AppLauncherId();
-  ~AppLauncherId();
-
-  AppLauncherId(const AppLauncherId& app_launcher_id) = default;
-  AppLauncherId(AppLauncherId&& app_launcher_id) = default;
-  AppLauncherId& operator=(const AppLauncherId& other) = default;
-
-  std::string ToString() const;
-  const std::string& app_id() const { return app_id_; }
-  const std::string& launch_id() const { return launch_id_; }
-
-  bool operator<(const AppLauncherId& other) const;
-
- private:
-  // The application id associated with a set of windows.
-  std::string app_id_;
-  // An id that can be passed to an app when launched in order to support
-  // multiple shelf items per app.
-  std::string launch_id_;
-};
-
 void RegisterChromeLauncherUserPrefs(
     user_prefs::PrefRegistrySyncable* registry);
-
-std::unique_ptr<base::DictionaryValue> CreateAppDict(
-    const AppLauncherId& app_launcher_id);
 
 // Get or set the shelf auto hide behavior preference for a particular display.
 ShelfAutoHideBehavior GetShelfAutoHideBehaviorPref(PrefService* prefs,
@@ -109,13 +70,15 @@ std::vector<AppLauncherId> GetPinnedAppsFromPrefs(
     const PrefService* prefs,
     LauncherControllerHelper* helper);
 
-// Removes information about pin position from sync model for the app.
+// Removes information about pin position from sync model for the app. Note,
+// |app_launcher_id| with non-empty launch_id is not supported.
 void RemovePinPosition(Profile* profile, const AppLauncherId& app_launcher_id);
 
 // Updates information about pin position in sync model for the app
 // |app_launcher_id|. |app_launcher_id_before| optionally specifies an app that
 // exists right before the target app. |app_launcher_ids_after| optionally
 // specifies sorted by position apps that exist right after the target app.
+// Note, |app_launcher_id| with non-empty launch_id is not supported.
 void SetPinPosition(Profile* profile,
                     const AppLauncherId& app_launcher_id,
                     const AppLauncherId& app_launcher_id_before,

@@ -19,6 +19,8 @@ class ChromeLauncherController;
 
 // LauncherItemController is used by ChromeLauncherController to track one
 // or more windows associated with a shelf item.
+// TODO (khmel): Consider using ash::launcher::AppLauncherId instead of pair
+// |app_id| and |launch_id|.
 class LauncherItemController : public ash::ShelfItemDelegate {
  public:
   LauncherItemController(const std::string& app_id,
