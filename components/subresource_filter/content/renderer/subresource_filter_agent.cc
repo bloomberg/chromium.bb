@@ -77,8 +77,10 @@ void SubresourceFilterAgent::OnActivateForProvisionalLoad(
 }
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted() {
+  // Note: ActivationLevel used to be called ActivationState, the legacy name is
+  // kept for the histogram.
   UMA_HISTOGRAM_ENUMERATION(
-      "SubresourceFilter.DocumentLoad.ActivationLevel",
+      "SubresourceFilter.DocumentLoad.ActivationState",
       static_cast<int>(activation_level_for_provisional_load_),
       static_cast<int>(ActivationLevel::LAST) + 1);
 

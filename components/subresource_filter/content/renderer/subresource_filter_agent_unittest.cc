@@ -80,7 +80,7 @@ constexpr const char kTestBothURLsPathSuffix[] = "a";
 constexpr const char kDocumentLoadRulesetIsAvailable[] =
     "SubresourceFilter.DocumentLoad.RulesetIsAvailable";
 constexpr const char kDocumentLoadActivationLevel[] =
-    "SubresourceFilter.DocumentLoad.ActivationLevel";
+    "SubresourceFilter.DocumentLoad.ActivationState";
 constexpr const char kSubresourcesEvaluated[] =
     "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated";
 constexpr const char kSubresourcesTotal[] =

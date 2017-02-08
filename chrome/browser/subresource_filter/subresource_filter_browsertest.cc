@@ -53,7 +53,7 @@ static constexpr const char kTestFrameSetPath[] =
 
 // Names of DocumentLoad histograms.
 constexpr const char kDocumentLoadActivationLevel[] =
-    "SubresourceFilter.DocumentLoad.ActivationLevel";
+    "SubresourceFilter.DocumentLoad.ActivationState";
 constexpr const char kSubresourceLoadsTotal[] =
     "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total";
 constexpr const char kSubresourceLoadsEvaluated[] =
@@ -545,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, NoActivationOnAboutBlank) {
   // The only frames where filtering was (even considered to be) activated
   // should be the main frame, and the child that was navigated to an HTTP URL.
   histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.ActivationLevel",
+      kDocumentLoadActivationLevel,
       static_cast<base::Histogram::Sample>(ActivationLevel::ENABLED), 2);
 }
 
