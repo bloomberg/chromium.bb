@@ -1108,8 +1108,29 @@ TEST_F(V8ValueConverterImplTest, StrategyBypass) {
   EXPECT_TRUE(
       base::Value::Equals(reference_array_value.get(), array_value.get()));
 
-  // Not testing ArrayBuffers as V8ValueConverter uses blink helpers and
-  // this requires having blink to be initialized.
+  const char kExampleData[] = {1, 2, 3, 4, 5};
+  v8::Local<v8::ArrayBuffer> array_buffer(
+      v8::ArrayBuffer::New(isolate_, sizeof(kExampleData)));
+  memcpy(array_buffer->GetContents().Data(), kExampleData,
+         sizeof(kExampleData));
+  std::unique_ptr<base::Value> binary_value(
+      converter.FromV8Value(array_buffer, context));
+  ASSERT_TRUE(binary_value);
+  std::unique_ptr<base::Value> reference_binary_value(
+      base::BinaryValue::CreateWithCopiedBuffer(kExampleData,
+                                                sizeof(kExampleData)));
+  EXPECT_TRUE(
+      base::Value::Equals(reference_binary_value.get(), binary_value.get()));
+
+  v8::Local<v8::ArrayBufferView> array_buffer_view(
+      v8::Uint8Array::New(array_buffer, 1, 3));
+  std::unique_ptr<base::Value> binary_view_value(
+      converter.FromV8Value(array_buffer_view, context));
+  ASSERT_TRUE(binary_view_value);
+  std::unique_ptr<base::Value> reference_binary_view_value(
+      base::BinaryValue::CreateWithCopiedBuffer(&kExampleData[1], 3));
+  EXPECT_TRUE(base::Value::Equals(reference_binary_view_value.get(),
+                                  binary_view_value.get()));
 
   v8::Local<v8::Number> number(v8::Number::New(isolate_, 0.0));
   std::unique_ptr<base::Value> number_value(
