@@ -179,27 +179,8 @@ void BaseArena::makeConsistentForGC() {
     page->invalidateObjectStartBitmap();
   }
 
-  // If a new GC is requested before this thread got around to sweep,
-  // ie. due to the thread doing a long running operation, we clear
-  // the mark bits and mark any of the dead objects as dead. The latter
-  // is used to ensure the next GC marking does not trace already dead
-  // objects. If we trace a dead object we could end up tracing into
-  // garbage or the middle of another object via the newly conservatively
-  // found object.
-  BasePage* previousPage = nullptr;
-  for (BasePage *page = m_firstUnsweptPage; page;
-       previousPage = page, page = page->next()) {
-    page->makeConsistentForGC();
-    ASSERT(!page->hasBeenSwept());
-    page->invalidateObjectStartBitmap();
-  }
-  if (previousPage) {
-    ASSERT(m_firstUnsweptPage);
-    previousPage->m_next = m_firstPage;
-    m_firstPage = m_firstUnsweptPage;
-    m_firstUnsweptPage = nullptr;
-  }
-  ASSERT(!m_firstUnsweptPage);
+  // We should not start a new GC until we finish sweeping in the current GC.
+  CHECK(!m_firstUnsweptPage);
 
   HeapCompact* heapCompactor = getThreadState()->heap().compaction();
   if (!heapCompactor->isCompactingArena(arenaIndex()))
@@ -1525,31 +1506,6 @@ void NormalPage::sweepAndCompact(CompactionContext& context) {
 #endif
 }
 
-void NormalPage::makeConsistentForGC() {
-  size_t markedObjectSize = 0;
-  for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
-    HeapObjectHeader* header =
-        reinterpret_cast<HeapObjectHeader*>(headerAddress);
-    ASSERT(header->size() < blinkPagePayloadSize());
-    // Check if a free list entry first since we cannot call
-    // isMarked on a free list entry.
-    if (header->isFree()) {
-      headerAddress += header->size();
-      continue;
-    }
-    if (header->isMarked()) {
-      header->unmark();
-      markedObjectSize += header->size();
-    } else {
-      header->markDead();
-    }
-    headerAddress += header->size();
-  }
-  if (markedObjectSize)
-    arenaForNormalPage()->getThreadState()->increaseMarkedObjectSize(
-        markedObjectSize);
-}
-
 void NormalPage::makeConsistentForMutator() {
   Address startOfGap = payload();
   NormalPageArena* normalArena = arenaForNormalPage();
@@ -1703,7 +1659,7 @@ void NormalPage::checkAndMarkPointer(Visitor* visitor, Address address) {
   DCHECK(contains(address));
 #endif
   HeapObjectHeader* header = findHeaderFromAddress(address);
-  if (!header || header->isDead())
+  if (!header)
     return;
   markPointer(visitor, header);
 }
@@ -1714,7 +1670,7 @@ void NormalPage::checkAndMarkPointer(Visitor* visitor,
                                      MarkedPointerCallbackForTesting callback) {
   DCHECK(contains(address));
   HeapObjectHeader* header = findHeaderFromAddress(address);
-  if (!header || header->isDead())
+  if (!header)
     return;
   if (!callback(header))
     markPointer(visitor, header);
@@ -1816,16 +1772,6 @@ void LargeObjectPage::sweep() {
   arena()->getThreadState()->increaseMarkedObjectSize(size());
 }
 
-void LargeObjectPage::makeConsistentForGC() {
-  HeapObjectHeader* header = heapObjectHeader();
-  if (header->isMarked()) {
-    header->unmark();
-    arena()->getThreadState()->increaseMarkedObjectSize(size());
-  } else {
-    header->markDead();
-  }
-}
-
 void LargeObjectPage::makeConsistentForMutator() {
   HeapObjectHeader* header = heapObjectHeader();
   if (header->isMarked())
@@ -1844,7 +1790,7 @@ void LargeObjectPage::checkAndMarkPointer(Visitor* visitor, Address address) {
 #if DCHECK_IS_ON()
   DCHECK(contains(address));
 #endif
-  if (!containedInObjectPayload(address) || heapObjectHeader()->isDead())
+  if (!containedInObjectPayload(address))
     return;
   markPointer(visitor, heapObjectHeader());
 }
@@ -1855,7 +1801,7 @@ void LargeObjectPage::checkAndMarkPointer(
     Address address,
     MarkedPointerCallbackForTesting callback) {
   DCHECK(contains(address));
-  if (!containedInObjectPayload(address) || heapObjectHeader()->isDead())
+  if (!containedInObjectPayload(address))
     return;
   if (!callback(heapObjectHeader()))
     markPointer(visitor, heapObjectHeader());

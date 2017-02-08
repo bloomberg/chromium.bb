@@ -157,12 +157,8 @@ const size_t headerGCInfoIndexMask = (static_cast<size_t>((1 << 14) - 1))
 const size_t headerSizeMask = (static_cast<size_t>((1 << 14) - 1)) << 3;
 const size_t headerMarkBitMask = 1;
 const size_t headerFreedBitMask = 2;
-// The dead bit is used for objects that have gone through a GC marking, but did
-// not get swept before a new GC started. In that case we set the dead bit on
-// objects that were not marked in the previous GC to ensure we are not tracing
-// them via a conservatively found pointer. Tracing dead objects could lead to
-// tracing of already finalized objects in another thread's heap which is a
-// use-after-free situation.
+// TODO(haraken): Remove the dead bit. It is used only by a header of
+// a promptly freed object.
 const size_t headerDeadBitMask = 4;
 // On free-list entries we reuse the dead bit to distinguish a normal free-list
 // entry from one that has been promptly freed.
@@ -232,8 +228,6 @@ class PLATFORM_EXPORT HeapObjectHeader {
   bool isMarked() const;
   void mark();
   void unmark();
-  void markDead();
-  bool isDead() const;
 
   Address payload();
   size_t payloadSize();
@@ -399,7 +393,6 @@ class BasePage {
   virtual bool isEmpty() = 0;
   virtual void removeFromHeap() = 0;
   virtual void sweep() = 0;
-  virtual void makeConsistentForGC() = 0;
   virtual void makeConsistentForMutator() = 0;
   virtual void invalidateObjectStartBitmap() = 0;
 
@@ -492,7 +485,6 @@ class NormalPage final : public BasePage {
   bool isEmpty() override;
   void removeFromHeap() override;
   void sweep() override;
-  void makeConsistentForGC() override;
   void makeConsistentForMutator() override;
   void invalidateObjectStartBitmap() override {
     m_objectStartBitMapComputed = false;
@@ -577,7 +569,6 @@ class LargeObjectPage final : public BasePage {
   bool isEmpty() override;
   void removeFromHeap() override;
   void sweep() override;
-  void makeConsistentForGC() override;
   void makeConsistentForMutator() override;
   void invalidateObjectStartBitmap() override {}
 #if defined(ADDRESS_SANITIZER)
@@ -939,20 +930,6 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::unmark() {
   ASSERT(checkHeader());
   ASSERT(isMarked());
   m_encoded &= ~headerMarkBitMask;
-}
-
-NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::isDead() const {
-  ASSERT(checkHeader());
-  return m_encoded & headerDeadBitMask;
-}
-
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::markDead() {
-  // A Dead state should not happen in a per-thread heap world.
-  // TODO(haraken): Remove code to handle the Dead state.
-  CHECK(false);
-  ASSERT(checkHeader());
-  ASSERT(!isMarked());
-  m_encoded |= headerDeadBitMask;
 }
 
 inline Address NormalPageArena::allocateObject(size_t allocationSize,
