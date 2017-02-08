@@ -3873,14 +3873,13 @@ TEST_P(WebViewTest, WebSubstringUtil) {
   webView->settings()->setDefaultFontSize(12);
   webView->resize(WebSize(400, 400));
   WebLocalFrameImpl* frame = webView->mainFrameImpl();
-  FrameView* frameView = frame->frame()->view();
 
   WebPoint baselinePoint;
   NSAttributedString* result = WebSubstringUtil::attributedSubstringInRange(
       frame, 10, 3, &baselinePoint);
   ASSERT_TRUE(!!result);
 
-  WebPoint point(baselinePoint.x, frameView->height() - baselinePoint.y);
+  WebPoint point(baselinePoint.x, baselinePoint.y);
   result = WebSubstringUtil::attributedWordAtPoint(frame->frameWidget(), point,
                                                    baselinePoint);
   ASSERT_TRUE(!!result);
@@ -3891,10 +3890,37 @@ TEST_P(WebViewTest, WebSubstringUtil) {
       WebSubstringUtil::attributedSubstringInRange(frame, 5, 5, &baselinePoint);
   ASSERT_TRUE(!!result);
 
-  point = WebPoint(baselinePoint.x, frameView->height() - baselinePoint.y);
+  point = WebPoint(baselinePoint.x, baselinePoint.y);
   result = WebSubstringUtil::attributedWordAtPoint(frame->frameWidget(), point,
                                                    baselinePoint);
   ASSERT_TRUE(!!result);
+}
+
+TEST_P(WebViewTest, WebSubstringUtilPinchZoom) {
+  registerMockedHttpURLLoad("content_editable_populated.html");
+  WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
+      m_baseURL + "content_editable_populated.html");
+  webView->settings()->setDefaultFontSize(12);
+  webView->resize(WebSize(400, 400));
+  WebLocalFrameImpl* frame = webView->mainFrameImpl();
+  NSAttributedString* result = nil;
+
+  WebPoint baselinePoint;
+  result = WebSubstringUtil::attributedSubstringInRange(frame, 10, 3,
+                                                        &baselinePoint);
+  ASSERT_TRUE(!!result);
+
+  webView->setPageScaleFactor(3);
+
+  WebPoint pointAfterZoom;
+  result = WebSubstringUtil::attributedSubstringInRange(frame, 10, 3,
+                                                        &pointAfterZoom);
+  ASSERT_TRUE(!!result);
+
+  // We won't have moved by a full factor of 3 because of the translations, but
+  // we should move by a factor of >2.
+  EXPECT_LT(2 * baselinePoint.x, pointAfterZoom.x);
+  EXPECT_LT(2 * baselinePoint.y, pointAfterZoom.y);
 }
 
 TEST_P(WebViewTest, WebSubstringUtilIframe) {
@@ -3914,8 +3940,7 @@ TEST_P(WebViewTest, WebSubstringUtilIframe) {
       childFrame, 11, 7, &baselinePoint);
   ASSERT_NE(result, nullptr);
 
-  WebPoint point(baselinePoint.x,
-                 mainFrame->frameView()->height() - baselinePoint.y);
+  WebPoint point(baselinePoint.x, baselinePoint.y);
   result = WebSubstringUtil::attributedWordAtPoint(mainFrame->frameWidget(),
                                                    point, baselinePoint);
   ASSERT_NE(result, nullptr);
@@ -3931,7 +3956,7 @@ TEST_P(WebViewTest, WebSubstringUtilIframe) {
                                                    point, baselinePoint);
   ASSERT_NE(result, nullptr);
 
-  EXPECT_EQ(yBeforeChange, baselinePoint.y + 100);
+  EXPECT_EQ(yBeforeChange, baselinePoint.y - 100);
 }
 
 #endif

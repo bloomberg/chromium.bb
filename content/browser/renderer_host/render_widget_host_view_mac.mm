@@ -2367,8 +2367,11 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     return;
   }
   dispatch_async(dispatch_get_main_queue(), ^{
+    NSPoint flippedBaselinePoint = {
+        baselinePoint.x, [view frame].size.height - baselinePoint.y,
+    };
     [view showDefinitionForAttributedString:string
-                                    atPoint:baselinePoint];
+                                    atPoint:flippedBaselinePoint];
   });
 }
 

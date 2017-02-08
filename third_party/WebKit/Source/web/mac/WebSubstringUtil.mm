@@ -41,8 +41,10 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
@@ -60,7 +62,8 @@
 using namespace blink;
 
 static NSAttributedString* attributedSubstringFromRange(
-    const EphemeralRange& range) {
+    const EphemeralRange& range,
+    float fontScale) {
   NSMutableAttributedString* string = [[NSMutableAttributedString alloc] init];
   NSMutableDictionary* attrs = [NSMutableDictionary dictionary];
   size_t length = range.endPosition().computeOffsetInContainerNode() -
@@ -87,8 +90,9 @@ static NSAttributedString* attributedSubstringFromRange(
       continue;
 
     const ComputedStyle* style = layoutObject->style();
-    const FontPlatformData& fontPlatformData =
+    FontPlatformData fontPlatformData =
         style->font().primaryFont()->platformData();
+    fontPlatformData.m_textSize *= fontScale;
     NSFont* font = toNSFont(fontPlatformData.ctFont());
     // If the platform font can't be loaded, or the size is incorrect comparing
     // to the computed style, it's likely that the site is using a web font.
@@ -96,12 +100,14 @@ static NSAttributedString* attributedSubstringFromRange(
     // TODO(rsesek): Change the font activation flags to allow other processes
     // to use the font.
     // TODO(shuchen): Support scaling the font as necessary according to CSS
-    // transforms.
+    // transforms, not just pinch-zoom.
     if (!font ||
         floor(fontPlatformData.size()) !=
-            floor([[font fontDescriptor] pointSize]))
+            floor([[font fontDescriptor] pointSize])) {
       font = [NSFont
-          systemFontOfSize:style->font().getFontDescription().computedSize()];
+          systemFontOfSize:style->font().getFontDescription().computedSize() *
+                           fontScale];
+    }
     [attrs setObject:font forKey:NSFontAttributeName];
 
     if (style->visitedDependentColor(CSSPropertyColor).alpha())
@@ -132,19 +138,16 @@ static NSAttributedString* attributedSubstringFromRange(
 WebPoint getBaselinePoint(FrameView* frameView,
                           const EphemeralRange& range,
                           NSAttributedString* string) {
-  // Compute bottom left corner and convert to AppKit coordinates.
   // TODO(yosin): We shold avoid to create |Range| object. See crbug.com/529985.
-  // TODO(shuchen): Support page-zoom for getting the baseline point.
   IntRect stringRect =
-      frameView->contentsToRootFrame(createRange(range)->boundingBox());
+      frameView->contentsToViewport(createRange(range)->boundingBox());
   IntPoint stringPoint = stringRect.minXMaxYCorner();
-  stringPoint.setY(frameView->root()->height() - stringPoint.y());
 
   // Adjust for the font's descender. AppKit wants the baseline point.
   if ([string length]) {
     NSDictionary* attributes = [string attributesAtIndex:0 effectiveRange:NULL];
     if (NSFont* font = [attributes objectForKey:NSFontAttributeName])
-      stringPoint.move(0, ceil(-[font descender]));
+      stringPoint.move(0, ceil([font descender]));
   }
   return stringPoint;
 }
@@ -175,7 +178,8 @@ NSAttributedString* WebSubstringUtil::attributedWordAtPoint(
   const EphemeralRange wordRange = selection.toNormalizedEphemeralRange();
 
   // Convert to NSAttributedString.
-  NSAttributedString* string = attributedSubstringFromRange(wordRange);
+  NSAttributedString* string = attributedSubstringFromRange(
+      wordRange, frame->host()->visualViewport().scale());
   baselinePoint = getBaselinePoint(frame->view(), wordRange, string);
   return string;
 }
@@ -205,7 +209,8 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(
   if (ephemeralRange.isNull())
     return nil;
 
-  NSAttributedString* result = attributedSubstringFromRange(ephemeralRange);
+  NSAttributedString* result = attributedSubstringFromRange(
+      ephemeralRange, frame->host()->visualViewport().scale());
   if (baselinePoint)
     *baselinePoint = getBaselinePoint(frame->view(), ephemeralRange, result);
   return result;

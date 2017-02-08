@@ -89,9 +89,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
   std::string word = helper.word();
 
   // Now get it at a given point.
-  point.SetPoint(point.x(),
-                 child_widget_host->GetView()->GetViewBounds().size().height() -
-                     point.y());
   helper.WaitForStringAtPoint(child_widget_host, point);
   EXPECT_EQ(word, helper.word());
   EXPECT_EQ("This", word);
@@ -116,9 +113,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
   std::string word = helper.word();
 
   // Now get it at a given point.
-  point.SetPoint(
-      point.x(),
-      widget_host->GetView()->GetViewBounds().size().height() - point.y());
   helper.WaitForStringAtPoint(widget_host, point);
   EXPECT_EQ(word, helper.word());
   EXPECT_EQ("This", word);
