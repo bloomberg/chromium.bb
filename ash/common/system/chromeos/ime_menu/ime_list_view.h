@@ -5,6 +5,7 @@
 #ifndef ASH_COMMON_SYSTEM_CHROMEOS_IME_MENU_IME_LIST_VIEW_H_
 #define ASH_COMMON_SYSTEM_CHROMEOS_IME_MENU_IME_LIST_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ui/views/controls/button/button.h"
@@ -64,8 +65,7 @@ class ImeListView : public TrayDetailsView {
   void VisibilityChanged(View* starting_from, bool is_visible) override;
 
  private:
-  // To allow the test class to access |ime_map_|.
-  friend class ImeMenuTrayTest;
+  friend class ImeListViewTestApi;
 
   // Appends the IMEs to the scrollable area of the detailed view.
   void AppendIMEList(const IMEInfoList& list);
@@ -111,6 +111,23 @@ class ImeListView : public TrayDetailsView {
   views::View* current_ime_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeListView);
+};
+
+class ASH_EXPORT ImeListViewTestApi {
+ public:
+  explicit ImeListViewTestApi(ImeListView* ime_list_view);
+  virtual ~ImeListViewTestApi();
+
+  views::View* GetToggleView() const;
+
+  const std::map<views::View*, std::string>& ime_map() const {
+    return ime_list_view_->ime_map_;
+  }
+
+ private:
+  ImeListView* ime_list_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImeListViewTestApi);
 };
 
 }  // namespace ash

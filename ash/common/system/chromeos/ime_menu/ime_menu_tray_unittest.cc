@@ -52,8 +52,8 @@ class ImeMenuTrayTest : public test::AshTestBase {
   // Returns true if the IME menu list has been updated with the right IME list.
   bool IsTrayImeListValid(const std::vector<IMEInfo>& expected_imes,
                           const IMEInfo& expected_current_ime) {
-    std::map<views::View*, std::string> ime_map =
-        GetTray()->ime_list_view_->ime_map_;
+    const std::map<views::View*, std::string>& ime_map =
+        ImeListViewTestApi(GetTray()->ime_list_view_).ime_map();
     if (ime_map.size() != expected_imes.size())
       return false;
 

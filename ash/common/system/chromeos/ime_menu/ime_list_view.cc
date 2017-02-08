@@ -180,7 +180,7 @@ class MaterialKeyboardStatusRowView : public views::View {
 
   ~MaterialKeyboardStatusRowView() override {}
 
-  const views::Button* toggle() const { return toggle_; }
+  views::Button* toggle() const { return toggle_; }
   bool is_toggled() const { return toggle_->is_on(); }
 
  protected:
@@ -454,6 +454,15 @@ void ImeListView::FocusCurrentImeIfNeeded() {
       return;
     }
   }
+}
+
+ImeListViewTestApi::ImeListViewTestApi(ImeListView* ime_list_view)
+    : ime_list_view_(ime_list_view) {}
+
+ImeListViewTestApi::~ImeListViewTestApi() {}
+
+views::View* ImeListViewTestApi::GetToggleView() const {
+  return ime_list_view_->material_keyboard_status_view_->toggle();
 }
 
 }  // namespace ash

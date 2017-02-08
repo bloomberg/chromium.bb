@@ -6,11 +6,10 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
+#include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/command_line.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/keyboard/keyboard_util.h"
 
@@ -21,11 +20,9 @@ class TrayIMETest : public test::AshTestBase {
   TrayIMETest() {}
   ~TrayIMETest() override {}
 
-  TrayIME* tray() { return tray_.get(); }
+  views::View* default_view() const { return default_view_.get(); }
 
-  views::View* default_view() { return default_view_.get(); }
-
-  views::View* detailed_view() { return detailed_view_.get(); }
+  views::View* detailed_view() const { return detailed_view_.get(); }
 
   // Mocks enabling the a11y virtual keyboard since the actual a11y manager
   // is not created in ash tests.
@@ -34,9 +31,8 @@ class TrayIMETest : public test::AshTestBase {
   // Sets the current number of active IMEs.
   void SetIMELength(int length);
 
-  // Returns the view in the detailed views scroll content at the provided
-  // index.
-  views::View* GetScrollChildView(int index);
+  // Returns the view responsible for toggling virtual keyboard.
+  views::View* GetToggleView() const;
 
   void SuppressKeyboard();
   void RestoreKeyboard();
@@ -75,12 +71,9 @@ void TrayIMETest::SetIMELength(int length) {
   tray_->Update();
 }
 
-views::View* TrayIMETest::GetScrollChildView(int index) {
-  TrayDetailsView* details = static_cast<TrayDetailsView*>(detailed_view());
-  views::View* content = details->scroll_content();
-  EXPECT_TRUE(content);
-  EXPECT_GT(content->child_count(), index);
-  return content->child_at(index);
+views::View* TrayIMETest::GetToggleView() const {
+  ImeListViewTestApi test_api(static_cast<ImeListView*>(detailed_view()));
+  return test_api.GetToggleView();
 }
 
 void TrayIMETest::SuppressKeyboard() {
@@ -133,9 +126,6 @@ void TrayIMETest::TearDown() {
 // Tests that if the keyboard is not suppressed the default view is hidden
 // if less than 2 IMEs are present.
 TEST_F(TrayIMETest, HiddenWithNoIMEs) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    return;
-
   SetIMELength(0);
   EXPECT_FALSE(default_view()->visible());
   SetIMELength(1);
@@ -147,9 +137,6 @@ TEST_F(TrayIMETest, HiddenWithNoIMEs) {
 // Tests that if no IMEs are present the default view is hidden when a11y is
 // enabled.
 TEST_F(TrayIMETest, HidesOnA11yEnabled) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    return;
-
   SetIMELength(0);
   SuppressKeyboard();
   EXPECT_TRUE(default_view()->visible());
@@ -164,22 +151,19 @@ TEST_F(TrayIMETest, HidesOnA11yEnabled) {
 // Tests that clicking on the keyboard toggle causes the virtual keyboard
 // to toggle between enabled and disabled.
 TEST_F(TrayIMETest, PerformActionOnDetailedView) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    return;
-
   SetIMELength(0);
   SuppressKeyboard();
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
-  views::View* toggle = GetScrollChildView(0);
+  views::View* toggle = GetToggleView();
   ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   // Enable the keyboard.
   toggle->OnGestureEvent(&tap);
   EXPECT_TRUE(keyboard::IsKeyboardEnabled());
   EXPECT_TRUE(default_view()->visible());
-  // With no IMEs the toggle should be the first child.
-  toggle = GetScrollChildView(0);
+
   // Clicking again should disable the keyboard.
+  toggle = GetToggleView();
   tap = ui::GestureEvent(0, 0, 0, base::TimeTicks(),
                          ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   toggle->OnGestureEvent(&tap);
