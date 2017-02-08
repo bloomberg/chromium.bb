@@ -683,6 +683,23 @@ int amdgpu_bo_va_op(amdgpu_bo_handle bo,
 		     uint32_t ops)
 {
 	amdgpu_device_handle dev = bo->dev;
+
+	size = ALIGN(size, getpagesize());
+
+	return amdgpu_bo_va_op_raw(dev, bo, offset, size, addr,
+				   AMDGPU_VM_PAGE_READABLE |
+				   AMDGPU_VM_PAGE_WRITEABLE |
+				   AMDGPU_VM_PAGE_EXECUTABLE, ops);
+}
+
+int amdgpu_bo_va_op_raw(amdgpu_device_handle dev,
+			amdgpu_bo_handle bo,
+			uint64_t offset,
+			uint64_t size,
+			uint64_t addr,
+			uint64_t flags,
+			uint32_t ops)
+{
 	struct drm_amdgpu_gem_va va;
 	int r;
 
@@ -690,14 +707,12 @@ int amdgpu_bo_va_op(amdgpu_bo_handle bo,
 		return -EINVAL;
 
 	memset(&va, 0, sizeof(va));
-	va.handle = bo->handle;
+	va.handle = bo ? bo->handle : 0;
 	va.operation = ops;
-	va.flags = AMDGPU_VM_PAGE_READABLE |
-		   AMDGPU_VM_PAGE_WRITEABLE |
-		   AMDGPU_VM_PAGE_EXECUTABLE;
+	va.flags = flags;
 	va.va_address = addr;
 	va.offset_in_bo = offset;
-	va.map_size = ALIGN(size, getpagesize());
+	va.map_size = size;
 
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_VA, &va, sizeof(va));
 
