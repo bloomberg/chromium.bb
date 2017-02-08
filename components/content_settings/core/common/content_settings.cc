@@ -58,7 +58,9 @@ ContentSettingsType kHistogramOrder[] = {
     CONTENT_SETTINGS_TYPE_AUTOPLAY,
     CONTENT_SETTINGS_TYPE_DEFAULT,  // PROMPT_NO_DECISION_COUNT (migrated).
     CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO,
-    CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA};
+    CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
+    CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+};
 
 int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
                                        size_t* num_values) {
