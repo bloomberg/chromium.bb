@@ -92,12 +92,17 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     base::Time timeout_at = suggestion->notification_extra()
                                 ? suggestion->notification_extra()->deadline
                                 : base::Time::Max();
+    bool use_snippet = variations::GetVariationParamByFeatureAsBool(
+        kContentSuggestionsNotificationsFeature,
+        kContentSuggestionsNotificationsUseSnippetAsTextParam, false);
     service_->FetchSuggestionImage(
         suggestion->id(),
         base::Bind(&NotifyingObserver::ImageFetched,
                    weak_ptr_factory_.GetWeakPtr(), suggestion->id(),
                    suggestion->url(), suggestion->title(),
-                   suggestion->publisher_name(), timeout_at));
+                   use_snippet ? suggestion->snippet_text()
+                               : suggestion->publisher_name(),
+                   timeout_at));
   }
 
   void OnCategoryStatusChanged(Category category,
@@ -174,7 +179,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
   void ImageFetched(const ContentSuggestion::ID& id,
                     const GURL& url,
                     const base::string16& title,
-                    const base::string16& publisher,
+                    const base::string16& text,
                     base::Time timeout_at,
                     const gfx::Image& image) {
     if (!ShouldNotifyInState(app_status_listener_.GetState())) {
@@ -185,7 +190,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
              << image.Size().height() << " image for " << url.spec();
     prefs_->ClearPref(kNotificationIDWithinCategory);
     if (ContentSuggestionsNotificationHelper::SendNotification(
-            id, url, title, publisher, CropSquare(image), timeout_at)) {
+            id, url, title, text, CropSquare(image), timeout_at)) {
       RecordContentSuggestionsNotificationImpression(
           id.category().IsKnownCategory(KnownCategories::ARTICLES)
               ? CONTENT_SUGGESTIONS_ARTICLE

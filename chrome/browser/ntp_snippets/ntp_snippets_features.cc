@@ -9,5 +9,7 @@ const base::Feature kContentSuggestionsNotificationsFeature = {
 
 const char kContentSuggestionsNotificationsAlwaysNotifyParam[] =
     "always_notify";
+const char kContentSuggestionsNotificationsUseSnippetAsTextParam[] =
+    "use_snippet_as_text";
 const char kContentSuggestionsNotificationsIgnoredLimitParam[] =
     "ignored_limit";

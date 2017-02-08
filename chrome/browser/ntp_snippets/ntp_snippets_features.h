@@ -14,6 +14,10 @@ extern const base::Feature kContentSuggestionsNotificationsFeature;
 // "true": always send a notification when we receive ARTICLES suggestions
 extern const char kContentSuggestionsNotificationsAlwaysNotifyParam[];
 
+// "true": use article's snippet as notification's text
+// "false": use article's publisher as notification's text
+extern const char kContentSuggestionsNotificationsUseSnippetAsTextParam[];
+
 // An integer. The number of notifications that can be ignored. If the user
 // ignores this many notifications or more, we stop sending them.
 extern const char kContentSuggestionsNotificationsIgnoredLimitParam[];
