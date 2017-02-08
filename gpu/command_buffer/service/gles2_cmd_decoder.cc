@@ -14166,8 +14166,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
         target != GL_TEXTURE_CUBE_MAP_POSITIVE_X) {
       for (int i = 0; i < 2; ++i) {
         TextureManager::DoTexImageArguments args = {
-          target, i, final_internal_format, 1, 1, 1, border,
-          format, type, nullptr, 1, 0,
+          target, i, final_internal_format, width, height, 1, border,
+          format, type, nullptr, pixels_size, 0,
           TextureManager::DoTexImageArguments::kTexImage2D };
         texture_manager()->WorkaroundCopyTexImageCubeMap(&texture_state_,
             &state_, &framebuffer_state_, texture_ref, func_name, args);
