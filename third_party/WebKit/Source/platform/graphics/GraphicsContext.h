@@ -358,12 +358,7 @@ class PLATFORM_EXPORT GraphicsContext {
                                           float strokeWidth,
                                           StrokeStyle);
 
-  static int focusRingOutsetExtent(int offset, int width) {
-    // Unlike normal outlines (whole width is outside of the offset), focus
-    // rings are drawn with the center of the path aligned with the offset, so
-    // only half of the width is outside of the offset.
-    return focusRingOffset(offset) + (width + 1) / 2;
-  }
+  static int focusRingOutsetExtent(int offset, int width);
 
 #if DCHECK_IS_ON()
   void setInDrawingRecorder(bool);
@@ -381,12 +376,6 @@ class PLATFORM_EXPORT GraphicsContext {
 
   template <typename DrawTextFunc>
   void drawTextPasses(const DrawTextFunc&);
-
-#if OS(MACOSX)
-  static inline int focusRingOffset(int offset) { return offset + 2; }
-#else
-  static inline int focusRingOffset(int offset) { return 0; }
-#endif
 
   void saveLayer(const SkRect* bounds, const PaintFlags*);
   void restoreLayer();

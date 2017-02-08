@@ -333,6 +333,25 @@ void GraphicsContext::compositePicture(sk_sp<PaintRecord> picture,
   m_canvas->restore();
 }
 
+namespace {
+
+int adjustedFocusRingOffset(int offset) {
+#if OS(MACOSX)
+  return offset + 2;
+#else
+  return 0;
+#endif
+}
+
+}  // anonymous ns
+
+int GraphicsContext::focusRingOutsetExtent(int offset, int width) {
+  // Unlike normal outlines (whole width is outside of the offset), focus
+  // rings are drawn with the center of the path aligned with the offset, so
+  // only half of the width is outside of the offset.
+  return adjustedFocusRingOffset(offset) + (width + 1) / 2;
+}
+
 void GraphicsContext::drawFocusRingPath(const SkPath& path,
                                         const Color& color,
                                         float width) {
@@ -368,12 +387,12 @@ void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects,
     return;
 
   SkRegion focusRingRegion;
-  offset = focusRingOffset(offset);
+  offset = adjustedFocusRingOffset(offset);
   for (unsigned i = 0; i < rectCount; i++) {
     SkIRect r = rects[i];
     if (r.isEmpty())
       continue;
-    r.inset(-offset, -offset);
+    r.outset(offset, offset);
     focusRingRegion.op(r, SkRegion::kUnion_Op);
   }
 
