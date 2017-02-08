@@ -301,8 +301,12 @@ function nonSeparateBlendColors(backdrop, source, blendModeIndex) {
     return [Math.round(255 * expectedColor[0]), Math.round(255 * expectedColor[1]), Math.round(255 * expectedColor[2]), 255];
 }
 
-function checkBlendModeResult(i, context, sigma) {
-    var actualColor = context.getImageData(0, 0, 1, 1).data;
+function checkBlendModeResult(i, context, sigma, x, y) {
+    if (x === undefined)
+        x = 0;
+    if (y === undefined)
+        y = 0;
+    var actualColor = context.getImageData(x, y, 1, 1).data;
     var expectedColor = blendColors([129 / 255, 1, 129 / 255, 1], [1, 129 / 255, 129 / 255, 1], i);
     assert_approx_equals(actualColor[0], expectedColor[0], sigma);
     assert_approx_equals(actualColor[1], expectedColor[1], sigma);
