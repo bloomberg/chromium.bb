@@ -308,6 +308,12 @@ message AndroidKioskAppInfoProto {
   // If package and action are specified, but not the class name, runtime may
   // use PackageManager.queryIntentActivity() to find out the class name.
   optional string action = 3;
+
+  // Display name (optional).
+  // User-friendly app name that should be used in Chrome UI where kiosk app
+  // name is shown. Chrome side could override the string with an updated
+  // value that it will get from Google Play when the app will be installed.
+  optional string display_name = 4;
 }
 
 // Describes a single device-local account.
