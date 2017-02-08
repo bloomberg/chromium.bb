@@ -26,11 +26,11 @@ class CC_SURFACES_EXPORT ReferencedSurfaceTracker {
 
   const SurfaceId& current_surface_id() const { return current_surface_id_; }
 
-  const std::vector<SurfaceReference>& references_to_add() const {
+  std::vector<SurfaceReference>& references_to_add() {
     return references_to_add_;
   }
 
-  const std::vector<SurfaceReference>& references_to_remove() const {
+  std::vector<SurfaceReference>& references_to_remove() {
     return references_to_remove_;
   }
 

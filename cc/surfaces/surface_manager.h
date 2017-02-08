@@ -147,10 +147,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
     return reference_factory_;
   }
 
-  bool using_surface_references() const {
-    return lifetime_type_ == LifetimeType::REFERENCES;
-  }
-
  private:
   friend class SurfaceManagerRefTest;
 

@@ -4,17 +4,12 @@
 
 #include "cc/surfaces/compositor_frame_sink_support.h"
 
-#include <algorithm>
-#include <utility>
-#include <vector>
-
 #include "cc/output/compositor_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/surfaces/surface_reference.h"
 
 namespace cc {
 
@@ -31,7 +26,6 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
       display_(display),
       surface_factory_(frame_sink_id_, surface_manager_, this),
       handles_frame_sink_id_invalidation_(handles_frame_sink_id_invalidation),
-      reference_tracker_(frame_sink_id),
       weak_factory_(this) {
   if (handles_frame_sink_id_invalidation_)
     surface_manager_->RegisterFrameSinkId(frame_sink_id_);
@@ -47,12 +41,6 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   // Unregister |this| as a BeginFrameObserver so that the BeginFrameSource does
   // not call into |this| after it's deleted.
   SetNeedsBeginFrame(false);
-
-  // For display root surfaces, the surface is no longer going to be visible
-  // so make it unreachable from the top-level root.
-  if (surface_manager_->using_surface_references() && display_ &&
-      reference_tracker_.current_surface_id().is_valid())
-    RemoveTopLevelRootReference(reference_tracker_.current_surface_id());
 
   for (auto& child_frame_sink_id : child_frame_sinks_) {
     DCHECK(child_frame_sink_id.is_valid());
@@ -85,27 +73,10 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     display_->SetLocalSurfaceId(local_surface_id,
                                 frame.metadata.device_scale_factor);
   }
-
-  if (surface_manager_->using_surface_references()) {
-    SurfaceId last_surface_id = reference_tracker_.current_surface_id();
-
-    // Populate surface references to add/remove based on reference surfaces in
-    // current frame compared with the last frame.
-    reference_tracker_.UpdateReferences(local_surface_id,
-                                        frame.metadata.referenced_surfaces);
-
-    surface_factory_.SubmitCompositorFrame(
-        local_surface_id, std::move(frame),
-        base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
-                   weak_factory_.GetWeakPtr()));
-
-    UpdateSurfaceReferences(last_surface_id, local_surface_id);
-  } else {
-    surface_factory_.SubmitCompositorFrame(
-        local_surface_id, std::move(frame),
-        base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
-                   weak_factory_.GetWeakPtr()));
-  }
+  surface_factory_.SubmitCompositorFrame(
+      local_surface_id, std::move(frame),
+      base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void CompositorFrameSinkSupport::Require(const LocalSurfaceId& local_surface_id,
@@ -116,51 +87,6 @@ void CompositorFrameSinkSupport::Require(const LocalSurfaceId& local_surface_id,
 
 void CompositorFrameSinkSupport::Satisfy(const SurfaceSequence& sequence) {
   surface_manager_->SatisfySequence(sequence);
-}
-
-void CompositorFrameSinkSupport::UpdateSurfaceReferences(
-    const SurfaceId& last_surface_id,
-    const LocalSurfaceId& local_surface_id) {
-  const bool surface_id_changed =
-      last_surface_id.local_surface_id() != local_surface_id;
-
-  // If this is a display root surface and the SurfaceId is changing, make the
-  // new SurfaceId reachable from the top-level root.
-  if (display_ && surface_id_changed)
-    AddTopLevelRootReference(reference_tracker_.current_surface_id());
-
-  // Add references based on CompositorFrame referenced surfaces. If the
-  // SurfaceId has changed all referenced surfaces will be in this list.
-  if (!reference_tracker_.references_to_add().empty()) {
-    surface_manager_->AddSurfaceReferences(
-        reference_tracker_.references_to_add());
-  }
-
-  // If this is a display root surface and the SurfaceId is changing, make the
-  // old SurfaceId unreachable from the top-level root. This needs to happen
-  // after adding all references for the new SurfaceId.
-  if (display_ && surface_id_changed && last_surface_id.is_valid())
-    RemoveTopLevelRootReference(last_surface_id);
-
-  // Remove references based on CompositorFrame referenced surfaces. If the
-  // SurfaceId has changed this list will be empty.
-  if (!reference_tracker_.references_to_remove().empty()) {
-    DCHECK(!surface_id_changed);
-    surface_manager_->RemoveSurfaceReferences(
-        reference_tracker_.references_to_remove());
-  }
-}
-
-void CompositorFrameSinkSupport::AddTopLevelRootReference(
-    const SurfaceId& surface_id) {
-  SurfaceReference reference(surface_manager_->GetRootSurfaceId(), surface_id);
-  surface_manager_->AddSurfaceReferences({reference});
-}
-
-void CompositorFrameSinkSupport::RemoveTopLevelRootReference(
-    const SurfaceId& surface_id) {
-  SurfaceReference reference(surface_manager_->GetRootSurfaceId(), surface_id);
-  surface_manager_->RemoveSurfaceReferences({reference});
 }
 
 void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
