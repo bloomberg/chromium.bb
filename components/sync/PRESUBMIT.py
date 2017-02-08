@@ -377,7 +377,6 @@ def CheckChangeLintsClean(input_api, output_api):
 def CheckChanges(input_api, output_api):
   results = []
   results += CheckChangeLintsClean(input_api, output_api)
-  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
   for f in input_api.AffectedFiles():
     if f.LocalPath().endswith(MODEL_TYPE_FILE_NAME):
       return CheckModelTypeInfoMap(input_api, output_api, f)

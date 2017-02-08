@@ -323,7 +323,6 @@ def CheckChangeOnUpload(input_api, output_api):
   results += CheckNamespace(input_api, output_api)
   results += CheckForUseOfWrongClock(input_api, output_api)
   results += FindUselessIfdefs(input_api, output_api)
-  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
   return results
 
 def PostUploadHook(cl, change, output_api):

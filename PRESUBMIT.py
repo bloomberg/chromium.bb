@@ -2315,6 +2315,8 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(_CommonChecks(input_api, output_api))
   results.extend(_CheckValidHostsInDEPS(input_api, output_api))
   results.extend(
+      input_api.canned_checks.CheckPatchFormatted(input_api, output_api))
+  results.extend(
       input_api.canned_checks.CheckGNFormatted(input_api, output_api))
   results.extend(_CheckUmaHistogramChanges(input_api, output_api))
   results.extend(_AndroidSpecificOnUploadChecks(input_api, output_api))
@@ -2369,6 +2371,8 @@ def CheckChangeOnCommit(input_api, output_api):
       output_api,
       json_url='http://chromium-status.appspot.com/current?format=json'))
 
+  results.extend(
+      input_api.canned_checks.CheckPatchFormatted(input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeHasBugField(
       input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeHasDescription(

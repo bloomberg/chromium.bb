@@ -23,5 +23,4 @@ def CheckChangeLintsClean(input_api, output_api):
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results += CheckChangeLintsClean(input_api, output_api)
-  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
   return results

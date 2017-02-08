@@ -54,7 +54,6 @@ def _RunHistogramChecks(input_api, output_api, histogram_name):
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results += _RunHistogramValueCheckers(input_api, output_api)
-  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
   results += _RunHistogramChecks(input_api, output_api,
     "BadMessageReasonExtensions")
   return results
