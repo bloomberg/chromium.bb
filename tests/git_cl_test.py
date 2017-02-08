@@ -173,6 +173,16 @@ class SystemExitMock(Exception):
 
 
 class TestGitClBasic(unittest.TestCase):
+  def test_get_description(self):
+    cl = git_cl.Changelist(issue=1, codereview='rietveld',
+                           codereview_host='host')
+    cl.description = 'x'
+    cl.has_description = True
+    cl._codereview_impl.FetchDescription = lambda: 'y'
+    self.assertEquals(cl.GetDescription(), 'x')
+    self.assertEquals(cl.GetDescription(force=True), 'y')
+    self.assertEquals(cl.GetDescription(), 'y')
+
   def _test_ParseIssueUrl(self, func, url, issue, patchset, hostname, fail):
     parsed = urlparse.urlparse(url)
     result = func(parsed)

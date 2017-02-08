@@ -1355,8 +1355,8 @@ class Changelist(object):
       return None
     return '%s/%s' % (self._codereview_impl.GetCodereviewServer(), issue)
 
-  def GetDescription(self, pretty=False):
-    if not self.has_description:
+  def GetDescription(self, pretty=False, force=False):
+    if not self.has_description or force:
       if self.GetIssue():
         self.description = self._codereview_impl.FetchDescription()
       self.has_description = True
