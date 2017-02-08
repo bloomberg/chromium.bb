@@ -19,7 +19,8 @@ public interface VrClassesWrapper {
     /**
      * Creates a VrShellImpl instance.
      */
-    public VrShell createVrShell(CompositorViewHolder compositorViewHolder);
+    public VrShell createVrShell(VrShellDelegate delegate,
+            CompositorViewHolder compositorViewHolder);
 
     /**
      * Creates a VrDaydreamApImpl instance.

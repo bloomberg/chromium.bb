@@ -61,7 +61,7 @@ public class VrUtils {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                vrDelegate.exitVRIfNecessary(false /* isPausing */);
+                vrDelegate.shutdownVR(false /* isPausing */, false /* showTransition */);
             }
         });
     }

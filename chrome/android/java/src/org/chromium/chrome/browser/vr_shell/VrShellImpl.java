@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.graphics.Point;
 import android.os.StrictMode;
 import android.view.MotionEvent;
@@ -23,13 +22,20 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -61,11 +67,17 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private static final float DEFAULT_UI_WIDTH = 1920f;
     private static final float DEFAULT_UI_HEIGHT = 1080f;
 
-    private final Activity mActivity;
+    private final ChromeActivity mActivity;
+    private final VrShellDelegate mDelegate;
     private final CompositorViewHolder mCompositorViewHolder;
     private final VirtualDisplayAndroid mContentVirtualDisplay;
     private final VirtualDisplayAndroid mUiVirtualDisplay;
     private final TabRedirectHandler mTabRedirectHandler;
+    private final TabObserver mTabObserver;
+    private final TabModelSelectorObserver mTabModelSelectorObserver;
+    private final View.OnTouchListener mTouchListener;
+    private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+
 
     private long mNativeVrShell;
 
@@ -92,9 +104,11 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private float mLastContentHeight;
     private float mLastContentDpr;
 
-    public VrShellImpl(Activity activity, CompositorViewHolder compositorViewHolder) {
+    public VrShellImpl(ChromeActivity activity, VrShellDelegate delegate,
+            CompositorViewHolder compositorViewHolder) {
         super(activity);
         mActivity = activity;
+        mDelegate = delegate;
         mCompositorViewHolder = compositorViewHolder;
         mTabModelSelector = mCompositorViewHolder.detachForVR();
         mUiCVCContainer = new FrameLayout(getContext()) {
@@ -122,6 +136,13 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
         setPresentationView(mPresentationView);
 
+        getUiLayout().setCloseButtonListener(new Runnable() {
+            @Override
+            public void run() {
+                mDelegate.shutdownVR(false /* isPausing */, false /* showTransition */);
+            }
+        });
+
         DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(activity);
         mContentVirtualDisplay = VirtualDisplayAndroid.createVirtualDisplay();
         mContentVirtualDisplay.setTo(primaryDisplay);
@@ -134,10 +155,59 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
                 return true;
             }
         };
+
+        mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onContentChanged(Tab tab) {
+                if (tab.getNativePage() != null || tab.isShowingSadTab()) {
+                    // For now we don't handle native pages. crbug.com/661609.
+                    forceExitVr();
+                }
+            }
+
+            @Override
+            public void onWebContentsSwapped(
+                    Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+                nativeSwapContents(mNativeVrShell, mContentCVC.getWebContents());
+                setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
+            }
+
+            @Override
+            public void onLoadProgressChanged(Tab tab, int progress) {
+                if (mNativeVrShell == 0) return;
+                nativeOnLoadProgressChanged(mNativeVrShell, progress / 100.0);
+            }
+        };
+
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onChange() {
+                swapToForegroundTab();
+            }
+
+            @Override
+            public void onNewTabCreated(Tab tab) {
+                if (mNativeVrShell == 0) return;
+                nativeOnTabUpdated(mNativeVrShell, tab.isIncognito(), tab.getId(), tab.getTitle());
+            }
+        };
+
+        mTouchListener = new View.OnTouchListener() {
+            @Override
+            @SuppressLint("ClickableViewAccessibility")
+            public boolean onTouch(View v, MotionEvent event) {
+                if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_VR_SHELL_DEV)
+                        && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    nativeOnTriggerEvent(mNativeVrShell);
+                    return true;
+                }
+                return false;
+            }
+        };
     }
 
     @Override
-    public void initializeNative(Tab currentTab, VrShellDelegate delegate, boolean forWebVR) {
+    public void initializeNative(Tab currentTab, boolean forWebVR) {
         assert currentTab.getContentViewCore() != null;
         mTab = currentTab;
         mContentCVC = mTab.getContentViewCore();
@@ -152,7 +222,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
         mNativeVrShell = nativeInit(mContentCVC.getWebContents(),
                 mContentVrWindowAndroid.getNativePointer(), mUiContents,
-                mUiVrWindowAndroid.getNativePointer(), forWebVR, delegate,
+                mUiVrWindowAndroid.getNativePointer(), forWebVR, mDelegate,
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering);
 
         // Set the UI and content sizes before we load the UI.
@@ -167,18 +237,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
         nativeLoadUIContent(mNativeVrShell);
 
-        mPresentationView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            @SuppressLint("ClickableViewAccessibility")
-            public boolean onTouch(View v, MotionEvent event) {
-                if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_VR_SHELL_DEV)
-                        && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                    nativeOnTriggerEvent(mNativeVrShell);
-                    return true;
-                }
-                return false;
-            }
-        });
+        mPresentationView.setOnTouchListener(mTouchListener);
 
         uiContentView.setVisibility(View.VISIBLE);
         mUiCVC.onShow();
@@ -190,6 +249,48 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mUiVrWindowAndroid.onVisibilityChanged(true);
 
         initializeTabForVR();
+        mTab.addObserver(mTabObserver);
+        mTab.updateFullscreenEnabledState();
+        createTabList();
+        mActivity.getTabModelSelector().addObserver(mTabModelSelectorObserver);
+        createTabModelSelectorTabObserver();
+    }
+
+    private void createTabList() {
+        assert mNativeVrShell != 0;
+        TabModel main = mTabModelSelector.getModel(false);
+        int count = main.getCount();
+        Tab[] mainTabs = new Tab[count];
+        for (int i = 0; i < count; ++i) {
+            mainTabs[i] = main.getTabAt(i);
+        }
+        TabModel incognito = mTabModelSelector.getModel(true);
+        count = incognito.getCount();
+        Tab[] incognitoTabs = new Tab[count];
+        for (int i = 0; i < count; ++i) {
+            incognitoTabs[i] = incognito.getTabAt(i);
+        }
+        nativeOnTabListCreated(mNativeVrShell, mainTabs, incognitoTabs);
+    }
+
+    private void swapToForegroundTab() {
+        Tab tab = mActivity.getActivityTab();
+        if (tab == mTab) return;
+        if (!mDelegate.canEnterVR(tab)) {
+            forceExitVr();
+            return;
+        }
+        mTab.removeObserver(mTabObserver);
+        restoreTabFromVR();
+        mTab.updateFullscreenEnabledState();
+
+        mTab = tab;
+        mContentCVC = mTab.getContentViewCore();
+        initializeTabForVR();
+        nativeSwapContents(mNativeVrShell, mContentCVC.getWebContents());
+        setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
+        mTab.addObserver(mTabObserver);
+        mTab.updateFullscreenEnabledState();
     }
 
     private void initializeTabForVR() {
@@ -210,15 +311,10 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mNonVrTabRedirectHandler = null;
     }
 
-    @Override
-    public void swapTab(final Tab newTab) {
-        restoreTabFromVR();
-        mTab = newTab;
-        mContentCVC = mTab.getContentViewCore();
-        initializeTabForVR();
-
-        nativeSwapContents(mNativeVrShell, mContentCVC.getWebContents());
-        setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
+    // Exits VR, telling the user to remove their headset, and returning to Chromium.
+    @CalledByNative
+    public void forceExitVr() {
+        mDelegate.shutdownVR(false /* isPausing */, true /* showTransition */);
     }
 
     @CalledByNative
@@ -290,18 +386,14 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     }
 
     @Override
-    public void onLoadProgressChanged(double progress) {
-        if (mNativeVrShell != 0) {
-            nativeOnLoadProgressChanged(mNativeVrShell, progress);
-        }
-    }
-
-    @Override
     public void shutdown() {
         if (mNativeVrShell != 0) {
             nativeDestroy(mNativeVrShell);
             mNativeVrShell = 0;
         }
+        mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        mTabModelSelectorTabObserver.destroy();
+        mTab.removeObserver(mTabObserver);
         restoreTabFromVR();
         mUiContents.destroy();
         mContentVirtualDisplay.destroy();
@@ -336,11 +428,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     }
 
     @Override
-    public void setCloseButtonListener(Runnable runner) {
-        getUiLayout().setCloseButtonListener(runner);
-    }
-
-    @Override
     public void surfaceCreated(SurfaceHolder holder) {
         nativeSetSurface(mNativeVrShell, holder.getSurface());
     }
@@ -358,19 +445,32 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         // multiple times.
     }
 
-    @Override
-    public void onTabListCreated(Tab[] mainTabs, Tab[] incognitoTabs) {
-        nativeOnTabListCreated(mNativeVrShell, mainTabs, incognitoTabs);
-    }
+    private void createTabModelSelectorTabObserver() {
+        assert mTabModelSelectorTabObserver == null;
+        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
+            @Override
+            public void onTitleUpdated(Tab tab) {
+                if (mNativeVrShell == 0) return;
+                nativeOnTabUpdated(mNativeVrShell, tab.isIncognito(), tab.getId(), tab.getTitle());
+            }
 
-    @Override
-    public void onTabUpdated(boolean incognito, int id, String title) {
-        nativeOnTabUpdated(mNativeVrShell, incognito, id, title);
-    }
+            @Override
+            public void onClosingStateChanged(Tab tab, boolean closing) {
+                if (mNativeVrShell == 0) return;
+                if (closing) {
+                    nativeOnTabRemoved(mNativeVrShell, tab.isIncognito(), tab.getId());
+                } else {
+                    nativeOnTabUpdated(mNativeVrShell, tab.isIncognito(), tab.getId(),
+                            tab.getTitle());
+                }
+            }
 
-    @Override
-    public void onTabRemoved(boolean incognito, int id) {
-        nativeOnTabRemoved(mNativeVrShell, incognito, id);
+            @Override
+            public void onDestroyed(Tab tab) {
+                if (mNativeVrShell == 0) return;
+                nativeOnTabRemoved(mNativeVrShell, tab.isIncognito(), tab.getId());
+            }
+        };
     }
 
     private native long nativeInit(WebContents contentWebContents,

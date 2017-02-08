@@ -157,11 +157,6 @@ void VrShellDelegate::ExitWebVRPresent() {
   Java_VrShellDelegate_exitWebVR(env, j_vr_shell_delegate_.obj());
 }
 
-void VrShellDelegate::ForceExitVr() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_VrShellDelegate_forceExitVr(env, j_vr_shell_delegate_.obj());
-}
-
 base::WeakPtr<VrShellDelegate> VrShellDelegate::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }

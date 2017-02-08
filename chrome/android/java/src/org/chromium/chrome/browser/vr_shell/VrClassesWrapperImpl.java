@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.StrictMode;
 
@@ -13,6 +12,7 @@ import com.google.vr.ndk.base.AndroidCompat;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 
 /**
@@ -25,7 +25,7 @@ public class VrClassesWrapperImpl implements VrClassesWrapper {
     private final Context mContext;
 
     @UsedByReflection("VrShellDelegate.java")
-    public VrClassesWrapperImpl(Activity activity) {
+    public VrClassesWrapperImpl(ChromeActivity activity) {
         mContext = activity;
     }
 
@@ -39,7 +39,7 @@ public class VrClassesWrapperImpl implements VrClassesWrapper {
     public NonPresentingGvrContext createNonPresentingGvrContext() {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            return new NonPresentingGvrContextImpl((Activity) mContext);
+            return new NonPresentingGvrContextImpl((ChromeActivity) mContext);
         } catch (Exception ex) {
             Log.e(TAG, "Unable to instantiate NonPresentingGvrContextImpl", ex);
             return null;
@@ -49,10 +49,11 @@ public class VrClassesWrapperImpl implements VrClassesWrapper {
     }
 
     @Override
-    public VrShell createVrShell(CompositorViewHolder compositorViewHolder) {
+    public VrShell createVrShell(VrShellDelegate delegate,
+            CompositorViewHolder compositorViewHolder) {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            return new VrShellImpl((Activity) mContext, compositorViewHolder);
+            return new VrShellImpl((ChromeActivity) mContext, delegate, compositorViewHolder);
         } catch (Exception ex) {
             Log.e(TAG, "Unable to instantiate VrShellImpl", ex);
             return null;
@@ -73,6 +74,6 @@ public class VrClassesWrapperImpl implements VrClassesWrapper {
 
     @Override
     public void setVrModeEnabled(boolean enabled) {
-        AndroidCompat.setVrModeEnabled((Activity) mContext, enabled);
+        AndroidCompat.setVrModeEnabled((ChromeActivity) mContext, enabled);
     }
 }

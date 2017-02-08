@@ -42,7 +42,6 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  void ForceExitVr();
   device::GvrDeviceProvider* device_provider() { return device_provider_; }
   void OnVRVsyncProviderRequest(device::mojom::VRVSyncProviderRequest request);
   base::WeakPtr<VrShellDelegate> GetWeakPtr();

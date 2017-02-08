@@ -468,7 +468,8 @@ void VrShell::ContentWasShown() {
 }
 
 void VrShell::ForceExitVr() {
-  delegate_provider_->ForceExitVr();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_forceExitVr(env, j_vr_shell_.obj());
 }
 
 void VrShell::OnVRVsyncProviderRequest(
