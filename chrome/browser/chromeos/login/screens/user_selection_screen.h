@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/chromeos/login/ui/models/user_board_model.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
@@ -33,7 +33,7 @@ class UserBoardView;
 class UserSelectionScreen
     : public ui::UserActivityObserver,
       public proximity_auth::ScreenlockBridge::LockHandler,
-      public UserBoardModel {
+      public BaseScreen {
  public:
   explicit UserSelectionScreen(const std::string& display_type);
   ~UserSelectionScreen() override;
@@ -56,6 +56,14 @@ class UserSelectionScreen
 
   void HandleGetUsers();
   void CheckUserStatus(const AccountId& account_id);
+
+  // Build list of users and send it to the webui.
+  virtual void SendUserList();
+
+  // Methods for easy unlock support.
+  void HardLockPod(const AccountId& account_id);
+  void AttemptEasyUnlock(const AccountId& account_id);
+  void RecordClickOnLockIcon(const AccountId& account_id);
 
   // ui::UserActivityDetector implementation:
   void OnUserActivity(const ui::Event* event) override;
@@ -82,11 +90,9 @@ class UserSelectionScreen
                          const std::string& secret,
                          const std::string& key_label) override;
 
-  // UserBoardModel implementation.
-  void SendUserList() override;
-  void HardLockPod(const AccountId& account_id) override;
-  void AttemptEasyUnlock(const AccountId& account_id) override;
-  void RecordClickOnLockIcon(const AccountId& account_id) override;
+  // BaseScreen implementation:
+  void Show() override;
+  void Hide() override;
 
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(
@@ -110,14 +116,11 @@ class UserSelectionScreen
   static bool ShouldForceOnlineSignIn(const user_manager::User* user);
 
  protected:
-  LoginDisplayWebUIHandler* handler_;
-  LoginDisplay::Delegate* login_display_delegate_;
-  UserBoardView* view_;
+  UserBoardView* view_ = nullptr;
 
   // Map from public session account IDs to recommended locales set by policy.
-  typedef std::map<AccountId, std::vector<std::string> >
-      PublicSessionRecommendedLocaleMap;
-  PublicSessionRecommendedLocaleMap public_session_recommended_locales_;
+  std::map<AccountId, std::vector<std::string>>
+      public_session_recommended_locales_;
 
  private:
   EasyUnlockService* GetEasyUnlockServiceForUser(
@@ -126,8 +129,11 @@ class UserSelectionScreen
   void OnUserStatusChecked(const AccountId& account_id,
                            TokenHandleUtil::TokenHandleStatus status);
 
+  LoginDisplayWebUIHandler* handler_ = nullptr;
+  LoginDisplay::Delegate* login_display_delegate_ = nullptr;
+
   // Whether to show guest login.
-  bool show_guest_;
+  bool show_guest_ = false;
 
   // Purpose of the screen (see constants in OobeUI).
   const std::string display_type_;

@@ -133,12 +133,9 @@ bool CanShowPinForUser(user_manager::User* user) {
 }  // namespace
 
 UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
-    : handler_(nullptr),
-      login_display_delegate_(nullptr),
-      view_(nullptr),
+    : BaseScreen(nullptr, OobeScreen::SCREEN_USER_SELECTION),
       display_type_(display_type),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 UserSelectionScreen::~UserSelectionScreen() {
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
@@ -532,6 +529,10 @@ void UserSelectionScreen::AttemptEasySignin(const AccountId& account_id,
 
   login_display_delegate_->Login(user_context, SigninSpecifics());
 }
+
+void UserSelectionScreen::Show() {}
+
+void UserSelectionScreen::Hide() {}
 
 void UserSelectionScreen::HardLockPod(const AccountId& account_id) {
   view_->SetAuthType(account_id, OFFLINE_PASSWORD, base::string16());

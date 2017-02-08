@@ -4,13 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/user_board_screen_handler.h"
 
-#include "chrome/browser/chromeos/login/ui/models/user_board_model.h"
+#include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "components/login/localized_values_builder.h"
 
 namespace chromeos {
 
-UserBoardScreenHandler::UserBoardScreenHandler()
-    : model_(nullptr), weak_factory_(this) {}
+UserBoardScreenHandler::UserBoardScreenHandler() : weak_factory_(this) {}
 
 UserBoardScreenHandler::~UserBoardScreenHandler() {
 }
@@ -33,24 +32,24 @@ void UserBoardScreenHandler::Initialize() {
 //----------------- Handlers
 
 void UserBoardScreenHandler::HandleGetUsers() {
-  CHECK(model_);
-  model_->SendUserList();
+  CHECK(screen_);
+  screen_->SendUserList();
 }
 
 void UserBoardScreenHandler::HandleHardlockPod(const AccountId& account_id) {
-  CHECK(model_);
-  model_->HardLockPod(account_id);
+  CHECK(screen_);
+  screen_->HardLockPod(account_id);
 }
 
 void UserBoardScreenHandler::HandleAttemptUnlock(const AccountId& account_id) {
-  CHECK(model_);
-  model_->AttemptEasyUnlock(account_id);
+  CHECK(screen_);
+  screen_->AttemptEasyUnlock(account_id);
 }
 
 void UserBoardScreenHandler::HandleRecordClickOnLockIcon(
     const AccountId& account_id) {
-  CHECK(model_);
-  model_->RecordClickOnLockIcon(account_id);
+  CHECK(screen_);
+  screen_->RecordClickOnLockIcon(account_id);
 }
 
 //----------------- API
@@ -94,13 +93,13 @@ void UserBoardScreenHandler::SetAuthType(
          static_cast<int>(auth_type), base::StringValue(initial_value));
 }
 
-void UserBoardScreenHandler::Bind(UserBoardModel& model) {
-  model_ = &model;
-  BaseScreenHandler::SetBaseScreen(model_);
+void UserBoardScreenHandler::Bind(UserSelectionScreen* screen) {
+  screen_ = screen;
+  BaseScreenHandler::SetBaseScreen(screen_);
 }
 
 void UserBoardScreenHandler::Unbind() {
-  model_ = nullptr;
+  screen_ = nullptr;
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 

@@ -34,7 +34,7 @@ SignInScreenController::SignInScreenController(
   // Model/View which are then each responsible for automatically unbinding the
   // other associated View/Model instance. Then we can eliminate this exposed
   // WeakPtr logic. See crbug.com/685287.
-  user_board_view_->Bind(*user_selection_screen_);
+  user_board_view_->Bind(user_selection_screen_.get());
 
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());

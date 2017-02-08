@@ -15,6 +15,9 @@
 
 namespace chromeos {
 
+// TODO(jdufault): Rename to UserSelectionScreenHandler and ensure this in the
+// right directory. See crbug.com/672142.
+
 // A class that handles WebUI hooks in Gaia screen.
 class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
  public:
@@ -51,12 +54,11 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
       const AccountId& account_id,
       proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
       const base::string16& initial_value) override;
-
-  void Bind(UserBoardModel& model) override;
+  void Bind(UserSelectionScreen* screen) override;
   void Unbind() override;
   base::WeakPtr<UserBoardView> GetWeakPtr() override;
 
-  UserBoardModel* model_;
+  UserSelectionScreen* screen_ = nullptr;
   base::WeakPtrFactory<UserBoardScreenHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserBoardScreenHandler);
