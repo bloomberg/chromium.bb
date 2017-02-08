@@ -38,6 +38,7 @@
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_type_converters.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/common/referrer.h"
@@ -58,6 +59,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
+#include "third_party/WebKit/public/platform/modules/payments/WebPaymentAppRequest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
@@ -204,6 +206,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
   using SkipWaitingCallbacksMap =
       IDMap<std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks>>;
   using SyncEventCallbacksMap = IDMap<std::unique_ptr<const SyncCallback>>;
+  using PaymentRequestEventCallbacksMap =
+      IDMap<std::unique_ptr<const PaymentRequestEventCallback>>;
   using PushEventCallbacksMap =
       IDMap<std::unique_ptr<const DispatchPushEventCallback>>;
   using FetchEventCallbacksMap = IDMap<std::unique_ptr<const FetchCallback>>;
@@ -237,6 +241,9 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   // Pending callbacks for Background Sync Events.
   SyncEventCallbacksMap sync_event_callbacks;
+
+  // Pending callbacks for Payment Request Events.
+  PaymentRequestEventCallbacksMap payment_request_event_callbacks;
 
   // Pending callbacks for Push Events.
   PushEventCallbacksMap push_event_callbacks;
@@ -755,6 +762,18 @@ void ServiceWorkerContextClient::didHandleSyncEvent(
   context_->sync_event_callbacks.Remove(request_id);
 }
 
+void ServiceWorkerContextClient::didHandlePaymentRequestEvent(
+    int request_id,
+    blink::WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
+  const PaymentRequestEventCallback* callback =
+      context_->payment_request_event_callbacks.Lookup(request_id);
+  DCHECK(callback);
+  callback->Run(EventResultToStatus(result),
+                base::Time::FromDoubleT(event_dispatch_time));
+  context_->payment_request_event_callbacks.Remove(request_id);
+}
+
 blink::WebServiceWorkerNetworkProvider*
 ServiceWorkerContextClient::createServiceWorkerNetworkProvider(
     blink::WebDataSource* data_source) {
@@ -873,7 +892,11 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
 void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
     payments::mojom::PaymentAppRequestPtr app_request,
     const DispatchPaymentRequestEventCallback& callback) {
-  NOTIMPLEMENTED();
+  int request_id = context_->payment_request_event_callbacks.Add(
+      base::MakeUnique<PaymentRequestEventCallback>(callback));
+  blink::WebPaymentAppRequest webAppRequest =
+      mojo::ConvertTo<blink::WebPaymentAppRequest>(std::move(app_request));
+  proxy_->dispatchPaymentRequestEvent(request_id, webAppRequest);
 }
 
 void ServiceWorkerContextClient::Send(IPC::Message* message) {

@@ -170,6 +170,9 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void didHandleSyncEvent(int request_id,
                           blink::WebServiceWorkerEventResult result,
                           double dispatch_event_time) override;
+  void didHandlePaymentRequestEvent(int request_id,
+                                    blink::WebServiceWorkerEventResult result,
+                                    double dispatch_event_time) override;
 
   // Called on the main thread.
   blink::WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(

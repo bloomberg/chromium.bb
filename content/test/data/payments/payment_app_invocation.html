@@ -1,0 +1,36 @@
+<!doctype html>
+<title>Payment App: Test for invoking payment app</title>
+<script src="./result_queue.js"></script>
+<script>
+
+function registerPaymentApp() {
+  navigator.serviceWorker.register('payment_app.js', { scope: './' })
+    .then(() => {
+        return navigator.serviceWorker.ready;
+      })
+    .then(registration => {
+        return registration.paymentAppManager.setManifest({
+            name: 'Payment App',
+            icon: 'payment-app-icon',
+            options: [{
+              name: 'Visa ****',
+              icon: 'payment-app-icon',
+              id: 'payment-app-id',
+              enabledMethods: ['visa']
+            }]
+          });
+      })
+    .then(result => {
+        sendResultToTest('registered');
+      })
+    .catch(result => {
+        sendResultToTest('error');
+      });
+}
+
+var resultQueue = new ResultQueue();
+navigator.serviceWorker.addEventListener('message', e => {
+  resultQueue.push(e.data);
+});
+
+</script>

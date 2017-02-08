@@ -86,12 +86,12 @@ WaitUntilObserver* WaitUntilObserver::create(ExecutionContext* context,
 
 void WaitUntilObserver::willDispatchEvent() {
   m_eventDispatchTime = WTF::currentTime();
-  // When handling a notificationclick event, we want to allow one window to
-  // be focused or opened. These calls are allowed between the call to
-  // willDispatchEvent() and the last call to decrementPendingActivity(). If
-  // waitUntil() isn't called, that means between willDispatchEvent() and
-  // didDispatchEvent().
-  if (m_type == NotificationClick)
+  // When handling a notificationclick or paymentrequest event, we want to
+  // allow one window to be focused or opened. These calls are allowed between
+  // the call to willDispatchEvent() and the last call to
+  // decrementPendingActivity(). If waitUntil() isn't called, that means
+  // between willDispatchEvent() and didDispatchEvent().
+  if (m_type == NotificationClick || m_type == PaymentRequest)
     m_executionContext->allowWindowInteraction();
 
   incrementPendingActivity();
