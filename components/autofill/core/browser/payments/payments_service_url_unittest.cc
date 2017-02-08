@@ -15,21 +15,21 @@ TEST(PaymentsServiceSandboxUrl, CheckSandboxUrls) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWalletServiceUseSandbox, "1");
 
-  EXPECT_EQ("https://wallet-web.sandbox.google.com/manage/w/1/paymentMethods",
-            GetManageInstrumentsUrl(1).spec());
-  EXPECT_EQ("https://wallet-web.sandbox.google.com/manage/w/1/settings/"
-            "addresses",
-            GetManageAddressesUrl(1).spec());
+  const char kExpectedSandboxURL[] =
+      "https://payments.sandbox.google.com/u/1#paymentMethods";
+
+  EXPECT_EQ(kExpectedSandboxURL, GetManageInstrumentsUrl(1).spec());
+  EXPECT_EQ(kExpectedSandboxURL, GetManageAddressesUrl(1).spec());
 }
 
 TEST(PaymentsServiceSandboxUrl, CheckProdUrls) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWalletServiceUseSandbox, "0");
 
-  EXPECT_EQ("https://wallet.google.com/manage/w/1/paymentMethods",
-            GetManageInstrumentsUrl(1).spec());
-  EXPECT_EQ("https://wallet.google.com/manage/w/1/settings/addresses",
-            GetManageAddressesUrl(1).spec());
+  const char kExpectedURL[] = "https://payments.google.com/u/1#paymentMethods";
+
+  EXPECT_EQ(kExpectedURL, GetManageInstrumentsUrl(1).spec());
+  EXPECT_EQ(kExpectedURL, GetManageAddressesUrl(1).spec());
 }
 
 }  // namespace payments

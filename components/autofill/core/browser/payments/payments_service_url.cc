@@ -21,10 +21,10 @@
 namespace autofill {
 namespace {
 
-const char kProdPaymentsServiceUrl[] = "https://wallet.google.com/";
+const char kProdPaymentsServiceUrl[] = "https://payments.google.com/";
 
 const char kSandboxPaymentsSecureServiceUrl[] =
-    "https://wallet-web.sandbox.google.com/";
+    "https://payments.sandbox.google.com/";
 
 }  // namespace
 
@@ -46,14 +46,13 @@ GURL GetBaseSecureUrl() {
 
 GURL GetManageInstrumentsUrl(size_t user_index) {
   std::string path =
-      base::StringPrintf("manage/w/%" PRIuS "/paymentMethods", user_index);
+      base::StringPrintf("u/%" PRIuS "#paymentMethods", user_index);
   return GetBaseSecureUrl().Resolve(path);
 }
 
 GURL GetManageAddressesUrl(size_t user_index) {
-  std::string path =
-      base::StringPrintf("manage/w/%" PRIuS "/settings/addresses", user_index);
-  return GetBaseSecureUrl().Resolve(path);
+  // Billing addresses are now managed as a part of the payment instrument.
+  return GetManageInstrumentsUrl(user_index);
 }
 
 }  // namespace payments

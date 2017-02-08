@@ -331,10 +331,10 @@ CHAR-LIMIT guidelines:
         Edit
       </message>
       <message name="IDS_AUTOFILL_MANAGE_WALLET_CARDS_URL" desc="URL for managing wallet credit cards" translateable="false">
-        https://wallet.google.com/manage/paymentMethods
+        https://payments.google.com/#paymentMethods
       </message>
       <message name="IDS_AUTOFILL_MANAGE_WALLET_ADDRESSES_URL" desc="URL for managing wallet addresses" translateable="false">
-        https://wallet.google.com/manage/addressBook
+        https://payments.google.com/#paymentMethods
       </message>
       <message name="IDS_AUTOFILL_FROM_GOOGLE_ACCOUNT_LONG" desc="Text that indicates an address or credit card came from Google servers.">
         From Google Payments
