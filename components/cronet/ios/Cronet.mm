@@ -76,6 +76,8 @@ class CronetHttpProtocolHandlerDelegate
   // net::HTTPProtocolHandlerDelegate implementation:
   bool CanHandleRequest(NSURLRequest* request) override {
     base::AutoLock auto_lock(lock_);
+    if (!IsRequestSupported(request))
+      return false;
     if (filter_) {
       RequestFilterBlock block = filter_.get();
       return block(request);

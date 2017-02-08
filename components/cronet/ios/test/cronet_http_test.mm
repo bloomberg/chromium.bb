@@ -373,4 +373,29 @@ TEST_F(HttpTest, FilterOutRequest) {
   EXPECT_TRUE([[delegate_ responseBody] containsString:@"CFNetwork"]);
 }
 
+TEST_F(HttpTest, FileSchemeNotSupported) {
+  NSString* fileData = @"Hello, World!";
+  NSString* documentsDirectory = [NSSearchPathForDirectoriesInDomains(
+      NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+  NSString* filePath = [documentsDirectory
+      stringByAppendingPathComponent:[[NSProcessInfo processInfo]
+                                         globallyUniqueString]];
+  [fileData writeToFile:filePath
+             atomically:YES
+               encoding:NSUTF8StringEncoding
+                  error:nil];
+
+  NSURL* url = [NSURL fileURLWithPath:filePath];
+  NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
+  [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
+    [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
+    EXPECT_TRUE(false) << "Block should not be called for unsupported requests";
+    return YES;
+  }];
+  StartDataTaskAndWaitForCompletion(task);
+  [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_TRUE([[delegate_ responseBody] containsString:fileData]);
+}
+
 }  // namespace cronet
