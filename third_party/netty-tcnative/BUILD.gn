@@ -46,7 +46,7 @@ shared_library("netty-tcnative-so") {
   include_dirs = [ "../apache-portable-runtime/src/include" ]
   defines = [ "HAVE_OPENSSL" ]
   cflags = [ "-w" ]
-  configs -= [ "//build/config/android:hide_native_jni_exports" ]
+  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   deps = [
     "../apache-portable-runtime:apr",
     "../boringssl:boringssl",

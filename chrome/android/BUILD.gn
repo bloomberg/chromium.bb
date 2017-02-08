@@ -648,7 +648,8 @@ if (!android_64bit_target_cpu ||
       "//chrome:chrome_android_core",
     ]
 
-    configs -= [ "//build/config/android:hide_native_jni_exports" ]
+    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    configs += [ "//build/config/android:hide_all_but_jni" ]
     if (is_android && use_order_profiling) {
       deps += [ "//tools/cygprofile" ]
     }
