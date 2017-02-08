@@ -14,9 +14,6 @@
   <message name="IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON" desc="The label of the button that clears the local copy of a Wallet Credit Card." formatter_data="android_java">
     Clear copy
   </message>
-  <message name="IDS_AUTOFILL_WARNING_FORM_DISABLED" desc="Warning text to show when autofill is disabled by the website for a given form.">
-    This webpage has disabled automatic filling for this form.
-  </message>
   <message name="IDS_AUTOFILL_WARNING_PAYMENT_DISABLED" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection. This warning text is shown below a separate warning indicating that the form is not secure, so this message indicates just that payment autofilling has been disabled (not why).">
     Payment autofilling disabled
   </message>
@@ -84,9 +81,6 @@
   <message name="IDS_AUTOFILL_CC_GENERIC" desc="Generic credit card name.">
     Card
   </message>
-  <message name="IDS_AUTOFILL_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses.">
-    , '''
-  </message>
   <message name="IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR" desc="The separator character used in the summary of an address." formatter_data="android_java">
     , '''
   </message>
@@ -130,9 +124,6 @@
   <message name="IDS_AUTOFILL_FIELD_LABEL_POSTAL_CODE" desc="The label of the Postal code entry.">
     Postal code
   </message>
-  <message name="IDS_AUTOFILL_FIELD_LABEL_COUNTRY" desc="The label of the Country entry.">
-    Country
-  </message>
 
   <message translateable="false" name="IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE" desc="The title for form elements when annotated with Autofill predictions.">
     overall type: <ph name="OVERALL_TYPE">$1<ex>NAME_FIRST</ex></ph>
@@ -142,11 +133,6 @@
     parseable name: <ph name="PARSEABLE_NAME">$5<ex>SOME_NAME</ex></ph>
     field signature: <ph name="FIELD_SIGNATURE">$6<ex>12345678</ex></ph>
     form signature: <ph name="FORM_SIGNATURE">$7<ex>1234567812345678</ex></ph>
-  </message>
-
-  <!-- Autofill dialog: legal documents -->
-  <message name="IDS_AUTOFILL_DIALOG_PRIVACY_POLICY_LINK" desc="The text of an extra link that is appended to the end of whatever other legal documents need to be accepted or updated.">
-    Privacy Policy
   </message>
 
   <if expr="_google_chrome">
@@ -174,20 +160,6 @@
   <message name="IDS_AUTOFILL_OPTIONS_CONTENT_DESCRIPTION" desc="The text verbalised by a screen reader for the button that directs the user to the Autofill settings UI. This string is not displayed.">
     settings
   </message>
-
-  <message name="IDS_AUTOFILL_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET" desc="Message displayed to user when user entered a credit card number that is not supported by Google Payments.">
-    This type of card is not supported by Google Payments. Please select a different card.
-  </message>
-  <message name="IDS_AUTOFILL_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET_FOR_MERCHANT" desc="Message displayed to user when user entered a credit card number that is not supported by Google Payments for the particular merchant site the user is on.">
-    This type of card is not supported by Google Payments for this merchant. Please select a different card.
-  </message>
-
-  <!-- Autofill on OSX -->
-  <if expr="is_macosx">
-    <message name="IDS_AUTOFILL_ACCESS_MAC_CONTACTS" desc="When the user selects this Autofill entry, the browser prompts the user for access to the user's OSX contacts.">
-      Enable Autofill using Contacts…
-    </message>
-  </if>
 
   <message name="IDS_AUTOFILL_SCAN_CREDIT_CARD" desc="An item in the autofill popup that triggers a new credit card to be scanned using the camera on the device." formatter_data="android_java">
     Scan new card
