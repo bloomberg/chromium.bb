@@ -29,23 +29,25 @@ class ChromeInterfaceRegistrar {
         InterfaceRegistrar.Registry.addWebContentsRegistrar(
                 new ChromeWebContentsInterfaceRegistrar());
     }
-}
 
-class ChromeContextInterfaceRegistrar implements InterfaceRegistrar<Context> {
-    @Override
-    public void registerInterfaces(InterfaceRegistry registry, final Context applicationContext) {
-        registry.addInterface(
-                BarcodeDetection.MANAGER, new BarcodeDetectionImpl.Factory(applicationContext));
-        registry.addInterface(
-                TextDetection.MANAGER, new TextDetectionImpl.Factory(applicationContext));
+    private static class ChromeContextInterfaceRegistrar implements InterfaceRegistrar<Context> {
+        @Override
+        public void registerInterfaces(
+                InterfaceRegistry registry, final Context applicationContext) {
+            registry.addInterface(
+                    BarcodeDetection.MANAGER, new BarcodeDetectionImpl.Factory(applicationContext));
+            registry.addInterface(
+                    TextDetection.MANAGER, new TextDetectionImpl.Factory(applicationContext));
+        }
     }
-}
 
-class ChromeWebContentsInterfaceRegistrar implements InterfaceRegistrar<WebContents> {
-    @Override
-    public void registerInterfaces(InterfaceRegistry registry, final WebContents webContents) {
-        registry.addInterface(PaymentRequest.MANAGER, new PaymentRequestFactory(webContents));
-        registry.addInterface(
-                ShareService.MANAGER, new ShareServiceImplementationFactory(webContents));
+    private static class ChromeWebContentsInterfaceRegistrar
+            implements InterfaceRegistrar<WebContents> {
+        @Override
+        public void registerInterfaces(InterfaceRegistry registry, final WebContents webContents) {
+            registry.addInterface(PaymentRequest.MANAGER, new PaymentRequestFactory(webContents));
+            registry.addInterface(
+                    ShareService.MANAGER, new ShareServiceImplementationFactory(webContents));
+        }
     }
 }

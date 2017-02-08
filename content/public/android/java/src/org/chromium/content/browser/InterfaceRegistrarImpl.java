@@ -22,6 +22,9 @@ import org.chromium.shape_detection.mojom.FaceDetectionProvider;
 
 @JNINamespace("content")
 class InterfaceRegistrarImpl {
+
+    private static boolean sHasRegisteredRegistrars;
+
     @CalledByNative
     static void createInterfaceRegistryForContext(int nativeHandle, Context applicationContext) {
         ensureContentRegistrarsAreRegistered();
@@ -48,25 +51,25 @@ class InterfaceRegistrarImpl {
                 new ContentWebContentsInterfaceRegistrar());
     }
 
-    private static boolean sHasRegisteredRegistrars;
-}
-
-class ContentContextInterfaceRegistrar implements InterfaceRegistrar<Context> {
-    @Override
-    public void registerInterfaces(InterfaceRegistry registry, final Context applicationContext) {
-        registry.addInterface(
-                VibrationManager.MANAGER, new VibrationManagerImpl.Factory(applicationContext));
-        registry.addInterface(
-                BatteryMonitor.MANAGER, new BatteryMonitorFactory(applicationContext));
-        registry.addInterface(FaceDetectionProvider.MANAGER,
-                new FaceDetectionProviderImpl.Factory(applicationContext));
-        // TODO(avayvod): Register the PresentationService implementation here.
+    private static class ContentContextInterfaceRegistrar implements InterfaceRegistrar<Context> {
+        @Override
+        public void registerInterfaces(
+                InterfaceRegistry registry, final Context applicationContext) {
+            registry.addInterface(
+                    VibrationManager.MANAGER, new VibrationManagerImpl.Factory(applicationContext));
+            registry.addInterface(
+                    BatteryMonitor.MANAGER, new BatteryMonitorFactory(applicationContext));
+            registry.addInterface(FaceDetectionProvider.MANAGER,
+                    new FaceDetectionProviderImpl.Factory(applicationContext));
+            // TODO(avayvod): Register the PresentationService implementation here.
+        }
     }
-}
 
-class ContentWebContentsInterfaceRegistrar implements InterfaceRegistrar<WebContents> {
-    @Override
-    public void registerInterfaces(InterfaceRegistry registry, final WebContents webContents) {
-        registry.addInterface(Nfc.MANAGER, new NfcFactory(webContents));
+    private static class ContentWebContentsInterfaceRegistrar
+            implements InterfaceRegistrar<WebContents> {
+        @Override
+        public void registerInterfaces(InterfaceRegistry registry, final WebContents webContents) {
+            registry.addInterface(Nfc.MANAGER, new NfcFactory(webContents));
+        }
     }
 }
