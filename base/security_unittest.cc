@@ -87,7 +87,7 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
   }
 }
 
-#if defined(OS_IOS) || defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_IOS) || defined(OS_LINUX)
 #define MAYBE_NewOverflow DISABLED_NewOverflow
 #else
 #define MAYBE_NewOverflow NewOverflow
