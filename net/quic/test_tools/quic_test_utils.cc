@@ -13,6 +13,7 @@
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/quic_data_writer.h"
+#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_framer.h"
 #include "net/quic/core/quic_packet_creator.h"
 #include "net/quic/core/quic_utils.h"
@@ -21,16 +22,16 @@
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/spdy/spdy_frame_builder.h"
-#include "net/tools/quic/quic_per_connection_packet_writer.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 using base::StringPiece;
+using std::max;
+using std::min;
 using std::string;
-using testing::Invoke;
 using testing::_;
+using testing::Invoke;
 
 namespace net {
-
 namespace test {
 
 QuicAckFrame MakeAckFrame(QuicPacketNumber largest_observed) {
@@ -252,10 +253,9 @@ QuicArenaScopedPtr<QuicAlarm> MockAlarmFactory::CreateAlarm(
     QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
     QuicConnectionArena* arena) {
   if (arena != nullptr) {
-    return arena->New<MockAlarmFactory::TestAlarm>(std::move(delegate));
+    return arena->New<TestAlarm>(std::move(delegate));
   } else {
-    return QuicArenaScopedPtr<MockAlarmFactory::TestAlarm>(
-        new TestAlarm(std::move(delegate)));
+    return QuicArenaScopedPtr<TestAlarm>(new TestAlarm(std::move(delegate)));
   }
 }
 
@@ -438,22 +438,6 @@ QuicCryptoServerStream* TestQuicSpdyServerSession::GetCryptoStream() {
       QuicServerSessionBase::GetCryptoStream());
 }
 
-TestPushPromiseDelegate::TestPushPromiseDelegate(bool match)
-    : match_(match), rendezvous_fired_(false), rendezvous_stream_(nullptr) {}
-
-bool TestPushPromiseDelegate::CheckVary(
-    const SpdyHeaderBlock& client_request,
-    const SpdyHeaderBlock& promise_request,
-    const SpdyHeaderBlock& promise_response) {
-  QUIC_DVLOG(1) << "match " << match_;
-  return match_;
-}
-
-void TestPushPromiseDelegate::OnRendezvousResult(QuicSpdyStream* stream) {
-  rendezvous_fired_ = true;
-  rendezvous_stream_ = stream;
-}
-
 TestQuicSpdyClientSession::TestQuicSpdyClientSession(
     QuicConnection* connection,
     const QuicConfig& config,
@@ -474,6 +458,22 @@ bool TestQuicSpdyClientSession::IsAuthorized(const string& authority) {
 
 QuicCryptoClientStream* TestQuicSpdyClientSession::GetCryptoStream() {
   return crypto_stream_.get();
+}
+
+TestPushPromiseDelegate::TestPushPromiseDelegate(bool match)
+    : match_(match), rendezvous_fired_(false), rendezvous_stream_(nullptr) {}
+
+bool TestPushPromiseDelegate::CheckVary(
+    const SpdyHeaderBlock& client_request,
+    const SpdyHeaderBlock& promise_request,
+    const SpdyHeaderBlock& promise_response) {
+  QUIC_DVLOG(1) << "match " << match_;
+  return match_;
+}
+
+void TestPushPromiseDelegate::OnRendezvousResult(QuicSpdyStream* stream) {
+  rendezvous_fired_ = true;
+  rendezvous_stream_ = stream;
 }
 
 MockPacketWriter::MockPacketWriter() {
@@ -511,8 +511,8 @@ string HexDumpWithMarks(const char* data,
   const int kSizeLimit = 1024;
   if (length > kSizeLimit || mark_length > kSizeLimit) {
     QUIC_LOG(ERROR) << "Only dumping first " << kSizeLimit << " bytes.";
-    length = std::min(length, kSizeLimit);
-    mark_length = std::min(mark_length, kSizeLimit);
+    length = min(length, kSizeLimit);
+    mark_length = min(mark_length, kSizeLimit);
   }
 
   string hex;
@@ -553,18 +553,6 @@ QuicVersion QuicVersionMax() {
 
 QuicVersion QuicVersionMin() {
   return AllSupportedVersions().back();
-}
-
-IPAddress Loopback4() {
-  return IPAddress::IPv4Localhost();
-}
-
-IPAddress Loopback6() {
-  return IPAddress::IPv6Localhost();
-}
-
-IPAddress Any4() {
-  return IPAddress::IPv4AllZeros();
 }
 
 QuicEncryptedPacket* ConstructEncryptedPacket(QuicConnectionId connection_id,
@@ -710,8 +698,8 @@ void CompareCharArraysWithHexError(const string& description,
                                    const char* expected,
                                    const int expected_len) {
   EXPECT_EQ(actual_len, expected_len);
-  const int min_len = std::min(actual_len, expected_len);
-  const int max_len = std::max(actual_len, expected_len);
+  const int min_len = min(actual_len, expected_len);
+  const int max_len = max(actual_len, expected_len);
   std::unique_ptr<bool[]> marks(new bool[max_len]);
   bool identical = (actual_len == expected_len);
   for (int i = 0; i < min_len; ++i) {
@@ -733,38 +721,6 @@ void CompareCharArraysWithHexError(const string& description,
                                     max_len)
                 << "\nActual:\n"
                 << HexDumpWithMarks(actual, actual_len, marks.get(), max_len);
-}
-
-static QuicPacket* ConstructPacketFromHandshakeMessage(
-    QuicConnectionId connection_id,
-    const CryptoHandshakeMessage& message,
-    bool should_include_version) {
-  CryptoFramer crypto_framer;
-  std::unique_ptr<QuicData> data(
-      crypto_framer.ConstructHandshakeMessage(message));
-  QuicFramer quic_framer(AllSupportedVersions(), QuicTime::Zero(),
-                         Perspective::IS_CLIENT);
-
-  QuicPacketHeader header;
-  header.public_header.connection_id = connection_id;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = should_include_version;
-  header.packet_number = 1;
-
-  QuicStreamFrame stream_frame(kCryptoStreamId, false, 0,
-                               data->AsStringPiece());
-
-  QuicFrame frame(&stream_frame);
-  QuicFrames frames;
-  frames.push_back(frame);
-  return BuildUnsizedDataPacket(&quic_framer, header, frames);
-}
-
-QuicPacket* ConstructHandshakePacket(QuicConnectionId connection_id,
-                                     QuicTag tag) {
-  CryptoHandshakeMessage message;
-  message.set_tag(tag);
-  return ConstructPacketFromHandshakeMessage(connection_id, message, false);
 }
 
 size_t GetPacketLengthForOneStream(QuicVersion version,

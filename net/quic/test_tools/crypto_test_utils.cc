@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#include "crypto/openssl_util.h"
-#include "crypto/secure_hash.h"
 #include "net/quic/core/crypto/channel_id.h"
 #include "net/quic/core/crypto/common_cert_set.h"
 #include "net/quic/core/crypto/crypto_handshake.h"
@@ -33,7 +31,6 @@
 #include "third_party/boringssl/src/include/openssl/bn.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/ecdsa.h"
-#include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/obj_mac.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
@@ -42,6 +39,127 @@ using std::string;
 
 namespace net {
 namespace test {
+
+TestChannelIDKey::TestChannelIDKey(EVP_PKEY* ecdsa_key)
+    : ecdsa_key_(ecdsa_key) {}
+TestChannelIDKey::~TestChannelIDKey() {}
+
+bool TestChannelIDKey::Sign(StringPiece signed_data,
+                            string* out_signature) const {
+  bssl::ScopedEVP_MD_CTX md_ctx;
+  if (EVP_DigestSignInit(md_ctx.get(), nullptr, EVP_sha256(), nullptr,
+                         ecdsa_key_.get()) != 1) {
+    return false;
+  }
+
+  EVP_DigestUpdate(md_ctx.get(), ChannelIDVerifier::kContextStr,
+                   strlen(ChannelIDVerifier::kContextStr) + 1);
+  EVP_DigestUpdate(md_ctx.get(), ChannelIDVerifier::kClientToServerStr,
+                   strlen(ChannelIDVerifier::kClientToServerStr) + 1);
+  EVP_DigestUpdate(md_ctx.get(), signed_data.data(), signed_data.size());
+
+  size_t sig_len;
+  if (!EVP_DigestSignFinal(md_ctx.get(), nullptr, &sig_len)) {
+    return false;
+  }
+
+  std::unique_ptr<uint8_t[]> der_sig(new uint8_t[sig_len]);
+  if (!EVP_DigestSignFinal(md_ctx.get(), der_sig.get(), &sig_len)) {
+    return false;
+  }
+
+  uint8_t* derp = der_sig.get();
+  bssl::UniquePtr<ECDSA_SIG> sig(
+      d2i_ECDSA_SIG(nullptr, const_cast<const uint8_t**>(&derp), sig_len));
+  if (sig.get() == nullptr) {
+    return false;
+  }
+
+  // The signature consists of a pair of 32-byte numbers.
+  static const size_t kSignatureLength = 32 * 2;
+  std::unique_ptr<uint8_t[]> signature(new uint8_t[kSignatureLength]);
+  if (!BN_bn2bin_padded(&signature[0], 32, sig->r) ||
+      !BN_bn2bin_padded(&signature[32], 32, sig->s)) {
+    return false;
+  }
+
+  *out_signature =
+      string(reinterpret_cast<char*>(signature.get()), kSignatureLength);
+
+  return true;
+}
+
+string TestChannelIDKey::SerializeKey() const {
+  // i2d_PublicKey will produce an ANSI X9.62 public key which, for a P-256
+  // key, is 0x04 (meaning uncompressed) followed by the x and y field
+  // elements as 32-byte, big-endian numbers.
+  static const int kExpectedKeyLength = 65;
+
+  int len = i2d_PublicKey(ecdsa_key_.get(), nullptr);
+  if (len != kExpectedKeyLength) {
+    return "";
+  }
+
+  uint8_t buf[kExpectedKeyLength];
+  uint8_t* derp = buf;
+  i2d_PublicKey(ecdsa_key_.get(), &derp);
+
+  return string(reinterpret_cast<char*>(buf + 1), kExpectedKeyLength - 1);
+}
+
+TestChannelIDSource::~TestChannelIDSource() {}
+
+QuicAsyncStatus TestChannelIDSource::GetChannelIDKey(
+    const string& hostname,
+    std::unique_ptr<ChannelIDKey>* channel_id_key,
+    ChannelIDSourceCallback* /*callback*/) {
+  channel_id_key->reset(new TestChannelIDKey(HostnameToKey(hostname)));
+  return QUIC_SUCCESS;
+}
+
+// static
+EVP_PKEY* TestChannelIDSource::HostnameToKey(const string& hostname) {
+  // In order to generate a deterministic key for a given hostname the
+  // hostname is hashed with SHA-256 and the resulting digest is treated as a
+  // big-endian number. The most-significant bit is cleared to ensure that
+  // the resulting value is less than the order of the group and then it's
+  // taken as a private key. Given the private key, the public key is
+  // calculated with a group multiplication.
+  SHA256_CTX sha256;
+  SHA256_Init(&sha256);
+  SHA256_Update(&sha256, hostname.data(), hostname.size());
+
+  unsigned char digest[SHA256_DIGEST_LENGTH];
+  SHA256_Final(digest, &sha256);
+
+  // Ensure that the digest is less than the order of the P-256 group by
+  // clearing the most-significant bit.
+  digest[0] &= 0x7f;
+
+  bssl::UniquePtr<BIGNUM> k(BN_new());
+  CHECK(BN_bin2bn(digest, sizeof(digest), k.get()) != nullptr);
+
+  bssl::UniquePtr<EC_GROUP> p256(
+      EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+  CHECK(p256);
+
+  bssl::UniquePtr<EC_KEY> ecdsa_key(EC_KEY_new());
+  CHECK(ecdsa_key && EC_KEY_set_group(ecdsa_key.get(), p256.get()));
+
+  bssl::UniquePtr<EC_POINT> point(EC_POINT_new(p256.get()));
+  CHECK(EC_POINT_mul(p256.get(), point.get(), k.get(), nullptr, nullptr,
+                     nullptr));
+
+  EC_KEY_set_private_key(ecdsa_key.get(), k.get());
+  EC_KEY_set_public_key(ecdsa_key.get(), point.get());
+
+  bssl::UniquePtr<EVP_PKEY> pkey(EVP_PKEY_new());
+  // EVP_PKEY_set1_EC_KEY takes a reference so no |release| here.
+  EVP_PKEY_set1_EC_KEY(pkey.get(), ecdsa_key.get());
+
+  return pkey.release();
+}
+
 namespace crypto_test_utils {
 
 namespace {
@@ -126,137 +244,6 @@ class AsyncTestChannelIDSource : public ChannelIDSource, public CallbackSource {
   std::unique_ptr<ChannelIDSource> sync_source_;
   std::unique_ptr<ChannelIDSourceCallback> callback_;
   std::unique_ptr<ChannelIDKey> channel_id_key_;
-};
-
-class TestChannelIDKey : public ChannelIDKey {
- public:
-  explicit TestChannelIDKey(EVP_PKEY* ecdsa_key) : ecdsa_key_(ecdsa_key) {}
-  ~TestChannelIDKey() override {}
-
-  // ChannelIDKey implementation.
-
-  bool Sign(StringPiece signed_data, string* out_signature) const override {
-    bssl::ScopedEVP_MD_CTX md_ctx;
-    if (EVP_DigestSignInit(md_ctx.get(), nullptr, EVP_sha256(), nullptr,
-                           ecdsa_key_.get()) != 1) {
-      return false;
-    }
-
-    EVP_DigestUpdate(md_ctx.get(), ChannelIDVerifier::kContextStr,
-                     strlen(ChannelIDVerifier::kContextStr) + 1);
-    EVP_DigestUpdate(md_ctx.get(), ChannelIDVerifier::kClientToServerStr,
-                     strlen(ChannelIDVerifier::kClientToServerStr) + 1);
-    EVP_DigestUpdate(md_ctx.get(), signed_data.data(), signed_data.size());
-
-    size_t sig_len;
-    if (!EVP_DigestSignFinal(md_ctx.get(), nullptr, &sig_len)) {
-      return false;
-    }
-
-    std::unique_ptr<uint8_t[]> der_sig(new uint8_t[sig_len]);
-    if (!EVP_DigestSignFinal(md_ctx.get(), der_sig.get(), &sig_len)) {
-      return false;
-    }
-
-    uint8_t* derp = der_sig.get();
-    bssl::UniquePtr<ECDSA_SIG> sig(
-        d2i_ECDSA_SIG(nullptr, const_cast<const uint8_t**>(&derp), sig_len));
-    if (sig.get() == nullptr) {
-      return false;
-    }
-
-    // The signature consists of a pair of 32-byte numbers.
-    static const size_t kSignatureLength = 32 * 2;
-    std::unique_ptr<uint8_t[]> signature(new uint8_t[kSignatureLength]);
-    if (!BN_bn2bin_padded(&signature[0], 32, sig->r) ||
-        !BN_bn2bin_padded(&signature[32], 32, sig->s)) {
-      return false;
-    }
-
-    *out_signature =
-        string(reinterpret_cast<char*>(signature.get()), kSignatureLength);
-
-    return true;
-  }
-
-  string SerializeKey() const override {
-    // i2d_PublicKey will produce an ANSI X9.62 public key which, for a P-256
-    // key, is 0x04 (meaning uncompressed) followed by the x and y field
-    // elements as 32-byte, big-endian numbers.
-    static const int kExpectedKeyLength = 65;
-
-    int len = i2d_PublicKey(ecdsa_key_.get(), nullptr);
-    if (len != kExpectedKeyLength) {
-      return "";
-    }
-
-    uint8_t buf[kExpectedKeyLength];
-    uint8_t* derp = buf;
-    i2d_PublicKey(ecdsa_key_.get(), &derp);
-
-    return string(reinterpret_cast<char*>(buf + 1), kExpectedKeyLength - 1);
-  }
-
- private:
-  bssl::UniquePtr<EVP_PKEY> ecdsa_key_;
-};
-
-class TestChannelIDSource : public ChannelIDSource {
- public:
-  ~TestChannelIDSource() override {}
-
-  // ChannelIDSource implementation.
-
-  QuicAsyncStatus GetChannelIDKey(
-      const string& hostname,
-      std::unique_ptr<ChannelIDKey>* channel_id_key,
-      ChannelIDSourceCallback* /*callback*/) override {
-    channel_id_key->reset(new TestChannelIDKey(HostnameToKey(hostname)));
-    return QUIC_SUCCESS;
-  }
-
- private:
-  static EVP_PKEY* HostnameToKey(const string& hostname) {
-    // In order to generate a deterministic key for a given hostname the
-    // hostname is hashed with SHA-256 and the resulting digest is treated as a
-    // big-endian number. The most-significant bit is cleared to ensure that
-    // the resulting value is less than the order of the group and then it's
-    // taken as a private key. Given the private key, the public key is
-    // calculated with a group multiplication.
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, hostname.data(), hostname.size());
-
-    unsigned char digest[SHA256_DIGEST_LENGTH];
-    SHA256_Final(digest, &sha256);
-
-    // Ensure that the digest is less than the order of the P-256 group by
-    // clearing the most-significant bit.
-    digest[0] &= 0x7f;
-
-    bssl::UniquePtr<BIGNUM> k(BN_new());
-    CHECK(BN_bin2bn(digest, sizeof(digest), k.get()) != nullptr);
-
-    bssl::UniquePtr<EC_GROUP> p256(
-        EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
-    CHECK(p256);
-
-    bssl::UniquePtr<EC_KEY> ecdsa_key(EC_KEY_new());
-    CHECK(ecdsa_key && EC_KEY_set_group(ecdsa_key.get(), p256.get()));
-
-    bssl::UniquePtr<EC_POINT> point(EC_POINT_new(p256.get()));
-    CHECK(EC_POINT_mul(p256.get(), point.get(), k.get(), nullptr, nullptr,
-                       nullptr));
-
-    EC_KEY_set_private_key(ecdsa_key.get(), k.get());
-    EC_KEY_set_public_key(ecdsa_key.get(), point.get());
-
-    bssl::UniquePtr<EVP_PKEY> pkey(EVP_PKEY_new());
-    // EVP_PKEY_set1_EC_KEY takes a reference so no |release| here.
-    EVP_PKEY_set1_EC_KEY(pkey.get(), ecdsa_key.get());
-
-    return pkey.release();
-  }
 };
 
 }  // anonymous namespace
@@ -950,22 +937,22 @@ CryptoHandshakeMessage GenerateDefaultInchoateCHLO(
 
 string GenerateClientNonceHex(const QuicClock* clock,
                               QuicCryptoServerConfig* crypto_config) {
-  net::QuicCryptoServerConfig::ConfigOptions old_config_options;
-  net::QuicCryptoServerConfig::ConfigOptions new_config_options;
+  QuicCryptoServerConfig::ConfigOptions old_config_options;
+  QuicCryptoServerConfig::ConfigOptions new_config_options;
   old_config_options.id = "old-config-id";
-  delete crypto_config->AddDefaultConfig(net::QuicRandom::GetInstance(), clock,
+  delete crypto_config->AddDefaultConfig(QuicRandom::GetInstance(), clock,
                                          old_config_options);
   std::unique_ptr<QuicServerConfigProtobuf> primary_config(
-      crypto_config->GenerateConfig(net::QuicRandom::GetInstance(), clock,
+      crypto_config->GenerateConfig(QuicRandom::GetInstance(), clock,
                                     new_config_options));
   primary_config->set_primary_time(clock->WallNow().ToUNIXSeconds());
-  std::unique_ptr<net::CryptoHandshakeMessage> msg(
+  std::unique_ptr<CryptoHandshakeMessage> msg(
       crypto_config->AddConfig(std::move(primary_config), clock->WallNow()));
   StringPiece orbit;
-  CHECK(msg->GetStringPiece(net::kORBT, &orbit));
+  CHECK(msg->GetStringPiece(kORBT, &orbit));
   string nonce;
-  net::CryptoUtils::GenerateNonce(
-      clock->WallNow(), net::QuicRandom::GetInstance(),
+  CryptoUtils::GenerateNonce(
+      clock->WallNow(), QuicRandom::GetInstance(),
       StringPiece(reinterpret_cast<const char*>(orbit.data()),
                   sizeof(orbit.size())),
       &nonce);

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/test_tools/fake_proof_source.h"
+
+#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 
 using std::string;
@@ -17,10 +18,10 @@ FakeProofSource::FakeProofSource()
 FakeProofSource::~FakeProofSource() {}
 
 FakeProofSource::Params::Params(const QuicSocketAddress& server_addr,
-                                std::string hostname,
-                                std::string server_config,
+                                string hostname,
+                                string server_config,
                                 QuicVersion quic_version,
-                                std::string chlo_hash,
+                                string chlo_hash,
                                 const QuicTagVector& connection_options,
                                 std::unique_ptr<ProofSource::Callback> callback)
     : server_address(server_addr),

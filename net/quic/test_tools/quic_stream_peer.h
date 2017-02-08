@@ -5,7 +5,7 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_STREAM_PEER_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_STREAM_PEER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
@@ -53,6 +53,7 @@ class QuicStreamPeer {
 };
 
 }  // namespace test
+
 }  // namespace net
 
 #endif  // NET_QUIC_TEST_TOOLS_QUIC_STREAM_PEER_H_

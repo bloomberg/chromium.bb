@@ -4,8 +4,6 @@
 
 #include "net/quic/test_tools/quic_crypto_server_config_peer.h"
 
-#include <cstdarg>
-
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_test_utils.h"

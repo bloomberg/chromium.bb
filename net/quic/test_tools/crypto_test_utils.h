@@ -17,6 +17,7 @@
 #include "net/quic/core/quic_framer.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 
 namespace net {
 
@@ -37,6 +38,39 @@ class QuicServerId;
 namespace test {
 
 class PacketSavingConnection;
+
+class TestChannelIDKey : public ChannelIDKey {
+ public:
+  explicit TestChannelIDKey(EVP_PKEY* ecdsa_key);
+  ~TestChannelIDKey() override;
+
+  // ChannelIDKey implementation.
+
+  bool Sign(base::StringPiece signed_data,
+            std::string* out_signature) const override;
+
+  std::string SerializeKey() const override;
+
+  const EVP_PKEY* get_evp_pkey() const { return ecdsa_key_.get(); }
+
+ private:
+  bssl::UniquePtr<EVP_PKEY> ecdsa_key_;
+};
+
+class TestChannelIDSource : public ChannelIDSource {
+ public:
+  ~TestChannelIDSource() override;
+
+  // ChannelIDSource implementation.
+
+  QuicAsyncStatus GetChannelIDKey(
+      const std::string& hostname,
+      std::unique_ptr<ChannelIDKey>* channel_id_key,
+      ChannelIDSourceCallback* /*callback*/) override;
+
+ private:
+  static EVP_PKEY* HostnameToKey(const std::string& hostname);
+};
 
 namespace crypto_test_utils {
 
