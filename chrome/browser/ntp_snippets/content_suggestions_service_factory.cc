@@ -171,15 +171,15 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   bool is_stable_channel =
       chrome::GetChannel() == version_info::Channel::STABLE;
+  auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
+      signin_manager, token_service, request_context, pref_service,
+      language_model, base::Bind(&safe_json::SafeJsonParser::Parse),
+      is_stable_channel ? google_apis::GetAPIKey()
+                        : google_apis::GetNonStableAPIKey(),
+      service->user_classifier());
   auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
       service, pref_service, g_browser_process->GetApplicationLocale(),
-      service->category_ranker(),
-      base::MakeUnique<RemoteSuggestionsFetcher>(
-          signin_manager, token_service, request_context, pref_service,
-          language_model, base::Bind(&safe_json::SafeJsonParser::Parse),
-          is_stable_channel ? google_apis::GetAPIKey()
-                            : google_apis::GetNonStableAPIKey(),
-          service->user_classifier()),
+      service->category_ranker(), std::move(suggestions_fetcher),
       base::MakeUnique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
                                          request_context.get()),
       base::MakeUnique<ImageDecoderImpl>(),

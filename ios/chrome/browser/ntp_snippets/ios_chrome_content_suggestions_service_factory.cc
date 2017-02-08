@@ -154,16 +154,15 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
             ->GetSequencedTaskRunnerWithShutdownBehavior(
                 base::SequencedWorkerPool::GetSequenceToken(),
                 base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+    auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
+        signin_manager, token_service, request_context, prefs, nullptr,
+        base::Bind(&ParseJson), GetChannel() == version_info::Channel::STABLE
+                                    ? google_apis::GetAPIKey()
+                                    : google_apis::GetNonStableAPIKey(),
+        service->user_classifier());
     auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
         service.get(), prefs, GetApplicationContext()->GetApplicationLocale(),
-        service->category_ranker(),
-        base::MakeUnique<RemoteSuggestionsFetcher>(
-            signin_manager, token_service, request_context, prefs, nullptr,
-            base::Bind(&ParseJson),
-            GetChannel() == version_info::Channel::STABLE
-                ? google_apis::GetAPIKey()
-                : google_apis::GetNonStableAPIKey(),
-            service->user_classifier()),
+        service->category_ranker(), std::move(suggestions_fetcher),
         base::MakeUnique<ImageFetcherImpl>(request_context.get(),
                                            web::WebThread::GetBlockingPool()),
         CreateIOSImageDecoder(task_runner),
