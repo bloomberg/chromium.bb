@@ -458,6 +458,8 @@ class PasswordFormManagerTest : public testing::Test {
     field.name = ASCIIToUTF16("NewPasswd");
     field.form_control_type = "password";
     observed_form()->form_data.fields.push_back(field);
+    autofill::FormFieldData empty_field;
+    observed_form()->form_data.fields.push_back(empty_field);
     if (has_confirmation_field) {
       field.label = ASCIIToUTF16("ConfPwd");
       field.name = ASCIIToUTF16("ConfPwd");
@@ -500,6 +502,7 @@ class PasswordFormManagerTest : public testing::Test {
     expected_types[observed_form_.username_element] = autofill::UNKNOWN_TYPE;
     expected_types[observed_form_.password_element] = autofill::PASSWORD;
     expected_types[observed_form_.new_password_element] = field_type;
+    expected_types[base::string16()] = autofill::UNKNOWN_TYPE;
 
     autofill::ServerFieldTypeSet expected_available_field_types;
     expected_available_field_types.insert(autofill::PASSWORD);
@@ -2801,6 +2804,8 @@ TEST_F(PasswordFormManagerTest, ReportProcessingUpdate) {
       pending, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
   EXPECT_FALSE(form_manager()->IsNewLogin());
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(_, false, _, _, true));
 
   base::UserActionTester tester;
   EXPECT_EQ(0, tester.GetActionCount("PasswordManager_LoginFollowingAutofill"));

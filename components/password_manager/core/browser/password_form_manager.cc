@@ -178,14 +178,14 @@ void LabelFields(const FieldTypeMap& field_types,
                  autofill::ServerFieldTypeSet* available_field_types) {
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     autofill::AutofillField* field = form_structure->field(i);
-    if (field->name.empty())
-      continue;
 
     autofill::ServerFieldType type = autofill::UNKNOWN_TYPE;
-    auto iter = field_types.find(field->name);
-    if (iter != field_types.end()) {
-      type = iter->second;
-      available_field_types->insert(type);
+    if (!field->name.empty()) {
+      auto iter = field_types.find(field->name);
+      if (iter != field_types.end()) {
+        type = iter->second;
+        available_field_types->insert(type);
+      }
     }
 
     autofill::ServerFieldTypeSet types;
