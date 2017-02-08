@@ -2736,9 +2736,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "TunedClippingLevelMin070",
                     "enable_features": [
-                        "TunedClippingLevelMin070"
+                        "TunedClippingLevelMin70"
                     ]
                 }
             ]
