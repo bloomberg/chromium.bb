@@ -675,15 +675,21 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                     }
                     return;
                 }
+                assert isAddingNewAddress || isSelectingIncompleteAddress;
 
-                final AutofillAddress editAddress = isSelectingIncompleteAddress
-                        ? new AutofillAddress(mContext,
-                                  findTargetProfile(mProfilesForBillingAddress, eventData.first))
-                        : null;
+                AutofillProfile profile = isSelectingIncompleteAddress
+                        ? findTargetProfile(mProfilesForBillingAddress, eventData.first)
+                        : new AutofillProfile();
+                if (TextUtils.isEmpty(profile.getFullName())) {
+                    // Prefill card holder name as the billing address name.
+                    profile.setFullName(
+                            card.getIsLocal() ? mNameField.getValue().toString() : card.getName());
+                }
+                final AutofillAddress editAddress = new AutofillAddress(mContext, profile);
                 mAddressEditor.edit(editAddress, new Callback<AutofillAddress>() {
                     @Override
                     public void onResult(AutofillAddress billingAddress) {
-                        if (billingAddress == null || !billingAddress.isComplete()) {
+                        if (!billingAddress.isComplete()) {
                             // User cancelled out of the add or edit flow. Restore the selection
                             // to the card's billing address, if any, else clear the selection.
                             if (mBillingAddressField.getDropdownKeys().contains(
