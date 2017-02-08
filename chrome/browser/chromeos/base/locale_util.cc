@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -120,8 +121,10 @@ void SwitchLanguage(const std::string& locale,
                              login_layouts_only, callback, profile));
   base::Closure reloader(
       base::Bind(&SwitchLanguageDoReloadLocale, base::Unretained(data.get())));
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, reloader,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      reloader,
       base::Bind(&FinishSwitchLanguage, base::Passed(std::move(data))));
 }
 
