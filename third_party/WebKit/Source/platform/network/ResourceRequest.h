@@ -310,6 +310,11 @@ class PLATFORM_EXPORT ResourceRequest final {
   void setNavigationStartTime(double);
   double navigationStartTime() const { return m_navigationStart; }
 
+  void setIsSameDocumentNavigation(bool isSameDocument) {
+    m_isSameDocumentNavigation = isSameDocument;
+  }
+  bool isSameDocumentNavigation() const { return m_isSameDocumentNavigation; }
+
  private:
   const CacheControlHeader& cacheControlHeader() const;
 
@@ -350,6 +355,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool m_checkForBrowserSideNavigation;
   double m_uiStartTime;
   bool m_isExternalRequest;
+  bool m_isSameDocumentNavigation;
   InputToLoadPerfMetricReportPolicy m_inputPerfMetricReportPolicy;
 
   mutable CacheControlHeader m_cacheControlHeaderCache;

@@ -204,7 +204,7 @@ CommonNavigationParams MakeCommonNavigationParams(
   CommonNavigationParams params;
   params.url = GURL("data:text/html,<div>Page</div>");
   params.navigation_start = base::TimeTicks::Now() + navigation_start_offset;
-  params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   params.transition = ui::PAGE_TRANSITION_TYPED;
   return params;
 }
@@ -600,7 +600,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   StartNavigationParams start_params;
   RequestNavigationParams request_params;
   common_params.url = GURL("data:text/html,<div>Page</div>");
-  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.transition = ui::PAGE_TRANSITION_TYPED;
   common_params.method = "POST";
 
@@ -641,7 +641,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
   CommonNavigationParams common_params;
   common_params.url = GURL("data:text/html,");
-  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.transition = ui::PAGE_TRANSITION_TYPED;
   common_params.base_url_for_data_url = GURL("about:blank");
   common_params.history_url_for_data_url = GURL("about:blank");
@@ -968,7 +968,8 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // Go back to C and commit, preparing for our real test.
   CommonNavigationParams common_params_C;
   RequestNavigationParams request_params_C;
-  common_params_C.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params_C.navigation_type =
+      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   common_params_C.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   request_params_C.current_history_list_length = 4;
   request_params_C.current_history_list_offset = 3;
@@ -986,7 +987,8 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // Back to page B without committing.
   CommonNavigationParams common_params_B;
   RequestNavigationParams request_params_B;
-  common_params_B.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params_B.navigation_type =
+      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   common_params_B.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   request_params_B.current_history_list_length = 4;
   request_params_B.current_history_list_offset = 2;
@@ -998,7 +1000,8 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   // Back to page A and commit.
   CommonNavigationParams common_params;
   RequestNavigationParams request_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.navigation_type =
+      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   request_params.current_history_list_length = 4;
   request_params.current_history_list_offset = 2;
@@ -1341,7 +1344,7 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
   CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.url = GURL("data:text/html,test data");
   frame()->Navigate(common_params, StartNavigationParams(),
                     RequestNavigationParams());
@@ -1364,7 +1367,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
   CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.url = GURL("data:text/html,test data");
   frame()->Navigate(common_params, StartNavigationParams(),
                     RequestNavigationParams());
@@ -1676,7 +1679,7 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   CommonNavigationParams common_params;
   RequestNavigationParams request_params;
   common_params.url = GURL("data:text/html,world");
-  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.transition = ui::PAGE_TRANSITION_TYPED;
   common_params.navigation_start = base::TimeTicks::FromInternalValue(1);
   request_params.current_history_list_length = 1;
@@ -1788,7 +1791,7 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
   CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.url = GURL("data:text/html,test data");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
   main_frame->Navigate(common_params, StartNavigationParams(),
@@ -1820,7 +1823,7 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
   CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.url = GURL("data:text/html,test data");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
   main_frame->Navigate(common_params, StartNavigationParams(),
@@ -1854,7 +1857,7 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
   CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.url = GURL("data:text/html,test data");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
   main_frame->Navigate(common_params, StartNavigationParams(),
@@ -2103,6 +2106,8 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   common_params_back.url =
       GURL("data:text/html;charset=utf-8,<div id=pagename>Page B</div>");
   common_params_back.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
+  common_params_back.navigation_type =
+      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(-1, back_state, common_params_back,
                        StartNavigationParams(), RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
@@ -2124,6 +2129,8 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   common_params_forward.url =
       GURL("data:text/html;charset=utf-8,<div id=pagename>Page C</div>");
   common_params_forward.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
+  common_params_forward.navigation_type =
+      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(1, forward_state, common_params_forward,
                        StartNavigationParams(), RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params2 =
@@ -2140,6 +2147,8 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
 TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
   common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
+  common_params.navigation_type =
+      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
 
   RequestNavigationParams request_params;
   request_params.page_state =

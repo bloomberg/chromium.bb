@@ -2533,9 +2533,9 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
   DCHECK(data_url.SchemeIs(url::kDataScheme));
   CommonNavigationParams common_params(
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
-      FrameMsg_Navigate_Type::NORMAL, false, false, base::TimeTicks::Now(),
-      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(), PREVIEWS_OFF,
-      base::TimeTicks::Now(), "GET", nullptr);
+      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, false, false,
+      base::TimeTicks::Now(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
+      GURL(), GURL(), PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr);
   if (IsBrowserSideNavigationEnabled()) {
     CommitNavigation(nullptr, nullptr, common_params, RequestNavigationParams(),
                      false);
@@ -2704,10 +2704,12 @@ void RenderFrameHostImpl::CommitNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     bool is_view_source) {
-  DCHECK((response && body.get()) ||
-         common_params.url.SchemeIs(url::kDataScheme) ||
-         !ShouldMakeNetworkRequestForURL(common_params.url) ||
-         IsRendererDebugURL(common_params.url));
+  DCHECK(
+      (response && body.get()) ||
+      common_params.url.SchemeIs(url::kDataScheme) ||
+      !ShouldMakeNetworkRequestForURL(common_params.url) ||
+      FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type) ||
+      IsRendererDebugURL(common_params.url));
   UpdatePermissionsForNavigation(common_params, request_params);
 
   // Get back to a clean state, in case we start a new navigation without
@@ -2729,8 +2731,10 @@ void RenderFrameHostImpl::CommitNavigation(
                                      request_params));
 
   // If a network request was made, update the Previews state.
-  if (ShouldMakeNetworkRequestForURL(common_params.url))
+  if (ShouldMakeNetworkRequestForURL(common_params.url) &&
+      !FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type)) {
     last_navigation_previews_state_ = common_params.previews_state;
+  }
 
   // TODO(clamy): Release the stream handle once the renderer has finished
   // reading it.
@@ -3405,15 +3409,27 @@ void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
 std::unique_ptr<NavigationHandleImpl>
 RenderFrameHostImpl::TakeNavigationHandleForCommit(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
-  // If this is a same-page navigation, there isn't an existing NavigationHandle
-  // to use for the navigation. Create one, but don't reset any NavigationHandle
-  // tracking an ongoing navigation, since this may lead to the cancellation of
-  // the navigation.
-  if (params.was_within_same_page) {
-    // We don't ever expect navigation_handle_ to match, because handles are not
-    // created for same-page navigations.
-    DCHECK(!navigation_handle_ || !navigation_handle_->IsSamePage());
+  bool is_browser_initiated = (params.nav_entry_id != 0);
 
+  if (params.was_within_same_page) {
+    if (IsBrowserSideNavigationEnabled()) {
+      // When browser-side navigation is enabled, a NavigationHandle is created
+      // for browser-initiated same-page navigation. Try to take it if it's
+      // still available and matches the current navigation.
+      if (is_browser_initiated && navigation_handle_ &&
+          navigation_handle_->IsSamePage() &&
+          navigation_handle_->GetURL() == params.url) {
+        return std::move(navigation_handle_);
+      }
+    } else {
+      // When browser-side navigation is disabled, there is never any existing
+      // NavigationHandle to use for the navigation. We don't ever expect
+      // navigation_handle_ to match.
+      DCHECK(!navigation_handle_ || !navigation_handle_->IsSamePage());
+    }
+    // No existing NavigationHandle has been found. Create a new one, but don't
+    // reset any NavigationHandle tracking an ongoing navigation, since this may
+    // lead to the cancellation of the navigation.
     // First, determine if the navigation corresponds to the pending navigation
     // entry. This is the case for a browser-initiated same-page navigation,
     // which does not cause a NavigationHandle to be created because it does not

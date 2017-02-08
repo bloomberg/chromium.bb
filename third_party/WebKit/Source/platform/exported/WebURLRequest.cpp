@@ -410,6 +410,10 @@ void WebURLRequest::setNavigationStartTime(double navigationStartSeconds) {
   m_resourceRequest->setNavigationStartTime(navigationStartSeconds);
 }
 
+void WebURLRequest::setIsSameDocumentNavigation(bool isSameDocument) {
+  m_resourceRequest->setIsSameDocumentNavigation(isSameDocument);
+}
+
 WebURLRequest::InputToLoadPerfMetricReportPolicy
 WebURLRequest::inputPerfMetricReportPolicy() const {
   return static_cast<WebURLRequest::InputToLoadPerfMetricReportPolicy>(

@@ -32,10 +32,7 @@ bool AreURLsInPageNavigation(const GURL& existing_url, const GURL& new_url) {
   if (existing_url == new_url || !new_url.has_ref())
     return false;
 
-  url::Replacements<char> replacements;
-  replacements.ClearRef();
-  return existing_url.ReplaceComponents(replacements) ==
-         new_url.ReplaceComponents(replacements);
+  return existing_url.EqualsIgnoringRef(new_url);
 }
 
 }  // anonymous namespace

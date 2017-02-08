@@ -980,4 +980,73 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplHttpsUpgradeBrowserTest,
   CheckHttpsUpgradedIframeNavigation(start_url, cross_site_iframe_secure_url);
 }
 
+// Ensure that browser-initiated same-document navigations are detected and
+// don't issue network requests.  See crbug.com/663777.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       SamePageBrowserInitiatedNoReload) {
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_fragment_1(embedded_test_server()->GetURL("/title1.html#id_1"));
+  GURL url_fragment_2(embedded_test_server()->GetURL("/title1.html#id_2"));
+
+  // 1) Perform a new-document navigation.
+  {
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::PROCEED,
+        NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+    NavigationHandleObserver observer(shell()->web_contents(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    EXPECT_EQ(1, installer.will_start_called());
+    EXPECT_EQ(1, installer.will_process_called());
+    EXPECT_FALSE(observer.is_same_page());
+  }
+
+  // 2) Perform a same-document navigation by adding a fragment.
+  {
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::PROCEED,
+        NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+    NavigationHandleObserver observer(shell()->web_contents(), url_fragment_1);
+    EXPECT_TRUE(NavigateToURL(shell(), url_fragment_1));
+    EXPECT_EQ(0, installer.will_start_called());
+    EXPECT_EQ(0, installer.will_process_called());
+    EXPECT_TRUE(observer.is_same_page());
+  }
+
+  // 3) Perform a same-document navigation by modifying the fragment.
+  {
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::PROCEED,
+        NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+    NavigationHandleObserver observer(shell()->web_contents(), url_fragment_2);
+    EXPECT_TRUE(NavigateToURL(shell(), url_fragment_2));
+    EXPECT_EQ(0, installer.will_start_called());
+    EXPECT_EQ(0, installer.will_process_called());
+    EXPECT_TRUE(observer.is_same_page());
+  }
+
+  // 4) Redo the last navigation, but this time it should trigger a reload.
+  {
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::PROCEED,
+        NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+    NavigationHandleObserver observer(shell()->web_contents(), url_fragment_2);
+    EXPECT_TRUE(NavigateToURL(shell(), url_fragment_2));
+    EXPECT_EQ(1, installer.will_start_called());
+    EXPECT_EQ(1, installer.will_process_called());
+    EXPECT_FALSE(observer.is_same_page());
+  }
+
+  // 5) Perform a new-document navigation by removing the fragment.
+  {
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::PROCEED,
+        NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+    NavigationHandleObserver observer(shell()->web_contents(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    EXPECT_EQ(1, installer.will_start_called());
+    EXPECT_EQ(1, installer.will_process_called());
+    EXPECT_FALSE(observer.is_same_page());
+  }
+}
+
 }  // namespace content

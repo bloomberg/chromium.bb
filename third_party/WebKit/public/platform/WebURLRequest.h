@@ -335,6 +335,12 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT void setNavigationStartTime(double);
 
+  // PlzNavigate: specify that the request was intended to be loaded as a same
+  // document navigation. No network requests should be made and the request
+  // should be dropped if a different document was loaded in the frame
+  // in-between.
+  BLINK_PLATFORM_EXPORT void setIsSameDocumentNavigation(bool);
+
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& toMutableResourceRequest();
   BLINK_PLATFORM_EXPORT const ResourceRequest& toResourceRequest() const;

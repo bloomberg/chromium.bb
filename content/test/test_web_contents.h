@@ -63,6 +63,15 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                    const GURL& url,
                                    const Referrer& referrer,
                                    ui::PageTransition transition) override;
+  void TestDidNavigateWithSequenceNumber(RenderFrameHost* render_frame_host,
+                                         int nav_entry_id,
+                                         bool did_create_new_entry,
+                                         const GURL& url,
+                                         const Referrer& referrer,
+                                         ui::PageTransition transition,
+                                         bool was_within_same_page,
+                                         int item_sequence_number,
+                                         int document_sequence_number);
   const std::string& GetSaveFrameHeaders() override;
 
   // True if a cross-site navigation is pending.

@@ -116,6 +116,21 @@ void TestWebContents::TestDidNavigateWithReferrer(
     const GURL& url,
     const Referrer& referrer,
     ui::PageTransition transition) {
+  TestDidNavigateWithSequenceNumber(render_frame_host, nav_entry_id,
+                                    did_create_new_entry, url, referrer,
+                                    transition, false, -1, -1);
+}
+
+void TestWebContents::TestDidNavigateWithSequenceNumber(
+    RenderFrameHost* render_frame_host,
+    int nav_entry_id,
+    bool did_create_new_entry,
+    const GURL& url,
+    const Referrer& referrer,
+    ui::PageTransition transition,
+    bool was_within_same_page,
+    int item_sequence_number,
+    int document_sequence_number) {
   TestRenderFrameHost* rfh =
       static_cast<TestRenderFrameHost*>(render_frame_host);
   rfh->InitializeRenderFrameIfNeeded();
@@ -126,19 +141,43 @@ void TestWebContents::TestDidNavigateWithReferrer(
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
 
   params.nav_entry_id = nav_entry_id;
+  params.frame_unique_name = std::string();
+  params.item_sequence_number = item_sequence_number;
+  params.document_sequence_number = document_sequence_number;
   params.url = url;
+  params.base_url = GURL();
   params.referrer = referrer;
   params.transition = transition;
   params.redirects = std::vector<GURL>();
-  params.should_update_history = false;
+  params.should_update_history = true;
+  params.contents_mime_type = std::string("text/html");
+  params.socket_address = net::HostPortPair();
+  params.intended_as_new_entry = did_create_new_entry;
+  params.did_create_new_entry = did_create_new_entry;
+  params.should_replace_current_entry = false;
+  params.gesture = NavigationGestureUser;
+  params.method = "GET";
+  params.post_id = 0;
+  params.was_within_same_page = was_within_same_page;
+  params.http_status_code = 200;
+  params.url_is_unreachable = false;
+  if (item_sequence_number != -1 && document_sequence_number != -1) {
+    params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+        url, item_sequence_number, document_sequence_number);
+  } else {
+    params.page_state = PageState::CreateFromURL(url);
+  }
+  params.original_request_url = GURL();
+  params.is_overriding_user_agent = false;
+  params.history_list_was_cleared = false;
+  params.render_view_routing_id = 0;
+  params.origin = url::Origin();
+  params.report_type = FrameMsg_UILoadMetricsReportType::NO_REPORT;
+  params.ui_timestamp = base::TimeTicks();
+  params.insecure_request_policy = blink::kLeaveInsecureRequestsAlone;
+  params.has_potentially_trustworthy_unique_origin = false;
   params.searchable_form_url = GURL();
   params.searchable_form_encoding = std::string();
-  params.did_create_new_entry = did_create_new_entry;
-  params.gesture = NavigationGestureUser;
-  params.was_within_same_page = false;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(url);
-  params.contents_mime_type = std::string("text/html");
 
   rfh->SendNavigateWithParams(&params);
 }

@@ -389,9 +389,10 @@ void FrameTreeNode::CreatedNavigationRequest(
   navigation_request_ = std::move(navigation_request);
   render_manager()->DidCreateNavigationRequest(navigation_request_.get());
 
-  // TODO(fdegans): Check if this is a same-document navigation and set the
-  // proper argument.
-  DidStartLoading(true, was_previously_loading);
+  bool to_different_document = !FrameMsg_Navigate_Type::IsSameDocument(
+      navigation_request_->common_params().navigation_type);
+
+  DidStartLoading(to_different_document, was_previously_loading);
 }
 
 void FrameTreeNode::ResetNavigationRequest(bool keep_state) {

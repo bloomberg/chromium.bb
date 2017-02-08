@@ -1195,6 +1195,14 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest,
     return;
   }
 
+  // PlzNavigate
+  // If the loader classifies this navigation as a different document navigation
+  // while the browser intended the navigation to be same-document, it means
+  // that a different navigation must have committed while the IPC was sent.
+  // This navigation is no more same-document. The navigation is simply dropped.
+  if (request.resourceRequest().isSameDocumentNavigation())
+    return;
+
   startLoad(request, newLoadType, policy);
 }
 

@@ -2631,7 +2631,11 @@ TEST_F(NavigationControllerTest, InPage) {
   self_params.should_update_history = false;
   self_params.gesture = NavigationGestureUser;
   self_params.method = "GET";
-  self_params.page_state = PageState::CreateFromURL(url1);
+  self_params.item_sequence_number = GenerateSequenceNumber();
+  self_params.document_sequence_number = GenerateSequenceNumber();
+  self_params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+      url1, self_params.item_sequence_number,
+      self_params.document_sequence_number);
   self_params.was_within_same_page = true;
 
   LoadCommittedDetailsObserver observer(contents());
@@ -2655,12 +2659,13 @@ TEST_F(NavigationControllerTest, InPage) {
   params.should_update_history = false;
   params.gesture = NavigationGestureUser;
   params.method = "GET";
-  params.page_state = PageState::CreateFromURL(url2);
+  params.item_sequence_number = GenerateSequenceNumber();
+  params.document_sequence_number = self_params.document_sequence_number;
+  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+      url2, params.item_sequence_number, params.document_sequence_number);
   params.was_within_same_page = true;
 
   // This should generate a new entry.
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, false);
-  main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&params);
   NavigationEntry* entry2 = controller.GetLastCommittedEntry();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -2670,12 +2675,10 @@ TEST_F(NavigationControllerTest, InPage) {
   EXPECT_EQ(2, controller.GetEntryCount());
 
   // Go back one.
-  FrameHostMsg_DidCommitProvisionalLoad_Params back_params(params);
+  FrameHostMsg_DidCommitProvisionalLoad_Params back_params(self_params);
   controller.GoBack();
-  back_params.url = url1;
   back_params.nav_entry_id = entry1->GetUniqueID();
   back_params.did_create_new_entry = false;
-  main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&back_params);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -2687,10 +2690,8 @@ TEST_F(NavigationControllerTest, InPage) {
   // Go forward.
   FrameHostMsg_DidCommitProvisionalLoad_Params forward_params(params);
   controller.GoForward();
-  forward_params.url = url2;
   forward_params.nav_entry_id = entry2->GetUniqueID();
   forward_params.did_create_new_entry = false;
-  main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&forward_params);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -2705,10 +2706,8 @@ TEST_F(NavigationControllerTest, InPage) {
   // one identified by an existing page ID. This would result in the second URL
   // losing the reference fragment when you navigate away from it and then back.
   controller.GoBack();
-  main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&back_params);
   controller.GoForward();
-  main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&forward_params);
   EXPECT_EQ(forward_params.url,
             controller.GetVisibleEntry()->GetURL());
@@ -2718,6 +2717,10 @@ TEST_F(NavigationControllerTest, InPage) {
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
   params.url = url3;
+  params.item_sequence_number = 0;
+  params.document_sequence_number = 0;
+  params.page_state = PageState::CreateFromURL(url3);
+  params.was_within_same_page = false;
   navigation_entry_committed_counter_ = 0;
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url3, false);
   main_test_rfh()->PrepareForCommit();
@@ -2755,8 +2758,6 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
 
   // This should NOT generate a new entry, nor prune the list.
   LoadCommittedDetailsObserver observer(contents());
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, false);
-  main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&params);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -2809,8 +2810,6 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
 
     // This should NOT generate a new entry, nor prune the list.
     LoadCommittedDetailsObserver observer(contents());
-    main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
-    main_test_rfh()->PrepareForCommit();
     main_test_rfh()->SendNavigateWithParams(&params);
     EXPECT_EQ(1U, navigation_entry_committed_counter_);
     navigation_entry_committed_counter_ = 0;
@@ -3408,8 +3407,6 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   controller.SetTransientEntry(std::move(transient_entry));
   EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
 
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(url3_ref, false);
-  main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(0, false, url3_ref);
   // Transient entry should be gone.
   EXPECT_FALSE(controller.GetTransientEntry());
@@ -4965,8 +4962,6 @@ TEST_F(NavigationControllerTest, PushStateUpdatesTitleAndFavicon) {
   params.url = kUrl2;
   params.page_state = PageState::CreateFromURL(kUrl2);
   params.was_within_same_page = true;
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(kUrl2, false);
-  main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&params);
 
   // The title should immediately be visible on the new NavigationEntry.
@@ -5062,8 +5057,6 @@ TEST_F(NavigationControllerTest, PostThenReplaceStateThenReload) {
   params.was_within_same_page = true;
   params.method = "GET";
   params.post_id = -1;
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(replace_url, false);
-  main_test_rfh()->PrepareForCommit();
   contents()->GetMainFrame()->SendNavigateWithParams(&params);
 
   // Now reload. replaceState overrides the POST, so we should not show a
@@ -5133,8 +5126,6 @@ TEST_F(NavigationControllerTest, UnreachableURLGivesErrorPage) {
   params.was_within_same_page = true;
   {
     LoadCommittedDetailsObserver observer(contents());
-    main_test_rfh()->SendRendererInitiatedNavigationRequest(params.url, false);
-    main_test_rfh()->PrepareForCommit();
     main_test_rfh()->SendNavigateWithParams(&params);
     EXPECT_EQ(PAGE_TYPE_ERROR,
               controller_impl().GetLastCommittedEntry()->GetPageType());

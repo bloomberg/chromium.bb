@@ -342,6 +342,7 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
   // properly set when it is out of the default zoom limits of WebView.
   CommonNavigationParams common_params;
   common_params.url = GURL("data:text/html,min_zoomlimit_test");
+  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   GetMainRenderFrame()->SetHostZoomLevel(common_params.url, kMinZoomLevel);
   GetMainRenderFrame()->NavigateInternal(
       common_params, StartNavigationParams(), RequestNavigationParams(),

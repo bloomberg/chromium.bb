@@ -156,6 +156,7 @@ class CONTENT_EXPORT NavigationHandle {
   // navigations are:
   // * reference fragment navigations
   // * pushState/replaceState
+  // * same page history navigation
   virtual bool IsSamePage() = 0;
 
   // Whether the navigation has encountered a server redirect or not.

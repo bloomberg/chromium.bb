@@ -75,6 +75,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       m_checkForBrowserSideNavigation(true),
       m_uiStartTime(0),
       m_isExternalRequest(false),
+      m_isSameDocumentNavigation(false),
       m_inputPerfMetricReportPolicy(
           InputToLoadPerfMetricReportPolicy::NoReport),
       m_redirectStatus(RedirectStatus::NoRedirect) {}

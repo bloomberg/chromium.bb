@@ -429,6 +429,7 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
     common_params.url = url;
     common_params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);
     common_params.transition = ui::PAGE_TRANSITION_LINK;
+    common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
     OnBeginNavigation(common_params, begin_params);
   }
 }
@@ -458,8 +459,10 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
   // PlzNavigate
   NavigationRequest* request = frame_tree_node_->navigation_request();
   CHECK(request);
-  bool have_to_make_network_request = ShouldMakeNetworkRequestForURL(
-      request->common_params().url);
+  bool have_to_make_network_request =
+      ShouldMakeNetworkRequestForURL(request->common_params().url) &&
+      !FrameMsg_Navigate_Type::IsSameDocument(
+          request->common_params().navigation_type);
 
   // Simulate a beforeUnload ACK from the renderer if the browser is waiting for
   // it. If it runs it will update the request state.

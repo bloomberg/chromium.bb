@@ -1,2 +1,3 @@
-# Browser-initiated fragment navigations are handled improperly. https://crbug.com/663777
--NavigationControllerBrowserTest.SamePageBrowserInitiated
+# List below tests to be excluded from running.
+
+# This list is currently empty. Hooray!

@@ -603,7 +603,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   render_frame_host_ = render_frame_host;
   state_ = READY_TO_COMMIT;
 
-  if (!IsRendererDebugURL(url_))
+  if (!IsRendererDebugURL(url_) && !IsSamePage())
     GetDelegate()->ReadyToCommitNavigation(this);
 }
 

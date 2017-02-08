@@ -561,6 +561,7 @@ WebURLRequest CreateURLRequestForNavigation(
     const CommonNavigationParams& common_params,
     std::unique_ptr<StreamOverrideParameters> stream_override,
     bool is_view_source_mode_enabled,
+    bool is_same_document_navigation,
     int nav_entry_id) {
   WebURLRequest request(common_params.url);
   if (is_view_source_mode_enabled)
@@ -569,8 +570,7 @@ WebURLRequest CreateURLRequestForNavigation(
   request.setHTTPMethod(WebString::fromUTF8(common_params.method));
   if (common_params.referrer.url.is_valid()) {
     WebString web_referrer = WebSecurityPolicy::generateReferrerHeader(
-        common_params.referrer.policy,
-        common_params.url,
+        common_params.referrer.policy, common_params.url,
         WebString::fromUTF8(common_params.referrer.url.spec()));
     if (!web_referrer.isEmpty()) {
       request.setHTTPReferrer(web_referrer, common_params.referrer.policy);
@@ -579,6 +579,7 @@ WebURLRequest CreateURLRequestForNavigation(
     }
   }
 
+  request.setIsSameDocumentNavigation(is_same_document_navigation);
   request.setPreviewsState(
       static_cast<WebURLRequest::PreviewsState>(common_params.previews_state));
 
@@ -638,9 +639,13 @@ CommonNavigationParams MakeCommonNavigationParams(
       static_cast<FrameMsg_UILoadMetricsReportType::Value>(
           info.urlRequest.inputPerfMetricReportPolicy());
 
-  // Determine the navigation type.
+  // No history-navigation is expected to happen.
+  DCHECK(info.navigationType != blink::WebNavigationTypeBackForward);
+
+  // Determine the navigation type. No same-document navigation is expected
+  // because it is loaded immediately by the FrameLoader.
   FrameMsg_Navigate_Type::Value navigation_type =
-      FrameMsg_Navigate_Type::NORMAL;
+      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   if (info.navigationType == blink::WebNavigationTypeReload) {
     if (load_flags & net::LOAD_BYPASS_CACHE)
       navigation_type = FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE;
@@ -667,37 +672,20 @@ media::Context3D GetSharedMainThreadContext3D(
   return media::Context3D(provider->ContextGL(), provider->GrContext());
 }
 
-bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
-  switch (navigation_type) {
-    case FrameMsg_Navigate_Type::RELOAD:
-    case FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE:
-    case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
-      return true;
-    case FrameMsg_Navigate_Type::RESTORE:
-    case FrameMsg_Navigate_Type::RESTORE_WITH_POST:
-    case FrameMsg_Navigate_Type::NORMAL:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
 WebFrameLoadType ReloadFrameLoadTypeFor(
     FrameMsg_Navigate_Type::Value navigation_type) {
   switch (navigation_type) {
     case FrameMsg_Navigate_Type::RELOAD:
     case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
       return WebFrameLoadType::ReloadMainResource;
+
     case FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE:
       return WebFrameLoadType::ReloadBypassingCache;
-    case FrameMsg_Navigate_Type::RESTORE:
-    case FrameMsg_Navigate_Type::RESTORE_WITH_POST:
-    case FrameMsg_Navigate_Type::NORMAL:
+
+    default:
       NOTREACHED();
       return WebFrameLoadType::Standard;
   }
-  NOTREACHED();
-  return WebFrameLoadType::Standard;
 }
 
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
@@ -5181,7 +5169,8 @@ void RenderFrameImpl::OnFailedNavigation(
     bool has_stale_copy_in_cache,
     int error_code) {
   DCHECK(IsBrowserSideNavigationEnabled());
-  bool is_reload = IsReload(common_params.navigation_type);
+  bool is_reload =
+      FrameMsg_Navigate_Type::IsReload(common_params.navigation_type);
   RenderFrameImpl::PrepareRenderViewForNavigation(
       common_params.url, request_params);
 
@@ -5202,7 +5191,9 @@ void RenderFrameImpl::OnFailedNavigation(
       CreateWebURLError(common_params.url, has_stale_copy_in_cache, error_code);
   WebURLRequest failed_request = CreateURLRequestForNavigation(
       common_params, std::unique_ptr<StreamOverrideParameters>(),
-      frame_->isViewSourceModeEnabled(), request_params.nav_entry_id);
+      frame_->isViewSourceModeEnabled(),
+      false,  // is_same_document_navigation
+      request_params.nav_entry_id);
 
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
     // The browser expects this frame to be loading an error page. Inform it
@@ -5829,7 +5820,8 @@ void RenderFrameImpl::NavigateInternal(
 
   // Lower bound for browser initiated navigation start time.
   base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
-  bool is_reload = IsReload(common_params.navigation_type);
+  bool is_reload =
+      FrameMsg_Navigate_Type::IsReload(common_params.navigation_type);
   bool is_history_navigation = request_params.page_state.IsValid();
   WebCachePolicy cache_policy = WebCachePolicy::UseProtocolCachePolicy;
   RenderFrameImpl::PrepareRenderViewForNavigation(
@@ -5875,10 +5867,17 @@ void RenderFrameImpl::NavigateInternal(
       blink::WebHistoryDifferentDocumentLoad;
   bool should_load_request = false;
   WebHistoryItem item_for_history_navigation;
-  WebURLRequest request =
-      CreateURLRequestForNavigation(common_params, std::move(stream_params),
-                                    frame_->isViewSourceModeEnabled(),
-                                    request_params.nav_entry_id);
+
+  // Enforce same-document navigation from the browser only if
+  // browser-side-navigation is enabled.
+  bool is_same_document =
+      IsBrowserSideNavigationEnabled() &&
+      FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type);
+
+  WebURLRequest request = CreateURLRequestForNavigation(
+      common_params, std::move(stream_params),
+      frame_->isViewSourceModeEnabled(), is_same_document,
+      request_params.nav_entry_id);
   request.setFrameType(IsTopLevelNavigation(frame_)
                            ? blink::WebURLRequest::FrameTypeTopLevel
                            : blink::WebURLRequest::FrameTypeNested);
@@ -5932,9 +5931,22 @@ void RenderFrameImpl::NavigateInternal(
       // store the relevant frame's WebHistoryItem in the root of the
       // PageState.
       item_for_history_navigation = entry->root();
-      history_load_type = request_params.is_same_document_history_load
-                              ? blink::WebHistorySameDocumentLoad
-                              : blink::WebHistoryDifferentDocumentLoad;
+      switch (common_params.navigation_type) {
+        case FrameMsg_Navigate_Type::RELOAD:
+        case FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE:
+        case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
+        case FrameMsg_Navigate_Type::RESTORE:
+        case FrameMsg_Navigate_Type::RESTORE_WITH_POST:
+        case FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT:
+          history_load_type = blink::WebHistoryDifferentDocumentLoad;
+          break;
+        case FrameMsg_Navigate_Type::HISTORY_SAME_DOCUMENT:
+          history_load_type = blink::WebHistorySameDocumentLoad;
+          break;
+        default:
+          NOTREACHED();
+          history_load_type = blink::WebHistoryDifferentDocumentLoad;
+      }
       load_type = request_params.is_history_navigation_in_new_child
                       ? blink::WebFrameLoadType::InitialHistoryLoad
                       : blink::WebFrameLoadType::BackForward;
