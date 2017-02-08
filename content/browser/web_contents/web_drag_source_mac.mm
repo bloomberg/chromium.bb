@@ -53,38 +53,6 @@ namespace {
 // |NSURLPboardType|.
 NSString* const kNSURLTitlePboardType = @"public.url-name";
 
-// Converts a base::string16 into a FilePath. Use this method instead of
-// -[NSString fileSystemRepresentation] to prevent exceptions from being thrown.
-// See http://crbug.com/78782 for more info.
-base::FilePath FilePathFromFilename(const base::string16& filename) {
-  NSString* str = SysUTF16ToNSString(filename);
-  char buf[MAXPATHLEN];
-  if (![str getFileSystemRepresentation:buf maxLength:sizeof(buf)])
-    return base::FilePath();
-  return base::FilePath(buf);
-}
-
-// Returns a filename appropriate for the drop data
-// TODO(viettrungluu): Refactor to make it common across platforms,
-// and move it somewhere sensible.
-base::FilePath GetFileNameFromDragData(const DropData& drop_data) {
-  base::FilePath file_name(
-      FilePathFromFilename(drop_data.file_description_filename));
-
-  // Images without ALT text will only have a file extension so we need to
-  // synthesize one from the provided extension and URL.
-  if (file_name.empty()) {
-    // Retrieve the name from the URL.
-    base::string16 suggested_filename =
-        net::GetSuggestedFilename(drop_data.url, "", "", "", "", "");
-    const std::string extension = file_name.Extension();
-    file_name = FilePathFromFilename(suggested_filename);
-    file_name = file_name.ReplaceExtension(extension);
-  }
-
-  return file_name;
-}
-
 // This helper's sole task is to write out data for a promised file; the caller
 // is responsible for opening the file. It takes the drop data and an open file
 // stream.
@@ -389,8 +357,12 @@ void PromiseWriterHelper(const DropData& drop_data,
   if (!dropData_->file_contents.empty() ||
       !dropData_->download_metadata.empty()) {
     if (dropData_->download_metadata.empty()) {
-      downloadFileName_ = GetFileNameFromDragData(*dropData_);
-      net::GetMimeTypeFromExtension(downloadFileName_.Extension(), &mimeType);
+      base::Optional<base::FilePath> suggestedFilename =
+          dropData_->GetSafeFilenameForImageFileContents();
+      if (suggestedFilename) {
+        downloadFileName_ = std::move(*suggestedFilename);
+        net::GetMimeTypeFromExtension(downloadFileName_.Extension(), &mimeType);
+      }
     } else {
       base::string16 mimeType16;
       base::FilePath fileName;

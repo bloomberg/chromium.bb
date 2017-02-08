@@ -58,7 +58,16 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
       case WebDragData::Item::StorageTypeBinaryData:
         result.file_contents.assign(item.binaryData.data(),
                                     item.binaryData.size());
-        result.file_description_filename = item.title.utf16();
+        result.file_contents_source_url = item.binaryDataSourceURL;
+#if defined(OS_WIN)
+        result.file_contents_filename_extension =
+            item.binaryDataFilenameExtension.utf16();
+#else
+        result.file_contents_filename_extension =
+            item.binaryDataFilenameExtension.utf8();
+#endif
+        result.file_contents_content_disposition =
+            item.binaryDataContentDisposition.utf8();
         break;
       case WebDragData::Item::StorageTypeFilename:
         // TODO(varunjain): This only works on chromeos. Support win/mac/gtk.

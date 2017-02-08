@@ -32,8 +32,7 @@ class ProgressTrackerTest : public ::testing::Test {
       : m_response(KURL(ParsedURLString, "http://example.com"),
                    "text/html",
                    1024,
-                   nullAtom,
-                   String()) {}
+                   nullAtom) {}
 
   void SetUp() override {
     m_client = new ProgressClient;

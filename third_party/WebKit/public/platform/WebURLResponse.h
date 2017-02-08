@@ -174,9 +174,6 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT WebString textEncodingName() const;
   BLINK_PLATFORM_EXPORT void setTextEncodingName(const WebString&);
 
-  BLINK_PLATFORM_EXPORT WebString suggestedFileName() const;
-  BLINK_PLATFORM_EXPORT void setSuggestedFileName(const WebString&);
-
   BLINK_PLATFORM_EXPORT HTTPVersion httpVersion() const;
   BLINK_PLATFORM_EXPORT void setHTTPVersion(HTTPVersion);
 

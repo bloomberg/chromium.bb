@@ -56,8 +56,11 @@ class CORE_EXPORT DataObjectItem
   static DataObjectItem* createFromURL(const String& url, const String& title);
   static DataObjectItem* createFromHTML(const String& html,
                                         const KURL& baseURL);
-  static DataObjectItem* createFromSharedBuffer(const String& filename,
-                                                PassRefPtr<SharedBuffer>);
+  static DataObjectItem* createFromSharedBuffer(
+      PassRefPtr<SharedBuffer>,
+      const KURL&,
+      const String& fileExtension,
+      const AtomicString& contentDisposition);
   static DataObjectItem* createFromPasteboard(const String& type,
                                               uint64_t sequenceNumber);
 
@@ -69,6 +72,7 @@ class CORE_EXPORT DataObjectItem
   // Used to support legacy DataTransfer APIs and renderer->browser
   // serialization.
   PassRefPtr<SharedBuffer> sharedBuffer() const { return m_sharedBuffer; }
+  String filenameExtension() const { return m_filenameExtension; }
   String title() const { return m_title; }
   KURL baseURL() const { return m_baseURL; }
   bool isFilename() const;
@@ -95,6 +99,7 @@ class CORE_EXPORT DataObjectItem
   Member<File> m_file;
   RefPtr<SharedBuffer> m_sharedBuffer;
   // Optional metadata. Currently used for URL, HTML, and dragging files in.
+  String m_filenameExtension;
   String m_title;
   KURL m_baseURL;
 

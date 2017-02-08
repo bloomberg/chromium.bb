@@ -259,6 +259,7 @@ source_set("common_sources") {
   deps = [
     # This looks needless as we have //content/common in public_deps, but it's
     # needed because of allow_circular_includes_from.
+    "//components/mime_util",
     "//content/common:mojo_bindings",
     "//ipc",
     "//media",

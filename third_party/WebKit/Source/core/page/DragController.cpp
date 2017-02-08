@@ -861,8 +861,7 @@ static void prepareDataTransferForImageDrag(LocalFrame* source,
             .setBaseAndExtent(EphemeralRange(range))
             .build());
   }
-  dataTransfer->declareAndWriteDragImage(
-      node, !linkURL.isEmpty() ? linkURL : imageURL, label);
+  dataTransfer->declareAndWriteDragImage(node, linkURL, imageURL, label);
 }
 
 bool DragController::populateDragDataTransfer(LocalFrame* src,

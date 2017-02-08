@@ -247,7 +247,7 @@ TEST(ImageResourceTest, MultipartImage) {
   // the response must be routed through ResourceLoader to ensure the load is
   // flagged as multipart.
   ResourceResponse multipartResponse(KURL(), "multipart/x-mixed-replace", 0,
-                                     nullAtom, String());
+                                     nullAtom);
   multipartResponse.setMultipartBoundary("boundary", strlen("boundary"));
   imageResource->loader()->didReceiveResponse(
       WrappedResourceResponse(multipartResponse), nullptr);
@@ -348,13 +348,11 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
 
   // Send the image response.
   imageResource->responseReceived(
-      ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom,
-                       String()),
+      ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom),
       nullptr);
 
   imageResource->responseReceived(
-      ResourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage), nullAtom,
-                       String()),
+      ResourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage), nullAtom),
       nullptr);
   imageResource->appendData(reinterpret_cast<const char*>(kJpegImage),
                             sizeof(kJpegImage));
@@ -392,8 +390,7 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
 
   // Send the image response.
   imageResource->responseReceived(
-      ResourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage), nullAtom,
-                       String()),
+      ResourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage), nullAtom),
       nullptr);
   imageResource->appendData(reinterpret_cast<const char*>(kJpegImage),
                             sizeof(kJpegImage));
@@ -421,7 +418,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
 
   // Send the image response.
   ResourceResponse resourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage),
-                                    nullAtom, String());
+                                    nullAtom);
   resourceResponse.addHTTPHeaderField("chrome-proxy-content-transform",
                                       "empty-image");
 
@@ -485,8 +482,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
       MockImageResourceObserver::create(imageResource->getContent());
 
   // Send the image response.
-  ResourceResponse initialResourceResponse(
-      testURL, "image/jpeg", sizeof(kJpegImage), nullAtom, String());
+  ResourceResponse initialResourceResponse(testURL, "image/jpeg",
+                                           sizeof(kJpegImage), nullAtom);
   initialResourceResponse.addHTTPHeaderField("chrome-proxy", "q=low");
 
   imageResource->loader()->didReceiveResponse(
@@ -518,8 +515,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
   EXPECT_FALSE(observer->imageNotifyFinishedCalled());
 
   imageResource->loader()->didReceiveResponse(
-      WrappedResourceResponse(ResourceResponse(
-          testURL, "image/jpeg", sizeof(kJpegImage2), nullAtom, String())),
+      WrappedResourceResponse(ResourceResponse(testURL, "image/jpeg",
+                                               sizeof(kJpegImage2), nullAtom)),
       nullptr);
   imageResource->loader()->didReceiveData(
       reinterpret_cast<const char*>(kJpegImage2), sizeof(kJpegImage2));
@@ -556,8 +553,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
       MockImageResourceObserver::create(imageResource->getContent());
 
   ResourceResponse response(testURL, "image/jpeg",
-                            kJpegImageSubrangeWithDimensionsLength, nullAtom,
-                            String());
+                            kJpegImageSubrangeWithDimensionsLength, nullAtom);
   response.setHTTPStatusCode(206);
   response.setHTTPHeaderField(
       "content-range", buildContentRange(kJpegImageSubrangeWithDimensionsLength,
@@ -860,7 +856,7 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
 
   imageResource->loader()->didReceiveResponse(
       WrappedResourceResponse(
-          ResourceResponse(testURL, "image/jpeg", 18, nullAtom, String())),
+          ResourceResponse(testURL, "image/jpeg", 18, nullAtom)),
       nullptr);
 
   EXPECT_EQ(0, observer->imageChangedCount());
@@ -888,7 +884,7 @@ TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
 
   imageResource->loader()->didReceiveResponse(
       WrappedResourceResponse(
-          ResourceResponse(testURL, "image/jpeg", 0, nullAtom, String())),
+          ResourceResponse(testURL, "image/jpeg", 0, nullAtom)),
       nullptr);
 
   EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
@@ -921,9 +917,8 @@ TEST(ImageResourceTest, FetchDisallowPlaceholder) {
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::create(imageResource->getContent());
 
-  imageResource->loader()->didReceiveResponse(
-      WrappedResourceResponse(ResourceResponse(
-          testURL, "image/jpeg", sizeof(kJpegImage), nullAtom, String())));
+  imageResource->loader()->didReceiveResponse(WrappedResourceResponse(
+      ResourceResponse(testURL, "image/jpeg", sizeof(kJpegImage), nullAtom)));
   imageResource->loader()->didReceiveData(
       reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
   imageResource->loader()->didFinishLoading(0.0, sizeof(kJpegImage),
@@ -1016,8 +1011,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderSuccessful) {
       MockImageResourceObserver::create(imageResource->getContent());
 
   ResourceResponse response(testURL, "image/jpeg",
-                            kJpegImageSubrangeWithDimensionsLength, nullAtom,
-                            String());
+                            kJpegImageSubrangeWithDimensionsLength, nullAtom);
   response.setHTTPStatusCode(206);
   response.setHTTPHeaderField(
       "content-range", buildContentRange(kJpegImageSubrangeWithDimensionsLength,
@@ -1066,9 +1060,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
 
   const char kBadData[] = "notanimageresponse";
 
-  imageResource->loader()->didReceiveResponse(
-      WrappedResourceResponse(ResourceResponse(
-          testURL, "image/jpeg", sizeof(kBadData), nullAtom, String())));
+  imageResource->loader()->didReceiveResponse(WrappedResourceResponse(
+      ResourceResponse(testURL, "image/jpeg", sizeof(kBadData), nullAtom)));
 
   EXPECT_EQ(0, observer->imageChangedCount());
 
@@ -1086,9 +1079,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   EXPECT_FALSE(observer->imageNotifyFinishedCalled());
   EXPECT_EQ(3, observer->imageChangedCount());
 
-  imageResource->loader()->didReceiveResponse(
-      WrappedResourceResponse(ResourceResponse(
-          testURL, "image/jpeg", sizeof(kJpegImage), nullAtom, String())));
+  imageResource->loader()->didReceiveResponse(WrappedResourceResponse(
+      ResourceResponse(testURL, "image/jpeg", sizeof(kJpegImage), nullAtom)));
   imageResource->loader()->didReceiveData(
       reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
   imageResource->loader()->didFinishLoading(0.0, sizeof(kJpegImage),
@@ -1152,8 +1144,7 @@ TEST(ImageResourceTest,
       MockImageResourceObserver::create(imageResource->getContent());
 
   ResourceResponse response(testURL, "image/jpeg",
-                            kJpegImageSubrangeWithDimensionsLength, nullAtom,
-                            String());
+                            kJpegImageSubrangeWithDimensionsLength, nullAtom);
   response.setHTTPStatusCode(206);
   response.setHTTPHeaderField(
       "content-range", buildContentRange(kJpegImageSubrangeWithDimensionsLength,
@@ -1203,7 +1194,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
 
   // Send the image response.
   ResourceResponse resourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage2),
-                                    nullAtom, String());
+                                    nullAtom);
   resourceResponse.addHTTPHeaderField("chrome-proxy", "q=low");
 
   imageResource->responseReceived(resourceResponse, nullptr);

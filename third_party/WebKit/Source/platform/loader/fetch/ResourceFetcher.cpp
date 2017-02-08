@@ -386,7 +386,7 @@ Resource* ResourceFetcher::resourceForStaticData(
     data = archiveResource->data();
   }
 
-  ResourceResponse response(url, mimetype, data->size(), charset, String());
+  ResourceResponse response(url, mimetype, data->size(), charset);
   response.setHTTPStatusCode(200);
   response.setHTTPStatusText("OK");
 

@@ -156,17 +156,10 @@ class WebDragSourceAura : public NotificationObserver {
 // necessary.
 void PrepareDragForFileContents(const DropData& drop_data,
                                 ui::OSExchangeData::Provider* provider) {
-  base::FilePath file_name =
-      base::FilePath::FromUTF16Unsafe(drop_data.file_description_filename);
-  // Images without ALT text will only have a file extension so we need to
-  // synthesize one from the provided extension and URL.
-  if (file_name.BaseName().RemoveExtension().empty()) {
-    const base::FilePath::StringType extension = file_name.Extension();
-    // Retrieve the name from the URL.
-    file_name = net::GenerateFileName(drop_data.url, "", "", "", "", "")
-                    .ReplaceExtension(extension);
-  }
-  provider->SetFileContents(file_name, drop_data.file_contents);
+  base::Optional<base::FilePath> filename =
+      drop_data.GetSafeFilenameForImageFileContents();
+  if (filename)
+    provider->SetFileContents(*filename, drop_data.file_contents);
 }
 #endif
 

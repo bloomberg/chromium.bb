@@ -62,9 +62,17 @@ class WebDragData {
 
     StorageType storageType;
 
+    // TODO(dcheng): This should probably be a union.
     // Only valid when storageType == StorageTypeString.
     WebString stringType;
     WebString stringData;
+
+    // Title associated with a link when stringType == "text/uri-list".
+    WebString title;
+
+    // Only valid when stringType == "text/html". Stores the base URL for the
+    // contained markup.
+    WebURL baseURL;
 
     // Only valid when storageType == StorageTypeFilename.
     WebString filenameData;
@@ -72,18 +80,14 @@ class WebDragData {
 
     // Only valid when storageType == StorageTypeBinaryData.
     WebData binaryData;
-
-    // Title associated with a link when stringType == "text/uri-list".
-    // Filename when storageType == StorageTypeBinaryData.
-    WebString title;
+    WebURL binaryDataSourceURL;
+    WebString binaryDataFilenameExtension;
+    WebString binaryDataContentDisposition;
 
     // Only valid when storageType == StorageTypeFileSystemFile.
     WebURL fileSystemURL;
     long long fileSystemFileSize;
     WebString fileSystemId;
-
-    // Only valid when stringType == "text/html".
-    WebURL baseURL;
   };
 
   WebDragData() : m_valid(false), m_modifierKeyState(0) {}

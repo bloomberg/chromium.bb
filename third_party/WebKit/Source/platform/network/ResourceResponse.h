@@ -138,8 +138,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   ResourceResponse(const KURL&,
                    const AtomicString& mimeType,
                    long long expectedLength,
-                   const AtomicString& textEncodingName,
-                   const String& filename);
+                   const AtomicString& textEncodingName);
   ResourceResponse(const ResourceResponse&);
   ResourceResponse& operator=(const ResourceResponse&);
 
@@ -172,13 +171,6 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   const AtomicString& textEncodingName() const;
   void setTextEncodingName(const AtomicString&);
-
-  // FIXME: Should compute this on the fly.
-  // There should not be a setter exposed, as suggested file name is determined
-  // based on other headers in a manner that WebCore does not necessarily know
-  // about.
-  const String& suggestedFilename() const;
-  void setSuggestedFilename(const String&);
 
   int httpStatusCode() const;
   void setHTTPStatusCode(int);
@@ -397,7 +389,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   AtomicString m_mimeType;
   long long m_expectedContentLength;
   AtomicString m_textEncodingName;
-  String m_suggestedFilename;
   int m_httpStatusCode;
   AtomicString m_httpStatusText;
   HTTPHeaderMap m_httpHeaderFields;
@@ -545,7 +536,6 @@ struct CrossThreadResourceResponseData {
   String m_mimeType;
   long long m_expectedContentLength;
   String m_textEncodingName;
-  String m_suggestedFilename;
   int m_httpStatusCode;
   String m_httpStatusText;
   std::unique_ptr<CrossThreadHTTPHeaderMapData> m_httpHeaders;

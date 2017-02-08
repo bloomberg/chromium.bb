@@ -98,7 +98,10 @@ class CORE_EXPORT DataTransfer final
 
   std::unique_ptr<DragImage> createDragImage(IntPoint& dragLocation,
                                              LocalFrame*) const;
-  void declareAndWriteDragImage(Element*, const KURL&, const String& title);
+  void declareAndWriteDragImage(Element*,
+                                const KURL& linkURL,
+                                const KURL& imageURL,
+                                const String& title);
   void writeURL(Node*, const KURL&, const String&);
   void writeSelection(const FrameSelection&);
 

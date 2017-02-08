@@ -1164,19 +1164,6 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setHTTPStatusCode(headers->response_code());
   response->setHTTPStatusText(WebString::fromLatin1(headers->GetStatusText()));
 
-  // TODO(darin): We should leverage HttpResponseHeaders for this, and this
-  // should be using the same code as ResourceDispatcherHost.
-  // TODO(jungshik): Figure out the actual value of the referrer charset and
-  // pass it to GetSuggestedFilename.
-  std::string value;
-  headers->EnumerateHeader(NULL, "content-disposition", &value);
-  response->setSuggestedFileName(blink::WebString::fromUTF16(
-      net::GetSuggestedFilename(url, value,
-                                std::string(),     // referrer_charset
-                                std::string(),     // suggested_name
-                                std::string(),     // mime_type
-                                std::string())));  // default_name
-
   Time time_val;
   if (headers->GetLastModifiedValue(&time_val))
     response->setLastModifiedDate(time_val.ToDoubleT());
@@ -1184,6 +1171,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   // Build up the header map.
   size_t iter = 0;
   std::string name;
+  std::string value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
     response->addHTTPHeaderField(WebString::fromLatin1(name),
                                  WebString::fromLatin1(value));

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -26,6 +27,8 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "net/base/filename_util.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebKeyboardEvent.h"
@@ -62,6 +65,7 @@ using blink::WebPointerProperties;
 using blink::WebString;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
+using blink::WebURL;
 using blink::WebVector;
 using blink::WebView;
 
@@ -1890,16 +1894,28 @@ void EventSender::DumpFilenameBeingDragged() {
   if (current_drag_data_.isNull())
     return;
 
-  WebString filename;
   WebVector<WebDragData::Item> items = current_drag_data_.items();
   for (size_t i = 0; i < items.size(); ++i) {
     if (items[i].storageType == WebDragData::Item::StorageTypeBinaryData) {
-      filename = items[i].title;
-      break;
+      WebURL url = items[i].binaryDataSourceURL;
+      WebString filename_extension = items[i].binaryDataFilenameExtension;
+      WebString content_disposition = items[i].binaryDataContentDisposition;
+      base::FilePath filename =
+          net::GenerateFileName(url, content_disposition.utf8(),
+                                std::string(),   // referrer_charset
+                                std::string(),   // suggested_name
+                                std::string(),   // mime_type
+                                std::string());  // default_name
+#if defined(OS_WIN)
+      filename = filename.ReplaceExtension(filename_extension.utf16());
+#else
+      filename = filename.ReplaceExtension(filename_extension.utf8());
+#endif
+      delegate()->PrintMessage(std::string("Filename being dragged: ") +
+                               filename.AsUTF8Unsafe() + "\n");
+      return;
     }
   }
-  delegate()->PrintMessage(std::string("Filename being dragged: ") +
-                           filename.utf8().data() + "\n");
 }
 
 void EventSender::GestureFlingCancel() {

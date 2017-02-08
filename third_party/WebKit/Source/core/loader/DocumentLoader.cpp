@@ -440,7 +440,7 @@ void DocumentLoader::cancelLoadAfterCSPDenied(
   m_request.setURL(blockedURL);
   m_redirectChain.pop_back();
   appendRedirect(blockedURL);
-  m_response = ResourceResponse(blockedURL, "text/html", 0, nullAtom, String());
+  m_response = ResourceResponse(blockedURL, "text/html", 0, nullAtom);
   finishedLoading(monotonicallyIncreasingTime());
 
   return;
@@ -709,8 +709,7 @@ bool DocumentLoader::maybeLoadEmpty() {
   if (m_request.url().isEmpty() &&
       !frameLoader().stateMachine()->creatingInitialEmptyDocument())
     m_request.setURL(blankURL());
-  m_response =
-      ResourceResponse(m_request.url(), "text/html", 0, nullAtom, String());
+  m_response = ResourceResponse(m_request.url(), "text/html", 0, nullAtom);
   finishedLoading(monotonicallyIncreasingTime());
   return true;
 }

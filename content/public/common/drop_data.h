@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
@@ -60,12 +62,16 @@ struct CONTENT_EXPORT DropData {
   DropData(const DropData& other);
   ~DropData();
 
+  // Returns a sanitized filename to use for the dragged image, or base::nullopt
+  // if no sanitized name could be synthesized.
+  base::Optional<base::FilePath> GetSafeFilenameForImageFileContents() const;
+
   int view_id = MSG_ROUTING_NONE;
 
   // Whether this drag originated from a renderer.
   bool did_originate_from_renderer;
 
-  // User is dragging a link into the webview.
+  // User is dragging a link or image.
   GURL url;
   base::string16 url_title;  // The title associated with |url|.
 
@@ -98,9 +104,11 @@ struct CONTENT_EXPORT DropData {
   base::NullableString16 html;
   GURL html_base_url;
 
-  // User is dragging data from the webview (e.g., an image).
-  base::string16 file_description_filename;
+  // User is dragging an image out of the WebView.
   std::string file_contents;
+  GURL file_contents_source_url;
+  base::FilePath::StringType file_contents_filename_extension;
+  std::string file_contents_content_disposition;
 
   std::map<base::string16, base::string16> custom_data;
 

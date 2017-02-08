@@ -73,7 +73,7 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
       request.setURL(KURL(ParsedURLString, kResourceURL));
     MockResource* resource = MockResource::create(request);
     resource->setResponse(ResourceResponse(KURL(ParsedURLString, kResourceURL),
-                                           "text/html", 0, nullAtom, String()));
+                                           "text/html", 0, nullAtom));
     resource->finish();
     memoryCache()->add(resource);
 

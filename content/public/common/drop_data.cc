@@ -4,17 +4,12 @@
 
 #include "content/public/common/drop_data.h"
 
+#include "base/strings/utf_string_conversions.h"
+#include "components/mime_util/mime_util.h"
+#include "net/base/filename_util.h"
+#include "net/base/mime_util.h"
+
 namespace content {
-
-DropData::DropData()
-    : did_originate_from_renderer(false),
-      referrer_policy(blink::WebReferrerPolicyDefault),
-      key_modifiers(0) {}
-
-DropData::DropData(const DropData& other) = default;
-
-DropData::~DropData() {
-}
 
 DropData::Metadata::Metadata() {}
 
@@ -49,5 +44,31 @@ DropData::Metadata DropData::Metadata::CreateForFileSystemUrl(
 DropData::Metadata::Metadata(const DropData::Metadata& other) = default;
 
 DropData::Metadata::~Metadata() {}
+
+DropData::DropData()
+    : did_originate_from_renderer(false),
+      referrer_policy(blink::WebReferrerPolicyDefault),
+      key_modifiers(0) {}
+
+DropData::DropData(const DropData& other) = default;
+
+DropData::~DropData() {}
+
+base::Optional<base::FilePath> DropData::GetSafeFilenameForImageFileContents()
+    const {
+  base::FilePath file_name = net::GenerateFileName(
+      file_contents_source_url, file_contents_content_disposition,
+      std::string(),   // referrer_charset
+      std::string(),   // suggested_name
+      std::string(),   // mime_type
+      std::string());  // default_name
+  std::string mime_type;
+  if (net::GetWellKnownMimeTypeFromExtension(file_contents_filename_extension,
+                                             &mime_type) &&
+      mime_util::IsSupportedImageMimeType(mime_type)) {
+    return file_name.ReplaceExtension(file_contents_filename_extension);
+  }
+  return base::nullopt;
+}
 
 }  // namespace content

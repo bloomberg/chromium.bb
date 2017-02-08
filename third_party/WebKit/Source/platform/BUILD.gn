@@ -489,8 +489,6 @@ component("platform") {
     "clipboard/ClipboardMimeTypes.h",
     "clipboard/ClipboardUtilities.cpp",
     "clipboard/ClipboardUtilities.h",
-    "clipboard/ClipboardUtilitiesPosix.cpp",
-    "clipboard/ClipboardUtilitiesWin.cpp",
     "cpu/mips/CommonMacrosMSA.h",
     "credentialmanager/PlatformCredential.cpp",
     "credentialmanager/PlatformCredential.h",
@@ -1512,9 +1510,8 @@ component("platform") {
   }
 
   if (is_win) {
+    sources += [ "clipboard/ClipboardUtilitiesWin.cpp" ]
     sources -= [
-      "clipboard/ClipboardUtilitiesPosix.cpp",
-
       # Uses LocaleWin instead.
       "text/LocaleICU.cpp",
       "text/LocaleICU.h",
@@ -1524,10 +1521,7 @@ component("platform") {
       "/wd4724",  # Modulo by 0.
     ]
   } else {
-    sources -= [
-      "clipboard/ClipboardUtilitiesWin.cpp",
-      "text/LocaleWin.cpp",
-    ]
+    sources -= [ "text/LocaleWin.cpp" ]
   }
 
   if (is_android) {
@@ -1703,7 +1697,6 @@ test("blink_platform_unittests") {
     "animation/TimingFunctionTest.cpp",
     "audio/PushPullFIFOTest.cpp",
     "blob/BlobDataTest.cpp",
-    "clipboard/ClipboardUtilitiesTest.cpp",
     "exported/FilePathConversionTest.cpp",
     "exported/WebStringTest.cpp",
     "feature_policy/FeaturePolicyTest.cpp",

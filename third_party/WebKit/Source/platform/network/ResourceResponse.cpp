@@ -26,9 +26,11 @@
 
 #include "platform/network/ResourceResponse.h"
 
+#include "platform/HTTPNames.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
+
 #include <memory>
 
 namespace blink {
@@ -108,13 +110,11 @@ ResourceResponse::ResourceResponse()
 ResourceResponse::ResourceResponse(const KURL& url,
                                    const AtomicString& mimeType,
                                    long long expectedLength,
-                                   const AtomicString& textEncodingName,
-                                   const String& filename)
+                                   const AtomicString& textEncodingName)
     : m_url(url),
       m_mimeType(mimeType),
       m_expectedContentLength(expectedLength),
       m_textEncodingName(textEncodingName),
-      m_suggestedFilename(filename),
       m_httpStatusCode(0),
       m_lastModifiedDate(0),
       m_wasCached(false),
@@ -154,7 +154,6 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   setMimeType(AtomicString(data->m_mimeType));
   setExpectedContentLength(data->m_expectedContentLength);
   setTextEncodingName(AtomicString(data->m_textEncodingName));
-  setSuggestedFilename(data->m_suggestedFilename);
 
   setHTTPStatusCode(data->m_httpStatusCode);
   setHTTPStatusText(AtomicString(data->m_httpStatusText));
@@ -219,7 +218,6 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData()
   data->m_mimeType = mimeType().getString().isolatedCopy();
   data->m_expectedContentLength = expectedContentLength();
   data->m_textEncodingName = textEncodingName().getString().isolatedCopy();
-  data->m_suggestedFilename = suggestedFilename().isolatedCopy();
   data->m_httpStatusCode = httpStatusCode();
   data->m_httpStatusText = httpStatusText().getString().isolatedCopy();
   data->m_httpHeaders = httpHeaderFields().copyData();
@@ -330,19 +328,6 @@ void ResourceResponse::setTextEncodingName(const AtomicString& encodingName) {
   // FIXME: Text encoding is determined by HTTP Content-Type header. We should
   // update the header, so that it doesn't disagree with m_textEncodingName.
   m_textEncodingName = encodingName;
-}
-
-// FIXME should compute this on the fly
-const String& ResourceResponse::suggestedFilename() const {
-  return m_suggestedFilename;
-}
-
-void ResourceResponse::setSuggestedFilename(const String& suggestedName) {
-  m_isNull = false;
-
-  // FIXME: Suggested file name is calculated based on other headers. There
-  // should not be a setter for it.
-  m_suggestedFilename = suggestedName;
 }
 
 int ResourceResponse::httpStatusCode() const {
@@ -544,9 +529,8 @@ double ResourceResponse::lastModified() const {
 }
 
 bool ResourceResponse::isAttachment() const {
-  static const char headerName[] = "content-disposition";
   static const char attachmentString[] = "attachment";
-  String value = m_httpHeaderFields.get(headerName);
+  String value = m_httpHeaderFields.get(HTTPNames::Content_Disposition);
   size_t loc = value.find(';');
   if (loc != kNotFound)
     value = value.left(loc);
@@ -651,8 +635,6 @@ bool ResourceResponse::compare(const ResourceResponse& a,
   if (a.expectedContentLength() != b.expectedContentLength())
     return false;
   if (a.textEncodingName() != b.textEncodingName())
-    return false;
-  if (a.suggestedFilename() != b.suggestedFilename())
     return false;
   if (a.httpStatusCode() != b.httpStatusCode())
     return false;

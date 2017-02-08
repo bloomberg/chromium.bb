@@ -237,7 +237,7 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
   // These fields are currently unused when dragging into WebKit.
   DCHECK(drop_data.download_metadata.empty());
   DCHECK(drop_data.file_contents.empty());
-  DCHECK(drop_data.file_description_filename.empty());
+  DCHECK(drop_data.file_contents_content_disposition.empty());
 
   if (!drop_data.text.is_null()) {
     WebDragData::Item item;

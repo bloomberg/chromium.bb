@@ -42,8 +42,6 @@ PLATFORM_EXPORT void replaceNewlinesWithWindowsStyleNewlines(String&);
 #endif
 PLATFORM_EXPORT void replaceNBSPWithSpace(String&);
 PLATFORM_EXPORT String convertURIListToURL(const String& uriList);
-// FIXME: This should probably be implemented in the embedder rather than here.
-PLATFORM_EXPORT void validateFilename(String& name, String& extension);
 
 }  // namespace blink
 

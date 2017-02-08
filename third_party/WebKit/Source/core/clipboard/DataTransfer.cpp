@@ -270,7 +270,7 @@ static ImageResourceContent* getImageResourceContent(Element* element) {
 
 static void writeImageToDataObject(DataObject* dataObject,
                                    Element* element,
-                                   const KURL& url) {
+                                   const KURL& imageURL) {
   // Shove image data into a DataObject for use as a file
   ImageResourceContent* cachedImage = getImageResourceContent(element);
   if (!cachedImage || !cachedImage->getImage() || !cachedImage->isLoaded())
@@ -280,54 +280,23 @@ static void writeImageToDataObject(DataObject* dataObject,
   if (!imageBuffer || !imageBuffer->size())
     return;
 
-  String imageExtension = cachedImage->getImage()->filenameExtension();
-  ASSERT(!imageExtension.isEmpty());
-
-  // Determine the filename for the file contents of the image.
-  String filename = cachedImage->response().suggestedFilename();
-  if (filename.isEmpty())
-    filename = url.lastPathComponent();
-
-  String fileExtension;
-  if (filename.isEmpty()) {
-    filename = element->getAttribute(HTMLNames::altAttr);
-  } else {
-    // Strip any existing extension. Assume that alt text is usually not a
-    // filename.
-    int extensionIndex = filename.reverseFind('.');
-    if (extensionIndex != -1) {
-      fileExtension = filename.substring(extensionIndex + 1);
-      filename.truncate(extensionIndex);
-    }
-  }
-
-  if (!fileExtension.isEmpty() && fileExtension != imageExtension) {
-    String imageMimeType =
-        MIMETypeRegistry::getMIMETypeForExtension(imageExtension);
-    ASSERT(imageMimeType.startsWith("image/"));
-    // Use the file extension only if it has imageMimeType: it's untrustworthy
-    // otherwise.
-    if (imageMimeType ==
-        MIMETypeRegistry::getMIMETypeForExtension(fileExtension))
-      imageExtension = fileExtension;
-  }
-
-  imageExtension = "." + imageExtension;
-  validateFilename(filename, imageExtension);
-
-  dataObject->addSharedBuffer(filename + imageExtension, imageBuffer);
+  dataObject->addSharedBuffer(imageBuffer, imageURL,
+                              cachedImage->getImage()->filenameExtension(),
+                              cachedImage->response().httpHeaderFields().get(
+                                  HTTPNames::Content_Disposition));
 }
 
 void DataTransfer::declareAndWriteDragImage(Element* element,
-                                            const KURL& url,
+                                            const KURL& linkURL,
+                                            const KURL& imageURL,
                                             const String& title) {
   if (!m_dataObject)
     return;
 
-  m_dataObject->setURLAndTitle(url, title);
+  m_dataObject->setURLAndTitle(linkURL.isValid() ? linkURL : imageURL, title);
 
   // Write the bytes in the image to the file format.
-  writeImageToDataObject(m_dataObject.get(), element, url);
+  writeImageToDataObject(m_dataObject.get(), element, imageURL);
 
   // Put img tag on the clipboard referencing the image
   m_dataObject->setData(mimeTypeTextHTML,

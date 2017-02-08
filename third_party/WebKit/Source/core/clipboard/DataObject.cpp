@@ -222,10 +222,12 @@ void DataObject::addFilename(const String& filename,
       File::createForUserProvidedFile(filename, displayName), fileSystemId));
 }
 
-void DataObject::addSharedBuffer(const String& name,
-                                 PassRefPtr<SharedBuffer> buffer) {
-  internalAddFileItem(
-      DataObjectItem::createFromSharedBuffer(name, std::move(buffer)));
+void DataObject::addSharedBuffer(PassRefPtr<SharedBuffer> buffer,
+                                 const KURL& sourceURL,
+                                 const String& filenameExtension,
+                                 const AtomicString& contentDisposition) {
+  internalAddFileItem(DataObjectItem::createFromSharedBuffer(
+      std::move(buffer), sourceURL, filenameExtension, contentDisposition));
 }
 
 DataObject::DataObject() : m_modifiers(0) {}
@@ -322,10 +324,15 @@ WebDragData DataObject::toWebDragData() {
       item.storageType = WebDragData::Item::StorageTypeString;
       item.stringType = originalItem->type();
       item.stringData = originalItem->getAsString();
+      item.title = originalItem->title();
+      item.baseURL = originalItem->baseURL();
     } else if (originalItem->kind() == DataObjectItem::FileKind) {
       if (originalItem->sharedBuffer()) {
         item.storageType = WebDragData::Item::StorageTypeBinaryData;
         item.binaryData = originalItem->sharedBuffer();
+        item.binaryDataSourceURL = originalItem->baseURL();
+        item.binaryDataFilenameExtension = originalItem->filenameExtension();
+        item.binaryDataContentDisposition = originalItem->title();
       } else if (originalItem->isFilename()) {
         Blob* blob = originalItem->getAsFile();
         if (blob->isFile()) {
@@ -355,8 +362,6 @@ WebDragData DataObject::toWebDragData() {
     } else {
       ASSERT_NOT_REACHED();
     }
-    item.title = originalItem->title();
-    item.baseURL = originalItem->baseURL();
     itemList[i] = item;
   }
   data.swapItems(itemList);

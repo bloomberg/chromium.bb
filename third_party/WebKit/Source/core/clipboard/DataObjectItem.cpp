@@ -33,6 +33,7 @@
 #include "core/clipboard/Pasteboard.h"
 #include "core/fileapi/Blob.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 
@@ -77,11 +78,18 @@ DataObjectItem* DataObjectItem::createFromHTML(const String& html,
 }
 
 DataObjectItem* DataObjectItem::createFromSharedBuffer(
-    const String& name,
-    PassRefPtr<SharedBuffer> buffer) {
-  DataObjectItem* item = new DataObjectItem(FileKind, String());
+    PassRefPtr<SharedBuffer> buffer,
+    const KURL& sourceURL,
+    const String& filenameExtension,
+    const AtomicString& contentDisposition) {
+  DataObjectItem* item = new DataObjectItem(
+      FileKind,
+      MIMETypeRegistry::getWellKnownMIMETypeForExtension(filenameExtension));
   item->m_sharedBuffer = buffer;
-  item->m_title = name;
+  item->m_filenameExtension = filenameExtension;
+  // TODO(dcheng): Rename these fields to be more generically named.
+  item->m_title = contentDisposition;
+  item->m_baseURL = sourceURL;
   return item;
 }
 
