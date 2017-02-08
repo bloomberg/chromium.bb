@@ -4,11 +4,12 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
 
+#include "base/logging.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -34,7 +35,7 @@ const CGFloat kFontSize = 16;
 const CGFloat kIconSize = 24;
 const CGFloat kLineHeight = 24;
 const CGFloat kPercentageFromTopForPosition = 0.4;
-const CGFloat kAlphaForCaret = 0.7;
+const CGFloat kAlphaForCaret = 0.4;
 
 }  // namespace
 
@@ -42,10 +43,12 @@ const CGFloat kAlphaForCaret = 0.7;
 
 // Attaches the icon named |iconName| to |instructionString| and a |caret|. The
 // icon is positionned using the |iconOffset| and with the |attributes| (mainly
-// the color).
+// the color). |spaceBeforeCaret| controls whether a space should be added
+// between the image and the caret.
 - (void)attachIconNamed:(NSString*)iconName
                toString:(NSMutableAttributedString*)instructionString
               withCaret:(NSMutableAttributedString*)caret
+       spaceBeforeCaret:(BOOL)spaceBeforeCaret
                  offset:(CGFloat)iconOffset
         imageAttributes:(NSDictionary*)attributes;
 // Sets the constraints for this view, positionning the |imageView| in the X
@@ -64,12 +67,12 @@ const CGFloat kAlphaForCaret = 0.7;
   if (self) {
     NSString* rawText =
         l10n_util::GetNSString(IDS_IOS_READING_LIST_EMPTY_MESSAGE);
-    // Add a space between Read Later and the preceding caret.
-    NSString* readLater = [@" "
+    // Add two spaces between Read Later and the preceding caret.
+    NSString* readLater = [@"  "
         stringByAppendingString:l10n_util::GetNSString(
                                     IDS_IOS_SHARE_MENU_READING_LIST_ACTION)];
 
-    id<MDCTypographyFontLoading> fontLoader = [MDCTypography fontLoader];
+    MDFRobotoFontLoader* fontLoader = [MDFRobotoFontLoader sharedInstance];
 
     UIColor* textColor = [[MDCPalette greyPalette] tint700];
     UIFont* textFont = [fontLoader regularFontOfSize:kFontSize];
@@ -77,7 +80,7 @@ const CGFloat kAlphaForCaret = 0.7;
         [[NSMutableParagraphStyle alloc] init];
     paragraphStyle.lineSpacing = kLineHeight - textFont.lineHeight;
 
-    NSDictionary* attributes = @{
+    NSDictionary* textAttributes = @{
       NSFontAttributeName : textFont,
       NSForegroundColorAttributeName : textColor,
       NSParagraphStyleAttributeName : paragraphStyle
@@ -87,7 +90,7 @@ const CGFloat kAlphaForCaret = 0.7;
     CGFloat iconOffset = (textFont.xHeight - kIconSize) / 2.0;
 
     UIColor* caretColor = [textColor colorWithAlphaComponent:kAlphaForCaret];
-    UIFont* instructionFont = [fontLoader mediumFontOfSize:kFontSize];
+    UIFont* instructionFont = [fontLoader boldFontOfSize:kFontSize];
     NSDictionary* caretAttributes = @{
       NSFontAttributeName : instructionFont,
       NSForegroundColorAttributeName : caretColor,
@@ -100,7 +103,7 @@ const CGFloat kAlphaForCaret = 0.7;
 
     NSMutableAttributedString* baseAttributedString =
         [[NSMutableAttributedString alloc] initWithString:rawText
-                                               attributes:attributes];
+                                               attributes:textAttributes];
 
     NSMutableAttributedString* caret =
         [[NSMutableAttributedString alloc] initWithString:[self caretString]
@@ -116,15 +119,23 @@ const CGFloat kAlphaForCaret = 0.7;
       [self attachIconNamed:kToolbarMenuIcon
                    toString:instructionString
                   withCaret:caret
+           spaceBeforeCaret:NO
                      offset:iconOffset
-            imageAttributes:attributes];
+            imageAttributes:textAttributes];
     }
+
+    // Add a space before the share icon.
+    [instructionString
+        appendAttributedString:[[NSAttributedString alloc]
+                                   initWithString:@" "
+                                       attributes:instructionAttributes]];
 
     [self attachIconNamed:kShareMenuIcon
                  toString:instructionString
                 withCaret:caret
+         spaceBeforeCaret:YES
                    offset:iconOffset
-          imageAttributes:attributes];
+          imageAttributes:textAttributes];
 
     // Add the "Read Later" string.
     NSAttributedString* shareMenuAction =
@@ -134,6 +145,7 @@ const CGFloat kAlphaForCaret = 0.7;
 
     NSRange iconRange =
         [[baseAttributedString string] rangeOfString:kOpenShareMarker];
+    DCHECK(iconRange.location != NSNotFound);
     [baseAttributedString replaceCharactersInRange:iconRange
                               withAttributedString:instructionString];
 
@@ -158,6 +170,7 @@ const CGFloat kAlphaForCaret = 0.7;
 - (void)attachIconNamed:(NSString*)iconName
                toString:(NSMutableAttributedString*)instructionString
               withCaret:(NSMutableAttributedString*)caret
+       spaceBeforeCaret:(BOOL)spaceBeforeCaret
                  offset:(CGFloat)iconOffset
         imageAttributes:(NSDictionary*)attributes {
   // Add a zero width space to set the attributes for the image.
@@ -172,6 +185,13 @@ const CGFloat kAlphaForCaret = 0.7;
   [instructionString
       appendAttributedString:[NSAttributedString
                                  attributedStringWithAttachment:toolbarIcon]];
+
+  if (spaceBeforeCaret) {
+    [instructionString appendAttributedString:[[NSAttributedString alloc]
+                                                  initWithString:@" "
+                                                      attributes:attributes]];
+  }
+
   [instructionString appendAttributedString:caret];
 }
 
