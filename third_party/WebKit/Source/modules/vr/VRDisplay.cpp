@@ -511,7 +511,7 @@ void VRDisplay::updateLayerBounds() {
     m_layer.setRightBounds({0.5f, 0.0f, 0.5f, 1.0f});
   }
 
-  m_display->UpdateLayerBounds(m_frameId, std::move(leftBounds),
+  m_display->UpdateLayerBounds(m_vrFrameId, std::move(leftBounds),
                                std::move(rightBounds));
 }
 
@@ -555,7 +555,7 @@ void VRDisplay::submitFrame() {
   }
 
   // No frame Id to write before submitting the frame.
-  if (m_frameId < 0) {
+  if (m_vrFrameId < 0) {
     m_display->SubmitFrame(m_framePose.Clone());
     return;
   }
@@ -580,7 +580,7 @@ void VRDisplay::submitFrame() {
   // Use the low byte of the index as the red component, and store an arbitrary
   // magic number in green/blue. This number must match the reading code in
   // vr_shell.cc. Avoid all-black/all-white.
-  gl->ClearColor((m_frameId & 255) / 255.0f,
+  gl->ClearColor((m_vrFrameId & 255) / 255.0f,
                  kWebVrPosePixelMagicNumbers[0] / 255.0f,
                  kWebVrPosePixelMagicNumbers[1] / 255.0f, 1.0f);
   gl->Clear(GL_COLOR_BUFFER_BIT);
@@ -626,6 +626,8 @@ void VRDisplay::onDisconnected() {
 }
 
 void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason) {
+  if (!m_navigatorVR->isFocused() || m_displayBlurred)
+    return;
   m_navigatorVR->dispatchVRGestureEvent(VRDisplayEvent::create(
       EventTypeNames::vrdisplayactivate, true, false, this, reason));
 }
@@ -665,7 +667,7 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
 
   AutoReset<bool> animating(&m_inAnimationFrame, true);
   m_framePose = std::move(pose);
-  m_frameId = frameId;
+  m_vrFrameId = frameId;
   m_pendingRaf = false;
   m_scriptedAnimationController->serviceScriptedAnimations(
       m_timebase + timeDelta.InSecondsF());
