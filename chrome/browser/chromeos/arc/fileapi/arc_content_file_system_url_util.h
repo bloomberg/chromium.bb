@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_CONTENT_FILE_SYSTEM_URL_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_CONTENT_FILE_SYSTEM_URL_UTIL_H_
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "url/gurl.h"
 

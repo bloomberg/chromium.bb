@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_CONTENT_FILE_SYSTEM_ASYNC_FILE_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_CONTENT_FILE_SYSTEM_ASYNC_FILE_UTIL_H_
 
+#include <memory>
+
 #include "storage/browser/fileapi/async_file_util.h"
 
 namespace arc {

@@ -114,19 +114,19 @@ struct StructTraits<arc::mojom::BluetoothAdvertisementDataView,
 
   // Dummy methods.
   static arc::mojom::BluetoothAdvertisementType type(
-      std::unique_ptr<device::BluetoothAdvertisement::Data>& input) {
+      const std::unique_ptr<device::BluetoothAdvertisement::Data>& input) {
     NOTREACHED();
     return arc::mojom::BluetoothAdvertisementType::ADV_TYPE_NON_CONNECTABLE;
   }
 
   static bool include_tx_power(
-      std::unique_ptr<device::BluetoothAdvertisement::Data>& input) {
+      const std::unique_ptr<device::BluetoothAdvertisement::Data>& input) {
     NOTREACHED();
     return false;
   }
 
   static std::vector<arc::mojom::BluetoothAdvertisingDataPtr> data(
-      std::unique_ptr<device::BluetoothAdvertisement::Data>& input) {
+      const std::unique_ptr<device::BluetoothAdvertisement::Data>& input) {
     NOTREACHED();
     return std::vector<arc::mojom::BluetoothAdvertisingDataPtr>();
   }

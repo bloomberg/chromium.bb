@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENT_ARC_BITMAP_BITMAP_STRUCT_TRAITS_H_
-#define COMPONENT_ARC_BITMAP_BITMAP_STRUCT_TRAITS_H_
+#ifndef COMPONENTS_ARC_BITMAP_BITMAP_STRUCT_TRAITS_H_
+#define COMPONENTS_ARC_BITMAP_BITMAP_STRUCT_TRAITS_H_
 
 #include "components/arc/common/bitmap.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -25,6 +25,6 @@ struct StructTraits<arc::mojom::ArcBitmapDataView, SkBitmap> {
   static bool Read(arc::mojom::ArcBitmapDataView data, SkBitmap* out);
 };
 
-}
+}  // namespace mojo
 
-#endif  // COMPONENT_ARC_BITMAP_BITMAP_STRUCT_TRAITS_H_
+#endif  // COMPONENTS_ARC_BITMAP_BITMAP_STRUCT_TRAITS_H_

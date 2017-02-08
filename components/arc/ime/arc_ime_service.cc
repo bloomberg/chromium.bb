@@ -99,7 +99,7 @@ void ArcImeService::SetInputMethodForTesting(
 
 void ArcImeService::SetArcWindowDelegateForTesting(
     std::unique_ptr<ArcWindowDelegate> delegate) {
-  arc_window_delegate_= std::move(delegate);
+  arc_window_delegate_ = std::move(delegate);
 }
 
 ui::InputMethod* ArcImeService::GetInputMethod() {

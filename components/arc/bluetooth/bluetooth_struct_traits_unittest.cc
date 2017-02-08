@@ -25,8 +25,8 @@ constexpr uint8_t kServiceData[] = {0x11, 0x22, 0x33, 0x44, 0x55};
 constexpr uint8_t kManufacturerData[] = {0x00, 0xe0};
 
 template <typename MojoType, typename UserType>
-mojo::StructPtr<MojoType> ConvertToMojo(UserType& input) {
-  std::vector<uint8_t> data = MojoType::Serialize(&input);
+mojo::StructPtr<MojoType> ConvertToMojo(UserType* input) {
+  std::vector<uint8_t> data = MojoType::Serialize(input);
   mojo::StructPtr<MojoType> output;
   MojoType::Deserialize(std::move(data), &output);
   return output;
@@ -45,7 +45,7 @@ namespace mojo {
 TEST(BluetoothStructTraitsTest, SerializeBluetoothUUID) {
   device::BluetoothUUID uuid_device(kUuidStr);
   arc::mojom::BluetoothUUIDPtr uuid_mojo =
-      ConvertToMojo<arc::mojom::BluetoothUUID>(uuid_device);
+      ConvertToMojo<arc::mojom::BluetoothUUID>(&uuid_device);
   EXPECT_EQ(kUuidSize, uuid_mojo->uuid.size());
   for (size_t i = 0; i < kUuidSize; i++) {
     EXPECT_EQ(kUuidArray[i], uuid_mojo->uuid[i]);
@@ -128,8 +128,7 @@ TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisement) {
   EXPECT_EQ(cic & 0xff, kManufacturerData[0]);
   EXPECT_EQ((cic >> 8) & 0xff, kManufacturerData[1]);
   EXPECT_EQ(converted_manufacturer->begin()->second.size(),
-            static_cast<unsigned long>(arraysize(kManufacturerData) -
-                                       sizeof(uint16_t)));
+            arraysize(kManufacturerData) - sizeof(uint16_t));
 }
 
 TEST(BluetoothStructTraitsTest, DeserializeBluetoothAdvertisementFailure) {

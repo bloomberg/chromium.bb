@@ -5,6 +5,7 @@
 #include "components/arc/arc_util.h"
 
 #include <memory>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/macros.h"

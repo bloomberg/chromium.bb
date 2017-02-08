@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 
+#include <string>
+
 #include "base/metrics/histogram_macros.h"
 
 namespace arc {

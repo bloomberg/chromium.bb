@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "components/arc/test/fake_bluetooth_instance.h"
-
-#include <utility>
 
 namespace arc {
 

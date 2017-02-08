@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENT_ARC_INTENT_FILTER_INTENT_FILTER_STRUCT_TRAITS_H_
-#define COMPONENT_ARC_INTENT_FILTER_INTENT_FILTER_STRUCT_TRAITS_H_
+#ifndef COMPONENTS_ARC_INTENT_HELPER_INTENT_FILTER_STRUCT_TRAITS_H_
+#define COMPONENTS_ARC_INTENT_HELPER_INTENT_FILTER_STRUCT_TRAITS_H_
+
+#include <string>
+#include <vector>
 
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/intent_filter.h"
@@ -76,4 +79,4 @@ struct StructTraits<arc::mojom::PatternMatcherDataView,
 
 }  // namespace mojo
 
-#endif  // COMPONENT_ARC_INTENT_FILTER_INTENT_FILTER_STRUCT_TRAITS_H_
+#endif  // COMPONENTS_ARC_INTENT_HELPER_INTENT_FILTER_STRUCT_TRAITS_H_

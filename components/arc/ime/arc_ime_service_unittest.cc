@@ -140,7 +140,7 @@ class ArcImeServiceTest : public testing::Test {
   std::unique_ptr<ArcImeService> instance_;
   FakeArcImeBridge* fake_arc_ime_bridge_;  // Owned by |instance_|
 
-  FakeArcWindowDelegate* fake_window_delegate_; // Owned by |instance_|
+  FakeArcWindowDelegate* fake_window_delegate_;  // Owned by |instance_|
   std::unique_ptr<aura::Window> arc_win_;
 
  private:

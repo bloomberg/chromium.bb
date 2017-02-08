@@ -57,11 +57,8 @@ class ArcSessionManager : public ArcSessionObserver,
   //   state only for the first boot case (= opt-in case). The second time and
   //   later the management check is running in parallel with ARC session
   //   starting, and in such a case, State is ACTIVE, instead.
-  // FETCHING_CODE: Fetching an auth token. Similar to
-  //   CHECKING_ANDROID_MANAGEMENT case, this is only for the first boot case.
-  //   In re-auth flow (fetching an auth token while ARC is running), the
-  //   State should be ACTIVE.
-  //   TODO(hidehiko): Migrate into re-auth flow, then remove this state.
+  // REMOVING_DATA_DIR: When ARC is disabled, the data directory is removed.
+  //   While removing is processed, ARC cannot be started. This is the state.
   // ACTIVE: ARC is running.
   //
   // State transition should be as follows:
@@ -70,17 +67,12 @@ class ArcSessionManager : public ArcSessionObserver,
   // ...(any)... -> NOT_INITIALIZED: when the Chrome is being shutdown.
   // ...(any)... -> STOPPED: on error.
   //
-  // In the first boot case (no OOBE case):
+  // In the first boot case:
   //   STOPPED -> SHOWING_TERMS_OF_SERVICE: when arc.enabled preference is set.
   //   SHOWING_TERMS_OF_SERVICE -> CHECKING_ANDROID_MANAGEMENT: when a user
   //     agree with "Terms Of Service"
-  //   CHECKING_ANDROID_MANAGEMENT -> FETCHING_CODE: when Android management
-  //     check passes.
-  //   FETCHING_CODE -> ACTIVE: when the auth token is successfully fetched.
-  //
-  // In the first boot case (OOBE case):
-  //   STOPPED -> FETCHING_CODE: When arc.enabled preference is set.
-  //   FETCHING_CODE -> ACTIVE: when the auth token is successfully fetched.
+  //   CHECKING_ANDROID_MANAGEMENT -> ACTIVE: when the auth token is
+  //     successfully fetched.
   //
   // In the second (or later) boot case:
   //   STOPPED -> ACTIVE: when arc.enabled preference is checked that it is

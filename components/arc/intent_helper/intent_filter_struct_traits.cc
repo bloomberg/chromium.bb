@@ -4,6 +4,10 @@
 
 #include "components/arc/intent_helper/intent_filter_struct_traits.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/strings/string_util.h"
 
 namespace mojo {

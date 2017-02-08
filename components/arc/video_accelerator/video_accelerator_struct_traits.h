@@ -14,12 +14,12 @@ template <>
 struct StructTraits<arc::mojom::ArcVideoAcceleratorDmabufPlaneDataView,
                     arc::ArcVideoAcceleratorDmabufPlane> {
   static uint32_t offset(const arc::ArcVideoAcceleratorDmabufPlane& r) {
-    DCHECK(r.offset >= 0);
+    DCHECK_GE(r.offset, 0);
     return r.offset;
   }
 
   static uint32_t stride(const arc::ArcVideoAcceleratorDmabufPlane& r) {
-    DCHECK(r.stride >= 0);
+    DCHECK_GE(r.stride, 0);
     return r.stride;
   }
 

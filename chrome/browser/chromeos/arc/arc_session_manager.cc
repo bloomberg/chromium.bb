@@ -260,7 +260,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     // We don't expect ProvisioningResult::SUCCESS is reported twice or reported
     // after an error.
     DCHECK_NE(result, ProvisioningResult::SUCCESS);
-    // TODO (khmel): Consider changing LOG to NOTREACHED once we guaranty that
+    // TODO(khmel): Consider changing LOG to NOTREACHED once we guaranty that
     // no double message can happen in production.
     LOG(WARNING) << "Provisioning result was already reported. Ignoring "
                  << "additional result " << static_cast<int>(result) << ".";
@@ -598,7 +598,7 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
   // Need user's explicit Terms Of Service agreement. Prevent race condition
   // when ARC can be enabled before profile is synced. In last case
   // OnOptInPreferenceChanged is called twice.
-  // TODO (crbug.com/687185)
+  // TODO(crbug.com/687185): Remove the condition.
   if (state_ != State::SHOWING_TERMS_OF_SERVICE)
     StartTermsOfServiceNegotiation();
 }

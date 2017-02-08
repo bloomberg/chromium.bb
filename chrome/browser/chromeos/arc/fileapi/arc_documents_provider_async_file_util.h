@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_DOCUMENTS_PROVIDER_ASYNC_FILE_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_DOCUMENTS_PROVIDER_ASYNC_FILE_UTIL_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "storage/browser/fileapi/async_file_util.h"

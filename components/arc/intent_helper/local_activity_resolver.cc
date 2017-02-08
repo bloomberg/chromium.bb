@@ -4,6 +4,8 @@
 
 #include "components/arc/intent_helper/local_activity_resolver.h"
 
+#include <utility>
+
 #include "url/gurl.h"
 
 namespace arc {

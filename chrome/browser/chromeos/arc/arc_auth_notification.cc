@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"

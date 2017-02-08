@@ -4,6 +4,8 @@
 
 #include "components/arc/intent_helper/intent_filter.h"
 
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/strings/string_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
