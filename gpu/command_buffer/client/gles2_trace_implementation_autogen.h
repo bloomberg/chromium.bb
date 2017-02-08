@@ -654,10 +654,6 @@ GLuint CreateImageCHROMIUM(ClientBuffer buffer,
                            GLsizei height,
                            GLenum internalformat) override;
 void DestroyImageCHROMIUM(GLuint image_id) override;
-GLuint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
-                                          GLsizei height,
-                                          GLenum internalformat,
-                                          GLenum usage) override;
 void DescheduleUntilFinishedCHROMIUM() override;
 void GetTranslatedShaderSourceANGLE(GLuint shader,
                                     GLsizei bufsize,

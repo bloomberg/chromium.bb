@@ -582,16 +582,6 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
   return new_id;
 }
 
-int32_t GLManager::CreateGpuMemoryBufferImage(size_t width,
-                                              size_t height,
-                                              unsigned internalformat,
-                                              unsigned usage) {
-  DCHECK_EQ(usage, static_cast<unsigned>(GL_READ_WRITE_CHROMIUM));
-  std::unique_ptr<gfx::GpuMemoryBuffer> buffer = CreateGpuMemoryBuffer(
-      gfx::Size(width, height), gfx::BufferFormat::RGBA_8888);
-  return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
-}
-
 void GLManager::DestroyImage(int32_t id) {
   gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
   DCHECK(image_manager);

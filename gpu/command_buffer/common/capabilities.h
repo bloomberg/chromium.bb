@@ -157,7 +157,7 @@ struct GPU_EXPORT Capabilities {
   // When this parameter is true, a CHROMIUM image created with RGB format will
   // actually have RGBA format. The client is responsible for handling most of
   // the complexities associated with this. See
-  // gpu/GLES2/extensions/CHROMIUM/CHROMIUM_gpu_memory_buffer_image.txt for more
+  // gpu/GLES2/extensions/CHROMIUM/CHROMIUM_image.txt for more
   // details.
   bool chromium_image_rgb_emulation = false;
 

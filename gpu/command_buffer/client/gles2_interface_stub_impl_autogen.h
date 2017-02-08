@@ -898,13 +898,6 @@ GLuint GLES2InterfaceStub::CreateImageCHROMIUM(ClientBuffer /* buffer */,
   return 0;
 }
 void GLES2InterfaceStub::DestroyImageCHROMIUM(GLuint /* image_id */) {}
-GLuint GLES2InterfaceStub::CreateGpuMemoryBufferImageCHROMIUM(
-    GLsizei /* width */,
-    GLsizei /* height */,
-    GLenum /* internalformat */,
-    GLenum /* usage */) {
-  return 0;
-}
 void GLES2InterfaceStub::DescheduleUntilFinishedCHROMIUM() {}
 void GLES2InterfaceStub::GetTranslatedShaderSourceANGLE(GLuint /* shader */,
                                                         GLsizei /* bufsize */,

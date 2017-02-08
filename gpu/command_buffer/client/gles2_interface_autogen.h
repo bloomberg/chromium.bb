@@ -675,10 +675,6 @@ virtual GLuint CreateImageCHROMIUM(ClientBuffer buffer,
                                    GLsizei height,
                                    GLenum internalformat) = 0;
 virtual void DestroyImageCHROMIUM(GLuint image_id) = 0;
-virtual GLuint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
-                                                  GLsizei height,
-                                                  GLenum internalformat,
-                                                  GLenum usage) = 0;
 virtual void DescheduleUntilFinishedCHROMIUM() = 0;
 virtual void GetTranslatedShaderSourceANGLE(GLuint shader,
                                             GLsizei bufsize,

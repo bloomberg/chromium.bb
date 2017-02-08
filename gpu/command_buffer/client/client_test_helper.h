@@ -102,11 +102,6 @@ class MockClientGpuControl : public GpuControl {
                        size_t height,
                        unsigned internalformat));
   MOCK_METHOD1(DestroyImage, void(int32_t id));
-  MOCK_METHOD4(CreateGpuMemoryBufferImage,
-               int32_t(size_t width,
-                       size_t height,
-                       unsigned internalformat,
-                       unsigned usage));
   MOCK_METHOD2(SignalQuery,
                void(uint32_t query, const base::Closure& callback));
   MOCK_METHOD1(CreateStreamTexture, uint32_t(uint32_t));

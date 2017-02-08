@@ -1313,14 +1313,6 @@ GLuint GL_APIENTRY GLES2CreateImageCHROMIUM(ClientBuffer buffer,
 void GL_APIENTRY GLES2DestroyImageCHROMIUM(GLuint image_id) {
   gles2::GetGLContext()->DestroyImageCHROMIUM(image_id);
 }
-GLuint GL_APIENTRY
-GLES2CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
-                                        GLsizei height,
-                                        GLenum internalformat,
-                                        GLenum usage) {
-  return gles2::GetGLContext()->CreateGpuMemoryBufferImageCHROMIUM(
-      width, height, internalformat, usage);
-}
 void GL_APIENTRY GLES2DescheduleUntilFinishedCHROMIUM() {
   gles2::GetGLContext()->DescheduleUntilFinishedCHROMIUM();
 }
@@ -2730,11 +2722,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glDestroyImageCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glDestroyImageCHROMIUM),
-    },
-    {
-        "glCreateGpuMemoryBufferImageCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glCreateGpuMemoryBufferImageCHROMIUM),
     },
     {
         "glDescheduleUntilFinishedCHROMIUM",

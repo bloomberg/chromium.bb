@@ -112,10 +112,6 @@ class GPU_EXPORT CommandBufferProxyImpl
                       size_t height,
                       unsigned internal_format) override;
   void DestroyImage(int32_t id) override;
-  int32_t CreateGpuMemoryBufferImage(size_t width,
-                                     size_t height,
-                                     unsigned internal_format,
-                                     unsigned usage) override;
   void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetLock(base::Lock* lock) override;
   void EnsureWorkVisible() override;

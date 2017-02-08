@@ -534,10 +534,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
                                    GLsizei height,
                                    GLenum internalformat);
   void DestroyImageCHROMIUMHelper(GLuint image_id);
-  GLuint CreateGpuMemoryBufferImageCHROMIUMHelper(GLsizei width,
-                                                  GLsizei height,
-                                                  GLenum internalformat,
-                                                  GLenum usage);
 
   // Helper for GetVertexAttrib
   bool GetVertexAttribHelper(GLuint index, GLenum pname, uint32_t* param);

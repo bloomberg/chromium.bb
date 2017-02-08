@@ -51,8 +51,10 @@ TEST_F(GLIOSurfaceReadbackWorkaroundTest, ReadPixels) {
   glBindTexture(source_target, source_texture);
   glTexParameteri(source_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(source_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  GLuint image_id = glCreateGpuMemoryBufferImageCHROMIUM(
-      width, height, GL_RGBA, GL_READ_WRITE_CHROMIUM);
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer(gl_.CreateGpuMemoryBuffer(
+      gfx::Size(width, height), gfx::BufferFormat::RGBA_8888));
+  GLuint image_id =
+      glCreateImageCHROMIUM(buffer->AsClientBuffer(), width, height, GL_RGBA);
   ASSERT_NE(0u, image_id);
   glBindTexImage2DCHROMIUM(source_target, image_id);
 

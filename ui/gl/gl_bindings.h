@@ -135,9 +135,6 @@
 // GL_CHROMIUM_sync_query
 #define GL_COMMANDS_COMPLETED_CHROMIUM                   0x84F7
 
-// GL_CHROMIUM_gpu_memory_buffer_image
-#define GL_READ_WRITE_CHROMIUM                           0x78F2
-
 // GL_CHROMIUM_ycrcb_420_image
 #define GL_RGB_YCRCB_420_CHROMIUM                        0x78FA
 

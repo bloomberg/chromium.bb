@@ -48,13 +48,6 @@ class GPU_EXPORT GpuControl {
   // Destroy an image. The ID must be positive.
   virtual void DestroyImage(int32_t id) = 0;
 
-  // Create a gpu memory buffer backed image with the given dimensions and
-  // format for |usage|. Returns its ID or -1 on error.
-  virtual int32_t CreateGpuMemoryBufferImage(size_t width,
-                                             size_t height,
-                                             unsigned internalformat,
-                                             unsigned usage) = 0;
-
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared
   // passed the glEndQueryEXT() point.
   virtual void SignalQuery(uint32_t query, const base::Closure& callback) = 0;

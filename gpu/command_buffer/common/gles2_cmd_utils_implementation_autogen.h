@@ -643,9 +643,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x78EF, "GL_PIXEL_UNPACK_TRANSFER_BUFFER_BINDING_CHROMIUM",
     },
     {
-        0x78F2, "GL_READ_WRITE_CHROMIUM",
-    },
-    {
         0x78FA, "GL_RGB_YCRCB_420_CHROMIUM",
     },
     {
@@ -3995,14 +3992,6 @@ std::string GLES2Util::GetStringImageInternalFormat(uint32_t value) {
       {GL_RGB_YCBCR_422_CHROMIUM, "GL_RGB_YCBCR_422_CHROMIUM"},
       {GL_RGB_YCBCR_420V_CHROMIUM, "GL_RGB_YCBCR_420V_CHROMIUM"},
       {GL_RGBA, "GL_RGBA"},
-  };
-  return GLES2Util::GetQualifiedEnumString(string_table,
-                                           arraysize(string_table), value);
-}
-
-std::string GLES2Util::GetStringImageUsage(uint32_t value) {
-  static const EnumToString string_table[] = {
-      {GL_READ_WRITE_CHROMIUM, "GL_READ_WRITE_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

@@ -300,8 +300,10 @@ class GLCopyTextureCHROMIUMTest
 
   void CreateBackingForTexture(GLenum target, GLsizei width, GLsizei height) {
     if (target == GL_TEXTURE_RECTANGLE_ARB) {
-      GLuint image_id = glCreateGpuMemoryBufferImageCHROMIUM(
-          width, height, GL_RGBA, GL_READ_WRITE_CHROMIUM);
+      std::unique_ptr<gfx::GpuMemoryBuffer> buffer(gl_.CreateGpuMemoryBuffer(
+          gfx::Size(width, height), gfx::BufferFormat::RGBA_8888));
+      GLuint image_id = glCreateImageCHROMIUM(buffer->AsClientBuffer(), width,
+                                              height, GL_RGBA);
       glBindTexImage2DCHROMIUM(target, image_id);
     } else {
       glTexImage2D(target, 0, GL_RGBA, width, height, 0, GL_RGBA,

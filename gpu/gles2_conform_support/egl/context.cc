@@ -173,14 +173,6 @@ void Context::DestroyImage(int32_t id) {
   NOTIMPLEMENTED();
 }
 
-int32_t Context::CreateGpuMemoryBufferImage(size_t width,
-                                            size_t height,
-                                            unsigned internalformat,
-                                            unsigned usage) {
-  NOTIMPLEMENTED();
-  return -1;
-}
-
 void Context::SignalQuery(uint32_t query, const base::Closure& callback) {
   NOTIMPLEMENTED();
 }

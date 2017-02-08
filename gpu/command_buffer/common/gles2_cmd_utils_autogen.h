@@ -41,7 +41,6 @@ static std::string GetStringGetTexParamTarget(uint32_t value);
 static std::string GetStringHintMode(uint32_t value);
 static std::string GetStringHintTarget(uint32_t value);
 static std::string GetStringImageInternalFormat(uint32_t value);
-static std::string GetStringImageUsage(uint32_t value);
 static std::string GetStringIndexType(uint32_t value);
 static std::string GetStringIndexedBufferTarget(uint32_t value);
 static std::string GetStringIndexedGLState(uint32_t value);

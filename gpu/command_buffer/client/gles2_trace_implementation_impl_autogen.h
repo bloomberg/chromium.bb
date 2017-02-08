@@ -1913,17 +1913,6 @@ void GLES2TraceImplementation::DestroyImageCHROMIUM(GLuint image_id) {
   gl_->DestroyImageCHROMIUM(image_id);
 }
 
-GLuint GLES2TraceImplementation::CreateGpuMemoryBufferImageCHROMIUM(
-    GLsizei width,
-    GLsizei height,
-    GLenum internalformat,
-    GLenum usage) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "GLES2Trace::CreateGpuMemoryBufferImageCHROMIUM");
-  return gl_->CreateGpuMemoryBufferImageCHROMIUM(width, height, internalformat,
-                                                 usage);
-}
-
 void GLES2TraceImplementation::DescheduleUntilFinishedCHROMIUM() {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::DescheduleUntilFinishedCHROMIUM");

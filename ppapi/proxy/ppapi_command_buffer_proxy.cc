@@ -249,15 +249,6 @@ void PpapiCommandBufferProxy::DestroyImage(int32_t id) {
   NOTREACHED();
 }
 
-int32_t PpapiCommandBufferProxy::CreateGpuMemoryBufferImage(
-    size_t width,
-    size_t height,
-    unsigned internalformat,
-    unsigned usage) {
-  NOTREACHED();
-  return -1;
-}
-
 bool PpapiCommandBufferProxy::Send(IPC::Message* msg) {
   DCHECK(last_state_.error == gpu::error::kNoError);
 

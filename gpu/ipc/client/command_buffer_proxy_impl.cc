@@ -545,25 +545,6 @@ void CommandBufferProxyImpl::DestroyImage(int32_t id) {
   Send(new GpuCommandBufferMsg_DestroyImage(route_id_, id));
 }
 
-int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
-    size_t width,
-    size_t height,
-    unsigned internal_format,
-    unsigned usage) {
-  CheckLock();
-  std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
-      channel_->gpu_memory_buffer_manager()->CreateGpuMemoryBuffer(
-          gfx::Size(width, height),
-          gpu::DefaultBufferFormatForImageFormat(internal_format),
-          gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle));
-  if (!buffer)
-    return -1;
-
-  int32_t result =
-      CreateImage(buffer->AsClientBuffer(), width, height, internal_format);
-  return result;
-}
-
 uint32_t CommandBufferProxyImpl::CreateStreamTexture(uint32_t texture_id) {
   CheckLock();
   base::AutoLock lock(last_state_lock_);

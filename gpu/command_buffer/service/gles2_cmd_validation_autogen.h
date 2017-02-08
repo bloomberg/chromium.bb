@@ -131,7 +131,6 @@ HintModeValidator hint_mode;
 
 ValueValidator<GLenum> hint_target;
 ValueValidator<GLenum> image_internal_format;
-ValueValidator<GLenum> image_usage;
 ValueValidator<GLenum> index_type;
 class IndexedBufferTargetValidator {
  public:

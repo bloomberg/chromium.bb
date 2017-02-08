@@ -828,26 +828,6 @@ void InProcessCommandBuffer::DestroyImageOnGpuThread(int32_t id) {
   image_manager->RemoveImage(id);
 }
 
-int32_t InProcessCommandBuffer::CreateGpuMemoryBufferImage(
-    size_t width,
-    size_t height,
-    unsigned internalformat,
-    unsigned usage) {
-  CheckSequencedThread();
-
-  DCHECK(gpu_memory_buffer_manager_);
-  std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
-      gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-          gfx::Size(base::checked_cast<int>(width),
-                    base::checked_cast<int>(height)),
-          gpu::DefaultBufferFormatForImageFormat(internalformat),
-          gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle));
-  if (!buffer)
-    return -1;
-
-  return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
-}
-
 void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {
   DCHECK(!sync_point_client_->client_state()->IsFenceSyncReleased(release));
   gles2::MailboxManager* mailbox_manager =

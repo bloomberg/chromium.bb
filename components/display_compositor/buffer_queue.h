@@ -37,9 +37,9 @@ namespace display_compositor {
 class GLHelper;
 
 // Provides a surface that manages its own buffers, backed by GpuMemoryBuffers
-// created using CHROMIUM_gpu_memory_buffer_image. Double/triple buffering is
-// implemented internally. Doublebuffering occurs if PageFlipComplete is called
-// before the next BindFramebuffer call, otherwise it creates extra buffers.
+// created using CHROMIUM_image. Double/triple buffering is implemented
+// internally. Doublebuffering occurs if PageFlipComplete is called before the
+// next BindFramebuffer call, otherwise it creates extra buffers.
 class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
  public:
   BufferQueue(gpu::gles2::GLES2Interface* gl,

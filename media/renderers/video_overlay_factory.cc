@@ -25,8 +25,13 @@ class VideoOverlayFactory::Texture {
         gpu_factories_->GetGLContextLock());
     if (lock) {
       gpu::gles2::GLES2Interface* gl = lock->ContextGL();
-      image_id_ = gl->CreateGpuMemoryBufferImageCHROMIUM(
-          1, 1, GL_RGBA, GL_READ_WRITE_CHROMIUM);
+      gpu_memory_buffer_ = gpu_factories_->CreateGpuMemoryBuffer(
+          gfx::Size(1, 1), gfx::BufferFormat::RGBA_8888,
+          gfx::BufferUsage::SCANOUT);
+      if (gpu_memory_buffer_) {
+        image_id_ = gl->CreateImageCHROMIUM(
+            gpu_memory_buffer_->AsClientBuffer(), 1, 1, GL_RGBA);
+      }
       if (image_id_) {
         gl->GenTextures(1, &texture_id_);
         gl->BindTexture(GL_TEXTURE_2D, texture_id_);
@@ -65,6 +70,7 @@ class VideoOverlayFactory::Texture {
   friend class VideoOverlayFactory;
   GpuVideoAcceleratorFactories* gpu_factories_;
 
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
   GLuint image_id_;
   GLuint texture_id_;
   gpu::Mailbox mailbox_;

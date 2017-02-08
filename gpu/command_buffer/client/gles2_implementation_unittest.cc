@@ -3203,8 +3203,7 @@ TEST_F(GLES2ImplementationTest, GetString) {
       "foobar "
       "GL_EXT_unpack_subimage "
       "GL_CHROMIUM_map_sub "
-      "GL_CHROMIUM_image "
-      "GL_CHROMIUM_gpu_memory_buffer_image";
+      "GL_CHROMIUM_image";
   const char kBad = 0x12;
   struct Cmds {
     cmd::SetBucketSize set_bucket_size1;
@@ -4607,43 +4606,6 @@ TEST_F(GLES2ImplementationTest, ReportLossReentrant) {
   // The lost context callback should not be run yet to avoid calling back into
   // clients re-entrantly, and having them re-enter GLES2Implementation.
   EXPECT_EQ(0, lost_count);
-}
-
-TEST_F(GLES2ImplementationManualInitTest, LoseContextOnOOM) {
-  ContextInitOptions init_options;
-  init_options.lose_context_when_out_of_memory = true;
-  ASSERT_TRUE(Initialize(init_options));
-
-  struct Cmds {
-    cmds::LoseContextCHROMIUM cmd;
-  };
-
-  GLsizei max = std::numeric_limits<GLsizei>::max();
-  EXPECT_CALL(*gpu_control_, CreateGpuMemoryBufferImage(max, max, _, _))
-      .WillOnce(Return(-1));
-  gl_->CreateGpuMemoryBufferImageCHROMIUM(max, max, GL_RGBA,
-                                          GL_READ_WRITE_CHROMIUM);
-  // The context should be lost.
-  Cmds expected;
-  expected.cmd.Init(GL_GUILTY_CONTEXT_RESET_ARB, GL_UNKNOWN_CONTEXT_RESET_ARB);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(GLES2ImplementationManualInitTest, NoLoseContextOnOOM) {
-  ContextInitOptions init_options;
-  ASSERT_TRUE(Initialize(init_options));
-
-  struct Cmds {
-    cmds::LoseContextCHROMIUM cmd;
-  };
-
-  GLsizei max = std::numeric_limits<GLsizei>::max();
-  EXPECT_CALL(*gpu_control_, CreateGpuMemoryBufferImage(max, max, _, _))
-      .WillOnce(Return(-1));
-  gl_->CreateGpuMemoryBufferImageCHROMIUM(max, max, GL_RGBA,
-                                          GL_READ_WRITE_CHROMIUM);
-  // The context should not be lost.
-  EXPECT_TRUE(NoCommandsWritten());
 }
 
 TEST_F(GLES2ImplementationManualInitTest, FailInitOnBGRMismatch1) {

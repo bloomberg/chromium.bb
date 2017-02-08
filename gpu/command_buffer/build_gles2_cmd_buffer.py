@@ -2146,12 +2146,6 @@ _NAMED_TYPE_INFO = {
       'GL_RGBA',
     ],
   },
-  'ImageUsage': {
-    'type': 'GLenum',
-    'valid': [
-      'GL_READ_WRITE_CHROMIUM',
-    ],
-  },
   'UniformParameter': {
     'type': 'GLenum',
     'is_complete': True,
@@ -2668,14 +2662,6 @@ _FUNCTION_INFO = {
   'DestroyImageCHROMIUM': {
     'type': 'NoCommand',
     'extension': "CHROMIUM_image",
-    'trace_level': 1,
-  },
-  'CreateGpuMemoryBufferImageCHROMIUM': {
-    'type': 'NoCommand',
-    'cmd_args':
-        'GLsizei width, GLsizei height, GLenum internalformat, GLenum usage',
-    'result': ['GLuint'],
-    'extension': "CHROMIUM_gpu_memory_buffer_image",
     'trace_level': 1,
   },
   'DescheduleUntilFinishedCHROMIUM': {
