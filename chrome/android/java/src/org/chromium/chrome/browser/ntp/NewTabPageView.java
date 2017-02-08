@@ -823,7 +823,7 @@ public class NewTabPageView
 
     @Override
     public void onTileIconChanged(Tile tile) {
-        mTileGridLayout.updateIconView(tile.getUrl(), tile.getIcon());
+        mTileGridLayout.updateIconView(tile);
         mSnapshotTileGridChanged = true;
     }
 

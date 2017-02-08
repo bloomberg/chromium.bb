@@ -12,14 +12,14 @@ import org.chromium.chrome.browser.ntp.MostVisitedTileType.MostVisitedTileTypeEn
 import org.chromium.chrome.browser.ntp.NTPTileSource.NTPTileSourceEnum;
 
 /**
- * Holds the details of a site tile.
+ * Holds the details to populate a site suggestion tile.
  */
 public class Tile {
     private final String mTitle;
     private final String mUrl;
     private final String mWhitelistIconPath;
     private final boolean mOfflineAvailable;
-    private int mIndex;
+    private final int mIndex;
 
     @NTPTileSourceEnum
     private final int mSource;
@@ -31,8 +31,8 @@ public class Tile {
     private Drawable mIcon;
 
     /**
-     * @param title The title of the page.
-     * @param url The URL of the page.
+     * @param title The tile title.
+     * @param url The site URL.
      * @param whitelistIconPath The path to the icon image file, if this is a whitelisted tile.
      * Empty otherwise.
      * @param offlineAvailable Whether there is an offline copy of the URL available.
@@ -50,7 +50,7 @@ public class Tile {
     }
 
     /**
-     * @return The URL of this tile.
+     * @return The site URL of this tile.
      */
     public String getUrl() {
         return mUrl;
@@ -85,10 +85,12 @@ public class Tile {
     }
 
     /**
-     * Updates this tile's index in the list of tiles.
+     * @return The source of this tile. Used for metrics tracking. Valid values are listed in
+     * {@code NTPTileSource}.
      */
-    public void setIndex(int index) {
-        mIndex = index;
+    @NTPTileSourceEnum
+    public int getSource() {
+        return mSource;
     }
 
     /**
@@ -106,15 +108,6 @@ public class Tile {
      */
     public void setType(@MostVisitedTileTypeEnum int type) {
         mType = type;
-    }
-
-    /**
-     * @return The source of this tile.  Used for metrics tracking. Valid values are listed in
-     * {@code NTPTileSource}.
-     */
-    @NTPTileSourceEnum
-    public int getSource() {
-        return mSource;
     }
 
     /**

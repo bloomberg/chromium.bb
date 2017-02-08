@@ -86,7 +86,7 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
         }
 
         public void updateIconView(Tile tile) {
-            mLayout.updateIconView(tile.getUrl(), tile.getIcon());
+            mLayout.updateIconView(tile);
         }
 
         /**

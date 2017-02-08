@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -69,15 +68,14 @@ public class TileGridLayout extends FrameLayout {
 
     /**
      * Sets a new icon on the child view with a matching URL.
-     * @param url The site URL of the child tile view.
-     * @param icon The icon to set.
+     * @param tile The tile that holds the data to populate the tile view.
      */
-    public void updateIconView(String url, Drawable icon) {
+    public void updateIconView(Tile tile) {
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
             TileView tileView = (TileView) getChildAt(i);
-            if (TextUtils.equals(url, tileView.getUrl())) {
-                tileView.setIcon(icon);
+            if (TextUtils.equals(tile.getUrl(), tileView.getTile().getUrl())) {
+                tileView.renderIcon();
                 break;
             }
         }

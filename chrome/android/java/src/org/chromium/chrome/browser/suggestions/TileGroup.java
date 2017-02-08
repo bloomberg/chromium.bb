@@ -31,13 +31,14 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.MostVisitedTileType;
-import org.chromium.chrome.browser.ntp.TitleUtil;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -192,11 +193,43 @@ public class TileGroup implements MostVisitedURLsObserver {
         mTileGroupDelegate.setMostVisitedURLsObserver(this, maxResults);
     }
 
-    public void renderTileViews(ViewGroup parentView, boolean trackLoadTasks) {
-        parentView.removeAllViews();
+    /**
+     * Renders tile views in the given {@link TileGridLayout}, reusing existing tile views where
+     * possible because view inflation and icon loading are slow.
+     * @param tileGridLayout The layout to render the tile views into.
+     * @param trackLoadTasks Whether to track load tasks.
+     */
+    public void renderTileViews(TileGridLayout tileGridLayout, boolean trackLoadTasks) {
+        // Map the old tile views by url so they can be reused later.
+        Map<String, TileView> oldTileViews = new HashMap<>();
+        int childCount = tileGridLayout.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            TileView tileView = (TileView) tileGridLayout.getChildAt(i);
+            oldTileViews.put(tileView.getTile().getUrl(), tileView);
+        }
+
+        // Remove all views from the layout because even if they are reused later they'll have to be
+        // added back in the correct order.
+        tileGridLayout.removeAllViews();
 
         for (final Tile tile : mTiles) {
-            View tileView = buildTileView(tile, parentView, trackLoadTasks);
+            // First see if an old view can be reused.
+            if (oldTileViews.containsKey(tile.getUrl())) {
+                TileView oldTileView = oldTileViews.get(tile.getUrl());
+                if (TextUtils.equals(tile.getTitle(), oldTileView.getTile().getTitle())
+                        && tile.isOfflineAvailable() == oldTileView.getTile().isOfflineAvailable()
+                        && TextUtils.equals(tile.getWhitelistIconPath(),
+                                   oldTileView.getTile().getWhitelistIconPath())) {
+                    tileGridLayout.addView(oldTileView);
+
+                    // Re-render the icon because it may not have been painted when re-added.
+                    oldTileView.renderIcon();
+                    continue;
+                }
+            }
+
+            // No view was reused, create a new one.
+            TileView tileView = buildTileView(tile, tileGridLayout, trackLoadTasks);
 
             tileView.setOnClickListener(new OnClickListener() {
                 @Override
@@ -236,8 +269,7 @@ public class TileGroup implements MostVisitedURLsObserver {
                             });
                 }
             });
-
-            parentView.addView(tileView);
+            tileGridLayout.addView(tileView);
         }
     }
 
@@ -251,42 +283,16 @@ public class TileGroup implements MostVisitedURLsObserver {
 
     private void buildTiles(String[] titles, String[] urls, String[] whitelistIconPaths,
             @Nullable Set<String> offlineUrls, int[] sources) {
-        Tile[] oldTiles = mTiles;
-        int oldTileCount = oldTiles == null ? 0 : oldTiles.length;
+        int oldTileCount = mTiles == null ? 0 : mTiles.length;
         mTiles = new Tile[titles.length];
 
         boolean isInitialLoad = !mHasReceivedData;
         mHasReceivedData = true;
 
-        // Add the tile views to the layout.
         for (int i = 0; i < titles.length; i++) {
-            String url = urls[i];
-            String title = titles[i];
-            String whitelistIconPath = whitelistIconPaths[i];
-            boolean offlineAvailable = offlineUrls != null && offlineUrls.contains(url);
-
-            // Look for an existing tile to reuse.
-            // TODO(mvanouwerkerk): Ensure we don't create views and load icons more often than
-            // necessary.
-            Tile tile = null;
-            for (int j = 0; j < oldTileCount; j++) {
-                Tile oldTile = oldTiles[j];
-                if (oldTile != null && TextUtils.equals(url, oldTile.getUrl())
-                        && TextUtils.equals(title, oldTile.getTitle())
-                        && offlineAvailable == oldTile.isOfflineAvailable()
-                        && whitelistIconPath.equals(oldTile.getWhitelistIconPath())) {
-                    tile = oldTile;
-                    tile.setIndex(i);
-                    oldTiles[j] = null;
-                    break;
-                }
-            }
-
-            // If nothing can be reused, create a new tile.
-            if (tile == null) {
-                tile = new Tile(title, url, whitelistIconPath, offlineAvailable, i, sources[i]);
-            }
-            mTiles[i] = tile;
+            boolean offlineAvailable = offlineUrls != null && offlineUrls.contains(urls[i]);
+            mTiles[i] = new Tile(
+                    titles[i], urls[i], whitelistIconPaths[i], offlineAvailable, i, sources[i]);
         }
 
         if (oldTileCount != mTiles.length) mObserver.onTileCountChanged();
@@ -297,13 +303,17 @@ public class TileGroup implements MostVisitedURLsObserver {
         mObserver.onTileDataChanged();
     }
 
-    private View buildTileView(Tile tile, ViewGroup parentView, boolean trackLoadTask) {
-        TileView view = (TileView) LayoutInflater.from(parentView.getContext())
-                                .inflate(R.layout.tile_view, parentView, false);
-        view.setTitle(TitleUtil.getTitleForDisplay(tile.getTitle(), tile.getUrl()));
-        view.setOfflineAvailable(tile.isOfflineAvailable());
-        view.setIcon(tile.getIcon());
-        view.setUrl(tile.getUrl());
+    /**
+     * Inflates a new tile view, initializes it, and loads an icon for it.
+     * @param tile The tile that holds the data to populate the new tile view.
+     * @param parentView The parent of the new tile view.
+     * @param trackLoadTask Whether to track a load task.
+     * @return The new tile view.
+     */
+    private TileView buildTileView(Tile tile, ViewGroup parentView, boolean trackLoadTask) {
+        TileView tileView = (TileView) LayoutInflater.from(parentView.getContext())
+                                    .inflate(R.layout.tile_view, parentView, false);
+        tileView.initialize(tile);
 
         LargeIconCallback iconCallback = new LargeIconCallbackImpl(tile, trackLoadTask);
         if (trackLoadTask) mObserver.onLoadTaskAdded();
@@ -311,7 +321,7 @@ public class TileGroup implements MostVisitedURLsObserver {
             mUiDelegate.getLargeIconForUrl(tile.getUrl(), mMinIconSize, iconCallback);
         }
 
-        return view;
+        return tileView;
     }
 
     private boolean loadWhitelistIcon(Tile tile, LargeIconCallback iconCallback) {

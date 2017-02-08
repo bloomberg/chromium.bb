@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -14,13 +12,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.TitleUtil;
 
 /**
  * The view for a site suggestion tile. Displays the title of the site beneath a large icon. If a
  * large icon isn't available, displays a rounded rectangle with a single letter in its place.
  */
 public class TileView extends FrameLayout {
-    private String mUrl;
+    /**
+     * The tile that holds the data to populate this view.
+     */
+    private Tile mTile;
 
     /**
      * Constructor for inflating from XML.
@@ -30,38 +32,30 @@ public class TileView extends FrameLayout {
     }
 
     /**
-     * Sets the title text.
+     * Initializes the view using the data held by {@code tile}. This should be called immediately
+     * after inflation.
+     * @param tile The tile that holds the data to populate this view.
      */
-    public void setTitle(String title) {
-        ((TextView) findViewById(R.id.tile_view_title)).setText(title);
-    }
-
-    /**
-     * Sets the icon, or null to clear it.
-     */
-    public void setIcon(@Nullable Drawable icon) {
-        ((ImageView) findViewById(R.id.tile_view_icon)).setImageDrawable(icon);
-    }
-
-    /**
-     * Sets whether the page is available offline.
-     */
-    public void setOfflineAvailable(boolean offlineAvailable) {
+    public void initialize(Tile tile) {
+        mTile = tile;
+        ((TextView) findViewById(R.id.tile_view_title))
+                .setText(TitleUtil.getTitleForDisplay(mTile.getTitle(), mTile.getUrl()));
+        renderIcon();
         findViewById(R.id.offline_badge)
-                .setVisibility(offlineAvailable ? View.VISIBLE : View.INVISIBLE);
+                .setVisibility(mTile.isOfflineAvailable() ? View.VISIBLE : View.GONE);
     }
 
     /**
-     * Sets the site URL. This is used to identify the view.
+     * @return The tile that holds the data to populate this view.
      */
-    public void setUrl(String url) {
-        mUrl = url;
+    public Tile getTile() {
+        return mTile;
     }
 
     /**
-     * Gets the site URL. This is used to identify the view.
+     * Renders the icon held by the {@link Tile} or clears it from the view if the icon is null.
      */
-    public String getUrl() {
-        return mUrl;
+    public void renderIcon() {
+        ((ImageView) findViewById(R.id.tile_view_icon)).setImageDrawable(mTile.getIcon());
     }
 }
