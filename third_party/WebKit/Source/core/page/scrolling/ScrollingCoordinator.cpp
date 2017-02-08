@@ -487,9 +487,9 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(
   WebLayer* containerLayer = toWebLayer(scrollableArea->layerForContainer());
   if (webLayer) {
     webLayer->setScrollClipLayer(containerLayer);
-    DoublePoint scrollPosition(FloatPoint(scrollableArea->scrollOrigin()) +
-                               scrollableArea->getScrollOffset());
-    webLayer->setScrollPositionDouble(scrollPosition);
+    FloatPoint scrollPosition(scrollableArea->scrollOrigin() +
+                              scrollableArea->getScrollOffset());
+    webLayer->setScrollPosition(scrollPosition);
 
     webLayer->setBounds(scrollableArea->contentsSize());
     bool canScrollX = scrollableArea->userInputScrollable(HorizontalScrollbar);

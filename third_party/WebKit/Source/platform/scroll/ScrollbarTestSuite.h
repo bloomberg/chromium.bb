@@ -63,6 +63,9 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
   bool scrollAnimatorEnabled() const override { return false; }
   int pageStep(ScrollbarOrientation) const override { return 0; }
   void scrollControlWasSetNeedsPaintInvalidation() {}
+  void setScrollOrigin(const IntPoint& origin) {
+    ScrollableArea::setScrollOrigin(origin);
+  }
 
   RefPtr<WebTaskRunner> getTimerTaskRunner() const final {
     return Platform::current()->currentThread()->scheduler()->timerTaskRunner();

@@ -823,7 +823,8 @@ void Layer::SetScrollOffsetFromImplSide(
     property_trees->needs_rebuild = true;
 
   if (!inputs_.did_scroll_callback.is_null())
-    inputs_.did_scroll_callback.Run();
+    inputs_.did_scroll_callback.Run(scroll_offset);
+
   // The callback could potentially change the layer structure:
   // "this" may have been destroyed during the process.
 }

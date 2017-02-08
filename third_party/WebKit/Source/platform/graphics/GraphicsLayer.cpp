@@ -1152,21 +1152,12 @@ void GraphicsLayer::setScrollableArea(ScrollableArea* scrollableArea,
   m_scrollableArea = scrollableArea;
 
   // VisualViewport scrolling may involve pinch zoom and gets routed through
-  // WebViewImpl explicitly rather than via GraphicsLayer::didScroll since it
+  // WebViewImpl explicitly rather than via ScrollableArea::didScroll since it
   // needs to be set in tandem with the page scale delta.
   if (isVisualViewport)
-    m_layer->layer()->setScrollClient(0);
+    m_layer->layer()->setScrollClient(nullptr);
   else
-    m_layer->layer()->setScrollClient(this);
-}
-
-void GraphicsLayer::didScroll() {
-  if (m_scrollableArea) {
-    ScrollOffset newOffset =
-        toFloatSize(m_layer->layer()->scrollPositionDouble() -
-                    m_scrollableArea->scrollOrigin());
-    m_scrollableArea->setScrollOffset(newOffset, CompositorScroll);
-  }
+    m_layer->layer()->setScrollClient(scrollableArea);
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

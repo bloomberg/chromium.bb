@@ -35,6 +35,7 @@
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
+#include "public/platform/WebLayerScrollClient.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
@@ -59,7 +60,8 @@ enum IncludeScrollbarsInRect {
   IncludeScrollbars,
 };
 
-class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
+class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
+                                       public WebLayerScrollClient {
   WTF_MAKE_NONCOPYABLE(ScrollableArea);
 
  public:
@@ -371,6 +373,9 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // Returns the task runner to be used for scrollable area timers.
   // Ideally a frame-specific throttled one can be used.
   virtual RefPtr<WebTaskRunner> getTimerTaskRunner() const = 0;
+
+  // Callback for compositor-side scrolling.
+  void didScroll(const gfx::ScrollOffset&) override;
 
  protected:
   ScrollableArea();

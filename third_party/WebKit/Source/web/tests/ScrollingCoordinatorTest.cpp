@@ -226,8 +226,8 @@ TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   WebLayer* webScrollLayer =
       compositedLayerMapping->scrollingContentsLayer()->platformLayer();
   ASSERT_TRUE(webScrollLayer);
-  ASSERT_NEAR(1.2f, webScrollLayer->scrollPositionDouble().x, 0.01f);
-  ASSERT_NEAR(1.2f, webScrollLayer->scrollPositionDouble().y, 0.01f);
+  ASSERT_NEAR(1.2f, webScrollLayer->scrollPosition().x, 0.01f);
+  ASSERT_NEAR(1.2f, webScrollLayer->scrollPosition().y, 0.01f);
 
   RuntimeEnabledFeatures::setFractionalScrollOffsetsEnabled(
       origFractionalOffsetsEnabled);
@@ -740,7 +740,7 @@ TEST_P(ScrollingCoordinatorTest, rtlIframe) {
                      ->isOverlayScrollbar()
                  ? 0
                  : 15);
-  ASSERT_EQ(expectedScrollPosition, webScrollLayer->scrollPositionDouble().x);
+  ASSERT_EQ(expectedScrollPosition, webScrollLayer->scrollPosition().x);
 }
 
 TEST_P(ScrollingCoordinatorTest, setupScrollbarLayerShouldNotCrash) {

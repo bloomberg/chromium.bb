@@ -29,7 +29,7 @@
 #include "WebBlendMode.h"
 #include "WebColor.h"
 #include "WebCommon.h"
-#include "WebDoublePoint.h"
+#include "WebFloatPoint.h"
 #include "WebFloatPoint3D.h"
 #include "WebFloatSize.h"
 #include "WebPoint.h"
@@ -158,8 +158,8 @@ class WebLayer {
   virtual void setClipParent(WebLayer*) = 0;
 
   // Scrolling
-  virtual void setScrollPositionDouble(WebDoublePoint) = 0;
-  virtual WebDoublePoint scrollPositionDouble() const = 0;
+  virtual void setScrollPosition(WebFloatPoint) = 0;
+  virtual WebFloatPoint scrollPosition() const = 0;
 
   // To set a WebLayer as scrollable we must specify the corresponding clip
   // layer.

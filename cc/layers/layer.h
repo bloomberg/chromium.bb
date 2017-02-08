@@ -251,7 +251,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.touch_event_handler_region;
   }
 
-  void set_did_scroll_callback(const base::Closure& callback) {
+  void set_did_scroll_callback(
+      const base::Callback<void(const gfx::ScrollOffset&)>& callback) {
     inputs_.did_scroll_callback = callback;
   }
 
@@ -614,7 +615,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     // The following elements can not and are not serialized.
     LayerClient* client;
-    base::Closure did_scroll_callback;
+    base::Callback<void(const gfx::ScrollOffset&)> did_scroll_callback;
     std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
 
     gfx::Size preferred_raster_bounds;

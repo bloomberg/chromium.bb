@@ -217,13 +217,13 @@ bool WebLayerImpl::hasTickingAnimationForTesting() {
   return layer_->HasTickingAnimationForTesting();
 }
 
-void WebLayerImpl::setScrollPositionDouble(blink::WebDoublePoint position) {
+void WebLayerImpl::setScrollPosition(blink::WebFloatPoint position) {
   layer_->SetScrollOffset(gfx::ScrollOffset(position.x, position.y));
 }
 
-blink::WebDoublePoint WebLayerImpl::scrollPositionDouble() const {
-  return blink::WebDoublePoint(layer_->scroll_offset().x(),
-                               layer_->scroll_offset().y());
+blink::WebFloatPoint WebLayerImpl::scrollPosition() const {
+  return blink::WebFloatPoint(layer_->scroll_offset().x(),
+                              layer_->scroll_offset().y());
 }
 
 void WebLayerImpl::setScrollClipLayer(WebLayer* clip_layer) {
@@ -416,7 +416,8 @@ void WebLayerImpl::setScrollClient(blink::WebLayerScrollClient* scroll_client) {
         base::Bind(&blink::WebLayerScrollClient::didScroll,
                    base::Unretained(scroll_client)));
   } else {
-    layer_->set_did_scroll_callback(base::Closure());
+    layer_->set_did_scroll_callback(
+        base::Callback<void(const gfx::ScrollOffset&)>());
   }
 }
 

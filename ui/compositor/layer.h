@@ -349,7 +349,9 @@ class COMPOSITOR_EXPORT Layer
 
   // Makes this Layer scrollable, clipping to |parent_clip_layer|. |on_scroll|
   // is invoked when scrolling performed by the cc::InputHandler is committed.
-  void SetScrollable(Layer* parent_clip_layer, const base::Closure& on_scroll);
+  void SetScrollable(
+      Layer* parent_clip_layer,
+      const base::Callback<void(const gfx::ScrollOffset&)>& on_scroll);
 
   // Gets and sets the current scroll offset of the layer.
   gfx::ScrollOffset CurrentScrollOffset() const;

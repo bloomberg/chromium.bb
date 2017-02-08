@@ -253,4 +253,18 @@ TEST_F(ScrollableAreaTest, RecalculatesScrollbarOverlayIfBackgroundChanges) {
             scrollableArea->getScrollbarOverlayColorTheme());
 }
 
+TEST_F(ScrollableAreaTest, ScrollableAreaDidScroll) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+
+  MockScrollableArea* scrollableArea =
+      MockScrollableArea::create(ScrollOffset(100, 100));
+  scrollableArea->setScrollOrigin(IntPoint(20, 30));
+  scrollableArea->didScroll(gfx::ScrollOffset(40, 51));
+
+  // After calling didScroll, the new offset should account for scroll origin.
+  EXPECT_EQ(20, scrollableArea->scrollOffsetInt().width());
+  EXPECT_EQ(21, scrollableArea->scrollOffsetInt().height());
+}
+
 }  // namespace blink

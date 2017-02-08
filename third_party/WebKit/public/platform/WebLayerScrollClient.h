@@ -32,7 +32,7 @@ namespace blink {
 // A client that is notified of scrolling on a WebLayer.
 class BLINK_PLATFORM_EXPORT WebLayerScrollClient {
  public:
-  virtual void didScroll() = 0;
+  virtual void didScroll(const gfx::ScrollOffset&) = 0;
 
  protected:
   virtual ~WebLayerScrollClient() {}

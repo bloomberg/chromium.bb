@@ -662,6 +662,12 @@ IntSize ScrollableArea::excludeScrollbars(const IntSize& size) const {
                  std::max(0, size.height() - horizontalScrollbarHeight()));
 }
 
+void ScrollableArea::didScroll(const gfx::ScrollOffset& offset) {
+  ScrollOffset newOffset = ScrollOffset(offset.x() - scrollOrigin().x(),
+                                        offset.y() - scrollOrigin().y());
+  setScrollOffset(newOffset, CompositorScroll);
+}
+
 DEFINE_TRACE(ScrollableArea) {
   visitor->trace(m_scrollAnimator);
   visitor->trace(m_programmaticScrollAnimator);

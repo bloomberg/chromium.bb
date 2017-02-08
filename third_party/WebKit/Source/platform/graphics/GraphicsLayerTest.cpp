@@ -204,16 +204,4 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
   ScrollOffset m_scrollOffset;
 };
 
-TEST_F(GraphicsLayerTest, applyScrollToScrollableArea) {
-  FakeScrollableArea* scrollableArea = FakeScrollableArea::create();
-  m_graphicsLayer->setScrollableArea(scrollableArea, false);
-
-  WebDoublePoint scrollPosition(7, 9);
-  m_platformLayer->setScrollPositionDouble(scrollPosition);
-  m_graphicsLayer->didScroll();
-
-  EXPECT_FLOAT_EQ(scrollPosition.x, scrollableArea->getScrollOffset().width());
-  EXPECT_FLOAT_EQ(scrollPosition.y, scrollableArea->getScrollOffset().height());
-}
-
 }  // namespace blink
