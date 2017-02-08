@@ -986,6 +986,42 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGPath path id='tabgroupTriangle__0'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGTSpan tspan",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g id='tabgroupTriangle__0_content'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject removal"
+    },
+    {
       "object": "LayoutSVGContainer g id='tabgroupRect'",
       "reason": "became visible"
     },
