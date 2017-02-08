@@ -119,8 +119,7 @@ class WebContentsFrameBindingSet : public WebContentsBindingSet {
   class FrameInterfaceBinder : public Binder {
    public:
     FrameInterfaceBinder(WebContentsFrameBindingSet* binding_set,
-                         Interface* impl)
-        : impl_(impl), bindings_(mojo::BindingSetDispatchMode::WITH_CONTEXT) {
+                         Interface* impl) : impl_(impl) {
       bindings_.set_pre_dispatch_handler(
           base::Bind(&WebContentsFrameBindingSet::WillDispatchForContext,
                      base::Unretained(binding_set)));
@@ -138,13 +137,13 @@ class WebContentsFrameBindingSet : public WebContentsBindingSet {
     }
 
     Interface* const impl_;
-    mojo::AssociatedBindingSet<Interface> bindings_;
+    mojo::AssociatedBindingSet<Interface, RenderFrameHost*> bindings_;
 
     DISALLOW_COPY_AND_ASSIGN(FrameInterfaceBinder);
   };
 
-  void WillDispatchForContext(void* context) {
-    current_target_frame_ = static_cast<RenderFrameHost*>(context);
+  void WillDispatchForContext(RenderFrameHost* const& frame_host) {
+    current_target_frame_ = frame_host;
   }
 
   RenderFrameHost* current_target_frame_ = nullptr;

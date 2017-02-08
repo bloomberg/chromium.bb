@@ -680,8 +680,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       shared_worker_ref_count_(0),
       is_worker_ref_count_disabled_(false),
       route_provider_binding_(this),
-      associated_interface_provider_bindings_(
-          mojo::BindingSetDispatchMode::WITH_CONTEXT),
       visible_widgets_(0),
       is_process_backgrounded_(false),
       id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
@@ -1356,15 +1354,14 @@ void RenderProcessHostImpl::GetRoute(
     mojom::AssociatedInterfaceProviderAssociatedRequest request) {
   DCHECK(request.is_pending());
   associated_interface_provider_bindings_.AddBinding(
-      this, std::move(request),
-      reinterpret_cast<void*>(static_cast<uintptr_t>(routing_id)));
+      this, std::move(request), routing_id);
 }
 
 void RenderProcessHostImpl::GetAssociatedInterface(
     const std::string& name,
     mojom::AssociatedInterfaceAssociatedRequest request) {
-  int32_t routing_id = static_cast<int32_t>(reinterpret_cast<uintptr_t>(
-      associated_interface_provider_bindings_.dispatch_context()));
+  int32_t routing_id =
+      associated_interface_provider_bindings_.dispatch_context();
   IPC::Listener* listener = listeners_.Lookup(routing_id);
   if (listener)
     listener->OnAssociatedInterfaceRequest(name, request.PassHandle());

@@ -30,16 +30,18 @@ class BindingSetTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(BindingSetTest);
 };
 
-template <typename BindingSetType>
-void ExpectContextHelper(BindingSetType* binding_set, void* expected_context) {
+template <typename BindingSetType, typename ContextType>
+void ExpectContextHelper(BindingSetType* binding_set,
+                         ContextType expected_context) {
   EXPECT_EQ(expected_context, binding_set->dispatch_context());
 }
 
-template <typename BindingSetType>
+template <typename BindingSetType, typename ContextType>
 base::Closure ExpectContext(BindingSetType* binding_set,
-                            void* expected_context) {
+                            ContextType expected_context) {
   return base::Bind(
-      &ExpectContextHelper<BindingSetType>, binding_set, expected_context);
+      &ExpectContextHelper<BindingSetType, ContextType>, binding_set,
+      expected_context);
 }
 
 base::Closure Sequence(const base::Closure& first,
@@ -74,23 +76,20 @@ class PingImpl : public PingService {
 TEST_F(BindingSetTest, BindingSetContext) {
   PingImpl impl;
 
-  void* context_a = reinterpret_cast<void*>(1);
-  void* context_b = reinterpret_cast<void*>(2);
-
-  BindingSet<PingService> bindings_(BindingSetDispatchMode::WITH_CONTEXT);
+  BindingSet<PingService, int> bindings;
   PingServicePtr ping_a, ping_b;
-  bindings_.AddBinding(&impl, MakeRequest(&ping_a), context_a);
-  bindings_.AddBinding(&impl, MakeRequest(&ping_b), context_b);
+  bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
+  bindings.AddBinding(&impl, MakeRequest(&ping_b), 2);
 
   {
-    impl.set_ping_handler(ExpectContext(&bindings_, context_a));
+    impl.set_ping_handler(ExpectContext(&bindings, 1));
     base::RunLoop loop;
     ping_a->Ping(loop.QuitClosure());
     loop.Run();
   }
 
   {
-    impl.set_ping_handler(ExpectContext(&bindings_, context_b));
+    impl.set_ping_handler(ExpectContext(&bindings, 2));
     base::RunLoop loop;
     ping_b->Ping(loop.QuitClosure());
     loop.Run();
@@ -98,21 +97,21 @@ TEST_F(BindingSetTest, BindingSetContext) {
 
   {
     base::RunLoop loop;
-    bindings_.set_connection_error_handler(
-        Sequence(ExpectContext(&bindings_, context_a), loop.QuitClosure()));
+    bindings.set_connection_error_handler(
+        Sequence(ExpectContext(&bindings, 1), loop.QuitClosure()));
     ping_a.reset();
     loop.Run();
   }
 
   {
     base::RunLoop loop;
-    bindings_.set_connection_error_handler(
-        Sequence(ExpectContext(&bindings_, context_b), loop.QuitClosure()));
+    bindings.set_connection_error_handler(
+        Sequence(ExpectContext(&bindings, 2), loop.QuitClosure()));
     ping_b.reset();
     loop.Run();
   }
 
-  EXPECT_TRUE(bindings_.empty());
+  EXPECT_TRUE(bindings.empty());
 }
 
 TEST_F(BindingSetTest, BindingSetConnectionErrorWithReason) {
@@ -136,10 +135,10 @@ TEST_F(BindingSetTest, BindingSetConnectionErrorWithReason) {
 
 class PingProviderImpl : public AssociatedPingProvider, public PingService {
  public:
-  PingProviderImpl() : ping_bindings_(BindingSetDispatchMode::WITH_CONTEXT) {}
+  PingProviderImpl() {}
   ~PingProviderImpl() override {}
 
-  void set_new_ping_context(void* context) { new_ping_context_ = context; }
+  void set_new_ping_context(int context) { new_ping_context_ = context; }
 
   void set_new_ping_handler(const base::Closure& handler) {
     new_ping_handler_ = handler;
@@ -149,7 +148,9 @@ class PingProviderImpl : public AssociatedPingProvider, public PingService {
     ping_handler_ = handler;
   }
 
-  AssociatedBindingSet<PingService>& ping_bindings() { return ping_bindings_; }
+  AssociatedBindingSet<PingService, int>& ping_bindings() {
+    return ping_bindings_;
+  }
 
  private:
   // AssociatedPingProvider:
@@ -166,8 +167,8 @@ class PingProviderImpl : public AssociatedPingProvider, public PingService {
     callback.Run();
   }
 
-  AssociatedBindingSet<PingService> ping_bindings_;
-  void* new_ping_context_ = nullptr;
+  AssociatedBindingSet<PingService, int> ping_bindings_;
+  int new_ping_context_ = -1;
   base::Closure ping_handler_;
   base::Closure new_ping_handler_;
 };
@@ -177,13 +178,10 @@ TEST_F(BindingSetTest, AssociatedBindingSetContext) {
   PingProviderImpl impl;
   Binding<AssociatedPingProvider> binding(&impl, MakeRequest(&provider));
 
-  void* context_a = reinterpret_cast<void*>(1);
-  void* context_b = reinterpret_cast<void*>(2);
-
   PingServiceAssociatedPtr ping_a;
   {
     base::RunLoop loop;
-    impl.set_new_ping_context(context_a);
+    impl.set_new_ping_context(1);
     impl.set_new_ping_handler(loop.QuitClosure());
     provider->GetPing(MakeRequest(&ping_a, provider.associated_group()));
     loop.Run();
@@ -192,21 +190,21 @@ TEST_F(BindingSetTest, AssociatedBindingSetContext) {
   PingServiceAssociatedPtr ping_b;
   {
     base::RunLoop loop;
-    impl.set_new_ping_context(context_b);
+    impl.set_new_ping_context(2);
     impl.set_new_ping_handler(loop.QuitClosure());
     provider->GetPing(MakeRequest(&ping_b, provider.associated_group()));
     loop.Run();
   }
 
   {
-    impl.set_ping_handler(ExpectContext(&impl.ping_bindings(), context_a));
+    impl.set_ping_handler(ExpectContext(&impl.ping_bindings(), 1));
     base::RunLoop loop;
     ping_a->Ping(loop.QuitClosure());
     loop.Run();
   }
 
   {
-    impl.set_ping_handler(ExpectContext(&impl.ping_bindings(), context_b));
+    impl.set_ping_handler(ExpectContext(&impl.ping_bindings(), 2));
     base::RunLoop loop;
     ping_b->Ping(loop.QuitClosure());
     loop.Run();
@@ -215,8 +213,7 @@ TEST_F(BindingSetTest, AssociatedBindingSetContext) {
   {
     base::RunLoop loop;
     impl.ping_bindings().set_connection_error_handler(
-        Sequence(ExpectContext(&impl.ping_bindings(), context_a),
-                 loop.QuitClosure()));
+        Sequence(ExpectContext(&impl.ping_bindings(), 1), loop.QuitClosure()));
     ping_a.reset();
     loop.Run();
   }
@@ -224,8 +221,7 @@ TEST_F(BindingSetTest, AssociatedBindingSetContext) {
   {
     base::RunLoop loop;
     impl.ping_bindings().set_connection_error_handler(
-        Sequence(ExpectContext(&impl.ping_bindings(), context_b),
-                 loop.QuitClosure()));
+        Sequence(ExpectContext(&impl.ping_bindings(), 2), loop.QuitClosure()));
     ping_b.reset();
     loop.Run();
   }
@@ -236,20 +232,16 @@ TEST_F(BindingSetTest, AssociatedBindingSetContext) {
 TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
   AssociatedPingProviderPtr provider_a, provider_b;
   PingProviderImpl impl;
-  BindingSet<AssociatedPingProvider> bindings(
-      BindingSetDispatchMode::WITH_CONTEXT);
+  BindingSet<AssociatedPingProvider, int> bindings;
 
-  void* context_a = reinterpret_cast<void*>(1);
-  void* context_b = reinterpret_cast<void*>(2);
-
-  bindings.AddBinding(&impl, MakeRequest(&provider_a), context_a);
-  bindings.AddBinding(&impl, MakeRequest(&provider_b), context_b);
+  bindings.AddBinding(&impl, MakeRequest(&provider_a), 1);
+  bindings.AddBinding(&impl, MakeRequest(&provider_b), 2);
 
   {
     PingServiceAssociatedPtr ping;
     base::RunLoop loop;
     impl.set_new_ping_handler(
-        Sequence(ExpectContext(&bindings, context_a), loop.QuitClosure()));
+        Sequence(ExpectContext(&bindings, 1), loop.QuitClosure()));
     provider_a->GetPing(MakeRequest(&ping, provider_a.associated_group()));
     loop.Run();
   }
@@ -258,7 +250,7 @@ TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
     PingServiceAssociatedPtr ping;
     base::RunLoop loop;
     impl.set_new_ping_handler(
-        Sequence(ExpectContext(&bindings, context_b), loop.QuitClosure()));
+        Sequence(ExpectContext(&bindings, 2), loop.QuitClosure()));
     provider_b->GetPing(MakeRequest(&ping, provider_b.associated_group()));
     loop.Run();
   }
@@ -266,7 +258,7 @@ TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
   {
     base::RunLoop loop;
     bindings.set_connection_error_handler(
-        Sequence(ExpectContext(&bindings, context_a), loop.QuitClosure()));
+        Sequence(ExpectContext(&bindings, 1), loop.QuitClosure()));
     provider_a.reset();
     loop.Run();
   }
@@ -274,8 +266,59 @@ TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
   {
     base::RunLoop loop;
     bindings.set_connection_error_handler(
-        Sequence(ExpectContext(&bindings, context_b), loop.QuitClosure()));
+        Sequence(ExpectContext(&bindings, 2), loop.QuitClosure()));
     provider_b.reset();
+    loop.Run();
+  }
+
+  EXPECT_TRUE(bindings.empty());
+}
+
+TEST_F(BindingSetTest, PreDispatchHandler) {
+  PingImpl impl;
+
+  BindingSet<PingService, int> bindings;
+  PingServicePtr ping_a, ping_b;
+  bindings.AddBinding(&impl, MakeRequest(&ping_a), 1);
+  bindings.AddBinding(&impl, MakeRequest(&ping_b), 2);
+
+  {
+    bindings.set_pre_dispatch_handler(base::Bind([] (const int& context) {
+      EXPECT_EQ(1, context);
+    }));
+    base::RunLoop loop;
+    ping_a->Ping(loop.QuitClosure());
+    loop.Run();
+  }
+
+  {
+    bindings.set_pre_dispatch_handler(base::Bind([] (const int& context) {
+      EXPECT_EQ(2, context);
+    }));
+    base::RunLoop loop;
+    ping_b->Ping(loop.QuitClosure());
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    bindings.set_pre_dispatch_handler(
+        base::Bind([](base::RunLoop* loop, const int& context) {
+          EXPECT_EQ(1, context);
+          loop->Quit();
+        }, &loop));
+    ping_a.reset();
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    bindings.set_pre_dispatch_handler(
+        base::Bind([](base::RunLoop* loop, const int& context) {
+          EXPECT_EQ(2, context);
+          loop->Quit();
+        }, &loop));
+    ping_b.reset();
     loop.Run();
   }
 

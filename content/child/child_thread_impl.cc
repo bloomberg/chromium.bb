@@ -357,8 +357,6 @@ bool ChildThreadImpl::ChildThreadMessageRouter::RouteMessage(
 
 ChildThreadImpl::ChildThreadImpl()
     : route_provider_binding_(this),
-      associated_interface_provider_bindings_(
-          mojo::BindingSetDispatchMode::WITH_CONTEXT),
       router_(this),
       channel_connected_factory_(
           new base::WeakPtrFactory<ChildThreadImpl>(this)),
@@ -368,8 +366,6 @@ ChildThreadImpl::ChildThreadImpl()
 
 ChildThreadImpl::ChildThreadImpl(const Options& options)
     : route_provider_binding_(this),
-      associated_interface_provider_bindings_(
-          mojo::BindingSetDispatchMode::WITH_CONTEXT),
       router_(this),
       browser_process_io_runner_(options.browser_process_io_runner),
       channel_connected_factory_(
@@ -856,15 +852,14 @@ void ChildThreadImpl::GetRoute(
     int32_t routing_id,
     mojom::AssociatedInterfaceProviderAssociatedRequest request) {
   associated_interface_provider_bindings_.AddBinding(
-      this, std::move(request),
-      reinterpret_cast<void*>(static_cast<uintptr_t>(routing_id)));
+      this, std::move(request), routing_id);
 }
 
 void ChildThreadImpl::GetAssociatedInterface(
     const std::string& name,
     mojom::AssociatedInterfaceAssociatedRequest request) {
-  int32_t routing_id = static_cast<int32_t>(reinterpret_cast<uintptr_t>(
-      associated_interface_provider_bindings_.dispatch_context()));
+  int32_t routing_id =
+      associated_interface_provider_bindings_.dispatch_context();
   Listener* route = router_.GetRoute(routing_id);
   if (route)
     route->OnAssociatedInterfaceRequest(name, request.PassHandle());

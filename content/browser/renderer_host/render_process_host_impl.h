@@ -451,7 +451,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   IDMap<IPC::Listener*> listeners_;
 
   mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
-  mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider>
+  mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider, int32_t>
       associated_interface_provider_bindings_;
 
   // The count of currently visible widgets.  Since the host can be a container

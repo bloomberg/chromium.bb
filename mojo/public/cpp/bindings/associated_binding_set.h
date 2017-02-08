@@ -18,9 +18,9 @@ struct BindingSetTraits<AssociatedBinding<Interface>> {
   using RequestType = AssociatedInterfaceRequest<Interface>;
 };
 
-template <typename Interface>
+template <typename Interface, typename ContextType = void>
 using AssociatedBindingSet =
-    BindingSet<Interface, AssociatedBinding<Interface>>;
+    BindingSetBase<Interface, AssociatedBinding<Interface>, ContextType>;
 
 }  // namespace mojo
 

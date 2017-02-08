@@ -33,31 +33,42 @@ struct BindingSetTraits<Binding<Interface>> {
   }
 };
 
-enum class BindingSetDispatchMode {
-  WITHOUT_CONTEXT,
-  WITH_CONTEXT,
-};
-
 using BindingId = size_t;
 
-// Use this class to manage a set of bindings, which are automatically destroyed
-// and removed from the set when the pipe they are bound to is disconnected.
-template <typename Interface, typename BindingType = Binding<Interface>>
-class BindingSet {
+template <typename ContextType>
+struct BindingSetContextTraits {
+  using Type = ContextType;
+
+  static constexpr bool SupportsContext() { return true; }
+};
+
+template <>
+struct BindingSetContextTraits<void> {
+  // NOTE: This choice of Type only matters insofar as it affects the size of
+  // the |context_| field of a BindingSetBase::Entry with void context. The
+  // context value is never used in this case.
+  using Type = bool;
+
+  static constexpr bool SupportsContext() { return false; }
+};
+
+// Generic definition used for BindingSet and AssociatedBindingSet to own a
+// collection of bindings which point to the same implementation.
+//
+// If |ContextType| is non-void, then every added binding must include a context
+// value of that type, and |dispatch_context()| will return that value during
+// the extent of any message dispatch targeting that specific binding.
+template <typename Interface, typename BindingType, typename ContextType>
+class BindingSetBase {
  public:
-  using PreDispatchCallback = base::Callback<void(void*)>;
+  using ContextTraits = BindingSetContextTraits<ContextType>;
+  using Context = typename ContextTraits::Type;
+  using PreDispatchCallback = base::Callback<void(const Context&)>;
   using Traits = BindingSetTraits<BindingType>;
   using ProxyType = typename Traits::ProxyType;
   using RequestType = typename Traits::RequestType;
 
-  BindingSet() : BindingSet(BindingSetDispatchMode::WITHOUT_CONTEXT) {}
-
-  // Constructs a new BindingSet operating in |dispatch_mode|. If |WITH_CONTEXT|
-  // is used, AddBinding() supports a |context| argument, and dispatch_context()
-  // may be called during message or error dispatch to identify which specific
-  // binding received the message or error.
-  explicit BindingSet(BindingSetDispatchMode dispatch_mode)
-      : dispatch_mode_(dispatch_mode) {}
+  BindingSetBase() {}
 
   void set_connection_error_handler(const base::Closure& error_handler) {
     error_handler_ = error_handler;
@@ -72,29 +83,26 @@ class BindingSet {
 
   // Sets a callback to be invoked immediately before dispatching any message or
   // error received by any of the bindings in the set. This may only be used
-  // if the set was constructed with |BindingSetDispatchMode::WITH_CONTEXT|.
-  // |handler| is passed the context associated with the binding which received
-  // the message or event about to be dispatched.
+  // with a non-void |ContextType|.
   void set_pre_dispatch_handler(const PreDispatchCallback& handler) {
-    DCHECK(SupportsContext());
+    static_assert(ContextTraits::SupportsContext(),
+                  "Pre-dispatch handler usage requires non-void context type.");
     pre_dispatch_handler_ = handler;
   }
 
-  // Adds a new binding to the set which binds |request| to |impl|. If |context|
-  // is non-null, dispatch_context() will reflect this value during the extent
-  // of any message or error dispatch targeting this specific binding. Note that
-  // |context| may only be non-null if the BindingSet was constructed with
-  // |BindingSetDispatchMode::WITH_CONTEXT|.
-  BindingId AddBinding(Interface* impl,
-                     RequestType request,
-                     void* context = nullptr) {
-    DCHECK(!context || SupportsContext());
-    BindingId id = next_binding_id_++;
-    DCHECK_GE(next_binding_id_, 0u);
-    std::unique_ptr<Entry> entry =
-        base::MakeUnique<Entry>(impl, std::move(request), this, id, context);
-    bindings_.insert(std::make_pair(id, std::move(entry)));
-    return id;
+  // Adds a new binding to the set which binds |request| to |impl| with no
+  // additional context.
+  BindingId AddBinding(Interface* impl, RequestType request) {
+    static_assert(!ContextTraits::SupportsContext(),
+                  "Context value required for non-void context type.");
+    return AddBindingImpl(impl, std::move(request), false);
+  }
+
+  // Adds a new binding associated with |context|.
+  BindingId AddBinding(Interface* impl, RequestType request, Context context) {
+    static_assert(ContextTraits::SupportsContext(),
+                  "Context value unsupported for void context type.");
+    return AddBindingImpl(impl, std::move(request), std::move(context));
   }
 
   // Removes a binding from the set. Note that this is safe to call even if the
@@ -129,12 +137,11 @@ class BindingSet {
   // error. During the extent of message or error dispatch, this will return the
   // context associated with the specific binding which received the message or
   // error. Use AddBinding() to associated a context with a specific binding.
-  //
-  // Note that this may ONLY be called if the BindingSet was constructed with
-  // |BindingSetDispatchMode::WITH_CONTEXT|.
-  void* dispatch_context() const {
-    DCHECK(SupportsContext());
-    return dispatch_context_;
+  const Context& dispatch_context() const {
+    static_assert(ContextTraits::SupportsContext(),
+                  "dispatch_context() requires non-void context type.");
+    DCHECK(dispatch_context_);
+    return *dispatch_context_;
   }
 
   void FlushForTesting() {
@@ -149,14 +156,14 @@ class BindingSet {
    public:
     Entry(Interface* impl,
           RequestType request,
-          BindingSet* binding_set,
+          BindingSetBase* binding_set,
           BindingId binding_id,
-          void* context)
+          Context context)
         : binding_(impl, std::move(request)),
           binding_set_(binding_set),
           binding_id_(binding_id),
-          context_(context) {
-      if (binding_set->SupportsContext())
+          context_(std::move(context)) {
+      if (ContextTraits::SupportsContext())
         binding_.AddFilter(base::MakeUnique<DispatchFilter>(this));
       binding_.set_connection_error_with_reason_handler(
           base::Bind(&Entry::OnConnectionError, base::Unretained(this)));
@@ -183,34 +190,41 @@ class BindingSet {
     };
 
     void WillDispatch() {
-      DCHECK(binding_set_->SupportsContext());
-      binding_set_->SetDispatchContext(context_);
+      DCHECK(ContextTraits::SupportsContext());
+      binding_set_->SetDispatchContext(&context_);
     }
 
     void OnConnectionError(uint32_t custom_reason,
                            const std::string& description) {
-      if (binding_set_->SupportsContext())
+      if (ContextTraits::SupportsContext())
         WillDispatch();
       binding_set_->OnConnectionError(binding_id_, custom_reason, description);
     }
 
     BindingType binding_;
-    BindingSet* const binding_set_;
+    BindingSetBase* const binding_set_;
     const BindingId binding_id_;
-    void* const context_;
+    Context const context_;
 
     DISALLOW_COPY_AND_ASSIGN(Entry);
   };
 
-  void SetDispatchContext(void* context) {
-    DCHECK(SupportsContext());
+  void SetDispatchContext(const Context* context) {
+    DCHECK(ContextTraits::SupportsContext());
     dispatch_context_ = context;
     if (!pre_dispatch_handler_.is_null())
-      pre_dispatch_handler_.Run(context);
+      pre_dispatch_handler_.Run(*context);
   }
 
-  bool SupportsContext() const {
-    return dispatch_mode_ == BindingSetDispatchMode::WITH_CONTEXT;
+  BindingId AddBindingImpl(Interface* impl,
+                           RequestType request,
+                           Context context) {
+    BindingId id = next_binding_id_++;
+    DCHECK_GE(next_binding_id_, 0u);
+    auto entry = base::MakeUnique<Entry>(
+        impl, std::move(request), this, id, std::move(context));
+    bindings_.insert(std::make_pair(id, std::move(entry)));
+    return id;
   }
 
   void OnConnectionError(BindingId id,
@@ -218,6 +232,9 @@ class BindingSet {
                          const std::string& description) {
     auto it = bindings_.find(id);
     DCHECK(it != bindings_.end());
+
+    // We keep the Entry alive throughout error dispatch.
+    std::unique_ptr<Entry> entry = std::move(it->second);
     bindings_.erase(it);
 
     if (!error_handler_.is_null())
@@ -226,16 +243,18 @@ class BindingSet {
       error_with_reason_handler_.Run(custom_reason, description);
   }
 
-  BindingSetDispatchMode dispatch_mode_;
   base::Closure error_handler_;
   ConnectionErrorWithReasonCallback error_with_reason_handler_;
   PreDispatchCallback pre_dispatch_handler_;
   BindingId next_binding_id_ = 0;
   std::map<BindingId, std::unique_ptr<Entry>> bindings_;
-  void* dispatch_context_ = nullptr;
+  const Context* dispatch_context_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(BindingSet);
+  DISALLOW_COPY_AND_ASSIGN(BindingSetBase);
 };
+
+template <typename Interface, typename ContextType = void>
+using BindingSet = BindingSetBase<Interface, Binding<Interface>, ContextType>;
 
 }  // namespace mojo
 
