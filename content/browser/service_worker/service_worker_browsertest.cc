@@ -2581,6 +2581,7 @@ class CacheStorageSideDataSizeChecker
                                          int size_result) {
     ASSERT_EQ(net::OK, size_result);
     if (!blob_reader_->has_side_data()) {
+      blob_reader_ = nullptr;
       continuation.Run();
       return;
     }
@@ -2599,6 +2600,7 @@ class CacheStorageSideDataSizeChecker
                                         storage::BlobReader::Status status) {
     ASSERT_NE(storage::BlobReader::Status::NET_ERROR, status);
     *result = blob_reader_->side_data()->size();
+    blob_reader_ = nullptr;
     continuation.Run();
   }
 
