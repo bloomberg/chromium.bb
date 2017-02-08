@@ -95,10 +95,6 @@ bool BubbleObserver::IsShowingUpdatePrompt() const {
 
 void BubbleObserver::Dismiss() const  {
   passwords_ui_controller_->OnBubbleHidden();
-  // Navigate away to reset the state to inactive.
-  static_cast<content::WebContentsObserver*>(passwords_ui_controller_)
-      ->DidNavigateMainFrame(content::LoadCommittedDetails(),
-                             content::FrameNavigateParams());
   ASSERT_EQ(password_manager::ui::INACTIVE_STATE,
             passwords_ui_controller_->GetState());
 }
