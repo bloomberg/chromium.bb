@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/test/mock_callback.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "content/public/common/presentation_session.h"
@@ -67,18 +68,16 @@ TEST_F(MediaRouterBaseTest, CreatePresentationIds) {
 TEST_F(MediaRouterBaseTest, NotifyCallbacks) {
   MediaRoute::Id route_id1("id1");
   MediaRoute::Id route_id2("id2");
-  MockPresentationConnectionStateChangedCallback callback1;
-  MockPresentationConnectionStateChangedCallback callback2;
+  base::MockCallback<content::PresentationConnectionStateChangedCallback>
+      callback1;
+  base::MockCallback<content::PresentationConnectionStateChangedCallback>
+      callback2;
   std::unique_ptr<PresentationConnectionStateSubscription> subscription1 =
-      router_.AddPresentationConnectionStateChangedCallback(
-          route_id1,
-          base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
-                     base::Unretained(&callback1)));
+      router_.AddPresentationConnectionStateChangedCallback(route_id1,
+                                                            callback1.Get());
   std::unique_ptr<PresentationConnectionStateSubscription> subscription2 =
-      router_.AddPresentationConnectionStateChangedCallback(
-          route_id2,
-          base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
-                     base::Unretained(&callback2)));
+      router_.AddPresentationConnectionStateChangedCallback(route_id2,
+                                                            callback2.Get());
 
   content::PresentationConnectionStateChangeInfo change_info_connected(
       content::PRESENTATION_CONNECTION_STATE_CONNECTED);

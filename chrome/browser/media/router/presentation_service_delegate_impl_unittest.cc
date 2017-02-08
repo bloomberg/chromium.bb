@@ -436,10 +436,9 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
   for (const auto& route_response_callback : route_response_callbacks)
     route_response_callback.Run(*result);
 
-  MockPresentationConnectionStateChangedCallback mock_callback;
-  content::PresentationConnectionStateChangedCallback callback =
-      base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
-                 base::Unretained(&mock_callback));
+  base::MockCallback<content::PresentationConnectionStateChangedCallback>
+      mock_callback;
+  auto callback = mock_callback.Get();
   content::PresentationSessionInfo connection(presentation_url1_,
                                               kPresentationId);
   EXPECT_CALL(router_, OnAddPresentationConnectionStateChangedCallbackInvoked(

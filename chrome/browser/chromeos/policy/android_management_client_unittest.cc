@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/mock_callback.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
@@ -37,14 +38,6 @@ MATCHER_P(MatchProto, expected, "matches protobuf") {
   return arg.SerializePartialAsString() == expected.SerializePartialAsString();
 }
 
-// A mock class to allow us to set expectations on upload callbacks.
-class MockStatusCallbackObserver {
- public:
-  MockStatusCallbackObserver() {}
-
-  MOCK_METHOD1(OnCallbackComplete, void(AndroidManagementClient::Result));
-};
-
 }  // namespace
 
 class AndroidManagementClientTest : public testing::Test {
@@ -70,7 +63,8 @@ class AndroidManagementClientTest : public testing::Test {
 
   base::MessageLoop loop_;
   MockDeviceManagementService service_;
-  StrictMock<MockStatusCallbackObserver> callback_observer_;
+  StrictMock<base::MockCallback<AndroidManagementClient::StatusCallback>>
+      callback_observer_;
   std::unique_ptr<AndroidManagementClient> client_;
   // Pointer to the client's request context.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
@@ -91,15 +85,11 @@ TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {
                        MatchProto(android_management_request_)))
       .WillOnce(SaveArg<4>(&client_id));
   EXPECT_CALL(callback_observer_,
-              OnCallbackComplete(AndroidManagementClient::Result::UNMANAGED))
+              Run(AndroidManagementClient::Result::UNMANAGED))
       .Times(1);
 
-  AndroidManagementClient::StatusCallback callback =
-      base::Bind(&MockStatusCallbackObserver::OnCallbackComplete,
-                 base::Unretained(&callback_observer_));
-
   token_service_.UpdateCredentials(kAccountId, kRefreshToken);
-  client_->StartCheckAndroidManagement(callback);
+  client_->StartCheckAndroidManagement(callback_observer_.Get());
   token_service_.IssueAllTokensForAccount(kAccountId, kOAuthToken,
                                           base::Time::Max());
   ASSERT_LT(client_id.size(), 64U);

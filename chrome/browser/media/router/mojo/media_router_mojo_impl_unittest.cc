@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
@@ -1100,12 +1101,11 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
   const std::string kPresentationId("pid");
   content::PresentationSessionInfo connection(presentation_url,
                                               kPresentationId);
-  MockPresentationConnectionStateChangedCallback callback;
+  base::MockCallback<content::PresentationConnectionStateChangedCallback>
+      callback;
   std::unique_ptr<PresentationConnectionStateSubscription> subscription =
-      router()->AddPresentationConnectionStateChangedCallback(
-          route_id,
-          base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
-                     base::Unretained(&callback)));
+      router()->AddPresentationConnectionStateChangedCallback(route_id,
+                                                              callback.Get());
 
   {
     base::RunLoop run_loop;
@@ -1140,12 +1140,11 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
 TEST_F(MediaRouterMojoImplTest,
        PresentationConnectionStateChangedCallbackRemoved) {
   MediaRoute::Id route_id("route-id");
-  MockPresentationConnectionStateChangedCallback callback;
+  base::MockCallback<content::PresentationConnectionStateChangedCallback>
+      callback;
   std::unique_ptr<PresentationConnectionStateSubscription> subscription =
-      router()->AddPresentationConnectionStateChangedCallback(
-          route_id,
-          base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
-                     base::Unretained(&callback)));
+      router()->AddPresentationConnectionStateChangedCallback(route_id,
+                                                              callback.Get());
 
   // Callback has been removed, so we don't expect it to be called anymore.
   subscription.reset();

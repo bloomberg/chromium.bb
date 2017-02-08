@@ -26,10 +26,4 @@ MockMediaRoutesObserver::MockMediaRoutesObserver(MediaRouter* router,
 MockMediaRoutesObserver::~MockMediaRoutesObserver() {
 }
 
-MockPresentationConnectionStateChangedCallback::
-    MockPresentationConnectionStateChangedCallback() = default;
-
-MockPresentationConnectionStateChangedCallback::
-    ~MockPresentationConnectionStateChangedCallback() = default;
-
 }  // namespace media_router

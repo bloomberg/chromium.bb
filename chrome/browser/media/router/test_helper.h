@@ -78,14 +78,6 @@ class MockMediaRoutesObserver : public MediaRoutesObserver {
       const std::vector<MediaRoute::Id>& joinable_route_ids));
 };
 
-class MockPresentationConnectionStateChangedCallback {
- public:
-  MockPresentationConnectionStateChangedCallback();
-  ~MockPresentationConnectionStateChangedCallback();
-  MOCK_METHOD1(Run,
-               void(const content::PresentationConnectionStateChangeInfo&));
-};
-
 }  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ROUTER_TEST_HELPER_H_

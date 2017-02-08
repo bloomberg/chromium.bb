@@ -56,13 +56,6 @@ class PresentationRequestCallbacks {
   content::PresentationError expected_error_;
 };
 
-class MockRoutesUpdatedCallback {
- public:
-  MOCK_METHOD2(OnRoutesUpdated,
-               void(const std::vector<MediaRoute>& routes,
-                    const std::vector<MediaRoute::Id>& joinable_route_ids));
-};
-
 class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
  public:
   MediaRouterUITest() {
@@ -341,7 +334,6 @@ TEST_F(MediaRouterUITest, UIMediaRoutesObserverAssignsCurrentCastModes) {
   MediaSource media_source_1(MediaSourceForTab(tab_id));
   MediaSource media_source_2("mediaSource");
   MediaSource media_source_3(MediaSourceForDesktop());
-  MockRoutesUpdatedCallback mock_callback;
   std::unique_ptr<MediaRouterUI::UIMediaRoutesObserver> observer(
       new MediaRouterUI::UIMediaRoutesObserver(
           &mock_router_, MediaSource::Id(),
@@ -390,7 +382,6 @@ TEST_F(MediaRouterUITest, UIMediaRoutesObserverSkipsUnavailableCastModes) {
   MediaSource media_source_1("mediaSource1");
   MediaSource media_source_2("mediaSource2");
   MediaSource media_source_3(MediaSourceForDesktop());
-  MockRoutesUpdatedCallback mock_callback;
   std::unique_ptr<MediaRouterUI::UIMediaRoutesObserver> observer(
       new MediaRouterUI::UIMediaRoutesObserver(
           &mock_router_, MediaSource::Id(),
