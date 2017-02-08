@@ -49,7 +49,7 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
     writer.AppendString(machine_name);
     writer.AppendString(user_principal_name);
     writer.AppendFileDescriptor(password_fd);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kSlowDbusTimeoutMilliseconds,
                        base::Bind(&AuthPolicyClientImpl::HandleJoinCallback,
                                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
