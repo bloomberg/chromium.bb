@@ -19,6 +19,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "public/platform/WebTouchEvent.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
@@ -66,6 +67,7 @@ void PointerEventManager::clear() {
   m_nodeUnderPointer.clear();
   m_pointerCaptureTarget.clear();
   m_pendingPointerCaptureTarget.clear();
+  m_dispatchingPointerId = 0;
 }
 
 DEFINE_TRACE(PointerEventManager) {
@@ -143,6 +145,7 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
 
   // Set whether node under pointer has received pointerover or not.
   const int pointerId = pointerEvent->pointerId();
+
   const AtomicString& eventType = pointerEvent->type();
   if ((eventType == EventTypeNames::pointerout ||
        eventType == EventTypeNames::pointerover) &&
@@ -159,11 +162,12 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
   if (!RuntimeEnabledFeatures::pointerEventEnabled())
     return WebInputEventResult::NotHandled;
   if (!checkForListener || target->hasEventListeners(eventType)) {
-    UseCounter::count(m_frame->document(), UseCounter::PointerEventDispatch);
+    UseCounter::count(m_frame, UseCounter::PointerEventDispatch);
     if (eventType == EventTypeNames::pointerdown)
-      UseCounter::count(m_frame->document(),
-                        UseCounter::PointerEventDispatchPointerDown);
+      UseCounter::count(m_frame, UseCounter::PointerEventDispatchPointerDown);
 
+    DCHECK(!m_dispatchingPointerId);
+    AutoReset<int> dispatchHolder(&m_dispatchingPointerId, pointerId);
     DispatchEventResult dispatchResult = target->dispatchEvent(pointerEvent);
     return EventHandlingUtil::toWebInputEventResult(dispatchResult);
   }
@@ -629,9 +633,14 @@ void PointerEventManager::elementRemoved(EventTarget* target) {
 
 void PointerEventManager::setPointerCapture(int pointerId,
                                             EventTarget* target) {
-  UseCounter::count(m_frame->document(), UseCounter::PointerEventSetCapture);
-  if (m_pointerEventFactory.isActiveButtonsState(pointerId))
+  UseCounter::count(m_frame, UseCounter::PointerEventSetCapture);
+  if (m_pointerEventFactory.isActiveButtonsState(pointerId)) {
+    if (pointerId != m_dispatchingPointerId) {
+      UseCounter::count(m_frame,
+                        UseCounter::PointerEventSetCaptureOutsideDispatch);
+    }
     m_pendingPointerCaptureTarget.set(pointerId, target);
+  }
 }
 
 void PointerEventManager::releasePointerCapture(int pointerId,

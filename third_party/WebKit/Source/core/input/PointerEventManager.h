@@ -223,6 +223,10 @@ class CORE_EXPORT PointerEventManager
   PointerEventFactory m_pointerEventFactory;
   Member<TouchEventManager> m_touchEventManager;
   Member<MouseEventManager> m_mouseEventManager;
+
+  // The pointerId of the PointerEvent currently being dispatched within this
+  // frame or 0 if none.
+  int m_dispatchingPointerId;
 };
 
 }  // namespace blink
