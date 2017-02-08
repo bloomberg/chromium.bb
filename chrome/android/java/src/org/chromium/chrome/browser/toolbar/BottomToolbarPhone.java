@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.BottomSheet;
@@ -33,8 +34,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
     @Override
     protected int getProgressBarTopMargin() {
         // In the case where the toolbar is at the bottom of the screen, the progress bar should
-        // be at the top of the toolbar.
-        return getContext().getResources().getDimensionPixelSize(R.dimen.toolbar_shadow_height);
+        // be at the top of the screen.
+        return 0;
     }
 
     @Override
@@ -59,5 +60,14 @@ public class BottomToolbarPhone extends ToolbarPhone {
         // Only detect swipes if the bottom sheet in the peeking state and not animating.
         return mBottomSheet.getSheetState() != BottomSheet.SHEET_STATE_PEEK
                 || mBottomSheet.isRunningSettleAnimation() || super.shouldIgnoreSwipeGesture();
+    }
+
+    @Override
+    protected void addProgressBarToHierarchy() {
+        if (mProgressBar == null) return;
+
+        ViewGroup coordinator = (ViewGroup) getRootView().findViewById(R.id.coordinator);
+        coordinator.addView(mProgressBar);
+        mProgressBar.setProgressBarContainer(coordinator);
     }
 }

@@ -78,7 +78,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     private AnimationLogic mAnimationLogic;
     private boolean mAnimationInitialized;
     private int mMarginTop;
-    private ViewGroup mControlContainer;
+    private ViewGroup mProgressBarContainer;
     private int mProgressStartCount;
     private int mThemeColor;
 
@@ -167,10 +167,10 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     }
 
     /**
-     * @param container This View's container.
+     * @param container The view containing the progress bar.
      */
-    public void setControlContainer(ViewGroup container) {
-        mControlContainer = container;
+    public void setProgressBarContainer(ViewGroup container) {
+        mProgressBarContainer = container;
     }
 
     @Override
@@ -225,7 +225,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
             } else {
                 setForegroundColor(getForegroundColor());
             }
-            UiUtils.insertAfter(mControlContainer, mAnimatingView, this);
+            UiUtils.insertAfter(mProgressBarContainer, mAnimatingView, this);
         } else if (TextUtils.equals(animation, "fast-start")) {
             mAnimationLogic = new ProgressAnimationFastStart();
         } else if (TextUtils.equals(animation, "linear")) {

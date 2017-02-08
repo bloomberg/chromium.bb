@@ -69,7 +69,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     private ToolbarDataProvider mToolbarDataProvider;
     private ToolbarTabController mToolbarTabController;
     @Nullable
-    private ToolbarProgressBar mProgressBar;
+    protected ToolbarProgressBar mProgressBar;
 
     private boolean mNativeLibraryReady;
     private boolean mUrlHasFocus;
@@ -245,17 +245,24 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         recordFirstDrawTime();
     }
 
+    /**
+     * Add the toolbar's progress bar to the view hierarchy.
+     */
+    protected void addProgressBarToHierarchy() {
+        if (mProgressBar == null) return;
+
+        ViewGroup controlContainer =
+                (ViewGroup) getRootView().findViewById(R.id.control_container);
+        int progressBarPosition = UiUtils.insertAfter(
+                controlContainer, mProgressBar, (View) getParent());
+        assert progressBarPosition >= 0;
+        mProgressBar.setProgressBarContainer(controlContainer);
+    }
+
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (mProgressBar != null) {
-            ViewGroup controlContainer =
-                    (ViewGroup) getRootView().findViewById(R.id.control_container);
-            int progressBarPosition = UiUtils.insertAfter(
-                    controlContainer, mProgressBar, (View) getParent());
-            assert progressBarPosition >= 0;
-            mProgressBar.setControlContainer(controlContainer);
-        }
+        addProgressBarToHierarchy();
     }
 
     /**
