@@ -6,6 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "components/sync/engine/model_safe_worker.h"
+#include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
@@ -22,7 +24,14 @@ bool ProxyDataTypeController::ShouldLoadModelBeforeConfigure() const {
 }
 
 void ProxyDataTypeController::BeforeLoadModels(
-    ModelTypeConfigurer* configurer) {}
+    ModelTypeConfigurer* configurer) {
+  // Proxy type doesn't need to be registered with ModelTypeRegistry as it
+  // doesn't need update handler, client doesn't expect updates of this type
+  // from the server. We still need to register proxy type because
+  // AddClientConfigParamsToMessage decides the value of tabs_datatype_enabled
+  // based on presence of proxy types in the set of enabled types.
+  configurer->RegisterDirectoryDataType(type(), GROUP_PASSIVE);
+}
 
 void ProxyDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
@@ -62,7 +71,9 @@ void ProxyDataTypeController::ActivateDataType(
     ModelTypeConfigurer* configurer) {}
 
 void ProxyDataTypeController::DeactivateDataType(
-    ModelTypeConfigurer* configurer) {}
+    ModelTypeConfigurer* configurer) {
+  configurer->UnregisterDirectoryDataType(type());
+}
 
 void ProxyDataTypeController::GetAllNodes(const AllNodesCallback& callback) {
   callback.Run(type(), base::MakeUnique<base::ListValue>());
