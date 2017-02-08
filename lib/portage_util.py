@@ -11,6 +11,7 @@ import errno
 import filecmp
 import fileinput
 import glob
+import itertools
 import multiprocessing
 import os
 import re
@@ -53,6 +54,9 @@ _category_re = re.compile(r'^(?P<category>[\w\+\.][\w\+\.\-]*)$', re.VERBOSE)
 
 # This regex matches blank lines, commented lines, and the EAPI line.
 _blank_or_eapi_re = re.compile(r'^\s*(?:#|EAPI=|$)')
+
+# This regex is used to extract test names from IUSE_TESTS
+_autotest_re = re.compile(r'\+tests_(\w+)', re.VERBOSE)
 
 WORKON_EBUILD_VERSION = '9999'
 WORKON_EBUILD_SUFFIX = '-%s.ebuild' % WORKON_EBUILD_VERSION
@@ -528,6 +532,70 @@ class EBuild(object):
      self.is_blacklisted, self.has_test) = EBuild.Classify(path)
 
   @staticmethod
+  def _GetAutotestTestsFromSettings(settings):
+    """Return a list of test names, when given a settings dictionary.
+
+    Args:
+      settings: A dictionary containing ebuild variables contents.
+
+    Returns:
+      A list of test name strings.
+    """
+    # We do a bit of string wrangling to extract directory names from test
+    # names. First, get rid of special characters.
+    test_list = []
+    raw_tests_str = settings['IUSE_TESTS']
+    if len(raw_tests_str) == 0:
+      return test_list
+
+    test_list.extend(_autotest_re.findall(raw_tests_str))
+    return test_list
+
+  @staticmethod
+  def GetAutotestSubdirsToRev(ebuild_path, srcdir):
+    """Return list of subdirs to be watched while deciding whether to uprev.
+
+    This logic is specific to autotest related ebuilds, that derive from the
+    autotest eclass.
+
+    Args:
+      ebuild_path: Path to the ebuild file (e.g
+                   autotest-tests-graphics-9999.ebuild).
+      srcdir: The path of the source for the test
+
+    Returns:
+      A list of strings mentioning directory paths.
+    """
+    results = []
+    test_vars = ('IUSE_TESTS',)
+
+    if not ebuild_path or not srcdir:
+      return results
+
+    # TODO(pmalani): Can we get this from get_test_list in autotest.eclass ?
+    settings = osutils.SourceEnvironment(ebuild_path, test_vars, env=None,
+                                         multiline=True)
+    if 'IUSE_TESTS' not in settings:
+      return results
+
+    test_list = EBuild._GetAutotestTestsFromSettings(settings)
+
+    location = ['client', 'server']
+    test_type = ['tests', 'site_tests']
+
+    # Check the existence of every directory combination of location and
+    # test_type for each test.
+    # This is a re-implementation of the same logic in autotest_src_prepare in
+    # the chromiumos-overlay/eclass/autotest.eclass .
+    for cur_test in test_list:
+      for x, y in list(itertools.product(location, test_type)):
+        a = os.path.join(srcdir, x, y, cur_test)
+        if os.path.isdir(a):
+          results.append(os.path.join(x, y, cur_test))
+
+    return results
+
+  @staticmethod
   def GetCrosWorkonVars(ebuild_path, pkg_name):
     """Return computed (as sourced ebuild script) values of:
 
@@ -821,7 +889,10 @@ class EBuild(object):
     variables = dict(CROS_WORKON_COMMIT=self.FormatBashArray(commit_ids),
                      CROS_WORKON_TREE=self.FormatBashArray(tree_ids))
 
-    if enforce_subdir_rev and not self._ShouldRevEBuild(commit_ids, srcdirs):
+    subdirs_to_rev = self.GetAutotestSubdirsToRev(self.ebuild_path, srcdirs[0])
+
+    if enforce_subdir_rev and not self._ShouldRevEBuild(commit_ids, srcdirs,
+                                                        subdirs_to_rev):
       self._Print('Skipping uprev of ebuild %s, none of the rev_subdirs have '
                   'been modified.')
       return
@@ -848,25 +919,18 @@ class EBuild(object):
 
       return '%s-%s' % (self.package, new_version)
 
-  def _ShouldRevEBuild(self, commit_ids, srcdirs):
-    """Determine whether we should attempt to rev |ebuild|.
 
-    If CROS_WORKON_SUBDIRS_TO_REV is not defined for |ebuild|, this function
-    trivially returns True.
-
-    If CROS_WORKON_SUBDIRS_TO_REV is defined, this function returns True if
-    there are commits ahead of CROS_WORKON_COMMIT that have affected one of
-    those directories.
-    """
+  def _ShouldRevEBuild(self, commit_ids, srcdirs, subdirs_to_rev):
+    """Determine whether we should attempt to rev |ebuild|."""
     if not self.cros_workon_vars:
-      return True
-    if not self.cros_workon_vars.rev_subdirs:
       return True
     if not self.cros_workon_vars.commit:
       return True
     if len(commit_ids) != 1:
       return True
     if len(srcdirs) != 1:
+      return True
+    if len(subdirs_to_rev) == 0:
       return True
 
     current_commit_hash = commit_ids[0]
@@ -875,7 +939,7 @@ class EBuild(object):
     logrange = '%s..%s' % (stable_commit_hash, current_commit_hash)
     paths = self.cros_workon_vars.rev_subdirs
     git_args = ['log', '--oneline', logrange, '--']
-    git_args.extend(self.cros_workon_vars.rev_subdirs)
+    git_args.extend(subdirs_to_rev)
 
     try:
       output = EBuild._RunGit(srcdir, git_args)
