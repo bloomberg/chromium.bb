@@ -716,8 +716,9 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event) {
     focusPlugin();
 
   WebCursorInfo cursorInfo;
-  if (m_webPlugin->handleInputEvent(transformedEvent, cursorInfo) !=
-      WebInputEventResult::NotHandled)
+  if (m_webPlugin &&
+      m_webPlugin->handleInputEvent(transformedEvent, cursorInfo) !=
+          WebInputEventResult::NotHandled)
     event->setDefaultHandled();
 
   // A windowless plugin can change the cursor in response to a mouse move
