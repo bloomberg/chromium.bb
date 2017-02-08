@@ -307,8 +307,7 @@ void ManageProfileHandler::SendProfileIconsAndNames(
     ProfileAttributesEntry* entry = nullptr;
     bool success = storage.GetProfileAttributesWithPath(profile->GetPath(),
                                                         &entry);
-    DCHECK(success);
-    const gfx::Image* icon = entry->GetGAIAPicture();
+    const gfx::Image* icon = success ? entry->GetGAIAPicture() : nullptr;
     if (icon) {
       gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
       gaia_picture_url_ = webui::GetBitmapDataUrl(icon2.AsBitmap());
