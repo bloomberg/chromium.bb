@@ -28,7 +28,8 @@ namespace {
 
 typedef void (*clpf_block_t)(const uint8_t *src, uint8_t *dst, int sstride,
                              int dstride, int x0, int y0, int sizex, int sizey,
-                             unsigned int strength, BOUNDARY_TYPE bt);
+                             unsigned int strength, BOUNDARY_TYPE bt,
+                             unsigned int bitdepth);
 
 typedef std::tr1::tuple<clpf_block_t, clpf_block_t, int, int>
     clpf_block_param_t;
@@ -58,7 +59,7 @@ typedef ClpfBlockTest ClpfSpeedTest;
 typedef void (*clpf_block_hbd_t)(const uint16_t *src, uint16_t *dst,
                                  int sstride, int dstride, int x0, int y0,
                                  int sizex, int sizey, unsigned int strength,
-                                 BOUNDARY_TYPE bt);
+                                 BOUNDARY_TYPE bt, unsigned int bitdepth);
 
 typedef std::tr1::tuple<clpf_block_hbd_t, clpf_block_hbd_t, int, int>
     clpf_block_hbd_param_t;
@@ -90,11 +91,12 @@ template <typename pixel>
 void test_clpf(int w, int h, int depth, int iterations,
                void (*clpf)(const pixel *src, pixel *dst, int sstride,
                             int dstride, int x0, int y0, int sizex, int sizey,
-                            unsigned int strength, BOUNDARY_TYPE bt),
+                            unsigned int strength, BOUNDARY_TYPE bt,
+                            unsigned int bitdepth),
                void (*ref_clpf)(const pixel *src, pixel *dst, int sstride,
                                 int dstride, int x0, int y0, int sizex,
                                 int sizey, unsigned int strength,
-                                BOUNDARY_TYPE bt)) {
+                                BOUNDARY_TYPE bt, unsigned int bitdepth)) {
   const int size = 24;
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   DECLARE_ALIGNED(16, pixel, s[size * size]);
@@ -129,10 +131,10 @@ void test_clpf(int w, int h, int depth, int iterations,
                                 (TILE_RIGHT_BOUNDARY & -(xpos + w == size)) |
                                 (TILE_BOTTOM_BOUNDARY & -(ypos + h == size)));
               ref_clpf(s, ref_d, size, size, xpos, ypos, w, h, 1 << strength,
-                       bt);
+                       bt, depth);
               if (clpf != ref_clpf)
                 ASM_REGISTER_STATE_CHECK(clpf(s, d, size, size, xpos, ypos, w,
-                                              h, 1 << strength, bt));
+                                              h, 1 << strength, bt, depth));
               if (ref_clpf != clpf)
                 for (pos = 0; pos < size * size && !error; pos++) {
                   error = ref_d[pos] != d[pos];
@@ -154,13 +156,17 @@ void test_clpf(int w, int h, int depth, int iterations,
       << "ypos: " << ypos << std::endl
       << "w: " << w << std::endl
       << "h: " << h << std::endl
-      << "A=" << (pos > size ? (int16_t)s[pos - size] : -1) << std::endl
-      << "B=" << (pos % size - 2 >= 0 ? (int16_t)s[pos - 2] : -1) << std::endl
-      << "C=" << (pos % size - 1 >= 0 ? (int16_t)s[pos - 1] : -1) << std::endl
+      << "A=" << (pos > 2 * size ? (int16_t)s[pos - 2 * size] : -1) << std::endl
+      << "B=" << (pos > size ? (int16_t)s[pos - size] : -1) << std::endl
+      << "C=" << (pos % size - 2 >= 0 ? (int16_t)s[pos - 2] : -1) << std::endl
+      << "D=" << (pos % size - 1 >= 0 ? (int16_t)s[pos - 1] : -1) << std::endl
       << "X=" << (int16_t)s[pos] << std::endl
-      << "D=" << (pos % size + 1 < size ? (int16_t)s[pos + 1] : -1) << std::endl
-      << "E=" << (pos % size + 2 < size ? (int16_t)s[pos + 2] : -1) << std::endl
-      << "F=" << (pos + size < size * size ? (int16_t)s[pos + size] : -1)
+      << "E=" << (pos % size + 1 < size ? (int16_t)s[pos + 1] : -1) << std::endl
+      << "F=" << (pos % size + 2 < size ? (int16_t)s[pos + 2] : -1) << std::endl
+      << "G=" << (pos + size < size * size ? (int16_t)s[pos + size] : -1)
+      << std::endl
+      << "H="
+      << (pos + 2 * size < size * size ? (int16_t)s[pos + 2 * size] : -1)
       << std::endl;
 }
 
@@ -169,11 +175,12 @@ void test_clpf_speed(int w, int h, int depth, int iterations,
                      void (*clpf)(const pixel *src, pixel *dst, int sstride,
                                   int dstride, int x0, int y0, int sizex,
                                   int sizey, unsigned int strength,
-                                  BOUNDARY_TYPE bt),
+                                  BOUNDARY_TYPE bt, unsigned int bitdepth),
                      void (*ref_clpf)(const pixel *src, pixel *dst, int sstride,
                                       int dstride, int x0, int y0, int sizex,
                                       int sizey, unsigned int strength,
-                                      BOUNDARY_TYPE bt)) {
+                                      BOUNDARY_TYPE bt,
+                                      unsigned int bitdepth)) {
   aom_usec_timer ref_timer;
   aom_usec_timer timer;
 

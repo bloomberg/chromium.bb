@@ -14,32 +14,46 @@
 #include "aom/aom_image.h"
 #include "aom_dsp/aom_dsp_common.h"
 
-int av1_clpf_sample(int X, int A, int B, int C, int D, int E, int F, int b) {
-  int delta = 4 * clamp(A - X, -b, b) + clamp(B - X, -b, b) +
-              3 * clamp(C - X, -b, b) + 3 * clamp(D - X, -b, b) +
-              clamp(E - X, -b, b) + 4 * clamp(F - X, -b, b);
+int sign(int i) { return i < 0 ? -1 : 1; }
+
+int constrain(int x, int s, unsigned int bitdepth) {
+  return sign(x) *
+         AOMMAX(0, abs(x) - AOMMAX(0, abs(x) - s + (abs(x) >> (bitdepth - 3 -
+                                                               get_msb(s)))));
+}
+
+int av1_clpf_sample(int X, int A, int B, int C, int D, int E, int F, int G,
+                    int H, int s, unsigned int bd) {
+  int delta = 1 * constrain(A - X, s, bd) + 3 * constrain(B - X, s, bd) +
+              1 * constrain(C - X, s, bd) + 3 * constrain(D - X, s, bd) +
+              3 * constrain(E - X, s, bd) + 1 * constrain(F - X, s, bd) +
+              3 * constrain(G - X, s, bd) + 1 * constrain(H - X, s, bd);
   return (8 + delta - (delta < 0)) >> 4;
 }
 
 void aom_clpf_block_c(const uint8_t *src, uint8_t *dst, int sstride,
                       int dstride, int x0, int y0, int sizex, int sizey,
-                      unsigned int strength, BOUNDARY_TYPE bt) {
+                      unsigned int strength, BOUNDARY_TYPE bt,
+                      unsigned int bitdepth) {
   int x, y;
-  int xmin = x0 - !(bt & TILE_LEFT_BOUNDARY) * 2;
-  int ymin = y0 - !(bt & TILE_ABOVE_BOUNDARY);
-  int xmax = x0 + sizex + !(bt & TILE_RIGHT_BOUNDARY) * 2 - 1;
-  int ymax = y0 + sizey + !(bt & TILE_BOTTOM_BOUNDARY) - 1;
+  const int xmin = x0 - !(bt & TILE_LEFT_BOUNDARY) * 2;
+  const int ymin = y0 - !(bt & TILE_ABOVE_BOUNDARY) * 2;
+  const int xmax = x0 + sizex + !(bt & TILE_RIGHT_BOUNDARY) * 2 - 1;
+  const int ymax = y0 + sizey + !(bt & TILE_BOTTOM_BOUNDARY) * 2 - 1;
+
   for (y = y0; y < y0 + sizey; y++) {
     for (x = x0; x < x0 + sizex; x++) {
-      int X = src[y * sstride + x];
-      int A = src[AOMMAX(ymin, y - 1) * sstride + x];
-      int B = src[y * sstride + AOMMAX(xmin, x - 2)];
-      int C = src[y * sstride + AOMMAX(xmin, x - 1)];
-      int D = src[y * sstride + AOMMIN(xmax, x + 1)];
-      int E = src[y * sstride + AOMMIN(xmax, x + 2)];
-      int F = src[AOMMIN(ymax, y + 1) * sstride + x];
-      int delta;
-      delta = av1_clpf_sample(X, A, B, C, D, E, F, strength);
+      const int X = src[y * sstride + x];
+      const int A = src[AOMMAX(ymin, y - 2) * sstride + x];
+      const int B = src[AOMMAX(ymin, y - 1) * sstride + x];
+      const int C = src[y * sstride + AOMMAX(xmin, x - 2)];
+      const int D = src[y * sstride + AOMMAX(xmin, x - 1)];
+      const int E = src[y * sstride + AOMMIN(xmax, x + 1)];
+      const int F = src[y * sstride + AOMMIN(xmax, x + 2)];
+      const int G = src[AOMMIN(ymax, y + 1) * sstride + x];
+      const int H = src[AOMMIN(ymax, y + 2) * sstride + x];
+      const int delta =
+          av1_clpf_sample(X, A, B, C, D, E, F, G, H, strength, bitdepth);
       dst[y * dstride + x] = X + delta;
     }
   }
@@ -49,24 +63,27 @@ void aom_clpf_block_c(const uint8_t *src, uint8_t *dst, int sstride,
 // Identical to aom_clpf_block_c() apart from "src" and "dst".
 void aom_clpf_block_hbd_c(const uint16_t *src, uint16_t *dst, int sstride,
                           int dstride, int x0, int y0, int sizex, int sizey,
-                          unsigned int strength, BOUNDARY_TYPE bt) {
+                          unsigned int strength, BOUNDARY_TYPE bt,
+                          unsigned int bitdepth) {
   int x, y;
-  int xmin = x0 - !(bt & TILE_LEFT_BOUNDARY) * 2;
-  int ymin = y0 - !(bt & TILE_ABOVE_BOUNDARY);
-  int xmax = x0 + sizex + !(bt & TILE_RIGHT_BOUNDARY) * 2 - 1;
-  int ymax = y0 + sizey + !(bt & TILE_BOTTOM_BOUNDARY) - 1;
+  const int xmin = x0 - !(bt & TILE_LEFT_BOUNDARY) * 2;
+  const int ymin = y0 - !(bt & TILE_ABOVE_BOUNDARY) * 2;
+  const int xmax = x0 + sizex + !(bt & TILE_RIGHT_BOUNDARY) * 2 - 1;
+  const int ymax = y0 + sizey + !(bt & TILE_BOTTOM_BOUNDARY) * 2 - 1;
 
   for (y = y0; y < y0 + sizey; y++) {
     for (x = x0; x < x0 + sizex; x++) {
-      int X = src[y * sstride + x];
-      int A = src[AOMMAX(ymin, y - 1) * sstride + x];
-      int B = src[y * sstride + AOMMAX(xmin, x - 2)];
-      int C = src[y * sstride + AOMMAX(xmin, x - 1)];
-      int D = src[y * sstride + AOMMIN(xmax, x + 1)];
-      int E = src[y * sstride + AOMMIN(xmax, x + 2)];
-      int F = src[AOMMIN(ymax, y + 1) * sstride + x];
-      int delta;
-      delta = av1_clpf_sample(X, A, B, C, D, E, F, strength);
+      const int X = src[y * sstride + x];
+      const int A = src[AOMMAX(ymin, y - 2) * sstride + x];
+      const int B = src[AOMMAX(ymin, y - 1) * sstride + x];
+      const int C = src[y * sstride + AOMMAX(xmin, x - 2)];
+      const int D = src[y * sstride + AOMMAX(xmin, x - 1)];
+      const int E = src[y * sstride + AOMMIN(xmax, x + 1)];
+      const int F = src[y * sstride + AOMMIN(xmax, x + 2)];
+      const int G = src[AOMMIN(ymax, y + 1) * sstride + x];
+      const int H = src[AOMMIN(ymax, y + 2) * sstride + x];
+      const int delta =
+          av1_clpf_sample(X, A, B, C, D, E, F, G, H, strength, bitdepth);
       dst[y * dstride + x] = X + delta;
     }
   }
@@ -243,14 +260,16 @@ void av1_clpf_frame(const YV12_BUFFER_CONFIG *frame,
                 aom_clpf_block_hbd(CONVERT_TO_SHORTPTR(src_buffer),
                                    CONVERT_TO_SHORTPTR(dst_buffer), sstride,
                                    dstride, xpos, ypos, sizex, sizey, strength,
-                                   boundary_type);
+                                   boundary_type, cm->bit_depth);
               } else {
                 aom_clpf_block(src_buffer, dst_buffer, sstride, dstride, xpos,
-                               ypos, sizex, sizey, strength, boundary_type);
+                               ypos, sizex, sizey, strength, boundary_type,
+                               cm->bit_depth);
               }
 #else
               aom_clpf_block(src_buffer, dst_buffer, sstride, dstride, xpos,
-                             ypos, sizex, sizey, strength, boundary_type);
+                             ypos, sizex, sizey, strength, boundary_type,
+                             cm->bit_depth);
 #endif
             }
           }

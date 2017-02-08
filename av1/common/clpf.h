@@ -18,7 +18,8 @@
 #define MAX_FB_SIZE (1 << MAX_FB_SIZE_LOG2)
 #define MIN_FB_SIZE (1 << MIN_FB_SIZE_LOG2)
 
-int av1_clpf_sample(int X, int A, int B, int C, int D, int E, int F, int b);
+int av1_clpf_sample(int X, int A, int B, int C, int D, int E, int F, int G,
+                    int H, int b, unsigned int bd);
 void av1_clpf_frame(const YV12_BUFFER_CONFIG *frame,
                     const YV12_BUFFER_CONFIG *org, AV1_COMMON *cm,
                     int enable_fb_flag, unsigned int strength,

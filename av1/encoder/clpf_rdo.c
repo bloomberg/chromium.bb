@@ -18,20 +18,24 @@
 // Calculate the error of a filtered and unfiltered block
 void aom_clpf_detect_c(const uint8_t *rec, const uint8_t *org, int rstride,
                        int ostride, int x0, int y0, int width, int height,
-                       int *sum0, int *sum1, unsigned int strength, int size) {
+                       int *sum0, int *sum1, unsigned int strength, int size,
+                       unsigned int bd) {
   int x, y;
   for (y = y0; y < y0 + size; y++) {
     for (x = x0; x < x0 + size; x++) {
-      int O = org[y * ostride + x];
-      int X = rec[y * rstride + x];
-      int A = rec[AOMMAX(0, y - 1) * rstride + x];
-      int B = rec[y * rstride + AOMMAX(0, x - 2)];
-      int C = rec[y * rstride + AOMMAX(0, x - 1)];
-      int D = rec[y * rstride + AOMMIN(width - 1, x + 1)];
-      int E = rec[y * rstride + AOMMIN(width - 1, x + 2)];
-      int F = rec[AOMMIN(height - 1, y + 1) * rstride + x];
-      int delta = av1_clpf_sample(X, A, B, C, D, E, F, strength);
-      int Y = X + delta;
+      const int O = org[y * ostride + x];
+      const int X = rec[y * rstride + x];
+      const int A = rec[AOMMAX(0, y - 2) * rstride + x];
+      const int B = rec[AOMMAX(0, y - 1) * rstride + x];
+      const int C = rec[y * rstride + AOMMAX(0, x - 2)];
+      const int D = rec[y * rstride + AOMMAX(0, x - 1)];
+      const int E = rec[y * rstride + AOMMIN(width - 1, x + 1)];
+      const int F = rec[y * rstride + AOMMIN(width - 1, x + 2)];
+      const int G = rec[AOMMIN(height - 1, y + 1) * rstride + x];
+      const int H = rec[AOMMIN(height - 1, y + 2) * rstride + x];
+      const int delta =
+          av1_clpf_sample(X, A, B, C, D, E, F, G, H, strength, bd);
+      const int Y = X + delta;
       *sum0 += (O - X) * (O - X);
       *sum1 += (O - Y) * (O - Y);
     }
@@ -40,25 +44,28 @@ void aom_clpf_detect_c(const uint8_t *rec, const uint8_t *org, int rstride,
 
 void aom_clpf_detect_multi_c(const uint8_t *rec, const uint8_t *org,
                              int rstride, int ostride, int x0, int y0,
-                             int width, int height, int *sum, int size) {
+                             int width, int height, int *sum, int size,
+                             unsigned int bd) {
   int x, y;
 
   for (y = y0; y < y0 + size; y++) {
     for (x = x0; x < x0 + size; x++) {
-      int O = org[y * ostride + x];
-      int X = rec[y * rstride + x];
-      int A = rec[AOMMAX(0, y - 1) * rstride + x];
-      int B = rec[y * rstride + AOMMAX(0, x - 2)];
-      int C = rec[y * rstride + AOMMAX(0, x - 1)];
-      int D = rec[y * rstride + AOMMIN(width - 1, x + 1)];
-      int E = rec[y * rstride + AOMMIN(width - 1, x + 2)];
-      int F = rec[AOMMIN(height - 1, y + 1) * rstride + x];
-      int delta1 = av1_clpf_sample(X, A, B, C, D, E, F, 1);
-      int delta2 = av1_clpf_sample(X, A, B, C, D, E, F, 2);
-      int delta3 = av1_clpf_sample(X, A, B, C, D, E, F, 4);
-      int F1 = X + delta1;
-      int F2 = X + delta2;
-      int F3 = X + delta3;
+      const int O = org[y * ostride + x];
+      const int X = rec[y * rstride + x];
+      const int A = rec[AOMMAX(0, y - 2) * rstride + x];
+      const int B = rec[AOMMAX(0, y - 1) * rstride + x];
+      const int C = rec[y * rstride + AOMMAX(0, x - 2)];
+      const int D = rec[y * rstride + AOMMAX(0, x - 1)];
+      const int E = rec[y * rstride + AOMMIN(width - 1, x + 1)];
+      const int F = rec[y * rstride + AOMMIN(width - 1, x + 2)];
+      const int G = rec[AOMMIN(height - 1, y + 1) * rstride + x];
+      const int H = rec[AOMMIN(height - 1, y + 2) * rstride + x];
+      const int delta1 = av1_clpf_sample(X, A, B, C, D, E, F, G, H, 1, bd);
+      const int delta2 = av1_clpf_sample(X, A, B, C, D, E, F, G, H, 2, bd);
+      const int delta3 = av1_clpf_sample(X, A, B, C, D, E, F, G, H, 4, bd);
+      const int F1 = X + delta1;
+      const int F2 = X + delta2;
+      const int F3 = X + delta3;
       sum[0] += (O - X) * (O - X);
       sum[1] += (O - F1) * (O - F1);
       sum[2] += (O - F2) * (O - F2);
@@ -72,20 +79,24 @@ void aom_clpf_detect_multi_c(const uint8_t *rec, const uint8_t *org,
 void aom_clpf_detect_hbd_c(const uint16_t *rec, const uint16_t *org,
                            int rstride, int ostride, int x0, int y0, int width,
                            int height, int *sum0, int *sum1,
-                           unsigned int strength, int shift, int size) {
+                           unsigned int strength, int size, unsigned int bd) {
+  const int shift = bd - 8;
   int x, y;
   for (y = y0; y < y0 + size; y++) {
     for (x = x0; x < x0 + size; x++) {
-      int O = org[y * ostride + x] >> shift;
-      int X = rec[y * rstride + x] >> shift;
-      int A = rec[AOMMAX(0, y - 1) * rstride + x] >> shift;
-      int B = rec[y * rstride + AOMMAX(0, x - 2)] >> shift;
-      int C = rec[y * rstride + AOMMAX(0, x - 1)] >> shift;
-      int D = rec[y * rstride + AOMMIN(width - 1, x + 1)] >> shift;
-      int E = rec[y * rstride + AOMMIN(width - 1, x + 2)] >> shift;
-      int F = rec[AOMMIN(height - 1, y + 1) * rstride + x] >> shift;
-      int delta = av1_clpf_sample(X, A, B, C, D, E, F, strength >> shift);
-      int Y = X + delta;
+      const int O = org[y * ostride + x] >> shift;
+      const int X = rec[y * rstride + x] >> shift;
+      const int A = rec[AOMMAX(0, y - 2) * rstride + x] >> shift;
+      const int B = rec[AOMMAX(0, y - 1) * rstride + x] >> shift;
+      const int C = rec[y * rstride + AOMMAX(0, x - 2)] >> shift;
+      const int D = rec[y * rstride + AOMMAX(0, x - 1)] >> shift;
+      const int E = rec[y * rstride + AOMMIN(width - 1, x + 1)] >> shift;
+      const int F = rec[y * rstride + AOMMIN(width - 1, x + 2)] >> shift;
+      const int G = rec[AOMMIN(height - 1, y + 1) * rstride + x] >> shift;
+      const int H = rec[AOMMIN(height - 1, y + 2) * rstride + x] >> shift;
+      const int delta = av1_clpf_sample(X, A, B, C, D, E, F, G, H,
+                                        strength >> shift, bd - shift);
+      const int Y = X + delta;
       *sum0 += (O - X) * (O - X);
       *sum1 += (O - Y) * (O - Y);
     }
@@ -95,26 +106,32 @@ void aom_clpf_detect_hbd_c(const uint16_t *rec, const uint16_t *org,
 // aom_clpf_detect_multi_c() apart from "rec" and "org".
 void aom_clpf_detect_multi_hbd_c(const uint16_t *rec, const uint16_t *org,
                                  int rstride, int ostride, int x0, int y0,
-                                 int width, int height, int *sum, int shift,
-                                 int size) {
+                                 int width, int height, int *sum, int size,
+                                 unsigned int bd) {
+  const int shift = bd - 8;
   int x, y;
 
   for (y = y0; y < y0 + size; y++) {
     for (x = x0; x < x0 + size; x++) {
       int O = org[y * ostride + x] >> shift;
       int X = rec[y * rstride + x] >> shift;
-      int A = rec[AOMMAX(0, y - 1) * rstride + x] >> shift;
-      int B = rec[y * rstride + AOMMAX(0, x - 2)] >> shift;
-      int C = rec[y * rstride + AOMMAX(0, x - 1)] >> shift;
-      int D = rec[y * rstride + AOMMIN(width - 1, x + 1)] >> shift;
-      int E = rec[y * rstride + AOMMIN(width - 1, x + 2)] >> shift;
-      int F = rec[AOMMIN(height - 1, y + 1) * rstride + x] >> shift;
-      int delta1 = av1_clpf_sample(X, A, B, C, D, E, F, 1);
-      int delta2 = av1_clpf_sample(X, A, B, C, D, E, F, 2);
-      int delta3 = av1_clpf_sample(X, A, B, C, D, E, F, 4);
-      int F1 = X + delta1;
-      int F2 = X + delta2;
-      int F3 = X + delta3;
+      const int A = rec[AOMMAX(0, y - 2) * rstride + x] >> shift;
+      const int B = rec[AOMMAX(0, y - 1) * rstride + x] >> shift;
+      const int C = rec[y * rstride + AOMMAX(0, x - 2)] >> shift;
+      const int D = rec[y * rstride + AOMMAX(0, x - 1)] >> shift;
+      const int E = rec[y * rstride + AOMMIN(width - 1, x + 1)] >> shift;
+      const int F = rec[y * rstride + AOMMIN(width - 1, x + 2)] >> shift;
+      const int G = rec[AOMMIN(height - 1, y + 1) * rstride + x] >> shift;
+      const int H = rec[AOMMIN(height - 1, y + 2) * rstride + x] >> shift;
+      const int delta1 =
+          av1_clpf_sample(X, A, B, C, D, E, F, G, H, 1, bd - shift);
+      const int delta2 =
+          av1_clpf_sample(X, A, B, C, D, E, F, G, H, 2, bd - shift);
+      const int delta3 =
+          av1_clpf_sample(X, A, B, C, D, E, F, G, H, 4, bd - shift);
+      const int F1 = X + delta1;
+      const int F2 = X + delta2;
+      const int F3 = X + delta3;
       sum[0] += (O - X) * (O - X);
       sum[1] += (O - F1) * (O - F1);
       sum[2] += (O - F2) * (O - F2);
@@ -143,17 +160,18 @@ int av1_clpf_decision(int k, int l, const YV12_BUFFER_CONFIG *rec,
                               CONVERT_TO_SHORTPTR(org->y_buffer), rec->y_stride,
                               org->y_stride, xpos, ypos, rec->y_crop_width,
                               rec->y_crop_height, &sum0, &sum1, strength,
-                              cm->bit_depth - 8, block_size);
+                              block_size, cm->bit_depth);
         } else {
           aom_clpf_detect(rec->y_buffer, org->y_buffer, rec->y_stride,
                           org->y_stride, xpos, ypos, rec->y_crop_width,
                           rec->y_crop_height, &sum0, &sum1, strength,
-                          block_size);
+                          block_size, cm->bit_depth);
         }
 #else
         aom_clpf_detect(rec->y_buffer, org->y_buffer, rec->y_stride,
                         org->y_stride, xpos, ypos, rec->y_crop_width,
-                        rec->y_crop_height, &sum0, &sum1, strength, block_size);
+                        rec->y_crop_height, &sum0, &sum1, strength, block_size,
+                        cm->bit_depth);
 #endif
       }
     }
@@ -255,16 +273,16 @@ static int clpf_rdo(int y, int x, const YV12_BUFFER_CONFIG *rec,
         aom_clpf_detect_multi_hbd(CONVERT_TO_SHORTPTR(rec_buffer),
                                   CONVERT_TO_SHORTPTR(org_buffer), rec_stride,
                                   org_stride, xpos, ypos, rec_width, rec_height,
-                                  sum + skip, cm->bit_depth - 8, block_size);
+                                  sum + skip, block_size, cm->bit_depth);
       } else {
         aom_clpf_detect_multi(rec_buffer, org_buffer, rec_stride, org_stride,
                               xpos, ypos, rec_width, rec_height, sum + skip,
-                              block_size);
+                              block_size, cm->bit_depth);
       }
 #else
       aom_clpf_detect_multi(rec_buffer, org_buffer, rec_stride, org_stride,
                             xpos, ypos, rec_width, rec_height, sum + skip,
-                            block_size);
+                            block_size, cm->bit_depth);
 #endif
       filtered |= !skip;
     }
