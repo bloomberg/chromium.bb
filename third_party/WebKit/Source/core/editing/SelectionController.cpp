@@ -950,6 +950,8 @@ bool SelectionController::handleGestureLongPress(
                                          SelectInputEventType::Touch))
     return selection().isAvailable();
 
+  if (!innerNode->isConnected() || !innerNode->layoutObject())
+    return false;
   setCaretAtHitTestResult(hitTestResult);
   return false;
 }
