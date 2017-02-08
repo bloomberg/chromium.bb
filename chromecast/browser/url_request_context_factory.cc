@@ -128,8 +128,8 @@ class URLRequestContextFactory::MainURLRequestContextGetter
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
-      : browser_context_(browser_context),
-        factory_(factory),
+      : factory_(factory),
+        cookie_path_(browser_context->GetPath().Append(kCookieStoreFile)),
         request_interceptors_(std::move(request_interceptors)) {
     std::swap(protocol_handlers_, *protocol_handlers);
   }
@@ -137,8 +137,7 @@ class URLRequestContextFactory::MainURLRequestContextGetter
   net::URLRequestContext* GetURLRequestContext() override {
     if (!request_context_) {
       request_context_.reset(factory_->CreateMainRequestContext(
-          browser_context_, &protocol_handlers_,
-          std::move(request_interceptors_)));
+          cookie_path_, &protocol_handlers_, std::move(request_interceptors_)));
       protocol_handlers_.clear();
     }
     return request_context_.get();
@@ -153,8 +152,8 @@ class URLRequestContextFactory::MainURLRequestContextGetter
  private:
   ~MainURLRequestContextGetter() override {}
 
-  content::BrowserContext* const browser_context_;
   URLRequestContextFactory* const factory_;
+  base::FilePath cookie_path_;
   content::ProtocolHandlerMap protocol_handlers_;
   content::URLRequestInterceptorScopedVector request_interceptors_;
   std::unique_ptr<net::URLRequestContext> request_context_;
@@ -386,7 +385,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMediaRequestContext() {
 }
 
 net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
-    content::BrowserContext* browser_context,
+    const base::FilePath& cookie_path,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -406,8 +405,8 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
       protocol_handlers, std::move(request_interceptors));
 
   content::CookieStoreConfig cookie_config(
-      browser_context->GetPath().Append(kCookieStoreFile),
-      content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES, nullptr, nullptr);
+      cookie_path, content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES,
+      nullptr, nullptr);
   main_cookie_store_ = content::CreateCookieStore(cookie_config);
 
   net::URLRequestContext* main_context = new net::URLRequestContext();

@@ -55,6 +55,8 @@ source_set("browser") {
     "metrics/cast_stability_metrics_provider.h",
     "pref_service_helper.cc",
     "pref_service_helper.h",
+    "renderer_prelauncher.cc",
+    "renderer_prelauncher.h",
     "service/cast_service_simple.cc",
     "service/cast_service_simple.h",
     "url_request_context_factory.cc",
@@ -235,6 +237,7 @@ source_set("browsertests") {
   testonly = true
   sources = [
     "cast_media_blocker_browsertest.cc",
+    "renderer_prelauncher_test.cc",
     "test/cast_navigation_browsertest.cc",
   ]
 
@@ -243,6 +246,8 @@ source_set("browsertests") {
   deps = [
     ":test_support",
     "//chromecast:chromecast_features",
+    "//chromecast/base:chromecast_switches",
+    "//chromecast/base/metrics",
     "//media/base:test_support",
   ]
 }

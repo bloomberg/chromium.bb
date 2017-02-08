@@ -13,6 +13,10 @@
 
 class PrefProxyConfigTracker;
 
+namespace base {
+class FilePath;
+}
+
 namespace net {
 class CookieStore;
 class HttpTransactionFactory;
@@ -88,7 +92,7 @@ class URLRequestContextFactory {
   net::URLRequestContext* CreateSystemRequestContext();
   net::URLRequestContext* CreateMediaRequestContext();
   net::URLRequestContext* CreateMainRequestContext(
-      content::BrowserContext* browser_context,
+      const base::FilePath& cookie_path,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors);
 

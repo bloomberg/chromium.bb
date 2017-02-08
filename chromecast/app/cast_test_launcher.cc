@@ -6,7 +6,6 @@
 #include "base/sys_info.h"
 #include "base/test/test_suite.h"
 #include "chromecast/app/cast_main_delegate.h"
-#include "chromecast/base/cast_paths.h"
 #include "content/public/test/test_launcher.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/edk/embedder/embedder.h"

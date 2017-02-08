@@ -8,10 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/events/event.h"
 
 namespace content {
 class BrowserContext;
+class SiteInstance;
 class WebContents;
 }
 
@@ -55,7 +58,12 @@ class CastContentWindow {
   // TODO(derekjchow): remove this function from this class, since it doesn't
   // have anything to do with displaying web_contents.
   virtual std::unique_ptr<content::WebContents> CreateWebContents(
-      content::BrowserContext* browser_context) = 0;
+      content::BrowserContext* browser_context,
+      scoped_refptr<content::SiteInstance> site_instance) = 0;
+  std::unique_ptr<content::WebContents> CreateWebContents(
+      content::BrowserContext* browser_context) {
+    return CreateWebContents(browser_context, nullptr);
+  }
 };
 
 }  // namespace shell

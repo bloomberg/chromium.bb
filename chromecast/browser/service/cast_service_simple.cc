@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/filename_util.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -55,6 +56,10 @@ void CastServiceSimple::FinalizeInternal() {
 }
 
 void CastServiceSimple::StartInternal() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    return;
+  }
+
   window_ = CastContentWindow::Create(this);
   web_contents_ = window_->CreateWebContents(browser_context());
   window_->ShowWebContents(web_contents_.get(), window_manager_);
@@ -66,9 +71,13 @@ void CastServiceSimple::StartInternal() {
 }
 
 void CastServiceSimple::StopInternal() {
-  web_contents_->ClosePage();
-  web_contents_.reset();
-  window_.reset();
+  if (web_contents_) {
+    web_contents_->ClosePage();
+    web_contents_.reset();
+  }
+  if (window_) {
+    window_.reset();
+  }
 }
 
 void CastServiceSimple::OnWindowDestroyed() {}

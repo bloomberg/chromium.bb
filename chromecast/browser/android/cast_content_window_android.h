@@ -36,7 +36,8 @@ class CastContentWindowAndroid : public CastContentWindow,
   void ShowWebContents(content::WebContents* web_contents,
                        CastWindowManager* window_manager) override;
   std::unique_ptr<content::WebContents> CreateWebContents(
-      content::BrowserContext* browser_context) override;
+      content::BrowserContext* browser_context,
+      scoped_refptr<content::SiteInstance> site_instance) override;
 
   // content::WebContentsObserver implementation:
   void DidFirstVisuallyNonEmptyPaint() override;
