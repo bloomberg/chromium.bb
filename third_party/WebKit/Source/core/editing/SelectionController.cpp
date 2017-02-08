@@ -279,12 +279,12 @@ static bool targetPositionIsBeforeDragStartPosition(
 }
 
 static SelectionInFlatTree applySelectAll(
-    const VisibleSelectionInFlatTree& newSelection,
+    const PositionInFlatTree& basePosition,
+    const PositionInFlatTree& targetPosition,
     Node* mousePressNode,
     const LayoutPoint& dragStartPoint,
     Node* target,
-    const LayoutPoint& hitTestPoint,
-    const VisiblePositionInFlatTree& targetPosition) {
+    const LayoutPoint& hitTestPoint) {
   Node* const rootUserSelectAllForMousePressNode =
       EditingInFlatTreeStrategy::rootUserSelectAllForNode(mousePressNode);
   Node* const rootUserSelectAllForTarget =
@@ -308,7 +308,7 @@ static SelectionInFlatTree applySelectAll(
     builder.collapse(
         PositionInFlatTree::afterNode(rootUserSelectAllForMousePressNode));
   } else {
-    builder.collapse(newSelection.base());
+    builder.collapse(basePosition);
   }
 
   if (rootUserSelectAllForTarget && mousePressNode->layoutObject()) {
@@ -323,7 +323,7 @@ static SelectionInFlatTree applySelectAll(
     return builder.build();
   }
 
-  builder.extend(targetPosition.deepEquivalent());
+  builder.extend(targetPosition);
   return builder.build();
 }
 
@@ -355,12 +355,14 @@ void SelectionController::updateSelectionForMouseDrag(
   // Restart the selection if this is the first mouse move. This work is usually
   // done in handleMousePressEvent, but not if the mouse press was on an
   // existing selection.
-  VisibleSelectionInFlatTree newSelection =
-      selection().visibleSelection<EditingInFlatTreeStrategy>();
 
   // Special case to limit selection to the containing block for SVG text.
   // FIXME: Isn't there a better non-SVG-specific way to do this?
-  if (Node* selectionBaseNode = newSelection.base().anchorNode()) {
+  if (Node* selectionBaseNode =
+          selection()
+              .visibleSelection<EditingInFlatTreeStrategy>()
+              .base()
+              .anchorNode()) {
     if (LayoutObject* selectionBaseLayoutObject =
             selectionBaseNode->layoutObject()) {
       if (selectionBaseLayoutObject->isSVGText()) {
@@ -379,31 +381,26 @@ void SelectionController::updateSelectionForMouseDrag(
   // |newSelection| are valid for |m_frame->document()|.
   // |dispatchSelectStart()| can change them by "selectstart" event handler.
 
+  PositionInFlatTree basePosition;
   if (m_selectionState != SelectionState::ExtendedSelection) {
     // Always extend selection here because it's caused by a mouse drag
     m_selectionState = SelectionState::ExtendedSelection;
-    SelectionInFlatTree::Builder builder;
-    builder.collapse(targetPosition.toPositionWithAffinity());
-    newSelection = createVisibleSelection(builder.build());
+    basePosition = targetPosition.deepEquivalent();
+  } else {
+    basePosition =
+        selection().visibleSelection<EditingInFlatTreeStrategy>().base();
   }
+  const SelectionInFlatTree& appliedSelection = applySelectAll(
+      basePosition, targetPosition.deepEquivalent(), mousePressNode,
+      dragStartPos, target, hitTestResult.localPoint());
+  SelectionInFlatTree::Builder builder(appliedSelection);
 
-  newSelection = createVisibleSelection(
-      applySelectAll(newSelection, mousePressNode, dragStartPos, target,
-                     hitTestResult.localPoint(), targetPosition));
+  if (selection().granularity() != CharacterGranularity)
+    builder.setGranularity(selection().granularity());
 
-  // TODO(yosin): We should have |newBase| and |newExtent| instead of
-  // |newSelection|.
-  if (selection().granularity() != CharacterGranularity) {
-    newSelection = createVisibleSelection(
-        SelectionInFlatTree::Builder()
-            .setBaseAndExtent(newSelection.base(), newSelection.extent())
-            .setGranularity(selection().granularity())
-            .build());
-  }
-
-  setNonDirectionalSelectionIfNeeded(newSelection, selection().granularity(),
-                                     AdjustEndpointsAtBidiBoundary,
-                                     HandleVisibility::NotVisible);
+  setNonDirectionalSelectionIfNeeded(
+      createVisibleSelection(builder.build()), selection().granularity(),
+      AdjustEndpointsAtBidiBoundary, HandleVisibility::NotVisible);
 }
 
 bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(
