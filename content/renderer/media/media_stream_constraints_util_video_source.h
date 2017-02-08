@@ -1,0 +1,155 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_SOURCE_H_
+#define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_SOURCE_H_
+
+#include <iosfwd>
+#include <string>
+#include <vector>
+
+#include "content/common/content_export.h"
+#include "content/common/media/media_devices.mojom.h"
+#include "media/capture/video_capture_types.h"
+
+namespace blink {
+class WebString;
+class WebMediaConstraints;
+}
+
+namespace content {
+
+struct CONTENT_EXPORT VideoCaptureCapabilities {
+  VideoCaptureCapabilities();
+  VideoCaptureCapabilities(VideoCaptureCapabilities&& other);
+  ~VideoCaptureCapabilities();
+  VideoCaptureCapabilities& operator=(VideoCaptureCapabilities&& other);
+
+  // Each field is independent of each other.
+  std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> device_capabilities;
+  std::vector<media::PowerLineFrequency> power_line_capabilities;
+};
+
+class CONTENT_EXPORT VideoCaptureSourceSettings {
+ public:
+  VideoCaptureSourceSettings();
+  VideoCaptureSourceSettings(const VideoCaptureSourceSettings& other);
+  VideoCaptureSourceSettings(VideoCaptureSourceSettings&& other);
+  VideoCaptureSourceSettings(const std::string& device_id,
+                             const media::VideoCaptureFormat& format,
+                             ::mojom::FacingMode facing_mode,
+                             media::PowerLineFrequency power_line_frequency);
+  ~VideoCaptureSourceSettings();
+  VideoCaptureSourceSettings& operator=(
+      const VideoCaptureSourceSettings& other);
+  VideoCaptureSourceSettings& operator=(VideoCaptureSourceSettings&& other);
+
+  // Accessors for easier interaction with blink constraint classes.
+  blink::WebString GetFacingMode() const;
+  long GetPowerLineFrequency() const;
+  long GetWidth() const;
+  long GetHeight() const;
+  double GetFrameRate() const;
+  blink::WebString GetDeviceId() const;
+
+  const media::VideoCaptureFormat& format() const { return format_; }
+  const std::string& device_id() const { return device_id_; }
+  ::mojom::FacingMode facing_mode() const { return facing_mode_; }
+  media::PowerLineFrequency power_line_frequency() const {
+    return power_line_frequency_;
+  }
+
+ private:
+  std::string device_id_;
+  media::VideoCaptureFormat format_;
+  ::mojom::FacingMode facing_mode_;
+  media::PowerLineFrequency power_line_frequency_;
+};
+
+struct CONTENT_EXPORT VideoCaptureSourceSelectionResult {
+  VideoCaptureSourceSelectionResult();
+  VideoCaptureSourceSelectionResult(
+      const VideoCaptureSourceSelectionResult& other);
+  VideoCaptureSourceSelectionResult(VideoCaptureSourceSelectionResult&& other);
+  ~VideoCaptureSourceSelectionResult();
+  VideoCaptureSourceSelectionResult& operator=(
+      const VideoCaptureSourceSelectionResult& other);
+  VideoCaptureSourceSelectionResult& operator=(
+      VideoCaptureSourceSelectionResult&& other);
+
+  bool has_value() const { return failed_constraint_name == nullptr; }
+
+  VideoCaptureSourceSettings settings;
+  const char* failed_constraint_name;
+};
+
+// This function performs source and source-settings selection based on
+// the given |capabilities| and |constraints|.
+// Chromium performs constraint resolution in two steps. First, a source and its
+// settings are selected; then a track is created, connected to the source, and
+// finally the track settings are selected. This function implements an
+// algorithm for the first step. Sources are not a user-visible concept, so the
+// spec only specifies an algorithm for track settings.
+// This algorithm for sources is compatible with the spec algorithm for tracks,
+// as defined in https://w3c.github.io/mediacapture-main/#dfn-selectsettings,
+// but it is customized to account for differences between sources and tracks,
+// and to break ties when multiple source settings are equally good according to
+// the spec algorithm.
+// The main difference between a source and a track with regards to the spec
+// algorithm is that a candidate  source can support a range of values for some
+// constraints while a candidate track supports a single value. For example,
+// cropping allows a source with native resolution AxB to support the range of
+// resolutions from 1x1 to AxB.
+// Only candidates that satisfy the basic constraint set are valid. If no
+// candidate can satisfy the basic constraint set, this function returns
+// a result without a valid |settings| field and with the name of a failed
+// constraint in field |failed_constraint_name|. If at least one candidate that
+// satisfies the basic constraint set can be found, this function returns a
+// result with a valid |settings| field and a null |failed_constraint_name|.
+// If there are no candidates at all, this function returns a result with an
+// empty string in |failed_constraint_name| and without a valid |settings|
+// field.
+// The criteria to decide if a valid candidate is better than another one are as
+// follows:
+// 1. Given advanced constraint sets A[0],A[1]...,A[n], candidate C1 is better
+//    than candidate C2 if C1 supports the first advanced set for which C1's
+//    support is different than C2's support.
+//    Examples:
+//    * One advanced set, C1 supports it, and C2 does not. C1 is better.
+//    * Two sets, C1 supports both, C2 supports only the first. C1 is better.
+//    * Three sets, C1 supports the first and second set, C2 supports the first
+//      and third set. C1 is better.
+// 2. C1 is better than C2 if C1 has a smaller fitness distance than C2. The
+//    fitness distance depends on the ability of the candidate to support ideal
+//    values in the basic constraint set. This is the final criterion defined in
+//    the spec.
+// 3. C1 is better than C2 if C1 has a lower Chromium-specific custom distance
+//    from the basic constraint set. This custom distance is the sum of various
+//    constraint-specific custom distances.
+//    For example, if the constraint set specifies a resolution of exactly
+//    1000x1000 for a track, then a candidate with a resolution of 1200x1200
+//    is better than a candidate with a resolution of 2000x2000. Both settings
+//    satisfy the constraint set because cropping can be used to produce the
+//    track setting of 1000x1000, but 1200x1200 is considered better because it
+//    has lower resource usage. The same criteria applies for each advanced
+//    constraint set.
+// 4. C1 is better than C2 if its native settings have a smaller fitness
+//    distance. For example, if the ideal resolution is 1000x1000 and C1 has a
+//    native resolution of 1200x1200, while C2 has a native resolution of
+//    2000x2000, then C1 is better because it can support the ideal value with
+//    lower resource usage. Both C1 and C2 are better than a candidate C3 with
+//    a native resolution of 999x999, since C3 has a nonzero distance to the
+//    ideal value and thus has worse fitness according to step 2, even if C3's
+//    native fitness is better than C1's and C2's.
+// 5. C1 is better than C2 if its settings are closer to certain default
+//    settings that include the device ID, power-line frequency, resolution, and
+//    frame rate, in that order. Note that there is no default facing mode or
+//    aspect ratio.
+VideoCaptureSourceSelectionResult CONTENT_EXPORT
+SelectVideoCaptureSourceSettings(const VideoCaptureCapabilities& capabilities,
+                                 const blink::WebMediaConstraints& constraints);
+
+}  // namespace content
+
+#endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_SOURCE_H_
