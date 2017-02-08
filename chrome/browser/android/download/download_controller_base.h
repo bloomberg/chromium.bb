@@ -36,16 +36,11 @@ struct DownloadInfo {
   GURL url;
   // The original URL before any redirection by the server for this URL.
   GURL original_url;
-  int64_t total_bytes;
   std::string content_disposition;
   std::string original_mime_type;
   std::string user_agent;
   std::string cookie;
   std::string referer;
-  bool has_user_gesture;
-
-  content::WebContents* web_contents;
-  // Default copy constructor is used for passing this struct by value.
 };
 
 // Interface to request GET downloads and send notifications for POST
@@ -82,6 +77,11 @@ class DownloadControllerBase : public content::DownloadItem::Observer {
 
   // Called by unit test to approve or disapprove file access request.
   virtual void SetApproveFileAccessRequestForTesting(bool approve) {}
+
+  // Starts a new download request with Android DownloadManager.
+  virtual void CreateAndroidDownload(
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const DownloadInfo& info) = 0;
 
  protected:
   ~DownloadControllerBase() override {}

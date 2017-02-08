@@ -34,7 +34,9 @@ class MockDownloadController : public DownloadControllerBase {
       content::WebContents* web_contents,
       const AcquireFileAccessPermissionCallback& callback) override;
   void SetApproveFileAccessRequestForTesting(bool approve) override;
-
+  void CreateAndroidDownload(
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const DownloadInfo& info) override;
  private:
   bool approve_file_access_request_;
   DISALLOW_COPY_AND_ASSIGN(MockDownloadController);

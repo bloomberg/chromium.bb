@@ -39,5 +39,9 @@ void MockDownloadController::SetApproveFileAccessRequestForTesting(
   approve_file_access_request_ = approve;
 }
 
+void MockDownloadController::CreateAndroidDownload(
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const DownloadInfo& info) {}
+
 }  // namespace android
 }  // namespace chrome

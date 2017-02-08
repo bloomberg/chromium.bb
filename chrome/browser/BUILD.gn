@@ -2649,6 +2649,8 @@ split_static_library("browser") {
       "android/download/download_manager_service.h",
       "android/download/duplicate_download_infobar_delegate.cc",
       "android/download/duplicate_download_infobar_delegate.h",
+      "android/download/intercept_download_resource_throttle.cc",
+      "android/download/intercept_download_resource_throttle.h",
       "android/download/mock_download_controller.cc",
       "android/download/mock_download_controller.h",
       "android/download/ui/thumbnail_provider.cc",

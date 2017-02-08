@@ -22,6 +22,14 @@ class ChromeDownloadDelegate
   void OnDownloadStarted(const std::string& filename);
   void RequestFileAccess(intptr_t callback_id);
 
+  // TODO(qinmin): consolidate this with the static function above.
+  void EnqueueDownloadManagerRequest(const std::string& url,
+                                     const std::string& user_agent,
+                                     const std::string& content_disposition,
+                                     const std::string& mime_type,
+                                     const std::string& cookie,
+                                     const std::string& referer);
+
  private:
   explicit ChromeDownloadDelegate(content::WebContents* contents);
   friend class content::WebContentsUserData<ChromeDownloadDelegate>;

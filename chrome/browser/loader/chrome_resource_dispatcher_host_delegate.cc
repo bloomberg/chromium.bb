@@ -106,6 +106,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/download/intercept_download_resource_throttle.h"
 #include "chrome/browser/android/offline_pages/downloads/resource_throttle.h"
 #include "chrome/browser/loader/data_reduction_proxy_resource_throttle_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
@@ -552,6 +553,9 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
                                     content::RESOURCE_TYPE_MAIN_FRAME,
                                     throttles);
 #if defined(OS_ANDROID)
+    throttles->push_back(
+        base::MakeUnique<InterceptDownloadResourceThrottle>(
+            request, info->GetWebContentsGetterForRequest()));
     // On Android, forward text/html downloads to OfflinePages backend.
     throttles->push_back(
         base::MakeUnique<offline_pages::downloads::ResourceThrottle>(request));

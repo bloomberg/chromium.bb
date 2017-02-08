@@ -12,8 +12,7 @@ DownloadControllerBase* DownloadControllerBase::download_controller_ = nullptr;
 
 using content::ResourceRequestInfo;
 
-DownloadInfo::DownloadInfo(const net::URLRequest* request)
-    : has_user_gesture(false) {
+DownloadInfo::DownloadInfo(const net::URLRequest* request) {
   request->GetResponseHeaderByName("content-disposition", &content_disposition);
 
   if (request->response_headers())
@@ -30,10 +29,6 @@ DownloadInfo::DownloadInfo(const net::URLRequest* request)
     original_url = request->url_chain().front();
     url = request->url_chain().back();
   }
-
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (info)
-    has_user_gesture = info->HasUserGesture();
 }
 
 DownloadInfo::DownloadInfo(const DownloadInfo& other) = default;

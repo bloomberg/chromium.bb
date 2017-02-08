@@ -44,6 +44,9 @@ class DownloadController : public DownloadControllerBase {
   void AcquireFileAccessPermission(
       content::WebContents* web_contents,
       const AcquireFileAccessPermissionCallback& callback) override;
+  void CreateAndroidDownload(
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const DownloadInfo& info) override;
 
   // UMA histogram enum for download cancellation reasons. Keep this
   // in sync with MobileDownloadCancelReason in histograms.xml. This should be
@@ -86,6 +89,14 @@ class DownloadController : public DownloadControllerBase {
 
   base::android::ScopedJavaLocalRef<jobject> GetContentViewCoreFromWebContents(
       content::WebContents* web_contents);
+
+  // Helper methods to start android download on UI thread.
+  void StartAndroidDownload(
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const DownloadInfo& info);
+  void StartAndroidDownloadInternal(
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const DownloadInfo& info, bool allowed);
 
   // Creates Java object if it is not created already and returns it.
   JavaObject* GetJavaObject();
