@@ -6584,10 +6584,8 @@ interface TextTrack : EventTarget
     getter oncuechange
     getter regions
     method addCue
-    method addRegion
     method constructor
     method removeCue
-    method removeRegion
     setter mode
     setter oncuechange
 interface TextTrackCue : EventTarget

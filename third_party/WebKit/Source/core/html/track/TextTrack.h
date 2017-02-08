@@ -43,7 +43,6 @@ class TextTrack;
 class TextTrackCue;
 class TextTrackCueList;
 class TextTrackList;
-class VTTRegion;
 class VTTRegionList;
 
 class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
@@ -102,8 +101,6 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   void removeCue(TextTrackCue*, ExceptionState&);
 
   VTTRegionList* regions();
-  void addRegion(VTTRegion*);
-  void removeRegion(VTTRegion*, ExceptionState&);
 
   void cueWillChange(TextTrackCue*);
   void cueDidChange(TextTrackCue*);

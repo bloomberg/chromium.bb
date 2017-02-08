@@ -301,57 +301,6 @@ VTTRegionList* TextTrack::regions() {
   return nullptr;
 }
 
-void TextTrack::addRegion(VTTRegion* region) {
-  if (!region)
-    return;
-
-  VTTRegionList* regionList = ensureVTTRegionList();
-
-  // 1. If the given region is in a text track list of regions, then remove
-  // region from that text track list of regions.
-  TextTrack* regionTrack = region->track();
-  if (regionTrack && regionTrack != this)
-    regionTrack->removeRegion(region, ASSERT_NO_EXCEPTION);
-
-  // 2. If the method's TextTrack object's text track list of regions contains
-  // a region with the same identifier as region replace the values of that
-  // region's width, height, anchor point, viewport anchor point and scroll
-  // attributes with those of region.
-  VTTRegion* existingRegion = regionList->getRegionById(region->id());
-  if (existingRegion) {
-    existingRegion->updateParametersFromRegion(region);
-    return;
-  }
-
-  // Otherwise: add region to the method's TextTrack object's text track
-  // list of regions.
-  region->setTrack(this);
-  regionList->add(region);
-}
-
-void TextTrack::removeRegion(VTTRegion* region,
-                             ExceptionState& exceptionState) {
-  if (!region)
-    return;
-
-  // 1. If the given region is not currently listed in the method's TextTrack
-  // object's text track list of regions, then throw a NotFoundError exception.
-  if (region->track() != this) {
-    exceptionState.throwDOMException(NotFoundError,
-                                     "The specified region is not listed in "
-                                     "the TextTrack's list of regions.");
-    return;
-  }
-
-  if (!m_regions || !m_regions->remove(region)) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "Failed to remove the specified region.");
-    return;
-  }
-
-  region->setTrack(0);
-}
-
 void TextTrack::cueWillChange(TextTrackCue* cue) {
   // The cue may need to be repositioned in the media element's interval tree,
   // may need to be re-rendered, etc, so remove it before the modification...

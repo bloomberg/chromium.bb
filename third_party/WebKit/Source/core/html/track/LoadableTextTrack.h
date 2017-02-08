@@ -33,6 +33,7 @@
 namespace blink {
 
 class HTMLTrackElement;
+class VTTRegion;
 
 class LoadableTextTrack final : public TextTrack {
  public:
