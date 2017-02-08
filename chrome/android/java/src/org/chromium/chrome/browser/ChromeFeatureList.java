@@ -80,6 +80,7 @@ public abstract class ChromeFeatureList {
     public static final String TABS_IN_CBD = "TabsInCBD";
     public static final String IMPROVED_A2HS = "ImprovedA2HS";
     public static final String NO_CREDIT_CARD_ABORT = "NoCreditCardAbort";
+    public static final String NTP_CONDENSED_LAYOUT = "NTPCondensedLayout";
     public static final String NTP_FAKE_OMNIBOX_TEXT = "NTPFakeOmniboxText";
     public static final String NTP_FOREIGN_SESSIONS_SUGGESTIONS = "NTPForeignSessionsSuggestions";
     public static final String NTP_OFFLINE_PAGES_FEATURE_NAME = "NTPOfflinePages";

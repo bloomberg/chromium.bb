@@ -32,6 +32,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
@@ -229,6 +230,9 @@ public class NewTabPageView
 
         mNewTabPageLayout.addOnLayoutChangeListener(this);
         setSearchProviderHasLogo(searchProviderHasLogo);
+        mSearchProviderLogoView.setVisibility(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT) ? View.GONE
+                                                                                    : View.VISIBLE);
 
         mPendingLoadTasks++;
         mTileGroup.startObserving(MAX_TILES);

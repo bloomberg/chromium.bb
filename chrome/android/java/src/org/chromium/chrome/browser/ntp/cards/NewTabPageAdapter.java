@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
@@ -87,7 +88,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             mRoot.addChild(new TileGrid(uiDelegate, mContextMenuManager, tileGroupDelegate));
         }
         mRoot.addChildren(mSections, mSigninPromo, mAllDismissed, mFooter);
-        if (mAboveTheFoldView == null) {
+        if (mAboveTheFoldView == null
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT)) {
             mBottomSpacer = null;
         } else {
             mBottomSpacer = new SpacingItem();

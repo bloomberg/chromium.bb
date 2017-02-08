@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPageUma.NTPLayoutResult;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
@@ -129,8 +130,10 @@ public class NewTabPageLayout extends LinearLayout {
         int spaceToFill = mParentViewportHeight - mPeekingCardHeight - mTabStripHeight;
         @NTPLayoutResult int layoutResult;
 
-        // We need to make sure we have just enough space to show the peeking card.
-        if (getMeasuredHeight() > spaceToFill) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT)) {
+            layoutResult = NewTabPageUma.NTP_LAYOUT_CONDENSED;
+        } else if (getMeasuredHeight() > spaceToFill) {
+            // We need to make sure we have just enough space to show the peeking card.
             layoutResult = NewTabPageUma.NTP_LAYOUT_DOES_NOT_FIT;
 
             // We don't have enough, we will push the peeking card completely below the fold
@@ -152,7 +155,6 @@ public class NewTabPageLayout extends LinearLayout {
                     layoutResult = NewTabPageUma.NTP_LAYOUT_DOES_NOT_FIT_PUSH_MOST_LIKELY;
                 }
             }
-
         } else {
             hasSpaceForPeekingCard = true;
             // We leave more than or just enough space needed for the peeking card. Redistribute

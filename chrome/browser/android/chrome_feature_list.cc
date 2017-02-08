@@ -50,6 +50,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kImportantSitesInCBD,
     &kImprovedA2HS,
     &kNoCreditCardAbort,
+    &kNTPCondensedLayoutFeature,
     &kNTPFakeOmniboxTextFeature,
     &kNTPOfflinePagesFeature,
     &kNTPSuggestionsStandaloneUIFeature,
@@ -111,6 +112,9 @@ const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
 
 const base::Feature kNTPFakeOmniboxTextFeature{
     "NTPFakeOmniboxText", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNTPCondensedLayoutFeature{
+    "NTPCondensedLayout", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

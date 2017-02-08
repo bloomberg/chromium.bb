@@ -30,6 +30,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.R.string;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchDisableableView;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
@@ -327,7 +328,8 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
 
         // Peeking is disabled in the card offset field trial and the increased visibility feature.
         if (CardsVariationParameters.getFirstCardOffsetDp() != 0
-                || SnippetsConfig.isIncreasedCardVisibilityEnabled()) {
+                || SnippetsConfig.isIncreasedCardVisibilityEnabled()
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT)) {
             peekingCard.updatePeek(0, /* shouldAnimate */ false);
             return;
         }

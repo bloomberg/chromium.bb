@@ -15155,6 +15155,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_NTP_SUGGESTIONS_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to enable notifications for content suggestions on the New Tab page." translateable="false">
         If enabled, notifications will inform about new content suggestions on the New Tab page (see #enable-ntp-snippets).
       </message>
+      <message name="IDS_FLAGS_NTP_CONDENSED_LAYOUT_NAME" desc="Name for the flag to enable the condensed New Tab Page layout." translateable="false">
+        Condensed NTP layout
+      </message>
+      <message name="IDS_FLAGS_NTP_CONDENSED_LAYOUT_DESCRIPTION" desc="Description for the flag to enable the condensed New Tab Page layout." translateable="false">
+        Show a condensed layout on the New Tab Page.
+      </message>
     </if>
 
     <if expr="is_android">
