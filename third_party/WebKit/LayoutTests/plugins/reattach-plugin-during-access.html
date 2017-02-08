@@ -3,11 +3,11 @@
 if (window.testRunner)
   testRunner.dumpAsText();
 
-function f() {
+onload = function() {
   divElem.appendChild(objElem);
   objElem[''] = 42;
 }
 </script>
 <div id='divElem'></div>
-<object id='objElem' type="text/javascript" onload='f()'></object>
+<object id='objElem' type="text/javascript"></object>
 <p>Test passes if it doesn't crash</p>

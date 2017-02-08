@@ -917,11 +917,15 @@ void Range::insertNode(Node* newNode, ExceptionState& exceptionState) {
     }
 
     container = m_start.container();
-    container->insertBefore(
-        newNode, NodeTraversal::childAt(*container, m_start.offset()),
-        exceptionState);
-    if (exceptionState.hadException())
-      return;
+    Node* referenceNode = NodeTraversal::childAt(*container, m_start.offset());
+    // TODO(tkent): The following check must be unnecessary if we follow the
+    // algorithm defined in the specification.
+    // https://dom.spec.whatwg.org/#concept-range-insert
+    if (newNode != referenceNode) {
+      container->insertBefore(newNode, referenceNode, exceptionState);
+      if (exceptionState.hadException())
+        return;
+    }
 
     // Note that m_start.offset() may have changed as a result of
     // container->insertBefore, when the node we are inserting comes before the

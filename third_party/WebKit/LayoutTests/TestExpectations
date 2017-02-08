@@ -950,7 +950,6 @@ crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/in
 # MANIFEST.json contains any *-manual.*. https://github.com/w3c/web-platform-tests/issues/4137
 Bug(github) external/wpt/uievents/keyboard/key-manual.css [ Skip ]
 Bug(github) external/wpt/uievents/keyboard/key-manual.js [ Skip ]
-crbug.com/441355 external/wpt/dom/nodes/MutationObserver-childList.html [ Skip ]
 
 crbug.com/387740 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 crbug.com/387740 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html [ Skip ]
@@ -1761,7 +1760,8 @@ crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
 crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.html [ Failure ]
 
 crbug.com/610464 [ Linux Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
-
+crbug.com/441355 paint/invalidation/svg/tabgroup.svg [ NeedsRebaseline ]
+crbug.com/441355 virtual/disable-spinvalidation/paint/invalidation/svg/tabgroup.svg [ NeedsRebaseline ]
 crbug.com/487344 paint/invalidation/video-paint-invalidation.html [ Failure ]
 crbug.com/487344 virtual/disable-spinvalidation/paint/invalidation/video-paint-invalidation.html [ Failure ]
 crbug.com/487344 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]

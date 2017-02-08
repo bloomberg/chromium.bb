@@ -266,6 +266,8 @@ class ContainerNode::AdoptAndAppendChild {
 Node* ContainerNode::insertBefore(Node* newChild,
                                   Node* refChild,
                                   ExceptionState& exceptionState) {
+  // https://dom.spec.whatwg.org/#concept-node-pre-insert
+
   // insertBefore(node, 0) is equivalent to appendChild(node)
   if (!refChild)
     return appendChild(newChild, exceptionState);
@@ -284,9 +286,12 @@ Node* ContainerNode::insertBefore(Node* newChild,
     return nullptr;
   }
 
-  // Nothing to do.
-  if (refChild->previousSibling() == newChild || refChild == newChild)
-    return newChild;
+  // 3. If reference child is node, set it to node’s next sibling.
+  if (refChild == newChild) {
+    refChild = newChild->nextSibling();
+    if (!refChild)
+      return appendChild(newChild, exceptionState);
+  }
 
   NodeVector targets;
   if (!collectChildrenAndRemoveFromOldParentWithCheck(
@@ -391,8 +396,7 @@ void ContainerNode::parserInsertBefore(Node* newChild, Node& nextChild) {
 Node* ContainerNode::replaceChild(Node* newChild,
                                   Node* oldChild,
                                   ExceptionState& exceptionState) {
-  if (oldChild == newChild)  // Nothing to do.
-    return oldChild;
+  // https://dom.spec.whatwg.org/#concept-node-replace
 
   if (!oldChild) {
     exceptionState.throwDOMException(NotFoundError,
@@ -412,16 +416,22 @@ Node* ContainerNode::replaceChild(Node* newChild,
   }
 
   ChildListMutationScope mutation(*this);
+  // 7. Let reference child be child’s next sibling.
   Node* next = oldChild->nextSibling();
+  // 8. If reference child is node, set it to node’s next sibling.
+  if (next == newChild)
+    next = newChild->nextSibling();
 
-  // Remove the node we're replacing.
+  // TODO(tkent): According to the specification, we should remove |newChild|
+  // from its parent here, and create a separated mutation record for it.
+  // Refer to imported/wpt/dom/nodes/MutationObserver-childList.html.
+
+  // 12. If child’s parent is not null, run these substeps:
+  //    1. Set removedNodes to a list solely containing child.
+  //    2. Remove child from its parent with the suppress observers flag set.
   removeChild(oldChild, exceptionState);
   if (exceptionState.hadException())
     return nullptr;
-
-  if (next && (next->previousSibling() == newChild ||
-               next == newChild))  // nothing to do
-    return oldChild;
 
   // Does this one more time because removeChild() fires a MutationEvent.
   if (!checkAcceptChild(newChild, oldChild, exceptionState))
@@ -648,9 +658,6 @@ Node* ContainerNode::appendChild(Node* newChild,
   if (!checkAcceptChild(newChild, 0, exceptionState))
     return newChild;
   DCHECK(newChild);
-
-  if (newChild == m_lastChild)  // nothing to do
-    return newChild;
 
   NodeVector targets;
   if (!collectChildrenAndRemoveFromOldParentWithCheck(
