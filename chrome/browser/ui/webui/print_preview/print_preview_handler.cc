@@ -27,7 +27,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -319,7 +319,6 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
 void PrintToPdfCallback(const scoped_refptr<base::RefCountedBytes>& data,
                         const base::FilePath& path,
                         const base::Closure& pdf_file_saved_closure) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::File file(path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   file.WriteAtCurrentPos(reinterpret_cast<const char*>(data->front()),
@@ -1405,9 +1404,9 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename,
   // Handle the no prompting case. Like the dialog prompt, this function
   // returns and eventually FileSelected() gets called.
   if (!prompt_user) {
-    base::PostTaskAndReplyWithResult(
-        BrowserThread::GetBlockingPool(),
-        FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::BACKGROUND),
         base::Bind(&GetUniquePath,
                    download_prefs->SaveFilePath().Append(default_filename)),
         base::Bind(&PrintPreviewHandler::OnGotUniqueFileName,
