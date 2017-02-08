@@ -89,6 +89,7 @@ ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
     case UNWANTED_SOFTWARE:
       return 1;
     case API_ABUSE:
+    case CLIENT_INCIDENT:
       return 2;
     default:
       NOTREACHED() << "Unexpected ThreatType encountered: "
