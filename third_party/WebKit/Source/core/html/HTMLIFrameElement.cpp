@@ -125,8 +125,17 @@ void HTMLIFrameElement::parseAttribute(
   } else if (name == allowfullscreenAttr) {
     bool oldAllowFullscreen = m_allowFullscreen;
     m_allowFullscreen = !value.isNull();
-    if (m_allowFullscreen != oldAllowFullscreen)
+    if (m_allowFullscreen != oldAllowFullscreen) {
+      // TODO(iclelland): Remove this use counter when the allowfullscreen
+      // attribute state is snapshotted on document creation. crbug.com/682282
+      if (m_allowFullscreen && contentFrame()) {
+        UseCounter::count(
+            document(),
+            UseCounter::
+                HTMLIFrameElementAllowfullscreenAttributeSetAfterContentLoad);
+      }
       frameOwnerPropertiesChanged();
+    }
   } else if (name == allowpaymentrequestAttr) {
     bool oldAllowPaymentRequest = m_allowPaymentRequest;
     m_allowPaymentRequest = !value.isNull();

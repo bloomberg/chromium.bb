@@ -1455,6 +1455,7 @@ class CORE_EXPORT UseCounter {
     CSSValueOnDemand = 1802,
     ServiceWorkerNavigationPreload = 1803,
     FullscreenRequestWithPendingElement = 1804,
+    HTMLIFrameElementAllowfullscreenAttributeSetAfterContentLoad = 1805,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
