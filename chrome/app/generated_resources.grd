@@ -8314,6 +8314,9 @@ I don't think this site should be blocked!
           Protected content exceptions
         </message>
       </if>
+      <message name="IDS_PROTECTED_CONTENT_ENABLE_CHECKBOX" desc="The label of the checkbox for enabling protected content.">
+        Allow sites to play protected content (recommended)
+      </message>
       <message name="IDS_PPAPI_BROKER_TAB_LABEL" desc="Label for PPAPI broker tab on Content Settings dialog">
         Unsandboxed plugin access
       </message>
