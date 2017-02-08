@@ -504,6 +504,8 @@ void GradientGridRenderer::Draw(const gvr::Mat4f& view_proj_matrix,
     MakeGridLines(gridline_count);
   }
 
+  glUseProgram(program_handle_);
+
   // Pass in model view project matrix.
   glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
                      MatrixToGLArray(view_proj_matrix).data());
@@ -519,9 +521,11 @@ void GradientGridRenderer::Draw(const gvr::Mat4f& view_proj_matrix,
   glUniform1f(opacity_handle_, opacity);
 
   // Draw the grid.
-  glEnableVertexAttribArray(position_handle_);
   glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
                         (float*)grid_lines_.data());
+  glEnableVertexAttribArray(position_handle_);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   int verticesNumber = 4 * (gridline_count + 1);
   glDrawArrays(GL_LINES, 0, verticesNumber);
 

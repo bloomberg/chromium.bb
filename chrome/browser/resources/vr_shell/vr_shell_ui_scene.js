@@ -129,6 +129,11 @@ scene.Scene = class {
     delete this.animations[id];
   }
 
+  setBackgroundColor(color) {
+    this.commands.push(
+        {'type': api.Command.UPDATE_BACKGROUND, 'data': {'color': color}});
+  }
+
   /**
    * Purge all elements in the scene.
    */

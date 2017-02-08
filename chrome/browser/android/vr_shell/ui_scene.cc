@@ -318,6 +318,10 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
   }
 }
 
+void UiScene::UpdateBackgroundFromDict(const base::DictionaryValue& dict) {
+  ParseColorf(dict, "color", &background_color_);
+}
+
 void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
                              int64_t time_in_micro) {
   for (auto& item : *commands) {
@@ -352,6 +356,9 @@ void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
         RemoveAnimation(element_id, animation_id);
         break;
       }
+      case Command::UPDATE_BACKGROUND:
+        UpdateBackgroundFromDict(*data);
+        break;
     }
   }
 }
@@ -382,6 +389,10 @@ ContentRectangle* UiScene::GetUiElementById(int element_id) {
 
 ContentRectangle* UiScene::GetContentQuad() {
   return content_element_;
+}
+
+const Colorf& UiScene::GetBackgroundColor() {
+  return background_color_;
 }
 
 const std::vector<std::unique_ptr<ContentRectangle>>&

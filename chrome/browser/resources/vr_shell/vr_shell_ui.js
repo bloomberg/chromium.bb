@@ -56,7 +56,7 @@ var vrShellUi = (function() {
       ui.updateElement(this.elementId, update);
       if (enabled) {
         api.setContentCssSize(
-          this.CSS_WIDTH_PIXELS, this.CSS_HEIGHT_PIXELS, this.DPR);
+            this.CSS_WIDTH_PIXELS, this.CSS_HEIGHT_PIXELS, this.DPR);
       } else {
         // TODO(mthiesse): Restore the webVR resolution (which matches native
         // display resolution).
@@ -519,41 +519,47 @@ var vrShellUi = (function() {
 
   class Background {
     constructor() {
-      /** @const */ var GRADIENT_LIGHER_GRAY =
-          {r: 0.57, g: 0.57, b: 0.57, a: 1.0};
-      /** @const */ var GRADIENT_DARKER_GRAY =
-          {r: 0.48, g: 0.48, b: 0.48, a: 1.0};
-      /** @const */ var SCENE_GROUND_SIZE = 25.0;
-      /** @const */ var SCENE_HEIGHT = 4.0;
-      /** @const */ var GRIDLINE_COUNT = 10;
+      /** @const */ this.SCENE_GROUND_SIZE = 25.0;
+      /** @const */ this.SCENE_HEIGHT = 4.0;
+      /** @const */ this.GRIDLINE_COUNT = 10;
+      /** @const */ this.HORIZON_COLOR = {r: 0.57, g: 0.57, b: 0.57, a: 1.0};
+      /** @const */ this.CENTER_COLOR = {r: 0.48, g: 0.48, b: 0.48, a: 1.0};
+      /** @const */ this.FULLSCREEN_BACKGROUND_COLOR =
+          {r: 0.1, g: 0.1, b: 0.1, a: 1.0};
 
       // Make ground plane.
       let groundPlane = new api.UiElementUpdate();
       groundPlane.setVisible(true);
-      groundPlane.setSize(SCENE_GROUND_SIZE, SCENE_GROUND_SIZE);
+      groundPlane.setSize(this.SCENE_GROUND_SIZE, this.SCENE_GROUND_SIZE);
       groundPlane.setFill(
-          new api.OpaqueGradient(GRADIENT_LIGHER_GRAY, GRADIENT_DARKER_GRAY));
-      groundPlane.setTranslation(0, -SCENE_HEIGHT / 2, 0);
+          new api.OpaqueGradient(this.HORIZON_COLOR, this.CENTER_COLOR));
+      groundPlane.setTranslation(0, -this.SCENE_HEIGHT / 2, 0);
       groundPlane.setRotation(1.0, 0.0, 0.0, -Math.PI / 2);
       this.groundPlaneId = ui.addElement(groundPlane);
 
       // Make ceiling plane.
       let ceilingPlane = new api.UiElementUpdate();
       ceilingPlane.setVisible(true);
-      ceilingPlane.setSize(SCENE_GROUND_SIZE, SCENE_GROUND_SIZE);
+      ceilingPlane.setSize(this.SCENE_GROUND_SIZE, this.SCENE_GROUND_SIZE);
       ceilingPlane.setFill(
-          new api.OpaqueGradient(GRADIENT_LIGHER_GRAY, GRADIENT_DARKER_GRAY));
-      ceilingPlane.setTranslation(0, SCENE_HEIGHT / 2, 0);
+          new api.OpaqueGradient(this.HORIZON_COLOR, this.CENTER_COLOR));
+      ceilingPlane.setTranslation(0, this.SCENE_HEIGHT / 2, 0);
       ceilingPlane.setRotation(1.0, 0.0, 0.0, Math.PI / 2);
       this.ceilingPlaneId = ui.addElement(ceilingPlane);
 
       // Ground grid.
       let groundGrid = new api.UiElementUpdate();
       groundGrid.setVisible(true);
-      groundGrid.setSize(SCENE_GROUND_SIZE, SCENE_GROUND_SIZE);
+      groundGrid.setSize(this.SCENE_GROUND_SIZE, this.SCENE_GROUND_SIZE);
+      let transparentHorizonColor = {
+        r: this.HORIZON_COLOR.r,
+        g: this.HORIZON_COLOR.g,
+        b: this.HORIZON_COLOR.b,
+        a: 0
+      };
       groundGrid.setFill(new api.GridGradient(
-          GRADIENT_LIGHER_GRAY, GRADIENT_LIGHER_GRAY, GRIDLINE_COUNT));
-      groundGrid.setTranslation(0, -SCENE_HEIGHT / 2 + 0.01, 0);
+          transparentHorizonColor, this.HORIZON_COLOR, this.GRIDLINE_COUNT));
+      groundGrid.setTranslation(0, -this.SCENE_HEIGHT / 2 + 0.01, 0);
       groundGrid.setRotation(1.0, 0.0, 0.0, -Math.PI / 2);
       this.groundGridId = ui.addElement(groundGrid);
     }
@@ -568,6 +574,23 @@ var vrShellUi = (function() {
       let groundGridUpdate = new api.UiElementUpdate();
       groundGridUpdate.setVisible(enabled);
       ui.updateElement(this.groundGridId, groundGridUpdate);
+    }
+
+    setFullscreen(fullscreen) {
+      let groundPlaneUpdate = new api.UiElementUpdate();
+      groundPlaneUpdate.setVisible(!fullscreen);
+      ui.updateElement(this.groundPlaneId, groundPlaneUpdate);
+      let ceilingPlaneUpdate = new api.UiElementUpdate();
+      ceilingPlaneUpdate.setVisible(!fullscreen);
+      ui.updateElement(this.ceilingPlaneId, ceilingPlaneUpdate);
+
+      // Set darker background color for fullscreen since the user might
+      // potentially watch a video.
+      if (fullscreen) {
+        ui.setBackgroundColor(this.FULLSCREEN_BACKGROUND_COLOR);
+      } else {
+        ui.setBackgroundColor(this.HORIZON_COLOR);
+      }
     }
   };
 
@@ -694,9 +717,9 @@ var vrShellUi = (function() {
           URL_INDICATOR_VISIBILITY_TIMEOUT_MS);
       this.secureOriginWarnings.setEnabled(
           mode == api.Mode.WEB_VR && !menuMode);
+      this.background.setFullscreen(this.fullscreen);
 
       this.reloadUiButton.setEnabled(mode == api.Mode.STANDARD);
-      this.background.setEnabled(mode == api.Mode.STANDARD && !menuMode);
 
       api.setUiCssSize(
           uiRootElement.clientWidth, uiRootElement.clientHeight, UI_DPR);
