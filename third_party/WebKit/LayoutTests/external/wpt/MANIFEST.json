@@ -13992,6 +13992,16 @@
      {}
     ]
    ],
+   "mediasession/README.md": [
+    [
+     {}
+    ]
+   ],
+   "mediasession/idlharness-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "navigation-timing/idlharness-expected.txt": [
     [
      {}
@@ -29259,6 +29269,30 @@
      {}
     ]
    ],
+   "mediasession/idlharness.html": [
+    [
+     "/mediasession/idlharness.html",
+     {}
+    ]
+   ],
+   "mediasession/mediametadata.html": [
+    [
+     "/mediasession/mediametadata.html",
+     {}
+    ]
+   ],
+   "mediasession/playbackstate.html": [
+    [
+     "/mediasession/playbackstate.html",
+     {}
+    ]
+   ],
+   "mediasession/setactionhandler.html": [
+    [
+     "/mediasession/setactionhandler.html",
+     {}
+    ]
+   ],
    "navigation-timing/idlharness.html": [
     [
      "/navigation-timing/idlharness.html",
@@ -34527,7 +34561,7 @@
    "support"
   ],
   "./MANIFEST.json": [
-   "94e506242954020d69b5240f63d2ef297d537608",
+   "468e5393eadca675d9f361840bdb4412f33351ac",
    "support"
   ],
   "./README.md": [
@@ -51256,6 +51290,30 @@
   ],
   "mediacapture-streams/MediaStreamTrackEvent-constructor.https.html": [
    "2907c67a3ab9c22ba98f03acf16adc2f2b31ee30",
+   "testharness"
+  ],
+  "mediasession/README.md": [
+   "5ceecb2611837e6c52a303cec32d8cb9fabe93a6",
+   "support"
+  ],
+  "mediasession/idlharness-expected.txt": [
+   "9d213cce22b4300c0496ba5438bcc647e276688c",
+   "support"
+  ],
+  "mediasession/idlharness.html": [
+   "9aa84a0143daf03d9a95108d0407fda2443c9849",
+   "testharness"
+  ],
+  "mediasession/mediametadata.html": [
+   "0f0c1f7e3b58321a76229fa5a93e80b6863f181f",
+   "testharness"
+  ],
+  "mediasession/playbackstate.html": [
+   "e9edd18778d437b039bc45f2e3f35db725528447",
+   "testharness"
+  ],
+  "mediasession/setactionhandler.html": [
+   "70a1f9e81faa3dbbe320a71a008e4594a29878a8",
    "testharness"
   ],
   "navigation-timing/idlharness-expected.txt": [

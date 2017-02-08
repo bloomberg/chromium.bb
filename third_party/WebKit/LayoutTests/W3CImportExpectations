@@ -278,6 +278,8 @@ external/wpt/manifest [ Skip ]
 external/wpt/mathml [ Skip ]
 ## Owners: none; No tests in the directory.
 # external/wpt/media [ Skip ]
+## Owners: mlamouri@chromium.org,zqzhang@chromium.org
+# external/wpt/mediasession [ Pass ]
 external/wpt/media-source [ Skip ]
 external/wpt/mediacapture-record [ Skip ]
 ## Owners: phoglund@chromium.org

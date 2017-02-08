@@ -1,0 +1,31 @@
+CONSOLE MESSAGE: line 251: callback not yet supported
+This is a testharness.js-based test.
+PASS Navigator interface: attribute mediaSession 
+PASS Navigator must be primary interface of navigator 
+PASS Stringification of navigator 
+PASS Navigator interface: navigator must inherit property "mediaSession" with the proper type (0) 
+PASS MediaSession interface: existence and properties of interface object 
+PASS MediaSession interface object length 
+PASS MediaSession interface object name 
+FAIL MediaSession interface: existence and properties of interface prototype object assert_equals: class string of MediaSession.prototype expected "[object MediaSessionPrototype]" but got "[object MediaSession]"
+PASS MediaSession interface: existence and properties of interface prototype object's "constructor" property 
+PASS MediaSession interface: attribute metadata 
+PASS MediaSession interface: attribute playbackState 
+PASS MediaSession interface: operation setActionHandler(MediaSessionAction,MediaSessionActionHandler) 
+PASS MediaMetadata interface: existence and properties of interface object 
+PASS MediaMetadata interface object length 
+PASS MediaMetadata interface object name 
+FAIL MediaMetadata interface: existence and properties of interface prototype object assert_equals: class string of MediaMetadata.prototype expected "[object MediaMetadataPrototype]" but got "[object MediaMetadata]"
+PASS MediaMetadata interface: existence and properties of interface prototype object's "constructor" property 
+PASS MediaMetadata interface: attribute title 
+PASS MediaMetadata interface: attribute artist 
+PASS MediaMetadata interface: attribute album 
+PASS MediaMetadata interface: attribute artwork 
+PASS MediaMetadata must be primary interface of [object MediaMetadata] 
+PASS Stringification of [object MediaMetadata] 
+PASS MediaMetadata interface: [object MediaMetadata] must inherit property "title" with the proper type (0) 
+PASS MediaMetadata interface: [object MediaMetadata] must inherit property "artist" with the proper type (1) 
+PASS MediaMetadata interface: [object MediaMetadata] must inherit property "album" with the proper type (2) 
+FAIL MediaMetadata interface: [object MediaMetadata] must inherit property "artwork" with the proper type (3) Unrecognized type FrozenArray
+Harness: the test ran to completion.
+
