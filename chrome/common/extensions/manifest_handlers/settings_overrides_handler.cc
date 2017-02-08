@@ -101,12 +101,15 @@ std::unique_ptr<ChromeSettingsOverrides::Search_provider> ParseSearchEngine(
   return std::move(overrides->search_provider);
 }
 
-// A www. prefix is not informative and thus not worth the limited real estate
-// in the permissions UI.
-std::string RemoveWwwPrefix(const std::string& url) {
-  if (base::StartsWith(url, kWwwPrefix, base::CompareCase::INSENSITIVE_ASCII))
-    return url.substr(strlen(kWwwPrefix));
-  return url;
+std::string FormatUrlForDisplay(const GURL& url) {
+  base::StringPiece host = url.host_piece();
+  // A www. prefix is not informative and thus not worth the limited real estate
+  // in the permissions UI.
+  base::StringPiece formatted_host =
+      base::StartsWith(host, kWwwPrefix, base::CompareCase::INSENSITIVE_ASCII)
+          ? host.substr(strlen(kWwwPrefix))
+          : host;
+  return formatted_host.as_string();
 }
 
 }  // namespace
@@ -148,13 +151,11 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
 
   if (info->search_engine) {
     PermissionsParser::AddAPIPermission(
-        extension,
-        new SettingsOverrideAPIPermission(
-            PermissionsInfo::GetInstance()->GetByID(
-                APIPermission::kSearchProvider),
-            RemoveWwwPrefix(CreateManifestURL(info->search_engine->search_url)
-                                ->GetOrigin()
-                                .host())));
+        extension, new SettingsOverrideAPIPermission(
+                       PermissionsInfo::GetInstance()->GetByID(
+                           APIPermission::kSearchProvider),
+                       FormatUrlForDisplay(*CreateManifestURL(
+                           info->search_engine->search_url))));
   }
   if (!info->startup_pages.empty()) {
     PermissionsParser::AddAPIPermission(
@@ -163,16 +164,15 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
             PermissionsInfo::GetInstance()->GetByID(
                 APIPermission::kStartupPages),
             // We only support one startup page even though the type of the
-            // manifest
-            // property is a list, only the first one is used.
-            RemoveWwwPrefix(info->startup_pages[0].GetContent())));
+            // manifest property is a list, only the first one is used.
+            FormatUrlForDisplay(info->startup_pages[0])));
   }
   if (info->homepage) {
     PermissionsParser::AddAPIPermission(
         extension,
         new SettingsOverrideAPIPermission(
             PermissionsInfo::GetInstance()->GetByID(APIPermission::kHomepage),
-            RemoveWwwPrefix(info->homepage->GetContent())));
+            FormatUrlForDisplay(*(info->homepage))));
   }
   extension->SetManifestData(manifest_keys::kSettingsOverride,
                              info.release());
