@@ -422,9 +422,7 @@ set(AOM_DSP_ASM_SSE4_1 "${AOM_ROOT}/aom_dsp/x86/sad_sse4.asm")
 set(AOM_DSP_INTRIN_SSE4_1
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_hmask_sse4.c"
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_mask_sse4.c"
-    "${AOM_ROOT}/aom_dsp/x86/blend_a64_vmask_sse4.c"
-    "${AOM_ROOT}/aom_dsp/x86/obmc_sad_sse4.c"
-    "${AOM_ROOT}/aom_dsp/x86/obmc_variance_sse4.c")
+    "${AOM_ROOT}/aom_dsp/x86/blend_a64_vmask_sse4.c")
 set(AOM_DSP_AVX_ASM "${AOM_ROOT}/aom_dsp/x86/quantize_avx_x86_64.asm")
 set(AOM_DSP_AVX2_INTRIN
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c"
@@ -553,9 +551,6 @@ set(AOM_UNIT_TEST_SOURCES
     "${AOM_ROOT}/test/lpf_8_test.cc"
     "${AOM_ROOT}/test/md5_helper.h"
     "${AOM_ROOT}/test/minmax_test.cc"
-    # requires CONFIG_MOTION_VAR
-    #"${AOM_ROOT}/test/obmc_sad_test.cc"
-    #"${AOM_ROOT}/test/obmc_variance_test.cc"
     "${AOM_ROOT}/test/partial_idct_test.cc"
     # omitted from tests.mk, includes vp8 file.
     #"${AOM_ROOT}/test/quantize_test.cc"
@@ -687,6 +682,17 @@ if (CONFIG_INTERNAL_STATS)
   set(AOM_AV1_ENCODER_SOURCES
       ${AOM_AV1_ENCODER_SOURCES}
       "${AOM_ROOT}/av1/encoder/blockiness.c")
+endif ()
+
+if (CONFIG_MOTION_VAR AND HAVE_SSE4_1)
+  set(AOM_DSP_INTRIN_SSE4_1
+      ${AOM_DSP_INTRIN_SSE4_1}
+      "${AOM_ROOT}/aom_dsp/x86/obmc_sad_sse4.c"
+      "${AOM_ROOT}/aom_dsp/x86/obmc_variance_sse4.c")
+  set(AOM_UNIT_TEST_SOURCES
+      ${AOM_UNIT_TEST_SOURCES}
+      "${AOM_ROOT}/test/obmc_sad_test.cc"
+      "${AOM_ROOT}/test/obmc_variance_test.cc")
 endif ()
 
 if (CONFIG_AOM_HIGHBITDEPTH)
