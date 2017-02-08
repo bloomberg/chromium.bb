@@ -295,10 +295,10 @@ class DataSeries0Test(CIDBIntegrationTest):
 
   def testCQWithSchema48(self):
     """Run the CQ test with schema version 48."""
-    self._PrepareFreshDatabase(48)
-    self._runCQTest()
+    db = self._PrepareFreshDatabase(48)
+    self._runCQTest(db)
 
-  def _runCQTest(self):
+  def _runCQTest(self, db):
     """Simulate a set of 630 master/slave CQ builds.
 
     Note: This test takes about 2.5 minutes to populate its 630 builds
@@ -315,7 +315,9 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.simulate_builds(bot_db, metadatas)
 
     # Perform some sanity check queries against the database, connected
-    # as the readonly user.
+    # as the readonly user. Apply schema migrations first to ensure that we can
+    # use the latest version or the readonly password.
+    db.ApplySchemaMigrations()
     readonly_db = self.LocalCIDBConnection(self.CIDB_USER_READONLY)
 
     self._start_and_finish_time_checks(readonly_db)
