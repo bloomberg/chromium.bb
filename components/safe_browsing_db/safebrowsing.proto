@@ -285,7 +285,7 @@ enum ThreatType {
 
   // Patterns to be used for activating the subresource filter. Interstitial
   // will not be shown for patterns from this list.
-  SUBRESOURCE_FILTER = 11;
+  SUBRESOURCE_FILTER = 13;
 }
 
 // Types of platforms.
