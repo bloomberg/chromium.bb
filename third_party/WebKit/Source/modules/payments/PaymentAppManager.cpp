@@ -194,10 +194,6 @@ void PaymentAppManager::onGetManifest(
 }
 
 void PaymentAppManager::onServiceConnectionError() {
-  if (!Platform::current()) {
-    return;
-  }
-
   m_manager.reset();
 }
 

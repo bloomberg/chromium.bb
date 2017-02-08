@@ -165,11 +165,6 @@ void SensorProxy::pageVisibilityChanged() {
 void SensorProxy::handleSensorError(ExceptionCode code,
                                     String sanitizedMessage,
                                     String unsanitizedMessage) {
-  if (!Platform::current()) {
-    // TODO(rockot): Remove this hack once renderer shutdown sequence is fixed.
-    return;
-  }
-
   m_state = Uninitialized;
   m_frequenciesUsed.clear();
   m_reading = device::SensorReading();

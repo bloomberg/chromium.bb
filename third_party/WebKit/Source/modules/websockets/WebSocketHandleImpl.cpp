@@ -129,14 +129,6 @@ void WebSocketHandleImpl::disconnect() {
 
 void WebSocketHandleImpl::onConnectionError(uint32_t customReason,
                                             const std::string& description) {
-  if (!blink::Platform::current()) {
-    // In the renderrer shutdown sequence, mojo channels are destructed and this
-    // function is called. On the other hand, blink objects became invalid
-    // *silently*, which means we must not touch |*client_| any more.
-    // TODO(yhirano): Remove this code once the shutdown sequence is fixed.
-    return;
-  }
-
   // Our connection to the WebSocket was dropped. This could be due to
   // exceeding the maximum number of concurrent websockets from this process.
   String failureMessage;
