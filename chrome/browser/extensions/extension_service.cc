@@ -678,6 +678,7 @@ void ExtensionService::ReloadExtensionImpl(
     system_->runtime_data()->SetBeingUpgraded(transient_current_extension->id(),
                                               true);
     DisableExtension(extension_id, Extension::DISABLE_RELOAD);
+    DCHECK(registry_->disabled_extensions().Contains(extension_id));
     reloading_extensions_.insert(extension_id);
   } else {
     std::map<std::string, base::FilePath>::const_iterator iter =
@@ -911,24 +912,30 @@ void ExtensionService::DisableExtension(const std::string& extension_id,
 
   const Extension* extension = GetInstalledExtension(extension_id);
 
-  // Shared modules cannot be disabled, they are just resources used by other
-  // extensions, and are not user controlled.
-  if (extension && SharedModuleInfo::IsSharedModule(extension))
-    return;
+  // Some extensions cannot be disabled by users:
+  // - |extension| can be null if sync disables an extension that is not
+  //   installed yet; allow disablement in this case.
+  // - Shared modules are just resources used by other extensions, and are not
+  //   user-controlled.
+  // - EXTERNAL_COMPONENT extensions are not generally modifiable by users, but
+  //   can be uninstalled by the browser if the user sets extension-specific
+  //   preferences.
+  bool is_controlled_extension =
+      extension && (SharedModuleInfo::IsSharedModule(extension) ||
+                    (!system_->management_policy()->UserMayModifySettings(
+                         extension, nullptr) &&
+                     extension->location() != Manifest::EXTERNAL_COMPONENT));
 
-  // |extension| can be nullptr if sync disables an extension that is not
-  // installed yet.
-  // EXTERNAL_COMPONENT extensions are not generally modifiable by users, but
-  // can be uninstalled by the browser if the user sets extension-specific
-  // preferences.
-  if (extension && !(disable_reasons & Extension::DISABLE_RELOAD) &&
-      !(disable_reasons & Extension::DISABLE_CORRUPTED) &&
-      !(disable_reasons & Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY) &&
-      !system_->management_policy()->UserMayModifySettings(extension,
-                                                           nullptr) &&
-      extension->location() != Manifest::EXTERNAL_COMPONENT) {
+  // Certain disable reasons are always allowed, since they are more internal to
+  // chrome (rather than the user choosing to disable the extension).
+  int internal_disable_reason_mask =
+      Extension::DISABLE_RELOAD | Extension::DISABLE_CORRUPTED |
+      Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY;
+  bool is_internal_disable =
+      (disable_reasons & internal_disable_reason_mask) > 0;
+
+  if (!is_internal_disable && is_controlled_extension)
     return;
-  }
 
   extension_prefs_->SetExtensionDisabled(extension_id, disable_reasons);
 

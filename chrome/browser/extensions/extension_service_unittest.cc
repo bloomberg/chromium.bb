@@ -7174,3 +7174,32 @@ TEST_F(ExtensionServiceTest, ReloadAndReEnableExtension) {
   // objects).
   EXPECT_NE(extension, registry()->enabled_extensions().GetByID(kExtensionId));
 }
+
+// Test reloading a shared module. Regression test for crbug.com/676815.
+TEST_F(ExtensionServiceTest, ReloadSharedModule) {
+  InitializeEmptyExtensionService();
+
+  // Add a shared module and an extension that depends on it (the latter is
+  // important to ensure we don't remove the unused shared module).
+  scoped_refptr<const Extension> shared_module =
+      extensions::ChromeTestExtensionLoader(profile()).LoadExtension(
+          data_dir().AppendASCII("api_test/shared_module/shared"));
+  scoped_refptr<const Extension> dependent =
+      extensions::ChromeTestExtensionLoader(profile()).LoadExtension(
+          data_dir().AppendASCII("api_test/shared_module/import_pass"));
+  ASSERT_TRUE(shared_module);
+  ASSERT_TRUE(dependent);
+  const std::string kExtensionId = shared_module->id();
+  ASSERT_TRUE(
+      extensions::Manifest::IsUnpackedLocation(shared_module->location()));
+  ASSERT_EQ(extensions::Manifest::TYPE_SHARED_MODULE,
+            shared_module->manifest()->type());
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(kExtensionId));
+
+  // Reload the extension and wait for it to complete. This previously crashed
+  // (see crbug.com/676815).
+  service()->ReloadExtension(kExtensionId);
+  base::RunLoop().RunUntilIdle();
+  // The shared module should be enabled.
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(kExtensionId));
+}
