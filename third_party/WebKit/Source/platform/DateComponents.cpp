@@ -447,8 +447,10 @@ bool DateComponents::parseTime(const String& src,
           } else if (digitsLength == 2) {
             ok = toInt(src, index, 2, millisecond);
             millisecond *= 10;
-          } else {  // digitsLength >= 3
+          } else if (digitsLength == 3) {
             ok = toInt(src, index, 3, millisecond);
+          } else {  // digitsLength >= 4
+            return false;
           }
           DCHECK(ok);
           index += digitsLength;
