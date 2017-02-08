@@ -203,6 +203,8 @@
             associated-control="[[$$('#site-settings-subpage-trigger')]]"
             id="site-settings"
             page-title="[[siteSettingsPageTitle_()]]">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <settings-site-settings-page></settings-site-settings-page>
         </settings-subpage>
       </template>
@@ -214,8 +216,6 @@
       </template>
       <template is="dom-if" route-path="/content/automaticDownloads" no-search>
         <settings-subpage page-title="$i18n{siteSettingsAutomaticDownloads}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
               toggle-off-label="$i18n{siteSettingsAutoDownloadBlock}"
               toggle-on-label="$i18n{siteSettingsAutoDownloadAskRecommended}"
@@ -228,8 +228,6 @@
       </template>
       <template is="dom-if" route-path="/content/backgroundSync" no-search>
         <settings-subpage page-title="$i18n{siteSettingsBackgroundSync}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
               toggle-off-label="$i18n{siteSettingsBackgroundSyncBlocked}"
               toggle-on-label=
@@ -243,8 +241,6 @@
       </template>
       <template is="dom-if" route-path="/content/camera" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryCamera}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <media-picker type="camera"></media-picker>
           <category-default-setting category="{{ContentSettingsTypes.CAMERA}}"
               toggle-off-label="$i18n{siteSettingsBlocked}"
@@ -258,8 +254,6 @@
       </template>
       <template is="dom-if" route-path="/content/cookies" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryCookies}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting category="{{ContentSettingsTypes.COOKIES}}"
               toggle-off-label="$i18n{siteSettingsBlocked}"
               toggle-on-label="$i18n{siteSettingsCookiesAllowedRecommended}"
@@ -281,8 +275,6 @@
       </template>
       <template is="dom-if" route-path="/content/images" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryImages}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting category="{{ContentSettingsTypes.IMAGES}}"
               toggle-off-label="$i18n{siteSettingsDontShowImages}"
               toggle-on-label="$i18n{siteSettingsShowAllRecommended}">
@@ -294,8 +286,6 @@
       </template>
       <template is="dom-if" route-path="/content/location" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryLocation}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
               toggle-off-label="$i18n{siteSettingsBlocked}"
               toggle-on-label="$i18n{siteSettingsAskBeforeAccessingRecommended}"
@@ -326,8 +316,6 @@
       </template>
       <template is="dom-if" route-path="/content/javascript" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryJavascript}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
               toggle-off-label="$i18n{siteSettingsBlocked}"
               toggle-on-label="$i18n{siteSettingsAllowedRecommended}"
@@ -340,8 +328,6 @@
       </template>
       <template is="dom-if" route-path="/content/microphone" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryMicrophone}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <media-picker type="mic"></media-picker>
           <category-default-setting category="{{ContentSettingsTypes.MIC}}"
               toggle-off-label="$i18n{siteSettingsBlocked}"
@@ -354,8 +340,6 @@
       </template>
       <template is="dom-if" route-path="/content/notifications" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryNotifications}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
               toggle-off-label="$i18n{siteSettingsBlocked}"
               toggle-on-label="$i18n{siteSettingsAskBeforeSendingRecommended}"
@@ -368,8 +352,6 @@
       </template>
       <template is="dom-if" route-path="/content/flash" no-search>
         <settings-subpage page-title="$i18n{siteSettingsFlash}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting category="{{ContentSettingsTypes.PLUGINS}}"
               toggle-off-label="$i18n{siteSettingsFlashBlock}"
               toggle-on-label="$i18n{siteSettingsFlashAllow}"
@@ -392,8 +374,6 @@
       </template>
       <template is="dom-if" route-path="/content/popups" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryPopups}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting category="{{ContentSettingsTypes.POPUPS}}"
               toggle-off-label="$i18n{siteSettingsBlockedRecommended}"
               toggle-on-label="$i18n{siteSettingsAllowed}">
@@ -405,8 +385,6 @@
       </template>
       <template is="dom-if" route-path="/content/unsandboxedPlugins" no-search>
         <settings-subpage page-title="$i18n{siteSettingsUnsandboxedPlugins}">
-          <button class="icon-help subpage-title-extra"
-              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <category-default-setting
               toggle-off-label="$i18n{siteSettingsUnsandboxedPluginsBlock}"
               toggle-on-label=
