@@ -1956,7 +1956,6 @@ void InitNonBrowserCrashReporterForAndroid(const std::string& process_type) {
     } else {
       InitCrashKeys();
       EnableNonBrowserCrashDumping(process_type, minidump_fd);
-      PostEnableBreakpadInitialization();
     }
   }
 }
