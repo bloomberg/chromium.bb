@@ -63,6 +63,7 @@ struct BindingsSystemPerContextData : public base::SupportsUserData::Data {
   ~BindingsSystemPerContextData() override {}
 
   v8::Global<v8::Object> api_object;
+  v8::Global<v8::Object> internal_apis;
   base::WeakPtr<NativeExtensionBindingsSystem> bindings_system;
 };
 
@@ -97,6 +98,23 @@ v8::Local<v8::Object> GetOrCreateChrome(v8::Local<v8::Context> context) {
     return chrome_value.As<v8::Object>();
 
   return v8::Local<v8::Object>();
+}
+
+BindingsSystemPerContextData* GetBindingsDataFromContext(
+    v8::Local<v8::Context> context) {
+  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
+  if (!per_context_data)
+    return nullptr;  // Context is shutting down.
+
+  auto* data = static_cast<BindingsSystemPerContextData*>(
+      per_context_data->GetUserData(kBindingsSystemPerContextKey));
+  CHECK(data);
+  if (!data->bindings_system) {
+    NOTREACHED() << "Context outlived bindings system.";
+    return nullptr;
+  }
+
+  return data;
 }
 
 // Handler for calling safely into JS.
@@ -152,6 +170,32 @@ bool IsAPIMethodAvailable(ScriptContext* context,
   return context->GetAvailability(method_name).is_available();
 }
 
+// Instantiates the binding object for the given |name|. |name| must specify a
+// specific feature.
+v8::Local<v8::Object> CreateRootBinding(
+    v8::Local<v8::Context> context,
+    ScriptContext* script_context,
+    const std::string& name,
+    APIBindingsSystem* bindings_system,
+    v8::Local<v8::Function> get_internal_api) {
+  v8::Local<v8::Object> hooks_interface;
+  v8::Local<v8::Object> binding_object = bindings_system->CreateAPIInstance(
+      name, context, context->GetIsolate(),
+      base::Bind(&IsAPIMethodAvailable, script_context), &hooks_interface);
+
+  gin::Handle<APIBindingBridge> bridge_handle = gin::CreateHandle(
+      context->GetIsolate(),
+      new APIBindingBridge(context, binding_object, hooks_interface,
+                           script_context->GetExtensionID(),
+                           script_context->GetContextTypeDescription(),
+                           base::Bind(&CallJsFunction)));
+  v8::Local<v8::Value> native_api_bridge = bridge_handle.ToV8();
+  script_context->module_system()->OnNativeBindingCreated(
+      name, native_api_bridge, get_internal_api);
+
+  return binding_object;
+}
+
 // Creates the binding object for the given |root_name|. This can be
 // complicated, since APIs may have prefixed names, like 'app.runtime' or
 // 'system.cpu'. This method accepts the first name (i.e., the key that we are
@@ -169,7 +213,8 @@ v8::Local<v8::Object> CreateFullBinding(
     ScriptContext* script_context,
     APIBindingsSystem* bindings_system,
     const FeatureProvider* api_feature_provider,
-    const std::string& root_name) {
+    const std::string& root_name,
+    v8::Local<v8::Function> get_internal_api) {
   const FeatureMap& features = api_feature_provider->GetAllFeatures();
   auto lower = features.lower_bound(root_name);
   DCHECK(lower != features.end());
@@ -183,22 +228,8 @@ v8::Local<v8::Object> CreateFullBinding(
   if (lower->first == root_name) {
     if (script_context->IsAnyFeatureAvailableToContext(
             *lower->second, CheckAliasStatus::NOT_ALLOWED)) {
-      v8::Local<v8::Object> hooks_interface;
-      v8::Local<v8::Object> binding_object = bindings_system->CreateAPIInstance(
-          root_name, context, context->GetIsolate(),
-          base::Bind(&IsAPIMethodAvailable, script_context), &hooks_interface);
-
-      gin::Handle<APIBindingBridge> bridge_handle = gin::CreateHandle(
-          context->GetIsolate(),
-          new APIBindingBridge(context, binding_object, hooks_interface,
-                               script_context->GetExtensionID(),
-                               script_context->GetContextTypeDescription(),
-                               base::Bind(&CallJsFunction)));
-      v8::Local<v8::Value> native_api_bridge = bridge_handle.ToV8();
-      script_context->module_system()->OnNativeBindingCreated(
-          root_name, native_api_bridge);
-
-      root_binding = binding_object;
+      root_binding = CreateRootBinding(context, script_context, root_name,
+                                       bindings_system, get_internal_api);
     }
     ++lower;
   }
@@ -252,9 +283,9 @@ v8::Local<v8::Object> CreateFullBinding(
     base::StringPiece binding_name =
         GetFirstDifferentAPIName(iter->first, root_name);
 
-    v8::Local<v8::Object> nested_binding =
-        CreateFullBinding(context, script_context, bindings_system,
-                          api_feature_provider, binding_name.as_string());
+    v8::Local<v8::Object> nested_binding = CreateFullBinding(
+        context, script_context, bindings_system, api_feature_provider,
+        binding_name.as_string(), get_internal_api);
     // It's possible that we don't create a binding if no features or
     // prefixed features are available to the context.
     if (nested_binding.IsEmpty())
@@ -411,25 +442,28 @@ void NativeExtensionBindingsSystem::GetAPIHelper(
   v8::Isolate* isolate = info.GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = info.Holder()->CreationContext();
-  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
-  if (!per_context_data)
-    return;  // Context is shutting down.
-  BindingsSystemPerContextData* data =
-      static_cast<BindingsSystemPerContextData*>(
-          per_context_data->GetUserData(kBindingsSystemPerContextKey));
-  CHECK(data);
-  if (!data->bindings_system) {
-    NOTREACHED() << "Context outlived bindings system.";
+  BindingsSystemPerContextData* data = GetBindingsDataFromContext(context);
+  if (!data)
     return;
-  }
 
   v8::Local<v8::Object> apis;
   if (data->api_object.IsEmpty()) {
     apis = v8::Object::New(isolate);
     data->api_object = v8::Global<v8::Object>(isolate, apis);
+    if (data->bindings_system->get_internal_api_.IsEmpty()) {
+      data->bindings_system->get_internal_api_.Set(
+          isolate, v8::FunctionTemplate::New(
+                       isolate, &NativeExtensionBindingsSystem::GetInternalAPI,
+                       v8::Local<v8::Value>(), v8::Local<v8::Signature>(), 0,
+                       v8::ConstructorBehavior::kThrow));
+    }
   } else {
     apis = data->api_object.Get(isolate);
   }
+  v8::Local<v8::Function> get_internal_api =
+      data->bindings_system->get_internal_api_.Get(isolate)
+          ->GetFunction(context)
+          .ToLocalChecked();
 
   // We use info.Data() to store a real name here instead of using the provided
   // one to handle any weirdness from the caller (non-existent strings, etc).
@@ -448,10 +482,9 @@ void NativeExtensionBindingsSystem::GetAPIHelper(
     CHECK(gin::Converter<std::string>::FromV8(isolate, api_name,
                                               &api_name_string));
 
-    v8::Local<v8::Object> root_binding =
-        CreateFullBinding(context, script_context,
-                          &data->bindings_system->api_system_,
-                          FeatureProvider::GetAPIFeatures(), api_name_string);
+    v8::Local<v8::Object> root_binding = CreateFullBinding(
+        context, script_context, &data->bindings_system->api_system_,
+        FeatureProvider::GetAPIFeatures(), api_name_string, get_internal_api);
     if (root_binding.IsEmpty())
       return;
 
@@ -464,6 +497,82 @@ void NativeExtensionBindingsSystem::GetAPIHelper(
   }
 
   info.GetReturnValue().Set(result);
+}
+
+// static
+void NativeExtensionBindingsSystem::GetInternalAPI(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  CHECK_EQ(1, info.Length());
+  CHECK(info[0]->IsString());
+
+  v8::Isolate* isolate = info.GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+  v8::Local<v8::String> v8_name = info[0].As<v8::String>();
+
+  BindingsSystemPerContextData* data = GetBindingsDataFromContext(context);
+  CHECK(data);
+
+  v8::Local<v8::Object> internal_apis;
+  if (data->internal_apis.IsEmpty()) {
+    internal_apis = v8::Object::New(isolate);
+    data->internal_apis.Reset(isolate, internal_apis);
+  } else {
+    internal_apis = data->internal_apis.Get(isolate);
+  }
+
+  v8::Maybe<bool> has_property =
+      internal_apis->HasOwnProperty(context, v8_name);
+  if (!has_property.IsJust())
+    return;
+
+  if (has_property.FromJust()) {
+    // API was already instantiated.
+    info.GetReturnValue().Set(
+        internal_apis->GetRealNamedProperty(context, v8_name).ToLocalChecked());
+    return;
+  }
+
+  std::string api_name = gin::V8ToString(info[0]);
+  const Feature* feature = FeatureProvider::GetAPIFeature(api_name);
+  ScriptContext* script_context =
+      ScriptContextSet::GetContextByV8Context(context);
+  if (!feature ||
+      !script_context->IsAnyFeatureAvailableToContext(
+          *feature, CheckAliasStatus::NOT_ALLOWED)) {
+    NOTREACHED();
+    return;
+  }
+
+  CHECK(feature->IsInternal());
+
+  // This is only called from the custom bindings for another API, so
+  // |get_internal_api| must have been initialized.
+  DCHECK(!data->bindings_system->get_internal_api_.IsEmpty());
+  v8::Local<v8::Function> get_internal_api =
+      data->bindings_system->get_internal_api_.Get(isolate)
+          ->GetFunction(context)
+          .ToLocalChecked();
+
+  // We don't need to go through CreateFullBinding here because internal APIs
+  // are always acquired through getInternalBinding and specified by full name,
+  // rather than through access on the chrome object. So we can just instantiate
+  // a binding keyed with any name, even a prefixed one (e.g.
+  // 'app.currentWindowInternal').
+  v8::Local<v8::Object> api_binding =
+      CreateRootBinding(context, script_context, api_name,
+                        &data->bindings_system->api_system_, get_internal_api);
+
+  if (api_binding.IsEmpty())
+    return;
+
+  v8::Maybe<bool> success =
+      internal_apis->CreateDataProperty(context, v8_name, api_binding);
+  if (!success.IsJust() || !success.FromJust())
+    return;
+
+  info.GetReturnValue().Set(api_binding);
 }
 
 void NativeExtensionBindingsSystem::SendRequest(

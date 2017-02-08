@@ -158,7 +158,8 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   // TODO(devlin): We can get rid of this once we convert all our custom
   // bindings.
   void OnNativeBindingCreated(const std::string& api_name,
-                              v8::Local<v8::Value> api_bridge_value);
+                              v8::Local<v8::Value> api_bridge_value,
+                              v8::Local<v8::Value> get_internal_api);
 
  protected:
   friend class ModuleSystemTestEnvironment;
@@ -218,7 +219,8 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   v8::Local<v8::Value> LoadModule(const std::string& module_name);
   v8::Local<v8::Value> LoadModuleWithNativeAPIBridge(
       const std::string& module_name,
-      v8::Local<v8::Value> api_object);
+      v8::Local<v8::Value> api_object,
+      v8::Local<v8::Value> get_internal_api);
 
   // Invoked when a module is loaded in response to a requireAsync call.
   // Resolves |resolver| with |value|.

@@ -6,7 +6,6 @@
 
 var appWindowNatives = requireNative('app_window_natives');
 var runtimeNatives = requireNative('runtime');
-var Binding = require('binding').Binding;
 var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
 var renderFrameObserverNatives = requireNative('renderFrameObserverNatives');
@@ -17,6 +16,9 @@ var currentWindowInternal = null;
 
 var kSetBoundsFunction = 'setBounds';
 var kSetSizeConstraintsFunction = 'setSizeConstraints';
+
+if (!apiBridge)
+  var binding = require('binding').Binding;
 
 // Bounds class definition.
 var Bounds = function(boundsKey) {
@@ -109,7 +111,7 @@ Bounds.prototype.setMaximumSize = function(maxWidth, maxHeight) {
                         { maxWidth: maxWidth, maxHeight: maxHeight });
 };
 
-var appWindow = Binding.create('app.window');
+var appWindow = apiBridge || binding.create('app.window');
 appWindow.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
@@ -207,7 +209,9 @@ appWindow.registerCustomHook(function(bindingsAPI) {
   // currentWindowInternal, appWindowData, etc.
   apiFunctions.setHandleRequest('initializeAppWindow', function(params) {
     currentWindowInternal =
-        Binding.create('app.currentWindowInternal').generate();
+        getInternalApi ?
+            getInternalApi('app.currentWindowInternal') :
+        binding.create('app.currentWindowInternal').generate();
     var AppWindow = function() {
       this.innerBounds = new Bounds('innerBounds');
       this.outerBounds = new Bounds('outerBounds');
@@ -384,6 +388,7 @@ function updateSizeConstraints(boundsType, constraints) {
   currentWindowInternal.setSizeConstraints(boundsType, constraints);
 }
 
-exports.$set('binding', appWindow.generate());
+if (!apiBridge)
+  exports.$set('binding', appWindow.generate());
 exports.$set('onAppWindowClosed', onAppWindowClosed);
 exports.$set('updateAppWindowProperties', updateAppWindowProperties);

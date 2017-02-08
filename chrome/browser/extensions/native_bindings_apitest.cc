@@ -34,7 +34,12 @@ class NativeBindingsApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, SimpleEndToEndTest) {
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir_);
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("native_bindings")) << message_;
+  ASSERT_TRUE(RunExtensionTest("native_bindings/extension")) << message_;
+}
+
+// A simplistic app test for app-specific APIs.
+IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, SimpleAppTest) {
+  ASSERT_TRUE(RunPlatformAppTest("native_bindings/platform_app")) << message_;
 }
 
 }  // namespace extensions

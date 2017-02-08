@@ -4,10 +4,12 @@
 
 // Custom binding for the chrome.app.runtime API.
 
-var binding = require('binding').Binding.create('app.runtime');
+var binding = apiBridge || require('binding').Binding.create('app.runtime');
 
 var AppViewGuestInternal =
-    require('binding').Binding.create('appViewGuestInternal').generate();
+    getInternalApi ?
+        getInternalApi('appViewGuestInternal') :
+        require('binding').Binding.create('appViewGuestInternal').generate();
 var eventBindings = require('event_bindings');
 var fileSystemHelpers = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
@@ -81,4 +83,5 @@ eventBindings.registerArgumentMassager('app.runtime.onLaunched',
   }
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

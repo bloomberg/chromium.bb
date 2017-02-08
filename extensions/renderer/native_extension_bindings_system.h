@@ -71,6 +71,9 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
   static void GetAPIHelper(v8::Local<v8::Name> name,
                            const v8::PropertyCallbackInfo<v8::Value>& info);
 
+  // Callback to get an API binding for an internal API.
+  static void GetInternalAPI(const v8::FunctionCallbackInfo<v8::Value>& info);
+
   // Handler to send request IPCs. Abstracted out for testing purposes.
   SendRequestIPCMethod send_request_ipc_;
 
@@ -80,6 +83,9 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
 
   // The APIBindingsSystem associated with this class.
   APIBindingsSystem api_system_;
+
+  // A function to acquire an internal API.
+  v8::Eternal<v8::FunctionTemplate> get_internal_api_;
 
   base::WeakPtrFactory<NativeExtensionBindingsSystem> weak_factory_;
 

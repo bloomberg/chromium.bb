@@ -78,7 +78,7 @@ var tests = [
       sendResponse('started');
     });
     var url = 'http://localhost:' + portNumber +
-              '/native_bindings/messaging_test.html';
+              '/native_bindings/extension/messaging_test.html';
     chrome.tabs.create({url: url}, function(tab) {
       chrome.test.assertNoLastError();
       chrome.test.assertTrue(!!tab);

@@ -544,11 +544,12 @@ void ModuleSystem::SetNativeLazyField(v8::Local<v8::Object> object,
 
 void ModuleSystem::OnNativeBindingCreated(
     const std::string& api_name,
-    v8::Local<v8::Value> api_bridge_value) {
+    v8::Local<v8::Value> api_bridge_value,
+    v8::Local<v8::Value> get_internal_api) {
   v8::HandleScope scope(GetIsolate());
   if (source_map_->Contains(api_name)) {
     NativesEnabledScope enabled(this);
-    LoadModuleWithNativeAPIBridge(api_name, api_bridge_value);
+    LoadModuleWithNativeAPIBridge(api_name, api_bridge_value, get_internal_api);
   }
 }
 
@@ -632,7 +633,7 @@ v8::Local<v8::String> ModuleSystem::WrapSource(v8::Local<v8::String> source) {
   v8::Local<v8::String> left = ToV8StringUnsafe(
       GetIsolate(),
       "(function(define, require, requireNative, requireAsync, exports, "
-      "console, privates, apiBridge,"
+      "console, privates, apiBridge, getInternalApi,"
       "$Array, $Function, $JSON, $Object, $RegExp, $String, $Error) {"
       "'use strict';");
   v8::Local<v8::String> right = ToV8StringUnsafe(GetIsolate(), "\n})");
@@ -670,13 +671,14 @@ void ModuleSystem::Private(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 v8::Local<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
-  return LoadModuleWithNativeAPIBridge(module_name,
+  return LoadModuleWithNativeAPIBridge(module_name, v8::Undefined(GetIsolate()),
                                        v8::Undefined(GetIsolate()));
 }
 
 v8::Local<v8::Value> ModuleSystem::LoadModuleWithNativeAPIBridge(
     const std::string& module_name,
-    v8::Local<v8::Value> api_bridge) {
+    v8::Local<v8::Value> api_bridge,
+    v8::Local<v8::Value> get_internal_api) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
   v8::Local<v8::Context> v8_context = context()->v8_context();
   v8::Context::Scope context_scope(v8_context);
@@ -746,7 +748,8 @@ v8::Local<v8::Value> ModuleSystem::LoadModuleWithNativeAPIBridge(
       console::AsV8Object(GetIsolate()),
       GetPropertyUnsafe(v8_context, natives, "privates",
                         v8::NewStringType::kInternalized),
-      api_bridge,  // exposed as apiBridge.
+      api_bridge,        // exposed as apiBridge.
+      get_internal_api,  // exposed as getInternalApi.
       // Each safe builtin. Keep in order with the arguments in WrapSource.
       context_->safe_builtins()->GetArray(),
       context_->safe_builtins()->GetFunction(),
