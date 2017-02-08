@@ -4,6 +4,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/histogram_tester.h"
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/external_protocol_dialog_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -98,6 +100,8 @@ class ExternalProtocolDialogBrowserTest : public InProcessBrowserTest {
     test::ExternalProtocolDialogTestApi(dialog_).SetCheckBoxSelected(checked);
   }
 
+  base::HistogramTester histogram_tester_;
+
  protected:
   ExternalProtocolDialog* dialog_ = nullptr;
   bool called_ = false;
@@ -116,6 +120,11 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestAccept) {
   EXPECT_TRUE(accept_);
   EXPECT_FALSE(cancel_);
   EXPECT_FALSE(dont_block_);
+  histogram_tester_.ExpectBucketCount(
+      ExternalProtocolHandler::kRememberCheckboxMetric, 0 /* false */, 1);
+  histogram_tester_.ExpectBucketCount(
+      ExternalProtocolHandler::kHandleStateMetric,
+      ExternalProtocolHandler::LAUNCH, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
@@ -127,6 +136,11 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
   EXPECT_TRUE(accept_);
   EXPECT_FALSE(cancel_);
   EXPECT_TRUE(dont_block_);
+  histogram_tester_.ExpectBucketCount(
+      ExternalProtocolHandler::kRememberCheckboxMetric, 1 /* true */, 1);
+  histogram_tester_.ExpectBucketCount(
+      ExternalProtocolHandler::kHandleStateMetric,
+      ExternalProtocolHandler::CHECKED_LAUNCH, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestCancel) {
@@ -136,6 +150,11 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestCancel) {
   EXPECT_FALSE(accept_);
   EXPECT_TRUE(cancel_);
   EXPECT_FALSE(dont_block_);
+  histogram_tester_.ExpectBucketCount(
+      ExternalProtocolHandler::kRememberCheckboxMetric, 0 /* false */, 1);
+  histogram_tester_.ExpectBucketCount(
+      ExternalProtocolHandler::kHandleStateMetric,
+      ExternalProtocolHandler::DONT_LAUNCH, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
@@ -147,6 +166,11 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
   EXPECT_FALSE(accept_);
   EXPECT_TRUE(cancel_);
   EXPECT_TRUE(dont_block_);
+  histogram_tester_.ExpectBucketCount(
+      ExternalProtocolHandler::kRememberCheckboxMetric, 1 /* true */, 1);
+  histogram_tester_.ExpectBucketCount(
+      ExternalProtocolHandler::kHandleStateMetric,
+      ExternalProtocolHandler::CHECKED_DONT_LAUNCH, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestClose) {
@@ -157,6 +181,11 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestClose) {
   EXPECT_FALSE(accept_);
   EXPECT_TRUE(cancel_);
   EXPECT_FALSE(dont_block_);
+  // No histogram data
+  histogram_tester_.ExpectTotalCount(
+      ExternalProtocolHandler::kRememberCheckboxMetric, 0);
+  histogram_tester_.ExpectTotalCount(
+      ExternalProtocolHandler::kHandleStateMetric, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
@@ -169,4 +198,9 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
   EXPECT_FALSE(accept_);
   EXPECT_TRUE(cancel_);
   EXPECT_FALSE(dont_block_);
+  // No histogram data
+  histogram_tester_.ExpectTotalCount(
+      ExternalProtocolHandler::kRememberCheckboxMetric, 0);
+  histogram_tester_.ExpectTotalCount(
+      ExternalProtocolHandler::kHandleStateMetric, 0);
 }

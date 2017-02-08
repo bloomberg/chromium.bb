@@ -97,17 +97,16 @@
 
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id_, routing_id_);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
+  bool isChecked = [[alert_ suppressionButton] state] == NSOnState;
   // Set the "don't warn me again" info.
-  if ([[alert_ suppressionButton] state] == NSOnState) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
+  if (isChecked)
     ExternalProtocolHandler::SetBlockState(url_.scheme(), blockState, profile);
-    ExternalProtocolHandler::RecordMetrics(true);
-  } else {
-    ExternalProtocolHandler::RecordMetrics(false);
-  }
+
+  ExternalProtocolHandler::RecordCheckboxStateMetrics(isChecked);
+  ExternalProtocolHandler::RecordHandleStateMetrics(isChecked, blockState);
 
   if (blockState == ExternalProtocolHandler::DONT_BLOCK) {
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",

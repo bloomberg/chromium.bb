@@ -28,6 +28,17 @@ class ExternalProtocolHandler {
     UNKNOWN,
   };
 
+  // This is used to back a UMA histogram, so it should be treated as
+  // append-only. Any new values should be inserted immediately prior to
+  // HANDLE_STATE_LAST.
+  enum HandleState {
+    LAUNCH,
+    CHECKED_LAUNCH,
+    DONT_LAUNCH,
+    CHECKED_DONT_LAUNCH,
+    HANDLE_STATE_LAST
+  };
+
   // Delegate to allow unit testing to provide different behavior.
   class Delegate {
    public:
@@ -50,6 +61,10 @@ class ExternalProtocolHandler {
     virtual void FinishedProcessingCheck() = 0;
     virtual ~Delegate() {}
   };
+
+  // UMA histogram metric names.
+  static const char kRememberCheckboxMetric[];
+  static const char kHandleStateMetric[];
 
   // Returns whether we should block a given scheme.
   static BlockState GetBlockState(const std::string& scheme, Profile* profile);
@@ -97,7 +112,12 @@ class ExternalProtocolHandler {
 
   // Records an UMA metric for the state of the checkbox in the dialog, i.e.
   // whether |selected| is true (checked) or false (unchecked).
-  static void RecordMetrics(bool selected);
+  static void RecordCheckboxStateMetrics(bool selected);
+
+  // Records an UMA metric for the external protocol HandleState selected, based
+  // on if the check box is selected / not and block / Dont block is picked.
+  static void RecordHandleStateMetrics(bool checkbox_selected,
+                                       BlockState state);
 
   // Register the ExcludedSchemes preference.
   static void RegisterPrefs(PrefRegistrySimple* registry);

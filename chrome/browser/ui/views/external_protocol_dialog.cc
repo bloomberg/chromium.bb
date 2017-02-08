@@ -79,11 +79,12 @@ void ExternalProtocolDialog::DeleteDelegate() {
 }
 
 bool ExternalProtocolDialog::Cancel() {
-  delegate_->DoCancel(delegate_->url(),
-                      message_box_view_->IsCheckBoxSelected());
+  bool is_checked = message_box_view_->IsCheckBoxSelected();
+  delegate_->DoCancel(delegate_->url(), is_checked);
 
-  ExternalProtocolHandler::RecordMetrics(
-      message_box_view_->IsCheckBoxSelected());
+  ExternalProtocolHandler::RecordCheckboxStateMetrics(is_checked);
+  ExternalProtocolHandler::RecordHandleStateMetrics(
+      is_checked, ExternalProtocolHandler::BLOCK);
 
   // Returning true closes the dialog.
   return true;
@@ -96,11 +97,12 @@ bool ExternalProtocolDialog::Accept() {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
                            base::TimeTicks::Now() - creation_time_);
 
-  ExternalProtocolHandler::RecordMetrics(
-      message_box_view_->IsCheckBoxSelected());
+  bool is_checked = message_box_view_->IsCheckBoxSelected();
+  ExternalProtocolHandler::RecordCheckboxStateMetrics(is_checked);
+  ExternalProtocolHandler::RecordHandleStateMetrics(
+      is_checked, ExternalProtocolHandler::DONT_BLOCK);
 
-  delegate_->DoAccept(delegate_->url(),
-                      message_box_view_->IsCheckBoxSelected());
+  delegate_->DoAccept(delegate_->url(), is_checked);
 
   // Returning true closes the dialog.
   return true;
