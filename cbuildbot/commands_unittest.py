@@ -694,10 +694,20 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
     self.testBuild(extra_env=extra_env)
     self.assertCommandContains(['./build_packages'], extra_env=extra_env)
 
-  def testGenerateSymbols(self):
+  def testGenerateBreakpadSymbols(self):
     """Test GenerateBreakpadSymbols Command."""
     commands.GenerateBreakpadSymbols(self.tempdir, self._board, False)
     self.assertCommandContains(['--board=%s' % self._board])
+
+  def testGenerateAndroidBreakpadSymbols(self):
+    """Test GenerateAndroidBreakpadSymbols Command."""
+    with mock.patch.object(path_util, 'ToChrootPath', side_effect=lambda s: s):
+      commands.GenerateAndroidBreakpadSymbols(
+          '/buildroot', 'MyBoard', 'symbols.zip')
+    self.assertCommandContains(
+        ['/buildroot/chromite/bin/cros_generate_android_breakpad_symbols',
+         '--symbols_file=symbols.zip',
+         '--breakpad_dir=/build/MyBoard/usr/lib/debug/breakpad'])
 
   def testUploadSymbolsMinimal(self):
     """Test uploading symbols for official builds"""

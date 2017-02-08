@@ -364,6 +364,16 @@ ARC_BUCKET_ACLS = {
     'SDK_TOOLS': 'googlestorage_acl_public.txt',
     'XTS': 'googlestorage_acl_cts.txt',
 }
+ARC_USE_FLAG_TO_ARCH = {
+    'arm': 'arm',
+    'x86': 'x86',
+    'amd64': 'x86',
+}
+ANDROID_SYMBOLS_URL_TEMPLATE = (
+    ARC_BUCKET_URL +
+    '/%(branch)s-linux-cheets_%(arch)s-user/%(version)s'
+    '/cheets_%(arch)s-symbols-%(version)s.zip')
+ANDROID_SYMBOLS_FILE = 'android-symbols.zip'
 # x86-user, x86-userdebug and x86-eng builders create build artifacts with the
 # same name, e.g. cheets_x86-target_files-${VERSION}.zip. Chrome OS builders
 # that need to select x86-user or x86-userdebug artifacts at emerge time need

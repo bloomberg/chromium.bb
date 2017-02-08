@@ -1676,6 +1676,22 @@ def GenerateBreakpadSymbols(buildroot, board, debug):
   RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True)
 
 
+def GenerateAndroidBreakpadSymbols(buildroot, board, symbols_file):
+  """Generate breakpad symbols of Android binaries.
+
+  Args:
+    buildroot: The root directory where the build occurs.
+    board: Board type that was built on this machine.
+    symbols_file: Path to a symbol archive file.
+  """
+  board_path = cros_build_lib.GetSysroot(board=board)
+  breakpad_dir = os.path.join(board_path, 'usr', 'lib', 'debug', 'breakpad')
+  cmd = ['cros_generate_android_breakpad_symbols',
+         '--symbols_file=%s' % path_util.ToChrootPath(symbols_file),
+         '--breakpad_dir=%s' % breakpad_dir]
+  RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True)
+
+
 def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
                          archive_name='debug.tgz'):
   """Generates a debug tarball in the archive_dir.

@@ -256,6 +256,8 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.StartPatcher(generic_stages_unittest.ArchivingStageMixinMock())
 
     self.gen_mock = self.PatchObject(commands, 'GenerateBreakpadSymbols')
+    self.gen_android_mock = self.PatchObject(
+        commands, 'GenerateAndroidBreakpadSymbols')
     self.upload_mock = self.PatchObject(commands, 'UploadSymbols')
     self.tar_mock = self.PatchObject(commands, 'GenerateDebugTarball')
 
@@ -274,7 +276,8 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
     value = self.stage.board_runattrs.GetParallel(attr)
     self.assertEqual(expected_value, value)
 
-  def _TestPerformStage(self, extra_config=None):
+  def _TestPerformStage(self, extra_config=None,
+                        create_android_symbols_archive=False):
     """Run PerformStage for the stage with the given extra config."""
     if not extra_config:
       extra_config = {
@@ -288,6 +291,12 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     self.tar_mock.side_effect = '/my/tar/ball'
     self.stage = self.ConstructStage()
+
+    if create_android_symbols_archive:
+      symbols_file = os.path.join(self.stage.archive_path,
+                                  constants.ANDROID_SYMBOLS_FILE)
+      osutils.Touch(symbols_file)
+
     try:
       self.stage.PerformStage()
     except Exception:
@@ -298,6 +307,19 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._TestPerformStage()
 
     self.assertEqual(self.gen_mock.call_count, 1)
+    self.assertEqual(self.gen_android_mock.call_count, 0)
+    self.assertEqual(self.upload_mock.call_count, 1)
+    self.assertEqual(self.tar_mock.call_count, 2)
+
+    self.assertBoardAttrEqual('breakpad_symbols_generated', True)
+    self.assertBoardAttrEqual('debug_tarball_generated', True)
+
+  def testPerformStageWithAndroidSymbols(self):
+    """Smoke test for an PerformStage when Android symbols are available"""
+    self._TestPerformStage(create_android_symbols_archive=True)
+
+    self.assertEqual(self.gen_mock.call_count, 1)
+    self.assertEqual(self.gen_android_mock.call_count, 1)
     self.assertEqual(self.upload_mock.call_count, 1)
     self.assertEqual(self.tar_mock.call_count, 2)
 
@@ -315,6 +337,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.assertIsNone(result)
 
     self.assertEqual(self.gen_mock.call_count, 1)
+    self.assertEqual(self.gen_android_mock.call_count, 0)
     self.assertEqual(self.upload_mock.call_count, 0)
     self.assertEqual(self.tar_mock.call_count, 2)
 
@@ -331,6 +354,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.assertIsInstance(result[0], failures_lib.InfrastructureFailure)
 
     self.assertEqual(self.gen_mock.call_count, 1)
+    self.assertEqual(self.gen_android_mock.call_count, 0)
     self.assertEqual(self.upload_mock.call_count, 0)
     self.assertEqual(self.tar_mock.call_count, 0)
 

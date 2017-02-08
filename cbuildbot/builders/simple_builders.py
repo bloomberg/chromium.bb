@@ -121,6 +121,18 @@ class SimpleBuilder(generic_builders.Builder):
     if parallel_stages:
       self._RunParallelStages(parallel_stages)
 
+  def _RunDebugSymbolStages(self, builder_run, board):
+    """Run debug-related stages for the specified board.
+
+    Args:
+      builder_run: BuilderRun object for these background stages.
+      board: Board name.
+    """
+    # These stages should run sequentially.
+    self._RunStage(android_stages.DownloadAndroidDebugSymbolsStage,
+                   board, builder_run=builder_run)
+    self._RunStage(artifact_stages.DebugSymbolsStage, board,
+                   builder_run=builder_run)
 
   def _RunBackgroundStagesForBoardAndMarkAsSuccessful(self, builder_run, board):
     """Run background board-specific stages for the specified board.
@@ -209,7 +221,6 @@ class SimpleBuilder(generic_builders.Builder):
         [test_stages.ImageTestStage, board],
         [artifact_stages.UploadPrebuiltsStage, board],
         [artifact_stages.DevInstallerPrebuiltsStage, board],
-        [artifact_stages.DebugSymbolsStage, board],
         [artifact_stages.CPEExportStage, board],
         [artifact_stages.UploadTestArtifactsStage, board],
     ]
@@ -225,6 +236,7 @@ class SimpleBuilder(generic_builders.Builder):
     parallel.RunParallelSteps([
         lambda: self._RunParallelStages(stage_objs + [archive_stage]),
         lambda: self._RunHWTests(builder_run, board),
+        lambda: self._RunDebugSymbolStages(builder_run, board),
     ])
 
   def RunSetupBoard(self):

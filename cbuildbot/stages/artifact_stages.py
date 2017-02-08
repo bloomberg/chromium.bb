@@ -407,8 +407,18 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
     buildroot = self._build_root
     board = self._current_board
 
-    # Create breakpad symbols.
+    # Generate breakpad symbols of Chrome OS binaries.
     commands.GenerateBreakpadSymbols(buildroot, board, self._run.debug)
+
+    # Generate breakpad symbols of Android binaries if we have a symbol archive.
+    # This archive is created by AndroidDebugSymbolsStage in Android PFQ.
+    # This must be done after GenerateBreakpadSymbols because it clobbers the
+    # output directory.
+    symbols_file = os.path.join(self.archive_path,
+                                constants.ANDROID_SYMBOLS_FILE)
+    if os.path.exists(symbols_file):
+      commands.GenerateAndroidBreakpadSymbols(buildroot, board, symbols_file)
+
     self.board_runattrs.SetParallel('breakpad_symbols_generated', True)
 
     # Upload them.
