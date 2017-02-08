@@ -29,9 +29,6 @@ enum LoadPhase {
   PAGE_LOADED = 2
 };
 
-// The accessibility identifier of the top-level container view.
-extern NSString* const kContainerViewID;
-
 }  // namespace web
 
 @class CRWJSInjectionReceiver;

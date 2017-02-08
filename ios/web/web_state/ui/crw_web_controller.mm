@@ -114,11 +114,7 @@ using web::NavigationManagerImpl;
 using web::WebState;
 using web::WebStateImpl;
 
-namespace web {
-NSString* const kContainerViewID = @"Container View";
-NSString* const kUserIsInteractingKey = @"userIsInteracting";
-NSString* const kOriginURLKey = @"originURL";
-NSString* const kLogJavaScript = @"LogJavascript";
+namespace {
 
 // Struct to capture data about a user interaction. Records the time of the
 // interaction and the main document URL at that time.
@@ -131,20 +127,12 @@ struct UserInteractionEvent {
   CFAbsoluteTime time;
 };
 
-// Values of the UMA |Web.URLVerificationFailure| histogram.
-enum WebViewDocumentType {
-  // Generic contents (e.g. PDF documents).
-  WEB_VIEW_DOCUMENT_TYPE_GENERIC = 0,
-  // HTML contents.
-  WEB_VIEW_DOCUMENT_TYPE_HTML,
-  // Unknown contents.
-  WEB_VIEW_DOCUMENT_TYPE_UNKNOWN,
-  WEB_VIEW_DOCUMENT_TYPE_COUNT,
-};
+// Keys for JavaScript command handlers context.
+NSString* const kUserIsInteractingKey = @"userIsInteracting";
+NSString* const kOriginURLKey = @"originURL";
 
-}  // namespace web
-
-namespace {
+// Standard User Defaults key for "Log JS" debug setting.
+NSString* const kLogJavaScript = @"LogJavascript";
 
 // Key of UMA IOSFix.ViewportZoomBugCount histogram.
 const char kUMAViewportZoomBugCount[] = "Renderer.ViewportZoomBugCount";
@@ -334,7 +322,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // Whether a click is in progress.
   BOOL _clickInProgress;
   // Data on the recorded last user interaction.
-  std::unique_ptr<web::UserInteractionEvent> _lastUserInteraction;
+  std::unique_ptr<UserInteractionEvent> _lastUserInteraction;
   // YES if there has been user interaction with views owned by this controller.
   BOOL _userInteractedWithWebController;
   // The time of the last page transfer start, measured in seconds since Jan 1
@@ -543,10 +531,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Returns the WKWebViewConfigurationProvider associated with the web
 // controller's BrowserState.
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider;
-// Returns the type of document object loaded in the web view.
-- (web::WebViewDocumentType)webViewDocumentType;
-// Converts MIME type string to WebViewDocumentType.
-- (web::WebViewDocumentType)documentTypeFromMIMEType:(NSString*)MIMEType;
 // Extracts Referer value from WKNavigationAction request header.
 - (NSString*)refererFromNavigationAction:(WKNavigationAction*)action;
 
@@ -1176,7 +1160,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (BOOL)contentIsHTML {
-  return [self webViewDocumentType] == web::WEB_VIEW_DOCUMENT_TYPE_HTML;
+  if (!_webView)
+    return NO;
+
+  std::string MIMEType = self.webState->GetContentsMimeType();
+  return MIMEType == "text/html" || MIMEType == "application/xhtml+xml" ||
+         MIMEType == "application/xml";
 }
 
 // Stop doing stuff, especially network stuff. Close the request tracker.
@@ -2012,7 +2001,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     DCHECK(!CGRectIsEmpty(_containerView.get().frame));
 
     [_containerView addGestureRecognizer:[self touchTrackingRecognizer]];
-    [_containerView setAccessibilityIdentifier:web::kContainerViewID];
     // Is |currentUrl| a web scheme or native chrome scheme.
     web::NavigationItem* item = [self currentNavItem];
     const GURL currentNavigationURL =
@@ -2479,10 +2467,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK(handlerImplementation);
   NSMutableDictionary* context =
       [NSMutableDictionary dictionaryWithObject:@(userIsInteracting)
-                                         forKey:web::kUserIsInteractingKey];
+                                         forKey:kUserIsInteractingKey];
   NSURL* originNSURL = net::NSURLWithGURL(originURL);
   if (originNSURL)
-    context[web::kOriginURLKey] = originNSURL;
+    context[kOriginURLKey] = originNSURL;
   return handlerImplementation(self, handler, message, context);
 }
 
@@ -2607,8 +2595,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         return NO;
       }
       _webStateImpl->OnScriptCommandReceived(
-          messageContent, *message, currentURL,
-          context[web::kUserIsInteractingKey]);
+          messageContent, *message, currentURL, context[kUserIsInteractingKey]);
       _webStateImpl->ProcessWebUIMessage(currentURL, messageContent,
                                          *arguments);
       return YES;
@@ -2623,7 +2610,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)handleConsoleMessage:(base::DictionaryValue*)message
                      context:(NSDictionary*)context {
   // Do not log if JS logging is off.
-  if (![[NSUserDefaults standardUserDefaults] boolForKey:web::kLogJavaScript]) {
+  if (![[NSUserDefaults standardUserDefaults] boolForKey:kLogJavaScript]) {
     return YES;
   }
 
@@ -2712,7 +2699,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // We decide the form is user-submitted if the user has interacted with
   // the main page (using logic from the popup blocker), or if the keyboard
   // is visible.
-  BOOL submittedByUser = [context[web::kUserIsInteractingKey] boolValue] ||
+  BOOL submittedByUser = [context[kUserIsInteractingKey] boolValue] ||
                          [_webViewProxy keyboardAccessory];
   _webStateImpl->OnDocumentSubmitted(formName, submittedByUser);
   return YES;
@@ -2763,11 +2750,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     }
     federations.push_back(federation);
   }
-  DCHECK(context[web::kUserIsInteractingKey]);
+  DCHECK(context[kUserIsInteractingKey]);
   _webStateImpl->OnCredentialsRequested(
-      static_cast<int>(request_id),
-      net::GURLWithNSURL(context[web::kOriginURLKey]), unmediated, federations,
-      [context[web::kUserIsInteractingKey] boolValue]);
+      static_cast<int>(request_id), net::GURLWithNSURL(context[kOriginURLKey]),
+      unmediated, federations, [context[kUserIsInteractingKey] boolValue]);
   return YES;
 }
 
@@ -2786,11 +2772,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       return NO;
     }
     _webStateImpl->OnSignedIn(static_cast<int>(request_id),
-                              net::GURLWithNSURL(context[web::kOriginURLKey]),
+                              net::GURLWithNSURL(context[kOriginURLKey]),
                               credential);
   } else {
     _webStateImpl->OnSignedIn(static_cast<int>(request_id),
-                              net::GURLWithNSURL(context[web::kOriginURLKey]));
+                              net::GURLWithNSURL(context[kOriginURLKey]));
   }
   return YES;
 }
@@ -2803,7 +2789,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return NO;
   }
   _webStateImpl->OnSignedOut(static_cast<int>(request_id),
-                             net::GURLWithNSURL(context[web::kOriginURLKey]));
+                             net::GURLWithNSURL(context[kOriginURLKey]));
   return YES;
 }
 
@@ -2821,13 +2807,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       DLOG(WARNING) << "JS message parameter 'credential' is invalid";
       return NO;
     }
-    _webStateImpl->OnSignInFailed(
-        static_cast<int>(request_id),
-        net::GURLWithNSURL(context[web::kOriginURLKey]), credential);
+    _webStateImpl->OnSignInFailed(static_cast<int>(request_id),
+                                  net::GURLWithNSURL(context[kOriginURLKey]),
+                                  credential);
   } else {
-    _webStateImpl->OnSignInFailed(
-        static_cast<int>(request_id),
-        net::GURLWithNSURL(context[web::kOriginURLKey]));
+    _webStateImpl->OnSignInFailed(static_cast<int>(request_id),
+                                  net::GURLWithNSURL(context[kOriginURLKey]));
   }
   return YES;
 }
@@ -3536,7 +3521,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         navigationManager.GetItemCount()
             ? navigationManager.GetLastCommittedItem()->GetURL()
             : [self currentURL];
-    _lastUserInteraction.reset(new web::UserInteractionEvent(mainDocumentURL));
+    _lastUserInteraction.reset(new UserInteractionEvent(mainDocumentURL));
   }
 }
 
@@ -4347,16 +4332,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider {
   web::BrowserState* browserState = self.webStateImpl->GetBrowserState();
   return web::WKWebViewConfigurationProvider::FromBrowserState(browserState);
-}
-
-- (web::WebViewDocumentType)webViewDocumentType {
-  // This happens during tests.
-  if (!_webView) {
-    return web::WEB_VIEW_DOCUMENT_TYPE_GENERIC;
-  }
-
-  std::string MIMEType = self.webState->GetContentsMimeType();
-  return [self documentTypeFromMIMEType:base::SysUTF8ToNSString(MIMEType)];
 }
 
 - (void)loadRequest:(NSMutableURLRequest*)request {
@@ -5309,20 +5284,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)simulateLoadRequestWithURL:(const GURL&)URL {
   _lastRegisteredRequestURL = URL;
   _loadPhase = web::LOAD_REQUESTED;
-}
-
-- (web::WebViewDocumentType)documentTypeFromMIMEType:(NSString*)MIMEType {
-  if (!MIMEType.length) {
-    return web::WEB_VIEW_DOCUMENT_TYPE_UNKNOWN;
-  }
-
-  if ([MIMEType isEqualToString:@"text/html"] ||
-      [MIMEType isEqualToString:@"application/xhtml+xml"] ||
-      [MIMEType isEqualToString:@"application/xml"]) {
-    return web::WEB_VIEW_DOCUMENT_TYPE_HTML;
-  }
-
-  return web::WEB_VIEW_DOCUMENT_TYPE_GENERIC;
 }
 
 - (NSString*)refererFromNavigationAction:(WKNavigationAction*)action {
