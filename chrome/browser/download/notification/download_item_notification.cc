@@ -9,6 +9,7 @@
 
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -64,8 +65,6 @@ const SkColor kImageBackgroundColor = SK_ColorWHITE;
 const int64_t kMaxImagePreviewSize = 10 * 1024 * 1024;  // 10 MB
 
 std::string ReadNotificationImage(const base::FilePath& file_path) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   std::string data;
   bool ret = base::ReadFileToString(file_path, &data);
   if (!ret)
@@ -481,8 +480,9 @@ void DownloadItemNotification::UpdateNotificationData(
 
     if (model.HasSupportedImageMimeType()) {
       base::FilePath file_path = item_->GetFullPath();
-      base::PostTaskAndReplyWithResult(
-          content::BrowserThread::GetBlockingPool(), FROM_HERE,
+      base::PostTaskWithTraitsAndReplyWithResult(
+          FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                         base::TaskPriority::BACKGROUND),
           base::Bind(&ReadNotificationImage, file_path),
           base::Bind(&DownloadItemNotification::OnImageLoaded,
                      weak_factory_.GetWeakPtr()));
@@ -599,8 +599,9 @@ void DownloadItemNotification::OnImageDecoded(const SkBitmap& decoded_bitmap) {
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
       base::Bind(&CropImage, decoded_bitmap),
       base::Bind(&DownloadItemNotification::OnImageCropped,
                  weak_factory_.GetWeakPtr()));
