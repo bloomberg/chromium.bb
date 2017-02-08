@@ -186,38 +186,48 @@ TEST_F(PasswordAutofillManagerTest, PreviewSuggestion) {
 // Test that the popup is marked as visible after recieving password
 // suggestions.
 TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
-  std::unique_ptr<TestPasswordManagerClient> client(
-      new TestPasswordManagerClient);
-  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  for (bool is_suggestion_on_password_field : {false, true}) {
+    std::unique_ptr<TestPasswordManagerClient> client(
+        new TestPasswordManagerClient);
+    std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+    InitializePasswordAutofillManager(client.get(), autofill_client.get());
 
-  gfx::RectF element_bounds;
-  autofill::PasswordFormFillData data;
-  data.username_field.value = test_username_;
-  data.password_field.value = test_password_;
-  data.preferred_realm = "http://foo.com/";
-  int dummy_key = 0;
-  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+    gfx::RectF element_bounds;
+    autofill::PasswordFormFillData data;
+    data.username_field.value = test_username_;
+    data.password_field.value = test_password_;
+    data.preferred_realm = "http://foo.com/";
+    int dummy_key = 0;
+    password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
 
-  EXPECT_CALL(*client->mock_driver(),
-              FillSuggestion(test_username_, test_password_));
+    EXPECT_CALL(*client->mock_driver(),
+                FillSuggestion(test_username_, test_password_));
 
-  // The enums must be cast to ints to prevent compile errors on linux_rel.
-  EXPECT_CALL(*autofill_client,
-              ShowAutofillPopup(
-                  _,
-                  _,
-                  SuggestionVectorIdsAre(testing::ElementsAre(
-                      autofill::POPUP_ITEM_ID_PASSWORD_ENTRY)),
-                  _));
-  password_autofill_manager_->OnShowPasswordSuggestions(
-      dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(), false,
-      element_bounds);
+    // The enums must be cast to ints to prevent compile errors on linux_rel.
+    auto suggestion_ids_matcher =
+        is_suggestion_on_password_field
+            ? SuggestionVectorIdsAre(
+                  testing::ElementsAre(autofill::POPUP_ITEM_ID_TITLE,
+                                       autofill::POPUP_ITEM_ID_PASSWORD_ENTRY))
+            : SuggestionVectorIdsAre(
+                  testing::ElementsAre(autofill::POPUP_ITEM_ID_USERNAME_ENTRY));
+    EXPECT_CALL(*autofill_client,
+                ShowAutofillPopup(_, _, suggestion_ids_matcher, _));
 
-  // Accepting a suggestion should trigger a call to hide the popup.
-  EXPECT_CALL(*autofill_client, HideAutofillPopup());
-  password_autofill_manager_->DidAcceptSuggestion(
-      test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ENTRY, 1);
+    int show_suggestion_options =
+        is_suggestion_on_password_field ? autofill::IS_PASSWORD_FIELD : 0;
+    password_autofill_manager_->OnShowPasswordSuggestions(
+        dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(),
+        show_suggestion_options, element_bounds);
+
+    // Accepting a suggestion should trigger a call to hide the popup.
+    EXPECT_CALL(*autofill_client, HideAutofillPopup());
+    password_autofill_manager_->DidAcceptSuggestion(
+        test_username_, is_suggestion_on_password_field
+                            ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
+                            : autofill::POPUP_ITEM_ID_USERNAME_ENTRY,
+        1);
+  }
 }
 
 // Test that OnShowPasswordSuggestions correctly matches the given FormFieldData

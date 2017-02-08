@@ -173,11 +173,12 @@ const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
     case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
     case POPUP_ITEM_ID_SEPARATOR:
     case POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE:
-      return normal_font_list_;
     case POPUP_ITEM_ID_TITLE:
+    case POPUP_ITEM_ID_PASSWORD_ENTRY:
+      return normal_font_list_;
     case POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY:
     case POPUP_ITEM_ID_DATALIST_ENTRY:
-    case POPUP_ITEM_ID_PASSWORD_ENTRY:
+    case POPUP_ITEM_ID_USERNAME_ENTRY:
       return bold_font_list_;
   }
   NOTREACHED();

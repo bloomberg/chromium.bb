@@ -72,6 +72,7 @@ void AppendSuggestionIfMatching(
     const base::string16& field_contents,
     const std::string& signon_realm,
     bool show_all,
+    bool is_password_field,
     std::vector<autofill::Suggestion>* suggestions) {
   base::string16 lower_suggestion = base::i18n::ToLower(field_suggestion);
   base::string16 lower_contents = base::i18n::ToLower(field_contents);
@@ -83,7 +84,9 @@ void AppendSuggestionIfMatching(
           lower_suggestion, lower_contents, true)) {
     autofill::Suggestion suggestion(ReplaceEmptyUsername(field_suggestion));
     suggestion.label = GetHumanReadableRealm(signon_realm);
-    suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
+    suggestion.frontend_id = is_password_field
+                                 ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
+                                 : autofill::POPUP_ITEM_ID_USERNAME_ENTRY;
     suggestion.match = prefix_matched_suggestion
                            ? autofill::Suggestion::PREFIX_MATCH
                            : autofill::Suggestion::SUBSTRING_MATCH;
@@ -97,19 +100,23 @@ void AppendSuggestionIfMatching(
 void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                     const base::string16& current_username,
                     std::vector<autofill::Suggestion>* suggestions,
-                    bool show_all) {
+                    bool show_all,
+                    bool is_password_field) {
   AppendSuggestionIfMatching(fill_data.username_field.value, current_username,
-                             fill_data.preferred_realm, show_all, suggestions);
+                             fill_data.preferred_realm, show_all,
+                             is_password_field, suggestions);
 
   for (const auto& login : fill_data.additional_logins) {
     AppendSuggestionIfMatching(login.first, current_username,
-                               login.second.realm, show_all, suggestions);
+                               login.second.realm, show_all, is_password_field,
+                               suggestions);
   }
 
   for (const auto& usernames : fill_data.other_possible_usernames) {
     for (size_t i = 0; i < usernames.second.size(); ++i) {
       AppendSuggestionIfMatching(usernames.second[i], current_username,
-                                 usernames.first.realm, show_all, suggestions);
+                                 usernames.first.realm, show_all,
+                                 is_password_field, suggestions);
     }
   }
 
@@ -194,7 +201,8 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     return;
   }
   GetSuggestions(fill_data_it->second, typed_username, &suggestions,
-                 options & autofill::SHOW_ALL);
+                 (options & autofill::SHOW_ALL) != 0,
+                 (options & autofill::IS_PASSWORD_FIELD) != 0);
 
   form_data_key_ = key;
 
