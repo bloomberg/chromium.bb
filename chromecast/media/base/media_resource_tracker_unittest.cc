@@ -203,6 +203,9 @@ TEST_F(MediaResourceTrackerTest, ScopedUsage) {
     EXPECT_EQ(1u, resource_tracker_->media_use_count());
   }
   EXPECT_EQ(0u, resource_tracker_->media_use_count());
+
+  resource_tracker_->FinalizeAndDestroy();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media
