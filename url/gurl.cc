@@ -468,6 +468,14 @@ bool GURL::DomainIs(base::StringPiece lower_ascii_domain) const {
   return url::DomainIs(host_piece(), lower_ascii_domain);
 }
 
+bool GURL::EqualsIgnoringRef(const GURL& other) const {
+  int ref_position = parsed_.CountCharactersBefore(url::Parsed::REF, true);
+  int ref_position_other =
+      other.parsed_.CountCharactersBefore(url::Parsed::REF, true);
+  return base::StringPiece(spec_).substr(0, ref_position) ==
+         base::StringPiece(other.spec_).substr(0, ref_position_other);
+}
+
 void GURL::Swap(GURL* other) {
   spec_.swap(other->spec_);
   std::swap(is_valid_, other->is_valid_);

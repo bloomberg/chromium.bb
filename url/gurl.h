@@ -385,6 +385,10 @@ class URL_EXPORT GURL {
   // object constructions are done.
   bool DomainIs(base::StringPiece lower_ascii_domain) const;
 
+  // Checks whether or not two URLs are differing only in the ref (the part
+  // after the # character).
+  bool EqualsIgnoringRef(const GURL& other) const;
+
   // Swaps the contents of this GURL object with |other|, without doing
   // any memory allocations.
   void Swap(GURL* other);
