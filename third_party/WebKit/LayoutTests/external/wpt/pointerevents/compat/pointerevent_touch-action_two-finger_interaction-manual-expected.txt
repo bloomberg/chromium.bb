@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL touch two-finger pan on 'touch-action: pan-x pan-y' assert_equals: expected "pointerdown@black, pointerdown@black, pointerup@black, pointerup@black" but got "pointerdown@black, pointerdown@black, pointercancel@black, pointercancel@black"
+PASS touch two-finger pan on 'touch-action: pinch-zoom' 
+PASS PointerEvent Automation 
+Harness: the test ran to completion.
+
