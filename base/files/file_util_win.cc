@@ -134,6 +134,8 @@ bool ReplaceFile(const FilePath& from_path,
   // already exist.
   if (::MoveFile(from_path.value().c_str(), to_path.value().c_str()))
     return true;
+  File::Error move_error = File::OSErrorToFileError(GetLastError());
+
   // Try the full-blown replace if the move fails, as ReplaceFile will only
   // succeed when |to_path| does exist. When writing to a network share, we may
   // not be able to change the ACLs. Ignore ACL errors then
@@ -142,8 +144,14 @@ bool ReplaceFile(const FilePath& from_path,
                     REPLACEFILE_IGNORE_MERGE_ERRORS, NULL, NULL)) {
     return true;
   }
-  if (error)
-    *error = File::OSErrorToFileError(GetLastError());
+  // In the case of FILE_ERROR_NOT_FOUND from ReplaceFile, it is likely that
+  // |to_path| does not exist. In this case, the more relevant error comes
+  // from the call to MoveFile.
+  if (error) {
+    File::Error replace_error = File::OSErrorToFileError(GetLastError());
+    *error = replace_error == File::FILE_ERROR_NOT_FOUND ? move_error
+                                                         : replace_error;
+  }
   return false;
 }
 
