@@ -87,6 +87,14 @@ def _create_enums(properties):
             enum_name = property_['type_name']
             # From the Blink style guide: Enum members should use InterCaps with an initial capital letter. [names-enum-members]
             enum_values = [('k' + camel_case(k)) for k in property_['keywords']]
+
+            if enum_name in enums:
+                # There's an enum with the same name, check if the enum values are the same
+                assert set(enums[enum_name]) == set(enum_values), \
+                    ("'" + property_['name'] + "' can't have type_name '" + enum_name + "' "
+                     "because it was used by a previous property, but with a different set of keywords. "
+                     "Either give it a different name or ensure the keywords are the same.")
+
             enums[enum_name] = enum_values
 
     return enums
