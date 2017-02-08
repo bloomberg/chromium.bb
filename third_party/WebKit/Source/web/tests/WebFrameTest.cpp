@@ -8474,7 +8474,7 @@ class WebFrameSwapTest : public WebFrameTest {
 
   void reset() { m_webViewHelper.reset(); }
   WebFrame* mainFrame() const { return m_webViewHelper.webView()->mainFrame(); }
-  WebView* webView() const { return m_webViewHelper.webView(); }
+  WebViewImpl* webView() const { return m_webViewHelper.webView(); }
 
  private:
   FrameTestHelpers::WebViewHelper m_webViewHelper;
@@ -8817,6 +8817,40 @@ TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext) {
 
   // Manually reset to break WebViewHelper's dependency on the stack allocated
   // TestWebFrameClient.
+  reset();
+}
+
+TEST_F(WebFrameSwapTest, SetTimeoutAfterSwap) {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope scope(isolate);
+  mainFrame()->executeScript(
+      WebScriptSource("savedSetTimeout = window[0].setTimeout"));
+
+  // Swap the frame to a remote frame.
+  FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+  WebRemoteFrame* remoteFrame = remoteClient.frame();
+  WebFrame* targetFrame = mainFrame()->firstChild();
+  targetFrame->swap(remoteFrame);
+  remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
+
+  // Invoking setTimeout should throw a security error.
+  {
+    v8::Local<v8::Value> exception = mainFrame()->executeScriptAndReturnValue(
+        WebScriptSource("try {\n"
+                        "  savedSetTimeout.call(window[0], () => {}, 0);\n"
+                        "} catch (e) { e; }"));
+    ASSERT_TRUE(!exception.IsEmpty());
+    EXPECT_EQ(
+        "SecurityError: Failed to execute 'setTimeout' on 'Window': Blocked a "
+        "frame with origin \"http://internal.test\" from accessing a "
+        "cross-origin frame.",
+        toCoreString(exception
+                         ->ToString(ScriptState::forMainWorld(
+                                        webView()->mainFrameImpl()->frame())
+                                        ->context())
+                         .ToLocalChecked()));
+  }
+
   reset();
 }
 

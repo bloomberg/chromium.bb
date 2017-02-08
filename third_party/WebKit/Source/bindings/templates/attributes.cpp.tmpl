@@ -43,15 +43,20 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if not attribute.is_static %}
-  {% if interface_name == 'Window' and not attribute.has_cross_origin_getter %}
+  {% set local_dom_window_only = interface_name == 'Window' and not attribute.has_cross_origin_getter %}
+  {% if local_dom_window_only %}
+  {% if attribute.is_check_security_for_receiver %}
+  {{cpp_class}}* uncheckedImpl = {{v8_class}}::toImpl(holder);
+  {% else %}
   // Same-origin attribute getters are never exposed via the cross-origin
   // interceptors. Since same-origin access requires a LocalDOMWindow, it is
   // safe to downcast here.
   LocalDOMWindow* impl = toLocalDOMWindow({{v8_class}}::toImpl(holder));
+  {% endif %}{# attribute.is_check_security_for_receiver #}
   {% else %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
-  {% endif %}
-  {% endif %}
+  {% endif %}{# local_dom_window_only #}
+  {% endif %}{# not attribute.is_static #}
 
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
@@ -68,10 +73,17 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.is_check_security_for_receiver and not attribute.is_data_type_property %}
   // Perform a security check for the receiver object.
   {{define_exception_state}}
+  {% if local_dom_window_only %}
+  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), uncheckedImpl, exceptionState)) {
+  {% else %}
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
+  {% endif %}{# local_dom_window_only #}
     v8SetReturnValueNull(info);
     return;
   }
+  {% if local_dom_window_only %}
+  LocalDOMWindow* impl = toLocalDOMWindow(uncheckedImpl);
+  {% endif %}{# local_dom_window_only #}
   {% endif %}
 
   {% if attribute.is_check_security_for_return_value %}
@@ -289,24 +301,36 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   if (!impl)
     return;
   {% else %}
-  {% if interface_name == 'Window' and not attribute.has_cross_origin_setter %}
-  // Same-origin attribute setters are never exposed via the cross-origin
+  {% set local_dom_window_only = interface_name == 'Window' and not attribute.has_cross_origin_setter %}
+  {% if local_dom_window_only %}
+  {% if attribute.is_check_security_for_receiver %}
+  {{cpp_class}}* uncheckedImpl = {{v8_class}}::toImpl(holder);
+  {% else %}
+  // Same-origin attributes setters are never exposed via the cross-origin
   // interceptors. Since same-origin access requires a LocalDOMWindow, it is
   // safe to downcast here.
   LocalDOMWindow* impl = toLocalDOMWindow({{v8_class}}::toImpl(holder));
+  {% endif %}{# attribute.is_check_security_for_receiver #}
   {% else %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
-  {% endif %}
+  {% endif %}{# local_dom_window_only #}
   {% endif %}
   {% endif %}
 
   {% if attribute.is_check_security_for_receiver and not attribute.is_data_type_property %}
   // Perform a security check for the receiver object.
   {{define_exception_state}}
+  {% if local_dom_window_only %}
+  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), uncheckedImpl, exceptionState)) {
+  {% else %}
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
+  {% endif %}{# local_dom_window_only #}
     v8SetReturnValue(info, v8Value);
     return;
   }
+  {% if local_dom_window_only %}
+  LocalDOMWindow* impl = toLocalDOMWindow(uncheckedImpl);
+  {% endif %}{# local_dom_window_only #}
   {% endif %}
 
   {% if attribute.is_check_security_for_return_value %}

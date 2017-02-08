@@ -29,15 +29,20 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     return;
   }
   {% endif %}
-  {% if interface_name == 'Window' and not method.is_cross_origin %}
+  {% set local_dom_window_only = interface_name == 'Window' and not method.is_cross_origin %}
+  {% if local_dom_window_only %}
+  {% if method.is_check_security_for_receiver %}
+  {{cpp_class}}* uncheckedImpl = {{v8_class}}::toImpl(info.Holder());
+  {% else %}
   // Same-origin methods are never exposed via the cross-origin interceptors.
   // Since same-origin access requires a LocalDOMWindow, it is safe to downcast
   // here.
   LocalDOMWindow* impl = toLocalDOMWindow({{v8_class}}::toImpl(info.Holder()));
+  {% endif %}{# method.is_check_security_for_receiver #}
   {% else %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-  {% endif %}
-  {% endif %}
+  {% endif %}{# local_dom_window_only #}
+  {% endif %}{# not method.is_static #}
 
   {# Security checks #}
   {% if method.is_check_security_for_receiver %}
@@ -53,11 +58,18 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     }
   }
   {% else %}{# interface_name == 'EventTarget' #}
+  {% if local_dom_window_only %}
+  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), uncheckedImpl, exceptionState)) {
+  {% else %}
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
+  {% endif %}{# local_dom_window_only #}
     return;
   }
+  {% if local_dom_window_only %}
+  LocalDOMWindow* impl = toLocalDOMWindow(uncheckedImpl);
+  {% endif %}{# local_dom_window_only #}
   {% endif %}{# interface_name == 'EventTarget' #}
-  {% endif %}
+  {% endif %}{# method.is_check_security_for_receiver #}
   {% if method.is_check_security_for_return_value %}
   {{define_exception_state}}
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), {{method.cpp_value}}, exceptionState)) {
