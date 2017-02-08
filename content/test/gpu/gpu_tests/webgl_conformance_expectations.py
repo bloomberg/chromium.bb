@@ -610,25 +610,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('nvidia', 'NVIDIA Tegra')], bug=478572)
 
     # Pixel C
-    self.Flaky('conformance/textures/video/' +
-        'tex-2d-rgb-rgb-unsigned_byte.html',
-        ['android', 'android-chromium',
-         ('nvidia', 'NVIDIA Tegra')], bug=624621)
-    self.Flaky('conformance/textures/video/' +
-        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-        ['android', 'android-chromium',
-         ('nvidia', 'NVIDIA Tegra')], bug=624621)
-    self.Flaky('conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html',
-        ['android', 'android-chromium',
-         ('nvidia', 'NVIDIA Tegra')], bug=624621)
-    self.Flaky('conformance/textures/video/' +
-        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['android', 'android-chromium',
-         ('nvidia', 'NVIDIA Tegra')], bug=624621)
-    self.Flaky('conformance/textures/video/' +
-        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['android', 'android-chromium',
-         ('nvidia', 'NVIDIA Tegra')], bug=624621)
     self.Fail('conformance/glsl/bugs/constant-precision-qualifier.html',
         ['android', 'android-chromium',
          ('nvidia', 'NVIDIA Tegra')], bug=624621)
