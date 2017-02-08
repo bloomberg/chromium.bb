@@ -213,13 +213,13 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
 
   if (address->address_level1) {
     profile.SetRawInfo(
-        autofill::ADDRESS_HOME_CITY,
+        autofill::ADDRESS_HOME_STATE,
         base::UTF8ToUTF16(*address->address_level1));
   }
 
   if (address->address_level2) {
     profile.SetRawInfo(
-        autofill::ADDRESS_HOME_STATE,
+        autofill::ADDRESS_HOME_CITY,
         base::UTF8ToUTF16(*address->address_level2));
   }
 
