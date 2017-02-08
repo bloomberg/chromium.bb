@@ -167,6 +167,7 @@ void ArcSessionManager::OnSessionStopped(StopReason reason) {
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested)) {
     // This should be always true, but just in case as this is looked at
     // inside RemoveArcData() at first.
+    VLOG(1) << "ARC had previously requested to remove user data.";
     DCHECK(arc_session_runner_->IsStopped());
     RemoveArcData();
   } else {
@@ -196,6 +197,7 @@ void ArcSessionManager::RemoveArcData() {
     return;
   }
 
+  VLOG(1) << "Starting ARC data removal";
   SetState(State::REMOVING_DATA_DIR);
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->RemoveArcData(
       cryptohome::Identification(
@@ -205,7 +207,10 @@ void ArcSessionManager::RemoveArcData() {
 }
 
 void ArcSessionManager::OnArcDataRemoved(bool success) {
-  LOG_IF(ERROR, !success) << "Required ARC user data wipe failed.";
+  if (success)
+    VLOG(1) << "ARC data removal successful";
+  else
+    LOG(ERROR) << "Request for ARC user data removal failed.";
 
   // TODO(khmel): Browser tests may shutdown profile by itself. Update browser
   // tests and remove this check.
@@ -313,6 +318,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
   }
 
   ArcSupportHost::Error error;
+  VLOG(1) << "ARC provisioning failed: " << result << ".";
   switch (result) {
     case ProvisioningResult::GMS_NETWORK_ERROR:
       error = ArcSupportHost::Error::SIGN_IN_NETWORK_ERROR;
@@ -362,6 +368,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       result == ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT ||
       // Just to be safe, remove data if we don't know the cause.
       result == ProvisioningResult::UNKNOWN_ERROR) {
+    VLOG(1) << "ARC provisioning failed permanently. Removing user data";
     RemoveArcData();
   }
 
@@ -433,11 +440,13 @@ void ArcSessionManager::OnPrimaryUserProfilePrepared(Profile* profile) {
     // ARC once data removal finishes.
     if (profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested)) {
       reenable_arc_ = true;
+      VLOG(1) << "ARC previously requested to remove data.";
       RemoveArcData();
     } else {
       OnOptInPreferenceChanged();
     }
   } else {
+    VLOG(1) << "ARC disabled on profile. Removing data.";
     RemoveArcData();
     PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
     OnIsSyncingChanged();
@@ -522,7 +531,8 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
   }
 
   if (!arc_enabled) {
-    // Reset any pending request to re-enable Arc.
+    // Reset any pending request to re-enable ARC.
+    VLOG(1) << "ARC opt-out. Removing user data.";
     reenable_arc_ = false;
     StopArc();
     RemoveArcData();
@@ -948,24 +958,24 @@ void ArcSessionManager::SetAttemptUserExitCallbackForTesting(
 
 std::ostream& operator<<(std::ostream& os,
                          const ArcSessionManager::State& state) {
+#define MAP_STATE(name)                \
+  case ArcSessionManager::State::name: \
+    return os << #name
+
   switch (state) {
-    case ArcSessionManager::State::NOT_INITIALIZED:
-      return os << "NOT_INITIALIZED";
-    case ArcSessionManager::State::STOPPED:
-      return os << "STOPPED";
-    case ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE:
-      return os << "SHOWING_TERMS_OF_SERVICE";
-    case ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT:
-      return os << "CHECKING_ANDROID_MANAGEMENT";
-    case ArcSessionManager::State::REMOVING_DATA_DIR:
-      return os << "REMOVING_DATA_DIR";
-    case ArcSessionManager::State::ACTIVE:
-      return os << "ACTIVE";
+    MAP_STATE(NOT_INITIALIZED);
+    MAP_STATE(STOPPED);
+    MAP_STATE(SHOWING_TERMS_OF_SERVICE);
+    MAP_STATE(CHECKING_ANDROID_MANAGEMENT);
+    MAP_STATE(REMOVING_DATA_DIR);
+    MAP_STATE(ACTIVE);
   }
 
-  // Some compiler reports an error even if all values of an enum-class are
-  // covered indivisually in a switch statement.
-  NOTREACHED();
+#undef MAP_STATE
+
+  // Some compilers report an error even if all values of an enum-class are
+  // covered exhaustively in a switch statement.
+  NOTREACHED() << "Invalid value " << static_cast<int>(state);
   return os;
 }
 

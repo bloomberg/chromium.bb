@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_OPTIN_UMA_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_OPTIN_UMA_H_
 
+#include <ostream>
+
 namespace base {
 class TimeDelta;
 }
@@ -119,6 +121,9 @@ void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
                               bool success,
                               bool managed);
 void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state);
+
+// Outputs the stringified |result| to |os|. This is only for logging purposes.
+std::ostream& operator<<(std::ostream& os, const ProvisioningResult& result);
 
 }  // namespace arc
 

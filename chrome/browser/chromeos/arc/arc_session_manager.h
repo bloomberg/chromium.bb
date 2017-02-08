@@ -190,7 +190,8 @@ class ArcSessionManager : public ArcSessionObserver,
   void StopAndEnableArc();
 
   // Removes the data if ARC is stopped. Otherwise, queue to remove the data
-  // on ARC is stopped.
+  // on ARC is stopped. A log statement with the removal reason must be added
+  // prior to calling RemoveArcData().
   void RemoveArcData();
 
   ArcSupportHost* support_host() { return support_host_.get(); }
