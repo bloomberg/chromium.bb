@@ -138,6 +138,7 @@ class AgentHostDelegate
   bool Activate() override;
   void Reload() override;
   bool Close() override;
+  base::TimeTicks GetLastActivityTime() override;
   void SendMessageToBackend(const std::string& message) override;
 
   void OnSocketOpened() override;
@@ -314,6 +315,10 @@ bool AgentHostDelegate::Close() {
                                            remote_id_.c_str());
   device_->SendJsonRequest(browser_id_, request, base::Bind(&NoOp));
   return true;
+}
+
+base::TimeTicks AgentHostDelegate::GetLastActivityTime() {
+  return base::TimeTicks();
 }
 
 void AgentHostDelegate::SendMessageToBackend(const std::string& message) {

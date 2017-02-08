@@ -112,6 +112,10 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
     return true;
   }
 
+  base::TimeTicks GetLastActivityTime() override {
+    return agent_host_ ? agent_host_->GetLastActivityTime() : base::TimeTicks();
+  }
+
   void SendMessageToBackend(const std::string& message) override {
     if (agent_host_)
       agent_host_->DispatchProtocolMessage(this, message);

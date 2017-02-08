@@ -45,6 +45,7 @@ class ForwardingAgentHost
   bool Activate() override;
   void Reload() override;
   bool Close() override;
+  base::TimeTicks GetLastActivityTime() override;
 
   std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate_;
   std::string type_;

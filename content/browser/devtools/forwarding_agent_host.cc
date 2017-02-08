@@ -76,4 +76,8 @@ bool ForwardingAgentHost::Close() {
   return delegate_->Close();
 }
 
+base::TimeTicks ForwardingAgentHost::GetLastActivityTime() {
+  return delegate_->GetLastActivityTime();
+}
+
 }  // content

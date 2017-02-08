@@ -251,6 +251,7 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
   bool Activate() override { return false; };
   void Reload() override { };
   bool Close() override { return false; };
+  base::TimeTicks GetLastActivityTime() override { return base::TimeTicks(); }
 
   void SendMessageToBackend(const std::string& message) override {
     recordEvent(std::string("SendMessageToBackend.") + message);

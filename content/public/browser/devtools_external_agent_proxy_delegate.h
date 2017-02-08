@@ -51,6 +51,9 @@ class DevToolsExternalAgentProxyDelegate {
   // Reloads agent host.
   virtual bool Close() = 0;
 
+  // Returns the time when the host was last active.
+  virtual base::TimeTicks GetLastActivityTime() = 0;
+
   // Sends a message to the agent.
   virtual void SendMessageToBackend(const std::string& message) = 0;
 };
