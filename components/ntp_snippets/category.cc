@@ -22,7 +22,9 @@ Category Category::FromRemoteCategory(int remote_category) {
 
 // static
 Category Category::FromIDValue(int id) {
-  DCHECK(IsValidIDValue(id)) << "Not a valid ID: " << id;
+  DCHECK(IsValidIDValue(id)) << id << " is not a valid category ID. This may "
+                                      "have been caused by removal of a local "
+                                      "KnownCategory.";
   return Category(id);
 }
 

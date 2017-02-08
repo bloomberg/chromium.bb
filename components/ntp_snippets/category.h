@@ -33,7 +33,11 @@ enum class KnownCategories {
 
   // Pages recently browsed to on other devices.
   FOREIGN_TABS,
-  // INSERT NEW LOCAL CATEGORIES HERE!
+
+  // ****************** INSERT NEW LOCAL CATEGORIES HERE! ******************
+  // Existing categories are persisted and they must never be removed. This may
+  // happen implicitly, e.g. when an older version without some local category
+  // is installed.
 
   // Follows the last local category.
   LOCAL_CATEGORIES_COUNT,
@@ -43,7 +47,8 @@ enum class KnownCategories {
 
   // Articles for you.
   ARTICLES,
-  // INSERT NEW REMOTE CATEGORIES HERE!
+
+  // ****************** INSERT NEW REMOTE CATEGORIES HERE! ******************
 
   // Tracks the last known remote category
   LAST_KNOWN_REMOTE_CATEGORY = ARTICLES,
