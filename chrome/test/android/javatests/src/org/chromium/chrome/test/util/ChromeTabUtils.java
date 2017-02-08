@@ -81,7 +81,11 @@ public class ChromeTabUtils {
         try {
             loadedCallback.waitForCallback(0);
         } catch (TimeoutException e) {
-            Assert.fail("Failed to load URL: " + url + ", final URL: " + tab.getUrl());
+            Assert.fail("Page did not load.  Tab information at time of failure --"
+                    + " url: " + url
+                    + ", final URL: " + tab.getUrl()
+                    + ", load progress: " + tab.getProgress()
+                    + ", is loading: " + Boolean.toString(tab.isLoading()));
         }
     }
 
