@@ -104,6 +104,12 @@ class OzonePlatformX11 : public OzonePlatform {
     surface_factory_ozone_.reset(new X11SurfaceFactory());
   }
 
+  base::MessageLoop::Type GetMessageLoopTypeForGpu() override {
+    // When Ozone X11 backend is running use an UI loop to grab Expose events.
+    // See GLSurfaceGLX and https://crbug.com/326995.
+    return base::MessageLoop::TYPE_UI;
+  }
+
  private:
   // Objects in the browser process.
   std::unique_ptr<X11WindowManagerOzone> window_manager_;

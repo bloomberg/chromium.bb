@@ -102,10 +102,6 @@ target(link_target_type, "gpu_sources") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
-
-    if (ozone_platform_x11) {
-      defines = [ "OZONE_X11" ]
-    }
   }
 
   if (enable_vulkan) {

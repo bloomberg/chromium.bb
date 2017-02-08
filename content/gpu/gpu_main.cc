@@ -81,6 +81,10 @@
 #include "content/common/sandbox_mac.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
 #include "media/gpu/vaapi_wrapper.h"
 #endif
@@ -218,13 +222,11 @@ int GpuMain(const MainFunctionParams& parameters) {
     // and https://crbug.com/326995.
     main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
     event_source = ui::PlatformEventSource::CreateDefault();
-#elif defined(USE_OZONE) && defined(OZONE_X11)
-    // If we might be running Ozone X11 we need a UI loop to grab Expose events.
-    // See GLSurfaceGLX and https://crbug.com/326995.
-    main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
 #elif defined(USE_OZONE)
-    main_message_loop.reset(
-        new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
+    // The MessageLoop type required depends on the Ozone platform selected at
+    // runtime.
+    main_message_loop.reset(new base::MessageLoop(
+        ui::OzonePlatform::EnsureInstance()->GetMessageLoopTypeForGpu()));
 #elif defined(OS_LINUX)
 #error "Unsupported Linux platform."
 #elif defined(OS_MACOSX)

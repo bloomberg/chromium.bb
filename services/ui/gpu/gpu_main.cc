@@ -14,6 +14,10 @@
 #include "services/ui/common/server_gpu_memory_buffer_manager.h"
 #include "services/ui/gpu/gpu_service.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
 #endif
@@ -51,7 +55,10 @@ GpuMain::GpuMain(mojom::GpuMainRequest request)
 #elif defined(USE_X11)
   thread_options.message_pump_factory = base::Bind(&CreateMessagePumpX11);
 #elif defined(USE_OZONE)
-  thread_options.message_loop_type = base::MessageLoop::TYPE_UI;
+  // The MessageLoop type required depends on the Ozone platform selected at
+  // runtime.
+  thread_options.message_loop_type =
+      ui::OzonePlatform::EnsureInstance()->GetMessageLoopTypeForGpu();
 #elif defined(OS_LINUX)
   thread_options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 #elif defined(OS_MACOSX)
