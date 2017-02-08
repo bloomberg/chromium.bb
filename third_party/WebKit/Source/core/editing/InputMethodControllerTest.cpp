@@ -309,6 +309,29 @@ TEST_F(InputMethodControllerTest, CommitTextKeepingStyle) {
   EXPECT_STREQ("abc1<b>2</b>37<b>8</b>9", div->innerHTML().utf8().data());
 }
 
+TEST_F(InputMethodControllerTest, InsertTextWithNewLine) {
+  Element* div =
+      insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+  Vector<CompositionUnderline> underlines;
+  underlines.push_back(CompositionUnderline(0, 11, Color(255, 0, 0), false, 0));
+
+  controller().commitText(String("hello\nworld"), underlines, 0);
+  EXPECT_STREQ("hello<div>world</div>", div->innerHTML().utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, InsertTextWithNewLineIncrementally) {
+  Element* div =
+      insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+
+  Vector<CompositionUnderline> underlines;
+  underlines.push_back(CompositionUnderline(0, 11, Color(255, 0, 0), false, 0));
+  controller().setComposition("foo", underlines, 0, 2);
+  EXPECT_STREQ("foo", div->innerHTML().utf8().data());
+
+  controller().commitText(String("hello\nworld"), underlines, 0);
+  EXPECT_STREQ("hello<div>world</div>", div->innerHTML().utf8().data());
+}
+
 TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
   insertHTMLElement("<div id='sample' contenteditable>hello world</div>",
                     "sample");

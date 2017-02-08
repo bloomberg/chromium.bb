@@ -95,10 +95,8 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   void setCompositionType(TextCompositionType type) {
     m_compositionType = type;
   }
-  static void adjustSelectionAfterIncrementalInsertion(TypingCommand*,
-                                                       LocalFrame*,
-                                                       const size_t start,
-                                                       const size_t end);
+  void adjustSelectionAfterIncrementalInsertion(LocalFrame*,
+                                                const size_t textLength);
 
   ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
   TextCompositionType compositionType() const { return m_compositionType; }
@@ -183,6 +181,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   bool m_shouldPreventSpellChecking;
 
   bool m_isIncrementalInsertion;
+  size_t m_selectionStart;
 };
 
 DEFINE_TYPE_CASTS(TypingCommand,
