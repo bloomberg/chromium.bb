@@ -123,10 +123,10 @@ void DOMURLUtils::setSearchInternal(const String& value) {
   // FIXME: have KURL do this clearing of the query component
   // instead, if practical. Will require addressing
   // http://crbug.com/108690, for one.
-  if (value[0] == '?')
-    kurl.setQuery(value.length() == 1 ? String() : value.substring(1));
+  if ((value.length() == 1 && value[0] == '?') || value.isEmpty())
+    kurl.setQuery(String());
   else
-    kurl.setQuery(value.isEmpty() ? String() : value);
+    kurl.setQuery(value);
 
   setURL(kurl);
 }

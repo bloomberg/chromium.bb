@@ -27,6 +27,9 @@ test(function() {
     url.search = '?b';
     assert_equals(url.search, '?b');
 
+    url.search = '??b';
+    assert_equals(url.search, '??b');
+
     url.search = 'a#b';
     assert_equals(url.search, '?a%23b');
 
