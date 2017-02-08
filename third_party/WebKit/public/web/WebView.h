@@ -398,12 +398,6 @@ class WebView : protected WebWidget {
   // Notify that context menu has been closed.
   virtual void didCloseContextMenu() = 0;
 
-  // SmartClip support ---------------------------------------------------
-  virtual void extractSmartClipData(WebRect initRect,
-                                    WebString& text,
-                                    WebString& html,
-                                    WebRect& resultRect) = 0;
-
   // Popup menu ----------------------------------------------------------
 
   // Sets whether select popup menus should be rendered by the browser.

@@ -298,6 +298,10 @@ class WEB_EXPORT WebLocalFrameImpl final
   base::SingleThreadTaskRunner* unthrottledTaskRunner() override;
   WebInputMethodControllerImpl* inputMethodController() const override;
 
+  void extractSmartClipData(WebRect rectInViewport,
+                            WebString& clipText,
+                            WebString& clipHtml) override;
+
   // WebFrameImplBase methods:
   void initializeCoreFrame(FrameHost*,
                            FrameOwner*,

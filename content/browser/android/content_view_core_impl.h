@@ -259,13 +259,6 @@ class ContentViewCoreImpl : public ContentViewCore,
       const base::android::JavaParamRef<jstring>& textTrackTextShadow,
       const base::android::JavaParamRef<jstring>& textTrackTextSize);
 
-  void ExtractSmartClipData(JNIEnv* env,
-                            const base::android::JavaParamRef<jobject>& obj,
-                            jint x,
-                            jint y,
-                            jint width,
-                            jint height);
-
   void SetBackgroundOpaque(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& jobj,
                            jboolean opaque);
@@ -292,10 +285,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // --------------------------------------------------------------------------
 
   void HidePopupsAndPreserveSelection();
-
-  void OnSmartClipDataExtracted(const base::string16& text,
-                                const base::string16& html,
-                                const gfx::Rect& clip_rect);
 
   // Creates a popup menu with |items|.
   // |multiple| defines if it should support multi-select.

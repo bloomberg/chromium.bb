@@ -326,6 +326,10 @@ class WebLocalFrame : public WebFrame {
   // selection.
   virtual void deleteSurroundingText(int before, int after) = 0;
 
+  virtual void extractSmartClipData(WebRect rectInViewport,
+                                    WebString& clipText,
+                                    WebString& clipHtml) = 0;
+
   // Spell-checking support -------------------------------------------------
   virtual void replaceMisspelledRange(const WebString&) = 0;
   virtual void enableSpellChecking(bool) = 0;

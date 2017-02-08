@@ -100,7 +100,6 @@ public class CompositorViewHolder extends FrameLayout
     private ChromeFullscreenManager mFullscreenManager;
     private View mAccessibilityView;
     private CompositorAccessibilityProvider mNodeProvider;
-    private float mLastContentOffset;
 
     /** The toolbar control container. **/
     private ControlContainer mControlContainer;
@@ -455,7 +454,6 @@ public class CompositorViewHolder extends FrameLayout
      */
     public void onStart() {
         if (mFullscreenManager != null) {
-            mLastContentOffset = mFullscreenManager.getContentOffset();
             mFullscreenManager.addListener(this);
         }
         requestRender();
@@ -470,7 +468,6 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public void onContentOffsetChanged(float offset) {
-        mLastContentOffset = offset;
         onViewportChanged();
     }
 
@@ -518,10 +515,6 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     private void onViewportChanged() {
-        // TODO(changwan): check if this can be merged with setContentMotionEventOffsets.
-        if (mTabVisible != null && mTabVisible.getContentViewCore() != null) {
-            mTabVisible.getContentViewCore().setSmartClipOffsets(0, (int) -mLastContentOffset);
-        }
         if (mLayoutManager != null) mLayoutManager.onViewportChanged();
     }
 
@@ -678,7 +671,6 @@ public class CompositorViewHolder extends FrameLayout
     public void setFullscreenHandler(ChromeFullscreenManager fullscreen) {
         mFullscreenManager = fullscreen;
         if (mFullscreenManager != null) {
-            mLastContentOffset = mFullscreenManager.getContentOffset();
             mFullscreenManager.addListener(this);
         }
         onViewportChanged();

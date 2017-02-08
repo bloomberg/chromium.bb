@@ -482,8 +482,6 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SmartClipDataExtracted,
-                        OnSmartClipDataExtracted)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowUnhandledTapUIIfNeeded,
                         OnShowUnhandledTapUIIfNeeded)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -809,14 +807,6 @@ void RenderWidgetHostViewAndroid::OnStartContentIntent(
     const GURL& content_url, bool is_main_frame) {
   if (content_view_core_)
     content_view_core_->StartContentIntent(content_url, is_main_frame);
-}
-
-void RenderWidgetHostViewAndroid::OnSmartClipDataExtracted(
-    const base::string16& text,
-    const base::string16& html,
-    const gfx::Rect rect) {
-  if (content_view_core_)
-    content_view_core_->OnSmartClipDataExtracted(text, html, rect);
 }
 
 bool RenderWidgetHostViewAndroid::OnTouchEvent(

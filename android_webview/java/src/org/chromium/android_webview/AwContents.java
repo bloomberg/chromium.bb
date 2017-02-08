@@ -3004,8 +3004,10 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
 
     @Override
     public void extractSmartClipData(int x, int y, int width, int height) {
+        float dpi = mContentViewCore.getRenderCoordinates().getDeviceScaleFactor();
         if (!isDestroyedOrNoOperation(WARN)) {
-            mContentViewCore.extractSmartClipData(x, y, width, height);
+            mWebContents.requestSmartClipExtract(
+                    (int) (x / dpi), (int) (y / dpi), (int) (width / dpi), (int) (height / dpi));
         }
     }
 
@@ -3013,28 +3015,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
     public void setSmartClipResultHandler(final Handler resultHandler) {
         if (isDestroyedOrNoOperation(WARN)) return;
 
-        if (resultHandler == null) {
-            mContentViewCore.setSmartClipDataListener(null);
-            return;
-        }
-        mContentViewCore.setSmartClipDataListener(new ContentViewCore.SmartClipDataListener() {
-            @Override
-            public void onSmartClipDataExtracted(String text, String html, Rect clipRect) {
-                Bundle bundle = new Bundle();
-                bundle.putString("url", mContentViewCore.getWebContents().getVisibleUrl());
-                bundle.putString("title", mContentViewCore.getWebContents().getTitle());
-                bundle.putParcelable("rect", clipRect);
-                bundle.putString("text", text);
-                bundle.putString("html", html);
-                try {
-                    Message msg = Message.obtain(resultHandler, 0);
-                    msg.setData(bundle);
-                    msg.sendToTarget();
-                } catch (Exception e) {
-                    Log.e(TAG, "Error calling handler for smart clip data: ", e);
-                }
-            }
-        });
+        mWebContents.setSmartClipResultHandler(resultHandler);
     }
 
     protected void insertVisualStateCallbackIfNotDestroyed(

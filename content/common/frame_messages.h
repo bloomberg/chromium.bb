@@ -743,6 +743,12 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DeleteProxy)
 IPC_MESSAGE_ROUTED1(FrameMsg_TextSurroundingSelectionRequest,
                     uint32_t /* max_length */)
 
+// Extracts the data at the given rect, returning it through the
+// SmartClipDataExtracted IPC.
+IPC_MESSAGE_ROUTED2(FrameMsg_ExtractSmartClipData,
+                    uint32_t /* id */,
+                    gfx::Rect /* rect */)
+
 // Requests information about currently focused text input element from the
 // renderer.
 IPC_MESSAGE_ROUTED1(FrameMsg_FocusedFormFieldDataRequest, int /* request_id */)
@@ -1442,6 +1448,12 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_BeginNavigation,
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
+
+// Reply to the ExtractSmartClipData message.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_SmartClipDataExtracted,
+                    uint32_t /* id */,
+                    base::string16 /* text */,
+                    base::string16 /* html */)
 
 // Puts the browser into "tab fullscreen" mode for the sending renderer.
 // See the comment in chrome/browser/ui/browser.h for more details.

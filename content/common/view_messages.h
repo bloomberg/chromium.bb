@@ -574,10 +574,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_UpdateBrowserControlsState,
                     bool /* enable_showing */,
                     bool /* animate */)
 
-// Extracts the data at the given rect, returning it through the
-// ViewHostMsg_SmartClipDataExtracted IPC.
-IPC_MESSAGE_ROUTED1(ViewMsg_ExtractSmartClipData,
-                    gfx::Rect /* rect */)
 #endif
 
 // Sent by browser to tell renderer compositor that some resources that were
@@ -868,12 +864,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_WaitForNextFrameForTests_ACK)
 IPC_MESSAGE_ROUTED2(ViewHostMsg_StartContentIntent,
                     GURL /* content_url */,
                     bool /* is_main_frame */)
-
-// Reply to the ViewMsg_ExtractSmartClipData message.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_SmartClipDataExtracted,
-                    base::string16 /* text */,
-                    base::string16 /* html */,
-                    gfx::Rect /* rect */)
 
 // Notifies that an unhandled tap has occurred at the specified x,y position
 // and that the UI may need to be triggered.

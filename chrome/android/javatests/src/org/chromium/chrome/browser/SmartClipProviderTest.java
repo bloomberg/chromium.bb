@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import android.annotation.TargetApi;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -54,16 +53,11 @@ public class SmartClipProviderTest
             return mHtml;
         }
 
-        public Rect getRect() {
-            return mRect;
-        }
-
-        public void notifyCalled(String title, String url, String text, String html, Rect rect) {
+        public void notifyCalled(String title, String url, String text, String html) {
             mTitle = title;
             mUrl = url;
             mText = text;
             mHtml = html;
-            mRect = rect;
             super.notifyCalled();
         }
 
@@ -71,7 +65,6 @@ public class SmartClipProviderTest
         private String mUrl;
         private String mText;
         private String mHtml;
-        private Rect mRect;
     }
 
     private ChromeActivity mActivity;
@@ -132,9 +125,8 @@ public class SmartClipProviderTest
         String title = bundle.getString("title");
         String text = bundle.getString("text");
         String html = bundle.getString("html");
-        Rect rect = bundle.getParcelable("rect");
         // We don't care about other values for now.
-        mCallbackHelper.notifyCalled(title, url, text, html, rect);
+        mCallbackHelper.notifyCalled(title, url, text, html);
         return true;
     }
 
@@ -191,6 +183,5 @@ public class SmartClipProviderTest
         assertEquals("about:blank", mCallbackHelper.getUrl());
         assertNotNull(mCallbackHelper.getText());
         assertNotNull(mCallbackHelper.getHtml());
-        assertNotNull(mCallbackHelper.getRect());
     }
 }

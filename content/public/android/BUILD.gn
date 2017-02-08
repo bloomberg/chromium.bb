@@ -229,6 +229,7 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/browser/NavigationController.java",
     "java/src/org/chromium/content_public/browser/NavigationEntry.java",
     "java/src/org/chromium/content_public/browser/NavigationHistory.java",
+    "java/src/org/chromium/content_public/browser/SmartClipCallback.java",
     "java/src/org/chromium/content_public/browser/WebContents.java",
     "java/src/org/chromium/content_public/browser/WebContentsObserver.java",
     "java/src/org/chromium/content_public/common/MediaMetadata.java",

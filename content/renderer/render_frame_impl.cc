@@ -1567,6 +1567,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
                         OnSnapshotAccessibilityTree)
+    IPC_MESSAGE_HANDLER(FrameMsg_ExtractSmartClipData, OnExtractSmartClipData)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_CommitNavigation, OnCommitNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
@@ -2143,6 +2144,15 @@ void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id) {
   RenderAccessibilityImpl::SnapshotAccessibilityTree(this, &response);
   Send(new AccessibilityHostMsg_SnapshotResponse(
       routing_id_, callback_id, response));
+}
+
+void RenderFrameImpl::OnExtractSmartClipData(uint32_t id,
+                                             const gfx::Rect& rect) {
+  blink::WebString clip_text;
+  blink::WebString clip_html;
+  GetWebFrame()->extractSmartClipData(rect, clip_text, clip_html);
+  Send(new FrameHostMsg_SmartClipDataExtracted(
+      routing_id_, id, clip_text.utf16(), clip_html.utf16()));
 }
 
 void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {

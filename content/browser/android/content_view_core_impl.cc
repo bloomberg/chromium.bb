@@ -1403,23 +1403,6 @@ void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
       ->OnOrientationChange();
 }
 
-void ContentViewCoreImpl::ExtractSmartClipData(JNIEnv* env,
-                                               const JavaParamRef<jobject>& obj,
-                                               jint x,
-                                               jint y,
-                                               jint width,
-                                               jint height) {
-  gfx::Rect rect(
-      static_cast<int>(x / dpi_scale()),
-      static_cast<int>(y / dpi_scale()),
-      static_cast<int>((width > 0 && width < dpi_scale()) ?
-          1 : (int)(width / dpi_scale())),
-      static_cast<int>((height > 0 && height < dpi_scale()) ?
-          1 : (int)(height / dpi_scale())));
-  GetWebContents()->Send(new ViewMsg_ExtractSmartClipData(
-      GetWebContents()->GetRenderViewHost()->GetRoutingID(), rect));
-}
-
 jint ContentViewCoreImpl::GetCurrentRenderProcessId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -1523,21 +1506,6 @@ void ContentViewCoreImpl::HidePopupsAndPreserveSelection() {
     return;
 
   Java_ContentViewCore_hidePopupsAndPreserveSelection(env, obj);
-}
-
-void ContentViewCoreImpl::OnSmartClipDataExtracted(
-    const base::string16& text,
-    const base::string16& html,
-    const gfx::Rect& clip_rect) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  ScopedJavaLocalRef<jstring> jtext = ConvertUTF16ToJavaString(env, text);
-  ScopedJavaLocalRef<jstring> jhtml = ConvertUTF16ToJavaString(env, html);
-  ScopedJavaLocalRef<jobject> clip_rect_object(CreateJavaRect(env, clip_rect));
-  Java_ContentViewCore_onSmartClipDataExtracted(env, obj, jtext, jhtml,
-                                                clip_rect_object);
 }
 
 void ContentViewCoreImpl::WebContentsDestroyed() {

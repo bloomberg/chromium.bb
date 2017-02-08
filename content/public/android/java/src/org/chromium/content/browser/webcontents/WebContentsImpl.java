@@ -8,6 +8,8 @@ import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
@@ -26,6 +28,7 @@ import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.MessagePortService;
 import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.SmartClipCallback;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.OverscrollRefreshHandler;
@@ -98,6 +101,8 @@ import java.util.UUID;
     // The media session for this WebContents. It is constructed by the native MediaSession and has
     // the same life time as native MediaSession.
     private MediaSessionImpl mMediaSession;
+
+    private SmartClipCallback mSmartClipCallback;
 
     private WebContentsImpl(
             long nativeWebContentsAndroid, NavigationController navigationController) {
@@ -367,6 +372,41 @@ import java.util.UUID;
     }
 
     @Override
+    public void requestSmartClipExtract(int x, int y, int width, int height) {
+        assert mSmartClipCallback != null;
+        nativeRequestSmartClipExtract(
+                mNativeWebContentsAndroid, mSmartClipCallback, x, y, width, height);
+    }
+
+    @Override
+    public void setSmartClipResultHandler(final Handler smartClipHandler) {
+        if (smartClipHandler == null) {
+            mSmartClipCallback = null;
+            return;
+        }
+        mSmartClipCallback = new SmartClipCallback() {
+            @Override
+            public void onSmartClipDataExtracted(String text, String html) {
+                Bundle bundle = new Bundle();
+                bundle.putString("url", getVisibleUrl());
+                bundle.putString("title", getTitle());
+                bundle.putString("text", text);
+                bundle.putString("html", html);
+
+                Message msg = Message.obtain(smartClipHandler, 0);
+                msg.setData(bundle);
+                msg.sendToTarget();
+            }
+        };
+    }
+
+    @CalledByNative
+    private static void onSmartClipDataExtracted(
+            String text, String html, SmartClipCallback callback) {
+        callback.onSmartClipDataExtracted(text, html);
+    }
+
+    @Override
     public void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback) {
         nativeRequestAccessibilitySnapshot(mNativeWebContentsAndroid, callback);
     }
@@ -545,6 +585,8 @@ import java.util.UUID;
     private native boolean nativeHasAccessedInitialDocument(
             long nativeWebContentsAndroid);
     private native int nativeGetThemeColor(long nativeWebContentsAndroid);
+    private native void nativeRequestSmartClipExtract(long nativeWebContentsAndroid,
+            SmartClipCallback callback, int x, int y, int width, int height);
     private native void nativeRequestAccessibilitySnapshot(
             long nativeWebContentsAndroid, AccessibilitySnapshotCallback callback);
     private native void nativeSetOverscrollRefreshHandler(

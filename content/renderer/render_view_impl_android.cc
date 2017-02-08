@@ -71,13 +71,4 @@ void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
   UpdateBrowserControlsState(top_controls_constraints_, current, true);
 }
 
-void RenderViewImpl::OnExtractSmartClipData(const gfx::Rect& rect) {
-  blink::WebString clip_text;
-  blink::WebString clip_html;
-  blink::WebRect clip_rect;
-  webview()->extractSmartClipData(rect, clip_text, clip_html, clip_rect);
-  Send(new ViewHostMsg_SmartClipDataExtracted(routing_id_, clip_text.utf16(),
-                                              clip_html.utf16(), clip_rect));
-}
-
 }  // namespace content

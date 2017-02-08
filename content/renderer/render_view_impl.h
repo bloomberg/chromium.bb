@@ -563,7 +563,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnUpdateBrowserControlsState(bool enable_hiding,
                                     bool enable_showing,
                                     bool animate);
-  void OnExtractSmartClipData(const gfx::Rect& rect);
 #elif defined(OS_MACOSX)
   void OnGetRenderedText();
 #endif

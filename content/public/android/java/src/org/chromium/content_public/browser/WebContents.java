@@ -6,6 +6,7 @@ package org.chromium.content_public.browser;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.os.Parcelable;
 
 import org.chromium.base.VisibleForTesting;
@@ -296,6 +297,17 @@ public interface WebContents extends Parcelable {
      * @return The theme color for the content as set by the theme-color meta tag.
      */
     int getThemeColor();
+
+    /**
+     * Initiate extraction of text, HTML, and other information for clipping puposes (smart clip)
+     * from the rectangle area defined by starting positions (x and y), and width and height.
+     */
+    void requestSmartClipExtract(int x, int y, int width, int height);
+
+    /**
+     * Register a handler to handle smart clip data once extraction is done.
+     */
+    void setSmartClipResultHandler(final Handler smartClipHandler);
 
     /**
      * Requests a snapshop of accessibility tree. The result is provided asynchronously

@@ -203,9 +203,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendGestureEvent(const blink::WebGestureEvent& event);
 
   void OnStartContentIntent(const GURL& content_url, bool is_main_frame);
-  void OnSmartClipDataExtracted(const base::string16& text,
-                                const base::string16& html,
-                                const gfx::Rect rect);
 
   bool OnTouchEvent(const ui::MotionEvent& event);
   bool OnTouchHandleEvent(const ui::MotionEvent& event);

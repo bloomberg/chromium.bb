@@ -57,7 +57,6 @@
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
-#include "core/frame/SmartClip.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLMediaElement.h"
@@ -3498,46 +3497,6 @@ void WebViewImpl::didCloseContextMenu() {
   LocalFrame* frame = m_page->focusController().focusedFrame();
   if (frame)
     frame->selection().setCaretBlinkingSuspended(false);
-}
-
-void WebViewImpl::extractSmartClipData(WebRect rectInViewport,
-                                       WebString& clipText,
-                                       WebString& clipHtml,
-                                       WebRect& clipRectInViewport) {
-  LocalFrame* localFrame = toLocalFrame(focusedCoreFrame());
-  if (!localFrame)
-    return;
-  SmartClipData clipData = SmartClip(localFrame).dataForRect(rectInViewport);
-  clipText = clipData.clipData();
-  clipRectInViewport = clipData.rectInViewport();
-
-  WebLocalFrameImpl* frame = mainFrameImpl();
-  if (!frame)
-    return;
-  WebPoint startPoint(rectInViewport.x, rectInViewport.y);
-  WebPoint endPoint(rectInViewport.x + rectInViewport.width,
-                    rectInViewport.y + rectInViewport.height);
-  VisiblePosition startVisiblePosition =
-      frame->visiblePositionForViewportPoint(startPoint);
-  VisiblePosition endVisiblePosition =
-      frame->visiblePositionForViewportPoint(endPoint);
-
-  Position startPosition = startVisiblePosition.deepEquivalent();
-  Position endPosition = endVisiblePosition.deepEquivalent();
-
-  // document() will return null if -webkit-user-select is set to none.
-  if (!startPosition.document() || !endPosition.document())
-    return;
-
-  if (startPosition.compareTo(endPosition) <= 0) {
-    clipHtml =
-        createMarkup(startPosition, endPosition, AnnotateForInterchange,
-                     ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
-  } else {
-    clipHtml =
-        createMarkup(endPosition, startPosition, AnnotateForInterchange,
-                     ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
-  }
 }
 
 void WebViewImpl::hidePopups() {

@@ -152,6 +152,15 @@ class CONTENT_EXPORT WebContentsAndroid
   jint GetThemeColor(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
 
+  void RequestSmartClipExtract(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& callback,
+      jint x,
+      jint y,
+      jint width,
+      jint height);
+
   void RequestAccessibilitySnapshot(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

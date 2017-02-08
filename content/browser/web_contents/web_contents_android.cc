@@ -72,6 +72,15 @@ void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
   Java_WebContentsImpl_onEvaluateJavaScriptResult(env, j_json, callback);
 }
 
+void SmartClipCallback(const ScopedJavaGlobalRef<jobject>& callback,
+                       const base::string16& text,
+                       const base::string16& html) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jtext = ConvertUTF16ToJavaString(env, text);
+  ScopedJavaLocalRef<jstring> jhtml = ConvertUTF16ToJavaString(env, html);
+  Java_WebContentsImpl_onSmartClipDataExtracted(env, jtext, jhtml, callback);
+}
+
 struct AccessibilitySnapshotParams {
   AccessibilitySnapshotParams()
       : has_tree_data(false), should_select_leaf_nodes(false) {}
@@ -595,6 +604,26 @@ jboolean WebContentsAndroid::HasAccessedInitialDocument(
 jint WebContentsAndroid::GetThemeColor(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
   return web_contents_->GetThemeColor();
+}
+
+void WebContentsAndroid::RequestSmartClipExtract(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& callback,
+    jint x,
+    jint y,
+    jint width,
+    jint height) {
+  // Secure the Java callback in a scoped object and give ownership of it to the
+  // base::Callback.
+  ScopedJavaGlobalRef<jobject> j_callback;
+  j_callback.Reset(env, callback);
+
+  RenderFrameHostImpl::SmartClipCallback smart_clip_callback =
+      base::Bind(&SmartClipCallback, j_callback);
+
+  web_contents_->GetMainFrame()->RequestSmartClipExtract(
+      smart_clip_callback, gfx::Rect(x, y, width, height));
 }
 
 void WebContentsAndroid::RequestAccessibilitySnapshot(

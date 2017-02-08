@@ -3043,15 +3043,14 @@ TEST_P(WebViewTest, SmartClipData) {
       "10,000,000won</div>";
   WebString clipText;
   WebString clipHtml;
-  WebRect clipRect;
   registerMockedHttpURLLoad("Ahem.ttf");
   registerMockedHttpURLLoad("smartclip.html");
-  WebView* webView =
+  WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "smartclip.html");
   webView->resize(WebSize(500, 500));
   webView->updateAllLifecyclePhases();
   WebRect cropRect(300, 125, 152, 50);
-  webView->extractSmartClipData(cropRect, clipText, clipHtml, clipRect);
+  webView->mainFrameImpl()->extractSmartClipData(cropRect, clipText, clipHtml);
   EXPECT_STREQ(kExpectedClipText, clipText.utf8().c_str());
   EXPECT_STREQ(kExpectedClipHtml, clipHtml.utf8().c_str());
 }
@@ -3079,17 +3078,16 @@ TEST_P(WebViewTest, SmartClipDataWithPinchZoom) {
       "10,000,000won</div>";
   WebString clipText;
   WebString clipHtml;
-  WebRect clipRect;
   registerMockedHttpURLLoad("Ahem.ttf");
   registerMockedHttpURLLoad("smartclip.html");
-  WebView* webView =
+  WebViewImpl* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + "smartclip.html");
   webView->resize(WebSize(500, 500));
   webView->updateAllLifecyclePhases();
   webView->setPageScaleFactor(1.5);
   webView->setVisualViewportOffset(WebFloatPoint(167, 100));
   WebRect cropRect(200, 38, 228, 75);
-  webView->extractSmartClipData(cropRect, clipText, clipHtml, clipRect);
+  webView->mainFrameImpl()->extractSmartClipData(cropRect, clipText, clipHtml);
   EXPECT_STREQ(kExpectedClipText, clipText.utf8().c_str());
   EXPECT_STREQ(kExpectedClipHtml, clipHtml.utf8().c_str());
 }
@@ -3097,15 +3095,14 @@ TEST_P(WebViewTest, SmartClipDataWithPinchZoom) {
 TEST_P(WebViewTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone) {
   WebString clipText;
   WebString clipHtml;
-  WebRect clipRect;
   registerMockedHttpURLLoad("Ahem.ttf");
   registerMockedHttpURLLoad("smartclip_user_select_none.html");
-  WebView* webView = m_webViewHelper.initializeAndLoad(
+  WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "smartclip_user_select_none.html");
   webView->resize(WebSize(500, 500));
   webView->updateAllLifecyclePhases();
   WebRect cropRect(0, 0, 100, 100);
-  webView->extractSmartClipData(cropRect, clipText, clipHtml, clipRect);
+  webView->mainFrameImpl()->extractSmartClipData(cropRect, clipText, clipHtml);
   EXPECT_STREQ("", clipText.utf8().c_str());
   EXPECT_STREQ("", clipHtml.utf8().c_str());
 }
@@ -3113,17 +3110,16 @@ TEST_P(WebViewTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone) {
 TEST_P(WebViewTest, SmartClipDoesNotCrashPositionReversed) {
   WebString clipText;
   WebString clipHtml;
-  WebRect clipRect;
   registerMockedHttpURLLoad("Ahem.ttf");
   registerMockedHttpURLLoad("smartclip_reversed_positions.html");
-  WebView* webView = m_webViewHelper.initializeAndLoad(
+  WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
       m_baseURL + "smartclip_reversed_positions.html");
   webView->resize(WebSize(500, 500));
   webView->updateAllLifecyclePhases();
   // Left upper corner of the rect will be end position in the DOM hierarchy.
   WebRect cropRect(30, 110, 400, 250);
   // This should not still crash. See crbug.com/589082 for more details.
-  webView->extractSmartClipData(cropRect, clipText, clipHtml, clipRect);
+  webView->mainFrameImpl()->extractSmartClipData(cropRect, clipText, clipHtml);
 }
 
 class CreateChildCounterFrameClient

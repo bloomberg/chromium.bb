@@ -87,6 +87,9 @@
 
 #include "web/WebLocalFrameImpl.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -120,6 +123,7 @@
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/SmartClip.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLAnchorElement.h"
@@ -229,9 +233,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
 #include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <memory>
-#include <utility>
 
 namespace blink {
 
@@ -2381,6 +2382,38 @@ base::SingleThreadTaskRunner* WebLocalFrameImpl::unthrottledTaskRunner() {
 
 WebInputMethodControllerImpl* WebLocalFrameImpl::inputMethodController() const {
   return m_inputMethodController.get();
+}
+
+void WebLocalFrameImpl::extractSmartClipData(WebRect rectInViewport,
+                                             WebString& clipText,
+                                             WebString& clipHtml) {
+  SmartClipData clipData = SmartClip(frame()).dataForRect(rectInViewport);
+  clipText = clipData.clipData();
+
+  WebPoint startPoint(rectInViewport.x, rectInViewport.y);
+  WebPoint endPoint(rectInViewport.x + rectInViewport.width,
+                    rectInViewport.y + rectInViewport.height);
+  VisiblePosition startVisiblePosition =
+      visiblePositionForViewportPoint(startPoint);
+  VisiblePosition endVisiblePosition =
+      visiblePositionForViewportPoint(endPoint);
+
+  Position startPosition = startVisiblePosition.deepEquivalent();
+  Position endPosition = endVisiblePosition.deepEquivalent();
+
+  // document() will return null if -webkit-user-select is set to none.
+  if (!startPosition.document() || !endPosition.document())
+    return;
+
+  if (startPosition.compareTo(endPosition) <= 0) {
+    clipHtml =
+        createMarkup(startPosition, endPosition, AnnotateForInterchange,
+                     ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
+  } else {
+    clipHtml =
+        createMarkup(endPosition, startPosition, AnnotateForInterchange,
+                     ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
+  }
 }
 
 }  // namespace blink

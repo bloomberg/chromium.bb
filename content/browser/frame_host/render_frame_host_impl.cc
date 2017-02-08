@@ -720,6 +720,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnJavaScriptExecuteResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse,
                         OnVisualStateResponse)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SmartClipDataExtracted,
+                        OnSmartClipDataExtracted)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunJavaScriptMessage,
                                     OnRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunBeforeUnloadConfirm,
@@ -1551,7 +1553,11 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   for (const auto& iter : ax_tree_snapshot_callbacks_)
     iter.second.Run(ui::AXTreeUpdate());
 
+  for (const auto& iter : smart_clip_callbacks_)
+    iter.second.Run(base::string16(), base::string16());
+
   ax_tree_snapshot_callbacks_.clear();
+  smart_clip_callbacks_.clear();
   javascript_callbacks_.clear();
   visual_state_callbacks_.clear();
   form_field_data_callbacks_.clear();
@@ -1649,6 +1655,26 @@ void RenderFrameHostImpl::OnJavaScriptExecuteResponse(
     javascript_callbacks_.erase(it);
   } else {
     NOTREACHED() << "Received script response for unknown request";
+  }
+}
+
+void RenderFrameHostImpl::RequestSmartClipExtract(SmartClipCallback callback,
+                                                  gfx::Rect rect) {
+  static uint32_t next_id = 1;
+  uint32_t key = next_id++;
+  Send(new FrameMsg_ExtractSmartClipData(routing_id_, key, rect));
+  smart_clip_callbacks_.insert(std::make_pair(key, callback));
+}
+
+void RenderFrameHostImpl::OnSmartClipDataExtracted(uint32_t id,
+                                                   base::string16 text,
+                                                   base::string16 html) {
+  auto it = smart_clip_callbacks_.find(id);
+  if (it != smart_clip_callbacks_.end()) {
+    it->second.Run(text, html);
+    smart_clip_callbacks_.erase(it);
+  } else {
+    NOTREACHED() << "Received smartclip data response for unknown request";
   }
 }
 
