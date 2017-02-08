@@ -11,7 +11,6 @@
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/window_state_aura.h"
@@ -56,11 +55,6 @@ const struct Accelerator {
     {ui::VKEY_W, ui::EF_CONTROL_DOWN},
     {ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN},
     {ui::VKEY_F4, ui::EF_ALT_DOWN}};
-
-void UpdateShelfStateForFullscreenChange(views::Widget* widget) {
-  for (ash::WmWindow* root_window : ash::WmShell::Get()->GetAllRootWindows())
-    ash::WmShelf::ForWindow(root_window)->UpdateVisibilityState();
-}
 
 class CustomFrameView : public views::NonClientFrameView {
  public:
@@ -171,7 +165,6 @@ class CustomWindowStateDelegate : public ash::wm::WindowStateDelegate,
       ash::wm::WindowState* window_state =
           ash::wm::GetWindowState(widget_->GetNativeWindow());
       window_state->set_in_immersive_fullscreen(enter_fullscreen);
-      UpdateShelfStateForFullscreenChange(widget_);
     }
     return true;
   }
