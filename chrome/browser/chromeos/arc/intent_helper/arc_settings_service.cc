@@ -117,18 +117,20 @@ class ArcSettingsServiceImpl
   void SyncRuntimeSettings() const;
   // Send settings that need to be synced only on Android first start to
   // Android.
-  void SyncInitialSettings() const;
+  // Keep these lines ordered lexicographically.
+  void SyncAccessibilityLargeMouseCursorEnabled() const;
+  void SyncAccessibilityVirtualKeyboardEnabled() const;
+  void SyncBackupEnabled() const;
   void SyncFocusHighlightEnabled() const;
   void SyncFontSize() const;
+  void SyncInitialSettings() const;
   void SyncLocale() const;
+  void SyncLocationServiceEnabled() const;
   void SyncProxySettings() const;
   void SyncReportingConsent() const;
   void SyncSpokenFeedbackEnabled() const;
   void SyncTimeZone() const;
   void SyncUse24HourClock() const;
-  void SyncBackupEnabled() const;
-  void SyncLocationServiceEnabled() const;
-  void SyncAccessibilityVirtualKeyboardEnabled() const;
 
   void OnBluetoothAdapterInitialized(
       scoped_refptr<device::BluetoothAdapter> adapter);
@@ -182,12 +184,72 @@ ArcSettingsServiceImpl::~ArcSettingsServiceImpl() {
     bluetooth_adapter_->RemoveObserver(this);
 }
 
+void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
+  VLOG(1) << "OnPrefChanged: " << pref_name;
+  // Keep these lines ordered lexicographically by pref_name.
+  if (pref_name == onc::prefs::kDeviceOpenNetworkConfiguration ||
+      pref_name == onc::prefs::kOpenNetworkConfiguration) {
+    // Only update proxy settings if kProxy pref is not applied.
+    if (IsPrefProxyConfigApplied()) {
+      LOG(ERROR) << "Open Network Configuration proxy settings are not applied,"
+                 << " because kProxy preference is configured.";
+      return;
+    }
+    SyncProxySettings();
+  } else if (pref_name == prefs::kAccessibilityFocusHighlightEnabled) {
+    SyncFocusHighlightEnabled();
+  } else if (pref_name == prefs::kAccessibilityLargeCursorEnabled) {
+    SyncAccessibilityLargeMouseCursorEnabled();
+  } else if (pref_name == prefs::kAccessibilitySpokenFeedbackEnabled) {
+    SyncSpokenFeedbackEnabled();
+  } else if (pref_name == prefs::kAccessibilityVirtualKeyboardEnabled) {
+    SyncAccessibilityVirtualKeyboardEnabled();
+  } else if (pref_name == prefs::kUse24HourClock) {
+    SyncUse24HourClock();
+  } else if (pref_name == prefs::kWebKitDefaultFixedFontSize ||
+             pref_name == prefs::kWebKitDefaultFontSize ||
+             pref_name == prefs::kWebKitMinimumFontSize) {
+    SyncFontSize();
+  } else if (pref_name == proxy_config::prefs::kProxy) {
+    SyncProxySettings();
+  } else {
+    LOG(ERROR) << "Unknown pref changed.";
+  }
+}
+
+void ArcSettingsServiceImpl::TimezoneChanged(const icu::TimeZone& timezone) {
+  SyncTimeZone();
+}
+
+void ArcSettingsServiceImpl::AdapterPoweredChanged(
+    device::BluetoothAdapter* adapter,
+    bool powered) {
+  base::DictionaryValue extras;
+  extras.SetBoolean("enable", powered);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_BLUETOOTH_STATE",
+                        extras);
+}
+
+void ArcSettingsServiceImpl::OnArcInitialStart() {
+  SyncInitialSettings();
+}
+
+void ArcSettingsServiceImpl::DefaultNetworkChanged(
+    const chromeos::NetworkState* network) {
+  // kProxy pref has more priority than the default network update.
+  // If a default network is changed to the network with ONC policy with proxy
+  // settings, it should be translated here.
+  if (network && !IsPrefProxyConfigApplied())
+    SyncProxySettings();
+}
+
 void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   registrar_.Init(profile->GetPrefs());
 
   // Keep these lines ordered lexicographically.
   AddPrefToObserve(prefs::kAccessibilityFocusHighlightEnabled);
+  AddPrefToObserve(prefs::kAccessibilityLargeCursorEnabled);
   AddPrefToObserve(prefs::kAccessibilitySpokenFeedbackEnabled);
   AddPrefToObserve(prefs::kAccessibilityVirtualKeyboardEnabled);
   AddPrefToObserve(prefs::kArcBackupRestoreEnabled);
@@ -216,21 +278,18 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
       this, FROM_HERE);
 }
 
-void ArcSettingsServiceImpl::OnBluetoothAdapterInitialized(
-    scoped_refptr<device::BluetoothAdapter> adapter) {
-  DCHECK(adapter);
-  bluetooth_adapter_ = adapter;
-  bluetooth_adapter_->AddObserver(this);
+void ArcSettingsServiceImpl::StopObservingSettingsChanges() {
+  registrar_.RemoveAll();
+  reporting_consent_subscription_.reset();
 
-  AdapterPoweredChanged(adapter.get(), adapter->IsPowered());
-}
-
-void ArcSettingsServiceImpl::OnArcInitialStart() {
-  SyncInitialSettings();
+  TimezoneSettings::GetInstance()->RemoveObserver(this);
+  chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+      this, FROM_HERE);
 }
 
 void ArcSettingsServiceImpl::SyncRuntimeSettings() const {
   // Keep these lines ordered lexicographically.
+  SyncAccessibilityLargeMouseCursorEnabled();
   SyncAccessibilityVirtualKeyboardEnabled();
   SyncFocusHighlightEnabled();
   SyncFontSize();
@@ -249,75 +308,28 @@ void ArcSettingsServiceImpl::SyncRuntimeSettings() const {
     SyncLocationServiceEnabled();
 }
 
-void ArcSettingsServiceImpl::SyncInitialSettings() const {
-  SyncBackupEnabled();
-  SyncLocationServiceEnabled();
+void ArcSettingsServiceImpl::SyncAccessibilityLargeMouseCursorEnabled() const {
+  SendBoolPrefSettingsBroadcast(
+      prefs::kAccessibilityLargeCursorEnabled,
+      "org.chromium.arc.intent_helper.ACCESSIBILITY_LARGE_POINTER_ICON");
 }
 
-void ArcSettingsServiceImpl::StopObservingSettingsChanges() {
-  registrar_.RemoveAll();
-  reporting_consent_subscription_.reset();
-
-  TimezoneSettings::GetInstance()->RemoveObserver(this);
-  chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
-      this, FROM_HERE);
+void ArcSettingsServiceImpl::SyncAccessibilityVirtualKeyboardEnabled() const {
+  SendBoolPrefSettingsBroadcast(
+      prefs::kAccessibilityVirtualKeyboardEnabled,
+      "org.chromium.arc.intent_helper.SET_SHOW_IME_WITH_HARD_KEYBOARD");
 }
 
-void ArcSettingsServiceImpl::AddPrefToObserve(const std::string& pref_name) {
-  registrar_.Add(pref_name, base::Bind(&ArcSettingsServiceImpl::OnPrefChanged,
-                                       base::Unretained(this)));
+void ArcSettingsServiceImpl::SyncBackupEnabled() const {
+  SendBoolPrefSettingsBroadcast(
+      prefs::kArcBackupRestoreEnabled,
+      "org.chromium.arc.intent_helper.SET_BACKUP_ENABLED");
 }
 
-void ArcSettingsServiceImpl::AdapterPoweredChanged(
-    device::BluetoothAdapter* adapter,
-    bool powered) {
-  base::DictionaryValue extras;
-  extras.SetBoolean("enable", powered);
-  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_BLUETOOTH_STATE",
-                        extras);
-}
-
-void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
-  if (pref_name == prefs::kAccessibilityFocusHighlightEnabled) {
-    SyncFocusHighlightEnabled();
-  } else if (pref_name == prefs::kAccessibilitySpokenFeedbackEnabled) {
-    SyncSpokenFeedbackEnabled();
-  } else if (pref_name == prefs::kWebKitDefaultFixedFontSize ||
-             pref_name == prefs::kWebKitDefaultFontSize ||
-             pref_name == prefs::kWebKitMinimumFontSize) {
-    SyncFontSize();
-  } else if (pref_name == prefs::kUse24HourClock) {
-    SyncUse24HourClock();
-  } else if (pref_name == proxy_config::prefs::kProxy) {
-    SyncProxySettings();
-  } else if (pref_name == onc::prefs::kDeviceOpenNetworkConfiguration ||
-             pref_name == onc::prefs::kOpenNetworkConfiguration) {
-    // Only update proxy settings if kProxy pref is not applied.
-    if (IsPrefProxyConfigApplied()) {
-      LOG(ERROR) << "Open Network Configuration proxy settings are not applied,"
-                 << " because kProxy preference is configured.";
-      return;
-    }
-    SyncProxySettings();
-  } else if (pref_name == prefs::kAccessibilityVirtualKeyboardEnabled) {
-    SyncAccessibilityVirtualKeyboardEnabled();
-  } else {
-    LOG(ERROR) << "Unknown pref changed.";
-  }
-}
-
-void ArcSettingsServiceImpl::TimezoneChanged(const icu::TimeZone& timezone) {
-  SyncTimeZone();
-}
-
-int ArcSettingsServiceImpl::GetIntegerPref(const std::string& pref_name) const {
-  const PrefService::Preference* pref =
-      registrar_.prefs()->FindPreference(pref_name);
-  DCHECK(pref);
-  int val = -1;
-  bool value_exists = pref->GetValue()->GetAsInteger(&val);
-  DCHECK(value_exists);
-  return val;
+void ArcSettingsServiceImpl::SyncFocusHighlightEnabled() const {
+  SendBoolPrefSettingsBroadcast(
+      prefs::kAccessibilityFocusHighlightEnabled,
+      "org.chromium.arc.intent_helper.SET_FOCUS_HIGHLIGHT_ENABLED");
 }
 
 void ArcSettingsServiceImpl::SyncFontSize() const {
@@ -334,31 +346,9 @@ void ArcSettingsServiceImpl::SyncFontSize() const {
                         extras);
 }
 
-void ArcSettingsServiceImpl::SendBoolPrefSettingsBroadcast(
-    const std::string& pref_name,
-    const std::string& action) const {
-  const PrefService::Preference* pref =
-      registrar_.prefs()->FindPreference(pref_name);
-  DCHECK(pref);
-  bool enabled = false;
-  bool value_exists = pref->GetValue()->GetAsBoolean(&enabled);
-  DCHECK(value_exists);
-  base::DictionaryValue extras;
-  extras.SetBoolean("enabled", enabled);
-  extras.SetBoolean("managed", !pref->IsUserModifiable());
-  SendSettingsBroadcast(action, extras);
-}
-
-void ArcSettingsServiceImpl::SyncFocusHighlightEnabled() const {
-  SendBoolPrefSettingsBroadcast(
-      prefs::kAccessibilityFocusHighlightEnabled,
-      "org.chromium.arc.intent_helper.SET_FOCUS_HIGHLIGHT_ENABLED");
-}
-
-void ArcSettingsServiceImpl::SyncSpokenFeedbackEnabled() const {
-  SendBoolPrefSettingsBroadcast(
-      prefs::kAccessibilitySpokenFeedbackEnabled,
-      "org.chromium.arc.intent_helper.SET_SPOKEN_FEEDBACK_ENABLED");
+void ArcSettingsServiceImpl::SyncInitialSettings() const {
+  SyncBackupEnabled();
+  SyncLocationServiceEnabled();
 }
 
 void ArcSettingsServiceImpl::SyncLocale() const {
@@ -373,34 +363,10 @@ void ArcSettingsServiceImpl::SyncLocale() const {
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_LOCALE", extras);
 }
 
-void ArcSettingsServiceImpl::SyncReportingConsent() const {
-  bool consent = false;
-  CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref, &consent);
-  base::DictionaryValue extras;
-  extras.SetBoolean("reportingConsent", consent);
-  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_REPORTING_CONSENT",
-                        extras);
-}
-
-void ArcSettingsServiceImpl::SyncTimeZone() const {
-  TimezoneSettings* timezone_settings = TimezoneSettings::GetInstance();
-  base::string16 timezoneID = timezone_settings->GetCurrentTimezoneID();
-  base::DictionaryValue extras;
-  extras.SetString("olsonTimeZone", timezoneID);
-  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_TIME_ZONE", extras);
-}
-
-void ArcSettingsServiceImpl::SyncUse24HourClock() const {
-  const PrefService::Preference* pref =
-      registrar_.prefs()->FindPreference(prefs::kUse24HourClock);
-  DCHECK(pref);
-  bool use24HourClock = false;
-  bool value_exists = pref->GetValue()->GetAsBoolean(&use24HourClock);
-  DCHECK(value_exists);
-  base::DictionaryValue extras;
-  extras.SetBoolean("use24HourClock", use24HourClock);
-  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_USE_24_HOUR_CLOCK",
-                        extras);
+void ArcSettingsServiceImpl::SyncLocationServiceEnabled() const {
+  SendBoolPrefSettingsBroadcast(
+      prefs::kArcLocationServiceEnabled,
+      "org.chromium.arc.intent_helper.SET_LOCATION_SERVICE_ENABLED");
 }
 
 void ArcSettingsServiceImpl::SyncProxySettings() const {
@@ -461,22 +427,79 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_PROXY", extras);
 }
 
-void ArcSettingsServiceImpl::SyncBackupEnabled() const {
-  SendBoolPrefSettingsBroadcast(
-      prefs::kArcBackupRestoreEnabled,
-      "org.chromium.arc.intent_helper.SET_BACKUP_ENABLED");
+void ArcSettingsServiceImpl::SyncReportingConsent() const {
+  bool consent = false;
+  CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref, &consent);
+  base::DictionaryValue extras;
+  extras.SetBoolean("reportingConsent", consent);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_REPORTING_CONSENT",
+                        extras);
 }
 
-void ArcSettingsServiceImpl::SyncLocationServiceEnabled() const {
+void ArcSettingsServiceImpl::SyncSpokenFeedbackEnabled() const {
   SendBoolPrefSettingsBroadcast(
-      prefs::kArcLocationServiceEnabled,
-      "org.chromium.arc.intent_helper.SET_LOCATION_SERVICE_ENABLED");
+      prefs::kAccessibilitySpokenFeedbackEnabled,
+      "org.chromium.arc.intent_helper.SET_SPOKEN_FEEDBACK_ENABLED");
 }
 
-void ArcSettingsServiceImpl::SyncAccessibilityVirtualKeyboardEnabled() const {
-  SendBoolPrefSettingsBroadcast(
-      prefs::kAccessibilityVirtualKeyboardEnabled,
-      "org.chromium.arc.intent_helper.SET_SHOW_IME_WITH_HARD_KEYBOARD");
+void ArcSettingsServiceImpl::SyncTimeZone() const {
+  TimezoneSettings* timezone_settings = TimezoneSettings::GetInstance();
+  base::string16 timezoneID = timezone_settings->GetCurrentTimezoneID();
+  base::DictionaryValue extras;
+  extras.SetString("olsonTimeZone", timezoneID);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_TIME_ZONE", extras);
+}
+
+void ArcSettingsServiceImpl::SyncUse24HourClock() const {
+  const PrefService::Preference* pref =
+      registrar_.prefs()->FindPreference(prefs::kUse24HourClock);
+  DCHECK(pref);
+  bool use24HourClock = false;
+  bool value_exists = pref->GetValue()->GetAsBoolean(&use24HourClock);
+  DCHECK(value_exists);
+  base::DictionaryValue extras;
+  extras.SetBoolean("use24HourClock", use24HourClock);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_USE_24_HOUR_CLOCK",
+                        extras);
+}
+
+void ArcSettingsServiceImpl::OnBluetoothAdapterInitialized(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  DCHECK(adapter);
+  bluetooth_adapter_ = adapter;
+  bluetooth_adapter_->AddObserver(this);
+
+  AdapterPoweredChanged(adapter.get(), adapter->IsPowered());
+}
+
+void ArcSettingsServiceImpl::AddPrefToObserve(const std::string& pref_name) {
+  registrar_.Add(pref_name, base::Bind(&ArcSettingsServiceImpl::OnPrefChanged,
+                                       base::Unretained(this)));
+}
+
+int ArcSettingsServiceImpl::GetIntegerPref(const std::string& pref_name) const {
+  const PrefService::Preference* pref =
+      registrar_.prefs()->FindPreference(pref_name);
+  DCHECK(pref);
+  int val = -1;
+  bool value_exists = pref->GetValue()->GetAsInteger(&val);
+  DCHECK(value_exists);
+  return val;
+}
+
+void ArcSettingsServiceImpl::SendBoolPrefSettingsBroadcast(
+    const std::string& pref_name,
+    const std::string& action) const {
+  const PrefService::Preference* pref =
+      registrar_.prefs()->FindPreference(pref_name);
+  DCHECK(pref);
+  bool enabled = false;
+  bool value_exists = pref->GetValue()->GetAsBoolean(&enabled);
+  DCHECK(value_exists);
+  base::DictionaryValue extras;
+  extras.SetBoolean("enabled", enabled);
+  extras.SetBoolean("managed", !pref->IsUserModifiable());
+  SendSettingsBroadcast(action, extras);
 }
 
 void ArcSettingsServiceImpl::SendSettingsBroadcast(
@@ -493,15 +516,6 @@ void ArcSettingsServiceImpl::SendSettingsBroadcast(
   instance->SendBroadcast(action, "org.chromium.arc.intent_helper",
                           "org.chromium.arc.intent_helper.SettingsReceiver",
                           extras_json);
-}
-
-void ArcSettingsServiceImpl::DefaultNetworkChanged(
-    const chromeos::NetworkState* network) {
-  // kProxy pref has more priority than the default network update.
-  // If a default network is changed to the network with ONC policy with proxy
-  // settings, it should be translated here.
-  if (network && !IsPrefProxyConfigApplied())
-    SyncProxySettings();
 }
 
 ArcSettingsService::ArcSettingsService(ArcBridgeService* bridge_service)
