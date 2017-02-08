@@ -28,7 +28,7 @@ public class CreditCardNumberFormattingTextWatcher implements TextWatcher {
     /**
      * Whether to format the credit card number. If true, spaces will be inserted
      * automatically between each group of 4 digits in the credit card number as the user types.
-     * This is set to false if the user types a dash or deletes one of the auto-inserted spaces.
+     * This is set to false if the user types a dash or space.
      */
     private boolean mFormattingEnabled = true;
 
@@ -52,13 +52,7 @@ public class CreditCardNumberFormattingTextWatcher implements TextWatcher {
     }
 
     @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        if (mSelfChange || !mFormattingEnabled) return;
-        // If user deletes non-digit characters, do not format.
-        if (count > 0 && hasDashOrSpace(s, start, count)) {
-            mFormattingEnabled = false;
-        }
-    }
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
     @Override
     public void afterTextChanged(Editable s) {
