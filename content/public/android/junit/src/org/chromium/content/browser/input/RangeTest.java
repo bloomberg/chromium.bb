@@ -8,10 +8,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.chromium.base.test.util.Feature;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+
+import org.chromium.base.test.util.Feature;
 
 /**
  * Unit tests for {@Range}.
@@ -46,5 +47,21 @@ public class RangeTest {
         assertFalse(new Range(1, 2).equals(new Range(1, 3)));
         Range range = new Range(1, 4);
         assertTrue(range.equals(range));
+    }
+
+    @Test
+    @Feature({"TextInput"})
+    public void testIntersects() {
+        assertTrue(new Range(1, 3).intersects(new Range(0, 2)));
+        assertTrue(new Range(0, 2).intersects(new Range(1, 3)));
+
+        assertTrue(new Range(0, 2).intersects(new Range(2, 3)));
+        assertTrue(new Range(2, 3).intersects(new Range(0, 2)));
+
+        assertFalse(new Range(1, 3).intersects(new Range(4, 6)));
+        assertFalse(new Range(4, 6).intersects(new Range(1, 3)));
+
+        Range range = new Range(1, 3);
+        assertTrue(range.intersects(range));
     }
 }

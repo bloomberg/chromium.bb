@@ -90,15 +90,20 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
                 candidatesEnd);
         Pair<Range, Range> newUpdateSelection =
                 new Pair<>(new Range(selStart, selEnd), new Range(candidatesStart, candidatesEnd));
+        Range lastSelection = null;
+        Range lastComposition = null;
         if (!mUpdateSelectionList.isEmpty()) {
             Pair<Range, Range> lastUpdateSelection =
                     mUpdateSelectionList.get(mUpdateSelectionList.size() - 1);
             if (lastUpdateSelection.equals(newUpdateSelection)) return;
+            lastSelection = lastUpdateSelection.first;
+            lastComposition = lastUpdateSelection.second;
         }
         mUpdateSelectionList.add(new Pair<Range, Range>(
                 new Range(selStart, selEnd), new Range(candidatesStart, candidatesEnd)));
         mSelection.set(selStart, selEnd);
         mComposition.set(candidatesStart, candidatesEnd);
+        onUpdateSelection(lastSelection, lastComposition, mSelection, mComposition);
     }
 
     @Override
@@ -162,4 +167,8 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
     public CursorAnchorInfo getLastCursorAnchorInfo() {
         return mLastCursorAnchorInfo;
     }
+
+    public void onUpdateSelection(Range oldSel, Range oldComp, Range newSel, Range newComp) {}
+
+    public void expectsSelectionOutsideComposition() {}
 }

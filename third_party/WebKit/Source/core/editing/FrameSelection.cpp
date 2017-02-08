@@ -211,7 +211,6 @@ void FrameSelection::setSelectionAlgorithm(
       m_handleVisibility == handleVisibility) {
     // Even if selection was not changed, selection offsets may have been
     // changed.
-    m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
     notifyLayoutObjectOfSelectionChange(userTriggered);
     return;
   }
@@ -258,10 +257,9 @@ void FrameSelection::setSelectionAlgorithm(
   // boundary, selection for the DOM tree is shrunk while that for the
   // flat tree is not. Additionally, this case occurs in some edge cases.
   // See also: editing/pasteboard/4076267-3.html
-  if (oldSelection == m_selectionEditor->visibleSelection<Strategy>()) {
-    m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
+  if (oldSelection == m_selectionEditor->visibleSelection<Strategy>())
     return;
-  }
+
   m_frame->editor().respondToChangedSelection(oldSelectionStart, options);
   if (userTriggered == UserTriggered) {
     ScrollAlignment alignment;

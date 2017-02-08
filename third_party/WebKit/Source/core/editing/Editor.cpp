@@ -1623,7 +1623,6 @@ void Editor::respondToChangedSelection(
     const Position& oldSelectionStart,
     FrameSelection::SetSelectionOptions options) {
   spellChecker().respondToChangedSelection(oldSelectionStart, options);
-  frame().inputMethodController().cancelCompositionIfSelectionIsInvalid();
   client().respondToChangedSelection(&frame(),
                                      frame().selection().getSelectionType());
   setStartNewKillRingSequence(true);

@@ -483,22 +483,6 @@ void InputMethodController::cancelComposition() {
   dispatchCompositionEndEvent(frame(), emptyString);
 }
 
-void InputMethodController::cancelCompositionIfSelectionIsInvalid() {
-  if (!hasComposition() || editor().preventRevealSelection())
-    return;
-
-  // Check if selection start and selection end are valid.
-  FrameSelection& selection = frame().selection();
-  if (!selection.isNone() && !m_compositionRange->collapsed()) {
-    if (selection.start().compareTo(m_compositionRange->startPosition()) >= 0 &&
-        selection.end().compareTo(m_compositionRange->endPosition()) <= 0)
-      return;
-  }
-
-  cancelComposition();
-  frame().chromeClient().didCancelCompositionOnSelectionChange();
-}
-
 // If current position is at grapheme boundary, return 0; otherwise, return the
 // distance to its nearest left grapheme boundary.
 static size_t computeDistanceToLeftGraphemeBoundary(const Position& position) {

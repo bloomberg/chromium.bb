@@ -114,7 +114,6 @@ class WebViewClient : protected WebWidgetClient {
 
   // These methods allow the client to intercept and overrule editing
   // operations.
-  virtual void didCancelCompositionOnSelectionChange() {}
   virtual void didChangeContents() {}
 
   // Dialogs -------------------------------------------------------------

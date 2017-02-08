@@ -310,7 +310,6 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   virtual void ajaxSucceeded(LocalFrame*) {}
 
   // Input method editor related functions.
-  virtual void didCancelCompositionOnSelectionChange() {}
   virtual void resetInputMethod() {}
   virtual void didUpdateTextOfFocusedElementByNonUserInput(LocalFrame&) {}
   virtual void showVirtualKeyboardOnElementFocus() {}

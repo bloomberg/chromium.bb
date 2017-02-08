@@ -300,7 +300,6 @@ class CONTENT_EXPORT RenderViewImpl
   bool enumerateChosenDirectory(
       const blink::WebString& path,
       blink::WebFileChooserCompletion* chooser_completion) override;
-  void didCancelCompositionOnSelectionChange() override;
   void SetValidationMessageDirection(base::string16* main_text,
                                      blink::WebTextDirection main_text_hint,
                                      base::string16* sub_text,

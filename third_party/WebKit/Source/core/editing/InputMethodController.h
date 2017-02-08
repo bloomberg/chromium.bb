@@ -85,7 +85,6 @@ class CORE_EXPORT InputMethodController final
   // Deletes the existing composition text.
   void cancelComposition();
 
-  void cancelCompositionIfSelectionIsInvalid();
   EphemeralRange compositionEphemeralRange() const;
   Range* compositionRange() const;
 

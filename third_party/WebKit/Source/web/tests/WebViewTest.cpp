@@ -1550,8 +1550,9 @@ TEST_P(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
   EXPECT_EQ("hello world", std::string(info.value.utf8().data()));
   EXPECT_EQ(2, info.selectionStart);
   EXPECT_EQ(2, info.selectionEnd);
-  EXPECT_EQ(-1, info.compositionStart);
-  EXPECT_EQ(-1, info.compositionEnd);
+  // Composition range should be reset by browser process or keyboard apps.
+  EXPECT_EQ(6, info.compositionStart);
+  EXPECT_EQ(11, info.compositionEnd);
 }
 
 TEST_P(WebViewTest, IsSelectionAnchorFirst) {
@@ -2365,11 +2366,13 @@ TEST_P(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
   EXPECT_TRUE(frame->frame()->inputMethodController().hasComposition());
   EXPECT_EQ("", std::string(frame->selectionAsText().utf8().data()));
   EXPECT_FALSE(frame->frame()->selection().isHandleVisible());
+  EXPECT_TRUE(frame->frame()->inputMethodController().hasComposition());
 
   EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, target));
   EXPECT_EQ("testword12345",
             std::string(frame->selectionAsText().utf8().data()));
   EXPECT_TRUE(frame->frame()->selection().isHandleVisible());
+  EXPECT_TRUE(frame->frame()->inputMethodController().hasComposition());
 
   // Check that finishComposingText(KeepSelection) does not dismiss handles.
   activeInputMethodController->finishComposingText(

@@ -1565,10 +1565,6 @@ void RenderViewImpl::SetZoomLevel(double zoom_level) {
     observer.OnZoomLevelChanged();
 }
 
-void RenderViewImpl::didCancelCompositionOnSelectionChange() {
-  Send(new InputHostMsg_ImeCancelComposition(GetRoutingID()));
-}
-
 void RenderViewImpl::SetValidationMessageDirection(
     base::string16* wrapped_main_text,
     blink::WebTextDirection main_text_hint,

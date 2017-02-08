@@ -1067,11 +1067,6 @@ void ChromeClientImpl::didAssociateFormControlsAfterLoad(LocalFrame* frame) {
     webframe->autofillClient()->didAssociateFormControlsDynamically();
 }
 
-void ChromeClientImpl::didCancelCompositionOnSelectionChange() {
-  if (m_webView->client())
-    m_webView->client()->didCancelCompositionOnSelectionChange();
-}
-
 void ChromeClientImpl::resetInputMethod() {
   if (m_webView->client())
     m_webView->client()->resetInputMethod();

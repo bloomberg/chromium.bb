@@ -12,7 +12,7 @@ import org.chromium.base.VisibleForTesting;
  * version becomes 21 or higher.
  */
 public class Range {
-    private int mStart;
+    private int mStart; // guaranteed to be smaller than or equal to mEnd
     private int mEnd;
 
     public Range(int start, int end) {
@@ -36,6 +36,10 @@ public class Range {
     public void clamp(int start, int end) {
         mStart = Math.min(Math.max(mStart, start), end);
         mEnd = Math.max(Math.min(mEnd, end), start);
+    }
+
+    public boolean intersects(Range range) {
+        return mStart <= range.mEnd && mEnd >= range.mStart;
     }
 
     @Override
