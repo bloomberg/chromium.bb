@@ -971,10 +971,6 @@ class TestExpectations(object):
         return expected_results
 
     @staticmethod
-    def has_pixel_failures(actual_results):
-        return IMAGE in actual_results or FAIL in actual_results
-
-    @staticmethod
     def suffixes_for_expectations(expectations):
         suffixes = set()
         if IMAGE in expectations:

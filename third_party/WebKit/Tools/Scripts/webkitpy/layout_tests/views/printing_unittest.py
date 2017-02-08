@@ -79,9 +79,6 @@ class FakeShard(object):
 
 class Testprinter(unittest.TestCase):
 
-    def assertEmpty(self, stream):
-        self.assertFalse(stream.getvalue())
-
     def assertNotEmpty(self, stream):
         self.assertTrue(stream.getvalue())
 

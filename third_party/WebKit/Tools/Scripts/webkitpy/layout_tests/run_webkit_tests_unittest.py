@@ -165,9 +165,6 @@ class StreamTestingMixin(object):
     def assertContains(self, stream, string):
         self.assertIn(string, stream.getvalue())
 
-    def assertEmpty(self, stream):
-        self.assertFalse(stream.getvalue())
-
     def assertNotEmpty(self, stream):
         self.assertTrue(stream.getvalue())
 
@@ -957,10 +954,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host.filesystem.write_text_file('/tmp/overrides.txt', 'Bug(x) failures/unexpected/mismatch.html [ Failure ]\n')
         self.assertTrue(passing_run(['--additional-expectations', '/tmp/overrides.txt', 'failures/unexpected/mismatch.html'],
                                     tests_included=True, host=host))
-
-    @staticmethod
-    def has_test_of_type(tests, type):
-        return [test for test in tests if type in test]
 
     def test_platform_directories_ignored_when_searching_for_tests(self):
         tests_run = get_tests_run(['--platform', 'test-mac-mac10.10'])

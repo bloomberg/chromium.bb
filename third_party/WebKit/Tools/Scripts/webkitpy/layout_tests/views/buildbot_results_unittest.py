@@ -37,9 +37,6 @@ from webkitpy.layout_tests.views import buildbot_results
 
 class BuildBotPrinterTests(unittest.TestCase):
 
-    def assertEmpty(self, stream):
-        self.assertFalse(stream.getvalue())
-
     def assertNotEmpty(self, stream):
         self.assertTrue(stream.getvalue())
 

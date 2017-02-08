@@ -46,9 +46,6 @@ class TrivialMockPort(object):
     def results_directory(self):
         return "/mock-results"
 
-    def process_kill_time(self):
-        return 1
-
 
 class MockFile(object):
 

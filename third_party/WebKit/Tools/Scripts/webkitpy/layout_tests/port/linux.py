@@ -142,14 +142,6 @@ class LinuxPort(base.Port):
         self._filesystem.rmtree(dummy_home)
         self.host.environ['HOME'] = self._original_home
 
-    def _check_apache_install(self):
-        result = self._check_file_exists(self.path_to_apache(), "apache2")
-        result = self._check_file_exists(self.path_to_apache_config_file(), "apache2 config file") and result
-        if not result:
-            _log.error('    Please install using: "sudo apt-get install apache2 libapache2-mod-php5"')
-            _log.error('')
-        return result
-
     def _path_to_driver(self, target=None):
         binary_name = self.driver_name()
         return self._build_path_with_target(target, binary_name)

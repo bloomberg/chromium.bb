@@ -54,12 +54,6 @@ class PortTest(unittest.TestCase):
             return TestPort(host, **kwargs)
         return Port(host, port_name or 'baseport', **kwargs)
 
-    def _file_with_contents(self, contents, encoding="utf-8"):
-        new_file = tempfile.NamedTemporaryFile()
-        new_file.write(contents.encode(encoding))
-        new_file.flush()
-        return new_file
-
     def test_pretty_patch_os_error(self):
         port = self.make_port(executive=MockExecutive(exception=OSError))
         oc = OutputCapture()

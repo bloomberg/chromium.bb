@@ -343,10 +343,6 @@ class Port(object):
             return False
         return True
 
-    def _check_port_build(self):
-        # Ports can override this method to do additional checks.
-        return True
-
     def check_sys_deps(self, needs_http):
         """Checks whether the system is properly configured.
 
@@ -1262,9 +1258,6 @@ class Port(object):
                 test_configurations.append(TestConfiguration(version, architecture, build_type))
         return test_configurations
 
-    def warn_if_bug_missing_in_test_expectations(self):
-        return True
-
     def _flag_specific_expectations_files(self):
         return [self._filesystem.join(self.layout_tests_dir(), 'FlagExpectations', flag.lstrip('-'))
                 for flag in self.get_option('additional_driver_flag', [])]
@@ -1649,11 +1642,6 @@ class Port(object):
         except OSError:
             pass
         return True
-
-    def _chromium_baseline_path(self, platform):
-        if platform is None:
-            platform = self.name()
-        return self.path_from_webkit_base('LayoutTests', 'platform', platform)
 
 
 class VirtualTestSuite(object):
