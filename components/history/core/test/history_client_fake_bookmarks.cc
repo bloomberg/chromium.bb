@@ -15,7 +15,8 @@
 
 namespace history {
 
-class FakeBookmarkDatabase : public base::RefCounted<FakeBookmarkDatabase> {
+class FakeBookmarkDatabase
+    : public base::RefCountedThreadSafe<FakeBookmarkDatabase> {
  public:
   FakeBookmarkDatabase() {}
 
@@ -27,7 +28,7 @@ class FakeBookmarkDatabase : public base::RefCounted<FakeBookmarkDatabase> {
   void GetBookmarks(std::vector<URLAndTitle>* bookmarks);
 
  private:
-  friend class base::RefCounted<FakeBookmarkDatabase>;
+  friend class base::RefCountedThreadSafe<FakeBookmarkDatabase>;
 
   ~FakeBookmarkDatabase() {}
 
