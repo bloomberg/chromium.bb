@@ -138,7 +138,7 @@ void ScreenOrientationControllerImpl::pageVisibilityChanged() {
 }
 
 void ScreenOrientationControllerImpl::notifyOrientationChanged() {
-  if (!isVisible())
+  if (!isVisible() || !frame())
     return;
 
   if (isActive())
