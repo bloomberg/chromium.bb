@@ -220,7 +220,7 @@ void SetupSignalHandlers() {
 
 #endif  // OS_POSIX
 
-void CommonSubprocessInit(const std::string& process_type) {
+void CommonSubprocessInit() {
 #if defined(OS_WIN)
   // HACK: Let Windows know that we have started.  This is needed to suppress
   // the IDC_APPSTARTING cursor from being displayed for a prolonged period
@@ -241,17 +241,9 @@ void CommonSubprocessInit(const std::string& process_type) {
   setlocale(LC_NUMERIC, "C");
 #endif
 
-#if !defined(OFFICIAL_BUILD)
-  // Print stack traces to stderr when crashes occur. This opens up security
-  // holes so it should never be enabled for official builds.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableInProcessStackTraces)) {
-    base::debug::EnableInProcessStackDumping();
-  }
-#if defined(OS_WIN)
+#if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
   base::RouteStdioToConsole(false);
   LoadLibraryA("dbghelp.dll");
-#endif
 #endif
 }
 
@@ -756,11 +748,28 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif  // OS_POSIX && !OS_MACOSX
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
+#if !defined(OFFICIAL_BUILD)
+#if defined(OS_WIN)
+    bool should_enable_stack_dump = !process_type.empty();
+#else
+    bool should_enable_stack_dump = true;
+#endif
+    // Print stack traces to stderr when crashes occur. This opens up security
+    // holes so it should never be enabled for official builds. This needs to
+    // happen before crash reporting is initialized (which for chrome happens in
+    // the call to PreSandboxStartup() on the delegate below), because otherwise
+    // this would interfere with signal handlers used by crash reporting.
+    if (should_enable_stack_dump && !command_line.HasSwitch(
+            switches::kDisableInProcessStackTraces)) {
+      base::debug::EnableInProcessStackDumping();
+    }
+#endif  // !defined(OFFICIAL_BUILD)
+
     if (delegate_)
       delegate_->PreSandboxStartup();
 
     if (!process_type.empty())
-      CommonSubprocessInit(process_type);
+      CommonSubprocessInit();
 
 #if defined(OS_WIN)
     CHECK(InitializeSandbox(params.sandbox_info));
