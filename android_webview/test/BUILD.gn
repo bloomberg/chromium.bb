@@ -93,8 +93,7 @@ shared_library("libstandalonelibwebviewchromium") {
   deps = [
     "//android_webview:common",
   ]
-  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-  configs += [ "//build/config/android:hide_all_but_jni" ]
+  configs -= [ "//build/config/android:hide_native_jni_exports" ]
 }
 
 instrumentation_test_apk("android_webview_test_apk") {
@@ -292,5 +291,5 @@ shared_library("libdrawgl") {
   sources = [
     "shell/src/draw_gl/draw_gl.cc",
   ]
-  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+  configs -= [ "//build/config/android:hide_native_jni_exports" ]
 }
