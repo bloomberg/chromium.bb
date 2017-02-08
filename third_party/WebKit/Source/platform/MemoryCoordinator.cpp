@@ -65,8 +65,12 @@ void MemoryCoordinator::onMemoryPressure(WebMemoryPressureLevel level) {
 void MemoryCoordinator::onMemoryStateChange(MemoryState state) {
   for (auto& client : m_clients)
     client->onMemoryStateChange(state);
+  // Font cache invalidation always causes full layout. This increases
+  // tab switching cost significantly (e.g. en.wikipedia.org/wiki/Wikipedia).
+  // So we should not invalidate the font cache in purge+throttle. We should
+  // invalidate the font cache only when receiving a critical memory pressure.
   if (state == MemoryState::SUSPENDED)
-    clearMemory();
+    ImageDecodingStore::instance().clear();
   WTF::Partitions::decommitFreeableMemory();
 }
 
