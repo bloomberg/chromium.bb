@@ -1789,16 +1789,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       finishPageLoadForTab:self
                loadSuccess:loadSuccess];
 
-  // Always take snapshots on iPad if the tab switcher is enabled.
-  // If the tab switcher is not enabled, don't take snapshot of chrome scheme
-  // pages.
-  BOOL takeSnapshotOnIpad =
-      IsIPadIdiom() &&
-      (experimental_flags::IsTabSwitcherEnabled() ||
-       !web::GetWebClient()->IsAppSpecificURL(lastCommittedURL));
-  // Always take snapshot on iPhone.
-  BOOL takeSnapshot = !IsIPadIdiom() || takeSnapshotOnIpad;
-  if (loadSuccess && takeSnapshot) {
+  if (loadSuccess) {
     [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
   }
   [webControllerSnapshotHelper_ setSnapshotCoalescingEnabled:NO];

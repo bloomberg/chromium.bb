@@ -122,6 +122,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   UIView* _view;
   TabStripView* _tabStripView;
   UIButton* _buttonNewTab;
+  // TODO(crbug.com/687132): Remove toggle button.
   UIButton* _modeToggleButton;         // weak, nil if not visible.
   UIButton* _tabSwitcherToggleButton;  // weak, nil if not visible.
 
@@ -1091,7 +1092,6 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   [_modeToggleButton addTarget:nil
                         action:@selector(chromeExecuteCommand:)
               forControlEvents:UIControlEventTouchUpInside];
-  [_modeToggleButton setTag:IDC_SWITCH_BROWSER_MODES];
   [_modeToggleButton addTarget:self
                         action:@selector(recordUserMetrics:)
               forControlEvents:UIControlEventTouchUpInside];

@@ -20,9 +20,6 @@ class FilePath;
 + (base::FilePath)greyImagePathForSessionID:(NSString*)sessionID;
 // Returns whether the snapshots are cached in a LRU cache.
 - (BOOL)usesLRUCache;
-// Returns whether the in-memory cache (as opposed to the on-disk cache) is
-// enabled.
-- (BOOL)inMemoryCacheIsEnabled;
 @end
 
 #endif  // IOS_CHROME_BROWSER_SNAPSHOTS_SNAPSHOT_CACHE_INTERNAL_H_

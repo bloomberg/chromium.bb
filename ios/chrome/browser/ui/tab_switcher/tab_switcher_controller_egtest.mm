@@ -6,7 +6,6 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#include "base/test/scoped_command_line.h"
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
@@ -86,16 +85,7 @@ void EnterTabSwitcherWithCommand() {
 @interface TabSwitcherControllerTestCase : ChromeTestCase
 @end
 
-@implementation TabSwitcherControllerTestCase {
-  std::unique_ptr<base::test::ScopedCommandLine> scoped_command_line_;
-}
-
-- (void)setUp {
-  [super setUp];
-  scoped_command_line_.reset(new base::test::ScopedCommandLine());
-  scoped_command_line_->GetProcessCommandLine()->AppendSwitch(
-      switches::kEnableTabSwitcher);
-}
+@implementation TabSwitcherControllerTestCase
 
 // Checks that the tab switcher is not presented.
 - (void)assertTabSwitcherIsInactive {

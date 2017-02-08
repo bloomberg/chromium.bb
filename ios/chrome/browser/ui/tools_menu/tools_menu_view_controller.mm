@@ -163,7 +163,7 @@ NS_INLINE BOOL ItemShouldBeVisible(const MenuItemInfo& item,
     return NO;
 
   if (item.title_id == IDS_IOS_TOOLBAR_SHOW_TABS) {
-    if (!IsIPadIdiom() || !experimental_flags::IsTabSwitcherEnabled()) {
+    if (!IsIPadIdiom()) {
       return NO;
     }
   }

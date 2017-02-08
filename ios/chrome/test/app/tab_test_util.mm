@@ -160,7 +160,7 @@ void CloseAllIncognitoTabs() {
   TabModel* tabModel = [[main_controller browserViewInformation] otrTabModel];
   DCHECK(tabModel);
   [tabModel closeAllTabs];
-  if (!IsIPadIdiom() || !experimental_flags::IsTabSwitcherEnabled()) {
+  if (!IsIPadIdiom()) {
     // If the OTR BVC is active, wait until it isn't (since all of the
     // tabs are now closed)
     testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{

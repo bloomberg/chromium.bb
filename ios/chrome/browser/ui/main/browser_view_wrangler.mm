@@ -212,16 +212,6 @@
   [self updateDeviceSharingManager];
 }
 
-// Called when the number of tabs changes. Updates the switcher button
-// visibility in the various modes on tablet.
-- (void)tabModelDidChangeTabCount:(TabModel*)notifiedTabModel {
-  // If in tablet, update the mode switcher icon based on the number of tabs
-  // in the incognito tab strip. Doing this all the time simplifies a lot
-  // of the state transition logic and setting the property to the same value
-  // incurs no re-layout penalty.
-  [self updateModeToggle];
-}
-
 #pragma mark - Other public methods
 
 - (void)updateDeviceSharingManager {
@@ -288,13 +278,6 @@
 
   if (otrBVCIsCurrent) {
     _currentBVC = self.otrBVC;
-  }
-}
-
-- (void)updateModeToggle {
-  if (IsIPadIdiom()) {
-    self.mainBVC.hasModeToggleSwitch = self.otrTabModel.count ? YES : NO;
-    self.otrBVC.hasModeToggleSwitch = YES;
   }
 }
 

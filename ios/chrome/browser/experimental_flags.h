@@ -100,9 +100,6 @@ bool IsStartupCrashEnabled();
 // Whether or not the tab strip scrolls new tabs to be visible.
 bool IsTabStripAutoScrollNewTabsEnabled();
 
-// Whether the Tab Switcher is enabled for iPad or not.
-bool IsTabSwitcherEnabled();
-
 // Whether viewing and copying passwords is enabled.
 bool IsViewCopyPasswordsEnabled();
 

@@ -118,7 +118,6 @@
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/history/tab_history_cell.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
-#import "ios/chrome/browser/ui/no_tabs/no_tabs_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_panel_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/page_info_model.h"
@@ -241,9 +240,6 @@ void Record(NSInteger action, bool is_image, bool is_link) {
                               NUM_ACTIONS);
   }
 }
-
-// Duration to show or hide the No-Tabs UI.
-const NSTimeInterval kNoTabsAnimationDuration = 0.25;
 
 const CGFloat kVoiceSearchBarHeight = 59.0;
 
@@ -396,9 +392,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
   // Used to display the Find In Page UI. Nil if not visible.
   base::scoped_nsobject<FindBarControllerIOS> _findBarController;
 
-  // Used to display the No-Tabs UI for iPads.  Nil if not visible.
-  base::scoped_nsobject<NoTabsController> _noTabsController;
-
   // Used to display the Print UI. Nil if not visible.
   base::scoped_nsobject<PrintController> _printController;
 
@@ -452,10 +445,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 
   // Card side swipe view.
   base::scoped_nsobject<CardSideSwipeView> _sideSwipeView;
-
-  // Used to cache value of |hasModeToggleSwitch| if set before the tab strip
-  // controller has been created.
-  BOOL _modeToggleNeedsSetting;
 
   // Dominant color cache. Key: (NSString*)url, val: (UIColor*)dominantColor.
   base::scoped_nsobject<NSMutableDictionary> _dominantColorCache;
@@ -588,11 +577,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 - (void)displayTab:(Tab*)tab isNewSelection:(BOOL)newSelection;
 // Initializes the bookmark interaction controller if not already initialized.
 - (void)initializeBookmarkInteractionController;
-
-// Shows the No-Tabs UI with animation.
-- (void)showNoTabsUI;
-// Dismisses the No-Tabs UI with animation.
-- (void)dismissNoTabsUI;
 
 // Shows the tools menu popup.
 - (void)showToolsMenuPopup;
@@ -964,27 +948,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 #pragma mark - Properties
 
-// Implements |hasModeToggleSwitch| property as pass-throughs to tab strip
-// controller and no-tabs controller. If set before the controller has been
-// created, cache it.
-- (void)setHasModeToggleSwitch:(BOOL)hasModeToggleSwitch {
-  if (!experimental_flags::IsTabSwitcherEnabled()) {
-    if (_tabStripController)
-      _tabStripController.get().hasModeToggleSwitch = hasModeToggleSwitch;
-    else
-      _modeToggleNeedsSetting = hasModeToggleSwitch;
-  }
-  [_noTabsController setHasModeToggleSwitch:hasModeToggleSwitch];
-}
-
-// Implements |hasModeToggleSwitch| property as pass-throughs to tab strip
-// controller, unless it hasn't been created in which return the cached version.
-- (BOOL)hasModeToggleSwitch {
-  if (_tabStripController)
-    return _tabStripController.get().hasModeToggleSwitch;
-  return _modeToggleNeedsSetting;
-}
-
 - (void)setActive:(BOOL)active {
   if (_active == active) {
     return;
@@ -1162,13 +1125,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   DCHECK(self.visible || self.dismissingModal);
   Tab* currentTab = [_model currentTab];
   if (currentTab) {
-    BOOL isChromeScheme =
-        web::GetWebClient()->IsAppSpecificURL([currentTab url]);
-    BOOL snapshotOnIpad =
-        (!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled());
-    if (snapshotOnIpad || !isChromeScheme) {
-      [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-    }
+    [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
   }
   [self addSelectedTabWithURL:GURL(kChromeUINewTabURL)
                    transition:ui::PAGE_TRANSITION_TYPED];
@@ -1234,7 +1191,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   self.visible = YES;
 
   // Restore hidden infobars.
-  if (IsIPadIdiom() && experimental_flags::IsTabSwitcherEnabled()) {
+  if (IsIPadIdiom()) {
     _infoBarContainer->RestoreInfobars();
   }
 
@@ -1255,7 +1212,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   [[_model currentTab] updateFullscreenWithToolbarVisible:YES];
   [[_model currentTab] wasHidden];
   [_bookmarkInteractionController dismissSnackbar];
-  if (IsIPadIdiom() && experimental_flags::IsTabSwitcherEnabled()) {
+  if (IsIPadIdiom()) {
     _infoBarContainer->SuspendInfobars();
   }
   [super viewWillDisappear:animated];
@@ -1311,7 +1268,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     _toolbarModelDelegate.reset();
     _toolbarModelIOS.reset();
     _tabStripController.reset();
-    _noTabsController.reset();
     _sideSwipeController.reset();
   }
 }
@@ -1745,20 +1701,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   // If needed, create the tabstrip.
   if (IsIPadIdiom()) {
-    // Determine if it's incognito. Whether or not the toggle button is
-    // visible is consolidated in logic elsewhere so it doesn't need to be set
-    // here.
     _tabStripController.reset(
         [_dependencyFactory newTabStripControllerWithTabModel:_model]);
     _tabStripController.get().fullscreenDelegate = self;
-    [_tabStripController setHasTabSwitcherToggleSwitch:
-                             experimental_flags::IsTabSwitcherEnabled()];
-
-    // If set before the views are loaded, pass the mode toggle to the
-    // toolbar controller (only needed if YES, defaults to NO).
-    if (_modeToggleNeedsSetting) {
-      _tabStripController.get().hasModeToggleSwitch = _modeToggleNeedsSetting;
-    }
+    [_tabStripController setHasTabSwitcherToggleSwitch:YES];
   }
 
   // Create infobar container.
@@ -1962,10 +1908,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)dismissPopups {
-  if (_noTabsController.get())
-    [_noTabsController dismissToolsMenuPopup];
-  else
-    [_toolbarController dismissToolsMenuPopup];
+  [_toolbarController dismissToolsMenuPopup];
   [self hidePageInfoPopupForView:nil];
   [_toolbarController dismissTabHistoryPopup];
   [[_model currentTab].webController recordStateInHistory];
@@ -3260,98 +3203,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
 }
 
-#pragma mark - No-tabs UI methods
-
-// Show the No-Tabs UI (hiding normal tab/web ui).
-- (void)showNoTabsUI {
-  // The No-Tabs UI is only shown on tablet for non-incognito BVCs.  (Incognito
-  // mode does not have a No-Tabs UI; the user is simply shown the non-incognito
-  // BVC when the last incognito tab is closed.)
-  DCHECK(IsIPadIdiom());
-  DCHECK(!_isOffTheRecord);
-
-  // The method showNoTabsUI is called asynchronously when the number of tabs
-  // reaches zero. Do not show the no tabs UI if a tab was added in the mean
-  // time.
-  if ([_model count])
-    return;
-
-  DCHECK([_model currentTab] == nil);
-  DCHECK([_contentArea subviews].count == 0 ||
-         experimental_flags::IsTabSwitcherEnabled());
-  _noTabsController.reset([[NoTabsController alloc] initWithView:self.view]);
-
-  // Close the tools popup menu if it is open, as its contents/location were
-  // specific to being in the tabs UI.
-  [_toolbarController dismissToolsMenuPopup];
-
-  // Immediately hide the web, toolbar, and tabstrip.
-  [[_toolbarController view] setHidden:YES];
-  [[_tabStripController view] setHidden:YES];
-
-  // Set up the toggle switch animation, if needed.
-  if ([self hasModeToggleSwitch]) {
-    UIButton* animationStartButton = [_tabStripController modeToggleButton];
-    [_noTabsController installAnimationImageForButton:animationStartButton
-                                               inView:self.view
-                                                 show:YES];
-  }
-
-  [_noTabsController prepareForShowAnimation];
-  [UIView animateWithDuration:kNoTabsAnimationDuration
-      animations:^{
-        [_noTabsController showNoTabsUI];
-      }
-      completion:^(BOOL finished) {
-        [_noTabsController showAnimationDidFinish];
-        [_noTabsController setHasModeToggleSwitch:[self hasModeToggleSwitch]];
-      }];
-}
-
-// Hide the No-Tabs UI (restoring normal tab/web ui).
-- (void)dismissNoTabsUI {
-  // The No-Tabs UI is only shown on tablet for non-incognito BVCs, so there is
-  // no need to dismiss it for an incognito BVC.
-  DCHECK(IsIPadIdiom());
-  if (_isOffTheRecord)
-    return;
-
-  // Set up the toggle switch animation, if needed.
-  if ([self hasModeToggleSwitch]) {
-    UIButton* animationEndButton = [_tabStripController modeToggleButton];
-    [_noTabsController installAnimationImageForButton:animationEndButton
-                                               inView:self.view
-                                                 show:NO];
-  }
-
-  [_noTabsController prepareForDismissAnimation];
-
-  // Pull the controller out of the scoped_nsobject so the animation blocks can
-  // retain it.
-  NoTabsController* noTabsController = _noTabsController.get();
-  [UIView animateWithDuration:kNoTabsAnimationDuration
-      animations:^{
-        [noTabsController dismissNoTabsUI];
-      }
-      completion:^(BOOL finished) {
-        // When the animation is finished, remove all of the No-Tabs UI and
-        // reshow the tabstrip, web toolbar, and web.
-        [noTabsController dismissAnimationDidFinish];
-        [[_toolbarController view] setHidden:NO];
-        [[_tabStripController view] setHidden:NO];
-      }];
-  // Nullify the instance variable. The controller is retained by the animation.
-  // Nullifying this variable prevents button press performed during the
-  // animation to be routed to the noTabController.
-  _noTabsController.reset();
-}
-
 #pragma mark - Showing popups
 
 - (void)showToolsMenuPopup {
   DCHECK(_browserState);
   DCHECK(self.visible || self.dismissingModal);
-  DCHECK(!_noTabsController);
 
   // Dismiss the omnibox (if open).
   [_toolbarController cancelOmniboxEdit];
@@ -3453,7 +3309,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 - (void)showTabHistoryPopupForBackwardHistory {
   DCHECK(self.visible || self.dismissingModal);
-  DCHECK(!_noTabsController);
 
   // Dismiss the omnibox (if open).
   [_toolbarController cancelOmniboxEdit];
@@ -3470,7 +3325,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 - (void)showTabHistoryPopupForForwardHistory {
   DCHECK(self.visible || self.dismissingModal);
-  DCHECK(!_noTabsController);
 
   // Dismiss the omnibox (if open).
   [_toolbarController cancelOmniboxEdit];
@@ -4027,15 +3881,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [self enableDesktopUserAgent];
       break;
     case IDC_SHOW_TOOLS_MENU: {
-      // TODO(blundell): Change this if/else to
-      // |DCHECK(!_noTabsController)| if/when the no tabs controller
-      // becomes part of the responder chain.
-      // The no tabs controller's toolbar should open the menu when in the
-      // no-tabs UI.
-      if (_noTabsController.get())
-        [_noTabsController showToolsMenuPopup];
-      else
-        [self showToolsMenuPopup];
+      [self showToolsMenuPopup];
       break;
     }
     case IDC_SHOW_BOOKMARK_MANAGER: {
@@ -4136,14 +3982,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   if (tabIndex == NSNotFound)
     return;
 
-  // Take snapshot on iPad only if Tab switcher is enabled, if not just close
-  // the tab.
-  if (IsIPadIdiom() && !experimental_flags::IsTabSwitcherEnabled()) {
-    [_model closeTabAtIndex:tabIndex];
-    return;
-  }
-
-  // Create image of tab for close animation.
+  // TODO(crbug.com/688003): Evaluate if a screenshot of the tab is needed on
+  // iPad.
   UIImageView* exitingPage = [self pageOpenCloseAnimationView];
   exitingPage.image =
       [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
@@ -4201,10 +4041,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   [_printController dismissAnimated:YES];
   _printController.reset();
-  if (_noTabsController.get())
-    [_noTabsController dismissToolsMenuPopup];
-  else
-    [_toolbarController dismissToolsMenuPopup];
+  [_toolbarController dismissToolsMenuPopup];
   [_contextMenuCoordinator stop];
   [self dismissRateThisAppDialog];
 
@@ -4606,26 +4443,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 // Called when the number of tabs changes. Update the toolbar accordingly.
 - (void)tabModelDidChangeTabCount:(TabModel*)model {
   DCHECK(model == _model);
-  if ([_model count] == 1 && _noTabsController.get()) {
-    [self dismissNoTabsUI];
-  }
-
   [_toolbarController setTabCount:[_model count]];
-  // If the iPad tab switcher feature is enabled, the tab switcher is shown
-  // instead of the no tabs UI. Showing the tab switcher in that case is
-  // done from the main controller.
-  // If the iPad tab switcher feature is disabled and the number of tabs is
-  // zero, ensure the no-tabs UI is visible (such as if the last tab was closed
-  // programmatically from JS).  This is done on a delay because the
-  // notification happens while the tab is going away and trying to trigger a
-  // change during teardown causes problems.
-  BOOL showNoTabsUIOnIPad =
-      IsIPadIdiom() && !experimental_flags::IsTabSwitcherEnabled();
-  if (![_model count] && showNoTabsUIOnIPad && !_isOffTheRecord) {
-    [self performSelector:@selector(showNoTabsUI)
-               withObject:nil
-               afterDelay:0.01];
-  }
 }
 
 #pragma mark - Upgrade Detection

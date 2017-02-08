@@ -163,29 +163,21 @@ void SwitchToNormalMode() {
   GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
                  @"Switching to normal mode is only allowed from Incognito.");
   if (IsIPadIdiom()) {
-    if (experimental_flags::IsTabSwitcherEnabled()) {
-      // Enter the tab switcher.
-      id<GREYMatcher> tabSwitcherEnterButton =
-          grey_accessibilityLabel(l10n_util::GetNSStringWithFixup(
-              IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER));
-      [[EarlGrey selectElementWithMatcher:tabSwitcherEnterButton]
-          performAction:grey_tap()];
+    // Enter the tab switcher.
+    id<GREYMatcher> tabSwitcherEnterButton = grey_accessibilityLabel(
+        l10n_util::GetNSStringWithFixup(IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER));
+    [[EarlGrey selectElementWithMatcher:tabSwitcherEnterButton]
+        performAction:grey_tap()];
 
-      // Select the non incognito panel.
-      id<GREYMatcher> tabSwitcherHeaderPanelButton =
-          grey_accessibilityLabel(l10n_util::GetNSStringWithFixup(
-              IDS_IOS_TAB_SWITCHER_HEADER_NON_INCOGNITO_TABS));
-      [[EarlGrey selectElementWithMatcher:tabSwitcherHeaderPanelButton]
-          performAction:grey_tap()];
+    // Select the non incognito panel.
+    id<GREYMatcher> tabSwitcherHeaderPanelButton =
+        grey_accessibilityLabel(l10n_util::GetNSStringWithFixup(
+            IDS_IOS_TAB_SWITCHER_HEADER_NON_INCOGNITO_TABS));
+    [[EarlGrey selectElementWithMatcher:tabSwitcherHeaderPanelButton]
+        performAction:grey_tap()];
 
-      // Leave the tab switcher.
-      CloseTabSwitcher();
-    } else {
-      [[EarlGrey selectElementWithMatcher:
-                     chrome_test_util::ButtonWithAccessibilityLabelId(
-                         IDS_IOS_SWITCH_BROWSER_MODE_LEAVE_INCOGNITO)]
-          performAction:grey_tap()];
-    }
+    // Leave the tab switcher.
+    CloseTabSwitcher();
   } else {
     [[EarlGrey selectElementWithMatcher:
                    chrome_test_util::ButtonWithAccessibilityLabelId(

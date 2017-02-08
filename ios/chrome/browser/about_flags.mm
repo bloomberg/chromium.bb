@@ -103,15 +103,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   if ([defaults boolForKey:@"TabStripAutoScrollNewTabsDisabled"])
     command_line->AppendSwitch(switches::kDisableTabStripAutoScrollNewTabs);
 
-  // Populate command line flag for the Tab Switcher experiment from the
-  // configuration plist.
-  NSString* enableTabSwitcher = [defaults stringForKey:@"EnableTabSwitcher"];
-  if ([enableTabSwitcher isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableTabSwitcher);
-  } else if ([enableTabSwitcher isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisableTabSwitcher);
-  }
-
   // Populate command line flag for the SnapshotLRUCache experiment from the
   // configuration plist.
   NSString* enableLRUSnapshotCache =

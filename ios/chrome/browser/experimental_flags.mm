@@ -249,19 +249,6 @@ bool IsTabStripAutoScrollNewTabsEnabled() {
   return !command_line->HasSwitch(switches::kDisableTabStripAutoScrollNewTabs);
 }
 
-bool IsTabSwitcherEnabled() {
-  // Check if the experimental flag is forced off.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableTabSwitcher)) {
-    return false;
-  }
-
-  // Check if the finch experiment is turned off.
-  std::string group_name = base::FieldTrialList::FindFullName("IOSTabSwitcher");
-  return !base::StartsWith(group_name, "Disabled",
-                           base::CompareCase::INSENSITIVE_ASCII);
-}
-
 bool IsViewCopyPasswordsEnabled() {
   NSString* viewCopyPasswordFlag = [[NSUserDefaults standardUserDefaults]
       objectForKey:kEnableViewCopyPasswords];

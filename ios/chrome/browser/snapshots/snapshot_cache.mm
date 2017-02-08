@@ -232,9 +232,6 @@ void ConvertAndSaveGreyImage(
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(sessionID);
 
-  if (![self inMemoryCacheIsEnabled] && !callback)
-    return;
-
   UIImage* img = nil;
   if (lruCache_)
     img = [lruCache_ objectForKey:sessionID];
@@ -256,7 +253,7 @@ void ConvertAndSaveGreyImage(
             [SnapshotCache imagePathForSessionID:sessionID]) retain]);
       }),
       base::BindBlock(^(base::scoped_nsobject<UIImage> image) {
-        if ([self inMemoryCacheIsEnabled] && image) {
+        if (image) {
           if (lruCache_)
             [lruCache_ setObject:image forKey:sessionID];
           else
@@ -272,12 +269,11 @@ void ConvertAndSaveGreyImage(
   if (!img || !sessionID)
     return;
 
-  if ([self inMemoryCacheIsEnabled]) {
-    if (lruCache_)
-      [lruCache_ setObject:img forKey:sessionID];
-    else
-      [imageDictionary_ setObject:img forKey:sessionID];
-  }
+  if (lruCache_)
+    [lruCache_ setObject:img forKey:sessionID];
+  else
+    [imageDictionary_ setObject:img forKey:sessionID];
+
   // Save the image to disk.
   web::WebThread::PostBlockingPoolSequencedTask(
       kSequenceToken, FROM_HERE,
@@ -403,15 +399,9 @@ void ConvertAndSaveGreyImage(
   }
 }
 
-- (BOOL)inMemoryCacheIsEnabled {
-  // In-memory cache on iPad is enabled only when the tab switcher is enabled.
-  return !IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled();
-}
-
 - (BOOL)usesLRUCache {
-  // Always use the LRUCache when the tab switcher is enabled.
-  return experimental_flags::IsTabSwitcherEnabled() ||
-         experimental_flags::IsLRUSnapshotCacheEnabled();
+  // TODO(crbug.com/687904): Remove the non-LRU cache code.
+  return true;
 }
 
 - (void)handleLowMemory {

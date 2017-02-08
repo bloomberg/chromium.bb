@@ -57,10 +57,6 @@ class ChromeBrowserState;
 - (void)deleteIncognitoTabModelState:
     (BrowsingDataRemovalController*)removalController;
 
-// Updates the mode toggle buttons on tablet. The incognito tab strip always
-// shows the switcher icon.
-- (void)updateModeToggle;
-
 @end
 
 @interface BrowserViewWrangler (Testing)

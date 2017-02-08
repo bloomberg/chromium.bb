@@ -218,9 +218,6 @@ class SnapshotCacheTest : public PlatformTest {
 TEST_F(SnapshotCacheTest, Cache) {
   SnapshotCache* cache = GetSnapshotCache();
 
-  if (![cache inMemoryCacheIsEnabled])
-    return;
-
   NSUInteger expectedCacheSize = kSessionCount;
   if ([cache usesLRUCache])
     expectedCacheSize = MIN(kSessionCount, [cache lruCacheMaxSize]);
@@ -361,13 +358,8 @@ TEST_F(SnapshotCacheTest, HandleMemoryWarning) {
 
   TriggerMemoryWarning();
 
-  if ([cache inMemoryCacheIsEnabled]) {
-    EXPECT_EQ(YES, [cache hasImageInMemory:firstPinnedID]);
-    EXPECT_EQ(YES, [cache hasImageInMemory:secondPinnedID]);
-  } else {
-    EXPECT_EQ(NO, [cache hasImageInMemory:firstPinnedID]);
-    EXPECT_EQ(NO, [cache hasImageInMemory:secondPinnedID]);
-  }
+  EXPECT_EQ(YES, [cache hasImageInMemory:firstPinnedID]);
+  EXPECT_EQ(YES, [cache hasImageInMemory:secondPinnedID]);
 
   NSString* notPinnedID = [testSessions_ objectAtIndex:2];
   EXPECT_FALSE([cache hasImageInMemory:notPinnedID]);

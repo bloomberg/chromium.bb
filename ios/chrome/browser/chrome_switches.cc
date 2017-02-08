@@ -47,9 +47,6 @@ const char kDisableSpotlightActions[] = "disable-spotlight-actions";
 const char kDisableTabStripAutoScrollNewTabs[] =
     "disable-tab-strip-autoscroll-new-tabs";
 
-// Disables the tab switcher.
-const char kDisableTabSwitcher[] = "disable-tab-switcher";
-
 // Disables Physical Web scanning for nearby URLs.
 const char kDisableIOSPhysicalWeb[] = "disable-ios-physical-web";
 
@@ -92,9 +89,6 @@ const char kEnableReaderModeToolbarIcon[] = "enable-reader-mode-toolbar-icon";
 
 // Enables the Spotlight actions.
 const char kEnableSpotlightActions[] = "enable-spotlight-actions";
-
-// Enables the tab switcher.
-const char kEnableTabSwitcher[] = "enable-tab-switcher";
 
 // Enables Physical Web scanning for nearby URLs.
 const char kEnableIOSPhysicalWeb[] = "enable-ios-physical-web";
