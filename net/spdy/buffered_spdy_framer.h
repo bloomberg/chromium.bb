@@ -181,30 +181,25 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   SpdyFramer::SpdyState state() const;
   bool MessageFullyRead();
   bool HasError();
-  SpdySerializedFrame* CreateRstStream(SpdyStreamId stream_id,
-                                       SpdyErrorCode error_code) const;
-  SpdySerializedFrame* CreateSettings(const SettingsMap& values) const;
-  SpdySerializedFrame* CreatePingFrame(SpdyPingId unique_id, bool is_ack) const;
-  SpdySerializedFrame* CreateGoAway(SpdyStreamId last_accepted_stream_id,
-                                    SpdyErrorCode error_code,
-                                    base::StringPiece debug_data) const;
-  SpdySerializedFrame* CreateHeaders(SpdyStreamId stream_id,
-                                     SpdyControlFlags flags,
-                                     int weight,
-                                     SpdyHeaderBlock headers);
-  SpdySerializedFrame* CreateWindowUpdate(SpdyStreamId stream_id,
-                                          uint32_t delta_window_size) const;
-  SpdySerializedFrame* CreateDataFrame(SpdyStreamId stream_id,
-                                       const char* data,
-                                       uint32_t len,
-                                       SpdyDataFlags flags);
-  SpdySerializedFrame* CreatePushPromise(SpdyStreamId stream_id,
-                                         SpdyStreamId promised_stream_id,
-                                         SpdyHeaderBlock headers);
-  SpdySerializedFrame* CreatePriority(SpdyStreamId stream_id,
-                                      SpdyStreamId dependency_id,
-                                      int weight,
-                                      bool exclusive) const;
+  std::unique_ptr<SpdySerializedFrame> CreateRstStream(
+      SpdyStreamId stream_id,
+      SpdyErrorCode error_code) const;
+  std::unique_ptr<SpdySerializedFrame> CreateSettings(
+      const SettingsMap& values) const;
+  std::unique_ptr<SpdySerializedFrame> CreatePingFrame(SpdyPingId unique_id,
+                                                       bool is_ack) const;
+  std::unique_ptr<SpdySerializedFrame> CreateWindowUpdate(
+      SpdyStreamId stream_id,
+      uint32_t delta_window_size) const;
+  std::unique_ptr<SpdySerializedFrame> CreateDataFrame(SpdyStreamId stream_id,
+                                                       const char* data,
+                                                       uint32_t len,
+                                                       SpdyDataFlags flags);
+  std::unique_ptr<SpdySerializedFrame> CreatePriority(
+      SpdyStreamId stream_id,
+      SpdyStreamId dependency_id,
+      int weight,
+      bool exclusive) const;
 
   // Serialize a frame of unknown type.
   SpdySerializedFrame SerializeFrame(const SpdyFrameIR& frame) {
