@@ -278,6 +278,12 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING" desc="The label used in the tray popup to show bluetooth is discovering devices.">
         Scanning for devices...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED_DEVICES" desc="The sub-header label for paired devices in Bluetooth device list.">
+        Paired devices
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_UNPAIRED_DEVICES" desc="The sub-header label for unpaired devices in Bluetooth device list.">
+        Unpaired devices
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
         Restart to update

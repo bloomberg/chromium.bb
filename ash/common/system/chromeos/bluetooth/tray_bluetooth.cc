@@ -323,24 +323,32 @@ class BluetoothDetailedView : public TrayDetailsView {
       }
     }
 
-    AppendSameTypeDevicesToScrollList(connected_devices_, true, true,
-                                      bluetooth_enabled);
-    AppendSameTypeDevicesToScrollList(connecting_devices_, true, false,
-                                      bluetooth_enabled);
-    AppendSameTypeDevicesToScrollList(paired_not_connected_devices_, false,
-                                      false, bluetooth_enabled);
+    // Add paired devices (and their section header in MD) in the list.
+    size_t num_paired_devices = connected_devices_.size() +
+                                connecting_devices_.size() +
+                                paired_not_connected_devices_.size();
+    if (num_paired_devices > 0) {
+      if (UseMd())
+        AddSubHeader(IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED_DEVICES);
+      AppendSameTypeDevicesToScrollList(connected_devices_, true, true,
+                                        bluetooth_enabled);
+      AppendSameTypeDevicesToScrollList(connecting_devices_, true, false,
+                                        bluetooth_enabled);
+      AppendSameTypeDevicesToScrollList(paired_not_connected_devices_, false,
+                                        false, bluetooth_enabled);
+    }
+
+    // Add paired devices (and their section header in MD) in the list.
     if (discovered_not_paired_devices_.size() > 0) {
       if (UseMd()) {
-        if (scroll_content()->has_children()) {
-          scroll_content()->AddChildView(
-              TrayPopupUtils::CreateListItemSeparator(false));
-        }
+        if (num_paired_devices > 0)
+          AddSubHeader(IDS_ASH_STATUS_TRAY_BLUETOOTH_UNPAIRED_DEVICES);
       } else {
         AddScrollSeparator();
       }
+      AppendSameTypeDevicesToScrollList(discovered_not_paired_devices_, false,
+                                        false, bluetooth_enabled);
     }
-    AppendSameTypeDevicesToScrollList(discovered_not_paired_devices_, false,
-                                      false, bluetooth_enabled);
 
     // Show user Bluetooth state if there is no bluetooth devices in list.
     if (device_map_.size() == 0) {
@@ -405,6 +413,19 @@ class BluetoothDetailedView : public TrayDetailsView {
     }
     scroll_content()->AddChildView(container);
     return container;
+  }
+
+  void AddSubHeader(int message_id) {
+    TriView* header = TrayPopupUtils::CreateSubHeaderRowView();
+    TrayPopupUtils::ConfigureAsStickyHeader(header);
+
+    views::Label* label = TrayPopupUtils::CreateDefaultLabel();
+    label->SetText(l10n_util::GetStringUTF16(message_id));
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
+    style.SetupLabel(label);
+    header->AddView(TriView::Container::CENTER, label);
+
+    scroll_content()->AddChildView(header);
   }
 
   void SetupConnectedItemMd(HoverHighlightView* container,
