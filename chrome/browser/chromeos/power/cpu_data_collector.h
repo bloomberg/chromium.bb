@@ -77,7 +77,7 @@ class CpuDataCollector {
   void PostSampleCpuState();
 
   // This function commits the CPU count and samples read by
-  // SampleCpuStateOnBlockingPool to |cpu_idle_state_data_| and
+  // SampleCpuStateAsync to |cpu_idle_state_data_| and
   // |cpu_freq_state_data_|. Since UI is the consumer of CPU idle and freq data,
   // this function should run on the UI thread.
   void SaveCpuStateSamplesOnUIThread(

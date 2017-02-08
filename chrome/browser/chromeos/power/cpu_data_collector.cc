@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -302,7 +303,7 @@ void SampleCpuFreqData(
 // index i in |idle_samples| and |freq_samples| correspond to the idle and
 // freq samples of CPU i. This also function reads the number of CPUs from
 // sysfs if *|cpu_count| < 0.
-void SampleCpuStateOnBlockingPool(
+void SampleCpuStateAsync(
     int* cpu_count,
     std::vector<std::string>* cpu_idle_state_names,
     std::vector<CpuDataCollector::StateOccupancySample>* idle_samples,
@@ -351,7 +352,7 @@ void SampleCpuStateOnBlockingPool(
 
 }  // namespace
 
-// Set |cpu_count_| to -1 and let SampleCpuStateOnBlockingPool discover the
+// Set |cpu_count_| to -1 and let SampleCpuStateAsync discover the
 // correct number of CPUs.
 CpuDataCollector::CpuDataCollector() : cpu_count_(-1), weak_ptr_factory_(this) {
 }
@@ -377,21 +378,18 @@ void CpuDataCollector::PostSampleCpuState() {
   std::vector<StateOccupancySample>* freq_samples =
       new std::vector<StateOccupancySample>;
 
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE,
-      base::Bind(&SampleCpuStateOnBlockingPool,
-                 base::Unretained(cpu_count),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::BACKGROUND),
+      base::Bind(&SampleCpuStateAsync, base::Unretained(cpu_count),
                  base::Unretained(cpu_idle_state_names),
                  base::Unretained(idle_samples),
                  base::Unretained(cpu_freq_state_names),
                  base::Unretained(freq_samples)),
       base::Bind(&CpuDataCollector::SaveCpuStateSamplesOnUIThread,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(cpu_count),
-                 base::Owned(cpu_idle_state_names),
-                 base::Owned(idle_samples),
-                 base::Owned(cpu_freq_state_names),
-                 base::Owned(freq_samples)));
+                 weak_ptr_factory_.GetWeakPtr(), base::Owned(cpu_count),
+                 base::Owned(cpu_idle_state_names), base::Owned(idle_samples),
+                 base::Owned(cpu_freq_state_names), base::Owned(freq_samples)));
 }
 
 void CpuDataCollector::SaveCpuStateSamplesOnUIThread(
