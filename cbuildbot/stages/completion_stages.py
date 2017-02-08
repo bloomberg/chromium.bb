@@ -338,7 +338,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
     for config_name in no_stat:
       if config_name in buildbucket_info_dict:
-        buildbucket_id = buildbucket_info_dict[config_name]['buildbucket_id']
+        buildbucket_id = buildbucket_info_dict[config_name].buildbucket_id
         assert buildbucket_id is not None, 'buildbucket_id is None'
         try:
           content = self.buildbucket_client.GetBuildRequest(

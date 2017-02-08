@@ -26,54 +26,60 @@ class BuildbucketInfos(object):
 
   @staticmethod
   def GetScheduledBuild(bb_id='scheduled_id_1', retry=0):
-    return build_status.BuildbucketInfo(
+    return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
+        created_ts=1,
         status=constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
         result=None
     )
 
   @staticmethod
   def GetStartedBuild(bb_id='started_id_1', retry=0):
-    return build_status.BuildbucketInfo(
+    return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
+        created_ts=1,
         status=constants.BUILDBUCKET_BUILDER_STATUS_STARTED,
         result=None
     )
 
   @staticmethod
   def GetSuccessBuild(bb_id='success_id_1', retry=0):
-    return build_status.BuildbucketInfo(
+    return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
+        created_ts=1,
         status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED,
         result=constants.BUILDBUCKET_BUILDER_RESULT_SUCCESS
     )
 
   @staticmethod
   def GetFailureBuild(bb_id='failure_id_1', retry=0):
-    return build_status.BuildbucketInfo(
+    return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
+        created_ts=1,
         status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED,
         result=constants.BUILDBUCKET_BUILDER_RESULT_FAILURE
     )
 
   @staticmethod
   def GetCanceledBuild(bb_id='canceled_id_1', retry=0):
-    return build_status.BuildbucketInfo(
+    return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
+        created_ts=1,
         status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED,
         result=constants.BUILDBUCKET_BUILDER_RESULT_CANCELED
     )
 
   @staticmethod
   def GetMissingBuild(bb_id='missing_id_1', retry=0):
-    return build_status.BuildbucketInfo(
+    return buildbucket_lib.BuildbucketInfo(
         buildbucket_id=bb_id,
         retry=retry,
+        created_ts=1,
         status=None,
         result=None
     )
@@ -994,17 +1000,17 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.assertEqual(retried_builds, builds_to_retry)
     buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
         slave_status.metadata)
-    self.assertEqual(buildbucket_info_dict['failure']['buildbucket_id'],
+    self.assertEqual(buildbucket_info_dict['failure'].buildbucket_id,
                      'retry_id')
-    self.assertEqual(buildbucket_info_dict['failure']['retry'], 1)
+    self.assertEqual(buildbucket_info_dict['failure'].retry, 1)
 
     retried_builds = slave_status._RetryBuilds(builds_to_retry)
     self.assertEqual(retried_builds, builds_to_retry)
     buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
         slave_status.metadata)
-    self.assertEqual(buildbucket_info_dict['canceled']['buildbucket_id'],
+    self.assertEqual(buildbucket_info_dict['canceled'].buildbucket_id,
                      'retry_id')
-    self.assertEqual(buildbucket_info_dict['canceled']['retry'], 2)
+    self.assertEqual(buildbucket_info_dict['canceled'].retry, 2)
 
   def test_GetAllSlaveBuildbucketInfo(self):
     """Test _GetAllSlaveBuildbucketInfo."""
@@ -1013,8 +1019,8 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
 
     # Test completed builds.
     buildbucket_info_dict = {
-        'build1': {'buildbucket_id': 'id_1', 'retry': 0},
-        'build2': {'buildbucket_id': 'id_2', 'retry': 0}
+        'build1': buildbucket_lib.BuildbucketInfo('id_1', 1, 0, None, None),
+        'build2': buildbucket_lib.BuildbucketInfo('id_2', 1, 0, None, None)
     }
     self.PatchObject(buildbucket_lib, 'GetScheduledBuildDict',
                      return_value=buildbucket_info_dict)

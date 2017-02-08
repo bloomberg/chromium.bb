@@ -15,6 +15,7 @@ cr-buildbucket/README.md'
 
 from __future__ import print_function
 
+import collections
 import json
 import os
 import urllib
@@ -55,6 +56,11 @@ BUILDBUCKET_HOST = 'cr-buildbucket.appspot.com'
 # Buildbucket test host instance
 BUILDBUCKET_TEST_HOST = 'cr-buildbucket-test.appspot.com'
 
+# Namedtupe to store buildbucket related info.
+BuildbucketInfo = collections.namedtuple(
+    'BuildbucketInfo',
+    ['buildbucket_id', 'retry', 'created_ts', 'status', 'result'])
+
 class BuildbucketResponseException(Exception):
   """Exception got from Buildbucket Response."""
 
@@ -87,8 +93,8 @@ def GetScheduledBuildDict(scheduled_slave_list):
                           [(build_config, buildbucket_id, created_ts)].
 
   Returns:
-    A dict mapping build config name to its buildbucket information dict
-    (current buildbucket_id, current created_ts, retry #).
+    A dict mapping build config name to its buildbucket information
+    (in the format of BuildbucketInfo).
   """
   if scheduled_slave_list is None:
     return {}
@@ -96,18 +102,19 @@ def GetScheduledBuildDict(scheduled_slave_list):
   buildbucket_info_dict = {}
   for (build_config, buildbucket_id, created_ts) in scheduled_slave_list:
     if build_config not in buildbucket_info_dict:
-      buildbucket_info_dict[build_config] = {
-          'buildbucket_id':buildbucket_id,
-          'created_ts': created_ts,
-          'retry': 0
-      }
+      buildbucket_info_dict[build_config] = BuildbucketInfo(
+          buildbucket_id, 0, created_ts, None, None)
     else:
+      old_info = buildbucket_info_dict[build_config]
       # If a slave occurs multiple times, increment retry count and keep
       # the buildbucket_id and created_ts of most recently created one.
-      buildbucket_info_dict[build_config]['retry'] += 1
-      if created_ts > buildbucket_info_dict[build_config]['created_ts']:
-        buildbucket_info_dict[build_config]['buildbucket_id'] = buildbucket_id
-        buildbucket_info_dict[build_config]['created_ts'] = created_ts
+      new_retry = old_info.retry + 1
+      if created_ts > buildbucket_info_dict[build_config].created_ts:
+        buildbucket_info_dict[build_config] = BuildbucketInfo(
+            buildbucket_id, new_retry, created_ts, None, None)
+      else:
+        buildbucket_info_dict[build_config] = BuildbucketInfo(
+            old_info.buildbucket_id, new_retry, old_info.created_ts, None, None)
 
   return buildbucket_info_dict
 
@@ -119,8 +126,8 @@ def GetBuildInfoDict(metadata):
 
   Returns:
     buildbucket_info_dict: A dict mapping build config name to its buildbucket
-        information dict(current buildbucket_id, current created_ts, retry #).
-        See GetScheduledBuildDict for details.
+        information in the format of BuildbucketInfo.
+        (See GetScheduledBuildDict for details.)
   """
   assert metadata is not None
 
@@ -138,7 +145,7 @@ def GetBuildbucketIds(metadata):
     A list of buildbucket_ids (string) of slave builds.
   """
   buildbucket_info_dict = GetBuildInfoDict(metadata)
-  return [info_dict['buildbucket_id']
+  return [info_dict.buildbucket_id
           for info_dict in buildbucket_info_dict.values()]
 
 

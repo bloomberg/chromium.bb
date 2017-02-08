@@ -17,11 +17,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
 
 
-# Namedtupe to store buildbucket related info.
-BuildbucketInfo = collections.namedtuple(
-    'BuildbucketInfo',
-    ['buildbucket_id', 'retry', 'status', 'result'])
-
 # Namedtupe to store CIDB status info.
 CIDBStatusInfo = collections.namedtuple(
     'CIDBStatusInfo',
@@ -161,8 +156,9 @@ class SlaveStatus(object):
     all_buildbucket_info_dict = {}
 
     for build_config in buildbucket_info_dict.keys():
-      buildbucket_id = buildbucket_info_dict[build_config]['buildbucket_id']
-      retry = buildbucket_info_dict[build_config]['retry']
+      buildbucket_id = buildbucket_info_dict[build_config].buildbucket_id
+      retry = buildbucket_info_dict[build_config].retry
+      created_ts = buildbucket_info_dict[build_config].created_ts
       status = None
       result = None
 
@@ -178,8 +174,8 @@ class SlaveStatus(object):
         logging.error('Failed to get status for build %s id %s: %s',
                       build_config, buildbucket_id, e)
 
-      all_buildbucket_info_dict[build_config] = BuildbucketInfo(
-          buildbucket_id, retry, status, result)
+      all_buildbucket_info_dict[build_config] = buildbucket_lib.BuildbucketInfo(
+          buildbucket_id, retry, created_ts, status, result)
 
     return all_buildbucket_info_dict
 
