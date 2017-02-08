@@ -3787,11 +3787,6 @@
      {}
     ]
    ],
-   "./MANIFEST.json": [
-    [
-     {}
-    ]
-   ],
    "./README.md": [
     [
      {}
@@ -3898,11 +3893,6 @@
     ]
    ],
    "FileAPI/idlharness.idl": [
-    [
-     {}
-    ]
-   ],
-   "FileAPI/reading-data-section/filereader_abort-expected.txt": [
     [
      {}
     ]
@@ -34511,10 +34501,6 @@
    "89af73c41d456ee93bd40921e96414c1908fc48c",
    "support"
   ],
-  "./MANIFEST.json": [
-   "21d1c98975a9d9bd1ca6e949f027331227cfe568",
-   "support"
-  ],
   "./README.md": [
    "47d52ff4a87b49dec2fb5ceb98211fb1b9af34fb",
    "support"
@@ -34674,10 +34660,6 @@
   "FileAPI/reading-data-section/FileReader-multiple-reads.html": [
    "32bad4f4ea2ac1104fa2828ef7370a2fdee11a5a",
    "testharness"
-  ],
-  "FileAPI/reading-data-section/filereader_abort-expected.txt": [
-   "6b7d9ce30d01a65662252c7f041bc804ca7be1cf",
-   "support"
   ],
   "FileAPI/reading-data-section/filereader_abort.html": [
    "b1a3335d10f661aee31df179e5e81d2071b38edd",
@@ -36660,7 +36642,7 @@
    "testharness"
   ],
   "dom/interfaces-expected.txt": [
-   "736c279a0fd985f14413551d6ce01f5393416265",
+   "f403c23e7b24229e9fe438dbfd9f8a5e439a1fbd",
    "support"
   ],
   "dom/interfaces.html": [
