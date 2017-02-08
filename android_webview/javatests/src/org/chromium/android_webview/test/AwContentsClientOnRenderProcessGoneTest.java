@@ -15,10 +15,13 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Tests for AwContentsClient.onRenderProcessGone callback.
  */
 public class AwContentsClientOnRenderProcessGoneTest extends AwTestBase {
+    private static final String TAG = "AwRendererGone";
     private static class GetRenderProcessGoneHelper extends CallbackHelper {
         private AwRenderProcessGoneDetail mDetail;
 
@@ -65,8 +68,8 @@ public class AwContentsClientOnRenderProcessGoneTest extends AwTestBase {
         GetRenderProcessGoneHelper helper = contentsClient.getGetRenderProcessGoneHelper();
         loadUrlAsync(awContents, "chrome://crash");
         int callCount = helper.getCallCount();
-        helper.waitForCallback(callCount);
-
+        helper.waitForCallback(callCount, 1, CallbackHelper.WAIT_TIMEOUT_SECONDS * 5,
+                TimeUnit.SECONDS);
         assertEquals(callCount + 1, helper.getCallCount());
         assertTrue(helper.getAwRenderProcessGoneDetail().didCrash());
         assertEquals(RendererPriority.HIGH,
