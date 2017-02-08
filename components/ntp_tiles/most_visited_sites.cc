@@ -207,10 +207,8 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
       std::min(visited_list.size(), static_cast<size_t>(num_sites_));
   for (size_t i = 0; i < num_tiles; ++i) {
     const history::MostVisitedURL& visited = visited_list[i];
-    if (visited.url.is_empty()) {
-      num_tiles = i;
+    if (visited.url.is_empty())
       break;  // This is the signal that there are no more real visited sites.
-    }
     if (supervisor_ && supervisor_->IsBlocked(visited.url))
       continue;
 
