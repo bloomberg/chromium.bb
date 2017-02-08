@@ -44,6 +44,8 @@
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkUnPreMultiply.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/effects/SkLumaColorFilter.h"
 #include "third_party/skia/include/effects/SkPictureImageFilter.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
@@ -509,6 +511,93 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2) {
   m_canvas->drawLine(p1.x(), p1.y(), p2.x(), p2.y(), paint);
 }
 
+namespace {
+
+#if !OS(MACOSX)
+
+sk_sp<SkPicture> recordMarker(GraphicsContext::DocumentMarkerLineStyle style) {
+  SkColor color = (style == GraphicsContext::DocumentMarkerGrammarLineStyle)
+      ? SkColorSetRGB(0xC0, 0xC0, 0xC0)
+      : SK_ColorRED;
+
+  // Record the path equivalent to this legacy pattern:
+  //   X o   o X o   o X
+  //     o X o   o X o
+
+  static const float kW = 4;
+  static const float kH = 2;
+
+  // Adjust the phase such that f' == 0 is "pixel"-centered
+  // (for optimal rasterization at native rez).
+  SkPath path;
+  path.moveTo(kW * -3 / 8, kH * 3 / 4);
+  path.cubicTo(kW * -1 / 8, kH * 3 / 4,
+               kW * -1 / 8, kH * 1 / 4,
+               kW *  1 / 8, kH * 1 / 4);
+  path.cubicTo(kW * 3 / 8, kH * 1 / 4,
+               kW * 3 / 8, kH * 3 / 4,
+               kW * 5 / 8, kH * 3 / 4);
+  path.cubicTo(kW * 7 / 8, kH * 3 / 4,
+               kW * 7 / 8, kH * 1 / 4,
+               kW * 9 / 8, kH * 1 / 4);
+
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setColor(color);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(kH * 1 / 2);
+
+  SkPictureRecorder recorder;
+  recorder.beginRecording(kW, kH);
+  recorder.getRecordingCanvas()->drawPath(path, paint);
+
+  return recorder.finishRecordingAsPicture();
+}
+
+#else  // OS(MACOSX)
+
+sk_sp<SkPicture> recordMarker(GraphicsContext::DocumentMarkerLineStyle style) {
+  SkColor color = (style == GraphicsContext::DocumentMarkerGrammarLineStyle)
+      ? SkColorSetRGB(0x6B, 0x6B, 0x6B)
+      : SkColorSetRGB(0xFB, 0x2D, 0x1D);
+
+  // Match the artwork used by the Mac.
+  static const float kW = 4;
+  static const float kH = 3;
+  static const float kR = 1.5f;
+
+  // top->bottom translucent gradient.
+  const SkColor colors[2] = {
+      SkColorSetARGB(0x48,
+                     SkColorGetR(color),
+                     SkColorGetG(color),
+                     SkColorGetB(color)),
+      color
+  };
+  const SkPoint pts[2] = {
+      SkPoint::Make(0, 0),
+      SkPoint::Make(0, 2 * kR)
+  };
+
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setColor(color);
+  paint.setShader(SkGradientShader::MakeLinear(pts,
+                                               colors,
+                                               nullptr,
+                                               ARRAY_SIZE(colors),
+                                               SkShader::kClamp_TileMode));
+  SkPictureRecorder recorder;
+  recorder.beginRecording(kW, kH);
+  recorder.getRecordingCanvas()->drawCircle(kR, kR, kR, paint);
+
+  return recorder.finishRecordingAsPicture();
+}
+
+#endif  // OS(MACOSX)
+
+}  // anonymous ns
+
 void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt,
                                                 float width,
                                                 DocumentMarkerLineStyle style,
@@ -516,133 +605,44 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt,
   if (contextDisabled())
     return;
 
-  // Use 2x resources for a device scale factor of 1.5 or above.
-  // This modifes the bitmaps used for the marker, not the overall
-  // scaling of the marker.
-  int deviceScaleFactor = m_deviceScaleFactor * zoom > 1.5f ? 2 : 1;
+  DEFINE_STATIC_LOCAL(SkPicture*, spellingMarker,
+                      (recordMarker(DocumentMarkerSpellingLineStyle).release()));
+  DEFINE_STATIC_LOCAL(SkPicture*, grammarMarker,
+                      (recordMarker(DocumentMarkerGrammarLineStyle).release()));
+  const auto& marker = style == DocumentMarkerSpellingLineStyle
+      ? spellingMarker
+      : grammarMarker;
 
-  // Create the pattern we'll use to draw the underline.
-  int index = style == DocumentMarkerGrammarLineStyle ? 1 : 0;
-  static SkBitmap* misspellBitmap1x[2] = {0, 0};
-  static SkBitmap* misspellBitmap2x[2] = {0, 0};
-  SkBitmap** misspellBitmap =
-      deviceScaleFactor == 2 ? misspellBitmap2x : misspellBitmap1x;
-  if (!misspellBitmap[index]) {
-#if OS(MACOSX)
-    // Match the artwork used by the Mac.
-    const int rowPixels = 4 * deviceScaleFactor;
-    const int colPixels = 3 * deviceScaleFactor;
-    SkBitmap bitmap;
-    if (!bitmap.tryAllocN32Pixels(rowPixels, colPixels))
-      return;
-
-    bitmap.eraseARGB(0, 0, 0, 0);
-    const uint32_t transparentColor = 0x00000000;
-
-    if (deviceScaleFactor == 1) {
-      const uint32_t colors[2][6] = {{0x2a2a0600, 0x57571000, 0xa8a81b00,
-                                      0xbfbf1f00, 0x70701200, 0xe0e02400},
-                                     {0x2a0f0f0f, 0x571e1e1e, 0xa83d3d3d,
-                                      0xbf454545, 0x70282828, 0xe0515151}};
-
-      // Pattern: a b a   a b a
-      //          c d c   c d c
-      //          e f e   e f e
-      for (int x = 0; x < colPixels; ++x) {
-        uint32_t* row = bitmap.getAddr32(0, x);
-        row[0] = colors[index][x * 2];
-        row[1] = colors[index][x * 2 + 1];
-        row[2] = colors[index][x * 2];
-        row[3] = transparentColor;
-      }
-    } else if (deviceScaleFactor == 2) {
-      const uint32_t colors[2][18] = {
-          {0x0a090101, 0x33320806, 0x55540f0a, 0x37360906, 0x6e6c120c,
-           0x6e6c120c, 0x7674140d, 0x8d8b1810, 0x8d8b1810, 0x96941a11,
-           0xb3b01f15, 0xb3b01f15, 0x6d6b130c, 0xd9d62619, 0xd9d62619,
-           0x19180402, 0x7c7a150e, 0xcecb2418},
-          {0x0a020202, 0x33141414, 0x55232323, 0x37161616, 0x6e2e2e2e,
-           0x6e2e2e2e, 0x76313131, 0x8d3a3a3a, 0x8d3a3a3a, 0x963e3e3e,
-           0xb34b4b4b, 0xb34b4b4b, 0x6d2d2d2d, 0xd95b5b5b, 0xd95b5b5b,
-           0x19090909, 0x7c343434, 0xce575757}};
-
-      // Pattern: a b c c b a
-      //          d e f f e d
-      //          g h j j h g
-      //          k l m m l k
-      //          n o p p o n
-      //          q r s s r q
-      for (int x = 0; x < colPixels; ++x) {
-        uint32_t* row = bitmap.getAddr32(0, x);
-        row[0] = colors[index][x * 3];
-        row[1] = colors[index][x * 3 + 1];
-        row[2] = colors[index][x * 3 + 2];
-        row[3] = colors[index][x * 3 + 2];
-        row[4] = colors[index][x * 3 + 1];
-        row[5] = colors[index][x * 3];
-        row[6] = transparentColor;
-        row[7] = transparentColor;
-      }
-    } else
-      ASSERT_NOT_REACHED();
-
-    misspellBitmap[index] = new SkBitmap(bitmap);
-#else
-    // We use a 2-pixel-high misspelling indicator because that seems to be
-    // what Blink is designed for, and how much room there is in a typical
-    // page for it.
-    const int rowPixels =
-        32 * deviceScaleFactor;  // Must be multiple of 4 for pattern below.
-    const int colPixels = 2 * deviceScaleFactor;
-    SkBitmap bitmap;
-    if (!bitmap.tryAllocN32Pixels(rowPixels, colPixels))
-      return;
-
-    bitmap.eraseARGB(0, 0, 0, 0);
-    if (deviceScaleFactor == 1)
-      draw1xMarker(&bitmap, index);
-    else if (deviceScaleFactor == 2)
-      draw2xMarker(&bitmap, index);
-    else
-      ASSERT_NOT_REACHED();
-
-    misspellBitmap[index] = new SkBitmap(bitmap);
-#endif
-  }
-
-#if OS(MACOSX)
   // Position already includes zoom and device scale factor.
   SkScalar originX = WebCoreFloatToSkScalar(pt.x());
   SkScalar originY = WebCoreFloatToSkScalar(pt.y());
 
+#if OS(MACOSX)
   // Make sure to draw only complete dots, and finish inside the marked text.
-  float rowPixels = misspellBitmap[index]->width() * zoom / deviceScaleFactor;
-  float dotCount = floorf(width / rowPixels);
-  width = dotCount * rowPixels;
+  width -= fmodf(width, marker->cullRect().width() * zoom);
 #else
-  SkScalar originX = WebCoreFloatToSkScalar(pt.x());
-
   // Offset it vertically by 1 so that there's some space under the text.
-  SkScalar originY = WebCoreFloatToSkScalar(pt.y()) + 1;
+  originY += 1;
 #endif
 
-  SkMatrix localMatrix;
-  localMatrix.setScale(zoom / deviceScaleFactor, zoom / deviceScaleFactor);
-  localMatrix.postTranslate(originX, originY);
+  const auto rect = SkRect::MakeWH(width, marker->cullRect().height() * zoom);
+  const auto localMatrix = SkMatrix::MakeScale(zoom, zoom);
 
   PaintFlags paint;
-  paint.setShader(WrapSkShader(SkShader::MakeBitmapShader(
-      *misspellBitmap[index], SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, &localMatrix)));
+  paint.setAntiAlias(true);
+  paint.setShader(WrapSkShader(
+      SkShader::MakePictureShader(sk_ref_sp(marker),
+                                  SkShader::kRepeat_TileMode,
+                                  SkShader::kClamp_TileMode,
+                                  &localMatrix,
+                                  nullptr)));
 
-  SkRect rect;
-  rect.set(
-      originX, originY, originX + WebCoreFloatToSkScalar(width),
-      originY +
-          SkIntToScalar(misspellBitmap[index]->height() / deviceScaleFactor) *
-              zoom);
-
-  drawRect(rect, paint);
+  // Apply the origin translation as a global transform.  This ensures that the
+  // shader local matrix depends solely on zoom => Skia can reuse the same
+  // cached tile for all markers at a given zoom level.
+  SkAutoCanvasRestore acr(m_canvas, true);
+  m_canvas->translate(originX, originY);
+  m_canvas->drawRect(rect, paint);
 }
 
 void GraphicsContext::drawLineForText(const FloatPoint& pt, float width) {
@@ -1329,96 +1329,5 @@ sk_sp<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
 
   return nullptr;
 }
-
-#if !OS(MACOSX)
-void GraphicsContext::draw2xMarker(SkBitmap* bitmap, int index) {
-  const SkPMColor lineColor = lineColors(index);
-  const SkPMColor antiColor1 = antiColors1(index);
-  const SkPMColor antiColor2 = antiColors2(index);
-
-  uint32_t* row1 = bitmap->getAddr32(0, 0);
-  uint32_t* row2 = bitmap->getAddr32(0, 1);
-  uint32_t* row3 = bitmap->getAddr32(0, 2);
-  uint32_t* row4 = bitmap->getAddr32(0, 3);
-
-  // Pattern: X0o   o0X0o   o0
-  //          XX0o o0XXX0o o0X
-  //           o0XXX0o o0XXX0o
-  //            o0X0o   o0X0o
-  const SkPMColor row1Color[] = {lineColor, antiColor1, antiColor2, 0,
-                                 0,         0,          antiColor2, antiColor1};
-  const SkPMColor row2Color[] = {lineColor, lineColor,  antiColor1, antiColor2,
-                                 0,         antiColor2, antiColor1, lineColor};
-  const SkPMColor row3Color[] = {0,         antiColor2, antiColor1, lineColor,
-                                 lineColor, lineColor,  antiColor1, antiColor2};
-  const SkPMColor row4Color[] = {0,         0,          antiColor2, antiColor1,
-                                 lineColor, antiColor1, antiColor2, 0};
-
-  for (int x = 0; x < bitmap->width() + 8; x += 8) {
-    int count = std::min(bitmap->width() - x, 8);
-    if (count > 0) {
-      memcpy(row1 + x, row1Color, count * sizeof(SkPMColor));
-      memcpy(row2 + x, row2Color, count * sizeof(SkPMColor));
-      memcpy(row3 + x, row3Color, count * sizeof(SkPMColor));
-      memcpy(row4 + x, row4Color, count * sizeof(SkPMColor));
-    }
-  }
-}
-
-void GraphicsContext::draw1xMarker(SkBitmap* bitmap, int index) {
-  const uint32_t lineColor = lineColors(index);
-  const uint32_t antiColor = antiColors2(index);
-
-  // Pattern: X o   o X o   o X
-  //            o X o   o X o
-  uint32_t* row1 = bitmap->getAddr32(0, 0);
-  uint32_t* row2 = bitmap->getAddr32(0, 1);
-  for (int x = 0; x < bitmap->width(); x++) {
-    switch (x % 4) {
-      case 0:
-        row1[x] = lineColor;
-        break;
-      case 1:
-        row1[x] = antiColor;
-        row2[x] = antiColor;
-        break;
-      case 2:
-        row2[x] = lineColor;
-        break;
-      case 3:
-        row1[x] = antiColor;
-        row2[x] = antiColor;
-        break;
-    }
-  }
-}
-
-SkPMColor GraphicsContext::lineColors(int index) {
-  static const SkPMColor colors[] = {
-      SkPreMultiplyARGB(0xFF, 0xFF, 0x00, 0x00),  // Opaque red.
-      SkPreMultiplyARGB(0xFF, 0xC0, 0xC0, 0xC0)   // Opaque gray.
-  };
-
-  return colors[index];
-}
-
-SkPMColor GraphicsContext::antiColors1(int index) {
-  static const SkPMColor colors[] = {
-      SkPreMultiplyARGB(0xB0, 0xFF, 0x00, 0x00),  // Semitransparent red.
-      SkPreMultiplyARGB(0xB0, 0xC0, 0xC0, 0xC0)   // Semitransparent gray.
-  };
-
-  return colors[index];
-}
-
-SkPMColor GraphicsContext::antiColors2(int index) {
-  static const SkPMColor colors[] = {
-      SkPreMultiplyARGB(0x60, 0xFF, 0x00, 0x00),  // More transparent red
-      SkPreMultiplyARGB(0x60, 0xC0, 0xC0, 0xC0)   // More transparent gray
-  };
-
-  return colors[index];
-}
-#endif
 
 }  // namespace blink

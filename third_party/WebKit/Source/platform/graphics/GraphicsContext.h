@@ -47,7 +47,6 @@
 #include "wtf/Noncopyable.h"
 #include <memory>
 
-class SkBitmap;
 class SkPath;
 class SkRRect;
 struct SkRect;
@@ -387,11 +386,6 @@ class PLATFORM_EXPORT GraphicsContext {
   static inline int focusRingOffset(int offset) { return offset + 2; }
 #else
   static inline int focusRingOffset(int offset) { return 0; }
-  static SkPMColor lineColors(int);
-  static SkPMColor antiColors1(int);
-  static SkPMColor antiColors2(int);
-  static void draw1xMarker(SkBitmap*, int);
-  static void draw2xMarker(SkBitmap*, int);
 #endif
 
   void saveLayer(const SkRect* bounds, const PaintFlags*);
