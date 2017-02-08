@@ -55,8 +55,12 @@ class ResolveHostAndOpenSocket final {
     }
     std::unique_ptr<net::StreamSocket> socket(new net::TCPClientSocket(
         address_list_, NULL, NULL, net::NetLogSource()));
-    socket->Connect(
-        base::Bind(&RunSocketCallback, callback_, base::Passed(&socket)));
+    net::StreamSocket* socket_ptr = socket.get();
+    net::CompletionCallback on_connect =
+        base::Bind(&RunSocketCallback, callback_, base::Passed(&socket));
+    result = socket_ptr->Connect(on_connect);
+    if (result != net::ERR_IO_PENDING)
+      on_connect.Run(result);
     delete this;
   }
 
