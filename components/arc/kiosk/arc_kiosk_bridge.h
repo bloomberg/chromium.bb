@@ -44,6 +44,9 @@ class ArcKioskBridge : public ArcService,
   mojo::Binding<mojom::KioskHost> binding_;
   Delegate* const delegate_;
 
+  // Tracks current maintenance session id.
+  int32_t session_id_ = -1;
+
   DISALLOW_COPY_AND_ASSIGN(ArcKioskBridge);
 };
 

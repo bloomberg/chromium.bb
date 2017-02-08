@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_ARC_ARC_KIOSK_APP_SERVICE_H_
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -88,6 +89,7 @@ class ArcKioskAppService
 
   Profile* const profile_;
   bool maintenance_session_running_ = false;
+  base::OneShotTimer maintenance_timeout_timer_;
   ArcKioskAppManager* app_manager_;
   std::string app_id_;
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info_;

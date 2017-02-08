@@ -27,12 +27,17 @@ void ArcKioskBridge::OnInstanceReady() {
 }
 
 void ArcKioskBridge::OnMaintenanceSessionCreated(int32_t session_id) {
+  session_id_ = session_id;
   delegate_->OnMaintenanceSessionCreated();
   // TODO(poromov@) Show appropriate splash screen.
 }
 
 void ArcKioskBridge::OnMaintenanceSessionFinished(int32_t session_id,
                                                   bool success) {
+  // Filter only callbacks for the started kiosk session.
+  if (session_id != session_id_)
+    return;
+  session_id_ = -1;
   delegate_->OnMaintenanceSessionFinished();
 }
 

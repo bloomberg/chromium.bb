@@ -4,6 +4,7 @@
 
 #include <chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h>
 
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -15,6 +16,10 @@
 #include "ui/message_center/notification_blocker.h"
 
 namespace chromeos {
+
+// Timeout maintenance session after 30 minutes.
+constexpr base::TimeDelta kArcKioskMaintenanceSessionTimeout =
+    base::TimeDelta::FromMinutes(30);
 
 // Blocks all notifications for ARC++ Kiosk
 class ArcKioskNotificationBlocker : public message_center::NotificationBlocker {
@@ -109,9 +114,17 @@ void ArcKioskAppService::OnTaskDestroyed(int32_t task_id) {
 void ArcKioskAppService::OnMaintenanceSessionCreated() {
   maintenance_session_running_ = true;
   PreconditionsChanged();
+  // Safe to bind |this| as timer is auto-cancelled on destruction.
+  maintenance_timeout_timer_.Start(
+      FROM_HERE, kArcKioskMaintenanceSessionTimeout,
+      base::Bind(&ArcKioskAppService::OnMaintenanceSessionFinished,
+                 base::Unretained(this)));
 }
 
 void ArcKioskAppService::OnMaintenanceSessionFinished() {
+  if (!maintenance_timeout_timer_.IsRunning())
+    VLOG(1) << "Maintenance session timeout";
+  maintenance_timeout_timer_.Stop();
   maintenance_session_running_ = false;
   PreconditionsChanged();
 }
@@ -137,7 +150,9 @@ ArcKioskAppService::ArcKioskAppService(Profile* profile) : profile_(profile) {
   PreconditionsChanged();
 }
 
-ArcKioskAppService::~ArcKioskAppService() = default;
+ArcKioskAppService::~ArcKioskAppService() {
+  maintenance_timeout_timer_.Stop();
+}
 
 void ArcKioskAppService::PreconditionsChanged() {
   app_id_ = GetAppId();
