@@ -295,14 +295,14 @@ class HttpCache::QuicServerInfoFactoryAdaptor : public QuicServerInfoFactory {
 //-----------------------------------------------------------------------------
 HttpCache::HttpCache(HttpNetworkSession* session,
                      std::unique_ptr<BackendFactory> backend_factory,
-                     bool set_up_quic_server_info)
+                     bool is_main_cache)
     : HttpCache(base::MakeUnique<HttpNetworkLayer>(session),
                 std::move(backend_factory),
-                set_up_quic_server_info) {}
+                is_main_cache) {}
 
 HttpCache::HttpCache(std::unique_ptr<HttpTransactionFactory> network_layer,
                      std::unique_ptr<BackendFactory> backend_factory,
-                     bool set_up_quic_server_info)
+                     bool is_main_cache)
     : net_log_(nullptr),
       backend_factory_(std::move(backend_factory)),
       building_backend_(false),
@@ -318,7 +318,7 @@ HttpCache::HttpCache(std::unique_ptr<HttpTransactionFactory> network_layer,
   // rather than having logic only used in unit tests here.
   if (session) {
     net_log_ = session->net_log();
-    if (set_up_quic_server_info &&
+    if (is_main_cache &&
         !session->quic_stream_factory()->has_quic_server_info_factory()) {
       // QuicStreamFactory takes ownership of QuicServerInfoFactoryAdaptor.
       session->quic_stream_factory()->set_quic_server_info_factory(

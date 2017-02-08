@@ -219,7 +219,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         base::MakeUnique<net::HttpNetworkSession>(network_session_params));
     storage_->set_http_transaction_factory(base::MakeUnique<net::HttpCache>(
         storage_->http_network_session(), std::move(main_backend),
-        true /* set_up_quic_server_info */));
+        true /* is_main_cache */));
 
     std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());

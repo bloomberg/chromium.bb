@@ -7769,7 +7769,8 @@ TEST_F(URLRequestTest, QuicServerInfoFactoryTest) {
       new HttpNetworkLayer(&session));
 
   HttpCache main_cache(std::move(network_layer1),
-                       HttpCache::DefaultBackend::InMemory(0), true);
+                       HttpCache::DefaultBackend::InMemory(0),
+                       true /* is_main_cache */);
 
   EXPECT_TRUE(session.quic_stream_factory()->has_quic_server_info_factory());
 
@@ -7864,7 +7865,7 @@ TEST_F(URLRequestTestHTTP, NetworkSuspendTest) {
 
   HttpCache http_cache(std::move(network_layer),
                        HttpCache::DefaultBackend::InMemory(0),
-                       false /* set_up_quic_server_info_factory */);
+                       false /* is_main_cache */);
 
   TestURLRequestContext context(true);
   context.set_http_transaction_factory(&http_cache);
@@ -9205,8 +9206,9 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   params.http_server_properties = default_context_.http_server_properties();
 
   HttpNetworkSession network_session(params);
-  std::unique_ptr<HttpCache> cache(new HttpCache(
-      &network_session, HttpCache::DefaultBackend::InMemory(0), false));
+  std::unique_ptr<HttpCache> cache(
+      new HttpCache(&network_session, HttpCache::DefaultBackend::InMemory(0),
+                    false /* is_main_cache */));
 
   default_context_.set_http_transaction_factory(cache.get());
 
