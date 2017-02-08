@@ -317,11 +317,9 @@ DOM_KEY_MAP_DECLARATION {
   //          Key                     Enum                      Value
   DOM_KEY_MAP("AudioBalanceLeft",     AUDIO_BALANCE_LEFT,       0x0D01),
   DOM_KEY_MAP("AudioBalanceRight",    AUDIO_BALANCE_RIGHT,      0x0D02),
-  DOM_KEY_MAP("AudioBassDown",        AUDIO_BASS_DOWN,          0x0E01),
   DOM_KEY_MAP("AudioBassBoostDown",   AUDIO_BASS_BOOST_DOWN,    0x0D03),
   DOM_KEY_MAP("AudioBassBoostToggle", AUDIO_BASS_BOOST_TOGGLE,  0x0E02),
   DOM_KEY_MAP("AudioBassBoostUp",     AUDIO_BASS_BOOST_UP,      0x0D04),
-  DOM_KEY_MAP("AudioBassUp",          AUDIO_BASS_UP,            0x0E03),
   DOM_KEY_MAP("AudioFaderFront",      AUDIO_FADER_FRONT,        0x0D05),
   DOM_KEY_MAP("AudioFaderRear",       AUDIO_FADER_REAR,         0x0D06),
   DOM_KEY_MAP("AudioSurroundModeNext",AUDIO_SURROUND_MODE_NEXT, 0x0D07),
