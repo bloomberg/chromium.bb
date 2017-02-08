@@ -46,7 +46,7 @@ DEFAULT_EXCLUDE_FOLDERS = [
 
 MAC_EXCLUDE_FOLDERS = [
 'Contents/Developer/Platforms/iPhoneOS.platform',
-'Contents/Developer/Platforms/iPhoneSimulator.platform',
+'Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs',
 ]
 
 IOS_EXCLUDE_FOLDERS = [
