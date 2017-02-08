@@ -58,6 +58,10 @@ def GetTestRootCause(job_id, dut):
   Returns:
     string of root cause, None otherwise.
   """
+  # Currently rely on DUT to root cause any test.
+  if dut is None:
+    return None
+
   # Grab autoserv.DEBUG log.
   gs_path = ('gs://chromeos-autotest-results'
              '/%(job)s-chromeos-test/%(dut)s/debug/autoserv.DEBUG' % {
@@ -67,7 +71,7 @@ def GetTestRootCause(job_id, dut):
   ctx = gs.GSContext()
   debug_log_content = ctx.Cat(gs_path)
 
-  for line in debug_log_content:
+  for line in debug_log_content.splitlines():
     m = DEVSERVER_IP_RE.search(line)
     if m:
       # saving devserver value for other errors below.
@@ -149,6 +153,11 @@ TEST_FAILURE_PATTERNS = [(re.compile(pattern), label) for pattern, label in (
     ('ABORT: Autotest client terminated unexpectedly: DUT is pingable',
      'AUUnexpect'),
 )]
+ON_DUT_RE = re.compile(r'on (chromeos\d+-row\d+-rack\d+-host\d+).*')
+
+LOG_LINK_RE = re.compile(
+    r'(\w[\w\. ]+\w) +'
+    r'http://cautotest/tko/retrieve_logs.cgi\?job=/results/(\d+)-chromeos-test')
 
 AUTOTEST_LOG_LINK_RE = re.compile(
     r'@@@STEP_LINK@\[Test-Logs\]: ([^:]+):.*(FAIL|ABORT).*'
@@ -168,6 +177,8 @@ def ClassifyTestFailure(log_content):
   # Add failures to this set as they are found.
   failure_set = set()
   swarming_start_time = None
+  test_runs = {}
+  test_jobs = {}
 
   for line in log_content:
     m = SWARMING_START_RE.search(line)
@@ -198,43 +209,83 @@ def ClassifyTestFailure(log_content):
       if m:
         failure_set.add(failure_label)
 
-    # Two-line check
+    # Two-line check looking for tests that failed.
     m = TEST_OUTCOME_RE.search(line)
-    if m and m.group(2) == 'FAILED':
-      failure = m.group(1)
-      # some test names contain an image version, for instance:
-      # autoupdate_EndToEndTest_npo_delta_8803.0.0
-      # The version number prevents matching failures and is not
-      # useful at this stage so we hide it.
-      failure = WhiteoutImageVersion(failure)
-      if failure not in ['Suite job']:
-        line = log_content.next()
-        m = FAILED_TEST_REASON_RE.search(line)
-        # Append a label to the failure name
-        if m:
-          for error_re, error_label in TEST_FAILURE_PATTERNS:
-            m = error_re.search(line)
-            if m:
-              failure += '{%s}' % error_label
-              break
-        failure_set.add(failure)
-
-    # Look for suite job failure and record the job ID.
-    m = AUTOTEST_LOG_LINK_RE.search(line)
     if m:
+      # For each invocation of the test, record its status.  Each test
+      # might be invoked multiple times, so need to record the ordering
+      # of each run to match it with the logs.
+      # TODO: This entire parsing of failed jobs is very weak and fragile.
+      # Get the failures from a structured data source or start logging
+      # a single line sufficient to trigger the root cause logic.
       autotest_name = m.group(1)
-      # group 2 is (FAIL|ABORT)
-      autotest_dut = m.group(3)
-      autotest_job_id = m.group(4)
-      root_cause = GetTestRootCause(autotest_job_id, autotest_dut)
-      if root_cause:
-        # replace existing failure entry with a more specific one
-        if autotest_name in failure_set:
-          failure_set.discard(autotest_name)
-        failure_set.add('%s==%s' % (autotest_name, root_cause))
+      if autotest_name not in test_runs:
+        test_runs[autotest_name] = []
+      test_entry = {'status': m.group(2)}
+      test_runs[autotest_name].append(test_entry)
+
+      if m.group(2) in ('FAILED', 'ABORT'):
+        failure = m.group(1)
+        # some test names contain an image version, for instance:
+        # autoupdate_EndToEndTest_npo_delta_8803.0.0
+        # The version number prevents matching failures and is not
+        # useful at this stage so we hide it.
+        failure = WhiteoutImageVersion(failure)
+        if failure not in ['Suite job']:
+          line = log_content.next()
+
+          # Extract and store DUT name if it exists.
+          m = ON_DUT_RE.search(line)
+          if m:
+            test_entry['dut'] = m.group(1)
+
+          m = FAILED_TEST_REASON_RE.search(line)
+          # Append a label to the failure name
+          if m:
+            for error_re, error_label in TEST_FAILURE_PATTERNS:
+              m = error_re.search(line)
+              if m:
+                failure += '{%s}' % error_label
+                break
+          failure_set.add(failure)
+
+    # Look for links to test logs.
+    m = LOG_LINK_RE.search(line)
+    if m:
+      # Record the ordering of the test logs so they can be reconciled.
+      autotest_name = m.group(1)
+      autotest_job_id = m.group(2)
+      if autotest_name not in test_jobs:
+        test_jobs[autotest_name] = []
+      test_jobs[autotest_name].append(autotest_job_id)
+
+  # Find the root cause for failed test runs.
+  root_caused_jobs = set()
+  for autotest_name in test_runs:
+    for run in xrange(len(test_runs[autotest_name])):
+      test_entry = test_runs[autotest_name][run]
+      status = test_entry.get('status', '')
+      autotest_dut = test_entry.get('dut', None)
+      if (status in ('FAILED', 'ABORT') and
+          autotest_name in test_jobs and run < len(test_jobs[autotest_name])):
+        autotest_job_id = test_jobs[autotest_name][run]
+        if autotest_job_id in root_caused_jobs:
+          # Avoid processing the same job twice, necessary since the logs
+          # are duplicated.
+          continue
+        root_caused_jobs.add(autotest_job_id)
+        root_cause = GetTestRootCause(autotest_job_id, autotest_dut)
+        logging.info('root caused job %s dut %s: %s', autotest_job_id,
+                     autotest_dut, root_cause)
+        if root_cause:
+          # Replace existing failure entry with a more specific one
+          if autotest_name in failure_set:
+            failure_set.discard(autotest_name)
+          failure_set.add('%s==%s' % (autotest_name, root_cause))
 
   if failure_set:
     return failure_set
+  return None
 
 
 # Patterns for classifying timeouts.
