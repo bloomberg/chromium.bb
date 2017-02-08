@@ -26,14 +26,14 @@ cr.define('settings', function() {
     setAdapterState: function(state, opt_callback) {
       this.bluetoothApi_.adapterState = state;
       if (opt_callback)
-        setTimeout(opt_callback);
+        opt_callback();
     },
 
     /** @override */
     setPairingResponse: function(options, opt_callback) {
       this.pairingResponses_[options.device.address] = options;
       if (opt_callback)
-        setTimeout(opt_callback);
+        opt_callback();
     },
 
     /** @override */
@@ -47,9 +47,13 @@ cr.define('settings', function() {
 
     /** @override */
     connect: function(address, opt_callback) {
-      this.connectedDevices_.add(address);
+      var device =
+          this.bluetoothApi_.getDeviceForTest(address) || {address: address};
+      device.paired = true;
+      device.connecting = true;
+      this.bluetoothApi_.updateDeviceForTest(device);
       if (opt_callback)
-        setTimeout(opt_callback);
+        opt_callback(chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS);
     },
 
     /** @override */

@@ -6,104 +6,8 @@ cr.exportPath('settings');
 
 var PairingEventType = chrome.bluetoothPrivate.PairingEventType;
 
-// NOTE(dbeam): even though these behaviors are only used privately, they must
+// NOTE(dbeam): even though this behavior is only used privately, it must
 // be globally accessible for Closure's --polymer_pass to compile happily.
-
-/** @polymerBehavior */
-settings.BluetoothAddDeviceBehavior = {
-  properties: {
-    /**
-     * The cached bluetooth adapter state.
-     * @type {!chrome.bluetooth.AdapterState|undefined}
-     */
-    adapterState: {
-      type: Object,
-      observer: 'adapterStateChanged_',
-    },
-
-    /**
-     * The ordered list of bluetooth devices.
-     * @type {!Array<!chrome.bluetooth.Device>}
-     */
-    deviceList: {
-      type: Array,
-      value: /** @return {Array} */ function() {
-        return [];
-      },
-    },
-
-    /**
-     * The ordered list of unpaired bluetooth devices.
-     * @type {!Array<!chrome.bluetooth.Device>}
-     */
-    unpairedDeviceList_: {
-      type: Array,
-      value: /** @return {Array} */ function() {
-        return [];
-      },
-    },
-
-    /**
-     * Reflects the iron-list selecteditem property.
-     * @type {!chrome.bluetooth.Device}
-     */
-    selectedItem_: {
-      type: Object,
-      observer: 'selectedItemChanged_',
-    },
-  },
-
-  observers: ['deviceListChanged_(deviceList.*)'],
-
-  /** @type {boolean} */
-  itemWasFocused_: false,
-
-  /** @private */
-  adapterStateChanged_: function() {
-    if (!this.adapterState.powered)
-      this.close();
-  },
-
-  /** @private */
-  deviceListChanged_: function() {
-    this.saveScroll(this.$.devices);
-    this.unpairedDeviceList_ = this.deviceList.filter(function(device) {
-      return !device.paired;
-    });
-    this.updateScrollableContents();
-    this.restoreScroll(this.$.devices);
-
-    if (this.itemWasFocused_ || !this.unpairedDeviceList_.length)
-      return;
-    // If the iron-list is populated with at least one visible item then
-    // focus it.
-    var item = this.$$('iron-list bluetooth-device-list-item');
-    if (item && item.offsetParent != null) {
-      item.focus();
-      this.itemWasFocused_ = true;
-      return;
-    }
-    // Otherwise try again.
-    setTimeout(function() {
-      this.deviceListChanged_();
-    }.bind(this), 100);
-  },
-
-  /** @private */
-  selectedItemChanged_: function() {
-    if (!this.selectedItem_)
-      return;
-    this.fire('device-event', {action: 'connect', device: this.selectedItem_});
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  haveUnpaired_: function() {
-    return this.unpairedDeviceList_.length > 0;
-  },
-};
 
 /** @polymerBehavior */
 settings.BluetoothPairDeviceBehavior = {
@@ -200,7 +104,8 @@ settings.BluetoothPairDeviceBehavior = {
   /** @private */
   pairingChanged_: function() {
     // Auto-close the dialog when pairing completes.
-    if (this.pairingDevice.connected) {
+    if (this.pairingDevice.paired && !this.pairingDevice.connecting &&
+        this.pairingDevice.connected) {
       this.close();
       return;
     }
@@ -426,14 +331,13 @@ Polymer({
   behaviors: [
     I18nBehavior,
     CrScrollableBehavior,
-    settings.BluetoothAddDeviceBehavior,
     settings.BluetoothPairDeviceBehavior,
   ],
 
   properties: {
     /**
-     * The version of this dialog to show: 'addDevice', 'pairDevice', or
-     * 'connectError'. Must be set before the dialog is opened.
+     * The version of this dialog to show: 'pairDevice', or 'connectError'.
+     * Must be set before the dialog is opened.
      */
     dialogId: String,
   },

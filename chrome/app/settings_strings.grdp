@@ -469,26 +469,29 @@
     <message name="IDS_SETTINGS_BLUETOOTH" desc="Name of the settings page which displays Bluetooth device settings.">
       Bluetooth
     </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_DEVICE_LIST_PAIRED" desc="Title of the settings subsection listing paired Bluetooth devices.">
+      Paired devices
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_DEVICE_LIST_UNPAIRED" desc="Title of the settings subsection listing unpaired Bluetooth devices.">
+      Unpaired devices
+    </message>
     <message name="IDS_SETTINGS_BLUETOOTH_PAIR" desc="Label for the settings button to pair a previously paired Bluetooth device.">
       Pair
-    </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE" desc="Label for the settings button to add and pair a new Bluetooth device.">
-      Pair device
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE" desc="Title of the settings dialog for adding or pairing Bluetooth a device.">
       Pair Bluetooth device
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_SCANNING" desc="Message displayed while scanning for Bluetooth devices.">
-      Scanning for devices...
+    <message name="IDS_SETTINGS_BLUETOOTH_NO_DEVICES" desc="Message displayed when there are no paired Bluetooth devices scan.">
+      No paired devices.
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_NO_DEVICES" desc="Message displayed when no Bluetooth devices are found after a scan.">
+    <message name="IDS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND" desc="Message displayed when no Bluetooth devices are found after a scan.">
       No Bluetooth devices found.
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_ENABLED" desc="Label for Bluetooth section when enabled.">
-      Bluetooth enabled
+      Enabled
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_DISABLED" desc="Label for Bluetooth section when disabled.">
-      Bluetooth disabled
+      Disabled
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing available Bluetooth devices. Only visible by screen reader software.">
       Show available Bluetooth devices

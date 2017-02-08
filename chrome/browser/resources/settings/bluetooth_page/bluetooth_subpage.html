@@ -3,48 +3,52 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="/icons.html">
-<link rel="import" href="/settings_shared_css.html">
+<link rel="import" href="../icons.html">
+<link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="bluetooth_device_dialog.html">
 <link rel="import" href="bluetooth_device_list_item.html">
 
 <dom-module id="settings-bluetooth-subpage">
   <template>
     <style include="settings-shared">
-      #container {
+      .container {
         @apply(--settings-list-frame-padding);
-        min-height: 100px;
+        min-height: 10px;
         overflow-y: auto;
       }
 
-      #pairButton {
-        margin: 0
+      .header {
+        margin-top: 10px;
       }
 
-      #topRow {
-        margin-bottom: 10px;
+      paper-spinner {
+        @apply(--cr-icon-height-width);
       }
     </style>
 
-    <div id="topRow" class="settings-box first">
+    <div class="settings-box first">
       <div class="start">[[getOffOnString_(bluetoothEnabled)]]</div>
-      <paper-button id="pairButton" class="primary-button"
-          on-tap="onAddDeviceTap_" hidden="[[!bluetoothEnabled]]">
-        $i18n{bluetoothPairDevice}
-      </paper-button>
       <paper-toggle-button id="enableBluetooth" checked="{{bluetoothEnabled}}">
       </paper-toggle-button>
     </div>
 
-    <div id="container" class="layout vertical"
+    <!-- Paired device list -->
+    <div class="settings-box first header" hidden$="[[!bluetoothEnabled]]">
+      <div class="start">$i18n{bluetoothDeviceListPaired}</div>
+    </div>
+    <div id="noPairedDevices" class="list-frame"
+        hidden$="[[!showNoDevices_(bluetoothEnabled, pairedDeviceList_)]]">
+      $i18n{bluetoothNoDevices}
+    </div>
+    <div id="pairedContainer" class="container layout vertical"
         scrollable on-device-event="onDeviceEvent_"
         hidden="[[!showDevices_(bluetoothEnabled, pairedDeviceList_)]]">
-      <iron-list id="devices" class="vertical-list"
+      <iron-list id="pairedDevices" class="vertical-list"
           items="[[pairedDeviceList_]]"
-          selection-enabled selected-item="{{selectedItem_}}"
-          scroll-target="container">
+          selection-enabled selected-item="{{selectedPairedItem_}}"
+          scroll-target="pairedContainer">
         <template>
           <bluetooth-device-list-item device="[[item]]"
               tabindex$="[[tabIndex]]">
@@ -52,15 +56,34 @@
         </template>
       </iron-list>
     </div>
-    <div id="noDevices" class="settings-box continuation"
-        hidden$="[[!showNoDevices_(bluetoothEnabled, pairedDeviceList_)]]">
-      $i18n{bluetoothNoDevices}
+
+    <!-- Unpaired device list -->
+    <div class="settings-box first header" hidden$="[[!bluetoothEnabled]]">
+      <div class="start">$i18n{bluetoothDeviceListUnpaired}</div>
+      <paper-spinner active="[[showSpinner_]]">
+      </paper-spinner>
+    </div>
+    <div id="noUnpairedDevices" class="list-frame"
+        hidden$="[[!showNoDevices_(bluetoothEnabled, unpairedDeviceList_)]]">
+      $i18n{bluetoothNoDevicesFound}
+    </div>
+    <div id="unpairedContainer" class="container layout vertical"
+        scrollable on-device-event="onDeviceEvent_"
+        hidden="[[!showDevices_(bluetoothEnabled, unpairedDeviceList_)]]">
+      <iron-list id="unpairedDevices" class="vertical-list"
+          items="[[unpairedDeviceList_]]"
+          selection-enabled selected-item="{{selectedUnpairedItem_}}"
+          scroll-target="unpairedContainer">
+        <template>
+          <bluetooth-device-list-item device="[[item]]"
+              tabindex$="[[tabIndex]]">
+          </bluetooth-device-list-item>
+        </template>
+      </iron-list>
     </div>
 
     <bluetooth-device-dialog id="deviceDialog"
-        adapter-state="[[adapterState]]"
         bluetooth-private="[[bluetoothPrivate]]"
-        device-list="[[deviceList_]]"
         dialog-id="[[dialogId_]]"
         error-message="[[errorMessage_]]"
         on-close="onDialogClosed_"

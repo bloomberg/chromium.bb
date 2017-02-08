@@ -23,16 +23,15 @@ suite('Bluetooth', function() {
       name: 'FakePairedDevice2',
       paired: true,
       connected: false,
-      connecting: true,
     },
     {
       address: '00:00:00:00:00:01',
-      name: 'FakeUnPairedDevice1',
+      name: 'FakeUnpairedDevice1',
       paired: false,
     },
     {
       address: '00:00:00:00:00:02',
-      name: 'FakeUnPairedDevice2',
+      name: 'FakeUnpairedDevice2',
       paired: false,
     },
   ];
@@ -65,6 +64,7 @@ suite('Bluetooth', function() {
     bluetoothPage = document.createElement('settings-bluetooth-page');
     assertTrue(!!bluetoothPage);
 
+    bluetoothApi_.setDevicesForTest([]);
     document.body.appendChild(bluetoothPage);
     Polymer.dom.flush();
   });
@@ -108,61 +108,77 @@ suite('Bluetooth', function() {
       assertFalse(bluetoothPage.bluetoothEnabled_);
     });
 
-    test('device list', function() {
-      var deviceList = subpage.$.container;
-      assertTrue(!!deviceList);
-      assertTrue(deviceList.hidden);
-      assertFalse(subpage.$.noDevices.hidden);
+    test('paired device list', function() {
+      var pairedContainer = subpage.$.pairedContainer;
+      assertTrue(!!pairedContainer);
+      assertTrue(pairedContainer.hidden);
+      assertFalse(subpage.$.noPairedDevices.hidden);
 
       bluetoothApi_.setDevicesForTest(fakeDevices_);
       Polymer.dom.flush();
       assertEquals(4, subpage.deviceList_.length);
-      assertTrue(subpage.$.noDevices.hidden);
+      assertEquals(2, subpage.pairedDeviceList_.length);
+      assertTrue(subpage.$.noPairedDevices.hidden);
 
-      var devicesIronList = subpage.$$('#container > iron-list');
-      assertTrue(!!devicesIronList);
-      devicesIronList.notifyResize();
+      var ironList = subpage.$.pairedDevices;
+      assertTrue(!!ironList);
+      ironList.notifyResize();
       Polymer.dom.flush();
-      var devices = deviceList.querySelectorAll('bluetooth-device-list-item');
+      var devices = ironList.querySelectorAll('bluetooth-device-list-item');
       assertEquals(2, devices.length);
       assertTrue(devices[0].device.connected);
       assertFalse(devices[1].device.connected);
-      assertTrue(devices[1].device.connecting);
     });
 
-    test('device dialog', function() {
-      // Tap the 'add device' button.
-      MockInteractions.tap(subpage.$.pairButton);
-      Polymer.dom.flush();
+    test('unpaired device list', function() {
+      var unpairedContainer = subpage.$.unpairedContainer;
+      assertTrue(!!unpairedContainer);
+      assertTrue(unpairedContainer.hidden);
+      assertFalse(subpage.$.noUnpairedDevices.hidden);
 
-      // Ensure the dialog appears.
+      bluetoothApi_.setDevicesForTest(fakeDevices_);
+      Polymer.dom.flush();
+      assertEquals(4, subpage.deviceList_.length);
+      assertEquals(2, subpage.unpairedDeviceList_.length);
+      assertTrue(subpage.$.noUnpairedDevices.hidden);
+
+      var ironList = subpage.$.unpairedDevices;
+      assertTrue(!!ironList);
+      ironList.notifyResize();
+      Polymer.dom.flush();
+      var devices = ironList.querySelectorAll('bluetooth-device-list-item');
+      assertEquals(2, devices.length);
+      assertFalse(devices[0].device.paired);
+      assertFalse(devices[1].device.paired);
+    });
+
+    test('pair device', function(done) {
+      bluetoothApi_.setDevicesForTest(fakeDevices_);
+      Polymer.dom.flush();
+      assertEquals(4, subpage.deviceList_.length);
+      assertEquals(2, subpage.pairedDeviceList_.length);
+      assertEquals(2, subpage.unpairedDeviceList_.length);
+
+      var address = subpage.unpairedDeviceList_[0].address;
+      bluetoothPrivateApi_.connect(address, function() {
+        Polymer.dom.flush();
+        assertEquals(3, subpage.pairedDeviceList_.length);
+        assertEquals(1, subpage.unpairedDeviceList_.length);
+        done();
+      });
+    });
+
+    test('pair dialog', function() {
+      bluetoothApi_.setDevicesForTest(fakeDevices_);
+      Polymer.dom.flush();
       var dialog = subpage.$.deviceDialog;
       assertTrue(!!dialog);
-      assertTrue(dialog.$.dialog.open);
-      assertEquals(dialog.deviceList.length, 4);
-
-      // Ensure the dialog has the expected devices.
-      var devicesIronList = dialog.$$('#dialogDeviceList iron-list');
-      assertTrue(!!devicesIronList);
-      devicesIronList.notifyResize();
-      Polymer.dom.flush();
-      var devices =
-          devicesIronList.querySelectorAll('bluetooth-device-list-item');
-      assertEquals(devices.length, 2);
-
-      // Select a device.
-      MockInteractions.tap(devices[0].$$('div'));
-      Polymer.dom.flush();
-      // Ensure the pairing dialog is shown.
-      assertTrue(!!dialog.$$('#pairing'));
-
-      // Ensure the device wass connected to.
-      expectEquals(1, bluetoothPrivateApi_.connectedDevices_.size);
-
-      // Close the dialog.
-      dialog.close();
-      Polymer.dom.flush();
       assertFalse(dialog.$.dialog.open);
+
+      // Simulate selecting an unpaired device; should show the pair dialog.
+      subpage.connectDevice_(subpage.unpairedDeviceList_[0]);
+      Polymer.dom.flush();
+      assertTrue(dialog.$.dialog.open);
     });
   });
 });

@@ -42,16 +42,6 @@ Polymer({
     },
 
     /**
-     * Set by bluetooth-subpage to controll spinner visibilit in the header.
-     * @private
-     */
-    showSpinner_: {
-      type: Boolean,
-      notify: true,
-      value: false,
-    },
-
-    /**
      * The cached bluetooth adapter state.
      * @type {!chrome.bluetooth.AdapterState|undefined}
      * @private
@@ -132,7 +122,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTitle_: function() {
+  getDescription_: function() {
     return this.i18n(
         this.bluetoothEnabled_ ? 'bluetoothEnabled' : 'bluetoothDisabled');
   },
@@ -155,6 +145,14 @@ Polymer({
       this.bluetoothEnabled_ = true;
     else
       this.openSubpage_();
+  },
+
+  /**
+   * @param {Event} e
+   * @private
+   */
+  stopTap_: function(e) {
+    e.stopPropagation();
   },
 
   /**

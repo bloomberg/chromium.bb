@@ -6,7 +6,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="../bluetooth_page/bluetooth_device_list_item.html">
 <link rel="import" href="../settings_shared_css.html">
 
@@ -23,11 +22,6 @@
 
       #pinDiv {
         margin-top: 10px;
-      }
-
-      paper-spinner {
-        @apply(--cr-icon-height-width);
-        margin: 0 10px;
       }
 
       .dialog-message {
@@ -79,28 +73,6 @@
       <div class="title">$i18n{bluetoothPairDevicePageTitle}</div>
       <div class="body">
         <div class="contents layout vertical center center-justified">
-          <!-- Note: dialog + dom-if + iron-list makes sizing complicated so use
-               hidden here; this is almost always the first dialog shown. -->
-          <div id="dialogDeviceList"
-              hidden$="[[!isDialogType_(dialogId, 'addDevice')]]"
-              class="layout vertical flex start self-stretch">
-            <span class="no-devices"
-                hidden$="[[haveUnpaired_(unpairedDeviceList_)]]">
-              $i18n{bluetoothNoDevices}
-            </span>
-            <div id="container" class="layout vertical flex self-stretch"
-                scrollable>
-              <iron-list id="devices" items="[[unpairedDeviceList_]]"
-                  selection-enabled selected-item="{{selectedItem_}}"
-                  scroll-target="container">
-                <template>
-                  <bluetooth-device-list-item device="[[item]]"
-                      tabindex$="[[tabIndex]]">
-                  </bluetooth-device-list-item>
-                </template>
-              </iron-list>
-            </div>
-          </div>
           <template is="dom-if" if="[[isDialogType_(dialogId, 'pairDevice')]]">
             <div id="pairing" class="settings-box first layout vertical center
                 center-justified">
@@ -141,17 +113,6 @@
         </div>
       </div>
       <div class="button-container">
-        <template is="dom-if" if="[[isDialogType_('addDevice', dialogId)]]">
-          <div id="scanning" class="layout horizontal center flex"
-              hidden$="[[!adapterState.discovering]]">
-            <paper-spinner active="[[adapterState.discovering]]">
-            </paper-spinner>
-            <span>$i18n{bluetoothScanning}</span>
-          </div>
-          <paper-button class="end-justified" on-tap="onCancelTap_">
-            $i18n{cancel}
-          </paper-button>
-        </template>
         <template is="dom-if" if="[[isDialogType_('pairDevice', dialogId)]]">
           <paper-button hidden$="[[!showAcceptReject_(pairingEvent_)]]"
               on-tap="onAcceptTap_">$i18n{bluetoothAccept}</paper-button>
