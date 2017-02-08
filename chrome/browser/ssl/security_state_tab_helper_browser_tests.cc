@@ -63,6 +63,18 @@ enum CertificateStatus { VALID_CERTIFICATE, INVALID_CERTIFICATE };
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
+// Inject a script into the page. Used by tests that check for visible
+// password fields to wait for notifications about these
+// fields. Notifications about visible password fields are queued at the
+// end of the event loop, so waiting for a dummy script to run ensures
+// that these notifcations have been sent.
+void InjectScript(content::WebContents* contents) {
+  bool js_result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents, "window.domAutomationController.send(true);", &js_result));
+  EXPECT_TRUE(js_result);
+}
+
 // A WebContentsObserver useful for testing the DidChangeVisibleSecurityState()
 // method: it keeps track of the latest security style and explanation that was
 // fired.
@@ -329,6 +341,51 @@ class SecurityStateTabHelperTestWithPasswordCcSwitch
     command_line->AppendSwitchASCII(
         security_state::switches::kMarkHttpAs,
         security_state::switches::kMarkHttpWithPasswordsOrCcWithChip);
+  }
+
+  // Navigates to an empty page and runs |javascript| to create a URL with with
+  // a scheme of |scheme|. If |expect_warning| is true, expects a password
+  // warning.
+  void TestPasswordFieldOnBlobOrFilesystemURL(const std::string& scheme,
+                                              const std::string& javascript,
+                                              bool expect_warning) {
+    content::WebContents* contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(contents);
+
+    SecurityStateTabHelper* helper =
+        SecurityStateTabHelper::FromWebContents(contents);
+    ASSERT_TRUE(helper);
+
+    ui_test_utils::NavigateToURL(
+        browser(),
+        GetURLWithNonLocalHostname(embedded_test_server(), "/empty.html"));
+
+    // Create a URL and navigate to it.
+    std::string blob_or_filesystem_url;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        contents, javascript, &blob_or_filesystem_url));
+    EXPECT_TRUE(GURL(blob_or_filesystem_url).SchemeIs(scheme));
+
+    ui_test_utils::NavigateToURL(browser(), GURL(blob_or_filesystem_url));
+    InjectScript(contents);
+    security_state::SecurityInfo security_info;
+    helper->GetSecurityInfo(&security_info);
+
+    content::NavigationEntry* entry =
+        contents->GetController().GetVisibleEntry();
+    ASSERT_TRUE(entry);
+
+    if (expect_warning) {
+      EXPECT_EQ(security_state::HTTP_SHOW_WARNING,
+                security_info.security_level);
+      EXPECT_TRUE(entry->GetSSL().content_status &
+                  content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+    } else {
+      EXPECT_EQ(security_state::NONE, security_info.security_level);
+      EXPECT_FALSE(entry->GetSSL().content_status &
+                   content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+    }
   }
 
  private:
@@ -938,18 +995,6 @@ IN_PROC_BROWSER_TEST_F(SecurityStateLoadingTest, NavigationStateChanges) {
       browser()->tab_strip_model()->GetActiveWebContents());
 }
 
-// Inject a script into the page. Used by tests that check for visible
-// password fields to wait for notifications about these
-// fields. Notifications about visible password fields are queued at the
-// end of the event loop, so waiting for a dummy script to run ensures
-// that these notifcations have been sent.
-void InjectScript(content::WebContents* contents) {
-  bool js_result = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents, "window.domAutomationController.send(true);", &js_result));
-  EXPECT_TRUE(js_result);
-}
-
 // Tests that when a visible password field is detected on an HTTP page
 // load, and when the command-line flag is set, the security level is
 // downgraded to HTTP_SHOW_WARNING.
@@ -975,6 +1020,76 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
   ASSERT_TRUE(entry);
   EXPECT_TRUE(entry->GetSSL().content_status &
               content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+// Tests that when a visible password field is detected on a blob URL, and when
+// the command-line flag is set, the security level is downgraded to
+// HTTP_SHOW_WARNING.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
+                       PasswordSecurityLevelDowngradedOnBlobUrl) {
+  TestPasswordFieldOnBlobOrFilesystemURL(
+      "blob",
+      "var blob = new Blob(['<html><form><input type=password></form></html>'],"
+      "                    {type: 'text/html'});"
+      "window.domAutomationController.send(URL.createObjectURL(blob));",
+      true /* expect_warning */);
+}
+
+// Tests that when no password field is detected on a blob URL, and when the
+// command-line flag is set the security level is not downgraded to
+// HTTP_SHOW_WARNING.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
+                       DefaultSecurityLevelOnBlobUrl) {
+  TestPasswordFieldOnBlobOrFilesystemURL(
+      "blob",
+      "var blob = new Blob(['<html>no password or credit card field</html>'],"
+      "                    {type: 'text/html'});"
+      "window.domAutomationController.send(URL.createObjectURL(blob));",
+      false /* expect_warning */);
+}
+
+// Same as PasswordSecurityLevelDowngradedOnBlobUrl, but instead of a blob URL,
+// this creates a filesystem URL.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
+                       PasswordSecurityLevelDowngradedOnFilesystemUrl) {
+  TestPasswordFieldOnBlobOrFilesystemURL(
+      "filesystem",
+      "window.webkitRequestFileSystem(window.TEMPORARY, 4096, function(fs) {"
+      "  fs.root.getFile('test.html', {create: true}, function(fileEntry) {"
+      "    fileEntry.createWriter(function(writer) {"
+      "      writer.onwriteend = function(e) {"
+      "        window.domAutomationController.send(fileEntry.toURL());"
+      "      };"
+      "      var blob ="
+      "          new Blob(['<html><form><input type=password></form></html>'],"
+      "                   {type: 'text/html'});"
+      "      writer.write(blob);"
+      "    });"
+      "  });"
+      "});",
+      true /* expect_warning */);
+}
+
+// Same as DefaultSecurityLevelOnBlobUrl, but instead of a blob URL,
+// this creates a filesystem URL.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
+                       DefaultSecurityLevelOnFilesystemUrl) {
+  TestPasswordFieldOnBlobOrFilesystemURL(
+      "filesystem",
+      "window.webkitRequestFileSystem(window.TEMPORARY, 4096, function(fs) {"
+      "  fs.root.getFile('test.html', {create: true}, function(fileEntry) {"
+      "    fileEntry.createWriter(function(writer) {"
+      "      writer.onwriteend = function(e) {"
+      "        window.domAutomationController.send(fileEntry.toURL());"
+      "      };"
+      "      var blob ="
+      "          new Blob(['<html>no password or credit card field</html>'],"
+      "                   {type: 'text/html'});"
+      "      writer.write(blob);"
+      "    });"
+      "  });"
+      "});",
+      false /* expect_warning */);
 }
 
 // Tests that when an invisible password field is present on an HTTP page

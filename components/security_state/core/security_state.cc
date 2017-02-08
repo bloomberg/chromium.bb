@@ -120,9 +120,9 @@ SecurityLevel GetSecurityLevelForRequest(
     return DANGEROUS;
   }
 
-  GURL url = visible_security_state.url;
+  const GURL url = visible_security_state.url;
 
-  bool is_cryptographic_with_certificate =
+  const bool is_cryptographic_with_certificate =
       (url.SchemeIsCryptographic() && visible_security_state.certificate);
 
   // Set the security level to DANGEROUS for major certificate errors.
@@ -138,9 +138,13 @@ SecurityLevel GetSecurityLevelForRequest(
   if (url.SchemeIs(url::kDataScheme))
     return SecurityLevel::HTTP_SHOW_WARNING;
 
-  // Choose the appropriate security level for HTTP requests.
+  // Choose the appropriate security level for requests to HTTP and remaining
+  // pseudo URLs (blob:, filesystem:). filesystem: is a standard scheme so does
+  // not need to be explicitly listed here.
+  // TODO(meacer): Remove special case for blob (crbug.com/684751).
   if (!is_cryptographic_with_certificate) {
-    if (!is_origin_secure_callback.Run(url) && url.IsStandard()) {
+    if (!is_origin_secure_callback.Run(url) &&
+        (url.IsStandard() || url.SchemeIs(url::kBlobScheme))) {
       return GetSecurityLevelForNonSecureFieldTrial(
           visible_security_state.displayed_password_field_on_http ||
           visible_security_state.displayed_credit_card_field_on_http);
