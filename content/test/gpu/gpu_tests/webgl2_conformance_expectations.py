@@ -52,10 +52,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'integer-cubemap-specification-order-bug.html',
         bug=483282) # owner:cwallez, test might be buggy
 
+    # Win and Mac
+    self.Flaky('deqp/functional/gles3/sync.html', ['win', 'mac'], bug=676848)
+
     # Windows only.
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['win'], bug=644740)
-    self.Flaky('deqp/functional/gles3/sync.html', ['win'], bug=676848)
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
