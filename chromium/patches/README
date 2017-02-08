@@ -76,9 +76,6 @@ Current patches:
     mov_seek_stream in mov.c.
 
   Other changes to libavformat/mov.c:
-    Avoid heap allocation wrap when allocating title_str in mov_read_hdlr().
-    TODO: push upstream.
-
     Avoid heap allocation wraps when allocating buffers in mov_read_uuid().
     TODO: push upstream.
 
