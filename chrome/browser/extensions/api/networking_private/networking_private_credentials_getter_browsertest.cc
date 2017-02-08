@@ -6,6 +6,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/common/extensions/wifi_credentials_getter.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -27,8 +28,9 @@ class NetworkingPrivateCredentialsGetterTest : public InProcessBrowserTest {
       network_ = extensions::mojom::WiFiCredentialsGetter::kWiFiTestNetwork;
 
     done_called_ = false;
-    content::BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                       base::TaskPriority::BACKGROUND),
         base::Bind(&NetworkingPrivateCredentialsGetterTest::GetCredentials,
                    base::Unretained(this)));
     run_loop.Run();
