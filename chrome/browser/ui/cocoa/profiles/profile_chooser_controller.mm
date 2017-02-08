@@ -1594,13 +1594,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       showLock = item.signed_in &&
           profiles::IsLockAvailable(browser_->profile());
     } else {
-      NSButton* otherProfileView = [self createOtherProfileView:i];
-      if (!firstProfileView_) {
-        firstProfileView_ = otherProfileView;
-      }
-      [otherProfiles addObject:otherProfileView];
+      [otherProfiles addObject:[self createOtherProfileView:i]];
     }
   }
+  firstProfileView_ = [otherProfiles lastObject];
   if (!currentProfileView)  // Guest windows don't have an active profile.
     currentProfileView = [self createGuestProfileView];
 
