@@ -28,56 +28,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCache_h
-#define WebCache_h
+#include "public/platform/WebCache.h"
 
-#include "../platform/WebCommon.h"
+#include "platform/loader/fetch/MemoryCache.h"
 
 namespace blink {
 
-// An interface to query and configure WebKit's resource cache.
-class WebCache {
- public:
-  struct UsageStats {
-    size_t capacity;
-    size_t size;
-  };
+// A helper method for coverting a MemoryCache::TypeStatistic to a
+// WebCache::ResourceTypeStat.
+static void ToResourceTypeStat(const MemoryCache::TypeStatistic& from,
+                               WebCache::ResourceTypeStat& to) {
+  to.count = from.count;
+  to.size = from.size;
+  to.decodedSize = from.decodedSize;
+}
 
-  // A struct mirroring blink::MemoryCache::TypeStatistic.
-  struct ResourceTypeStat {
-    size_t count;
-    size_t size;
-    size_t decodedSize;
-  };
+void WebCache::setCapacity(size_t capacity) {
+  MemoryCache* cache = memoryCache();
+  if (cache)
+    cache->setCapacity(static_cast<unsigned>(capacity));
+}
 
-  // A struct mirroring blink::MemoryCache::Statistics.
-  struct ResourceTypeStats {
-    ResourceTypeStat images;
-    ResourceTypeStat cssStyleSheets;
-    ResourceTypeStat scripts;
-    ResourceTypeStat xslStyleSheets;
-    ResourceTypeStat fonts;
-    ResourceTypeStat other;
-  };
+void WebCache::clear() {
+  MemoryCache* cache = memoryCache();
+  if (cache)
+    cache->evictResources();
+}
 
-  // Sets the capacities of the resource cache, evicting objects as necessary.
-  BLINK_EXPORT static void setCapacity(size_t);
+void WebCache::getUsageStats(UsageStats* result) {
+  DCHECK(result);
 
-  // Clears the cache (as much as possible; some resources may not be
-  // cleared if they are actively referenced). Note that this method
-  // only removes resources from live list, w/o releasing cache memory.
-  BLINK_EXPORT static void clear();
+  MemoryCache* cache = memoryCache();
+  if (cache) {
+    result->capacity = cache->capacity();
+    result->size = cache->size();
+  } else {
+    memset(result, 0, sizeof(UsageStats));
+  }
+}
 
-  // Gets the usage statistics from the resource cache.
-  BLINK_EXPORT static void getUsageStats(UsageStats*);
-
-  // Get usage stats about the resource cache.
-  BLINK_EXPORT static void getResourceTypeStats(ResourceTypeStats*);
-
- private:
-  WebCache();  // Not intended to be instanced.
-};
+void WebCache::getResourceTypeStats(ResourceTypeStats* result) {
+  MemoryCache* cache = memoryCache();
+  if (cache) {
+    MemoryCache::Statistics stats = cache->getStatistics();
+    ToResourceTypeStat(stats.images, result->images);
+    ToResourceTypeStat(stats.cssStyleSheets, result->cssStyleSheets);
+    ToResourceTypeStat(stats.scripts, result->scripts);
+    ToResourceTypeStat(stats.xslStyleSheets, result->xslStyleSheets);
+    ToResourceTypeStat(stats.fonts, result->fonts);
+    ToResourceTypeStat(stats.other, result->other);
+  } else {
+    memset(result, 0, sizeof(WebCache::ResourceTypeStats));
+  }
+}
 
 }  // namespace blink
-
-#endif

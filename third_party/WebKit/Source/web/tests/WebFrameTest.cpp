@@ -30,6 +30,10 @@
 
 #include "public/web/WebFrame.h"
 
+#include <stdarg.h>
+#include <v8.h>
+#include <map>
+#include <memory>
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
@@ -99,6 +103,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCache.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebFloatRect.h"
@@ -109,7 +114,6 @@
 #include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
-#include "public/web/WebCache.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebDataSource.h"
 #include "public/web/WebDeviceEmulationParams.h"
@@ -143,10 +147,6 @@
 #include "wtf/Forward.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/dtoa/utils.h"
-#include <map>
-#include <memory>
-#include <stdarg.h>
-#include <v8.h>
 
 using blink::URLTestHelpers::toKURL;
 using blink::testing::runPendingTasks;

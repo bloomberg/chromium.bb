@@ -142,7 +142,6 @@ component("web") {
     "WebAssociatedURLLoaderImpl.h",
     "WebBlob.cpp",
     "WebCSSParser.cpp",
-    "WebCache.cpp",
     "WebColorSuggestion.cpp",
     "WebCryptoNormalize.cpp",
     "WebCustomElement.cpp",

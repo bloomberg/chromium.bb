@@ -30,6 +30,7 @@
 
 #include "public/web/WebView.h"
 
+#include <memory>
 #include "bindings/core/v8/V8Document.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
@@ -68,6 +69,7 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCache.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebDragOperation.h"
@@ -80,7 +82,6 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebAutofillClient.h"
-#include "public/web/WebCache.h"
 #include "public/web/WebDateTimeChooserCompletion.h"
 #include "public/web/WebDeviceEmulationParams.h"
 #include "public/web/WebDocument.h"
@@ -107,7 +108,6 @@
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 #if OS(MACOSX)
 #include "public/web/mac/WebSubstringUtil.h"

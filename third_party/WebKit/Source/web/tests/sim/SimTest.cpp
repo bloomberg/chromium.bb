@@ -9,7 +9,7 @@
 #include "platform/LayoutTestSupport.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "public/web/WebCache.h"
+#include "public/platform/WebCache.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 

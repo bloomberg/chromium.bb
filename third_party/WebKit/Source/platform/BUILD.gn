@@ -506,6 +506,7 @@ component("platform") {
     "exported/WebAudioBus.cpp",
     "exported/WebAudioDevice.cpp",
     "exported/WebBlobData.cpp",
+    "exported/WebCache.cpp",
     "exported/WebCanvasCaptureHandler.cpp",
     "exported/WebContentDecryptionModule.cpp",
     "exported/WebContentDecryptionModuleAccess.cpp",

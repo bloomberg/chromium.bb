@@ -4,20 +4,20 @@
 
 #include "public/web/WebEmbeddedWorker.h"
 
+#include <memory>
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCache.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
-#include "public/web/WebCache.h"
 #include "public/web/WebEmbeddedWorkerStartData.h"
 #include "public/web/WebSettings.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 namespace {

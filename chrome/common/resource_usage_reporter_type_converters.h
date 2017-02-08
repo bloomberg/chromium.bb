@@ -7,7 +7,7 @@
 
 #include "chrome/common/resource_usage_reporter.mojom.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "third_party/WebKit/public/web/WebCache.h"
+#include "third_party/WebKit/public/platform/WebCache.h"
 
 namespace mojo {
 

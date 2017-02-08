@@ -30,9 +30,11 @@
 
 #include "public/web/WebAssociatedURLLoader.h"
 
+#include <memory>
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCache.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURL.h"
@@ -41,7 +43,6 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/web/WebAssociatedURLLoaderClient.h"
 #include "public/web/WebAssociatedURLLoaderOptions.h"
-#include "public/web/WebCache.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebView.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +50,6 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 using blink::URLTestHelpers::toKURL;
 using blink::testing::runPendingTasks;
