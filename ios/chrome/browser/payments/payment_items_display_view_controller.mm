@@ -8,7 +8,9 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/payments/currency_formatter.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/payments/payment_request_utils.h"
@@ -153,15 +155,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   totalItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;
   totalItem.item =
       base::SysUTF16ToNSString(_paymentRequest->payment_details().total.label);
-
-  NSString* currencyCode = base::SysUTF16ToNSString(
-      _paymentRequest->payment_details().total.amount.currency);
-  NSDecimalNumber* value = [NSDecimalNumber
-      decimalNumberWithString:SysUTF16ToNSString(
-                                  _paymentRequest->payment_details()
-                                      .total.amount.value)];
-  totalItem.price =
-      payment_request_utils::FormattedCurrencyString(value, currencyCode);
+  payments::CurrencyFormatter* currencyFormatter =
+      _paymentRequest->GetOrCreateCurrencyFormatter();
+  totalItem.price = SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+      IDS_IOS_PAYMENT_REQUEST_PAYMENT_ITEMS_TOTAL_FORMAT,
+      base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
+      currencyFormatter->Format(base::UTF16ToASCII(
+          _paymentRequest->payment_details().total.amount.value))));
 
   [model addItem:totalItem toSectionWithIdentifier:SectionIdentifierPayment];
 
@@ -172,13 +172,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [[[PriceItem alloc] initWithType:ItemTypePaymentItem] autorelease];
     paymentItemItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;
     paymentItemItem.item = base::SysUTF16ToNSString(paymentItem.label);
-
-    NSString* currencyCode =
-        base::SysUTF16ToNSString(paymentItem.amount.currency);
-    NSDecimalNumber* value = [NSDecimalNumber
-        decimalNumberWithString:SysUTF16ToNSString(paymentItem.amount.value)];
-    paymentItemItem.price =
-        payment_request_utils::FormattedCurrencyString(value, currencyCode);
+    payments::CurrencyFormatter* currencyFormatter =
+        _paymentRequest->GetOrCreateCurrencyFormatter();
+    paymentItemItem.price = SysUTF16ToNSString(currencyFormatter->Format(
+        base::UTF16ToASCII(paymentItem.amount.value)));
     [model addItem:paymentItemItem
         toSectionWithIdentifier:SectionIdentifierPayment];
   }

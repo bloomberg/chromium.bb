@@ -9,22 +9,23 @@
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/payments/currency_formatter.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/payments/cells/page_info_item.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/payments/cells/shipping_address_item.h"
 #import "ios/chrome/browser/payments/payment_request_utils.h"
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -361,14 +362,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)fillPaymentSummaryItem:(PriceItem*)item
                withPaymentItem:(web::PaymentItem)paymentItem {
   item.item = l10n_util::GetNSString(IDS_IOS_PAYMENT_REQUEST_TOTAL_HEADER);
-  NSString* currencyCode = base::SysUTF16ToNSString(
-      _paymentRequest->payment_details().total.amount.currency);
-  NSDecimalNumber* value = [NSDecimalNumber
-      decimalNumberWithString:SysUTF16ToNSString(
-                                  _paymentRequest->payment_details()
-                                      .total.amount.value)];
-  item.price =
-      payment_request_utils::FormattedCurrencyString(value, currencyCode);
+  payments::CurrencyFormatter* currencyFormatter =
+      _paymentRequest->GetOrCreateCurrencyFormatter();
+  item.price = SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+      IDS_IOS_PAYMENT_REQUEST_PAYMENT_ITEMS_TOTAL_FORMAT,
+      base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
+      currencyFormatter->Format(base::UTF16ToASCII(paymentItem.amount.value))));
 }
 
 - (void)fillShippingAddressItem:(ShippingAddressItem*)item
@@ -381,11 +380,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)fillShippingOptionItem:(CollectionViewTextItem*)item
                     withOption:(web::PaymentShippingOption*)option {
   item.text = base::SysUTF16ToNSString(option->label);
-  NSString* currencyCode = base::SysUTF16ToNSString(option->amount.currency);
-  NSDecimalNumber* value = [NSDecimalNumber
-      decimalNumberWithString:SysUTF16ToNSString(option->amount.value)];
-  item.detailText =
-      payment_request_utils::FormattedCurrencyString(value, currencyCode);
+  payments::CurrencyFormatter* currencyFormatter =
+      _paymentRequest->GetOrCreateCurrencyFormatter();
+  item.detailText = SysUTF16ToNSString(
+      currencyFormatter->Format(base::UTF16ToASCII(option->amount.value)));
 }
 
 #pragma mark UICollectionViewDataSource

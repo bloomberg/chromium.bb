@@ -65,6 +65,11 @@ TEST(PaymentRequestTest, PaymentCurrencyAmountFromDictionaryValueSuccess) {
   EXPECT_TRUE(actual.FromDictionaryValue(amount_dict));
 
   EXPECT_EQ(expected, actual);
+
+  expected.currency_system = base::ASCIIToUTF16("urn:iso:std:iso:123456789");
+  amount_dict.SetString("currencySystem", "urn:iso:std:iso:123456789");
+  EXPECT_TRUE(actual.FromDictionaryValue(amount_dict));
+  EXPECT_EQ(expected, actual);
 }
 
 // Tests the failure case when populating a PaymentCurrencyAmount from a

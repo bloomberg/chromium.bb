@@ -7,6 +7,8 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/payments/currency_formatter.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -129,13 +131,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
     CollectionViewTextItem* item = [[[CollectionViewTextItem alloc]
         initWithType:ItemTypeShippingOption] autorelease];
     item.text = base::SysUTF16ToNSString(shippingOption->label);
-    NSString* currencyCode =
-        base::SysUTF16ToNSString(shippingOption->amount.currency);
-    NSDecimalNumber* value = [NSDecimalNumber
-        decimalNumberWithString:SysUTF16ToNSString(
-                                    shippingOption->amount.value)];
-    item.detailText =
-        payment_request_utils::FormattedCurrencyString(value, currencyCode);
+    payments::CurrencyFormatter* currencyFormatter =
+        _paymentRequest->GetOrCreateCurrencyFormatter();
+    item.detailText = SysUTF16ToNSString(currencyFormatter->Format(
+        base::UTF16ToASCII(shippingOption->amount.value)));
 
     // Styling.
     item.textFont = [MDCTypography body2Font];

@@ -11,6 +11,8 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/payments/currency_formatter.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/web/public/payments/payment_request.h"
 
 PaymentRequest::PaymentRequest(
@@ -29,8 +31,21 @@ PaymentRequest::PaymentRequest(
 PaymentRequest::~PaymentRequest() {}
 
 void PaymentRequest::set_payment_details(const web::PaymentDetails& details) {
+  DCHECK(web_payment_request_);
   web_payment_request_->details = details;
   PopulateShippingOptionCache();
+}
+
+payments::CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
+  DCHECK(web_payment_request_);
+  if (!currency_formatter_) {
+    currency_formatter_.reset(new payments::CurrencyFormatter(
+        base::UTF16ToASCII(web_payment_request_->details.total.amount.currency),
+        base::UTF16ToASCII(
+            web_payment_request_->details.total.amount.currency_system),
+        GetApplicationContext()->GetApplicationLocale()));
+  }
+  return currency_formatter_.get();
 }
 
 void PaymentRequest::PopulateProfileCache() {
@@ -45,6 +60,7 @@ void PaymentRequest::PopulateProfileCache() {
 }
 
 void PaymentRequest::PopulateCreditCardCache() {
+  DCHECK(web_payment_request_);
   std::unordered_set<base::string16> supported_method_types;
   for (const auto& method_data : web_payment_request_->method_data) {
     for (const auto& supported_method : method_data.supported_methods)
@@ -71,6 +87,7 @@ void PaymentRequest::PopulateCreditCardCache() {
 }
 
 void PaymentRequest::PopulateShippingOptionCache() {
+  DCHECK(web_payment_request_);
   shipping_options_.clear();
   shipping_options_.reserve(
       web_payment_request_->details.shipping_options.size());

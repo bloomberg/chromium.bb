@@ -121,6 +121,10 @@ class PaymentCurrencyAmount {
 
   // A string containing the decimal monetary value.
   base::string16 value;
+
+  // A URL that indicates the currency system that the currency identifier
+  // belongs to.
+  base::string16 currency_system;
 };
 
 // Information indicating what the payment request is for and the value asked

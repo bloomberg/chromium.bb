@@ -4,6 +4,7 @@
 
 #include "ios/web/public/payments/payment_request.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
 namespace {
@@ -31,6 +32,7 @@ static const char kCardExpiryYear[] = "expiryYear";
 static const char kMethodData[] = "methodData";
 static const char kMethodDataData[] = "data";
 static const char kMethodName[] = "methodName";
+static const char kPaymentCurrencyAmountCurrencySystem[] = "currencySystem";
 static const char kPaymentCurrencyAmountCurrency[] = "currency";
 static const char kPaymentCurrencyAmountValue[] = "value";
 static const char kPaymentDetails[] = "details";
@@ -146,7 +148,11 @@ bool PaymentMethodData::FromDictionaryValue(
   return true;
 }
 
-PaymentCurrencyAmount::PaymentCurrencyAmount() {}
+PaymentCurrencyAmount::PaymentCurrencyAmount()
+    // By default, the value is urn:iso:std:iso:4217 indicating that currency is
+    // defined by [ISO4217] (for example, USD for US Dollars).
+    : currency_system(base::ASCIIToUTF16("urn:iso:std:iso:4217")) {}
+
 PaymentCurrencyAmount::~PaymentCurrencyAmount() = default;
 
 bool PaymentCurrencyAmount::operator==(
@@ -161,8 +167,18 @@ bool PaymentCurrencyAmount::operator!=(
 
 bool PaymentCurrencyAmount::FromDictionaryValue(
     const base::DictionaryValue& value) {
-  return value.GetString(kPaymentCurrencyAmountCurrency, &this->currency) &&
-         value.GetString(kPaymentCurrencyAmountValue, &this->value);
+  if (!value.GetString(kPaymentCurrencyAmountCurrency, &this->currency)) {
+    return false;
+  }
+
+  if (!value.GetString(kPaymentCurrencyAmountValue, &this->value)) {
+    return false;
+  }
+
+  // Currency_system is optional
+  value.GetString(kPaymentCurrencyAmountCurrencySystem, &this->currency_system);
+
+  return true;
 }
 
 PaymentItem::PaymentItem() : pending(false) {}

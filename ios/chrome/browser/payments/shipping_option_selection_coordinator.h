@@ -36,8 +36,8 @@
 @interface ShippingOptionSelectionCoordinator : ChromeCoordinator
 
 // The PaymentRequest object owning an instance of web::PaymentRequest as
-// provided by the page invoking the Payment Request API. This is a weak
-// reference and should outlive this class.
+// provided by the page invoking the Payment Request API. This pointer is not
+// owned by this class and should outlive it.
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The delegate to be notified when the user selects a shipping option or

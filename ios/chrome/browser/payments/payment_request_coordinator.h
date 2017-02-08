@@ -54,8 +54,8 @@
     NS_DESIGNATED_INITIALIZER;
 
 // The PaymentRequest object owning an instance of web::PaymentRequest as
-// provided by the page invoking the Payment Request API. This is a weak
-// reference and should outlive this class.
+// provided by the page invoking the Payment Request API. This pointer is not
+// owned by this class and should outlive it.
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The favicon of the page invoking the PaymentRequest API. Should be set before

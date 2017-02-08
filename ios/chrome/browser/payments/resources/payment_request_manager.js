@@ -487,7 +487,8 @@ window.PaymentMethodData;
 /**
  * @typedef {{
  *   currency: string,
- *   value: string
+ *   value: string,
+ *   currencySystem: (string|undefined)
  * }}
  */
 window.PaymentCurrencyAmount;

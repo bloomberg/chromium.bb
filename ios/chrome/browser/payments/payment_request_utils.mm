@@ -34,15 +34,6 @@ NSString* AddressLabelFromAutofillProfile(autofill::AutofillProfile* profile) {
       GetApplicationContext()->GetApplicationLocale()));
 }
 
-NSString* FormattedCurrencyString(NSDecimalNumber* value,
-                                  NSString* currencyCode) {
-  NSNumberFormatter* currencyFormatter =
-      [[[NSNumberFormatter alloc] init] autorelease];
-  [currencyFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
-  [currencyFormatter setCurrencyCode:currencyCode];
-  return [currencyFormatter stringFromNumber:value];
-}
-
 NSString* PhoneNumberLabelFromAutofillProfile(
     autofill::AutofillProfile* profile) {
   return base::SysUTF16ToNSString(profile->GetInfo(

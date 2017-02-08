@@ -17,6 +17,10 @@ class CreditCard;
 class PersonalDataManager;
 }  // namespace autofill
 
+namespace payments {
+class CurrencyFormatter;
+}  // namespace payments
+
 // Owns an instance of web::PaymentRequest as provided by the page invoking the
 // PaymentRequest API. Also caches credit cards and addresses provided by the
 // |personal_data_manager| and manages shared resources and user selections for
@@ -39,6 +43,11 @@ class PaymentRequest {
   // the cached references to the shipping options in |web_payment_request_| as
   // well as the reference to the selected shipping option.
   void set_payment_details(const web::PaymentDetails& details);
+
+  // Returns the payments::CurrencyFormatter instance for this PaymentRequest.
+  // Note: Having multiple currencies per PaymentRequest flow is not supported;
+  // hence the CurrencyFormatter is cached here.
+  payments::CurrencyFormatter* GetOrCreateCurrencyFormatter();
 
   // Returns the available autofill profiles for this user to be used as
   // shipping profiles.
@@ -111,6 +120,9 @@ class PaymentRequest {
 
   // Never null and outlives this object.
   autofill::PersonalDataManager* personal_data_manager_;
+
+  // The currency formatter instance for this PaymentRequest flow.
+  std::unique_ptr<payments::CurrencyFormatter> currency_formatter_;
 
   // Profiles returned by the Data Manager may change due to (e.g.) sync events,
   // meaning PaymentRequest may outlive them. Therefore, profiles are fetched

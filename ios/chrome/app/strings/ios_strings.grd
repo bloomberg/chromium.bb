@@ -948,6 +948,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_PAYMENT_REQUEST_PAYMENT_ITEMS_TITLE" desc="Title of the view that displays the payment items in a payment request (for example subtotal, tax, shipping cost) to the user [iOS only].">
         Order Summary
       </message>
+      <message name="IDS_IOS_PAYMENT_REQUEST_PAYMENT_ITEMS_TOTAL_FORMAT" desc="The format specifier of the Total label in the payment items in a payment request [iOS only].">
+        <ph name="FORMATTED_CURRENCY_CODE">$1<ex>USD</ex></ph> <ph name="FORMATTED_TOTAL_AMOUNT">$2<ex>$ 12.34</ex></ph>
+      </message>
       <message name="IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_HEADER" desc="Label of the header of the section which displays the currently selected shipping address and the available shipping options for satisfying a payment request [iOS only].">
         Shipping
       </message>
