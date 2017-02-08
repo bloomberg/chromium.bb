@@ -41,8 +41,8 @@ const int kMinStackDepth = 2;
 
 // The amount of memory set aside for holding arbitrary user data (key/value
 // pairs) globally or associated with ActivityData entries.
-const size_t kUserDataSize = 1024;    // bytes
-const size_t kGlobalDataSize = 4096;  // bytes
+const size_t kUserDataSize = 1 << 10;     // 1 KiB
+const size_t kGlobalDataSize = 16 << 10;  // 16 KiB
 const size_t kMaxUserDataNameLength =
     static_cast<size_t>(std::numeric_limits<uint8_t>::max());
 
@@ -288,7 +288,6 @@ void ActivityUserData::Set(StringPiece name,
                            ValueType type,
                            const void* memory,
                            size_t size) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GE(std::numeric_limits<uint8_t>::max(), name.length());
   size = std::min(std::numeric_limits<uint16_t>::max() - (kMemoryAlignment - 1),
                   size);
@@ -1056,6 +1055,19 @@ ActivityUserData& GlobalActivityTracker::ScopedThreadActivity::user_data() {
   return *user_data_;
 }
 
+GlobalActivityTracker::GlobalUserData::GlobalUserData(void* memory, size_t size)
+    : ActivityUserData(memory, size) {}
+
+GlobalActivityTracker::GlobalUserData::~GlobalUserData() {}
+
+void GlobalActivityTracker::GlobalUserData::Set(StringPiece name,
+                                                ValueType type,
+                                                const void* memory,
+                                                size_t size) {
+  AutoLock lock(data_lock_);
+  ActivityUserData::Set(name, type, memory, size);
+}
+
 GlobalActivityTracker::ManagedActivityTracker::ManagedActivityTracker(
     PersistentMemoryAllocator::Reference mem_reference,
     void* base,
@@ -1216,6 +1228,12 @@ void GlobalActivityTracker::RecordModuleInfo(const ModuleInfo& info) {
   modules_.insert(std::make_pair(info.file, record));
 }
 
+void GlobalActivityTracker::RecordFieldTrial(const std::string& trial_name,
+                                             StringPiece group_name) {
+  const std::string key = std::string("FieldTrial.") + trial_name;
+  global_data_.SetString(key, group_name);
+}
+
 GlobalActivityTracker::GlobalActivityTracker(
     std::unique_ptr<PersistentMemoryAllocator> allocator,
     int stack_depth)
@@ -1235,7 +1253,7 @@ GlobalActivityTracker::GlobalActivityTracker(
                            kUserDataSize,
                            kCachedUserDataMemories,
                            /*make_iterable=*/false),
-      user_data_(
+      global_data_(
           allocator_->GetAsArray<char>(
               allocator_->Allocate(kGlobalDataSize, kTypeIdGlobalDataRecord),
               kTypeIdGlobalDataRecord,
@@ -1251,7 +1269,13 @@ GlobalActivityTracker::GlobalActivityTracker(
 
   // The global records must be iterable in order to be found by an analyzer.
   allocator_->MakeIterable(allocator_->GetAsReference(
-      user_data_.GetBaseAddress(), kTypeIdGlobalDataRecord));
+      global_data_.GetBaseAddress(), kTypeIdGlobalDataRecord));
+
+  // Fetch and record all activated field trials.
+  FieldTrial::ActiveGroups active_groups;
+  FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+  for (auto& group : active_groups)
+    RecordFieldTrial(group.trial_name, group.group_name);
 }
 
 GlobalActivityTracker::~GlobalActivityTracker() {

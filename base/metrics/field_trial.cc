@@ -10,6 +10,7 @@
 #include "base/base_switches.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
+#include "base/debug/activity_tracker.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/process/memory.h"
@@ -980,6 +981,15 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
 
     if (kUseSharedMemoryForFieldTrials)
       ActivateFieldTrialEntryWhileLocked(field_trial);
+  }
+
+  // Recording for stability debugging has to be done inline as a task posted
+  // to an observer may not get executed before a crash.
+  base::debug::GlobalActivityTracker* tracker =
+      base::debug::GlobalActivityTracker::Get();
+  if (tracker) {
+    tracker->RecordFieldTrial(field_trial->trial_name(),
+                              field_trial->group_name_internal());
   }
 
   global_->observer_list_->Notify(

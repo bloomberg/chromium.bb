@@ -567,7 +567,7 @@ TEST_F(PostmortemReportCollectorCollectionFromGlobalTrackerTest,
   // Record some global user data.
   GlobalActivityTracker::CreateWithFile(debug_file_path(), kMemorySize, 0ULL,
                                         "", 3);
-  ActivityUserData& global_data = GlobalActivityTracker::Get()->user_data();
+  ActivityUserData& global_data = GlobalActivityTracker::Get()->global_data();
   global_data.Set("raw", "foo", 3);
   global_data.SetString("string", "bar");
   global_data.SetChar("char", '9');

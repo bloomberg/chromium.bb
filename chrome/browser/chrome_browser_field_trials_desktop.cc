@@ -161,7 +161,7 @@ void SetupStabilityDebugging() {
                                                 &version_number, &special_build,
                                                 &channel_name);
 
-    base::debug::ActivityUserData& global_data = global_tracker->user_data();
+    base::debug::ActivityUserData& global_data = global_tracker->global_data();
     global_data.SetString(browser_watcher::kStabilityProduct, product_name);
     global_data.SetString(browser_watcher::kStabilityVersion, version_number);
     global_data.SetString(browser_watcher::kStabilityChannel, channel_name);
