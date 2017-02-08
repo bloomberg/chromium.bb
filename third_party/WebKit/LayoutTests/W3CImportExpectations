@@ -304,6 +304,8 @@ external/wpt/proximity [ Skip ]
 ## Owners: mkwst@chromium.org
 # http://crbug.com/360762: Requires HTTPS server with python.
 external/wpt/referrer-policy [ Skip ]
+## Owners: avayvod@chromium.org,mlamouri@chromium.org
+# external/wpt/remote-playback [ Pass ]
 external/wpt/resource-timing [ Skip ]
 ## Owners: jsbell@chromium.org
 # external/wpt/resources [ Pass ]

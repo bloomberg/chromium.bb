@@ -3787,6 +3787,11 @@
      {}
     ]
    ],
+   "./MANIFEST.json": [
+    [
+     {}
+    ]
+   ],
    "./README.md": [
     [
      {}
@@ -4188,11 +4193,6 @@
     ]
    ],
    "dom/events/Event-dispatch-click-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "dom/events/Event-init-while-dispatching-expected.txt": [
     [
      {}
     ]
@@ -4617,6 +4617,11 @@
      {}
     ]
    ],
+   "dom/nodes/MutationObserver-childList-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "dom/nodes/MutationObserver-document-expected.txt": [
     [
      {}
@@ -4752,27 +4757,12 @@
      {}
     ]
    ],
-   "dom/ranges/Range-mutations-appendChild-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "dom/ranges/Range-mutations-dataChange-expected.txt": [
     [
      {}
     ]
    ],
    "dom/ranges/Range-mutations-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "dom/ranges/Range-mutations-insertBefore-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "dom/ranges/Range-mutations-replaceChild-expected.txt": [
     [
      {}
     ]
@@ -14188,6 +14178,11 @@
     ]
    ],
    "quirks-mode/historical/list-item-bullet-size-ref.html": [
+    [
+     {}
+    ]
+   ],
+   "remote-playback/README.md": [
     [
      {}
     ]
@@ -29668,6 +29663,36 @@
      {}
     ]
    ],
+   "remote-playback/cancel-watch-availability.html": [
+    [
+     "/remote-playback/cancel-watch-availability.html",
+     {}
+    ]
+   ],
+   "remote-playback/disable-remote-playback-cancel-watch-availability-throws.html": [
+    [
+     "/remote-playback/disable-remote-playback-cancel-watch-availability-throws.html",
+     {}
+    ]
+   ],
+   "remote-playback/disable-remote-playback-prompt-throws.html": [
+    [
+     "/remote-playback/disable-remote-playback-prompt-throws.html",
+     {}
+    ]
+   ],
+   "remote-playback/disable-remote-playback-watch-availability-throws.html": [
+    [
+     "/remote-playback/disable-remote-playback-watch-availability-throws.html",
+     {}
+    ]
+   ],
+   "remote-playback/watch-availability-initial-callback.html": [
+    [
+     "/remote-playback/watch-availability-initial-callback.html",
+     {}
+    ]
+   ],
    "selection/Document-open.html": [
     [
      "/selection/Document-open.html",
@@ -34501,6 +34526,10 @@
    "89af73c41d456ee93bd40921e96414c1908fc48c",
    "support"
   ],
+  "./MANIFEST.json": [
+   "94e506242954020d69b5240f63d2ef297d537608",
+   "support"
+  ],
   "./README.md": [
    "47d52ff4a87b49dec2fb5ceb98211fb1b9af34fb",
    "support"
@@ -34706,7 +34735,7 @@
    "support"
   ],
   "FileAPI/url/blob-url-in-sandboxed-iframe.html": [
-   "ea6ccb6eb5b6370b9c524833bf267adf71b0cdf2",
+   "59188b2e679f56d5eb7ea01428ce06ff0068111a",
    "testharness"
   ],
   "FileAPI/url/origin.sub.html": [
@@ -35854,7 +35883,7 @@
    "testharness"
   ],
   "IndexedDB/key-conversion-exceptions.htm": [
-   "6300e99617ff28434b3fca1594ea373e4d8b20a4",
+   "66c9ee49f2689e8917e5206f1bd2b9759b755d53",
    "testharness"
   ],
   "IndexedDB/key_invalid.htm": [
@@ -36544,10 +36573,6 @@
   "dom/events/Event-dispatch-throwing.html": [
    "d4385b80c2575fc81d1d93504b8a14b74c93bd85",
    "testharness"
-  ],
-  "dom/events/Event-init-while-dispatching-expected.txt": [
-   "b8c260b7e47e827d35a964196525e7dfa53fbc94",
-   "support"
   ],
   "dom/events/Event-init-while-dispatching.html": [
    "84e38be2f0e8f3c4f44a95cc296096de3631624b",
@@ -37357,6 +37382,10 @@
    "ecf8cba9842dc6fed4b678a40c039389088c9d6e",
    "testharness"
   ],
+  "dom/nodes/MutationObserver-childList-expected.txt": [
+   "f58c868768930e0c38a9911e89bfde53f4d11b73",
+   "support"
+  ],
   "dom/nodes/MutationObserver-childList.html": [
    "91826df379f2edb53ab2d5d408905636512eeb28",
    "testharness"
@@ -37510,7 +37539,7 @@
    "testharness"
   ],
   "dom/nodes/Node-replaceChild-expected.txt": [
-   "d6ce469f8a342c3d7053474916bb5ca402daf7fb",
+   "c3bd5e37d0be4bd282c2db5002117699b668bb79",
    "support"
   ],
   "dom/nodes/Node-replaceChild.html": [
@@ -37845,10 +37874,6 @@
    "99cd69da0d76b1ac128ee7c155d85f3be40dc088",
    "testharness"
   ],
-  "dom/ranges/Range-mutations-appendChild-expected.txt": [
-   "67884ea2071e3729ea6702fd3df9fc5fb5cd26a6",
-   "support"
-  ],
   "dom/ranges/Range-mutations-appendChild.html": [
    "5506bcbb1469bb727a5b0a5ce4339048959cdafb",
    "testharness"
@@ -37858,7 +37883,7 @@
    "testharness"
   ],
   "dom/ranges/Range-mutations-dataChange-expected.txt": [
-   "edf4692d792c0bde9b7a4313e22e40936a503c0c",
+   "372d3f8bcd17916497417dcf9d1aa0ae5156cba7",
    "support"
   ],
   "dom/ranges/Range-mutations-dataChange.html": [
@@ -37873,10 +37898,6 @@
    "45a88d19ceff57f8b6b5ad09e3c7bdcb2a1996a6",
    "support"
   ],
-  "dom/ranges/Range-mutations-insertBefore-expected.txt": [
-   "06a490d95a09f963392c0745de7f34c5ad3cd71b",
-   "support"
-  ],
   "dom/ranges/Range-mutations-insertBefore.html": [
    "efa7479a1249f6ef37c1ffffe6f01f9c9cacc69c",
    "testharness"
@@ -37888,10 +37909,6 @@
   "dom/ranges/Range-mutations-removeChild.html": [
    "bca8ea0dfb51f83d0ec4a4adf70808c629db8027",
    "testharness"
-  ],
-  "dom/ranges/Range-mutations-replaceChild-expected.txt": [
-   "d6e6ebe1b735effc6919fc4dcd5bde56cf48cf04",
-   "support"
   ],
   "dom/ranges/Range-mutations-replaceChild.html": [
    "abede1c9cb2c08f7de4bfc4c57b8e21fe6a01fea",
@@ -51895,6 +51912,30 @@
   ],
   "quirks-mode/unitless-length.html": [
    "1e896cad5c89bfe1756af5db60b61bc9fa93f61b",
+   "testharness"
+  ],
+  "remote-playback/README.md": [
+   "f76a7ece018ba65d920c5df4b6e287521254399f",
+   "support"
+  ],
+  "remote-playback/cancel-watch-availability.html": [
+   "f74aa07eec9e1e47915a7165518429c78c9af28a",
+   "testharness"
+  ],
+  "remote-playback/disable-remote-playback-cancel-watch-availability-throws.html": [
+   "3e58b314ce06d2070036930f08147fece491d877",
+   "testharness"
+  ],
+  "remote-playback/disable-remote-playback-prompt-throws.html": [
+   "d61b27d43d1f01f4964be312ad38f249bc89c05e",
+   "testharness"
+  ],
+  "remote-playback/disable-remote-playback-watch-availability-throws.html": [
+   "2779fd2a3bd27a011e8ba20dd6fb214978d8a54c",
+   "testharness"
+  ],
+  "remote-playback/watch-availability-initial-callback.html": [
+   "3d220a3cc0e6a05fbc40c0ab0e46a2e60162b2be",
    "testharness"
   ],
   "selection/Document-open-expected.txt": [
