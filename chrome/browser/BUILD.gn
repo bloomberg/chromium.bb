@@ -246,6 +246,8 @@ split_static_library("browser") {
     "component_updater/pnacl_component_installer.h",
     "component_updater/recovery_component_installer.cc",
     "component_updater/recovery_component_installer.h",
+    "component_updater/recovery_improved_component_installer.cc",
+    "component_updater/recovery_improved_component_installer.h",
     "component_updater/sth_set_component_installer.cc",
     "component_updater/sth_set_component_installer.h",
     "component_updater/subresource_filter_component_installer.cc",

@@ -105,6 +105,12 @@ const base::Feature kHappinessTrackingSystem {
     "HappinessTrackingSystem", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Controls whether the "improved recovery component" is used. The improved
+// recovery component is a redesigned Chrome component intended to restore
+// a broken Chrome updater in more scenarios than before.
+const base::Feature kImprovedRecoveryComponent{
+    "ImprovedRecoveryComponent", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Enables showing the "This computer will no longer receive Google Chrome
 // updates" infobar instead of the "will soon stop receiving" infobar on

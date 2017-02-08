@@ -53,6 +53,7 @@
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
+#include "chrome/browser/component_updater/recovery_improved_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_installer.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -475,7 +476,10 @@ void RegisterComponentsForUpdate() {
   // file IO to know you existing component version.
 #if !defined(OS_ANDROID)
 #if !defined(OS_CHROMEOS)
-  RegisterRecoveryComponent(cus, g_browser_process->local_state());
+  if (base::FeatureList::IsEnabled(features::kImprovedRecoveryComponent))
+    RegisterRecoveryImprovedComponent(cus, g_browser_process->local_state());
+  else
+    RegisterRecoveryComponent(cus, g_browser_process->local_state());
 #endif  // !defined(OS_CHROMEOS)
   RegisterPepperFlashComponent(cus);
 #if !defined(OS_CHROMEOS)
