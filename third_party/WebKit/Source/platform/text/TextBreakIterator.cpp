@@ -255,12 +255,9 @@ static inline int nextBreakablePosition(
   int len = static_cast<int>(length);
   int nextBreak = -1;
 
-  CharacterType lastLastCh =
-      pos > 1 ? str[pos - 2] : static_cast<CharacterType>(
-                                   lazyBreakIterator.secondToLastCharacter());
-  CharacterType lastCh =
-      pos > 0 ? str[pos - 1]
-              : static_cast<CharacterType>(lazyBreakIterator.lastCharacter());
+  UChar lastLastCh =
+      pos > 1 ? str[pos - 2] : lazyBreakIterator.secondToLastCharacter();
+  UChar lastCh = pos > 0 ? str[pos - 1] : lazyBreakIterator.lastCharacter();
   ULineBreak lastLineBreak;
   if (lineBreakType == LineBreakType::BreakAll)
     lastLineBreak = lineBreakPropertyValue(lastLastCh, lastCh);
