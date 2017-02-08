@@ -31,6 +31,7 @@
 
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioIOCallback.h"
+#include "platform/audio/AudioSourceProvider.h"
 #include "public/platform/WebAudioDevice.h"
 #include "public/platform/WebVector.h"
 #include "wtf/Allocator.h"
@@ -40,14 +41,15 @@
 
 namespace blink {
 
-class PushPullFIFO;
+class AudioPullFIFO;
 class SecurityOrigin;
 
 // The AudioDestination class is an audio sink interface between the media
 // renderer and the Blink's WebAudio module. It has a FIFO to adapt the
 // different processing block sizes of WebAudio renderer and actual hardware
 // audio callback.
-class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
+class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback,
+                                         public AudioSourceProvider {
   USING_FAST_MALLOC(AudioDestination);
   WTF_MAKE_NONCOPYABLE(AudioDestination);
 
@@ -72,6 +74,9 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
               double delayTimestamp,
               size_t priorFramesSkipped) override;
 
+  // AudioSourceProvider (FIFO)
+  void provideInput(AudioBus* outputBus, size_t framesToProcess) override;
+
   virtual void start();
   virtual void stop();
 
@@ -93,15 +98,8 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
   // The render callback function of WebAudio engine. (i.e. DestinationNode)
   AudioIOCallback& m_callback;
 
-  // To pass the data from FIFO to the audio device callback.
   RefPtr<AudioBus> m_outputBus;
-
-  // To push the rendered result from WebAudio graph into the FIFO.
-  RefPtr<AudioBus> m_renderBus;
-
-  // Resolves the buffer size mismatch between the WebAudio engine and
-  // the callback function from the actual audio device.
-  std::unique_ptr<PushPullFIFO> m_fifo;
+  std::unique_ptr<AudioPullFIFO> m_fifo;
 
   size_t m_framesElapsed;
   AudioIOPosition m_outputPosition;
