@@ -342,7 +342,9 @@ bool IsOnWelcomePage(content::WebContents* contents) {
   }
 
   const GURL welcome_page(chrome::kChromeUIWelcomeURL);
-  return contents->GetURL().GetWithEmptyPath() == welcome_page;
+  const GURL welcome_page_win10(chrome::kChromeUIWelcomeWin10URL);
+  const GURL current = contents->GetURL().GetWithEmptyPath();
+  return current == welcome_page || current == welcome_page_win10;
 }
 
 // Show the first run search engine bubble at the first appropriate opportunity.
