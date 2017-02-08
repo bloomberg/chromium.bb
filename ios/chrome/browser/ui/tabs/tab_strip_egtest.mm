@@ -14,6 +14,10 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Tests for the tab strip shown on iPad.
 @interface TabStripTestCase : ChromeTestCase
 @end

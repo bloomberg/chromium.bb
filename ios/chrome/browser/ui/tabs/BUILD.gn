@@ -94,6 +94,7 @@ source_set("unit_tests") {
 }
 
 source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "tab_strip_egtest.mm",
