@@ -61,25 +61,6 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
-   * Adds the wildcard prefix to a pattern string (if missing).
-   * @param {string} pattern The pattern to add the wildcard to.
-   * @return {string} The resulting pattern.
-   * @private
-   */
-  addPatternWildcard: function(pattern) {
-    if (pattern.indexOf('[*.]') > -1)
-      return pattern;
-    if (pattern.startsWith('http://'))
-      return pattern.replace('http://', 'http://[*.]');
-    else if (pattern.startsWith('https://'))
-      return pattern.replace('https://', 'https://[*.]');
-    else if (pattern.startsWith('chrome-extension://'))
-      return pattern;  // No need for a wildcard for this.
-    else
-      return '[*.]' + pattern;
-  },
-
-  /**
    * Removes the wildcard prefix from a pattern string.
    * @param {string} pattern The pattern to remove the wildcard from.
    * @return {string} The resulting pattern.

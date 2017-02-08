@@ -86,9 +86,8 @@ Polymer({
   onSubmit_: function() {
     if (this.$.add.disabled)
       return;  // Can happen when Enter is pressed.
-    var pattern = this.addPatternWildcard(this.site_);
     this.browserProxy.setCategoryPermissionForOrigin(
-        pattern, pattern, this.category, this.contentSetting,
+        this.site_, this.site_, this.category, this.contentSetting,
         this.$.incognito.checked);
     this.$.dialog.close();
   },
