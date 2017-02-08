@@ -18,6 +18,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
+#include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -51,15 +52,21 @@ const Client kClient = Client::CHROME_QNX;
 const Client kClient = Client::UNKNOWN;
 #endif
 
+const std::string kBody = "response body";
+
 }  // namespace
 
 class ContentResourceProviderTest : public testing::Test {
  public:
   ContentResourceProviderTest()
-      : context_(true), content_resource_type_provider_(nullptr) {
+      : context_(true), content_resource_type_provider_(nullptr) {}
+
+  void Init(const std::vector<DataReductionProxyServer> proxy_servers) {
     test_context_ = DataReductionProxyTestContext::Builder()
                         .WithClient(kClient)
+                        .WithProxiesForHttp(proxy_servers)
                         .WithURLRequestContext(&context_)
+                        .WithMockClientSocketFactory(&mock_socket_factory_)
                         .Build();
 
     data_reduction_proxy_network_delegate_.reset(
@@ -73,9 +80,12 @@ class ContentResourceProviderTest : public testing::Test {
     data_reduction_proxy_network_delegate_->InitIODataAndUMA(
         test_context_->io_data(), test_context_->io_data()->bypass_stats());
 
+    context_.set_client_socket_factory(&mock_socket_factory_);
     context_.set_network_delegate(data_reduction_proxy_network_delegate_.get());
     context_.set_proxy_delegate(test_context_->io_data()->proxy_delegate());
     context_.Init();
+
+    test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();
 
     std::unique_ptr<data_reduction_proxy::ContentResourceTypeProvider>
         content_resource_type_provider(
@@ -109,9 +119,14 @@ class ContentResourceProviderTest : public testing::Test {
     return content_resource_type_provider_;
   }
 
+  net::MockClientSocketFactory* mock_socket_factory() {
+    return &mock_socket_factory_;
+  }
+
  protected:
   base::MessageLoopForIO message_loop_;
   net::TestURLRequestContext context_;
+  net::MockClientSocketFactory mock_socket_factory_;
   net::TestDelegate delegate_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<DataReductionProxyNetworkDelegate>
@@ -119,9 +134,22 @@ class ContentResourceProviderTest : public testing::Test {
   ResourceTypeProvider* content_resource_type_provider_;
 };
 
-// Tests that the resource content type was correctly computed, and was
-// available to the data reduction proxy delegate.
-TEST_F(ContentResourceProviderTest, SetAndGetContentResourceType) {
+// Tests that the correct data reduction proxy is used based on the resource
+// content type.
+TEST_F(ContentResourceProviderTest, VerifyCorrectProxyUsed) {
+  std::vector<DataReductionProxyServer> proxies_for_http;
+
+  net::ProxyServer core_primary = net::ProxyServer::FromURI(
+      "http://origin.net:80", net::ProxyServer::SCHEME_HTTP);
+  net::ProxyServer core_fallback = net::ProxyServer::FromURI(
+      "http://fallback.net:80", net::ProxyServer::SCHEME_HTTP);
+
+  proxies_for_http.push_back(
+      DataReductionProxyServer(core_primary, ProxyServer_ProxyType_CORE));
+  proxies_for_http.push_back(
+      DataReductionProxyServer(core_fallback, ProxyServer_ProxyType_CORE));
+  Init(proxies_for_http);
+
   const struct {
     GURL gurl;
     content::ResourceType resource_type;
@@ -156,6 +184,15 @@ TEST_F(ContentResourceProviderTest, SetAndGetContentResourceType) {
        ResourceTypeProvider::CONTENT_TYPE_UNKNOWN}};
 
   for (const auto test : tests) {
+    net::MockRead mock_reads[] = {
+        net::MockRead(
+            "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n"),
+        net::MockRead(kBody.c_str()), net::MockRead(net::SYNCHRONOUS, net::OK),
+    };
+    net::StaticSocketDataProvider socket_data_provider(
+        mock_reads, arraysize(mock_reads), nullptr, 0);
+    mock_socket_factory()->AddSocketDataProvider(&socket_data_provider);
+
     base::HistogramTester histogram_tester;
     std::unique_ptr<net::URLRequest> request =
         CreateRequestByType(test.gurl, test.resource_type);
@@ -173,6 +210,180 @@ TEST_F(ContentResourceProviderTest, SetAndGetContentResourceType) {
     // give the correct result.
     EXPECT_EQ(test.expected_content_type,
               content_resource_type_provider()->GetContentType(request->url()));
+
+    EXPECT_EQ(core_primary, request->proxy_server());
+  }
+}
+
+// Tests that the resource content type was correctly computed, and was
+// available to the data reduction proxy delegate.
+TEST_F(ContentResourceProviderTest, SetAndGetContentResourceTypeContent) {
+  std::vector<DataReductionProxyServer> proxies_for_http;
+
+  net::ProxyServer unspecified = net::ProxyServer::FromURI(
+      "http://origin.net:80", net::ProxyServer::SCHEME_HTTP);
+  net::ProxyServer core = net::ProxyServer::FromURI(
+      "http://fallback.net:80", net::ProxyServer::SCHEME_HTTP);
+
+  proxies_for_http.push_back(DataReductionProxyServer(
+      unspecified, ProxyServer_ProxyType_UNSPECIFIED_TYPE));
+  proxies_for_http.push_back(
+      DataReductionProxyServer(core, ProxyServer_ProxyType_CORE));
+  Init(proxies_for_http);
+
+  const struct {
+    GURL gurl;
+    content::ResourceType resource_type;
+    ResourceTypeProvider::ContentType expected_content_type;
+  } tests[] = {
+      {GURL("http://www.google.com/main-frame"),
+       content::RESOURCE_TYPE_MAIN_FRAME,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/sub-frame"),
+       content::RESOURCE_TYPE_SUB_FRAME,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/stylesheet"),
+       content::RESOURCE_TYPE_STYLESHEET,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/script"), content::RESOURCE_TYPE_SCRIPT,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/image"), content::RESOURCE_TYPE_IMAGE,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/font"), content::RESOURCE_TYPE_FONT_RESOURCE,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/sub-resource"),
+       content::RESOURCE_TYPE_SUB_RESOURCE,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/object"), content::RESOURCE_TYPE_OBJECT,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/media"), content::RESOURCE_TYPE_MEDIA,
+       ResourceTypeProvider::CONTENT_TYPE_MEDIA},
+      {GURL("http://www.google.com/worker"), content::RESOURCE_TYPE_WORKER,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/shared-worker"),
+       content::RESOURCE_TYPE_SHARED_WORKER,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN}};
+
+  for (const auto test : tests) {
+    net::MockRead mock_reads[] = {
+        net::MockRead(
+            "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n"),
+        net::MockRead(kBody.c_str()), net::MockRead(net::SYNCHRONOUS, net::OK),
+    };
+    net::StaticSocketDataProvider socket_data_provider(
+        mock_reads, arraysize(mock_reads), nullptr, 0);
+    mock_socket_factory()->AddSocketDataProvider(&socket_data_provider);
+
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<net::URLRequest> request =
+        CreateRequestByType(test.gurl, test.resource_type);
+    request->Start();
+    base::RunLoop().RunUntilIdle();
+
+    histogram_tester.ExpectUniqueSample(
+        "DataReductionProxy.ResourceContentType", test.expected_content_type,
+        1);
+
+    EXPECT_EQ(test.expected_content_type,
+              content_resource_type_provider()->GetContentType(request->url()));
+
+    // Querying for the content type of |request->url()| again should still
+    // give the correct result.
+    EXPECT_EQ(test.expected_content_type,
+              content_resource_type_provider()->GetContentType(request->url()));
+
+    if (test.expected_content_type ==
+        ResourceTypeProvider::CONTENT_TYPE_MEDIA) {
+      EXPECT_EQ(core, request->proxy_server());
+    } else {
+      EXPECT_EQ(unspecified, request->proxy_server());
+    }
+  }
+}
+
+// Tests that the request is fetched directly if no valid data reduction
+// proxy is available.
+TEST_F(ContentResourceProviderTest, FetchDirect) {
+  std::vector<DataReductionProxyServer> proxies_for_http;
+
+  net::ProxyServer unspecified = net::ProxyServer::FromURI(
+      "http://origin.net:80", net::ProxyServer::SCHEME_HTTP);
+  net::ProxyServer core = net::ProxyServer::FromURI(
+      "http://fallback.net:80", net::ProxyServer::SCHEME_HTTP);
+
+  proxies_for_http.push_back(DataReductionProxyServer(
+      unspecified, ProxyServer_ProxyType_UNSPECIFIED_TYPE));
+  proxies_for_http.push_back(
+      DataReductionProxyServer(core, ProxyServer_ProxyType_UNSPECIFIED_TYPE));
+  Init(proxies_for_http);
+
+  const struct {
+    GURL gurl;
+    content::ResourceType resource_type;
+    ResourceTypeProvider::ContentType expected_content_type;
+  } tests[] = {
+      {GURL("http://www.google.com/main-frame"),
+       content::RESOURCE_TYPE_MAIN_FRAME,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/sub-frame"),
+       content::RESOURCE_TYPE_SUB_FRAME,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/stylesheet"),
+       content::RESOURCE_TYPE_STYLESHEET,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/script"), content::RESOURCE_TYPE_SCRIPT,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/image"), content::RESOURCE_TYPE_IMAGE,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/font"), content::RESOURCE_TYPE_FONT_RESOURCE,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/sub-resource"),
+       content::RESOURCE_TYPE_SUB_RESOURCE,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/object"), content::RESOURCE_TYPE_OBJECT,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/media"), content::RESOURCE_TYPE_MEDIA,
+       ResourceTypeProvider::CONTENT_TYPE_MEDIA},
+      {GURL("http://www.google.com/worker"), content::RESOURCE_TYPE_WORKER,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN},
+      {GURL("http://www.google.com/shared-worker"),
+       content::RESOURCE_TYPE_SHARED_WORKER,
+       ResourceTypeProvider::CONTENT_TYPE_UNKNOWN}};
+
+  for (const auto test : tests) {
+    net::MockRead mock_reads[] = {
+        net::MockRead(
+            "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n"),
+        net::MockRead(kBody.c_str()), net::MockRead(net::SYNCHRONOUS, net::OK),
+    };
+    net::StaticSocketDataProvider socket_data_provider(
+        mock_reads, arraysize(mock_reads), nullptr, 0);
+    mock_socket_factory()->AddSocketDataProvider(&socket_data_provider);
+
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<net::URLRequest> request =
+        CreateRequestByType(test.gurl, test.resource_type);
+    request->Start();
+    base::RunLoop().RunUntilIdle();
+
+    histogram_tester.ExpectUniqueSample(
+        "DataReductionProxy.ResourceContentType", test.expected_content_type,
+        1);
+
+    EXPECT_EQ(test.expected_content_type,
+              content_resource_type_provider()->GetContentType(request->url()));
+
+    // Querying for the content type of |request->url()| again should still
+    // give the correct result.
+    EXPECT_EQ(test.expected_content_type,
+              content_resource_type_provider()->GetContentType(request->url()));
+
+    if (test.expected_content_type ==
+        ResourceTypeProvider::CONTENT_TYPE_MEDIA) {
+      EXPECT_EQ(net::ProxyServer::Direct(), request->proxy_server());
+    } else {
+      EXPECT_EQ(unspecified, request->proxy_server());
+    }
   }
 }
 

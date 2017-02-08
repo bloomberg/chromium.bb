@@ -197,7 +197,8 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
 
   ~DataReductionProxyParams() override;
 
-  const std::vector<DataReductionProxyServer> proxies_for_http() const override;
+  const std::vector<DataReductionProxyServer>& proxies_for_http()
+      const override;
 
   const GURL& secure_proxy_check_url() const override;
 

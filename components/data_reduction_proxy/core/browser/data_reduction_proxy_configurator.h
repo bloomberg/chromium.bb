@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "net/proxy/proxy_config.h"
 
 namespace net {
@@ -37,8 +38,9 @@ class DataReductionProxyConfigurator {
   // transports can not be used.
   // TODO: crbug.com/675764: Pass a vector of DataReductionProxyServer
   // instead of net::ProxyServer.
-  virtual void Enable(bool secure_transport_restricted,
-                      const std::vector<net::ProxyServer>& proxies_for_http);
+  virtual void Enable(
+      bool secure_transport_restricted,
+      const std::vector<DataReductionProxyServer>& proxies_for_http);
 
   // Constructs a proxy configuration suitable for disabling the Data Reduction
   // proxy.
@@ -60,7 +62,7 @@ class DataReductionProxyConfigurator {
   // over secure transports (HTTPS) should/can not be used.
   net::ProxyConfig CreateProxyConfig(
       bool secure_transport_restricted,
-      const std::vector<net::ProxyServer>& proxies_for_http) const;
+      const std::vector<DataReductionProxyServer>& proxies_for_http) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfiguratorTest, TestBypassList);

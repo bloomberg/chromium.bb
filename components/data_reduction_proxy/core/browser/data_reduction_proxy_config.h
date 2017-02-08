@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
@@ -201,6 +202,10 @@ class DataReductionProxyConfig
   // Gets the ProxyConfig that would be used ignoring the holdback experiment.
   // This should only be used for logging purposes.
   net::ProxyConfig ProxyConfigIgnoringHoldback() const;
+
+  bool secure_proxy_allowed() const;
+
+  std::vector<DataReductionProxyServer> GetProxiesForHttp() const;
 
  protected:
   // Virtualized for mocking. Returns the list of network interfaces in use.

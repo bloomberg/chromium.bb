@@ -467,7 +467,7 @@ void DataReductionProxyParams::InitWithoutChecks() {
   secure_proxy_check_url_ = GURL(secure_proxy_check_url);
 }
 
-const std::vector<DataReductionProxyServer>
+const std::vector<DataReductionProxyServer>&
 DataReductionProxyParams::proxies_for_http() const {
   if (use_override_proxies_for_http_)
     return override_data_reduction_proxy_servers_;

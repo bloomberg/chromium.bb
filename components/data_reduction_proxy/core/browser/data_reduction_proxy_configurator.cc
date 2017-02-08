@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "net/proxy/proxy_config.h"
 
 namespace data_reduction_proxy {
@@ -31,34 +32,43 @@ DataReductionProxyConfigurator::~DataReductionProxyConfigurator() {
 
 void DataReductionProxyConfigurator::Enable(
     bool secure_transport_restricted,
-    const std::vector<net::ProxyServer>& proxies_for_http) {
+    const std::vector<DataReductionProxyServer>& proxies_for_http) {
   DCHECK(thread_checker_.CalledOnValidThread());
   net::ProxyConfig config =
       CreateProxyConfig(secure_transport_restricted, proxies_for_http);
   data_reduction_proxy_event_creator_->AddProxyEnabledEvent(
-      net_log_, secure_transport_restricted, proxies_for_http);
+      net_log_, secure_transport_restricted,
+      DataReductionProxyServer::ConvertToNetProxyServers(proxies_for_http));
   config_ = config;
 }
 
 net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
     bool secure_transport_restricted,
-    const std::vector<net::ProxyServer>& proxies_for_http) const {
+    const std::vector<DataReductionProxyServer>& proxies_for_http) const {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   net::ProxyConfig config;
+  DCHECK(!config.is_valid() && config.proxy_rules().proxies_for_http.IsEmpty());
   config.proxy_rules().type =
       net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;
 
   for (const auto& http_proxy : proxies_for_http) {
     if (!secure_transport_restricted ||
-        (http_proxy.scheme() != net::ProxyServer::SCHEME_HTTPS &&
-         http_proxy.scheme() != net::ProxyServer::SCHEME_QUIC)) {
-      config.proxy_rules().proxies_for_http.AddProxyServer(http_proxy);
+        (http_proxy.proxy_server().scheme() != net::ProxyServer::SCHEME_HTTPS &&
+         http_proxy.proxy_server().scheme() != net::ProxyServer::SCHEME_QUIC)) {
+      config.proxy_rules().proxies_for_http.AddProxyServer(
+          http_proxy.proxy_server());
     }
   }
 
   if (!config.proxy_rules().proxies_for_http.IsEmpty()) {
     config.proxy_rules().proxies_for_http.AddProxyServer(
         net::ProxyServer::Direct());
+  }
+
+  if (config.proxy_rules().proxies_for_http.IsEmpty()) {
+    // Return an invalid net config so that data reduction proxy is not used.
+    return config;
   }
 
   config.proxy_rules().bypass_rules.ParseFromString(

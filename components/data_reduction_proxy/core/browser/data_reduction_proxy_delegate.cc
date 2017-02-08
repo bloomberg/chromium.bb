@@ -77,7 +77,28 @@ void DataReductionProxyDelegate::OnResolveProxy(
   DCHECK(result);
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  OnResolveProxyHandler(url, method, configurator_->GetProxyConfig(),
+  ResourceTypeProvider::ContentType content_type =
+      ResourceTypeProvider::CONTENT_TYPE_UNKNOWN;
+
+  if (io_data_ && io_data_->resource_type_provider()) {
+    content_type = io_data_->resource_type_provider()->GetContentType(url);
+  }
+
+  std::vector<DataReductionProxyServer> proxies_for_http =
+      config_->GetProxiesForHttp();
+
+  // Remove the proxies that are unsupported for this request.
+  proxies_for_http.erase(
+      std::remove_if(proxies_for_http.begin(), proxies_for_http.end(),
+                     [content_type](const DataReductionProxyServer& proxy) {
+                       return !proxy.SupportsResourceType(content_type);
+                     }),
+      proxies_for_http.end());
+
+  net::ProxyConfig proxy_config = configurator_->CreateProxyConfig(
+      !config_->secure_proxy_allowed(), proxies_for_http);
+
+  OnResolveProxyHandler(url, method, proxy_config,
                         proxy_service.proxy_retry_info(), config_, io_data_,
                         result);
 
@@ -251,24 +272,25 @@ void DataReductionProxyDelegate::OnIPAddressChanged() {
   last_network_change_time_ = tick_clock_->NowTicks();
 }
 
-void OnResolveProxyHandler(const GURL& url,
-                           const std::string& method,
-                           const net::ProxyConfig& data_reduction_proxy_config,
-                           const net::ProxyRetryInfoMap& proxy_retry_info,
-                           const DataReductionProxyConfig* config,
-                           DataReductionProxyIOData* io_data,
-                           net::ProxyInfo* result) {
-  DCHECK(config);
+void OnResolveProxyHandler(
+    const GURL& url,
+    const std::string& method,
+    const net::ProxyConfig& proxy_config,
+    const net::ProxyRetryInfoMap& proxy_retry_info,
+    const DataReductionProxyConfig* data_reduction_proxy_config,
+    DataReductionProxyIOData* io_data,
+    net::ProxyInfo* result) {
+  DCHECK(data_reduction_proxy_config);
   DCHECK(result->is_empty() || result->is_direct() ||
-         !config->IsDataReductionProxy(result->proxy_server(), NULL));
+         !data_reduction_proxy_config->IsDataReductionProxy(
+             result->proxy_server(), NULL));
 
   if (!util::EligibleForDataReductionProxy(*result, url, method))
     return;
 
   net::ProxyInfo data_reduction_proxy_info;
   bool data_saver_proxy_used = util::ApplyProxyConfigToProxyInfo(
-      data_reduction_proxy_config, proxy_retry_info, url,
-      &data_reduction_proxy_info);
+      proxy_config, proxy_retry_info, url, &data_reduction_proxy_info);
   if (data_saver_proxy_used)
     result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
 
@@ -279,17 +301,15 @@ void OnResolveProxyHandler(const GURL& url,
     UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.ResourceContentType",
                               content_type,
                               ResourceTypeProvider::CONTENT_TYPE_MAX);
-    // TODO(tbansal): crbug.com/671810: Use the content type to determine the
-    // proxy that should be used for fetching |url|.
   }
 
-  // The |data_reduction_proxy_config| must be valid otherwise the proxy
-  // cannot be used.
-  DCHECK(data_reduction_proxy_config.is_valid() || !data_saver_proxy_used);
+  // The |proxy_config| must be valid otherwise the proxy cannot be used.
+  DCHECK(proxy_config.is_valid() || !data_saver_proxy_used);
 
-  if (config->enabled_by_user_and_reachable() && url.SchemeIsHTTPOrHTTPS() &&
-      !url.SchemeIsCryptographic() && !net::IsLocalhost(url.host()) &&
-      (!data_reduction_proxy_config.is_valid() || data_saver_proxy_used)) {
+  if (data_reduction_proxy_config->enabled_by_user_and_reachable() &&
+      url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsCryptographic() &&
+      !net::IsLocalhost(url.host()) &&
+      (!proxy_config.is_valid() || data_saver_proxy_used)) {
     UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.ConfigService.HTTPRequests",
                           data_saver_proxy_used);
   }

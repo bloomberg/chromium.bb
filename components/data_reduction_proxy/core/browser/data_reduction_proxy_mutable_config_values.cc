@@ -46,7 +46,7 @@ bool DataReductionProxyMutableConfigValues::holdback() const {
   return holdback_;
 }
 
-const std::vector<DataReductionProxyServer>
+const std::vector<DataReductionProxyServer>&
 DataReductionProxyMutableConfigValues::proxies_for_http() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (use_override_proxies_for_http_ && !proxies_for_http_.empty()) {

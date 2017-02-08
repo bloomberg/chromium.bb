@@ -19,6 +19,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
@@ -220,11 +221,15 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackMethods) {
   EXPECT_EQ(std::string(), event_store()->GetHttpProxyList());
   EXPECT_EQ(std::string(), event_store()->SanitizedLastBypassEvent());
 
-  std::vector<net::ProxyServer> http_proxies;
-  http_proxies.push_back(net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
-                                          net::HostPortPair("foo.com", 80)));
-  http_proxies.push_back(net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
-                                          net::HostPortPair("bar.com", 443)));
+  std::vector<DataReductionProxyServer> http_proxies;
+  http_proxies.push_back(DataReductionProxyServer(
+      net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
+                       net::HostPortPair("foo.com", 80)),
+      ProxyServer::CORE));
+  http_proxies.push_back(DataReductionProxyServer(
+      net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
+                       net::HostPortPair("bar.com", 443)),
+      ProxyServer::CORE));
   configurator.Enable(false, http_proxies);
   EXPECT_EQ("foo.com:80;https://bar.com:443",
             event_store()->GetHttpProxyList());
@@ -235,7 +240,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackMethods) {
 
 TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
   DataReductionProxyConfigurator configurator(net_log(), event_creator());
-  std::vector<net::ProxyServer> http_proxies;
+  std::vector<DataReductionProxyServer> http_proxies;
   configurator.Enable(false, http_proxies);
 
   std::unique_ptr<base::DictionaryValue> bypass_event(
@@ -268,7 +273,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
 
 TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventHostOnly) {
   DataReductionProxyConfigurator configurator(net_log(), event_creator());
-  std::vector<net::ProxyServer> http_proxies;
+  std::vector<DataReductionProxyServer> http_proxies;
   configurator.Enable(false, http_proxies);
 
   std::unique_ptr<base::DictionaryValue> bypass_event(

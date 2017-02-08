@@ -573,11 +573,14 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   EXPECT_FALSE(config_client()->foreground_fetch_pending());
 #endif
 
-  std::vector<net::ProxyServer> http_proxies;
-  http_proxies.push_back(
-      net::ProxyServer::FromURI(kSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
-  http_proxies.push_back(net::ProxyServer::FromURI(
-      kSuccessFallback, net::ProxyServer::SCHEME_HTTP));
+  std::vector<DataReductionProxyServer> http_proxies;
+  http_proxies.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI(kSuccessOrigin, net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::CORE));
+  http_proxies.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI(kSuccessFallback,
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::CORE));
 
   // Secure check failed.
   configurator()->Enable(true /* secure_transport_restricted */, http_proxies);
@@ -702,11 +705,14 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   RunUntilIdle();
   VerifyRemoteSuccess(true);
 
-  std::vector<net::ProxyServer> http_proxies;
-  http_proxies.push_back(
-      net::ProxyServer::FromURI(kSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
-  http_proxies.push_back(net::ProxyServer::FromURI(
-      kSuccessFallback, net::ProxyServer::SCHEME_HTTP));
+  std::vector<DataReductionProxyServer> http_proxies;
+  http_proxies.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI(kSuccessOrigin, net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::CORE));
+  http_proxies.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI(kSuccessFallback,
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::CORE));
 
   // Secure check failed.
   configurator()->Enable(true /* secure_transport_restricted */, http_proxies);
