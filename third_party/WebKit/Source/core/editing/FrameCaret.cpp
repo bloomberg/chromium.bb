@@ -191,13 +191,6 @@ IntRect FrameCaret::absoluteCaretBounds() const {
   Node* const caretNode = caretPosition().anchorNode();
   if (!isActive())
     return absoluteBoundsForLocalRect(caretNode, LayoutRect());
-  // TODO(yosin): We should get rid of text control short path since layout
-  // tree is clean.
-  if (enclosingTextControl(caretPosition().position()) &&
-      isVisuallyEquivalentCandidate(caretPosition().position())) {
-    return absoluteBoundsForLocalRect(
-        caretNode, CaretDisplayItemClient::computeCaretRect(caretPosition()));
-  }
   return absoluteBoundsForLocalRect(
       caretNode,
       CaretDisplayItemClient::computeCaretRect(
