@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/tabs/tab_model.h"
 
-#include <list>
 #include <utility>
 #include <vector>
 
@@ -16,6 +15,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -66,12 +66,11 @@ NSString* const kTabModelOpenInBackgroundKey = @"shouldOpenInBackground";
 namespace {
 
 // Updates CRWSessionCertificatePolicyManager's certificate policy cache.
-void UpdateCertificatePolicyCacheFromWebState(web::WebState* web_state) {
-  DCHECK([NSThread isMainThread]);
+void UpdateCertificatePolicyCacheFromWebState(
+    const scoped_refptr<web::CertificatePolicyCache>& policy_cache,
+    web::WebState* web_state) {
   DCHECK(web_state);
-  scoped_refptr<web::CertificatePolicyCache> policy_cache =
-      web::BrowserState::GetCertificatePolicyCache(
-          web_state->GetBrowserState());
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   // TODO(crbug.com/454984): Remove CRWSessionController usage once certificate
   // policy manager is moved to NavigationManager.
   CRWSessionController* controller = static_cast<web::WebStateImpl*>(web_state)
@@ -81,26 +80,31 @@ void UpdateCertificatePolicyCacheFromWebState(web::WebState* web_state) {
       updateCertificatePolicyCache:policy_cache];
 }
 
-// Populates the certificate policy cache based on the current entries of the
-// given tabs.
-void RestoreCertificatePolicyCacheFromTabs(NSArray* tabs) {
-  DCHECK([NSThread isMainThread]);
-  for (Tab* tab in tabs) {
-    UpdateCertificatePolicyCacheFromWebState(tab.webState);
-  }
+// Populates the certificate policy cache based on the WebStates of |tab_model|.
+void RestoreCertificatePolicyCacheFromModel(
+    const scoped_refptr<web::CertificatePolicyCache>& policy_cache,
+    TabModel* tab_model) {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  for (Tab* tab in tab_model)
+    UpdateCertificatePolicyCacheFromWebState(policy_cache, tab.webState);
 }
 
-// Scrubs the certificate policy cache of all the certificate policies except
-// those for the current entries of the given tabs.
+// Scrubs the certificate policy cache of all certificates policies except
+// those for the current entries in |tab_model|.
 void CleanCertificatePolicyCache(
-    scoped_refptr<web::CertificatePolicyCache> policy_cache,
-    NSArray* tabs) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
+    base::CancelableTaskTracker* task_tracker,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const scoped_refptr<web::CertificatePolicyCache>& policy_cache,
+    TabModel* tab_model) {
+  DCHECK(tab_model);
   DCHECK(policy_cache);
-  policy_cache->ClearCertificatePolicies();
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE,
-      base::Bind(&RestoreCertificatePolicyCacheFromTabs, tabs));
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  task_tracker->PostTaskAndReply(
+      task_runner.get(), FROM_HERE,
+      base::Bind(&web::CertificatePolicyCache::ClearCertificatePolicies,
+                 policy_cache),
+      base::Bind(&RestoreCertificatePolicyCacheFromModel, policy_cache,
+                 base::Unretained(tab_model)));
 }
 
 }  // anonymous namespace
@@ -134,6 +138,9 @@ void CleanCertificatePolicyCache(
   base::scoped_nsobject<SessionServiceIOS> _sessionService;
   // List of TabModelObservers.
   base::scoped_nsobject<TabModelObservers> _observers;
+
+  // Used to ensure thread-safety of the certificate policy management code.
+  base::CancelableTaskTracker _clearPoliciesTaskTracker;
 }
 
 // Session window for the contents of the tab model.
@@ -200,6 +207,8 @@ void CleanCertificatePolicyCache(
   // removeObserver: to be called first otherwise a lot of unecessary work will
   // happen on -closeAllTabs.
   [self closeAllTabs];
+
+  _clearPoliciesTaskTracker.TryCancelAll();
 
   [super dealloc];
 }
@@ -954,6 +963,8 @@ void CleanCertificatePolicyCache(
 
   size_t oldCount = [_tabs count];
   web::WebState::CreateParams params(_browserState);
+  scoped_refptr<web::CertificatePolicyCache> policyCache =
+      web::BrowserState::GetCertificatePolicyCache(_browserState);
 
   for (CRWNavigationManagerStorage* session in sessions) {
     std::unique_ptr<web::WebState> webState =
@@ -965,7 +976,7 @@ void CleanCertificatePolicyCache(
 
     // Restore the CertificatePolicyCache (note that webState is invalid after
     // passing it via move semantic to -insertTabWithWebState:atIndex:).
-    UpdateCertificatePolicyCacheFromWebState(tab.webState);
+    UpdateCertificatePolicyCacheFromWebState(policyCache, tab.webState);
   }
   DCHECK_GT([_tabs count], oldCount);
 
@@ -1012,14 +1023,13 @@ void CleanCertificatePolicyCache(
 - (void)applicationDidEnterBackground:(NSNotification*)notify {
   if (!_browserState)
     return;
+
   // Evict all the certificate policies except for the current entries of the
   // active sessions.
-  scoped_refptr<web::CertificatePolicyCache> policy_cache =
-      web::BrowserState::GetCertificatePolicyCache(_browserState);
-  DCHECK(policy_cache);
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
-      base::Bind(&CleanCertificatePolicyCache, policy_cache, _tabs));
+  CleanCertificatePolicyCache(
+      &_clearPoliciesTaskTracker,
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
+      web::BrowserState::GetCertificatePolicyCache(_browserState), self);
 
   if (_tabUsageRecorder)
     _tabUsageRecorder->AppDidEnterBackground();
