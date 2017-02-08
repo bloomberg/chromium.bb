@@ -30,7 +30,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -184,19 +183,6 @@ void FaviconHelper::EnsureIconIsAvailable(
 }
 
 FaviconHelper::~FaviconHelper() {}
-
-static jint GetDominantColorForBitmap(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz,
-                                      const JavaParamRef<jobject>& bitmap) {
-  if (!bitmap)
-    return 0;
-
-  gfx::JavaBitmap bitmap_lock(bitmap);
-  SkBitmap skbitmap = gfx::CreateSkBitmapFromJavaBitmap(bitmap_lock);
-  return color_utils::CalculateKMeanColorOfBitmap(skbitmap);
-}
-
-// static
 
 // Return the index of |sizes| whose area is largest but not exceeds int type
 // range. If all |sizes|'s area exceed int type range, return the first one.
