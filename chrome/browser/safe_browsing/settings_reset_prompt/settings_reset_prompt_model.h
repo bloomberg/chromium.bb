@@ -13,12 +13,15 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/extension_info.h"
 #include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 
+class BrandcodedDefaultSettings;
 class Profile;
+class ProfileResetter;
 class ResettableSettingsSnapshot;
 
 namespace safe_browsing {
@@ -40,11 +43,20 @@ class SettingsResetPromptModel {
   SettingsResetPromptModel(
       Profile* profile,
       std::unique_ptr<SettingsResetPromptConfig> prompt_config,
-      std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot);
+      std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot,
+      std::unique_ptr<BrandcodedDefaultSettings> default_settings,
+      std::unique_ptr<ProfileResetter> profile_resetter);
   ~SettingsResetPromptModel();
 
   // Returns true if reset is enabled for any settings type.
-  bool ShouldPromptForReset();
+  bool ShouldPromptForReset() const;
+  // Resets the settings whose reset states are set to |RESET_REQUIRED| as
+  // returned by the methods below. Should be called only on the UI
+  // thread. |done_callback| will called from the UI thread when the reset
+  // operation has been completed.
+  //
+  // NOTE: Can only be called once during the lifetime of this object.
+  void PerformReset(const base::Closure& done_callback);
 
   std::string homepage() const;
   ResetState homepage_reset_state() const;
@@ -73,6 +85,10 @@ class SettingsResetPromptModel {
   Profile* const profile_;
   std::unique_ptr<SettingsResetPromptConfig> prompt_config_;
   std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot_;
+  // |default_settings_| should only be accessed on the UI thread after
+  // construction.
+  std::unique_ptr<BrandcodedDefaultSettings> default_settings_;
+  std::unique_ptr<ProfileResetter> profile_resetter_;
 
   // Bits to keep track of which settings types have been initialized.
   uint32_t settings_types_initialized_;

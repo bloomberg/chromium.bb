@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,9 +25,23 @@ MockSettingsResetPromptConfig::MockSettingsResetPromptConfig() {
 
 MockSettingsResetPromptConfig::~MockSettingsResetPromptConfig() {}
 
+MockProfileResetter::MockProfileResetter(Profile* profile)
+    : ProfileResetter(profile) {}
+
+MockProfileResetter::~MockProfileResetter() {}
+
+void MockProfileResetter::Reset(
+    ProfileResetter::ResettableFlags resettable_flags,
+    std::unique_ptr<BrandcodedDefaultSettings> master_settings,
+    const base::Closure& callback) {
+  MockReset(resettable_flags, master_settings.get(), callback);
+  callback.Run();
+}
+
 std::unique_ptr<SettingsResetPromptModel> CreateModelForTesting(
     Profile* profile,
-    const std::unordered_set<std::string>& reset_urls) {
+    const std::unordered_set<std::string>& reset_urls,
+    std::unique_ptr<ProfileResetter> profile_resetter) {
   auto config = base::MakeUnique<NiceMock<MockSettingsResetPromptConfig>>();
 
   int id = 1;
@@ -38,7 +53,11 @@ std::unique_ptr<SettingsResetPromptModel> CreateModelForTesting(
 
   return base::MakeUnique<SettingsResetPromptModel>(
       profile, std::move(config),
-      base::MakeUnique<ResettableSettingsSnapshot>(profile));
+      base::MakeUnique<ResettableSettingsSnapshot>(profile),
+      base::MakeUnique<BrandcodedDefaultSettings>(),
+      profile_resetter
+          ? std::move(profile_resetter)
+          : base::MakeUnique<NiceMock<MockProfileResetter>>(profile));
 }
 
 }  // namespace safe_browsing

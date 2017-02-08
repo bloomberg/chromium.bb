@@ -9,7 +9,7 @@
 #include <unordered_set>
 #include <utility>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -86,6 +86,9 @@ bool ListValueContainsUrl(const base::ListValue* list, const GURL& url) {
 
 class SettingsResetPromptModelTest
     : public extensions::ExtensionServiceTestBase {
+ public:
+  virtual void OnResetDone() { ++reset_callbacks_; }
+
  protected:
   using ModelPointer = std::unique_ptr<SettingsResetPromptModel>;
 
@@ -156,19 +159,29 @@ class SettingsResetPromptModelTest
   }
 
   // Returns a model with a mock config that will return negative IDs for every
-  // URL. positive IDs for each URL in |reset_urls_|.
+  // URL.
   ModelPointer CreateModel() {
-    return CreateModelForTesting(profile(), std::unordered_set<std::string>());
+    return CreateModelForTesting(profile(), std::unordered_set<std::string>(),
+                                 nullptr);
   }
 
   // Returns a model with a mock config that will return positive IDs for each
   // URL in |reset_urls|.
   ModelPointer CreateModel(std::unordered_set<std::string> reset_urls) {
-    return CreateModelForTesting(profile(), reset_urls);
+    return CreateModelForTesting(profile(), reset_urls, nullptr);
+  }
+
+  // Returns a model with a mock config that will return positive IDs for each
+  // URL in |reset_urls|.
+  ModelPointer CreateModel(std::unordered_set<std::string> reset_urls,
+                           std::unique_ptr<ProfileResetter> profile_resetter) {
+    return CreateModelForTesting(profile(), reset_urls,
+                                 std::move(profile_resetter));
   }
 
   PrefService* prefs_;
   SessionStartupPref startup_pref_;
+  int reset_callbacks_ = 0;
 };
 
 class ResetStatesTest
@@ -362,6 +375,33 @@ TEST_P(ResetStatesTest, ShouldPromptForReset) {
                 SettingsResetPromptModel::RESET_REQUIRED,
             startup_urls_reset_enabled_);
   EXPECT_EQ(model->ShouldPromptForReset(), should_prompt_);
+}
+
+TEST_P(ResetStatesTest, PerformReset) {
+  ProfileResetter::ResettableFlags expected_reset_flags = 0U;
+  std::unordered_set<std::string> reset_urls;
+  if (homepage_reset_enabled_) {
+    reset_urls.insert(kHomepage);
+    expected_reset_flags |= ProfileResetter::HOMEPAGE;
+  }
+  if (default_search_reset_enabled_) {
+    reset_urls.insert(kDefaultSearch);
+    expected_reset_flags |= ProfileResetter::DEFAULT_SEARCH_ENGINE;
+  }
+  if (startup_urls_reset_enabled_) {
+    reset_urls.insert(kStartupUrl1);
+    expected_reset_flags |= ProfileResetter::STARTUP_PAGES;
+  }
+
+  auto profile_resetter =
+      base::MakeUnique<NiceMock<MockProfileResetter>>(profile());
+  EXPECT_CALL(*profile_resetter, MockReset(expected_reset_flags, _, _))
+      .Times(1);
+
+  ModelPointer model = CreateModel(reset_urls, std::move(profile_resetter));
+  model->PerformReset(base::Bind(&SettingsResetPromptModelTest::OnResetDone,
+                                 base::Unretained(this)));
+  EXPECT_EQ(reset_callbacks_, 1);
 }
 
 INSTANTIATE_TEST_CASE_P(SettingsResetPromptModel,

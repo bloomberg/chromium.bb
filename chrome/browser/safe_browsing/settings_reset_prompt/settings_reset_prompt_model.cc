@@ -6,12 +6,16 @@
 
 #include <utility>
 
+#include "base/callback.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_set.h"
@@ -42,10 +46,14 @@ const extensions::Extension* GetExtension(
 SettingsResetPromptModel::SettingsResetPromptModel(
     Profile* profile,
     std::unique_ptr<SettingsResetPromptConfig> prompt_config,
-    std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot)
+    std::unique_ptr<ResettableSettingsSnapshot> settings_snapshot,
+    std::unique_ptr<BrandcodedDefaultSettings> default_settings,
+    std::unique_ptr<ProfileResetter> profile_resetter)
     : profile_(profile),
       prompt_config_(std::move(prompt_config)),
       settings_snapshot_(std::move(settings_snapshot)),
+      default_settings_(std::move(default_settings)),
+      profile_resetter_(std::move(profile_resetter)),
       settings_types_initialized_(0),
       homepage_reset_domain_id_(-1),
       homepage_reset_state_(NO_RESET_REQUIRED_DUE_TO_DOMAIN_NOT_MATCHED),
@@ -55,6 +63,8 @@ SettingsResetPromptModel::SettingsResetPromptModel(
   DCHECK(profile_);
   DCHECK(prompt_config_);
   DCHECK(settings_snapshot_);
+  DCHECK(default_settings_);
+  DCHECK(profile_resetter_);
 
   InitHomepageData();
   InitDefaultSearchData();
@@ -69,10 +79,40 @@ SettingsResetPromptModel::SettingsResetPromptModel(
 
 SettingsResetPromptModel::~SettingsResetPromptModel() {}
 
-bool SettingsResetPromptModel::ShouldPromptForReset() {
+bool SettingsResetPromptModel::ShouldPromptForReset() const {
   return homepage_reset_state() == RESET_REQUIRED ||
          default_search_reset_state() == RESET_REQUIRED ||
          startup_urls_reset_state() == RESET_REQUIRED;
+}
+
+void SettingsResetPromptModel::PerformReset(
+    const base::Closure& done_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // |default_settings_| is set in the constructor and will be passed on to
+  // |profile_resetter_| who will take over ownership. This method should never
+  // be called more than once during the lifetime of this object.
+  DCHECK(default_settings_);
+
+  // Disable all extensions that override settings that need to be reset.
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(extension_service);
+  for (const auto& item : extensions_to_disable()) {
+    const extensions::ExtensionId& extension_id = item.first;
+    extension_service->DisableExtension(
+        extension_id, extensions::Extension::DISABLE_USER_ACTION);
+  }
+
+  // Disable all the settings that need to be reset.
+  ProfileResetter::ResettableFlags reset_flags = 0;
+  if (homepage_reset_state() == RESET_REQUIRED)
+    reset_flags |= ProfileResetter::HOMEPAGE;
+  if (default_search_reset_state() == RESET_REQUIRED)
+    reset_flags |= ProfileResetter::DEFAULT_SEARCH_ENGINE;
+  if (startup_urls_reset_state() == RESET_REQUIRED)
+    reset_flags |= ProfileResetter::STARTUP_PAGES;
+  profile_resetter_->Reset(reset_flags, std::move(default_settings_),
+                           done_callback);
 }
 
 std::string SettingsResetPromptModel::homepage() const {
@@ -178,7 +218,6 @@ void SettingsResetPromptModel::InitStartupUrlsData() {
 // that default values can be restored. This function should be called after
 // other Init*() functions.
 void SettingsResetPromptModel::InitExtensionData() {
-  DCHECK(settings_snapshot_);
   DCHECK_EQ(settings_types_initialized_, SETTINGS_TYPE_ALL);
 
   // |enabled_extensions()| is a container of [id, name] pairs.
