@@ -266,6 +266,7 @@ EXPERIMENT_LIST="
     wedge
     compound_segment
     ext_refs
+    altref2
     speed_refs
     gf_groups
     global_motion
@@ -549,6 +550,7 @@ post_process_cmdline() {
     enabled bgsprite && enable_feature global_motion
     enabled ext_comp_refs && enable_feature var_refs
     enabled ext_comp_refs && disable_feature one_sided_compound
+    enabled altref2 && enable_feature ext_refs
 
     if ! enabled delta_q && enabled ext_delta_q; then
       log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"
