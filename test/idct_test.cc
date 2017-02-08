@@ -12,7 +12,7 @@
 #include "./aom_config.h"
 #include "./aom_rtcd.h"
 
-#include "third_party/googletest/src/include/gtest/gtest.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"

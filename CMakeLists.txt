@@ -679,10 +679,6 @@ if (CONFIG_AOM_HIGHBITDEPTH)
       "${AOM_ROOT}/test/av1_quantize_test.cc")
 endif ()
 
-set(AOM_GTEST_SOURCES
-    "${AOM_ROOT}/third_party/googletest/src/src/gtest-all.cc"
-    "${AOM_ROOT}/third_party/googletest/src/include/gtest/gtest.h")
-
 set(AOM_TEST_INTRA_PRED_SPEED_SOURCES
     "${AOM_CONFIG_DIR}/usage_exit.c"
     "${AOM_ROOT}/test/test_intra_pred_speed.cc")
@@ -898,10 +894,10 @@ if (CONFIG_WEBM_IO)
 endif ()
 
 if (CONFIG_UNIT_TESTS)
-  include_directories("${AOM_ROOT}/third_party/googletest/src/include"
-                      "${AOM_ROOT}/third_party/googletest/src")
-
-  add_library(aom_gtest OBJECT ${AOM_GTEST_SOURCES})
+  include_directories(
+    "${AOM_ROOT}/third_party/googletest/src/googletest/src"
+    "${AOM_ROOT}/third_party/googletest/src/googletest/include")
+  add_subdirectory("${AOM_ROOT}/third_party/googletest/src/googletest")
 
   # Generate a stub file containing the C function usage_exit(); this is
   # required because of the test dependency on aom_common_app_util.
@@ -912,15 +908,13 @@ if (CONFIG_UNIT_TESTS)
   add_executable(test_libaom ${AOM_UNIT_TEST_SOURCES}
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:aom_decoder_app_util>
-                 $<TARGET_OBJECTS:aom_encoder_app_util>
-                 $<TARGET_OBJECTS:aom_gtest>)
-  target_link_libraries(test_libaom PUBLIC aom)
+                 $<TARGET_OBJECTS:aom_encoder_app_util>)
+  target_link_libraries(test_libaom PUBLIC aom gtest)
 
   add_executable(test_intra_pred_speed
                  ${AOM_TEST_INTRA_PRED_SPEED_SOURCES}
-                 $<TARGET_OBJECTS:aom_common_app_util>
-                 $<TARGET_OBJECTS:aom_gtest>)
-  target_link_libraries(test_intra_pred_speed PUBLIC aom)
+                 $<TARGET_OBJECTS:aom_common_app_util>)
+  target_link_libraries(test_intra_pred_speed PUBLIC aom gtest)
 
   if (CONFIG_DECODE_PERF_TESTS AND CONFIG_WEBM_IO)
     target_sources(test_libaom PUBLIC ${AOM_DECODE_PERF_TEST_SOURCES})

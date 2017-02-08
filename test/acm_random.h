@@ -12,7 +12,7 @@
 #ifndef TEST_ACM_RANDOM_H_
 #define TEST_ACM_RANDOM_H_
 
-#include "third_party/googletest/src/include/gtest/gtest.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "aom/aom_integer.h"
 

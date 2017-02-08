@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "third_party/googletest/src/include/gtest/gtest.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "./aom_config.h"
 #include "./y4menc.h"

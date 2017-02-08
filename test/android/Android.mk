@@ -32,9 +32,9 @@ include $(CLEAR_VARS)
 LOCAL_ARM_MODE := arm
 LOCAL_CPP_EXTENSION := .cc
 LOCAL_MODULE := gtest
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/third_party/googletest/src/
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/third_party/googletest/src/include/
-LOCAL_SRC_FILES := ./third_party/googletest/src/src/gtest-all.cc
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/third_party/googletest/src/googletest/src
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/third_party/googletest/src/googletest/include
+LOCAL_SRC_FILES := ./third_party/googletest/src/googletest/src/gtest-all.cc
 include $(BUILD_STATIC_LIBRARY)
 
 #libaom_test

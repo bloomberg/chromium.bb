@@ -11,7 +11,7 @@
 
 #include "av1/common/common_data.h"
 #include "av1/common/scan.h"
-#include "third_party/googletest/src/include/gtest/gtest.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace {
 

@@ -10,7 +10,7 @@
  */
 #include <stdlib.h>
 
-#include "third_party/googletest/src/include/gtest/gtest.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "./aom_config.h"
 #include "./av1_rtcd.h"

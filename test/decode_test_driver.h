@@ -12,7 +12,7 @@
 #ifndef TEST_DECODE_TEST_DRIVER_H_
 #define TEST_DECODE_TEST_DRIVER_H_
 #include <cstring>
-#include "third_party/googletest/src/include/gtest/gtest.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "./aom_config.h"
 #include "aom/aom_decoder.h"
 

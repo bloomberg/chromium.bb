@@ -12,7 +12,7 @@
 #ifndef TEST_REGISTER_STATE_CHECK_H_
 #define TEST_REGISTER_STATE_CHECK_H_
 
-#include "third_party/googletest/src/include/gtest/gtest.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "./aom_config.h"
 #include "aom/aom_integer.h"
 

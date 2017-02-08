@@ -396,8 +396,7 @@ testdata:: $(LIBAOM_TEST_DATA)
 
 ifeq ($(CONFIG_EXTERNAL_BUILD),yes)
 ifeq ($(CONFIG_MSVS),yes)
-
-gtest.$(VCPROJ_SFX): $(SRC_PATH_BARE)/third_party/googletest/src/src/gtest-all.cc
+gtest.$(VCPROJ_SFX): $(SRC_PATH_BARE)/third_party/googletest/src/googletest/src/gtest-all.cc
 	@echo "    [CREATE] $@"
 	$(qexec)$(GEN_VCPROJ) \
             --lib \
@@ -408,8 +407,10 @@ gtest.$(VCPROJ_SFX): $(SRC_PATH_BARE)/third_party/googletest/src/src/gtest-all.c
             --ver=$(CONFIG_VS_VERSION) \
             --src-path-bare="$(SRC_PATH_BARE)" \
             -D_VARIADIC_MAX=10 \
-            --out=gtest.$(VCPROJ_SFX) $(SRC_PATH_BARE)/third_party/googletest/src/src/gtest-all.cc \
-            -I. -I"$(SRC_PATH_BARE)/third_party/googletest/src/include" -I"$(SRC_PATH_BARE)/third_party/googletest/src"
+            --out=gtest.$(VCPROJ_SFX) \
+	    $(SRC_PATH_BARE)/third_party/googletest/src/googletest/src/gtest-all.cc \
+            -I. -I"$(SRC_PATH_BARE)/third_party/googletest/src/googletest/include" \
+	    -I"$(SRC_PATH_BARE)/third_party/googletest/src/googletest"
 
 PROJECTS-$(CONFIG_MSVS) += gtest.$(VCPROJ_SFX)
 
@@ -425,7 +426,7 @@ test_libaom.$(VCPROJ_SFX): $(LIBAOM_TEST_SRCS) aom.$(VCPROJ_SFX) gtest.$(VCPROJ_
             --src-path-bare="$(SRC_PATH_BARE)" \
             $(if $(CONFIG_STATIC_MSVCRT),--static-crt) \
             --out=$@ $(INTERNAL_CFLAGS) $(CFLAGS) \
-            -I. -I"$(SRC_PATH_BARE)/third_party/googletest/src/include" \
+            -I. -I"$(SRC_PATH_BARE)/third_party/googletest/src/googletest/include" \
             $(if $(CONFIG_WEBM_IO),-I"$(SRC_PATH_BARE)/third_party/libwebm") \
             -L. -l$(CODEC_LIB) -l$(GTEST_LIB) $^
 
@@ -447,21 +448,21 @@ test_intra_pred_speed.$(VCPROJ_SFX): $(TEST_INTRA_PRED_SPEED_SRCS) aom.$(VCPROJ_
             --src-path-bare="$(SRC_PATH_BARE)" \
             $(if $(CONFIG_STATIC_MSVCRT),--static-crt) \
             --out=$@ $(INTERNAL_CFLAGS) $(CFLAGS) \
-            -I. -I"$(SRC_PATH_BARE)/third_party/googletest/src/include" \
+            -I. -I"$(SRC_PATH_BARE)/third_party/googletest/src/googletest/include" \
             -L. -l$(CODEC_LIB) -l$(GTEST_LIB) $^
 endif  # TEST_INTRA_PRED_SPEED
 endif
 else
 
 include $(SRC_PATH_BARE)/third_party/googletest/gtest.mk
-GTEST_SRCS := $(addprefix third_party/googletest/src/,$(call enabled,GTEST_SRCS))
+GTEST_SRCS := $(addprefix third_party/,$(call enabled,GTEST_SRCS))
 GTEST_OBJS=$(call objs,$(GTEST_SRCS))
 ifeq ($(filter win%,$(TGT_OS)),$(TGT_OS))
 # Disabling pthreads globally will cause issues on darwin and possibly elsewhere
 $(GTEST_OBJS) $(GTEST_OBJS:.o=.d): CXXFLAGS += -DGTEST_HAS_PTHREAD=0
 endif
-GTEST_INCLUDES := -I$(SRC_PATH_BARE)/third_party/googletest/src
-GTEST_INCLUDES += -I$(SRC_PATH_BARE)/third_party/googletest/src/include
+GTEST_INCLUDES := -I$(SRC_PATH_BARE)/third_party/googletest/src/googletest
+GTEST_INCLUDES += -I$(SRC_PATH_BARE)/third_party/googletest/src/googletest/include
 $(GTEST_OBJS) $(GTEST_OBJS:.o=.d): CXXFLAGS += $(GTEST_INCLUDES)
 OBJS-yes += $(GTEST_OBJS)
 LIBS-yes += $(BUILD_PFX)libgtest.a $(BUILD_PFX)libgtest_g.a

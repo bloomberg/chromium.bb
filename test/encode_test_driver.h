@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "third_party/googletest/src/include/gtest/gtest.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "./aom_config.h"
 #if CONFIG_AV1_ENCODER

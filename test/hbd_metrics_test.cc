@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <new>
 
-#include "third_party/googletest/src/include/gtest/gtest.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
 #include "test/util.h"
 #include "./aom_config.h"

@@ -12,7 +12,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#include "third_party/googletest/src/include/gtest/gtest.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "./aom_config.h"
 #include "test/acm_random.h"
 #include "test/codec_factory.h"

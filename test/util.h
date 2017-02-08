@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include "third_party/googletest/src/include/gtest/gtest.h"
+#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "aom/aom_image.h"
 
 // Macros
