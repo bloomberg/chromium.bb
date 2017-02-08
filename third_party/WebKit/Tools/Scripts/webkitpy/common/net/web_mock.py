@@ -40,20 +40,3 @@ class MockWeb(object):
         if url in self.urls:
             return self.urls[url]
         return "MOCK Web result, convert 404 to None=%s" % return_none_on_404
-
-
-# FIXME: Classes which are using Browser probably want to use Web instead.
-class MockBrowser(object):
-    params = {}
-
-    def open(self, url):
-        pass
-
-    def select_form(self, name):
-        pass
-
-    def __setitem__(self, key, value):
-        self.params[key] = value
-
-    def submit(self):
-        return StringIO.StringIO()
