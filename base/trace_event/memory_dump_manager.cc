@@ -53,8 +53,6 @@ MemoryDumpManager* g_instance_for_testing = nullptr;
 // TODO(ssid): Fix all the dump providers to unregister if needed and clear the
 // blacklist, crbug.com/643438.
 const char* const kStrictThreadCheckBlacklist[] = {
-    "AndroidGraphics",
-    "BrowserGpuMemoryBufferManager",
     "ClientDiscardableSharedMemoryManager",
     "ContextProviderCommandBuffer",
     "DiscardableSharedMemoryManager",
@@ -65,17 +63,12 @@ const char* const kStrictThreadCheckBlacklist[] = {
     "ThreadLocalEventBuffer",
     "TraceLog",
     "URLRequestContext",
-    "V8Isolate",
     "VpxVideoDecoder",
-    "cc::ResourcePool",
-    "cc::ResourceProvider",
     "cc::SoftwareImageDecodeCache",
     "cc::StagingBufferPool",
     "gpu::BufferManager",
     "gpu::MappedMemoryManager",
     "gpu::RenderbufferManager",
-    "gpu::TransferBufferManager",
-    "sql::Connection",
     "BlacklistTestDumpProvider"  // for testing
 };
 
