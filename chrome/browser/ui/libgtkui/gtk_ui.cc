@@ -364,25 +364,6 @@ float GetRawDeviceScaleFactor() {
   return GetDpi() / kDefaultDPI;
 }
 
-// Returns the font size for the *raw* device scale factor in points.
-// The |ui_device_scale_factor| is used to cancel the scale to be applied by UI
-// and to compensate the scale when the device_scale_factor is floored.
-double GetFontSizePixelsInPoint(float ui_device_scale_factor) {
-  // There are 72 points in an inch.
-  double point = GetDpi() / 72.0;
-
-  // Take device_scale_factor into account — if Chrome already scales the
-  // entire UI up by 2x, we should not also scale up.
-  point /= ui_device_scale_factor;
-
-  // Allow the scale lower than 1.0 only for fonts. Don't always use
-  // the raw value however, because the 1.0~1.3 is rounded to 1.0.
-  float raw_scale = GetRawDeviceScaleFactor();
-  if (raw_scale < 1.0f)
-    return point * raw_scale / ui_device_scale_factor;
-  return point;
-}
-
 views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
@@ -990,8 +971,8 @@ void GtkUi::UpdateDefaultFont() {
     // Round the value when converting to pixels to match GTK's logic.
     const double size_points = pango_font_description_get_size(desc) /
                                static_cast<double>(PANGO_SCALE);
-    default_font_size_pixels_ = static_cast<int>(
-        GetFontSizePixelsInPoint(GetDeviceScaleFactor()) * size_points);
+    default_font_size_pixels_ =
+        static_cast<int>(kDefaultDPI / 72.0 * size_points + 0.5);
     query.point_size = static_cast<int>(size_points);
   }
 
