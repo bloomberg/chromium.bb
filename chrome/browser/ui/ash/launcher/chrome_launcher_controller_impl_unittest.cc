@@ -829,8 +829,6 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   void EnableArc(bool enable) {
     enable ? arc_test_.arc_session_manager()->EnableArc()
            : arc_test_.arc_session_manager()->DisableArc();
-    arc_test_.arc_session_manager()->OnSyncedPrefChanged(prefs::kArcEnabled,
-                                                         false);
     base::RunLoop().RunUntilIdle();
   }
 

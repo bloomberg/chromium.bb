@@ -18,7 +18,6 @@
 #include "components/arc/arc_session_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
-#include "components/sync_preferences/synced_pref_observer.h"
 
 class ArcAppLauncher;
 class Profile;
@@ -44,8 +43,7 @@ enum class ProvisioningResult : int;
 // LSO. It lives on the UI thread.
 class ArcSessionManager : public ArcSessionObserver,
                           public ArcSupportHost::Observer,
-                          public sync_preferences::PrefServiceSyncableObserver,
-                          public sync_preferences::SyncedPrefObserver {
+                          public sync_preferences::PrefServiceSyncableObserver {
  public:
   // Represents each State of ARC session.
   // NOT_INITIALIZED: represents the state that the Profile is not yet ready
@@ -182,9 +180,6 @@ class ArcSessionManager : public ArcSessionObserver,
 
   // sync_preferences::PrefServiceSyncableObserver
   void OnIsSyncingChanged() override;
-
-  // sync_preferences::SyncedPrefObserver
-  void OnSyncedPrefChanged(const std::string& path, bool from_sync) override;
 
   // ArcSupportHost::Observer:
   void OnWindowClosed() override;

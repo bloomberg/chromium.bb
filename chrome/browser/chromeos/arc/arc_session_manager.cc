@@ -417,9 +417,6 @@ void ArcSessionManager::OnPrimaryUserProfilePrepared(Profile* profile) {
   DCHECK_EQ(State::NOT_INITIALIZED, state_);
   SetState(State::STOPPED);
 
-  PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
-      prefs::kArcEnabled, this);
-
   context_.reset(new ArcAuthContext(profile_));
 
   if (!g_disable_ui_for_testing ||
@@ -454,10 +451,6 @@ void ArcSessionManager::OnIsSyncingChanged() {
     return;
 
   pref_service_syncable->RemoveObserver(this);
-
-  if (IsArcEnabled())
-    OnOptInPreferenceChanged();
-
   if (!g_disable_ui_for_testing &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableArcOOBEOptIn) &&
@@ -481,31 +474,11 @@ void ArcSessionManager::Shutdown() {
     sync_preferences::PrefServiceSyncable* pref_service_syncable =
         PrefServiceSyncableFromProfile(profile_);
     pref_service_syncable->RemoveObserver(this);
-    pref_service_syncable->RemoveSyncedPrefObserver(prefs::kArcEnabled, this);
   }
   pref_change_registrar_.RemoveAll();
   context_.reset();
   profile_ = nullptr;
   SetState(State::NOT_INITIALIZED);
-}
-
-void ArcSessionManager::OnSyncedPrefChanged(const std::string& path,
-                                            bool from_sync) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Update UMA only for local changes
-  if (!from_sync) {
-    const bool arc_enabled =
-        profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled);
-    UpdateOptInActionUMA(arc_enabled ? OptInActionType::OPTED_IN
-                                     : OptInActionType::OPTED_OUT);
-
-    if (!arc_enabled && !IsArcManaged()) {
-      ash::ShelfDelegate* shelf_delegate = GetShelfDelegate();
-      if (shelf_delegate)
-        shelf_delegate->UnpinAppWithID(ArcSupportHost::kHostAppId);
-    }
-  }
 }
 
 void ArcSessionManager::StopArc() {
@@ -522,10 +495,22 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
 
-  // TODO(dspaid): Move code from OnSyncedPrefChanged into this method.
-  OnSyncedPrefChanged(prefs::kArcEnabled, IsArcManaged());
-
   const bool arc_enabled = IsArcEnabled();
+  if (!IsArcManaged()) {
+    // Update UMA only for non-Managed cases.
+    UpdateOptInActionUMA(arc_enabled ? OptInActionType::OPTED_IN
+                                     : OptInActionType::OPTED_OUT);
+
+    if (!arc_enabled) {
+      // Remove the pinned Play Store icon launcher in Shelf.
+      // This is only for non-Managed cases. In managed cases, it is expected
+      // to be "disabled" rather than "removed", so keep it here.
+      ash::ShelfDelegate* shelf_delegate = GetShelfDelegate();
+      if (shelf_delegate)
+        shelf_delegate->UnpinAppWithID(ArcSupportHost::kHostAppId);
+    }
+  }
+
   for (auto& observer : observer_list_)
     observer.OnArcOptInChanged(arc_enabled);
 
