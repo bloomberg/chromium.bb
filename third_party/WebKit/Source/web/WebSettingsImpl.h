@@ -136,6 +136,7 @@ class WEB_EXPORT WebSettingsImpl final : NON_EXPORTED_BASE(public WebSettings) {
   void setPictographFontFamily(const WebString&,
                                UScriptCode = USCRIPT_COMMON) override;
   void setPluginsEnabled(bool) override;
+  void setEncryptedMediaEnabled(bool) override;
   void setAvailablePointerTypes(int) override;
   void setPrimaryPointerType(PointerType) override;
   void setAvailableHoverTypes(int) override;

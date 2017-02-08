@@ -12,10 +12,13 @@
 #include "chrome/browser/media/media_browsertest.h"
 #include "chrome/browser/media/test_license_server.h"
 #include "chrome/browser/media/wv_test_license_server_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_launcher_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
@@ -415,6 +418,11 @@ class EncryptedMediaTest : public EncryptedMediaTestBase,
                               CurrentKeySystem(), query_params, kEnded);
   }
 
+  void DisableEncryptedMedia() {
+    PrefService* pref_service = browser()->profile()->GetPrefs();
+    pref_service->SetBoolean(prefs::kWebKitEncryptedMediaEnabled, false);
+  }
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
@@ -534,6 +542,14 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
     return;
   }
   TestFrameSizeChange();
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, EncryptedMediaDisabled) {
+  DisableEncryptedMedia();
+  RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
+                        kWebMVorbisAudioOnly, CurrentKeySystem(),
+                        CurrentSourceType(), kNoSessionToLoad, false,
+                        PlayCount::ONCE, kEmeNotSupportedError);
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)

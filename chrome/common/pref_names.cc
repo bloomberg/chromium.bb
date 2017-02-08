@@ -371,6 +371,8 @@ const char kWebKitJavascriptCanOpenWindowsAutomatically[] =
 const char kWebKitLoadsImagesAutomatically[] =
     "webkit.webprefs.loads_images_automatically";
 const char kWebKitPluginsEnabled[] = "webkit.webprefs.plugins_enabled";
+const char kWebKitEncryptedMediaEnabled[] =
+    "webkit.webprefs.encrypted_media_enabled";
 
 // Boolean that is true when Data Saver is enabled.
 // TODO(bengr): Migrate the preference string to "data_saver.enabled"

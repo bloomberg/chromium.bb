@@ -4,6 +4,8 @@
 
 #include "modules/encryptedmedia/NavigatorRequestMediaKeySystemAccess.h"
 
+#include <algorithm>
+
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -12,6 +14,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/Deprecation.h"
+#include "core/frame/Settings.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
@@ -28,7 +31,6 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -304,6 +306,17 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations) {
   DVLOG(3) << __func__;
 
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
+  Document* document = toDocument(executionContext);
+
+  // If encrypted media is disabled, return a rejected promise.
+  if (!document->settings() ||
+      !document->settings()->getEncryptedMediaEnabled()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState, DOMException::create(NotSupportedError,
+                                          "Encrypted media is disabled."));
+  }
+
   // From https://w3c.github.io/encrypted-media/#requestMediaKeySystemAccess
   // When this method is invoked, the user agent must run the following steps:
   // 1. If keySystem is the empty string, return a promise rejected with a
@@ -328,7 +341,6 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   // by the [SecureContext] IDL attribute. Since that will break some existing
   // sites, we simply keep track of sites that aren't secure and output a
   // deprecation message.
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
   if (executionContext->isSecureContext()) {
     UseCounter::count(executionContext, UseCounter::EncryptedMediaSecureOrigin);
   } else {
@@ -339,7 +351,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   }
 
   // 3. Let document be the calling context's Document.
-  Document* document = toDocument(executionContext);
+  //    (Done at the begining of this function.)
   if (!document->page()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,

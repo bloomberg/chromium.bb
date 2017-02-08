@@ -2518,6 +2518,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   if (!prefs->GetBoolean(prefs::kWebKitPluginsEnabled))
     web_prefs->plugins_enabled = false;
+  web_prefs->encrypted_media_enabled =
+      prefs->GetBoolean(prefs::kWebKitEncryptedMediaEnabled);
   web_prefs->loads_images_automatically =
       prefs->GetBoolean(prefs::kWebKitLoadsImagesAutomatically);
 
