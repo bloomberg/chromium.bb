@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
@@ -33,99 +32,26 @@
 #include "ui/views/painter.h"
 
 namespace ash {
-namespace {
-
-const int kLogoutButtonHorizontalExtraPadding = 7;
-
-const int kLogoutButtonNormalImages[] = {
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP_LEFT,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP_RIGHT,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_LEFT,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_CENTER,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_RIGHT,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM_LEFT,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM_RIGHT};
-
-const int kLogoutButtonPushedImages[] = {
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP_LEFT,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_TOP_RIGHT,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_LEFT,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_CENTER,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_RIGHT,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_LEFT,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM,
-    IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_RIGHT};
-
-// TODO(estade): LogoutButton is not used in MD; remove it when possible.
-// See crbug.com/614453
-class LogoutButton : public views::LabelButton {
- public:
-  LogoutButton(views::ButtonListener* listener);
-  ~LogoutButton() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LogoutButton);
-};
-
-}  // namespace
-
-LogoutButton::LogoutButton(views::ButtonListener* listener)
-    : views::LabelButton(listener, base::string16()) {
-  SetupLabelForTray(label());
-  SetFontList(label()->font_list());
-  SetEnabledTextColors(SK_ColorWHITE);
-
-  std::unique_ptr<views::LabelButtonAssetBorder> border(
-      new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
-  border->SetPainter(
-      false, views::Button::STATE_NORMAL,
-      views::Painter::CreateImageGridPainter(kLogoutButtonNormalImages));
-  border->SetPainter(
-      false, views::Button::STATE_HOVERED,
-      views::Painter::CreateImageGridPainter(kLogoutButtonNormalImages));
-  border->SetPainter(
-      false, views::Button::STATE_PRESSED,
-      views::Painter::CreateImageGridPainter(kLogoutButtonPushedImages));
-  gfx::Insets insets = border->GetInsets();
-  insets += gfx::Insets(0, kLogoutButtonHorizontalExtraPadding, 0,
-                        kLogoutButtonHorizontalExtraPadding);
-  border->set_insets(insets);
-  SetBorder(std::move(border));
-  set_animate_on_state_change(false);
-
-  SetMinSize(gfx::Size(0, GetTrayConstant(TRAY_ITEM_HEIGHT_LEGACY)));
-}
-
-LogoutButton::~LogoutButton() {}
 
 LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
     : TrayBackgroundView(wm_shelf),
       button_(nullptr),
       login_status_(LoginStatus::NOT_LOGGED_IN),
       show_logout_button_in_tray_(false) {
-  if (MaterialDesignController::IsShelfMaterial()) {
-    views::MdTextButton* button =
-        views::MdTextButton::Create(this, base::string16());
-    button->SetProminent(true);
-    button->SetBgColorOverride(gfx::kGoogleRed700);
-    // Base font size + 2 = 14.
-    // TODO(estade): should this 2 be shared with other tray views? See
-    // crbug.com/623987
-    button->AdjustFontSize(2);
-    button_ = button;
+  views::MdTextButton* button =
+      views::MdTextButton::Create(this, base::string16());
+  button->SetProminent(true);
+  button->SetBgColorOverride(gfx::kGoogleRed700);
+  // Base font size + 2 = 14.
+  // TODO(estade): should this 2 be shared with other tray views? See
+  // crbug.com/623987
+  button->AdjustFontSize(2);
+  button_ = button;
 
-    // Since |logout_button_tray| has a red background and it is distinguished
-    // by itself, no separator is needed on its right side.
-    set_separator_visibility(false);
-  } else {
-    button_ = new LogoutButton(this);
-  }
+  // Since |logout_button_tray| has a red background and it is distinguished
+  // by itself, no separator is needed on its right side.
+  set_separator_visibility(false);
   tray_container()->AddChildView(button_);
-  if (!MaterialDesignController::IsShelfMaterial())
-    tray_container()->SetBorder(views::NullBorder());
   WmShell::Get()->system_tray_notifier()->AddLogoutButtonObserver(this);
 }
 
@@ -138,8 +64,6 @@ void LogoutButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
   // TrayBackgroundView::SetShelfAlignment() can lay it out correctly.
   UpdateButtonTextAndImage(login_status_, alignment);
   TrayBackgroundView::SetShelfAlignment(alignment);
-  if (!MaterialDesignController::IsShelfMaterial())
-    tray_container()->SetBorder(views::NullBorder());
 }
 
 base::string16 LogoutButtonTray::GetAccessibleNameForTray() {
@@ -191,19 +115,16 @@ void LogoutButtonTray::UpdateButtonTextAndImage(LoginStatus login_status,
   login_status_ = login_status;
   const base::string16 title =
       user::GetLocalizedSignOutStringForStatus(login_status, false);
-  const int button_size = MaterialDesignController::IsShelfMaterial()
-                              ? kTrayItemSize
-                              : GetTrayConstant(TRAY_ITEM_HEIGHT_LEGACY);
   if (IsHorizontalAlignment(alignment)) {
     button_->SetText(title);
     button_->SetImage(views::LabelButton::STATE_NORMAL, gfx::ImageSkia());
-    button_->SetMinSize(gfx::Size(0, button_size));
+    button_->SetMinSize(gfx::Size(0, kTrayItemSize));
   } else {
     button_->SetText(base::string16());
     button_->SetAccessibleName(title);
     button_->SetImage(views::LabelButton::STATE_NORMAL,
                       gfx::CreateVectorIcon(kShelfLogoutIcon, kTrayIconColor));
-    button_->SetMinSize(gfx::Size(button_size, button_size));
+    button_->SetMinSize(gfx::Size(kTrayItemSize, kTrayItemSize));
   }
   UpdateVisibility();
 }
