@@ -902,6 +902,15 @@ void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 bool Textfield::HandleAccessibleAction(const ui::AXActionData& action_data) {
+  if (action_data.action == ui::AX_ACTION_SET_SELECTION) {
+    if (action_data.anchor_node_id != action_data.focus_node_id)
+      return false;
+    // TODO(nektar): Check that the focus_node_id matches the ID of this node.
+    const gfx::Range range(action_data.anchor_offset, action_data.focus_offset);
+    return SetSelectionRange(range);
+  }
+
+  // Remaining actions cannot be performed on readonly fields.
   if (read_only())
     return View::HandleAccessibleAction(action_data);
 
@@ -1909,11 +1918,7 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
       StartBlinkingCursor();
     else
       StopBlinkingCursor();
-    if (!text_changed) {
-      // TEXT_CHANGED implies TEXT_SELECTION_CHANGED, so we only need to fire
-      // this if only the selection changed.
-      NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_SELECTION_CHANGED, true);
-    }
+    NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_SELECTION_CHANGED, true);
   }
   if (text_changed || cursor_changed) {
     OnCaretBoundsChanged();

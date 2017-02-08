@@ -5,6 +5,7 @@
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -202,6 +203,16 @@ AXPlatformNodeBase* AXPlatformNodeBase::FromNativeViewAccessible(
     gfx::NativeViewAccessible accessible) {
   return static_cast<AXPlatformNodeBase*>(
       AXPlatformNode::FromNativeViewAccessible(accessible));
+}
+
+bool AXPlatformNodeBase::SetTextSelection(int start_offset, int end_offset) {
+  ui::AXActionData action_data;
+  action_data.action = ui::AX_ACTION_SET_SELECTION;
+  action_data.anchor_node_id = action_data.focus_node_id = GetData().id;
+  action_data.anchor_offset = start_offset;
+  action_data.focus_offset = end_offset;
+  DCHECK(delegate_);
+  return delegate_->AccessibilityPerformAction(action_data);
 }
 
 }  // namespace ui

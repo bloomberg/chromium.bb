@@ -119,7 +119,7 @@ TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
 
 bool TestAXNodeWrapper::AccessibilityPerformAction(
     const ui::AXActionData& data) {
-  return false;
+  return true;
 }
 
 void TestAXNodeWrapper::DoDefaultAction() {}

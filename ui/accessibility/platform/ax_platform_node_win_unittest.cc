@@ -95,6 +95,7 @@ class AXPlatformNodeWinTest : public testing::Test {
 
   ScopedComPtr<IAccessible2> ToIAccessible2(
       ScopedComPtr<IAccessible> accessible) {
+    CHECK(accessible.get());
     ScopedComPtr<IServiceProvider> service_provider;
     service_provider.QueryFrom(accessible.get());
     ScopedComPtr<IAccessible2> result;
@@ -114,12 +115,12 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
 
   ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
   ScopedBstr name;
-  ASSERT_EQ(S_OK, root_obj->get_accName(SELF, name.Receive()));
-  EXPECT_EQ(L"Name", base::string16(name));
+  EXPECT_EQ(S_OK, root_obj->get_accName(SELF, name.Receive()));
+  EXPECT_STREQ(L"Name", name);
 
   tree_.reset(new AXTree());
   ScopedBstr name2;
-  ASSERT_EQ(E_FAIL, root_obj->get_accName(SELF, name2.Receive()));
+  EXPECT_EQ(E_FAIL, root_obj->get_accName(SELF, name2.Receive()));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {
@@ -130,13 +131,13 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {
 
   ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
   ScopedBstr name;
-  ASSERT_EQ(S_OK, root_obj->get_accName(SELF, name.Receive()));
-  EXPECT_EQ(L"Name", base::string16(name));
+  EXPECT_EQ(S_OK, root_obj->get_accName(SELF, name.Receive()));
+  EXPECT_STREQ(L"Name", name);
 
-  ASSERT_EQ(E_INVALIDARG, root_obj->get_accName(SELF, nullptr));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_accName(SELF, nullptr));
   ScopedVariant bad_id(999);
   ScopedBstr name2;
-  ASSERT_EQ(E_INVALIDARG, root_obj->get_accName(bad_id, name2.Receive()));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_accName(bad_id, name2.Receive()));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDescription) {
@@ -147,13 +148,13 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDescription) {
 
   ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
   ScopedBstr description;
-  ASSERT_EQ(S_OK, root_obj->get_accDescription(SELF, description.Receive()));
-  EXPECT_EQ(L"Description", base::string16(description));
+  EXPECT_EQ(S_OK, root_obj->get_accDescription(SELF, description.Receive()));
+  EXPECT_STREQ(L"Description", description);
 
-  ASSERT_EQ(E_INVALIDARG, root_obj->get_accDescription(SELF, nullptr));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_accDescription(SELF, nullptr));
   ScopedVariant bad_id(999);
   ScopedBstr d2;
-  ASSERT_EQ(E_INVALIDARG, root_obj->get_accDescription(bad_id, d2.Receive()));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_accDescription(bad_id, d2.Receive()));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleValue) {
@@ -164,13 +165,13 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleValue) {
 
   ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
   ScopedBstr value;
-  ASSERT_EQ(S_OK, root_obj->get_accValue(SELF, value.Receive()));
-  EXPECT_EQ(L"Value", base::string16(value));
+  EXPECT_EQ(S_OK, root_obj->get_accValue(SELF, value.Receive()));
+  EXPECT_STREQ(L"Value", value);
 
-  ASSERT_EQ(E_INVALIDARG, root_obj->get_accValue(SELF, nullptr));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_accValue(SELF, nullptr));
   ScopedVariant bad_id(999);
   ScopedBstr v2;
-  ASSERT_EQ(E_INVALIDARG, root_obj->get_accValue(bad_id, v2.Receive()));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_accValue(bad_id, v2.Receive()));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleShortcut) {
@@ -181,15 +182,14 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleShortcut) {
 
   ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
   ScopedBstr shortcut;
-  ASSERT_EQ(S_OK, root_obj->get_accKeyboardShortcut(
-      SELF, shortcut.Receive()));
-  EXPECT_EQ(L"Shortcut", base::string16(shortcut));
+  EXPECT_EQ(S_OK, root_obj->get_accKeyboardShortcut(SELF, shortcut.Receive()));
+  EXPECT_STREQ(L"Shortcut", shortcut);
 
-  ASSERT_EQ(E_INVALIDARG, root_obj->get_accKeyboardShortcut(SELF, nullptr));
+  EXPECT_EQ(E_INVALIDARG, root_obj->get_accKeyboardShortcut(SELF, nullptr));
   ScopedVariant bad_id(999);
   ScopedBstr k2;
-  ASSERT_EQ(E_INVALIDARG, root_obj->get_accKeyboardShortcut(
-      bad_id, k2.Receive()));
+  EXPECT_EQ(E_INVALIDARG,
+            root_obj->get_accKeyboardShortcut(bad_id, k2.Receive()));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleRole) {
@@ -209,23 +209,23 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleRole) {
 
   child.role = AX_ROLE_ALERT;
   child_node->SetData(child);
-  ASSERT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
+  EXPECT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
   EXPECT_EQ(ROLE_SYSTEM_ALERT, V_I4(role.ptr()));
 
   child.role = AX_ROLE_BUTTON;
   child_node->SetData(child);
-  ASSERT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
+  EXPECT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
   EXPECT_EQ(ROLE_SYSTEM_PUSHBUTTON, V_I4(role.ptr()));
 
   child.role = AX_ROLE_POP_UP_BUTTON;
   child_node->SetData(child);
-  ASSERT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
+  EXPECT_EQ(S_OK, child_iaccessible->get_accRole(SELF, role.Receive()));
   EXPECT_EQ(ROLE_SYSTEM_BUTTONMENU, V_I4(role.ptr()));
 
-  ASSERT_EQ(E_INVALIDARG, child_iaccessible->get_accRole(SELF, nullptr));
+  EXPECT_EQ(E_INVALIDARG, child_iaccessible->get_accRole(SELF, nullptr));
   ScopedVariant bad_id(999);
-  ASSERT_EQ(E_INVALIDARG, child_iaccessible->get_accRole(
-      bad_id, role.Receive()));
+  EXPECT_EQ(E_INVALIDARG,
+            child_iaccessible->get_accRole(bad_id, role.Receive()));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleLocation) {
@@ -237,24 +237,24 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleLocation) {
   TestAXNodeWrapper::SetGlobalCoordinateOffset(gfx::Vector2d(100, 200));
 
   LONG x_left, y_top, width, height;
-  ASSERT_EQ(S_OK, GetRootIAccessible()->accLocation(
-      &x_left, &y_top, &width, &height, SELF));
+  EXPECT_EQ(S_OK, GetRootIAccessible()->accLocation(&x_left, &y_top, &width,
+                                                    &height, SELF));
   EXPECT_EQ(110, x_left);
   EXPECT_EQ(240, y_top);
   EXPECT_EQ(800, width);
   EXPECT_EQ(600, height);
 
-  ASSERT_EQ(E_INVALIDARG, GetRootIAccessible()->accLocation(
-      nullptr, &y_top, &width, &height, SELF));
-  ASSERT_EQ(E_INVALIDARG, GetRootIAccessible()->accLocation(
-      &x_left, nullptr, &width, &height, SELF));
-  ASSERT_EQ(E_INVALIDARG, GetRootIAccessible()->accLocation(
-      &x_left, &y_top, nullptr, &height, SELF));
-  ASSERT_EQ(E_INVALIDARG, GetRootIAccessible()->accLocation(
-      &x_left, &y_top, &width, nullptr, SELF));
+  EXPECT_EQ(E_INVALIDARG, GetRootIAccessible()->accLocation(
+                              nullptr, &y_top, &width, &height, SELF));
+  EXPECT_EQ(E_INVALIDARG, GetRootIAccessible()->accLocation(
+                              &x_left, nullptr, &width, &height, SELF));
+  EXPECT_EQ(E_INVALIDARG, GetRootIAccessible()->accLocation(
+                              &x_left, &y_top, nullptr, &height, SELF));
+  EXPECT_EQ(E_INVALIDARG, GetRootIAccessible()->accLocation(
+                              &x_left, &y_top, &width, nullptr, SELF));
   ScopedVariant bad_id(999);
-  ASSERT_EQ(E_INVALIDARG, GetRootIAccessible()->accLocation(
-      &x_left, &y_top, &width, &height, bad_id));
+  EXPECT_EQ(E_INVALIDARG, GetRootIAccessible()->accLocation(
+                              &x_left, &y_top, &width, &height, bad_id));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
@@ -281,38 +281,38 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
       IAccessibleFromNode(checkbox_node));
 
   LONG child_count;
-  ASSERT_EQ(S_OK, root_iaccessible->get_accChildCount(&child_count));
-  ASSERT_EQ(2L, child_count);
-  ASSERT_EQ(S_OK, button_iaccessible->get_accChildCount(&child_count));
-  ASSERT_EQ(0L, child_count);
-  ASSERT_EQ(S_OK, checkbox_iaccessible->get_accChildCount(&child_count));
-  ASSERT_EQ(0L, child_count);
+  EXPECT_EQ(S_OK, root_iaccessible->get_accChildCount(&child_count));
+  EXPECT_EQ(2L, child_count);
+  EXPECT_EQ(S_OK, button_iaccessible->get_accChildCount(&child_count));
+  EXPECT_EQ(0L, child_count);
+  EXPECT_EQ(S_OK, checkbox_iaccessible->get_accChildCount(&child_count));
+  EXPECT_EQ(0L, child_count);
 
   {
     ScopedComPtr<IDispatch> result;
-    ASSERT_EQ(S_OK, root_iaccessible->get_accChild(SELF, result.Receive()));
-    ASSERT_EQ(result.get(), root_iaccessible);
+    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(SELF, result.Receive()));
+    EXPECT_EQ(result.get(), root_iaccessible);
   }
 
   {
     ScopedComPtr<IDispatch> result;
     ScopedVariant child1(1);
-    ASSERT_EQ(S_OK, root_iaccessible->get_accChild(child1, result.Receive()));
-    ASSERT_EQ(result.get(), button_iaccessible);
+    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(child1, result.Receive()));
+    EXPECT_EQ(result.get(), button_iaccessible);
   }
 
   {
     ScopedComPtr<IDispatch> result;
     ScopedVariant child2(2);
-    ASSERT_EQ(S_OK, root_iaccessible->get_accChild(child2, result.Receive()));
-    ASSERT_EQ(result.get(), checkbox_iaccessible);
+    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(child2, result.Receive()));
+    EXPECT_EQ(result.get(), checkbox_iaccessible);
   }
 
   {
     // Asking for child id 3 should fail.
     ScopedComPtr<IDispatch> result;
     ScopedVariant child3(3);
-    ASSERT_EQ(E_INVALIDARG,
+    EXPECT_EQ(E_INVALIDARG,
               root_iaccessible->get_accChild(child3, result.Receive()));
   }
 
@@ -325,9 +325,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
   {
     ScopedComPtr<IDispatch> result;
     ScopedVariant button_id_variant(button_unique_id);
-    ASSERT_EQ(S_OK, root_iaccessible->get_accChild(button_id_variant,
+    EXPECT_EQ(S_OK, root_iaccessible->get_accChild(button_id_variant,
                                                    result.Receive()));
-    ASSERT_EQ(result.get(), button_iaccessible);
+    EXPECT_EQ(result.get(), button_iaccessible);
   }
 
   // We shouldn't be able to ask for the root node by its unique ID
@@ -340,26 +340,26 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
   {
     ScopedComPtr<IDispatch> result;
     ScopedVariant root_id_variant(root_unique_id);
-    ASSERT_EQ(E_INVALIDARG, button_iaccessible->get_accChild(root_id_variant,
+    EXPECT_EQ(E_INVALIDARG, button_iaccessible->get_accChild(root_id_variant,
                                                              result.Receive()));
   }
 
   // Now check parents.
   {
     ScopedComPtr<IDispatch> result;
-    ASSERT_EQ(S_OK, button_iaccessible->get_accParent(result.Receive()));
-    ASSERT_EQ(result.get(), root_iaccessible);
+    EXPECT_EQ(S_OK, button_iaccessible->get_accParent(result.Receive()));
+    EXPECT_EQ(result.get(), root_iaccessible);
   }
 
   {
     ScopedComPtr<IDispatch> result;
-    ASSERT_EQ(S_OK, checkbox_iaccessible->get_accParent(result.Receive()));
-    ASSERT_EQ(result.get(), root_iaccessible);
+    EXPECT_EQ(S_OK, checkbox_iaccessible->get_accParent(result.Receive()));
+    EXPECT_EQ(result.get(), root_iaccessible);
   }
 
   {
     ScopedComPtr<IDispatch> result;
-    ASSERT_EQ(S_FALSE, root_iaccessible->get_accParent(result.Receive()));
+    EXPECT_EQ(S_FALSE, root_iaccessible->get_accParent(result.Receive()));
   }
 }
 
@@ -389,13 +389,37 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2IndexInParent) {
       ToIAccessible2(right_iaccessible);
 
   LONG index;
-  ASSERT_EQ(E_FAIL, root_iaccessible2->get_indexInParent(&index));
+  EXPECT_EQ(E_FAIL, root_iaccessible2->get_indexInParent(&index));
 
-  ASSERT_EQ(S_OK, left_iaccessible2->get_indexInParent(&index));
+  EXPECT_EQ(S_OK, left_iaccessible2->get_indexInParent(&index));
   EXPECT_EQ(0, index);
 
-  ASSERT_EQ(S_OK, right_iaccessible2->get_indexInParent(&index));
+  EXPECT_EQ(S_OK, right_iaccessible2->get_indexInParent(&index));
   EXPECT_EQ(1, index);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessible2SetSelection) {
+  AXNodeData text_field_node;
+  text_field_node.id = 1;
+  text_field_node.role = ui::AX_ROLE_TEXT_FIELD;
+  text_field_node.state = 1 << ui::AX_STATE_EDITABLE;
+  text_field_node.SetValue("Hi");
+
+  Init(text_field_node);
+  ScopedComPtr<IAccessible2> ia2_text_field =
+      ToIAccessible2(GetRootIAccessible());
+  ScopedComPtr<IAccessibleText> text_field;
+  text_field.QueryFrom(ia2_text_field.get());
+  ASSERT_NE(nullptr, text_field);
+
+  EXPECT_HRESULT_SUCCEEDED(text_field->setSelection(0, 0, 1));
+  EXPECT_HRESULT_SUCCEEDED(text_field->setSelection(0, 1, 0));
+  EXPECT_HRESULT_SUCCEEDED(text_field->setSelection(0, 2, 2));
+  EXPECT_HRESULT_SUCCEEDED(text_field->setSelection(0, IA2_TEXT_OFFSET_CARET,
+                                                    IA2_TEXT_OFFSET_LENGTH));
+
+  EXPECT_HRESULT_FAILED(text_field->setSelection(1, 0, 0));
+  EXPECT_HRESULT_FAILED(text_field->setSelection(0, 0, 5));
 }
 
 }  // namespace ui

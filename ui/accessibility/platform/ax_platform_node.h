@@ -11,7 +11,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 // Set PLATFORM_HAS_AX_PLATFORM_NODE_IMPL if this platform has a specific
-// implementation of AxPlatfromNode::Create().
+// implementation of AXPlatformNode::Create().
 #undef PLATFORM_HAS_AX_PLATFORM_NODE_IMPL
 
 #if defined(OS_WIN)

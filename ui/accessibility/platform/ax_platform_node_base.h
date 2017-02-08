@@ -75,6 +75,9 @@ class AXPlatformNodeBase : public AXPlatformNode {
 
   virtual void Dispose();
 
+  // Sets the text selection in this object if possible.
+  bool SetTextSelection(int start_offset, int end_offset);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeBase);
 };
