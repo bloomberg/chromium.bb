@@ -109,9 +109,10 @@ LayoutRect CaretDisplayItemClient::computeCaretRect(
   // (which is either the layoutObject we just found, or one of its containers).
   LayoutBlockItem caretPainterItem =
       LayoutBlockItem(caretLayoutBlock(caretPosition.anchorNode()));
-
+  LayoutRect caretLocalRectWithWritingMode = caretLocalRect;
+  caretPainterItem.flipForWritingMode(caretLocalRectWithWritingMode);
   return mapCaretRectToCaretPainter(LayoutItem(layoutObject), caretPainterItem,
-                                    caretLocalRect);
+                                    caretLocalRectWithWritingMode);
 }
 
 void CaretDisplayItemClient::updateStyleAndLayoutIfNeeded(
@@ -231,7 +232,6 @@ void CaretDisplayItemClient::paintCaret(
     return;
 
   LayoutRect drawingRect = m_localRect;
-  m_layoutBlock->flipForWritingMode(drawingRect);
   drawingRect.moveBy(paintOffset);
 
   IntRect paintRect = pixelSnappedIntRect(drawingRect);

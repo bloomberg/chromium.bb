@@ -177,7 +177,6 @@ static IntRect absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) {
     return IntRect();
 
   LayoutRect localRect(rect);
-  caretPainter->flipForWritingMode(localRect);
   return caretPainter->localToAbsoluteQuad(FloatRect(localRect))
       .enclosingBoundingBox();
 }

@@ -24,6 +24,10 @@ class LayoutBlockItem : public LayoutBoxItem {
 
   LayoutBlockItem() {}
 
+  void flipForWritingMode(LayoutRect& rect) const {
+    toBlock()->flipForWritingMode(rect);
+  }
+
   bool recalcOverflowAfterStyleChange() {
     return toBlock()->recalcOverflowAfterStyleChange();
   }
