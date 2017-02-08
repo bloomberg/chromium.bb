@@ -4,6 +4,9 @@
 
 #include "core/dom/StyleEngine.h"
 
+#include "core/css/CSSRuleList.h"
+#include "core/css/CSSStyleRule.h"
+#include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/dom/Document.h"
@@ -367,6 +370,48 @@ TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
 
   unsigned afterCount = styleEngine().styleForElementCount();
   EXPECT_EQ(0u, afterCount - beforeCount);
+
+  ASSERT_TRUE(t1->computedStyle());
+  EXPECT_EQ(makeRGB(0, 128, 0),
+            t1->computedStyle()->visitedDependentColor(CSSPropertyColor));
+}
+
+TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
+  // Test that the MatchedPropertiesCache is cleared when a StyleRule is
+  // modified. The MatchedPropertiesCache caches results based on
+  // StylePropertySet pointers. When a mutable StylePropertySet is modified,
+  // the pointer doesn't change, yet the declarations do.
+
+  document().body()->setInnerHTML(
+      "<style id='s1'>#t1 { color: blue }</style>"
+      "<div id='t1'>Green</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* t1 = document().getElementById("t1");
+  ASSERT_TRUE(t1);
+  ASSERT_TRUE(t1->computedStyle());
+  EXPECT_EQ(makeRGB(0, 0, 255),
+            t1->computedStyle()->visitedDependentColor(CSSPropertyColor));
+
+  CSSStyleSheet* sheet = toCSSStyleSheet(document().styleSheets().item(0));
+  ASSERT_TRUE(sheet);
+  ASSERT_TRUE(sheet->cssRules());
+  CSSStyleRule* styleRule = toCSSStyleRule(sheet->cssRules()->item(0));
+  ASSERT_TRUE(styleRule);
+  ASSERT_TRUE(styleRule->style());
+
+  // Modify the StylePropertySet once to make it a mutable set. Subsequent
+  // modifications will not change the StylePropertySet pointer and cache hash
+  // value will be the same.
+  styleRule->style()->setProperty("color", "red", "", ASSERT_NO_EXCEPTION);
+  document().view()->updateAllLifecyclePhases();
+
+  ASSERT_TRUE(t1->computedStyle());
+  EXPECT_EQ(makeRGB(255, 0, 0),
+            t1->computedStyle()->visitedDependentColor(CSSPropertyColor));
+
+  styleRule->style()->setProperty("color", "green", "", ASSERT_NO_EXCEPTION);
+  document().view()->updateAllLifecyclePhases();
 
   ASSERT_TRUE(t1->computedStyle());
   EXPECT_EQ(makeRGB(0, 128, 0),

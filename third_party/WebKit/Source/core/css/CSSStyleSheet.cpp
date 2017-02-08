@@ -160,7 +160,14 @@ void CSSStyleSheet::didMutateRules() {
   DCHECK(m_contents->isMutable());
   DCHECK_LE(m_contents->clientSize(), 1u);
 
-  didMutate();
+  Document* owner = ownerDocument();
+  if (!owner)
+    return;
+  if (ownerNode() && ownerNode()->isConnected()) {
+    owner->styleEngine().setNeedsActiveStyleUpdate(ownerNode()->treeScope());
+    if (StyleResolver* resolver = owner->styleEngine().resolver())
+      resolver->invalidateMatchedPropertiesCache();
+  }
 }
 
 void CSSStyleSheet::didMutate() {
