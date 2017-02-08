@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
+#include "net/base/backoff_entry.h"
 
 namespace base {
 class ElapsedTimer;
@@ -81,6 +83,7 @@ class EnrollmentScreen
   }
 
  private:
+  friend class EnrollmentScreenUnitTest;
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestSuccess);
   FRIEND_TEST_ALL_PREFIXES(AttestationAuthEnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(ForcedAttestationAuthEnrollmentScreenTest,
@@ -93,6 +96,9 @@ class EnrollmentScreen
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
                            TestAuthCodeGetsProperlyReceivedFromGaia);
   FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, RequiresNoInput);
+  FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenUnitTest, Retries);
+  FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenUnitTest, DoesNotRetryOnTopOfUser);
+  FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenUnitTest, DoesNotRetryAfterSuccess);
 
   // The authentication mechanisms that this class can use.
   enum Auth {
@@ -144,6 +150,14 @@ class EnrollmentScreen
   // Advance to the next authentication mechanism if possible.
   bool AdvanceToNextAuth();
 
+  // Similar to OnRetry(), but responds to a timer instead of the user
+  // pressing the Retry button.
+  void AutomaticRetry();
+
+  // Processes a request to retry enrollment.
+  // Called by OnRetry() and AutomaticRetry().
+  void ProcessRetry();
+
   pairing_chromeos::ControllerPairingController* shark_controller_ = nullptr;
 
   EnrollmentScreenActor* actor_;
@@ -155,6 +169,10 @@ class EnrollmentScreen
   std::string enrolling_user_domain_;
   std::string auth_code_;
   std::unique_ptr<base::ElapsedTimer> elapsed_timer_;
+  net::BackoffEntry::Policy retry_policy_;
+  std::unique_ptr<net::BackoffEntry> retry_backoff_;
+  base::CancelableClosure retry_task_;
+  int num_retries_ = 0;
   std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
 

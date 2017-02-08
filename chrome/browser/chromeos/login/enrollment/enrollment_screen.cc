@@ -52,6 +52,19 @@ const char * const kMetricEnrollmentTimeFailure =
 const char * const kMetricEnrollmentTimeSuccess =
     "Enterprise.EnrollmentTime.Success";
 
+// Retry policy constants.
+constexpr int kInitialDelayMS = 4 * 1000;  // 4 seconds
+constexpr double kMultiplyFactor = 1.5;
+constexpr double kJitterFactor = 0.1;           // +/- 10% jitter
+constexpr int64_t kMaxDelayMS = 8 * 60 * 1000;  // 8 minutes
+
+// Helper function. Returns true if we are using Hands Off Enrollment.
+bool UsingHandsOffEnrollment() {
+  return policy::DeviceCloudPolicyManagerChromeOS::
+             GetZeroTouchEnrollmentMode() ==
+         policy::ZeroTouchEnrollmentMode::HANDS_OFF;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -66,7 +79,16 @@ EnrollmentScreen::EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
                                    EnrollmentScreenActor* actor)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_ENROLLMENT),
       actor_(actor),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  retry_policy_.num_errors_to_ignore = 0;
+  retry_policy_.initial_delay_ms = kInitialDelayMS;
+  retry_policy_.multiply_factor = kMultiplyFactor;
+  retry_policy_.jitter_factor = kJitterFactor;
+  retry_policy_.maximum_backoff_ms = kMaxDelayMS;
+  retry_policy_.entry_lifetime_ms = -1;
+  retry_policy_.always_use_initial_delay = true;
+  retry_backoff_.reset(new net::BackoffEntry(&retry_policy_));
+}
 
 EnrollmentScreen::~EnrollmentScreen() {
   DCHECK(!enrollment_helper_ || g_browser_process->IsShuttingDown());
@@ -190,6 +212,22 @@ void EnrollmentScreen::OnLoginDone(const std::string& user,
 }
 
 void EnrollmentScreen::OnRetry() {
+  retry_task_.Cancel();
+  ProcessRetry();
+}
+
+void EnrollmentScreen::AutomaticRetry() {
+  retry_backoff_->InformOfRequest(false);
+  retry_task_.Reset(base::Bind(&EnrollmentScreen::ProcessRetry,
+                               weak_ptr_factory_.GetWeakPtr()));
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, retry_task_.callback(), retry_backoff_->GetTimeUntilRelease());
+}
+
+void EnrollmentScreen::ProcessRetry() {
+  ++num_retries_;
+  LOG(WARNING) << "Enrollment retry " << num_retries_;
   Show();
 }
 
@@ -243,16 +281,21 @@ void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
   // based enrollment and we have a fallback authentication, show it.
   if (status.status() == policy::EnrollmentStatus::REGISTRATION_FAILED &&
       status.client_status() == policy::DM_STATUS_SERVICE_DEVICE_NOT_FOUND &&
-      current_auth_ == AUTH_ATTESTATION && AdvanceToNextAuth())
+      current_auth_ == AUTH_ATTESTATION && AdvanceToNextAuth()) {
     Show();
-  else
+  } else {
     actor_->ShowEnrollmentStatus(status);
+    if (UsingHandsOffEnrollment())
+      AutomaticRetry();
+  }
 }
 
 void EnrollmentScreen::OnOtherError(
     EnterpriseEnrollmentHelper::OtherError error) {
   RecordEnrollmentErrorMetrics();
   actor_->ShowOtherError(error);
+  if (UsingHandsOffEnrollment())
+    AutomaticRetry();
 }
 
 void EnrollmentScreen::OnDeviceEnrolled(const std::string& additional_token) {
@@ -323,6 +366,7 @@ void EnrollmentScreen::SendEnrollmentAuthToken(const std::string& token) {
 }
 
 void EnrollmentScreen::ShowEnrollmentStatusOnSuccess() {
+  retry_backoff_->InformOfRequest(true);
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeSuccess, elapsed_timer_);
   actor_->ShowEnrollmentStatus(
