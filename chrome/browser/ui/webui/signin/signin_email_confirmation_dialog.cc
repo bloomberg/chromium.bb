@@ -140,8 +140,13 @@ void SigninEmailConfirmationDialog::GetWebUIMessageHandlers(
     std::vector<content::WebUIMessageHandler*>* handlers) const {}
 
 void SigninEmailConfirmationDialog::GetDialogSize(gfx::Size* size) const {
-  // Avoid setting a dialog size in here as this dialog auto-resizes (see
-  // method |SigninEmailConfirmationDialog::Show|.
+  DCHECK(size);
+
+  // Set the dialog width if it's not set, so that the dialog is center-aligned
+  // horizontally when it appears. Avoid setting a dialog height in here as
+  // this dialog auto-resizes.
+  if (size->IsEmpty())
+    size->set_width(kDialogWidth);
 }
 
 std::string SigninEmailConfirmationDialog::GetDialogArgs() const {
