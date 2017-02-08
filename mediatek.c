@@ -49,7 +49,13 @@ static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	int ret;
 	size_t plane;
 	struct drm_mtk_gem_create gem_create;
+	uint32_t bytes_per_pixel = drv_stride_from_format(format, 1, 0);
 
+	/*
+	 * Since the ARM L1 cache line size is 64 bytes, align to that as a
+	 * performance optimization.
+	 */
+	width = ALIGN(width, DIV_ROUND_UP(64, bytes_per_pixel));
 	drv_bo_from_format(bo, width, height, format);
 
 	memset(&gem_create, 0, sizeof(gem_create));

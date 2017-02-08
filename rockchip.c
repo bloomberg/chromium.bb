@@ -142,6 +142,13 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo,
 			fprintf(stderr, "no usable modifier found\n");
 			return -1;
 		}
+
+		/*
+		 * Since the ARM L1 cache line size is 64 bytes, align to that
+		 * as a performance optimization.
+		 */
+		uint32_t bytes_per_pixel = drv_stride_from_format(format, 1, 0);
+		width = ALIGN(width, DIV_ROUND_UP(64, bytes_per_pixel));
 		drv_bo_from_format(bo, width, height, format);
 	}
 
