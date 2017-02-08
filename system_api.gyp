@@ -85,5 +85,28 @@
         '<(SHARED_INTERMEDIATE_DIR)/include/cryptohome/proto_bindings/signed_secret.pb.cc',
       ]
     },
+    {
+      'target_name': 'system_api-authpolicy-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/authpolicy',
+        'proto_out_dir': 'include/authpolicy/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/active_directory_account_data.proto',
+      ],
+      'includes': ['../../platform2/common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-authpolicy-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-authpolicy-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/authpolicy/proto_bindings/active_directory_account_data.pb.cc',
+      ]
+    },
   ]
 }
