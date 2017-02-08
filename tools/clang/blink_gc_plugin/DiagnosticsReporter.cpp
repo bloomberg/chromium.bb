@@ -210,6 +210,8 @@ DiagnosticsReporter::DiagnosticsReporter(
       getErrorLevel(), kLeftMostBaseMustBePolymorphic);
   diag_base_class_must_declare_virtual_trace_ = diagnostic_.getCustomDiagID(
       getErrorLevel(), kBaseClassMustDeclareVirtualTrace);
+  diag_iterator_to_gc_managed_collection_note_ = diagnostic_.getCustomDiagID(
+      getErrorLevel(), kIteratorToGCManagedCollectionNote);
 
   // Register note messages.
   diag_base_requires_tracing_note_ = diagnostic_.getCustomDiagID(
@@ -256,8 +258,6 @@ DiagnosticsReporter::DiagnosticsReporter(
       DiagnosticsEngine::Note, kOverriddenNonVirtualTraceNote);
   diag_manual_dispatch_method_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kManualDispatchMethodNote);
-  diag_iterator_to_gc_managed_collection_note_ = diagnostic_.getCustomDiagID(
-      DiagnosticsEngine::Note, kIteratorToGCManagedCollectionNote);
 }
 
 bool DiagnosticsReporter::hasErrorOccurred() const
