@@ -48,6 +48,10 @@ def GetParser():
                       help='Filename to write JSON to.')
   parser.add_argument('--json_file', type=str, action='store',
                       help='JSON file to send.')
+  parser.add_argument('builds', type=str, nargs='*', action='store',
+                      metavar='WATERFALL,TREE,SEVERITY',
+                      help='Builds to report on.  eg chromeos,elm-release,1000 '
+                           'or chromeos,master-paladin,1001')
   return parser
 
 
@@ -298,20 +302,29 @@ def GenerateAlertsSummary(db, builds=None,
   now = datetime.datetime.utcnow()
 
   # Iterate over relvevant masters.
-  for build_tuple in builds:
+  for waterfall, build_config, severity in builds:
     # Find the most recent build, their slaves, and the individual slave stages.
-    master = db.GetMostRecentBuild(build_tuple[0], build_tuple[1])
-    slaves = db.GetSlaveStatuses(master['id'])
-    slave_stages = db.GetSlaveStages(master['id'])
-    exceptions = db.GetSlaveFailures(master['id'])
-    logging.info('%s %s (id %d): %d slaves, %d slave stages',
-                 build_tuple[0], build_tuple[1], master['id'],
-                 len(slaves), len(slave_stages))
+    master = db.GetMostRecentBuild(waterfall, build_config)
+    statuses = db.GetSlaveStatuses(master['id'])
+    if len(statuses):
+      stages = db.GetSlaveStages(master['id'])
+      exceptions = db.GetSlaveFailures(master['id'])
+      logging.info('%s %s (id %d): %d slaves, %d slave stages',
+                   waterfall, build_config, master['id'],
+                   len(statuses), len(stages))
+    else:
+      # Didn't find any slaves, so treat as a singular build.
+      statuses = [master]
+      stages = db.GetBuildStages(master['id'])
+      exceptions = db.GetBuildsFailures([master['id']])
+      logging.info('%s %s (id %d): single build, %d stages',
+                   waterfall, build_config, master['id'],
+                   len(stages))
 
     # Look for failing and inflight (signifying timeouts) slave builds.
-    for slave in sorted(slaves, key=lambda s: s['builder_name']):
-      alert = GenerateBuildAlert(slave, slave_stages, exceptions,
-                                 build_tuple[2], now,
+    for build in sorted(statuses, key=lambda s: s['builder_name']):
+      alert = GenerateBuildAlert(build, stages, exceptions,
+                                 severity, now,
                                  logdog_client, milo_client)
       if alert:
         alerts.append(alert)
@@ -331,6 +344,7 @@ def ToEpoch(value):
 def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
+  builds = [tuple(x.split(',')) for x in options.builds]
 
   # Determine which hosts to connect to.
   db = cidb.CIDBConnection(options.cred_dir)
@@ -348,7 +362,8 @@ def main(argv):
                                         host=options.logdog_host)
     milo_client = milo.MiloClient(options.service_acct_json,
                                   host=options.milo_host)
-    summary_json = GenerateAlertsSummary(db, logdog_client=logdog_client,
+    summary_json = GenerateAlertsSummary(db, builds=builds,
+                                         logdog_client=logdog_client,
                                          milo_client=milo_client)
     if options.output_json:
       with open(options.output_json, 'w') as f:
