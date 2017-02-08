@@ -1,24 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
+<meta charset=utf-8>
 <title>IndexedDB: Exceptions thrown during key conversion</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support.js"></script>
 <script>
 
-function simple_idb_test(upgrade_callback, description) {
-    async_test(function(t) {
-        var dbname = document.location + '-' + t.name;
-        var del = indexedDB.deleteDatabase(dbname);
-        del.onerror = t.unreached_func('deleteDatabase should succeed');
-        var open = indexedDB.open(dbname);
-        open.onerror = t.unreached_func('open should succeed');
-        open.onupgradeneeded = t.step_func(function(e) {
-            upgrade_callback(t, open.result);
-        });
-        open.onsuccess = t.step_func(function() {
-            open.result.close();
-            t.done();
-        });
-    }, description);
+// Convenience function for tests that only need to run code in onupgradeneeded.
+function indexeddb_upgrade_only_test(upgrade_callback, description) {
+  indexeddb_test(upgrade_callback, t => { t.done(); }, description);
 }
 
 // Key that throws during conversion.
@@ -44,80 +34,80 @@ var invalid_key = {};
 function check_method(receiver, method, args) {
     args = args || 1;
     if (args < 2) {
-        assert_throws({name:'getter'}, function() {
+        assert_throws({name:'getter'}, () => {
             receiver[method](throwing_key('getter'));
         }, 'key conversion with throwing getter should rethrow');
 
-        assert_throws('DataError', function() {
+        assert_throws('DataError', () => {
             receiver[method](invalid_key);
         }, 'key conversion with invalid key should throw DataError');
     } else {
-        assert_throws({name:'getter 1'}, function() {
+        assert_throws({name:'getter 1'}, () => {
             receiver[method](throwing_key('getter 1'), throwing_key('getter 2'));
         }, 'first key conversion with throwing getter should rethrow');
 
-        assert_throws('DataError', function() {
+        assert_throws('DataError', () => {
             receiver[method](invalid_key, throwing_key('getter 2'));
         }, 'first key conversion with invalid key should throw DataError');
 
-        assert_throws({name:'getter 2'}, function() {
+        assert_throws({name:'getter 2'}, () => {
             receiver[method](valid_key, throwing_key('getter 2'));
         }, 'second key conversion with throwing getter should rethrow');
 
-        assert_throws('DataError', function() {
+        assert_throws('DataError', () => {
             receiver[method](valid_key, invalid_key);
         }, 'second key conversion with invalid key should throw DataError');
     }
 }
 
 // Static key comparison utility on IDBFactory.
-test(function(t) {
+test(t => {
     check_method(indexedDB, 'cmp', 2);
 }, 'IDBFactory cmp() static with throwing/invalid keys');
 
 // Continue methods on IDBCursor.
-simple_idb_test(function(t, db) {
+indexeddb_upgrade_only_test((t, db) => {
     var store = db.createObjectStore('store');
     store.put('a', 1).onerror = t.unreached_func('put should succeed');
 
     var request = store.openCursor();
     request.onerror = t.unreached_func('openCursor should succeed');
-    request.onsuccess = t.step_func(function() {
+    request.onsuccess = t.step_func(() => {
         var cursor = request.result;
         assert_not_equals(cursor, null, 'cursor should find a value');
         check_method(cursor, 'continue');
     });
 }, 'IDBCursor continue() method with throwing/invalid keys');
 
-simple_idb_test(function(t, db) {
+indexeddb_upgrade_only_test((t, db) => {
     var store = db.createObjectStore('store');
     var index = store.createIndex('index', 'prop');
     store.put({prop: 'a'}, 1).onerror = t.unreached_func('put should succeed');
 
     var request = index.openCursor();
     request.onerror = t.unreached_func('openCursor should succeed');
-    request.onsuccess = t.step_func(function() {
+    request.onsuccess = t.step_func(() => {
         var cursor = request.result;
         assert_not_equals(cursor, null, 'cursor should find a value');
 
         check_method(cursor, 'continuePrimaryKey', 2);
     });
-}, 'IDBCursor continuePrimaryKey() method with throwing/invalid keys');
+}, null, 'IDBCursor continuePrimaryKey() method with throwing/invalid keys');
 
 // Mutation methods on IDBCursor.
-simple_idb_test(function(t, db) {
+indexeddb_upgrade_only_test((t, db) => {
     var store = db.createObjectStore('store', {keyPath: 'prop'});
     store.put({prop: 1}).onerror = t.unreached_func('put should succeed');
 
     var request = store.openCursor();
     request.onerror = t.unreached_func('openCursor should succeed');
-    request.onsuccess = t.step_func(function() {
+    request.onsuccess = t.step_func(() => {
         var cursor = request.result;
         assert_not_equals(cursor, null, 'cursor should find a value');
 
         var value = {};
         value.prop = throwing_key('getter');
-        assert_throws({name: 'getter'}, function() {
+        assert_throws({name: 'getter'}, () => {
             cursor.update(value);
         }, 'throwing getter should rethrow during clone');
 
@@ -127,40 +117,40 @@ simple_idb_test(function(t, db) {
         // are used for key path evaluation.
 
         value.prop = invalid_key;
-        assert_throws('DataError', function() {
+        assert_throws('DataError', () => {
             cursor.update(value);
         }, 'key conversion with invalid key should throw DataError');
     });
 }, 'IDBCursor update() method with throwing/invalid keys');
 
 // Static constructors on IDBKeyRange
-['only', 'lowerBound', 'upperBound'].forEach(function(method) {
-    test(function(t) {
+['only', 'lowerBound', 'upperBound'].forEach(method => {
+    test(t => {
         check_method(IDBKeyRange, method);
     }, 'IDBKeyRange ' + method + '() static with throwing/invalid keys');
 });
 
-test(function(t) {
+test(t => {
     check_method(IDBKeyRange, 'bound', 2);
 }, 'IDBKeyRange bound() static with throwing/invalid keys');
 
 // Insertion methods on IDBObjectStore.
-['add', 'put'].forEach(function(method) {
-    simple_idb_test(function(t, db) {
+['add', 'put'].forEach(method => {
+    indexeddb_upgrade_only_test((t, db) => {
         var out_of_line = db.createObjectStore('out-of-line keys');
         var in_line = db.createObjectStore('in-line keys', {keyPath: 'prop'});
 
-        assert_throws({name:'getter'}, function() {
+        assert_throws({name:'getter'}, () => {
             out_of_line[method]('value', throwing_key('getter'));
         }, 'key conversion with throwing getter should rethrow');
 
-        assert_throws('DataError', function() {
+        assert_throws('DataError', () => {
             out_of_line[method]('value', invalid_key);
         }, 'key conversion with invalid key should throw DataError');
 
         var value = {};
         value.prop = throwing_key('getter');
-        assert_throws({name:'getter'}, function() {
+        assert_throws({name:'getter'}, () => {
             in_line[method](value);
         }, 'throwing getter should rethrow during clone');
 
@@ -170,35 +160,35 @@ test(function(t) {
         // are used for key path evaluation.
 
         value.prop = invalid_key;
-        assert_throws('DataError', function() {
+        assert_throws('DataError', () => {
             in_line[method](value);
         }, 'key conversion with invalid key should throw DataError');
-    }, 'IDBObjectStore ' + method + '() method with throwing/invalid keys');
+    }, `IDBObjectStore ${method}() method with throwing/invalid keys`);
 });
 
 // Generic (key-or-key-path) methods on IDBObjectStore.
 [
-    // TODO(jsbell): Add 'getAllKeys'
-    'delete', 'get', 'getAll', 'count', 'openCursor', 'openKeyCursor'
-].forEach(function(method) {
-    simple_idb_test(function(t, db) {
+    'delete', 'get', 'getKey', 'getAll', 'getAllKeys', 'count', 'openCursor',
+    'openKeyCursor'
+].forEach(method => {
+    indexeddb_upgrade_only_test((t, db) => {
         var store = db.createObjectStore('store');
 
         check_method(store, method);
-    }, 'IDBObjectStore ' + method + '() method with throwing/invalid keys');
+    }, `IDBObjectStore ${method}() method with throwing/invalid keys`);
 });
 
 // Generic (key-or-key-path) methods on IDBIndex.
 [
-    // TODO(jsbell): Add 'getAllKeys'
-    'get', 'getKey', 'getAll', 'count', 'openCursor', 'openKeyCursor'
-].forEach(function(method) {
-    simple_idb_test(function(t, db) {
+    'get', 'getKey', 'getAll', 'getAllKeys', 'count', 'openCursor',
+    'openKeyCursor'
+].forEach(method => {
+    indexeddb_upgrade_only_test((t, db) => {
         var store = db.createObjectStore('store');
         var index = store.createIndex('index', 'keyPath');
 
         check_method(index, method);
-    }, 'IDBIndex ' + method + '() method with throwing/invalid keys');
+    }, `IDBIndex ${method}() method with throwing/invalid keys`);
 });
 
 </script>

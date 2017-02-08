@@ -18944,6 +18944,12 @@
      {}
     ]
    ],
+   "IndexedDB/key-conversion-exceptions.htm": [
+    [
+     "/IndexedDB/key-conversion-exceptions.htm",
+     {}
+    ]
+   ],
    "IndexedDB/key_invalid.htm": [
     [
      "/IndexedDB/key_invalid.htm",
@@ -35853,6 +35859,10 @@
   ],
   "IndexedDB/interfaces.worker.js": [
    "7edbb0cce85708e4b578ceae18a833fd623cd976",
+   "testharness"
+  ],
+  "IndexedDB/key-conversion-exceptions.htm": [
+   "6300e99617ff28434b3fca1594ea373e4d8b20a4",
    "testharness"
   ],
   "IndexedDB/key_invalid.htm": [
