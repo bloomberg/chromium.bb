@@ -9,11 +9,9 @@
 
 namespace android {
 
-bool OnJNIOnLoadRegisterJNI(
-    JavaVM* vm,
-    base::android::RegisterCallback callback);
+bool OnJNIOnLoadRegisterJNI(JNIEnv* env);
 
-bool OnJNIOnLoadInit(base::android::InitCallback callback);
+bool OnJNIOnLoadInit();
 
 }  // namespace android
 

@@ -10,16 +10,8 @@
 
 namespace {
 
-bool RegisterJNI(JNIEnv* env) {
-  return true;
-}
-
-bool Init() {
-  return true;
-}
-
 bool NativeInit() {
-  return android::OnJNIOnLoadInit(base::Bind(&Init));
+  return android::OnJNIOnLoadInit();
 }
 
 }  // namespace
@@ -35,7 +27,7 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     base::android::SetJniRegistrationType(
         base::android::SELECTIVE_JNI_REGISTRATION);
   }
-  if (!android::OnJNIOnLoadRegisterJNI(vm, base::Bind(&RegisterJNI))) {
+  if (!android::OnJNIOnLoadRegisterJNI(env)) {
     return -1;
   }
   base::android::SetNativeInitializationHook(NativeInit);

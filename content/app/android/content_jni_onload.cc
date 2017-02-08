@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/android/base_jni_onload.h"
+#include "base/android/jni_android.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
 #include "content/app/android/library_loader_hooks.h"
@@ -15,31 +16,19 @@
 namespace content {
 namespace android {
 
-namespace {
+bool OnJNIOnLoadRegisterJNI(JNIEnv* env) {
+  if (!base::android::OnJNIOnLoadRegisterJNI(env))
+    return false;
 
-bool RegisterJNI(JNIEnv* env) {
   return content::EnsureJniRegistered(env);
 }
 
-bool Init() {
+bool OnJNIOnLoadInit() {
+  if (!base::android::OnJNIOnLoadInit())
+    return false;
+
   base::android::SetLibraryLoadedHook(&content::LibraryLoaded);
   return true;
-}
-
-}  // namespace
-
-
-bool OnJNIOnLoadRegisterJNI(
-    JavaVM* vm,
-    std::vector<base::android::RegisterCallback> callbacks) {
-  callbacks.push_back(base::Bind(&RegisterJNI));
-  return base::android::OnJNIOnLoadRegisterJNI(vm, callbacks);
-}
-
-bool OnJNIOnLoadInit(
-    std::vector<base::android::InitCallback> callbacks) {
-  callbacks.push_back(base::Bind(&Init));
-  return base::android::OnJNIOnLoadInit(callbacks);
 }
 
 }  // namespace android

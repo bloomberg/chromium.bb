@@ -23,18 +23,17 @@ base::android::RegistrationMethod kRemotingRegisteredMethods[] = {
 };
 
 bool RegisterJNI(JNIEnv* env) {
-  return base::android::RegisterNativeMethods(env,
-      kRemotingRegisteredMethods, arraysize(kRemotingRegisteredMethods));
+  return base::android::RegisterNativeMethods(
+      env, kRemotingRegisteredMethods, arraysize(kRemotingRegisteredMethods));
 }
 
 }  // namespace
 
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  std::vector<base::android::RegisterCallback> register_callbacks;
-  register_callbacks.push_back(base::Bind(&RegisterJNI));
-  std::vector<base::android::InitCallback> init_callbacks;
-  if (!base::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks) ||
-      !base::android::OnJNIOnLoadInit(init_callbacks)) {
+  base::android::InitVM(vm);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!base::android::OnJNIOnLoadRegisterJNI(env) || !RegisterJNI(env) ||
+      !base::android::OnJNIOnLoadInit()) {
     return -1;
   }
   return JNI_VERSION_1_4;

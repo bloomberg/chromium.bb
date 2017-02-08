@@ -41,15 +41,10 @@ const base::android::RegistrationMethod kCronetTestsRegisteredMethods[] = {
 // This is called by the VM when the shared library is first loaded.
 // Checks the available version of JNI. Also, caches Java reflection artifacts.
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  JNIEnv* env;
-  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
-    return -1;
-  }
-
-  std::vector<base::android::RegisterCallback> register_callbacks;
-  std::vector<base::android::InitCallback> init_callbacks;
-  if (!base::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks) ||
-      !base::android::OnJNIOnLoadInit(init_callbacks)) {
+  base::android::InitVM(vm);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!base::android::OnJNIOnLoadRegisterJNI(env) ||
+      !base::android::OnJNIOnLoadInit()) {
     return -1;
   }
 
@@ -65,4 +60,3 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 extern "C" void JNI_OnUnLoad(JavaVM* vm, void* reserved) {
   base::android::LibraryLoaderExitHook();
 }
-

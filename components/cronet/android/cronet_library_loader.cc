@@ -63,7 +63,9 @@ bool RegisterJNI(JNIEnv* env) {
       env, kCronetRegisteredMethods, arraysize(kCronetRegisteredMethods));
 }
 
-bool Init() {
+bool NativeInit() {
+  if (!base::android::OnJNIOnLoadInit())
+    return false;
   url::Initialize();
   return true;
 }
@@ -72,12 +74,10 @@ bool Init() {
 
 // Checks the available version of JNI. Also, caches Java reflection artifacts.
 jint CronetOnLoad(JavaVM* vm, void* reserved) {
-  std::vector<base::android::RegisterCallback> register_callbacks;
-  register_callbacks.push_back(base::Bind(&RegisterJNI));
-  std::vector<base::android::InitCallback> init_callbacks;
-  init_callbacks.push_back(base::Bind(&Init));
-  if (!base::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks) ||
-      !base::android::OnJNIOnLoadInit(init_callbacks)) {
+  base::android::InitVM(vm);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!base::android::OnJNIOnLoadRegisterJNI(env) || !RegisterJNI(env) ||
+      !NativeInit()) {
     return -1;
   }
   return JNI_VERSION_1_6;

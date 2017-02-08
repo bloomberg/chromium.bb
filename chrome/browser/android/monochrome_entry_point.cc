@@ -10,10 +10,6 @@
 
 namespace {
 
-bool Init() {
-  return true;
-}
-
 bool NativeInit() {
   JNIEnv* env = base::android::AttachCurrentThread();
   int library_process_type = base::android::GetLibraryProcessType(env);
@@ -24,7 +20,7 @@ bool NativeInit() {
       break;
     case base::android::PROCESS_BROWSER:
     case base::android::PROCESS_CHILD:
-      return android::OnJNIOnLoadInit(base::Bind(&Init));
+      return android::OnJNIOnLoadInit();
       break;
     default:
       NOTREACHED();

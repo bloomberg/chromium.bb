@@ -4,6 +4,7 @@
 
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
+#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
 #include "content/public/app/content_jni_onload.h"
 #include "content/public/app/content_main.h"
@@ -13,13 +14,15 @@
 
 namespace {
 
-bool RegisterJNI(JNIEnv* env) {
+bool RegisterJNI(JNIEnv *env) {
   return base::android::RegisterJni(env) &&
       content::android::RegisterShellJni(env) &&
       testing::android::RegisterNativeTestJNI(env);
 }
 
-bool Init() {
+bool NativeInit() {
+  if (!content::android::OnJNIOnLoadInit())
+    return false;
   content::SetContentMainDelegate(new content::ShellMainDelegate());
   return true;
 }
@@ -29,12 +32,10 @@ bool Init() {
 
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  std::vector<base::android::RegisterCallback> register_callbacks;
-  register_callbacks.push_back(base::Bind(&RegisterJNI));
-  std::vector<base::android::InitCallback> init_callbacks;
-  init_callbacks.push_back(base::Bind(&Init));
-  if (!content::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks) ||
-      !content::android::OnJNIOnLoadInit(init_callbacks)) {
+  base::android::InitVM(vm);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!content::android::OnJNIOnLoadRegisterJNI(env) || !RegisterJNI(env) ||
+      !NativeInit()) {
     return -1;
   }
   return JNI_VERSION_1_4;

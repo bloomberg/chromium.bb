@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_android.h"
+#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
 #include "chromecast/android/cast_jni_registrar.h"
 #include "chromecast/android/platform_jni_loader.h"
@@ -27,7 +28,9 @@ bool RegisterJNI(JNIEnv* env) {
   return true;
 }
 
-bool Init() {
+bool NativeInit() {
+  if (!content::android::OnJNIOnLoadInit())
+    return false;
   content::Compositor::Initialize();
   content::SetContentMainDelegate(new chromecast::shell::CastMainDelegate);
   return true;
@@ -37,12 +40,10 @@ bool Init() {
 
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  std::vector<base::android::RegisterCallback> register_callbacks;
-  register_callbacks.push_back(base::Bind(&RegisterJNI));
-  std::vector<base::android::InitCallback> init_callbacks;
-  init_callbacks.push_back(base::Bind(&Init));
-  if (!content::android::OnJNIOnLoadRegisterJNI(vm, register_callbacks) ||
-      !content::android::OnJNIOnLoadInit(init_callbacks)) {
+  base::android::InitVM(vm);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!content::android::OnJNIOnLoadRegisterJNI(env) || !RegisterJNI(env) ||
+      !NativeInit()) {
     return -1;
   }
   return JNI_VERSION_1_4;
