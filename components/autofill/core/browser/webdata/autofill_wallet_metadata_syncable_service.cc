@@ -33,6 +33,10 @@ namespace autofill {
 
 namespace {
 
+// The length of the GUIDs used for local autofill data. It is different than
+// the length used for server autofill data.
+const int kLocalGuidSize = 36;
+
 void* UserDataKey() {
   // Use the address of a static so that COMDAT folding won't ever fold
   // with something else.
@@ -201,6 +205,20 @@ void MergeMetadata(const sync_pb::WalletMetadataSpecifics& remote_metadata,
                       is_local_modified);
 }
 
+// Whether the |current_billing_address_id| is considered outdated compared to
+// the |proposed_billing_address_id|.
+bool IsBillingAddressOutdated(const std::string& current_billing_address_id,
+                              const std::string& proposed_billing_address_id) {
+  DCHECK(current_billing_address_id != proposed_billing_address_id);
+
+  // If the current billing address is empty, or if the current one refers to a
+  // server address and the proposed one refers to a local address, the current
+  // billing address is considered outdated.
+  return current_billing_address_id.empty() ||
+         (current_billing_address_id.size() != kLocalGuidSize &&
+          proposed_billing_address_id.size() == kLocalGuidSize);
+}
+
 // Merges the metadata of the remote and local versions of the credit card.
 void MergeMetadata(const sync_pb::WalletMetadataSpecifics& remote_metadata,
                    CreditCard* local_card,
@@ -213,18 +231,21 @@ void MergeMetadata(const sync_pb::WalletMetadataSpecifics& remote_metadata,
                      &remote_billing_address_id);
 
   if (local_card->billing_address_id() != remote_billing_address_id) {
-    // If one of the values is empty, update it with the non empty value.
-    if (local_card->billing_address_id().empty()) {
+    if (IsBillingAddressOutdated(local_card->billing_address_id(),
+                                 remote_billing_address_id)) {
       local_card->set_billing_address_id(remote_billing_address_id);
       *is_local_modified = true;
-    } else if (remote_billing_address_id.empty()) {
+    } else if (IsBillingAddressOutdated(remote_billing_address_id,
+                                        local_card->billing_address_id())) {
       *is_remote_outdated = true;
     } else {
-      // The cards have a different non-empty billing address id. Keep the
-      // billing address id of the most recently used card.
+      // The cards have a different non-empty billing address id and both refer
+      // to the same type of address. Keep the billing address id of the most
+      // recently used card. If both have the same timestamp, the remote version
+      // should be kept in order to stabilize the values.
       base::Time remote_use_date =
           base::Time::FromInternalValue(remote_metadata.use_date());
-      if (local_card->use_date() < remote_use_date) {
+      if (local_card->use_date() <= remote_use_date) {
         local_card->set_billing_address_id(remote_billing_address_id);
         *is_local_modified = true;
       } else {
