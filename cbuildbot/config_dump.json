@@ -11626,6 +11626,7 @@
     },
     "jadeite-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "jadeite"
         ],
@@ -18851,6 +18852,7 @@
     },
     "plaso-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "plaso"
         ],
@@ -21403,6 +21405,7 @@
     },
     "sand-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "sand"
         ],
@@ -21609,6 +21612,7 @@
     },
     "scarlet-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "scarlet"
         ],
