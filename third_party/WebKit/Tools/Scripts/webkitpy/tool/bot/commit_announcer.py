@@ -28,7 +28,6 @@ import re
 import threading
 import time
 
-from webkitpy.common.checkout.scm.git import Git
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.thirdparty.irc.ircbot import SingleServerIRCBot
 

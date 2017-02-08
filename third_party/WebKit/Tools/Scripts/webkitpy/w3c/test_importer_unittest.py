@@ -4,7 +4,7 @@
 
 import collections
 
-from webkitpy.common.checkout.scm.git_mock import MockGit
+from webkitpy.common.checkout.git_mock import MockGit
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.log_testing import LoggingTestCase

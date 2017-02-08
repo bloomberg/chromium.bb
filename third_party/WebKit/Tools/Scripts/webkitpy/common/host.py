@@ -29,7 +29,7 @@
 
 import logging
 
-from webkitpy.common.checkout.scm.git import Git
+from webkitpy.common.checkout.git import Git
 from webkitpy.common.config.builders import BUILDERS
 from webkitpy.common.net import web
 from webkitpy.common.net.buildbot import BuildBot
