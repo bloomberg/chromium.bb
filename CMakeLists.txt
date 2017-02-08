@@ -97,7 +97,6 @@ set(AOM_DSP_SOURCES
     "${AOM_ROOT}/aom_dsp/aom_convolve.c"
     "${AOM_ROOT}/aom_dsp/aom_convolve.h"
     "${AOM_ROOT}/aom_dsp/aom_dsp_common.h"
-    "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c"
     "${AOM_ROOT}/aom_dsp/aom_filter.h"
     "${AOM_ROOT}/aom_dsp/aom_simd.h"
     "${AOM_ROOT}/aom_dsp/aom_simd_inline.h"
@@ -159,7 +158,6 @@ set(AOM_MEM_SOURCES
 
 set(AOM_SCALE_SOURCES
     "${AOM_ROOT}/aom_scale/aom_scale.h"
-    "${AOM_ROOT}/aom_scale/aom_scale_rtcd.c"
     "${AOM_ROOT}/aom_scale/generic/aom_scale.c"
     "${AOM_ROOT}/aom_scale/generic/gen_scalers.c"
     "${AOM_ROOT}/aom_scale/generic/yv12config.c"
@@ -194,7 +192,6 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/common/av1_inv_txfm2d_cfg.h"
     "${AOM_ROOT}/av1/common/av1_loopfilter.c"
     "${AOM_ROOT}/av1/common/av1_loopfilter.h"
-    "${AOM_ROOT}/av1/common/av1_rtcd.c"
     "${AOM_ROOT}/av1/common/av1_txfm.h"
     "${AOM_ROOT}/av1/common/blockd.c"
     "${AOM_ROOT}/av1/common/blockd.h"
@@ -768,21 +765,16 @@ add_rtcd_build_step("${AOM_ROOT}/av1/common/av1_rtcd_defs.pl"
                     "${AOM_ROOT}/av1/common/av1_rtcd.c"
                     "av1_rtcd")
 add_library(aom_rtcd OBJECT ${AOM_RTCD_SOURCES})
-add_library(aom_util OBJECT ${AOM_UTIL_SOURCES} ${AOM_RTCD_HEADER_FILE_LIST})
-add_library(aom_dsp OBJECT ${AOM_DSP_SOURCES} ${AOM_RTCD_HEADER_FILE_LIST})
-add_library(aom_encoder_stats OBJECT ${AOM_ENCODER_STATS_SOURCES}
-            ${AOM_RTCD_HEADER_FILE_LIST})
-add_library(aom_mem OBJECT ${AOM_MEM_SOURCES} ${AOM_RTCD_HEADER_FILE_LIST})
-add_library(aom_scale OBJECT ${AOM_SCALE_SOURCES} ${AOM_RTCD_HEADER_FILE_LIST})
-add_library(aom_av1_common OBJECT ${AOM_AV1_COMMON_SOURCES}
-            ${AOM_RTCD_HEADER_FILE_LIST})
-add_library(aom_av1_decoder OBJECT ${AOM_AV1_DECODER_SOURCES}
-            ${AOM_RTCD_HEADER_FILE_LIST})
-add_library(aom_av1_encoder OBJECT ${AOM_AV1_ENCODER_SOURCES}
-            ${AOM_RTCD_HEADER_FILE_LIST})
+add_library(aom_util OBJECT ${AOM_UTIL_SOURCES})
+add_library(aom_dsp OBJECT ${AOM_DSP_SOURCES})
+add_library(aom_encoder_stats OBJECT ${AOM_ENCODER_STATS_SOURCES})
+add_library(aom_mem OBJECT ${AOM_MEM_SOURCES})
+add_library(aom_scale OBJECT ${AOM_SCALE_SOURCES})
+add_library(aom_av1_common OBJECT ${AOM_AV1_COMMON_SOURCES})
+add_library(aom_av1_decoder OBJECT ${AOM_AV1_DECODER_SOURCES})
+add_library(aom_av1_encoder OBJECT ${AOM_AV1_ENCODER_SOURCES})
 add_library(aom
             ${AOM_SOURCES}
-            ${AOM_RTCD_HEADER_FILE_LIST}
             $<TARGET_OBJECTS:aom_dsp>
             $<TARGET_OBJECTS:aom_mem>
             $<TARGET_OBJECTS:aom_rtcd>
