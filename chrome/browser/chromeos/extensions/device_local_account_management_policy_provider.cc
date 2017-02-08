@@ -131,6 +131,11 @@ const char* const kSafeManifestEntries[] = {
     // Special-cased in IsSafeForPublicSession().
     // emk::kApp,
 
+    // Not a real manifest entry (doesn't show up in code search). All legacy
+    // ARC apps have this dictionary (data is stuffed there to be consumed by
+    // the ARC runtime).
+    "arc_metadata",
+
     // Documented in https://developer.chrome.com/extensions/manifest but not
     // implemented anywhere.  Still, a lot of apps use it.
     "author",
@@ -683,8 +688,8 @@ const char* const kSafePermissionStrings[] = {
 // Some permissions take the form of a dictionary.  See |kSafePermissionStrings|
 // for permission strings (and for more documentation).
 const char* const kSafePermissionDicts[] = {
-    // TBD
-    // "fileSystem",
+    // Dictionary form of the above "fileSystem" permission string.
+    "fileSystem",
 
     // Just another type of connectivity.
     "socket",
