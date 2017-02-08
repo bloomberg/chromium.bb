@@ -12,6 +12,8 @@
 
 namespace cc {
 
+class Program;
+
 // Collects 4 floats at a time for easy upload to GL.
 struct Float4 {
   float data[4];
@@ -30,18 +32,11 @@ struct TexturedQuadDrawCache {
   ~TexturedQuadDrawCache();
 
   // Values tracked to determine if textured quads may be coalesced.
-  int program_id;
-  int resource_id;
-  bool needs_blending;
-  bool nearest_neighbor;
-  SkColor background_color;
-
-  // Information about the program binding that is required to draw.
-  int uv_xform_location;
-  int background_color_location;
-  int vertex_opacity_location;
-  int matrix_location;
-  int sampler_location;
+  const Program* program = nullptr;
+  int resource_id = -1;
+  bool needs_blending = false;
+  bool nearest_neighbor = false;
+  SkColor background_color = 0;
 
   // A cache for the coalesced quad data.
   std::vector<Float4> uv_xform_data;

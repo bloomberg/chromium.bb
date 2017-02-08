@@ -83,9 +83,9 @@ Float4 UVTransform(const TextureDrawQuad* quad) {
   return xform;
 }
 
-Float4 PremultipliedColor(SkColor color) {
+Float4 PremultipliedColor(SkColor color, float opacity) {
   const float factor = 1.0f / 255.0f;
-  const float alpha = SkColorGetA(color) * factor;
+  const float alpha = opacity * SkColorGetA(color) * factor;
 
   Float4 result = {
       {SkColorGetR(color) * factor * alpha, SkColorGetG(color) * factor * alpha,
@@ -379,17 +379,11 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
                        TextureMailboxDeleter* texture_mailbox_deleter,
                        int highp_threshold_min)
     : DirectRenderer(settings, output_surface, resource_provider),
-      offscreen_framebuffer_id_(0),
       shared_geometry_quad_(QuadVertexRect()),
       gl_(output_surface->context_provider()->ContextGL()),
       context_support_(output_surface->context_provider()->ContextSupport()),
       texture_mailbox_deleter_(texture_mailbox_deleter),
-      is_scissor_enabled_(false),
-      stencil_shadow_(false),
-      blend_shadow_(false),
       highp_threshold_min_(highp_threshold_min),
-      highp_threshold_cache_(0),
-      use_sync_query_(false),
       gl_composited_texture_quad_border_(
           settings->gl_composited_texture_quad_border),
       bound_geometry_(NO_BINDING),
@@ -619,11 +613,8 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
                                      const DebugBorderDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  static float gl_matrix[16];
   const Program* program = GetProgram(ProgramKey::DebugBorder());
-  DCHECK(program);
-  DCHECK(program->initialized() || IsContextLost());
-  SetUseProgram(program->program());
+  SetUseProgram(program);
 
   // Use the full quad_rect for debug quads to not move the edges based on
   // partial swaps.
@@ -632,17 +623,8 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
   QuadRectTransform(&render_matrix,
                     quad->shared_quad_state->quad_to_target_transform,
                     gfx::RectF(layer_rect));
-  GLRenderer::ToGLMatrix(&gl_matrix[0],
-                         frame->projection_matrix * render_matrix);
-  gl_->UniformMatrix4fv(program->matrix_location(), 1, false, &gl_matrix[0]);
-
-  SkColor color = quad->color;
-  float alpha = SkColorGetA(color) * (1.0f / 255.0f);
-
-  gl_->Uniform4f(program->color_location(),
-                 (SkColorGetR(color) * (1.0f / 255.0f)) * alpha,
-                 (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
-                 (SkColorGetB(color) * (1.0f / 255.0f)) * alpha, alpha);
+  SetShaderMatrix(frame->projection_matrix * render_matrix);
+  SetShaderColor(quad->color, 1.f);
 
   gl_->LineWidth(quad->width);
 
@@ -1345,8 +1327,7 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
       tex_coord_precision, sampler_type, shader_blend_mode,
       params->use_aa ? USE_AA : NO_AA, mask_mode, mask_for_background,
       params->use_color_matrix));
-  SetUseProgram(params->program->program());
-  gl_->Uniform1i(params->program->sampler_location(), 0);
+  SetUseProgram(params->program);
 }
 
 void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
@@ -1415,16 +1396,6 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
   if (program->edge_location() != -1)
     gl_->Uniform3fv(program->edge_location(), 8, params->edge);
 
-  if (program->viewport_location() != -1) {
-    float viewport[4] = {
-        static_cast<float>(current_window_space_viewport_.x()),
-        static_cast<float>(current_window_space_viewport_.y()),
-        static_cast<float>(current_window_space_viewport_.width()),
-        static_cast<float>(current_window_space_viewport_.height()),
-    };
-    gl_->Uniform4fv(program->viewport_location(), 1, viewport);
-  }
-
   if (program->color_matrix_location() != -1) {
     float matrix[16];
     for (int i = 0; i < 4; ++i) {
@@ -1472,14 +1443,13 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
     }
   }
 
-  SetShaderOpacity(params->quad->shared_quad_state->opacity,
-                   program->alpha_location());
-  SetShaderQuadF(params->surface_quad, program->quad_location());
+  SetShaderOpacity(params->quad);
+  SetShaderQuadF(params->surface_quad);
 }
 
 void GLRenderer::DrawRPDQ(const DrawRenderPassDrawQuadParams& params) {
   DrawQuadGeometry(params.projection_matrix, params.quad_to_target_transform,
-                   params.dst_rect, params.program->matrix_location());
+                   params.dst_rect);
 
   // Flush the compositor context before the filter bitmap goes out of
   // scope, so the draw gets processed before the filter texture gets deleted.
@@ -1797,20 +1767,10 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
 
   const Program* program =
       GetProgram(ProgramKey::SolidColor(use_aa ? USE_AA : NO_AA));
-  SetUseProgram(program->program());
+  SetUseProgram(program);
+  SetShaderColor(color, opacity);
 
-  gl_->Uniform4f(program->color_location(),
-                 (SkColorGetR(color) * (1.0f / 255.0f)) * alpha,
-                 (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
-                 (SkColorGetB(color) * (1.0f / 255.0f)) * alpha, alpha);
   if (use_aa) {
-    float viewport[4] = {
-        static_cast<float>(current_window_space_viewport_.x()),
-        static_cast<float>(current_window_space_viewport_.y()),
-        static_cast<float>(current_window_space_viewport_.width()),
-        static_cast<float>(current_window_space_viewport_.height()),
-    };
-    gl_->Uniform4fv(program->viewport_location(), 1, viewport);
     gl_->Uniform3fv(program->edge_location(), 8, edge);
   }
 
@@ -1824,7 +1784,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
     // Normalize to tile_rect.
     local_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
 
-    SetShaderQuadF(local_quad, program->quad_location());
+    SetShaderQuadF(local_quad);
 
     // The transform and vertex data are used to figure out the extents that the
     // un-antialiased quad should have and which vertex this is and the float
@@ -1836,16 +1796,12 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
         gfx::SizeF(tile_rect.size()));
     DrawQuadGeometry(frame->projection_matrix,
                      quad->shared_quad_state->quad_to_target_transform,
-                     centered_rect, program->matrix_location());
+                     centered_rect);
   } else {
     PrepareGeometry(SHARED_BINDING);
-    SetShaderQuadF(local_quad, program->quad_location());
-    static float gl_matrix[16];
-    ToGLMatrix(&gl_matrix[0],
-               frame->projection_matrix *
-                   quad->shared_quad_state->quad_to_target_transform);
-    gl_->UniformMatrix4fv(program->matrix_location(), 1, false, &gl_matrix[0]);
-
+    SetShaderQuadF(local_quad);
+    SetShaderMatrix(frame->projection_matrix *
+                    quad->shared_quad_state->quad_to_target_transform);
     gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
   }
 }
@@ -1966,16 +1922,8 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
       tex_coord_precision, sampler, USE_AA,
       quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE, false));
 
-  SetUseProgram(program->program());
-  gl_->Uniform1i(program->sampler_location(), 0);
+  SetUseProgram(program);
 
-  float viewport[4] = {
-      static_cast<float>(current_window_space_viewport_.x()),
-      static_cast<float>(current_window_space_viewport_.y()),
-      static_cast<float>(current_window_space_viewport_.width()),
-      static_cast<float>(current_window_space_viewport_.height()),
-  };
-  gl_->Uniform4fv(program->viewport_location(), 1, viewport);
   gl_->Uniform3fv(program->edge_location(), 8, edge);
 
   gl_->Uniform4f(program->vertex_tex_transform_location(),
@@ -1991,8 +1939,8 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
   // Normalize to tile_rect.
   local_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
 
-  SetShaderOpacity(quad->shared_quad_state->opacity, program->alpha_location());
-  SetShaderQuadF(local_quad, program->quad_location());
+  SetShaderOpacity(quad);
+  SetShaderQuadF(local_quad);
 
   // The transform and vertex data are used to figure out the extents that the
   // un-antialiased quad should have and which vertex this is and the float
@@ -2003,7 +1951,7 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
       gfx::SizeF(tile_rect.size()));
   DrawQuadGeometry(frame->projection_matrix,
                    quad->shared_quad_state->quad_to_target_transform,
-                   centered_rect, program->matrix_location());
+                   centered_rect);
 }
 
 void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
@@ -2053,8 +2001,7 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
                        quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE,
                        !quad->ShouldDrawWithBlending()));
 
-  SetUseProgram(program->program());
-  gl_->Uniform1i(program->sampler_location(), 0);
+  SetUseProgram(program);
 
   gl_->Uniform4f(program->vertex_tex_transform_location(),
                  vertex_tex_translate_x, vertex_tex_translate_y,
@@ -2062,7 +2009,7 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
 
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  SetShaderOpacity(quad->shared_quad_state->opacity, program->alpha_location());
+  SetShaderOpacity(quad);
 
   // Pass quad coordinates to the uniform in the same order as GeometryBinding
   // does, then vertices will match the texture mapping in the vertex buffer.
@@ -2097,11 +2044,8 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
   };
   gl_->Uniform2fv(program->quad_location(), 4, gl_quad);
 
-  static float gl_matrix[16];
-  ToGLMatrix(&gl_matrix[0],
-             frame->projection_matrix *
-                 quad->shared_quad_state->quad_to_target_transform);
-  gl_->UniformMatrix4fv(program->matrix_location(), 1, false, &gl_matrix[0]);
+  SetShaderMatrix(frame->projection_matrix *
+                  quad->shared_quad_state->quad_to_target_transform);
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
@@ -2210,8 +2154,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   const Program* program = GetProgram(
       ProgramKey::YUVVideo(tex_coord_precision, sampler, alpha_texture_mode,
                            uv_texture_mode, color_conversion_mode));
-  DCHECK(program && (program->initialized() || IsContextLost()));
-  SetUseProgram(program->program());
+  SetUseProgram(program);
 
   gfx::SizeF ya_tex_scale(1.0f, 1.0f);
   gfx::SizeF uv_tex_scale(1.0f, 1.0f);
@@ -2298,11 +2241,11 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   // it. This is why this centered rect is used and not the original quad_rect.
   auto tile_rect = gfx::RectF(quad->rect);
 
-  SetShaderOpacity(quad->shared_quad_state->opacity, program->alpha_location());
+  SetShaderOpacity(quad);
   if (!clip_region) {
     DrawQuadGeometry(frame->projection_matrix,
                      quad->shared_quad_state->quad_to_target_transform,
-                     tile_rect, program->matrix_location());
+                     tile_rect);
   } else {
     float uvs[8] = {0};
     GetScaledUVs(quad->visible_rect, clip_region, uvs);
@@ -2311,7 +2254,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     region_quad -= gfx::Vector2dF(0.5f, 0.5f);
     DrawQuadGeometryClippedByQuadF(
         frame, quad->shared_quad_state->quad_to_target_transform, tile_rect,
-        region_quad, program->matrix_location(), uvs);
+        region_quad, uvs);
   }
 }
 
@@ -2319,8 +2262,6 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
                                      const StreamVideoDrawQuad* quad,
                                      const gfx::QuadF* clip_region) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
-
-  static float gl_matrix[16];
 
   DCHECK(output_surface_->context_provider()
              ->ContextCapabilities()
@@ -2332,9 +2273,7 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
 
   const Program* program =
       GetProgram(ProgramKey::VideoStream(tex_coord_precision));
-  SetUseProgram(program->program());
-
-  ToGLMatrix(&gl_matrix[0], quad->matrix);
+  SetUseProgram(program);
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                           quad->resource_id());
@@ -2342,16 +2281,16 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id());
 
+  static float gl_matrix[16];
+  ToGLMatrix(&gl_matrix[0], quad->matrix);
   gl_->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
       program->tex_matrix_location(), false, gl_matrix);
 
-  gl_->Uniform1i(program->sampler_location(), 0);
-
-  SetShaderOpacity(quad->shared_quad_state->opacity, program->alpha_location());
+  SetShaderOpacity(quad);
   if (!clip_region) {
     DrawQuadGeometry(frame->projection_matrix,
                      quad->shared_quad_state->quad_to_target_transform,
-                     gfx::RectF(quad->rect), program->matrix_location());
+                     gfx::RectF(quad->rect));
   } else {
     gfx::QuadF region_quad(*clip_region);
     region_quad.Scale(1.0f / quad->rect.width(), 1.0f / quad->rect.height());
@@ -2360,13 +2299,13 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
     GetScaledUVs(quad->visible_rect, clip_region, uvs);
     DrawQuadGeometryClippedByQuadF(
         frame, quad->shared_quad_state->quad_to_target_transform,
-        gfx::RectF(quad->rect), region_quad, program->matrix_location(), uvs);
+        gfx::RectF(quad->rect), region_quad, uvs);
   }
 }
 
 void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   // Check to see if we have anything to draw.
-  if (draw_cache_.program_id == -1)
+  if (!draw_cache_.program)
     return;
 
   PrepareGeometry(flush_binding);
@@ -2375,10 +2314,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   SetBlendEnabled(draw_cache_.needs_blending);
 
   // Bind the program to the GL state.
-  SetUseProgram(draw_cache_.program_id);
-
-  // Bind the correct texture sampler location.
-  gl_->Uniform1i(draw_cache_.sampler_location, 0);
+  SetUseProgram(draw_cache_.program);
 
   // Assume the current active textures is 0.
   ResourceProvider::ScopedSamplerGL locked_quad(
@@ -2395,21 +2331,22 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
 
   // Upload the tranforms for both points and uvs.
   gl_->UniformMatrix4fv(
-      static_cast<int>(draw_cache_.matrix_location),
+      draw_cache_.program->matrix_location(),
       static_cast<int>(draw_cache_.matrix_data.size()), false,
       reinterpret_cast<float*>(&draw_cache_.matrix_data.front()));
-  gl_->Uniform4fv(static_cast<int>(draw_cache_.uv_xform_location),
+  gl_->Uniform4fv(draw_cache_.program->vertex_tex_transform_location(),
                   static_cast<int>(draw_cache_.uv_xform_data.size()),
                   reinterpret_cast<float*>(&draw_cache_.uv_xform_data.front()));
 
   if (draw_cache_.background_color != SK_ColorTRANSPARENT) {
-    Float4 background_color = PremultipliedColor(draw_cache_.background_color);
-    gl_->Uniform4fv(draw_cache_.background_color_location, 1,
+    Float4 background_color =
+        PremultipliedColor(draw_cache_.background_color, 1.f);
+    gl_->Uniform4fv(draw_cache_.program->background_color_location(), 1,
                     background_color.data);
   }
 
   gl_->Uniform1fv(
-      static_cast<int>(draw_cache_.vertex_opacity_location),
+      draw_cache_.program->vertex_opacity_location(),
       static_cast<int>(draw_cache_.vertex_opacity_data.size()),
       static_cast<float*>(&draw_cache_.vertex_opacity_data.front()));
 
@@ -2426,9 +2363,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
     DCHECK_EQ(1u, draw_cache_.matrix_data.size());
     SetBlendEnabled(false);
     const Program* program = GetProgram(ProgramKey::DebugBorder());
-    DCHECK(program);
-    DCHECK(program->initialized() || IsContextLost());
-    SetUseProgram(program->program());
+    SetUseProgram(program);
 
     gl_->UniformMatrix4fv(
         program->matrix_location(), 1, false,
@@ -2438,9 +2373,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
     int colorIndex = static_cast<int>(draw_cache_.matrix_data.front().data[0] *
                                       draw_cache_.matrix_data.front().data[5]);
     SkColor color = DebugColors::GLCompositedTextureQuadBorderColor(colorIndex);
-
-    gl_->Uniform4f(program->color_location(), SkColorGetR(color),
-                   SkColorGetG(color), SkColorGetB(color), 1.0f);
+    SetShaderColor(color, 1.f);
 
     gl_->LineWidth(DebugColors::GLCompositedTextureQuadBoderWidth());
     // The indices for the line are stored in the same array as the triangle
@@ -2449,7 +2382,8 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   }
 
   // Clear the cache.
-  draw_cache_.program_id = -1;
+  draw_cache_.program = nullptr;
+  draw_cache_.resource_id = -1;
   draw_cache_.uv_xform_data.resize(0);
   draw_cache_.vertex_opacity_data.resize(0);
   draw_cache_.matrix_data.resize(0);
@@ -2486,28 +2420,20 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
       quad->premultiplied_alpha ? PREMULTIPLIED_ALPHA : NON_PREMULTIPLIED_ALPHA,
       quad->background_color != SK_ColorTRANSPARENT));
   int resource_id = quad->resource_id();
-  int program_id = program->program();
 
   size_t max_quads = StaticGeometryBinding::NUM_QUADS;
-  if (draw_cache_.program_id != program_id ||
+  if (draw_cache_.program != program ||
       draw_cache_.resource_id != resource_id ||
       draw_cache_.needs_blending != quad->ShouldDrawWithBlending() ||
       draw_cache_.nearest_neighbor != quad->nearest_neighbor ||
       draw_cache_.background_color != quad->background_color ||
       draw_cache_.matrix_data.size() >= max_quads) {
     FlushTextureQuadCache(SHARED_BINDING);
-    draw_cache_.program_id = program_id;
+    draw_cache_.program = program;
     draw_cache_.resource_id = resource_id;
     draw_cache_.needs_blending = quad->ShouldDrawWithBlending();
     draw_cache_.nearest_neighbor = quad->nearest_neighbor;
     draw_cache_.background_color = quad->background_color;
-
-    draw_cache_.uv_xform_location = program->vertex_tex_transform_location();
-    draw_cache_.background_color_location =
-        program->background_color_location();
-    draw_cache_.vertex_opacity_location = program->vertex_opacity_location();
-    draw_cache_.matrix_location = program->matrix_location();
-    draw_cache_.sampler_location = program->sampler_location();
   }
 
   // Generate the uv-transform
@@ -2635,10 +2561,9 @@ void GLRenderer::ToGLMatrix(float* gl_matrix, const gfx::Transform& transform) {
   transform.matrix().asColMajorf(gl_matrix);
 }
 
-void GLRenderer::SetShaderQuadF(const gfx::QuadF& quad, int quad_location) {
-  if (quad_location == -1)
+void GLRenderer::SetShaderQuadF(const gfx::QuadF& quad) {
+  if (!program_shadow_ || program_shadow_->quad_location() == -1)
     return;
-
   float gl_quad[8];
   gl_quad[0] = quad.p1().x();
   gl_quad[1] = quad.p1().y();
@@ -2648,12 +2573,30 @@ void GLRenderer::SetShaderQuadF(const gfx::QuadF& quad, int quad_location) {
   gl_quad[5] = quad.p3().y();
   gl_quad[6] = quad.p4().x();
   gl_quad[7] = quad.p4().y();
-  gl_->Uniform2fv(quad_location, 4, gl_quad);
+  gl_->Uniform2fv(program_shadow_->quad_location(), 4, gl_quad);
 }
 
-void GLRenderer::SetShaderOpacity(float opacity, int alpha_location) {
-  if (alpha_location != -1)
-    gl_->Uniform1f(alpha_location, opacity);
+void GLRenderer::SetShaderOpacity(const DrawQuad* quad) {
+  if (!program_shadow_ || program_shadow_->alpha_location() == -1)
+    return;
+  gl_->Uniform1f(program_shadow_->alpha_location(),
+                 quad->shared_quad_state->opacity);
+}
+
+void GLRenderer::SetShaderMatrix(const gfx::Transform& transform) {
+  if (!program_shadow_ || program_shadow_->matrix_location() == -1)
+    return;
+  float gl_matrix[16];
+  ToGLMatrix(gl_matrix, transform);
+  gl_->UniformMatrix4fv(program_shadow_->matrix_location(), 1, false,
+                        gl_matrix);
+}
+
+void GLRenderer::SetShaderColor(SkColor color, float opacity) {
+  if (!program_shadow_ || program_shadow_->color_location() == -1)
+    return;
+  Float4 float_color = PremultipliedColor(color, opacity);
+  gl_->Uniform4fv(program_shadow_->color_location(), 1, float_color.data);
 }
 
 void GLRenderer::SetStencilEnabled(bool enabled) {
@@ -2678,10 +2621,25 @@ void GLRenderer::SetBlendEnabled(bool enabled) {
   blend_shadow_ = enabled;
 }
 
-void GLRenderer::SetUseProgram(unsigned program) {
+void GLRenderer::SetUseProgram(const Program* program) {
+  DCHECK(program);
+  DCHECK(program->initialized() || IsContextLost());
   if (program == program_shadow_)
     return;
-  gl_->UseProgram(program);
+  gl_->UseProgram(program->program());
+
+  // Set uniforms that are common to all programs.
+  if (program->sampler_location() != -1)
+    gl_->Uniform1i(program->sampler_location(), 0);
+  if (program->viewport_location() != -1) {
+    float viewport[4] = {
+        static_cast<float>(current_window_space_viewport_.x()),
+        static_cast<float>(current_window_space_viewport_.y()),
+        static_cast<float>(current_window_space_viewport_.width()),
+        static_cast<float>(current_window_space_viewport_.height()),
+    };
+    gl_->Uniform4fv(program->viewport_location(), 1, viewport);
+  }
   program_shadow_ = program;
 }
 
@@ -2690,7 +2648,6 @@ void GLRenderer::DrawQuadGeometryClippedByQuadF(
     const gfx::Transform& draw_transform,
     const gfx::RectF& quad_rect,
     const gfx::QuadF& clipping_region_quad,
-    int matrix_location,
     const float* uvs) {
   PrepareGeometry(CLIPPED_BINDING);
   if (uvs) {
@@ -2700,9 +2657,7 @@ void GLRenderer::DrawQuadGeometryClippedByQuadF(
   }
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix, draw_transform, quad_rect);
-  static float gl_matrix[16];
-  ToGLMatrix(&gl_matrix[0], frame->projection_matrix * quad_rect_matrix);
-  gl_->UniformMatrix4fv(matrix_location, 1, false, &gl_matrix[0]);
+  SetShaderMatrix(frame->projection_matrix * quad_rect_matrix);
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT,
                     reinterpret_cast<const void*>(0));
@@ -2710,14 +2665,11 @@ void GLRenderer::DrawQuadGeometryClippedByQuadF(
 
 void GLRenderer::DrawQuadGeometry(const gfx::Transform& projection_matrix,
                                   const gfx::Transform& draw_transform,
-                                  const gfx::RectF& quad_rect,
-                                  int matrix_location) {
+                                  const gfx::RectF& quad_rect) {
   PrepareGeometry(SHARED_BINDING);
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix, draw_transform, quad_rect);
-  static float gl_matrix[16];
-  ToGLMatrix(&gl_matrix[0], projection_matrix * quad_rect_matrix);
-  gl_->UniformMatrix4fv(matrix_location, 1, false, &gl_matrix[0]);
+  SetShaderMatrix(projection_matrix * quad_rect_matrix);
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
@@ -3157,7 +3109,7 @@ void GLRenderer::ReinitializeGLState() {
   scissor_rect_ = gfx::Rect();
   stencil_shadow_ = false;
   blend_shadow_ = true;
-  program_shadow_ = 0;
+  program_shadow_ = nullptr;
 
   RestoreGLState();
 }
@@ -3174,7 +3126,7 @@ void GLRenderer::RestoreGLState() {
   gl_->ActiveTexture(GL_TEXTURE0);
 
   if (program_shadow_)
-    gl_->UseProgram(program_shadow_);
+    gl_->UseProgram(program_shadow_->program());
 
   if (stencil_shadow_)
     gl_->Enable(GL_STENCIL_TEST);
@@ -3501,18 +3453,13 @@ void GLRenderer::FlushOverdrawFeedback(const DrawingFrame* frame,
   PrepareGeometry(SHARED_BINDING);
 
   const Program* program = GetProgram(ProgramKey::DebugBorder());
-  DCHECK(program);
-  DCHECK(program->initialized() || IsContextLost());
-  SetUseProgram(program->program());
+  SetUseProgram(program);
 
   gfx::Transform render_matrix;
   render_matrix.Translate(0.5 * output_rect.width() + output_rect.x(),
                           0.5 * output_rect.height() + output_rect.y());
   render_matrix.Scale(output_rect.width(), output_rect.height());
-  static float gl_matrix[16];
-  GLRenderer::ToGLMatrix(&gl_matrix[0],
-                         frame->projection_matrix * render_matrix);
-  gl_->UniformMatrix4fv(program->matrix_location(), 1, false, &gl_matrix[0]);
+  SetShaderMatrix(frame->projection_matrix * render_matrix);
 
   // Produce hinting for the amount of overdraw on screen for each pixel by
   // drawing hint colors to the framebuffer based on the current stencil value.
@@ -3561,9 +3508,7 @@ void GLRenderer::FlushOverdrawFeedback(const DrawingFrame* frame,
 
     gl_->StencilFunc(test.func, test.ref, 0xffffffff);
     // Transparent color unless color-coding of overdraw is enabled.
-    Float4 color =
-        PremultipliedColor(settings_->show_overdraw_feedback ? test.color : 0);
-    gl_->Uniform4fv(program->color_location(), 1, color.data);
+    SetShaderColor(settings_->show_overdraw_feedback ? test.color : 0, 1.f);
     gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 
     if (query) {

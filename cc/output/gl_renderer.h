@@ -223,19 +223,19 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                         const YUVVideoDrawQuad* quad,
                         const gfx::QuadF* clip_region);
 
-  void SetShaderOpacity(float opacity, int alpha_location);
-  void SetShaderQuadF(const gfx::QuadF& quad, int quad_location);
+  void SetShaderOpacity(const DrawQuad* quad);
+  void SetShaderQuadF(const gfx::QuadF& quad);
+  void SetShaderMatrix(const gfx::Transform& transform);
+  void SetShaderColor(SkColor color, float opacity);
   void DrawQuadGeometryClippedByQuadF(const DrawingFrame* frame,
                                       const gfx::Transform& draw_transform,
                                       const gfx::RectF& quad_rect,
                                       const gfx::QuadF& clipping_region_quad,
-                                      int matrix_location,
                                       const float uv[8]);
   void DrawQuadGeometry(const gfx::Transform& projection_matrix,
                         const gfx::Transform& draw_transform,
-                        const gfx::RectF& quad_rect,
-                        int matrix_location);
-  void SetUseProgram(unsigned program);
+                        const gfx::RectF& quad_rect);
+  void SetUseProgram(const Program* program);
 
   bool MakeContextCurrent();
 
@@ -297,7 +297,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   // texture id of the resource.
   std::map<unsigned, OverlayResourceLock> swapped_and_acked_overlay_resources_;
 
-  unsigned offscreen_framebuffer_id_;
+  unsigned offscreen_framebuffer_id_ = 0u;
 
   std::unique_ptr<StaticGeometryBinding> shared_geometry_;
   std::unique_ptr<DynamicGeometryBinding> clipped_geometry_;
@@ -322,14 +322,13 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   gfx::Rect swap_buffer_rect_;
   gfx::Rect scissor_rect_;
-  bool is_using_bind_uniform_;
-  bool is_scissor_enabled_;
-  bool stencil_shadow_;
-  bool blend_shadow_;
-  unsigned program_shadow_;
+  bool is_scissor_enabled_ = false;
+  bool stencil_shadow_ = false;
+  bool blend_shadow_ = false;
+  const Program* program_shadow_ = nullptr;
   TexturedQuadDrawCache draw_cache_;
-  int highp_threshold_min_;
-  int highp_threshold_cache_;
+  int highp_threshold_min_ = 0;
+  int highp_threshold_cache_ = 0;
 
   struct PendingAsyncReadPixels;
   std::vector<std::unique_ptr<PendingAsyncReadPixels>>
@@ -344,10 +343,10 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   std::deque<std::unique_ptr<SyncQuery>> pending_sync_queries_;
   std::deque<std::unique_ptr<SyncQuery>> available_sync_queries_;
   std::unique_ptr<SyncQuery> current_sync_query_;
-  bool use_discard_framebuffer_;
-  bool use_sync_query_;
-  bool use_blend_equation_advanced_;
-  bool use_blend_equation_advanced_coherent_;
+  bool use_discard_framebuffer_ = false;
+  bool use_sync_query_ = false;
+  bool use_blend_equation_advanced_ = false;
+  bool use_blend_equation_advanced_coherent_ = false;
 
   // Some overlays require that content is copied from a render pass into an
   // overlay resource. This means the GLRenderer needs its own ResourcePool.
