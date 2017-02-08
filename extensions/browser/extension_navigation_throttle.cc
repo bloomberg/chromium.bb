@@ -90,7 +90,7 @@ ExtensionNavigationThrottle::WillStartRequest() {
             is_guest, extension, owner_extension, partition_id, resource_path,
             navigation_handle()->GetPageTransition(), &allowed);
         if (!allowed)
-          return content::NavigationThrottle::CANCEL;
+          return content::NavigationThrottle::BLOCK_REQUEST;
       }
     }
 

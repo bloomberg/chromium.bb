@@ -40,7 +40,8 @@ class NavigationHandleObserver : public WebContentsObserver {
         was_redirected_(false),
         frame_tree_node_id_(-1),
         page_transition_(ui::PAGE_TRANSITION_LINK),
-        expected_start_url_(expected_start_url) {}
+        expected_start_url_(expected_start_url),
+        net_error_code_(net::OK) {}
 
   void DidStartNavigation(NavigationHandle* navigation_handle) override {
     if (handle_ || navigation_handle->GetURL() != expected_start_url_)
@@ -71,6 +72,7 @@ class NavigationHandleObserver : public WebContentsObserver {
     DCHECK_EQ(frame_tree_node_id_, navigation_handle->GetFrameTreeNodeId());
 
     was_redirected_ = navigation_handle->WasServerRedirect();
+    net_error_code_ = navigation_handle->GetNetErrorCode();
 
     if (navigation_handle->HasCommitted()) {
       has_committed_ = true;
@@ -101,6 +103,8 @@ class NavigationHandleObserver : public WebContentsObserver {
 
   ui::PageTransition page_transition() { return page_transition_; }
 
+  net::Error net_error_code() { return net_error_code_; }
+
  private:
   // A reference to the NavigationHandle so this class will track only
   // one navigation at a time. It is set at DidStartNavigation and cleared
@@ -117,6 +121,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   ui::PageTransition page_transition_;
   GURL expected_start_url_;
   GURL last_committed_url_;
+  net::Error net_error_code_;
 };
 
 // A test NavigationThrottle that will return pre-determined checks and run
@@ -845,6 +850,71 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   // Finishes the last navigation.
   post_manager.WaitForNavigationFinished();
   EXPECT_FALSE(installer.navigation_throttle());
+}
+
+// Checks that the error code is properly set on the NavigationHandle when a
+// NavigationThrottle cancels.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       ErrorCodeOnThrottleCancelNavigation) {
+  const GURL kUrl = embedded_test_server()->GetURL("/title1.html");
+  const GURL kRedirectingUrl =
+      embedded_test_server()->GetURL("/server-redirect?" + kUrl.spec());
+
+  {
+    // Set up a NavigationThrottle that will cancel the navigation in
+    // WillStartRequest.
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::CANCEL_AND_IGNORE,
+        NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+    NavigationHandleObserver observer(shell()->web_contents(), kUrl);
+
+    // Try to navigate to the url. The navigation should be canceled and the
+    // NavigationHandle should have the right error code.
+    EXPECT_FALSE(NavigateToURL(shell(), kUrl));
+    EXPECT_EQ(net::ERR_ABORTED, observer.net_error_code());
+  }
+
+  {
+    // Set up a NavigationThrottle that will cancel the navigation in
+    // WillRedirectRequest.
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::PROCEED,
+        NavigationThrottle::CANCEL_AND_IGNORE, NavigationThrottle::PROCEED);
+    NavigationHandleObserver observer(shell()->web_contents(), kRedirectingUrl);
+
+    // Try to navigate to the url. The navigation should be canceled and the
+    // NavigationHandle should have the right error code.
+    EXPECT_FALSE(NavigateToURL(shell(), kRedirectingUrl));
+    EXPECT_EQ(net::ERR_ABORTED, observer.net_error_code());
+  }
+
+  {
+    // Set up a NavigationThrottle that will cancel the navigation in
+    // WillProcessResponse.
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::PROCEED,
+        NavigationThrottle::PROCEED, NavigationThrottle::CANCEL_AND_IGNORE);
+    NavigationHandleObserver observer(shell()->web_contents(), kUrl);
+
+    // Try to navigate to the url. The navigation should be canceled and the
+    // NavigationHandle should have the right error code.
+    EXPECT_FALSE(NavigateToURL(shell(), kUrl));
+    EXPECT_EQ(net::ERR_ABORTED, observer.net_error_code());
+  }
+
+  {
+    // Set up a NavigationThrottle that will block the navigation in
+    // WillStartRequest.
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::BLOCK_REQUEST,
+        NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+    NavigationHandleObserver observer(shell()->web_contents(), kUrl);
+
+    // Try to navigate to the url. The navigation should be canceled and the
+    // NavigationHandle should have the right error code.
+    EXPECT_FALSE(NavigateToURL(shell(), kUrl));
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, observer.net_error_code());
+  }
 }
 
 // Specialized test that verifies the NavigationHandle gets the HTTPS upgraded

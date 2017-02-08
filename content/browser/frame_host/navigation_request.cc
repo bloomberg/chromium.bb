@@ -582,12 +582,16 @@ void NavigationRequest::OnStartChecksComplete(
   if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
       result == NavigationThrottle::CANCEL) {
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
-    frame_tree_node_->ResetNavigationRequest(false);
+    OnRequestFailed(false, net::ERR_ABORTED);
+
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
+    // destroyed the NavigationRequest.
     return;
   }
 
   if (result == NavigationThrottle::BLOCK_REQUEST) {
     OnRequestFailed(false, net::ERR_BLOCKED_BY_CLIENT);
+
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
     // destroyed the NavigationRequest.
     return;
@@ -675,7 +679,10 @@ void NavigationRequest::OnRedirectChecksComplete(
   if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
       result == NavigationThrottle::CANCEL) {
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
-    frame_tree_node_->ResetNavigationRequest(false);
+    OnRequestFailed(false, net::ERR_ABORTED);
+
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
+    // destroyed the NavigationRequest.
     return;
   }
 
@@ -692,9 +699,10 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
   if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
       result == NavigationThrottle::CANCEL || !response_should_be_rendered_) {
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
-    frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
-        navigation_handle_.get());
-    frame_tree_node_->ResetNavigationRequest(false);
+    OnRequestFailed(false, net::ERR_ABORTED);
+
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
+    // destroyed the NavigationRequest.
     return;
   }
 
