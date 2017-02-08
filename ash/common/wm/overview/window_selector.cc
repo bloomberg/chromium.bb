@@ -116,8 +116,6 @@ class RoundedContainerView : public views::View {
     gfx::Rect bounds(size());
     path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
 
-    cc::PaintFlags paint;
-    paint.setAntiAlias(true);
     canvas->ClipPath(path, true);
     canvas->DrawColor(background_);
   }

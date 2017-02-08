@@ -63,14 +63,14 @@ void RoundedImageView::OnPaint(gfx::Canvas* canvas) {
       SkIntToScalar(corner_radius_[3]), SkIntToScalar(corner_radius_[3])};
   SkPath path;
   path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius);
-  cc::PaintFlags paint;
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
   const bool grayscale =
       !active_user_ && !MaterialDesignController::IsSystemTrayMenuMaterial();
-  paint.setBlendMode(grayscale ? SkBlendMode::kLuminosity
+  flags.setBlendMode(grayscale ? SkBlendMode::kLuminosity
                                : SkBlendMode::kSrcOver);
   canvas->DrawImageInPath(resized_, image_bounds.x(), image_bounds.y(), path,
-                          paint);
+                          flags);
 }
 
 }  // namespace tray

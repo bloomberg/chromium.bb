@@ -127,13 +127,13 @@ void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
 
   if (crossfade_icon_alpha > 0 && !crossfade_icon_image_.isNull()) {
     gfx::Canvas icon_canvas(icon_image_.size(), canvas->image_scale(), false);
-    cc::PaintFlags paint;
-    paint.setAlpha(icon_alpha);
-    icon_canvas.DrawImageInt(icon_image_, 0, 0, paint);
+    cc::PaintFlags flags;
+    flags.setAlpha(icon_alpha);
+    icon_canvas.DrawImageInt(icon_image_, 0, 0, flags);
 
-    paint.setAlpha(crossfade_icon_alpha);
-    paint.setBlendMode(SkBlendMode::kPlus);
-    icon_canvas.DrawImageInt(crossfade_icon_image_, 0, 0, paint);
+    flags.setAlpha(crossfade_icon_alpha);
+    flags.setBlendMode(SkBlendMode::kPlus);
+    icon_canvas.DrawImageInt(crossfade_icon_image_, 0, 0, flags);
 
     PaintCentered(canvas, gfx::ImageSkia(icon_canvas.ExtractImageRep()),
                   alpha_);
@@ -182,10 +182,10 @@ void FrameCaptionButton::PaintCentered(gfx::Canvas* canvas,
     alpha *= inactive_alpha;
   }
 
-  cc::PaintFlags paint;
-  paint.setAlpha(alpha);
+  cc::PaintFlags flags;
+  flags.setAlpha(alpha);
   canvas->DrawImageInt(to_center, (width() - to_center.width()) / 2,
-                       (height() - to_center.height()) / 2, paint);
+                       (height() - to_center.height()) / 2, flags);
 }
 
 }  // namespace ash

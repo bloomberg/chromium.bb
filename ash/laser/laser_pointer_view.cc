@@ -218,9 +218,9 @@ void LaserPointerView::OnPaint(gfx::Canvas* canvas) {
   if (laser_points_.IsEmpty())
     return;
 
-  cc::PaintFlags paint;
-  paint.setStyle(cc::PaintFlags::kFill_Style);
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setAntiAlias(true);
 
   // Compute the offset of the current widget.
   gfx::Vector2d widget_offset(
@@ -262,16 +262,16 @@ void LaserPointerView::OnPaint(gfx::Canvas* canvas) {
         i == num_points - 1);
 
     SkPath path = current_segment.path();
-    paint.setColor(SkColorSetA(kPointColor, current_opacity));
-    canvas->DrawPath(path, paint);
+    flags.setColor(SkColorSetA(kPointColor, current_opacity));
+    canvas->DrawPath(path, flags);
 
     previous_segment_points = current_segment.path_points();
     previous_radius = current_radius;
     previous_point = current_point;
   }
   // Draw the last point as a circle.
-  paint.setColor(SkColorSetA(kPointColor, current_opacity));
-  paint.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawCircle(current_point.location, kPointInitialRadius, paint);
+  flags.setColor(SkColorSetA(kPointColor, current_opacity));
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  canvas->DrawCircle(current_point.location, kPointInitialRadius, flags);
 }
 }  // namespace ash

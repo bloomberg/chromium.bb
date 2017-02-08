@@ -45,13 +45,13 @@ const SkColor kAutoclickRingCircleColor = SkColorSetARGB(255, 0, 0, 255);
 void PaintAutoclickRingCircle(gfx::Canvas* canvas,
                               gfx::Point& center,
                               int radius) {
-  cc::PaintFlags paint;
-  paint.setStyle(cc::PaintFlags::kStroke_Style);
-  paint.setStrokeWidth(2 * kAutoclickRingArcWidth);
-  paint.setColor(kAutoclickRingCircleColor);
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(2 * kAutoclickRingArcWidth);
+  flags.setColor(kAutoclickRingCircleColor);
+  flags.setAntiAlias(true);
 
-  canvas->DrawCircle(center, radius, paint);
+  canvas->DrawCircle(center, radius, flags);
 }
 
 void PaintAutoclickRingArc(gfx::Canvas* canvas,
@@ -59,17 +59,17 @@ void PaintAutoclickRingArc(gfx::Canvas* canvas,
                            int radius,
                            int start_angle,
                            int end_angle) {
-  cc::PaintFlags paint;
-  paint.setStyle(cc::PaintFlags::kStroke_Style);
-  paint.setStrokeWidth(2 * kAutoclickRingArcWidth);
-  paint.setColor(kAutoclickRingArcColor);
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(2 * kAutoclickRingArcWidth);
+  flags.setColor(kAutoclickRingArcColor);
+  flags.setAntiAlias(true);
 
   SkPath arc_path;
   arc_path.addArc(SkRect::MakeXYWH(center.x() - radius, center.y() - radius,
                                    2 * radius, 2 * radius),
                   start_angle, end_angle - start_angle);
-  canvas->DrawPath(arc_path, paint);
+  canvas->DrawPath(arc_path, flags);
 }
 }  // namespace
 

@@ -353,15 +353,15 @@ class WindowCycleView : public views::WidgetDelegateView {
     // We can't set a bg on the mirror container itself because the highlight
     // view needs to be on top of the bg but behind the target windows.
     const gfx::RectF shield_bounds(mirror_container_->bounds());
-    cc::PaintFlags paint;
-    paint.setColor(SkColorSetA(SK_ColorBLACK, 0xE6));
-    paint.setStyle(cc::PaintFlags::kFill_Style);
+    cc::PaintFlags flags;
+    flags.setColor(SkColorSetA(SK_ColorBLACK, 0xE6));
+    flags.setStyle(cc::PaintFlags::kFill_Style);
     float corner_radius = 0.f;
     if (shield_bounds.width() < width()) {
-      paint.setAntiAlias(true);
+      flags.setAntiAlias(true);
       corner_radius = kBackgroundCornerRadius;
     }
-    canvas->DrawRoundRect(shield_bounds, corner_radius, paint);
+    canvas->DrawRoundRect(shield_bounds, corner_radius, flags);
   }
 
   View* GetInitiallyFocusedView() override {

@@ -184,10 +184,10 @@ ToastOverlayView::ToastOverlayView(
 ToastOverlayView::~ToastOverlayView() {}
 
 void ToastOverlayView::OnPaint(gfx::Canvas* canvas) {
-  cc::PaintFlags paint;
-  paint.setStyle(cc::PaintFlags::kFill_Style);
-  paint.setColor(kButtonBackgroundColor);
-  canvas->DrawRoundRect(GetLocalBounds(), 2, paint);
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setColor(kButtonBackgroundColor);
+  canvas->DrawRoundRect(GetLocalBounds(), 2, flags);
   views::View::OnPaint(canvas);
 }
 

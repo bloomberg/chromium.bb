@@ -395,24 +395,24 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
       return triangle;
     };
 
-    cc::PaintFlags paint;
-    paint.setAntiAlias(true);
-    paint.setStyle(cc::PaintFlags::kFill_Style);
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
     // Background. Skip drawing for full signal.
     if (signal_strength_ != kNumNetworkImages - 1) {
-      paint.setColor(SkColorSetA(color_, kBgAlpha));
-      canvas->DrawPath(make_triangle(kFullTriangleSide), paint);
+      flags.setColor(SkColorSetA(color_, kBgAlpha));
+      canvas->DrawPath(make_triangle(kFullTriangleSide), flags);
     }
     // Foreground (signal strength).
     if (signal_strength_ != 0) {
-      paint.setColor(color_);
+      flags.setColor(color_);
       // As a percentage of the bg triangle, the length of one of the short
       // sides of the fg triangle, indexed by signal strength.
       static const float kTriangleSidePercents[] = {0.f, 0.5f, 0.625f, 0.75f,
                                                     1.f};
       canvas->DrawPath(make_triangle(kTriangleSidePercents[signal_strength_] *
                                      kFullTriangleSide),
-                       paint);
+                       flags);
     }
   }
 

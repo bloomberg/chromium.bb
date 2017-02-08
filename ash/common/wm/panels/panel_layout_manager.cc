@@ -77,10 +77,10 @@ class CalloutWidgetBackground : public views::Background {
         break;
     }
     // Hard code the arrow color for now.
-    cc::PaintFlags paint;
-    paint.setStyle(cc::PaintFlags::kFill_Style);
-    paint.setColor(SkColorSetARGB(0xff, 0xe5, 0xe5, 0xe5));
-    canvas->DrawPath(path, paint);
+    cc::PaintFlags flags;
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setColor(SkColorSetARGB(0xff, 0xe5, 0xe5, 0xe5));
+    canvas->DrawPath(path, flags);
   }
 
   ShelfAlignment alignment() { return alignment_; }

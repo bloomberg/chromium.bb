@@ -127,20 +127,20 @@ class TrayBackground : public views::Background {
   WmShelf* GetShelf() const { return tray_background_view_->shelf(); }
 
   void PaintMaterial(gfx::Canvas* canvas, views::View* view) const {
-    cc::PaintFlags background_paint;
-    background_paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
-    background_paint.setColor(SkColorSetA(kShelfBaseColor, alpha_));
+    cc::PaintFlags background_flags;
+    background_flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+    background_flags.setColor(SkColorSetA(kShelfBaseColor, alpha_));
     gfx::Insets insets =
         GetMirroredBackgroundInsets(GetShelf()->GetAlignment());
     gfx::Rect bounds = view->GetLocalBounds();
     bounds.Inset(insets);
-    canvas->DrawRoundRect(bounds, kTrayRoundedBorderRadius, background_paint);
+    canvas->DrawRoundRect(bounds, kTrayRoundedBorderRadius, background_flags);
 
     if (draws_active_ && tray_background_view_->is_active()) {
-      cc::PaintFlags highlight_paint;
-      highlight_paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
-      highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
-      canvas->DrawRoundRect(bounds, kTrayRoundedBorderRadius, highlight_paint);
+      cc::PaintFlags highlight_flags;
+      highlight_flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+      highlight_flags.setColor(kShelfButtonActivatedHighlightColor);
+      canvas->DrawRoundRect(bounds, kTrayRoundedBorderRadius, highlight_flags);
     }
   }
 
@@ -600,9 +600,9 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
   const int y = (GetShelfConstant(SHELF_SIZE) - kTrayItemSize) / 2;
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
-  cc::PaintFlags paint;
-  paint.setColor(kSeparatorColor);
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setColor(kSeparatorColor);
+  flags.setAntiAlias(true);
 
   const gfx::Rect bounds = horizontal_shelf
                                ? gfx::Rect(x, y, kSeparatorWidth, height)
@@ -616,7 +616,7 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
       (horizontal_shelf && base::i18n::IsRTL() ? rect.bottom_left()
                                                : rect.bottom_right());
 
-  canvas->DrawLine(line_start, line_end, paint);
+  canvas->DrawLine(line_start, line_end, flags);
 }
 
 gfx::Insets TrayBackgroundView::GetBackgroundInsets() const {

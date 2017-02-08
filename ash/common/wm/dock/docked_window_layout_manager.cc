@@ -94,8 +94,8 @@ class DockedBackgroundWidget : public views::Widget,
       const gfx::ImageSkia& shelf_background(alignment_ == DOCKED_ALIGNMENT_LEFT
                                                  ? shelf_background_left_
                                                  : shelf_background_right_);
-      cc::PaintFlags paint;
-      paint.setAlpha(asset_background_alpha_);
+      cc::PaintFlags flags;
+      flags.setAlpha(asset_background_alpha_);
       recorder.canvas()->DrawImageInt(
           shelf_background, 0, 0, shelf_background.width(),
           shelf_background.height(),
@@ -103,7 +103,7 @@ class DockedBackgroundWidget : public views::Widget,
               ? local_window_bounds.width() - shelf_background.width()
               : 0,
           0, shelf_background.width(), local_window_bounds.height(), false,
-          paint);
+          flags);
       recorder.canvas()->DrawImageInt(
           shelf_background,
           alignment_ == DOCKED_ALIGNMENT_LEFT ? 0
@@ -111,7 +111,7 @@ class DockedBackgroundWidget : public views::Widget,
           0, 1, shelf_background.height(),
           alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width(), 0,
           local_window_bounds.width() - shelf_background.width(),
-          local_window_bounds.height(), false, paint);
+          local_window_bounds.height(), false, flags);
     }
   }
 

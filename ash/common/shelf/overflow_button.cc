@@ -119,11 +119,10 @@ std::unique_ptr<views::InkDropMask> OverflowButton::CreateInkDropMask() const {
 void OverflowButton::PaintBackground(gfx::Canvas* canvas,
                                      const gfx::Rect& bounds) {
   if (MaterialDesignController::IsShelfMaterial()) {
-    cc::PaintFlags background_paint;
-    background_paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
-    background_paint.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
-    canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius,
-                          background_paint);
+    cc::PaintFlags flags;
+    flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+    flags.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
+    canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius, flags);
   } else {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::ImageSkia* background =

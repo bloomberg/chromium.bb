@@ -241,7 +241,7 @@ class TouchHudCanvas : public views::View {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
-    paint_.setStyle(cc::PaintFlags::kFill_Style);
+    flags_.setStyle(cc::PaintFlags::kFill_Style);
   }
 
   ~TouchHudCanvas() override {}
@@ -299,12 +299,12 @@ class TouchHudCanvas : public views::View {
     for (int i = 0; i < kMaxPaths; ++i) {
       if (paths_[i].countPoints() == 0)
         continue;
-      paint_.setColor(colors_[i]);
-      canvas->DrawPath(paths_[i], paint_);
+      flags_.setColor(colors_[i]);
+      canvas->DrawPath(paths_[i], flags_);
     }
   }
 
-  cc::PaintFlags paint_;
+  cc::PaintFlags flags_;
 
   const TouchLog& touch_log_;
   SkPath paths_[kMaxPaths];

@@ -160,30 +160,30 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
     if (pseudo_cursor_point.y() == region_.y())
       pseudo_cursor_point.Offset(0, -1);
 
-    cc::PaintFlags paint;
-    paint.setAntiAlias(false);
-    paint.setStrokeWidth(1);
-    paint.setColor(SK_ColorWHITE);
-    paint.setBlendMode(SkBlendMode::kSrc);
+    cc::PaintFlags flags;
+    flags.setAntiAlias(false);
+    flags.setStrokeWidth(1);
+    flags.setColor(SK_ColorWHITE);
+    flags.setBlendMode(SkBlendMode::kSrc);
     gfx::Vector2d width(kCursorSize / 2, 0);
     gfx::Vector2d height(0, kCursorSize / 2);
     gfx::Vector2d white_x_offset(1, -1);
     gfx::Vector2d white_y_offset(1, -1);
     // Horizontal
     canvas->DrawLine(pseudo_cursor_point - width + white_x_offset,
-                     pseudo_cursor_point + width + white_x_offset, paint);
-    paint.setStrokeWidth(1);
+                     pseudo_cursor_point + width + white_x_offset, flags);
+    flags.setStrokeWidth(1);
     // Vertical
     canvas->DrawLine(pseudo_cursor_point - height + white_y_offset,
-                     pseudo_cursor_point + height + white_y_offset, paint);
+                     pseudo_cursor_point + height + white_y_offset, flags);
 
-    paint.setColor(SK_ColorBLACK);
+    flags.setColor(SK_ColorBLACK);
     // Horizontal
     canvas->DrawLine(pseudo_cursor_point - width, pseudo_cursor_point + width,
-                     paint);
+                     flags);
     // Vertical
     canvas->DrawLine(pseudo_cursor_point - height, pseudo_cursor_point + height,
-                     paint);
+                     flags);
   }
 
   bool draw_inactive_overlay_;

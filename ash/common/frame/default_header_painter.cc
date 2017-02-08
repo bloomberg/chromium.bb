@@ -44,7 +44,7 @@ const int kActivationCrossfadeDurationMs = 200;
 
 // Tiles an image into an area, rounding the top corners.
 void TileRoundRect(gfx::Canvas* canvas,
-                   const cc::PaintFlags& paint,
+                   const cc::PaintFlags& flags,
                    const gfx::Rect& bounds,
                    int corner_radius) {
   SkRect rect = gfx::RectToSkRect(bounds);
@@ -59,7 +59,7 @@ void TileRoundRect(gfx::Canvas* canvas,
                        0};  // bottom-left
   SkPath path;
   path.addRoundRect(rect, radii, SkPath::kCW_Direction);
-  canvas->DrawPath(path, paint);
+  canvas->DrawPath(path, flags);
 }
 
 // Returns the FontList to use for the title.
@@ -138,12 +138,12 @@ void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
                           ? 0
                           : HeaderPainterUtil::GetTopCornerRadiusWhenRestored();
 
-  cc::PaintFlags paint;
+  cc::PaintFlags flags;
   int active_alpha = activation_animation_->CurrentValueBetween(0, 255);
-  paint.setColor(color_utils::AlphaBlend(active_frame_color_,
+  flags.setColor(color_utils::AlphaBlend(active_frame_color_,
                                          inactive_frame_color_, active_alpha));
-  paint.setAntiAlias(true);
-  TileRoundRect(canvas, paint, GetLocalBounds(), corner_radius);
+  flags.setAntiAlias(true);
+  TileRoundRect(canvas, flags, GetLocalBounds(), corner_radius);
 
   if (!frame_->IsMaximized() && !frame_->IsFullscreen() &&
       mode_ == MODE_INACTIVE && !UsesCustomFrameColors()) {
@@ -269,10 +269,10 @@ void DefaultHeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
   gfx::RectF rect(0, painted_height_ * scale - 1, view_->width() * scale, 1);
-  cc::PaintFlags paint;
-  paint.setColor((mode_ == MODE_ACTIVE) ? kHeaderContentSeparatorColor
+  cc::PaintFlags flags;
+  flags.setColor((mode_ == MODE_ACTIVE) ? kHeaderContentSeparatorColor
                                         : kHeaderContentSeparatorInactiveColor);
-  canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(rect), paint);
+  canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(rect), flags);
 }
 
 bool DefaultHeaderPainter::ShouldUseLightImages() {

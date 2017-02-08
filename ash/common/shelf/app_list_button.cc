@@ -164,11 +164,11 @@ void AppListButton::PaintMd(gfx::Canvas* canvas) {
   gfx::PointF circle_center(GetCenterPoint());
 
   // Paint the circular background.
-  cc::PaintFlags bg_paint;
-  bg_paint.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
-  bg_paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
-  bg_paint.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawCircle(circle_center, kAppListButtonRadius, bg_paint);
+  cc::PaintFlags bg_flags;
+  bg_flags.setColor(SkColorSetA(kShelfBaseColor, background_alpha_));
+  bg_flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+  bg_flags.setStyle(cc::PaintFlags::kFill_Style);
+  canvas->DrawCircle(circle_center, kAppListButtonRadius, bg_flags);
 
   // Paint a white ring as the foreground. The ceil/dsf math assures that the
   // ring draws sharply and is centered at all scale factors.
@@ -178,15 +178,15 @@ void AppListButton::PaintMd(gfx::Canvas* canvas) {
   const float dsf = canvas->UndoDeviceScaleFactor();
   circle_center.Scale(dsf);
 
-  cc::PaintFlags fg_paint;
-  fg_paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
-  fg_paint.setStyle(cc::PaintFlags::kStroke_Style);
-  fg_paint.setColor(kShelfIconColor);
+  cc::PaintFlags fg_flags;
+  fg_flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+  fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
+  fg_flags.setColor(kShelfIconColor);
   const float thickness = std::ceil(kRingThicknessDp * dsf);
   const float radius = std::ceil(kRingOuterRadiusDp * dsf) - thickness / 2;
-  fg_paint.setStrokeWidth(thickness);
+  fg_flags.setStrokeWidth(thickness);
   // Make sure the center of the circle lands on pixel centers.
-  canvas->DrawCircle(circle_center, radius, fg_paint);
+  canvas->DrawCircle(circle_center, radius, fg_flags);
 }
 
 void AppListButton::PaintAppListButton(gfx::Canvas* canvas,

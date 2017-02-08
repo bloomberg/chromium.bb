@@ -119,8 +119,6 @@ class RoundedRectView : public views::View {
     bounds.set_height(bounds.height() + radius);
     path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
 
-    cc::PaintFlags paint;
-    paint.setAntiAlias(true);
     canvas->ClipPath(path, true);
     canvas->DrawColor(background_);
   }
@@ -183,23 +181,23 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
   path.addRoundRect(gfx::RectFToSkRect(border_rect_f), scaled_corner_radius,
                     scaled_corner_radius);
 
-  SkPaint paint;
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(1);
-  paint.setAntiAlias(true);
+  SkPaint flags;
+  flags.setStyle(SkPaint::kStroke_Style);
+  flags.setStrokeWidth(1);
+  flags.setAntiAlias(true);
 
   SkPath stroke_path;
-  paint.getFillPath(path, &stroke_path);
+  flags.getFillPath(path, &stroke_path);
 
   SkPath fill_path;
   Op(path, stroke_path, kDifference_SkPathOp, &fill_path);
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(get_color());
-  canvas->sk_canvas()->drawPath(fill_path, paint);
+  flags.setStyle(SkPaint::kFill_Style);
+  flags.setColor(get_color());
+  canvas->sk_canvas()->drawPath(fill_path, flags);
 
   if (border_thickness_ > 0) {
-    paint.setColor(border_color_);
-    canvas->sk_canvas()->drawPath(stroke_path, paint);
+    flags.setColor(border_color_);
+    canvas->sk_canvas()->drawPath(stroke_path, flags);
   }
 }
 

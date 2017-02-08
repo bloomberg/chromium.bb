@@ -140,8 +140,8 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
   }
   const gfx::Rect dock_bounds(
       shelf_widget_->shelf_layout_manager()->dock_bounds());
-  cc::PaintFlags paint;
-  paint.setAlpha(asset_background_alpha_);
+  cc::PaintFlags flags;
+  flags.setAlpha(asset_background_alpha_);
   canvas->DrawImageInt(
       shelf_background, 0, 0, shelf_background.width(),
       shelf_background.height(),
@@ -149,7 +149,7 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
           ? dock_bounds.width()
           : 0,
       0, horizontal ? width() - dock_bounds.width() : width(), height(), false,
-      paint);
+      flags);
   if (horizontal && dock_bounds.width() > 0) {
     // The part of the shelf background that is in the corner below the docked
     // windows close to the work area is an arched gradient that blends
@@ -162,7 +162,7 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
     canvas->DrawImageInt(
         shelf_corner, 0, 0, shelf_corner.width(), shelf_corner.height(),
         dock_bounds.x() > 0 ? dock_bounds.x() : dock_bounds.width() - height(),
-        0, height(), height(), false, paint);
+        0, height(), height(), false, flags);
     // The part of the shelf background that is just below the docked windows
     // is drawn using the last (lowest) 1-pixel tall strip of the image asset.
     // This avoids showing the border 3D shadow between the shelf and the
@@ -171,7 +171,7 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
                          shelf_background.width(), 1,
                          dock_bounds.x() > 0 ? dock_bounds.x() + height() : 0,
                          0, dock_bounds.width() - height(), height(), false,
-                         paint);
+                         flags);
   }
   gfx::Rect black_rect =
       shelf_widget_->shelf_layout_manager()->SelectValueForShelfAlignment(

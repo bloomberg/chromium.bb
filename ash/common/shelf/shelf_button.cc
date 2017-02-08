@@ -60,13 +60,13 @@ const int kIconPaddingVerticalMD = 8;
 
 // Paints an activity indicator on |canvas| whose |size| is specified in DIP.
 void PaintIndicatorOnCanvas(gfx::Canvas* canvas, const gfx::Size& size) {
-  cc::PaintFlags paint;
-  paint.setColor(kIndicatorColor);
-  paint.setFlags(cc::PaintFlags::kAntiAlias_Flag);
+  cc::PaintFlags flags;
+  flags.setColor(kIndicatorColor);
+  flags.setFlags(cc::PaintFlags::kAntiAlias_Flag);
   canvas->DrawCircle(
       gfx::Point(size.width() / 2,
                  size.height() - kIndicatorOffsetFromBottom - kIndicatorRadius),
-      kIndicatorRadius, paint);
+      kIndicatorRadius, flags);
 }
 
 // Simple AnimationDelegate that owns a single ThrobAnimation instance to

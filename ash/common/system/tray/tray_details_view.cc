@@ -215,14 +215,14 @@ class ScrollContentsView : public views::View {
                   const gfx::Rect& shadowed_area) {
     ui::PaintRecorder recorder(context, size());
     gfx::Canvas* canvas = recorder.canvas();
-    cc::PaintFlags paint;
+    cc::PaintFlags flags;
     gfx::ShadowValues shadow;
     shadow.emplace_back(gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
                         kSeparatorColor);
-    paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadow));
-    paint.setAntiAlias(true);
+    flags.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadow));
+    flags.setAntiAlias(true);
     canvas->ClipRect(shadowed_area, SkClipOp::kDifference);
-    canvas->DrawRect(shadowed_area, paint);
+    canvas->DrawRect(shadowed_area, flags);
   }
 
   views::BoxLayout* box_layout_;
