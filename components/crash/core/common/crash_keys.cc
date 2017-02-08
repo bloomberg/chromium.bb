@@ -93,12 +93,12 @@ void SetVariationsList(const std::vector<std::string>& variations) {
       base::StringPrintf("%" PRIuS, variations.size()));
 
   std::string variations_string;
-  variations_string.reserve(kLargeSize);
+  variations_string.reserve(kHugeSize);
 
   for (size_t i = 0; i < variations.size(); ++i) {
     const std::string& variation = variations[i];
     // Do not truncate an individual experiment.
-    if (variations_string.size() + variation.size() >= kLargeSize)
+    if (variations_string.size() + variation.size() >= kHugeSize)
       break;
     variations_string += variation;
     variations_string += ",";

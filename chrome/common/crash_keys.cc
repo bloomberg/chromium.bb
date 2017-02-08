@@ -111,7 +111,7 @@ size_t RegisterChromeCrashKeys() {
     { kChannel, kSmallSize },
     { kActiveURL, kLargeSize },
     { kNumVariations, kSmallSize },
-    { kVariations, kLargeSize },
+    { kVariations, kHugeSize },
     { kNumExtensionsCount, kSmallSize },
     { kShutdownType, kSmallSize },
     { kBrowserUnpinTrace, kMediumSize },

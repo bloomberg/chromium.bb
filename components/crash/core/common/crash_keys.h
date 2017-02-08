@@ -65,6 +65,10 @@ const size_t kMediumSize = kSmallSize * 4;
 // used sparingly.
 const size_t kLargeSize = kSmallSize * 16;
 
+// A very large crash key, which will be chunked on all platforms. This should
+// be used very sparingly.
+const size_t kHugeSize = kLargeSize * 2;
+
 // Crash Key Name Constants ////////////////////////////////////////////////////
 
 // The GUID used to identify this client to the crash system.

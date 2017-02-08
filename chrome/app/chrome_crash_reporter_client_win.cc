@@ -94,7 +94,7 @@ size_t RegisterCrashKeysHelper() {
       {kChannel, kSmallSize},
       {kActiveURL, kLargeSize},
       {kNumVariations, kSmallSize},
-      {kVariations, kLargeSize},
+      {kVariations, kHugeSize},
       {kNumExtensionsCount, kSmallSize},
       {kShutdownType, kSmallSize},
       {kBrowserUnpinTrace, kMediumSize},
