@@ -33,6 +33,12 @@ cr.define('device_page_tests', function() {
       cr.webUIListenerCallback('has-touchpad-changed', true);
     },
 
+    /** override */
+    initializeStylus: function() {
+      // Enable stylus.
+      cr.webUIListenerCallback('has-stylus-changed', true);
+    },
+
     /** @override */
     handleLinkEvent: function(e) {
       settings.DevicePageBrowserProxyImpl.prototype.handleLinkEvent.call(

@@ -16,6 +16,7 @@
 #include "ash/common/system/tray/tray_background_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/events/devices/input_device_event_observer.h"
 
 namespace gfx {
 class Point;
@@ -38,6 +39,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
                                public SessionStateObserver,
                                public ShellObserver,
                                public PaletteToolManager::Delegate,
+                               public ui::InputDeviceEventObserver,
                                public views::TrayBubbleView::Delegate {
  public:
   explicit PaletteTray(WmShelf* wm_shelf);
@@ -78,6 +80,10 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   bool ContainsPointInScreen(const gfx::Point& point);
 
  private:
+  // ui::InputDeviceObserver:
+  void OnTouchscreenDeviceConfigurationChanged() override;
+  void OnStylusStateChanged(ui::StylusState stylus_state) override;
+
   // views::TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
   void OnMouseEnteredView() override;
@@ -102,9 +108,6 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
   // Sets the icon to visible if the palette can be used.
   void UpdateIconVisibility();
-
-  // Called when a stylus inserted or removed event is received.
-  void OnStylusStateChanged(ui::StylusState stylus_state);
 
   // Called when the palette enabled pref has changed.
   void OnPaletteEnabledPrefChanged(bool enabled);

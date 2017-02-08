@@ -151,7 +151,8 @@ void NoteTakingHelper::SetPreferredApp(Profile* profile,
 bool NoteTakingHelper::IsAppAvailable(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
-  return ash::IsPaletteFeatureEnabled() && !GetAvailableApps(profile).empty();
+  return ash::palette_utils::HasStylusInput() &&
+         !GetAvailableApps(profile).empty();
 }
 
 void NoteTakingHelper::LaunchAppForNewNote(Profile* profile,

@@ -70,7 +70,7 @@ void LaserPointerController::OnTouchEvent(ui::TouchEvent* event) {
   // Start a new laser session if the stylus is pressed but not pressed over the
   // palette.
   if (event->type() == ui::ET_TOUCH_PRESSED &&
-      !PaletteContainsPointInScreen(event_location)) {
+      !palette_utils::PaletteContainsPointInScreen(event_location)) {
     DestroyLaserPointerView();
     UpdateLaserPointerView(current_window, event_location, event);
   }

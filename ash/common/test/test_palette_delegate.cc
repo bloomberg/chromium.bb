@@ -25,10 +25,6 @@ bool TestPaletteDelegate::HasNoteApp() {
   return has_note_app_;
 }
 
-void TestPaletteDelegate::SetStylusStateChangedCallback(
-    const PaletteDelegate::OnStylusStateChangedCallback&
-        on_stylus_state_changed) {}
-
 bool TestPaletteDelegate::ShouldAutoOpenPalette() {
   return should_auto_open_palette_;
 }

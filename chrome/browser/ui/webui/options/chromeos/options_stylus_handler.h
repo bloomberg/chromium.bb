@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "ui/events/devices/input_device_event_observer.h"
 
 namespace base {
 class ListValue;
@@ -22,7 +23,8 @@ namespace options {
 
 // Stylus-specific options C++ code.
 class OptionsStylusHandler : public ::options::OptionsPageUIHandler,
-                             public NoteTakingHelper::Observer {
+                             public NoteTakingHelper::Observer,
+                             public ui::InputDeviceEventObserver {
  public:
   OptionsStylusHandler();
   ~OptionsStylusHandler() override;
@@ -35,7 +37,17 @@ class OptionsStylusHandler : public ::options::OptionsPageUIHandler,
   // NoteTakingHelper::Observer implementation.
   void OnAvailableNoteTakingAppsUpdated() override;
 
+  // ui::InputDeviceEventObserver implementation:
+  void OnDeviceListsComplete() override;
+
  private:
+  // Called from WebUI when the page is initialized to determine if stylus
+  // settings should be shown.
+  void RequestStylusHardwareState(const base::ListValue* args);
+
+  // Sends if there is a stylus device to WebUI.
+  void SendHasStylus();
+
   // Updates the note-taking app menu in the stylus overlay to display the
   // currently-available set of apps.
   void UpdateNoteTakingApps();

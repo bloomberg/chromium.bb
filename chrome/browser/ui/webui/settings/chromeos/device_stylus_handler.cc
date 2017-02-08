@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/device_stylus_handler.h"
 
+#include "ash/common/system/chromeos/palette/palette_utils.h"
+#include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
+#include "ui/events/devices/input_device_manager.h"
 
 namespace chromeos {
 namespace settings {
@@ -20,15 +23,20 @@ constexpr char kAppPreferredKey[] = "preferred";
 
 StylusHandler::StylusHandler() {
   NoteTakingHelper::Get()->AddObserver(this);
+  ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
 StylusHandler::~StylusHandler() {
+  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   NoteTakingHelper::Get()->RemoveObserver(this);
 }
 
 void StylusHandler::RegisterMessages() {
   DCHECK(web_ui());
 
+  web_ui()->RegisterMessageCallback(
+      "initializeStylusSettings",
+      base::Bind(&StylusHandler::HandleInitialize, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "requestNoteTakingApps",
       base::Bind(&StylusHandler::RequestApps, base::Unretained(this)));
@@ -40,6 +48,10 @@ void StylusHandler::RegisterMessages() {
 
 void StylusHandler::OnAvailableNoteTakingAppsUpdated() {
   UpdateNoteTakingApps();
+}
+
+void StylusHandler::OnDeviceListsComplete() {
+  SendHasStylus();
 }
 
 void StylusHandler::UpdateNoteTakingApps() {
@@ -89,6 +101,19 @@ void StylusHandler::SetPreferredNoteTakingApp(const base::ListValue* args) {
 
   NoteTakingHelper::Get()->SetPreferredApp(Profile::FromWebUI(web_ui()),
                                            app_id);
+}
+
+void StylusHandler::HandleInitialize(const base::ListValue* args) {
+  AllowJavascript();
+  if (ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete())
+    SendHasStylus();
+}
+
+void StylusHandler::SendHasStylus() {
+  DCHECK(ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete());
+  CallJavascriptFunction(
+      "cr.webUIListenerCallback", base::StringValue("has-stylus-changed"),
+      base::FundamentalValue(ash::palette_utils::HasStylusInput()));
 }
 
 }  // namespace settings

@@ -553,7 +553,7 @@ ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
 
 std::unique_ptr<ash::PaletteDelegate>
 ChromeShellDelegate::CreatePaletteDelegate() {
-  return chromeos::PaletteDelegateChromeOS::Create();
+  return base::MakeUnique<chromeos::PaletteDelegateChromeOS>();
 }
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {

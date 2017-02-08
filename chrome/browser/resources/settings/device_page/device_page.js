@@ -22,22 +22,25 @@ Polymer({
     },
 
     /**
-     * |hasMouse_| and |hasTouchpad_| start undefined so observers don't trigger
-     * until both have been populated.
+     * |hasMouse_|, |hasTouchpad_|, and |hasStylus_| start undefined so
+     * observers don't trigger until they have been populated.
      * @private
      */
-    hasMouse_: Boolean,
-
-    /** @private */
-    hasTouchpad_: Boolean,
-
-    /** @private */
-    stylusAllowed_: {
+    hasMouse_: {
       type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('stylusAllowed');
-      },
-      readOnly: true,
+      value: false
+    },
+
+    /** @private */
+    hasTouchpad_: {
+      type: Boolean,
+      value: false
+    },
+
+    /** @private */
+    hasStylus_: {
+      type: Boolean,
+      value: false
     },
 
     /**
@@ -108,6 +111,10 @@ Polymer({
     this.addWebUIListener(
         'has-touchpad-changed', this.set.bind(this, 'hasTouchpad_'));
     settings.DevicePageBrowserProxyImpl.getInstance().initializePointers();
+
+    this.addWebUIListener(
+        'has-stylus-changed', this.set.bind(this, 'hasStylus_'));
+    settings.DevicePageBrowserProxyImpl.getInstance().initializeStylus();
 
     if (this.enablePowerSettings_) {
       this.addWebUIListener(

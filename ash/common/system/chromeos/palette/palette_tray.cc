@@ -29,6 +29,7 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -156,9 +157,6 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
     : TrayBackgroundView(wm_shelf),
       palette_tool_manager_(new PaletteToolManager(this)),
       weak_factory_(this) {
-  // PaletteTray should only be instantiated if the palette feature is enabled.
-  DCHECK(IsPaletteFeatureEnabled());
-
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
   if (MaterialDesignController::IsShelfMaterial()) {
@@ -177,17 +175,14 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
 
   WmShell::Get()->AddShellObserver(this);
   WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
-  if (WmShell::Get()->palette_delegate()) {
-    WmShell::Get()->palette_delegate()->SetStylusStateChangedCallback(
-        base::Bind(&PaletteTray::OnStylusStateChanged,
-                   weak_factory_.GetWeakPtr()));
-  }
+  ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
 PaletteTray::~PaletteTray() {
   if (bubble_)
     bubble_->bubble_view()->reset_delegate();
 
+  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   WmShell::Get()->RemoveShellObserver(this);
   WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(this);
 }
@@ -293,6 +288,33 @@ void PaletteTray::HideBubbleWithView(const views::TrayBubbleView* bubble_view) {
     HidePalette();
 }
 
+void PaletteTray::OnTouchscreenDeviceConfigurationChanged() {
+  UpdateIconVisibility();
+}
+
+void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
+  PaletteDelegate* palette_delegate = WmShell::Get()->palette_delegate();
+
+  // Don't do anything if the palette should not be shown or if the user has
+  // disabled it all-together.
+  if (!IsInUserSession() || !palette_delegate->ShouldShowPalette())
+    return;
+
+  // Auto show/hide the palette if allowed by the user.
+  if (palette_delegate->ShouldAutoOpenPalette()) {
+    if (stylus_state == ui::StylusState::REMOVED && !bubble_) {
+      is_bubble_auto_opened_ = true;
+      ShowPalette();
+    } else if (stylus_state == ui::StylusState::INSERTED && bubble_) {
+      HidePalette();
+    }
+  }
+
+  // Disable any active modes if the stylus has been inserted.
+  if (stylus_state == ui::StylusState::INSERTED)
+    palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
+}
+
 void PaletteTray::BubbleViewDestroyed() {
   palette_tool_manager_->NotifyViewsDestroyed();
   SetIsActive(false);
@@ -385,12 +407,15 @@ void PaletteTray::AnchorUpdated() {
 }
 
 void PaletteTray::Initialize() {
+  PaletteDelegate* delegate = WmShell::Get()->palette_delegate();
+  // |delegate| can be null in tests.
+  if (!delegate)
+    return;
+
   // OnPaletteEnabledPrefChanged will get called with the initial pref value,
   // which will take care of showing the palette.
-  palette_enabled_subscription_ =
-      WmShell::Get()->palette_delegate()->AddPaletteEnableListener(
-          base::Bind(&PaletteTray::OnPaletteEnabledPrefChanged,
-                     weak_factory_.GetWeakPtr()));
+  palette_enabled_subscription_ = delegate->AddPaletteEnableListener(base::Bind(
+      &PaletteTray::OnPaletteEnabledPrefChanged, weak_factory_.GetWeakPtr()));
 }
 
 void PaletteTray::SetIconBorderForShelfAlignment() {
@@ -412,29 +437,6 @@ void PaletteTray::UpdateTrayIcon() {
       kTrayIconSize, kShelfIconColor));
 }
 
-void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
-  PaletteDelegate* palette_delegate = WmShell::Get()->palette_delegate();
-
-  // Don't do anything if the palette should not be shown or if the user has
-  // disabled it all-together.
-  if (!IsInUserSession() || !palette_delegate->ShouldShowPalette())
-    return;
-
-  // Auto show/hide the palette if allowed by the user.
-  if (palette_delegate->ShouldAutoOpenPalette()) {
-    if (stylus_state == ui::StylusState::REMOVED && !bubble_) {
-      is_bubble_auto_opened_ = true;
-      ShowPalette();
-    } else if (stylus_state == ui::StylusState::INSERTED && bubble_) {
-      HidePalette();
-    }
-  }
-
-  // Disable any active modes if the stylus has been inserted.
-  if (stylus_state == ui::StylusState::INSERTED)
-    palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
-}
-
 void PaletteTray::OnPaletteEnabledPrefChanged(bool enabled) {
   is_palette_enabled_ = enabled;
 
@@ -447,7 +449,8 @@ void PaletteTray::OnPaletteEnabledPrefChanged(bool enabled) {
 }
 
 void PaletteTray::UpdateIconVisibility() {
-  SetVisible(is_palette_enabled_ && IsInUserSession());
+  SetVisible(is_palette_enabled_ && palette_utils::HasStylusInput() &&
+             IsInUserSession());
 }
 
 }  // namespace ash

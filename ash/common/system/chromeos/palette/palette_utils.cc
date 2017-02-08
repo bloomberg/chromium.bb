@@ -11,13 +11,29 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/command_line.h"
+#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ash {
+namespace palette_utils {
 
-bool IsPaletteFeatureEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnablePalette);
+bool HasStylusInput() {
+  // Allow the user to force-enable by passing a switch.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshForceEnablePalette)) {
+    return true;
+  }
+
+  for (const ui::TouchscreenDevice& device :
+       ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices()) {
+    if (device.is_stylus &&
+        device.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool IsPaletteEnabledOnEveryDisplay() {
@@ -36,4 +52,5 @@ bool PaletteContainsPointInScreen(const gfx::Point& point) {
   return false;
 }
 
+}  // namespace palette_utils
 }  // namespace ash

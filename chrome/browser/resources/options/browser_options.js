@@ -339,12 +339,10 @@ cr.define('options', function() {
 
       // Device section (ChromeOS only).
       if (cr.isChromeOS) {
-        if (loadTimeData.getBoolean('showStylusSettings')) {
-          $('stylus-settings-link').onclick = function(event) {
-            PageManager.showPageByName('stylus-overlay');
-          };
-          $('stylus-row').hidden = false;
-        }
+        // Probe for stylus hardware state. C++ will invoke
+        // BrowserOptions.setStylusInputStatus_ when the data is available.
+        chrome.send('requestStylusHardwareState');
+
         if (loadTimeData.getBoolean('showPowerStatus')) {
           $('power-settings-link').onclick = function(evt) {
             PageManager.showPageByName('power-overlay');
@@ -1814,6 +1812,21 @@ cr.define('options', function() {
     },
 
     /**
+     * Called when stylus hardware detection probing is complete.
+     * @param {boolean} hasStylus
+     * @private
+     */
+    setStylusInputStatus_: function(hasStylus) {
+      if (!hasStylus)
+        return;
+
+      $('stylus-settings-link').onclick = function(event) {
+        PageManager.showPageByName('stylus-overlay');
+      };
+      $('stylus-row').hidden = false;
+    },
+
+    /**
      * This is called from chromium code when system timezone "managed" state
      * is changed. Enables or disables dependent settings.
      * @param {boolean} managed Is true when system Timezone is managed by
@@ -2412,6 +2425,7 @@ cr.define('options', function() {
     'setNowSectionVisible',
     'setProfilesInfo',
     'setSpokenFeedbackCheckboxState',
+    'setStylusInputStatus',
     'setSystemTimezoneAutomaticDetectionManaged',
     'setSystemTimezoneManaged',
     'setThemesResetButtonEnabled',

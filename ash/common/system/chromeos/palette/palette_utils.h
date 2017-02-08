@@ -12,10 +12,12 @@ class Point;
 }
 
 namespace ash {
+namespace palette_utils {
 
-// Returns true if the palette feature is enabled. The palette itself may have
-// been disabled by the user.
-ASH_EXPORT bool IsPaletteFeatureEnabled();
+// Returns true if there is a stylus input device on the internal display. This
+// will return false even if there is a stylus input device until hardware
+// probing is complete (see ui::InputDeviceEventObserver).
+ASH_EXPORT bool HasStylusInput();
 
 // Returns true if the palette should be shown on every display.
 ASH_EXPORT bool IsPaletteEnabledOnEveryDisplay();
@@ -24,6 +26,7 @@ ASH_EXPORT bool IsPaletteEnabledOnEveryDisplay();
 // given point (in screen space).
 ASH_EXPORT bool PaletteContainsPointInScreen(const gfx::Point& point);
 
+}  // namespace palette_utils
 }  // namespace ash
 
 #endif  // ASH_COMMON_SYSTEM_CHROMEOS_PALETTE_PALETTE_UTILS_H_

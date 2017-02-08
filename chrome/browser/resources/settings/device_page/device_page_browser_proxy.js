@@ -46,6 +46,9 @@ cr.define('settings', function() {
     /** Initializes the mouse and touchpad handler. */
     initializePointers: function() {},
 
+    /** Initializes the stylus handler. */
+    initializeStylus: function() {},
+
     /**
      * Override to interact with the on-tap/on-keydown event on the Learn More
      * link.
@@ -101,6 +104,11 @@ cr.define('settings', function() {
     /** @override */
     initializePointers: function() {
       chrome.send('initializePointerSettings');
+    },
+
+    /** @override */
+    initializeStylus: function() {
+      chrome.send('initializeStylusSettings');
     },
 
     /** override */

@@ -159,7 +159,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   AddSettingsPageUIHandler(base::WrapUnique(
       chromeos::settings::DateTimeHandler::Create(html_source)));
 
-  html_source->AddBoolean("stylusAllowed", ash::IsPaletteFeatureEnabled());
+  AddSettingsPageUIHandler(
+      base::MakeUnique<chromeos::settings::StylusHandler>());
   html_source->AddBoolean("pinUnlockEnabled",
                           chromeos::IsPinUnlockEnabled(profile->GetPrefs()));
   html_source->AddBoolean("fingerprintUnlockEnabled",
