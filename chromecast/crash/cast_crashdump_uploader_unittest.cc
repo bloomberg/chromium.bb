@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "breakpad/src/common/linux/libcurl_wrapper.h"
 #include "chromecast/base/scoped_temp_file.h"
 #include "chromecast/crash/cast_crashdump_uploader.h"
@@ -35,8 +36,8 @@ using testing::_;
 using testing::Return;
 
 TEST(CastCrashdumpUploaderTest, UploadFailsWhenInitFails) {
-  testing::StrictMock<MockLibcurlWrapper> m;
-  EXPECT_CALL(m, Init()).Times(1).WillOnce(Return(false));
+  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(false));
 
   CastCrashdumpData data;
   data.product = "foobar";
@@ -46,20 +47,20 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWhenInitFails) {
   data.comments = "none";
   data.minidump_pathname = "/tmp/foo.dmp";
   data.crash_server = "http://foo.com";
-  CastCrashdumpUploader uploader(data, &m);
+  CastCrashdumpUploader uploader(data, std::move(m));
 
   ASSERT_FALSE(uploader.Upload(nullptr));
 }
 
 TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidParameters) {
-  testing::StrictMock<MockLibcurlWrapper> m;
+  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
 
   // Create a temporary file.
   ScopedTempFile minidump;
 
-  EXPECT_CALL(m, Init()).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(m, AddFile(minidump.path().value(), _)).WillOnce(Return(true));
-  EXPECT_CALL(m, SendRequest("http://foo.com", _, _, _, _)).Times(1).WillOnce(
+  EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(*m, AddFile(minidump.path().value(), _)).WillOnce(Return(true));
+  EXPECT_CALL(*m, SendRequest("http://foo.com", _, _, _, _)).Times(1).WillOnce(
       Return(true));
 
   CastCrashdumpData data;
@@ -70,15 +71,15 @@ TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidParameters) {
   data.comments = "none";
   data.minidump_pathname = minidump.path().value();
   data.crash_server = "http://foo.com";
-  CastCrashdumpUploader uploader(data, &m);
+  CastCrashdumpUploader uploader(data, std::move(m));
 
   ASSERT_TRUE(uploader.Upload(nullptr));
 }
 
 TEST(CastCrashdumpUploaderTest, UploadFailsWithInvalidPathname) {
-  testing::StrictMock<MockLibcurlWrapper> m;
-  EXPECT_CALL(m, Init()).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(m, SendRequest(_, _, _, _, _)).Times(0);
+  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(*m, SendRequest(_, _, _, _, _)).Times(0);
 
   CastCrashdumpData data;
   data.product = "foobar";
@@ -88,13 +89,12 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithInvalidPathname) {
   data.comments = "none";
   data.minidump_pathname = "/invalid/file/path";
   data.crash_server = "http://foo.com";
-  CastCrashdumpUploader uploader(data, &m);
+  CastCrashdumpUploader uploader(data, std::move(m));
 
   ASSERT_FALSE(uploader.Upload(nullptr));
 }
 
 TEST(CastCrashdumpUploaderTest, UploadFailsWithoutAllRequiredParameters) {
-  testing::StrictMock<MockLibcurlWrapper> m;
 
   // Create a temporary file.
   ScopedTempFile minidump;
@@ -111,33 +111,36 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithoutAllRequiredParameters) {
 
   // Test with empty product name.
   data.product = "";
-  EXPECT_CALL(m, Init()).Times(1).WillOnce(Return(true));
-  CastCrashdumpUploader uploader_no_product(data, &m);
+  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(true));
+  CastCrashdumpUploader uploader_no_product(data, std::move(m));
   ASSERT_FALSE(uploader_no_product.Upload(nullptr));
   data.product = "foobar";
 
   // Test with empty product version.
   data.version = "";
-  EXPECT_CALL(m, Init()).Times(1).WillOnce(Return(true));
-  CastCrashdumpUploader uploader_no_version(data, &m);
+  m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(true));
+  CastCrashdumpUploader uploader_no_version(data, std::move(m));
   ASSERT_FALSE(uploader_no_version.Upload(nullptr));
   data.version = "1.0";
 
   // Test with empty client GUID.
   data.guid = "";
-  EXPECT_CALL(m, Init()).Times(1).WillOnce(Return(true));
-  CastCrashdumpUploader uploader_no_guid(data, &m);
+  m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
+  EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(true));
+  CastCrashdumpUploader uploader_no_guid(data, std::move(m));
   ASSERT_FALSE(uploader_no_guid.Upload(nullptr));
 }
 
 TEST(CastCrashdumpUploaderTest, UploadFailsWithInvalidAttachment) {
-  testing::StrictMock<MockLibcurlWrapper> m;
+  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
 
   // Create a temporary file.
   ScopedTempFile minidump;
 
-  EXPECT_CALL(m, Init()).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(m, AddFile(minidump.path().value(), _)).WillOnce(Return(true));
+  EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(*m, AddFile(minidump.path().value(), _)).WillOnce(Return(true));
 
   CastCrashdumpData data;
   data.product = "foobar";
@@ -147,7 +150,7 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithInvalidAttachment) {
   data.comments = "none";
   data.minidump_pathname = minidump.path().value();
   data.crash_server = "http://foo.com";
-  CastCrashdumpUploader uploader(data, &m);
+  CastCrashdumpUploader uploader(data, std::move(m));
 
   // Add a file that does not exist as an attachment.
   uploader.AddAttachment("label", "/path/does/not/exist");
@@ -155,7 +158,7 @@ TEST(CastCrashdumpUploaderTest, UploadFailsWithInvalidAttachment) {
 }
 
 TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidAttachment) {
-  testing::StrictMock<MockLibcurlWrapper> m;
+  auto m = base::MakeUnique<testing::StrictMock<MockLibcurlWrapper>>();
 
   // Create a temporary file.
   ScopedTempFile minidump;
@@ -163,10 +166,10 @@ TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidAttachment) {
   // Create a valid attachment.
   ScopedTempFile attachment;
 
-  EXPECT_CALL(m, Init()).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(m, AddFile(minidump.path().value(), _)).WillOnce(Return(true));
-  EXPECT_CALL(m, AddFile(attachment.path().value(), _)).WillOnce(Return(true));
-  EXPECT_CALL(m, SendRequest(_, _, _, _, _)).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(*m, Init()).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(*m, AddFile(minidump.path().value(), _)).WillOnce(Return(true));
+  EXPECT_CALL(*m, AddFile(attachment.path().value(), _)).WillOnce(Return(true));
+  EXPECT_CALL(*m, SendRequest(_, _, _, _, _)).Times(1).WillOnce(Return(true));
 
   CastCrashdumpData data;
   data.product = "foobar";
@@ -176,7 +179,7 @@ TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidAttachment) {
   data.comments = "none";
   data.minidump_pathname = minidump.path().value();
   data.crash_server = "http://foo.com";
-  CastCrashdumpUploader uploader(data, &m);
+  CastCrashdumpUploader uploader(data, std::move(m));
 
   // Add a valid file as an attachment.
   uploader.AddAttachment("label", attachment.path().value());
