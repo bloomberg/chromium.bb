@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <body>
-<script src="../../../resources/js-test.js"></script>
+<script src="../../resources/js-test.js"></script>
 <script>
-description('Tests using null values for some or all of the event properties.');
+
+description('Tests to see if the last available event is fired.');
 
 var mockEvent;
 function setMockMotion(accelerationX, accelerationY, accelerationZ,
@@ -50,60 +51,33 @@ function checkMotion(event) {
     shouldBe('deviceMotionEvent.interval', 'mockEvent.interval');
 }
 
-function firstListener(event) {
+
+function mainFrameListener(event) {
     checkMotion(event);
-    window.removeEventListener('devicemotion', firstListener);
-    setTimeout(function(){initSecondListener();}, 0);
+    var childFrame = document.createElement('iframe');
+    document.body.appendChild(childFrame);
+    window.removeEventListener('devicemotion', mainFrameListener);
+    testRunner.setMockDeviceMotion(true, 0, true, 0, true, 0,
+                                   true, 0, true, 0, true, 0,
+                                   true, 0, true, 0, true, 0,
+                                   0);
+    childFrame.contentWindow.addEventListener('devicemotion', childFrameListener);
 }
 
-function initSecondListener() {
-    setMockMotion(1, 2, 3,
-              null, null, null,
-              null, null, null,
-              100);
-    window.addEventListener('devicemotion', secondListener);
-}
-
-function secondListener(event) {
-    checkMotion(event);
-    window.removeEventListener('devicemotion', secondListener);
-    setTimeout(function(){initThirdListener();}, 0);
-}
-
-function initThirdListener() {
-    setMockMotion(null, null, null,
-                  1, 2, 3,
-                  null, null, null,
-                  100);
-    window.addEventListener('devicemotion', thirdListener);
-}
-
-function thirdListener(event) {
-    checkMotion(event);
-    window.removeEventListener('devicemotion', thirdListener);
-    setTimeout(function(){initFourthListener();}, 0);
-}
-
-function initFourthListener() {
-    setMockMotion(null, null, null,
-                  null, null, null,
-                  1, 2, 3,
-                  100);
-    window.addEventListener('devicemotion', fourthListener);
-}
-
-function fourthListener(event) {
+function childFrameListener(event) {
     checkMotion(event);
     finishJSTest();
 }
 
-setMockMotion(null, null, null,
-              null, null, null,
-              null, null, null,
-              0);
-window.addEventListener('devicemotion', firstListener);
+setMockMotion(1, 2, 3,
+              4, 5, 6,
+              7, 8, 9,
+              10);
+
+window.addEventListener('devicemotion', mainFrameListener);
 
 window.jsTestIsAsync = true;
+
 </script>
 </body>
 </html>

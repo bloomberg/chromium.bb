@@ -1212,8 +1212,7 @@
     },
     'blink_device_orientation': {
       'filepath': 'third_party/WebKit/Source/modules/device_orientation/' \
-                  '|third_party/WebKit/LayoutTests/fast/dom/DeviceMotion/' \
-                  '|third_party/WebKit/LayoutTests/fast/dom/DeviceOrientation/' \
+                  '|third_party/WebKit/LayoutTests/device_orientation/' \
                   '|third_party/WebKit/Source/core/frame/PlatformEvent(Controller|Dispatcher)' \
                   '|third_party/WebKit/Source/core/frame/DeviceSingleWindowEventController'
     },
