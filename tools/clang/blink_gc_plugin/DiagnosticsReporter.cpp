@@ -150,6 +150,10 @@ const char kBaseClassMustDeclareVirtualTrace[] =
 const char kIteratorToGCManagedCollectionNote[] =
     "[blink-gc] Iterator field %0 to a GC managed collection declared here:";
 
+const char kTraceMethodOfStackAllocatedParentNote[] =
+    "[blink-gc] The stack allocated class %0 provides an unnecessary "
+    "trace method:";
+
 } // namespace
 
 DiagnosticBuilder DiagnosticsReporter::ReportDiagnostic(
@@ -212,6 +216,8 @@ DiagnosticsReporter::DiagnosticsReporter(
       getErrorLevel(), kBaseClassMustDeclareVirtualTrace);
   diag_iterator_to_gc_managed_collection_note_ = diagnostic_.getCustomDiagID(
       getErrorLevel(), kIteratorToGCManagedCollectionNote);
+  diag_trace_method_of_stack_allocated_parent_ = diagnostic_.getCustomDiagID(
+      getErrorLevel(), kTraceMethodOfStackAllocatedParentNote);
 
   // Register note messages.
   diag_base_requires_tracing_note_ = diagnostic_.getCustomDiagID(
@@ -497,6 +503,14 @@ void DiagnosticsReporter::BaseClassMustDeclareVirtualTrace(
   ReportDiagnostic(base->getLocStart(),
                    diag_base_class_must_declare_virtual_trace_)
       << base << derived->record();
+}
+
+void DiagnosticsReporter::TraceMethodForStackAllocatedClass(
+    RecordInfo* info,
+    CXXMethodDecl* trace) {
+  ReportDiagnostic(trace->getLocStart(),
+                   diag_trace_method_of_stack_allocated_parent_)
+      << info->record();
 }
 
 void DiagnosticsReporter::NoteManualDispatchMethod(CXXMethodDecl* dispatch) {
