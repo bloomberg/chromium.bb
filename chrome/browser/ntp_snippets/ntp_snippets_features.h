@@ -18,6 +18,11 @@ extern const char kContentSuggestionsNotificationsAlwaysNotifyParam[];
 // "false": use article's publisher as notification's text
 extern const char kContentSuggestionsNotificationsUseSnippetAsTextParam[];
 
+// "true": when Chrome becomes frontmost, leave notifications open.
+// "false": automatically dismiss notification when Chrome becomes frontmost.
+extern const char
+    kContentSuggestionsNotificationsKeepNotificationWhenFrontmostParam[];
+
 // An integer. The number of notifications that can be ignored. If the user
 // ignores this many notifications or more, we stop sending them.
 extern const char kContentSuggestionsNotificationsIgnoredLimitParam[];

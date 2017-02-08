@@ -11,5 +11,8 @@ const char kContentSuggestionsNotificationsAlwaysNotifyParam[] =
     "always_notify";
 const char kContentSuggestionsNotificationsUseSnippetAsTextParam[] =
     "use_snippet_as_text";
+const char
+    kContentSuggestionsNotificationsKeepNotificationWhenFrontmostParam[] =
+        "keep_notification_when_frontmost";
 const char kContentSuggestionsNotificationsIgnoredLimitParam[] =
     "ignored_limit";
