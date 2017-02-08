@@ -36,7 +36,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "media/gpu/vt_video_decode_accelerator_mac.h"
-#include "sandbox/mac/seatbelt.h"
+#include "sandbox/mac/sandbox_compiler.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/base/layout.h"
 #include "ui/gl/init/gl_factory.h"
@@ -117,43 +117,6 @@ NOINLINE void FatalStringQuoteException(const std::string& str) {
 }
 
 }  // namespace
-
-SandboxCompiler::SandboxCompiler(const std::string& profile_str)
-    : params_map_(), profile_str_(profile_str) {
-}
-
-SandboxCompiler::~SandboxCompiler() {
-}
-
-bool SandboxCompiler::InsertBooleanParam(const std::string& key, bool value) {
-  return params_map_.insert(std::make_pair(key, value ? "TRUE" : "FALSE"))
-      .second;
-}
-
-bool SandboxCompiler::InsertStringParam(const std::string& key,
-                                        const std::string& value) {
-  return params_map_.insert(std::make_pair(key, value)).second;
-}
-
-bool SandboxCompiler::CompileAndApplyProfile(std::string* error) {
-  char* error_internal = nullptr;
-  std::vector<const char*> params;
-
-  for (const auto& kv : params_map_) {
-    params.push_back(kv.first.c_str());
-    params.push_back(kv.second.c_str());
-  }
-  // The parameters array must be null terminated.
-  params.push_back(static_cast<const char*>(0));
-
-  if (sandbox::Seatbelt::InitWithParams(profile_str_.c_str(), 0, params.data(),
-                                        &error_internal)) {
-    error->assign(error_internal);
-    sandbox::Seatbelt::FreeError(error_internal);
-    return false;
-  }
-  return true;
-}
 
 // static
 bool Sandbox::QuotePlainString(const std::string& src_utf8, std::string* dst) {
@@ -425,7 +388,7 @@ bool Sandbox::EnableSandbox(int sandbox_type,
     return false;
   }
 
-  SandboxCompiler compiler(sandbox_data);
+  sandbox::SandboxCompiler compiler(sandbox_data);
 
   if (!allowed_dir.empty()) {
     // Add the sandbox parameters necessary to access the given directory.

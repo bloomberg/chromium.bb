@@ -35,6 +35,8 @@ component("sandbox") {
 
 component("seatbelt") {
   sources = [
+    "sandbox_compiler.cc",
+    "sandbox_compiler.h",
     "seatbelt.cc",
     "seatbelt.h",
     "seatbelt_export.h",
@@ -47,6 +49,8 @@ test("sandbox_mac_unittests") {
   sources = [
     "bootstrap_sandbox_unittest.mm",
     "policy_unittest.cc",
+    "sandbox_mac_compiler_unittest.mm",
+    "sandbox_mac_compiler_v2_unittest.mm",
     "xpc_message_server_unittest.cc",
   ]
 
@@ -57,6 +61,7 @@ test("sandbox_mac_unittests") {
 
   deps = [
     ":sandbox",
+    ":seatbelt",
     "//base",
     "//base/test:run_all_unittests",
     "//testing/gtest",

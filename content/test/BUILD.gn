@@ -1336,7 +1336,6 @@ test("content_unittests") {
     "../common/quarantine/quarantine_linux_unittest.cc",
     "../common/quarantine/quarantine_mac_unittest.mm",
     "../common/quarantine/quarantine_win_unittest.cc",
-    "../common/sandbox_mac_compiler_unittest.mm",
     "../common/sandbox_mac_diraccess_unittest.mm",
     "../common/sandbox_mac_fontloading_unittest.mm",
     "../common/sandbox_mac_system_access_unittest.mm",
@@ -1655,6 +1654,7 @@ test("content_unittests") {
   }
   if (is_mac) {
     deps += [
+      "//sandbox/mac:seatbelt",
       "//third_party/mozilla",
       "//third_party/ocmock",
       "//ui/accelerated_widget_mac",

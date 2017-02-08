@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_mac.h"
-
 #include <fcntl.h>
 #include <stdint.h>
 #include <sys/stat.h>
@@ -12,10 +10,11 @@
 #include "base/process/kill.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "sandbox/mac/sandbox_compiler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
-namespace content {
+namespace sandbox {
 
 class SandboxMacCompilerTest : public base::MultiProcessTest {};
 
@@ -158,4 +157,4 @@ TEST_F(SandboxMacCompilerTest, ProfileFunctionalityTestError) {
   EXPECT_EQ(exit_code, 0);
 }
 
-}  // namespace content
+}  // namespace sandbox
