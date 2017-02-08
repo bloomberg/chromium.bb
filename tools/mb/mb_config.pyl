@@ -302,6 +302,7 @@
       'ios-device-xcode-clang': 'ios',
       'ios-simulator': 'ios',
       'ios-simulator-cronet': 'ios',
+      'ios-simulator-eg': 'ios',
       'ios-simulator-xcode-clang': 'ios',
     },
 
@@ -593,6 +594,7 @@
       'ios-device': 'ios',
       'ios-device-xcode-clang': 'ios',
       'ios-simulator': 'ios',
+      'ios-simulator-eg': 'ios',
       'ios-simulator-cronet': 'ios',
       'ios-simulator-xcode-clang': 'ios',
       'mac_chromium_10.10_rel_ng': 'gpu_tests_release_trybot',
