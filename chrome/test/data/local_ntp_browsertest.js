@@ -66,14 +66,24 @@ function runTests() {
 
 
 /**
+ * Checks whether a given HTMLElement exists and is visible.
+ * @param {HTMLElement|undefined} elem An HTMLElement.
+ * @return {boolean} True if the element exists and is visible.
+ */
+function elementIsVisible(elem) {
+  return elem && elem.offsetWidth > 0 && elem.offsetHeight > 0;
+}
+
+
+/**
  * Tests that Google NTPs show a fakebox and logo.
  */
 function testShowsFakeboxAndLogoIfGoogle() {
   var localNTP = LocalNTP();
   configData.isGooglePage = true;
   localNTP.init();
-  assert($('fakebox'));
-  assert($('logo'));
+  assert(elementIsVisible($('fakebox')));
+  assert(elementIsVisible($('logo')));
 }
 
 
@@ -84,6 +94,6 @@ function testDoesNotShowFakeboxIfNotGoogle() {
   var localNTP = LocalNTP();
   configData.isGooglePage = false;
   localNTP.init();
-  assert(!$('fakebox'));
-  assert(!$('logo'));
+  assert(!elementIsVisible($('fakebox')));
+  assert(!elementIsVisible($('logo')));
 }

@@ -37,6 +37,10 @@ body.hide-fakebox-logo #fakebox {
   width: 272px;
 }
 
+.non-google-page #logo {
+  display: none;
+}
+
 body.alternate-logo #logo {
   -webkit-mask-image:
       url(../../../../ui/webui/resources/images/google_logo.svg);
@@ -61,6 +65,10 @@ body.alternate-logo #logo {
   /* #fakebox width (here and below) should be 2px less than #mv-tiles
      to account for its border. */
   width: 298px;
+}
+
+.non-google-page #fakebox {
+  display: none;
 }
 
 #fakebox:hover {

@@ -12,7 +12,15 @@
   <script src="local_ntp_browsertest.js"></script>
   <template id="local-ntp-body">
     <div id="ntp-contents">
+      <div id="logo" title="Google"></div>
+      <div id="fakebox">
+        <div id="fakebox-text"></div>
+        <input id="fakebox-input" autocomplete="off" tabIndex="-1" type="url"
+            aria-hidden="true">
+        <div id="cursor"></div>
+      </div>
       <div id="most-visited">
+        <!-- The container for the tiles. The MV iframe goes in here. -->
         <div id="mv-tiles"></div>
         <!-- Notification shown when a tile is blacklisted. -->
         <div id="mv-notice" class="mv-notice-hide">

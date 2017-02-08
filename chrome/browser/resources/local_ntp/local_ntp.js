@@ -124,6 +124,7 @@ var IDS = {
   NTP_CONTENTS: 'ntp-contents',
   RESTORE_ALL_LINK: 'mv-restore',
   TILES: 'mv-tiles',
+  TILES_IFRAME: 'mv-single',
   UNDO_LINK: 'mv-undo'
 };
 
@@ -244,15 +245,6 @@ function getIsThemeDark(info) {
  * @private
  */
 function renderTheme() {
-  var fakeboxText = $(IDS.FAKEBOX_TEXT);
-  if (fakeboxText) {
-    fakeboxText.innerHTML = '';
-    if (configData.translatedStrings.searchboxPlaceholder) {
-      fakeboxText.textContent =
-          configData.translatedStrings.searchboxPlaceholder;
-    }
-  }
-
   var info = ntpApiHandle.themeBackgroundInfo;
   var isThemeDark = getIsThemeDark(info);
   ntpContents.classList.toggle(CLASSES.DARK, isThemeDark);
@@ -271,6 +263,7 @@ function renderTheme() {
   updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
   setCustomThemeStyle(info);
 
+  // Inform the most visited iframe of the new theme.
   var themeinfo = {cmd: 'updateTheme'};
   if (!info.usingDefaultTheme) {
     themeinfo.tileBorderColor = convertToRGBAColor(info.sectionBorderColorRgba);
@@ -286,7 +279,7 @@ function renderTheme() {
   }
   themeinfo.tileTitleColor = convertToRGBAColor(titleColor);
 
-  $('mv-single').contentWindow.postMessage(themeinfo, '*');
+  $(IDS.TILES_IFRAME).contentWindow.postMessage(themeinfo, '*');
 }
 
 
@@ -423,7 +416,7 @@ function reloadTiles() {
   }
   cmds.push({cmd: 'show', maxVisible: numColumnsShown * NUM_ROWS});
 
-  $('mv-single').contentWindow.postMessage(cmds, '*');
+  $(IDS.TILES_IFRAME).contentWindow.postMessage(cmds, '*');
 }
 
 
@@ -514,7 +507,7 @@ function updateContentWidth() {
  */
 function onResize() {
   updateContentWidth();
-  $('mv-single').contentWindow.postMessage(
+  $(IDS.TILES_IFRAME).contentWindow.postMessage(
     {cmd: 'tilesVisible', maxVisible: numColumnsShown * NUM_ROWS}, '*');
 }
 
@@ -634,21 +627,7 @@ function init() {
   ntpContents = $(IDS.NTP_CONTENTS);
 
   if (configData.isGooglePage) {
-    var logo = document.createElement('div');
-    logo.id = IDS.LOGO;
-    logo.title = 'Google';
-
-    fakebox = document.createElement('div');
-    fakebox.id = IDS.FAKEBOX;
-    var fakeboxHtml = [];
-    fakeboxHtml.push('<div id="' + IDS.FAKEBOX_TEXT + '"></div>');
-    fakeboxHtml.push('<input id="' + IDS.FAKEBOX_INPUT +
-        '" autocomplete="off" tabindex="-1" type="url" aria-hidden="true">');
-    fakeboxHtml.push('<div id="cursor"></div>');
-    fakebox.innerHTML = fakeboxHtml.join('');
-
-    ntpContents.insertBefore(fakebox, ntpContents.firstChild);
-    ntpContents.insertBefore(logo, ntpContents.firstChild);
+    fakebox = $(IDS.FAKEBOX);
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }
@@ -656,8 +635,7 @@ function init() {
   // Hide notifications after fade out, so we can't focus on links via keyboard.
   notification.addEventListener('webkitTransitionEnd', hideNotification);
 
-  var notificationMessage = $(IDS.NOTIFICATION_MESSAGE);
-  notificationMessage.textContent =
+  $(IDS.NOTIFICATION_MESSAGE).textContent =
       configData.translatedStrings.thumbnailRemovedNotification;
 
   var undoLink = $(IDS.UNDO_LINK);
@@ -694,6 +672,9 @@ function init() {
   searchboxApiHandle = topLevelHandle.searchBox;
 
   if (fakebox) {
+    $(IDS.FAKEBOX_TEXT).textContent =
+        configData.translatedStrings.searchboxPlaceholder;
+
     // Listener for updating the key capture state.
     document.body.onmousedown = function(event) {
       if (isFakeboxClick(event))
@@ -705,29 +686,27 @@ function init() {
       setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
     };
     var inputbox = $(IDS.FAKEBOX_INPUT);
-    if (inputbox) {
-      inputbox.onpaste = function(event) {
-        event.preventDefault();
-        // Send pasted text to Omnibox.
-        var text = event.clipboardData.getData('text/plain');
-        if (text)
-          searchboxApiHandle.paste(text);
-      };
-      inputbox.ondrop = function(event) {
-        event.preventDefault();
-        var text = event.dataTransfer.getData('text/plain');
-        if (text) {
-          searchboxApiHandle.paste(text);
-        }
-        setFakeboxDragFocus(false);
-      };
-      inputbox.ondragenter = function() {
-        setFakeboxDragFocus(true);
-      };
-      inputbox.ondragleave = function() {
-        setFakeboxDragFocus(false);
-      };
-    }
+    inputbox.onpaste = function(event) {
+      event.preventDefault();
+      // Send pasted text to Omnibox.
+      var text = event.clipboardData.getData('text/plain');
+      if (text)
+        searchboxApiHandle.paste(text);
+    };
+    inputbox.ondrop = function(event) {
+      event.preventDefault();
+      var text = event.dataTransfer.getData('text/plain');
+      if (text) {
+        searchboxApiHandle.paste(text);
+      }
+      setFakeboxDragFocus(false);
+    };
+    inputbox.ondragenter = function() {
+      setFakeboxDragFocus(true);
+    };
+    inputbox.ondragleave = function() {
+      setFakeboxDragFocus(false);
+    };
 
     // Update the fakebox style to match the current key capturing state.
     setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
@@ -741,11 +720,7 @@ function init() {
     document.documentElement.classList.add(CLASSES.RTL);
   }
 
-  var iframe = document.createElement('iframe');
-  // Change the order of tabbing the page to start with NTP tiles.
-  iframe.setAttribute('tabindex', '1');
-  iframe.id = 'mv-single';
-
+  // Pass arguments to the most visited iframe.
   var args = [];
 
   if (searchboxApiHandle.rtl)
@@ -756,6 +731,10 @@ function init() {
   args.push('removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));
 
+  // Create the most visited iframe.
+  var iframe = document.createElement('iframe');
+  iframe.id = IDS.TILES_IFRAME;
+  iframe.tabIndex = 1;
   iframe.src = '//most-visited/single.html?' + args.join('&');
   $(IDS.TILES).appendChild(iframe);
 
