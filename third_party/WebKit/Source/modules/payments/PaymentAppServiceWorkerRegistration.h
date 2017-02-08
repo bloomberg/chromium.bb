@@ -32,9 +32,10 @@ class PaymentAppServiceWorkerRegistration final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit PaymentAppServiceWorkerRegistration(ServiceWorkerRegistration&);
+  explicit PaymentAppServiceWorkerRegistration(ServiceWorkerRegistration*);
   static const char* supplementName();
 
+  Member<ServiceWorkerRegistration> m_registration;
   Member<PaymentAppManager> m_paymentAppManager;
 };
 

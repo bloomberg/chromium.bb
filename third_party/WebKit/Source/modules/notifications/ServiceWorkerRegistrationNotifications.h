@@ -52,8 +52,8 @@ class ServiceWorkerRegistrationNotifications final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  ServiceWorkerRegistrationNotifications(ServiceWorkerRegistration&,
-                                         ExecutionContext*);
+  ServiceWorkerRegistrationNotifications(ExecutionContext*,
+                                         ServiceWorkerRegistration*);
 
   static const char* supplementName();
   static ServiceWorkerRegistrationNotifications& from(
@@ -67,6 +67,7 @@ class ServiceWorkerRegistrationNotifications final
                         std::unique_ptr<WebNotificationShowCallbacks>,
                         NotificationResourcesLoader*);
 
+  Member<ServiceWorkerRegistration> m_registration;
   HeapHashSet<Member<NotificationResourcesLoader>> m_loaders;
 };
 

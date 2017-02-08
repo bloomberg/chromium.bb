@@ -10,8 +10,8 @@
 namespace blink {
 
 ServiceWorkerRegistrationPush::ServiceWorkerRegistrationPush(
-    ServiceWorkerRegistration& registration)
-    : Supplement<ServiceWorkerRegistration>(registration) {}
+    ServiceWorkerRegistration* registration)
+    : m_registration(registration) {}
 
 ServiceWorkerRegistrationPush::~ServiceWorkerRegistrationPush() {}
 
@@ -26,7 +26,7 @@ ServiceWorkerRegistrationPush& ServiceWorkerRegistrationPush::from(
           Supplement<ServiceWorkerRegistration>::from(registration,
                                                       supplementName()));
   if (!supplement) {
-    supplement = new ServiceWorkerRegistrationPush(registration);
+    supplement = new ServiceWorkerRegistrationPush(&registration);
     provideTo(registration, supplementName(), supplement);
   }
   return *supplement;
@@ -39,11 +39,12 @@ PushManager* ServiceWorkerRegistrationPush::pushManager(
 
 PushManager* ServiceWorkerRegistrationPush::pushManager() {
   if (!m_pushManager)
-    m_pushManager = PushManager::create(supplementable());
+    m_pushManager = PushManager::create(m_registration);
   return m_pushManager.get();
 }
 
 DEFINE_TRACE(ServiceWorkerRegistrationPush) {
+  visitor->trace(m_registration);
   visitor->trace(m_pushManager);
   Supplement<ServiceWorkerRegistration>::trace(visitor);
 }

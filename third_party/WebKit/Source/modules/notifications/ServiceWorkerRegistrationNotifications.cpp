@@ -55,10 +55,10 @@ class NotificationArray {
 }  // namespace
 
 ServiceWorkerRegistrationNotifications::ServiceWorkerRegistrationNotifications(
-    ServiceWorkerRegistration& registration,
-    ExecutionContext* executionContext)
-    : Supplement<ServiceWorkerRegistration>(registration),
-      ContextLifecycleObserver(executionContext) {}
+    ExecutionContext* executionContext,
+    ServiceWorkerRegistration* registration)
+    : ContextLifecycleObserver(executionContext),
+      m_registration(registration) {}
 
 ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
     ScriptState* scriptState,
@@ -142,6 +142,7 @@ void ServiceWorkerRegistrationNotifications::contextDestroyed(
 }
 
 DEFINE_TRACE(ServiceWorkerRegistrationNotifications) {
+  visitor->trace(m_registration);
   visitor->trace(m_loaders);
   Supplement<ServiceWorkerRegistration>::trace(visitor);
   ContextLifecycleObserver::trace(visitor);
@@ -160,8 +161,8 @@ ServiceWorkerRegistrationNotifications::from(
           Supplement<ServiceWorkerRegistration>::from(registration,
                                                       supplementName()));
   if (!supplement) {
-    supplement = new ServiceWorkerRegistrationNotifications(registration,
-                                                            executionContext);
+    supplement = new ServiceWorkerRegistrationNotifications(executionContext,
+                                                            &registration);
     provideTo(registration, supplementName(), supplement);
   }
   return *supplement;
@@ -192,7 +193,7 @@ void ServiceWorkerRegistrationNotifications::didLoadResources(
 
   notificationManager->showPersistent(
       WebSecurityOrigin(origin.get()), data, loader->getResources(),
-      supplementable()->webRegistration(), std::move(callbacks));
+      m_registration->webRegistration(), std::move(callbacks));
   m_loaders.remove(loader);
 }
 

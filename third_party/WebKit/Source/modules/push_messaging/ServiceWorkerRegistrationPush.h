@@ -30,9 +30,10 @@ class ServiceWorkerRegistrationPush final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit ServiceWorkerRegistrationPush(ServiceWorkerRegistration&);
+  explicit ServiceWorkerRegistrationPush(ServiceWorkerRegistration*);
   static const char* supplementName();
 
+  Member<ServiceWorkerRegistration> m_registration;
   Member<PushManager> m_pushManager;
 };
 
