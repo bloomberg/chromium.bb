@@ -13,26 +13,12 @@
 #include "base/time/time.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/origin_util.h"
 #include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
 #include "url/origin.h"
 
 using content::BrowserThread;
-
-namespace {
-
-// Previously, budget information was stored in the prefs. If there is any old
-// information still there, clear it.
-// TODO(harkness): Remove once Chrome 56 has branched.
-void ClearBudgetDataFromPrefs(Profile* profile) {
-  profile->GetPrefs()->ClearPref(prefs::kBackgroundBudgetMap);
-}
-
-}  // namespace
 
 BudgetManager::BudgetManager(Profile* profile)
     : profile_(profile),
@@ -43,16 +29,9 @@ BudgetManager::BudgetManager(Profile* profile)
                   base::SequencedWorkerPool::GetSequenceToken(),
                   base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
       weak_ptr_factory_(this) {
-  ClearBudgetDataFromPrefs(profile);
 }
 
 BudgetManager::~BudgetManager() {}
-
-// static
-void BudgetManager::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(prefs::kBackgroundBudgetMap);
-}
 
 // static
 double BudgetManager::GetCost(blink::mojom::BudgetOperationType type) {

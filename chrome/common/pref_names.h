@@ -437,7 +437,6 @@ extern const char kNotificationsVibrateEnabled[];
 #endif
 
 extern const char kPushMessagingAppIdentifierMap[];
-extern const char kBackgroundBudgetMap[];
 
 extern const char kGCMProductCategoryForSubtypes[];
 

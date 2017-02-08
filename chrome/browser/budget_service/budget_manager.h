@@ -16,10 +16,6 @@
 
 class Profile;
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace url {
 class Origin;
 }
@@ -32,8 +28,6 @@ class BudgetManager : public KeyedService {
  public:
   explicit BudgetManager(Profile* profile);
   ~BudgetManager() override;
-
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Query for the base cost for any background processing.
   static double GetCost(blink::mojom::BudgetOperationType type);
