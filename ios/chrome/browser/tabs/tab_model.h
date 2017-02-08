@@ -228,10 +228,8 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 - (void)moveTab:(Tab*)tab toIndex:(NSUInteger)index;
 
 // Replaces |oldTab| in the model with |newTab|. Closes the oldTab when
-// replacing it in the model unless |keepOldTabOpen|.
-- (void)replaceTab:(Tab*)oldTab
-           withTab:(Tab*)newTab
-    keepOldTabOpen:(BOOL)keepOldTabOpen;
+// replacing it in the model.
+- (void)replaceTab:(Tab*)oldTab withTab:(Tab*)newTab;
 
 // Closes the tab at the given |index|. |index| must be valid.
 - (void)closeTabAtIndex:(NSUInteger)index;

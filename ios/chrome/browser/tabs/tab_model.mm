@@ -560,9 +560,7 @@ void CleanCertificatePolicyCache(
   [_observers tabModel:self didMoveTab:tab fromIndex:fromIndex toIndex:toIndex];
 }
 
-- (void)replaceTab:(Tab*)oldTab
-           withTab:(Tab*)newTab
-    keepOldTabOpen:(BOOL)keepOldTabOpen {
+- (void)replaceTab:(Tab*)oldTab withTab:(Tab*)newTab {
   NSUInteger index = [self indexOfTab:oldTab];
   DCHECK_NE(NSNotFound, static_cast<NSInteger>(index));
 
@@ -578,8 +576,7 @@ void CleanCertificatePolicyCache(
     [self changeSelectedTabFrom:nil to:newTab persistState:NO];
 
   [oldTab setParentTabModel:nil];
-  if (!keepOldTabOpen)
-    [oldTab close];
+  [oldTab close];
 
   // Record a tab clobber, since swapping tabs bypasses the tab code that would
   // normally log clobbers.

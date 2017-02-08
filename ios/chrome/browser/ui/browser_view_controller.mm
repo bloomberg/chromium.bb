@@ -3537,7 +3537,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [newHistory insertStateFromSessionController:oldHistory];
       [[newTab nativeAppNavigationController]
           copyStateFrom:[oldTab nativeAppNavigationController]];
-      [_model replaceTab:oldTab withTab:newTab keepOldTabOpen:NO];
+      [_model replaceTab:oldTab withTab:newTab];
 
       // Set isPrerenderTab to NO after replacing the tab. This will allow the
       // BrowserViewController to detect that a pre-rendered tab is switched in,
