@@ -4,23 +4,27 @@
 
 package org.chromium.chrome.browser.omaha;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.os.Build;
-import android.support.annotation.IntDef;
+import android.os.Looper;
 
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeApplication;
 
 import java.io.IOException;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -51,9 +55,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class OmahaClient extends IntentService {
     // Results of {@link #handlePostRequest()}.
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({POST_RESULT_NO_REQUEST, POST_RESULT_SENT, POST_RESULT_FAILED, POST_RESULT_SCHEDULED})
-    @interface PostResult {}
     static final int POST_RESULT_NO_REQUEST = 0;
     static final int POST_RESULT_SENT = 1;
     static final int POST_RESULT_FAILED = 2;
@@ -61,15 +62,19 @@ public class OmahaClient extends IntentService {
 
     private static final String TAG = "omaha";
 
-    /** Deprecated; kept around to cancel alarms set for OmahaClient pre-M58. */
+    // Intent actions.
+    private static final String ACTION_INITIALIZE =
+            "org.chromium.chrome.browser.omaha.ACTION_INITIALIZE";
     private static final String ACTION_REGISTER_REQUEST =
             "org.chromium.chrome.browser.omaha.ACTION_REGISTER_REQUEST";
+    private static final String ACTION_POST_REQUEST =
+            "org.chromium.chrome.browser.omaha.ACTION_POST_REQUEST";
 
     // Delays between events.
-    static final long MS_POST_BASE_DELAY = TimeUnit.HOURS.toMillis(1);
-    static final long MS_POST_MAX_DELAY = TimeUnit.HOURS.toMillis(5);
+    private static final long MS_POST_BASE_DELAY = TimeUnit.HOURS.toMillis(1);
+    private static final long MS_POST_MAX_DELAY = TimeUnit.HOURS.toMillis(5);
     static final long MS_BETWEEN_REQUESTS = TimeUnit.HOURS.toMillis(5);
-    static final int MS_CONNECTION_TIMEOUT = (int) TimeUnit.MINUTES.toMillis(1);
+    private static final int MS_CONNECTION_TIMEOUT = (int) TimeUnit.MINUTES.toMillis(1);
 
     // Strings indicating how the Chrome APK arrived on the user's device. These values MUST NOT
     // be changed without updating the corresponding Omaha server strings.
@@ -82,7 +87,8 @@ public class OmahaClient extends IntentService {
 
     // Member fields not persisted to disk.
     private boolean mStateHasBeenRestored;
-    private OmahaDelegate mDelegate;
+    private ExponentialBackoffScheduler mBackoffScheduler;
+    private RequestGenerator mGenerator;
 
     // State saved written to and read from disk.
     private RequestData mCurrentRequest;
@@ -99,115 +105,176 @@ public class OmahaClient extends IntentService {
         setIntentRedelivery(true);
     }
 
+    @VisibleForTesting
+    long getTimestampForNextPostAttempt() {
+        return mTimestampForNextPostAttempt;
+    }
+
+    @VisibleForTesting
+    long getTimestampForNewRequest() {
+        return mTimestampForNewRequest;
+    }
+
+    @VisibleForTesting
+    int getCumulativeFailedAttempts() {
+        return getBackoffScheduler().getNumFailedAttempts();
+    }
+
+    /**
+     * Creates the scheduler used to space out POST attempts.
+     */
+    @VisibleForTesting
+    ExponentialBackoffScheduler createBackoffScheduler(String prefPackage, Context context,
+            long base, long max) {
+        return new ExponentialBackoffScheduler(prefPackage, context, base, max);
+    }
+
+    /**
+     * Creates the request generator used to create Omaha XML.
+     */
+    @VisibleForTesting
+    RequestGenerator createRequestGenerator(Context context) {
+        return ((ChromeApplication) context.getApplicationContext()).createOmahaRequestGenerator();
+    }
+
     /**
      * Handles an action on a thread separate from the UI thread.
      * @param intent Intent fired by some part of Chrome.
      */
     @Override
     public void onHandleIntent(Intent intent) {
-        assert !ThreadUtils.runningOnUiThread();
-        run();
-    }
+        assert Looper.myLooper() != Looper.getMainLooper();
 
-    protected void run() {
         if (OmahaBase.isDisabled() || Build.VERSION.SDK_INT > Build.VERSION_CODES.N
                 || getRequestGenerator() == null) {
             Log.v(TAG, "Disabled.  Ignoring intent.");
             return;
         }
 
-        if (mDelegate == null) mDelegate = new OmahaDelegateImpl(this);
+        restoreState(this);
 
-        restoreState(getContext());
-
-        long nextTimestamp = Long.MAX_VALUE;
-        if (mDelegate.isChromeBeingUsed()) {
-            handleRegisterActiveRequest();
-            nextTimestamp = Math.min(nextTimestamp, mTimestampForNewRequest);
+        if (ACTION_INITIALIZE.equals(intent.getAction())) {
+            handleInitialize();
+        } else if (ACTION_REGISTER_REQUEST.equals(intent.getAction())) {
+            handleRegisterRequest();
+        } else if (ACTION_POST_REQUEST.equals(intent.getAction())) {
+            handlePostRequest();
+        } else {
+            Log.e(TAG, "Got unknown action from intent: " + intent.getAction());
         }
 
-        if (hasRequest()) {
-            int result = handlePostRequest();
-            if (result == POST_RESULT_FAILED || result == POST_RESULT_SCHEDULED) {
-                nextTimestamp = Math.min(nextTimestamp, mTimestampForNextPostAttempt);
-            }
-        }
-
-        // TODO(dfalcantara): Prevent Omaha code from repeatedly rescheduling itself immediately in
-        //                    case a scheduling error occurs.
-        if (nextTimestamp != Long.MAX_VALUE && nextTimestamp >= 0) {
-            mDelegate.scheduleService(this, nextTimestamp);
-        }
-        saveState(getContext());
+        saveState(this);
     }
 
     /**
      * Begin communicating with the Omaha Update Server.
      */
     static void startService(Context context) {
-        context.startService(createOmahaIntent(context));
+        Intent omahaIntent = createInitializeIntent(context);
+        context.startService(omahaIntent);
     }
 
-    static Intent createOmahaIntent(Context context) {
-        return new Intent(context, OmahaClient.class);
+    static Intent createInitializeIntent(Context context) {
+        Intent intent = new Intent(context, OmahaClient.class);
+        intent.setAction(ACTION_INITIALIZE);
+        return intent;
+    }
+
+    /**
+     * Start a recurring alarm to fire request generation intents.
+     */
+    private void handleInitialize() {
+        scheduleActiveUserCheck();
+
+        // If a request exists, kick off POSTing it to the server immediately.
+        if (hasRequest()) handlePostRequest();
+    }
+
+    /**
+     * Returns an Intent for registering a new request to send to the server.
+     */
+    static Intent createRegisterRequestIntent(Context context) {
+        Intent intent = new Intent(context, OmahaClient.class);
+        intent.setAction(ACTION_REGISTER_REQUEST);
+        return intent;
     }
 
     /**
      * Determines if a new request should be generated.  New requests are only generated if enough
      * time has passed between now and the last time a request was generated.
      */
-    private void handleRegisterActiveRequest() {
+    private void handleRegisterRequest() {
+        if (!isChromeBeingUsed()) {
+            getBackoffScheduler().cancelAlarm(createRegisterRequestIntent(this));
+            return;
+        }
+
         // If the current request is too old, generate a new one.
         long currentTimestamp = getBackoffScheduler().getCurrentTime();
         boolean isTooOld = hasRequest()
                 && mCurrentRequest.getAgeInMilliseconds(currentTimestamp) >= MS_BETWEEN_REQUESTS;
-        boolean isOverdue = currentTimestamp >= mTimestampForNewRequest;
+        boolean isOverdue = !hasRequest() && currentTimestamp >= mTimestampForNewRequest;
         if (isTooOld || isOverdue) {
             registerNewRequest(currentTimestamp);
         }
+
+        // Send the request.
+        if (hasRequest()) {
+            handlePostRequest();
+        }
+    }
+
+    /**
+     * Returns an Intent for POSTing the current request to the Omaha server.
+     */
+    static Intent createPostRequestIntent(Context context) {
+        Intent intent = new Intent(context, OmahaClient.class);
+        intent.setAction(ACTION_POST_REQUEST);
+        return intent;
     }
 
     /**
      * Sends the request it is holding.
      */
-    private int handlePostRequest() {
-        if (!hasRequest()) {
-            mDelegate.onHandlePostRequestDone(POST_RESULT_NO_REQUEST, false);
-            return POST_RESULT_NO_REQUEST;
-        }
+    @VisibleForTesting
+    protected int handlePostRequest() {
+        if (!hasRequest()) return POST_RESULT_NO_REQUEST;
 
         // If enough time has passed since the last attempt, try sending a request.
         int result;
         long currentTimestamp = getBackoffScheduler().getCurrentTime();
-        boolean installEventWasSent = false;
         if (currentTimestamp >= mTimestampForNextPostAttempt) {
             // All requests made during the same session should have the same ID.
-            String sessionID = mDelegate.generateUUID();
+            String sessionID = generateRandomUUID();
             boolean sendingInstallRequest = mSendInstallEvent;
             boolean succeeded = generateAndPostRequest(currentTimestamp, sessionID);
 
             if (succeeded && sendingInstallRequest) {
                 // Only the first request ever generated should contain an install event.
                 mSendInstallEvent = false;
-                installEventWasSent = true;
 
                 // Create and immediately send another request for a ping and update check.
                 registerNewRequest(currentTimestamp);
-                succeeded &= generateAndPostRequest(currentTimestamp, sessionID);
+                generateAndPostRequest(currentTimestamp, sessionID);
             }
 
             result = succeeded ? POST_RESULT_SENT : POST_RESULT_FAILED;
         } else {
+            schedulePost();
             result = POST_RESULT_SCHEDULED;
         }
 
-        mDelegate.onHandlePostRequestDone(result, installEventWasSent);
         return result;
+    }
+
+    /** Set an alarm to POST at the proper time.  Previous alarms are destroyed. */
+    private void schedulePost() {
+        Intent postIntent = createPostRequestIntent(this);
+        getBackoffScheduler().createAlarm(postIntent, mTimestampForNextPostAttempt);
     }
 
     private boolean generateAndPostRequest(long currentTimestamp, String sessionID) {
         ExponentialBackoffScheduler scheduler = getBackoffScheduler();
-        boolean succeeded = false;
         try {
             // Generate the XML for the current request.
             long installAgeInDays = RequestGenerator.installAge(currentTimestamp,
@@ -228,29 +295,61 @@ public class OmahaClient extends IntentService {
             mLatestVersion = parser.getNewVersion();
             mMarketURL = parser.getURL();
 
-            succeeded = true;
-        } catch (RequestFailureException e) {
-            Log.e(TAG, "Failed to contact server: ", e);
-        }
-
-        if (succeeded) {
             // If we've gotten this far, we've successfully sent a request.
             mCurrentRequest = null;
 
+            mTimestampForNewRequest = getBackoffScheduler().getCurrentTime() + MS_BETWEEN_REQUESTS;
+            scheduleActiveUserCheck();
+
             scheduler.resetFailedAttempts();
-            mTimestampForNewRequest = scheduler.getCurrentTime() + MS_BETWEEN_REQUESTS;
             mTimestampForNextPostAttempt = scheduler.calculateNextTimestamp();
             Log.i(TAG, "Request to Server Successful. Timestamp for next request:"
                     + String.valueOf(mTimestampForNextPostAttempt));
-        } else {
-            // Set the alarm to try again later.  Failures are incremented after setting the timer
-            // to allow the first failure to incur the minimum base delay between POSTs.
-            mTimestampForNextPostAttempt = scheduler.calculateNextTimestamp();
-            scheduler.increaseFailedAttempts();
-        }
 
-        mDelegate.onGenerateAndPostRequestDone(succeeded);
-        return succeeded;
+            return true;
+        } catch (RequestFailureException e) {
+            // Set the alarm to try again later.
+            Log.e(TAG, "Failed to contact server: ", e);
+            scheduler.increaseFailedAttempts();
+            mTimestampForNextPostAttempt = scheduler.calculateNextTimestamp();
+            scheduler.createAlarm(createPostRequestIntent(this), mTimestampForNextPostAttempt);
+            return false;
+        }
+    }
+
+    /**
+     * Sets a repeating alarm that fires request registration Intents.
+     * Setting the alarm overwrites whatever alarm is already there, and rebooting
+     * clears whatever alarms are currently set.
+     */
+    private void scheduleActiveUserCheck() {
+        Intent registerIntent = createRegisterRequestIntent(this);
+        PendingIntent pIntent = PendingIntent.getService(this, 0, registerIntent, 0);
+        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        setAlarm(am, pIntent, mTimestampForNewRequest);
+    }
+
+    /**
+     * Sets up a timer to fire after each interval.
+     * Override to prevent a real alarm from being set.
+     */
+    @VisibleForTesting
+    protected void setAlarm(AlarmManager am, PendingIntent operation, long triggerAtTime) {
+        try {
+            am.setRepeating(AlarmManager.RTC, triggerAtTime, MS_BETWEEN_REQUESTS, operation);
+        } catch (SecurityException e) {
+            Log.e(TAG, "Failed to set repeating alarm.");
+        }
+    }
+
+    /**
+     * Determine whether or not Chrome is currently being used actively.
+     */
+    @VisibleForTesting
+    protected boolean isChromeBeingUsed() {
+        boolean isChromeVisible = ApplicationStatus.hasVisibleActivities();
+        boolean isScreenOn = ApiCompatibilityUtils.isInteractive(this);
+        return isChromeVisible && isScreenOn;
     }
 
     /**
@@ -258,7 +357,8 @@ public class OmahaClient extends IntentService {
      * fresh.
      * @param currentTimestamp Current time.
      */
-    private void registerNewRequest(long currentTimestamp) {
+    @VisibleForTesting
+    void registerNewRequest(long currentTimestamp) {
         mCurrentRequest = createRequestData(currentTimestamp, null);
         getBackoffScheduler().resetFailedAttempts();
         mTimestampForNextPostAttempt = currentTimestamp;
@@ -266,22 +366,22 @@ public class OmahaClient extends IntentService {
         // Tentatively set the timestamp for a new request.  This will be updated when the server
         // is successfully contacted.
         mTimestampForNewRequest = currentTimestamp + MS_BETWEEN_REQUESTS;
-
-        mDelegate.onRegisterNewRequestDone(mTimestampForNewRequest, mTimestampForNextPostAttempt);
+        scheduleActiveUserCheck();
     }
 
     private RequestData createRequestData(long currentTimestamp, String persistedID) {
         // If we're sending a persisted event, keep trying to send the same request ID.
         String requestID;
         if (persistedID == null || INVALID_REQUEST_ID.equals(persistedID)) {
-            requestID = mDelegate.generateUUID();
+            requestID = generateRandomUUID();
         } else {
             requestID = persistedID;
         }
         return new RequestData(mSendInstallEvent, currentTimestamp, requestID, mInstallSource);
     }
 
-    private boolean hasRequest() {
+    @VisibleForTesting
+    boolean hasRequest() {
         return mCurrentRequest != null;
     }
 
@@ -290,7 +390,8 @@ public class OmahaClient extends IntentService {
      * @return the XML response as a String.
      * @throws RequestFailureException if the request fails.
      */
-    private String postRequest(long timestamp, String xml) throws RequestFailureException {
+    @VisibleForTesting
+    String postRequest(long timestamp, String xml) throws RequestFailureException {
         String response = null;
 
         HttpURLConnection urlConnection = null;
@@ -300,7 +401,7 @@ public class OmahaClient extends IntentService {
             // Prepare the HTTP header.
             urlConnection.setDoOutput(true);
             urlConnection.setFixedLengthStreamingMode(xml.getBytes().length);
-            if (mSendInstallEvent && getBackoffScheduler().getNumFailedAttempts() > 0) {
+            if (mSendInstallEvent && getCumulativeFailedAttempts() > 0) {
                 String age = Long.toString(mCurrentRequest.getAgeInSeconds(timestamp));
                 urlConnection.addRequestProperty("X-RequestAge", age);
             }
@@ -340,17 +441,33 @@ public class OmahaClient extends IntentService {
     }
 
     /**
+     * Determine how the Chrome APK arrived on the device.
+     * @param context Context to pull resources from.
+     * @return A String indicating the install source.
+     */
+    String determineInstallSource() {
+        boolean isInSystemImage = (getApplicationFlags() & ApplicationInfo.FLAG_SYSTEM) != 0;
+        return isInSystemImage ? INSTALL_SOURCE_SYSTEM : INSTALL_SOURCE_ORGANIC;
+    }
+
+    /**
+     * Returns the Application's flags, used to determine if Chrome was installed as part of the
+     * system image.
+     * @return The Application's flags.
+     */
+    @VisibleForTesting
+    int getApplicationFlags() {
+        return getApplicationInfo().flags;
+    }
+
+    /**
      * Reads the data back from the file it was saved to.  Uses SharedPreferences to handle I/O.
      * Sanity checks are performed on the timestamps to guard against clock changing.
      */
     @VisibleForTesting
     void restoreState(Context context) {
         if (mStateHasBeenRestored) return;
-
-        String installSource =
-                mDelegate.isInSystemImage() ? INSTALL_SOURCE_SYSTEM : INSTALL_SOURCE_ORGANIC;
-        ExponentialBackoffScheduler scheduler = getBackoffScheduler();
-        long currentTime = scheduler.getCurrentTime();
+        long currentTime = getBackoffScheduler().getCurrentTime();
 
         SharedPreferences preferences = OmahaBase.getSharedPreferences(context);
         mTimestampForNewRequest =
@@ -359,7 +476,8 @@ public class OmahaClient extends IntentService {
                 preferences.getLong(OmahaBase.PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, currentTime);
         mTimestampOfInstall = preferences.getLong(OmahaBase.PREF_TIMESTAMP_OF_INSTALL, currentTime);
         mSendInstallEvent = preferences.getBoolean(OmahaBase.PREF_SEND_INSTALL_EVENT, true);
-        mInstallSource = preferences.getString(OmahaBase.PREF_INSTALL_SOURCE, installSource);
+        mInstallSource =
+                preferences.getString(OmahaBase.PREF_INSTALL_SOURCE, determineInstallSource());
         mLatestVersion = preferences.getString(OmahaBase.PREF_LATEST_VERSION, "");
         mMarketURL = preferences.getString(OmahaBase.PREF_MARKET_URL, "");
 
@@ -383,15 +501,13 @@ public class OmahaClient extends IntentService {
 
         // Confirm that the timestamp for the next POST is less than the current delay.
         long delayToNextPost = mTimestampForNextPostAttempt - currentTime;
-        long lastGeneratedDelay = scheduler.getGeneratedDelay();
-        if (delayToNextPost > lastGeneratedDelay) {
+        if (delayToNextPost > getBackoffScheduler().getGeneratedDelay()) {
             Log.w(TAG, "Delay to next post attempt (" + delayToNextPost
-                    + ") is greater than expected (" + lastGeneratedDelay
+                    + ") is greater than expected (" + getBackoffScheduler().getGeneratedDelay()
                     + ").  Resetting to now.");
             mTimestampForNextPostAttempt = currentTime;
         }
 
-        migrateToNewerChromeVersions();
         mStateHasBeenRestored = true;
     }
 
@@ -415,32 +531,26 @@ public class OmahaClient extends IntentService {
         editor.putString(OmahaBase.PREF_MARKET_URL, mMarketURL == null ? "" : mMarketURL);
         editor.putString(OmahaBase.PREF_INSTALL_SOURCE, mInstallSource);
         editor.apply();
-
-        mDelegate.onSaveStateDone(mTimestampForNewRequest, mTimestampForNextPostAttempt);
     }
 
-    private void migrateToNewerChromeVersions() {
-        // Remove any repeating alarms in favor of the new scheduling setup on M58 and up.
-        // Seems cheaper to cancel the alarm repeatedly than to store a SharedPreference and never
-        // do it again.
-        Intent intent = new Intent(getContext(), OmahaClient.class);
-        intent.setAction(ACTION_REGISTER_REQUEST);
-        getBackoffScheduler().cancelAlarm(intent);
+    /**
+     * Generates a random UUID.
+     */
+    @VisibleForTesting
+    protected String generateRandomUUID() {
+        return UUID.randomUUID().toString();
     }
 
-    Context getContext() {
-        return mDelegate.getContext();
+    protected final RequestGenerator getRequestGenerator() {
+        if (mGenerator == null) mGenerator = createRequestGenerator(this);
+        return mGenerator;
     }
 
-    private RequestGenerator getRequestGenerator() {
-        return mDelegate.getRequestGenerator();
-    }
-
-    private ExponentialBackoffScheduler getBackoffScheduler() {
-        return mDelegate.getScheduler();
-    }
-
-    void setDelegateForTests(OmahaDelegate delegate) {
-        mDelegate = delegate;
+    protected final ExponentialBackoffScheduler getBackoffScheduler() {
+        if (mBackoffScheduler == null) {
+            mBackoffScheduler = createBackoffScheduler(
+                    OmahaBase.PREF_PACKAGE, this, MS_POST_BASE_DELAY, MS_POST_MAX_DELAY);
+        }
+        return mBackoffScheduler;
     }
 }

@@ -4,14 +4,18 @@
 
 package org.chromium.chrome.browser.omaha;
 
-import android.app.Service;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.omaha.AttributeFinder;
 import org.chromium.chrome.test.omaha.MockRequestGenerator;
 import org.chromium.chrome.test.omaha.MockRequestGenerator.DeviceType;
 
@@ -24,75 +28,475 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Tests for the {@link OmahaClient}.
- * Tests override the original OmahaClient's functions with the MockOmahaClient, which
+ * Tests often override the original OmahaClient's functions with the HookedOmahaClient, which
  * provides a way to hook into functions to return values that would normally be provided by the
  * system, such as whether Chrome was installed through the system image.
  */
 public class OmahaClientTest extends InstrumentationTestCase {
-    private static class TimestampPair {
-        public long timestampNextRequest;
-        public long timestampNextPost;
+    private enum ServerResponse {
+        SUCCESS, FAILURE
+    }
 
-        public TimestampPair(long timestampNextRequest, long timestampNextPost) {
-            this.timestampNextRequest = timestampNextRequest;
-            this.timestampNextPost = timestampNextPost;
+    private enum ConnectionStatus {
+        RESPONDS, TIMES_OUT
+    }
+
+    private enum InstallEvent {
+        SEND, DONT_SEND
+    }
+
+    private enum PostStatus {
+        DUE, NOT_DUE
+    }
+
+    private AdvancedMockContext mContext;
+    private HookedOmahaClient mOmahaClient;
+
+    @Override
+    protected void setUp() {
+        Context targetContext = getInstrumentation().getTargetContext();
+        mContext = new AdvancedMockContext(targetContext);
+        mOmahaClient = HookedOmahaClient.create(mContext);
+    }
+
+    /**
+     * If a request exists during handleInitialize(), a POST Intent should be fired immediately.
+     */
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testInitializeWithRequest() {
+        mOmahaClient.registerNewRequest(10);
+
+        Intent intent = OmahaClient.createInitializeIntent(mContext);
+        mOmahaClient.onHandleIntent(intent);
+        assertTrue("OmahaClient has no registered request", mOmahaClient.hasRequest());
+        assertTrue("Alarm does not have the correct state", mOmahaClient.getRequestAlarmWasSet());
+        assertEquals("OmahaClient didn't post the request",
+                OmahaClient.POST_RESULT_SCHEDULED, mOmahaClient.mPostResult);
+    }
+
+    /**
+     * If a request doesn't exist during handleInitialize(), no intent should be fired.
+     */
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testInitializeWithoutRequest() {
+        Intent intent = OmahaClient.createInitializeIntent(mContext);
+        mOmahaClient.onHandleIntent(intent);
+        assertFalse("OmahaClient has a registered request", mOmahaClient.hasRequest());
+        assertTrue("Alarm does not have the correct state", mOmahaClient.getRequestAlarmWasSet());
+        assertEquals("OmahaClient called handlePostRequest", -1, mOmahaClient.mPostResult);
+    }
+
+    /**
+     * Catch situations where the install source isn't set prior to restoring a saved request.
+     */
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testInstallSourceSetBeforeRestoringRequest() {
+        // Plant a failed request.
+        Context targetContext = getInstrumentation().getTargetContext();
+        AdvancedMockContext mockContext = new AdvancedMockContext(targetContext);
+        SharedPreferences prefs = OmahaBase.getSharedPreferences(mockContext);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putLong(OmahaBase.PREF_TIMESTAMP_OF_REQUEST, 0);
+        editor.putString(OmahaBase.PREF_PERSISTED_REQUEST_ID, "persisted_id");
+        editor.apply();
+
+        // Send it off and don't crash when the state is restored and the XML is generated.
+        HookedOmahaClient omahaClient = HookedOmahaClient.create(mockContext);
+        omahaClient.mMockScheduler.setCurrentTime(1000);
+        Intent postIntent = OmahaClient.createPostRequestIntent(mockContext);
+        omahaClient.onHandleIntent(postIntent);
+
+        // Check that the request was actually generated and tried to be sent.
+        MockConnection connection = omahaClient.getLastConnection();
+        assertTrue("Didn't try to make a connection.", connection.getSentRequest());
+        assertFalse("OmahaClient still has a registered request", omahaClient.hasRequest());
+        assertTrue("Failed to send request", omahaClient.getCumulativeFailedAttempts() == 0);
+    }
+
+    /**
+     * Makes sure that we don't generate a request if we don't have to.
+     */
+    @SmallTest
+    @Feature({"Omaha", "Main"})
+    public void testOmahaClientDoesNotGenerateRequest() {
+        // Change the time so the OmahaClient thinks no request is necessary.
+        mOmahaClient.mMockScheduler.setCurrentTime(-1000);
+        Intent intent = OmahaClient.createRegisterRequestIntent(mContext);
+        mOmahaClient.onHandleIntent(intent);
+        assertFalse("OmahaClient has a registered request", mOmahaClient.hasRequest());
+        assertEquals(-1, mOmahaClient.mPostResult);
+    }
+
+    /**
+     * Makes sure that firing a XML request triggers a post intent.
+     */
+    @SmallTest
+    @Feature({"Omaha", "Main"})
+    public void testOmahaClientRequestToPost() {
+        // Change the time so the OmahaClient thinks a request is overdue.
+        mOmahaClient.mMockScheduler.setCurrentTime(1000);
+        Intent intent = OmahaClient.createRegisterRequestIntent(mContext);
+        mOmahaClient.onHandleIntent(intent);
+        assertFalse("OmahaClient has no registered request", mOmahaClient.hasRequest());
+        assertEquals(OmahaClient.POST_RESULT_SENT, mOmahaClient.mPostResult);
+    }
+
+    /**
+     * Makes sure that incorrect timestamps are caught.
+     */
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testIncorrectDelays() {
+        // Set the time to be 2 days past epoch, then generate a request.
+        final long millisecondsPerDay = 86400000;
+        long currentTimestamp = millisecondsPerDay * 2;
+        mOmahaClient.mMockScheduler.setCurrentTime(currentTimestamp);
+        Intent intent = OmahaClient.createRegisterRequestIntent(mContext);
+        mOmahaClient.onHandleIntent(intent);
+
+        // Rewind the clock 2 days.
+        currentTimestamp -= millisecondsPerDay * 2;
+        mOmahaClient.mMockScheduler.setCurrentTime(currentTimestamp);
+
+        // Restore state and confirm that the post timestamp was reset, since it's larger than the
+        // exponential backoff delay.
+        HookedOmahaClient secondClient = HookedOmahaClient.create(mContext);
+        assertEquals("Post timestamp was not cleared.",
+                0, secondClient.getTimestampForNextPostAttempt());
+
+        // Confirm that the request timestamp was reset, since the next timestamp is more than
+        // a day away.
+        assertEquals("Request timestamp was not cleared.",
+                0, secondClient.getTimestampForNewRequest());
+    }
+
+    /**
+     * Checks that reading and writing out the preferences works.
+     */
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testOmahaClientFileIO() {
+        // Register and send a request, which saves timestamps to disk.
+        Intent intent = OmahaClient.createRegisterRequestIntent(mContext);
+        mOmahaClient.onHandleIntent(intent);
+
+        // The second OmahaClient should know the next timestamp.
+        HookedOmahaClient secondClient = HookedOmahaClient.create(mContext);
+        assertEquals("The next timestamp wasn't correct",
+                OmahaClient.MS_BETWEEN_REQUESTS, secondClient.getTimestampForNewRequest());
+    }
+
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testOmahaClientPostHandsetFailure() {
+        postRequestToServer(DeviceType.HANDSET, ServerResponse.FAILURE, ConnectionStatus.RESPONDS,
+                            InstallEvent.DONT_SEND, PostStatus.DUE);
+    }
+
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testOmahaClientPostHandsetSuccess() {
+        postRequestToServer(DeviceType.HANDSET, ServerResponse.SUCCESS, ConnectionStatus.RESPONDS,
+                            InstallEvent.DONT_SEND, PostStatus.DUE);
+    }
+
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testOmahaClientPostTabletFailure() {
+        postRequestToServer(DeviceType.TABLET, ServerResponse.FAILURE, ConnectionStatus.RESPONDS,
+                            InstallEvent.DONT_SEND, PostStatus.DUE);
+    }
+
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testOmahaClientPostTabletSuccess() {
+        postRequestToServer(DeviceType.TABLET, ServerResponse.SUCCESS, ConnectionStatus.RESPONDS,
+                            InstallEvent.DONT_SEND, PostStatus.DUE);
+    }
+
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testOmahaClientPostHandsetTimeout() {
+        postRequestToServer(DeviceType.HANDSET, ServerResponse.FAILURE, ConnectionStatus.TIMES_OUT,
+                            InstallEvent.DONT_SEND, PostStatus.DUE);
+    }
+
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testOmahaClientPostInstallEventSuccess() {
+        postRequestToServer(DeviceType.HANDSET, ServerResponse.SUCCESS, ConnectionStatus.RESPONDS,
+                            InstallEvent.SEND, PostStatus.DUE);
+    }
+
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testOmahaClientPostInstallEventFailure() {
+        postRequestToServer(DeviceType.HANDSET, ServerResponse.FAILURE, ConnectionStatus.RESPONDS,
+                            InstallEvent.SEND, PostStatus.DUE);
+    }
+
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testOmahaClientPostWhenNotDue() {
+        postRequestToServer(DeviceType.HANDSET, ServerResponse.FAILURE, ConnectionStatus.RESPONDS,
+                            InstallEvent.DONT_SEND, PostStatus.NOT_DUE);
+    }
+
+    /**
+     * Pretends to post a request to the Omaha server.
+     * @param deviceType Whether or not to use an app-ID indicating a tablet.
+     * @param response Whether the server acknowledged the request correctly.
+     * @param connectionStatus Whether the connection times out when it tries to contact the
+     *                         Omaha server.
+     * @param installType Whether we're sending an install event or not.
+     * @param postStatus Whether we're due for a POST or not.
+     */
+    public void postRequestToServer(DeviceType deviceType, ServerResponse response,
+            ConnectionStatus connectionStatus, InstallEvent installType, PostStatus postStatus) {
+        final boolean succeeded = response == ServerResponse.SUCCESS;
+        final boolean sentInstallEvent = installType == InstallEvent.SEND;
+
+        HookedOmahaClient omahaClient = new HookedOmahaClient(mContext, deviceType, response,
+                connectionStatus, false);
+        omahaClient.onCreate();
+        omahaClient.restoreState(mContext);
+
+        // Set whether or not we're sending the install event.
+        assertTrue("Should default to sending install event.", omahaClient.isSendInstallEvent());
+        omahaClient.setSendInstallEvent(installType == InstallEvent.SEND);
+        omahaClient.registerNewRequest(0);
+
+        // Set up the POST request.
+        if (postStatus == PostStatus.NOT_DUE) {
+            // Rewind the clock so that we don't send the request yet.
+            omahaClient.mMockScheduler.setCurrentTime(-1000);
+        }
+        Intent postIntent = OmahaClient.createPostRequestIntent(mContext);
+        omahaClient.onHandleIntent(postIntent);
+
+        assertTrue("hasRequest() returned wrong value", succeeded != omahaClient.hasRequest());
+        if (postStatus == PostStatus.NOT_DUE) {
+            // No POST attempt was made.
+            assertTrue("POST was attempted and failed.",
+                    omahaClient.getCumulativeFailedAttempts() == 0);
+            assertTrue("POST alarm wasn't set for reattempt", omahaClient.getPOSTAlarmWasSet());
+        } else {
+            // Since we start with no failures, the counter incrementing should indicate whether it
+            // succeeded or not.
+            assertEquals("Expected different outcome", succeeded,
+                    omahaClient.getCumulativeFailedAttempts() == 0);
+            assertTrue("Alarm state was changed when it shouldn't have been",
+                    succeeded != omahaClient.getPOSTAlarmWasSet());
+
+            // If we're sending an install event, we will immediately attempt to send a ping in a
+            // follow-up request.
+            int numExpectedRequests = succeeded && sentInstallEvent ? 2 : 1;
+            assertEquals("Didn't send the correct number of XML requests.", numExpectedRequests,
+                            omahaClient.getNumConnectionsMade());
+
+            MockConnection connection = omahaClient.getLastConnection();
+            assertEquals("Didn't try to make a connection.", true, connection.getSentRequest());
+
+            if (connectionStatus == ConnectionStatus.TIMES_OUT) {
+                // Several events shouldn't happen if the connection times out.
+                assertEquals("Retrieved response code when it should have bailed earlier.",
+                        0, connection.getNumTimesResponseCodeRetrieved());
+                assertFalse("Grabbed input stream when it should have bailed earlier.",
+                        connection.getGotInputStream());
+            }
+        }
+
+        // Check that the latest version and market URLs were saved correctly.
+        String expectedVersion = succeeded ? MockConnection.UPDATE_VERSION : "";
+        String expectedURL = succeeded ? MockConnection.STRIPPED_MARKET_URL : "";
+
+        // Make sure we properly parsed out the server's response.
+        assertEquals("Latest version numbers didn't match", expectedVersion,
+                VersionNumberGetter.getInstance().getLatestKnownVersion(mContext));
+        assertEquals(
+                "Market URL didn't match", expectedURL, MarketURLGetter.getMarketUrl(mContext));
+
+        // Check that the install event was sent properly.
+        if (sentInstallEvent) {
+            assertFalse("OmahaPingService is going to send another install <event>.",
+                    succeeded == omahaClient.isSendInstallEvent());
         }
     }
 
-    private static class MockOmahaDelegate extends OmahaDelegate {
-        private final List<Integer> mPostResults = new ArrayList<Integer>();
-        private final List<Boolean> mGenerateAndPostRequestResults = new ArrayList<Boolean>();
+    /**
+     * Test whether we're using request and session IDs properly for POSTs.
+     */
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testRequestAndSessionIDs() {
+        assertTrue("Should default to sending install event.", mOmahaClient.isSendInstallEvent());
 
+        // Send the POST request.
+        mOmahaClient.registerNewRequest(0);
+        Intent postIntent = OmahaClient.createPostRequestIntent(mContext);
+        mOmahaClient.onHandleIntent(postIntent);
+
+        // If we're sending an install event, we will immediately attempt to send a ping in a
+        // follow-up request.  These should have the same session ID, but different request IDs.
+        int numRequests = mOmahaClient.getNumConnectionsMade();
+
+        HashSet<String> sessionIDs = new HashSet<String>();
+        HashSet<String> requestIDs = new HashSet<String>();
+        for (int i = 0; i < numRequests; ++i) {
+            String request = mOmahaClient.getConnection(i).getOutputStreamContents();
+
+            String sessionID =
+                    new AttributeFinder(request, "request", "sessionid").getValue();
+            assertNotNull(sessionID);
+            sessionIDs.add(sessionID);
+
+            String requestID =
+                    new AttributeFinder(request, "request", "requestid").getValue();
+            assertNotNull(requestID);
+            requestIDs.add(requestID);
+        }
+        assertEquals("Session ID was not the same across all requests", 1,
+                sessionIDs.size());
+        assertEquals("Request ID was duplicated", numRequests, requestIDs.size());
+
+        // Send another XML request and make sure the IDs are all different.
+        assertFalse("OmahaPingService is going to send another install <event>.",
+                mOmahaClient.isSendInstallEvent());
+        mOmahaClient.registerNewRequest(0);
+        postIntent = OmahaClient.createPostRequestIntent(mContext);
+        mOmahaClient.onHandleIntent(postIntent);
+
+        assertEquals("Didn't send the correct number of XML requests.", numRequests + 1,
+                        mOmahaClient.getNumConnectionsMade());
+        String newRequest = mOmahaClient.getConnection(numRequests).getOutputStreamContents();
+
+        String newSessionID = new AttributeFinder(newRequest, "request", "sessionid").getValue();
+        assertNotNull(newSessionID);
+        assertFalse("Session ID was reused.", sessionIDs.contains(newSessionID));
+
+        String newRequestID = new AttributeFinder(newRequest, "request", "requestid").getValue();
+        assertNotNull(newRequestID);
+        assertFalse("Request ID was reused.", requestIDs.contains(newRequestID));
+    }
+
+    /**
+     * Checks to see that the header is added only for persisted XML requests.
+     */
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testHTTPHeaderForPersistedXMLRequest() {
+        final String xml = "<lorem ipsum=\"dolor\" />";
+        final long requestTimestamp = 0;
+        final long currentTimestamp = 11684;
+        final long currentTimestampInSeconds = currentTimestamp / 1000;
+
+        mOmahaClient.registerNewRequest(requestTimestamp);
+
+        assertTrue("Should default to sending install event.", mOmahaClient.isSendInstallEvent());
+        assertEquals("Shouldn't have any failed attempts.", 0,
+                mOmahaClient.getCumulativeFailedAttempts());
+
+        MockConnection connection = null;
+        try {
+            mOmahaClient.postRequest(currentTimestamp, xml);
+            connection = mOmahaClient.getLastConnection();
+        } catch (RequestFailureException e) {
+            fail();
+        }
+        assertEquals("Age property field was unexpectedly added.", null,
+                connection.getRequestPropertyField());
+        assertEquals("Age property value was unexpectedly set.", null,
+                connection.getRequestPropertyValue());
+
+        // Fail once, then check that the header is added.
+        mOmahaClient.getBackoffScheduler().increaseFailedAttempts();
+        try {
+            mOmahaClient.postRequest(currentTimestamp, xml);
+            connection = mOmahaClient.getLastConnection();
+        } catch (RequestFailureException e) {
+            fail();
+        }
+        assertEquals("Age property field was not added.", "X-RequestAge",
+                connection.getRequestPropertyField());
+        assertEquals("Age property value was incorrectly set.", currentTimestampInSeconds,
+                Long.parseLong(connection.getRequestPropertyValue()));
+
+        // Make sure the header isn't added if we're not sending an install ping.
+        mOmahaClient.setSendInstallEvent(false);
+        mOmahaClient.registerNewRequest(requestTimestamp);
+        mOmahaClient.getBackoffScheduler().increaseFailedAttempts();
+        try {
+            mOmahaClient.postRequest(currentTimestamp, xml);
+            connection = mOmahaClient.getLastConnection();
+        } catch (RequestFailureException e) {
+            fail();
+        }
+        assertEquals("Age property field was unexpectedly added.", null,
+                connection.getRequestPropertyField());
+        assertEquals("Age property value was unexpectedly set.", null,
+                connection.getRequestPropertyValue());
+    }
+
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testInstallSource() {
+        HookedOmahaClient organicClient = new HookedOmahaClient(mContext, DeviceType.TABLET,
+                ServerResponse.SUCCESS, ConnectionStatus.RESPONDS, false);
+        String organicInstallSource = organicClient.determineInstallSource();
+        assertEquals("Install source should have been treated as organic.",
+                OmahaClient.INSTALL_SOURCE_ORGANIC, organicInstallSource);
+
+        HookedOmahaClient systemImageClient = new HookedOmahaClient(mContext, DeviceType.TABLET,
+                ServerResponse.SUCCESS, ConnectionStatus.RESPONDS, true);
+        String systemImageInstallSource = systemImageClient.determineInstallSource();
+        assertEquals("Install source should have been treated as system image.",
+                OmahaClient.INSTALL_SOURCE_SYSTEM, systemImageInstallSource);
+    }
+
+    /**
+     * OmahaClient that overrides simple methods for testing.
+     */
+    private static class HookedOmahaClient extends OmahaClient {
         private final boolean mIsOnTablet;
+        private final boolean mSendValidResponse;
         private final boolean mIsInForeground;
-        private final boolean mIsInSystemImage;
-        private final MockExponentialBackoffScheduler mMockScheduler;
-        private MockRequestGenerator mMockGenerator;
+        private final boolean mConnectionTimesOut;
+        private final boolean mInstalledOnSystemImage;
 
+        private MockExponentialBackoffScheduler mMockScheduler;
+        private RequestGenerator mMockGenerator;
+        private final LinkedList<MockConnection> mMockConnections;
+
+        private boolean mRequestAlarmWasSet;
         private int mNumUUIDsGenerated;
-        private long mNextScheduledTimestamp = -1;
+        private int mPostResult = -1;
 
-        private boolean mInstallEventWasSent;
-        private TimestampPair mTimestampsOnRegisterNewRequest;
-        private TimestampPair mTimestampsOnSaveState;
+        public static HookedOmahaClient create(Context context) {
+            HookedOmahaClient omahaClient = new HookedOmahaClient(context, DeviceType.TABLET,
+                    ServerResponse.SUCCESS, ConnectionStatus.RESPONDS, false);
+            omahaClient.onCreate();
+            omahaClient.restoreState(context);
+            return omahaClient;
+        }
 
-        MockOmahaDelegate(Context context, DeviceType deviceType, InstallSource installSource) {
-            super(context);
+        public HookedOmahaClient(Context context, DeviceType deviceType,
+                    ServerResponse serverResponse, ConnectionStatus connectionStatus,
+                    boolean installedOnSystemImage) {
+            attachBaseContext(context);
             mIsOnTablet = deviceType == DeviceType.TABLET;
+            mSendValidResponse = serverResponse == ServerResponse.SUCCESS;
             mIsInForeground = true;
-            mIsInSystemImage = installSource == InstallSource.SYSTEM_IMAGE;
-
-            mMockScheduler = new MockExponentialBackoffScheduler(OmahaBase.PREF_PACKAGE, context,
-                    OmahaClient.MS_POST_BASE_DELAY, OmahaClient.MS_POST_MAX_DELAY);
-        }
-
-        @Override
-        protected RequestGenerator createRequestGenerator(Context context) {
-            mMockGenerator = new MockRequestGenerator(
-                    context, mIsOnTablet ? DeviceType.TABLET : DeviceType.HANDSET);
-            return mMockGenerator;
-        }
-
-        @Override
-        public boolean isInSystemImage() {
-            return mIsInSystemImage;
-        }
-
-        @Override
-        MockExponentialBackoffScheduler getScheduler() {
-            return mMockScheduler;
-        }
-
-        @Override
-        protected String generateUUID() {
-            mNumUUIDsGenerated += 1;
-            return "UUID" + mNumUUIDsGenerated;
+            mConnectionTimesOut = connectionStatus == ConnectionStatus.TIMES_OUT;
+            mMockConnections = new LinkedList<MockConnection>();
+            mInstalledOnSystemImage = installedOnSystemImage;
         }
 
         @Override
@@ -101,85 +505,25 @@ public class OmahaClientTest extends InstrumentationTestCase {
         }
 
         @Override
-        void scheduleService(Service service, long nextTimestamp) {
-            mNextScheduledTimestamp = nextTimestamp;
+        public int getApplicationFlags() {
+            return mInstalledOnSystemImage ? ApplicationInfo.FLAG_SYSTEM : 0;
         }
 
         @Override
-        void onHandlePostRequestDone(int result, boolean installEventWasSent) {
-            mPostResults.add(result);
-            mInstallEventWasSent = installEventWasSent;
+        protected int handlePostRequest() {
+            mPostResult = super.handlePostRequest();
+            return mPostResult;
         }
 
-        @Override
-        void onRegisterNewRequestDone(long nextRequestTimestamp, long nextPostTimestamp) {
-            mTimestampsOnRegisterNewRequest =
-                    new TimestampPair(nextRequestTimestamp, nextPostTimestamp);
+        /**
+         * Checks if an alarm was set by the backoff scheduler.
+         */
+        public boolean getPOSTAlarmWasSet() {
+            return mMockScheduler.getAlarmWasSet();
         }
 
-        @Override
-        void onGenerateAndPostRequestDone(boolean result) {
-            mGenerateAndPostRequestResults.add(result);
-        }
-
-        @Override
-        void onSaveStateDone(long nextRequestTimestamp, long nextPostTimestamp) {
-            mTimestampsOnSaveState = new TimestampPair(nextRequestTimestamp, nextPostTimestamp);
-        }
-    }
-
-    private enum InstallSource { SYSTEM_IMAGE, ORGANIC }
-    private enum ServerResponse { SUCCESS, FAILURE }
-    private enum ConnectionStatus { RESPONDS, TIMES_OUT }
-    private enum InstallEvent { SEND, DONT_SEND }
-    private enum PostStatus { DUE, NOT_DUE }
-
-    private AdvancedMockContext mContext;
-    private MockOmahaDelegate mDelegate;
-    private MockOmahaClient mOmahaClient;
-
-    private MockOmahaClient createOmahaClient() {
-        return createOmahaClient(
-                ServerResponse.SUCCESS, ConnectionStatus.RESPONDS, DeviceType.HANDSET);
-    }
-
-    private MockOmahaClient createOmahaClient(
-            ServerResponse response, ConnectionStatus status, DeviceType deviceType) {
-        MockOmahaClient omahaClient = new MockOmahaClient(mContext, response, status, deviceType);
-        omahaClient.onCreate();
-        omahaClient.restoreState(mContext);
-        return omahaClient;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        Context targetContext = getInstrumentation().getTargetContext();
-        OmahaBase.setIsDisabledForTesting(false);
-        mContext = new AdvancedMockContext(targetContext);
-    }
-
-    @Override
-    public void tearDown() throws Exception {
-        OmahaBase.setIsDisabledForTesting(true);
-        super.tearDown();
-    }
-
-    private class MockOmahaClient extends OmahaClient {
-        private final LinkedList<MockConnection> mMockConnections = new LinkedList<>();
-
-        private final boolean mSendValidResponse;
-        private final boolean mConnectionTimesOut;
-        private final boolean mIsOnTablet;
-
-        public MockOmahaClient(Context context, ServerResponse serverResponse,
-                ConnectionStatus connectionStatus, DeviceType deviceType) {
-            attachBaseContext(context);
-            setDelegateForTests(mDelegate);
-
-            mSendValidResponse = serverResponse == ServerResponse.SUCCESS;
-            mConnectionTimesOut = connectionStatus == ConnectionStatus.TIMES_OUT;
-            mIsOnTablet = deviceType == DeviceType.TABLET;
+        public boolean getRequestAlarmWasSet() {
+            return mRequestAlarmWasSet;
         }
 
         /**
@@ -211,11 +555,29 @@ public class OmahaClientTest extends InstrumentationTestCase {
             mSendInstallEvent = state;
         }
 
+        /**
+         * Mocks out the scheduler so that no alarms are really created.
+         */
+        @Override
+        ExponentialBackoffScheduler createBackoffScheduler(
+                String prefPackage, Context context, long base, long max) {
+            mMockScheduler =
+                    new MockExponentialBackoffScheduler(prefPackage, context, base, max);
+            return mMockScheduler;
+        }
+
+        @Override
+        RequestGenerator createRequestGenerator(Context context) {
+            mMockGenerator = new MockRequestGenerator(
+                    context, mIsOnTablet ? DeviceType.TABLET : DeviceType.HANDSET);
+            return mMockGenerator;
+        }
+
         @Override
         protected HttpURLConnection createConnection() throws RequestFailureException {
             MockConnection connection = null;
             try {
-                URL url = new URL(mDelegate.getRequestGenerator().getServerUrl());
+                URL url = new URL(getRequestGenerator().getServerUrl());
                 connection = new MockConnection(url, mIsOnTablet, mSendValidResponse,
                         mSendInstallEvent, mConnectionTimesOut);
                 mMockConnections.addLast(connection);
@@ -224,314 +586,19 @@ public class OmahaClientTest extends InstrumentationTestCase {
             }
             return connection;
         }
+
+        @Override
+        protected void setAlarm(AlarmManager am, PendingIntent operation, long triggerAtTime) {
+            mRequestAlarmWasSet = true;
+        }
+
+        @Override
+        protected String generateRandomUUID() {
+            mNumUUIDsGenerated += 1;
+            return "UUID" + mNumUUIDsGenerated;
+        }
     }
 
-    @SmallTest
-    @Feature({"Omaha"})
-    public void testPipelineFreshInstall() {
-        final long now = 11684;
-
-        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
-        mDelegate.getScheduler().setCurrentTime(now);
-
-        // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
-
-        // A fresh install results in two requests to the Omaha server: one for the install request
-        // and one for the ping request.
-        assertTrue(mDelegate.mInstallEventWasSent);
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(2, mDelegate.mGenerateAndPostRequestResults.size());
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(1));
-
-        // Successful requests mean that the next scheduled event should be checking for when the
-        // user is active.
-        assertEquals(now + OmahaClient.MS_BETWEEN_REQUESTS, mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now + OmahaClient.MS_POST_BASE_DELAY,
-                mDelegate.mTimestampsOnSaveState);
-    }
-
-    @SmallTest
-    @Feature({"Omaha"})
-    public void testPipelineRegularPing() {
-        final long now = 11684;
-
-        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
-        mDelegate.getScheduler().setCurrentTime(now);
-
-        // Record that an install event has already been sent and that we're due for a new request.
-        SharedPreferences.Editor editor = OmahaBase.getSharedPreferences(mContext).edit();
-        editor.putBoolean(OmahaBase.PREF_SEND_INSTALL_EVENT, false);
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEW_REQUEST, now);
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, now);
-        editor.apply();
-
-        // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
-
-        // Only the regular ping should have been sent.
-        assertFalse(mDelegate.mInstallEventWasSent);
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
-
-        // Successful requests mean that the next scheduled event should be checking for when the
-        // user is active.
-        assertEquals(now + OmahaClient.MS_BETWEEN_REQUESTS, mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now + OmahaClient.MS_POST_BASE_DELAY,
-                mDelegate.mTimestampsOnSaveState);
-    }
-
-    @SmallTest
-    @Feature({"Omaha"})
-    public void testTooEarlyToPing() {
-        final long now = 0;
-        final long later = 10000;
-
-        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
-        mDelegate.getScheduler().setCurrentTime(now);
-
-        // Put the time for the next request in the future.
-        SharedPreferences prefs = OmahaBase.getSharedPreferences(mContext);
-        prefs.edit().putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEW_REQUEST, later).apply();
-
-        // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
-
-        // Nothing should have been POSTed.
-        assertEquals(0, mDelegate.mPostResults.size());
-        assertEquals(0, mDelegate.mGenerateAndPostRequestResults.size());
-
-        // The next scheduled event is the request generation.  Because there was nothing to POST,
-        // its timestamp should have remained unchanged and shouldn't have been considered when the
-        // new alarm was scheduled.
-        assertEquals(later, mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(later, now, mDelegate.mTimestampsOnSaveState);
-    }
-
-    @SmallTest
-    @Feature({"Omaha"})
-    public void testTooEarlyToPostExistingRequest() {
-        final long timeGeneratedRequest = 0L;
-        final long now = 10000L;
-        final long timeSendNewPost = 20000L;
-        final long timeSendNewRequest = 50000L;
-
-        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
-        mDelegate.getScheduler().setCurrentTime(now);
-
-        SharedPreferences prefs = OmahaBase.getSharedPreferences(mContext);
-        SharedPreferences.Editor editor = prefs.edit();
-
-        // Make it so that a request was generated and is just waiting to be sent.
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEW_REQUEST, timeSendNewRequest);
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_OF_REQUEST, timeGeneratedRequest);
-        editor.putString(OmahaBase.PREF_PERSISTED_REQUEST_ID, "persisted_id");
-
-        // Put the time for the next post in the future.
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, timeSendNewPost);
-        editor.apply();
-
-        // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
-
-        // Request generation code should be skipped.
-        assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
-
-        // Should be too early to post, causing it to be rescheduled.
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SCHEDULED, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(0, mDelegate.mGenerateAndPostRequestResults.size());
-
-        // The next scheduled event is the POST.  Because request generation code wasn't run, the
-        // timestamp for it shouldn't have changed.
-        assertEquals(timeSendNewPost, mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(timeSendNewRequest, timeSendNewPost, mDelegate.mTimestampsOnSaveState);
-    }
-
-    @SmallTest
-    @Feature({"Omaha"})
-    public void testPostExistingRequestSuccessfully() {
-        final long timeGeneratedRequest = 0L;
-        final long now = 10000L;
-        final long timeSendNewPost = now;
-        final long timeRegisterNewRequest = 20000L;
-
-        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
-        mDelegate.getScheduler().setCurrentTime(now);
-
-        SharedPreferences prefs = OmahaBase.getSharedPreferences(mContext);
-        SharedPreferences.Editor editor = prefs.edit();
-
-        // Make it so that a regular <ping> was generated and is just waiting to be sent.
-        editor.putBoolean(OmahaBase.PREF_SEND_INSTALL_EVENT, false);
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEW_REQUEST, timeRegisterNewRequest);
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_OF_REQUEST, timeGeneratedRequest);
-        editor.putString(OmahaBase.PREF_PERSISTED_REQUEST_ID, "persisted_id");
-
-        // Send the POST now.
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, timeSendNewPost);
-        editor.apply();
-
-        // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
-
-        // Registering code shouldn't have fired.
-        assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
-
-        // Because we didn't send an install event, only one POST should have occurred.
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
-
-        // The next scheduled event is the request generation because there is nothing to POST.
-        // A successful POST adjusts all timestamps for the current time.
-        assertEquals(timeRegisterNewRequest, mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now + OmahaClient.MS_POST_BASE_DELAY,
-                mDelegate.mTimestampsOnSaveState);
-    }
-
-    @SmallTest
-    @Feature({"Omaha"})
-    public void testPostExistingButFails() {
-        final long timeGeneratedRequest = 0L;
-        final long now = 10000L;
-        final long timeSendNewPost = now;
-        final long timeRegisterNewRequest = timeGeneratedRequest + OmahaClient.MS_BETWEEN_REQUESTS;
-
-        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
-        mDelegate.getScheduler().setCurrentTime(now);
-
-        SharedPreferences prefs = OmahaBase.getSharedPreferences(mContext);
-        SharedPreferences.Editor editor = prefs.edit();
-
-        // Make it so that a regular <ping> was generated and is just waiting to be sent.
-        editor.putBoolean(OmahaBase.PREF_SEND_INSTALL_EVENT, false);
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEW_REQUEST, timeRegisterNewRequest);
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_OF_REQUEST, timeGeneratedRequest);
-        editor.putString(OmahaBase.PREF_PERSISTED_REQUEST_ID, "persisted_id");
-
-        // Send the POST now.
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, timeSendNewPost);
-        editor.apply();
-
-        // Trigger Omaha.
-        mOmahaClient = createOmahaClient(
-                ServerResponse.FAILURE, ConnectionStatus.RESPONDS, DeviceType.HANDSET);
-        mOmahaClient.run();
-
-        // Registering code shouldn't have fired.
-        assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
-
-        // Because we didn't send an install event, only one POST should have occurred.
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_FAILED, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
-        assertFalse(mDelegate.mGenerateAndPostRequestResults.get(0));
-
-        // The next scheduled event should be the POST event, which is delayed by the base delay
-        // because no failures have happened yet.
-        assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextPost,
-                mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(timeRegisterNewRequest, now + OmahaClient.MS_POST_BASE_DELAY,
-                mDelegate.mTimestampsOnSaveState);
-    }
-
-    @SmallTest
-    @Feature({"Omaha"})
-    public void testTimestampWithinBounds() {
-        final long now = 0L;
-        final long timeRegisterNewRequest = OmahaClient.MS_BETWEEN_REQUESTS + 1;
-
-        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
-        mDelegate.getScheduler().setCurrentTime(now);
-
-        SharedPreferences prefs = OmahaBase.getSharedPreferences(mContext);
-        SharedPreferences.Editor editor = prefs.edit();
-
-        // Indicate that the next request should be generated way past an expected timeframe.
-        editor.putBoolean(OmahaBase.PREF_SEND_INSTALL_EVENT, false);
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEW_REQUEST, timeRegisterNewRequest);
-        editor.apply();
-
-        // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
-
-        // Request generation code should fire.
-        assertNotNull(mDelegate.mTimestampsOnRegisterNewRequest);
-
-        // Because we didn't send an install event, only one POST should have occurred.
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
-
-        // The next scheduled event should be the timestamp for a new request generation.
-        assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextRequest,
-                mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now + OmahaClient.MS_POST_BASE_DELAY,
-                mDelegate.mTimestampsOnSaveState);
-    }
-
-    @SmallTest
-    @Feature({"Omaha"})
-    public void testOverdueRequestCausesNewRegistration() {
-        final long timeGeneratedRequest = 0L;
-        final long now = 10000L;
-        final long timeSendNewPost = now;
-        final long timeRegisterNewRequest =
-                timeGeneratedRequest + OmahaClient.MS_BETWEEN_REQUESTS * 5;
-
-        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
-        mDelegate.getScheduler().setCurrentTime(now);
-
-        // Record that a regular <ping> was generated, but not sent, then assign it an invalid
-        // timestamp and try to send it now.
-        SharedPreferences prefs = OmahaBase.getSharedPreferences(mContext);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean(OmahaBase.PREF_SEND_INSTALL_EVENT, false);
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEW_REQUEST, timeRegisterNewRequest);
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_OF_REQUEST, timeGeneratedRequest);
-        editor.putString(OmahaBase.PREF_PERSISTED_REQUEST_ID, "persisted_id");
-        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, timeSendNewPost);
-        editor.apply();
-
-        // Trigger Omaha.
-        mOmahaClient = createOmahaClient();
-        mOmahaClient.run();
-
-        // Registering code shouldn't have fired.
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now,
-                mDelegate.mTimestampsOnRegisterNewRequest);
-
-        // Because we didn't send an install event, only one POST should have occurred.
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaClient.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
-
-        // The next scheduled event should be the registration event.
-        assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextRequest,
-                mDelegate.mNextScheduledTimestamp);
-        checkTimestamps(now + OmahaClient.MS_BETWEEN_REQUESTS, now + OmahaClient.MS_POST_BASE_DELAY,
-                mDelegate.mTimestampsOnSaveState);
-    }
-
-    private void checkTimestamps(
-            long expectedRequestTimestamp, long expectedPostTimestamp, TimestampPair timestamps) {
-        assertEquals(expectedRequestTimestamp, timestamps.timestampNextRequest);
-        assertEquals(expectedPostTimestamp, timestamps.timestampNextPost);
-    }
 
     /**
      * Simulates communication with the actual Omaha server.

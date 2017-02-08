@@ -34,6 +34,8 @@ import javax.annotation.concurrent.NotThreadSafe;
  *
  * This class is not thread-safe because any two different classes could be accessing the same
  * SharedPreferences.
+ *
+ * TODO(dfalcantara): Consider making this an AlarmManagerHelper class to manage general alarms.
  */
 @NotThreadSafe
 public class ExponentialBackoffScheduler {
