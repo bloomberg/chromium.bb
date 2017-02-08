@@ -44,7 +44,10 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -73,7 +76,7 @@ scoped_refptr<ShellLinkItem> CreateShellLink() {
 }
 
 // Creates a temporary icon file to be shown in JumpList.
-bool CreateIconFile(const SkBitmap& bitmap,
+bool CreateIconFile(const gfx::ImageSkia& image_skia,
                     const base::FilePath& icon_dir,
                     base::FilePath* icon_path) {
   // Retrieve the path to a temporary file.
@@ -86,7 +89,16 @@ bool CreateIconFile(const SkBitmap& bitmap,
   // Create an icon file from the favicon attached to the given |page|, and
   // save it as the temporary file.
   gfx::ImageFamily image_family;
-  image_family.Add(gfx::Image::CreateFrom1xBitmap(bitmap));
+  if (!image_skia.isNull()) {
+    std::vector<float> supported_scales = image_skia.GetSupportedScales();
+    for (auto& scale : supported_scales) {
+      gfx::ImageSkiaRep image_skia_rep = image_skia.GetRepresentation(scale);
+      if (!image_skia_rep.is_null())
+        image_family.Add(
+            gfx::Image::CreateFrom1xBitmap(image_skia_rep.sk_bitmap()));
+    }
+  }
+
   if (!IconUtil::CreateIconFileFromImageFamily(image_family, path,
                                                IconUtil::NORMAL_WRITE))
     return false;
@@ -104,7 +116,7 @@ void CreateIconFiles(const base::FilePath& icon_dir,
   for (ShellLinkItemList::const_iterator item = item_list.begin();
       item != item_list.end(); ++item) {
     base::FilePath icon_path;
-    if (CreateIconFile((*item)->icon_data(), icon_dir, &icon_path))
+    if (CreateIconFile((*item)->icon_image(), icon_dir, &icon_path))
       (*item)->set_icon(icon_path.value(), 0);
   }
 }
@@ -541,10 +553,12 @@ void JumpList::OnFaviconDataAvailable(
     base::AutoLock auto_lock(data->list_lock_);
     // Attach the received data to the ShellLinkItem object.
     // This data will be decoded by the RunUpdateOnFileThread method.
-    if (!image_result.image.IsEmpty()) {
-      if (!data->icon_urls_.empty() && data->icon_urls_.front().second.get())
-        data->icon_urls_.front().second->set_icon_data(
-            image_result.image.AsBitmap());
+    if (!image_result.image.IsEmpty() && !data->icon_urls_.empty() &&
+        data->icon_urls_.front().second.get()) {
+      gfx::ImageSkia image_skia = image_result.image.AsImageSkia();
+      image_skia.EnsureRepsForSupportedScales();
+      std::unique_ptr<gfx::ImageSkia> deep_copy(image_skia.DeepCopy());
+      data->icon_urls_.front().second->set_icon_image(*deep_copy);
     }
 
     if (!data->icon_urls_.empty())

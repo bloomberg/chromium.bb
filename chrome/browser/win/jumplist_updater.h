@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/win/scoped_comptr.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 // Represents a class used for creating an IShellLink object.
 // Even though an IShellLink also needs the absolute path to an application to
@@ -29,7 +29,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   const std::wstring& title() const { return title_; }
   const std::wstring& icon_path() const { return icon_path_; }
   int icon_index() const { return icon_index_; }
-  const SkBitmap& icon_data() const { return icon_data_; }
+  const gfx::ImageSkia& icon_image() const { return icon_image_; }
 
   std::wstring GetArguments() const;
   base::CommandLine* GetCommandLine();
@@ -43,8 +43,8 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
     icon_index_ = index;
   }
 
-  void set_icon_data(const SkBitmap& data) {
-    icon_data_ = data;
+  void set_icon_image(const gfx::ImageSkia& image) {
+    icon_image_ = image;
   }
 
  private:
@@ -65,10 +65,10 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   // one icon, this value is 0.
   int icon_index_;
 
-  // Icon bitmap. Used by the browser JumpList.
+  // Icon image. Used by the browser JumpList.
   // Note that an icon path must be supplied to IShellLink, so users of this
   // class must save icon data to disk.
-  SkBitmap icon_data_;
+  gfx::ImageSkia icon_image_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellLinkItem);
 };
