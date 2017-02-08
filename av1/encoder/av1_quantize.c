@@ -20,8 +20,8 @@
 #include "av1/common/scan.h"
 #include "av1/common/seg_common.h"
 
+#include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/encoder.h"
-#include "av1/encoder/quantize.h"
 #include "av1/encoder/rd.h"
 
 #if CONFIG_NEW_QUANT

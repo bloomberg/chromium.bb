@@ -38,6 +38,7 @@
 #endif  // CONFIG_WARPED_MOTION
 
 #include "av1/encoder/aq_variance.h"
+#include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
@@ -47,7 +48,6 @@
 #if CONFIG_PALETTE
 #include "av1/encoder/palette.h"
 #endif  // CONFIG_PALETTE
-#include "av1/encoder/quantize.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
 #include "av1/encoder/rdopt.h"

@@ -192,6 +192,8 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/common/av1_inv_txfm1d.h"
     "${AOM_ROOT}/av1/common/av1_inv_txfm2d.c"
     "${AOM_ROOT}/av1/common/av1_inv_txfm2d_cfg.h"
+    "${AOM_ROOT}/av1/common/av1_loopfilter.c"
+    "${AOM_ROOT}/av1/common/av1_loopfilter.h"
     "${AOM_ROOT}/av1/common/av1_rtcd.c"
     "${AOM_ROOT}/av1/common/av1_txfm.h"
     "${AOM_ROOT}/av1/common/blockd.c"
@@ -214,8 +216,6 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/common/frame_buffers.h"
     "${AOM_ROOT}/av1/common/idct.c"
     "${AOM_ROOT}/av1/common/idct.h"
-    "${AOM_ROOT}/av1/common/loopfilter.c"
-    "${AOM_ROOT}/av1/common/loopfilter.h"
     "${AOM_ROOT}/av1/common/mv.h"
     "${AOM_ROOT}/av1/common/mvref_common.c"
     "${AOM_ROOT}/av1/common/mvref_common.h"
@@ -265,6 +265,8 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/aq_cyclicrefresh.h"
     "${AOM_ROOT}/av1/encoder/aq_variance.c"
     "${AOM_ROOT}/av1/encoder/aq_variance.h"
+    "${AOM_ROOT}/av1/encoder/av1_quantize.c"
+    "${AOM_ROOT}/av1/encoder/av1_quantize.h"
     "${AOM_ROOT}/av1/encoder/bitstream.c"
     "${AOM_ROOT}/av1/encoder/bitstream.h"
     "${AOM_ROOT}/av1/encoder/block.h"
@@ -297,8 +299,6 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/mcomp.h"
     "${AOM_ROOT}/av1/encoder/picklpf.c"
     "${AOM_ROOT}/av1/encoder/picklpf.h"
-    "${AOM_ROOT}/av1/encoder/quantize.c"
-    "${AOM_ROOT}/av1/encoder/quantize.h"
     "${AOM_ROOT}/av1/encoder/ratectrl.c"
     "${AOM_ROOT}/av1/encoder/ratectrl.h"
     "${AOM_ROOT}/av1/encoder/rd.c"
@@ -472,10 +472,10 @@ set(AOM_AV1_ENCODER_SSE2_INTRIN
     #"${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c"
     "${AOM_ROOT}/av1/encoder/x86/dct_intrin_sse2.c"
     "${AOM_ROOT}/av1/encoder/x86/highbd_block_error_intrin_sse2.c"
-    "${AOM_ROOT}/av1/encoder/x86/quantize_sse2.c")
+    "${AOM_ROOT}/av1/encoder/x86/av1_quantize_sse2.c")
 
 set(AOM_AV1_ENCODER_SSSE3_ASM
-    "${AOM_ROOT}/av1/encoder/x86/quantize_ssse3_x86_64.asm")
+    "${AOM_ROOT}/av1/encoder/x86/av1_quantize_ssse3_x86_64.asm")
 
 set(AOM_AV1_ENCODER_SSSE3_INTRIN
     # Requires CONFIG_CLPF

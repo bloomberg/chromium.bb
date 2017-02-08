@@ -27,6 +27,7 @@
 #include "av1/common/entropymv.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"  // av1_setup_dst_planes()
+#include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/aq_variance.h"
 #include "av1/encoder/block.h"
 #include "av1/encoder/encodeframe.h"
@@ -36,7 +37,6 @@
 #include "av1/encoder/extend.h"
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/mcomp.h"
-#include "av1/encoder/quantize.h"
 #include "av1/encoder/rd.h"
 
 #define OUTPUT_FPF 0

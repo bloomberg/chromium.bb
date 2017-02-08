@@ -20,11 +20,11 @@
 #include "aom_dsp/ans.h"
 #endif
 #include "av1/common/alloccommon.h"
+#include "av1/common/av1_loopfilter.h"
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
 #include "av1/common/entropymv.h"
 #include "av1/common/frame_buffers.h"
-#include "av1/common/loopfilter.h"
 #include "av1/common/mv.h"
 #include "av1/common/quant_common.h"
 #if CONFIG_LOOP_RESTORATION

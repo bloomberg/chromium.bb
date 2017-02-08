@@ -13,7 +13,7 @@
 
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
-#include "av1/common/loopfilter.h"
+#include "av1/common/av1_loopfilter.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"
 #include "aom_dsp/aom_dsp_common.h"

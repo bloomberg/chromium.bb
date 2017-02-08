@@ -15,7 +15,6 @@
 #include "av1/common/entropymode.h"
 #include "av1/common/thread_common.h"
 #include "av1/common/reconinter.h"
-#include "av1/common/loopfilter.h"
 
 #if CONFIG_MULTITHREAD
 static INLINE void mutex_lock(pthread_mutex_t *const mutex) {

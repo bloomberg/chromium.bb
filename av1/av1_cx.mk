@@ -18,6 +18,8 @@ AV1_CX_SRCS_REMOVE-no  += $(AV1_COMMON_SRCS_REMOVE-no)
 
 AV1_CX_SRCS-yes += av1_cx_iface.c
 
+AV1_CX_SRCS-yes += encoder/av1_quantize.c
+AV1_CX_SRCS-yes += encoder/av1_quantize.h
 AV1_CX_SRCS-yes += encoder/bitstream.c
 AV1_CX_SRCS-yes += encoder/context_tree.c
 AV1_CX_SRCS-yes += encoder/context_tree.h
@@ -58,7 +60,6 @@ AV1_CX_SRCS-yes += encoder/lookahead.c
 AV1_CX_SRCS-yes += encoder/lookahead.h
 AV1_CX_SRCS-yes += encoder/mcomp.h
 AV1_CX_SRCS-yes += encoder/encoder.h
-AV1_CX_SRCS-yes += encoder/quantize.h
 AV1_CX_SRCS-yes += encoder/ratectrl.h
 AV1_CX_SRCS-yes += encoder/rd.h
 AV1_CX_SRCS-yes += encoder/rdopt.h
@@ -74,7 +75,6 @@ AV1_CX_SRCS-yes += encoder/picklpf.c
 AV1_CX_SRCS-yes += encoder/picklpf.h
 AV1_CX_SRCS-$(CONFIG_LOOP_RESTORATION) += encoder/pickrst.c
 AV1_CX_SRCS-$(CONFIG_LOOP_RESTORATION) += encoder/pickrst.h
-AV1_CX_SRCS-yes += encoder/quantize.c
 AV1_CX_SRCS-yes += encoder/ratectrl.c
 AV1_CX_SRCS-yes += encoder/rd.c
 AV1_CX_SRCS-yes += encoder/rdopt.c
@@ -122,8 +122,8 @@ AV1_CX_SRCS-yes += encoder/generic_encoder.c
 AV1_CX_SRCS-yes += encoder/laplace_encoder.c
 endif
 
+AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/av1_quantize_sse2.c
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/temporal_filter_apply_sse2.asm
-AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/quantize_sse2.c
 ifeq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/highbd_block_error_intrin_sse2.c
 endif
@@ -132,15 +132,15 @@ AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/dct_sse2.asm
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/error_sse2.asm
 
 ifeq ($(ARCH_X86_64),yes)
-AV1_CX_SRCS-$(HAVE_SSSE3) += encoder/x86/quantize_ssse3_x86_64.asm
+AV1_CX_SRCS-$(HAVE_SSSE3) += encoder/x86/av1_quantize_ssse3_x86_64.asm
 endif
 
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/dct_intrin_sse2.c
 AV1_CX_SRCS-$(HAVE_SSSE3) += encoder/x86/dct_ssse3.c
 AV1_CX_SRCS-$(HAVE_AVX2) += encoder/x86/hybrid_fwd_txfm_avx2.c
 ifeq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
-AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/highbd_fwd_txfm_sse4.c
 AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/av1_highbd_quantize_sse4.c
+AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/highbd_fwd_txfm_sse4.c
 endif
 
 ifeq ($(CONFIG_EXT_INTER),yes)

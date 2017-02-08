@@ -31,12 +31,12 @@
 #include "av1/common/reconintra.h"
 #include "av1/common/seg_common.h"
 
+#include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/mcomp.h"
-#include "av1/encoder/quantize.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
 #include "av1/encoder/tokenize.h"

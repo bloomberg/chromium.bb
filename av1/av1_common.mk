@@ -12,6 +12,8 @@
 AV1_COMMON_SRCS-yes += av1_common.mk
 AV1_COMMON_SRCS-yes += av1_iface_common.h
 AV1_COMMON_SRCS-yes += common/alloccommon.c
+AV1_COMMON_SRCS-yes += common/av1_loopfilter.c
+AV1_COMMON_SRCS-yes += common/av1_loopfilter.h
 AV1_COMMON_SRCS-yes += common/blockd.c
 AV1_COMMON_SRCS-yes += common/debugmodes.c
 AV1_COMMON_SRCS-yes += common/entropy.c
@@ -30,7 +32,6 @@ AV1_COMMON_SRCS-yes += common/filter.h
 AV1_COMMON_SRCS-yes += common/filter.c
 AV1_COMMON_SRCS-yes += common/idct.h
 AV1_COMMON_SRCS-yes += common/idct.c
-AV1_COMMON_SRCS-yes += common/loopfilter.h
 AV1_COMMON_SRCS-yes += common/thread_common.h
 AV1_COMMON_SRCS-yes += common/mv.h
 AV1_COMMON_SRCS-yes += common/onyxc_int.h
@@ -47,7 +48,6 @@ AV1_COMMON_SRCS-yes += common/seg_common.h
 AV1_COMMON_SRCS-yes += common/seg_common.c
 AV1_COMMON_SRCS-yes += common/tile_common.h
 AV1_COMMON_SRCS-yes += common/tile_common.c
-AV1_COMMON_SRCS-yes += common/loopfilter.c
 AV1_COMMON_SRCS-yes += common/thread_common.c
 AV1_COMMON_SRCS-yes += common/mvref_common.c
 AV1_COMMON_SRCS-yes += common/mvref_common.h
@@ -125,15 +125,15 @@ AV1_COMMON_SRCS-yes += common/laplace_tables.c
 endif
 
 ifneq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
-AV1_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/itrans4_dspr2.c
-AV1_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/itrans8_dspr2.c
-AV1_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/itrans16_dspr2.c
+AV1_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/av1_itrans4_dspr2.c
+AV1_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/av1_itrans8_dspr2.c
+AV1_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/av1_itrans16_dspr2.c
 endif
 
 # common (msa)
-AV1_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/idct4x4_msa.c
-AV1_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/idct8x8_msa.c
-AV1_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/idct16x16_msa.c
+AV1_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/av1_idct4x4_msa.c
+AV1_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/av1_idct8x8_msa.c
+AV1_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/av1_idct16x16_msa.c
 
 AV1_COMMON_SRCS-$(HAVE_SSE2) += common/x86/idct_intrin_sse2.c
 AV1_COMMON_SRCS-$(HAVE_AVX2) += common/x86/hybrid_inv_txfm_avx2.c

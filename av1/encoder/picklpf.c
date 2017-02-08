@@ -19,13 +19,13 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
-#include "av1/common/loopfilter.h"
+#include "av1/common/av1_loopfilter.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/quant_common.h"
 
+#include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/picklpf.h"
-#include "av1/encoder/quantize.h"
 
 int av1_get_max_filter_level(const AV1_COMP *cpi) {
   if (cpi->oxcf.pass == 2) {

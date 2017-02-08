@@ -21,8 +21,8 @@
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
+#include "av1/common/av1_loopfilter.h"
 #include "av1/common/entropy.h"
-#include "av1/common/loopfilter.h"
 #include "aom/aom_integer.h"
 
 using libaom_test::ACMRandom;

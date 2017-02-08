@@ -23,9 +23,9 @@
 #include "av1/common/reconintra.h"
 #include "av1/common/scan.h"
 
+#include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
-#include "av1/encoder/quantize.h"
 #include "av1/encoder/rd.h"
 #include "av1/encoder/tokenize.h"
 

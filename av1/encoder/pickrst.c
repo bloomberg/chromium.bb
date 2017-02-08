@@ -25,10 +25,10 @@
 #include "av1/common/quant_common.h"
 #include "av1/common/restoration.h"
 
+#include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/picklpf.h"
 #include "av1/encoder/pickrst.h"
-#include "av1/encoder/quantize.h"
 
 typedef double (*search_restore_type)(const YV12_BUFFER_CONFIG *src,
                                       AV1_COMP *cpi, int filter_level,
