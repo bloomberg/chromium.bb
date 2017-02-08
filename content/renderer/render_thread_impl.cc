@@ -922,7 +922,7 @@ void RenderThreadImpl::Shutdown() {
   // it will exit the process before the browser side is ready to exit.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess))
-    _exit(0);
+    base::Process::TerminateCurrentProcessImmediately(0);
 }
 
 bool RenderThreadImpl::ShouldBeDestroyed() {
