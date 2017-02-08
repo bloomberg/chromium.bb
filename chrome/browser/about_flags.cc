@@ -2203,6 +2203,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(net::CertVerifyProcAndroid::kAIAFetchingFeature)},
 #endif
 
+#if defined(OS_CHROMEOS)
+    {"force-enable-stylus-tools", IDS_FLAGS_FORCE_ENABLE_STYLUS_TOOLS_NAME,
+     IDS_FLAGS_FORCE_ENABLE_STYLUS_TOOLS_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kAshForceEnablePalette)},
+#endif // defined(OS_CHROMEOS)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -5769,6 +5769,14 @@ Battery full
     Disable Notifcation when Device is End of Life.
   </message>
 
+  <!-- Stylus strings -->
+  <message name="IDS_FLAGS_FORCE_ENABLE_STYLUS_TOOLS_NAME" desc="Name of the about:flag option to enable stylus tools.">
+    Force enable stylus features
+  </message>
+  <message name="IDS_FLAGS_FORCE_ENABLE_STYLUS_TOOLS_DESCRIPTION" desc="Description of the about:flag option to enable stylus tools.">
+    Forces display of the stylus tools menu in the shelf and the stylus section in settings, even if there is no attached stylus device.
+  </message>
+
   <!-- Genius App -->
   <message name="IDS_GENIUS_APP_NAME" desc="Name of the genius app in the app shelf">
     Get Help
