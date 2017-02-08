@@ -126,6 +126,18 @@ class AvSettings {
 
     // This event should be fired when an HDMI error occurs.
     HDMI_ERROR = 102,
+
+    // This event must be fired when turn active succeeds on HDMI platforms.
+    TURN_ACTIVE_SUCCESS = 103,
+
+    // This event must be fired when turn active fails on HDMI platforms.
+    TURN_ACTIVE_FAILURE = 104,
+
+    // This event must be fired when turn standby succeeds on HDMI platforms.
+    TURN_STANDBY_SUCCESS = 105,
+
+    // This event must be fired when turn standby fails on HDMI platforms.
+    TURN_STANDBY_FAILURE = 106,
   };
 
   // Delegate to inform the caller events. As a subclass of TaskRunner,
@@ -165,12 +177,16 @@ class AvSettings {
 
   // Turns the screen on and sets the active input to the cast receiver.
   // If successful, it must return true and fire ACTIVE_STATE_CHANGED.
+  // On HDMI platforms, it must also fire TURN_ACTIVE_SUCCESS or
+  // TURN_ACTIVE_FAILURE depending on the result.
   virtual bool TurnActive() = 0;
 
   // Turns the screen off (or stand-by). If the device is connecting to HDMI
   // sinks, broadcasts a CEC standby message on the HDMI control bus to put all
   // sink devices (TV, AVR) into a standby state.
   // If successful, it must return true and fire ACTIVE_STATE_CHANGED.
+  // On HDMI platforms, it must also fire TURN_STANDBY_SUCCESS or
+  // TURN_STANDBY_FAILURE depending on the result.
   virtual bool TurnStandby() = 0;
 
   // Requests the system where cast receiver is running on to be kept awake for
