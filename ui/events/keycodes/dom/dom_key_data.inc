@@ -279,6 +279,7 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("MailForward",          MAIL_FORWARD,             0x0A02),
   DOM_KEY_MAP("MailReply",            MAIL_REPLY,               0x0A03),
   DOM_KEY_MAP("MailSend",             MAIL_SEND,                0x0A04),
+  DOM_KEY_MAP("MediaClose",           MEDIA_CLOSE,              0x0D5B),
   DOM_KEY_MAP("MediaFastForward",     MEDIA_FAST_FORWARD,       0x0D2C),
   DOM_KEY_MAP("MediaPause",           MEDIA_PAUSE,              0x0D2E),
   DOM_KEY_MAP("MediaPlay",            MEDIA_PLAY,               0x0D2F),
