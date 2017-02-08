@@ -424,6 +424,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void UpdateInitialInteractionTimestamp(
       const base::TimeTicks& interaction_timestamp);
 
+  // Examines |form| and returns true if it is in a non-secure context or
+  // its action attribute targets a HTTP url.
+  bool IsFormNonSecure(const FormData& form) const;
+
   // Uses the existing personal data in |profiles| and |credit_cards| to
   // determine possible field types for the |submitted_form|.  This is
   // potentially expensive -- on the order of 50ms even for a small set of

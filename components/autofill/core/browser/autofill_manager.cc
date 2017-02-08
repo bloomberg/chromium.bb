@@ -309,6 +309,9 @@ bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
   if (!is_card_number_field && !is_scannable_name_on_card_field)
     return false;
 
+  if (IsFormNonSecure(form))
+    return false;
+
   static const int kShowScanCreditCardMaxValueLength = 6;
   return field.value.size() <= kShowScanCreditCardMaxValueLength;
 }
@@ -327,6 +330,9 @@ bool AutofillManager::ShouldShowCreditCardSigninPromo(
   AutofillField* autofill_field = GetAutofillField(form, field);
   if (!autofill_field || autofill_field->Type().group() != CREDIT_CARD ||
       !client_->ShouldShowSigninPromo())
+    return false;
+
+  if (IsFormNonSecure(form))
     return false;
 
   // The last step is checking if we are under the limit of impressions.
@@ -527,6 +533,11 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
   UpdateInitialInteractionTimestamp(timestamp);
 }
 
+bool AutofillManager::IsFormNonSecure(const FormData& form) const {
+  return !client_->IsContextSecure(form.origin) ||
+         (form.action.is_valid() && form.action.SchemeIs("http"));
+}
+
 void AutofillManager::OnQueryFormFieldAutofill(int query_id,
                                                const FormData& form,
                                                const FormFieldData& field,
@@ -563,11 +574,8 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   }
 
   std::vector<Suggestion> suggestions;
-  const bool is_context_secure =
-      !form_structure ||
-      (client_->IsContextSecure(form_structure->source_url()) &&
-       (!form_structure->target_url().is_valid() ||
-        !form_structure->target_url().SchemeIs("http")));
+  const bool is_context_secure = !IsFormNonSecure(form);
+
   const bool is_http_warning_enabled =
       security_state::IsHttpWarningInFormEnabled();
 

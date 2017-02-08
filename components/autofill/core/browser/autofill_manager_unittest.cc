@@ -5361,6 +5361,66 @@ TEST_F(AutofillManagerTest,
                 prefs::kAutofillCreditCardSigninPromoImpressionCount));
 }
 
+// Test that ShouldShowCreditCardSigninPromo behaves as expected for a credit
+// card form on a non-secure page.
+TEST_F(AutofillManagerTest,
+       ShouldShowCreditCardSigninPromo_CreditCardField_NonSecureContext) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, false, false);
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+
+  // Both calls will now return false, regardless of the mock implementation of
+  // ShouldShowSigninPromo().
+  EXPECT_CALL(autofill_client_, ShouldShowSigninPromo())
+      .WillOnce(testing::Return(true));
+  EXPECT_FALSE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
+
+  EXPECT_CALL(autofill_client_, ShouldShowSigninPromo())
+      .WillOnce(testing::Return(false));
+  EXPECT_FALSE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
+
+  // Number of impressions should remain at zero.
+  EXPECT_EQ(0, autofill_client_.GetPrefs()->GetInteger(
+                   prefs::kAutofillCreditCardSigninPromoImpressionCount));
+}
+
+// Test that ShouldShowCreditCardSigninPromo behaves as expected for a credit
+// card form targeting a non-secure page.
+TEST_F(AutofillManagerTest,
+       ShouldShowCreditCardSigninPromo_CreditCardField_NonSecureAction) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, false, false);
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+
+  // Both calls will now return false, regardless of the mock implementation of
+  // ShouldShowSigninPromo().
+  EXPECT_CALL(autofill_client_, ShouldShowSigninPromo())
+      .WillOnce(testing::Return(true));
+  EXPECT_FALSE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
+
+  EXPECT_CALL(autofill_client_, ShouldShowSigninPromo())
+      .WillOnce(testing::Return(false));
+  EXPECT_FALSE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
+
+  // Number of impressions should remain at zero.
+  EXPECT_EQ(0, autofill_client_.GetPrefs()->GetInteger(
+                   prefs::kAutofillCreditCardSigninPromoImpressionCount));
+}
+
 // Test that ShouldShowCreditCardSigninPromo behaves as expected for an address
 // form.
 TEST_F(AutofillManagerTest, ShouldShowCreditCardSigninPromo_AddressField) {
