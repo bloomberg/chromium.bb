@@ -888,12 +888,11 @@ void ChromeMainDelegate::PreSandboxStartup() {
   // Zygote needs to call InitCrashReporter() in RunZygote().
   if (process_type != switches::kZygoteProcess) {
 #if defined(OS_ANDROID)
-    if (process_type.empty()) {
+    if (process_type.empty())
       breakpad::InitCrashReporter(process_type);
-      base::android::InitJavaExceptionReporter();
-    } else {
+    else
       breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
-    }
+    base::android::InitJavaExceptionReporter();
 #else  // !defined(OS_ANDROID)
     breakpad::InitCrashReporter(process_type);
 #endif  // defined(OS_ANDROID)
