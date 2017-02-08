@@ -36,6 +36,8 @@ extern const char kPerformanceMeasurementRateParameterName[];
 
 extern const char kSuppressNotificationsParameterName[];
 
+extern const char kWhitelistSiteOnReloadParameterName[];
+
 // Returns the maximum degree to which subresource filtering should be activated
 // on any RenderFrame. This will be ActivationLevel::DISABLED unless the feature
 // is enabled and variation parameters prescribe a higher activation level.
@@ -64,6 +66,9 @@ bool ShouldSuppressNotifications();
 // Returns the ruleset flavor, or the empty string if the default ruleset should
 // be used.
 std::string GetRulesetFlavor();
+
+// Returns whether the site of reloaded pages should be whitelisted.
+bool ShouldWhitelistSiteOnReload();
 
 }  // namespace subresource_filter
 

@@ -17,6 +17,7 @@
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/common/document_load_statistics.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -91,6 +92,8 @@ class ContentSubresourceFilterDriverFactory
   ContentSubresourceFilterDriver* DriverFromFrameHost(
       content::RenderFrameHost* render_frame_host);
 
+  void ResetActivationState();
+
   void OnFirstSubresourceLoadDisallowed();
 
   void OnDocumentLoadStatistics(const DocumentLoadStatistics& statistics);
@@ -121,7 +124,9 @@ class ContentSubresourceFilterDriverFactory
   // NavigationHandle to ease unit tests.
   void ReadyToCommitNavigationInternal(
       content::RenderFrameHost* render_frame_host,
-      const GURL& url);
+      const GURL& url,
+      const content::Referrer& referrer,
+      ui::PageTransition page_transition);
 
   bool DidURLMatchCurrentActivationList(const GURL& url) const;
 

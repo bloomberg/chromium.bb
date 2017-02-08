@@ -252,4 +252,37 @@ TEST(SubresourceFilterFeaturesTest, SuppressNotifications) {
   }
 }
 
+TEST(SubresourceFilterFeaturesTest, WhitelistSiteOnReload) {
+  const struct {
+    bool feature_enabled;
+    const char* whitelist_site_on_reload_param;
+    bool expected_whitelist_site_on_reload_value;
+  } kTestCases[] = {{false, "", false},
+                    {false, "true", false},
+                    {false, "false", false},
+                    {false, "invalid value", false},
+                    {true, "", false},
+                    {true, "false", false},
+                    {true, "invalid value", false},
+                    {true, "True", false},
+                    {true, "TRUE", false},
+                    {true, "true", true}};
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(::testing::Message("Enabled = ") << test_case.feature_enabled);
+    SCOPED_TRACE(::testing::Message("WhitelistSiteOnReloadParam = \"")
+                 << test_case.whitelist_site_on_reload_param << "\"");
+
+    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+        test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+                                  : base::FeatureList::OVERRIDE_USE_DEFAULT,
+        {{kWhitelistSiteOnReloadParameterName,
+          test_case.whitelist_site_on_reload_param}});
+
+    EXPECT_EQ(test_case.expected_whitelist_site_on_reload_value,
+              ShouldWhitelistSiteOnReload());
+  }
+}
+
 }  // namespace subresource_filter

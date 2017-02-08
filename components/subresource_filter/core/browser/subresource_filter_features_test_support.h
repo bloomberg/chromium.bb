@@ -26,7 +26,8 @@ class ScopedSubresourceFilterFeatureToggle {
       const std::string& activation_scope,
       const std::string& activation_lists = std::string(),
       const std::string& performance_measurement_rate = std::string(),
-      const std::string& suppress_notifications = std::string());
+      const std::string& suppress_notifications = std::string(),
+      const std::string& whitelist_site_on_reload = std::string());
 
   ScopedSubresourceFilterFeatureToggle(
       base::FeatureList::OverrideState feature_state,

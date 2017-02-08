@@ -211,6 +211,8 @@ class ContentSubresourceFilterDriverFactoryTest
       const std::vector<GURL>& navigation_chain,
       safe_browsing::SBThreatType threat_type,
       safe_browsing::ThreatPatternType threat_type_metadata,
+      const content::Referrer& referrer,
+      ui::PageTransition transition,
       RedirectChainMatchPattern expected_pattern,
       bool expected_activation) {
     base::HistogramTester tester;
@@ -238,9 +240,12 @@ class ContentSubresourceFilterDriverFactoryTest
                 ActivateForProvisionalLoad(::testing::_, ::testing::_,
                                            expected_measure_performance()))
         .Times(expected_activation);
+    // TODO(crbug.com/688393): remove the call to
+    // ReadyToCommitNavigationInternal once WCO::ReadyToCommitNavigation is
+    // invoked consistently for tests in PlzNavigate and non-PlzNavigate.
     if (!content::IsBrowserSideNavigationEnabled()) {
-      factory()->ReadyToCommitNavigationInternal(main_rfh(),
-                                                 navigation_chain.back());
+      factory()->ReadyToCommitNavigationInternal(
+          main_rfh(), navigation_chain.back(), referrer, transition);
     }
 
     rfh_tester->SimulateNavigationCommit(navigation_chain.back());
@@ -268,7 +273,8 @@ class ContentSubresourceFilterDriverFactoryTest
         .Times(expected_activation);
     EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
 
-    factory()->ReadyToCommitNavigationInternal(subframe_rfh(), url);
+    factory()->ReadyToCommitNavigationInternal(
+        subframe_rfh(), url, content::Referrer(), ui::PAGE_TRANSITION_LINK);
     ::testing::Mock::VerifyAndClearExpectations(subframe_driver());
     ::testing::Mock::VerifyAndClearExpectations(client());
   }
@@ -278,11 +284,13 @@ class ContentSubresourceFilterDriverFactoryTest
       const std::vector<GURL>& navigation_chain,
       safe_browsing::SBThreatType threat_type,
       safe_browsing::ThreatPatternType threat_type_metadata,
+      const content::Referrer& referrer,
+      ui::PageTransition transition,
       RedirectChainMatchPattern expected_pattern,
       bool expected_activation) {
     BlacklistURLWithRedirectsNavigateAndCommit(
         blacklisted_urls, navigation_chain, threat_type, threat_type_metadata,
-        expected_pattern, expected_activation);
+        referrer, transition, expected_pattern, expected_activation);
 
     NavigateAndCommitSubframe(GURL(kExampleLoginUrl), expected_activation);
   }
@@ -295,7 +303,8 @@ class ContentSubresourceFilterDriverFactoryTest
         blacklisted_urls, navigation_chain,
         safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
         safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS,
-        expected_pattern, expected_activation);
+        content::Referrer(), ui::PAGE_TRANSITION_LINK, expected_pattern,
+        expected_activation);
   }
 
   void EmulateDidDisallowFirstSubresourceMessage() {
@@ -506,6 +515,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
         test_data.blacklisted_urls, test_data.navigation_chain,
         safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
         safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS,
+        content::Referrer(), ui::PAGE_TRANSITION_LINK,
         test_data.hit_expected_pattern, test_data.expected_activation);
     NavigateAndExpectActivation({false}, {GURL("https://dummy.com")}, EMPTY,
                                 false);
@@ -539,6 +549,50 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   EmulateDidDisallowFirstSubresourceMessage();
 }
 
+TEST_F(ContentSubresourceFilterDriverFactoryTest, WhitelistSiteOnReload) {
+  // TODO(crbug.com/688393): enable this test for PlzNavigate once
+  // WCO::ReadyToCommitNavigation is invoked consistently for tests in
+  // PlzNavigate and non-PlzNavigate.
+  if (content::IsBrowserSideNavigationEnabled())
+    return;
+
+  const struct {
+    content::Referrer referrer;
+    ui::PageTransition transition;
+    bool expect_activation;
+  } kTestCases[] = {
+      {content::Referrer(), ui::PAGE_TRANSITION_LINK, true},
+      {content::Referrer(GURL(kUrlA), blink::WebReferrerPolicyDefault),
+       ui::PAGE_TRANSITION_LINK, true},
+      {content::Referrer(GURL(kExampleUrl), blink::WebReferrerPolicyDefault),
+       ui::PAGE_TRANSITION_LINK, false},
+      {content::Referrer(), ui::PAGE_TRANSITION_RELOAD, false}};
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(::testing::Message("referrer = \"")
+                 << test_case.referrer.url << "\""
+                 << " transition = \"" << test_case.transition << "\"");
+
+    base::FieldTrialList field_trial_list(nullptr);
+    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
+        kActivationScopeAllSites, "" /* activation_lists */,
+        "" /* performance_measurement_rate */, "" /* suppress_notifications */,
+        "true" /* whitelist_site_on_reload */);
+
+    NavigateAndExpectActivation(
+        {false}, {GURL(kExampleUrl)},
+        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS,
+        test_case.referrer, test_case.transition, EMPTY,
+        test_case.expect_activation);
+    // Verify that if the first URL failed to activate, subsequent same-origin
+    // navigations also fail to activate.
+    NavigateAndExpectActivation({false}, {GURL(kExampleUrlWithParams)}, EMPTY,
+                                test_case.expect_activation);
+  }
+}
+
 TEST_P(ContentSubresourceFilterDriverFactoryActivationLevelTest,
        ActivateForFrameState) {
   const ActivationLevelTestData& test_data = GetParam();
@@ -570,12 +624,12 @@ TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest,
   const GURL test_url("https://example.com/nonsoceng?q=engsocnon");
   std::vector<GURL> navigation_chain;
 
-  NavigateAndExpectActivation({false, false, false, true},
-                              {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC), test_url},
-                              test_data.threat_type,
-                              test_data.threat_type_metadata,
-                              test_data.expected_activation ? F0M0L1 : EMPTY,
-                              test_data.expected_activation);
+  NavigateAndExpectActivation(
+      {false, false, false, true},
+      {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC), test_url}, test_data.threat_type,
+      test_data.threat_type_metadata, content::Referrer(),
+      ui::PAGE_TRANSITION_LINK, test_data.expected_activation ? F0M0L1 : EMPTY,
+      test_data.expected_activation);
 };
 
 TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,

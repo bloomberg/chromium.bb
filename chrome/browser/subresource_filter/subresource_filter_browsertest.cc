@@ -20,6 +20,7 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -39,6 +40,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -200,8 +202,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterDisabledBrowserTest,
 
 class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
  public:
-  explicit SubresourceFilterBrowserTestImpl(bool measure_performance)
-      : measure_performance_(measure_performance) {}
+  explicit SubresourceFilterBrowserTestImpl(bool measure_performance,
+                                            bool whitelist_site_on_reload)
+      : measure_performance_(measure_performance),
+        whitelist_site_on_reload_(whitelist_site_on_reload) {}
 
   ~SubresourceFilterBrowserTestImpl() override {}
 
@@ -234,7 +238,8 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
     scoped_feature_toggle_.reset(new ScopedSubresourceFilterFeatureToggle(
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
         kActivationScopeActivationList, kActivationListPhishingInterstitial,
-        measure_performance_ ? "1" : "0"));
+        measure_performance_ ? "1" : "0", "" /* suppress_notifications */,
+        whitelist_site_on_reload_ ? "true" : "false"));
 
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
@@ -331,7 +336,8 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
 
   std::unique_ptr<ScopedSubresourceFilterFeatureToggle> scoped_feature_toggle_;
   TestRulesetPublisher test_ruleset_publisher_;
-  bool measure_performance_;
+  const bool measure_performance_;
+  const bool whitelist_site_on_reload_;
   TestRulesetCreator ruleset_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTestImpl);
@@ -339,7 +345,8 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
 
 class SubresourceFilterBrowserTest : public SubresourceFilterBrowserTestImpl {
  public:
-  SubresourceFilterBrowserTest() : SubresourceFilterBrowserTestImpl(false) {}
+  SubresourceFilterBrowserTest()
+      : SubresourceFilterBrowserTestImpl(false, false) {}
 };
 
 // TODO(pkalinnikov): It should be possible to have only one fixture, i.e.,
@@ -351,7 +358,14 @@ class SubresourceFilterWithPerformanceMeasurementBrowserTest
     : public SubresourceFilterBrowserTestImpl {
  public:
   SubresourceFilterWithPerformanceMeasurementBrowserTest()
-      : SubresourceFilterBrowserTestImpl(true) {}
+      : SubresourceFilterBrowserTestImpl(true, false) {}
+};
+
+class SubresourceFilterWhitelistSiteOnReloadBrowserTest
+    : public SubresourceFilterBrowserTestImpl {
+ public:
+  SubresourceFilterWhitelistSiteOnReloadBrowserTest()
+      : SubresourceFilterBrowserTestImpl(false, true) {}
 };
 
 // Tests -----------------------------------------------------------------------
@@ -724,6 +738,78 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   tester.ExpectUniqueSample(
       kDocumentLoadActivationLevel,
       static_cast<base::Histogram::Sample>(ActivationLevel::DISABLED), 6);
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       ActivationEnabledOnReloadByDefault) {
+  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
+  ConfigureAsPhishingURL(url);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  content::TestNavigationObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      content::MessageLoopRunner::QuitMode::DEFERRED);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  observer.Wait();
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterWhitelistSiteOnReloadBrowserTest,
+                       ActivationDisabledOnReload) {
+  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
+  ConfigureAsPhishingURL(url);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  content::TestNavigationObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      content::MessageLoopRunner::QuitMode::DEFERRED);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  observer.Wait();
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterWhitelistSiteOnReloadBrowserTest,
+                       ActivationDisabledOnReloadFromScript) {
+  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
+  ConfigureAsPhishingURL(url);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  content::TestNavigationObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      content::MessageLoopRunner::QuitMode::DEFERRED);
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "location.reload();"));
+  observer.Wait();
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterWhitelistSiteOnReloadBrowserTest,
+                       ActivationDisabledOnNavigationToSameURL) {
+  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
+  ConfigureAsPhishingURL(url);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  content::TestNavigationObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      content::MessageLoopRunner::QuitMode::DEFERRED);
+  std::string nav_frame_script = "location.href = '" + url.spec() + "';";
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(), nav_frame_script));
+  observer.Wait();
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 }
 
 }  // namespace subresource_filter

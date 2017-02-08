@@ -40,6 +40,8 @@ const char kPerformanceMeasurementRateParameterName[] =
 
 const char kSuppressNotificationsParameterName[] = "suppress_notifications";
 
+const char kWhitelistSiteOnReloadParameterName[] = "whitelist_site_on_reload";
+
 ActivationLevel GetMaximumActivationLevel() {
   std::string activation_level = variations::GetVariationParamValueByFeature(
       kSafeBrowsingSubresourceFilter, kActivationLevelParameterName);
@@ -99,6 +101,12 @@ std::string GetRulesetFlavor() {
   return variations::GetVariationParamValueByFeature(
       subresource_filter::kSafeBrowsingSubresourceFilter,
       subresource_filter::kRulesetFlavorParameterName);
+}
+
+bool ShouldWhitelistSiteOnReload() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kSafeBrowsingSubresourceFilter, kWhitelistSiteOnReloadParameterName,
+      false /* default value */);
 }
 
 }  // namespace subresource_filter

@@ -41,6 +41,14 @@ bool ShouldMeasurePerformanceForPageLoad() {
   return rate == 1 || (rate > 0 && base::RandDouble() < rate);
 }
 
+bool NavigationIsPageReload(const GURL& url,
+                            const content::Referrer& referrer,
+                            ui::PageTransition transition) {
+  return ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD) ||
+         // Some pages 'reload' from JavaScript by navigating to themselves.
+         url == referrer.url;
+}
+
 }  // namespace
 
 // static
@@ -193,17 +201,20 @@ ContentSubresourceFilterDriverFactory::DriverFromFrameHost(
   return iterator == frame_drivers_.end() ? nullptr : iterator->second.get();
 }
 
+void ContentSubresourceFilterDriverFactory::ResetActivationState() {
+  navigation_chain_.clear();
+  activation_list_matches_.clear();
+  activation_level_ = ActivationLevel::DISABLED;
+  measure_performance_ = false;
+  aggregated_document_statistics_ = DocumentLoadStatistics();
+}
+
 void ContentSubresourceFilterDriverFactory::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage()) {
-    navigation_chain_.clear();
-    activation_list_matches_.clear();
+    ResetActivationState();
     navigation_chain_.push_back(navigation_handle->GetURL());
-
     client_->ToggleNotificationVisibility(false);
-    activation_level_ = ActivationLevel::DISABLED;
-    measure_performance_ = false;
-    aggregated_document_statistics_ = DocumentLoadStatistics();
   }
 }
 
@@ -230,7 +241,9 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigation(
   content::RenderFrameHost* render_frame_host =
       navigation_handle->GetRenderFrameHost();
   GURL url = navigation_handle->GetURL();
-  ReadyToCommitNavigationInternal(render_frame_host, url);
+  const content::Referrer& referrer = navigation_handle->GetReferrer();
+  ui::PageTransition transition = navigation_handle->GetPageTransition();
+  ReadyToCommitNavigationInternal(render_frame_host, url, referrer, transition);
 }
 
 void ContentSubresourceFilterDriverFactory::DidFinishLoad(
@@ -290,22 +303,31 @@ bool ContentSubresourceFilterDriverFactory::OnMessageReceived(
 
 void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigationInternal(
     content::RenderFrameHost* render_frame_host,
-    const GURL& url) {
-  if (!render_frame_host->GetParent()) {
-    RecordRedirectChainMatchPattern();
-    if (ShouldActivateForMainFrameURL(url)) {
-      activation_level_ = GetMaximumActivationLevel();
-      measure_performance_ = activation_level_ != ActivationLevel::DISABLED &&
-                             ShouldMeasurePerformanceForPageLoad();
-      ActivateForFrameHostIfNeeded(render_frame_host, url);
-    } else {
-      activation_level_ = ActivationLevel::DISABLED;
-      measure_performance_ = false;
-      aggregated_document_statistics_ = DocumentLoadStatistics();
-    }
-  } else {
+    const GURL& url,
+    const content::Referrer& referrer,
+    ui::PageTransition transition) {
+  if (render_frame_host->GetParent()) {
     ActivateForFrameHostIfNeeded(render_frame_host, url);
+    return;
   }
+
+  RecordRedirectChainMatchPattern();
+
+  if (ShouldWhitelistSiteOnReload() &&
+      NavigationIsPageReload(url, referrer, transition)) {
+    // Whitelist this host for the current as well as subsequent navigations.
+    AddHostOfURLToWhitelistSet(url);
+  }
+
+  if (!ShouldActivateForMainFrameURL(url)) {
+    ResetActivationState();
+    return;
+  }
+
+  activation_level_ = GetMaximumActivationLevel();
+  measure_performance_ = activation_level_ != ActivationLevel::DISABLED &&
+                         ShouldMeasurePerformanceForPageLoad();
+  ActivateForFrameHostIfNeeded(render_frame_host, url);
 }
 
 bool ContentSubresourceFilterDriverFactory::DidURLMatchCurrentActivationList(
