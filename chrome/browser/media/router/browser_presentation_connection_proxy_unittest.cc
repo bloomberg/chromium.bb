@@ -104,7 +104,7 @@ TEST_F(BrowserPresentationConnectionProxyTest, TestOnMessageBinaryMessage) {
 
   base::MockCallback<base::Callback<void(bool)>> mock_on_message_callback;
   EXPECT_CALL(*mock_router(), SendRouteBinaryMessageInternal(_, _, _))
-      .WillOnce(::testing::Invoke([this, &expected_data](
+      .WillOnce(::testing::Invoke([&expected_data](
           const MediaRoute::Id& route_id, std::vector<uint8_t>* data,
           const BrowserPresentationConnectionProxy::OnMessageCallback&
               callback) { EXPECT_EQ(expected_data, *data); }));
