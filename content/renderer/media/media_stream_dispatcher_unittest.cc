@@ -117,7 +117,7 @@ class MediaStreamDispatcherTest : public ::testing::Test {
   int GenerateStream(const StreamControls& controls, int request_id) {
     int next_ipc_id = dispatcher_->GetNextIpcIdForTest();
     dispatcher_->GenerateStream(request_id, handler_.get()->AsWeakPtr(),
-                                controls, security_origin_);
+                                controls, security_origin_, true);
     return next_ipc_id;
   }
 
@@ -282,7 +282,7 @@ TEST_F(MediaStreamDispatcherTest, TestFailure) {
   // Test failure when creating a stream.
   int ipc_request_id1 = dispatcher->next_ipc_id_;
   dispatcher->GenerateStream(kRequestId1, handler.get()->AsWeakPtr(),
-                             components, security_origin);
+                             components, security_origin, true);
   dispatcher->OnMessageReceived(MediaStreamMsg_StreamGenerationFailed(
       kRouteId, ipc_request_id1, MEDIA_DEVICE_PERMISSION_DENIED));
 
@@ -293,7 +293,7 @@ TEST_F(MediaStreamDispatcherTest, TestFailure) {
   // Create a new stream.
   ipc_request_id1 = dispatcher->next_ipc_id_;
   dispatcher->GenerateStream(kRequestId1, handler.get()->AsWeakPtr(),
-                             components, security_origin);
+                             components, security_origin, true);
 
   StreamDeviceInfoArray audio_device_array(1);
   StreamDeviceInfo audio_device_info;
@@ -328,9 +328,9 @@ TEST_F(MediaStreamDispatcherTest, CancelGenerateStream) {
   int ipc_request_id1 = dispatcher->next_ipc_id_;
 
   dispatcher->GenerateStream(kRequestId1, handler.get()->AsWeakPtr(),
-                             components, url::Origin());
+                             components, url::Origin(), true);
   dispatcher->GenerateStream(kRequestId2, handler.get()->AsWeakPtr(),
-                             components, url::Origin());
+                             components, url::Origin(), true);
 
   EXPECT_EQ(2u, dispatcher->requests_.size());
   dispatcher->CancelGenerateStream(kRequestId2, handler.get()->AsWeakPtr());
