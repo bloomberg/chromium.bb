@@ -15,7 +15,7 @@
 }
 
 #textButton:not([focused]) {
-  border-color: transparent;
+  border-color: var(--oobe-text-button-border-color, transparent);
   border-radius: 2px;
   border-style: solid;
   border-width: 2px;

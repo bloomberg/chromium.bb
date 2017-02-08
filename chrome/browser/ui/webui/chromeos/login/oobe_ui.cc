@@ -116,6 +116,7 @@ const char kEnrollmentCSSPath[] = "enrollment.css";
 const char kEnrollmentJSPath[] = "enrollment.js";
 const char kArcPlaystoreCSSPath[] = "playstore.css";
 const char kArcPlaystoreJSPath[] = "playstore.js";
+const char kArcPlaystoreLogoPath[] = "playstore.svg";
 
 // Creates a WebUIDataSource for chrome://oobe
 content::WebUIDataSource* CreateOobeUIDataSource(
@@ -158,6 +159,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   // Required for postprocessing of Goolge PlayStore Terms.
   source->AddResourcePath(kArcPlaystoreCSSPath, IDR_ARC_SUPPORT_PLAYSTORE_CSS);
   source->AddResourcePath(kArcPlaystoreJSPath, IDR_ARC_SUPPORT_PLAYSTORE_JS);
+  source->AddResourcePath(kArcPlaystoreLogoPath,
+      IDR_ARC_SUPPORT_PLAYSTORE_LOGO);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyChildSrc(

@@ -2,9 +2,20 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+a,
+a:link,
+a:visited {
+  color: rgb(51, 103, 214);
+  text-decoration: none;
+}
+
 body {
   margin: 0;
   padding: 8px 4px 8px 8px;
+}
+
+body.large-view {
+  padding: 8px 16px 8px 20px;
 }
 
 ::-webkit-scrollbar {
@@ -19,6 +30,24 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2);
+}
+
+.large-view .play-contained {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.large-view .play-contained h2,
+.large-view .play-contained strong {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 13px;
+  line-height: 20px;
+}
+.large-view .play-contained select {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 13px;
+  line-height: 20px;
 }
 
 .play-contained {
@@ -68,9 +97,3 @@ body {
   padding: 0;
 }
 
-a,
-a:link,
-a:visited {
-  color: rgb(51, 103, 214);
-  text-decoration: none;
-}

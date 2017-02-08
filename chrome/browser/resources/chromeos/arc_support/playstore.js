@@ -89,6 +89,9 @@ function processLangZoneTerms() {
  * Formats current document in order to display it correctly.
  */
 function formatDocument() {
+  if (document.viewMode) {
+    document.body.classList.add(document.viewMode);
+  }
   // playstore.css is injected into the document and it is applied first.
   // Need to remove existing links that contain references to external
   // stylesheets which override playstore.css.

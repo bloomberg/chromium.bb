@@ -1,0 +1,90 @@
+/* Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+a {
+  color: var(--google-blue-500);
+  font-family: 'Roboto';
+  font-size: 13px;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+p {
+  color: rgba(0, 0, 0, 0.54);
+  font-family: 'Roboto';
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 16px;
+  margin: 0;
+  padding: 0;
+}
+
+.arc-tos-loaded .arc-tos-loading,
+.arc-tos-loaded .arc-tos-error,
+.arc-tos-loaded #arc-tos-retry-button-md,
+.arc-tos-loading .arc-tos-content,
+.arc-tos-loading .arc-tos-error,
+.arc-tos-loading #arc-tos-retry-button-md,
+.error .arc-tos-content,
+.error .arc-tos-loading,
+.error #arc-tos-accept-button-md {
+  display: none;
+}
+
+.arc-tos-loading p,
+.error p {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.parameter-section {
+  margin: 0;
+  max-width: 590px;
+  padding: 0 20px 16px 20px;
+}
+
+#arc-enable-backup-restore-md,
+#arc-enable-location-service-md {
+  --paper-checkbox-size: 12px;
+  --paper-checkbox-checked-color: rgb(66, 133, 244); /* #4285f4 */
+  --paper-checkbox-label-spacing: 20px;
+  --paper-checkbox-vertical-align: top;
+}
+
+#arc-policy-link-md {
+  margin: 0;
+  padding: 16px 0 16px 20px;
+}
+
+#arc-tos-skip-button-md {
+  --oobe-text-button-border-color: rgba(0, 0, 0, 0.1);
+   color: rgba(0, 0, 0, 0.54);
+}
+
+#arc-tos-view-md {
+  display: block;
+  height: 10px;
+  margin: auto;
+  padding: 0;
+}
+
+#arc-tos-view-container-md {
+  border: 1px solid #d9d9d9;
+  box-sizing: border-box;
+  flex: auto;
+  margin: -4px 0 0 0;
+  padding: 0;
+  width: 100%;
+}
+
+#arc-tos-skip-button-md {
+  -webkit-padding-end: 6px;
+}
+
+#arc-tos-accept-button-md,
+#arc-tos-retry-button-md {
+  -webkit-padding-end: 12px;
+}

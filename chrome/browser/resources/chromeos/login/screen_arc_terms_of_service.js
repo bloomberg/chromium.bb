@@ -17,12 +17,37 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
 
     /** @override */
     decorate: function(element) {
+      // Valid newOobeUI is not available at this time.
+    },
+
+    /**
+     * Makes sure that UI is initialized and MD mode is correctly set.
+     *
+     * @private
+     */
+    setMDMode_: function() {
+      var useMDOobe = (loadTimeData.getString('newOobeUI') == 'on');
+      if (typeof this.useMDOobe !== 'undefined' &&
+          this.useMDOobe == useMDOobe) {
+        return;
+      }
+
+      this.useMDOobe = useMDOobe;
+      $('arc-tos-md').screen = this;
+      $('arc-tos-md').hidden = !this.useMDOobe;
+      $('arc-tos-legacy').hidden = this.useMDOobe;
+      if (this.useMDOobe) {
+        $('arc-tos').setAttribute('md-mode', 'true');
+      } else {
+        $('arc-tos').removeAttribute('md-mode');
+      }
+
       var closeButtons = document.querySelectorAll('.arc-overlay-close-button');
       for (var i = 0; i < closeButtons.length; i++) {
         closeButtons[i].addEventListener('click', this.hideOverlay.bind(this));
       }
 
-      var termsView = $('arc-tos-view');
+      var termsView = this.getElement_('arc-tos-view');
       var requestFilter = {
         urls: ['<all_urls>'],
         types: ['main_frame']
@@ -48,7 +73,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
           run_at: 'document_end'
         }]);
 
-      $('arc-policy-link').onclick = function() {
+      this.getElement_('arc-policy-link').onclick = function() {
         termsView.executeScript(
             {code: 'getPrivacyPolicyLink();'},
             function(results) {
@@ -60,8 +85,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
               }
             });
       };
-
-      this.updateLocalizedContent();
     },
 
     /**
@@ -70,8 +93,10 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      * @param {boolean} visible If metrics text is visible.
      */
     setMetricsMode: function(text, visible) {
-      $('arc-text-metrics').hidden = !visible;
-      $('arc-text-metrics').innerHTML = text;
+      var metrics = this.getElement_('arc-text-metrics');
+      metrics.innerHTML = text;
+      // This element is wrapped by label in legacy mode and by div in MD mode.
+      metrics.parentElement.hidden = !visible;
 
       if (!visible) {
         return;
@@ -80,7 +105,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       var self = this;
       var leanMoreStatisticsText =
           loadTimeData.getString('arcLearnMoreStatistics');
-      $('learn-more-link-metrics').onclick = function() {
+      metrics.querySelector('#learn-more-link-metrics').onclick = function() {
         self.showLearnMoreOverlay(leanMoreStatisticsText);
       };
     },
@@ -88,14 +113,14 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
     /**
      * Applies current enabled/managed state to checkbox and text.
      * @param {string} checkBoxId Id of checkbox to set on/off.
-     * @param {string} textId Id of text to set enabled state.
      * @param {boolean} enabled Defines the value of the checkbox.
      * @param {boolean} managed Defines whether this setting is set by policy.
      */
-    setPreference(checkBoxId, textId, enabled, managed) {
-      $(checkBoxId).checked = enabled;
-      $(checkBoxId).disabled = managed;
-      $(textId).disabled = managed;
+    setPreference(checkBoxId, enabled, managed) {
+      var preference = this.getElement_(checkBoxId);
+      preference.checked = enabled;
+      preference.disabled = managed;
+      preference.parentElement.disabled = managed;
     },
 
     /**
@@ -106,7 +131,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      */
     setBackupAndRestoreMode: function(enabled, managed) {
       this.setPreference('arc-enable-backup-restore',
-                         'arc-text-backup-restore',
                          enabled, managed);
     },
 
@@ -117,7 +141,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      */
     setLocationServicesMode: function(enabled, managed) {
       this.setPreference('arc-enable-location-service',
-                         'arc-text-location-service',
                          enabled, managed);
     },
 
@@ -126,14 +149,17 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      * @param {string} countryCode Country code based on current timezone.
      */
     setCountryCode: function(countryCode) {
-      var scriptSetCountryCode = 'document.countryCode = \'' +
+      var scriptSetParameters = 'document.countryCode = \'' +
           countryCode.toLowerCase() + '\';';
-      var termsView = $('arc-tos-view');
+      if (this.useMDOobe) {
+        scriptSetParameters += 'document.viewMode = \'large-view\';';
+      }
+      var termsView = this.getElement_('arc-tos-view');
       termsView.removeContentScripts(['preProcess']);
       termsView.addContentScripts([
           { name: 'preProcess',
             matches: ['https://play.google.com/*'],
-            js: { code: scriptSetCountryCode },
+            js: { code: scriptSetParameters },
             run_at: 'document_start'
           }]);
 
@@ -155,11 +181,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       skipButton.classList.add('preserve-disabled-state');
       skipButton.textContent =
           loadTimeData.getString('arcTermsOfServiceSkipButton');
-      skipButton.addEventListener('click', function(event) {
-        $('arc-tos-skip-button').disabled = true;
-        $('arc-tos-accept-button').disabled = true;
-        chrome.send('arcTermsOfServiceSkip');
-      });
+      skipButton.addEventListener('click', this.onSkip.bind(this));
       buttons.push(skipButton);
 
       var retryButton = this.ownerDocument.createElement('button');
@@ -175,19 +197,47 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
       acceptButton.classList.add('preserve-disabled-state');
       acceptButton.textContent =
           loadTimeData.getString('arcTermsOfServiceAcceptButton');
-      acceptButton.addEventListener('click', function(event) {
-        $('arc-tos-skip-button').disabled = true;
-        $('arc-tos-accept-button').disabled = true;
-
-        var isBackupRestoreEnabled = $('arc-enable-backup-restore').checked;
-        var isLocationServiceEnabled = $('arc-enable-location-service').checked;
-
-        chrome.send('arcTermsOfServiceAccept',
-            [isBackupRestoreEnabled, isLocationServiceEnabled]);
-      });
+      acceptButton.addEventListener('click', this.onAccept.bind(this));
       buttons.push(acceptButton);
 
       return buttons;
+    },
+
+    /**
+     * Handles Accept button click.
+     */
+    onAccept: function() {
+      this.enableButtons_(false);
+
+      var isBackupRestoreEnabled =
+        this.getElement_('arc-enable-backup-restore').checked;
+      var isLocationServiceEnabled =
+        this.getElement_('arc-enable-location-service').checked;
+
+      chrome.send('arcTermsOfServiceAccept',
+          [isBackupRestoreEnabled, isLocationServiceEnabled]);
+    },
+
+    /**
+     * Handles Retry button click.
+     */
+    onSkip: function() {
+      this.enableButtons_(false);
+
+      chrome.send('arcTermsOfServiceSkip');
+    },
+
+    /**
+     * Enables/Disables set of buttons: Accept, Skip, Retry.
+     * @param {boolean} enable Buttons are enabled if set to true.
+     *
+     * @private
+     */
+    enableButtons_: function(enable) {
+      $('arc-tos-skip-button').disabled = !enable;
+      $('arc-tos-accept-button').disabled = !enable;
+      $('arc-tos-retry-button').disabled = !enable;
+      $('arc-tos-md').arcTosButtonsDisabled = !enable;
     },
 
     /**
@@ -230,14 +280,37 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      */
     reloadPlayStore: function() {
       this.termsError = false;
-      var termsView = $('arc-tos-view');
+      var termsView = this.getElement_('arc-tos-view');
       termsView.src = 'https://play.google.com/about/play-terms.html';
-      this.classList.remove('arc-tos-loaded');
-      this.classList.remove('error');
-      this.classList.add('arc-tos-loading');
+      this.removeClass_('arc-tos-loaded');
+      this.removeClass_('error');
+      this.addClass_('arc-tos-loading');
+      this.enableButtons_(false);
+    },
 
-      $('arc-tos-accept-button').disabled = true;
-      $('arc-tos-skip-button').disabled = true;
+    /**
+     * Adds new class to the list of classes of root OOBE MD style and legacy
+     * style root elements.
+     * @param {string} className class to remove.
+     *
+     * @private
+     */
+    addClass_: function (className) {
+      this.classList.add(className);
+      $('arc-tos-md').getElement('arc-tos-dialog-md').classList.add(className);
+    },
+
+    /**
+     * Removes class from the list of classes of root OOBE MD style and legacy
+     * style root elements.
+     * @param {string} className class to remove.
+     *
+     * @private
+     */
+    removeClass_: function (className) {
+      this.classList.remove(className);
+      $('arc-tos-md').getElement('arc-tos-dialog-md').classList.
+          remove(className);
     },
 
     /**
@@ -248,19 +321,15 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
         return;
       }
 
-      this.classList.remove('arc-tos-loading');
-      this.classList.remove('error');
-      this.classList.add('arc-tos-loaded');
+      this.removeClass_('arc-tos-loading');
+      this.removeClass_('error');
+      this.addClass_('arc-tos-loaded');
 
-      var acceptButton = $('arc-tos-accept-button');
-      var skipButton = $('arc-tos-skip-button');
+      this.enableButtons_(true);
+      this.getElement_('arc-tos-accept-button').focus();
 
-      skipButton.disabled = false;
-      acceptButton.disabled = false;
-      acceptButton.focus();
-
-      var termsView = $('arc-tos-view');
-      var termsViewContainer = $('arc-tos-view-container');
+      var termsView = this.getElement_('arc-tos-view');
+      var termsViewContainer = this.getElement_('arc-tos-view-container');
       var setTermsHeight = function() {
         // Reset terms-view height in order to stabilize style computation.
         // For some reason, child webview affects final result.
@@ -277,9 +346,9 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      */
     onTermsViewErrorOccurred: function(details) {
       this.termsError = true;
-      this.classList.remove('arc-tos-loading');
-      this.classList.remove('arc-tos-loaded');
-      this.classList.add('error');
+      this.removeClass_('arc-tos-loading');
+      this.removeClass_('arc-tos-loaded');
+      this.addClass_('error');
 
       $('arc-tos-retry-button').focus();
     },
@@ -289,6 +358,9 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      * @param {object} data Screen init payload.
      */
     onBeforeShow: function(data) {
+      this.setMDMode_();
+      this.setLearnMoreHandlers_();
+
       Oobe.getInstance().headerHidden = true;
 
       // Reload caption image in case it was not loaded during the
@@ -301,20 +373,51 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
     },
 
     /**
+     * Returns requested element from related part of HTML determined by current
+     * MD OOBE mode.
+     * @param {string} id Id of an element to find.
+     *
+     * @private
+     */
+    getElement_: function(id) {
+      if (this.useMDOobe) {
+        return $('arc-tos-md').getElement(id + '-md');
+      }
+      return $(id);
+    },
+
+    /**
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {
+      this.setMDMode_();
+      this.setLearnMoreHandlers_();
+    },
+
+    /**
+     * Sets handlers for learn more links for backup and restore and location
+     * service options.
+     *
+     * @private
+     */
+    setLearnMoreHandlers_: function() {
       var self = this;
 
       var leanMoreBackupAndRestoreText =
           loadTimeData.getString('arcLearnMoreBackupAndRestore');
-      $('learn-more-link-backup-restore').onclick = function() {
+      var backupAndRestore = this.getElement_('arc-enable-backup-restore');
+      backupAndRestore.parentElement.querySelector(
+          '#learn-more-link-backup-restore').onclick = function(event) {
+        event.stopPropagation();
         self.showLearnMoreOverlay(leanMoreBackupAndRestoreText);
       };
 
       var leanMoreLocationServiceText =
           loadTimeData.getString('arcLearnMoreLocationService');
-      $('learn-more-link-location-service').onclick = function() {
+      var locationService = this.getElement_('arc-enable-location-service');
+      locationService.parentElement.querySelector(
+          '#learn-more-link-location-service').onclick = function(event) {
+        event.stopPropagation();
         self.showLearnMoreOverlay(leanMoreLocationServiceText);
       };
     }

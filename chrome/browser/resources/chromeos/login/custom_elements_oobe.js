@@ -35,3 +35,4 @@
 // <include src="oobe_welcome.js">
 // <include src="offline_ad_login.js">
 // <include src="active_directory_password_change.js">
+// <include src="arc_terms_of_service.js">

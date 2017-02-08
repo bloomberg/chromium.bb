@@ -2,8 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#arc-tos {
+#arc-tos:not([md-mode]) {
   padding: 16px 17px 21px;
+}
+
+#arc-tos[md-mode] {
+  min-height: unset;
+  padding: unset;
 }
 
 #arc-tos .step-contents {
@@ -125,7 +130,8 @@
 
 #arc-tos-overlay-content-text p {
   color: rgba(0, 0, 0, 0.54);
-  font-size: 12px;
+  font-family: 'Roboto';
+  font-size: 10px;
   font-weight: 400;
   text-align: justify;
 }
@@ -205,3 +211,9 @@ html[dir='rtl'] .arc-tos-overlay-close-up {
 .arc-tos-overlay-close-up:active {
   background-image: url(chrome://theme/IDR_CLOSE_DIALOG_P);
 }
+
+#arc-tos[md-mode] #arc-tos-overlay-content-text p {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 13px;
+}
+

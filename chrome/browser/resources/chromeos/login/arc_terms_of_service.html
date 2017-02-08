@@ -1,0 +1,69 @@
+<!-- Copyright 2017 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+
+
+<dom-module name="arc-tos-md">
+  <template>
+    <link rel="stylesheet" href="arc_terms_of_service.css">
+    <link rel="stylesheet" href="oobe_dialog_parameters.css">
+    <oobe-dialog id="arc-tos-dialog-md" class="arc-tos-loading" has-buttons>
+      <iron-icon src="chrome://oobe/playstore.svg" class="oobe-icon">
+      </iron-icon>
+      <div class="header">
+        <h1 class="title">$i18n{arcTermsOfServiceScreenHeading}</h1>
+        <div class="subtitle">$i18n{arcTermsOfServiceScreenDescription}</div>
+      </div>
+      <div class="footer flex layout vertical">
+        <div id="arc-tos-view-container-md" class="arc-tos-content">
+          <webview id="arc-tos-view-md"></webview>
+        </div>
+        <a id="arc-policy-link-md" class="arc-tos-content" href="#">
+          $i18n{arcPolicyLink}
+        </a>
+        <div class="parameter-section arc-tos-content">
+          <p id="arc-text-metrics-md"></p>
+        </div>
+        <div class="parameter-section arc-tos-content">
+          <paper-checkbox id="arc-enable-backup-restore-md">
+            <p i18n-values=".innerHTML:arcTextBackupRestore"></p>
+          </paper-checkbox>
+        </div>
+        <div class="parameter-section arc-tos-content">
+          <paper-checkbox id="arc-enable-location-service-md">
+            <p i18n-values=".innerHTML:arcTextLocationService"></p>
+          </paper-checkbox>
+        </div>
+        <div class="arc-tos-loading">
+          <p>$i18n{arcTermsOfServiceLoading}</p>
+        </div>
+        <div class="arc-tos-error">
+          <p>$i18n{arcTermsOfServiceError}</p>
+        </div>
+      </div>
+      <div class="bottom-buttons flex layout horizontal">
+        <div class="flex">
+        </div>
+        <oobe-text-button id="arc-tos-skip-button-md" on-tap="onSkip_"
+            disabled="[[arcTosButtonsDisabled]]">
+          <div>$i18n{arcTermsOfServiceSkipButton}</div>
+        </oobe-text-button>
+        <oobe-text-button id="arc-tos-retry-button-md"
+            inverse on-tap="onRetry_"
+            disabled="[[arcTosButtonsDisabled]]">
+          <div>$i18n{arcTermsOfServiceRetryButton}</div>
+        </oobe-text-button>
+        <oobe-text-button id="arc-tos-accept-button-md" 
+            inverse on-tap="onAccept_"
+            disabled="[[arcTosButtonsDisabled]]">
+          <div>$i18n{arcTermsOfServiceAcceptButton}</div>
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

@@ -156,14 +156,16 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   // user accepts ToS then prefs::kArcEnabled is left activated. If user skips
   // ToS then prefs::kArcEnabled is automatically reset in ArcSessionManager.
   profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+
+  system::TimezoneSettings::GetInstance()->AddObserver(this);
+
+  ShowScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
+
+  UpdateTimeZone();
   pref_handler_.reset(new arc::ArcOptInPreferenceHandler(
       this, profile->GetPrefs()));
   pref_handler_->Start();
 
-  UpdateTimeZone();
-  system::TimezoneSettings::GetInstance()->AddObserver(this);
-
-  ShowScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
 }
 
 void ArcTermsOfServiceScreenHandler::HandleSkip() {
