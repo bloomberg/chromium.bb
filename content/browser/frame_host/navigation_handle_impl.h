@@ -314,6 +314,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     searchable_form_encoding_ = encoding;
   }
 
+  void set_response_headers_for_testing(
+      scoped_refptr<net::HttpResponseHeaders> response_headers) {
+    response_headers_ = response_headers;
+  }
+
  private:
   friend class NavigationHandleImplTest;
 

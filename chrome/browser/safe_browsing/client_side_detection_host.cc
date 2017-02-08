@@ -27,14 +27,15 @@
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
+#include "net/http/http_response_headers.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -62,15 +63,14 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
           ClientSideDetectionHost::ShouldClassifyUrlRequest> {
  public:
   ShouldClassifyUrlRequest(
-      const content::FrameNavigateParams& params,
+      content::NavigationHandle* navigation_handle,
       const ShouldClassifyUrlCallback& start_phishing_classification,
       const ShouldClassifyUrlCallback& start_malware_classification,
       WebContents* web_contents,
       ClientSideDetectionService* csd_service,
       SafeBrowsingDatabaseManager* database_manager,
       ClientSideDetectionHost* host)
-      : params_(params),
-        web_contents_(web_contents),
+      : web_contents_(web_contents),
         csd_service_(csd_service),
         database_manager_(database_manager),
         host_(host),
@@ -81,6 +81,10 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     DCHECK(csd_service_);
     DCHECK(database_manager_.get());
     DCHECK(host_);
+    url_ = navigation_handle->GetURL();
+    if (navigation_handle->GetResponseHeaders())
+      navigation_handle->GetResponseHeaders()->GetMimeType(&mime_type_);
+    socket_address_ = navigation_handle->GetSocketAddress();
   }
 
   void Start() {
@@ -91,34 +95,33 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     UMA_HISTOGRAM_BOOLEAN("SBClientMalware.ClassificationStart", 1);
 
     // Only classify [X]HTML documents.
-    if (params_.contents_mime_type != "text/html" &&
-        params_.contents_mime_type != "application/xhtml+xml") {
-      DVLOG(1) << "Skipping phishing classification for URL: " << params_.url
+    if (mime_type_ != "text/html" && mime_type_ != "application/xhtml+xml") {
+      DVLOG(1) << "Skipping phishing classification for URL: " << url_
                << " because it has an unsupported MIME type: "
-               << params_.contents_mime_type;
+               << mime_type_;
       DontClassifyForPhishing(NO_CLASSIFY_UNSUPPORTED_MIME_TYPE);
     }
 
-    if (csd_service_->IsPrivateIPAddress(params_.socket_address.host())) {
-      DVLOG(1) << "Skipping phishing classification for URL: " << params_.url
+    if (csd_service_->IsPrivateIPAddress(socket_address_.host())) {
+      DVLOG(1) << "Skipping phishing classification for URL: " << url_
                << " because of hosting on private IP: "
-               << params_.socket_address.host();
+               << socket_address_.host();
       DontClassifyForPhishing(NO_CLASSIFY_PRIVATE_IP);
       DontClassifyForMalware(NO_CLASSIFY_PRIVATE_IP);
     }
 
     // For phishing we only classify HTTP pages.
-    if (!params_.url.SchemeIs(url::kHttpScheme)) {
-      DVLOG(1) << "Skipping phishing classification for URL: " << params_.url
+    if (!url_.SchemeIs(url::kHttpScheme)) {
+      DVLOG(1) << "Skipping phishing classification for URL: " << url_
                << " because it is not HTTP: "
-               << params_.socket_address.host();
+               << socket_address_.host();
       DontClassifyForPhishing(NO_CLASSIFY_NOT_HTTP_URL);
     }
 
     // Don't run any classifier if the tab is incognito.
     if (web_contents_->GetBrowserContext()->IsOffTheRecord()) {
       DVLOG(1) << "Skipping phishing and malware classification for URL: "
-               << params_.url << " because we're browsing incognito.";
+               << url_ << " because we're browsing incognito.";
       DontClassifyForPhishing(NO_CLASSIFY_OFF_THE_RECORD);
       DontClassifyForMalware(NO_CLASSIFY_OFF_THE_RECORD);
     }
@@ -133,7 +136,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
           BrowserThread::IO,
           FROM_HERE,
           base::Bind(&ShouldClassifyUrlRequest::CheckSafeBrowsingDatabase,
-                     this, params_.url));
+                     this, url_));
     }
   }
 
@@ -251,11 +254,11 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // If result is cached, we don't want to run classification again.
     // In that case we're just trying to show the warning.
     bool is_phishing;
-    if (csd_service_->GetValidCachedResult(params_.url, &is_phishing)) {
-      DVLOG(1) << "Satisfying request for " << params_.url << " from cache";
+    if (csd_service_->GetValidCachedResult(url_, &is_phishing)) {
+      DVLOG(1) << "Satisfying request for " << url_ << " from cache";
       UMA_HISTOGRAM_BOOLEAN("SBClientPhishing.RequestSatisfiedFromCache", 1);
       // Since we are already on the UI thread, this is safe.
-      host_->MaybeShowPhishingWarning(params_.url, is_phishing);
+      host_->MaybeShowPhishingWarning(url_, is_phishing);
       DontClassifyForPhishing(NO_CLASSIFY_RESULT_FROM_CACHE);
     }
 
@@ -264,13 +267,13 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // too many pages as phishing, but for those that we already think are
     // phishing we want to send a request to the server to give ourselves
     // a chance to fix misclassifications.
-    if (csd_service_->IsInCache(params_.url)) {
-      DVLOG(1) << "Reporting limit skipped for " << params_.url
+    if (csd_service_->IsInCache(url_)) {
+      DVLOG(1) << "Reporting limit skipped for " << url_
                << " as it was in the cache.";
       UMA_HISTOGRAM_BOOLEAN("SBClientPhishing.ReportLimitSkipped", 1);
     } else if (csd_service_->OverPhishingReportLimit()) {
       DVLOG(1) << "Too many report phishing requests sent recently, "
-               << "not running classification for " << params_.url;
+               << "not running classification for " << url_;
       DontClassifyForPhishing(NO_CLASSIFY_TOO_MANY_REPORTS);
     }
     if (csd_service_->OverMalwareReportLimit()) {
@@ -294,7 +297,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     }
   }
 
-  content::FrameNavigateParams params_;
+  GURL url_;
+  std::string mime_type_;
+  net::HostPortPair socket_address_;
   WebContents* web_contents_;
   ClientSideDetectionService* csd_service_;
   // We keep a ref pointer here just to make sure the safe browsing
@@ -354,13 +359,15 @@ bool ClientSideDetectionHost::OnMessageReceived(
   return handled;
 }
 
-void ClientSideDetectionHost::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void ClientSideDetectionHost::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+    return;
+
   // TODO(noelutz): move this DCHECK to WebContents and fix all the unit tests
   // that don't call this method on the UI thread.
   // DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (details.is_in_page) {
+  if (navigation_handle->IsSamePage()) {
     // If the navigation is within the same page, the user isn't really
     // navigating away.  We don't need to cancel a pending callback or
     // begin a new classification.
@@ -383,15 +390,18 @@ void ClientSideDetectionHost::DidNavigateMainFrame(
   browse_info_.reset(new BrowseInfo);
 
   // Store redirect chain information.
-  if (params.url.host() != cur_host_) {
-    cur_host_ = params.url.host();
-    cur_host_redirects_ = params.redirects;
+  if (navigation_handle->GetURL().host() != cur_host_) {
+    cur_host_ = navigation_handle->GetURL().host();
+    cur_host_redirects_ = navigation_handle->GetRedirectChain();
   }
-  browse_info_->url = params.url;
+  browse_info_->url = navigation_handle->GetURL();
   browse_info_->host_redirects = cur_host_redirects_;
-  browse_info_->url_redirects = params.redirects;
-  browse_info_->referrer = params.referrer.url;
-  browse_info_->http_status_code = details.http_status_code;
+  browse_info_->url_redirects = navigation_handle->GetRedirectChain();
+  browse_info_->referrer = navigation_handle->GetReferrer().url;
+  if (navigation_handle->GetResponseHeaders()) {
+    browse_info_->http_status_code =
+        navigation_handle->GetResponseHeaders()->response_code();
+  }
 
   should_extract_malware_features_ = true;
   should_classify_for_malware_ = false;
@@ -399,7 +409,7 @@ void ClientSideDetectionHost::DidNavigateMainFrame(
 
   // Check whether we can cassify the current URL for phishing or malware.
   classification_request_ = new ShouldClassifyUrlRequest(
-      params,
+      navigation_handle,
       base::Bind(&ClientSideDetectionHost::OnPhishingPreClassificationDone,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ClientSideDetectionHost::OnMalwarePreClassificationDone,
