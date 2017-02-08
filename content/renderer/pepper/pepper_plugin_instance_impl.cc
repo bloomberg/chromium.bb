@@ -483,7 +483,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       document_url_(container ? GURL(container->document().url()) : GURL()),
       is_flash_plugin_(module->name() == kFlashPluginName),
       has_been_clicked_(false),
-      javascript_used_(false),
       full_frame_(false),
       viewport_to_dip_scale_(1.0f),
       sent_initial_did_change_view_(false),
@@ -1251,7 +1250,6 @@ PP_Var PepperPluginInstanceImpl::GetInstanceObject(v8::Isolate* isolate) {
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
 
   DCHECK_EQ(isolate, isolate_);
-  RecordFlashJavaScriptUse();
 
   // If the plugin supports the private instance interface, try to retrieve its
   // instance object.
@@ -1708,8 +1706,6 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
   // During the first view update, initialize the throttler.
   if (!sent_initial_did_change_view_) {
     if (is_flash_plugin_ && RenderThread::Get()) {
-      RenderThread::Get()->RecordAction(
-          base::UserMetricsAction("Flash.PluginInstanceCreated"));
       RecordFlashSizeMetric(unobscured_rect_.width(),
                             unobscured_rect_.height());
     }
@@ -2414,7 +2410,6 @@ PP_Bool PepperPluginInstanceImpl::FlashIsFullscreen(PP_Instance instance) {
 PP_Var PepperPluginInstanceImpl::GetWindowObject(PP_Instance instance) {
   if (!container_)
     return PP_MakeUndefined();
-  RecordFlashJavaScriptUse();
   V8VarConverter converter(pp_instance_, V8VarConverter::kAllowObjectVars);
   PepperTryCatchVar try_catch(this, &converter, NULL);
   WebLocalFrame* frame = container_->document().frame();
@@ -2432,7 +2427,6 @@ PP_Var PepperPluginInstanceImpl::GetWindowObject(PP_Instance instance) {
 PP_Var PepperPluginInstanceImpl::GetOwnerElementObject(PP_Instance instance) {
   if (!container_)
     return PP_MakeUndefined();
-  RecordFlashJavaScriptUse();
   V8VarConverter converter(pp_instance_, V8VarConverter::kAllowObjectVars);
   PepperTryCatchVar try_catch(this, &converter, NULL);
   ScopedPPVar result = try_catch.FromV8(container_->v8ObjectForElement());
@@ -2447,7 +2441,6 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
     return PP_MakeUndefined();
   if (is_deleted_ && blink::WebPluginScriptForbiddenScope::isForbidden())
     return PP_MakeUndefined();
-  RecordFlashJavaScriptUse();
 
   // Executing the script may remove the plugin from the DOM, so we need to keep
   // a reference to ourselves so that we can still process the result after
@@ -3404,14 +3397,6 @@ void PepperPluginInstanceImpl::DidDataFromWebURLResponse(
         ppapi::proxy::HostDispatcher::GetForInstance(pp_instance());
     dispatcher->Send(new PpapiMsg_PPPInstance_HandleDocumentLoad(
         ppapi::API_ID_PPP_INSTANCE, pp_instance(), pending_host_id, data));
-  }
-}
-
-void PepperPluginInstanceImpl::RecordFlashJavaScriptUse() {
-  if (initialized_ && !javascript_used_ && is_flash_plugin_) {
-    javascript_used_ = true;
-    RenderThread::Get()->RecordAction(
-        base::UserMetricsAction("Flash.JavaScriptUsed"));
   }
 }
 

@@ -4356,11 +4356,13 @@ should be able to be added at any place in this file.
   <description>
     Count of Flash plugin instances that use JavaScript.
   </description>
+  <obsolete>Deprecated 02/2017.</obsolete>
 </action>
 
 <action name="Flash.PluginInstanceCreated" not_user_triggered="true">
   <owner>thestig@chromium.org</owner>
   <description>Count of Flash plugin instances.</description>
+  <obsolete>Deprecated 02/2017.</obsolete>
 </action>
 
 <action name="FocusAppMenu">
