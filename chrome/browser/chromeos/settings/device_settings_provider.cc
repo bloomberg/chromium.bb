@@ -98,6 +98,8 @@ const char* const kKnownSettings[] = {
     kTargetVersionPrefix,
     kUpdateDisabled,
     kVariationsRestrictParameter,
+    kDeviceLoginScreenLocales,
+    kDeviceLoginScreenInputMethods,
 };
 
 void DecodeLoginPolicies(
@@ -309,6 +311,26 @@ void DecodeLoginPolicies(
     for (const auto& login_app : login_apps_proto.login_apps())
       login_apps->AppendString(login_app);
     new_values_cache->SetValue(kLoginApps, std::move(login_apps));
+  }
+
+  if (policy.has_login_screen_locales()) {
+    std::unique_ptr<base::ListValue> locales(new base::ListValue);
+    const em::LoginScreenLocalesProto& login_screen_locales(
+        policy.login_screen_locales());
+    for (const auto& locale : login_screen_locales.login_screen_locales())
+      locales->AppendString(locale);
+    new_values_cache->SetValue(kDeviceLoginScreenLocales, std::move(locales));
+  }
+
+  if (policy.has_login_screen_input_methods()) {
+    std::unique_ptr<base::ListValue> input_methods(new base::ListValue);
+    const em::LoginScreenInputMethodsProto& login_screen_input_methods(
+        policy.login_screen_input_methods());
+    for (const auto& input_method :
+         login_screen_input_methods.login_screen_input_methods())
+      input_methods->AppendString(input_method);
+    new_values_cache->SetValue(kDeviceLoginScreenInputMethods,
+                               std::move(input_methods));
   }
 }
 

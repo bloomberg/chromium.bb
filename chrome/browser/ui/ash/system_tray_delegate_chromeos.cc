@@ -478,6 +478,13 @@ void SystemTrayDelegateChromeOS::GetCurrentIMEProperties(
   }
 }
 
+base::string16 SystemTrayDelegateChromeOS::GetIMEManagedMessage() {
+  auto ime_state = input_method::InputMethodManager::Get()->GetActiveIMEState();
+  return ime_state->GetAllowedInputMethods().empty()
+             ? base::string16()
+             : l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY);
+}
+
 void SystemTrayDelegateChromeOS::SwitchIME(const std::string& ime_id) {
   input_method::InputMethodManager::Get()
       ->GetActiveIMEState()

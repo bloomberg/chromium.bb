@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "ash/common/system/accessibility_observer.h"
+#include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/common/system/ime/ime_observer.h"
 #include "ash/common/system/tray/ime_info.h"
@@ -65,8 +66,17 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
   void OnIMERefresh() override;
   void OnIMEMenuActivationChanged(bool is_active) override;
 
+  // Returns true input methods are managed by policy.
+  bool IsIMEManaged();
+
   // Whether the default view should be shown.
   bool ShouldDefaultViewBeVisible();
+
+  // Decides if a tray icon should be shown.
+  bool ShouldShowImeTrayItem(size_t ime_count);
+  // Mandates behavior for the single IME case for the detailed IME list
+  // sub-view.
+  ImeListView::SingleImeBehavior GetSingleImeBehavior();
 
   TrayItemView* tray_label_;
   tray::IMEDefaultView* default_;
@@ -77,6 +87,10 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
   IMEInfoList ime_list_;
   IMEInfo current_ime_;
   IMEPropertyInfoList property_list_;
+  // If non-empty, a controlled-setting icon should be displayed with a tooltip
+  // text defined by this string.
+  base::string16 ime_managed_message_;
+
   // Whether the IME label and tray items should be visible.
   bool is_visible_;
 

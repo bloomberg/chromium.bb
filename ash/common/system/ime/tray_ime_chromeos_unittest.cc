@@ -10,6 +10,7 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/keyboard/keyboard_util.h"
 
@@ -33,6 +34,10 @@ class TrayIMETest : public test::AshTestBase {
 
   // Returns the view responsible for toggling virtual keyboard.
   views::View* GetToggleView() const;
+
+  // Sets the managed IMEs tooltip message (and thus also if IMEs are managed =
+  // non-empty or not = empty)
+  void SetManagedMessage(base::string16 managed_message);
 
   void SuppressKeyboard();
   void RestoreKeyboard();
@@ -74,6 +79,11 @@ void TrayIMETest::SetIMELength(int length) {
 views::View* TrayIMETest::GetToggleView() const {
   ImeListViewTestApi test_api(static_cast<ImeListView*>(detailed_view()));
   return test_api.GetToggleView();
+}
+
+void TrayIMETest::SetManagedMessage(base::string16 managed_message) {
+  tray_->ime_managed_message_ = managed_message;
+  tray_->Update();
 }
 
 void TrayIMETest::SuppressKeyboard() {
@@ -130,6 +140,18 @@ TEST_F(TrayIMETest, HiddenWithNoIMEs) {
   EXPECT_FALSE(default_view()->visible());
   SetIMELength(1);
   EXPECT_FALSE(default_view()->visible());
+  SetIMELength(2);
+  EXPECT_TRUE(default_view()->visible());
+}
+
+// Tests that if IMEs are managed, the default view is displayed even for a
+// single IME.
+TEST_F(TrayIMETest, ShownWithSingleIMEWhenManaged) {
+  SetManagedMessage(base::ASCIIToUTF16("managed"));
+  SetIMELength(0);
+  EXPECT_FALSE(default_view()->visible());
+  SetIMELength(1);
+  EXPECT_TRUE(default_view()->visible());
   SetIMELength(2);
   EXPECT_TRUE(default_view()->visible());
 }

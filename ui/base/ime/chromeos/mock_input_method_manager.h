@@ -53,6 +53,9 @@ class UI_BASE_IME_EXPORT MockInputMethodManager : public InputMethodManager {
     InputMethodDescriptor GetCurrentInputMethod() const override;
     bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_active_input_method_ids) override;
+    bool SetAllowedInputMethods(
+        const std::vector<std::string>& new_allowed_input_method_ids) override;
+    const std::vector<std::string>& GetAllowedInputMethods() override;
 
     // The active input method ids cache (actually default only)
     std::vector<std::string> active_input_method_ids;
@@ -62,6 +65,9 @@ class UI_BASE_IME_EXPORT MockInputMethodManager : public InputMethodManager {
     ~State() override;
 
    private:
+    // Allowed input methods ids
+    std::vector<std::string> allowed_input_method_ids_;
+
     DISALLOW_COPY_AND_ASSIGN(State);
   };
 

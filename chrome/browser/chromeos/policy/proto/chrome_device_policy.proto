@@ -754,6 +754,16 @@ message LoginAppsProto {
   repeated string login_apps = 1;
 }
 
+// A list of allowed locales on the login page.
+message LoginScreenLocalesProto {
+  repeated string login_screen_locales = 1;
+}
+
+// A list of allowed input methods on the login page.
+message LoginScreenInputMethodsProto {
+  repeated string login_screen_input_methods = 1;
+}
+
 // The url and hash that specified in JSON format that can be used to set the
 // device-level wallpaper on the login screen before any user logs in.
 message DeviceWallpaperImageProto {
@@ -815,4 +825,6 @@ message ChromeDeviceSettingsProto {
   optional LoginAppsProto login_apps = 46;
   optional NetworkThrottlingEnabledProto network_throttling = 47;
   optional DeviceWallpaperImageProto device_wallpaper_image = 48;
+  optional LoginScreenLocalesProto login_screen_locales = 49;
+  optional LoginScreenInputMethodsProto login_screen_input_methods = 50;
 }

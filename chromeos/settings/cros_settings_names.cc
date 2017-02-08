@@ -231,4 +231,13 @@ const char kLoginApps[] = "cros.device.login_apps";
 // format allowed to set a device-level wallpaper before any user logs in.
 const char kDeviceWallpaperImage[] = "cros.device_wallpaper_image";
 
+// A list pref specifying the locales allowed on the login screen. Currently
+// only the first value is used, as the single locale allowed on the login
+// screen.
+const char kDeviceLoginScreenLocales[] = "cros.device_login_screen_locales";
+
+// A list pref containing the input method IDs allowed on the login screen.
+const char kDeviceLoginScreenInputMethods[] =
+    "cros.device_login_screen_input_methods";
+
 }  // namespace chromeos

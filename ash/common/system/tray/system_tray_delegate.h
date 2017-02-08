@@ -141,6 +141,9 @@ class ASH_EXPORT SystemTrayDelegate {
   // Returns a list of properties for the currently selected IME.
   virtual void GetCurrentIMEProperties(IMEPropertyInfoList* list);
 
+  // Returns a non-empty string if IMEs are managed by policy.
+  virtual base::string16 GetIMEManagedMessage();
+
   // Switches to the selected input method.
   virtual void SwitchIME(const std::string& ime_id);
 

@@ -94,6 +94,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -173,8 +174,15 @@ class AnimationObserver : public ui::ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(AnimationObserver);
 };
 
+bool ShouldShowSigninScreen(chromeos::OobeScreen first_screen) {
+  return (first_screen == chromeos::OobeScreen::SCREEN_UNKNOWN &&
+          chromeos::StartupUtils::IsOobeCompleted()) ||
+         first_screen == chromeos::OobeScreen::SCREEN_SPECIAL_LOGIN;
+}
+
 // ShowLoginWizard is split into two parts. This function is sometimes called
-// from ShowLoginWizard(), and sometimes from OnLanguageSwitchedCallback()
+// from TriggerShowLoginWizardFinish() directly, and sometimes from
+// OnLanguageSwitchedCallback()
 // (if locale was updated).
 void ShowLoginWizardFinish(
     chromeos::OobeScreen first_screen,
@@ -182,16 +190,20 @@ void ShowLoginWizardFinish(
     chromeos::LoginDisplayHost* display_host) {
   TRACE_EVENT0("chromeos", "ShowLoginWizard::ShowLoginWizardFinish");
 
-  display_host->StartWizard(first_screen);
+  if (ShouldShowSigninScreen(first_screen)) {
+    display_host->StartSignInScreen(chromeos::LoginScreenContext());
+  } else {
+    display_host->StartWizard(first_screen);
 
-  // Set initial timezone if specified by customization.
-  const std::string timezone_name = startup_manifest->initial_timezone();
-  VLOG(1) << "Initial time zone: " << timezone_name;
-  // Apply locale customizations only once to preserve whatever locale
-  // user has changed to during OOBE.
-  if (!timezone_name.empty()) {
-    chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
-        base::UTF8ToUTF16(timezone_name));
+    // Set initial timezone if specified by customization.
+    const std::string timezone_name = startup_manifest->initial_timezone();
+    VLOG(1) << "Initial time zone: " << timezone_name;
+    // Apply locale customizations only once to preserve whatever locale
+    // user has changed to during OOBE.
+    if (!timezone_name.empty()) {
+      chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+          base::UTF8ToUTF16(timezone_name));
+    }
   }
 }
 
@@ -221,6 +233,46 @@ void OnLanguageSwitchedCallback(
 
   ShowLoginWizardFinish(self->first_screen, self->startup_manifest,
                         self->display_host);
+}
+
+// Triggers ShowLoginWizardFinish directly if no locale switch is required
+// (|switch_locale| is empty) or after a locale switch otherwise.
+void TriggerShowLoginWizardFinish(
+    std::string switch_locale,
+    std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> data) {
+  if (switch_locale.empty()) {
+    ShowLoginWizardFinish(data->first_screen, data->startup_manifest,
+                          data->display_host);
+  } else {
+    chromeos::locale_util::SwitchLanguageCallback callback(
+        base::Bind(&OnLanguageSwitchedCallback, base::Passed(std::move(data))));
+
+    // Load locale keyboards here. Hardware layout would be automatically
+    // enabled.
+    chromeos::locale_util::SwitchLanguage(
+        switch_locale, true, true /* login_layouts_only */, callback,
+        ProfileManager::GetActiveUserProfile());
+  }
+}
+
+// Returns the login screen locale mandated by device policy, or an empty string
+// if no policy-specified locale is set.
+std::string GetManagedLoginScreenLocale() {
+  chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
+  const base::ListValue* login_screen_locales = nullptr;
+  if (!cros_settings->GetList(chromeos::kDeviceLoginScreenLocales,
+                              &login_screen_locales))
+    return std::string();
+
+  // Currently, only the first element is used. The setting is a list for future
+  // compatibility, if dynamically switching locales on the login screen will be
+  // implemented.
+  std::string login_screen_locale;
+  if (login_screen_locales->empty() ||
+      !login_screen_locales->GetString(0, &login_screen_locale))
+    return std::string();
+
+  return login_screen_locale;
 }
 
 void EnableSystemSoundsForAccessibility() {
@@ -877,10 +929,15 @@ void LoginDisplayHostImpl::Observe(
       // the lifetime of host.
       // Make sure that subsequent calls are not postponed.
       waiting_for_wallpaper_load_ = false;
-      if (initialize_webui_hidden_)
-        ShowWebUI();
-      else
+      if (initialize_webui_hidden_) {
+        // If we're in the process of switching locale, the wallpaper might
+        // have finished loading before the locale switch was completed.
+        // Only show the UI if it already exists.
+        if (login_window_ && login_view_)
+          ShowWebUI();
+      } else {
         StartPostponedWebUI();
+      }
     }
     registrar_.Remove(this,
                       chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
@@ -1333,12 +1390,20 @@ void ShowLoginWizard(OobeScreen first_screen) {
         ->UpdateTimezoneResolver();
   }
 
-  bool show_login_screen = (first_screen == OobeScreen::SCREEN_UNKNOWN &&
-                            StartupUtils::IsOobeCompleted()) ||
-                           first_screen == OobeScreen::SCREEN_SPECIAL_LOGIN;
+  PrefService* prefs = g_browser_process->local_state();
+  const std::string& current_locale =
+      prefs->GetString(prefs::kApplicationLocale);
+  VLOG(1) << "Current locale: " << current_locale;
 
-  if (show_login_screen) {
-    display_host->StartSignInScreen(LoginScreenContext());
+  if (ShouldShowSigninScreen(first_screen)) {
+    std::string switch_locale = GetManagedLoginScreenLocale();
+    if (switch_locale == current_locale)
+      switch_locale.clear();
+
+    std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> data =
+        base::MakeUnique<ShowLoginWizardSwitchLanguageCallbackData>(
+            first_screen, nullptr, display_host);
+    TriggerShowLoginWizardFinish(switch_locale, std::move(data));
     return;
   }
 
@@ -1350,10 +1415,6 @@ void ShowLoginWizard(OobeScreen first_screen) {
   // and has not been set yet. We cannot call
   // LanguageSwitchMenu::SwitchLanguage here before
   // EmitLoginPromptReady.
-  PrefService* prefs = g_browser_process->local_state();
-  const std::string& current_locale =
-      prefs->GetString(prefs::kApplicationLocale);
-  VLOG(1) << "Current locale: " << current_locale;
   const std::string& locale = startup_manifest->initial_locale_default();
 
   const std::string& layout = startup_manifest->keyboard_layout();
@@ -1364,8 +1425,12 @@ void ShowLoginWizard(OobeScreen first_screen) {
   manager->GetActiveIMEState()->SetInputMethodLoginDefaultFromVPD(locale,
                                                                   layout);
 
+  std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> data(
+      new ShowLoginWizardSwitchLanguageCallbackData(
+          first_screen, startup_manifest, display_host));
+
   if (!current_locale.empty() || locale.empty()) {
-    ShowLoginWizardFinish(first_screen, startup_manifest, display_host);
+    TriggerShowLoginWizardFinish(std::string(), std::move(data));
     return;
   }
 
@@ -1376,16 +1441,7 @@ void ShowLoginWizard(OobeScreen first_screen) {
   prefs->SetString(prefs::kApplicationLocale, locale);
   StartupUtils::SetInitialLocale(locale);
 
-  std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> data(
-      new ShowLoginWizardSwitchLanguageCallbackData(
-          first_screen, startup_manifest, display_host));
-
-  locale_util::SwitchLanguageCallback callback(
-      base::Bind(&OnLanguageSwitchedCallback, base::Passed(std::move(data))));
-
-  // Load locale keyboards here. Hardware layout would be automatically enabled.
-  locale_util::SwitchLanguage(locale, true, true /* login_layouts_only */,
-                              callback, ProfileManager::GetActiveUserProfile());
+  TriggerShowLoginWizardFinish(locale, std::move(data));
 }
 
 }  // namespace chromeos

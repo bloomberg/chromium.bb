@@ -763,6 +763,7 @@ void UserManagerScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("loginVisible", kDoNothingCallback);
   // Unused callbacks from user_pod_row.js
   web_ui()->RegisterMessageCallback("focusPod", kDoNothingCallback);
+  web_ui()->RegisterMessageCallback("noPodFocused", kDoNothingCallback);
 }
 
 void UserManagerScreenHandler::GetLocalizedValues(

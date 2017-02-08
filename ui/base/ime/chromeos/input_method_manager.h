@@ -213,6 +213,18 @@ class UI_BASE_IME_EXPORT InputMethodManager {
     virtual bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_active_input_method_ids) = 0;
 
+    // Sets the currently allowed input methods (e.g. due to policy). Invalid
+    // input method ids are ignored. Passing an empty vector means that all
+    // input methods are allowed, which is the default.  When allowed input
+    // methods are set, these are also automatically enabled.
+    virtual bool SetAllowedInputMethods(
+        const std::vector<std::string>& allowed_input_method_ids) = 0;
+
+    // Returns the currently allowed input methods, as set by
+    // SetAllowedInputMethodIds. An empty vector means that all input methods
+    // are allowed.
+    virtual const std::vector<std::string>& GetAllowedInputMethods() = 0;
+
    protected:
     friend base::RefCounted<InputMethodManager::State>;
 

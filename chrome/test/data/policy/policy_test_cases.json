@@ -2929,6 +2929,12 @@
   "DeviceLoginScreenDefaultVirtualKeyboardEnabled" : {
   },
 
+  "DeviceLoginScreenLocales" : {
+  },
+
+  "DeviceLoginScreenInputMethods" : {
+  },
+
   "UptimeLimit": {
   },
 

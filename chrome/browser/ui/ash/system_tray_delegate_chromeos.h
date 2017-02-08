@@ -94,6 +94,7 @@ class SystemTrayDelegateChromeOS
   void GetCurrentIME(ash::IMEInfo* info) override;
   void GetAvailableIMEList(ash::IMEInfoList* list) override;
   void GetCurrentIMEProperties(ash::IMEPropertyInfoList* list) override;
+  base::string16 GetIMEManagedMessage() override;
   void SwitchIME(const std::string& ime_id) override;
   void ActivateIMEProperty(const std::string& key) override;
   void ManageBluetoothDevices() override;

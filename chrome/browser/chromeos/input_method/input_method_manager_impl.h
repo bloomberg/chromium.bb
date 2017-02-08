@@ -113,6 +113,10 @@ class InputMethodManagerImpl : public InputMethodManager,
     bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_active_input_method_ids) override;
 
+    bool SetAllowedInputMethods(
+        const std::vector<std::string>& new_allowed_input_method_ids) override;
+    const std::vector<std::string>& GetAllowedInputMethods() override;
+
     // ------------------------- Data members.
     Profile* const profile;
 
@@ -122,6 +126,9 @@ class InputMethodManagerImpl : public InputMethodManager,
 
     // The active input method ids cache.
     std::vector<std::string> active_input_method_ids;
+
+    // The allowed keyboard layout input methods (e.g. by policy).
+    std::vector<std::string> allowed_keyboard_layout_input_method_ids;
 
     // The pending input method id for delayed 3rd party IME enabling.
     std::string pending_input_method_id;
@@ -141,6 +148,13 @@ class InputMethodManagerImpl : public InputMethodManager,
    protected:
     friend base::RefCounted<chromeos::input_method::InputMethodManager::State>;
     ~StateImpl() override;
+
+   private:
+    // Retruns true if the passed input method is allowed. By default, all input
+    // methods are allowed. After SetAllowedKeyboardLayoutInputMethods was
+    // called, the passed keyboard layout input methods are allowed and all
+    // non-keyboard input methods remain to be allowed.
+    bool IsInputMethodAllowed(const std::string& input_method_id) const;
   };
 
   // Constructs an InputMethodManager instance. The client is responsible for

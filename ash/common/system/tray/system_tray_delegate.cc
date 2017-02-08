@@ -86,6 +86,10 @@ void SystemTrayDelegate::GetAvailableIMEList(IMEInfoList* list) {}
 
 void SystemTrayDelegate::GetCurrentIMEProperties(IMEPropertyInfoList* list) {}
 
+base::string16 SystemTrayDelegate::GetIMEManagedMessage() {
+  return base::string16();
+}
+
 void SystemTrayDelegate::SwitchIME(const std::string& ime_id) {}
 
 void SystemTrayDelegate::ActivateIMEProperty(const std::string& key) {}

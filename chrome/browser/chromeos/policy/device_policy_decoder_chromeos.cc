@@ -332,6 +332,56 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     policies->Set(key::kLoginApps, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                   POLICY_SOURCE_CLOUD, std::move(login_apps), nullptr);
   }
+
+  if (policy.has_login_screen_power_management()) {
+    const em::LoginScreenPowerManagementProto& container(
+        policy.login_screen_power_management());
+    if (container.has_login_screen_power_management()) {
+      std::unique_ptr<base::Value> decoded_json;
+      decoded_json = DecodeJsonStringAndDropUnknownBySchema(
+          container.login_screen_power_management(),
+          key::kDeviceLoginScreenPowerManagement);
+      if (decoded_json) {
+        policies->Set(key::kDeviceLoginScreenPowerManagement,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_CLOUD, std::move(decoded_json), nullptr);
+      }
+    }
+  }
+
+  if (policy.has_login_screen_domain_auto_complete()) {
+    const em::LoginScreenDomainAutoCompleteProto& container(
+        policy.login_screen_domain_auto_complete());
+    policies->Set(key::kDeviceLoginScreenDomainAutoComplete,
+                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                  POLICY_SOURCE_CLOUD,
+                  base::MakeUnique<base::StringValue>(
+                      container.login_screen_domain_auto_complete()),
+                  nullptr);
+  }
+
+  if (policy.has_login_screen_locales()) {
+    std::unique_ptr<base::ListValue> locales(new base::ListValue);
+    const em::LoginScreenLocalesProto& login_screen_locales(
+        policy.login_screen_locales());
+    for (const auto& locale : login_screen_locales.login_screen_locales())
+      locales->AppendString(locale);
+    policies->Set(key::kDeviceLoginScreenLocales, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(locales),
+                  nullptr);
+  }
+
+  if (policy.has_login_screen_input_methods()) {
+    std::unique_ptr<base::ListValue> input_methods(new base::ListValue);
+    const em::LoginScreenInputMethodsProto& login_screen_input_methods(
+        policy.login_screen_input_methods());
+    for (const auto& input_method :
+         login_screen_input_methods.login_screen_input_methods())
+      input_methods->AppendString(input_method);
+    policies->Set(key::kDeviceLoginScreenInputMethods, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  std::move(input_methods), nullptr);
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -753,22 +803,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
-  if (policy.has_login_screen_power_management()) {
-    const em::LoginScreenPowerManagementProto& container(
-        policy.login_screen_power_management());
-    if (container.has_login_screen_power_management()) {
-      std::unique_ptr<base::Value> decoded_json;
-      decoded_json = DecodeJsonStringAndDropUnknownBySchema(
-          container.login_screen_power_management(),
-          key::kDeviceLoginScreenPowerManagement);
-      if (decoded_json) {
-        policies->Set(key::kDeviceLoginScreenPowerManagement,
-                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                      POLICY_SOURCE_CLOUD, std::move(decoded_json), nullptr);
-      }
-    }
-  }
-
   if (policy.has_system_settings()) {
     const em::SystemSettingsProto& container(policy.system_settings());
     if (container.has_block_devmode()) {
@@ -788,17 +822,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     DecodeIntegerValue(container.extension_cache_size()),
                     nullptr);
     }
-  }
-
-  if (policy.has_login_screen_domain_auto_complete()) {
-    const em::LoginScreenDomainAutoCompleteProto& container(
-        policy.login_screen_domain_auto_complete());
-    policies->Set(key::kDeviceLoginScreenDomainAutoComplete,
-                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                  POLICY_SOURCE_CLOUD,
-                  base::MakeUnique<base::StringValue>(
-                      container.login_screen_domain_auto_complete()),
-                  nullptr);
   }
 
   if (policy.has_display_rotation_default()) {

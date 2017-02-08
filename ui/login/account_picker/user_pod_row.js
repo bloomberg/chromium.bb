@@ -3347,6 +3347,8 @@ cr.define('login', function() {
         this.firstShown_ = false;
         this.lastFocusedPod_ = podToFocus;
         this.scrollFocusedPodIntoView();
+      } else {
+        chrome.send('noPodFocused');
       }
       this.insideFocusPod_ = false;
     },

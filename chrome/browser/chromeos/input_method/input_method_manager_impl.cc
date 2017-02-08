@@ -130,6 +130,8 @@ void InputMethodManagerImpl::StateImpl::InitFrom(const StateImpl& other) {
   enabled_extension_imes = other.enabled_extension_imes;
   extra_input_methods = other.extra_input_methods;
   menu_activated = other.menu_activated;
+  allowed_keyboard_layout_input_method_ids =
+      other.allowed_keyboard_layout_input_method_ids;
 }
 
 bool InputMethodManagerImpl::StateImpl::IsActive() const {
@@ -255,7 +257,12 @@ void InputMethodManagerImpl::StateImpl::EnableLoginLayouts(
   for (size_t i = 0; i < initial_layouts.size(); ++i) {
     if (manager_->util_.IsValidInputMethodId(initial_layouts[i])) {
       if (manager_->IsLoginKeyboard(initial_layouts[i])) {
-        layouts.push_back(initial_layouts[i]);
+        if (IsInputMethodAllowed(initial_layouts[i])) {
+          layouts.push_back(initial_layouts[i]);
+        } else {
+          DVLOG(1) << "EnableLoginLayouts: ignoring layout disallowd by policy:"
+                   << initial_layouts[i];
+        }
       } else {
         DVLOG(1)
             << "EnableLoginLayouts: ignoring non-login initial keyboard layout:"
@@ -272,8 +279,10 @@ void InputMethodManagerImpl::StateImpl::EnableLoginLayouts(
     const std::string& candidate = candidates[i];
     // Not efficient, but should be fine, as the two vectors are very
     // short (2-5 items).
-    if (!Contains(layouts, candidate) && manager_->IsLoginKeyboard(candidate))
+    if (!Contains(layouts, candidate) && manager_->IsLoginKeyboard(candidate) &&
+        IsInputMethodAllowed(candidate)) {
       layouts.push_back(candidate);
+    }
   }
 
   manager_->MigrateInputMethods(&layouts);
@@ -334,6 +343,11 @@ void InputMethodManagerImpl::StateImpl::EnableLockScreenLayouts() {
 bool InputMethodManagerImpl::StateImpl::EnableInputMethodImpl(
     const std::string& input_method_id,
     std::vector<std::string>* new_active_input_method_ids) const {
+  if (!IsInputMethodAllowed(input_method_id)) {
+    DVLOG(1) << "EnableInputMethod: " << input_method_id << " is not allowed.";
+    return false;
+  }
+
   DCHECK(new_active_input_method_ids);
   if (!manager_->util_.IsValidInputMethodId(input_method_id)) {
     DVLOG(1) << "EnableInputMethod: Invalid ID: " << input_method_id;
@@ -393,6 +407,54 @@ bool InputMethodManagerImpl::StateImpl::ReplaceEnabledInputMethods(
                        active_input_method_ids.size());
 
   return true;
+}
+
+bool InputMethodManagerImpl::StateImpl::SetAllowedInputMethods(
+    const std::vector<std::string>& new_allowed_input_method_ids) {
+  allowed_keyboard_layout_input_method_ids.clear();
+  for (auto input_method_id : new_allowed_input_method_ids) {
+    std::string migrated_id =
+        manager_->util_.MigrateInputMethod(input_method_id);
+    if (manager_->util_.IsValidInputMethodId(migrated_id)) {
+      allowed_keyboard_layout_input_method_ids.push_back(migrated_id);
+    }
+  }
+
+  if (allowed_keyboard_layout_input_method_ids.empty()) {
+    // None of the passed input methods were valid, so allow everything.
+    return false;
+  }
+
+  // Enable all allowed keyboard layout input methods. Leave all non-keyboard
+  // input methods enabled.
+  std::vector<std::string> new_active_input_method_ids(
+      allowed_keyboard_layout_input_method_ids);
+  for (auto active_input_method_id : active_input_method_ids) {
+    if (!manager_->util_.IsKeyboardLayout(active_input_method_id))
+      new_active_input_method_ids.push_back(active_input_method_id);
+  }
+  return ReplaceEnabledInputMethods(new_active_input_method_ids);
+}
+
+const std::vector<std::string>&
+InputMethodManagerImpl::StateImpl::GetAllowedInputMethods() {
+  return allowed_keyboard_layout_input_method_ids;
+}
+
+bool InputMethodManagerImpl::StateImpl::IsInputMethodAllowed(
+    const std::string& input_method_id) const {
+  // Every input method is allowed if SetAllowedKeyboardLayoutInputMethods has
+  // not been called.
+  if (allowed_keyboard_layout_input_method_ids.empty())
+    return true;
+
+  // We only restrict keyboard layouts.
+  if (!manager_->util_.IsKeyboardLayout(input_method_id))
+    return true;
+
+  return Contains(allowed_keyboard_layout_input_method_ids, input_method_id) ||
+         Contains(allowed_keyboard_layout_input_method_ids,
+                  manager_->util_.MigrateInputMethod(input_method_id));
 }
 
 void InputMethodManagerImpl::StateImpl::ChangeInputMethod(

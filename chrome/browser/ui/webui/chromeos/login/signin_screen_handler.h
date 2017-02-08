@@ -376,6 +376,7 @@ class SigninScreenHandler
   void HandleShowLoadingTimeoutError();
   void HandleShowSupervisedUserCreationScreen();
   void HandleFocusPod(const AccountId& account_id);
+  void HandleNoPodFocused();
   void HandleHardlockPod(const std::string& user_id);
   void HandleLaunchKioskApp(const AccountId& app_account_id,
                             bool diagnostic_mode);
@@ -431,6 +432,9 @@ class SigninScreenHandler
   // Callback invoked after the feedback is finished.
   void OnFeedbackFinished();
 
+  // Called when the cros property controlling allowed input methods changes.
+  void OnAllowedInputMethodsChanged();
+
   // Current UI state of the signin screen.
   UIState ui_state_ = UI_STATE_UNKNOWN;
 
@@ -466,6 +470,9 @@ class SigninScreenHandler
   base::CancelableClosure connecting_closure_;
 
   content::NotificationRegistrar registrar_;
+
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      allowed_input_methods_subscription_;
 
   // Whether there is an auth UI pending. This flag is set on receiving
   // NOTIFICATION_AUTH_NEEDED and reset on either NOTIFICATION_AUTH_SUPPLIED or
@@ -510,6 +517,8 @@ class SigninScreenHandler
   std::unique_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 
   std::unique_ptr<LoginFeedback> login_feedback_;
+
+  std::unique_ptr<AccountId> focused_pod_account_id_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 
