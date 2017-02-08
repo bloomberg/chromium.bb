@@ -2344,6 +2344,39 @@ TEST_P(WebViewTest, LongPressSelection) {
   EXPECT_EQ("testword", std::string(frame->selectionAsText().utf8().data()));
 }
 
+TEST_P(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
+  registerMockedHttpURLLoad("longpress_selection.html");
+
+  WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
+      m_baseURL + "longpress_selection.html", true);
+  webView->resize(WebSize(500, 300));
+  webView->updateAllLifecyclePhases();
+  runPendingTasks();
+
+  WebString target = WebString::fromUTF8("target");
+  WebLocalFrameImpl* frame = webView->mainFrameImpl();
+  WebInputMethodController* activeInputMethodController =
+      frame->frameWidget()->getActiveWebInputMethodController();
+  EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, target));
+  WebVector<WebCompositionUnderline> emptyUnderlines;
+  frame->setEditableSelectionOffsets(8, 8);
+  EXPECT_TRUE(activeInputMethodController->setComposition(
+      "12345", emptyUnderlines, 8, 13));
+  EXPECT_TRUE(frame->frame()->inputMethodController().hasComposition());
+  EXPECT_EQ("", std::string(frame->selectionAsText().utf8().data()));
+  EXPECT_FALSE(frame->frame()->selection().isHandleVisible());
+
+  EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, target));
+  EXPECT_EQ("testword12345",
+            std::string(frame->selectionAsText().utf8().data()));
+  EXPECT_TRUE(frame->frame()->selection().isHandleVisible());
+
+  // Check that finishComposingText(KeepSelection) does not dismiss handles.
+  activeInputMethodController->finishComposingText(
+      WebInputMethodController::KeepSelection);
+  EXPECT_TRUE(frame->frame()->selection().isHandleVisible());
+}
+
 #if !OS(MACOSX)
 TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   registerMockedHttpURLLoad("longpress_textarea.html");

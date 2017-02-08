@@ -267,7 +267,11 @@ bool InputMethodController::finishComposingText(
   const String& composing = composingText();
 
   if (confirmBehavior == KeepSelection) {
-    PlainTextRange oldOffsets = getSelectionOffsets();
+    // Do not dismiss handles even if we are moving selection, because we will
+    // eventually move back to the old selection offsets.
+    const bool isHandleVisible = frame().selection().isHandleVisible();
+
+    const PlainTextRange& oldOffsets = getSelectionOffsets();
     Editor::RevealSelectionScope revealSelectionScope(&editor());
 
     clear();
@@ -276,7 +280,17 @@ bool InputMethodController::finishComposingText(
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited. see http://crbug.com/590369 for more details.
     document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setSelectionOffsets(oldOffsets);
+
+    const EphemeralRange& oldSelectionRange =
+        ephemeralRangeForOffsets(oldOffsets);
+    if (oldSelectionRange.isNull())
+      return false;
+    const SelectionInDOMTree& selection =
+        SelectionInDOMTree::Builder()
+            .setBaseAndExtent(oldSelectionRange)
+            .setIsHandleVisible(isHandleVisible)
+            .build();
+    frame().selection().setSelection(selection, FrameSelection::CloseTyping);
     return true;
   }
 
@@ -713,19 +727,23 @@ PlainTextRange InputMethodController::getSelectionOffsets() const {
   return PlainTextRange::create(*editable, range);
 }
 
-bool InputMethodController::setSelectionOffsets(
-    const PlainTextRange& selectionOffsets,
-    FrameSelection::SetSelectionOptions options) {
-  if (selectionOffsets.isNull())
-    return false;
+EphemeralRange InputMethodController::ephemeralRangeForOffsets(
+    const PlainTextRange& offsets) const {
+  if (offsets.isNull())
+    return EphemeralRange();
   Element* rootEditableElement = frame().selection().rootEditableElement();
   if (!rootEditableElement)
-    return false;
+    return EphemeralRange();
 
   DCHECK(!document().needsLayoutTreeUpdate());
 
-  const EphemeralRange range =
-      selectionOffsets.createRange(*rootEditableElement);
+  return offsets.createRange(*rootEditableElement);
+}
+
+bool InputMethodController::setSelectionOffsets(
+    const PlainTextRange& selectionOffsets,
+    FrameSelection::SetSelectionOptions options) {
+  const EphemeralRange range = ephemeralRangeForOffsets(selectionOffsets);
   if (range.isNull())
     return false;
 
