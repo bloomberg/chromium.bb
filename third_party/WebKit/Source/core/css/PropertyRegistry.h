@@ -20,7 +20,7 @@ class PropertyRegistry : public GarbageCollected<PropertyRegistry> {
                         bool inherits,
                         const CSSValue* initial,
                         PassRefPtr<CSSVariableData> initialVariableData,
-                        InterpolationTypes);
+                        CSSInterpolationTypes);
   const PropertyRegistration* registration(const AtomicString&) const;
   size_t registrationCount() const { return m_registrations.size(); }
 

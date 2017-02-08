@@ -12,12 +12,12 @@ void PropertyRegistry::registerProperty(
     bool inherits,
     const CSSValue* initial,
     PassRefPtr<CSSVariableData> initialVariableData,
-    InterpolationTypes interpolationTypes) {
+    CSSInterpolationTypes cssInterpolationTypes) {
   DCHECK(!registration(name));
-  m_registrations.set(name,
-                      new PropertyRegistration(syntax, inherits, initial,
-                                               std::move(initialVariableData),
-                                               std::move(interpolationTypes)));
+  m_registrations.set(
+      name, new PropertyRegistration(syntax, inherits, initial,
+                                     std::move(initialVariableData),
+                                     std::move(cssInterpolationTypes)));
 }
 
 const PropertyRegistration* PropertyRegistry::registration(

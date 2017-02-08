@@ -5,7 +5,7 @@
 #ifndef PropertyRegistration_h
 #define PropertyRegistration_h
 
-#include "core/animation/InterpolationType.h"
+#include "core/animation/CSSInterpolationType.h"
 #include "core/animation/InterpolationTypesMap.h"
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/CSSValue.h"
@@ -20,6 +20,8 @@ class ExceptionState;
 class PropertyDescriptor;
 class ScriptState;
 
+using CSSInterpolationTypes = Vector<std::unique_ptr<CSSInterpolationType>>;
+
 class PropertyRegistration
     : public GarbageCollectedFinalized<PropertyRegistration> {
  public:
@@ -27,16 +29,11 @@ class PropertyRegistration
                                const PropertyDescriptor&,
                                ExceptionState&);
 
-  PropertyRegistration(const CSSSyntaxDescriptor& syntax,
+  PropertyRegistration(const CSSSyntaxDescriptor&,
                        bool inherits,
                        const CSSValue* initial,
                        PassRefPtr<CSSVariableData> initialVariableData,
-                       InterpolationTypes interpolationTypes)
-      : m_syntax(syntax),
-        m_inherits(inherits),
-        m_initial(initial),
-        m_initialVariableData(initialVariableData),
-        m_interpolationTypes(std::move(interpolationTypes)) {}
+                       CSSInterpolationTypes);
 
   const CSSSyntaxDescriptor& syntax() const { return m_syntax; }
   bool inherits() const { return m_inherits; }

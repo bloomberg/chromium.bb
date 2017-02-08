@@ -4,6 +4,7 @@
 
 #include "core/animation/CSSInterpolationTypesMap.h"
 
+#include <memory>
 #include "core/animation/CSSBasicShapeInterpolationType.h"
 #include "core/animation/CSSBorderImageLengthBoxInterpolationType.h"
 #include "core/animation/CSSClipInterpolationType.h"
@@ -34,9 +35,9 @@
 #include "core/animation/CSSValueInterpolationType.h"
 #include "core/animation/CSSVisibilityInterpolationType.h"
 #include "core/css/CSSPropertyMetadata.h"
+#include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/PropertyRegistry.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -323,6 +324,51 @@ size_t CSSInterpolationTypesMap::version() const {
   // custom properties is equivalent to how many changes there have been to the
   // property registry.
   return m_registry ? m_registry->registrationCount() : 0;
+}
+
+CSSInterpolationTypes
+CSSInterpolationTypesMap::createCSSInterpolationTypesForSyntax(
+    const AtomicString& propertyName,
+    const CSSSyntaxDescriptor& descriptor) {
+  PropertyHandle property(propertyName);
+  CSSInterpolationTypes result;
+  for (const CSSSyntaxComponent& component : descriptor.components()) {
+    if (component.m_repeatable) {
+      // TODO(alancutter): Support animation of repeatable types.
+      continue;
+    }
+
+    switch (component.m_type) {
+      case CSSSyntaxType::Color:
+        result.push_back(WTF::makeUnique<CSSColorInterpolationType>(property));
+        break;
+      case CSSSyntaxType::Length:
+        result.push_back(WTF::makeUnique<CSSLengthInterpolationType>(property));
+        break;
+      case CSSSyntaxType::Number:
+      case CSSSyntaxType::Percentage:
+      case CSSSyntaxType::LengthPercentage:
+      case CSSSyntaxType::Image:
+      case CSSSyntaxType::Url:
+      case CSSSyntaxType::Integer:
+      case CSSSyntaxType::Angle:
+      case CSSSyntaxType::Time:
+      case CSSSyntaxType::Resolution:
+      case CSSSyntaxType::TransformFunction:
+        // TODO(alancutter): Support smooth interpolation of these types.
+        break;
+      case CSSSyntaxType::TokenStream:
+      case CSSSyntaxType::Ident:
+      case CSSSyntaxType::CustomIdent:
+        // Uses the CSSValueInterpolationType added below.
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  result.push_back(WTF::makeUnique<CSSValueInterpolationType>(property));
+  return result;
 }
 
 }  // namespace blink

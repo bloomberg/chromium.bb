@@ -11,8 +11,12 @@
 namespace blink {
 
 class CSSCustomPropertyDeclaration;
+class PropertyRegistration;
 
 class CSSInterpolationType : public InterpolationType {
+ public:
+  void setCustomPropertyRegistration(const PropertyRegistration&);
+
  protected:
   CSSInterpolationType(PropertyHandle);
 
@@ -75,6 +79,8 @@ class CSSInterpolationType : public InterpolationType {
   void applyCustomPropertyValue(const InterpolableValue&,
                                 const NonInterpolableValue*,
                                 StyleResolverState&) const;
+
+  WeakPersistent<const PropertyRegistration> m_registration;
 };
 
 }  // namespace blink
