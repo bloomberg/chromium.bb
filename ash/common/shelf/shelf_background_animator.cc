@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -15,7 +14,7 @@ namespace ash {
 
 namespace {
 // The total number of animators that will call BackgroundAnimationEnded().
-const int kNumAnimators = 3;
+const int kNumAnimators = 2;
 
 const int kMaxAlpha = 255;
 }  // namespace
@@ -50,7 +49,6 @@ void ShelfBackgroundAnimator::RemoveObserver(
 void ShelfBackgroundAnimator::Initialize(
     ShelfBackgroundAnimatorObserver* observer) const {
   observer->UpdateShelfOpaqueBackground(opaque_background_animator_->alpha());
-  observer->UpdateShelfAssetBackground(asset_background_animator_->alpha());
   observer->UpdateShelfItemBackground(item_background_animator_->alpha());
 }
 
@@ -90,9 +88,6 @@ void ShelfBackgroundAnimator::OnAlphaChanged(BackgroundAnimator* animator,
   if (animator == opaque_background_animator_.get()) {
     for (auto& observer : observers_)
       observer.UpdateShelfOpaqueBackground(alpha);
-  } else if (animator == asset_background_animator_.get()) {
-    for (auto& observer : observers_)
-      observer.UpdateShelfAssetBackground(alpha);
   } else if (animator == item_background_animator_.get()) {
     for (auto& observer : observers_)
       observer.UpdateShelfItemBackground(alpha);
@@ -113,8 +108,6 @@ void ShelfBackgroundAnimator::AnimateBackground(
   bool show_background = true;
   if (can_reuse_animators_ && previous_background_type_ == background_type) {
     DCHECK_EQ(opaque_background_animator_->paints_background(),
-              asset_background_animator_->paints_background());
-    DCHECK_EQ(asset_background_animator_->paints_background(),
               item_background_animator_->paints_background());
 
     show_background = !opaque_background_animator_->paints_background();
@@ -132,7 +125,6 @@ void ShelfBackgroundAnimator::AnimateBackground(
 
   opaque_background_animator_->SetPaintsBackground(show_background,
                                                    change_type);
-  asset_background_animator_->SetPaintsBackground(show_background, change_type);
   item_background_animator_->SetPaintsBackground(show_background, change_type);
 
   if (target_background_type_ != background_type) {
@@ -146,59 +138,42 @@ void ShelfBackgroundAnimator::CreateAnimators(
     BackgroundAnimatorChangeType change_type) {
   const int opaque_background_alpha =
       opaque_background_animator_ ? opaque_background_animator_->alpha() : 0;
-  const int asset_background_alpha =
-      asset_background_animator_ ? asset_background_animator_->alpha() : 0;
   const int item_background_alpha =
       item_background_animator_ ? item_background_animator_->alpha() : 0;
 
-  const bool is_material = MaterialDesignController::IsShelfMaterial();
   int duration_ms = 0;
 
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
-      duration_ms = is_material ? 500 : 1000;
+      duration_ms = 500;
       opaque_background_animator_.reset(
           new BackgroundAnimator(this, opaque_background_alpha, 0));
-      asset_background_animator_.reset(
-          new BackgroundAnimator(this, asset_background_alpha, 0));
-      item_background_animator_.reset(
-          new BackgroundAnimator(this, item_background_alpha,
-                                 GetShelfConstant(SHELF_BACKGROUND_ALPHA)));
+      item_background_animator_.reset(new BackgroundAnimator(
+          this, item_background_alpha, kShelfTranslucentAlpha));
       break;
     case SHELF_BACKGROUND_OVERLAP:
-      duration_ms = is_material ? 500 : 1000;
+      duration_ms = 500;
       opaque_background_animator_.reset(new BackgroundAnimator(
-          this, opaque_background_alpha,
-          is_material ? GetShelfConstant(SHELF_BACKGROUND_ALPHA) : 0));
-      asset_background_animator_.reset(new BackgroundAnimator(
-          this, asset_background_alpha,
-          is_material ? 0 : GetShelfConstant(SHELF_BACKGROUND_ALPHA)));
-      item_background_animator_.reset(new BackgroundAnimator(
-          this, item_background_alpha,
-          is_material ? 0 : GetShelfConstant(SHELF_BACKGROUND_ALPHA)));
+          this, opaque_background_alpha, kShelfTranslucentAlpha));
+      item_background_animator_.reset(
+          new BackgroundAnimator(this, item_background_alpha, 0));
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
-      duration_ms = is_material ? 250 : 1000;
+      duration_ms = 250;
       opaque_background_animator_.reset(
           new BackgroundAnimator(this, opaque_background_alpha, kMaxAlpha));
-      asset_background_animator_.reset(new BackgroundAnimator(
-          this, asset_background_alpha,
-          is_material ? 0 : GetShelfConstant(SHELF_BACKGROUND_ALPHA)));
-      item_background_animator_.reset(new BackgroundAnimator(
-          this, item_background_alpha, is_material ? 0 : kMaxAlpha));
+      item_background_animator_.reset(
+          new BackgroundAnimator(this, item_background_alpha, 0));
       break;
   }
 
   opaque_background_animator_->SetDuration(duration_ms);
-  asset_background_animator_->SetDuration(duration_ms);
   item_background_animator_->SetDuration(duration_ms);
 }
 
 void ShelfBackgroundAnimator::StopAnimators() {
   if (opaque_background_animator_)
     opaque_background_animator_->Stop();
-  if (asset_background_animator_)
-    asset_background_animator_->Stop();
   if (item_background_animator_)
     item_background_animator_->Stop();
 }

@@ -15,10 +15,6 @@ class ASH_EXPORT ShelfBackgroundAnimatorObserver {
   // Called when the Shelf's opaque background should be updated.
   virtual void UpdateShelfOpaqueBackground(int alpha) {}
 
-  // Called when the Shelf's asset based background should be updated.
-  // TODO(bruthig): Remove when non-md is no longer needed (crbug.com/614453).
-  virtual void UpdateShelfAssetBackground(int alpha) {}
-
   // Called when the Shelf item (aka button) backgrounds should be updated.
   virtual void UpdateShelfItemBackground(int alpha) {}
 

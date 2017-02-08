@@ -52,8 +52,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   set_background(NULL);
   SkColor color = MaterialDesignController::IsShelfMaterial()
                       ? kShelfBaseColor
-                      : SkColorSetA(kShelfBaseColor,
-                                    GetShelfConstant(SHELF_BACKGROUND_ALPHA));
+                      : SkColorSetA(kShelfBaseColor, kShelfTranslucentAlpha);
   set_color(color);
   set_margins(gfx::Insets(kPadding, kPadding, kPadding, kPadding));
   // Overflow bubble should not get focus. If it get focus when it is shown,

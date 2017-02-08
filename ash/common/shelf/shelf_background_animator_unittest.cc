@@ -8,7 +8,6 @@
 
 #include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/test/material_design_controller_test_api.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -16,9 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
-
-using test::MaterialDesignControllerTestAPI;
-
 namespace {
 
 const int kMaxAlpha = 255;
@@ -37,27 +33,19 @@ class TestShelfBackgroundObserver : public ShelfBackgroundAnimatorObserver {
 
   int item_background_alpha() const { return item_background_alpha_; }
 
-  int asset_background_alpha() const { return asset_background_alpha_; }
-
   // ShelfBackgroundObserver:
   void UpdateShelfOpaqueBackground(int alpha) override;
-  void UpdateShelfAssetBackground(int alpha) override;
   void UpdateShelfItemBackground(int alpha) override;
 
  private:
   int opaque_background_alpha_ = 0;
   int item_background_alpha_ = 0;
-  int asset_background_alpha_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfBackgroundObserver);
 };
 
 void TestShelfBackgroundObserver::UpdateShelfOpaqueBackground(int alpha) {
   opaque_background_alpha_ = alpha;
-}
-
-void TestShelfBackgroundObserver::UpdateShelfAssetBackground(int alpha) {
-  asset_background_alpha_ = alpha;
 }
 
 void TestShelfBackgroundObserver::UpdateShelfItemBackground(int alpha) {
@@ -82,10 +70,6 @@ class ShelfBackgroundAnimatorTestApi {
     return animator_->opaque_background_animator_.get();
   }
 
-  BackgroundAnimator* asset_background_animator() const {
-    return animator_->asset_background_animator_.get();
-  }
-
   BackgroundAnimator* item_background_animator() const {
     return animator_->item_background_animator_.get();
   }
@@ -99,17 +83,10 @@ class ShelfBackgroundAnimatorTestApi {
   DISALLOW_COPY_AND_ASSIGN(ShelfBackgroundAnimatorTestApi);
 };
 
-// Note: this is not a parameterized test (like other MD tests) because the
-// behavior is so different and not all tests need to be run for both MD and
-// non-MD variants.
-class ShelfBackgroundAnimatorTestBase : public testing::Test {
+class ShelfBackgroundAnimatorTest : public testing::Test {
  public:
-  ShelfBackgroundAnimatorTestBase() {}
-  ~ShelfBackgroundAnimatorTestBase() override {}
-
-  virtual MaterialDesignController::Mode GetMaterialDesignMode() = 0;
-
-  int expected_translucent_alpha() const { return expected_translucent_alpha_; }
+  ShelfBackgroundAnimatorTest() {}
+  ~ShelfBackgroundAnimatorTest() override {}
 
   // testing::Test:
   void SetUp() override;
@@ -139,108 +116,37 @@ class ShelfBackgroundAnimatorTestBase : public testing::Test {
  private:
   std::unique_ptr<base::ThreadTaskRunnerHandle> task_runner_handle_;
 
-  std::unique_ptr<MaterialDesignControllerTestAPI> material_mode_test_api_;
-
-  // The expected alpha value for translucent items.  Cannot be a constant
-  // because it is different for material design and non-material.
-  int expected_translucent_alpha_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfBackgroundAnimatorTestBase);
+  DISALLOW_COPY_AND_ASSIGN(ShelfBackgroundAnimatorTest);
 };
 
-void ShelfBackgroundAnimatorTestBase::SetUp() {
+void ShelfBackgroundAnimatorTest::SetUp() {
   task_runner_ = new base::TestMockTimeTaskRunner();
   task_runner_handle_.reset(new base::ThreadTaskRunnerHandle(task_runner_));
 
-  material_mode_test_api_.reset(
-      new MaterialDesignControllerTestAPI(GetMaterialDesignMode()));
   animator_.reset(
       new ShelfBackgroundAnimator(SHELF_BACKGROUND_DEFAULT, nullptr));
   animator_->AddObserver(&observer_);
 
   test_api_.reset(new ShelfBackgroundAnimatorTestApi(animator_.get()));
-
-  // Initialized after the Material Design mode because GetShelfConstant()
-  // depends on the mode.
-  expected_translucent_alpha_ = GetShelfConstant(SHELF_BACKGROUND_ALPHA);
 }
 
-void ShelfBackgroundAnimatorTestBase::PaintBackground(
+void ShelfBackgroundAnimatorTest::PaintBackground(
     ShelfBackgroundType background_type) {
   animator_->PaintBackground(background_type, BACKGROUND_CHANGE_IMMEDIATE);
 }
 
-void ShelfBackgroundAnimatorTestBase::SetAlphaValuesOnObserver(int alpha) {
+void ShelfBackgroundAnimatorTest::SetAlphaValuesOnObserver(int alpha) {
   observer_.UpdateShelfOpaqueBackground(alpha);
-  observer_.UpdateShelfAssetBackground(alpha);
   observer_.UpdateShelfItemBackground(alpha);
 }
 
-void ShelfBackgroundAnimatorTestBase::CompleteAnimations() {
+void ShelfBackgroundAnimatorTest::CompleteAnimations() {
   task_runner_->FastForwardUntilNoTasksRemain();
 }
 
-class ShelfBackgroundAnimatorNonMDTest
-    : public ShelfBackgroundAnimatorTestBase {
- public:
-  ShelfBackgroundAnimatorNonMDTest() {}
-  ~ShelfBackgroundAnimatorNonMDTest() override {}
-
-  MaterialDesignController::Mode GetMaterialDesignMode() override {
-    return MaterialDesignController::NON_MATERIAL;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfBackgroundAnimatorNonMDTest);
-};
-
-// Verify the alpha values for the SHELF_BACKGROUND_DEFAULT state.
-TEST_F(ShelfBackgroundAnimatorNonMDTest, DefaultBackground) {
-  PaintBackground(SHELF_BACKGROUND_DEFAULT);
-
-  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, animator_->target_background_type());
-  EXPECT_EQ(0, observer_.opaque_background_alpha());
-  EXPECT_EQ(0, observer_.asset_background_alpha());
-  EXPECT_EQ(expected_translucent_alpha(), observer_.item_background_alpha());
-}
-
-// Verify the alpha values for the SHELF_BACKGROUND_OVERLAP state.
-TEST_F(ShelfBackgroundAnimatorNonMDTest, OverlapBackground) {
-  PaintBackground(SHELF_BACKGROUND_OVERLAP);
-
-  EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, animator_->target_background_type());
-  EXPECT_EQ(0, observer_.opaque_background_alpha());
-  EXPECT_EQ(expected_translucent_alpha(), observer_.asset_background_alpha());
-  EXPECT_EQ(expected_translucent_alpha(), observer_.item_background_alpha());
-}
-
-// Verify the alpha values for the SHELF_BACKGROUND_MAXIMIZED state.
-TEST_F(ShelfBackgroundAnimatorNonMDTest, MaximizedBackground) {
-  PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
-
-  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, animator_->target_background_type());
-  EXPECT_EQ(kMaxAlpha, observer_.opaque_background_alpha());
-  EXPECT_EQ(expected_translucent_alpha(), observer_.asset_background_alpha());
-  EXPECT_EQ(kMaxAlpha, observer_.item_background_alpha());
-}
-
-class ShelfBackgroundAnimatorMDTest : public ShelfBackgroundAnimatorTestBase {
- public:
-  ShelfBackgroundAnimatorMDTest() {}
-  ~ShelfBackgroundAnimatorMDTest() override {}
-
-  MaterialDesignController::Mode GetMaterialDesignMode() override {
-    return MaterialDesignController::MATERIAL_EXPERIMENTAL;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfBackgroundAnimatorMDTest);
-};
-
 // Verify the |previous_background_type_| and |target_background_type_| values
 // when animating to the same target type multiple times.
-TEST_F(ShelfBackgroundAnimatorMDTest,
-       BackgroundTypesWhenAnimatingToSameTarget) {
+TEST_F(ShelfBackgroundAnimatorTest, BackgroundTypesWhenAnimatingToSameTarget) {
   PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, animator_->target_background_type());
 
@@ -255,7 +161,7 @@ TEST_F(ShelfBackgroundAnimatorMDTest,
 
 // Verify subsequent calls to PaintBackground() using the
 // BACKGROUND_CHANGE_ANIMATE change type are ignored.
-TEST_F(ShelfBackgroundAnimatorMDTest,
+TEST_F(ShelfBackgroundAnimatorTest,
        MultipleAnimateCallsToSameTargetAreIgnored) {
   PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
   SetAlphaValuesOnObserver(kDummyAlpha);
@@ -276,70 +182,63 @@ TEST_F(ShelfBackgroundAnimatorMDTest,
 }
 
 // Verify observers are updated with the current values when they are added.
-TEST_F(ShelfBackgroundAnimatorMDTest, ObserversUpdatedWhenAdded) {
+TEST_F(ShelfBackgroundAnimatorTest, ObserversUpdatedWhenAdded) {
   animator_->RemoveObserver(&observer_);
   SetAlphaValuesOnObserver(kDummyAlpha);
 
   animator_->AddObserver(&observer_);
 
   EXPECT_NE(observer_.opaque_background_alpha(), kDummyAlpha);
-  EXPECT_NE(observer_.asset_background_alpha(), kDummyAlpha);
   EXPECT_NE(observer_.item_background_alpha(), kDummyAlpha);
 }
 
 // Verify the alpha values for the SHELF_BACKGROUND_DEFAULT state.
-TEST_F(ShelfBackgroundAnimatorMDTest, DefaultBackground) {
+TEST_F(ShelfBackgroundAnimatorTest, DefaultBackground) {
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
 
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, animator_->target_background_type());
   EXPECT_EQ(0, observer_.opaque_background_alpha());
-  EXPECT_EQ(0, observer_.asset_background_alpha());
-  EXPECT_EQ(expected_translucent_alpha(), observer_.item_background_alpha());
+  EXPECT_EQ(kShelfTranslucentAlpha, observer_.item_background_alpha());
 }
 
 // Verify the alpha values for the SHELF_BACKGROUND_OVERLAP state.
-TEST_F(ShelfBackgroundAnimatorMDTest, OverlapBackground) {
+TEST_F(ShelfBackgroundAnimatorTest, OverlapBackground) {
   PaintBackground(SHELF_BACKGROUND_OVERLAP);
 
   EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, animator_->target_background_type());
-  EXPECT_EQ(expected_translucent_alpha(), observer_.opaque_background_alpha());
-  EXPECT_EQ(0, observer_.asset_background_alpha());
+  EXPECT_EQ(kShelfTranslucentAlpha, observer_.opaque_background_alpha());
   EXPECT_EQ(0, observer_.item_background_alpha());
 }
 
 // Verify the alpha values for the SHELF_BACKGROUND_MAXIMIZED state.
-TEST_F(ShelfBackgroundAnimatorMDTest, MaximizedBackground) {
+TEST_F(ShelfBackgroundAnimatorTest, MaximizedBackground) {
   PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
 
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, animator_->target_background_type());
   EXPECT_EQ(kMaxAlpha, observer_.opaque_background_alpha());
-  EXPECT_EQ(0, observer_.asset_background_alpha());
   EXPECT_EQ(0, observer_.item_background_alpha());
 }
 
 // Verify that existing animators are used when animating to the previous state.
-TEST_F(ShelfBackgroundAnimatorMDTest, ExistingAnimatorsAreReused) {
+TEST_F(ShelfBackgroundAnimatorTest, ExistingAnimatorsAreReused) {
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
   PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
   EXPECT_TRUE(test_api_->can_reuse_animators());
 
   const BackgroundAnimator* opaque_animator =
       test_api_->opaque_background_animator();
-  const BackgroundAnimator* asset_animator =
-      test_api_->asset_background_animator();
   const BackgroundAnimator* item_animator =
       test_api_->item_background_animator();
 
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
 
   EXPECT_EQ(opaque_animator, test_api_->opaque_background_animator());
-  EXPECT_EQ(asset_animator, test_api_->asset_background_animator());
   EXPECT_EQ(item_animator, test_api_->item_background_animator());
 }
 
 // Verify that existing animators are not re-used when the previous animation
 // didn't complete.
-TEST_F(ShelfBackgroundAnimatorMDTest,
+TEST_F(ShelfBackgroundAnimatorTest,
        ExistingAnimatorsNotReusedWhenPreviousAnimationsDontComplete) {
   EXPECT_NE(SHELF_BACKGROUND_OVERLAP, test_api_->previous_background_type());
   animator_->PaintBackground(SHELF_BACKGROUND_OVERLAP,
@@ -350,8 +249,6 @@ TEST_F(ShelfBackgroundAnimatorMDTest,
 
   const BackgroundAnimator* opaque_animator =
       test_api_->opaque_background_animator();
-  const BackgroundAnimator* asset_animator =
-      test_api_->asset_background_animator();
   const BackgroundAnimator* item_animator =
       test_api_->item_background_animator();
 
@@ -360,13 +257,12 @@ TEST_F(ShelfBackgroundAnimatorMDTest,
                              BACKGROUND_CHANGE_ANIMATE);
 
   EXPECT_NE(opaque_animator, test_api_->opaque_background_animator());
-  EXPECT_NE(asset_animator, test_api_->asset_background_animator());
   EXPECT_NE(item_animator, test_api_->item_background_animator());
 }
 
 // Verify that existing animators are not re-used when the target background
 // isn't the same as the previous background.
-TEST_F(ShelfBackgroundAnimatorMDTest,
+TEST_F(ShelfBackgroundAnimatorTest,
        ExistingAnimatorsNotReusedWhenTargetBackgroundNotPreviousBackground) {
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
   PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
@@ -374,8 +270,6 @@ TEST_F(ShelfBackgroundAnimatorMDTest,
 
   const BackgroundAnimator* opaque_animator =
       test_api_->opaque_background_animator();
-  const BackgroundAnimator* asset_animator =
-      test_api_->asset_background_animator();
   const BackgroundAnimator* item_animator =
       test_api_->item_background_animator();
 
@@ -383,12 +277,11 @@ TEST_F(ShelfBackgroundAnimatorMDTest,
   PaintBackground(SHELF_BACKGROUND_OVERLAP);
 
   EXPECT_NE(opaque_animator, test_api_->opaque_background_animator());
-  EXPECT_NE(asset_animator, test_api_->asset_background_animator());
   EXPECT_NE(item_animator, test_api_->item_background_animator());
 }
 
 // Verify animators are not re-used after snapping to the same background type.
-TEST_F(ShelfBackgroundAnimatorMDTest,
+TEST_F(ShelfBackgroundAnimatorTest,
        ExistingAnimatorsNotUsedWhenSnappingToSameTargetBackground) {
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
@@ -397,14 +290,13 @@ TEST_F(ShelfBackgroundAnimatorMDTest,
 }
 
 // Verify observers are always notified, even when alpha values don't change.
-TEST_F(ShelfBackgroundAnimatorMDTest,
+TEST_F(ShelfBackgroundAnimatorTest,
        ObserversAreNotifiedWhenSnappingToSameTargetBackground) {
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
   SetAlphaValuesOnObserver(kDummyAlpha);
   PaintBackground(SHELF_BACKGROUND_DEFAULT);
 
   EXPECT_NE(observer_.opaque_background_alpha(), kDummyAlpha);
-  EXPECT_NE(observer_.asset_background_alpha(), kDummyAlpha);
   EXPECT_NE(observer_.item_background_alpha(), kDummyAlpha);
 }
 

@@ -5,6 +5,7 @@
 #ifndef ASH_COMMON_SHELF_SHELF_BACKGROUND_ANIMATOR_H_
 #define ASH_COMMON_SHELF_SHELF_BACKGROUND_ANIMATOR_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -25,12 +26,8 @@ class WmShelf;
 // The ShelfBackgroundAnimator is capable of observing a WmShelf instance for
 // background type changes or clients can call PaintBackground() directly.
 //
-// The Shelf uses 3 surfaces for the animations:
+// The Shelf uses 2 surfaces for the animations:
 //
-//  Non-Material Design:
-//    1. Shelf button backgrounds
-//    2. Opaque overlay for the SHELF_BACKGROUND_MAXIMIZED state.
-//    3. Shelf and Dock assets for the SHELF_BACKGROUND_OVERLAP state.
 //  Material Design:
 //    1. Shelf button backgrounds
 //    2. Opaque overlay for the SHELF_BACKGROUND_OVERLAP and
@@ -107,10 +104,6 @@ class ASH_EXPORT ShelfBackgroundAnimator : public WmShelfObserver,
   // TODO(bruthig): Replace all BackgroundAnimators with a single
   // gfx::SlideAnimation.
   std::unique_ptr<BackgroundAnimator> opaque_background_animator_;
-
-  // Animates the asset/image based background of the Shelf.
-  // TODO(bruthig): Remove when non-md is no longer needed (crbug.com/614453).
-  std::unique_ptr<BackgroundAnimator> asset_background_animator_;
 
   // Animates the backgrounds of Shelf child Views.
   std::unique_ptr<BackgroundAnimator> item_background_animator_;
