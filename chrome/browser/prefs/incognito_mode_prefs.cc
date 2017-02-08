@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -197,8 +198,11 @@ bool IncognitoModePrefs::CanOpenBrowser(Profile* profile) {
 #if defined(OS_WIN)
 // static
 void IncognitoModePrefs::InitializePlatformParentalControls() {
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
+  // TODO(fdoray): This task uses COM. Add the WithCom() trait once supported.
+  // crbug.com/662122
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
+                     base::TaskPriority::USER_VISIBLE),
       base::Bind(
           base::IgnoreResult(&PlatformParentalControlsValue::GetInstance)));
 }
