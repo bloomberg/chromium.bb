@@ -42,9 +42,6 @@ void CharacterData::atomize() {
 
 void CharacterData::setData(const String& data) {
   const String& nonNullData = !data.isNull() ? data : emptyString;
-  if (m_data == nonNullData)
-    return;
-
   unsigned oldLength = length();
 
   setDataAndUpdate(nonNullData, 0, oldLength, nonNullData.length(),
