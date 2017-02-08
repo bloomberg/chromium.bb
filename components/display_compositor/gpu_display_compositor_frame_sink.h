@@ -38,12 +38,6 @@ class DISPLAY_COMPOSITOR_EXPORT GpuDisplayCompositorFrameSink
   mojo::AssociatedBinding<cc::mojom::MojoCompositorFrameSink> binding_;
   mojo::AssociatedBinding<cc::mojom::DisplayPrivate> display_private_binding_;
 
-  // GpuCompositorFrameSink holds a Display and its BeginFrameSource. In the
-  // window server, the display root window's CompositorFrameSink will have a
-  // valid gpu::SurfaceHandle.
-  std::unique_ptr<cc::BeginFrameSource> display_begin_frame_source_;
-  std::unique_ptr<cc::Display> display_;
-
   DISALLOW_COPY_AND_ASSIGN(GpuDisplayCompositorFrameSink);
 };
 

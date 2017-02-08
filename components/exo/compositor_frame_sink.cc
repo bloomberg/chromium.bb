@@ -18,12 +18,7 @@ namespace exo {
 CompositorFrameSink::CompositorFrameSink(const cc::FrameSinkId& frame_sink_id,
                                          cc::SurfaceManager* surface_manager,
                                          CompositorFrameSinkHolder* client)
-    : support_(this,
-               surface_manager,
-               frame_sink_id,
-               nullptr,
-               true /* handles_frame_sink_id_invalidation */,
-               true /* needs_sync_points */),
+    : support_(this, surface_manager, frame_sink_id, nullptr, nullptr),
       client_(client) {}
 
 CompositorFrameSink::~CompositorFrameSink() {}

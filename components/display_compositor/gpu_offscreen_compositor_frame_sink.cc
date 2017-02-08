@@ -18,6 +18,7 @@ GpuOffscreenCompositorFrameSink::GpuOffscreenCompositorFrameSink(
                              surface_manager,
                              frame_sink_id,
                              nullptr,
+                             nullptr,
                              std::move(compositor_frame_sink_private_request),
                              std::move(client)),
       binding_(this, std::move(request)) {

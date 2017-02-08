@@ -35,7 +35,8 @@ class DISPLAY_COMPOSITOR_EXPORT GpuCompositorFrameSink
       GpuCompositorFrameSinkDelegate* delegate,
       cc::SurfaceManager* surface_manager,
       const cc::FrameSinkId& frame_sink_id,
-      cc::Display* display,
+      std::unique_ptr<cc::Display> display,
+      std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
       cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 

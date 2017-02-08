@@ -17,31 +17,25 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
     CompositorFrameSinkSupportClient* client,
     SurfaceManager* surface_manager,
     const FrameSinkId& frame_sink_id,
-    Display* display,
-    bool handles_frame_sink_id_invalidation,
-    bool needs_sync_points)
+    std::unique_ptr<Display> display,
+    std::unique_ptr<BeginFrameSource> display_begin_frame_source)
     : client_(client),
       surface_manager_(surface_manager),
       frame_sink_id_(frame_sink_id),
-      display_(display),
+      display_begin_frame_source_(std::move(display_begin_frame_source)),
+      display_(std::move(display)),
       surface_factory_(frame_sink_id_, surface_manager_, this),
-      handles_frame_sink_id_invalidation_(handles_frame_sink_id_invalidation),
       weak_factory_(this) {
-  if (handles_frame_sink_id_invalidation_)
-    surface_manager_->RegisterFrameSinkId(frame_sink_id_);
-
+  surface_manager_->RegisterFrameSinkId(frame_sink_id_);
   surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
-  surface_factory_.set_needs_sync_points(needs_sync_points);
 
-  if (display_)
+  if (display_) {
     display_->Initialize(this, surface_manager_);
+    display_->SetVisible(true);
+  }
 }
 
 CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
-  // Unregister |this| as a BeginFrameObserver so that the BeginFrameSource does
-  // not call into |this| after it's deleted.
-  SetNeedsBeginFrame(false);
-
   for (auto& child_frame_sink_id : child_frame_sinks_) {
     DCHECK(child_frame_sink_id.is_valid());
     surface_manager_->UnregisterFrameSinkHierarchy(frame_sink_id_,
@@ -52,8 +46,7 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   // |surface_factory_|'s resources early on.
   surface_factory_.EvictSurface();
   surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
-  if (handles_frame_sink_id_invalidation_)
-    surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
+  surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void CompositorFrameSinkSupport::EvictFrame() {
@@ -69,14 +62,14 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame) {
   ++ack_pending_count_;
-  if (display_) {
-    display_->SetLocalSurfaceId(local_surface_id,
-                                frame.metadata.device_scale_factor);
-  }
   surface_factory_.SubmitCompositorFrame(
       local_surface_id, std::move(frame),
       base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                  weak_factory_.GetWeakPtr()));
+  if (display_) {
+    display_->SetLocalSurfaceId(local_surface_id,
+                                frame.metadata.device_scale_factor);
+  }
 }
 
 void CompositorFrameSinkSupport::Require(const LocalSurfaceId& local_surface_id,
@@ -117,10 +110,6 @@ void CompositorFrameSinkSupport::RemoveChildFrameSink(
   surface_manager_->UnregisterFrameSinkHierarchy(frame_sink_id_,
                                                  child_frame_sink_id);
   child_frame_sinks_.erase(it);
-}
-
-void CompositorFrameSinkSupport::ForceReclaimResources() {
-  surface_factory_.ClearSurface();
 }
 
 void CompositorFrameSinkSupport::DisplayOutputSurfaceLost() {}
