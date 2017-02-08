@@ -646,7 +646,7 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
     self.assertEqual(len(slave_stages), 0)
 
   def testGetSlaveFailures(self):
-    """Test GetSlaveFailures"""
+    """Test GetSlaveFailures and GetBuildFailures"""
     self._PrepareDatabase()
 
     bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
@@ -693,6 +693,14 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
                                        buildbucket_ids=['bb_id_2'])
     self.assertEqual(len(failures), 1)
     self.assertEqual(failures[0]['buildbucket_id'], 'bb_id_2')
+
+    failures = bot_db.GetBuildsFailures([build_id_1])
+    self.assertEqual(len(failures), 1)
+    self.assertEqual(failures[0]['build_id'], build_id_1)
+
+    failures = bot_db.GetBuildsFailures([build_id_1, build_id_2])
+    self.assertEqual(len(failures), 2)
+
 
 class BuildTableTest(CIDBIntegrationTest):
   """Test buildTable functionality not tested by the DataSeries tests."""

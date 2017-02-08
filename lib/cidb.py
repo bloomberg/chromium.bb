@@ -1147,6 +1147,36 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [dict(zip(columns, values)) for values in results]
 
   @minimum_schema(44)
+  def GetBuildsFailures(self, build_ids):
+    """Gets the failure entries for all listed build_ids.
+
+    Args:
+      build_ids: list of build ids of the builds to fetch failures for.
+
+    Returns:
+      A list containing, for each failure entry, a dictionary with keys
+      (id, build_stage_id, outer_failure_id, exception_type, exception_message,
+       exception_category, extra_info, timestamp, stage_name, board,
+       stage_status, build_id, master_build_id, builder_name, waterfall,
+       build_number, build_config, build_status, important, buildbucket_id).
+    """
+    if not build_ids:
+      return []
+
+    columns = ['id', 'build_stage_id', 'outer_failure_id', 'exception_type',
+               'exception_message', 'exception_category', 'extra_info',
+               'timestamp', 'stage_name', 'board', 'stage_status', 'build_id',
+               'master_build_id', 'builder_name', 'waterfall', 'build_number',
+               'build_config', 'build_status', 'important', 'buildbucket_id']
+    columns_string = ', '.join(columns)
+
+    query = ('SELECT %s FROM failureView WHERE build_id IN (%s)' %
+             (columns_string, ','.join(str(int(x)) for x in build_ids)))
+
+    results = self._Execute(query).fetchall()
+    return [dict(zip(columns, values)) for values in results]
+
+  @minimum_schema(44)
   def GetSlaveFailures(self, master_build_id, buildbucket_ids=None):
     """Gets the failure entries for slave builds to given build.
 
@@ -1163,7 +1193,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       (id, build_stage_id, outer_failure_id, exception_type, exception_message,
        exception_category, extra_info, timestamp, stage_name, board,
        stage_status, build_id, master_build_id, builder_name, waterfall,
-       build_number, build_config, build_status, important).
+       build_number, build_config, build_status, important, buildbucket_id).
     """
     columns = ['id', 'build_stage_id', 'outer_failure_id', 'exception_type',
                'exception_message', 'exception_category', 'extra_info',
