@@ -441,23 +441,24 @@ std::unique_ptr<api::tabs::MutedInfo> ExtensionTabUtil::CreateMutedInfo(
 void ExtensionTabUtil::ScrubTabForExtension(const Extension* extension,
                                             content::WebContents* contents,
                                             api::tabs::Tab* tab) {
-  DCHECK(extension);
-
-  bool api_permission = false;
-  std::string url;
-  if (contents) {
-    api_permission = extension->permissions_data()->HasAPIPermissionForTab(
-        GetTabId(contents), APIPermission::kTab);
-    url = contents->GetURL().spec();
-  } else {
-    api_permission =
-        extension->permissions_data()->HasAPIPermission(APIPermission::kTab);
-    url = *tab->url;
+  bool has_permission = false;
+  if (extension) {
+    bool api_permission = false;
+    std::string url;
+    if (contents) {
+      api_permission = extension->permissions_data()->HasAPIPermissionForTab(
+          GetTabId(contents), APIPermission::kTab);
+      url = contents->GetURL().spec();
+    } else {
+      api_permission =
+          extension->permissions_data()->HasAPIPermission(APIPermission::kTab);
+      url = *tab->url;
+    }
+    bool host_permission = extension->permissions_data()
+                               ->active_permissions()
+                               .HasExplicitAccessToOrigin(GURL(url));
+    has_permission = api_permission || host_permission;
   }
-  bool host_permission = extension->permissions_data()
-                             ->active_permissions()
-                             .HasExplicitAccessToOrigin(GURL(url));
-  bool has_permission = api_permission || host_permission;
   if (!has_permission) {
     tab->url.reset();
     tab->title.reset();

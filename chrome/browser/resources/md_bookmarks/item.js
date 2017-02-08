@@ -63,7 +63,10 @@ Polymer({
    * @private
    */
   onDblClick_: function(e) {
-    /* TODO(jiaxi): Add double click later. */
+    if (!this.item.url)
+      this.fire('selected-folder-changed', this.item.id);
+    else
+      chrome.tabs.create({url: this.item.url});
   },
 
   /**

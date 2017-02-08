@@ -357,9 +357,24 @@ var BookmarksStore = Polymer({
     if (!this.idToNodeMap_[id] || this.idToNodeMap_[id].url)
       id = this.rootNode.children[0].id;
 
-    var newFolder = this.idToNodeMap_[id];
-    this.set(newFolder.path + '.isSelectedFolder', true);
+    var folder = this.idToNodeMap_[id];
+    this.set(folder.path + '.isSelectedFolder', true);
     this.selectedId = id;
+
+    if (folder.id == this.rootNode.id)
+      return;
+
+    var parent = this.idToNodeMap_[/** @type {?string} */ (folder.parentId)];
+    while (parent) {
+      if (!parent.isOpen) {
+        this.fire('folder-open-changed', {
+          id: parent.id,
+          open: true,
+        });
+      }
+
+      parent = this.idToNodeMap_[/** @type {?string} */ (parent.parentId)];
+    }
   },
 
   /**

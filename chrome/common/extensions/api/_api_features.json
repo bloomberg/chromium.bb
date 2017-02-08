@@ -745,11 +745,17 @@
     "dependencies": ["permission:tabCapture"],
     "contexts": ["blessed_extension"]
   },
-  "tabs": {
+  "tabs": [{
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],
     "contexts": ["blessed_extension", "extension_service_worker"]
-  },
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://bookmarks/*"
+    ]
+  }],
   "terminalPrivate": {
     "dependencies": ["permission:terminalPrivate"],
     "contexts": ["blessed_extension"]

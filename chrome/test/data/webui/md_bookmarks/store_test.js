@@ -154,6 +154,16 @@ suite('<bookmarks-store>', function() {
     assertFalse(store.idToNodeMap_['3'].isSelectedFolder);
   });
 
+  test('parent folder opens when descendant folder is selected', function() {
+    store.idToNodeMap_['0'].isOpen = false;
+    store.idToNodeMap_['1'].isOpen = false;
+    store.idToNodeMap_['3'].isOpen = false;
+    store.fire('selected-folder-changed', '3');
+    assertTrue(store.idToNodeMap_['0'].isOpen);
+    assertTrue(store.idToNodeMap_['1'].isOpen);
+    assertFalse(store.idToNodeMap_['3'].isOpen);
+  });
+
   test('deleting a node updates the tree', function() {
     removeChild(TEST_TREE, 1);
     overrideBookmarksGetSubTree([TEST_TREE]);
