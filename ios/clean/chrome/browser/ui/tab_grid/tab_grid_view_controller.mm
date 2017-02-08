@@ -16,6 +16,7 @@
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
+#import "ios/clean/chrome/browser/ui/tab_grid/mdc_floating_button+cr_tab_grid.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,6 +33,7 @@ const CGFloat kTabSize = 150;
                                     UICollectionViewDelegate,
                                     SessionCellDelegate>
 @property(nonatomic, weak) UICollectionView* grid;
+@property(nonatomic, strong) MDCFloatingButton* floatingNewTabButton;
 @end
 
 @implementation TabGridViewController
@@ -41,6 +43,7 @@ const CGFloat kTabSize = 150;
 @synthesize tabGridCommandHandler = _tabGridCommandHandler;
 @synthesize tabCommandHandler = _tabCommandHandler;
 @synthesize grid = _grid;
+@synthesize floatingNewTabButton = _floatingNewTabButton;
 
 - (void)viewDidLoad {
   // Placeholder dark grey stripe at the top of the view.
@@ -98,6 +101,11 @@ const CGFloat kTabSize = 150;
 
 - (void)viewWillAppear:(BOOL)animated {
   [self.grid reloadData];
+  self.floatingNewTabButton = [MDCFloatingButton cr_tabGridNewTabButton];
+  [self.floatingNewTabButton
+      setFrame:[MDCFloatingButton
+                   cr_frameForTabGridNewTabButtonInRect:self.view.bounds]];
+  [self.view addSubview:self.floatingNewTabButton];
 }
 
 #pragma mark - UICollectionViewDataSource methods

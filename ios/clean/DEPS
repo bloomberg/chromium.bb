@@ -3,5 +3,6 @@ include_rules = [
   "+ui/base",
   "+ios/chrome",
   "+ios/shared",
+  "+ios/third_party",
   "+ios/web",
 ]

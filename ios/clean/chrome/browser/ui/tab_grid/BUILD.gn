@@ -27,6 +27,8 @@ source_set("tab_grid") {
 
 source_set("tab_grid_ui") {
   sources = [
+    "mdc_floating_button+cr_tab_grid.h",
+    "mdc_floating_button+cr_tab_grid.mm",
     "tab_grid_tab_cell.h",
     "tab_grid_tab_cell.mm",
     "tab_grid_view_controller.h",
@@ -37,9 +39,14 @@ source_set("tab_grid_ui") {
 
   deps = [
     "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/commands",
+    "//ios/third_party/material_components_ios:material_components_ios",
+    "//ui/base",
   ]
 }
