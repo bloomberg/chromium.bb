@@ -33,8 +33,14 @@ SigninEmailConfirmationUI::SigninEmailConfirmationUI(content::WebUI* web_ui)
       "signinEmailConfirmationCreateProfileButtonTitle",
       IDS_SIGNIN_EMAIL_CONFIRMATION_CREATE_PROFILE_RADIO_BUTTON_TITLE);
   source->AddLocalizedString(
+      "signinEmailConfirmationCreateProfileButtonSubtitle",
+      IDS_SIGNIN_EMAIL_CONFIRMATION_CREATE_PROFILE_RADIO_BUTTON_SUBTITLE);
+  source->AddLocalizedString(
       "signinEmailConfirmationStartSyncButtonTitle",
       IDS_SIGNIN_EMAIL_CONFIRMATION_START_SYNC_RADIO_BUTTON_TITLE);
+  source->AddLocalizedString(
+      "signinEmailConfirmationStartSyncButtonSubtitle",
+      IDS_SIGNIN_EMAIL_CONFIRMATION_START_SYNC_RADIO_BUTTON_SUBTITLE);
   source->AddLocalizedString(
       "signinEmailConfirmationConfirmLabel",
       IDS_SIGNIN_EMAIL_CONFIRMATION_CONFIRM_BUTTON_LABEL);

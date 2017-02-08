@@ -11144,10 +11144,16 @@ I don't think this site should be blocked!
 
       <!-- Signin Email Confirmation tab modal dialog -->
       <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_CREATE_PROFILE_RADIO_BUTTON_TITLE" desc="Title of radio button to create a new profile.">
-        <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>This wasn't me.<ph name="END_BOLD">&lt;/strong&gt;</ph> Create a new profile for <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
+        This wasn't me.
       </message>
-      <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_START_SYNC_RADIO_BUTTON_TITLE" desc="Title of radio button to create a new profile.">
-        <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>This was me.<ph name="END_BOLD">&lt;/strong&gt;</ph> Add my bookmarks, history, passwords, and other settings to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
+      <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_CREATE_PROFILE_RADIO_BUTTON_SUBTITLE" desc="Subtitle of radio button to create a new profile.">
+        Create a new profile for <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
+      </message>
+      <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_START_SYNC_RADIO_BUTTON_TITLE" desc="Title of radio button to sign in to current profile.">
+        This was me.
+      </message>
+      <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_START_SYNC_RADIO_BUTTON_SUBTITLE" desc="Subtitle of radio button to sign in to current profile.">
+        Add my bookmarks, history, passwords, and other settings to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
       </message>
       <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_CLOSE_BUTTON_LABEL" desc="Label of the close button in the signin email confirmation dialog.">
         Cancel

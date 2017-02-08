@@ -2,7 +2,6 @@
 <html dir="$i18n{textdirection}" lang="$i18n{language}">
   <head>
     <meta charset="utf-8">
-    <link rel="import" href="chrome://resources/html/i18n_behavior.html">
     <link rel="import" href="chrome://resources/html/polymer.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
@@ -28,6 +27,11 @@
       }
 
       .radio-button-title-container {
+        font-weight: 500;
+        line-height: 20px;
+      }
+
+      .radio-button-subtitle-container {
         line-height: 20px;
       }
 
@@ -64,15 +68,21 @@
         <paper-radio-group selected="createNewUser">
           <paper-radio-button id="createNewUserRadioButton"
               name="createNewUser">
-             <div class="radio-button-title-container"
-                  id="createNewUserRadioButtonTitle">
+            <div class="radio-button-title-container">
               $i18n{signinEmailConfirmationCreateProfileButtonTitle}
+            </div>
+            <div class="radio-button-subtitle-container"
+                id="createNewUserRadioButtonSubtitle">
+              $i18n{signinEmailConfirmationCreateProfileButtonSubtitle}
             </div>
           </paper-radio-button>
           <paper-radio-button id="startSyncRadioButton" name="startSync">
-             <div class="radio-button-title-container"
-                 id="startSyncRadioButtonTitle">
+            <div class="radio-button-title-container">
               $i18n{signinEmailConfirmationStartSyncButtonTitle}
+            </div>
+            <div class="radio-button-subtitle-container"
+                id="startSyncRadioButtonSubtitle">
+              $i18n{signinEmailConfirmationStartSyncButtonSubtitle}
             </div>
           </paper-radio-button>
         </paper-radio-group>
