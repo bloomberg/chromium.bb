@@ -3727,7 +3727,15 @@ class SSLBlockingPageIDNTest : public SecurityInterstitialIDNTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SSLBlockingPageIDNTest, SSLBlockingPageDecodesIDN) {
+// Flaky on mac: https://crbug.com/689846
+#if defined(OS_MACOSX)
+#define MAYBE_SSLBlockingPageDecodesIDN DISABLED_SSLBlockingPageDecodesIDN
+#else
+#define MAYBE_SSLBlockingPageDecodesIDN SSLBlockingPageDecodesIDN
+#endif
+
+IN_PROC_BROWSER_TEST_F(SSLBlockingPageIDNTest,
+                       MAYBE_SSLBlockingPageDecodesIDN) {
   EXPECT_TRUE(VerifyIDNDecoded());
 }
 
