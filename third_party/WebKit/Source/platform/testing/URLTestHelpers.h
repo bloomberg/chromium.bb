@@ -34,11 +34,9 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebURLResponse.h"
 
 namespace blink {
-
-class WebURLResponse;
-
 namespace URLTestHelpers {
 
 inline blink::KURL toKURL(const std::string& url) {
@@ -46,6 +44,9 @@ inline blink::KURL toKURL(const std::string& url) {
   return blink::KURL(blink::ParsedURLString, wtfString);
 }
 
+// Avoid directly using these methods, instead please use ScopedMockedURL (or
+// define a variant of ScopedMockedURL classes if necessary) in new code.
+//
 // Helper functions for mock URLs. These functions set up the desired URL and
 // mimeType, with a 200 OK return status.
 // webTestDataPath() or platformTestDataPath() in UnitTestHelpers can be used to
@@ -66,6 +67,8 @@ void registerMockedURLLoad(
     const WebURL& fullURL,
     const WebString& filePath,
     const WebString& mimeType = WebString::fromUTF8("text/html"));
+
+// Registers with a custom response.
 void registerMockedURLLoadWithCustomResponse(const WebURL& fullURL,
                                              const WebString& filePath,
                                              WebURLResponse);

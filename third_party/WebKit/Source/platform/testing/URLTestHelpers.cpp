@@ -36,11 +36,9 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/FilePathConversion.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoadTiming.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
-#include "public/platform/WebURLResponse.h"
 
 namespace blink {
 namespace URLTestHelpers {

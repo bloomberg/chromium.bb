@@ -30,6 +30,7 @@
 
 #include "core/loader/resource/ImageResource.h"
 
+#include <memory>
 #include "core/loader/resource/MockImageResourceClient.h"
 #include "core/loader/resource/MockImageResourceObserver.h"
 #include "platform/SharedBuffer.h"
@@ -44,8 +45,8 @@
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/scheduler/test/fake_web_task_runner.h"
+#include "platform/testing/ScopedMockedURL.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
@@ -55,14 +56,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/Base64.h"
-#include <memory>
 
 namespace blink {
+
+using testing::ScopedMockedURLLoad;
 
 namespace {
 
 // An image of size 1x1.
-const unsigned char kJpegImage[] = {
+constexpr unsigned char kJpegImage[] = {
     0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
     0x01, 0x01, 0x00, 0x48, 0x00, 0x48, 0x00, 0x00, 0xff, 0xfe, 0x00, 0x13,
     0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x20, 0x77, 0x69, 0x74, 0x68,
@@ -111,7 +113,7 @@ TEST(ImageResourceTest, DimensionsDecodableFromPartialTestImage) {
 }
 
 // An image of size 50x50.
-const unsigned char kJpegImage2[] = {
+constexpr unsigned char kJpegImage2[] = {
     0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
     0x01, 0x01, 0x00, 0x48, 0x00, 0x48, 0x00, 0x00, 0xff, 0xdb, 0x00, 0x43,
     0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -141,17 +143,23 @@ const unsigned char kJpegImage2[] = {
 
 constexpr int kJpegImage2Width = 50;
 
-const char kSvgImage[] =
+constexpr char kSvgImage[] =
     "<svg width=\"200\" height=\"200\" xmlns=\"http://www.w3.org/2000/svg\" "
     "xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
     "<rect x=\"0\" y=\"0\" width=\"100px\" height=\"100px\" fill=\"red\"/>"
     "</svg>";
 
-const char kSvgImage2[] =
+constexpr char kSvgImage2[] =
     "<svg width=\"300\" height=\"300\" xmlns=\"http://www.w3.org/2000/svg\" "
     "xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
     "<rect x=\"0\" y=\"0\" width=\"200px\" height=\"200px\" fill=\"green\"/>"
     "</svg>";
+
+constexpr char kTestURL[] = "http://www.test.com/cancelTest.html";
+
+String GetTestFilePath() {
+  return testing::webTestDataPath("cancelTest.html");
+}
 
 void receiveResponse(ImageResource* imageResource,
                      const KURL& url,
@@ -197,30 +205,6 @@ class ImageResourceTestMockFetchContext : public FetchContext {
   RefPtr<scheduler::FakeWebTaskRunner> m_runner;
 };
 
-// Convenience class that registers a mocked URL load on construction, and
-// unregisters it on destruction. This allows for a test to use constructs like
-// ASSERT_TRUE() without needing to worry about unregistering the mocked URL
-// load to avoid putting other tests into inconsistent states in case the
-// assertion fails.
-// TODO(toyoshim): Generalize and move to platform/testing/URLTestHelpers.
-class ScopedRegisteredURL {
- public:
-  ScopedRegisteredURL(const KURL& url,
-                      const String& fileName = "cancelTest.html",
-                      const String& mimeType = "text/html")
-      : m_url(url) {
-    URLTestHelpers::registerMockedURLLoad(
-        m_url, testing::webTestDataPath(fileName.utf8().data()), mimeType);
-  }
-
-  ~ScopedRegisteredURL() {
-    Platform::current()->getURLLoaderMockFactory()->unregisterURL(m_url);
-  }
-
- private:
-  KURL m_url;
-};
-
 AtomicString buildContentRange(size_t rangeLength, size_t totalLength) {
   return AtomicString(String("bytes 0-" + String::number(rangeLength) + "/" +
                              String::number(totalLength)));
@@ -229,8 +213,8 @@ AtomicString buildContentRange(size_t rangeLength, size_t totalLength) {
 TEST(ImageResourceTest, MultipartImage) {
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
 
   // Emulate starting a real load, but don't expect any "real"
   // WebURLLoaderClient callbacks.
@@ -308,8 +292,8 @@ TEST(ImageResourceTest, MultipartImage) {
 }
 
 TEST(ImageResourceTest, CancelOnRemoveObserver) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
 
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
@@ -404,8 +388,8 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
 }
 
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
   ResourceRequest request = ResourceRequest(testURL);
   request.setPreviewsState(WebURLRequest::ServerLoFiOn);
   ImageResource* imageResource = ImageResource::create(request);
@@ -468,8 +452,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
 }
 
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
 
   ResourceRequest request(testURL);
   request.setPreviewsState(WebURLRequest::ServerLoFiOn);
@@ -537,8 +521,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
 }
 
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
 
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
@@ -844,8 +828,8 @@ TEST(ImageResourceTest, AddClientAfterPrune) {
 }
 
 TEST(ImageResourceTest, CancelOnDecodeError) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
 
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
@@ -872,8 +856,8 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
 }
 
 TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
 
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
@@ -902,8 +886,8 @@ TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
 }
 
 TEST(ImageResourceTest, FetchDisallowPlaceholder) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
 
   FetchRequest request(testURL, FetchInitiatorInfo());
   ImageResource* imageResource = ImageResource::fetch(
@@ -956,8 +940,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderDataURL) {
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderPostRequest) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
   ResourceRequest resourceRequest(testURL);
   resourceRequest.setHTTPMethod("POST");
   FetchRequest request(resourceRequest, FetchInitiatorInfo());
@@ -975,8 +959,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPostRequest) {
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderExistingRangeHeader) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
   ResourceRequest resourceRequest(testURL);
   resourceRequest.setHTTPHeaderField("range", "bytes=128-255");
   FetchRequest request(resourceRequest, FetchInitiatorInfo());
@@ -994,8 +978,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderExistingRangeHeader) {
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderSuccessful) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
 
   FetchRequest request(testURL, FetchInitiatorInfo());
   request.setAllowImagePlaceholder();
@@ -1042,8 +1026,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderSuccessful) {
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
 
   FetchRequest request(testURL, FetchInitiatorInfo());
   request.setAllowImagePlaceholder();
@@ -1101,8 +1085,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
 }
 
 TEST(ImageResourceTest, FetchAllowPlaceholderThenDisallowPlaceholder) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
 
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
@@ -1131,8 +1115,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderThenDisallowPlaceholder) {
 
 TEST(ImageResourceTest,
      FetchAllowPlaceholderThenDisallowPlaceholderAfterLoaded) {
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
 
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
@@ -1183,8 +1167,8 @@ TEST(ImageResourceTest,
 TEST(ImageResourceTest, PeriodicFlushTest) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
-  KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
-  ScopedRegisteredURL scopedRegisteredURL(testURL);
+  KURL testURL(ParsedURLString, kTestURL);
+  ScopedMockedURLLoad scopedMockedURLLoad(testURL, GetTestFilePath());
   ResourceRequest request = ResourceRequest(testURL);
   ImageResource* imageResource = ImageResource::create(request);
   imageResource->setStatus(ResourceStatus::Pending);

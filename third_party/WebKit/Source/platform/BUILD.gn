@@ -1620,6 +1620,8 @@ static_library("test_support") {
     "testing/PictureMatchers.h",
     "testing/PlatformTestPrinters.cpp",
     "testing/RuntimeEnabledFeaturesTestHelpers.h",
+    "testing/ScopedMockedURL.cpp",
+    "testing/ScopedMockedURL.h",
     "testing/TestPaintArtifact.cpp",
     "testing/TestPaintArtifact.h",
     "testing/TestingPlatformSupport.cpp",
