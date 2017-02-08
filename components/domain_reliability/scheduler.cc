@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -95,7 +96,7 @@ DomainReliabilityScheduler::DomainReliabilityScheduler(
 
   for (size_t i = 0; i < num_collectors; ++i) {
     collectors_.push_back(
-      new net::BackoffEntry(&backoff_policy_, time_));
+        base::MakeUnique<net::BackoffEntry>(&backoff_policy_, time_));
   }
 }
 
@@ -137,7 +138,7 @@ void DomainReliabilityScheduler::OnUploadComplete(
   VLOG(1) << "Upload to collector " << collector_index_
           << (result.is_success() ? " succeeded." : " failed.");
 
-  net::BackoffEntry* backoff = collectors_[collector_index_];
+  net::BackoffEntry* backoff = collectors_[collector_index_].get();
   collector_index_ = kInvalidCollectorIndex;
 
   backoff->InformOfRequest(result.is_success());
@@ -184,7 +185,7 @@ std::unique_ptr<base::Value> DomainReliabilityScheduler::GetWebUIData() const {
   }
 
   std::unique_ptr<base::ListValue> collectors_value(new base::ListValue());
-  for (const auto* collector : collectors_) {
+  for (const auto& collector : collectors_) {
     std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
     value->SetInteger("failures", collector->failure_count());
     value->SetInteger("next_upload",
@@ -245,7 +246,7 @@ void DomainReliabilityScheduler::GetNextUploadTimeAndCollector(
   size_t min_index = kInvalidCollectorIndex;
 
   for (size_t i = 0; i < collectors_.size(); ++i) {
-    net::BackoffEntry* backoff = collectors_[i];
+    net::BackoffEntry* backoff = collectors_[i].get();
     // If a collector is usable, use the first one in the list.
     if (!backoff->ShouldRejectRequest()) {
       min_time = now;

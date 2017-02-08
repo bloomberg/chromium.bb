@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/domain_reliability/uploader.h"
@@ -102,7 +101,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
   Params params_;
   ScheduleUploadCallback callback_;
   net::BackoffEntry::Policy backoff_policy_;
-  ScopedVector<net::BackoffEntry> collectors_;
+  std::vector<std::unique_ptr<net::BackoffEntry>> collectors_;
 
   // Whether there are beacons that have not yet been uploaded. Set when a
   // beacon arrives or an upload fails, and cleared when an upload starts.
@@ -141,6 +140,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
   base::TimeTicks last_upload_end_time_;
   size_t last_upload_collector_index_;
   bool last_upload_success_;
+
+  DISALLOW_COPY_AND_ASSIGN(DomainReliabilityScheduler);
 };
 
 }  // namespace domain_reliability
