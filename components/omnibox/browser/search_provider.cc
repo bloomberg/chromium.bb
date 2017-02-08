@@ -210,14 +210,6 @@ void SearchProvider::UpdateOldResults(
   }
 }
 
-// static
-ACMatches::iterator SearchProvider::FindTopMatch(ACMatches* matches) {
-  ACMatches::iterator it = matches->begin();
-  while ((it != matches->end()) && !it->allowed_to_be_default_match)
-    ++it;
-  return it;
-}
-
 void SearchProvider::Start(const AutocompleteInput& input,
                            bool minimal_changes) {
   TRACE_EVENT0("omnibox", "SearchProvider::Start");
@@ -517,7 +509,7 @@ void SearchProvider::UpdateMatches() {
     const bool is_extension_keyword = (keyword_url != NULL) &&
         (keyword_url->type() == TemplateURL::OMNIBOX_API_EXTENSION);
     if ((keyword_url != NULL) && !is_extension_keyword &&
-        (FindTopMatch() == matches_.end())) {
+        (AutocompleteResult::FindTopMatch(&matches_) == matches_.end())) {
       // In non-extension keyword mode, disregard the keyword verbatim suggested
       // relevance if necessary, so at least one match is allowed to be default.
       // (In extension keyword mode this is not necessary because the extension
@@ -538,7 +530,8 @@ void SearchProvider::UpdateMatches() {
       keyword_results_.verbatim_relevance = -1;
       ConvertResultsToAutocompleteMatches();
     }
-    if (!is_extension_keyword && (FindTopMatch() == matches_.end())) {
+    if (!is_extension_keyword &&
+        (AutocompleteResult::FindTopMatch(&matches_) == matches_.end())) {
       // Guarantee that SearchProvider returns a legal default match (except
       // when in extension-based keyword mode).  The omnibox always needs at
       // least one legal default match, and it relies on SearchProvider in
@@ -553,7 +546,8 @@ void SearchProvider::UpdateMatches() {
       ConvertResultsToAutocompleteMatches();
     }
     DCHECK(!IsTopMatchSearchWithURLInput());
-    DCHECK(is_extension_keyword || (FindTopMatch() != matches_.end()));
+    DCHECK(is_extension_keyword ||
+           (AutocompleteResult::FindTopMatch(&matches_) != matches_.end()));
   }
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Omnibox.SearchProviderMatches", matches_.size(), 1, 6, 7);
@@ -561,7 +555,8 @@ void SearchProvider::UpdateMatches() {
   // Record the top suggestion (if any) for future use.
   top_query_suggestion_match_contents_ = base::string16();
   top_navigation_suggestion_ = GURL();
-  ACMatches::const_iterator first_match = FindTopMatch();
+  ACMatches::const_iterator first_match =
+      AutocompleteResult::FindTopMatch(matches_);
   if ((first_match != matches_.end()) &&
       !first_match->inline_autocompletion.empty()) {
     // Identify if this match came from a query suggestion or a navsuggestion.
@@ -1007,7 +1002,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // Guarantee that if there's a legal default match anywhere in the result
   // set that it'll get returned.  The rotate() call does this by moving the
   // default match to the front of the list.
-  ACMatches::iterator default_match = FindTopMatch(&matches);
+  ACMatches::iterator default_match =
+      AutocompleteResult::FindTopMatch(&matches);
   if (default_match != matches.end())
     std::rotate(matches.begin(), default_match, default_match + 1);
 
@@ -1062,15 +1058,9 @@ void SearchProvider::RemoveExtraAnswers(ACMatches* matches) {
   }
 }
 
-ACMatches::const_iterator SearchProvider::FindTopMatch() const {
-  ACMatches::const_iterator it = matches_.begin();
-  while ((it != matches_.end()) && !it->allowed_to_be_default_match)
-    ++it;
-  return it;
-}
-
 bool SearchProvider::IsTopMatchSearchWithURLInput() const {
-  ACMatches::const_iterator first_match = FindTopMatch();
+  ACMatches::const_iterator first_match =
+      AutocompleteResult::FindTopMatch(matches_);
   return (input_.type() == metrics::OmniboxInputType::URL) &&
       (first_match != matches_.end()) &&
       (first_match->relevance > CalculateRelevanceForVerbatim()) &&

@@ -106,6 +106,10 @@ class AutocompleteResult {
   // some kind of verbatim match.
   bool TopMatchIsStandaloneVerbatimMatch() const;
 
+  // Returns the first match in |matches| which might be chosen as default.
+  static ACMatches::const_iterator FindTopMatch(const ACMatches& matches);
+  static ACMatches::iterator FindTopMatch(ACMatches* matches);
+
   const GURL& alternate_nav_url() const { return alternate_nav_url_; }
 
   // Clears the matches for this result set.

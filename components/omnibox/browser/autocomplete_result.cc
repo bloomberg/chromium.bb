@@ -134,17 +134,11 @@ void AutocompleteResult::SortAndCull(
   CompareWithDemoteByType<AutocompleteMatch> comparing_object(
       input.current_page_classification());
   std::sort(matches_.begin(), matches_.end(), comparing_object);
-  if (!matches_.empty() && !matches_.begin()->allowed_to_be_default_match) {
-    // Top match is not allowed to be the default match.  Find the most
-    // relevant legal match and shift it to the front.
-    for (AutocompleteResult::iterator it = matches_.begin() + 1;
-         it != matches_.end(); ++it) {
-      if (it->allowed_to_be_default_match) {
-        std::rotate(matches_.begin(), it, it + 1);
-        break;
-      }
-    }
-  }
+  // Top match is not allowed to be the default match.  Find the most
+  // relevant legal match and shift it to the front.
+  ACMatches::iterator it = FindTopMatch(&matches_);
+  if (it != matches_.end())
+    std::rotate(matches_.begin(), it, it + 1);
   // In the process of trimming, drop all matches with a demoted relevance
   // score of 0.
   size_t num_matches;
@@ -257,6 +251,23 @@ bool AutocompleteResult::TopMatchIsStandaloneVerbatimMatch() const {
       return !i->IsVerbatimType();
   }
   return true;
+}
+
+// static
+ACMatches::const_iterator AutocompleteResult::FindTopMatch(
+    const ACMatches& matches) {
+  ACMatches::const_iterator it = matches.begin();
+  while ((it != matches.end()) && !it->allowed_to_be_default_match)
+    ++it;
+  return it;
+}
+
+// static
+ACMatches::iterator AutocompleteResult::FindTopMatch(ACMatches* matches) {
+  ACMatches::iterator it = matches->begin();
+  while ((it != matches->end()) && !it->allowed_to_be_default_match)
+    ++it;
+  return it;
 }
 
 void AutocompleteResult::Reset() {

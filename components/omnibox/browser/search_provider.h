@@ -155,9 +155,6 @@ class SearchProvider : public BaseSearchProvider,
   static void UpdateOldResults(bool minimal_changes,
                                SearchSuggestionParser::Results* results);
 
-  // Returns the first match in |matches| which might be chosen as default.
-  static ACMatches::iterator FindTopMatch(ACMatches* matches);
-
   // AutocompleteProvider:
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
   void Stop(bool clear_cached_results,
@@ -257,10 +254,6 @@ class SearchProvider : public BaseSearchProvider,
   // Remove answer contents from each match in |matches| other than the first
   // that appears.
   static void RemoveExtraAnswers(ACMatches* matches);
-
-  // Returns an iterator to the first match in |matches_| which might
-  // be chosen as default.
-  ACMatches::const_iterator FindTopMatch() const;
 
   // Checks if suggested relevances violate an expected constraint.
   // See UpdateMatches() for the use and explanation of this constraint
