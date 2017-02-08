@@ -58,15 +58,15 @@ void FallbackIconService::DrawFallbackIcon(
     gfx::Canvas* canvas) {
   const int kOffsetX = 0;
   const int kOffsetY = 0;
-  cc::PaintFlags paint;
-  paint.setStyle(cc::PaintFlags::kFill_Style);
-  paint.setAntiAlias(true);
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setAntiAlias(true);
 
   // Draw a filled, colored rounded square.
-  paint.setColor(style.background_color);
+  flags.setColor(style.background_color);
   int corner_radius = static_cast<int>(size * style.roundness * 0.5 + 0.5);
-  canvas->DrawRoundRect(
-      gfx::Rect(kOffsetX, kOffsetY, size, size), corner_radius, paint);
+  canvas->DrawRoundRect(gfx::Rect(kOffsetX, kOffsetY, size, size),
+                        corner_radius, flags);
 
   // Draw text.
   base::string16 icon_text = GetFallbackIconText(icon_url);

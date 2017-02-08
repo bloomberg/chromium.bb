@@ -78,14 +78,14 @@ void DrawSelectionRect(const PixelsDumpRequest& dump_request,
   if (wr.isEmpty())
     return;
   // Render a red rectangle bounding selection rect
-  cc::PaintFlags paint;
-  paint.setColor(0xFFFF0000);  // Fully opaque red
-  paint.setStyle(cc::PaintFlags::kStroke_Style);
-  paint.setAntiAlias(true);
-  paint.setStrokeWidth(1.0f);
+  cc::PaintFlags flags;
+  flags.setColor(0xFFFF0000);  // Fully opaque red
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setAntiAlias(true);
+  flags.setStrokeWidth(1.0f);
   SkIRect rect;  // Bounding rect
   rect.set(wr.x, wr.y, wr.x + wr.width, wr.y + wr.height);
-  canvas->drawIRect(rect, paint);
+  canvas->drawIRect(rect, flags);
 }
 
 void CapturePixelsForPrinting(std::unique_ptr<PixelsDumpRequest> dump_request) {
