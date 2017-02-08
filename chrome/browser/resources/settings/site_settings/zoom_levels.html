@@ -14,6 +14,10 @@
         display: block;
       }
 
+      .zoom-label {
+        -webkit-margin-end: 16px;
+      }
+
       .empty-message {
         margin-top: 15px;
       }
@@ -28,7 +32,7 @@
           <div class="middle">
             <div>[[item.displayName]]</div>
           </div>
-          <div>[[item.zoom]]</div>
+          <div class="zoom-label">[[item.zoom]]</div>
           <div>
             <paper-icon-button icon="cr:clear"
                 on-tap="removeZoomLevel_">

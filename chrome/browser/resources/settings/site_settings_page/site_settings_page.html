@@ -10,7 +10,11 @@
 
 <dom-module id="settings-site-settings-page">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      .settings-box iron-icon + .middle {
+        -webkit-padding-start: 20px;
+      }
+    </style>
     <template is="dom-if" if="[[enableSiteSettings_]]">
       <div class="settings-box first" category$="[[ALL_SITES]]"
           data-route="SITE_SETTINGS_ALL" on-tap="onTapNavigate_" actionable>
