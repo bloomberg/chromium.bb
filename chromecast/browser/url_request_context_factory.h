@@ -5,9 +5,13 @@
 #ifndef CHROMECAST_BROWSER_URL_REQUEST_CONTEXT_FACTORY_H_
 #define CHROMECAST_BROWSER_URL_REQUEST_CONTEXT_FACTORY_H_
 
+#include <memory>
+
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/http/http_network_session.h"
+
+class PrefProxyConfigTracker;
 
 namespace net {
 class CookieStore;
@@ -123,6 +127,8 @@ class URLRequestContextFactory {
 
   bool media_dependencies_initialized_;
   std::unique_ptr<net::HttpTransactionFactory> media_transaction_factory_;
+
+  std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_impl_;
 
   // Determines if QUIC is enabled for a URLContextGetter when it is created.
   // QUIC can be disabled at runtime by calling DisableQuic() above.

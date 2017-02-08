@@ -18,11 +18,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_config_service_fixed.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace chromecast {
 
@@ -58,7 +57,8 @@ const char kMetricNameNetworkConnectivityCheckingErrorType[] =
 }  // namespace
 
 ConnectivityCheckerImpl::ConnectivityCheckerImpl(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    net::URLRequestContextGetter* url_request_context_getter)
     : ConnectivityChecker(),
       task_runner_(task_runner),
       connected_(false),
@@ -66,11 +66,14 @@ ConnectivityCheckerImpl::ConnectivityCheckerImpl(
       check_errors_(0),
       network_changed_pending_(false) {
   DCHECK(task_runner_.get());
+
   task_runner->PostTask(FROM_HERE,
-                        base::Bind(&ConnectivityCheckerImpl::Initialize, this));
+                        base::Bind(&ConnectivityCheckerImpl::Initialize, this,
+                                   url_request_context_getter));
 }
 
-void ConnectivityCheckerImpl::Initialize() {
+void ConnectivityCheckerImpl::Initialize(
+    net::URLRequestContextGetter* url_request_context_getter) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringType check_url_str =
@@ -78,12 +81,7 @@ void ConnectivityCheckerImpl::Initialize() {
   connectivity_check_url_.reset(new GURL(
       check_url_str.empty() ? kDefaultConnectivityCheckUrl : check_url_str));
 
-  net::URLRequestContextBuilder builder;
-  builder.set_proxy_config_service(
-      base::MakeUnique<net::ProxyConfigServiceFixed>(
-          net::ProxyConfig::CreateDirect()));
-  builder.DisableHttpCache();
-  url_request_context_ = builder.Build();
+  url_request_context_ = url_request_context_getter->GetURLRequestContext();
 
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   task_runner_->PostTask(FROM_HERE,
@@ -94,7 +92,6 @@ ConnectivityCheckerImpl::~ConnectivityCheckerImpl() {
   DCHECK(task_runner_.get());
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   task_runner_->DeleteSoon(FROM_HERE, url_request_.release());
-  task_runner_->DeleteSoon(FROM_HERE, url_request_context_.release());
 }
 
 bool ConnectivityCheckerImpl::Connected() const {
@@ -121,7 +118,7 @@ void ConnectivityCheckerImpl::Check() {
 
 void ConnectivityCheckerImpl::CheckInternal() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(url_request_context_.get());
+  DCHECK(url_request_context_);
 
   // Don't check connectivity if network is offline, because Internet could be
   // accessible via netifs ignored.

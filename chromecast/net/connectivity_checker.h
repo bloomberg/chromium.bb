@@ -15,6 +15,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace chromecast {
 
 // Checks if internet connectivity is available.
@@ -35,7 +39,8 @@ class ConnectivityChecker
   };
 
   static scoped_refptr<ConnectivityChecker> Create(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      net::URLRequestContextGetter* url_request_context_getter);
 
   ConnectivityChecker();
 

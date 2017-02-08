@@ -8,6 +8,7 @@ include_rules = [
   "+components/crash",
   "+components/network_hints/browser",
   "+components/prefs",
+  "+components/proxy_config",
   "+content/public/android",
   "+content/public/browser",
   "+content/public/common",

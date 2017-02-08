@@ -52,6 +52,7 @@
 #include "chromecast/public/cast_sys_info.h"
 #include "chromecast/service/cast_service.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -428,6 +429,7 @@ int CastBrowserMainParts::PreCreateThreads() {
 void CastBrowserMainParts::PreMainMessageLoopRun() {
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
   metrics::RegisterPrefs(pref_registry.get());
+  PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
   cast_browser_process_->SetPrefService(
       PrefServiceHelper::CreatePrefService(pref_registry.get()));
 
@@ -437,7 +439,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
       content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO)));
+          content::BrowserThread::IO),
+      url_request_context_factory_->GetSystemGetter()));
 
   cast_browser_process_->SetNetLog(net_log_.get());
 

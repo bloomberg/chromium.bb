@@ -12,8 +12,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/worker_pool.h"
 #include "chromecast/base/chromecast_switches.h"
+#include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_http_user_agent_settings.h"
 #include "chromecast/browser/cast_network_delegate.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -169,6 +171,7 @@ URLRequestContextFactory::URLRequestContextFactory()
       enable_quic_(true) {}
 
 URLRequestContextFactory::~URLRequestContextFactory() {
+  pref_proxy_config_tracker_impl_->DetachFromPrefService();
 }
 
 void URLRequestContextFactory::InitializeOnUIThread(net::NetLog* net_log) {
@@ -180,12 +183,17 @@ void URLRequestContextFactory::InitializeOnUIThread(net::NetLog* net_log) {
 
   // Proxy config service should be initialized in UI thread, since
   // ProxyConfigServiceDelegate on Android expects UI thread.
-  proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::FILE));
+  pref_proxy_config_tracker_impl_ =
+      base::WrapUnique<PrefProxyConfigTrackerImpl>(
+          new PrefProxyConfigTrackerImpl(
+              CastBrowserProcess::GetInstance()->pref_service(),
+              content::BrowserThread::GetTaskRunnerForThread(
+                  content::BrowserThread::IO)));
 
+  proxy_config_service_ =
+      pref_proxy_config_tracker_impl_->CreateTrackingProxyConfigService(
+          nullptr);
+  DCHECK(proxy_config_service_.get());
   net_log_ = net_log;
 }
 

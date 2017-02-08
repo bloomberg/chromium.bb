@@ -101,6 +101,7 @@ source_set("browser") {
     "//components/metrics:ui",
     "//components/network_hints/browser",
     "//components/prefs",
+    "//components/proxy_config",
     "//content",
     "//content/public/browser",
     "//content/public/common",
