@@ -10,6 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_client.h"
 #include "components/favicon/core/favicon_service.h"
@@ -17,6 +18,7 @@
 #include "components/reading_list/ios/reading_list_model.h"
 #include "components/reading_list/ios/reading_list_model_impl.h"
 #include "components/reading_list/ios/reading_list_model_storage.h"
+#include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -168,4 +170,61 @@ TEST_F(ReadingListCollectionViewControllerTest, OpensItems) {
       didSelectItemAtIndexPath:indexPath];
 
   EXPECT_OCMOCK_VERIFY(mock_delegate_);
+}
+
+// Tests that the ReadingListCollectionView is creating
+// ReadingListCollectionViewItem with the correct informations.
+TEST_F(ReadingListCollectionViewControllerTest,
+       TestItemInitializationUndistilled) {
+  // Setup.
+  GURL url("https://chromium.org");
+  std::string title("Chromium");
+  reading_list_model_->AddEntry(url, title,
+                                reading_list::ADDED_VIA_CURRENT_APP);
+  // Load view.
+  [reading_list_view_controller_ view];
+  DCHECK([reading_list_view_controller_.get().collectionView
+             numberOfItemsInSection:0] == 1);
+  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0 inSection:0];
+  ReadingListCollectionViewItem* readingListItem =
+      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(
+          [[reading_list_view_controller_ collectionViewModel]
+              itemAtIndexPath:indexPath]);
+  EXPECT_EQ(base::SysNSStringToUTF8([readingListItem text]), title);
+  EXPECT_EQ([readingListItem url], url);
+  EXPECT_EQ(base::SysNSStringToUTF16([readingListItem detailText]),
+            url_formatter::FormatUrl(url));
+  EXPECT_EQ([readingListItem faviconPageURL], url);
+  EXPECT_EQ([readingListItem distillationState], ReadingListEntry::WAITING);
+}
+
+// Tests that the ReadingListCollectionView is creating
+// ReadingListCollectionViewItem with the correct informations for distilled
+// items.
+TEST_F(ReadingListCollectionViewControllerTest,
+       TestItemInitializationDistilled) {
+  // Setup.
+  GURL url("https://chromium.org");
+  std::string title("Chromium");
+  GURL distilled_url("https://chromium.org/distilled");
+  base::FilePath distilled_path("/distilled/path");
+  reading_list_model_->AddEntry(url, title,
+                                reading_list::ADDED_VIA_CURRENT_APP);
+  reading_list_model_->SetEntryDistilledInfo(url, distilled_path,
+                                             distilled_url);
+  // Load view.
+  [reading_list_view_controller_ view];
+  DCHECK([reading_list_view_controller_.get().collectionView
+             numberOfItemsInSection:0] == 1);
+  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0 inSection:0];
+  ReadingListCollectionViewItem* readingListItem =
+      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(
+          [[reading_list_view_controller_ collectionViewModel]
+              itemAtIndexPath:indexPath]);
+  EXPECT_EQ(base::SysNSStringToUTF8([readingListItem text]), title);
+  EXPECT_EQ([readingListItem url], url);
+  EXPECT_EQ(base::SysNSStringToUTF16([readingListItem detailText]),
+            url_formatter::FormatUrl(url));
+  EXPECT_EQ([readingListItem faviconPageURL], distilled_url);
+  EXPECT_EQ([readingListItem distillationState], ReadingListEntry::PROCESSED);
 }

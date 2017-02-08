@@ -105,6 +105,7 @@ source_set("unit_tests") {
     "//components/favicon/core",
     "//components/prefs",
     "//components/reading_list/ios",
+    "//components/url_formatter",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/reading_list",
