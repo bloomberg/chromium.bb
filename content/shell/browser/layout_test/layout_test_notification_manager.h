@@ -25,11 +25,6 @@ class LayoutTestNotificationManager : public MockPlatformNotificationService {
   LayoutTestNotificationManager();
   ~LayoutTestNotificationManager() override;
 
-  // MockPlatformNotificationService overrides.
-  bool GetDisplayedNotifications(
-      BrowserContext* browser_context,
-      std::set<std::string>* displayed_notifications) override;
-
  private:
   blink::mojom::PermissionStatus CheckPermission(const GURL& origin) override;
   DISALLOW_COPY_AND_ASSIGN(LayoutTestNotificationManager);
