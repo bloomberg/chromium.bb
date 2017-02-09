@@ -12,24 +12,12 @@
 #include <stdlib.h>
 #include "av1/common/av1_fwd_txfm1d.h"
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
-#define range_check(stage, input, buf, size, bit)                         \
-  {                                                                       \
-    int i, j;                                                             \
-    for (i = 0; i < size; ++i) {                                          \
-      int buf_bit = get_max_bit(abs(buf[i])) + 1;                         \
-      if (buf_bit > bit) {                                                \
-        printf("======== %s %d overflow ========\n", __FILE__, __LINE__); \
-        printf("stage: %d node: %d\n", stage, i);                         \
-        printf("bit: %d buf_bit: %d buf[i]: %d\n", bit, buf_bit, buf[i]); \
-        printf("input:\n");                                               \
-        for (j = 0; j < size; j++) {                                      \
-          printf("%d,", input[j]);                                        \
-        }                                                                 \
-        printf("\n");                                                     \
-        assert(0);                                                        \
-      }                                                                   \
-    }                                                                     \
-  }
+
+void range_check_func(int32_t stage, const int32_t *input, const int32_t *buf,
+                      int32_t size, int8_t bit);
+
+#define range_check(stage, input, buf, size, bit) \
+  range_check_func(stage, input, buf, size, bit)
 #else
 #define range_check(stage, input, buf, size, bit) \
   {                                               \
