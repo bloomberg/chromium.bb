@@ -5,10 +5,13 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface CollectionViewModel (Testing)
 // Adds an item with the given type to the section with the given identifier.
@@ -22,8 +25,7 @@
 
 - (void)addItemWithType:(NSInteger)itemType
     toSectionWithIdentifier:(NSInteger)sectionIdentifier {
-  base::scoped_nsobject<CollectionViewItem> item(
-      [[CollectionViewItem alloc] initWithType:itemType]);
+  CollectionViewItem* item = [[CollectionViewItem alloc] initWithType:itemType];
   [self addItem:item toSectionWithIdentifier:sectionIdentifier];
 }
 
@@ -52,8 +54,7 @@ void LogSink(const std::string& str) {
 }
 
 TEST(CollectionViewModelTest, EmptyModel) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   // Check there are no items.
   EXPECT_EQ(NO, [model hasItemAtIndexPath:[NSIndexPath indexPathForItem:0
@@ -64,8 +65,7 @@ TEST(CollectionViewModelTest, EmptyModel) {
 }
 
 TEST(CollectionViewModelTest, SingleSection) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheeseCheddar
@@ -107,8 +107,7 @@ TEST(CollectionViewModelTest, SingleSection) {
 }
 
 TEST(CollectionViewModelTest, SingleSectionWithMissingItems) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheeseCheddar
@@ -127,8 +126,7 @@ TEST(CollectionViewModelTest, SingleSectionWithMissingItems) {
 }
 
 TEST(CollectionViewModelTest, MultipleSections) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   // "Cheddar" and "Gouda" are intentionally omitted.
@@ -165,8 +163,7 @@ TEST(CollectionViewModelTest, MultipleSections) {
 }
 
 TEST(CollectionViewModelTest, GetIndexPathFromModelCoordinates) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheesePepperJack
@@ -193,8 +190,7 @@ TEST(CollectionViewModelTest, GetIndexPathFromModelCoordinates) {
 }
 
 TEST(CollectionViewItemTest, RepeatedItems) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheesePepperJack
@@ -227,8 +223,7 @@ TEST(CollectionViewItemTest, RepeatedItems) {
 }
 
 TEST(CollectionViewModelTest, RepeatedItemIndex) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheesePepperJack
@@ -263,12 +258,11 @@ TEST(CollectionViewModelTest, RepeatedItemIndex) {
 }
 
 TEST(CollectionViewModelTest, RetrieveAddedItem) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
-  base::scoped_nsobject<CollectionViewItem> someItem(
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseGouda]);
+  CollectionViewItem* someItem =
+      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseGouda];
   [model addItem:someItem toSectionWithIdentifier:SectionIdentifierCheese];
 
   // Check that the item is the same in the model.
@@ -277,17 +271,16 @@ TEST(CollectionViewModelTest, RetrieveAddedItem) {
 }
 
 TEST(CollectionViewModelTest, RetrieveItemsInSection) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
   [model addSectionWithIdentifier:SectionIdentifierCheese];
-  base::scoped_nsobject<CollectionViewItem> cheddar(
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseCheddar]);
+  CollectionViewItem* cheddar =
+      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseCheddar];
   [model addItem:cheddar toSectionWithIdentifier:SectionIdentifierCheese];
-  base::scoped_nsobject<CollectionViewItem> pepperJack(
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheesePepperJack]);
+  CollectionViewItem* pepperJack =
+      [[CollectionViewItem alloc] initWithType:ItemTypeCheesePepperJack];
   [model addItem:pepperJack toSectionWithIdentifier:SectionIdentifierCheese];
-  base::scoped_nsobject<CollectionViewItem> gouda(
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseGouda]);
+  CollectionViewItem* gouda =
+      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseGouda];
   [model addItem:gouda toSectionWithIdentifier:SectionIdentifierCheese];
 
   NSArray* cheeseItems =
@@ -299,8 +292,7 @@ TEST(CollectionViewModelTest, RetrieveItemsInSection) {
 }
 
 TEST(CollectionViewModelTest, InvalidIndexPath) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
   [model addSectionWithIdentifier:SectionIdentifierCheese];
 
   logging::SetLogAssertHandler(&LogSink);
@@ -318,8 +310,7 @@ TEST(CollectionViewModelTest, InvalidIndexPath) {
 }
 
 TEST(CollectionViewModelTest, RemoveItems) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheesePepperJack
@@ -371,8 +362,7 @@ TEST(CollectionViewModelTest, RemoveItems) {
 }
 
 TEST(CollectionViewModelTest, RemoveSections) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   // Empty section.
   [model addSectionWithIdentifier:SectionIdentifierWeasley];
@@ -404,8 +394,7 @@ TEST(CollectionViewModelTest, RemoveSections) {
 }
 
 TEST(CollectionViewModelTest, QueryItemsFromModelCoordinates) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   EXPECT_FALSE([model hasSectionForSectionIdentifier:SectionIdentifierWeasley]);
   EXPECT_FALSE([model hasItemForItemType:ItemTypeCheeseCheddar
@@ -435,8 +424,7 @@ TEST(CollectionViewModelTest, QueryItemsFromModelCoordinates) {
 
 // Tests that inserted sections are added at the correct index.
 TEST(CollectionViewModelTest, InsertSections) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierWeasley];
   EXPECT_EQ(1, [model numberOfSections]);
@@ -456,16 +444,15 @@ TEST(CollectionViewModelTest, InsertSections) {
 
 // Tests that inserted items are added at the correct index.
 TEST(CollectionViewModelTest, InsertItemAtIndex) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheesePepperJack
       toSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheeseGouda
       toSectionWithIdentifier:SectionIdentifierCheese];
-  base::scoped_nsobject<CollectionViewItem> cheddarItem(
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseCheddar]);
+  CollectionViewItem* cheddarItem =
+      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseCheddar];
   [model insertItem:cheddarItem
       inSectionWithIdentifier:SectionIdentifierCheese
                       atIndex:1];
@@ -492,23 +479,22 @@ TEST(CollectionViewModelTest, InsertItemAtIndex) {
 }
 
 TEST(CollectionViewModelTest, IndexPathsForItems) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyGinny
       toSectionWithIdentifier:SectionIdentifierWeasley];
   // Added at index 1.
-  base::scoped_nsobject<CollectionViewItem> item1(
-      [[CollectionViewItem alloc] initWithType:ItemTypeWeasleyRon]);
+  CollectionViewItem* item1 =
+      [[CollectionViewItem alloc] initWithType:ItemTypeWeasleyRon];
   [model addItem:item1 toSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyGinny
       toSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyArthur
       toSectionWithIdentifier:SectionIdentifierWeasley];
   // Repeated item added at index 4.
-  base::scoped_nsobject<CollectionViewItem> item4(
-      [[CollectionViewItem alloc] initWithType:ItemTypeWeasleyArthur]);
+  CollectionViewItem* item4 =
+      [[CollectionViewItem alloc] initWithType:ItemTypeWeasleyArthur];
   [model addItem:item4 toSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyArthur
       toSectionWithIdentifier:SectionIdentifierWeasley];
@@ -527,12 +513,11 @@ TEST(CollectionViewModelTest, IndexPathsForItems) {
 }
 
 TEST(CollectionViewModelTest, Headers) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
-  base::scoped_nsobject<CollectionViewItem> cheeseHeader(
-      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseHeader]);
+  CollectionViewItem* cheeseHeader =
+      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseHeader];
   [model setHeader:cheeseHeader
       forSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheeseGouda
@@ -550,17 +535,16 @@ TEST(CollectionViewModelTest, Headers) {
   NSInteger weasleySection =
       [model sectionForSectionIdentifier:SectionIdentifierWeasley];
 
-  EXPECT_EQ(cheeseHeader.get(),
+  EXPECT_EQ(cheeseHeader,
             [model headerForSectionWithIdentifier:SectionIdentifierCheese]);
-  EXPECT_EQ(cheeseHeader.get(), [model headerForSection:cheeseSection]);
+  EXPECT_EQ(cheeseHeader, [model headerForSection:cheeseSection]);
 
   EXPECT_FALSE([model headerForSectionWithIdentifier:SectionIdentifierWeasley]);
   EXPECT_FALSE([model headerForSection:weasleySection]);
 }
 
 TEST(CollectionViewModelTest, Footers) {
-  base::scoped_nsobject<CollectionViewModel> model(
-      [[CollectionViewModel alloc] init]);
+  CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   [model addItemWithType:ItemTypeCheeseGouda
@@ -572,8 +556,8 @@ TEST(CollectionViewModelTest, Footers) {
       toSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyGinny
       toSectionWithIdentifier:SectionIdentifierWeasley];
-  base::scoped_nsobject<CollectionViewItem> weasleyFooter(
-      [[CollectionViewItem alloc] initWithType:ItemTypeWeasleyFooter]);
+  CollectionViewItem* weasleyFooter =
+      [[CollectionViewItem alloc] initWithType:ItemTypeWeasleyFooter];
   [model setFooter:weasleyFooter
       forSectionWithIdentifier:SectionIdentifierWeasley];
 
@@ -585,9 +569,9 @@ TEST(CollectionViewModelTest, Footers) {
   EXPECT_FALSE([model footerForSectionWithIdentifier:SectionIdentifierCheese]);
   EXPECT_FALSE([model footerForSection:cheeseSection]);
 
-  EXPECT_EQ(weasleyFooter.get(),
+  EXPECT_EQ(weasleyFooter,
             [model footerForSectionWithIdentifier:SectionIdentifierWeasley]);
-  EXPECT_EQ(weasleyFooter.get(), [model footerForSection:weasleySection]);
+  EXPECT_EQ(weasleyFooter, [model footerForSection:weasleySection]);
 }
 
 }  // namespace

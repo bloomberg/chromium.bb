@@ -37,6 +37,7 @@ source_set("test_support") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "collection_view_controller_unittest.mm",
