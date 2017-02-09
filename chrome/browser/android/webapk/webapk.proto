@@ -71,6 +71,12 @@ message WebAppManifest {
 }
 
 message Image {
+
+  enum Usage {
+    PRIMARY_ICON = 1;
+    BADGE_ICON = 2;
+  }
+
   // Image's URL.
   optional string src = 1;
 
@@ -82,5 +88,8 @@ message Image {
   // image and may not match the murmur2 hash field above.
   optional bytes image_data = 6;
 
-  reserved 2 to 4;
+  // Specifies Chrome's intended usages for the image.
+  repeated Usage usages = 8;
+
+  reserved 2, 3, 4, 7;
 }
