@@ -2057,7 +2057,11 @@ fuzzer_test("blink_png_decoder_fuzzer") {
     "//third_party/libpng",
   ]
   dict = "//testing/libfuzzer/fuzzers/dicts/png.dict"
-  seed_corpus = "//third_party/WebKit/LayoutTests/images/resources/pngfuzz"
+  seed_corpuses = [
+    "//cc/test/data",
+    "//third_party/WebKit/LayoutTests/images/png-suite/samples",
+    "//third_party/WebKit/LayoutTests/images/resources/pngfuzz",
+  ]
 }
 
 # Fuzzer for blink::JSONParser.
