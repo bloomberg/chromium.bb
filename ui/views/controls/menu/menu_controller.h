@@ -574,11 +574,6 @@ class VIEWS_EXPORT MenuController
   // If true, we're showing.
   bool showing_;
 
-  // TODO(jonross): remove after tracking down the cause of (crbug.com/683087).
-  // If true running has began and there are still delegates which have not been
-  // closed. We may not be showing.
-  bool running_;
-
   // Indicates what to exit.
   ExitType exit_type_;
 
