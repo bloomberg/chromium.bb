@@ -234,7 +234,6 @@ class CORE_EXPORT ScriptValueSerializer {
                                               ExceptionState&);
 
   static String serializeWTFString(const String&);
-  static String serializeNullValue();
 
  protected:
   class StateBase {

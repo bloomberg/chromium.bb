@@ -132,7 +132,9 @@ SerializedScriptValue::~SerializedScriptValue() {
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::nullValue() {
-  return create(ScriptValueSerializer::serializeNullValue());
+  // UChar rather than uint8_t here to get host endian behavior.
+  static const UChar kNullData[] = {0xff09, 0x3000};
+  return create(reinterpret_cast<const char*>(kNullData), sizeof(kNullData));
 }
 
 String SerializedScriptValue::toWireString() const {

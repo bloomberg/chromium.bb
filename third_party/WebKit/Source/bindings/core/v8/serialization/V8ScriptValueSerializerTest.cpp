@@ -1087,5 +1087,14 @@ TEST(V8ScriptValueSerializerTest, RoundTripCompositorProxy) {
 // unshipped and likely to not use this mechanism when it does.
 // TODO(jbroman): Update this if that turns out not to be the case.
 
+TEST(V8ScriptValueSerializerTest, DecodeHardcodedNullValue) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  EXPECT_TRUE(V8ScriptValueDeserializer(scope.getScriptState(),
+                                        SerializedScriptValue::nullValue())
+                  .deserialize()
+                  ->IsNull());
+}
+
 }  // namespace
 }  // namespace blink

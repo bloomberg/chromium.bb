@@ -808,13 +808,6 @@ String ScriptValueSerializer::serializeWTFString(const String& data) {
   return valueWriter.takeWireString();
 }
 
-// static
-String ScriptValueSerializer::serializeNullValue() {
-  SerializedScriptValueWriter valueWriter;
-  valueWriter.writeNull();
-  return valueWriter.takeWireString();
-}
-
 ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(
     v8::Local<v8::Value> value,
     StateBase* next) {
