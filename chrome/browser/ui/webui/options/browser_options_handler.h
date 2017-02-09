@@ -341,6 +341,9 @@ class BrowserOptionsHandler
   // Called to show Android apps settings.
   void ShowAndroidAppsSettings(const base::ListValue* args);
 
+  // Called to show apps based on a url for the Play Store.
+  void ShowPlayStoreApps(const base::ListValue* args);
+
   // Called to show TalkBack settings.
   void ShowAccessibilityTalkBackSettings(const base::ListValue *args);
 #endif

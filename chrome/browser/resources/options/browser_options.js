@@ -860,13 +860,9 @@ cr.define('options', function() {
             return;
 
           var isArcEnabled = !e.value.value;
-          var androidAppSettings = $('android-apps-settings');
-          if (androidAppSettings != null)
-            androidAppSettings.hidden = isArcEnabled;
-
-          var talkbackSettingsButton = $('talkback-settings-button');
-          if (talkbackSettingsButton != null)
-            talkbackSettingsButton.hidden = isArcEnabled;
+          $('android-apps-settings').hidden = isArcEnabled;
+          $('talkback-settings-button').hidden = isArcEnabled;
+          $('stylus-find-more-link').hidden = isArcEnabled;
         });
 
         $('android-apps-settings-link').addEventListener('click', function(e) {

@@ -885,6 +885,10 @@ void BrowserOptionsHandler::RegisterMessages() {
       base::Bind(&BrowserOptionsHandler::ShowAndroidAppsSettings,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "showPlayStoreApps",
+      base::Bind(&BrowserOptionsHandler::ShowPlayStoreApps,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "showAccessibilityTalkBackSettings",
       base::Bind(&BrowserOptionsHandler::ShowAccessibilityTalkBackSettings,
                  base::Unretained(this)));
@@ -2039,6 +2043,18 @@ void BrowserOptionsHandler::ShowAndroidAppsSettings(
   int flags = activated_from_keyboard ? ui::EF_NONE : ui::EF_LEFT_MOUSE_BUTTON;
 
   arc::LaunchAndroidSettingsApp(profile, flags);
+}
+
+void BrowserOptionsHandler::ShowPlayStoreApps(const base::ListValue* args) {
+  std::string apps_url;
+  args->GetString(0, &apps_url);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!arc::IsArcAllowedForProfile(profile)) {
+    VLOG(1) << "ARC is not enabled for this profile";
+    return;
+  }
+
+  arc::LaunchPlayStoreWithUrl(apps_url);
 }
 
 void BrowserOptionsHandler::ShowAccessibilityTalkBackSettings(

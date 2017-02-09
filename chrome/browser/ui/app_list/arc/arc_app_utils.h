@@ -38,6 +38,9 @@ bool LaunchApp(content::BrowserContext* context,
 bool LaunchAndroidSettingsApp(content::BrowserContext* context,
                               int event_flags);
 
+// Launch Play Store app.
+bool LaunchPlayStoreWithUrl(const std::string& url);
+
 // Launch an app with given layout and let the system decides how big and where
 // to place it.
 bool LaunchApp(content::BrowserContext* context,

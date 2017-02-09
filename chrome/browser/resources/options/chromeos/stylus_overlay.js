@@ -57,6 +57,12 @@ cr.define('options', function() {
       $('stylus-note-taking-app-select')
           .addEventListener(
               'change', this.handleNoteTakingAppSelected_.bind(this));
+
+      var stylusAppsUrl = "https://play.google.com/store/apps/collection/" +
+          "promotion_30023cb_stylus_apps";
+      $('stylus-find-more-link').onclick = function(event) {
+        chrome.send('showPlayStoreApps', [stylusAppsUrl]);
+      };
     },
 
     /** @override */
