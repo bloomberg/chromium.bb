@@ -136,6 +136,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               'copy-tex-image-and-sub-image-2d.html',
               ['win7', 'intel', 'no_passthrough'])
 
+    # Win7 / NVIDIA D3D9 failures
+    self.Flaky('conformance/canvas/canvas-test.html',
+        ['win7', 'nvidia', 'd3d9'], bug=690248)
+
     # Win / Intel HD 530 failures
     self.Fail('conformance/canvas/to-data-url-test.html',
         ['win', 'intel'], bug=680797)
@@ -577,7 +581,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/' +
         'copy-tex-image-and-sub-image-2d.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Flaky('conformance/uniforms/uniform-samplers-test.html',
+    self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 430')], bug=663071)
     self.Fail('WebglExtension_EXT_sRGB',
         ['android',
