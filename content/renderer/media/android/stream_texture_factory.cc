@@ -68,10 +68,6 @@ void StreamTextureProxy::OnFrameAvailable() {
     received_frame_cb_.Run();
 }
 
-void StreamTextureProxy::EstablishPeer(int player_id, int frame_id) {
-  host_->EstablishPeer(player_id, frame_id);
-}
-
 void StreamTextureProxy::SetStreamTextureSize(const gfx::Size& size) {
   host_->SetStreamTextureSize(size);
 }

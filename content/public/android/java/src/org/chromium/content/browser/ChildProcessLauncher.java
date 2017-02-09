@@ -847,25 +847,6 @@ public class ChildProcessLauncher {
     private static IChildProcessCallback createCallback(
             final int childProcessId, final int callbackType) {
         return new IChildProcessCallback.Stub() {
-            /**
-             * This is called by the remote service regularly to tell us about new values. Note that
-             * IPC calls are dispatched through a thread pool running in each process, so the code
-             * executing here will NOT be running in our main thread -- so, to update the UI, we
-             * need to use a Handler.
-             */
-            @Override
-            public void establishSurfacePeer(
-                    int pid, Surface surface, int primaryID, int secondaryID) {
-                // Do not allow a malicious renderer to connect to a producer. This is only used
-                // from stream textures managed by the GPU process.
-                if (callbackType != CALLBACK_FOR_GPU_PROCESS) {
-                    Log.e(TAG, "Illegal callback for non-GPU process.");
-                    return;
-                }
-
-                nativeEstablishSurfacePeer(pid, surface, primaryID, secondaryID);
-            }
-
             @Override
             public void forwardSurfaceForSurfaceRequest(
                     UnguessableToken requestToken, Surface surface) {
@@ -998,8 +979,6 @@ public class ChildProcessLauncher {
     }
 
     private static native void nativeOnChildProcessStarted(long clientContext, int pid);
-    private static native void nativeEstablishSurfacePeer(
-            int pid, Surface surface, int primaryID, int secondaryID);
     private static native void nativeCompleteScopedSurfaceRequest(
             UnguessableToken requestToken, Surface surface);
     private static native boolean nativeIsSingleProcess();

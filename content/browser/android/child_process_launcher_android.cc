@@ -37,60 +37,6 @@ using content::StartChildProcessCallback;
 
 namespace content {
 
-namespace {
-
-// Pass a java surface object to the MediaPlayerAndroid object
-// identified by render process handle, render frame ID and player ID.
-static void SetSurfacePeer(
-    const base::android::JavaRef<jobject>& surface,
-    base::ProcessHandle render_process_handle,
-    int render_frame_id,
-    int player_id) {
-  int render_process_id = 0;
-  RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
-  while (!it.IsAtEnd()) {
-    if (it.GetCurrentValue()->GetHandle() == render_process_handle) {
-      render_process_id = it.GetCurrentValue()->GetID();
-      break;
-    }
-    it.Advance();
-  }
-  if (!render_process_id) {
-    DVLOG(1) << "Cannot find render process for render_process_handle "
-             << render_process_handle;
-    return;
-  }
-
-  RenderFrameHostImpl* frame =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-  if (!frame) {
-    DVLOG(1) << "Cannot find frame for render_frame_id " << render_frame_id;
-    return;
-  }
-
-  BrowserMediaPlayerManager* player_manager =
-      MediaWebContentsObserverAndroid::FromWebContents(
-          WebContents::FromRenderFrameHost(frame))
-          ->GetMediaPlayerManager(frame);
-  if (!player_manager) {
-    DVLOG(1) << "Cannot find the media player manager for frame " << frame;
-    return;
-  }
-
-  media::MediaPlayerAndroid* player = player_manager->GetPlayer(player_id);
-  if (!player) {
-    DVLOG(1) << "Cannot find media player for player_id " << player_id;
-    return;
-  }
-
-  if (player != player_manager->GetFullscreenPlayer()) {
-    gl::ScopedJavaSurface scoped_surface(surface);
-    player->SetVideoSurface(std::move(scoped_surface));
-  }
-}
-
-}  // anonymous namespace
-
 // Called from ChildProcessLauncher.java when the ChildProcess was
 // started.
 // |client_context| is the pointer to StartChildProcessCallback which was
@@ -171,22 +117,6 @@ void SetChildProcessInForeground(base::ProcessHandle handle,
   DCHECK(env);
   return Java_ChildProcessLauncher_setInForeground(env,
       static_cast<jint>(handle), static_cast<jboolean>(in_foreground));
-}
-
-void EstablishSurfacePeer(JNIEnv* env,
-                          const JavaParamRef<jclass>& clazz,
-                          jint pid,
-                          const JavaParamRef<jobject>& surface,
-                          jint primary_id,
-                          jint secondary_id) {
-  ScopedJavaGlobalRef<jobject> jsurface;
-  jsurface.Reset(env, surface);
-  if (jsurface.is_null())
-    return;
-
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &SetSurfacePeer, jsurface, pid, primary_id, secondary_id));
 }
 
 void CompleteScopedSurfaceRequest(JNIEnv* env,

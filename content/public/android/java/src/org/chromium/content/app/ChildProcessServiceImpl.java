@@ -362,48 +362,6 @@ public class ChildProcessServiceImpl {
         }
     }
 
-    /**
-     * Called from native code to share a surface texture with another child process.
-     * Through using the callback object the browser is used as a proxy to route the
-     * call to the correct process.
-     *
-     * @param pid Process handle of the child process to share the SurfaceTexture with.
-     * @param surfaceObject The Surface or SurfaceTexture to share with the other child process.
-     * @param primaryID Used to route the call to the correct client instance.
-     * @param secondaryID Used to route the call to the correct client instance.
-     */
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void establishSurfaceTexturePeer(
-            int pid, Object surfaceObject, int primaryID, int secondaryID) {
-        if (mCallback == null) {
-            Log.e(TAG, "No callback interface has been provided.");
-            return;
-        }
-
-        Surface surface = null;
-        boolean needRelease = false;
-        if (surfaceObject instanceof Surface) {
-            surface = (Surface) surfaceObject;
-        } else if (surfaceObject instanceof SurfaceTexture) {
-            surface = new Surface((SurfaceTexture) surfaceObject);
-            needRelease = true;
-        } else {
-            Log.e(TAG, "Not a valid surfaceObject: %s", surfaceObject);
-            return;
-        }
-        try {
-            mCallback.establishSurfacePeer(pid, surface, primaryID, secondaryID);
-        } catch (RemoteException e) {
-            Log.e(TAG, "Unable to call establishSurfaceTexturePeer: %s", e);
-            return;
-        } finally {
-            if (needRelease) {
-                surface.release();
-            }
-        }
-    }
-
     @SuppressWarnings("unused")
     @CalledByNative
     private void forwardSurfaceTextureForSurfaceRequest(

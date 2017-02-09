@@ -48,16 +48,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   static void RegisterMediaUrlInterceptor(
       media::MediaUrlInterceptor* media_url_interceptor);
 
-  // Init the SurfaceTexturePeer.
-  static void InitSurfaceTexturePeer();
-
-  // Pass a java surface object to the MediaPlayerAndroid object
-  // identified by render process handle, render frame ID and player ID.
-  static void SetSurfacePeer(scoped_refptr<gl::SurfaceTexture> surface_texture,
-                             base::ProcessHandle render_process_handle,
-                             int render_frame_id,
-                             int player_id);
-
   // Returns a new instance using the registered factory if available.
   static BrowserMediaPlayerManager* Create(RenderFrameHost* rfh);
 

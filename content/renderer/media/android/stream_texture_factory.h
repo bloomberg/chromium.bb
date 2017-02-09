@@ -53,12 +53,6 @@ class StreamTextureProxy : public StreamTextureHost::Listener {
   // Set the streamTexture size.
   void SetStreamTextureSize(const gfx::Size& size);
 
-  // Send an IPC message to the browser process to request a java surface
-  // object for the given route_id. After the the surface is created,
-  // it will be passed back to the WebMediaPlayerAndroid object identified by
-  // the player_id.
-  void EstablishPeer(int player_id, int frame_id);
-
   // Sends an IPC to the GPU process.
   // Asks the StreamTexture to forward its SurfaceTexture to the
   // ScopedSurfaceRequestManager, using the gpu::ScopedSurfaceRequestConduit.

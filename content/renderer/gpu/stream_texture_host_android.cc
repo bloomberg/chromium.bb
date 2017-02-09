@@ -58,13 +58,6 @@ void StreamTextureHost::OnFrameAvailable() {
     listener_->OnFrameAvailable();
 }
 
-void StreamTextureHost::EstablishPeer(int player_id, int frame_id) {
-  if (channel_) {
-    channel_->Send(
-        new GpuStreamTextureMsg_EstablishPeer(route_id_, frame_id, player_id));
-  }
-}
-
 void StreamTextureHost::SetStreamTextureSize(const gfx::Size& size) {
   if (channel_)
     channel_->Send(new GpuStreamTextureMsg_SetSize(route_id_, size));

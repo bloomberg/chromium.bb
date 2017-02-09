@@ -19,11 +19,11 @@
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/content_descriptors.h"
 #include "gpu/ipc/common/android/scoped_surface_request_conduit.h"
-#include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "ipc/ipc_descriptors.h"
 #include "jni/ChildProcessServiceImpl_jni.h"
 #include "ui/gl/android/scoped_java_surface.h"
+#include "ui/gl/android/surface_texture.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -36,8 +36,7 @@ namespace {
 
 // TODO(sievers): Use two different implementations of this depending on if
 // we're in a renderer or gpu process.
-class ChildProcessSurfaceManager : public gpu::SurfaceTexturePeer,
-                                   public gpu::ScopedSurfaceRequestConduit,
+class ChildProcessSurfaceManager : public gpu::ScopedSurfaceRequestConduit,
                                    public gpu::GpuSurfaceLookup {
  public:
   ChildProcessSurfaceManager() {}
@@ -47,18 +46,6 @@ class ChildProcessSurfaceManager : public gpu::SurfaceTexturePeer,
   // org.chromium.content.app.ChildProcessServiceImpl.
   void SetServiceImpl(const base::android::JavaRef<jobject>& service_impl) {
     service_impl_.Reset(service_impl);
-  }
-
-  // Overridden from SurfaceTexturePeer:
-  void EstablishSurfaceTexturePeer(
-      base::ProcessHandle pid,
-      scoped_refptr<gl::SurfaceTexture> surface_texture,
-      int primary_id,
-      int secondary_id) override {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    content::Java_ChildProcessServiceImpl_establishSurfaceTexturePeer(
-        env, service_impl_, pid, surface_texture->j_surface_texture(),
-        primary_id, secondary_id);
   }
 
   // Overriden from ScopedSurfaceRequestConduit:
@@ -124,8 +111,6 @@ void InternalInitChildProcessImpl(JNIEnv* env,
 
   g_child_process_surface_manager.Get().SetServiceImpl(service_impl);
 
-  gpu::SurfaceTexturePeer::InitInstance(
-      g_child_process_surface_manager.Pointer());
   gpu::GpuSurfaceLookup::InitInstance(
       g_child_process_surface_manager.Pointer());
   gpu::ScopedSurfaceRequestConduit::SetInstance(

@@ -95,9 +95,6 @@ void ContentTestSuite::Initialize() {
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new TestInitializationListener);
-#if defined(OS_ANDROID)
-  content::BrowserMediaPlayerManager::InitSurfaceTexturePeer();
-#endif
 }
 
 }  // namespace content

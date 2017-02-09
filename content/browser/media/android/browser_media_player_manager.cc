@@ -26,7 +26,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_url_interceptor.h"
 #include "media/base/media_content_type.h"
@@ -41,57 +40,6 @@ using media::MediaPlayerBridge;
 using media::MediaPlayerManager;
 
 namespace content {
-
-namespace {
-
-class BrowserSurfaceTexturePeer : public gpu::SurfaceTexturePeer {
- public:
-  static BrowserSurfaceTexturePeer* GetInstance();
-
- private:
-  friend struct base::DefaultSingletonTraits<BrowserSurfaceTexturePeer>;
-
-  BrowserSurfaceTexturePeer();
-  ~BrowserSurfaceTexturePeer() override;
-
-  void EstablishSurfaceTexturePeer(
-      base::ProcessHandle render_process_handle,
-      scoped_refptr<gl::SurfaceTexture> surface_texture,
-      int render_frame_id,
-      int player_id) override;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserSurfaceTexturePeer);
-};
-
-// static
-BrowserSurfaceTexturePeer* BrowserSurfaceTexturePeer::GetInstance() {
-  return base::Singleton<
-      BrowserSurfaceTexturePeer,
-      base::LeakySingletonTraits<BrowserSurfaceTexturePeer>>::get();
-}
-
-BrowserSurfaceTexturePeer::BrowserSurfaceTexturePeer() {
-  gpu::SurfaceTexturePeer::InitInstance(this);
-}
-
-BrowserSurfaceTexturePeer::~BrowserSurfaceTexturePeer() {
-  gpu::SurfaceTexturePeer::InitInstance(nullptr);
-}
-
-void BrowserSurfaceTexturePeer::EstablishSurfaceTexturePeer(
-    base::ProcessHandle render_process_handle,
-    scoped_refptr<gl::SurfaceTexture> surface_texture,
-    int render_frame_id,
-    int player_id) {
-  if (!surface_texture.get())
-    return;
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowserMediaPlayerManager::SetSurfacePeer, surface_texture,
-                 render_process_handle, render_frame_id, player_id));
-}
-
-}  // namespace
 
 // Threshold on the number of media players per renderer before we start
 // attempting to release inactive media players.
@@ -115,61 +63,6 @@ void BrowserMediaPlayerManager::RegisterFactory(Factory factory) {
 void BrowserMediaPlayerManager::RegisterMediaUrlInterceptor(
     media::MediaUrlInterceptor* media_url_interceptor) {
   media_url_interceptor_ = media_url_interceptor;
-}
-
-// static
-void BrowserMediaPlayerManager::InitSurfaceTexturePeer() {
-  BrowserSurfaceTexturePeer::GetInstance();
-}
-
-// static
-void BrowserMediaPlayerManager::SetSurfacePeer(
-    scoped_refptr<gl::SurfaceTexture> surface_texture,
-    base::ProcessHandle render_process_handle,
-    int render_frame_id,
-    int player_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  int render_process_id = 0;
-  RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
-  while (!it.IsAtEnd()) {
-    if (it.GetCurrentValue()->GetHandle() == render_process_handle) {
-      render_process_id = it.GetCurrentValue()->GetID();
-      break;
-    }
-    it.Advance();
-  }
-  if (!render_process_id) {
-    DVLOG(1) << "Cannot find render process for render_process_handle "
-             << render_process_handle;
-    return;
-  }
-
-  RenderFrameHostImpl* frame =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-  if (!frame) {
-    DVLOG(1) << "Cannot find frame for render_frame_id " << render_frame_id;
-    return;
-  }
-
-  BrowserMediaPlayerManager* player_manager =
-      MediaWebContentsObserverAndroid::FromWebContents(
-          WebContents::FromRenderFrameHost(frame))
-          ->GetMediaPlayerManager(frame);
-  if (!player_manager) {
-    DVLOG(1) << "Cannot find the media player manager for frame " << frame;
-    return;
-  }
-
-  media::MediaPlayerAndroid* player = player_manager->GetPlayer(player_id);
-  if (!player) {
-    DVLOG(1) << "Cannot find media player for player_id " << player_id;
-    return;
-  }
-
-  if (player != player_manager->GetFullscreenPlayer()) {
-    gl::ScopedJavaSurface scoped_surface(surface_texture.get());
-    player->SetVideoSurface(std::move(scoped_surface));
-  }
 }
 
 // static

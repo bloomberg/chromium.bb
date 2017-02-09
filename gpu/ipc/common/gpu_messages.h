@@ -37,9 +37,7 @@
 #include "ui/gfx/swap_result.h"
 #include "url/ipc/url_param_traits.h"
 
-#if defined(OS_ANDROID)
-#include "gpu/ipc/common/android/surface_texture_peer.h"
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/mac/io_surface.h"
 #endif
@@ -124,13 +122,6 @@ IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_GetDriverBugWorkArounds,
 
 #if defined(OS_ANDROID)
 //------------------------------------------------------------------------------
-// Stream Texture Messages
-// Tells the GPU process create and send the java surface texture object to
-// the renderer process through the binder thread.
-IPC_MESSAGE_ROUTED2(GpuStreamTextureMsg_EstablishPeer,
-                    int32_t, /* primary_id */
-                    int32_t /* secondary_id */)
-
 // Tells the StreamTexture to send its SurfaceTexture to the browser process,
 // via the ScopedSurfaceRequestConduit.
 IPC_MESSAGE_ROUTED1(GpuStreamTextureMsg_ForwardForSurfaceRequest,

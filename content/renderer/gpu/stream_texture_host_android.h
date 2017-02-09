@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 
@@ -49,7 +48,6 @@ class StreamTextureHost : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelError() override;
 
-  void EstablishPeer(int player_id, int frame_id);
   void SetStreamTextureSize(const gfx::Size& size);
   void ForwardStreamTextureForSurfaceRequest(
       const base::UnguessableToken& request_token);

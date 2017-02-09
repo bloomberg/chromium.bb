@@ -786,7 +786,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
       gpu::ScopedSurfaceRequestConduit::SetInstance(
           ScopedSurfaceRequestManager::GetInstance());
     }
-    BrowserMediaPlayerManager::InitSurfaceTexturePeer();
   }
 
   if (!parsed_command_line_.HasSwitch(
