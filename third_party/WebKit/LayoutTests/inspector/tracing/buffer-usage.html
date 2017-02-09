@@ -6,29 +6,29 @@
 
 function test()
 {
-    TestTimelineLifecycleDelegate = function()
+    TestTimelineControllerClient = function()
     {
         this._hadLoadingProgress = false;
     }
 
-    TestTimelineLifecycleDelegate.prototype = {
+    TestTimelineControllerClient.prototype = {
         recordingStarted: function()
         {
-            InspectorTest.addResult("TimelineLifecycleDelegate.recordingStarted");
+            InspectorTest.addResult("TimelineControllerClient.recordingStarted");
         },
 
         recordingProgress: function()
         {
             if (!controller)
                 return;
-            InspectorTest.addResult("TimelineLifecycleDelegate.recordingProgress");
+            InspectorTest.addResult("TimelineControllerClient.recordingProgress");
             controller.stopRecording();
             controller = null;
         },
 
         loadingStarted: function()
         {
-            InspectorTest.addResult("TimelineLifecycleDelegate.loadingStarted");
+            InspectorTest.addResult("TimelineControllerClient.loadingStarted");
         },
 
         loadingProgress: function()
@@ -36,17 +36,17 @@ function test()
             if (this._hadLoadingProgress)
                 return;
             this._hadLoadingProgress = true;
-            InspectorTest.addResult("TimelineLifecycleDelegate.loadingProgress");
+            InspectorTest.addResult("TimelineControllerClient.loadingProgress");
         },
 
         loadingComplete: function()
         {
-            InspectorTest.addResult("TimelineLifecycleDelegate.loadingComplete");
+            InspectorTest.addResult("TimelineControllerClient.loadingComplete");
             InspectorTest.completeTest();
         }
     };
     var performanceModel = new Timeline.PerformanceModel();
-    var controller = new Timeline.TimelineController(SDK.targetManager.mainTarget(), performanceModel, new TestTimelineLifecycleDelegate());
+    var controller = new Timeline.TimelineController(SDK.targetManager.mainTarget(), performanceModel, new TestTimelineControllerClient());
     controller.startRecording({}, []);
 }
 

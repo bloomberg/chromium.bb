@@ -6,24 +6,24 @@
 
 function test()
 {
-    InspectorTest.TestTimelineLifecycleDelegate = function() {}
+    InspectorTest.TestTimelineLoaderClient = function() {}
 
-    InspectorTest.TestTimelineLifecycleDelegate.prototype = {
+    InspectorTest.TestTimelineLoaderClient.prototype = {
         loadingStarted: function()
         {
-            InspectorTest.addResult("TimelineLifecycleDelegate.loadingStarted()");
+            InspectorTest.addResult("TimelineLoaderClient.loadingStarted()");
         },
 
         loadingProgress: function()
         {
-            InspectorTest.addResult("TimelineLifecycleDelegate.loadingProgress()");
+            InspectorTest.addResult("TimelineLoaderClient.loadingProgress()");
         },
 
         loadingComplete: function(model, storage)
         {
             this.model = model;
             this.storage = storage;
-            InspectorTest.addResult(`TimelineLifecycleDelegate.loadingComplete(${!!model})`);
+            InspectorTest.addResult(`TimelineLoaderClient.loadingComplete(${!!model})`);
         },
     }
 
@@ -42,7 +42,7 @@ function test()
         }
 
         InspectorTest.override(Timeline.TimelineLoader, "_createFileReader", createFileReader);
-        var delegate = new InspectorTest.TestTimelineLifecycleDelegate();
+        var delegate = new InspectorTest.TestTimelineLoaderClient();
         Timeline.TimelineLoader.loadFromFile({}, delegate);
 
         var saver = new Timeline.TracingTimelineSaver();
@@ -66,7 +66,7 @@ function test()
         }
 
         InspectorTest.override(Timeline.TimelineLoader, "_createFileReader", createFileReader);
-        var delegate = new InspectorTest.TestTimelineLifecycleDelegate();
+        var delegate = new InspectorTest.TestTimelineLoaderClient();
         Timeline.TimelineLoader.loadFromFile({}, delegate);
     }
 

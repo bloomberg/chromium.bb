@@ -2,29 +2,29 @@ Tests tracing based Timeline save/load functionality.
 
 
 Running: testNormal
-TimelineLifecycleDelegate.loadingStarted()
-TimelineLifecycleDelegate.loadingProgress()
-TimelineLifecycleDelegate.loadingComplete(true)
+TimelineLoaderClient.loadingStarted()
+TimelineLoaderClient.loadingProgress()
+TimelineLoaderClient.loadingComplete(true)
 Saved data is equal to restored data: true
 
 Running: testJSONObjectFormat
-TimelineLifecycleDelegate.loadingStarted()
-TimelineLifecycleDelegate.loadingProgress()
-TimelineLifecycleDelegate.loadingComplete(true)
+TimelineLoaderClient.loadingStarted()
+TimelineLoaderClient.loadingProgress()
+TimelineLoaderClient.loadingComplete(true)
 Saved data is equal to restored data: true
 
 Running: testJSONObjectFormatWithMetadata
-TimelineLifecycleDelegate.loadingStarted()
-TimelineLifecycleDelegate.loadingProgress()
-TimelineLifecycleDelegate.loadingComplete(true)
+TimelineLoaderClient.loadingStarted()
+TimelineLoaderClient.loadingProgress()
+TimelineLoaderClient.loadingComplete(true)
 Saved data is equal to restored data: true
 
 Running: testBroken
-TimelineLifecycleDelegate.loadingStarted()
-TimelineLifecycleDelegate.loadingComplete(true)
+TimelineLoaderClient.loadingStarted()
+TimelineLoaderClient.loadingComplete(true)
 Model is empty: true
 
 Running: testMalformedJSON
-TimelineLifecycleDelegate.loadingComplete(false)
+TimelineLoaderClient.loadingComplete(false)
 Model is empty: true
 
