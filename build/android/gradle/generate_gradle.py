@@ -7,6 +7,7 @@
 
 import argparse
 import codecs
+import glob
 import logging
 import os
 import re
@@ -30,7 +31,6 @@ from util import build_utils
 _DEFAULT_ANDROID_MANIFEST_PATH = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'AndroidManifest.xml')
 _FILE_DIR = os.path.dirname(__file__)
-_JAVA_SUBDIR = 'symlinked-java'
 _SRCJARS_SUBDIR = 'extracted-srcjars'
 _JNI_LIBS_SUBDIR = 'symlinked-libs'
 _ARMEABI_SUBDIR = 'armeabi'
@@ -204,13 +204,12 @@ class _ProjectContextGenerator(object):
     return jni_libs
 
   def _GenJavaDirs(self, entry):
-    java_dirs = _CreateJavaSourceDir(
-        constants.GetOutDirectory(), self.EntryOutputDir(entry),
-        entry.JavaFiles())
+    java_dirs, excludes = _CreateJavaSourceDir(
+        constants.GetOutDirectory(), entry.JavaFiles())
     if self.Srcjars(entry):
       java_dirs.append(
           os.path.join(self.EntryOutputDir(entry), _SRCJARS_SUBDIR))
-    return java_dirs
+    return java_dirs, excludes
 
   def _Relativize(self, entry, paths):
     return _RebasePath(paths, self.EntryOutputDir(entry))
@@ -238,7 +237,9 @@ class _ProjectContextGenerator(object):
         'android_manifest', _DEFAULT_ANDROID_MANIFEST_PATH)
     variables['android_manifest'] = self._Relativize(
         entry, android_test_manifest)
-    variables['java_dirs'] = self._Relativize(entry, self._GenJavaDirs(entry))
+    java_dirs, excludes = self._GenJavaDirs(entry)
+    variables['java_dirs'] = self._Relativize(entry, java_dirs)
+    variables['java_excludes'] = excludes
     variables['jni_libs'] = self._Relativize(entry, self._GenJniLibs(entry))
     deps = [_ProjectEntry.FromBuildConfigPath(p)
             for p in entry.Gradle()['dependent_android_projects']]
@@ -254,8 +255,8 @@ class _ProjectContextGenerator(object):
 
 
 def _ComputeJavaSourceDirs(java_files):
-  """Returns the list of source directories for the given files."""
-  found_roots = set()
+  """Returns a dictionary of source dirs with each given files in one."""
+  found_roots = {}
   for path in java_files:
     path_root = path
     # Recognize these tokens as top-level.
@@ -268,8 +269,68 @@ def _ComputeJavaSourceDirs(java_files):
       if basename in ('javax', 'org', 'com'):
         path_root = os.path.dirname(path_root)
         break
-    found_roots.add(path_root)
-  return list(found_roots)
+    if path_root not in found_roots:
+      found_roots[path_root] = []
+    found_roots[path_root].append(path)
+  return found_roots
+
+
+def _ComputeExcludeFilters(wanted_files, unwanted_files, parent_dir):
+  """Returns exclude patters to exclude unwanted files but keep wanted files.
+
+  - Shortens exclude list by globbing if possible.
+  - Exclude patterns are relative paths from the parent directory.
+  """
+  excludes = []
+  files_to_include = set(wanted_files)
+  files_to_exclude = set(unwanted_files)
+  while files_to_exclude:
+    unwanted_file = files_to_exclude.pop()
+    target_exclude = os.path.join(
+        os.path.dirname(unwanted_file), '*.java')
+    found_files = set(glob.glob(target_exclude))
+    valid_files = found_files & files_to_include
+    if valid_files:
+      excludes.append(os.path.relpath(unwanted_file, parent_dir))
+    else:
+      excludes.append(os.path.relpath(target_exclude, parent_dir))
+      files_to_exclude -= found_files
+  return excludes
+
+
+def _CreateJavaSourceDir(output_dir, java_files):
+  """Computes the list of java source directories and exclude patterns.
+
+  1. Computes the root java source directories from the list of files.
+  2. Compute exclude patterns that exclude all extra files only.
+  3. Returns the list of java source directories and exclude patterns.
+  """
+  java_dirs = []
+  excludes = []
+  if java_files:
+    java_files = _RebasePath(java_files)
+    computed_dirs = _ComputeJavaSourceDirs(java_files)
+    java_dirs = computed_dirs.keys()
+    all_found_java_files = set()
+
+    for directory, files in computed_dirs.iteritems():
+      found_java_files = build_utils.FindInDirectory(directory, '*.java')
+      all_found_java_files.update(found_java_files)
+      unwanted_java_files = set(found_java_files) - set(files)
+      if unwanted_java_files:
+        logging.debug('Directory requires excludes: %s', directory)
+        excludes.extend(
+            _ComputeExcludeFilters(files, unwanted_java_files, directory))
+
+    missing_java_files = set(java_files) - all_found_java_files
+    # Warn only about non-generated files that are missing.
+    missing_java_files = [p for p in missing_java_files
+                          if not p.startswith(output_dir)]
+    if missing_java_files:
+      logging.warning(
+          'Some java files were not found: %s', missing_java_files)
+
+  return java_dirs, excludes
 
 
 def _CreateRelativeSymlink(target_path, link_path):
@@ -277,60 +338,6 @@ def _CreateRelativeSymlink(target_path, link_path):
   relpath = os.path.relpath(target_path, link_dir)
   logging.debug('Creating symlink %s -> %s', link_path, relpath)
   os.symlink(relpath, link_path)
-
-
-def _CreateSymlinkTree(entry_output_dir, symlink_dir, desired_files,
-                       parent_dirs):
-  """Creates a directory tree of symlinks to the given files.
-
-  The idea here is to replicate a directory tree while leaving out files within
-  it not listed by |desired_files|.
-  """
-  assert _IsSubpathOf(symlink_dir, entry_output_dir)
-
-  for target_path in desired_files:
-    prefix = next(d for d in parent_dirs if target_path.startswith(d))
-    subpath = os.path.relpath(target_path, prefix)
-    symlinked_path = os.path.join(symlink_dir, subpath)
-    symlinked_dir = os.path.dirname(symlinked_path)
-    if not os.path.exists(symlinked_dir):
-      os.makedirs(symlinked_dir)
-    _CreateRelativeSymlink(target_path, symlinked_path)
-
-
-def _CreateJavaSourceDir(output_dir, entry_output_dir, java_files):
-  """Computes and constructs when necessary the list of java source directories.
-
-  1. Computes the root java source directories from the list of files.
-  2. Determines whether there are any .java files in them that are not included
-     in |java_files|.
-  3. If not, returns the list of java source directories. If so, constructs a
-     tree of symlinks within |entry_output_dir| of all files in |java_files|.
-  """
-  java_dirs = []
-  if java_files:
-    java_files = _RebasePath(java_files)
-    java_dirs = _ComputeJavaSourceDirs(java_files)
-
-    found_java_files = build_utils.FindInDirectories(java_dirs, '*.java')
-    unwanted_java_files = set(found_java_files) - set(java_files)
-    missing_java_files = set(java_files) - set(found_java_files)
-    # Warn only about non-generated files that are missing.
-    missing_java_files = [p for p in missing_java_files
-                          if not p.startswith(output_dir)]
-
-    symlink_dir = os.path.join(entry_output_dir, _JAVA_SUBDIR)
-    shutil.rmtree(symlink_dir, True)
-
-    if unwanted_java_files:
-      logging.debug('Target requires .java symlinks: %s', entry_output_dir)
-      _CreateSymlinkTree(entry_output_dir, symlink_dir, java_files, java_dirs)
-      java_dirs = [symlink_dir]
-
-    if missing_java_files:
-      logging.warning('Some java files were not found: %s', missing_java_files)
-
-  return java_dirs
 
 
 def _CreateJniLibsDir(output_dir, entry_output_dir, so_files):

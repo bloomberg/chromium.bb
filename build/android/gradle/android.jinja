@@ -10,6 +10,11 @@
                 "{{ path }}",
 {% endfor %}
             ]
+            java.filter.exclude(
+{% for path in variables.java_excludes %}
+                "{{ path }}",
+{% endfor %}
+            )
             jniLibs.srcDirs = [
 {% for path in variables.jni_libs %}
                 "{{ path }}",
