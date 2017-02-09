@@ -137,6 +137,14 @@ namespace content {
 
 namespace {
 
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
+#if defined __LP64__
+#define kV8SnapshotDataDescriptor kV8SnapshotDataDescriptor64
+#else
+#define kV8SnapshotDataDescriptor kV8SnapshotDataDescriptor32
+#endif
+#endif
+
 // This sets up two singletons responsible for managing field trials. The
 // |field_trial_list| singleton lives on the stack and must outlive the Run()
 // method of the process.
@@ -170,6 +178,55 @@ void InitializeFieldTrialAndFeatureList(
   base::FeatureList::SetInstance(std::move(feature_list));
 }
 
+void InitializeV8IfNeeded(
+    const base::CommandLine& command_line,
+    const std::string& process_type) {
+  if (process_type == switches::kGpuProcess)
+    return;
+
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
+#if !defined(OS_ANDROID)
+    // kV8NativesDataDescriptor and kV8SnapshotDataDescriptor could be shared
+    // with child processes via file descriptors. On Android they are set in
+    // ChildProcessService::InternalInitChildProcess, otherwise set them here.
+    if (command_line.HasSwitch(switches::kV8NativesPassedByFD)) {
+      g_fds->Set(
+          kV8NativesDataDescriptor,
+          kV8NativesDataDescriptor + base::GlobalDescriptors::kBaseDescriptor);
+    }
+    if (command_line.HasSwitch(switches::kV8SnapshotPassedByFD)) {
+      g_fds->Set(
+          kV8SnapshotDataDescriptor,
+          kV8SnapshotDataDescriptor + base::GlobalDescriptors::kBaseDescriptor);
+    }
+#endif  // !OS_ANDROID
+    int v8_natives_fd = g_fds->MaybeGet(kV8NativesDataDescriptor);
+    int v8_snapshot_fd = g_fds->MaybeGet(kV8SnapshotDataDescriptor);
+    if (v8_snapshot_fd != -1) {
+      auto v8_snapshot_region = g_fds->GetRegion(kV8SnapshotDataDescriptor);
+      gin::V8Initializer::LoadV8SnapshotFromFD(
+          v8_snapshot_fd, v8_snapshot_region.offset, v8_snapshot_region.size);
+    } else {
+      gin::V8Initializer::LoadV8Snapshot();
+    }
+    if (v8_natives_fd != -1) {
+      auto v8_natives_region = g_fds->GetRegion(kV8NativesDataDescriptor);
+      gin::V8Initializer::LoadV8NativesFromFD(
+          v8_natives_fd, v8_natives_region.offset, v8_natives_region.size);
+    } else {
+      gin::V8Initializer::LoadV8Natives();
+    }
+#else
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+    gin::V8Initializer::LoadV8Snapshot();
+    gin::V8Initializer::LoadV8Natives();
+#endif  // !CHROME_MULTIPLE_DLL_BROWSER
+#endif  // OS_POSIX && !OS_MACOSX
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+}
+
 }  // namespace
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -185,14 +242,6 @@ base::LazyInstance<ContentRendererClient>
 base::LazyInstance<ContentUtilityClient>
     g_empty_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER
-
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
-#if defined __LP64__
-#define kV8SnapshotDataDescriptor kV8SnapshotDataDescriptor64
-#else
-#define kV8SnapshotDataDescriptor kV8SnapshotDataDescriptor32
-#endif
-#endif
 
 #if defined(OS_POSIX)
 
@@ -707,46 +756,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
     base::StatisticsRecorder::Initialize();
 
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-#if !defined(OS_ANDROID)
-    // kV8NativesDataDescriptor and kV8SnapshotDataDescriptor could be shared
-    // with child processes via file descriptors. On Android they are set in
-    // ChildProcessService::InternalInitChildProcess, otherwise set them here.
-    if (command_line.HasSwitch(switches::kV8NativesPassedByFD)) {
-      g_fds->Set(
-          kV8NativesDataDescriptor,
-          kV8NativesDataDescriptor + base::GlobalDescriptors::kBaseDescriptor);
-    }
-    if (command_line.HasSwitch(switches::kV8SnapshotPassedByFD)) {
-      g_fds->Set(
-          kV8SnapshotDataDescriptor,
-          kV8SnapshotDataDescriptor + base::GlobalDescriptors::kBaseDescriptor);
-    }
-#endif  // !OS_ANDROID
-    int v8_natives_fd = g_fds->MaybeGet(kV8NativesDataDescriptor);
-    int v8_snapshot_fd = g_fds->MaybeGet(kV8SnapshotDataDescriptor);
-    if (v8_snapshot_fd != -1) {
-      auto v8_snapshot_region = g_fds->GetRegion(kV8SnapshotDataDescriptor);
-      gin::V8Initializer::LoadV8SnapshotFromFD(
-          v8_snapshot_fd, v8_snapshot_region.offset, v8_snapshot_region.size);
-    } else {
-      gin::V8Initializer::LoadV8Snapshot();
-    }
-    if (v8_natives_fd != -1) {
-      auto v8_natives_region = g_fds->GetRegion(kV8NativesDataDescriptor);
-      gin::V8Initializer::LoadV8NativesFromFD(
-          v8_natives_fd, v8_natives_region.offset, v8_natives_region.size);
-    } else {
-      gin::V8Initializer::LoadV8Natives();
-    }
-#else
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-    gin::V8Initializer::LoadV8Snapshot();
-    gin::V8Initializer::LoadV8Natives();
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER
-#endif  // OS_POSIX && !OS_MACOSX
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+    InitializeV8IfNeeded(command_line, process_type);
 
 #if !defined(OFFICIAL_BUILD)
 #if defined(OS_WIN)
