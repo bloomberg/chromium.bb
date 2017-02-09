@@ -68,11 +68,7 @@ void LayoutButton(LabelButton* button,
 // DialogClientView, public:
 
 DialogClientView::DialogClientView(Widget* owner, View* contents_view)
-    : ClientView(owner, contents_view),
-      ok_button_(nullptr),
-      cancel_button_(nullptr),
-      extra_view_(nullptr),
-      delegate_allowed_close_(false) {
+    : ClientView(owner, contents_view) {
   button_row_insets_ =
       ViewsDelegate::GetInstance()
           ? ViewsDelegate::GetInstance()->GetDialogButtonInsets()
@@ -191,6 +187,8 @@ gfx::Size DialogClientView::GetPreferredSize() const {
   gfx::Size contents_size = contents_view()->GetPreferredSize();
   size.Enlarge(0, contents_size.height());
   size.set_width(std::max(size.width(), contents_size.width()));
+
+  size.SetToMax(minimum_size_);
 
   return size;
 }

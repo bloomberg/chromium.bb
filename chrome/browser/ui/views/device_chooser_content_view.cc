@@ -23,10 +23,6 @@
 
 namespace {
 
-const int kChooserWidth = 370;
-
-const int kChooserHeight = 260;
-
 const int kThrobberDiameter = 24;
 
 const int kAdapterOffHelpLinkPadding = 5;
@@ -93,10 +89,6 @@ DeviceChooserContentView::~DeviceChooserContentView() {
   chooser_controller_->set_view(nullptr);
   table_view_->set_observer(nullptr);
   table_view_->SetModel(nullptr);
-}
-
-gfx::Size DeviceChooserContentView::GetPreferredSize() const {
-  return gfx::Size(kChooserWidth, kChooserHeight);
 }
 
 void DeviceChooserContentView::Layout() {

@@ -64,6 +64,8 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
     button_row_insets_ = insets;
   }
 
+  void set_minimum_size(const gfx::Size& size) { minimum_size_ = size; }
+
  protected:
   // For testing.
   explicit DialogClientView(View* contents_view);
@@ -103,25 +105,29 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // buttons/extra view.
   int GetButtonsAndExtraViewRowTopPadding() const;
 
-  // How much to inset the button row.
-  gfx::Insets button_row_insets_;
-
   // Sets up the focus chain for the child views. This is required since the
   // delegate may choose to add/remove views at any time.
   void SetupFocusChain();
 
+  // How much to inset the button row.
+  gfx::Insets button_row_insets_;
+
+  // The minimum size of this dialog, regardless of the size of its content
+  // view.
+  gfx::Size minimum_size_;
+
   // The dialog buttons.
-  LabelButton* ok_button_;
-  LabelButton* cancel_button_;
+  LabelButton* ok_button_ = nullptr;
+  LabelButton* cancel_button_ = nullptr;
 
   // The extra view shown in the row of buttons; may be NULL.
-  View* extra_view_;
+  View* extra_view_ = nullptr;
 
   // True if we've notified the delegate the window is closing and the delegate
   // allowed the close. In some situations it's possible to get two closes (see
   // http://crbug.com/71940). This is used to avoid notifying the delegate
   // twice, which can have bad consequences.
-  bool delegate_allowed_close_;
+  bool delegate_allowed_close_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientView);
 };

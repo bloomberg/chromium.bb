@@ -35,7 +35,6 @@ class DeviceChooserContentView : public views::View,
   ~DeviceChooserContentView() override;
 
   // views::View:
-  gfx::Size GetPreferredSize() const override;
   void Layout() override;
 
   // ui::TableModel:

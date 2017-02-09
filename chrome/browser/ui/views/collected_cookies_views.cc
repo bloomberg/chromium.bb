@@ -71,14 +71,6 @@ const SkColor kCookiesBorderColor = SkColorSetRGB(0xC8, 0xC8, 0xC8);
 const int kTabbedPaneTopPadding = 14;
 const int kCookieInfoBottomPadding = 4;
 
-LayoutDelegate::Metric GetTreeviewToButtonsMetric() {
-  // Hack: in the Harmony specs, the buttons under the treeview are "unrelated"
-  // to it (which looks better), but in the existing dialog they were related.
-  return LayoutDelegate::Get()->IsHarmonyMode()
-             ? LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING
-             : LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING;
-}
-
 }  // namespace
 
 // A custom view that conditionally displays an infobar.
@@ -409,7 +401,8 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
                   GridLayout::FILL, GridLayout::FILL, kTreeViewWidth,
                   kTreeViewHeight);
   layout->AddPaddingRow(
-      0, LayoutDelegate::Get()->GetMetric(GetTreeviewToButtonsMetric()));
+      0, LayoutDelegate::Get()->GetMetric(
+             LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING));
 
   layout->StartRow(0, three_columns_layout_id);
   layout->AddView(block_allowed_button_);
@@ -485,7 +478,8 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
       CreateScrollView(blocked_cookies_tree_), 1, 1,
       GridLayout::FILL, GridLayout::FILL, kTreeViewWidth, kTreeViewHeight);
   layout->AddPaddingRow(
-      0, LayoutDelegate::Get()->GetMetric(GetTreeviewToButtonsMetric()));
+      0, LayoutDelegate::Get()->GetMetric(
+             LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING));
 
   layout->StartRow(0, three_columns_layout_id);
   layout->AddView(allow_blocked_button_);
