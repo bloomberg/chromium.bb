@@ -67,6 +67,38 @@ void DrawSquare(const gfx::Rect& bounds, double angle, SkCanvas* canvas) {
 
 }  // namespace
 
+class MusDemo::WindowTreeData {
+ public:
+  explicit WindowTreeData(
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host);
+  ~WindowTreeData();
+
+ private:
+  // Draws one frame, incrementing the rotation angle.
+  void DrawFrame();
+
+  // The Window tree host corresponding to this data.
+  std::unique_ptr<aura::WindowTreeHostMus> window_tree_host_;
+
+  // Root window of the window tree host.
+  aura::Window* root_window_ = nullptr;
+
+  // Window to which we draw the bitmap.
+  std::unique_ptr<aura::Window> bitmap_window_;
+
+  // Destroys itself when the window gets destroyed.
+  aura_extra::ImageWindowDelegate* window_delegate_ = nullptr;
+
+  // Timer for calling DrawFrame().
+  base::RepeatingTimer timer_;
+
+  // Current rotation angle for drawing.
+  double angle_ = 0.0;
+
+  // Last time a frame was drawn.
+  base::TimeTicks last_draw_frame_time_;
+};
+
 MusDemo::MusDemo() {}
 
 MusDemo::~MusDemo() {
@@ -110,9 +142,8 @@ void MusDemo::OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) {
 }
 
 void MusDemo::OnLostConnection(aura::WindowTreeClient* client) {
-  root_window_ = nullptr;
   window_tree_client_.reset();
-  timer_.Stop();
+  window_tree_data_.reset();
 }
 
 void MusDemo::OnPointerEventObserved(const PointerEvent& event,
@@ -157,8 +188,13 @@ void MusDemo::OnWmWillCreateDisplay(const display::Display& display) {
 void MusDemo::OnWmNewDisplay(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
-  DCHECK(!root_window_);  // Only support one display.
+  DCHECK(!window_tree_data_);  // Only support one display.
+  window_tree_data_ =
+      base::MakeUnique<WindowTreeData>(std::move(window_tree_host));
+}
 
+MusDemo::WindowTreeData::WindowTreeData(
+    std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
   window_tree_host->InitHost();
   window_tree_host->Show();
   root_window_ = window_tree_host->window();
@@ -178,10 +214,14 @@ void MusDemo::OnWmNewDisplay(
   // Draw initial frame and start the timer to regularly draw frames.
   DrawFrame();
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kFrameDelay),
-               base::Bind(&MusDemo::DrawFrame, base::Unretained(this)));
+               base::Bind(&WindowTreeData::DrawFrame, base::Unretained(this)));
 }
 
 void MusDemo::OnWmDisplayRemoved(aura::WindowTreeHostMus* window_tree_host) {
+  window_tree_data_.reset();
+}
+
+MusDemo::WindowTreeData::~WindowTreeData() {
   timer_.Stop();
   root_window_->RemoveChild(bitmap_window_.get());
   bitmap_window_.reset();
@@ -211,7 +251,7 @@ bool MusDemo::IsWindowActive(aura::Window* window) { return false; }
 
 void MusDemo::OnWmDeactivateWindow(aura::Window* window) {}
 
-void MusDemo::DrawFrame() {
+void MusDemo::WindowTreeData::DrawFrame() {
   base::TimeTicks now = base::TimeTicks::Now();
 
   VLOG(1) << (now - last_draw_frame_time_).InMilliseconds()

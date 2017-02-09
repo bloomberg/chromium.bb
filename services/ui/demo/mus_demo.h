@@ -28,10 +28,6 @@ class DefaultCaptureClient;
 }
 }  // namespace aura
 
-namespace aura_extra {
-class ImageWindowDelegate;
-}
-
 namespace wm {
 class WMState;
 }
@@ -98,12 +94,7 @@ class MusDemo : public service_manager::Service,
   bool IsWindowActive(aura::Window* window) override;
   void OnWmDeactivateWindow(aura::Window* window) override;
 
-  // Draws one frame, incrementing the rotation angle.
-  void DrawFrame();
-
-  aura::Window* root_window_ = nullptr;
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
-  std::unique_ptr<aura::WindowTreeHostMus> window_tree_host_;
   std::unique_ptr<aura::Env> env_;
   std::unique_ptr<display::ScreenBase> screen_;
 
@@ -111,20 +102,8 @@ class MusDemo : public service_manager::Service,
   std::unique_ptr<::wm::WMState> wm_state_;
   std::unique_ptr<aura::PropertyConverter> property_converter_;
 
-  // Window to which we draw the bitmap.
-  std::unique_ptr<aura::Window> bitmap_window_;
-
-  // Destroys itself when the window gets destroyed.
-  aura_extra::ImageWindowDelegate* window_delegate_ = nullptr;
-
-  // Timer for calling DrawFrame().
-  base::RepeatingTimer timer_;
-
-  // Current rotation angle for drawing.
-  double angle_ = 0.0;
-
-  // Last time a frame was drawn.
-  base::TimeTicks last_draw_frame_time_;
+  class WindowTreeData;
+  std::unique_ptr<WindowTreeData> window_tree_data_;
 
   DISALLOW_COPY_AND_ASSIGN(MusDemo);
 };
