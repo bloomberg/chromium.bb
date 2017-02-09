@@ -644,10 +644,12 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   FillClientEdgeRects(x, y, w, height, true, toolbar_color, canvas);
 
   // For popup windows, draw location bar sides.
+  SkColor location_bar_border_color =
+      browser_view()->toolbar()->location_bar()->GetOpaqueBorderColor(
+          incognito);
   if (!tabstrip_visible && IsToolbarVisible()) {
     FillClientEdgeRects(x, y, w, toolbar_bounds.height(), false,
-                        LocationBarView::GetOpaqueBorderColor(incognito),
-                        canvas);
+                        location_bar_border_color, canvas);
   }
 }
 

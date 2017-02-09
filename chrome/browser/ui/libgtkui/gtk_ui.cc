@@ -822,6 +822,10 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
       color_utils::BlendTowardOppositeLuma(toolbar_text_color, 50);
 
+  // Color drawn around the location bar.
+  colors_[ThemeProperties::COLOR_LOCATION_BAR_BORDER] =
+      GetBorderColor("GtkToolbar#toolbar GtkEntry#entry");
+
   inactive_selection_bg_color_ =
       GetBgColor("GtkEntry#entry:backdrop #selection:selected");
   inactive_selection_fg_color_ =

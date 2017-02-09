@@ -438,6 +438,8 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       return SkColorSetA(
           GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
           0x33);
+    case ThemeProperties::COLOR_LOCATION_BAR_BORDER:
+      return SkColorSetA(SK_ColorBLACK, 0x4D);
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR:
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE: {
       const SkColor tab_color =

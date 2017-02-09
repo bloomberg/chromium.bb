@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
@@ -102,13 +103,6 @@
 using content::WebContents;
 using views::View;
 
-namespace {
-
-// The border color, drawn on top of the toolbar.
-const SkColor kBorderColor = SkColorSetA(SK_ColorBLACK, 0x4D);
-
-}  // namespace
-
 
 // LocationBarView -----------------------------------------------------------
 
@@ -158,13 +152,6 @@ LocationBarView::~LocationBarView() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, public:
-
-// static
-SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) {
-  return color_utils::GetResultingPaintColor(
-      kBorderColor, ThemeProperties::GetDefaultColor(
-                        ThemeProperties::COLOR_TOOLBAR, incognito));
-}
 
 void LocationBarView::Init() {
   // We need to be in a Widget, otherwise GetNativeTheme() may change and we're
@@ -302,6 +289,12 @@ SkColor LocationBarView::GetColor(
   }
   NOTREACHED();
   return gfx::kPlaceholderColor;
+}
+
+SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) {
+  return color_utils::GetResultingPaintColor(
+      GetBorderColor(), ThemeProperties::GetDefaultColor(
+                            ThemeProperties::COLOR_TOOLBAR, incognito));
 }
 
 SkColor LocationBarView::GetSecureTextColor(
@@ -614,7 +607,7 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
     // This border color will be blended on top of the toolbar (which may use an
     // image in the case of themes).
     set_background(
-        new BackgroundWith1PxBorder(GetColor(BACKGROUND), kBorderColor));
+        new BackgroundWith1PxBorder(GetColor(BACKGROUND), GetBorderColor()));
   }
   SchedulePaint();
 }
@@ -667,6 +660,11 @@ int LocationBarView::IncrementalMinimumWidth(views::View* view) const {
   return view->visible() ? (GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
                             view->GetMinimumSize().width())
                          : 0;
+}
+
+SkColor LocationBarView::GetBorderColor() {
+  return GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_LOCATION_BAR_BORDER);
 }
 
 int LocationBarView::GetHorizontalEdgeThickness() const {

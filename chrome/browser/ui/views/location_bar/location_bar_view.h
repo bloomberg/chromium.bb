@@ -126,10 +126,6 @@ class LocationBarView : public LocationBar,
 
   ~LocationBarView() override;
 
-  // Returns the location bar border color blended with the toolbar color.
-  // It's guaranteed to be opaque.
-  static SkColor GetOpaqueBorderColor(bool incognito);
-
   // Initializes the LocationBarView.
   void Init();
 
@@ -140,6 +136,10 @@ class LocationBarView : public LocationBar,
   // Returns the appropriate color for the desired kind, based on the user's
   // system theme.
   SkColor GetColor(ColorKind kind) const;
+
+  // Returns the location bar border color blended with the toolbar color.
+  // It's guaranteed to be opaque.
+  SkColor GetOpaqueBorderColor(bool incognito);
 
   // Returns the color to be used for security text in the context of
   // |security_level|.
@@ -254,6 +254,9 @@ class LocationBarView : public LocationBar,
   // Helper for GetMinimumWidth().  Calculates the incremental minimum width
   // |view| should add to the trailing width after the omnibox.
   int IncrementalMinimumWidth(views::View* view) const;
+
+  // The border color, drawn on top of the toolbar.
+  SkColor GetBorderColor();
 
   // Returns the thickness of any visible edge, in pixels.
   int GetHorizontalEdgeThickness() const;
