@@ -133,7 +133,12 @@ if (pdf_enable_xfa) {
       "//third_party/pdfium/testing/libfuzzer:pdf_codec_png_fuzzer",
     ]
     dict = "dicts/pdf_codec_png.dict"
-    seed_corpus = "corpora/pdf_codec_png"
+    seed_corpuses = [
+      "corpora/pdf_codec_png",
+      "//cc/test/data",
+      "//third_party/WebKit/LayoutTests/images/png-suite/samples",
+      "//third_party/WebKit/LayoutTests/images/resources/pngfuzz",
+    ]
   }
 
   fuzzer_test("pdf_codec_tiff_fuzzer") {
