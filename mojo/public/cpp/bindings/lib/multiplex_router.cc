@@ -174,26 +174,23 @@ class MultiplexRouter::InterfaceEndpoint
 
   void OnHandleReady(MojoResult result) {
     DCHECK(task_runner_->BelongsToCurrentThread());
-    scoped_refptr<InterfaceEndpoint> self_protector(this);
     scoped_refptr<MultiplexRouter> router_protector(router_);
 
     // Because we never close |sync_message_event_{sender,receiver}_| before
     // destruction or set a deadline, |result| should always be MOJO_RESULT_OK.
     DCHECK_EQ(MOJO_RESULT_OK, result);
-    bool reset_sync_watcher = false;
-    {
-      MayAutoLock locker(router_->lock_.get());
 
-      bool more_to_process = router_->ProcessFirstSyncMessageForEndpoint(id_);
+    MayAutoLock locker(router_->lock_.get());
+    scoped_refptr<InterfaceEndpoint> self_protector(this);
 
-      if (!more_to_process)
-        ResetSyncMessageSignal();
+    bool more_to_process = router_->ProcessFirstSyncMessageForEndpoint(id_);
 
-      // Currently there are no queued sync messages and the peer has closed so
-      // there won't be incoming sync messages in the future.
-      reset_sync_watcher = !more_to_process && peer_closed_;
-    }
-    if (reset_sync_watcher) {
+    if (!more_to_process)
+      ResetSyncMessageSignal();
+
+    // Currently there are no queued sync messages and the peer has closed so
+    // there won't be incoming sync messages in the future.
+    if (!more_to_process && peer_closed_) {
       // If a SyncWatch() call (or multiple ones) of this interface endpoint is
       // on the call stack, resetting the sync watcher will allow it to exit
       // when the call stack unwinds to that frame.
