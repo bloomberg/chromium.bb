@@ -51,6 +51,8 @@ namespace {
 const char kBlinkFieldPrefix[] = "m_";
 const char kBlinkStaticMemberPrefix[] = "s_";
 const char kGeneratedFileRegex[] = "^gen/|/gen/";
+const char kGeneratedFileExclusionRegex[] =
+    "(^gen/|/gen/).*/ComputedStyleBase\\.h$";
 const char kGMockMethodNamePrefix[] = "gmock_";
 const char kMethodBlocklistParamName[] = "method-blocklist";
 
@@ -506,6 +508,41 @@ bool IsKnownTraitName(clang::StringRef name) {
 
 AST_MATCHER(clang::VarDecl, isKnownTraitName) {
   return Node.getDeclName().isIdentifier() && IsKnownTraitName(Node.getName());
+}
+
+AST_MATCHER(clang::Decl, isDeclInGeneratedFile) {
+  // This matcher mimics the built-in isExpansionInFileMatching matcher from
+  // llvm/tools/clang/include/clang/ASTMatchers/ASTMatchers.h, except:
+  // - It special cases some files (e.g. doesn't skip renaming of identifiers
+  //   from gen/blink/core/ComputedStyleBase.h)
+
+  const clang::SourceManager& source_manager =
+      Node.getASTContext().getSourceManager();
+
+  // TODO(lukasza): Consider using getSpellingLoc below.
+  // The built-in isExpansionInFileMatching matcher uses getExpansionLoc below.
+  // We could consider using getSpellingLoc (which properly handles things like
+  // SETTINGS_GETTERS_AND_SETTERS macro which is defined in generated code
+  // (gen/blink/core/SettingsMacros.h), but expanded in non-generated code
+  // (third_party/WebKit/Source/core/frame/Settings.h).
+  clang::SourceLocation loc =
+      source_manager.getExpansionLoc(Node.getLocStart());
+
+  // TODO(lukasza): jump out of scratch space if token concatenation was used.
+  if (loc.isInvalid())
+    return false;
+
+  const clang::FileEntry* file_entry =
+      source_manager.getFileEntryForID(source_manager.getFileID(loc));
+  if (!file_entry)
+    return false;
+
+  static llvm::Regex exclusion_regex(kGeneratedFileExclusionRegex);
+  if (exclusion_regex.match(file_entry->getName()))
+    return false;
+
+  static llvm::Regex generated_file_regex(kGeneratedFileRegex);
+  return generated_file_regex.match(file_entry->getName());
 }
 
 // Helper to convert from a camelCaseName to camel_case_name. It uses some
@@ -1516,7 +1553,7 @@ int main(int argc, const char* argv[]) {
   auto in_blink_namespace = decl(
       anyOf(decl_under_blink_namespace, decl_has_qualifier_to_blink_namespace,
             hasAncestor(decl_has_qualifier_to_blink_namespace)),
-      unless(hasCanonicalDecl(isExpansionInFileMatching(kGeneratedFileRegex))));
+      unless(hasCanonicalDecl(isDeclInGeneratedFile())));
 
   // Field, variable, and enum declarations ========
   // Given
