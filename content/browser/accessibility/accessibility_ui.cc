@@ -325,6 +325,10 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
   std::unique_ptr<base::DictionaryValue> result(BuildTargetDescriptor(rvh));
   auto* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvh));
+  // No matter the state of the current web_contents, we want to force the mode
+  // because we are about to show the accessibility tree
+  web_contents->SetAccessibilityMode(ACCESSIBILITY_MODE_FLAG_NATIVE_APIS |
+                                     ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS);
   std::unique_ptr<AccessibilityTreeFormatter> formatter;
   if (g_show_internal_accessibility_tree)
     formatter.reset(new AccessibilityTreeFormatterBlink());
