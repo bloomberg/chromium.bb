@@ -81,9 +81,6 @@ class CC_EXPORT TileDrawInfo {
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
-  void set_was_ever_used_to_draw() { was_ever_used_to_draw_ = true; }
-  void set_was_a_prepaint_tile() { was_a_prepaint_tile_ = true; }
-
  private:
   friend class Tile;
   friend class TileManager;
@@ -98,7 +95,6 @@ class CC_EXPORT TileDrawInfo {
 
   void set_resource_ready_for_draw() {
     is_resource_ready_to_draw_ = true;
-    was_ever_ready_to_draw_ = true;
   }
 
   Resource* TakeResource();
@@ -106,7 +102,6 @@ class CC_EXPORT TileDrawInfo {
   void set_solid_color(const SkColor& color) {
     mode_ = SOLID_COLOR_MODE;
     solid_color_ = color;
-    was_ever_ready_to_draw_ = true;
   }
 
   void set_oom() { mode_ = OOM_MODE; }
@@ -116,11 +111,6 @@ class CC_EXPORT TileDrawInfo {
   Resource* resource_ = nullptr;
   bool contents_swizzled_ = false;
   bool is_resource_ready_to_draw_ = false;
-
-  // Used for gathering UMA stats.
-  bool was_ever_ready_to_draw_ : 1;
-  bool was_ever_used_to_draw_ : 1;
-  bool was_a_prepaint_tile_ : 1;
 };
 
 }  // namespace cc

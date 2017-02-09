@@ -669,8 +669,6 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
               tile->content_rect(), tile->contents_scale(), &color);
       if (is_solid_color) {
         tile->draw_info().set_solid_color(color);
-        if (!tile_is_needed_now)
-          tile->draw_info().set_was_a_prepaint_tile();
         client_->NotifyTileStateChanged(tile);
         continue;
       }
@@ -730,13 +728,6 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
 
     memory_usage += memory_required_by_tile_to_be_scheduled;
     work_to_schedule.tiles_to_raster.push_back(prioritized_tile);
-
-    // Since we scheduled the tile, set whether it was a prepaint or not
-    // assuming that the tile will successfully finish running. We don't have
-    // priority information at the time the tile completes, so it should be done
-    // here.
-    if (!tile_is_needed_now)
-      tile->draw_info().set_was_a_prepaint_tile();
   }
 
   // Debugging to check that remaining tiles in the priority queue are not in
