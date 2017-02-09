@@ -4,7 +4,9 @@
 
 #include "platform/graphics/CompositorFilterOperations.h"
 
+#include "platform/geometry/IntRect.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -90,6 +92,17 @@ void CompositorFilterOperations::clear() {
 
 bool CompositorFilterOperations::isEmpty() const {
   return m_filterOperations.IsEmpty();
+}
+
+FloatRect CompositorFilterOperations::mapRect(
+    const FloatRect& inputRect) const {
+  gfx::Rect result =
+      m_filterOperations.MapRect(enclosingIntRect(inputRect), SkMatrix::I());
+  return FloatRect(result.x(), result.y(), result.width(), result.height());
+}
+
+bool CompositorFilterOperations::hasFilterThatMovesPixels() const {
+  return m_filterOperations.HasFilterThatMovesPixels();
 }
 
 bool CompositorFilterOperations::operator==(

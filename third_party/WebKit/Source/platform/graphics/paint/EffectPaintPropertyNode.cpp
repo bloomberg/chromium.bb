@@ -18,6 +18,14 @@ EffectPaintPropertyNode* EffectPaintPropertyNode::root() {
   return root;
 }
 
+FloatRect EffectPaintPropertyNode::mapRect(const FloatRect& inputRect) const {
+  FloatRect rect = inputRect;
+  rect.moveBy(-m_paintOffset);
+  FloatRect result = m_filter.mapRect(rect);
+  result.moveBy(m_paintOffset);
+  return result;
+}
+
 cc::Layer* EffectPaintPropertyNode::ensureDummyLayer() const {
   if (m_dummyLayer)
     return m_dummyLayer.get();
@@ -28,12 +36,14 @@ cc::Layer* EffectPaintPropertyNode::ensureDummyLayer() const {
 String EffectPaintPropertyNode::toString() const {
   return String::format(
       "parent=%p localTransformSpace=%p outputClip=%p opacity=%f filter=%s "
-      "blendMode=%s directCompositingReasons=%s compositorElementId=(%d, %d)",
+      "blendMode=%s directCompositingReasons=%s compositorElementId=(%d, %d) "
+      "paintOffset=%s",
       m_parent.get(), m_localTransformSpace.get(), m_outputClip.get(),
       m_opacity, m_filter.toString().ascii().data(),
       SkBlendMode_Name(m_blendMode),
       compositingReasonsAsString(m_directCompositingReasons).ascii().data(),
-      m_compositorElementId.primaryId, m_compositorElementId.secondaryId);
+      m_compositorElementId.primaryId, m_compositorElementId.secondaryId,
+      m_paintOffset.toString().ascii().data());
 }
 
 #if DCHECK_IS_ON()

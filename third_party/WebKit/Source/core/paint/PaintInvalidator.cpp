@@ -335,8 +335,8 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
     context.forcedSubtreeInvalidationFlags |=
         PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
 
-  // TODO(crbug.com/637313): This is temporary before we support filters in
-  // GeometryMapper.
+  // TODO(crbug.com/637313): Use GeometryMapper which now supports filter
+  // geometry effects, after skia optimizes filter's mapRect operation.
   // TODO(crbug.com/648274): This is a workaround for multi-column contents.
   if (object.hasFilterInducingProperty() || object.isLayoutFlowThread()) {
     context.forcedSubtreeInvalidationFlags |=

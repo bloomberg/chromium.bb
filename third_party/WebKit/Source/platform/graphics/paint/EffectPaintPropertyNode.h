@@ -39,11 +39,12 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       float opacity,
       SkBlendMode blendMode,
       CompositingReasons directCompositingReasons = CompositingReasonNone,
-      const CompositorElementId& compositorElementId = CompositorElementId()) {
+      const CompositorElementId& compositorElementId = CompositorElementId(),
+      const FloatPoint& paintOffset = FloatPoint()) {
     return adoptRef(new EffectPaintPropertyNode(
         std::move(parent), std::move(localTransformSpace),
         std::move(outputClip), std::move(filter), opacity, blendMode,
-        directCompositingReasons, compositorElementId));
+        directCompositingReasons, compositorElementId, paintOffset));
   }
 
   void update(
@@ -54,7 +55,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       float opacity,
       SkBlendMode blendMode,
       CompositingReasons directCompositingReasons = CompositingReasonNone,
-      CompositorElementId compositorElementId = CompositorElementId()) {
+      const CompositorElementId& compositorElementId = CompositorElementId(),
+      const FloatPoint& paintOffset = FloatPoint()) {
     DCHECK(!isRoot());
     DCHECK(parent != this);
     m_parent = parent;
@@ -65,6 +67,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     m_blendMode = blendMode;
     m_directCompositingReasons = directCompositingReasons;
     m_compositorElementId = compositorElementId;
+    m_paintOffset = paintOffset;
   }
 
   const TransformPaintPropertyNode* localTransformSpace() const {
@@ -80,6 +83,14 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   const EffectPaintPropertyNode* parent() const { return m_parent.get(); }
   bool isRoot() const { return !m_parent; }
 
+  bool hasFilterThatMovesPixels() const {
+    return m_filter.hasFilterThatMovesPixels();
+  }
+
+  // Returns a rect covering the pixels that can be affected by pixels in
+  // |inputRect|. The rects are in the space of localTransformSpace.
+  FloatRect mapRect(const FloatRect& inputRect) const;
+
   cc::Layer* ensureDummyLayer() const;
 
 #if DCHECK_IS_ON()
@@ -88,7 +99,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   PassRefPtr<EffectPaintPropertyNode> clone() const {
     return adoptRef(new EffectPaintPropertyNode(
         m_parent, m_localTransformSpace, m_outputClip, m_filter, m_opacity,
-        m_blendMode, m_directCompositingReasons, m_compositorElementId));
+        m_blendMode, m_directCompositingReasons, m_compositorElementId,
+        m_paintOffset));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
@@ -101,7 +113,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
            m_filter.equalsIgnoringReferenceFilters(o.m_filter) &&
            m_opacity == o.m_opacity && m_blendMode == o.m_blendMode &&
            m_directCompositingReasons == o.m_directCompositingReasons &&
-           m_compositorElementId == o.m_compositorElementId;
+           m_compositorElementId == o.m_compositorElementId &&
+           m_paintOffset == o.m_paintOffset;
   }
 
   String toTreeString() const;
@@ -130,7 +143,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       float opacity,
       SkBlendMode blendMode,
       CompositingReasons directCompositingReasons,
-      CompositorElementId compositorElementId)
+      CompositorElementId compositorElementId,
+      const FloatPoint& paintOffset)
       : m_parent(parent),
         m_localTransformSpace(localTransformSpace),
         m_outputClip(outputClip),
@@ -138,7 +152,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
         m_opacity(opacity),
         m_blendMode(blendMode),
         m_directCompositingReasons(directCompositingReasons),
-        m_compositorElementId(compositorElementId) {}
+        m_compositorElementId(compositorElementId),
+        m_paintOffset(paintOffset) {}
 
   RefPtr<const EffectPaintPropertyNode> m_parent;
   // The local transform space serves two purposes:
@@ -168,6 +183,11 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
 
   CompositingReasons m_directCompositingReasons;
   CompositorElementId m_compositorElementId;
+
+  // The offset of the effect's local space in m_localTransformSpace. Some
+  // effects e.g. reflection need this to apply geometry effects in the local
+  // space.
+  FloatPoint m_paintOffset;
 };
 
 // Redeclared here to avoid ODR issues.

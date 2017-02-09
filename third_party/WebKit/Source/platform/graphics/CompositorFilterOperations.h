@@ -7,6 +7,7 @@
 
 #include "cc/output/filter_operations.h"
 #include "platform/PlatformExport.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/Color.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -40,6 +41,12 @@ class PLATFORM_EXPORT CompositorFilterOperations {
 
   void clear();
   bool isEmpty() const;
+
+  // Returns a rect covering the destination pixels that can be affected by
+  // source pixels in |inputRect|.
+  FloatRect mapRect(const FloatRect& inputRect) const;
+
+  bool hasFilterThatMovesPixels() const;
 
   // For reference filters, this equality operator compares pointers of the
   // image_filter fields instead of their values.

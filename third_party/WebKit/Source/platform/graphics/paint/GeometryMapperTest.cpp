@@ -6,6 +6,8 @@
 
 #include "platform/geometry/GeometryTestHelpers.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/BoxReflection.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
@@ -697,6 +699,80 @@ TEST_F(GeometryMapperTest, LowestCommonAncestor) {
 
   EXPECT_EQ(rootPropertyTreeState().transform(),
             lowestCommonAncestor(child1.get(), child2.get()));
+}
+
+TEST_F(GeometryMapperTest, FilterWithClipsAndTransforms) {
+  RefPtr<TransformPaintPropertyNode> transformAboveEffect =
+      TransformPaintPropertyNode::create(rootPropertyTreeState().transform(),
+                                         TransformationMatrix().scale(3),
+                                         FloatPoint3D());
+  RefPtr<TransformPaintPropertyNode> transformBelowEffect =
+      TransformPaintPropertyNode::create(transformAboveEffect,
+                                         TransformationMatrix().scale(2),
+                                         FloatPoint3D());
+
+  // This clip is between transformAboveEffect and the effect.
+  RefPtr<ClipPaintPropertyNode> clipAboveEffect = ClipPaintPropertyNode::create(
+      rootPropertyTreeState().clip(), transformAboveEffect,
+      FloatRoundedRect(-100, -100, 200, 200));
+  // This clip is between the effect and transformBelowEffect.
+  RefPtr<ClipPaintPropertyNode> clipBelowEffect =
+      ClipPaintPropertyNode::create(clipAboveEffect, transformAboveEffect,
+                                    FloatRoundedRect(10, 10, 200, 200));
+
+  CompositorFilterOperations filters;
+  filters.appendBlurFilter(20);
+  RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
+      rootPropertyTreeState().effect(), transformAboveEffect, clipAboveEffect,
+      filters, 1.0, SkBlendMode::kSrcOver);
+
+  PropertyTreeState localState(transformBelowEffect.get(),
+                               clipBelowEffect.get(), effect.get());
+
+  FloatRect input(0, 0, 50, 50);
+  // 1. transformBelowEffect
+  FloatRect output = transformBelowEffect->matrix().mapRect(input);
+  // 2. clipBelowEffect
+  output.intersect(clipBelowEffect->clipRect().rect());
+  EXPECT_EQ(FloatRect(10, 10, 90, 90), output);
+  // 3. effect (the outset is 3 times of blur amount).
+  output = filters.mapRect(output);
+  EXPECT_EQ(FloatRect(-50, -50, 210, 210), output);
+  // 4. clipAboveEffect
+  output.intersect(clipAboveEffect->clipRect().rect());
+  EXPECT_EQ(FloatRect(-50, -50, 150, 150), output);
+  // 5. transformAboveEffect
+  output = transformAboveEffect->matrix().mapRect(output);
+  EXPECT_EQ(FloatRect(-150, -150, 450, 450), output);
+
+  bool hasRadius = false;
+  CHECK_MAPPINGS(
+      input, output, FloatRect(0, 0, 300, 300),
+      transformAboveEffect->matrix() * transformBelowEffect->matrix(),
+      FloatRect(30, 30, 270, 270), localState, rootPropertyTreeState(),
+      hasRadius);
+}
+
+TEST_F(GeometryMapperTest, ReflectionWithPaintOffset) {
+  CompositorFilterOperations filters;
+  filters.appendReferenceFilter(SkiaImageFilterBuilder::buildBoxReflectFilter(
+      BoxReflection(BoxReflection::HorizontalReflection, 0), nullptr));
+  RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
+      rootPropertyTreeState().effect(), rootPropertyTreeState().transform(),
+      rootPropertyTreeState().clip(), filters, 1.0, SkBlendMode::kSrcOver,
+      CompositingReasonNone, CompositorElementId(), FloatPoint(100, 100));
+
+  PropertyTreeState localState = rootPropertyTreeState();
+  localState.setEffect(effect);
+
+  FloatRect input(100, 100, 50, 50);
+  // Reflection is at (50, 100, 50, 50).
+  FloatRect output(50, 100, 100, 50);
+
+  bool hasRadius = false;
+  CHECK_MAPPINGS(input, output, input, TransformationMatrix(),
+                 ClipPaintPropertyNode::root()->clipRect().rect(), localState,
+                 rootPropertyTreeState(), hasRadius);
 }
 
 }  // namespace blink

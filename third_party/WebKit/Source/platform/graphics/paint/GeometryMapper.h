@@ -177,6 +177,12 @@ class PLATFORM_EXPORT GeometryMapper {
       const PropertyTreeState& ancestorState,
       bool& success);
 
+  FloatClipRect slowLocalToAncestorVisualRectWithEffects(
+      const FloatRect&,
+      const PropertyTreeState& localState,
+      const PropertyTreeState& ancestorState,
+      bool& success);
+
   // Returns the precomputed data if already set, or adds and memoizes a new
   // PrecomputedDataForAncestor otherwise.
   PrecomputedDataForAncestor& getPrecomputedDataForAncestor(

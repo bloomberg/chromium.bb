@@ -94,6 +94,11 @@ FloatClipRect GeometryMapper::localToAncestorVisualRectInternal(
     return rect;
   }
 
+  if (localState.effect() != ancestorState.effect()) {
+    return slowLocalToAncestorVisualRectWithEffects(rect, localState,
+                                                    ancestorState, success);
+  }
+
   const auto& transformMatrix = localToAncestorMatrixInternal(
       localState.transform(), ancestorState.transform(), success);
   if (!success)
@@ -117,6 +122,47 @@ FloatClipRect GeometryMapper::localToAncestorVisualRectInternal(
   }
 
   return clipRect;
+}
+
+FloatClipRect GeometryMapper::slowLocalToAncestorVisualRectWithEffects(
+    const FloatRect& rect,
+    const PropertyTreeState& localState,
+    const PropertyTreeState& ancestorState,
+    bool& success) {
+  PropertyTreeState lastTransformAndClipState(localState.transform(),
+                                              localState.clip(), nullptr);
+  FloatClipRect result(rect);
+
+  for (const auto* effect = localState.effect();
+       effect && effect != ancestorState.effect(); effect = effect->parent()) {
+    if (!effect->hasFilterThatMovesPixels())
+      continue;
+
+    PropertyTreeState transformAndClipState(effect->localTransformSpace(),
+                                            effect->outputClip(), nullptr);
+    bool hasRadius = result.hasRadius();
+    result = sourceToDestinationVisualRectInternal(
+        result.rect(), lastTransformAndClipState, transformAndClipState,
+        success);
+    hasRadius |= result.hasRadius();
+    if (!success) {
+      result.setHasRadius(hasRadius);
+      return result;
+    }
+
+    result = effect->mapRect(result.rect());
+    result.setHasRadius(hasRadius);
+    lastTransformAndClipState = transformAndClipState;
+  }
+
+  PropertyTreeState finalTransformAndClipState(ancestorState.transform(),
+                                               ancestorState.clip(), nullptr);
+  bool hasRadius = result.hasRadius();
+  result = sourceToDestinationVisualRectInternal(
+      result.rect(), lastTransformAndClipState, finalTransformAndClipState,
+      success);
+  result.setHasRadius(hasRadius || result.hasRadius());
+  return result;
 }
 
 FloatRect GeometryMapper::localToAncestorRect(
