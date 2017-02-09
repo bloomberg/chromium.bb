@@ -9,17 +9,13 @@
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace blink {
-struct WebColorSuggestion;
-}
-
 namespace content {
 
 // Container for information about datalist suggestion for the color input
 // control.
 struct CONTENT_EXPORT ColorSuggestion {
   ColorSuggestion() {}
-  explicit ColorSuggestion(const blink::WebColorSuggestion& suggestion);
+  ColorSuggestion(const SkColor& color, const base::string16& label);
 
   SkColor color;
   base::string16 label;

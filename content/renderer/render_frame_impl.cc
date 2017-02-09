@@ -4078,7 +4078,8 @@ blink::WebColorChooser* RenderFrameImpl::createColorChooser(
       new RendererWebColorChooserImpl(this, client);
   std::vector<ColorSuggestion> color_suggestions;
   for (size_t i = 0; i < suggestions.size(); i++) {
-    color_suggestions.push_back(ColorSuggestion(suggestions[i]));
+    color_suggestions.push_back(
+        ColorSuggestion(suggestions[i].color, suggestions[i].label.utf16()));
   }
   color_chooser->Open(static_cast<SkColor>(initial_color), color_suggestions);
   return color_chooser;

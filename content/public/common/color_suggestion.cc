@@ -4,11 +4,10 @@
 
 #include "content/public/common/color_suggestion.h"
 
-#include "third_party/WebKit/public/web/WebColorSuggestion.h"
-
 namespace content {
 
-ColorSuggestion::ColorSuggestion(const blink::WebColorSuggestion& suggestion)
-    : color(suggestion.color), label(suggestion.label.utf16()) {}
+ColorSuggestion::ColorSuggestion(const SkColor& color,
+                                 const base::string16& label)
+    : color(color), label(label) {}
 
 }  // namespace content
