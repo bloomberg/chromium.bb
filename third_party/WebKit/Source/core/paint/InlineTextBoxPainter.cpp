@@ -36,6 +36,40 @@ std::pair<unsigned, unsigned> GetMarkerPaintOffsets(
 }
 }
 
+enum class ResolvedUnderlinePosition { Roman, Under, Over };
+
+static ResolvedUnderlinePosition resolveUnderlinePosition(
+    const ComputedStyle& style,
+    const InlineTextBox* inlineTextBox) {
+  // |auto| should resolve to |under| to avoid drawing through glyphs in
+  // scripts where it would not be appropriate (e.g., ideographs.)
+  // However, this has performance implications. For now, we only work with
+  // vertical text.
+  switch (inlineTextBox->root().baselineType()) {
+    default:
+      NOTREACHED();
+    // Fall though.
+    case AlphabeticBaseline:
+      switch (style.getTextUnderlinePosition()) {
+        default:
+          NOTREACHED();
+        // Fall though.
+        case TextUnderlinePositionAuto:
+          return ResolvedUnderlinePosition::Roman;
+        case TextUnderlinePositionUnder:
+          return ResolvedUnderlinePosition::Under;
+      }
+      break;
+    case IdeographicBaseline:
+      // Compute language-appropriate default underline position.
+      // https://drafts.csswg.org/css-text-decor-3/#default-stylesheet
+      UScriptCode script = style.getFontDescription().script();
+      if (script == USCRIPT_KATAKANA_OR_HIRAGANA || script == USCRIPT_HANGUL)
+        return ResolvedUnderlinePosition::Over;
+      return ResolvedUnderlinePosition::Under;
+  }
+}
+
 static LineLayoutItem enclosingUnderlineObject(
     const InlineTextBox* inlineTextBox) {
   bool firstLine = inlineTextBox->isFirstLineStyle();
@@ -61,20 +95,30 @@ static LineLayoutItem enclosingUnderlineObject(
   }
 }
 
-static LayoutUnit computeUnderlineOffsetForUnder(
-    const ComputedStyle& style,
-    const InlineTextBox* inlineTextBox) {
+static int computeUnderlineOffsetForUnder(const ComputedStyle& style,
+                                          const InlineTextBox* inlineTextBox,
+                                          bool isOverline = false) {
   const RootInlineBox& root = inlineTextBox->root();
   LineLayoutItem decorationObject = enclosingUnderlineObject(inlineTextBox);
+  LayoutUnit offset;
   if (style.isFlippedLinesWritingMode()) {
     LayoutUnit position = inlineTextBox->logicalTop();
-    return position -
-           root.minLogicalTopForUnderline(decorationObject, position);
+    offset =
+        position - root.minLogicalTopForUnderline(decorationObject, position);
   } else {
     LayoutUnit position = inlineTextBox->logicalBottom();
-    return root.maxLogicalBottomForUnderline(decorationObject, position) -
-           position;
+    offset = root.maxLogicalBottomForUnderline(decorationObject, position) -
+             position;
   }
+  if (isOverline)
+    return std::min(-offset, LayoutUnit()).toInt();
+  return (inlineTextBox->logicalHeight() + std::max(offset, LayoutUnit()))
+      .toInt();
+}
+
+static int computeOverlineOffset(const ComputedStyle& style,
+                                 const InlineTextBox* inlineTextBox) {
+  return computeUnderlineOffsetForUnder(style, inlineTextBox, true);
 }
 
 static int computeUnderlineOffsetForRoman(const FontMetrics& fontMetrics,
@@ -98,25 +142,22 @@ static int computeUnderlineOffsetForRoman(const FontMetrics& fontMetrics,
   return fontMetrics.ascent() + gap;
 }
 
-static int computeUnderlineOffset(const ComputedStyle& style,
+static int computeUnderlineOffset(ResolvedUnderlinePosition underlinePosition,
+                                  const ComputedStyle& style,
                                   const FontMetrics& fontMetrics,
                                   const InlineTextBox* inlineTextBox,
                                   const float textDecorationThickness) {
-  // FIXME: We support only horizontal text for now.
-  switch (style.getTextUnderlinePosition()) {
+  switch (underlinePosition) {
     default:
       NOTREACHED();
     // Fall through.
-    case TextUnderlinePositionAuto:
+    case ResolvedUnderlinePosition::Roman:
       return computeUnderlineOffsetForRoman(fontMetrics,
                                             textDecorationThickness);
-    case TextUnderlinePositionUnder: {
+    case ResolvedUnderlinePosition::Under:
       // Position underline at the under edge of the lowest element's
       // content box.
-      LayoutUnit offset = computeUnderlineOffsetForUnder(style, inlineTextBox);
-      offset = inlineTextBox->logicalHeight() + std::max(offset, LayoutUnit());
-      return offset.toInt();
-    }
+      return computeUnderlineOffsetForUnder(style, inlineTextBox);
   }
 }
 
@@ -1145,12 +1186,25 @@ void InlineTextBoxPainter::paintDecorations(
   bool skipIntercepts =
       styleToUse.getTextDecorationSkip() & TextDecorationSkipInk;
 
+  // text-underline-position may flip underline and overline.
+  ResolvedUnderlinePosition underlinePosition =
+      resolveUnderlinePosition(styleToUse, &m_inlineTextBox);
+  bool flipUnderlineAndOverline = false;
+  if (underlinePosition == ResolvedUnderlinePosition::Over) {
+    flipUnderlineAndOverline = true;
+    underlinePosition = ResolvedUnderlinePosition::Under;
+  }
+
   for (const AppliedTextDecoration& decoration : decorations) {
     TextDecoration lines = decoration.lines();
+    if (flipUnderlineAndOverline) {
+      lines = static_cast<TextDecoration>(
+          lines ^ (TextDecorationUnderline | TextDecorationOverline));
+    }
     if ((lines & TextDecorationUnderline) && fontData) {
-      const int underlineOffset =
-          computeUnderlineOffset(styleToUse, fontData->getFontMetrics(),
-                                 &m_inlineTextBox, textDecorationThickness);
+      const int underlineOffset = computeUnderlineOffset(
+          underlinePosition, styleToUse, fontData->getFontMetrics(),
+          &m_inlineTextBox, textDecorationThickness);
       AppliedDecorationPainter decorationPainter(
           context, FloatPoint(localOrigin) + FloatPoint(0, underlineOffset),
           width.toFloat(), decoration, textDecorationThickness, doubleOffset, 1,
@@ -1165,9 +1219,12 @@ void InlineTextBoxPainter::paintDecorations(
       decorationPainter.paint();
     }
     if (lines & TextDecorationOverline) {
+      const int overlineOffset =
+          computeOverlineOffset(styleToUse, &m_inlineTextBox);
       AppliedDecorationPainter decorationPainter(
-          context, FloatPoint(localOrigin), width.toFloat(), decoration,
-          textDecorationThickness, -doubleOffset, 1, antialiasDecoration);
+          context, FloatPoint(localOrigin) + FloatPoint(0, overlineOffset),
+          width.toFloat(), decoration, textDecorationThickness, -doubleOffset,
+          1, antialiasDecoration);
       if (skipIntercepts) {
         textPainter.clipDecorationsStripe(
             -baseline + decorationPainter.decorationBounds().y() -
