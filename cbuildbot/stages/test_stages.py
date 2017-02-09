@@ -537,6 +537,10 @@ class CrosSigningTestStage(generic_stages.BuilderStage):
   This requires an internal source code checkouts.
   """
 
+  def __init__(self, builder_run, network, **kwargs):
+    super(CrosSigningTestStage, self).__init__(builder_run, **kwargs)
+    self.network = network
+
   def PerformStage(self):
     """Run the cros-signing unittests."""
-    commands.RunCrosSigningTests(self._build_root)
+    commands.RunCrosSigningTests(self._build_root, self.network)

@@ -437,7 +437,7 @@ def RunBranchUtilTest(buildroot, version):
     RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
-def RunCrosSigningTests(buildroot):
+def RunCrosSigningTests(buildroot, network=False):
   """Run the signer unittests.
 
   These tests don't have a matching ebuild, and don't need to be run during
@@ -445,10 +445,14 @@ def RunCrosSigningTests(buildroot):
 
   Args:
     buildroot: The buildroot of the current build.
+    network: Whether to run network based tests.
   """
   test_runner = path_util.ToChrootPath(os.path.join(
       buildroot, 'cros-signing', 'signer', 'run_tests.py'))
-  cros_build_lib.RunCommand([test_runner], enter_chroot=True)
+  cmd = [test_runner]
+  if network:
+    cmd.append('--network')
+  cros_build_lib.RunCommand(cmd, enter_chroot=True)
 
 
 def UpdateBinhostJson(buildroot):
