@@ -36,7 +36,7 @@ import unittest
 
 from webkitpy.common.host import Host
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system import output_capture, path
+from webkitpy.common.system.path import abspath_to_uri
 from webkitpy.common.system.system_host import SystemHost
 
 from webkitpy.layout_tests import run_webkit_tests
@@ -97,15 +97,10 @@ def logging_run(extra_args=None, port_obj=None, tests_included=False, host=None,
 def run_and_capture(port_obj, options, parsed_args, shared_port=True):
     if shared_port:
         port_obj.host.port_factory.get = lambda *args, **kwargs: port_obj
-    oc = output_capture.OutputCapture()
-    try:
-        oc.capture_output()
-        logging_stream = StringIO.StringIO()
-        stdout = StringIO.StringIO()
-        run_details = run_webkit_tests.run(port_obj, options, parsed_args,
-                                           logging_stream=logging_stream, stdout=stdout)
-    finally:
-        oc.restore_output()
+    logging_stream = StringIO.StringIO()
+    stdout = StringIO.StringIO()
+    run_details = run_webkit_tests.run(port_obj, options, parsed_args,
+                                       logging_stream=logging_stream, stdout=stdout)
     return (run_details, logging_stream)
 
 
@@ -135,15 +130,10 @@ def get_test_results(args, host=None, port_obj=None):
     host = host or MockHost()
     port_obj = port_obj or host.port_factory.get(port_name=options.platform, options=options)
 
-    oc = output_capture.OutputCapture()
-    oc.capture_output()
     logging_stream = StringIO.StringIO()
     stdout = StringIO.StringIO()
-    try:
-        run_details = run_webkit_tests.run(port_obj, options, parsed_args,
-                                           logging_stream=logging_stream, stdout=stdout)
-    finally:
-        oc.restore_output()
+    run_details = run_webkit_tests.run(port_obj, options, parsed_args,
+                                       logging_stream=logging_stream, stdout=stdout)
 
     all_results = []
     if run_details.initial_results:
@@ -225,7 +215,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         full_results_text = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         self.assertEqual(json.loads(full_results_text), details.summarized_full_results)
 
-        self.assertEqual(host.user.opened_urls, [path.abspath_to_uri(MockHost().platform, '/tmp/layout-test-results/results.html')])
+        self.assertEqual(host.user.opened_urls, [abspath_to_uri(MockHost().platform, '/tmp/layout-test-results/results.html')])
 
     def test_batch_size(self):
         batch_tests_run = get_test_batches(['--batch-size', '2'])

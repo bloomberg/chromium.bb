@@ -56,15 +56,12 @@ class PortTest(unittest.TestCase):
 
     def test_pretty_patch_os_error(self):
         port = self.make_port(executive=MockExecutive(exception=OSError))
-        oc = OutputCapture()
-        oc.capture_output()
         self.assertEqual(port.pretty_patch_text("patch.txt"),
                          port._pretty_patch_error_html)
 
         # This tests repeated calls to make sure we cache the result.
         self.assertEqual(port.pretty_patch_text("patch.txt"),
                          port._pretty_patch_error_html)
-        oc.restore_output()
 
     def test_pretty_patch_script_error(self):
         # FIXME: This is some ugly white-box test hacking ...
