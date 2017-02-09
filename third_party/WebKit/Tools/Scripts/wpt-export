@@ -46,7 +46,7 @@ def main():
     host = Host()
 
     if not args.gh_user:
-        args.user = host.environ.get('GH_USER')
+        args.gh_user = host.environ.get('GH_USER')
     if not args.gh_token:
         args.gh_token = host.environ.get('GH_TOKEN')
     if args.github_credentials_json:
