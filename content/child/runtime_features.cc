@@ -303,6 +303,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::enableTimerThrottlingForHiddenFrames(
       base::FeatureList::IsEnabled(features::kTimerThrottlingForHiddenFrames));
 
+  WebRuntimeFeatures::enableTouchpadAndWheelScrollLatching(
+      base::FeatureList::IsEnabled(features::kTouchpadAndWheelScrollLatching));
+
   if (base::FeatureList::IsEnabled(
           features::kSendBeaconThrowForBlobWithNonSimpleType))
     WebRuntimeFeatures::enableSendBeaconThrowForBlobWithNonSimpleType(true);

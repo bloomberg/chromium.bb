@@ -4,6 +4,7 @@
 
 #include "core/input/ScrollManager.h"
 
+#include <memory>
 #include "core/dom/DOMNodeIds.h"
 #include "core/events/GestureEvent.h"
 #include "core/frame/BrowserControls.h"
@@ -22,8 +23,8 @@
 #include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -383,6 +384,9 @@ WebInputEventResult ScrollManager::handleGestureScrollEvent(
   if (!m_frame->view())
     return WebInputEventResult::NotHandled;
 
+  bool enableTouchpadScrollLatching =
+      RuntimeEnabledFeatures::touchpadAndWheelScrollLatchingEnabled();
+
   Node* eventTarget = nullptr;
   Scrollbar* scrollbar = nullptr;
   if (gestureEvent.type() != WebInputEvent::GestureScrollBegin) {
@@ -415,11 +419,23 @@ WebInputEventResult ScrollManager::handleGestureScrollEvent(
 
   if (scrollbar) {
     bool shouldUpdateCapture = false;
+    // scrollbar->gestureEvent always returns true for touchpad based GSB
+    // events. Therefore, while mouse is over a fully scrolled scrollbar, GSB
+    // won't propagate to the next scrollable layer.
     if (scrollbar->gestureEvent(gestureEvent, &shouldUpdateCapture)) {
       if (shouldUpdateCapture)
         m_scrollbarHandlingScrollGesture = scrollbar;
       return WebInputEventResult::HandledSuppressed;
     }
+
+    // When touchpad scroll latching is enabled and mouse is over a scrollbar,
+    // GSU events will always latch to the scrollbar even when it hits the
+    // scroll content.
+    if (enableTouchpadScrollLatching &&
+        gestureEvent.type() == WebInputEvent::GestureScrollUpdate) {
+      return WebInputEventResult::NotHandled;
+    }
+
     m_scrollbarHandlingScrollGesture = nullptr;
   }
 

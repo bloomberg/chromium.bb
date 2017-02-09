@@ -1,0 +1,121 @@
+<!DOCTYPE HTML>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<style>
+
+  body {
+    margin: 0px;
+    height: 1000px;
+    width: 1000px;
+  }
+  #parentDiv {
+    background-color: #FF7F7F;
+    height: 600px;
+    width: 600px;
+    overflow: scroll;
+  }
+  #content1 {
+    height: 700px;
+    width: 700px;
+  }
+  #childDiv {
+    background-color: #84BE6A;
+    height: 500px;
+    width: 500px;
+    overflow: scroll;
+  }
+  #content2 {
+    height: 600px;
+    width: 600px;
+  }
+</style>
+
+<div id="parentDiv">
+  <div id="content1">
+    <div id="childDiv">
+      <div id="content2">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var childDiv = document.getElementById('childDiv');
+var parentDiv = document.getElementById('parentDiv');
+var rect = childDiv.getBoundingClientRect();
+const GESTURE_SOURCE_TYPE = 2; // MOUSE_INPUT from synthetic_gesture_params.h
+
+setup({ explicit_done: true });
+test(() => {
+    chrome.gpuBenchmarking.smoothScrollBy(150, waitForChildScrollAndCheck,
+                                          rect.right - 5,
+                                          (rect.top + rect.bottom) / 2,
+                                          GESTURE_SOURCE_TYPE, "down", 4000);
+    
+}, "Scrolling on the child div scrollbar doesn't propagate to the parent div");
+
+var lastScrollOffset = childDiv.scrollTop;
+var rafCount = 0;
+
+// Wait for the child div to fully scroll.
+function waitForChildScrollAndCheck() {
+  if (childDiv.scrollTop == childDiv.scrollHeight - childDiv.clientHeight) {
+    rafCount = 0;
+    waitForParentScrollAndCheck();
+  } else if (childDiv.scrollTop != lastScrollOffset) {
+    lastScrollOffset = childDiv.scrollTop;
+    rafCount = 0;
+    requestAnimationFrame(waitForChildScrollAndCheck);
+  } else if (rafCount < 10) {
+    requestAnimationFrame(waitForChildScrollAndCheck);
+    rafCount++;
+  } else {
+    // Fail the test since for the last 10 rafs childDiv.scrollTop hasn't
+    // changed and the child div is not fully scrolled.
+    assert_equals(childDiv.scrollTop,
+                  childDiv.scrollHeight - childDiv.clientHeight,
+                  "The child div should be fully scrolled.");
+  }
+}
+
+// Wait for 10 rafs, the scroll shouldn't get propagated to the parent div.
+function waitForParentScrollAndCheck() {
+  if (parentDiv.scrollTop != 0) {
+    // Fail the test since the parent div has scrolled.
+    assert_equals(parentDiv.scrollTop, 0,
+        "The parent div is not supposed to scroll.");
+  } else if (rafCount < 10) {
+    requestAnimationFrame(waitForParentScrollAndCheck);
+    rafCount++;
+  } else {
+    rafCount = 0;
+    secondScrollCall();
+  }
+}
+
+// Scrolling on the scrollbar of the fully scrolled child div shouldn't get
+// propagated to the parent div.
+function secondScrollCall() {
+  chrome.gpuBenchmarking.smoothScrollBy(150, secondScrollShouldNotPropagate,
+                                        rect.right - 5,
+                                        (rect.top + rect.bottom) / 2,
+                                        GESTURE_SOURCE_TYPE, "down", 4000);
+}
+
+// Wait for 10 rafs, if the parent div doesn't scroll the test will pass.
+function secondScrollShouldNotPropagate() {
+  if (parentDiv.scrollTop != 0) {
+    // Fail the test since the parent div has scrolled.
+    assert_equals(parentDiv.scrollTop, 0,
+        "The parent div is not supposed to scroll.");
+  } else if (rafCount < 10) {
+    requestAnimationFrame(secondScrollShouldNotPropagate);
+    rafCount++;
+  } else {
+    done();
+  }
+}
+
+</script>
+
+

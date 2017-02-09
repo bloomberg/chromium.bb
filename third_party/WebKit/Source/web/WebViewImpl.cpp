@@ -630,6 +630,8 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta,
     return false;
 
   if (m_flingSourceDevice == WebGestureDeviceTouchpad) {
+    bool enableTouchpadScrollLatching =
+        RuntimeEnabledFeatures::touchpadAndWheelScrollLatchingEnabled();
     WebMouseWheelEvent syntheticWheel(WebInputEvent::MouseWheel,
                                       m_flingModifier,
                                       WTF::monotonicallyIncreasingTime());
@@ -649,15 +651,15 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta,
         WebInputEventResult::NotHandled)
       return true;
 
-    // TODO(dtapuska): Remove these GSB/GSE sequences when trackpad latching is
-    // implemented; see crbug.com/526463.
-    WebGestureEvent syntheticScrollBegin = createGestureScrollEventFromFling(
-        WebInputEvent::GestureScrollBegin, WebGestureDeviceTouchpad);
-    syntheticScrollBegin.data.scrollBegin.deltaXHint = delta.width;
-    syntheticScrollBegin.data.scrollBegin.deltaYHint = delta.height;
-    syntheticScrollBegin.data.scrollBegin.inertialPhase =
-        WebGestureEvent::MomentumPhase;
-    handleGestureEvent(syntheticScrollBegin);
+    if (!enableTouchpadScrollLatching) {
+      WebGestureEvent syntheticScrollBegin = createGestureScrollEventFromFling(
+          WebInputEvent::GestureScrollBegin, WebGestureDeviceTouchpad);
+      syntheticScrollBegin.data.scrollBegin.deltaXHint = delta.width;
+      syntheticScrollBegin.data.scrollBegin.deltaYHint = delta.height;
+      syntheticScrollBegin.data.scrollBegin.inertialPhase =
+          WebGestureEvent::MomentumPhase;
+      handleGestureEvent(syntheticScrollBegin);
+    }
 
     WebGestureEvent syntheticScrollUpdate = createGestureScrollEventFromFling(
         WebInputEvent::GestureScrollUpdate, WebGestureDeviceTouchpad);
@@ -670,11 +672,14 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta,
     bool scrollUpdateHandled = handleGestureEvent(syntheticScrollUpdate) !=
                                WebInputEventResult::NotHandled;
 
-    WebGestureEvent syntheticScrollEnd = createGestureScrollEventFromFling(
-        WebInputEvent::GestureScrollEnd, WebGestureDeviceTouchpad);
-    syntheticScrollEnd.data.scrollEnd.inertialPhase =
-        WebGestureEvent::MomentumPhase;
-    handleGestureEvent(syntheticScrollEnd);
+    if (!enableTouchpadScrollLatching) {
+      WebGestureEvent syntheticScrollEnd = createGestureScrollEventFromFling(
+          WebInputEvent::GestureScrollEnd, WebGestureDeviceTouchpad);
+      syntheticScrollEnd.data.scrollEnd.inertialPhase =
+          WebGestureEvent::MomentumPhase;
+      handleGestureEvent(syntheticScrollEnd);
+    }
+
     return scrollUpdateHandled;
   } else {
     WebGestureEvent syntheticGestureEvent = createGestureScrollEventFromFling(

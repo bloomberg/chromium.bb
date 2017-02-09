@@ -254,6 +254,10 @@ void WebRuntimeFeatures::enableTouchEventFeatureDetection(bool enable) {
   RuntimeEnabledFeatures::setTouchEventFeatureDetectionEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableTouchpadAndWheelScrollLatching(bool enable) {
+  RuntimeEnabledFeatures::setTouchpadAndWheelScrollLatchingEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableWebGLDraftExtensions(bool enable) {
   RuntimeEnabledFeatures::setWebGLDraftExtensionsEnabled(enable);
 }

@@ -859,6 +859,12 @@
       name: "TouchEventFeatureDetection",
       status: "stable",
     },
+    // This is set conditionally in SetRuntimeFeaturesDefaultsAndUpdateFromArgs
+    // and will eventually go away when the touchpad/wheel scroll latching is
+    // enabled on all platforms (http://crbug.com/526463).
+    {
+      name: "TouchpadAndWheelScrollLatching",
+    },
     {
       name: "TrueColorRendering",
       status: "experimental",
