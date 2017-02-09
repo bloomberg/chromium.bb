@@ -5,17 +5,8 @@
 crbug.com/608372 http/tests/history/back-to-post.html [ Timeout ]
 crbug.com/608372 virtual/mojo-loading/http/tests/history/back-to-post.html [ Timeout ]
 
-# Ensure same-page back-forward are handled as same-page navigations
-# Fixed by https://codereview.chromium.org/2584513003/
-crbug.com/575210 fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
-crbug.com/575210 external/wpt/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
-crbug.com/575210 external/wpt/html/browsers/history/the-history-interface/004.html [ Failure ]
-crbug.com/575210 external/wpt/html/browsers/history/the-location-interface/security_location_0.htm [ Failure ]
-
 # https://crbug.com/551000: PlzNavigate: DevTools support
-crbug.com/551000 http/tests/inspector/extensions-network-redirect.html [ Timeout ]
 crbug.com/551000 http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
-crbug.com/551000 virtual/mojo-loading/http/tests/inspector/extensions-network-redirect.html [ Timeout ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
 #  Console error messages are wrongly ordered.
 crbug.com/551000 http/tests/inspector/console-resource-errors.html [ Failure ]
@@ -26,10 +17,12 @@ crbug.com/551000 http/tests/inspector/network/network-initiator.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-document-initiator.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-initiator.html [ Failure ]
 
-# https://crbug.com/625765: Need to solve duplicate output from
-# WebFrameTestClient::willSendRequest() that causes text failures.
-#crbug.com/625765 http/tests/loading/redirect-methods.html [ Crash Failure ]
+#  Forward redirect info to the renderer. Fixed by https://codereview.chromium.org/2653953005/.
+crbug.com/551000 http/tests/inspector/extensions-network-redirect.html [ Timeout ]
+crbug.com/551000 virtual/mojo-loading/http/tests/inspector/extensions-network-redirect.html [ Timeout ]
+#  These ones have an additional issue with a flipped order between diStartProvisionalLoad & willSendRequest
 crbug.com/625765 virtual/mojo-loading/http/tests/loading/redirect-methods.html [ Crash Failure ]
+crbug.com/625765 http/tests/loading/redirect-methods.html [ Crash Failure ]
 
 # https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
 # checks up out of the renderer.
@@ -83,6 +76,20 @@ Bug(none) external/wpt/service-workers/service-worker/navigate-window.https.html
 crbug.com/689153 http/tests/navigation/response204.html [ Timeout ]
 crbug.com/689153 virtual/stable/http/tests/navigation/response204.html [ Timeout ]
 crbug.com/689153 virtual/mojo-loading/http/tests/navigation/response204.html [ Timeout ]
+
+# Missing console warning about usage of legacy protocol.
+Bug(none) external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird.html [ Failure ]
+
+# Missing error messages.
+Bug(none) external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure ]
+
+# Missing console error line number.
+Bug(none) http/tests/security/location-href-clears-username-password.html [ Failure ]
+Bug(none) virtual/mojo-loading/http/tests/security/location-href-clears-username-password.html [ Failure ]
+
+# New untriaged.
+Bug(none) http/tests/navigation/back-to-dynamic-iframe.html [ Failure ]
+Bug(none) virtual/mojo-loading/http/tests/navigation/back-to-dynamic-iframe.html [ Failure ]
 
 # This test seems to be partially failing without PlzNavigate as well.
 
