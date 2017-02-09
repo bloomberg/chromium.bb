@@ -670,7 +670,7 @@ void RenderWidget::SendOrCrash(IPC::Message* message) {
 }
 
 bool RenderWidget::ShouldHandleImeEvents() const {
-  return GetWebWidget()->isWebFrameWidget() && has_focus_;
+  return GetWebWidget() && GetWebWidget()->isWebFrameWidget() && has_focus_;
 }
 
 void RenderWidget::SetWindowRectSynchronously(
@@ -1570,20 +1570,16 @@ void RenderWidget::OnImeSetComposition(
     return;
   }
 #endif
-  if (replacement_range.IsValid()) {
-    GetWebWidget()->applyReplacementRange(
-        WebRange(replacement_range.start(), replacement_range.length()));
-  }
-
-  if (!GetWebWidget())
-    return;
   ImeEventGuard guard(this);
   blink::WebInputMethodController* controller = GetInputMethodController();
   if (!controller ||
       !controller->setComposition(
           WebString::fromUTF16(text),
-          WebVector<WebCompositionUnderline>(underlines), selection_start,
-          selection_end)) {
+          WebVector<WebCompositionUnderline>(underlines),
+          replacement_range.IsValid()
+              ? WebRange(replacement_range.start(), replacement_range.length())
+              : WebRange(),
+          selection_start, selection_end)) {
     // If we failed to set the composition text, then we need to let the browser
     // process to cancel the input method's ongoing composition session, to make
     // sure we are in a consistent state.
@@ -1607,19 +1603,16 @@ void RenderWidget::OnImeCommitText(
     return;
   }
 #endif
-  if (replacement_range.IsValid()) {
-    GetWebWidget()->applyReplacementRange(
-        WebRange(replacement_range.start(), replacement_range.length()));
-  }
-
-  if (!GetWebWidget())
-    return;
   ImeEventGuard guard(this);
   input_handler_->set_handling_input_event(true);
   if (auto* controller = GetInputMethodController())
-    controller->commitText(WebString::fromUTF16(text),
-                           WebVector<WebCompositionUnderline>(underlines),
-                           relative_cursor_pos);
+    controller->commitText(
+        WebString::fromUTF16(text),
+        WebVector<WebCompositionUnderline>(underlines),
+        replacement_range.IsValid()
+            ? WebRange(replacement_range.start(), replacement_range.length())
+            : WebRange(),
+        relative_cursor_pos);
   input_handler_->set_handling_input_event(false);
   UpdateCompositionInfo(false /* not an immediate request */);
 }

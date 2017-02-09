@@ -174,10 +174,6 @@ bool WebViewFrameWidget::getCompositionCharacterBounds(
   return m_webView->getCompositionCharacterBounds(bounds);
 }
 
-void WebViewFrameWidget::applyReplacementRange(const WebRange& range) {
-  m_webView->applyReplacementRange(range);
-}
-
 void WebViewFrameWidget::updateBrowserControlsState(
     WebBrowserControlsState constraints,
     WebBrowserControlsState current,

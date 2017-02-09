@@ -112,7 +112,6 @@ class WebFrameWidgetImpl final
   void didNotAcquirePointerLock() override;
   void didLosePointerLock() override;
   bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
-  void applyReplacementRange(const WebRange&) override;
   void setRemoteViewportIntersection(const WebRect&) override;
 
   // WebFrameWidget implementation.

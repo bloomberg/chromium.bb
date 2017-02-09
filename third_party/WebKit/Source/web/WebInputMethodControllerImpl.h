@@ -15,6 +15,7 @@ class InputMethodController;
 class LocalFrame;
 class WebLocalFrameImpl;
 class WebPlugin;
+class WebRange;
 class WebString;
 
 class WebInputMethodControllerImpl : public WebInputMethodController {
@@ -29,10 +30,12 @@ class WebInputMethodControllerImpl : public WebInputMethodController {
   // WebInputMethodController overrides.
   bool setComposition(const WebString& text,
                       const WebVector<WebCompositionUnderline>& underlines,
+                      const WebRange& replacementRange,
                       int selectionStart,
                       int selectionEnd) override;
   bool commitText(const WebString& text,
                   const WebVector<WebCompositionUnderline>& underlines,
+                  const WebRange& replacementRange,
                   int relativeCaretPosition) override;
   bool finishComposingText(
       ConfirmCompositionBehavior selectionBehavior) override;

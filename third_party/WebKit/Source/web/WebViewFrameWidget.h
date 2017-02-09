@@ -82,7 +82,6 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
   WebColor backgroundColor() const override;
   WebPagePopup* pagePopup() const override;
   bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
-  void applyReplacementRange(const WebRange&) override;
   void updateBrowserControlsState(WebBrowserControlsState constraints,
                                   WebBrowserControlsState current,
                                   bool animate) override;

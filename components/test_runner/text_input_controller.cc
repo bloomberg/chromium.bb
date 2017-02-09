@@ -173,7 +173,8 @@ void TextInputController::Install(blink::WebLocalFrame* frame) {
 void TextInputController::InsertText(const std::string& text) {
   if (auto* controller = GetInputMethodController()) {
     controller->commitText(blink::WebString::fromUTF8(text),
-                           std::vector<blink::WebCompositionUnderline>(), 0);
+                           std::vector<blink::WebCompositionUnderline>(),
+                           blink::WebRange(), 0);
   }
 }
 
@@ -221,7 +222,8 @@ void TextInputController::SetMarkedText(const std::string& text,
   }
 
   if (auto* controller = GetInputMethodController()) {
-    controller->setComposition(web_text, underlines, start, start + length);
+    controller->setComposition(web_text, underlines, blink::WebRange(), start,
+                               start + length);
   }
 }
 
@@ -315,7 +317,7 @@ void TextInputController::SetComposition(const std::string& text) {
   if (auto* controller = GetInputMethodController()) {
     controller->setComposition(
         newText, blink::WebVector<blink::WebCompositionUnderline>(underlines),
-        textLength, textLength);
+        blink::WebRange(), textLength, textLength);
   }
 }
 

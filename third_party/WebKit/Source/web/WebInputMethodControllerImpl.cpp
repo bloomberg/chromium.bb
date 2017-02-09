@@ -46,6 +46,7 @@ DEFINE_TRACE(WebInputMethodControllerImpl) {
 bool WebInputMethodControllerImpl::setComposition(
     const WebString& text,
     const WebVector<WebCompositionUnderline>& underlines,
+    const WebRange& replacementRange,
     int selectionStart,
     int selectionEnd) {
   if (WebPlugin* plugin = focusedPluginIfInputMethodSupported()) {
@@ -57,6 +58,10 @@ bool WebInputMethodControllerImpl::setComposition(
   // composition.
   if (!frame()->editor().canEdit() && !inputMethodController().hasComposition())
     return false;
+
+  // Select the range to be replaced with the composition later.
+  if (!replacementRange.isNull())
+    m_webLocalFrame->selectRange(replacementRange);
 
   // We should verify the parent node of this IME composition node are
   // editable because JavaScript may delete a parent node of the composition
@@ -118,12 +123,17 @@ bool WebInputMethodControllerImpl::finishComposingText(
 bool WebInputMethodControllerImpl::commitText(
     const WebString& text,
     const WebVector<WebCompositionUnderline>& underlines,
+    const WebRange& replacementRange,
     int relativeCaretPosition) {
   UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
       frame()->document(), UserGestureToken::NewGesture));
 
   if (WebPlugin* plugin = focusedPluginIfInputMethodSupported())
     return plugin->commitText(text, underlines, relativeCaretPosition);
+
+  // Select the range to be replaced with the composition later.
+  if (!replacementRange.isNull())
+    m_webLocalFrame->selectRange(replacementRange);
 
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.

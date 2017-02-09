@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class WebRange;
 class WebString;
 template <typename T>
 class WebVector;
@@ -24,22 +25,27 @@ class WebInputMethodController {
   };
 
   virtual ~WebInputMethodController() {}
-  // Called to inform the WebInputMethodController of a new composition text.
-  // If selectionStart and selectionEnd has the same value, then it indicates
-  // the input caret position. If the text is empty, then the existing
-  // composition text will be canceled.
-  // Returns true if the composition text was set successfully.
+
+  // Called to inform the WebInputMethodController of a new composition text. If
+  // selectionStart and selectionEnd has the same value, then it indicates the
+  // input caret position. If the text is empty, then the existing composition
+  // text will be canceled. |replacementRange| (when not null) is the range in
+  // current text which should be replaced by |text|. Returns true if the
+  // composition text was set successfully.
   virtual bool setComposition(
       const WebString& text,
       const WebVector<WebCompositionUnderline>& underlines,
+      const WebRange& replacementRange,
       int selectionStart,
       int selectionEnd) = 0;
 
-  // Called to inform the controller that deleting the ongoing composition if
-  // any, inserting the specified text, and moving the caret according to
-  // relativeCaretPosition.
+  // Called to inform the controller to delete the ongoing composition if any,
+  // insert |text|, and move the caret according to |relativeCaretPosition|.
+  // |replacementRange| (when not null) is the range in current text which
+  // should be replaced by |text|.
   virtual bool commitText(const WebString& text,
                           const WebVector<WebCompositionUnderline>& underlines,
+                          const WebRange& replacementRange,
                           int relativeCaretPosition) = 0;
 
   // Called to inform the controller to confirm an ongoing composition.

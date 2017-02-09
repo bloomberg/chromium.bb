@@ -2562,13 +2562,6 @@ bool WebViewImpl::getCompositionCharacterBounds(WebVector<WebRect>& bounds) {
   return true;
 }
 
-// TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
-// well. This code needs to be refactored  (http://crbug.com/629721).
-void WebViewImpl::applyReplacementRange(const WebRange& range) {
-  if (WebLocalFrame* frame = focusedFrame())
-    frame->selectRange(range);
-}
-
 // WebView --------------------------------------------------------------------
 
 WebSettingsImpl* WebViewImpl::settingsImpl() {

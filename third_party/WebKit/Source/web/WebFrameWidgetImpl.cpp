@@ -696,16 +696,6 @@ bool WebFrameWidgetImpl::getCompositionCharacterBounds(
   return true;
 }
 
-// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
-// code needs to be refactored  (http://crbug.com/629721).
-void WebFrameWidgetImpl::applyReplacementRange(const WebRange& range) {
-  if (LocalFrame* frame = focusedLocalFrameInWidget()) {
-    // TODO(dglazkov): Going from LocalFrame to WebLocalFrameImpl seems
-    // silly. What is going on here?
-    WebLocalFrameImpl::fromFrame(frame)->selectRange(range);
-  }
-}
-
 void WebFrameWidgetImpl::setRemoteViewportIntersection(
     const WebRect& viewportIntersection) {
   // Remote viewports are only applicable to local frames with remote ancestors.

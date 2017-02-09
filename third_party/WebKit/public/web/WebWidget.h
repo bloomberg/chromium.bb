@@ -218,10 +218,6 @@ class WebWidget {
     return false;
   }
 
-  // Applies the range on the focused frame so that the text will later be
-  // replaced.
-  virtual void applyReplacementRange(const WebRange&) {}
-
  protected:
   ~WebWidget() {}
 };

@@ -9,6 +9,7 @@
 #include "content/renderer/render_widget.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebInputMethodController.h"
+#include "third_party/WebKit/public/web/WebRange.h"
 #include "ui/base/ime/text_input_type.h"
 
 namespace content {
@@ -130,7 +131,7 @@ TEST_F(RenderWidgetTest, GetCompositionRangeValidComposition) {
   blink::WebVector<blink::WebCompositionUnderline> emptyUnderlines;
   DCHECK(widget()->GetInputMethodController());
   widget()->GetInputMethodController()->setComposition("hello", emptyUnderlines,
-                                                       3, 3);
+                                                       blink::WebRange(), 3, 3);
   gfx::Range range;
   GetCompositionRange(&range);
   EXPECT_TRUE(range.IsValid());
