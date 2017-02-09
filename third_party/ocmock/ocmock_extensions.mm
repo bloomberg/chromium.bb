@@ -11,7 +11,7 @@
     return [self andReturnValue:OCMOCK_VALUE(value)]; \
   }
 
-@implementation OCMockRecorder(CrExtensions)
+@implementation OCMStubRecorder(CrExtensions)
 
 CR_OCMOCK_RETURN_IMPL(Char, char);
 CR_OCMOCK_RETURN_IMPL(UnsignedChar, unsigned char);

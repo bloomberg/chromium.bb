@@ -1,13 +1,23 @@
-//---------------------------------------------------------------------------------------
-//  $Id$
-//  Copyright (c) 2009-2010 by Mulle Kybernetik. See License file for details.
-//---------------------------------------------------------------------------------------
+/*
+ *  Copyright (c) 2009-2015 Erik Doernenburg and contributors
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
+ *  not use these files except in compliance with the License. You may obtain
+ *  a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  License for the specific language governing permissions and limitations
+ *  under the License.
+ */
 
 #import <objc/runtime.h>
 #import <OCMock/OCMArg.h>
 #import <OCMock/OCMConstraint.h>
 #import "OCMPassByRefSetter.h"
-#import "OCMConstraint.h"
 
 @implementation OCMArg
 
@@ -21,6 +31,16 @@
 	return (void *)0x01234567;
 }
 
++ (id __autoreleasing *)anyObjectRef
+{
+    return (id *)0x01234567;
+}
+
++ (SEL)anySelector
+{
+    return NSSelectorFromString(@"aSelectorThatMatchesAnySelector");
+}
+
 + (id)isNil
 {
 	return [OCMIsNilConstraint constraint];
@@ -31,6 +51,11 @@
 	return [OCMIsNotNilConstraint constraint];
 }
 
++ (id)isEqual:(id)value
+{
+    return value;
+}
+
 + (id)isNotEqual:(id)value
 {
 	OCMIsNotEqualConstraint *constraint = [OCMIsNotEqualConstraint constraint];
@@ -38,21 +63,29 @@
 	return constraint;
 }
 
++ (id)isKindOfClass:(Class)cls
+{
+	return [[[OCMBlockConstraint alloc] initWithConstraintBlock:^BOOL(id obj) {
+        return [obj isKindOfClass:cls];
+    }] autorelease];
+}
+
 + (id)checkWithSelector:(SEL)selector onObject:(id)anObject
 {
 	return [OCMConstraint constraintWithSelector:selector onObject:anObject];
 }
 
-#if NS_BLOCKS_AVAILABLE
-
-+ (id)checkWithBlock:(BOOL (^)(id))block 
++ (id)checkWithBlock:(BOOL (^)(id))block
 {
 	return [[[OCMBlockConstraint alloc] initWithConstraintBlock:block] autorelease];
 }
 
-#endif
-
 + (id *)setTo:(id)value
+{
+	return (id *)[[[OCMPassByRefSetter alloc] initWithValue:value] autorelease];
+}
+
++ (void *)setToValue:(NSValue *)value
 {
 	return (id *)[[[OCMPassByRefSetter alloc] initWithValue:value] autorelease];
 }
@@ -68,7 +101,15 @@
 		if((pointer != NULL) && (object_getClass((id)pointer) == [OCMPassByRefSetter class]))
 			return (id)pointer;
 	}
+    else if(type[0] == ':')
+    {
+        SEL selector;
+        [value getValue:&selector];
+        if(selector == NSSelectorFromString(@"aSelectorThatMatchesAnySelector"))
+            return [OCMArg any];
+    }
 	return value;
 }
+
 
 @end

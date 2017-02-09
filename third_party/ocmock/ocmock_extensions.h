@@ -13,7 +13,7 @@
 // Pointers to objects still have to be handled with
 // - (id)andReturnValue:OCMOCK_VALUE(blah)
 // to keep the types working correctly.
-@interface OCMockRecorder(CrExtensions)
+@interface OCMStubRecorder(CrExtensions)
 - (id)andReturnChar:(char)value;
 - (id)andReturnUnsignedChar:(unsigned char)value;
 - (id)andReturnShort:(short)value;

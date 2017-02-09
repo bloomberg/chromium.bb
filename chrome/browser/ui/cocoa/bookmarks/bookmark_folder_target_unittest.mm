@@ -27,7 +27,7 @@ using bookmarks::BookmarkNode;
 // We need a mechanism to clear the invocation handlers to break a
 // retain cycle (see below; search for "retain cycle").
 - (void)clearRecordersAndExpectations {
-  [recorders removeAllObjects];
+  [stubs removeAllObjects];
   [expectations removeAllObjects];
 }
 

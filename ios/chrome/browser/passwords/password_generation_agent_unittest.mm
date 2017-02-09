@@ -435,7 +435,7 @@ TEST_F(PasswordGenerationAgentTest,
                        @"focus");
 
   EXPECT_OCMOCK_VERIFY(mock);
-  [mock stop];
+  [mock stopMocking];
 }
 
 // Tests that requesting password generation shows the alert UI.
@@ -451,7 +451,7 @@ TEST_F(PasswordGenerationAgentTest, ShouldShowAlertWhenGenerationRequested) {
   EXPECT_EQ(YES, mock_ui_delegate().UIShown);
 
   EXPECT_OCMOCK_VERIFY(mock);
-  [mock stop];
+  [mock stopMocking];
 }
 
 // Tests that the password generation UI is hidden when the user changes focus
@@ -468,7 +468,7 @@ TEST_F(PasswordGenerationAgentTest,
   SimulateFormActivity(kAccountCreationFormName, kEmailFieldName, @"focus");
 
   EXPECT_OCMOCK_VERIFY(mock);
-  [mock stop];
+  [mock stopMocking];
 }
 
 // Tests that the password field is filled when the user accepts a generated

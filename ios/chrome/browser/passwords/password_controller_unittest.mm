@@ -211,7 +211,7 @@ class PasswordControllerTest : public web::WebTestWithWebState {
     __block int failure_count = 0;
     void (^fail_invocation)(NSInvocation*) = ^(NSInvocation* invocation) {
       if (failure_count >= target_failure_count) {
-        [failing_manager stop];
+        [failing_manager stopMocking];
         [invocation invokeWithTarget:original_manager];
       } else {
         ++failure_count;
