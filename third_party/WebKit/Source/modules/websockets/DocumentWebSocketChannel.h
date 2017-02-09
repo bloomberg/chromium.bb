@@ -31,6 +31,8 @@
 #ifndef DocumentWebSocketChannel_h
 #define DocumentWebSocketChannel_h
 
+#include <stdint.h>
+#include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
@@ -38,6 +40,7 @@
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketHandle.h"
 #include "modules/websockets/WebSocketHandleClient.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Deque.h"
@@ -46,8 +49,6 @@
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
-#include <stdint.h>
 
 namespace blink {
 
@@ -173,6 +174,8 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   uint64_t m_sendingQuota;
   uint64_t m_receivedDataSizeForFlowControl;
   size_t m_sentSizeOfTopMessage;
+  std::unique_ptr<WebFrameScheduler::ActiveConnectionHandle>
+      connection_handle_for_scheduler_;
 
   std::unique_ptr<SourceLocation> m_locationAtConstruction;
   RefPtr<WebSocketHandshakeRequest> m_handshakeRequest;

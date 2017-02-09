@@ -9,10 +9,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "platform/WebFrameScheduler.h"
-#include "public/platform/scheduler/base/task_queue.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/scheduler/base/task_queue.h"
 
 namespace base {
 namespace trace_event {
@@ -50,17 +51,36 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   void didStopLoading(unsigned long identifier) override;
   void setDocumentParsingInBackground(bool background_parser_active) override;
   void onFirstMeaningfulPaint() override;
+  std::unique_ptr<ActiveConnectionHandle> onActiveConnectionCreated() override;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
+  bool has_active_connection() const { return active_connection_count_; }
+
  private:
   friend class WebViewSchedulerImpl;
+
+  class ActiveConnectionHandleImpl : public ActiveConnectionHandle {
+   public:
+    ActiveConnectionHandleImpl(WebFrameSchedulerImpl* frame_scheduler);
+    ~ActiveConnectionHandleImpl() override;
+
+   private:
+    base::WeakPtr<WebFrameSchedulerImpl> frame_scheduler_;
+
+    DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandleImpl);
+  };
 
   void DetachFromWebViewScheduler();
   void RemoveTimerQueueFromBackgroundTimeBudgetPool();
   void ApplyPolicyToTimerQueue();
   bool ShouldThrottleTimers() const;
   void UpdateTimerThrottling(bool was_throttled);
+
+  void didOpenActiveConnection();
+  void didCloseActiveConnection();
+
+  base::WeakPtr<WebFrameSchedulerImpl> AsWeakPtr();
 
   scoped_refptr<TaskQueue> loading_task_queue_;
   scoped_refptr<TaskQueue> timer_task_queue_;
@@ -77,6 +97,9 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   bool page_throttled_;
   bool frame_suspended_;
   bool cross_origin_;
+  int active_connection_count_;
+
+  base::WeakPtrFactory<WebFrameSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameSchedulerImpl);
 };

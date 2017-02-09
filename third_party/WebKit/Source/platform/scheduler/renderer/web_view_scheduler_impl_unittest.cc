@@ -685,5 +685,105 @@ TEST_F(WebViewSchedulerImplTest, BackgroundThrottlingGracePeriod) {
                   base::TimeTicks() + base::TimeDelta::FromSeconds(26)));
 }
 
+TEST_F(WebViewSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
+  ScopedExpensiveBackgroundTimerThrottlingForTest
+      budget_background_throttling_enabler(true);
+
+  std::vector<base::TimeTicks> run_times;
+  FakeWebViewSchedulerSettings web_view_scheduler_settings;
+  std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler(
+      new WebViewSchedulerImpl(nullptr, &web_view_scheduler_settings,
+                               scheduler_.get(), false));
+
+  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler1 =
+      web_view_scheduler->createWebFrameSchedulerImpl(nullptr);
+  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler2 =
+      web_view_scheduler->createWebFrameSchedulerImpl(nullptr);
+
+  web_view_scheduler->setPageVisible(false);
+
+  // Wait for 20s to avoid initial throttling delay.
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(20500));
+
+  for (size_t i = 0; i < 3; ++i) {
+    web_frame_scheduler1->timerTaskRunner()->postDelayedTask(
+        BLINK_FROM_HERE,
+        base::Bind(&ExpensiveTestTask, clock_.get(), &run_times), 1);
+  }
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(55500));
+
+  // Check that tasks are throttled.
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(21),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(26),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(51)));
+  run_times.clear();
+
+  std::unique_ptr<WebFrameScheduler::ActiveConnectionHandle>
+      websocket_connection = web_frame_scheduler1->onActiveConnectionCreated();
+
+  for (size_t i = 0; i < 3; ++i) {
+    web_frame_scheduler1->timerTaskRunner()->postDelayedTask(
+        BLINK_FROM_HERE,
+        base::Bind(&ExpensiveTestTask, clock_.get(), &run_times), 1);
+  }
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(58500));
+
+  // Check that the timer task queue from the first frame is aligned,
+  // but not throttled.
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(
+          base::TimeTicks() + base::TimeDelta::FromMilliseconds(56000),
+          base::TimeTicks() + base::TimeDelta::FromMilliseconds(56250),
+          base::TimeTicks() + base::TimeDelta::FromMilliseconds(56500)));
+  run_times.clear();
+
+  for (size_t i = 0; i < 3; ++i) {
+    web_frame_scheduler2->timerTaskRunner()->postDelayedTask(
+        BLINK_FROM_HERE,
+        base::Bind(&ExpensiveTestTask, clock_.get(), &run_times), 1);
+  }
+
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(59500));
+
+  // Check that the second frame scheduler becomes unthrottled.
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(
+          base::TimeTicks() + base::TimeDelta::FromMilliseconds(59000),
+          base::TimeTicks() + base::TimeDelta::FromMilliseconds(59250),
+          base::TimeTicks() + base::TimeDelta::FromMilliseconds(59500)));
+  run_times.clear();
+
+  websocket_connection.reset();
+
+  // Wait for 10s to enable throttling back.
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromMilliseconds(70500));
+
+  for (size_t i = 0; i < 3; ++i) {
+    web_frame_scheduler1->timerTaskRunner()->postDelayedTask(
+        BLINK_FROM_HERE,
+        base::Bind(&ExpensiveTestTask, clock_.get(), &run_times), 1);
+  }
+
+  mock_task_runner_->RunUntilIdle();
+
+  // WebSocket is closed, budget-based throttling now applies.
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(84),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(109),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(134)));
+}
+
 }  // namespace scheduler
 }  // namespace blink

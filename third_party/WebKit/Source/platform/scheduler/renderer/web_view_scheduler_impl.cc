@@ -108,6 +108,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       virtual_time_(false),
       is_audio_playing_(false),
       reported_background_throttling_since_navigation_(false),
+      has_active_connection_(false),
       background_time_budget_pool_(nullptr),
       settings_(settings) {
   renderer_scheduler->AddWebViewScheduler(this);
@@ -238,6 +239,10 @@ void WebViewSchedulerImpl::audioStateChanged(bool is_audio_playing) {
   renderer_scheduler_->OnAudioStateChanged();
 }
 
+bool WebViewSchedulerImpl::hasActiveConnectionForTest() const {
+  return has_active_connection_;
+}
+
 void WebViewSchedulerImpl::ApplyVirtualTimePolicy() {
   if (virtual_time_policy_ != VirtualTimePolicy::DETERMINISTIC_LOADING) {
     return;
@@ -253,6 +258,18 @@ void WebViewSchedulerImpl::ApplyVirtualTimePolicy() {
 
 bool WebViewSchedulerImpl::IsAudioPlaying() const {
   return is_audio_playing_;
+}
+
+void WebViewSchedulerImpl::OnConnectionUpdated() {
+  bool has_active_connection = false;
+  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+    has_active_connection |= frame_scheduler->has_active_connection();
+  }
+
+  if (has_active_connection_ != has_active_connection) {
+    has_active_connection_ = has_active_connection;
+    UpdateBackgroundThrottlingState();
+  }
 }
 
 void WebViewSchedulerImpl::AsValueInto(
@@ -335,10 +352,7 @@ void WebViewSchedulerImpl::EnableBackgroundThrottling() {
   for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->setPageThrottled(true);
   }
-  if (background_time_budget_pool_) {
-    LazyNow lazy_now(renderer_scheduler_->tick_clock());
-    background_time_budget_pool_->EnableThrottling(&lazy_now);
-  }
+  UpdateBackgroundBudgetPoolThrottlingState();
 }
 
 void WebViewSchedulerImpl::UpdateBackgroundThrottlingState() {
@@ -349,15 +363,29 @@ void WebViewSchedulerImpl::UpdateBackgroundThrottlingState() {
     for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
       frame_scheduler->setPageThrottled(false);
     }
-    if (background_time_budget_pool_) {
-      LazyNow lazy_now(renderer_scheduler_->tick_clock());
-      background_time_budget_pool_->DisableThrottling(&lazy_now);
-    }
+    UpdateBackgroundBudgetPoolThrottlingState();
   } else {
-    // TODO(altimin): Consider moving this logic into PumpThrottledTasks.
-    renderer_scheduler_->ControlTaskRunner()->PostDelayedTask(
-        FROM_HERE, delayed_background_throttling_enabler_.callback(),
-        kBackgroundThrottlingGracePeriod);
+    if (has_active_connection_) {
+      // If connection is active, update state immediately to stop throttling.
+      UpdateBackgroundBudgetPoolThrottlingState();
+    } else {
+      // TODO(altimin): Consider moving this logic into PumpThrottledTasks.
+      renderer_scheduler_->ControlTaskRunner()->PostDelayedTask(
+          FROM_HERE, delayed_background_throttling_enabler_.callback(),
+          kBackgroundThrottlingGracePeriod);
+    }
+  }
+}
+
+void WebViewSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
+  if (!background_time_budget_pool_)
+    return;
+
+  LazyNow lazy_now(renderer_scheduler_->tick_clock());
+  if (page_visible_ || has_active_connection_) {
+    background_time_budget_pool_->DisableThrottling(&lazy_now);
+  } else {
+    background_time_budget_pool_->EnableThrottling(&lazy_now);
   }
 }
 

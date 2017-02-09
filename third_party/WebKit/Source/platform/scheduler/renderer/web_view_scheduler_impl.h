@@ -47,6 +47,7 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool virtualTimeAllowedToAdvance() const override;
   void setVirtualTimePolicy(VirtualTimePolicy virtual_time_policy) override;
   void audioStateChanged(bool is_audio_playing) override;
+  bool hasActiveConnectionForTest() const override;
 
   // Virtual for testing.
   virtual void ReportIntervention(const std::string& message);
@@ -62,6 +63,8 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void OnNavigation();
 
   bool IsAudioPlaying() const;
+
+  void OnConnectionUpdated();
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -83,6 +86,11 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   // call to enable it after a grace period.
   void UpdateBackgroundThrottlingState();
 
+  // As a part of UpdateBackgroundThrottlingState set correct
+  // background_time_budget_pool_ state depending on page visibility and
+  // number of active connections.
+  void UpdateBackgroundBudgetPoolThrottlingState();
+
   void EnableBackgroundThrottling();
 
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
@@ -99,6 +107,7 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool virtual_time_;
   bool is_audio_playing_;
   bool reported_background_throttling_since_navigation_;
+  bool has_active_connection_;
   TaskQueueThrottler::TimeBudgetPool*
       background_time_budget_pool_;  // Not owned.
   CancelableClosureHolder delayed_background_throttling_enabler_;

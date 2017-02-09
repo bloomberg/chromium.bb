@@ -28,6 +28,18 @@ std::string PointerToId(void* pointer) {
 
 }  // namespace
 
+WebFrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
+    WebFrameSchedulerImpl* frame_scheduler)
+    : frame_scheduler_(frame_scheduler->AsWeakPtr()) {
+  frame_scheduler->didOpenActiveConnection();
+}
+
+WebFrameSchedulerImpl::ActiveConnectionHandleImpl::
+    ~ActiveConnectionHandleImpl() {
+  if (frame_scheduler_)
+    frame_scheduler_->didCloseActiveConnection();
+}
+
 WebFrameSchedulerImpl::WebFrameSchedulerImpl(
     RendererSchedulerImpl* renderer_scheduler,
     WebViewSchedulerImpl* parent_web_view_scheduler,
@@ -38,9 +50,13 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
       frame_visible_(true),
       page_throttled_(true),
       frame_suspended_(false),
-      cross_origin_(false) {}
+      cross_origin_(false),
+      active_connection_count_(0),
+      weak_factory_(this) {}
 
 WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
+  weak_factory_.InvalidateWeakPtrs();
+
   if (loading_task_queue_) {
     loading_task_queue_->UnregisterTaskQueue();
     loading_task_queue_->SetBlameContext(nullptr);
@@ -57,8 +73,12 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
     unthrottled_task_queue_->SetBlameContext(nullptr);
   }
 
-  if (parent_web_view_scheduler_)
+  if (parent_web_view_scheduler_) {
     parent_web_view_scheduler_->Unregister(this);
+
+    if (active_connection_count_)
+      parent_web_view_scheduler_->OnConnectionUpdated();
+  }
 }
 
 void WebFrameSchedulerImpl::DetachFromWebViewScheduler() {
@@ -167,6 +187,19 @@ void WebFrameSchedulerImpl::didStopLoading(unsigned long identifier) {
     parent_web_view_scheduler_->DidStopLoading(identifier);
 }
 
+void WebFrameSchedulerImpl::didOpenActiveConnection() {
+  ++active_connection_count_;
+  if (parent_web_view_scheduler_)
+    parent_web_view_scheduler_->OnConnectionUpdated();
+}
+
+void WebFrameSchedulerImpl::didCloseActiveConnection() {
+  DCHECK_GT(active_connection_count_, 0);
+  --active_connection_count_;
+  if (parent_web_view_scheduler_)
+    parent_web_view_scheduler_->OnConnectionUpdated();
+}
+
 void WebFrameSchedulerImpl::setDocumentParsingInBackground(
     bool background_parser_active) {
   if (background_parser_active)
@@ -224,6 +257,12 @@ void WebFrameSchedulerImpl::onFirstMeaningfulPaint() {
   renderer_scheduler_->OnFirstMeaningfulPaint();
 }
 
+std::unique_ptr<WebFrameScheduler::ActiveConnectionHandle>
+WebFrameSchedulerImpl::onActiveConnectionCreated() {
+  return base::MakeUnique<WebFrameSchedulerImpl::ActiveConnectionHandleImpl>(
+      this);
+}
+
 bool WebFrameSchedulerImpl::ShouldThrottleTimers() const {
   if (page_throttled_)
     return true;
@@ -242,6 +281,10 @@ void WebFrameSchedulerImpl::UpdateTimerThrottling(bool was_throttled) {
     renderer_scheduler_->task_queue_throttler()->DecreaseThrottleRefCount(
         timer_task_queue_.get());
   }
+}
+
+base::WeakPtr<WebFrameSchedulerImpl> WebFrameSchedulerImpl::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace scheduler

@@ -7,6 +7,8 @@
 
 #include "wtf/RefPtr.h"
 
+#include <memory>
+
 namespace blink {
 
 class WebTaskRunner;
@@ -15,6 +17,15 @@ class WebViewScheduler;
 class WebFrameScheduler {
  public:
   virtual ~WebFrameScheduler() {}
+
+  class ActiveConnectionHandle {
+   public:
+    ActiveConnectionHandle() {}
+    virtual ~ActiveConnectionHandle() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandle);
+  };
 
   // The scheduler may throttle tasks associated with offscreen frames.
   virtual void setFrameVisible(bool) {}
@@ -67,6 +78,13 @@ class WebFrameScheduler {
   // Tells the scheduler that the first meaningful paint has occured for this
   // frame.
   virtual void onFirstMeaningfulPaint() {}
+
+  // Notifies scheduler that this frame has established an active real time
+  // connection (websocket, webrtc, etc). When connection is closed this handle
+  // must be destroyed.
+  virtual std::unique_ptr<ActiveConnectionHandle> onActiveConnectionCreated() {
+    return nullptr;
+  };
 };
 
 }  // namespace blink

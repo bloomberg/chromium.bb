@@ -79,6 +79,8 @@ class BLINK_PLATFORM_EXPORT WebViewScheduler {
   virtual void setVirtualTimePolicy(VirtualTimePolicy) = 0;
 
   virtual void audioStateChanged(bool isAudioPlaying) = 0;
+
+  virtual bool hasActiveConnectionForTest() const = 0;
 };
 
 }  // namespace blink
