@@ -425,7 +425,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   String reasonNotDeletable() const;
 
   // MemoryCoordinatorClient overrides:
-  void onMemoryStateChange(MemoryState) override;
+  void onPurgeMemory() override;
 
   Member<CachedMetadataHandlerImpl> m_cacheHandler;
   RefPtr<SecurityOrigin> m_fetcherSecurityOrigin;

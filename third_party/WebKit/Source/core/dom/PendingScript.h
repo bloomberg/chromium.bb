@@ -116,7 +116,7 @@ class CORE_EXPORT PendingScript final
   void notifyAppendData(ScriptResource*) override;
 
   // MemoryCoordinatorClient
-  void onMemoryStateChange(MemoryState) override;
+  void onPurgeMemory() override;
 
   bool m_watchingForLoad;
   Member<Element> m_element;
