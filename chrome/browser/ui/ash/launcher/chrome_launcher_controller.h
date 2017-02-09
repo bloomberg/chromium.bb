@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/ash/app_launcher_id.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -134,18 +135,11 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // Returns true if the specified item is for a platform app.
   virtual bool IsPlatformApp(ash::ShelfID id) = 0;
 
-  // Opens a new instance of the application identified by |app_id|.
+  // Opens a new instance of the application identified by the AppLauncherId.
   // Used by the app-list, and by pinned-app shelf items.
-  void LaunchApp(const std::string& app_id,
+  void LaunchApp(ash::launcher::AppLauncherId id,
                  ash::LaunchSource source,
                  int event_flags);
-
-  // As above but includes |launch_id|, an id that can be passed to an app when
-  // launched in order to support multiple shelf items per app.
-  void LaunchAppWithLaunchId(const std::string& app_id,
-                             const std::string& launch_id,
-                             ash::LaunchSource source,
-                             int event_flags);
 
   // If |app_id| is running, reactivates the app's most recently active window,
   // otherwise launches and activates the app.

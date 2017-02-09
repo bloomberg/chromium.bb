@@ -261,7 +261,6 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   ~TestV2AppLauncherItemController() override {}
 
   // Override for LauncherItemController:
-  void Launch(ash::LaunchSource source, int event_flags) override {}
   ash::ShelfItemDelegate::PerformedAction Activate(
       ash::LaunchSource source) override {
     return kExistingWindowActivated;

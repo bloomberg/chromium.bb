@@ -92,33 +92,25 @@ AppShortcutLauncherItemController::AppShortcutLauncherItemController(
   }
 }
 
-AppShortcutLauncherItemController::~AppShortcutLauncherItemController() {
-}
-
-void AppShortcutLauncherItemController::Launch(ash::LaunchSource source,
-                                               int event_flags) {
-  // Launching an app replaces shortcut item controller to app controller. As
-  // result app_id_, launch_id_ are deleted during this call. Use local copies
-  // to prevent crash condition.
-  launcher_controller()->LaunchAppWithLaunchId(
-      std::string(app_id()), std::string(launch_id()), source, event_flags);
-}
+AppShortcutLauncherItemController::~AppShortcutLauncherItemController() {}
 
 ash::ShelfItemDelegate::PerformedAction
 AppShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   content::WebContents* content = GetLRUApplication();
   if (!content) {
-    if (IsV2App()) {
-      // Ideally we come here only once. After that ShellLauncherItemController
-      // will take over when the shell window gets opened. However there are
-      // apps which take a lot of time for pre-processing (like the files app)
-      // before they open a window. Since there is currently no other way to
-      // detect if an app was started we suppress any further clicks within a
-      // special time out.
-      if (!AllowNextLaunchAttempt())
-        return kNoAction;
-    }
-    Launch(source, ui::EF_NONE);
+    // Ideally we come here only once. After that ShellLauncherItemController
+    // will take over when the shell window gets opened. However there are apps
+    // which take a lot of time for pre-processing (like the files app) before
+    // they open a window. Since there is currently no other way to detect if an
+    // app was started we suppress any further clicks within a special time out.
+    if (IsV2App() && !AllowNextLaunchAttempt())
+      return kNoAction;
+
+    // Launching some items replaces this item controller instance, which
+    // destroys the app and launch id strings; making copies avoid crashes.
+    launcher_controller()->LaunchApp(
+        ash::launcher::AppLauncherId(app_id(), launch_id()), source,
+        ui::EF_NONE);
     return kNewWindowCreated;
   }
   return ActivateContent(content);

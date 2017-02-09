@@ -69,11 +69,6 @@ void AppWindowLauncherItemController::SetActiveWindow(aura::Window* window) {
     last_active_window_ = app_window;
 }
 
-void AppWindowLauncherItemController::Launch(ash::LaunchSource source,
-                                             int event_flags) {
-  launcher_controller()->LaunchApp(app_id(), source, ui::EF_NONE);
-}
-
 ash::ShelfItemDelegate::PerformedAction
 AppWindowLauncherItemController::Activate(ash::LaunchSource source) {
   DCHECK(!windows_.empty());

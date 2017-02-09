@@ -43,7 +43,6 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
   bool IsListOfActiveBrowserEmpty();
 
   // LauncherItemController overrides:
-  void Launch(ash::LaunchSource source, int event_flags) override;
   ShelfItemDelegate::PerformedAction Activate(
       ash::LaunchSource source) override;
   ash::ShelfItemDelegate::PerformedAction ItemSelected(

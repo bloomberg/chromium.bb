@@ -169,17 +169,10 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
   return true;
 }
 
-void LauncherControllerHelper::LaunchApp(const std::string& app_id,
+void LauncherControllerHelper::LaunchApp(ash::launcher::AppLauncherId id,
                                          ash::LaunchSource source,
                                          int event_flags) {
-  LaunchAppWithLaunchId(app_id, "", source, event_flags);
-}
-
-void LauncherControllerHelper::LaunchAppWithLaunchId(
-    const std::string& app_id,
-    const std::string& launch_id,
-    ash::LaunchSource source,
-    int event_flags) {
+  const std::string& app_id = id.app_id();
   const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();
   if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
     arc::LaunchApp(profile_, app_id, event_flags);
@@ -215,7 +208,7 @@ void LauncherControllerHelper::LaunchAppWithLaunchId(
     params.override_url = net::AppendQueryParameter(
         extension_url, extension_urls::kWebstoreSourceField, source_value);
   }
-  params.launch_id = launch_id;
+  params.launch_id = id.launch_id();
 
   OpenApplication(params);
 }
@@ -225,8 +218,9 @@ ArcAppListPrefs* LauncherControllerHelper::GetArcAppListPrefs() const {
 }
 
 void LauncherControllerHelper::ExtensionEnableFlowFinished() {
-  LaunchApp(extension_enable_flow_->extension_id(), ash::LAUNCH_FROM_UNKNOWN,
-            ui::EF_NONE);
+  LaunchApp(
+      ash::launcher::AppLauncherId(extension_enable_flow_->extension_id()),
+      ash::LAUNCH_FROM_UNKNOWN, ui::EF_NONE);
   extension_enable_flow_.reset();
 }
 

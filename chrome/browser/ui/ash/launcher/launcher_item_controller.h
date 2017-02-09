@@ -49,9 +49,6 @@ class LauncherItemController : public ash::ShelfItemDelegate {
     image_set_by_controller_ = image_set_by_controller;
   }
 
-  // Launches a new instance of the app associated with this item.
-  virtual void Launch(ash::LaunchSource source, int event_flags) = 0;
-
   // Shows and activates the most-recently-active window associated with the
   // item, or launches the item if it is not currently open.
   // Returns the action performed by activating the item.

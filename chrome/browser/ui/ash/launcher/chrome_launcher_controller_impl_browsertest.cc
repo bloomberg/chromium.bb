@@ -926,9 +926,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchInBackground) {
   LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
                          WindowOpenDisposition::NEW_BACKGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  controller_->LaunchApp(last_loaded_extension_id(),
-                                               ash::LAUNCH_FROM_UNKNOWN,
-                                               0);
+  controller_->LaunchApp(
+      ash::launcher::AppLauncherId(last_loaded_extension_id()),
+      ash::LAUNCH_FROM_UNKNOWN, 0);
 }
 
 // Confirm that clicking a icon for an app running in one of 2 maxmized windows
@@ -978,12 +978,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateApp) {
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchApp) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
-  const Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("app1"));
-
-  controller_->LaunchApp(extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0);
+  ash::launcher::AppLauncherId id(
+      LoadExtension(test_data_dir_.AppendASCII("app1"))->id());
+  controller_->LaunchApp(id, ash::LAUNCH_FROM_UNKNOWN, 0);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  controller_->LaunchApp(extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0);
+  controller_->LaunchApp(id, ash::LAUNCH_FROM_UNKNOWN, 0);
   EXPECT_EQ(++tab_count, tab_strip->count());
 }
 

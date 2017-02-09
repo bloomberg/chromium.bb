@@ -18,7 +18,7 @@ ArcAppDeferredLauncherItemController::ArcAppDeferredLauncherItemController(
     ChromeLauncherController* controller,
     int event_flags,
     const base::WeakPtr<ArcAppDeferredLauncherController>& host)
-    : LauncherItemController(arc_app_id, "", controller),
+    : LauncherItemController(arc_app_id, std::string(), controller),
       event_flags_(event_flags),
       host_(host),
       start_time_(base::Time::Now()) {}
@@ -46,9 +46,6 @@ void ArcAppDeferredLauncherItemController::Close() {
   if (host_)
     host_->Close(app_id());
 }
-
-void ArcAppDeferredLauncherItemController::Launch(ash::LaunchSource source,
-                                                  int event_flags) {}
 
 ash::ShelfItemDelegate::PerformedAction
 ArcAppDeferredLauncherItemController::Activate(ash::LaunchSource source) {

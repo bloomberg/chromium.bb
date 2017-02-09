@@ -64,13 +64,12 @@ BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
     ChromeLauncherController* launcher_controller,
     ash::ShelfModel* shelf_model)
     : LauncherItemController(extension_misc::kChromeAppId,
-                             "",
+                             std::string(),
                              launcher_controller),
       shelf_model_(shelf_model) {}
 
 BrowserShortcutLauncherItemController::
-    ~BrowserShortcutLauncherItemController() {
-}
+    ~BrowserShortcutLauncherItemController() {}
 
 void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
   // Determine the new browser's active state and change if necessary.
@@ -127,10 +126,6 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
       ->SetIntProperty(
           ash::WmWindowProperty::SHELF_ID,
           launcher_controller()->GetShelfIDForWebContents(web_contents));
-}
-
-void BrowserShortcutLauncherItemController::Launch(ash::LaunchSource source,
-                                                   int event_flags) {
 }
 
 ash::ShelfItemDelegate::PerformedAction

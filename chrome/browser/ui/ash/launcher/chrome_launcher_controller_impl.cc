@@ -415,7 +415,12 @@ void ChromeLauncherControllerImpl::Launch(ash::ShelfID id, int event_flags) {
   LauncherItemController* controller = GetLauncherItemController(id);
   if (!controller)
     return;  // In case invoked from menu and item closed while menu up.
-  controller->Launch(ash::LAUNCH_FROM_UNKNOWN, event_flags);
+
+  // Launching some items replaces the associated item controller instance,
+  // which destroys the app and launch id strings; making copies avoid crashes.
+  LaunchApp(ash::launcher::AppLauncherId(controller->app_id(),
+                                         controller->launch_id()),
+            ash::LAUNCH_FROM_UNKNOWN, event_flags);
 }
 
 void ChromeLauncherControllerImpl::Close(ash::ShelfID id) {
@@ -455,11 +460,11 @@ void ChromeLauncherControllerImpl::ActivateApp(const std::string& app_id,
   // Create a temporary application launcher item and use it to see if there are
   // running instances.
   std::unique_ptr<AppShortcutLauncherItemController> app_controller(
-      AppShortcutLauncherItemController::Create(app_id, "", this));
+      AppShortcutLauncherItemController::Create(app_id, std::string(), this));
   if (!app_controller->GetRunningApplications().empty())
     app_controller->Activate(source);
   else
-    LaunchApp(app_id, source, event_flags);
+    LaunchApp(ash::launcher::AppLauncherId(app_id), source, event_flags);
 }
 
 void ChromeLauncherControllerImpl::SetLauncherItemImage(

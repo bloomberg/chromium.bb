@@ -36,19 +36,10 @@ void ChromeLauncherController::Init() {
   OnInit();
 }
 
-void ChromeLauncherController::LaunchApp(const std::string& app_id,
+void ChromeLauncherController::LaunchApp(ash::launcher::AppLauncherId id,
                                          ash::LaunchSource source,
                                          int event_flags) {
-  launcher_controller_helper_->LaunchApp(app_id, source, event_flags);
-}
-
-void ChromeLauncherController::LaunchAppWithLaunchId(
-    const std::string& app_id,
-    const std::string& launch_id,
-    ash::LaunchSource source,
-    int event_flags) {
-  launcher_controller_helper_->LaunchAppWithLaunchId(app_id, launch_id, source,
-                                                     event_flags);
+  launcher_controller_helper_->LaunchApp(id, source, event_flags);
 }
 
 ChromeLauncherController::ChromeLauncherController() : observer_binding_(this) {

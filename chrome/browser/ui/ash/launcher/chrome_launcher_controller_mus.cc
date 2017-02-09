@@ -35,7 +35,8 @@ class ChromeShelfItemDelegate : public ash::mojom::ShelfItemDelegate {
  private:
   // ash::mojom::ShelfItemDelegate:
   void LaunchItem() override {
-    controller_->LaunchApp(app_id_, ash::LAUNCH_FROM_UNKNOWN, ui::EF_NONE);
+    controller_->LaunchApp(ash::launcher::AppLauncherId(app_id_),
+                           ash::LAUNCH_FROM_UNKNOWN, ui::EF_NONE);
   }
   void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {
     NOTIMPLEMENTED();
