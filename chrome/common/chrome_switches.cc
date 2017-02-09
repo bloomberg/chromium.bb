@@ -1099,6 +1099,11 @@ const char kWindows10CustomTitlebar[]       = "windows10-custom-titlebar";
 const char kWindows8Search[]                = "windows8-search";
 #endif  // defined(OS_WIN)
 
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+// Used to enable Mus+ash.
+const char kMash[]                          = "mash";
+#endif
+
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 // Enables support to debug printing subsystem.
 const char kDebugPrint[] = "debug-print";

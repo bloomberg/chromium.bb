@@ -4,10 +4,11 @@
 
 #include <stdint.h>
 
-#include "build/build_config.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_main_delegate.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "content/public/app/content_main.h"
 #include "content/public/common/content_switches.h"
@@ -101,7 +102,7 @@ int ChromeMain(int argc, const char** argv) {
   version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::CANARY ||
       channel == version_info::Channel::UNKNOWN) {
-    if (command_line->HasSwitch("mash"))
+    if (command_line->HasSwitch(switches::kMash))
       return MashMain();
     WaitForMashDebuggerIfNecessary();
     if (service_manager::ServiceManagerIsRemote())

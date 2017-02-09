@@ -28,6 +28,7 @@
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/app/mash/chrome_mash_catalog.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/common/content_switches.h"
@@ -110,13 +111,13 @@ class ServiceProcessLauncherDelegateImpl
 
     // When launching the browser process, ensure that we don't inherit the
     // --mash flag so it proceeds with the normal content/browser startup path.
-    // Eliminate all copies in case the developer passed more than one.
-    base::CommandLine::StringVector new_argv;
-    for (const base::CommandLine::StringType& arg : command_line->argv()) {
-      if (arg != FILE_PATH_LITERAL("--mash"))
-        new_argv.push_back(arg);
+    base::CommandLine::SwitchMap new_switches = command_line->GetSwitches();
+    new_switches.erase(switches::kMash);
+    *command_line = base::CommandLine(command_line->GetProgram());
+    for (const std::pair<std::string, base::CommandLine::StringType>& sw :
+         new_switches) {
+      command_line->AppendSwitchNative(sw.first, sw.second);
     }
-    *command_line = base::CommandLine(new_argv);
   }
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcessLauncherDelegateImpl);

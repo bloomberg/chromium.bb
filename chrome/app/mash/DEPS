@@ -5,6 +5,7 @@ include_rules = [
   # depend upon chrome code in any way.
   "-chrome",
   "+chrome/app/mash",
+  "+chrome/common/chrome_switches.h",
   "+components/font_service",
   "+components/tracing",
   "+services/ui",
