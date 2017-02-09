@@ -86,6 +86,21 @@ cr.define('cr.ui.Oobe', function() {
     },
 
     /**
+     * Returns value of the selected option (see setupSelect() above).
+     * @param {!Object} list The same as in setupSelect() above.
+     */
+    getSelectedValue: function(list) {
+      for (var i = 0; i < list.length; ++i) {
+        var item = list[i];
+        if (item.optionGroupName)
+          continue;
+        if (item.selected)
+          return item.value;
+      }
+      return null;
+    },
+
+    /**
      * Initializes the OOBE flow.  This will cause all C++ handlers to
      * be invoked to do final setup.
      */

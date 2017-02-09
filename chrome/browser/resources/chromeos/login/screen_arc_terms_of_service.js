@@ -81,7 +81,18 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
                   typeof results[0] == 'string') {
                 self.showUrlOverlay(results[0]);
               } else {
-                self.showUrlOverlay('https://www.google.com/policies/privacy/');
+                // currentLanguage can be updated in OOBE but not in Login page.
+                // languageList exists in OOBE otherwise use navigator.language.
+                var currentLanguage;
+                var languageList = loadTimeData.getValue('languageList');
+                if (languageList) {
+                  currentLanguage = Oobe.getSelectedValue(languageList);
+                } else {
+                  currentLanguage = navigator.language;
+                }
+                var defaultLink = 'https://www.google.com/intl/' +
+                    currentLanguage + '/policies/privacy/';
+                self.showUrlOverlay(defaultLink);
               }
             });
       };
@@ -253,9 +264,11 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      * @param {string} content HTML formatted text to show.
      */
     showLearnMoreOverlay: function(content) {
+      this.lastFocusedElement = document.activeElement;
       $('arc-learn-more-content').innerHTML = content;
       $('arc-tos-overlay-content-text').hidden = false;
       $('arc-tos-overlay-text').hidden = false;
+      $('arc-tos-overlay-text-close').focus();
     },
 
     /**
@@ -263,8 +276,10 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
      * @param {string} targetUrl URL to open.
      */
     showUrlOverlay: function(targetUrl) {
+      this.lastFocusedElement = document.activeElement;
       $('arc-tos-overlay-webview').src = targetUrl;
       $('arc-tos-overlay-url').hidden = false;
+      $('arc-tos-overlay-url-close').focus();
     },
 
     /**
@@ -273,6 +288,10 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
     hideOverlay: function() {
       $('arc-tos-overlay-text').hidden = true;
       $('arc-tos-overlay-url').hidden = true;
+      if (this.lastFocusedElement) {
+        this.lastFocusedElement.focus();
+        this.lastFocusedElement = null;
+      }
     },
 
     /**

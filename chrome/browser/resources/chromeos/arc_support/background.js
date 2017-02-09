@@ -30,6 +30,13 @@ var port = null;
 var currentDeviceId = null;
 
 /**
+ * Stores last focused element before showing overlay. It is used to restore
+ * focus once overlay is closed.
+ * @type {Object}
+ */
+var lastFocusedElement = null;
+
+/**
  * Host window inner default width.
  * @const {number}
  */
@@ -287,6 +294,7 @@ class TermsOfServicePage {
     this.loadingContainer_.hidden = true;
     this.contentContainer_.hidden = false;
     this.updateTermsHeight_();
+    this.contentContainer_.querySelector('#button-agree').focus();
   }
 
   /**
@@ -373,7 +381,7 @@ class TermsOfServicePage {
   }
 
   /** Called when metrics preference is updated. */
-  onMetricxPreferenceChanged(isEnabled, isManaged) {
+  onMetricsPreferenceChanged(isEnabled, isManaged) {
     this.metricsCheckbox_.onPreferenceChanged(isEnabled, isManaged);
 
     // Applying metrics mode may change page layout, update terms height.
@@ -446,7 +454,7 @@ function onNativeMessage(message) {
   if (message.action == 'initialize') {
     initialize(message.data, message.deviceId);
   } else if (message.action == 'setMetricsMode') {
-    termsPage.onMetricxPreferenceChanged(message.enabled, message.managed);
+    termsPage.onMetricsPreferenceChanged(message.enabled, message.managed);
   } else if (message.action == 'setBackupAndRestoreMode') {
     termsPage.onBackupRestorePreferenceChanged(
         message.enabled, message.managed);
@@ -545,6 +553,8 @@ function showOverlay(overlayClass) {
   var overlayContainer = doc.getElementById('overlay-container');
   overlayContainer.className = 'overlay ' + overlayClass;
   overlayContainer.hidden = false;
+  lastFocusedElement = doc.activeElement;
+  doc.getElementById('overlay-close').focus();
 }
 
 /**
@@ -574,12 +584,18 @@ function showURLOverlay(url) {
  * the content of terms view.
  */
 function showPrivacyPolicyOverlay() {
+  var defaultLink = 'https://www.google.com/intl/' + navigator.language +
+      '/policies/privacy/';
+  if (termsPage.isManaged_) {
+    showURLOverlay(defaultLink);
+    return;
+  }
   var details = {code: 'getPrivacyPolicyLink();'};
   termsPage.termsView_.executeScript(details, function(results) {
     if (results && results.length == 1 && typeof results[0] == 'string') {
       showURLOverlay(results[0]);
     } else {
-      showURLOverlay('https://www.google.com/policies/privacy/');
+      showURLOverlay(defaultLink);
     }
   });
 }
@@ -591,6 +607,10 @@ function hideOverlay() {
   var doc = appWindow.contentWindow.document;
   var overlayContainer = doc.getElementById('overlay-container');
   overlayContainer.hidden = true;
+  if (lastFocusedElement) {
+    lastFocusedElement.focus();
+    lastFocusedElement = null;
+  }
 }
 
 function setWindowBounds() {

@@ -75,10 +75,8 @@ constexpr base::TimeDelta kArcSignInTimeout = base::TimeDelta::FromMinutes(5);
 ash::ShelfDelegate* GetShelfDelegate() {
   if (g_shelf_delegate_for_testing)
     return g_shelf_delegate_for_testing;
-  if (ash::WmShell::HasInstance()) {
-    DCHECK(ash::WmShell::Get()->shelf_delegate());
+  if (ash::WmShell::HasInstance())
     return ash::WmShell::Get()->shelf_delegate();
-  }
   return nullptr;
 }
 
