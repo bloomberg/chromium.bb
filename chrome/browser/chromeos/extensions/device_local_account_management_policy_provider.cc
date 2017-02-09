@@ -688,11 +688,11 @@ const char* const kSafePermissionStrings[] = {
 // Some permissions take the form of a dictionary.  See |kSafePermissionStrings|
 // for permission strings (and for more documentation).
 const char* const kSafePermissionDicts[] = {
-    // Dictionary form of the above "fileSystem" permission string.
+    // Dictionary forms of the above permission strings.
     "fileSystem",
-
-    // Just another type of connectivity.
+    "mediaGalleries",
     "socket",
+    "usbDevices",
 };
 
 // List of safe entries for the "app" dict in manifest.
