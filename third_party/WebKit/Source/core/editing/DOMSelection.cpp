@@ -365,8 +365,11 @@ void DOMSelection::extend(Node* node,
                           ExceptionState& exceptionState) {
   DCHECK(node);
 
-  if (!isAvailable())
+  if (rangeCount() == 0) {
+    exceptionState.throwDOMException(
+        InvalidStateError, "This Selection object doesn't have any Ranges.");
     return;
+  }
 
   if (offset < 0) {
     exceptionState.throwDOMException(

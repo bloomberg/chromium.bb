@@ -36,7 +36,7 @@ shouldBeNull("foreignSel.anchorNode");
 shouldBeNull("mainSel.anchorNode");
 
 clear();
-mainSel.extend(foreignElement, 1);
+shouldThrow("mainSel.extend(foreignElement, 1)");
 shouldBeNull("foreignSel.anchorNode");
 shouldBeNull("mainSel.anchorNode");
 

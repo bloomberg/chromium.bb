@@ -7,6 +7,7 @@ PASS sel.anchorNode is null
 PASS sel.anchorNode is null
 PASS sel.anchorNode is null
 PASS sel.anchorNode is null
+PASS sel.extend(docType, 0) threw exception InvalidStateError: Failed to execute 'extend' on 'Selection': This Selection object doesn't have any Ranges..
 PASS sel.anchorNode is null
 PASS sel.anchorNode is null
 PASS sel.containsNode(docType) is false

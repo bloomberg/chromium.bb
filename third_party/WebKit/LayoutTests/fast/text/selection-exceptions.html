@@ -21,6 +21,7 @@
         shouldThrow('getSelection().getRangeAt(-1)', '"IndexSizeError: Failed to execute \'getRangeAt\' on \'Selection\': -1 is not a valid index."');
 
         shouldThrow('getSelection().extend(0, -1)', '"TypeError: Failed to execute \'extend\' on \'Selection\': parameter 1 is not of type \'Node\'."');
+        getSelection().addRange(document.createRange());
         shouldThrow('getSelection().extend(document.documentElement, -1)', '"IndexSizeError: Failed to execute \'extend\' on \'Selection\': -1 is not a valid offset."');
         shouldThrow('getSelection().extend(document.documentElement, 1000)', '"IndexSizeError: Failed to execute \'extend\' on \'Selection\': 1000 is larger than the given node\'s length."');
     </script>

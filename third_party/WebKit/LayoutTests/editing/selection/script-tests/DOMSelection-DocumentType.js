@@ -17,7 +17,7 @@ shouldBeNull("sel.anchorNode");
 sel.selectAllChildren(docType);
 shouldBeNull("sel.anchorNode");
 
-sel.extend(docType, 0);
+shouldThrow("sel.extend(docType, 0)");
 shouldBeNull("sel.anchorNode");
 
 sel.containsNode(docType);

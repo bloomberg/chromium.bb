@@ -750,7 +750,8 @@ class Sample {
     if (this.loadSelectionInTextArea(selection))
       return;
     this.selection_.collapse(selection.anchorNode, selection.anchorOffset);
-    this.selection_.extend(selection.focusNode, selection.focusOffset);
+    if (this.selection_.rangeCount > 0)
+      this.selection_.extend(selection.focusNode, selection.focusOffset);
   }
 
   /**
