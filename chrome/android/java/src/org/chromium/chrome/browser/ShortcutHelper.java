@@ -404,8 +404,17 @@ public class ShortcutHelper {
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         int maxInnerSize = Math.round(am.getLauncherLargeIconSize() * MAX_INNER_SIZE_RATIO);
         int innerSize = Math.min(maxInnerSize, Math.max(webIcon.getWidth(), webIcon.getHeight()));
-        int padding = Math.round(ICON_PADDING_RATIO * innerSize);
-        int outerSize = innerSize + 2 * padding;
+
+        int outerSize = innerSize;
+        Rect innerBounds = new Rect(0, 0, innerSize, innerSize);
+
+        // Draw the icon with padding around it if all four corners are not transparent. Otherwise,
+        // don't add padding.
+        if (shouldPadIcon(webIcon)) {
+            int padding = Math.round(ICON_PADDING_RATIO * innerSize);
+            outerSize += 2 * padding;
+            innerBounds.offset(padding, padding);
+        }
 
         Bitmap bitmap = null;
         try {
@@ -418,15 +427,6 @@ public class ShortcutHelper {
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setFilterBitmap(true);
-        Rect innerBounds;
-
-        // Draw the icon with padding around it if all four corners are not transparent. Otherwise,
-        // don't add padding.
-        if (shouldPadIcon(webIcon)) {
-            innerBounds = new Rect(padding, padding, outerSize - padding, outerSize - padding);
-        } else {
-            innerBounds = new Rect(0, 0, outerSize, outerSize);
-        }
         canvas.drawBitmap(webIcon, null, innerBounds, paint);
 
         return bitmap;
