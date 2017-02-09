@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string>
+#include <vector>
 
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/json/string_escape.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -31,7 +31,6 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
@@ -68,21 +67,6 @@ const char kRTLHtmlTextDirection[] = "rtl";
 base::string16 V8ValueToUTF16(v8::Local<v8::Value> v) {
   v8::String::Value s(v);
   return base::string16(reinterpret_cast<const base::char16*>(*s), s.length());
-}
-
-// Returns whether icon NTP is enabled by experiment.
-// TODO(huangs): Remove all 3 copies of this routine once Icon NTP launches.
-bool IsIconNTPEnabled() {
-  // Note: It's important to query the field trial state first, to ensure that
-  // UMA reports the correct group.
-  const std::string group_name = base::FieldTrialList::FindFullName("IconNTP");
-  using base::CommandLine;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableIconNtp))
-    return false;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableIconNtp))
-    return true;
-
-  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
 // Converts string16 to V8 String.
@@ -189,18 +173,6 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
 
   obj->Set(v8::String::NewFromUtf8(isolate, "tileSource"),
            v8::Integer::New(isolate, static_cast<int>(mv_item.source)));
-
-  if (IsIconNTPEnabled()) {
-    // Update website http://www.chromium.org/embeddedsearch when we make this
-    // permanent.
-    // Large icon size is 48px * window.devicePixelRatio. This is easier to set
-    // from JS, where IsIconNTPEnabled() is not available. So we add stubs
-    // here, and let JS fill in details.
-    obj->Set(v8::String::NewFromUtf8(isolate, "largeIconUrl"),
-             v8::String::NewFromUtf8(isolate, "chrome-search://large-icon/"));
-    obj->Set(v8::String::NewFromUtf8(isolate, "fallbackIconUrl"),
-        v8::String::NewFromUtf8(isolate, "chrome-search://fallback-icon/"));
-  }
   obj->Set(v8::String::NewFromUtf8(isolate, "title"),
            UTF16ToV8String(isolate, title));
   obj->Set(v8::String::NewFromUtf8(isolate, "domain"),

@@ -942,18 +942,6 @@
             ]
         }
     ],
-    "IconNTP": [
-        {
-            "platforms": [
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Default"
-                }
-            ]
-        }
-    ],
     "ImportantSitesInCBD": [
         {
             "platforms": [

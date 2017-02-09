@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -1722,7 +1723,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableGpuVsync,
     switches::kDisableLowResTiling,
     switches::kDisableHistogramCustomizer,
-    switches::kDisableIconNtp,
     switches::kDisableLCDText,
     switches::kDisableLocalStorage,
     switches::kDisableLogging,
@@ -1759,7 +1759,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGpuClientTracing,
     switches::kEnableGpuMemoryBufferVideoFrames,
     switches::kEnableGPUServiceLogging,
-    switches::kEnableIconNtp,
     switches::kEnableLowResTiling,
     switches::kEnableMediaSuspend,
     switches::kEnableInbandTextTracks,

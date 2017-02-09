@@ -4,9 +4,7 @@
 
 #include "components/favicon/core/favicon_driver_impl.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -14,25 +12,9 @@
 #include "components/favicon/core/favicon_handler.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
-#include "ui/base/ui_base_switches.h"
 
 namespace favicon {
 namespace {
-
-// Returns whether icon NTP is enabled by experiment.
-// TODO(huangs): Remove all 3 copies of this routine once Icon NTP launches.
-bool IsIconNTPEnabled() {
-  // Note: It's important to query the field trial state first, to ensure that
-  // UMA reports the correct group.
-  const std::string group_name = base::FieldTrialList::FindFullName("IconNTP");
-  using base::CommandLine;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableIconNtp))
-    return false;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableIconNtp))
-    return true;
-
-  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
-}
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 const bool kEnableTouchIcon = true;
@@ -52,7 +34,7 @@ FaviconDriverImpl::FaviconDriverImpl(FaviconService* favicon_service,
       favicon_service_, this, kEnableTouchIcon
                                   ? FaviconDriverObserver::NON_TOUCH_LARGEST
                                   : FaviconDriverObserver::NON_TOUCH_16_DIP));
-  if (kEnableTouchIcon || IsIconNTPEnabled()) {
+  if (kEnableTouchIcon) {
     touch_icon_handler_.reset(new FaviconHandler(
         favicon_service_, this, FaviconDriverObserver::TOUCH_LARGEST));
   }
