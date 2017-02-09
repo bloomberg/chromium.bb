@@ -1,6 +1,7 @@
 include_rules = [
   "+media/base",
   "+google/protobuf",
+  "+ios/third_party/material_components_ios/src",
   "+remoting/codec",
   "+remoting/client/ios",
   "+remoting/client/ios/bridge",
