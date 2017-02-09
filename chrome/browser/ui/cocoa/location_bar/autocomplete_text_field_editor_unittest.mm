@@ -19,6 +19,7 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/ocmock_extensions.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 using ::testing::Return;
@@ -193,6 +194,14 @@ TEST_F(AutocompleteTextFieldEditorTest, FirstResponder) {
 TEST_F(AutocompleteTextFieldEditorTest, Display) {
   [field_ display];
   [editor_ display];
+}
+
+// Tests that the Touch Bar is nothing.
+TEST_F(AutocompleteTextFieldEditorTest, TouchBarTest) {
+  if ([field_ respondsToSelector:@selector(touchBar)]) {
+    NSTouchBar* touch_bar = [field_ performSelector:@selector(touchBar)];
+    EXPECT_FALSE(touch_bar);
+  }
 }
 
 // Test that -paste: is correctly delegated to the observer.
