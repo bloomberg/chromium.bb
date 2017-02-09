@@ -75,8 +75,20 @@ class AnalyserHandler final : public AudioBasicInspectorHandler {
     m_analyser.getByteTimeDomainData(array);
   }
 
+  // AnalyserNode needs special handling when updating the pull status
+  // because the node must get pulled even if there are no inputs or
+  // outputs so that the internal state is properly updated with the
+  // correct time data.
+  void updatePullStatus() override;
+
  private:
   AnalyserHandler(AudioNode&, float sampleRate);
+  bool propagatesSilence() const {
+    // An AnalyserNode does actually propogate silence, but to get the
+    // time and FFT data updated correctly, process() needs to be
+    // called even if all the inputs are silent.
+    return false;
+  }
 
   RealtimeAnalyser m_analyser;
 };

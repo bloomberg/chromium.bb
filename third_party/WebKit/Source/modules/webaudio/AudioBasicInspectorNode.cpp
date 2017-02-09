@@ -116,8 +116,11 @@ void AudioBasicInspectorHandler::updatePullStatus() {
       context()->deferredTaskHandler().addAutomaticPullNode(this);
       m_needAutomaticPull = true;
     } else if (!numberOfInputConnections && m_needAutomaticPull) {
-      // The AudioBasicInspectorNode is connected to nothing, remove it from the
-      // context's automatic pull list.
+      // The AudioBasicInspectorNode is connected to nothing and is
+      // not an AnalyserNode, remove it from the context's automatic
+      // pull list.  AnalyserNode's need to be pulled even with no
+      // inputs so that the internal state gets updated to hold the
+      // right time and FFT data.
       context()->deferredTaskHandler().removeAutomaticPullNode(this);
       m_needAutomaticPull = false;
     }

@@ -429,9 +429,14 @@ void AudioHandler::disableOutputsIfNecessary() {
     // This needs to be handled more generally where AudioNodes have a tailTime
     // attribute. Then the AudioNode only needs to remain "active" for tailTime
     // seconds after there are no longer any active connections.
+    //
+    // The analyser node also requires special handling because we
+    // need the internal state to be updated for the time and FFT data
+    // even if it has no connections.
     if (getNodeType() != NodeTypeConvolver && getNodeType() != NodeTypeDelay &&
         getNodeType() != NodeTypeBiquadFilter &&
-        getNodeType() != NodeTypeIIRFilter) {
+        getNodeType() != NodeTypeIIRFilter &&
+        getNodeType() != NodeTypeAnalyser) {
       m_isDisabled = true;
       clearInternalStateWhenDisabled();
       for (auto& output : m_outputs)

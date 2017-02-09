@@ -50,9 +50,9 @@ class AudioBasicInspectorHandler : public AudioHandler {
   void pullInputs(size_t framesToProcess) final;
   void checkNumberOfChannelsForInput(AudioNodeInput*) final;
 
-  void updatePullStatus();
+  virtual void updatePullStatus();
 
- private:
+ protected:
   // When setting to true, AudioBasicInspectorHandler will be pulled
   // automaticlly by BaseAudioContext before the end of each render quantum.
   bool m_needAutomaticPull;

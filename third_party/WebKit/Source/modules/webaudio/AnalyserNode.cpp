@@ -50,15 +50,23 @@ AnalyserHandler::~AnalyserHandler() {
 void AnalyserHandler::process(size_t framesToProcess) {
   AudioBus* outputBus = output(0).bus();
 
-  if (!isInitialized() || !input(0).isConnected()) {
+  if (!isInitialized()) {
     outputBus->zero();
     return;
   }
 
   AudioBus* inputBus = input(0).bus();
 
-  // Give the analyser the audio which is passing through this AudioNode.
+  // Give the analyser the audio which is passing through this
+  // AudioNode.  This must always be done so that the state of the
+  // Analyser reflects the current input.
   m_analyser.writeInput(inputBus, framesToProcess);
+
+  if (!input(0).isConnected()) {
+    // No inputs, so clear the output, and propagate the silence hint.
+    outputBus->zero();
+    return;
+  }
 
   // For in-place processing, our override of pullInputs() will just pass the
   // audio data through unchanged if the channel count matches from input to
@@ -132,6 +140,35 @@ void AnalyserHandler::setSmoothingTimeConstant(double k,
   }
 }
 
+void AnalyserHandler::updatePullStatus() {
+#if DCHECK_IS_ON()
+  DCHECK(context()->isGraphOwner());
+#endif
+
+  if (output(0).isConnected()) {
+    // When an AudioBasicInspectorNode is connected to a downstream node, it
+    // will get pulled by the downstream node, thus remove it from the context's
+    // automatic pull list.
+    if (m_needAutomaticPull) {
+      context()->deferredTaskHandler().removeAutomaticPullNode(this);
+      m_needAutomaticPull = false;
+    }
+  } else {
+    unsigned numberOfInputConnections = input(0).numberOfRenderingConnections();
+    // When an AnalyserNode is not connected to any downstream node
+    // while still connected from upstream node(s), add it to the context's
+    // automatic pull list.
+    //
+    // But don't remove the AnalyserNode if there are no inputs
+    // connected to the node.  The node needs to be pulled so that the
+    // internal state is updated with the correct input signal (of
+    // zeroes).
+    if (numberOfInputConnections && !m_needAutomaticPull) {
+      context()->deferredTaskHandler().addAutomaticPullNode(this);
+      m_needAutomaticPull = true;
+    }
+  }
+}
 // ----------------------------------------------------------------
 
 AnalyserNode::AnalyserNode(BaseAudioContext& context)
