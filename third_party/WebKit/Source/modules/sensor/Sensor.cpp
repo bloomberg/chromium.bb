@@ -62,24 +62,24 @@ Sensor::Sensor(ExecutionContext* executionContext,
 
 Sensor::~Sensor() = default;
 
-void Sensor::start(ScriptState* scriptState, ExceptionState& exceptionState) {
+void Sensor::start() {
   if (m_state != Sensor::SensorState::Unconnected &&
       m_state != Sensor::SensorState::Idle &&
       m_state != Sensor::SensorState::Errored)
     return;
 
   initSensorProxyIfNeeded();
-
   if (!m_sensorProxy) {
-    exceptionState.throwDOMException(
-        InvalidStateError, "The Sensor is no longer associated to a frame.");
+    reportError(InvalidStateError,
+                "The Sensor is no longer associated to a frame.");
     return;
   }
+
   m_lastUpdateTimestamp = WTF::monotonicallyIncreasingTime();
   startListening();
 }
 
-void Sensor::stop(ScriptState*, ExceptionState& exceptionState) {
+void Sensor::stop() {
   if (m_state == Sensor::SensorState::Unconnected ||
       m_state == Sensor::SensorState::Idle ||
       m_state == Sensor::SensorState::Errored)

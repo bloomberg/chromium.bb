@@ -35,8 +35,8 @@ class Sensor : public EventTargetWithInlineData,
 
   ~Sensor() override;
 
-  void start(ScriptState*, ExceptionState&);
-  void stop(ScriptState*, ExceptionState&);
+  void start();
+  void stop();
 
   // EventTarget overrides.
   const AtomicString& interfaceName() const override {

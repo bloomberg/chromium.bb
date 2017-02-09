@@ -21,8 +21,8 @@ enum SensorState {
     readonly attribute SensorState state;
     [CallWith=ScriptState] readonly attribute DOMHighResTimeStamp? timestamp;
 
-    [CallWith=ScriptState, RaisesException, MeasureAs=GenericSensorStart] void start();
-    [CallWith=ScriptState, RaisesException, MeasureAs=GenericSensorStop] void stop();
+    [MeasureAs=GenericSensorStart] void start();
+    [MeasureAs=GenericSensorStop] void stop();
 
     attribute EventHandler onerror;
     attribute EventHandler onchange;
