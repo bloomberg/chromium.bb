@@ -94,7 +94,6 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
 #endif
 // Test array[TooBig][X] and array[X][TooBig] allocations for int overflows.
 // IOS doesn't honor nothrow, so disable the test there.
-// Crashes on Windows Dbg builds, disable there as well.
 // Disabled on Linux because failing Linux Valgrind bot, and Valgrind exclusions
 // are not currently read. See http://crbug.com/582398
 TEST(SecurityTest, MAYBE_NewOverflow) {
