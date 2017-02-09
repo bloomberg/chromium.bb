@@ -33,7 +33,7 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->OverrideContentSecurityPolicyObjectSrc("object-src chrome:;");
   source->SetJsonPath("strings.js");
 
-  source->SetDefaultResource(IDR_NEW_INLINE_LOGIN_HTML);
+  source->SetDefaultResource(IDR_INLINE_LOGIN_HTML);
 
   // Only add a filter when runing as test.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

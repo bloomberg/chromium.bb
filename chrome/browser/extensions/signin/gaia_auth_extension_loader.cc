@@ -68,7 +68,6 @@ namespace extensions {
 GaiaAuthExtensionLoader::GaiaAuthExtensionLoader(BrowserContext* context)
     : browser_context_(context),
       load_count_(0),
-      last_data_id_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -93,7 +92,6 @@ void GaiaAuthExtensionLoader::UnloadIfNeeded() {
   --load_count_;
   if (load_count_ == 0) {
     UnloadGaiaAuthExtension(browser_context_);
-    data_.clear();
   }
 }
 
@@ -102,7 +100,6 @@ void GaiaAuthExtensionLoader::Shutdown() {
     UnloadGaiaAuthExtension(browser_context_);
     load_count_ = 0;
   }
-  data_.clear();
 }
 
 // static

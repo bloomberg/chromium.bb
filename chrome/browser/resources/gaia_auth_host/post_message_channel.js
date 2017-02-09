@@ -9,7 +9,7 @@
  */
 'use strict';
 
-// <include src="../gaia_auth/channel.js">
+// <include src="channel.js">
 
 var PostMessageChannel = (function() {
   /**

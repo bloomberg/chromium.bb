@@ -3,4 +3,4 @@
 // found in the LICENSE file.
 
 // <include src="post_message_channel.js">
-// <include src="../gaia_auth/saml_injected.js">
+// <include src="saml_injected.js">

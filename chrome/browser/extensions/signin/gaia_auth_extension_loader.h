@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_SIGNIN_GAIA_AUTH_EXTENSION_LOADER_H_
 #define CHROME_BROWSER_EXTENSIONS_SIGNIN_GAIA_AUTH_EXTENSION_LOADER_H_
 
-#include <map>
-#include <string>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -54,9 +51,6 @@ class GaiaAuthExtensionLoader : public BrowserContextKeyedAPI {
 
   content::BrowserContext* browser_context_;
   int load_count_;
-
-  int last_data_id_;
-  std::map<int, std::string> data_;
 
   base::WeakPtrFactory<GaiaAuthExtensionLoader> weak_ptr_factory_;
 
