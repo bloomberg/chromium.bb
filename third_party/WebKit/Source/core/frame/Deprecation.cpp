@@ -19,6 +19,7 @@ enum Milestone {
   M57,
   M58,
   M59,
+  M60,
 };
 
 const char* milestoneString(Milestone milestone) {
@@ -34,6 +35,8 @@ const char* milestoneString(Milestone milestone) {
       return "M58, around April 2017";
     case M59:
       return "M59, around June 2017";
+    case M60:
+      return "M60, around August 2017";
   }
 
   ASSERT_NOT_REACHED();
@@ -353,6 +356,16 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
              "Support will be removed in the future. You should consider "
              "switching your application to a secure origin, such as HTTPS. "
              "See https://goo.gl/rStTGz for more details.";
+
+    case UseCounter::NotificationInsecureOrigin:
+    case UseCounter::NotificationAPIInsecureOriginIframe:
+    case UseCounter::NotificationPermissionRequestedInsecureOrigin:
+      return String::format(
+          "Using the Notification API on insecure origins is "
+          "deprecated and will be removed in %s. You should consider "
+          "switching your application to a secure origin, such as HTTPS. See "
+          "https://goo.gl/rStTGz for more details.",
+          milestoneString(M60));
 
     case UseCounter::ElementCreateShadowRootMultiple:
       return "Calling Element.createShadowRoot() for an element which already "

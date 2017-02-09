@@ -41,6 +41,7 @@
 #include "core/dom/ScopedWindowFocusAllowedIndicator.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "modules/notifications/NotificationAction.h"
 #include "modules/notifications/NotificationData.h"
@@ -98,9 +99,10 @@ Notification* Notification::create(ExecutionContext* context,
       UseCounter::countCrossOriginIframe(
           *toDocument(context), UseCounter::NotificationAPISecureOriginIframe);
   } else {
-    UseCounter::count(context, UseCounter::NotificationInsecureOrigin);
+    Deprecation::countDeprecation(context,
+                                  UseCounter::NotificationInsecureOrigin);
     if (context->isDocument())
-      UseCounter::countCrossOriginIframe(
+      Deprecation::countDeprecationCrossOriginIframe(
           *toDocument(context),
           UseCounter::NotificationAPIInsecureOriginIframe);
   }
@@ -358,8 +360,13 @@ String Notification::permission(ExecutionContext* context) {
 ScriptPromise Notification::requestPermission(
     ScriptState* scriptState,
     NotificationPermissionCallback* deprecatedCallback) {
-  return NotificationManager::from(scriptState->getExecutionContext())
-      ->requestPermission(scriptState, deprecatedCallback);
+  ExecutionContext* context = scriptState->getExecutionContext();
+  if (!context->isSecureContext()) {
+    Deprecation::countDeprecation(
+        context, UseCounter::NotificationPermissionRequestedInsecureOrigin);
+  }
+  return NotificationManager::from(context)->requestPermission(
+      scriptState, deprecatedCallback);
 }
 
 size_t Notification::maxActions() {

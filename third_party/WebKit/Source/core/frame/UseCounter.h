@@ -1457,6 +1457,7 @@ class CORE_EXPORT UseCounter {
     FullscreenRequestWithPendingElement = 1804,
     HTMLIFrameElementAllowfullscreenAttributeSetAfterContentLoad = 1805,
     PointerEventSetCaptureOutsideDispatch = 1806,
+    NotificationPermissionRequestedInsecureOrigin = 1807,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
