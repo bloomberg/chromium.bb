@@ -205,15 +205,15 @@ class NetworkQualitiesPrefDelegateImpl
   }
   std::unique_ptr<base::DictionaryValue> GetDictionaryValue() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    // TODO(tbansal): Add logic to read prefs if the embedder has enabled cached
-    // estimates.
-    return base::WrapUnique(new base::DictionaryValue());
+    UMA_HISTOGRAM_EXACT_LINEAR("NQE.Prefs.ReadCount", 1, 2);
+    return pref_service_->GetDictionary(kNetworkQualities)->CreateDeepCopy();
   }
 
  private:
   // Schedules the writing of the lossy prefs.
   void SchedulePendingLossyWrites() {
     DCHECK(thread_checker_.CalledOnValidThread());
+    UMA_HISTOGRAM_EXACT_LINEAR("NQE.Prefs.WriteCount", 1, 2);
     pref_service_->SchedulePendingLossyWrites();
     lossy_prefs_writing_task_posted_ = false;
   }

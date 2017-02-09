@@ -22,6 +22,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.net.MetricsTestUtil.TestExecutor;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.impl.CronetEngineBase;
@@ -323,6 +324,12 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         testFramework.mCronetEngine.addRttListener(rttListener);
         testFramework.mCronetEngine.addThroughputListener(throughputListener);
 
+        HistogramDelta writeCountHistogram = new HistogramDelta("NQE.Prefs.WriteCount", 1);
+        assertEquals(0, writeCountHistogram.getDelta()); // Sanity check.
+
+        HistogramDelta readCountHistogram = new HistogramDelta("NQE.Prefs.ReadCount", 1);
+        assertEquals(0, readCountHistogram.getDelta()); // Sanity check.
+
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = testFramework.mCronetEngine.newUrlRequestBuilder(
                 mUrl, callback, callback.getExecutor());
@@ -335,6 +342,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // throughput listeners on the executor provided to network quality.
         waitForThroughput.block();
         assertTrue(throughputListener.throughputObservationCount() > 0);
+
+        // Prefs must be read at startup.
+        assertTrue(readCountHistogram.getDelta() > 0);
 
         // Check RTT observation count after throughput observation has been received. This ensures
         // that executor has finished posting the RTT observation to the RTT listeners.
@@ -367,7 +377,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // Verify that the cached estimates were written to the prefs.
         while (true) {
             Log.i(TAG, "Still waiting for pref file update.....");
-            Thread.sleep(10000);
+            Thread.sleep(12000);
             try {
                 if (fileContainsString("local_prefs.json", "network_qualities")) {
                     break;
@@ -380,6 +390,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         assertTrue(fileContainsString("local_prefs.json", "network_qualities"));
 
         testFramework.mCronetEngine.shutdown();
+        assertTrue(writeCountHistogram.getDelta() > 0);
     }
 
     @SmallTest
