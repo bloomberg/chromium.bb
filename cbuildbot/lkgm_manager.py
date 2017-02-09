@@ -332,10 +332,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     self.RefreshManifestCheckout()
     self.InitializeManifestVariables(version_info)
 
-    self.GenerateBlameListSinceLKGM()
+    has_chump_cls = self.GenerateBlameListSinceLKGM()
 
     # Throw away CLs that might not be used this run.
     if validation_pool:
+      validation_pool.has_chump_cls = has_chump_cls
       validation_pool.FilterChangesForThrottledTree()
 
       # Apply any manifest CLs (internal or exteral).
@@ -508,16 +509,19 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     Add buildbot trappings to print <a href='url'>text</a> in the waterfall for
     each CL committed since we last had a passing build.
+
+    Returns:
+      A boolean indicating whether the blamelist has chump CLs.
     """
     if not self._ShouldGenerateBlameListSinceLKGM():
       logging.info('Not generating blamelist for lkgm as it is not appropriate '
                    'for this build type.')
-      return
+      return False
     # Suppress re-printing changes we tried ourselves on paladin
     # builders since they are redundant.
     only_print_chumps = self.build_type == constants.PALADIN_TYPE
-    GenerateBlameList(self.cros_source, self.lkgm_path,
-                      only_print_chumps=only_print_chumps)
+    return GenerateBlameList(self.cros_source, self.lkgm_path,
+                             only_print_chumps=only_print_chumps)
 
   def GetLatestPassingSpec(self):
     """Get the last spec file that passed in the current branch."""
@@ -531,7 +535,11 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
     source_repo: Repository object for the source code.
     lkgm_path: Path to LKGM manifest.
     only_print_chumps: If True, only print changes that were chumped.
+
+  Returns:
+    A boolean indicating whether the blamelist has chump CLs.
   """
+  has_chump_cls = False
   handler = git.Manifest(lkgm_path)
   reviewed_on_re = re.compile(r'\s*Reviewed-on:\s*(\S+)')
   author_re = re.compile(r'\s*Author:.*<(\S+)@\S+>\s*')
@@ -555,7 +563,7 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
         raise
       logging.warning('Detected branch removed from local checkout.')
       logging.PrintBuildbotStepWarnings()
-      return
+      return has_chump_cls
     current_author = None
     current_committer = None
     for line in unicode(result.output, 'ascii', 'ignore').splitlines():
@@ -584,6 +592,9 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
         if current_committer not in ('chrome-bot', 'chrome-internal-fetch',
                                      'chromeos-commit-bot', '3su6n15k.default'):
           items.insert(0, 'CHUMP')
+          has_chump_cls = True
         elif only_print_chumps:
           continue
         logging.PrintBuildbotLink(' | '.join(items), review)
+
+  return has_chump_cls

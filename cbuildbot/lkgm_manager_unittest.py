@@ -12,11 +12,12 @@ import os
 import tempfile
 from xml.dom import minidom
 
-from chromite.lib import config_lib
-from chromite.lib import constants
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
+from chromite.cbuildbot import validation_pool
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
@@ -186,6 +187,18 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     init_mock = self.PatchObject(lkgm_manager.LKGMManager,
                                  'InitializeManifestVariables')
 
+    self.PatchObject(lkgm_manager.LKGMManager,
+                     'GenerateBlameListSinceLKGM',
+                     return_value=True)
+    self.PatchObject(lkgm_manager.LKGMManager,
+                     '_AdjustRepoCheckoutToLocalManifest')
+    self.PatchObject(lkgm_manager.LKGMManager,
+                     '_AddPatchesToManifest')
+    mock_pool = self.PatchObject(
+        validation_pool, 'ValidationPool',
+        build_root=self.manager.cros_source.directory,
+        has_chump_cls=False)
+
     # For _AdjustRepoCheckoutToLocalManifest.
     self.PatchObject(repository, 'CloneGitRepo')
     self.PatchObject(git, 'CreateBranch')
@@ -193,7 +206,8 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     # Publish new candidate.
     publish_mock = self.PatchObject(lkgm_manager.LKGMManager, 'PublishManifest')
 
-    candidate_path = self.manager.CreateNewCandidate(build_id=build_id)
+    candidate_path = self.manager.CreateNewCandidate(
+        build_id=build_id, validation_pool=mock_pool)
     self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
 
     publish_mock.assert_called_once_with(new_manifest,
@@ -201,6 +215,7 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
                                          build_id=build_id)
     init_mock.assert_called_once_with(my_info)
     self.push_mock.assert_called_once_with(mock.ANY, mock.ANY, sync=False)
+    self.assertTrue(mock_pool.has_chump_cls)
 
   def testCreateFromManifest(self):
     """Tests that we can create a new candidate from another manifest."""
@@ -282,6 +297,18 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     osutils.Touch(manifest)
     return manifest, dir_pfx
 
+  def _MockParseGitLog(self, fake_git_log, project):
+    exists_mock = self.PatchObject(os.path, 'exists', return_value=True)
+    link_mock = self.PatchObject(logging, 'PrintBuildbotLink')
+    fake_project_handler = mock.Mock(spec=git.Manifest)
+    fake_project_handler.checkouts_by_path = {project['path']: project}
+    self.PatchObject(git, 'Manifest', return_value=fake_project_handler)
+
+    fake_result = cros_build_lib.CommandResult(output=fake_git_log)
+    self.PatchObject(git, 'RunGit', return_value=fake_result)
+
+    return exists_mock, link_mock
+
   def testGenerateBlameListSinceLKGM(self):
     """Tests that we can generate a blamelist from two commit messages.
 
@@ -319,23 +346,14 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     Reviewed-by: Fake person <fake@fake.org>
     Tested-by: Sammy Sosa <fake@fake.com>
     """
-    self.manager.incr_type = 'build'
-    self.PatchObject(cros_build_lib, 'RunCommand', side_effect=Exception())
-    exists_mock = self.PatchObject(os.path, 'exists', return_value=True)
-    link_mock = self.PatchObject(logging, 'PrintBuildbotLink')
-
     project = {
         'name': 'fake/repo',
         'path': 'fake/path',
         'revision': '1234567890',
     }
-    fake_project_handler = mock.Mock(spec=git.Manifest)
-    fake_project_handler.checkouts_by_path = {project['path']: project}
-    self.PatchObject(git, 'Manifest', return_value=fake_project_handler)
-
-    fake_result = cros_build_lib.CommandResult(output=fake_git_log)
-    self.PatchObject(git, 'RunGit', return_value=fake_result)
-
+    self.manager.incr_type = 'build'
+    self.PatchObject(cros_build_lib, 'RunCommand', side_effect=Exception())
+    exists_mock, link_mock = self._MockParseGitLog(fake_git_log, project)
     self.manager.GenerateBlameListSinceLKGM()
 
     exists_mock.assert_called_once_with(
@@ -346,6 +364,71 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
         mock.call('repo | fake | 1235',
                   'https://chromium-review.googlesource.com/1235'),
     ])
+
+  def testGenerateBlameListHasChumpCL(self):
+    """Test GenerateBlameList with chump CLs."""
+    fake_git_log = """
+    Author: Sammy Sosa <fake@fake.com>
+    Commit: Chris Sosa <sosa@chromium.org>
+
+    Date:   Mon Aug 8 14:52:06 2011 -0700
+
+    Add in a test for cbuildbot
+
+    TEST=So much testing
+    BUG=chromium-os:99999
+
+    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
+    Reviewed-on: https://chromium-review.googlesource.com/1234
+    Reviewed-by: Fake person <fake@fake.org>
+    Tested-by: Sammy Sosa <fake@fake.com>
+    Author: Sammy Sosa <fake@fake.com>
+    Commit: Gerrit <chrome-bot@chromium.org>
+    """
+    project = {
+        'name': 'fake/repo',
+        'path': 'fake/path',
+        'revision': '1234567890',
+    }
+    _, link_mock = self._MockParseGitLog(fake_git_log, project)
+    has_chump_cls = lkgm_manager.GenerateBlameList(
+        self.manager.cros_source, self.manager.lkgm_path)
+
+    self.assertTrue(has_chump_cls)
+    link_mock.assert_has_calls([
+        mock.call('CHUMP | repo | fake | 1234',
+                  'https://chromium-review.googlesource.com/1234')])
+
+  def testGenerateBlameListNoChumpCL(self):
+    """Test GenerateBlameList without chump CLs."""
+    fake_git_log = """Author: Sammy Sosa <fake@fake.com>
+    Commit: Gerrit <chrome-bot@chromium.org>
+
+    Date:   Mon Aug 8 14:52:06 2011 -0700
+
+    Add in a test for cbuildbot
+
+    TEST=So much testing
+    BUG=chromium-os:99999
+
+    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
+    Reviewed-on: https://chromium-review.googlesource.com/1235
+    Reviewed-by: Fake person <fake@fake.org>
+    Tested-by: Sammy Sosa <fake@fake.com>
+    """
+    project = {
+        'name': 'fake/repo',
+        'path': 'fake/path',
+        'revision': '1234567890',
+    }
+    _, link_mock = self._MockParseGitLog(fake_git_log, project)
+    has_chump_cl = lkgm_manager.GenerateBlameList(
+        self.manager.cros_source, self.manager.lkgm_path)
+
+    self.assertFalse(has_chump_cl)
+    link_mock.assert_has_calls([
+        mock.call('repo | fake | 1235',
+                  'https://chromium-review.googlesource.com/1235')])
 
   def testAddChromeVersionToManifest(self):
     """Tests whether we can write the chrome version to the manifest file."""

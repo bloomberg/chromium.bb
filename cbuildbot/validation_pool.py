@@ -282,6 +282,8 @@ class ValidationPool(object):
     self.non_manifest_changes = non_os_changes or []
     self.applied = applied or []
     self.applied_patches = None
+    # Whether this pool picked up new chumpped CLs.
+    self.has_chump_cls = False
 
     # Note, we hold onto these CLs since they conflict against our current CLs
     # being tested; if our current ones succeed, we notify the user to deal

@@ -150,7 +150,20 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     schedule_mock = self.PatchObject(
         scheduler_stages.ScheduleSlavesStage,
         'ScheduleSlaveBuildsViaBuildbucket')
-    self.sync_stage.pool.return_value.applied = []
+    self.sync_stage.pool.applied = []
+    self.sync_stage.pool.has_chump_cls = False
 
     stage.PerformStage()
-    schedule_mock.assert_not_called()
+    self.assertFalse(schedule_mock.called)
+
+  def testScheduleSlaveBuildsWithChumpCLs(self):
+    """Test no slave builds are scheduled."""
+    stage = self.ConstructStage()
+    schedule_mock = self.PatchObject(
+        scheduler_stages.ScheduleSlavesStage,
+        'ScheduleSlaveBuildsViaBuildbucket')
+    self.sync_stage.pool.applied = []
+    self.sync_stage.pool.has_chump_cls = True
+
+    stage.PerformStage()
+    self.assertTrue(schedule_mock.called)
