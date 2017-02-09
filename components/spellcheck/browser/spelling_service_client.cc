@@ -102,7 +102,43 @@ bool SpellingServiceClient::RequestTextCheck(
       country_code.c_str(), api_key.c_str());
 
   GURL url = GURL(kSpellingServiceURL);
-  net::URLFetcher* fetcher = CreateURLFetcher(url).release();
+
+  // Create traffic annotation tag.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("spellcheck_lookup", R"(
+        semantics {
+          sender: "spellcheck"
+          description:
+            "Google Chrome can provide smarter spell-checking by sending "
+            "text you type into the browser to Google's servers, allowing "
+            "you to use the same spell-checking technology used by Google "
+            "products, such as Docs. If the feature is enabled, Chrome will "
+            "send the entire contents of text fields as you type in them to "
+            "Google along with the browser’s default language. Google "
+            "returns a list of suggested spellings, which will be displayed "
+            "in the context menu."
+          trigger: "User types text into a text field or asks to correct a "
+                   "misspelled word."
+          data: "Text a user has typed into a text field. No user identifier "
+                "is sent along with the text."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "You can enable or disable this feature via 'Use a web service to "
+            "help resolve spelling errors.' in Chrome's settings under "
+            "Advanced. The feature is disabled by default."
+          policy {
+            SpellCheckServiceEnabled {
+                policy_options {mode: MANDATORY}
+                value: false
+            }
+          }
+        })");
+
+  net::URLFetcher* fetcher =
+      CreateURLFetcher(url, traffic_annotation).release();
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher, data_use_measurement::DataUseUserData::SPELL_CHECKER);
   fetcher->SetRequestContext(
@@ -269,6 +305,8 @@ void SpellingServiceClient::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 std::unique_ptr<net::URLFetcher> SpellingServiceClient::CreateURLFetcher(
-    const GURL& url) {
-  return net::URLFetcher::Create(url, net::URLFetcher::POST, this);
+    const GURL& url,
+    net::NetworkTrafficAnnotationTag traffic_annotation) {
+  return net::URLFetcher::Create(url, net::URLFetcher::POST, this,
+                                 traffic_annotation);
 }

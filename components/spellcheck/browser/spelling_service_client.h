@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
@@ -118,7 +119,9 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   // Creates a URLFetcher object used for sending a JSON-RPC request. This
   // function is overridden by unit tests to prevent them from actually sending
   // requests to the Spelling service.
-  virtual std::unique_ptr<net::URLFetcher> CreateURLFetcher(const GURL& url);
+  virtual std::unique_ptr<net::URLFetcher> CreateURLFetcher(
+      const GURL& url,
+      net::NetworkTrafficAnnotationTag traffic_annotation);
 
   // The URLFetcher object used for sending a JSON-RPC request.
   std::map<const net::URLFetcher*, std::unique_ptr<TextCheckCallbackData>>

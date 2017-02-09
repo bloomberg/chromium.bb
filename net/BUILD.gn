@@ -358,6 +358,7 @@ component("net") {
 
   public_deps = [
     ":net_quic_proto",
+    ":traffic_annotation",
     "//crypto",
     "//crypto:platform",
   ]
@@ -2395,6 +2396,7 @@ static_library("test_support") {
     "test/url_request/url_request_mock_data_job.h",
     "test/url_request/url_request_slow_download_job.cc",
     "test/url_request/url_request_slow_download_job.h",
+    "traffic_annotation/network_traffic_annotation_test_helper.h",
     "url_request/test_url_fetcher_factory.cc",
     "url_request/test_url_fetcher_factory.h",
     "url_request/url_request_test_util.cc",
@@ -2420,6 +2422,7 @@ static_library("test_support") {
   ]
 
   public_deps = [
+    ":traffic_annotation",
     "//base",
     "//base/test:test_support",
     "//crypto",
@@ -2973,6 +2976,13 @@ source_set("simple_quic_tools") {
     "//base/third_party/dynamic_annotations",
     "//url",
   ]
+}
+
+source_set("traffic_annotation") {
+  sources = [
+    "traffic_annotation/network_traffic_annotation.h",
+  ]
+  deps = []
 }
 
 if (!is_ios) {

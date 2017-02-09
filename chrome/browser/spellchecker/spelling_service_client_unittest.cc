@@ -171,7 +171,9 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   }
 
  private:
-  std::unique_ptr<net::URLFetcher> CreateURLFetcher(const GURL& url) override {
+  std::unique_ptr<net::URLFetcher> CreateURLFetcher(
+      const GURL& url,
+      net::NetworkTrafficAnnotationTag traffic_annotation) override {
     EXPECT_EQ("https://www.googleapis.com/rpc", url.spec());
     fetcher_ = new TestSpellingURLFetcher(
         0, url, this, request_type_, sanitized_request_text_, request_language_,
