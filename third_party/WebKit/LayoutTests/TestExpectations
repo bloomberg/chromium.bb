@@ -1954,6 +1954,7 @@ crbug.com/626703 external/wpt/html/syntax/parsing/template/creating-an-element-f
 crbug.com/626703 external/wpt/selection/selectAllChildren.html [ Pass Timeout ]
 crbug.com/666703 external/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout ]
 crbug.com/626703 external/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Timeout ]
+crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
 
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 external/wpt/workers/baseurl/alpha/worker.html [ Failure ]
