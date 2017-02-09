@@ -6,12 +6,15 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 NSString* kTitle = @"Foo Title";
@@ -39,16 +42,16 @@ NSString* kTitle = @"Foo Title";
   UIViewController* topViewController =
       [[[UIApplication sharedApplication] keyWindow] rootViewController];
 
-  base::scoped_nsobject<AlertCoordinator> alertCoordinator(
+  AlertCoordinator* alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:topViewController
                                                      title:kTitle
-                                                   message:nil]);
+                                                   message:nil];
 
   [alertCoordinator start];
 
   GREYAssertTrue([self isPresentingAlert], @"An alert should be presented");
 
-  alertCoordinator.reset();
+  alertCoordinator = nil;
 
   GREYAssertFalse([self isPresentingAlert], @"The alert should be removed");
 }
@@ -64,10 +67,10 @@ NSString* kTitle = @"Foo Title";
   UIViewController* topViewController =
       [[[UIApplication sharedApplication] keyWindow] rootViewController];
 
-  base::scoped_nsobject<AlertCoordinator> alertCoordinator(
+  AlertCoordinator* alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:topViewController
                                                      title:kTitle
-                                                   message:nil]);
+                                                   message:nil];
 
   __block BOOL blockCalled = NO;
 

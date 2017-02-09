@@ -67,6 +67,7 @@ source_set("alert_coordinator_internal") {
 }
 
 source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "alert_coordinator_egtest.mm",
