@@ -922,7 +922,7 @@ LayoutPoint PaintLayer::computeOffsetFromTransformedAncestor() const {
 
 PaintLayer* PaintLayer::compositingContainer() const {
   if (!stackingNode()->isStacked())
-    return containingLayer();
+    return isSelfPaintingLayer() ? parent() : containingLayer();
   if (PaintLayerStackingNode* ancestorStackingNode =
           stackingNode()->ancestorStackingContextNode())
     return ancestorStackingNode->layer();
