@@ -37,6 +37,7 @@ using TimedSigninStatusValue = std::pair<std::string, std::string>;
 class AboutSigninInternals
     : public KeyedService,
       public signin_internals_util::SigninDiagnosticsObserver,
+      public OAuth2TokenService::Observer,
       public OAuth2TokenService::DiagnosticsObserver,
       public GaiaCookieManagerService::Observer,
       SigninManagerBase::Observer,
@@ -183,6 +184,9 @@ class AboutSigninInternals
                                   base::Time expiration_time) override;
   void OnTokenRemoved(const std::string& account_id,
                       const OAuth2TokenService::ScopeSet& scopes) override;
+
+  // OAuth2TokenServiceDelegate::Observer implementations.
+  void OnRefreshTokensLoaded() override;
 
   // SigninManagerBase::Observer implementations.
   void GoogleSigninFailed(const GoogleServiceAuthError& error) override;

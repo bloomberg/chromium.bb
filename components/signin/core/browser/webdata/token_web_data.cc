@@ -47,10 +47,10 @@ class TokenWebDataBackend
   }
 
   std::unique_ptr<WDTypedResult> GetAllTokens(WebDatabase* db) {
-    std::map<std::string, std::string> map;
-    TokenServiceTable::FromWebDatabase(db)->GetAllTokens(&map);
-    return base::MakeUnique<WDResult<std::map<std::string, std::string>>>(
-        TOKEN_RESULT, map);
+    TokenResult result;
+    result.db_result =
+        TokenServiceTable::FromWebDatabase(db)->GetAllTokens(&result.tokens);
+    return base::MakeUnique<WDResult<TokenResult>>(TOKEN_RESULT, result);
   }
 
  protected:
@@ -61,6 +61,11 @@ class TokenWebDataBackend
   friend class base::RefCountedDeleteOnSequence<TokenWebDataBackend>;
   friend class base::DeleteHelper<TokenWebDataBackend>;
 };
+
+TokenResult::TokenResult()
+    : db_result(TokenServiceTable::TOKEN_DB_RESULT_SQL_INVALID_STATEMENT) {}
+TokenResult::TokenResult(const TokenResult& other) = default;
+TokenResult::~TokenResult(){};
 
 TokenWebData::TokenWebData(
     scoped_refptr<WebDatabaseService> wdbs,

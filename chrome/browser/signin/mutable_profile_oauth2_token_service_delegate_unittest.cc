@@ -282,6 +282,18 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
+       LoadCredentialsStateEmptyPrimaryAccountId) {
+  // Ensure DB is clean.
+  oauth2_service_delegate_->RevokeAllCredentials();
+
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
+            oauth2_service_delegate_->GetLoadCredentialsState());
+  oauth2_service_delegate_->LoadCredentials("");
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+            oauth2_service_delegate_->GetLoadCredentialsState());
+}
+
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        PersistenceLoadCredentials) {
   switches::EnableAccountConsistencyForTesting(
       base::CommandLine::ForCurrentProcess());
@@ -290,8 +302,14 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   oauth2_service_delegate_->RevokeAllCredentials();
   ResetObserverCounts();
   // Perform a load from an empty DB.
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
+            oauth2_service_delegate_->GetLoadCredentialsState());
   oauth2_service_delegate_->LoadCredentials("account_id");
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
+            oauth2_service_delegate_->GetLoadCredentialsState());
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+            oauth2_service_delegate_->GetLoadCredentialsState());
   EXPECT_EQ(1, start_batch_changes_);
   EXPECT_EQ(1, end_batch_changes_);
   ExpectOneTokensLoadedNotification();
@@ -310,7 +328,11 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   ResetObserverCounts();
 
   oauth2_service_delegate_->LoadCredentials("account_id");
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
+            oauth2_service_delegate_->GetLoadCredentialsState());
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+            oauth2_service_delegate_->GetLoadCredentialsState());
   EXPECT_EQ(2, token_available_count_);
   EXPECT_EQ(0, token_revoked_count_);
   EXPECT_EQ(1, tokens_loaded_count_);

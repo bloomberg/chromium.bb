@@ -41,6 +41,23 @@ std::string RemoveAccountIdPrefix(const std::string& prefixed_account_id) {
   return prefixed_account_id.substr(kAccountIdPrefixLength);
 }
 
+OAuth2TokenServiceDelegate::LoadCredentialsState
+LoadCredentialsStateFromTokenResult(TokenServiceTable::Result token_result) {
+  switch (token_result) {
+    case TokenServiceTable::TOKEN_DB_RESULT_SQL_INVALID_STATEMENT:
+    case TokenServiceTable::TOKEN_DB_RESULT_BAD_ENTRY:
+      return OAuth2TokenServiceDelegate::
+          LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS;
+    case TokenServiceTable::TOKEN_DB_RESULT_DECRYPT_ERROR:
+      return OAuth2TokenServiceDelegate::
+          LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS;
+    case TokenServiceTable::TOKEN_DB_RESULT_SUCCESS:
+      return OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
+  }
+  NOTREACHED();
+  return OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_UNKNOWN;
+}
+
 }  // namespace
 
 // This class sends a request to GAIA to revoke the given refresh token from
@@ -129,6 +146,7 @@ MutableProfileOAuth2TokenServiceDelegate::
         SigninErrorController* signin_error_controller,
         AccountTrackerService* account_tracker_service)
     : web_data_service_request_(0),
+      load_credentials_state_(LOAD_CREDENTIALS_NOT_STARTED),
       backoff_entry_(&backoff_policy_),
       backoff_error_(GoogleServiceAuthError::NONE),
       client_(client),
@@ -244,17 +262,39 @@ MutableProfileOAuth2TokenServiceDelegate::GetRequestContext() const {
   return client_->GetURLRequestContext();
 }
 
+OAuth2TokenServiceDelegate::LoadCredentialsState
+MutableProfileOAuth2TokenServiceDelegate::GetLoadCredentialsState() const {
+  return load_credentials_state_;
+}
+
 void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
     const std::string& primary_account_id) {
+  if (load_credentials_state_ == LOAD_CREDENTIALS_IN_PROGRESS) {
+    VLOG(1) << "Load credentials operation already in progress";
+    return;
+  }
+
+  load_credentials_state_ = LOAD_CREDENTIALS_IN_PROGRESS;
   if (primary_account_id.empty()) {
+    load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
     FireRefreshTokensLoaded();
     return;
   }
+
   ValidateAccountId(primary_account_id);
   DCHECK(loading_primary_account_id_.empty());
   DCHECK_EQ(0, web_data_service_request_);
 
   refresh_tokens_.clear();
+
+  scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
+  if (!token_web_data) {
+    // This case only exists in unit tests that do not care about loading
+    // credentials.
+    load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS;
+    FireRefreshTokensLoaded();
+    return;
+  }
 
   // If the account_id is an email address, then canonicalize it.  This
   // is to support legacy account_ids, and will not be needed after
@@ -265,9 +305,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
     loading_primary_account_id_ = primary_account_id;
   }
 
-  scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
-  if (token_web_data.get())
-    web_data_service_request_ = token_web_data->GetAllTokens(this);
+  web_data_service_request_ = token_web_data->GetAllTokens(this);
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
@@ -287,11 +325,15 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
 
   if (result) {
     DCHECK(result->GetType() == TOKEN_RESULT);
-    const WDResult<std::map<std::string, std::string>>* token_result =
-        static_cast<const WDResult<std::map<std::string, std::string>>*>(
-            result.get());
-    LoadAllCredentialsIntoMemory(token_result->GetValue());
+    const WDResult<TokenResult>* token_result =
+        static_cast<const WDResult<TokenResult>*>(result.get());
+    LoadAllCredentialsIntoMemory(token_result->GetValue().tokens);
+    load_credentials_state_ =
+        LoadCredentialsStateFromTokenResult(token_result->GetValue().db_result);
+  } else {
+    load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS;
   }
+  FireRefreshTokensLoaded();
 
   // Make sure that we have an entry for |loading_primary_account_id_| in the
   // map.  The entry could be missing if there is a corruption in the token DB
@@ -400,8 +442,6 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
         UpdateCredentials(loading_primary_account_id_, old_login_token);
     }
   }
-
-  FireRefreshTokensLoaded();
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(

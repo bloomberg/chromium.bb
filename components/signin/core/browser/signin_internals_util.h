@@ -69,13 +69,7 @@ class SigninDiagnosticsObserver {
   // Credentials and signin related changes.
   virtual void NotifySigninValueChanged(const TimedSigninStatusField& field,
                                         const std::string& value) {}
-  // OAuth tokens related changes.
-  virtual void NotifyTokenReceivedSuccess(const std::string& token_name,
-                                          const std::string& token,
-                                          bool update_time) {}
-  virtual void NotifyTokenReceivedFailure(const std::string& token_name,
-                                          const std::string& error) {}
-  virtual void NotifyClearStoredToken(const std::string& token_name) {}};
+};
 
 // Gets the first 6 hex characters of the SHA256 hash of the passed in string.
 // These are enough to perform equality checks across a single users tokens,

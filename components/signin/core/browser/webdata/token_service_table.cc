@@ -97,7 +97,7 @@ bool TokenServiceTable::SetTokenForService(const std::string& service,
   return s.Run();
 }
 
-bool TokenServiceTable::GetAllTokens(
+TokenServiceTable::Result TokenServiceTable::GetAllTokens(
     std::map<std::string, std::string>* tokens) {
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT service, encrypted_token FROM token_service"));
@@ -107,10 +107,10 @@ bool TokenServiceTable::GetAllTokens(
 
   if (!s.is_valid()) {
     LOG(ERROR) << "Failed to load tokens (invalid SQL statement).";
-    return false;
+    return TOKEN_DB_RESULT_SQL_INVALID_STATEMENT;
   }
 
-  bool read_all_tokens_result = true;
+  Result read_all_tokens_result = TOKEN_DB_RESULT_SUCCESS;
   while (s.Step()) {
     ReadOneTokenResult read_token_result = READ_ONE_TOKEN_MAX_VALUE;
 
@@ -129,12 +129,12 @@ bool TokenServiceTable::GetAllTokens(
         // may fail (see http://crbug.com/686485).
         LOG(ERROR) << "Failed to decrypt token for service " << service;
         read_token_result = READ_ONE_TOKEN_DB_SUCCESS_DECRYPT_FAILED;
-        read_all_tokens_result = false;
+        read_all_tokens_result = TOKEN_DB_RESULT_DECRYPT_ERROR;
       }
     } else {
       LOG(ERROR) << "Bad token entry for service " << service;
       read_token_result = READ_ONE_TOKEN_DB_FAILED_BAD_ENTRY;
-      read_all_tokens_result = false;
+      read_all_tokens_result = TOKEN_DB_RESULT_BAD_ENTRY;
     }
     DCHECK_LT(read_token_result, READ_ONE_TOKEN_MAX_VALUE);
     UMA_HISTOGRAM_ENUMERATION("Signin.TokenTable.ReadTokenFromDBResult",

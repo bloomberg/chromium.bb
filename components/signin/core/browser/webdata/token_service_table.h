@@ -16,6 +16,13 @@ class WebDatabase;
 
 class TokenServiceTable : public WebDatabaseTable {
  public:
+  enum Result {
+    TOKEN_DB_RESULT_SQL_INVALID_STATEMENT,
+    TOKEN_DB_RESULT_BAD_ENTRY,
+    TOKEN_DB_RESULT_DECRYPT_ERROR,
+    TOKEN_DB_RESULT_SUCCESS
+  };
+
   TokenServiceTable() {}
   ~TokenServiceTable() override {}
 
@@ -36,7 +43,7 @@ class TokenServiceTable : public WebDatabaseTable {
   // Retrieves all tokens previously set with SetTokenForService.
   // Returns true if there were tokens and we decrypted them,
   // false if there was a failure somehow
-  bool GetAllTokens(std::map<std::string, std::string>* tokens);
+  Result GetAllTokens(std::map<std::string, std::string>* tokens);
 
   // Store a token in the token_service table. Stored encrypted. May cause
   // a mac keychain popup.

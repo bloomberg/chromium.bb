@@ -18,6 +18,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/signin/core/browser/webdata/token_service_table.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -30,6 +31,16 @@ class SingleThreadTaskRunner;
 class TokenWebDataBackend;
 class WebDatabaseService;
 class WebDataServiceConsumer;
+
+// The result of a get tokens operation.
+struct TokenResult {
+  TokenResult();
+  TokenResult(const TokenResult& other);
+  ~TokenResult();
+
+  TokenServiceTable::Result db_result;
+  std::map<std::string, std::string> tokens;
+};
 
 // TokenWebData is a data repository for storage of authentication tokens.
 

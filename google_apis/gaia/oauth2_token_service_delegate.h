@@ -20,6 +20,16 @@ class URLRequestContextGetter;
 // CreateAccessTokenFetcher properly.
 class OAuth2TokenServiceDelegate {
  public:
+  enum LoadCredentialsState {
+    LOAD_CREDENTIALS_UNKNOWN,
+    LOAD_CREDENTIALS_NOT_STARTED,
+    LOAD_CREDENTIALS_IN_PROGRESS,
+    LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+    LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS,
+    LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS,
+    LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS,
+  };
+
   OAuth2TokenServiceDelegate();
   virtual ~OAuth2TokenServiceDelegate();
 
@@ -57,6 +67,11 @@ class OAuth2TokenServiceDelegate {
   // Returns a pointer to its instance of net::BackoffEntry if it has one, or
   // a nullptr otherwise.
   virtual const net::BackoffEntry* BackoffEntry() const;
+
+  // Diagnostic methods
+
+  // Returns the state of the load credentials operation.
+  virtual LoadCredentialsState GetLoadCredentialsState() const;
 
  protected:
   // Called by subclasses to notify observers.

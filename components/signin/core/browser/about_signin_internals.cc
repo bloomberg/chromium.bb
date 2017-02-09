@@ -28,6 +28,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_switches.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/base/backoff_entry.h"
 
 using base::Time;
@@ -83,6 +84,30 @@ std::string SigninStatusFieldToLabel(UntimedSigninStatusField field) {
     case UNTIMED_FIELDS_END:
       NOTREACHED();
       return std::string();
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+std::string TokenServiceLoadCredentialsStateToLabel(
+    OAuth2TokenServiceDelegate::LoadCredentialsState state) {
+  switch (state) {
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_UNKNOWN:
+      return "Unknown";
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED:
+      return "Load credentials not started";
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS:
+      return "Load credentials in progress";
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS:
+      return "Load credentials finished with success";
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS:
+      return "Load credentials failed with database errors";
+    case OAuth2TokenServiceDelegate::
+        LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS:
+      return "Load credentials failed with decrypt errors";
+    case OAuth2TokenServiceDelegate::
+        LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS:
+      return "Load credentials failed with unknown errors";
   }
   NOTREACHED();
   return std::string();
@@ -334,6 +359,10 @@ void AboutSigninInternals::OnFetchAccessTokenComplete(
   NotifyObservers();
 }
 
+void AboutSigninInternals::OnRefreshTokensLoaded() {
+  NotifyObservers();
+}
+
 void AboutSigninInternals::OnTokenRemoved(
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes) {
@@ -514,6 +543,10 @@ AboutSigninInternals::SigninStatus::ToValue(
       switches::IsEnableAccountConsistency() == true ? "On" : "Off");
   AddSectionEntry(basic_info, "Signin Status",
       signin_manager->IsAuthenticated() ? "Signed In" : "Not Signed In");
+  OAuth2TokenServiceDelegate::LoadCredentialsState load_tokens_state =
+      token_service->GetDelegate()->GetLoadCredentialsState();
+  AddSectionEntry(basic_info, "TokenService Status",
+                  TokenServiceLoadCredentialsStateToLabel(load_tokens_state));
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.

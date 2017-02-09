@@ -119,3 +119,8 @@ std::vector<std::string> OAuth2TokenServiceDelegate::GetAccounts() {
 const net::BackoffEntry* OAuth2TokenServiceDelegate::BackoffEntry() const {
   return nullptr;
 }
+
+OAuth2TokenServiceDelegate::LoadCredentialsState
+OAuth2TokenServiceDelegate::GetLoadCredentialsState() const {
+  return LOAD_CREDENTIALS_UNKNOWN;
+}
