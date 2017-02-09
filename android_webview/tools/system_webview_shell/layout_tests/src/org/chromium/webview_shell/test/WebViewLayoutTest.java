@@ -231,12 +231,14 @@ public class WebViewLayoutTest
                 "blink-apis/geolocation/geolocation-permission-callbacks-expected.txt");
     }
 
+    @DisabledTest(message = "crbug.com/690536")
     @MediumTest
     public void testMediaStreamApiDenyPermission() throws Exception {
         runWebViewLayoutTest("blink-apis/webrtc/mediastream-permission-denied-callbacks.html",
                 "blink-apis/webrtc/mediastream-permission-denied-callbacks-expected.txt");
     }
 
+    @DisabledTest(message = "crbug.com/690536")
     @MediumTest
     public void testMediaStreamApi() throws Exception {
         mTestActivity.setGrantPermission(true);
