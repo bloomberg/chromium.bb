@@ -1418,7 +1418,7 @@ void ShellSurface::UpdateWidgetBounds() {
 }
 
 void ShellSurface::UpdateShadow() {
-  if (!widget_)
+  if (!widget_ || !surface_)
     return;
   aura::Window* window = widget_->GetNativeWindow();
   if (!shadow_enabled_) {
