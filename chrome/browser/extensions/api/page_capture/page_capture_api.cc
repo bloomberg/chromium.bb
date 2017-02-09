@@ -37,6 +37,9 @@ const char kMHTMLGenerationFailedError[] = "Failed to generate MHTML.";
 const char kTemporaryFileError[] = "Failed to create a temporary file.";
 const char kTabClosedError[] = "Cannot find the tab for this request.";
 
+void ClearFileReferenceOnIOThread(
+    scoped_refptr<storage::ShareableFileReference>) {}
+
 }  // namespace
 
 static PageCaptureSaveAsMHTMLFunction::TestDelegate* test_delegate_ = NULL;
@@ -46,10 +49,9 @@ PageCaptureSaveAsMHTMLFunction::PageCaptureSaveAsMHTMLFunction() {
 
 PageCaptureSaveAsMHTMLFunction::~PageCaptureSaveAsMHTMLFunction() {
   if (mhtml_file_.get()) {
-    storage::ShareableFileReference* to_release = mhtml_file_.get();
-    to_release->AddRef();
-    mhtml_file_ = NULL;
-    BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, to_release);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ClearFileReferenceOnIOThread, base::Passed(&mhtml_file_)));
   }
 }
 
