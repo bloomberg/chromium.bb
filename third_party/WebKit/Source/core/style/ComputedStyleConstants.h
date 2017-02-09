@@ -330,10 +330,7 @@ enum EBreak {
   BreakPage,
   BreakRecto,
   BreakRight,
-  BreakVerso,
-  BreakValueLastAllowedForBreakAfterAndBefore = BreakVerso,
-  BreakAlways  // Only needed by {page,-webkit-column}-break-{after,before}
-               // shorthands.
+  BreakVerso
 };
 
 enum class ECursor : unsigned {

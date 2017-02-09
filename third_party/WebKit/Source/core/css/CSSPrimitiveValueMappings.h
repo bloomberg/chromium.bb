@@ -1959,9 +1959,6 @@ inline CSSIdentifierValue::CSSIdentifierValue(EBreak e)
     case BreakAuto:
       m_valueID = CSSValueAuto;
       break;
-    case BreakAlways:
-      m_valueID = CSSValueAlways;
-      break;
     case BreakAvoid:
       m_valueID = CSSValueAvoid;
       break;
@@ -2001,8 +1998,6 @@ inline EBreak CSSIdentifierValue::convertTo() const {
       return BreakAuto;
     case CSSValueAvoid:
       return BreakAvoid;
-    case CSSValueAlways:
-      return BreakAlways;
     case CSSValueAvoidPage:
       return BreakAvoidPage;
     case CSSValuePage:

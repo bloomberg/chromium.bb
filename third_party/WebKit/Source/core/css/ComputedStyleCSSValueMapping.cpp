@@ -1906,37 +1906,43 @@ static CSSValue* valueForScrollSnapCoordinate(
   return list;
 }
 
-static EBreak mapToPageBreakValue(EBreak genericBreakValue) {
-  switch (genericBreakValue) {
+// Returns a suitable value for the page-break-(before|after|inside) property,
+// given the computed value of the more general break-(before|after|inside)
+// property.
+static CSSValue* valueForPageBreak(EBreak breakValue) {
+  switch (breakValue) {
     case BreakAvoidColumn:
     case BreakColumn:
     case BreakRecto:
     case BreakVerso:
-      return BreakAuto;
+      return CSSIdentifierValue::create(CSSValueAuto);
     case BreakPage:
-      return BreakAlways;
+      return CSSIdentifierValue::create(CSSValueAlways);
     case BreakAvoidPage:
-      return BreakAvoid;
+      return CSSIdentifierValue::create(CSSValueAvoid);
     default:
-      return genericBreakValue;
+      return CSSIdentifierValue::create(breakValue);
   }
 }
 
-static EBreak mapToColumnBreakValue(EBreak genericBreakValue) {
-  switch (genericBreakValue) {
+// Returns a suitable value for the -webkit-column-break-(before|after|inside)
+// property, given the computed value of the more general
+// break-(before|after|inside) property.
+static CSSValue* valueForWebkitColumnBreak(EBreak breakValue) {
+  switch (breakValue) {
     case BreakAvoidPage:
     case BreakLeft:
     case BreakPage:
     case BreakRecto:
     case BreakRight:
     case BreakVerso:
-      return BreakAuto;
+      return CSSIdentifierValue::create(CSSValueAuto);
     case BreakColumn:
-      return BreakAlways;
+      return CSSIdentifierValue::create(CSSValueAlways);
     case BreakAvoidColumn:
-      return BreakAvoid;
+      return CSSIdentifierValue::create(CSSValueAvoid);
     default:
-      return genericBreakValue;
+      return CSSIdentifierValue::create(breakValue);
   }
 }
 
@@ -2237,14 +2243,11 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return CSSIdentifierValue::create(style.getColumnSpan() ? CSSValueAll
                                                               : CSSValueNone);
     case CSSPropertyWebkitColumnBreakAfter:
-      return CSSIdentifierValue::create(
-          mapToColumnBreakValue(style.breakAfter()));
+      return valueForWebkitColumnBreak(style.breakAfter());
     case CSSPropertyWebkitColumnBreakBefore:
-      return CSSIdentifierValue::create(
-          mapToColumnBreakValue(style.breakBefore()));
+      return valueForWebkitColumnBreak(style.breakBefore());
     case CSSPropertyWebkitColumnBreakInside:
-      return CSSIdentifierValue::create(
-          mapToColumnBreakValue(style.breakInside()));
+      return valueForWebkitColumnBreak(style.breakInside());
     case CSSPropertyColumnWidth:
       if (style.hasAutoColumnWidth())
         return CSSIdentifierValue::create(CSSValueAuto);
@@ -2660,14 +2663,11 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     case CSSPropertyBreakInside:
       return CSSIdentifierValue::create(style.breakInside());
     case CSSPropertyPageBreakAfter:
-      return CSSIdentifierValue::create(
-          mapToPageBreakValue(style.breakAfter()));
+      return valueForPageBreak(style.breakAfter());
     case CSSPropertyPageBreakBefore:
-      return CSSIdentifierValue::create(
-          mapToPageBreakValue(style.breakBefore()));
+      return valueForPageBreak(style.breakBefore());
     case CSSPropertyPageBreakInside:
-      return CSSIdentifierValue::create(
-          mapToPageBreakValue(style.breakInside()));
+      return valueForPageBreak(style.breakInside());
     case CSSPropertyPosition:
       return CSSIdentifierValue::create(style.position());
     case CSSPropertyQuotes:

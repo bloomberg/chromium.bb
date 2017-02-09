@@ -766,7 +766,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return static_cast<EBreak>(m_nonInheritedData.m_breakAfter);
   }
   void setBreakAfter(EBreak b) {
-    DCHECK_LE(b, BreakValueLastAllowedForBreakAfterAndBefore);
     m_nonInheritedData.m_breakAfter = b;
   }
 
@@ -777,7 +776,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return static_cast<EBreak>(m_nonInheritedData.m_breakBefore);
   }
   void setBreakBefore(EBreak b) {
-    DCHECK_LE(b, BreakValueLastAllowedForBreakAfterAndBefore);
     m_nonInheritedData.m_breakBefore = b;
   }
 
