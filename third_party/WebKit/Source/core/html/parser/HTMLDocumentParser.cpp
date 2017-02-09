@@ -257,7 +257,7 @@ bool HTMLDocumentParser::isParsingFragment() const {
 }
 
 void HTMLDocumentParser::pumpTokenizerIfPossible() {
-  checkIfBodyStlyesheetAdded();
+  checkIfBodyStylesheetAdded();
   if (isStopped() || isPaused())
     return;
 
@@ -273,7 +273,7 @@ void HTMLDocumentParser::resumeParsingAfterYield() {
   ASSERT(shouldUseThreading());
   ASSERT(m_haveBackgroundParser);
 
-  checkIfBodyStlyesheetAdded();
+  checkIfBodyStylesheetAdded();
   if (isStopped() || isPaused())
     return;
 
@@ -289,7 +289,7 @@ void HTMLDocumentParser::runScriptsForPausedTreeBuilder() {
   // We will not have a scriptRunner when parsing a DocumentFragment.
   if (m_scriptRunner)
     m_scriptRunner->processScriptElement(scriptElement, scriptStartPosition);
-  checkIfBodyStlyesheetAdded();
+  checkIfBodyStylesheetAdded();
 }
 
 bool HTMLDocumentParser::canTakeNextToken() {
@@ -632,7 +632,7 @@ void HTMLDocumentParser::pumpPendingSpeculations() {
     // isScheduledForResume() may be set here as a result of
     // processTokenizedChunkFromBackgroundParser running arbitrary javascript
     // which invokes nested event loops. (e.g. inspector breakpoints)
-    checkIfBodyStlyesheetAdded();
+    checkIfBodyStylesheetAdded();
     if (!isParsing() || isPaused() || isScheduledForResume())
       break;
 
@@ -757,7 +757,7 @@ void HTMLDocumentParser::constructTreeFromHTMLToken() {
     token().clear();
 
   m_treeBuilder->constructTree(&atomicToken);
-  checkIfBodyStlyesheetAdded();
+  checkIfBodyStylesheetAdded();
 
   // FIXME: constructTree may synchronously cause Document to be detached.
   if (!m_token)
@@ -773,7 +773,7 @@ void HTMLDocumentParser::constructTreeFromCompactHTMLToken(
     const CompactHTMLToken& compactToken) {
   AtomicHTMLToken token(compactToken);
   m_treeBuilder->constructTree(&token);
-  checkIfBodyStlyesheetAdded();
+  checkIfBodyStylesheetAdded();
 }
 
 bool HTMLDocumentParser::hasInsertionPoint() {
@@ -1074,7 +1074,7 @@ void HTMLDocumentParser::resumeParsingAfterPause() {
   ASSERT(!isExecutingScript());
   DCHECK(!isPaused());
 
-  checkIfBodyStlyesheetAdded();
+  checkIfBodyStylesheetAdded();
   if (isPaused())
     return;
 
@@ -1151,7 +1151,7 @@ void HTMLDocumentParser::didLoadAllBodyStylesheets() {
   m_addedPendingStylesheetInBody = false;
 }
 
-void HTMLDocumentParser::checkIfBodyStlyesheetAdded() {
+void HTMLDocumentParser::checkIfBodyStylesheetAdded() {
   if (m_addedPendingStylesheetInBody) {
     m_addedPendingStylesheetInBody = false;
     m_isWaitingForStylesheets = true;

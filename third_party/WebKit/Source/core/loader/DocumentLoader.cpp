@@ -30,7 +30,6 @@
 #include "core/loader/DocumentLoader.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/DocumentParser.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/events/Event.h"
 #include "core/frame/Deprecation.h"
@@ -40,7 +39,6 @@
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
