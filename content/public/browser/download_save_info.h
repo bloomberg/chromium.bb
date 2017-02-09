@@ -22,6 +22,10 @@ namespace content {
 // name, |offset| is set to the point where we left off, and |hash_state| will
 // hold the state of the hash algorithm where we left off.
 struct CONTENT_EXPORT DownloadSaveInfo {
+  // The default value for |length|. Used when request the rest of the file
+  // starts from |offset|.
+  static const int64_t kLengthFullContent;
+
   DownloadSaveInfo();
   ~DownloadSaveInfo();
   DownloadSaveInfo(DownloadSaveInfo&& that);
@@ -40,6 +44,13 @@ struct CONTENT_EXPORT DownloadSaveInfo {
 
   // The file offset at which to start the download.  May be 0.
   int64_t offset;
+
+  // The number of the bytes to download from |offset|. Set to
+  // |kLengthFullContent| by default.
+  // Ask to retrieve segment of the download file when length is greater than 0.
+  // Request the rest of the file starting from |offset|, when length is
+  // |kLengthFullContent|.
+  int64_t length;
 
   // The state of the hash. If specified, this hash state must indicate the
   // state of the partial file for the first |offset| bytes.
