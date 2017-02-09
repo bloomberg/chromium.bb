@@ -364,10 +364,23 @@ public class ContentSuggestionsNotificationHelper {
 
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         int currentValue = prefs.getInt(prefName, 0);
-        int consecutiveIgnored = 0;
-        if (action != ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_TAP) {
-            consecutiveIgnored = 1 + prefs.getInt(PREF_CACHED_CONSECUTIVE_IGNORED, 0);
+
+        int consecutiveIgnored = prefs.getInt(PREF_CACHED_CONSECUTIVE_IGNORED, 0);
+        switch (action) {
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_TAP:
+                consecutiveIgnored = 0;
+                break;
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_DISMISSAL:
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_DEADLINE:
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_EXPIRY:
+                ++consecutiveIgnored;
+                break;
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_FRONTMOST:
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_DISABLED:
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_SHUTDOWN:
+                break; // no change
         }
+
         prefs.edit()
                 .putInt(prefName, currentValue + 1)
                 .putInt(PREF_CACHED_CONSECUTIVE_IGNORED, consecutiveIgnored)
