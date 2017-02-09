@@ -26,6 +26,7 @@
 #include "content/public/common/sandbox_init.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -133,13 +134,12 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     cmd_line->AppendSwitchASCII(
         mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch,
         base::UintToString(base::win::HandleToUint32(handles[0])));
-    const std::string mojo_child_token = mojo::edk::GenerateRandomToken();
-    const std::string mojo_channel_token = mojo::edk::GenerateRandomToken();
+
+    mojo::edk::PendingProcessConnection pending_process;
+    std::string token;
     mojo::ScopedMessagePipeHandle host_message_pipe =
-        mojo::edk::CreateParentMessagePipe(mojo_channel_token,
-                                           mojo_child_token);
-    cmd_line->AppendSwitchASCII(switches::kServiceRequestChannelToken,
-                                mojo_channel_token);
+        pending_process.CreateMessagePipe(&token);
+    cmd_line->AppendSwitchASCII(switches::kServiceRequestChannelToken, token);
     CHECK_EQ(MOJO_RESULT_OK,
              mojo::FuseMessagePipes(std::move(loader_message_pipe),
                                     std::move(host_message_pipe)));
@@ -149,9 +149,9 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
         this, cmd_line, handles, &loader_process);
 
     if (result == sandbox::SBOX_ALL_OK) {
-      mojo::edk::ChildProcessLaunched(loader_process.Handle(),
-                                      std::move(parent_handle),
-                                      mojo_child_token);
+      pending_process.Connect(loader_process.Handle(),
+                              std::move(parent_handle));
+
       // Note: PROCESS_DUP_HANDLE is necessary here, because:
       // 1) The current process is the broker, which is the loader's parent.
       // 2) The browser is not the loader's parent, and so only gets the
@@ -165,8 +165,6 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
           browser_process_.Handle(), &loader_handle_in_browser,
           PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_TERMINATE,
           FALSE, 0);
-    } else {
-      mojo::edk::ChildProcessLaunchFailed(mojo_child_token);
     }
   }
 

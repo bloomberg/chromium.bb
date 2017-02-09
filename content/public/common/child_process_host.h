@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
 
 namespace base {
 class FilePath;
@@ -85,7 +86,8 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   //
   // DEPRECATED: Don't use this. Instead implement GetRemoteInterfaces() in the
   // delegate and use the CreateChannelMojo() version below.
-  virtual std::string CreateChannelMojo(const std::string& child_token) = 0;
+  virtual std::string CreateChannelMojo(
+      mojo::edk::PendingProcessConnection* connection) = 0;
 
   // Creates the IPC channel over a Mojo message pipe. The pipe connection is
   // brokered through the Service Manager like any other service connection.

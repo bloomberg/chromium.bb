@@ -68,7 +68,7 @@ first learns about the service, and OnConnect(), which the Service Manager calls
  every time some other service tries to connect to this one.
 
 Services have a link back to the Service Manager too, primarily in the form of
-the service_manager.mojom.Connector interface. The Connector allows services to 
+the service_manager.mojom.Connector interface. The Connector allows services to
 open connections to other services.
 
 A unique connection from the Service Manager to a service is called an
@@ -140,7 +140,7 @@ Consider this simple application that implements the Service interface:
 What does all this do? Building the app target produces two files in the output
 directory: Packages/my_service/my_service.library and
 Packages/my_service/manifest.json. app.library is a DSO loaded by the Service
-Manager in its own process when another service connects to the 
+Manager in its own process when another service connects to the
 service:my_service name. This is not the only way (nor even the most likely one)
  you can implement a Service, but it's the simplest and easiest to reason about.
 
@@ -644,29 +644,21 @@ previous section. The connect flow in the service that launches the target
     mojo::edk::HandlePassingInformation info;
     pair.PrepareToPassClientHandleToChildProcess(&target_command_line, &info);
 
-    std::string token = mojo::edk::GenerateRandomToken();
+    mojo::edk::PendingProcessConnection connection;
+    std::string token;
+    mojo::ScopedMessagePipeHandle pipe = connection.CreateMessagePipe(&token);
     target_command_line.AppendSwitchASCII(switches::kPrimordialPipeToken,
                                           token);
 
-    mojo::ScopedMessagePipeHandle pipe =
-        mojo::edk::CreateParentMessagePipe(token);
-
-    service_manager::mojom::ServiceFactoryPtr factory;
-    factory.Bind(
-        mojo::InterfacePtrInfo<service_manager::mojom::ServiceFactory>(
-            std::move(pipe), 0u));
+    service_manager::Identity target("exe:target",
+                                     service_manager::mojom::kInheritUserID);
     service_manager::mojom::PIDReceiverPtr receiver;
-
-    service_manager::Identity target("exe:target",service_manager::mojom::kInheritUserID);
-    service_manager::Connector::ConnectParams params(target);
-    params.set_client_process_connection(std::move(factory),
-                                         MakeRequest(&receiver));
-    std::unique_ptr<service_manager::Connection> connection = connector->Connect(&params);
+    connector->RegisterService(target, std::move(pipe), MakeRequest(&receiver));
 
     base::LaunchOptions options;
     options.handles_to_inherit = &info;
     base::Process process = base::LaunchProcess(target_command_line, options);
-    mojo::edk::ChildProcessLaunched(process.Handle(), pair.PassServerHandle());
+    connection.Connect(process.Handle(), pair.PassServerHandle());
 
 That's a lot. But it boils down to these steps:
 1. Creating the message pipe to connect the target process and the Service

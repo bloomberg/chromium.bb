@@ -26,6 +26,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -114,11 +115,6 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
     command_line.AppendSwitchNative(kMojoNamedPipeName, named_pipe.name);
   }
 
-  std::string pipe_token = mojo::edk::GenerateRandomToken();
-  if (launch_type == LaunchType::CHILD ||
-      launch_type == LaunchType::NAMED_CHILD)
-    command_line.AppendSwitchASCII(kMojoPrimordialPipeToken, pipe_token);
-
   if (!switch_string.empty()) {
     CHECK(!command_line.HasSwitch(switch_string));
     if (!switch_value.empty())
@@ -151,11 +147,13 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
     server_handle = CreateServerHandle(named_pipe);
   }
 
+  PendingProcessConnection process;
   ScopedMessagePipeHandle pipe;
-  std::string child_token = mojo::edk::GenerateRandomToken();
   if (launch_type == LaunchType::CHILD ||
       launch_type == LaunchType::NAMED_CHILD) {
-    pipe = CreateParentMessagePipe(pipe_token, child_token);
+    std::string pipe_token;
+    pipe = process.CreateMessagePipe(&pipe_token);
+    command_line.AppendSwitchASCII(kMojoPrimordialPipeToken, pipe_token);
   } else if (launch_type == LaunchType::PEER ||
              launch_type == LaunchType::NAMED_PEER) {
     peer_token_ = mojo::edk::GenerateRandomToken();
@@ -170,8 +168,8 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
   if (launch_type == LaunchType::CHILD ||
       launch_type == LaunchType::NAMED_CHILD) {
     DCHECK(server_handle.is_valid());
-    ChildProcessLaunched(test_child_.Handle(), std::move(server_handle),
-                         child_token, process_error_callback_);
+    process.Connect(test_child_.Handle(), std::move(server_handle),
+                    process_error_callback_);
   }
 
   CHECK(test_child_.IsValid());

@@ -16,6 +16,7 @@
 #include "base/memory/shared_memory_handle.h"
 #include "base/process/process_handle.h"
 #include "base/task_runner.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -27,8 +28,6 @@ class PortProvider;
 namespace mojo {
 namespace edk {
 
-using ProcessErrorCallback = base::Callback<void(const std::string& error)>;
-
 // Basic configuration/initialization ------------------------------------------
 
 // |Init()| sets up the basic Mojo system environment, making the |Mojo...()|
@@ -38,30 +37,9 @@ using ProcessErrorCallback = base::Callback<void(const std::string& error)>;
 // Allows changing the default max message size. Must be called before Init.
 MOJO_SYSTEM_IMPL_EXPORT void SetMaxMessageSize(size_t bytes);
 
-// Called in the parent process for each child process that is launched.
-MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunched(
-    base::ProcessHandle child_process,
-    ScopedPlatformHandle server_pipe,
-    const std::string& child_token);
-
-// Called in the parent process for each child process that is launched.
-// |process_error_callback| is called if the system becomes aware of some
-// internal error related to this process, e.g., if the system is notified of a
-// bad message from this process via the |MojoNotifyBadMessage()| API.
-MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunched(
-    base::ProcessHandle child_process,
-    ScopedPlatformHandle server_pipe,
-    const std::string& child_token,
-    const ProcessErrorCallback& error_callback);
-
-// Called in the parent process when a child process fails to launch.
-// Exactly one of ChildProcessLaunched() or ChildProcessLaunchFailed() must be
-// called per child process launch attempt.
-MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunchFailed(
-    const std::string& child_token);
-
-// Should be called as early as possible in the child process with the handle
-// that the parent received from ChildProcessLaunched.
+// Should be called as early as possible in a child process with a handle to the
+// other end of a pipe provided in the parent to
+// PendingProcessConnection::Connect.
 MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandle(ScopedPlatformHandle pipe);
 
 // Same as above but extracts the pipe handle from the command line. See
@@ -170,25 +148,14 @@ MOJO_SYSTEM_IMPL_EXPORT void SetMachPortProvider(
     base::PortProvider* port_provider);
 #endif
 
-// Creates a message pipe from a token. A child embedder must also have this
-// token and call CreateChildMessagePipe() with it in order for the pipe to get
-// connected. |child_token| identifies the child process and should be the same
-// as the token passed into ChildProcessLaunched(). If they are different, the
-// returned message pipe will not be signaled of peer closure if the child
-// process dies before establishing connection to the pipe.
-MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
-CreateParentMessagePipe(const std::string& token,
-                        const std::string& child_token);
-
-// Creates a message pipe from a token in a child process. The parent must also
-// have this token and call CreateParentMessagePipe() with it in order for the
-// pipe to get connected.
+// Creates a message pipe from a token in a child process. This token must have
+// been acquired by a corresponding call to
+// PendingProcessConnection::CreateMessagePipe.
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 CreateChildMessagePipe(const std::string& token);
 
-// Generates a random ASCII token string for use with CreateParentMessagePipe()
-// and CreateChildMessagePipe() above. The generated token is suitably random so
-// as to not have to worry about collisions with other generated tokens.
+// Generates a random ASCII token string for use with various APIs that expect
+// a globally unique token string.
 MOJO_SYSTEM_IMPL_EXPORT std::string GenerateRandomToken();
 
 // Sets system properties that can be read by the MojoGetProperty() API. See the

@@ -64,7 +64,8 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   // ChildProcessHost implementation
   bool Send(IPC::Message* message) override;
   void ForceShutdown() override;
-  std::string CreateChannelMojo(const std::string& child_token) override;
+  std::string CreateChannelMojo(
+      mojo::edk::PendingProcessConnection* connection) override;
   void CreateChannelMojo() override;
   bool IsChannelOpening() override;
   void AddFilter(IPC::MessageFilter* filter) override;

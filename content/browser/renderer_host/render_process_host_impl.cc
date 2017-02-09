@@ -830,6 +830,7 @@ bool RenderProcessHostImpl::Init() {
   // null, so we re-initialize it here.
   if (!channel_)
     InitializeChannelProxy();
+  DCHECK(pending_connection_);
 
   // Unpause the Channel briefly. This will be paused again below if we launch a
   // real child process. Note that messages may be sent in the short window
@@ -910,7 +911,7 @@ bool RenderProcessHostImpl::Init() {
     // at this stage.
     child_process_launcher_.reset(new ChildProcessLauncher(
         base::MakeUnique<RendererSandboxedProcessLauncherDelegate>(),
-        std::move(cmd_line), GetID(), this, child_token_,
+        std::move(cmd_line), GetID(), this, std::move(pending_connection_),
         base::Bind(&RenderProcessHostImpl::OnMojoError, id_)));
     channel_->Pause();
 
@@ -933,9 +934,6 @@ void RenderProcessHostImpl::EnableSendQueue() {
 }
 
 void RenderProcessHostImpl::InitializeChannelProxy() {
-  // Generate a token used to identify the new child process.
-  child_token_ = mojo::edk::GenerateRandomToken();
-
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 
@@ -960,10 +958,11 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   }
 
   // Establish a ServiceManager connection for the new render service instance.
+  pending_connection_.reset(new mojo::edk::PendingProcessConnection);
   child_connection_.reset(new ChildConnection(
       mojom::kRendererServiceName,
-      base::StringPrintf("%d_%d", id_, instance_id_++), child_token_, connector,
-      io_task_runner));
+      base::StringPrintf("%d_%d", id_, instance_id_++),
+      pending_connection_.get(), connector, io_task_runner));
 
   // Send an interface request to bootstrap the IPC::Channel. Note that this
   // request will happily sit on the pipe until the process is launched and

@@ -169,7 +169,6 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
     : client_(client),
       client_task_runner_(client_task_runner),
       waiting_for_reply_(false),
-      mojo_child_token_(mojo::edk::GenerateRandomToken()),
       weak_ptr_factory_(this) {
   child_process_host_.reset(ChildProcessHost::Create(this));
 }
@@ -221,7 +220,7 @@ bool ServiceUtilityProcessHost::StartGetPrinterSemanticCapsAndDefaults(
 
 bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox) {
   std::string mojo_channel_token =
-      child_process_host_->CreateChannelMojo(mojo_child_token_);
+      child_process_host_->CreateChannelMojo(&process_connection_);
   if (mojo_channel_token.empty())
     return false;
 
@@ -278,13 +277,9 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
     }
   }
 
-  if (success) {
-    mojo::edk::ChildProcessLaunched(process_.Handle(),
-                                    std::move(parent_handle),
-                                    mojo_child_token_);
-  } else {
-    mojo::edk::ChildProcessLaunchFailed(mojo_child_token_);
-  }
+  if (success)
+    process_connection_.Connect(process_.Handle(), std::move(parent_handle));
+
   return success;
 }
 

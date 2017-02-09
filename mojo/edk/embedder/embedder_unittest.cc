@@ -16,6 +16,7 @@
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -26,6 +27,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/test_embedder.h"
 #include "mojo/edk/system/test_utils.h"
@@ -189,13 +191,12 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 }
 
 TEST_F(EmbedderTest, PipeSetup) {
-  std::string child_token = GenerateRandomToken();
-  std::string pipe_token = GenerateRandomToken();
-
-  ScopedMessagePipeHandle parent_mp =
-      CreateParentMessagePipe(pipe_token, child_token);
-  ScopedMessagePipeHandle child_mp =
-      CreateChildMessagePipe(pipe_token);
+  // Ensures that a pending process connection's message pipe can be claimed by
+  // the host process itself.
+  PendingProcessConnection process;
+  std::string pipe_token;
+  ScopedMessagePipeHandle parent_mp = process.CreateMessagePipe(&pipe_token);
+  ScopedMessagePipeHandle child_mp = CreateChildMessagePipe(pipe_token);
 
   const std::string kHello = "hello";
   WriteMessage(parent_mp.get().value(), kHello);
@@ -206,13 +207,10 @@ TEST_F(EmbedderTest, PipeSetup) {
 TEST_F(EmbedderTest, PipeSetup_LaunchDeath) {
   PlatformChannelPair pair;
 
-  std::string child_token = GenerateRandomToken();
-  std::string pipe_token = GenerateRandomToken();
-
-  ScopedMessagePipeHandle parent_mp =
-      CreateParentMessagePipe(pipe_token, child_token);
-  ChildProcessLaunched(base::GetCurrentProcessHandle(), pair.PassServerHandle(),
-                       child_token);
+  PendingProcessConnection process;
+  std::string pipe_token;
+  ScopedMessagePipeHandle parent_mp = process.CreateMessagePipe(&pipe_token);
+  process.Connect(base::GetCurrentProcessHandle(), pair.PassServerHandle());
 
   // Close the remote end, simulating child death before the child connects to
   // the reserved port.
@@ -227,13 +225,14 @@ TEST_F(EmbedderTest, PipeSetup_LaunchDeath) {
 TEST_F(EmbedderTest, PipeSetup_LaunchFailure) {
   PlatformChannelPair pair;
 
-  std::string child_token = GenerateRandomToken();
-  std::string pipe_token = GenerateRandomToken();
+  auto process = base::MakeUnique<PendingProcessConnection>();
+  std::string pipe_token;
+  ScopedMessagePipeHandle parent_mp = process->CreateMessagePipe(&pipe_token);
 
-  ScopedMessagePipeHandle parent_mp =
-      CreateParentMessagePipe(pipe_token, child_token);
+  // Ensure that if a PendingProcessConnection goes away before Connect() is
+  // called, any message pipes associated with it detect peer closure.
+  process.reset();
 
-  ChildProcessLaunchFailed(child_token);
   EXPECT_EQ(MOJO_RESULT_OK, MojoWait(parent_mp.get().value(),
                                      MOJO_HANDLE_SIGNAL_PEER_CLOSED,
                                      MOJO_DEADLINE_INDEFINITE,

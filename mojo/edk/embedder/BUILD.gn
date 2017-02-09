@@ -12,6 +12,7 @@ source_set("headers") {
     "named_platform_channel_pair.h",
     "named_platform_handle.h",
     "named_platform_handle_utils.h",
+    "pending_process_connection.h",
     "platform_channel_pair.h",
     "platform_handle.h",
     "platform_handle_utils.h",
@@ -39,6 +40,7 @@ source_set("embedder") {
     "embedder_internal.h",
     "entrypoints.cc",
     "entrypoints.h",
+    "pending_process_connection.cc",
     "scoped_ipc_support.cc",
     "scoped_ipc_support.h",
 

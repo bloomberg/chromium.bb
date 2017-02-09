@@ -42,27 +42,6 @@ Core* GetCore() { return g_core; }
 void SetMaxMessageSize(size_t bytes) {
 }
 
-void ChildProcessLaunched(base::ProcessHandle child_process,
-                          ScopedPlatformHandle server_pipe,
-                          const std::string& child_token) {
-  ChildProcessLaunched(child_process, std::move(server_pipe),
-                       child_token, ProcessErrorCallback());
-}
-
-void ChildProcessLaunched(base::ProcessHandle child_process,
-                          ScopedPlatformHandle server_pipe,
-                          const std::string& child_token,
-                          const ProcessErrorCallback& process_error_callback) {
-  CHECK(internal::g_core);
-  internal::g_core->AddChild(child_process, std::move(server_pipe),
-                             child_token, process_error_callback);
-}
-
-void ChildProcessLaunchFailed(const std::string& child_token) {
-  CHECK(internal::g_core);
-  internal::g_core->ChildLaunchFailed(child_token);
-}
-
 void SetParentPipeHandle(ScopedPlatformHandle pipe) {
   CHECK(internal::g_core);
   internal::g_core->InitChild(std::move(pipe));
@@ -154,11 +133,6 @@ void SetMachPortProvider(base::PortProvider* port_provider) {
   internal::g_core->SetMachPortProvider(port_provider);
 }
 #endif
-
-ScopedMessagePipeHandle CreateParentMessagePipe(
-    const std::string& token, const std::string& child_token) {
-  return internal::g_core->CreateParentMessagePipe(token, child_token);
-}
 
 ScopedMessagePipeHandle CreateChildMessagePipe(const std::string& token) {
   return internal::g_core->CreateChildMessagePipe(token);

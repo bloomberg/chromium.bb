@@ -44,6 +44,7 @@
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -179,8 +180,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
 
     InitializeMojo();
     shell_context_.reset(new TestServiceManagerContext);
+    mojo::edk::PendingProcessConnection process_connection;
     child_connection_.reset(new ChildConnection(
-        mojom::kRendererServiceName, "test", mojo::edk::GenerateRandomToken(),
+        mojom::kRendererServiceName, "test", &process_connection,
         ServiceManagerConnection::GetForProcess()->GetConnector(),
         io_task_runner));
 

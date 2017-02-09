@@ -33,6 +33,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
@@ -441,15 +442,16 @@ mojo::ScopedMessagePipeHandle ArcSessionImpl::ConnectMojo(
   // Hardcode pid 0 since it is unused in mojo.
   const base::ProcessHandle kUnusedChildProcessHandle = 0;
   mojo::edk::PlatformChannelPair channel_pair;
-  std::string child_token = mojo::edk::GenerateRandomToken();
-  mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle,
-                                  channel_pair.PassServerHandle(), child_token);
+  mojo::edk::PendingProcessConnection process;
+  process.Connect(kUnusedChildProcessHandle, channel_pair.PassServerHandle());
 
   mojo::edk::ScopedPlatformHandleVectorPtr handles(
       new mojo::edk::PlatformHandleVector{
           channel_pair.PassClientHandle().release()});
 
-  std::string token = mojo::edk::GenerateRandomToken();
+  std::string token;
+  mojo::ScopedMessagePipeHandle pipe = process.CreateMessagePipe(&token);
+
   // We need to send the length of the message as a single byte, so make sure it
   // fits.
   DCHECK_LT(token.size(), 256u);
@@ -464,7 +466,7 @@ mojo::ScopedMessagePipeHandle ArcSessionImpl::ConnectMojo(
     return mojo::ScopedMessagePipeHandle();
   }
 
-  return mojo::edk::CreateParentMessagePipe(token, child_token);
+  return pipe;
 }
 
 void ArcSessionImpl::OnMojoConnected(

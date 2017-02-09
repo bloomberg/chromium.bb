@@ -28,6 +28,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "testing/multiprocess_func_list.h"
@@ -146,27 +147,19 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   listener_.reset(new FFDecryptorServerChannelListener());
 
   // Set up IPC channel using ChannelMojo.
-  const std::string mojo_child_token = mojo::edk::GenerateRandomToken();
-  const std::string mojo_channel_token = mojo::edk::GenerateRandomToken();
-  mojo::ScopedMessagePipeHandle parent_handle =
-      mojo::edk::CreateParentMessagePipe(mojo_channel_token, mojo_child_token);
-  channel_ = IPC::Channel::CreateServer(parent_handle.release(),
-                                        listener_.get());
+  mojo::edk::PendingProcessConnection process;
+  std::string token;
+  mojo::ScopedMessagePipeHandle parent_pipe = process.CreateMessagePipe(&token);
+  channel_ = IPC::Channel::CreateServer(parent_pipe.release(), listener_.get());
   CHECK(channel_->Connect());
   listener_->SetSender(channel_.get());
 
   // Spawn child and set up sync IPC connection.
   mojo::edk::PlatformChannelPair channel_pair;
   child_process_ = LaunchNSSDecrypterChildProcess(
-      nss_path, channel_pair.PassClientHandle(), mojo_channel_token);
-  if (child_process_.IsValid()) {
-    mojo::edk::ChildProcessLaunched(child_process_.Handle(),
-                                    channel_pair.PassServerHandle(),
-                                    mojo_child_token);
-  } else {
-    mojo::edk::ChildProcessLaunchFailed(mojo_child_token);
-  }
-
+      nss_path, channel_pair.PassClientHandle(), token);
+  if (child_process_.IsValid())
+    process.Connect(child_process_.Handle(), channel_pair.PassServerHandle());
   return child_process_.IsValid();
 }
 

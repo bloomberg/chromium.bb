@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "ipc/ipc_platform_file.h"
+#include "mojo/edk/embedder/pending_process_connection.h"
 
 namespace base {
 class CommandLine;
@@ -147,7 +148,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   scoped_refptr<Client> client_;
   scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
   bool waiting_for_reply_;
-  const std::string mojo_child_token_;
+  mojo::edk::PendingProcessConnection process_connection_;
 
   // Start time of operation.
   base::Time start_time_;

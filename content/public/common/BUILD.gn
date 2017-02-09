@@ -248,6 +248,7 @@ source_set("common_sources") {
     ":service_names",
     "//content/common",
     "//content/public/common:interfaces",
+    "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",

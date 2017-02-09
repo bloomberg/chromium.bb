@@ -5,22 +5,27 @@
 #ifndef SERVICES_SERVICE_MANAGER_RUNNER_COMMON_CLIENT_UTIL_H_
 #define SERVICES_SERVICE_MANAGER_RUNNER_COMMON_CLIENT_UTIL_H_
 
-#include <string>
-
 #include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace base {
 class CommandLine;
 }
 
+namespace mojo {
+namespace edk {
+class PendingProcessConnection;
+}
+}
+
 namespace service_manager {
 
-// Creates a new Service pipe and returns one end of it. The other end is
-// passed via a token in |command_line|. A child of the calling process may
-// extract a ServiceRequest from this by calling
-// GetServiceRequestFromCommandLine().
+// Creates a new Service pipe for connection to a not-yet-launched child process
+// and returns one end of it. The other end is passed via a token in
+// |command_line|. The launched process may extract the corresponding
+// ServiceRequest by calling GetServiceRequestFromCommandLine().
 mojom::ServicePtr PassServiceRequestOnCommandLine(
-    base::CommandLine* command_line, const std::string& child_token);
+    mojo::edk::PendingProcessConnection* connection,
+    base::CommandLine* command_line);
 
 // Extracts a ServiceRequest from the command line of the current process.
 // The parent of this process should have passed a request using

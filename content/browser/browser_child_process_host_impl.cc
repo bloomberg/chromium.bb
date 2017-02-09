@@ -161,7 +161,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     const std::string& service_name)
     : data_(process_type),
       delegate_(delegate),
-      child_token_(mojo::edk::GenerateRandomToken()),
+      pending_connection_(new mojo::edk::PendingProcessConnection),
       channel_(nullptr),
       is_channel_connected_(false),
       notify_child_disconnected_(false),
@@ -179,10 +179,11 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
   if (!service_name.empty()) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    child_connection_.reset(new ChildConnection(
-        service_name, base::StringPrintf("%d", data_.id), child_token_,
-        ServiceManagerContext::GetConnectorForIOThread(),
-        base::ThreadTaskRunnerHandle::Get()));
+    child_connection_.reset(
+        new ChildConnection(service_name, base::StringPrintf("%d", data_.id),
+                            pending_connection_.get(),
+                            ServiceManagerContext::GetConnectorForIOThread(),
+                            base::ThreadTaskRunnerHandle::Get()));
   }
 
   // May be null during test execution.
@@ -256,7 +257,8 @@ void BrowserChildProcessHostImpl::Launch(
 
   notify_child_disconnected_ = true;
   child_process_.reset(new ChildProcessLauncher(
-      std::move(delegate), std::move(cmd_line), data_.id, this, child_token_,
+      std::move(delegate), std::move(cmd_line), data_.id, this,
+      std::move(pending_connection_),
       base::Bind(&BrowserChildProcessHostImpl::OnMojoError,
                  weak_factory_.GetWeakPtr(),
                  base::ThreadTaskRunnerHandle::Get()),
