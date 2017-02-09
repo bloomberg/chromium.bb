@@ -257,6 +257,25 @@ drm_output_find_by_crtc(struct drm_backend *b, uint32_t crtc_id)
 	return NULL;
 }
 
+static struct drm_output *
+drm_output_find_by_connector(struct drm_backend *b, uint32_t connector_id)
+{
+	struct drm_output *output;
+
+	wl_list_for_each(output, &b->compositor->output_list, base.link) {
+		if (output->connector_id == connector_id)
+			return output;
+	}
+
+	wl_list_for_each(output, &b->compositor->pending_output_list,
+			 base.link) {
+		if (output->connector_id == connector_id)
+			return output;
+	}
+
+	return NULL;
+}
+
 static void
 drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
 {
@@ -2764,14 +2783,14 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 
 		connected |= (1 << connector_id);
 
-		if (!(b->connector_allocator & (1 << connector_id))) {
-			create_output_for_connector(b, resources,
-						    connector, drm_device);
-			weston_log("connector %d connected\n", connector_id);
-
-		} else {
+		if (drm_output_find_by_connector(b, connector_id)) {
 			drmModeFreeConnector(connector);
+			continue;
 		}
+
+		create_output_for_connector(b, resources,
+					    connector, drm_device);
+		weston_log("connector %d connected\n", connector_id);
 	}
 	drmModeFreeResources(resources);
 
