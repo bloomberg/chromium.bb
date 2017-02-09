@@ -306,13 +306,13 @@ cr.define('print_preview', function() {
         'generateDraftData': documentInfo.isModifiable,
         'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
         'scaleFactor': printTicketStore.scaling.getValueAsNumber(),
-        'rasterizePDF': printTicketStore.rasterize.getValue(),
         // NOTE: Even though the following fields don't directly relate to the
         // preview, they still need to be included.
         'duplex': printTicketStore.duplex.getValue() ?
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
         'copies': 1,
         'collate': true,
+        'rasterizePDF': false,
         'shouldPrintBackgrounds': printTicketStore.cssBackground.getValue(),
         'shouldPrintSelectionOnly': printTicketStore.selectionOnly.getValue()
       };

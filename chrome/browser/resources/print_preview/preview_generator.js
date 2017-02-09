@@ -86,13 +86,6 @@ cr.define('print_preview', function() {
     this.colorValue_ = false;
 
     /**
-     * Whether the document should be printed as a raster PDF.
-     * @type {boolean}
-     * @private
-     */
-    this.rasterizeValue_ = false;
-
-    /**
      * Whether the document should be fitted to the page.
      * @type {boolean}
      * @private
@@ -191,7 +184,6 @@ cr.define('print_preview', function() {
       this.isHeaderFooterEnabled_ =
           this.printTicketStore_.headerFooter.getValue();
       this.colorValue_ = this.printTicketStore_.color.getValue();
-      this.rasterizeValue_ = this.printTicketStore_.rasterize.getValue();
       this.isFitToPageEnabled_ = this.printTicketStore_.fitToPage.getValue();
       this.scalingValue_ = this.printTicketStore_.scaling.getValueAsNumber();
       this.pageRanges_ = this.printTicketStore_.pageRange.getPageRanges();
@@ -292,7 +284,6 @@ cr.define('print_preview', function() {
           !ticketStore.landscape.isValueEqual(this.isLandscapeEnabled_) ||
           !ticketStore.headerFooter.isValueEqual(this.isHeaderFooterEnabled_) ||
           !ticketStore.color.isValueEqual(this.colorValue_) ||
-          !ticketStore.rasterize.isValueEqual(this.rasterizeValue_) ||
           !ticketStore.scaling.isValueEqual(this.scalingValue_) ||
           !ticketStore.fitToPage.isValueEqual(this.isFitToPageEnabled_) ||
           this.pageRanges_ == null ||
