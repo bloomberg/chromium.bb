@@ -26,7 +26,7 @@ class ShellJavaScriptDialog {
   ShellJavaScriptDialog(
       ShellJavaScriptDialogManager* manager,
       gfx::NativeWindow parent_window,
-      JavaScriptMessageType message_type,
+      JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
       const JavaScriptDialogManager::DialogClosedCallback& callback);
@@ -42,7 +42,7 @@ class ShellJavaScriptDialog {
   ShellJavaScriptDialogHelper* helper_;  // owned
 #elif defined(OS_WIN)
   ShellJavaScriptDialogManager* manager_;
-  JavaScriptMessageType message_type_;
+  JavaScriptDialogType dialog_type_;
   HWND dialog_win_;
   base::string16 message_text_;
   base::string16 default_prompt_text_;

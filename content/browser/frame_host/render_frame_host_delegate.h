@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/common/javascript_message_type.h"
+#include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/media_stream_request.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/http/http_response_headers.h"
@@ -93,13 +93,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
                                const ContextMenuParams& params) {}
 
-  // A JavaScript message, confirmation or prompt should be shown.
-  virtual void RunJavaScriptMessage(RenderFrameHost* render_frame_host,
-                                    const base::string16& message,
-                                    const base::string16& default_prompt,
-                                    const GURL& frame_url,
-                                    JavaScriptMessageType type,
-                                    IPC::Message* reply_msg) {}
+  // A JavaScript alert, confirmation or prompt dialog should be shown.
+  virtual void RunJavaScriptDialog(RenderFrameHost* render_frame_host,
+                                   const base::string16& message,
+                                   const base::string16& default_prompt,
+                                   const GURL& frame_url,
+                                   JavaScriptDialogType type,
+                                   IPC::Message* reply_msg) {}
 
   virtual void RunBeforeUnloadConfirm(RenderFrameHost* render_frame_host,
                                       bool is_reload,

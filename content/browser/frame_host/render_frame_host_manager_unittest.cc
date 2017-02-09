@@ -40,7 +40,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/javascript_message_type.h"
+#include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"

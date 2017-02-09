@@ -18,13 +18,13 @@ base::WeakPtr<JavaScriptDialogViews> JavaScriptDialogViews::Create(
     content::WebContents* parent_web_contents,
     content::WebContents* alerting_web_contents,
     const base::string16& title,
-    content::JavaScriptMessageType message_type,
+    content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const content::JavaScriptDialogManager::DialogClosedCallback&
         dialog_callback) {
   return (new JavaScriptDialogViews(parent_web_contents, alerting_web_contents,
-                                    title, message_type, message_text,
+                                    title, dialog_type, message_text,
                                     default_prompt_text, dialog_callback))
       ->weak_factory_.GetWeakPtr();
 }
@@ -39,7 +39,7 @@ int JavaScriptDialogViews::GetDefaultDialogButton() const {
 }
 
 int JavaScriptDialogViews::GetDialogButtons() const {
-  const bool is_alert = message_type_ == content::JAVASCRIPT_MESSAGE_TYPE_ALERT;
+  const bool is_alert = dialog_type_ == content::JAVASCRIPT_DIALOG_TYPE_ALERT;
   return ui::DIALOG_BUTTON_OK | (is_alert ? 0 : ui::DIALOG_BUTTON_CANCEL);
 }
 
@@ -94,20 +94,20 @@ JavaScriptDialogViews::JavaScriptDialogViews(
     content::WebContents* parent_web_contents,
     content::WebContents* alerting_web_contents,
     const base::string16& title,
-    content::JavaScriptMessageType message_type,
+    content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const content::JavaScriptDialogManager::DialogClosedCallback&
         dialog_callback)
     : JavaScriptDialog(parent_web_contents),
       title_(title),
-      message_type_(message_type),
+      dialog_type_(dialog_type),
       message_text_(message_text),
       default_prompt_text_(default_prompt_text),
       dialog_callback_(dialog_callback),
       weak_factory_(this) {
   int options = views::MessageBoxView::DETECT_DIRECTIONALITY;
-  if (message_type == content::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
+  if (dialog_type == content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
     options |= views::MessageBoxView::HAS_PROMPT_FIELD;
 
   views::MessageBoxView::InitParams params(message_text);

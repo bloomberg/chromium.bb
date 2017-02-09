@@ -238,11 +238,11 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
   NSString* other_button = l10n_util::GetNSStringWithFixup(IDS_APP_CANCEL);
   bool text_field = false;
   bool one_button = false;
-  switch (dialog_->javascript_message_type()) {
-    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
+  switch (dialog_->javascript_dialog_type()) {
+    case content::JAVASCRIPT_DIALOG_TYPE_ALERT:
       one_button = true;
       break;
-    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
+    case content::JAVASCRIPT_DIALOG_TYPE_CONFIRM:
       if (dialog_->is_before_unload_dialog()) {
         if (dialog_->is_reload()) {
           default_button = l10n_util::GetNSStringWithFixup(
@@ -257,7 +257,7 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
         }
       }
       break;
-    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
+    case content::JAVASCRIPT_DIALOG_TYPE_PROMPT:
       text_field = true;
       break;
 

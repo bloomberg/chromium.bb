@@ -24,7 +24,7 @@ ShellJavaScriptDialogManager::~ShellJavaScriptDialogManager() {
 void ShellJavaScriptDialogManager::RunJavaScriptDialog(
     WebContents* web_contents,
     const GURL& origin_url,
-    JavaScriptMessageType javascript_message_type,
+    JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const DialogClosedCallback& callback,
@@ -50,11 +50,8 @@ void ShellJavaScriptDialogManager::RunJavaScriptDialog(
       base::ASCIIToUTF16("\n\n") + message_text;
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
 
-  dialog_.reset(new ShellJavaScriptDialog(this,
-                                          parent_window,
-                                          javascript_message_type,
-                                          new_message_text,
-                                          default_prompt_text,
+  dialog_.reset(new ShellJavaScriptDialog(this, parent_window, dialog_type,
+                                          new_message_text, default_prompt_text,
                                           callback));
 #else
   // TODO: implement ShellJavaScriptDialog for other platforms, drop this #if
@@ -91,12 +88,10 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
 
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
 
-  dialog_.reset(new ShellJavaScriptDialog(this,
-                                          parent_window,
-                                          JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
-                                          message_text,
-                                          base::string16(),  // default
-                                          callback));
+  dialog_.reset(new ShellJavaScriptDialog(
+      this, parent_window, JAVASCRIPT_DIALOG_TYPE_CONFIRM, message_text,
+      base::string16(),  // default
+      callback));
 #else
   // TODO: implement ShellJavaScriptDialog for other platforms, drop this #if
   callback.Run(true, base::string16());

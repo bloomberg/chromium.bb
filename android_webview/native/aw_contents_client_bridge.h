@@ -46,7 +46,7 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
       std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
 
   void RunJavaScriptDialog(
-      content::JavaScriptMessageType message_type,
+      content::JavaScriptDialogType dialog_type,
       const GURL& origin_url,
       const base::string16& message_text,
       const base::string16& default_prompt_text,

@@ -271,7 +271,7 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
 }
 
 void AwContentsClientBridge::RunJavaScriptDialog(
-    content::JavaScriptMessageType message_type,
+    content::JavaScriptDialogType dialog_type,
     const GURL& origin_url,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
@@ -293,20 +293,20 @@ void AwContentsClientBridge::RunJavaScriptDialog(
   ScopedJavaLocalRef<jstring> jmessage(
       ConvertUTF16ToJavaString(env, message_text));
 
-  switch (message_type) {
-    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT: {
+  switch (dialog_type) {
+    case content::JAVASCRIPT_DIALOG_TYPE_ALERT: {
       devtools_instrumentation::ScopedEmbedderCallbackTask("onJsAlert");
       Java_AwContentsClientBridge_handleJsAlert(env, obj, jurl, jmessage,
                                                 callback_id);
       break;
     }
-    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM: {
+    case content::JAVASCRIPT_DIALOG_TYPE_CONFIRM: {
       devtools_instrumentation::ScopedEmbedderCallbackTask("onJsConfirm");
       Java_AwContentsClientBridge_handleJsConfirm(env, obj, jurl, jmessage,
                                                   callback_id);
       break;
     }
-    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT: {
+    case content::JAVASCRIPT_DIALOG_TYPE_PROMPT: {
       ScopedJavaLocalRef<jstring> jdefault_value(
           ConvertUTF16ToJavaString(env, default_prompt_text));
       devtools_instrumentation::ScopedEmbedderCallbackTask("onJsPrompt");

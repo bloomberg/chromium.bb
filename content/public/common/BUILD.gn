@@ -146,7 +146,7 @@ source_set("common_sources") {
     "frame_navigate_params.h",
     "injection_test_mac.h",
     "injection_test_win.h",
-    "javascript_message_type.h",
+    "javascript_dialog_type.h",
     "main_function_params.h",
     "manifest.cc",
     "manifest.h",

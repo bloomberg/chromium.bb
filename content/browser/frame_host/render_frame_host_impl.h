@@ -37,7 +37,7 @@
 #include "content/common/image_downloader/image_downloader.mojom.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/javascript_message_type.h"
+#include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "net/http/http_response_headers.h"
@@ -695,11 +695,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnContextMenu(const ContextMenuParams& params);
   void OnJavaScriptExecuteResponse(int id, const base::ListValue& result);
   void OnVisualStateResponse(uint64_t id);
-  void OnRunJavaScriptMessage(const base::string16& message,
-                              const base::string16& default_prompt,
-                              const GURL& frame_url,
-                              JavaScriptMessageType type,
-                              IPC::Message* reply_msg);
+  void OnRunJavaScriptDialog(const base::string16& message,
+                             const base::string16& default_prompt,
+                             const GURL& frame_url,
+                             JavaScriptDialogType dialog_type,
+                             IPC::Message* reply_msg);
   void OnRunBeforeUnloadConfirm(const GURL& frame_url,
                                 bool is_reload,
                                 IPC::Message* reply_msg);

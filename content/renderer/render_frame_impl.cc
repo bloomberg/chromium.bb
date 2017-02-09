@@ -2310,11 +2310,11 @@ void RenderFrameImpl::OnFocusedFormFieldDataRequest(int request_id) {
                                                      field));
 }
 
-bool RenderFrameImpl::RunJavaScriptMessage(JavaScriptMessageType type,
-                                           const base::string16& message,
-                                           const base::string16& default_value,
-                                           const GURL& frame_url,
-                                           base::string16* result) {
+bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
+                                          const base::string16& message,
+                                          const base::string16& default_value,
+                                          const GURL& frame_url,
+                                          base::string16* result) {
   // Don't allow further dialogs if we are waiting to swap out, since the
   // ScopedPageLoadDeferrer in our stack prevents it.
   if (suppress_further_dialogs_)
@@ -2334,8 +2334,8 @@ bool RenderFrameImpl::RunJavaScriptMessage(JavaScriptMessageType type,
   if (!result)
     result = &result_temp;
 
-  Send(new FrameHostMsg_RunJavaScriptMessage(
-      routing_id_, message, default_value, frame_url, type, &success, result));
+  Send(new FrameHostMsg_RunJavaScriptDialog(routing_id_, message, default_value,
+                                            frame_url, type, &success, result));
   return success;
 }
 
@@ -4085,13 +4085,13 @@ blink::WebColorChooser* RenderFrameImpl::createColorChooser(
 }
 
 void RenderFrameImpl::runModalAlertDialog(const blink::WebString& message) {
-  RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_ALERT, message.utf16(),
-                       base::string16(), frame_->document().url(), NULL);
+  RunJavaScriptDialog(JAVASCRIPT_DIALOG_TYPE_ALERT, message.utf16(),
+                      base::string16(), frame_->document().url(), NULL);
 }
 
 bool RenderFrameImpl::runModalConfirmDialog(const blink::WebString& message) {
-  return RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_CONFIRM, message.utf16(),
-                              base::string16(), frame_->document().url(), NULL);
+  return RunJavaScriptDialog(JAVASCRIPT_DIALOG_TYPE_CONFIRM, message.utf16(),
+                             base::string16(), frame_->document().url(), NULL);
 }
 
 bool RenderFrameImpl::runModalPromptDialog(
@@ -4099,9 +4099,9 @@ bool RenderFrameImpl::runModalPromptDialog(
     const blink::WebString& default_value,
     blink::WebString* actual_value) {
   base::string16 result;
-  bool ok = RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_PROMPT,
-                                 message.utf16(), default_value.utf16(),
-                                 frame_->document().url(), &result);
+  bool ok = RunJavaScriptDialog(JAVASCRIPT_DIALOG_TYPE_PROMPT, message.utf16(),
+                                default_value.utf16(), frame_->document().url(),
+                                &result);
   if (ok)
     actual_value->assign(WebString::fromUTF16(result));
   return ok;
@@ -4115,7 +4115,7 @@ bool RenderFrameImpl::runModalBeforeUnloadDialog(bool is_reload) {
 
   bool success = false;
   // This is an ignored return value, but is included so we can accept the same
-  // response as RunJavaScriptMessage.
+  // response as RunJavaScriptDialog.
   base::string16 ignored_result;
   Send(new FrameHostMsg_RunBeforeUnloadConfirm(
       routing_id_, frame_->document().url(), is_reload, &success,

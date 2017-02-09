@@ -24,7 +24,7 @@ INT_PTR CALLBACK ShellJavaScriptDialog::DialogProc(HWND dialog,
           reinterpret_cast<ShellJavaScriptDialog*>(lparam);
       owner->dialog_win_ = dialog;
       SetDlgItemText(dialog, IDC_DIALOGTEXT, owner->message_text_.c_str());
-      if (owner->message_type_ == JAVASCRIPT_MESSAGE_TYPE_PROMPT)
+      if (owner->dialog_type_ == JAVASCRIPT_DIALOG_TYPE_PROMPT)
         SetDlgItemText(dialog, IDC_PROMPTEDIT,
                        owner->default_prompt_text_.c_str());
       break;
@@ -49,7 +49,7 @@ INT_PTR CALLBACK ShellJavaScriptDialog::DialogProc(HWND dialog,
         case IDOK:
           finish = true;
           result = true;
-          if (owner->message_type_ == JAVASCRIPT_MESSAGE_TYPE_PROMPT) {
+          if (owner->dialog_type_ == JAVASCRIPT_DIALOG_TYPE_PROMPT) {
             int length =
                 GetWindowTextLength(GetDlgItem(dialog, IDC_PROMPTEDIT)) + 1;
             GetDlgItemText(dialog, IDC_PROMPTEDIT,
@@ -78,26 +78,26 @@ INT_PTR CALLBACK ShellJavaScriptDialog::DialogProc(HWND dialog,
 ShellJavaScriptDialog::ShellJavaScriptDialog(
     ShellJavaScriptDialogManager* manager,
     gfx::NativeWindow parent_window,
-    JavaScriptMessageType message_type,
+    JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const JavaScriptDialogManager::DialogClosedCallback& callback)
     : callback_(callback),
       manager_(manager),
-      message_type_(message_type),
+      dialog_type_(dialog_type),
       message_text_(message_text),
       default_prompt_text_(default_prompt_text) {
-  int dialog_type;
-  if (message_type == JAVASCRIPT_MESSAGE_TYPE_ALERT)
-    dialog_type = IDD_ALERT;
-  else if (message_type == JAVASCRIPT_MESSAGE_TYPE_CONFIRM)
-    dialog_type = IDD_CONFIRM;
-  else // JAVASCRIPT_MESSAGE_TYPE_PROMPT
-    dialog_type = IDD_PROMPT;
+  int dialog_resource;
+  if (dialog_type == JAVASCRIPT_DIALOG_TYPE_ALERT)
+    dialog_resource = IDD_ALERT;
+  else if (dialog_type == JAVASCRIPT_DIALOG_TYPE_CONFIRM)
+    dialog_resource = IDD_CONFIRM;
+  else  // JAVASCRIPT_DIALOG_TYPE_PROMPT
+    dialog_resource = IDD_PROMPT;
 
-  dialog_win_ = CreateDialogParam(GetModuleHandle(0),
-                                  MAKEINTRESOURCE(dialog_type), 0, DialogProc,
-                                  reinterpret_cast<LPARAM>(this));
+  dialog_win_ =
+      CreateDialogParam(GetModuleHandle(0), MAKEINTRESOURCE(dialog_resource), 0,
+                        DialogProc, reinterpret_cast<LPARAM>(this));
   ShowWindow(dialog_win_, SW_SHOWNORMAL);
 }
 

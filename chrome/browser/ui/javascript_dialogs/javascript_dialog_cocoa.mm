@@ -24,7 +24,7 @@ class JavaScriptDialogCocoa::JavaScriptDialogCocoaImpl
       content::WebContents* parent_web_contents,
       content::WebContents* alerting_web_contents,
       const base::string16& title,
-      content::JavaScriptMessageType message_type,
+      content::JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
       const content::JavaScriptDialogManager::DialogClosedCallback&
@@ -82,7 +82,7 @@ JavaScriptDialogCocoa::JavaScriptDialogCocoaImpl::JavaScriptDialogCocoaImpl(
     content::WebContents* parent_web_contents,
     content::WebContents* alerting_web_contents,
     const base::string16& title,
-    content::JavaScriptMessageType message_type,
+    content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const content::JavaScriptDialogManager::DialogClosedCallback&
@@ -97,13 +97,13 @@ JavaScriptDialogCocoa::JavaScriptDialogCocoaImpl::JavaScriptDialogCocoaImpl(
                keyEquivalent:kKeyEquivalentReturn
                       target:bridge_
                       action:@selector(onAcceptButton:)];
-  if (message_type != content::JAVASCRIPT_MESSAGE_TYPE_ALERT) {
+  if (dialog_type != content::JAVASCRIPT_DIALOG_TYPE_ALERT) {
     [alert_ addButtonWithTitle:l10n_util::GetNSStringWithFixup(IDS_APP_CANCEL)
                  keyEquivalent:kKeyEquivalentEscape
                         target:bridge_
                         action:@selector(onCancelButton:)];
   }
-  if (message_type == content::JAVASCRIPT_MESSAGE_TYPE_PROMPT) {
+  if (dialog_type == content::JAVASCRIPT_DIALOG_TYPE_PROMPT) {
     textField_.reset(
         [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 460, 22)]);
     [[textField_ cell] setLineBreakMode:NSLineBreakByTruncatingTail];
@@ -153,13 +153,13 @@ base::WeakPtr<JavaScriptDialogCocoa> JavaScriptDialogCocoa::Create(
     content::WebContents* parent_web_contents,
     content::WebContents* alerting_web_contents,
     const base::string16& title,
-    content::JavaScriptMessageType message_type,
+    content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const content::JavaScriptDialogManager::DialogClosedCallback&
         dialog_callback) {
   return (new JavaScriptDialogCocoa(parent_web_contents, alerting_web_contents,
-                                    title, message_type, message_text,
+                                    title, dialog_type, message_text,
                                     default_prompt_text, dialog_callback))
       ->weak_factory_.GetWeakPtr();
 }
@@ -173,7 +173,7 @@ JavaScriptDialogCocoa::JavaScriptDialogCocoa(
     content::WebContents* parent_web_contents,
     content::WebContents* alerting_web_contents,
     const base::string16& title,
-    content::JavaScriptMessageType message_type,
+    content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const content::JavaScriptDialogManager::DialogClosedCallback&
@@ -183,7 +183,7 @@ JavaScriptDialogCocoa::JavaScriptDialogCocoa(
                                                         parent_web_contents,
                                                         alerting_web_contents,
                                                         title,
-                                                        message_type,
+                                                        dialog_type,
                                                         message_text,
                                                         default_prompt_text,
                                                         dialog_callback)),

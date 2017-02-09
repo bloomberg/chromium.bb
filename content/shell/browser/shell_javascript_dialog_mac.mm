@@ -89,13 +89,13 @@ namespace content {
 ShellJavaScriptDialog::ShellJavaScriptDialog(
     ShellJavaScriptDialogManager* manager,
     gfx::NativeWindow parent_window,
-    JavaScriptMessageType message_type,
+    JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const JavaScriptDialogManager::DialogClosedCallback& callback)
     : callback_(callback) {
-  bool text_field = message_type == JAVASCRIPT_MESSAGE_TYPE_PROMPT;
-  bool one_button = message_type == JAVASCRIPT_MESSAGE_TYPE_ALERT;
+  bool text_field = dialog_type == JAVASCRIPT_DIALOG_TYPE_PROMPT;
+  bool one_button = dialog_type == JAVASCRIPT_DIALOG_TYPE_ALERT;
 
   helper_ =
       [[ShellJavaScriptDialogHelper alloc] initHelperWithManager:manager

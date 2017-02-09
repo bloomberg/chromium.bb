@@ -6266,7 +6266,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 namespace {
 
-// A BrowserMessageFilter that delays the FrameHostMsg_RunJavaScriptMessage IPC
+// A BrowserMessageFilter that delays the FrameHostMsg_RunJavaScriptDialog IPC
 // message until a commit happens on a given WebContents. This allows testing a
 // race condition.
 class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
@@ -6285,7 +6285,7 @@ class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
   // BrowserMessageFilter:
   bool OnMessageReceived(const IPC::Message& message) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    if (message.type() != FrameHostMsg_RunJavaScriptMessage::ID)
+    if (message.type() != FrameHostMsg_RunJavaScriptDialog::ID)
       return false;
 
     // Suspend the message.

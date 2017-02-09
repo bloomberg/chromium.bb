@@ -17,7 +17,7 @@ AwJavaScriptDialogManager::~AwJavaScriptDialogManager() {}
 void AwJavaScriptDialogManager::RunJavaScriptDialog(
     content::WebContents* web_contents,
     const GURL& origin_url,
-    content::JavaScriptMessageType message_type,
+    content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const DialogClosedCallback& callback,
@@ -29,11 +29,8 @@ void AwJavaScriptDialogManager::RunJavaScriptDialog(
     return;
   }
 
-  bridge->RunJavaScriptDialog(message_type,
-                              origin_url,
-                              message_text,
-                              default_prompt_text,
-                              callback);
+  bridge->RunJavaScriptDialog(dialog_type, origin_url, message_text,
+                              default_prompt_text, callback);
 }
 
 void AwJavaScriptDialogManager::RunBeforeUnloadDialog(

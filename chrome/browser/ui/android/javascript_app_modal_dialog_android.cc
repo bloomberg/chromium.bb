@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/javascript_message_type.h"
+#include "content/public/common/javascript_dialog_type.h"
 #include "jni/JavascriptAppModalDialog_jni.h"
 #include "ui/android/window_android.h"
 
@@ -62,14 +62,14 @@ void JavascriptAppModalDialogAndroid::ShowAppModalDialog() {
       ConvertUTF16ToJavaString(env, dialog_->message_text());
 
   bool foremost = tab->IsUserInteractable();
-  switch (dialog_->javascript_message_type()) {
-    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT: {
+  switch (dialog_->javascript_dialog_type()) {
+    case content::JAVASCRIPT_DIALOG_TYPE_ALERT: {
       UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Alert", foremost);
       dialog_object = Java_JavascriptAppModalDialog_createAlertDialog(
           env, title, message, dialog_->display_suppress_checkbox());
       break;
     }
-    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM: {
+    case content::JAVASCRIPT_DIALOG_TYPE_CONFIRM: {
       if (dialog_->is_before_unload_dialog()) {
         dialog_object = Java_JavascriptAppModalDialog_createBeforeUnloadDialog(
             env, title, message, dialog_->is_reload(),
@@ -81,7 +81,7 @@ void JavascriptAppModalDialogAndroid::ShowAppModalDialog() {
       }
       break;
     }
-    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT: {
+    case content::JAVASCRIPT_DIALOG_TYPE_PROMPT: {
       UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Prompt", foremost);
       ScopedJavaLocalRef<jstring> default_prompt_text =
           ConvertUTF16ToJavaString(env, dialog_->default_prompt_text());

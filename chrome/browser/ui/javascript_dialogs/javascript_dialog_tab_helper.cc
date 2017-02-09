@@ -90,7 +90,7 @@ void JavaScriptDialogTabHelper::SetDialogShownCallbackForTesting(
 void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     content::WebContents* alerting_web_contents,
     const GURL& origin_url,
-    content::JavaScriptMessageType message_type,
+    content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const DialogClosedCallback& callback,
@@ -116,21 +116,21 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
   content::WebContents* parent_web_contents =
       WebContentsObserver::web_contents();
   bool foremost = IsWebContentsForemost(parent_web_contents);
-  switch (message_type) {
-    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
+  switch (dialog_type) {
+    case content::JAVASCRIPT_DIALOG_TYPE_ALERT:
       UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Alert", foremost);
       break;
-    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
+    case content::JAVASCRIPT_DIALOG_TYPE_CONFIRM:
       UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Confirm", foremost);
       break;
-    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
+    case content::JAVASCRIPT_DIALOG_TYPE_PROMPT:
       UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Prompt", foremost);
       break;
   }
 
   if (IsEnabled()) {
     if (!IsWebContentsForemost(parent_web_contents) &&
-        message_type == content::JAVASCRIPT_MESSAGE_TYPE_PROMPT) {
+        dialog_type == content::JAVASCRIPT_DIALOG_TYPE_PROMPT) {
       // Don't allow "prompt" dialogs to steal the user's focus. TODO(avi):
       // Eventually, for subsequent phases of http://bit.ly/project-oldspice,
       // turn off focus stealing for other dialog types.
@@ -154,9 +154,9 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     base::string16 title =
         AppModalDialogManager()->GetTitle(alerting_web_contents, origin_url);
     dialog_callback_ = callback;
-    message_type_ = message_type;
+    dialog_type_ = dialog_type;
     dialog_ = JavaScriptDialog::Create(
-        parent_web_contents, alerting_web_contents, title, message_type,
+        parent_web_contents, alerting_web_contents, title, dialog_type,
         message_text, default_prompt_text,
         base::Bind(&JavaScriptDialogTabHelper::OnDialogClosed,
                    base::Unretained(this), callback));
@@ -175,7 +175,7 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     }
   } else {
     AppModalDialogManager()->RunJavaScriptDialog(
-        alerting_web_contents, origin_url, message_type, message_text,
+        alerting_web_contents, origin_url, dialog_type, message_text,
         default_prompt_text, callback, did_suppress_message);
   }
 
@@ -289,18 +289,18 @@ void JavaScriptDialogTabHelper::OnBrowserSetLastActive(Browser* browser) {
 
 void JavaScriptDialogTabHelper::LogDialogDismissalCause(
     JavaScriptDialogTabHelper::DismissalCause cause) {
-  switch (message_type_) {
-    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
+  switch (dialog_type_) {
+    case content::JAVASCRIPT_DIALOG_TYPE_ALERT:
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Alert",
                                 static_cast<int>(cause),
                                 static_cast<int>(DismissalCause::MAX));
       break;
-    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
+    case content::JAVASCRIPT_DIALOG_TYPE_CONFIRM:
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Confirm",
                                 static_cast<int>(cause),
                                 static_cast<int>(DismissalCause::MAX));
       break;
-    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
+    case content::JAVASCRIPT_DIALOG_TYPE_PROMPT:
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Prompt",
                                 static_cast<int>(cause),
                                 static_cast<int>(DismissalCause::MAX));

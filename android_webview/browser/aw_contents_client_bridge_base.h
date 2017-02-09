@@ -60,12 +60,12 @@ class AwContentsClientBridgeBase {
       std::unique_ptr<content::ClientCertificateDelegate> delegate) = 0;
 
   virtual void RunJavaScriptDialog(
-      content::JavaScriptMessageType message_type,
+      content::JavaScriptDialogType dialog_type,
       const GURL& origin_url,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
-      const content::JavaScriptDialogManager::DialogClosedCallback& callback)
-      = 0;
+      const content::JavaScriptDialogManager::DialogClosedCallback&
+          callback) = 0;
 
   virtual void RunBeforeUnloadDialog(
       const GURL& origin_url,

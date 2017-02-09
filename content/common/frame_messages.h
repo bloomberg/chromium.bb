@@ -35,7 +35,7 @@
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/form_field_data.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/public/common/javascript_message_type.h"
+#include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
@@ -83,9 +83,9 @@ using FrameMsg_SerializeAsMHTML_FrameRoutingIdToContentIdMap =
 
 #define IPC_MESSAGE_START FrameMsgStart
 
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::JavaScriptMessageType,
-                              content::JAVASCRIPT_MESSAGE_TYPE_ALERT,
-                              content::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::JavaScriptDialogType,
+                              content::JAVASCRIPT_DIALOG_TYPE_ALERT,
+                              content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
 IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_Navigate_Type::Value,
                           FrameMsg_Navigate_Type::NAVIGATE_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_UILoadMetricsReportType::Value,
@@ -1367,13 +1367,13 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_JavaScriptExecuteResponse,
                     base::ListValue  /* result */)
 
 // A request to run a JavaScript dialog.
-IPC_SYNC_MESSAGE_ROUTED4_2(FrameHostMsg_RunJavaScriptMessage,
-                           base::string16     /* in - alert message */,
-                           base::string16     /* in - default prompt */,
-                           GURL               /* in - originating page URL */,
-                           content::JavaScriptMessageType /* in - type */,
-                           bool               /* out - success */,
-                           base::string16     /* out - user_input field */)
+IPC_SYNC_MESSAGE_ROUTED4_2(FrameHostMsg_RunJavaScriptDialog,
+                           base::string16 /* in - alert message */,
+                           base::string16 /* in - default prompt */,
+                           GURL /* in - originating page URL */,
+                           content::JavaScriptDialogType /* in - type */,
+                           bool /* out - success */,
+                           base::string16 /* out - user_input field */)
 
 // Displays a dialog to confirm that the user wants to navigate away from the
 // page. Replies true if yes, and false otherwise. The reply string is ignored,

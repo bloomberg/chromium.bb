@@ -24,8 +24,8 @@ JavaScriptAppModalDialogViews::JavaScriptAppModalDialogViews(
     JavaScriptAppModalDialog* parent)
     : parent_(parent) {
   int options = views::MessageBoxView::DETECT_DIRECTIONALITY;
-  if (parent->javascript_message_type() ==
-          content::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
+  if (parent->javascript_dialog_type() ==
+      content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
     options |= views::MessageBoxView::HAS_PROMPT_FIELD;
 
   views::MessageBoxView::InitParams params(parent->message_text());
@@ -85,8 +85,8 @@ int JavaScriptAppModalDialogViews::GetDefaultDialogButton() const {
 }
 
 int JavaScriptAppModalDialogViews::GetDialogButtons() const {
-  if (parent_->javascript_message_type() ==
-          content::JAVASCRIPT_MESSAGE_TYPE_ALERT)
+  if (parent_->javascript_dialog_type() ==
+      content::JAVASCRIPT_DIALOG_TYPE_ALERT)
     return ui::DIALOG_BUTTON_OK;
 
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;

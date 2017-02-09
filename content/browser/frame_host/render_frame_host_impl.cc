@@ -722,8 +722,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnVisualStateResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SmartClipDataExtracted,
                         OnSmartClipDataExtracted)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunJavaScriptMessage,
-                                    OnRunJavaScriptMessage)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunJavaScriptDialog,
+                                    OnRunJavaScriptDialog)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunBeforeUnloadConfirm,
                                     OnRunBeforeUnloadConfirm)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RunFileChooser, OnRunFileChooser)
@@ -1688,11 +1688,11 @@ void RenderFrameHostImpl::OnVisualStateResponse(uint64_t id) {
   }
 }
 
-void RenderFrameHostImpl::OnRunJavaScriptMessage(
+void RenderFrameHostImpl::OnRunJavaScriptDialog(
     const base::string16& message,
     const base::string16& default_prompt,
     const GURL& frame_url,
-    JavaScriptMessageType type,
+    JavaScriptDialogType dialog_type,
     IPC::Message* reply_msg) {
   if (!is_active()) {
     JavaScriptDialogClosed(reply_msg, true, base::string16(), true);
@@ -1710,8 +1710,8 @@ void RenderFrameHostImpl::OnRunJavaScriptMessage(
   // process input events.
   GetProcess()->SetIgnoreInputEvents(true);
   render_view_host_->GetWidget()->StopHangMonitorTimeout();
-  delegate_->RunJavaScriptMessage(this, message, default_prompt,
-                                  frame_url, type, reply_msg);
+  delegate_->RunJavaScriptDialog(this, message, default_prompt, frame_url,
+                                 dialog_type, reply_msg);
 }
 
 void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
@@ -2680,8 +2680,8 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
         blink::WebInputEvent::Undefined, type);
   }
 
-  FrameHostMsg_RunJavaScriptMessage::WriteReplyParams(reply_msg,
-                                                      success, user_input);
+  FrameHostMsg_RunJavaScriptDialog::WriteReplyParams(reply_msg, success,
+                                                     user_input);
   Send(reply_msg);
 
   // If we are waiting for an unload or beforeunload ack and the user has

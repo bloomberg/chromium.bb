@@ -34,7 +34,7 @@
 #include "content/common/host_zoom.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/common/console_message_level.h"
-#include "content/public/common/javascript_message_type.h"
+#include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/stop_find_action.h"
@@ -984,11 +984,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // selection handles in sync with the webpage.
   void SyncSelectionIfRequired();
 
-  bool RunJavaScriptMessage(JavaScriptMessageType type,
-                            const base::string16& message,
-                            const base::string16& default_value,
-                            const GURL& frame_url,
-                            base::string16* result);
+  bool RunJavaScriptDialog(JavaScriptDialogType type,
+                           const base::string16& message,
+                           const base::string16& default_value,
+                           const GURL& frame_url,
+                           base::string16* result);
 
   // Loads the appropriate error page for the specified failure into the frame.
   // |entry| is only used by PlzNavigate when navigating to a history item.

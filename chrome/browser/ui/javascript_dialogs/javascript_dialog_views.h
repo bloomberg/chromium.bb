@@ -28,7 +28,7 @@ class JavaScriptDialogViews : public JavaScriptDialog,
       content::WebContents* parent_web_contents,
       content::WebContents* alerting_web_contents,
       const base::string16& title,
-      content::JavaScriptMessageType message_type,
+      content::JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
       const content::JavaScriptDialogManager::DialogClosedCallback&
@@ -58,14 +58,14 @@ class JavaScriptDialogViews : public JavaScriptDialog,
       content::WebContents* parent_web_contents,
       content::WebContents* alerting_web_contents,
       const base::string16& title,
-      content::JavaScriptMessageType message_type,
+      content::JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
       const content::JavaScriptDialogManager::DialogClosedCallback&
           dialog_callback);
 
   base::string16 title_;
-  content::JavaScriptMessageType message_type_;
+  content::JavaScriptDialogType dialog_type_;
   base::string16 message_text_;
   base::string16 default_prompt_text_;
   content::JavaScriptDialogManager::DialogClosedCallback dialog_callback_;

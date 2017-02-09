@@ -23,7 +23,7 @@ LayoutTestJavaScriptDialogManager::~LayoutTestJavaScriptDialogManager() {
 void LayoutTestJavaScriptDialogManager::RunJavaScriptDialog(
     WebContents* web_contents,
     const GURL& origin_url,
-    JavaScriptMessageType javascript_message_type,
+    JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const DialogClosedCallback& callback,

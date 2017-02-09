@@ -18,14 +18,13 @@ class JavaScriptDialogHelper : public content::JavaScriptDialogManager {
   ~JavaScriptDialogHelper() override;
 
   // JavaScriptDialogManager implementation.
-  void RunJavaScriptDialog(
-      content::WebContents* web_contents,
-      const GURL& origin_url,
-      content::JavaScriptMessageType javascript_message_type,
-      const base::string16& message_text,
-      const base::string16& default_prompt_text,
-      const DialogClosedCallback& callback,
-      bool* did_suppress_message) override;
+  void RunJavaScriptDialog(content::WebContents* web_contents,
+                           const GURL& origin_url,
+                           content::JavaScriptDialogType dialog_type,
+                           const base::string16& message_text,
+                           const base::string16& default_prompt_text,
+                           const DialogClosedCallback& callback,
+                           bool* did_suppress_message) override;
   void RunBeforeUnloadDialog(content::WebContents* web_contents,
                              bool is_reload,
                              const DialogClosedCallback& callback) override;

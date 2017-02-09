@@ -24,7 +24,7 @@ class JavaScriptDialogCocoa : public JavaScriptDialog {
       content::WebContents* parent_web_contents,
       content::WebContents* alerting_web_contents,
       const base::string16& title,
-      content::JavaScriptMessageType message_type,
+      content::JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
       const content::JavaScriptDialogManager::DialogClosedCallback&
@@ -38,7 +38,7 @@ class JavaScriptDialogCocoa : public JavaScriptDialog {
       content::WebContents* parent_web_contents,
       content::WebContents* alerting_web_contents,
       const base::string16& title,
-      content::JavaScriptMessageType message_type,
+      content::JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
       const content::JavaScriptDialogManager::DialogClosedCallback&

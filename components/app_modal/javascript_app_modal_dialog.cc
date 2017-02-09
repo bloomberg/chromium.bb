@@ -59,7 +59,7 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     content::WebContents* web_contents,
     ExtraDataMap* extra_data_map,
     const base::string16& title,
-    content::JavaScriptMessageType javascript_message_type,
+    content::JavaScriptDialogType javascript_dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     bool display_suppress_checkbox,
@@ -68,7 +68,7 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     const content::JavaScriptDialogManager::DialogClosedCallback& callback)
     : AppModalDialog(web_contents, title),
       extra_data_map_(extra_data_map),
-      javascript_message_type_(javascript_message_type),
+      javascript_dialog_type_(javascript_dialog_type),
       display_suppress_checkbox_(display_suppress_checkbox),
       is_before_unload_dialog_(is_before_unload_dialog),
       is_reload_(is_reload),
