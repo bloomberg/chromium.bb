@@ -81,6 +81,7 @@ namespace content {
 class AppWebMessagePortMessageFilter;
 class AssociatedInterfaceProviderImpl;
 class CrossProcessFrameConnector;
+class FeaturePolicy;
 class FrameTree;
 class FrameTreeNode;
 class MediaInterfaceProxy;
@@ -594,6 +595,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Resets the loading state. Following this call, the RenderFrameHost will be
   // in a non-loading state.
   void ResetLoadingState();
+
+  // Returns the feature policy which should be enforced on this RenderFrame.
+  FeaturePolicy* get_feature_policy() { return feature_policy_.get(); }
+
+  // Clears any existing policy and constructs a new policy for this frame,
+  // based on its parent frame.
+  void ResetFeaturePolicy();
 
   // Tells the renderer that this RenderFrame will soon be swapped out, and thus
   // not to create any new modal dialogs until it happens.  This must be done
@@ -1154,6 +1162,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // A bitwise OR of bindings types that have been enabled for this RenderFrame.
   // See BindingsPolicy for details.
   int enabled_bindings_ = 0;
+
+  // Tracks the feature policy which has been set on this frame.
+  std::unique_ptr<FeaturePolicy> feature_policy_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

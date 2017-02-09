@@ -1317,6 +1317,7 @@ test("content_unittests") {
     "../common/database_connections_unittest.cc",
     "../common/database_identifier_unittest.cc",
     "../common/dom_storage/dom_storage_map_unittest.cc",
+    "../common/feature_policy/feature_policy_unittest.cc",
     "../common/fileapi/file_system_util_unittest.cc",
     "../common/host_shared_bitmap_manager_unittest.cc",
     "../common/indexed_db/indexed_db_key_unittest.cc",

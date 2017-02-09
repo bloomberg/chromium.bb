@@ -1850,6 +1850,8 @@ void RenderFrameHostImpl::OnDidChangeName(const std::string& name,
 void RenderFrameHostImpl::OnDidSetFeaturePolicyHeader(
     const ParsedFeaturePolicyHeader& parsed_header) {
   frame_tree_node()->SetFeaturePolicyHeader(parsed_header);
+  ResetFeaturePolicy();
+  feature_policy_->SetHeaderPolicy(parsed_header);
 }
 
 void RenderFrameHostImpl::OnDidAddContentSecurityPolicy(
@@ -3389,6 +3391,14 @@ void RenderFrameHostImpl::DeleteWebBluetoothService(
       });
   DCHECK(it != web_bluetooth_services_.end());
   web_bluetooth_services_.erase(it);
+}
+
+void RenderFrameHostImpl::ResetFeaturePolicy() {
+  RenderFrameHostImpl* parent_frame_host = GetParent();
+  const FeaturePolicy* parent_policy =
+      parent_frame_host ? parent_frame_host->get_feature_policy() : nullptr;
+  feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
+      parent_policy, last_committed_origin_);
 }
 
 void RenderFrameHostImpl::Create(

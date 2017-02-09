@@ -286,7 +286,7 @@ void FrameTreeNode::SetFeaturePolicyHeader(
   replication_state_.feature_policy_header = parsed_header;
 }
 
-void FrameTreeNode::ResetFeaturePolicy() {
+void FrameTreeNode::ResetFeaturePolicyHeader() {
   replication_state_.feature_policy_header.clear();
 }
 

@@ -618,7 +618,7 @@ void NavigatorImpl::DidNavigate(
   // <meta> elements - we need to reset CSP and Feature Policy.
   if (!is_navigation_within_page) {
     render_frame_host->frame_tree_node()->ResetContentSecurityPolicy();
-    render_frame_host->frame_tree_node()->ResetFeaturePolicy();
+    render_frame_host->frame_tree_node()->ResetFeaturePolicyHeader();
   }
 
   // When using --site-per-process, we notify the RFHM for all navigations,
@@ -687,6 +687,10 @@ void NavigatorImpl::DidNavigate(
   // network errors or PlzNavigate is enabled.  See https://crbug.com/588314.
   if (!params.url_is_unreachable)
     render_frame_host->set_last_successful_url(params.url);
+
+  // After setting the last committed origin, reset the feature policy in the
+  // RenderFrameHost to a blank policy based on the parent frame.
+  render_frame_host->ResetFeaturePolicy();
 
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include
