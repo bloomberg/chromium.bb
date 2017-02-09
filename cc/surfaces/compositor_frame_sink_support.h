@@ -5,14 +5,19 @@
 #ifndef CC_SURFACES_COMPOSITOR_FRAME_SINK_SUPPORT_H_
 #define CC_SURFACES_COMPOSITOR_FRAME_SINK_SUPPORT_H_
 
+#include <memory>
+#include <unordered_set>
+
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_client.h"
+#include "cc/surfaces/referenced_surface_tracker.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
 
 namespace cc {
@@ -50,6 +55,16 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   Display* display() { return display_.get(); }
 
  private:
+  // Update surface references with SurfaceManager for current CompositorFrame
+  // that has |local_surface_id|. UpdateReferences() must be called on
+  // |reference_tracker_| before calling this. Will add and remove top-level
+  // root references if |display_| is not null.
+  void UpdateSurfaceReferences(const SurfaceId& last_surface_id,
+                               const LocalSurfaceId& local_surface_id);
+
+  void AddTopLevelRootReference(const SurfaceId& surface_id);
+  void RemoveTopLevelRootReference(const SurfaceId& surface_id);
+
   void DidReceiveCompositorFrameAck();
 
   // DisplayClient implementation.
@@ -100,6 +115,10 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   // Whether or not a frame observer has been added.
   bool added_frame_observer_ = false;
+
+  // Track the surface references for the surface corresponding to this
+  // compositor frame sink.
+  ReferencedSurfaceTracker reference_tracker_;
 
   // The set of BeginFrame children of this CompositorFrameSink.
   std::unordered_set<FrameSinkId, FrameSinkIdHash> child_frame_sinks_;

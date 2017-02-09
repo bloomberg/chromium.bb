@@ -14,7 +14,6 @@
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
-#include "cc/surfaces/referenced_surface_tracker.h"
 #include "components/display_compositor/display_compositor_export.h"
 #include "components/display_compositor/gpu_compositor_frame_sink_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -71,9 +70,6 @@ class DISPLAY_COMPOSITOR_EXPORT GpuCompositorFrameSink
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
   void WillDrawSurface() override;
 
-  // Track the surface references for the surface corresponding to this
-  // compositor frame sink.
-  cc::ReferencedSurfaceTracker surface_tracker_;
 
   bool client_connection_lost_ = false;
   bool private_connection_lost_ = false;
