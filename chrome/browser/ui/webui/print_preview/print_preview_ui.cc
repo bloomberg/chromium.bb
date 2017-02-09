@@ -604,8 +604,6 @@ void PrintPreviewUI::OnDidPreviewPage(int page_number,
     g_testing_delegate->DidRenderPreviewPage(web_ui()->GetWebContents());
   web_ui()->CallJavascriptFunctionUnsafe("onDidPreviewPage", number,
                                          ui_identifier, request_id);
-  if (g_testing_delegate && g_testing_delegate->IsAutoCancelEnabled())
-    web_ui()->CallJavascriptFunctionUnsafe("autoCancelForTesting");
 }
 
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,

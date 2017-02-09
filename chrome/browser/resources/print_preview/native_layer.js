@@ -63,7 +63,6 @@ cr.define('print_preview', function() {
     global.onDidPreviewPage = this.onDidPreviewPage_.bind(this);
     global.updatePrintPreview = this.onUpdatePrintPreview_.bind(this);
     global.onDidGetAccessToken = this.onDidGetAccessToken_.bind(this);
-    global.autoCancelForTesting = this.autoCancelForTesting_.bind(this);
     global.onPrivetPrinterChanged = this.onPrivetPrinterChanged_.bind(this);
     global.onPrivetCapabilitiesSet =
         this.onPrivetCapabilitiesSet_.bind(this);
@@ -758,17 +757,6 @@ cr.define('print_preview', function() {
           NativeLayer.EventType.PRINT_PRESET_OPTIONS);
       printPresetOptionsEvent.optionsFromDocument = options;
       this.dispatchEvent(printPresetOptionsEvent);
-    },
-
-    /**
-     * Simulates a user click on the print preview dialog cancel button. Used
-     * only for testing.
-     * @private
-     */
-    autoCancelForTesting_: function() {
-      var properties = {view: window, bubbles: true, cancelable: true};
-      var click = new MouseEvent('click', properties);
-      document.querySelector('#print-header .cancel').dispatchEvent(click);
     },
 
     /**
