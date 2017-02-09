@@ -100,7 +100,7 @@ bool RegisterJniForTesting(JNIEnv* env);
 // GetDeferredQuitTaskForRunLoop directly.
 // If you found a case where base::RunLoop is inconvenient or can not be used at
 // all, please post details in a comment on https://crbug.com/668707.
-class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
+class MessageLoopRunner : public base::RefCountedThreadSafe<MessageLoopRunner> {
  public:
   enum class QuitMode {
     // Message loop stops after finishing the current task.
@@ -129,7 +129,7 @@ class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
   bool loop_running() const { return loop_running_; }
 
  private:
-  friend class base::RefCounted<MessageLoopRunner>;
+  friend class base::RefCountedThreadSafe<MessageLoopRunner>;
   ~MessageLoopRunner();
 
   QuitMode quit_mode_;
