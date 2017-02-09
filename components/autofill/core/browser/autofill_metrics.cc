@@ -693,6 +693,7 @@ AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
     : is_for_credit_card_(is_for_credit_card),
       is_server_data_available_(false),
       is_local_data_available_(false),
+      is_context_secure_(false),
       has_logged_interacted_(false),
       has_logged_suggestions_shown_(false),
       has_logged_masked_server_card_suggestion_selected_(false),
@@ -700,8 +701,7 @@ AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
       has_logged_will_submit_(false),
       has_logged_submitted_(false),
       logged_suggestion_filled_was_server_data_(false),
-      logged_suggestion_filled_was_masked_server_card_(false) {
-}
+      logged_suggestion_filled_was_masked_server_card_(false) {}
 
 void AutofillMetrics::FormEventLogger::OnDidInteractWithAutofillableForm() {
   if (!has_logged_interacted_) {
@@ -869,6 +869,14 @@ void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
   else
     name += "Address";
   LogUMAHistogramEnumeration(name, event, NUM_FORM_EVENTS);
+
+  // Log again in a different histogram for credit card forms on nonsecure
+  // pages, so that form interactions on nonsecure pages can be analyzed on
+  // their own.
+  if (is_for_credit_card_ && !is_context_secure_) {
+    LogUMAHistogramEnumeration(name + ".OnNonsecurePage", event,
+                               NUM_FORM_EVENTS);
+  }
 
   // Logging again in a different histogram for segmentation purposes.
   // TODO(waltercacau): Re-evaluate if we still need such fine grained

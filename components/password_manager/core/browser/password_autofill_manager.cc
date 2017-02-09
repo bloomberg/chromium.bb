@@ -219,7 +219,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
   }
 
   GURL origin = (fill_data_it->second).origin;
-  bool is_context_secure = autofill_client_->IsContextSecure(origin) &&
+  bool is_context_secure = autofill_client_->IsContextSecure() &&
                            (!origin.is_valid() || !origin.SchemeIs("http"));
   if (!is_context_secure && security_state::IsHttpWarningInFormEnabled()) {
     std::string icon_str;

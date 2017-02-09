@@ -76,7 +76,7 @@ using autofill::AutofillPopupDelegate;
             OAuth2TokenServiceFactory::GetForBrowserState(originalBrowserState),
             base::Closure()));
     _autofillClient.reset(new autofill::AutofillClientIOS(
-        browserState, infobarManager, self, passwordGenerationManager,
+        browserState, webState, infobarManager, self, passwordGenerationManager,
         std::move(identityProvider)));
     autofill::AutofillDriverIOS::CreateForWebStateAndDelegate(
         webState, _autofillClient.get(), self,

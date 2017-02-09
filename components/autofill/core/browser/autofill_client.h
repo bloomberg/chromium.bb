@@ -17,7 +17,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
-class GURL;
 class IdentityProvider;
 class PrefService;
 
@@ -181,7 +180,7 @@ class AutofillClient {
   virtual void OnFirstUserGestureObserved() = 0;
 
   // If the context is secure.
-  virtual bool IsContextSecure(const GURL& form_origin) = 0;
+  virtual bool IsContextSecure() = 0;
 
   // Whether it is appropriate to show a signin promo for this user.
   virtual bool ShouldShowSigninPromo() = 0;

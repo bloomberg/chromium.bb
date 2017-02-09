@@ -534,7 +534,7 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
 }
 
 bool AutofillManager::IsFormNonSecure(const FormData& form) const {
-  return !client_->IsContextSecure(form.origin) ||
+  return !client_->IsContextSecure() ||
          (form.action.is_valid() && form.action.SchemeIs("http"));
 }
 
@@ -575,7 +575,6 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
 
   std::vector<Suggestion> suggestions;
   const bool is_context_secure = !IsFormNonSecure(form);
-
   const bool is_http_warning_enabled =
       security_state::IsHttpWarningInFormEnabled();
 
@@ -1474,6 +1473,8 @@ bool AutofillManager::RefreshDataModels() {
         is_server_data_available);
     credit_card_form_event_logger_->set_is_local_data_available(
         is_local_data_available);
+    credit_card_form_event_logger_->set_is_context_secure(
+        client_->IsContextSecure());
   }
   {
     bool is_server_data_available = false;

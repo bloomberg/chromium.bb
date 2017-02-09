@@ -100,7 +100,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   void DidFillOrPreviewField(const base::string16& autofilled_value,
                              const base::string16& profile_full_name) override;
   void OnFirstUserGestureObserved() override;
-  bool IsContextSecure(const GURL& form_origin) override;
+  bool IsContextSecure() override;
   bool ShouldShowSigninPromo() override;
   void StartSigninFlow() override;
   void ShowHttpNotSecureExplanation() override;

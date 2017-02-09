@@ -33,6 +33,10 @@ namespace syncer {
 class SyncService;
 }
 
+namespace web {
+class WebState;
+}
+
 namespace autofill {
 
 class PersonalDataManager;
@@ -42,6 +46,7 @@ class AutofillClientIOS : public AutofillClient {
  public:
   AutofillClientIOS(
       ios::ChromeBrowserState* browser_state,
+      web::WebState* web_state,
       infobars::InfoBarManager* infobar_manager,
       id<AutofillClientIOSBridge> bridge,
       password_manager::PasswordGenerationManager* password_generation_manager,
@@ -88,13 +93,14 @@ class AutofillClientIOS : public AutofillClient {
                              const base::string16& profile_full_name) override;
   void OnFirstUserGestureObserved() override;
   scoped_refptr<AutofillWebDataService> GetDatabase() override;
-  bool IsContextSecure(const GURL& form_origin) override;
+  bool IsContextSecure() override;
   bool ShouldShowSigninPromo() override;
   void StartSigninFlow() override;
   void ShowHttpNotSecureExplanation() override;
 
  private:
   ios::ChromeBrowserState* browser_state_;
+  web::WebState* web_state_;
   infobars::InfoBarManager* infobar_manager_;
   __weak id<AutofillClientIOSBridge> bridge_;
   password_manager::PasswordGenerationManager* password_generation_manager_;

@@ -5370,6 +5370,7 @@ TEST_F(AutofillManagerTest,
   CreateTestCreditCardFormData(&form, false, false);
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("https://myform.com/submit.html");
+  autofill_client_.set_form_origin(form.origin);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 

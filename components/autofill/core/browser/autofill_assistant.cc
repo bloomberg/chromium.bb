@@ -31,8 +31,7 @@ bool AutofillAssistant::CanShowCreditCardAssist(
       !IsAutofillCreditCardAssistEnabled() ||
       // Context of the page is not secure or target URL is valid but not
       // secure.
-      !(autofill_manager_->client()->IsContextSecure(
-            form_structures.front()->source_url()) &&
+      !(autofill_manager_->client()->IsContextSecure() &&
         (!form_structures.front()->target_url().is_valid() ||
          !form_structures.front()->target_url().SchemeIs("http")))) {
     return false;
