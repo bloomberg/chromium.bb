@@ -25,6 +25,10 @@
 
 #include "modules/indexeddb/IDBObjectStore.h"
 
+#include <memory>
+
+#include <v8.h>
+
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
@@ -38,14 +42,13 @@
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBTracing.h"
+#include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/indexeddb/WebIDBKey.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
-#include <memory>
-#include <v8.h>
 
 using blink::WebBlobInfo;
 using blink::WebIDBCallbacks;
@@ -321,15 +324,25 @@ static void generateIndexKeysForValue(v8::Isolate* isolate,
   if (!indexKey)
     return;
 
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      EnumerationHistogram, keyTypeHistogram,
+      new EnumerationHistogram(
+          "WebCore.IndexedDB.ObjectStore.IndexEntry.KeyType",
+          static_cast<int>(IDBKey::TypeEnumMax)));
+
   if (!indexMetadata.multiEntry || indexKey->getType() != IDBKey::ArrayType) {
     if (!indexKey->isValid())
       return;
 
     indexKeys->push_back(indexKey);
+    keyTypeHistogram.count(static_cast<int>(indexKey->getType()));
   } else {
     DCHECK(indexMetadata.multiEntry);
     DCHECK_EQ(indexKey->getType(), IDBKey::ArrayType);
-    indexKeys->appendVector(indexKey->toMultiEntryArray());
+    IDBKey::KeyArray array = indexKey->toMultiEntryArray();
+    for (const IDBKey* key : array)
+      keyTypeHistogram.count(static_cast<int>(key->getType()));
+    indexKeys->appendVector(array);
   }
 }
 
@@ -447,9 +460,10 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState,
     return nullptr;
   }
   if (usesInLineKeys) {
-    if (clone.isEmpty())
+    if (clone.isEmpty()) {
       clone =
           deserializeScriptValue(scriptState, serializedValue.get(), &blobInfo);
+    }
     IDBKey* keyPathKey = ScriptValue::to<IDBKey*>(scriptState->isolate(), clone,
                                                   exceptionState, keyPath);
     if (exceptionState.hadException())
@@ -490,12 +504,21 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState,
     return nullptr;
   }
 
+  if (key && usesInLineKeys) {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        EnumerationHistogram, keyTypeHistogram,
+        new EnumerationHistogram("WebCore.IndexedDB.ObjectStore.Record.KeyType",
+                                 static_cast<int>(IDBKey::TypeEnumMax)));
+    keyTypeHistogram.count(static_cast<int>(key->getType()));
+  }
+
   Vector<int64_t> indexIds;
   HeapVector<IndexKeys> indexKeys;
   for (const auto& it : metadata().indexes) {
-    if (clone.isEmpty())
+    if (clone.isEmpty()) {
       clone =
           deserializeScriptValue(scriptState, serializedValue.get(), &blobInfo);
+    }
     IndexKeys keys;
     generateIndexKeysForValue(scriptState->isolate(), *it.value, clone, &keys);
     indexIds.push_back(it.key);

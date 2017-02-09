@@ -96,7 +96,7 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
 
   switch (key->getType()) {
     case IDBKey::InvalidType:
-    case IDBKey::MinType:
+    case IDBKey::TypeEnumMax:
       ASSERT_NOT_REACHED();
       return v8Undefined();
     case IDBKey::NumberType:

@@ -139,7 +139,7 @@ static void convertToWebIDBKeyArray(const IDBKey::KeyArray& array,
       case IDBKey::InvalidType:
         keys[i] = WebIDBKey::createInvalid();
         break;
-      case IDBKey::MinType:
+      case IDBKey::TypeEnumMax:
         NOTREACHED();
         break;
     }

@@ -83,7 +83,7 @@ int IDBKey::compare(const IDBKey* other) const {
     case NumberType:
       return compareNumbers(m_number, other->m_number);
     case InvalidType:
-    case MinType:
+    case TypeEnumMax:
       ASSERT_NOT_REACHED();
       return 0;
   }

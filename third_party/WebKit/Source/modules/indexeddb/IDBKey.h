@@ -63,14 +63,16 @@ class MODULES_EXPORT IDBKey : public GarbageCollectedFinalized<IDBKey> {
   DECLARE_TRACE();
 
   // In order of the least to the highest precedent in terms of sort order.
+  // These values are written to logs. New enum values can be added, but
+  // existing enums must never be renumbered or deleted and reused.
   enum Type {
     InvalidType = 0,
-    ArrayType,
-    BinaryType,
-    StringType,
-    DateType,
-    NumberType,
-    MinType
+    ArrayType = 1,
+    BinaryType = 2,
+    StringType = 3,
+    DateType = 4,
+    NumberType = 5,
+    TypeEnumMax,
   };
 
   Type getType() const { return m_type; }
