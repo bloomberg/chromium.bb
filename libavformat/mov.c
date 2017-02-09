@@ -4600,7 +4600,7 @@ static int mov_read_uuid(MOVContext *c, AVIOContext *pb, MOVAtom atom)
         0x88, 0x14, 0x58, 0x7a, 0x02, 0x52, 0x1f, 0xdd,
     };
 
-    if (atom.size < sizeof(uuid) || atom.size == INT64_MAX)
+    if (atom.size < sizeof(uuid) || atom.size >= FFMIN(INT_MAX, SIZE_MAX))
         return AVERROR_INVALIDDATA;
 
     if (c->fc->nb_streams < 1)
@@ -4661,9 +4661,6 @@ static int mov_read_uuid(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     } else if (!memcmp(uuid, uuid_xmp, sizeof(uuid))) {
         uint8_t *buffer;
         size_t len = atom.size - sizeof(uuid);
-        if (len >= UINT_MAX)
-            return AVERROR_INVALIDDATA;
-
         if (c->export_xmp) {
             buffer = av_mallocz(len + 1);
             if (!buffer) {
