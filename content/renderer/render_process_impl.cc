@@ -14,6 +14,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
@@ -87,13 +88,10 @@ GetDefaultSchedulerWorkerPoolParams() {
   using StandbyThreadPolicy =
       base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
   using ThreadPriority = base::ThreadPriority;
-  constexpr size_t kMaxNumThreadsInBackgroundPool = 1;
-  constexpr size_t kMaxNumThreadsInBackgroundFileIOPool = 1;
+  constexpr int kMaxNumThreadsInBackgroundPool = 1;
+  constexpr int kMaxNumThreadsInBackgroundFileIOPool = 1;
   constexpr int kMaxNumThreadsInForegroundPoolLowerBound = 2;
-  constexpr int kMaxNumThreadsInForegroundPoolUpperBound = 4;
-  constexpr double kMaxNumThreadsInForegroundPoolCoresMultiplier = 1;
-  constexpr int kMaxNumThreadsInForegroundPoolOffset = 0;
-  constexpr size_t kMaxNumThreadsInForegroundFileIOPool = 1;
+  constexpr int kMaxNumThreadsInForegroundFileIOPool = 1;
   constexpr auto kSuggestedReclaimTime = base::TimeDelta::FromSeconds(30);
 
   std::vector<base::SchedulerWorkerPoolParams> params_vector;
@@ -107,11 +105,8 @@ GetDefaultSchedulerWorkerPoolParams() {
       kSuggestedReclaimTime);
   params_vector.emplace_back("RendererForeground", ThreadPriority::NORMAL,
                              StandbyThreadPolicy::LAZY,
-                             base::RecommendedMaxNumberOfThreadsInPool(
-                                 kMaxNumThreadsInForegroundPoolLowerBound,
-                                 kMaxNumThreadsInForegroundPoolUpperBound,
-                                 kMaxNumThreadsInForegroundPoolCoresMultiplier,
-                                 kMaxNumThreadsInForegroundPoolOffset),
+                             std::max(kMaxNumThreadsInForegroundPoolLowerBound,
+                                      base::SysInfo::NumberOfProcessors()),
                              kSuggestedReclaimTime);
   params_vector.emplace_back("RendererForegroundFileIO", ThreadPriority::NORMAL,
                              StandbyThreadPolicy::LAZY,
