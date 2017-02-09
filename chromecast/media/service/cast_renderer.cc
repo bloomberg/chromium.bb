@@ -274,7 +274,11 @@ void CastRenderer::OnStatisticsUpdate(
 
 void CastRenderer::OnBufferingStateChange(::media::BufferingState state) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnBufferingStateChange(state);
+  // TODO(alokp): WebMediaPlayerImpl currently only handles HAVE_ENOUGH.
+  // See WebMediaPlayerImpl::OnPipelineBufferingStateChanged,
+  // http://crbug.com/144683.
+  if (state == ::media::BUFFERING_HAVE_ENOUGH)
+    client_->OnBufferingStateChange(state);
 }
 
 void CastRenderer::OnWaitingForDecryptionKey() {

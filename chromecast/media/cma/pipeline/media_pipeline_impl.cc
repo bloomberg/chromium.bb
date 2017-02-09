@@ -360,14 +360,10 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
   DCHECK_EQ(is_buffering, buffering_controller_->IsBuffering());
 
   if (!client_.buffering_state_cb.is_null()) {
-    if (is_buffering) {
-      // TODO(alokp): WebMediaPlayerImpl currently only handles HAVE_ENOUGH.
-      // See WebMediaPlayerImpl::OnPipelineBufferingStateChanged,
-      // http://crbug.com/144683.
-      NOTIMPLEMENTED();
-    } else {
-      client_.buffering_state_cb.Run(::media::BUFFERING_HAVE_ENOUGH);
-    }
+    ::media::BufferingState state = is_buffering
+                                        ? ::media::BUFFERING_HAVE_NOTHING
+                                        : ::media::BUFFERING_HAVE_ENOUGH;
+    client_.buffering_state_cb.Run(state);
   }
 
   if (is_buffering && (backend_state_ == BACKEND_STATE_PLAYING)) {
