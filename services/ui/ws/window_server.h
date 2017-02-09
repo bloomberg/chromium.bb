@@ -195,7 +195,8 @@ class WindowServer : public ServerWindowDelegate,
   void SendToPointerWatchers(const ui::Event& event,
                              const UserId& user_id,
                              ServerWindow* target_window,
-                             WindowTree* ignore_tree);
+                             WindowTree* ignore_tree,
+                             int64_t display_id);
 
   // Sets a callback to be called whenever a ServerWindow is scheduled for
   // a [re]paint. This should only be called in a test configuration.

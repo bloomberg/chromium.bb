@@ -36,9 +36,12 @@
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/class_property.h"
 #include "ui/compositor/compositor.h"
+#include "ui/display/display.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
@@ -109,14 +112,23 @@ class WindowTreeClientClientTestHighDPI : public WindowTreeClientClientTest {
   WindowTreeClientClientTestHighDPI() {}
   ~WindowTreeClientClientTestHighDPI() override {}
 
+  const ui::PointerEvent* last_event_observed() const {
+    return last_event_observed_.get();
+  }
+
   // WindowTreeClientClientTest:
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kForceDeviceScaleFactor, "2");
     WindowTreeClientClientTest::SetUp();
   }
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              Window* target) override {
+    last_event_observed_.reset(new ui::PointerEvent(event));
+  }
 
  private:
+  std::unique_ptr<ui::PointerEvent> last_event_observed_;
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientClientTestHighDPI);
 };
 
@@ -534,7 +546,7 @@ TEST_F(WindowTreeClientClientTest, InputEventBasic) {
                          gfx::Point(), ui::EventTimeForNow(), ui::EF_NONE, 0));
   window_tree_client()->OnWindowInputEvent(
       InputEventBasicTestWindowDelegate::kEventId, server_id(&child),
-      ui::Event::Clone(*ui_event.get()), 0);
+      window_tree_host.display_id(), ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(
       InputEventBasicTestWindowDelegate::kEventId));
   EXPECT_EQ(ui::mojom::EventResult::HANDLED,
@@ -585,7 +597,7 @@ TEST_F(WindowTreeClientPointerObserverTest, OnPointerEventObserved) {
       0, ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks()));
   window_tree_client()->OnPointerEventObserved(std::move(pointer_event_down),
-                                               0u);
+                                               0u, 0);
 
   // Delegate sensed the event.
   const ui::PointerEvent* last_event = last_event_observed();
@@ -602,7 +614,8 @@ TEST_F(WindowTreeClientPointerObserverTest, OnPointerEventObserved) {
       ui::ET_POINTER_UP, gfx::Point(), gfx::Point(), ui::EF_CONTROL_DOWN, 1, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks()));
-  window_tree_client()->OnPointerEventObserved(std::move(pointer_event_up), 0u);
+  window_tree_client()->OnPointerEventObserved(std::move(pointer_event_up), 0u,
+                                               0);
 
   // No event was sensed.
   EXPECT_FALSE(last_event_observed());
@@ -625,7 +638,7 @@ TEST_F(WindowTreeClientPointerObserverTest,
       ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_CONTROL_DOWN, 1,
       0, ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks::Now()));
-  window_tree_client()->OnWindowInputEvent(1, server_id(top_level.get()),
+  window_tree_client()->OnWindowInputEvent(1, server_id(top_level.get()), 0,
                                            std::move(pointer_event_down), true);
 
   // Delegate sensed the event.
@@ -1573,6 +1586,40 @@ TEST_F(WindowTreeClientClientTestHighDPI, NewTopLevelWindowBounds) {
   // in pixels.
   EXPECT_EQ(gfx::Rect(0, 0, 3, 4), top_level->bounds());
   EXPECT_EQ(gfx::Rect(2, 4, 6, 8), top_level->GetHost()->GetBoundsInPixels());
+}
+
+TEST_F(WindowTreeClientClientTestHighDPI, PointerEventsInDips) {
+  display::Screen* screen = display::Screen::GetScreen();
+  const display::Display primary_display = screen->GetPrimaryDisplay();
+  ASSERT_EQ(2.0f, primary_display.device_scale_factor());
+
+  std::unique_ptr<Window> top_level(base::MakeUnique<Window>(nullptr));
+  top_level->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  top_level->Init(ui::LAYER_NOT_DRAWN);
+  top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
+  top_level->Show();
+
+  // Start a pointer watcher for all events excluding move events.
+  window_tree_client_impl()->StartPointerWatcher(false /* want_moves */);
+
+  // Simulate the server sending an observed event.
+  const gfx::Point location_pixels(10, 12);
+  const gfx::Point root_location_pixels(14, 16);
+  std::unique_ptr<ui::PointerEvent> pointer_event_down(new ui::PointerEvent(
+      ui::ET_POINTER_DOWN, location_pixels, root_location_pixels,
+      ui::EF_CONTROL_DOWN, 1, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      base::TimeTicks()));
+  window_tree_client()->OnPointerEventObserved(std::move(pointer_event_down),
+                                               0u, primary_display.id());
+
+  // Delegate received the event in Dips.
+  const ui::PointerEvent* last_event = last_event_observed();
+  ASSERT_TRUE(last_event);
+  EXPECT_EQ(gfx::ConvertPointToDIP(2.0f, location_pixels),
+            last_event->location());
+  EXPECT_EQ(gfx::ConvertPointToDIP(2.0f, root_location_pixels),
+            last_event->root_location());
 }
 
 }  // namespace aura

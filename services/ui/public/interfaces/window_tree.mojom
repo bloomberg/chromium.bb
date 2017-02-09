@@ -416,6 +416,7 @@ interface WindowTreeClient {
   // |matches_pointer_watcher|.
   OnWindowInputEvent(uint32 event_id,
                      uint32 window,
+                     int64 display_id,
                      ui.mojom.Event event,
                      bool matches_pointer_watcher);
 
@@ -424,7 +425,9 @@ interface WindowTreeClient {
   // StartPointerWatcher() for details. |window_id| is the window id of the
   // event target, or 0 if the window is not known to this client. The
   // client should not acknowledge these events.
-  OnPointerEventObserved(ui.mojom.Event event, uint32 window_id);
+  OnPointerEventObserved(ui.mojom.Event event,
+                         uint32 window_id,
+                         int64 display_id);
 
   // Called in two distinct cases: when a window known to the connection gains
   // focus, or when focus moves from a window known to the connection to a

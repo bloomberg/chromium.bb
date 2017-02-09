@@ -145,6 +145,21 @@ float ScaleFactorForDisplay(Window* window) {
       .device_scale_factor();
 }
 
+void ConvertEventLocationToDip(int64_t display_id, ui::LocatedEvent* event) {
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display display;
+  if (!screen->GetDisplayWithDisplayId(display_id, &display) ||
+      display.device_scale_factor() == 1.f) {
+    return;
+  }
+  const gfx::Point host_location =
+      gfx::ConvertPointToDIP(display.device_scale_factor(), event->location());
+  event->set_location(host_location);
+  const gfx::Point root_location = gfx::ConvertPointToDIP(
+      display.device_scale_factor(), event->root_location());
+  event->set_root_location(root_location);
+}
+
 }  // namespace
 
 WindowTreeClient::WindowTreeClient(
@@ -1114,6 +1129,7 @@ void WindowTreeClient::OnWindowSharedPropertyChanged(
 
 void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
                                           Id window_id,
+                                          int64_t display_id,
                                           std::unique_ptr<ui::Event> event,
                                           bool matches_pointer_watcher) {
   DCHECK(event);
@@ -1134,13 +1150,13 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
 
   if (matches_pointer_watcher && has_pointer_watcher_) {
     DCHECK(event->IsPointerEvent());
-    delegate_->OnPointerEventObserved(*event->AsPointerEvent(),
+    std::unique_ptr<ui::Event> event_in_dip(ui::Event::Clone(*event));
+    ConvertEventLocationToDip(display_id, event_in_dip->AsLocatedEvent());
+    delegate_->OnPointerEventObserved(*event_in_dip->AsPointerEvent(),
                                       window ? window->GetWindow() : nullptr);
   }
 
-  // TODO: deal with no window or host here. This could happen if during
-  // dispatch a window is deleted or moved. In either case we still need to
-  // dispatch. Most likely need the display id.
+  // TODO: use |display_id| to find host and send there.
   if (!window || !window->GetWindow()->GetHost()) {
     tree_->OnWindowInputEventAck(event_id, ui::mojom::EventResult::UNHANDLED);
     return;
@@ -1179,12 +1195,14 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
 }
 
 void WindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                                              uint32_t window_id) {
+                                              uint32_t window_id,
+                                              int64_t display_id) {
   DCHECK(event);
   DCHECK(event->IsPointerEvent());
   if (!has_pointer_watcher_)
     return;
 
+  ConvertEventLocationToDip(display_id, event->AsLocatedEvent());
   WindowMus* target_window = GetWindowByServerId(window_id);
   delegate_->OnPointerEventObserved(
       *event->AsPointerEvent(),

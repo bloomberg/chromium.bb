@@ -207,7 +207,9 @@ class WindowManagerStateTestApi {
     return wms_->GetEventTargetClientId(window, in_nonclient_area);
   }
 
-  void ProcessEvent(const ui::Event& event) { wms_->ProcessEvent(event); }
+  void ProcessEvent(const ui::Event& event, int64_t display_id = 0) {
+    wms_->ProcessEvent(event, display_id);
+  }
 
   void OnEventAckTimeout(ClientSpecificId client_id) {
     wms_->OnEventAckTimeout(client_id);
@@ -219,7 +221,8 @@ class WindowManagerStateTestApi {
   }
 
   WindowTree* tree_awaiting_input_ack() {
-    return wms_->tree_awaiting_input_ack_;
+    return wms_->in_flight_event_details_ ? wms_->in_flight_event_details_->tree
+                                          : nullptr;
   }
 
  private:
@@ -442,10 +445,12 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
       const base::Optional<std::vector<uint8_t>>& new_data) override;
   void OnWindowInputEvent(uint32_t event_id,
                           uint32_t window,
+                          int64_t display_id,
                           std::unique_ptr<ui::Event> event,
                           bool matches_pointer_watcher) override;
   void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                              uint32_t window_id) override;
+                              uint32_t window_id,
+                              int64_t display_id) override;
   void OnWindowFocused(uint32_t focused_window_id) override;
   void OnWindowPredefinedCursorChanged(uint32_t window_id,
                                        mojom::Cursor cursor_id) override;

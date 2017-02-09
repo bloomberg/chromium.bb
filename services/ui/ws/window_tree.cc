@@ -798,7 +798,8 @@ void WindowTree::ProcessWindowSurfaceChanged(
 }
 
 void WindowTree::SendToPointerWatcher(const ui::Event& event,
-                                      ServerWindow* target_window) {
+                                      ServerWindow* target_window,
+                                      int64_t display_id) {
   if (!EventMatchesPointerWatcher(event))
     return;
 
@@ -806,8 +807,8 @@ void WindowTree::SendToPointerWatcher(const ui::Event& event,
   // Ignore the return value from IsWindowKnown() as in the case of the client
   // not knowing the window we'll send 0, which corresponds to no window.
   IsWindowKnown(target_window, &client_window_id);
-  client()->OnPointerEventObserved(ui::Event::Clone(event),
-                                   client_window_id.id);
+  client()->OnPointerEventObserved(ui::Event::Clone(event), client_window_id.id,
+                                   display_id);
 }
 
 bool WindowTree::ShouldRouteToWindowManager(const ServerWindow* window) const {
@@ -1146,8 +1147,10 @@ void WindowTree::DispatchInputEventImpl(ServerWindow* target,
   // Should only get events from windows attached to a host.
   DCHECK(event_source_wms_);
   bool matched_pointer_watcher = EventMatchesPointerWatcher(event);
+  Display* display = GetDisplay(target);
+  DCHECK(display);
   client()->OnWindowInputEvent(
-      event_ack_id_, ClientWindowIdForWindow(target).id,
+      event_ack_id_, ClientWindowIdForWindow(target).id, display->GetId(),
       ui::Event::Clone(event), matched_pointer_watcher);
 }
 

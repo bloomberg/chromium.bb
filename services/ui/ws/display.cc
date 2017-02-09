@@ -284,7 +284,7 @@ bool Display::IsInHighContrastMode() {
 void Display::OnEvent(const ui::Event& event) {
   WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
   if (display_root)
-    display_root->window_manager_state()->ProcessEvent(event);
+    display_root->window_manager_state()->ProcessEvent(event, GetId());
   window_server_
       ->GetUserActivityMonitorForUser(
           window_server_->user_id_tracker()->active_id())

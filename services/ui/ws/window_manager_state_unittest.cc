@@ -239,7 +239,7 @@ TEST_F(WindowManagerStateTest, PreTargetConsumed) {
 
   // Send an ensure only the pre accelerator is called.
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  window_manager_state()->ProcessEvent(key);
+  window_manager_state()->ProcessEvent(key, 0);
   EXPECT_TRUE(window_manager()->on_accelerator_called());
   EXPECT_EQ(accelerator_id, window_manager()->on_accelerator_id());
   EXPECT_TRUE(tracker->changes()->empty());
@@ -254,7 +254,7 @@ TEST_F(WindowManagerStateTest, PreTargetConsumed) {
   window_manager()->ClearAcceleratorCalled();
 
   // Repeat, but respond with UNHANDLED.
-  window_manager_state()->ProcessEvent(key);
+  window_manager_state()->ProcessEvent(key, 0);
   EXPECT_TRUE(window_manager()->on_accelerator_called());
   EXPECT_EQ(accelerator_id, window_manager()->on_accelerator_id());
   EXPECT_TRUE(tracker->changes()->empty());
@@ -583,7 +583,7 @@ TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
       ui::ET_POINTER_MOVED, gfx::Point(25, 25), gfx::Point(25, 25), 0, 0, 0,
       ui::PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
       base::TimeTicks());
-  window_manager_state()->ProcessEvent(move);
+  window_manager_state()->ProcessEvent(move, 0);
   // The event isn't over a valid target, which should trigger resetting the
   // cursor to POINTER.
   EXPECT_EQ(ui::mojom::Cursor::POINTER, display_test_api.last_cursor());

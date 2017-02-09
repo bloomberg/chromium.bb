@@ -105,10 +105,12 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
       const base::Optional<std::vector<uint8_t>>& new_data) override;
   void OnWindowInputEvent(uint32_t event_id,
                           ui::Id window_id,
+                          int64_t display_id,
                           std::unique_ptr<ui::Event> event,
                           bool matches_pointer_watcher) override;
   void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                              uint32_t window_id) override;
+                              uint32_t window_id,
+                              int64_t display_id) override;
   void OnWindowFocused(ui::Id focused_window_id) override;
   void OnWindowPredefinedCursorChanged(ui::Id window_id,
                                        ui::mojom::Cursor cursor) override;

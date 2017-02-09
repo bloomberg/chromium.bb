@@ -264,7 +264,8 @@ class WindowTree : public mojom::WindowTree,
   // |target_window| is the target of the event, and may be null or not known
   // to this tree.
   void SendToPointerWatcher(const ui::Event& event,
-                            ServerWindow* target_window);
+                            ServerWindow* target_window,
+                            int64_t display_id);
 
  private:
   friend class test::WindowTreeTestApi;

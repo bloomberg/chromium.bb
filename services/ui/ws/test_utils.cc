@@ -359,6 +359,7 @@ void TestWindowTreeClient::OnWindowSharedPropertyChanged(
 
 void TestWindowTreeClient::OnWindowInputEvent(uint32_t event_id,
                                               uint32_t window,
+                                              int64_t display_id,
                                               std::unique_ptr<ui::Event> event,
                                               bool matches_pointer_watcher) {
   tracker_.OnWindowInputEvent(window, *event.get(), matches_pointer_watcher);
@@ -366,7 +367,8 @@ void TestWindowTreeClient::OnWindowInputEvent(uint32_t event_id,
 
 void TestWindowTreeClient::OnPointerEventObserved(
     std::unique_ptr<ui::Event> event,
-    uint32_t window_id) {
+    uint32_t window_id,
+    int64_t display_id) {
   tracker_.OnPointerEventObserved(*event.get(), window_id);
 }
 
