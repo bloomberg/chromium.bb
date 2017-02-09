@@ -747,9 +747,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
 // static
 Browser* SessionRestore::RestoreSession(
-    Profile* profile,
-    Browser* browser,
-    uint32_t behavior,
+    Profile* profile, Browser* browser,
+    SessionRestore::BehaviorBitmask behavior,
     const std::vector<GURL>& urls_to_open) {
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
@@ -775,7 +774,7 @@ Browser* SessionRestore::RestoreSession(
 
 // static
 void SessionRestore::RestoreSessionAfterCrash(Browser* browser) {
-  uint32_t behavior =
+  SessionRestore::BehaviorBitmask behavior =
       HasSingleNewTabPage(browser) ? SessionRestore::CLOBBER_CURRENT_TAB : 0;
   SessionRestore::RestoreSession(browser->profile(), browser, behavior,
                                  std::vector<GURL>());

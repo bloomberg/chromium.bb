@@ -119,7 +119,24 @@ void DisableWelcomePages(const std::vector<Profile*>& profiles) {
                                                true);
 #endif
 }
-#endif
+
+Browser* OpenNewBrowser(Profile* profile) {
+  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
+  StartupBrowserCreatorImpl creator(base::FilePath(), dummy,
+                                    chrome::startup::IS_FIRST_RUN);
+  creator.Launch(profile, std::vector<GURL>(), false);
+  return chrome::FindBrowserWithProfile(profile);
+}
+
+Browser* CloseBrowserAndOpenNew(Browser* browser, Profile* profile) {
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser));
+  browser->window()->Close();
+  observer.Wait();
+  return OpenNewBrowser(profile);
+}
+
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -258,18 +275,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   // Close the browser.
   CloseBrowserAsynchronously(browser());
 
-  // Do a simple non-process-startup browser launch.
-  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
-  chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
-  {
-    StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
-    ASSERT_TRUE(launch.Launch(profile, std::vector<GURL>(), false));
-  }
-
-  // This should have created a new browser window.  |browser()| is still
-  // around at this point, even though we've closed its window.
-  Browser* new_browser = FindOneOtherBrowser(browser());
+  Browser* new_browser = OpenNewBrowser(profile);
   ASSERT_TRUE(new_browser);
 
   std::vector<GURL> expected_urls(urls);
@@ -284,7 +290,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   EXPECT_NE(
       tab_strip->GetWebContentsAt(tab_strip->count() - 2)->GetSiteInstance(),
       tab_strip->GetWebContentsAt(tab_strip->count() - 1)->GetSiteInstance());
-
 }
 
 // Verify that startup URLs aren't used when the process already exists
@@ -306,46 +311,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   pref.urls = urls;
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
-  // Do a simple non-process-startup browser launch.
-  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
-  chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
-  {
-    StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
-    ASSERT_TRUE(
-        launch.Launch(browser()->profile(), std::vector<GURL>(), false));
-  }
+  DisableWelcomePages({browser()->profile()});
 
-  // This should have created a new browser window.
-  Browser* new_browser = FindOneOtherBrowser(browser());
+  Browser* new_browser = OpenNewBrowser(browser()->profile());
   ASSERT_TRUE(new_browser);
 
   // The new browser should have exactly one tab (not the startup URLs).
-  ASSERT_EQ(1, new_browser->tab_strip_model()->count());
-
-  // Test that the welcome page is not shown the second time through if it was
-  // above.
-  if (!IsWindows10OrNewer()) {
-    // Close the browser opened above.
-    {
-      content::WindowedNotificationObserver observer(
-          chrome::NOTIFICATION_BROWSER_CLOSED,
-          content::Source<Browser>(new_browser));
-      new_browser->window()->Close();
-      observer.Wait();
-    }
-
-    {
-      StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
-      ASSERT_TRUE(
-          launch.Launch(browser()->profile(), std::vector<GURL>(), false));
-    }
-
-    // Find the new browser and ensure that it has only the one tab this time.
-    new_browser = FindOneOtherBrowser(browser());
-    ASSERT_TRUE(new_browser);
-    ASSERT_EQ(1, new_browser->tab_strip_model()->count());
-  }
+  TabStripModel* tab_strip = new_browser->tab_strip_model();
+  ASSERT_EQ(1, tab_strip->count());
+  EXPECT_EQ("chrome://newtab/",
+            tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
 }
 
 // App shortcuts are not implemented on mac os.
@@ -904,7 +879,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBrowserCreatorTest,
 #endif  // !defined(OS_CHROMEOS)
 
 // These tests are not applicable to Chrome OS as neither master_preferences nor
-// the sync promo exist there.
+// the onboarding promos exist there.
 #if !defined(OS_CHROMEOS)
 
 class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
@@ -1070,6 +1045,53 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   ASSERT_EQ(1, tab_strip->count());
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
+}
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Open the two profiles.
+  base::FilePath dest_path = profile_manager->user_data_dir();
+
+  Profile* profile1 = Profile::CreateProfile(
+      dest_path.Append(FILE_PATH_LITERAL("New Profile 1")), nullptr,
+      Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
+  ASSERT_TRUE(profile1);
+  profile_manager->RegisterTestingProfile(profile1, true, false);
+
+  Browser* browser = OpenNewBrowser(profile1);
+  ASSERT_TRUE(browser);
+
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Windows 10 has its own Welcome page; the standard Welcome page does not
+  // appear until second run.
+  if (IsWindows10OrNewer()) {
+    ASSERT_EQ(1, tab_strip->count());
+    EXPECT_EQ("chrome://welcome-win10/",
+              tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
+
+    browser = CloseBrowserAndOpenNew(browser, profile1);
+    ASSERT_TRUE(browser);
+    tab_strip = browser->tab_strip_model();
+  }
+
+  // Ensure that the standard Welcome page appears on second run on Win 10, and
+  // on first run on all other platforms.
+  ASSERT_EQ(1, tab_strip->count());
+  EXPECT_EQ("chrome://welcome/",
+            tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
+
+  browser = CloseBrowserAndOpenNew(browser, profile1);
+  ASSERT_TRUE(browser);
+  tab_strip = browser->tab_strip_model();
+
+  // Ensure that the new tab page appears on subsequent runs.
+  ASSERT_EQ(1, tab_strip->count());
+  EXPECT_EQ("chrome://newtab/",
+            tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
 }
 
 #endif  // !defined(OS_CHROMEOS)

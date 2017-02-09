@@ -54,13 +54,14 @@ class StartupTabProviderImpl : public StartupTabProvider {
  public:
   StartupTabProviderImpl() = default;
 
-  // The static Check*TabPolicy methods below enforce the policies relevant to
-  // the respective Get*Tabs methods, but do not gather or interact with any
-  // system state relating to making those policy decisions.
+  // The static helper methods below implement the policies relevant to the
+  // respective Get*Tabs methods, but do not gather or interact with any
+  // system state relating to making those policy decisions. Exposed for
+  // testing.
 
   // Determines which tabs should be shown according to onboarding/first
   // run policy.
-  static StartupTabs CheckStandardOnboardingTabPolicy(
+  static StartupTabs GetStandardOnboardingTabsForState(
       bool is_first_run,
       bool has_seen_welcome_page,
       bool is_signed_in,
@@ -69,7 +70,7 @@ class StartupTabProviderImpl : public StartupTabProvider {
 #if defined(OS_WIN)
   // Determines which tabs should be shown according to onboarding/first run
   // policy, including promo content specific to Windows 10.
-  static StartupTabs CheckWin10OnboardingTabPolicy(
+  static StartupTabs GetWin10OnboardingTabsForState(
       bool is_first_run,
       bool has_seen_welcome_page,
       bool has_seen_win10_promo,
@@ -81,30 +82,30 @@ class StartupTabProviderImpl : public StartupTabProvider {
 
   // Processes first run URLs specified in Master Preferences file, replacing
   // any "magic word" URL hosts with appropriate URLs.
-  static StartupTabs CheckMasterPrefsTabPolicy(
+  static StartupTabs GetMasterPrefsTabsForState(
       bool is_first_run,
       const std::vector<GURL>& first_run_tabs);
 
   // Determines which tabs should be shown as a result of the presence/absence
   // of a Reset Trigger on this profile.
-  static StartupTabs CheckResetTriggerTabPolicy(bool profile_has_trigger);
+  static StartupTabs GetResetTriggerTabsForState(bool profile_has_trigger);
 
   // Determines whether the startup preference requires the contents of
   // |pinned_tabs| to be shown. This is needed to avoid duplicates, as the
   // session restore logic will also resurface pinned tabs on its own.
-  static StartupTabs CheckPinnedTabPolicy(const SessionStartupPref& pref,
-                                          const StartupTabs& pinned_tabs);
+  static StartupTabs GetPinnedTabsForState(const SessionStartupPref& pref,
+                                           const StartupTabs& pinned_tabs);
 
   // Determines whether preferences and window state indicate that
   // user-specified tabs should be shown as the default new window content, and
   // returns the specified tabs if so.
-  static StartupTabs CheckPreferencesTabPolicy(
+  static StartupTabs GetPreferencesTabsForState(
       const SessionStartupPref& pref,
       bool profile_has_other_tabbed_browser);
 
   // Determines whether startup preferences require the New Tab Page to be
   // explicitly specified. Session Restore does not expect the NTP to be passed.
-  static StartupTabs CheckNewTabPageTabPolicy(const SessionStartupPref& pref);
+  static StartupTabs GetNewTabPageTabsForState(const SessionStartupPref& pref);
 
   // Gets the URL for the Welcome page. If |use_later_run_variant| is true, a
   // URL parameter will be appended so as to access the variant page used when

@@ -49,7 +49,6 @@
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/shell_integration.h"
@@ -624,26 +623,35 @@ void StartupBrowserCreatorImpl::ProcessLaunchUrlsUsingConsolidatedFlow(
   StartupTabs cmd_line_tabs;
   UrlsToTabs(cmd_line_urls, &cmd_line_tabs);
 
-  bool is_ephemeral_profile =
+  bool is_incognito_or_guest =
       profile_->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE;
   bool is_post_crash_launch = HasPendingUncleanExit(profile_);
   StartupTabs tabs =
       DetermineStartupTabs(StartupTabProviderImpl(), cmd_line_tabs,
-                           is_ephemeral_profile, is_post_crash_launch);
+                           is_incognito_or_guest, is_post_crash_launch);
 
   // Return immediately if we start an async restore, since the remainder of
   // that process is self-contained.
   if (MaybeAsyncRestore(tabs, process_startup, is_post_crash_launch))
     return;
 
+  BrowserOpenBehaviorOptions behavior_options = 0;
+  if (process_startup)
+    behavior_options |= PROCESS_STARTUP;
+  if (is_post_crash_launch)
+    behavior_options |= IS_POST_CRASH_LAUNCH;
+  if (command_line_.HasSwitch(switches::kRestoreLastSession))
+    behavior_options |= HAS_RESTORE_SWITCH;
+  if (command_line_.HasSwitch(switches::kOpenInNewWindow))
+    behavior_options |= HAS_NEW_WINDOW_SWITCH;
+  if (!cmd_line_tabs.empty())
+    behavior_options |= HAS_CMD_LINE_TABS;
+
   BrowserOpenBehavior behavior = DetermineBrowserOpenBehavior(
       StartupBrowserCreator::GetSessionStartupPref(command_line_, profile_),
-      process_startup, is_post_crash_launch,
-      command_line_.HasSwitch(switches::kRestoreLastSession),
-      command_line_.HasSwitch(switches::kOpenInNewWindow),
-      !cmd_line_tabs.empty());
+      behavior_options);
 
-  uint32_t restore_options = 0;
+  SessionRestore::BehaviorBitmask restore_options = 0;
   if (behavior == BrowserOpenBehavior::SYNCHRONOUS_RESTORE) {
 #if defined(OS_MACOSX)
     bool was_mac_login_or_resume = base::mac::WasLaunchedAsLoginOrResumeItem();
@@ -669,12 +677,12 @@ void StartupBrowserCreatorImpl::ProcessLaunchUrlsUsingConsolidatedFlow(
 StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     const StartupTabProvider& provider,
     const StartupTabs& cmd_line_tabs,
-    bool is_ephemeral_profile,
+    bool is_incognito_or_guest,
     bool is_post_crash_launch) {
   // Only the New Tab Page or command line URLs may be shown in incognito mode.
   // A similar policy exists for crash recovery launches, to prevent getting the
   // user stuck in a crash loop.
-  if (is_ephemeral_profile || is_post_crash_launch) {
+  if (is_incognito_or_guest || is_post_crash_launch) {
     if (cmd_line_tabs.empty())
       return StartupTabs({StartupTab(GURL(chrome::kChromeUINewTabURL), false)});
     return cmd_line_tabs;
@@ -739,7 +747,7 @@ bool StartupBrowserCreatorImpl::MaybeAsyncRestore(const StartupTabs& tabs,
 Browser* StartupBrowserCreatorImpl::RestoreOrCreateBrowser(
     const StartupTabs& tabs,
     BrowserOpenBehavior behavior,
-    uint32_t restore_options,
+    SessionRestore::BehaviorBitmask restore_options,
     bool process_startup,
     bool is_post_crash_launch) {
   Browser* browser = nullptr;
@@ -756,7 +764,8 @@ Browser* StartupBrowserCreatorImpl::RestoreOrCreateBrowser(
       &StartupBrowserCreator::in_synchronous_profile_launch_, true);
 
   // OpenTabsInBrowser requires at least one tab be passed. As a fallback to
-  // prevent a crash, use the NTP if |tabs| is empty.
+  // prevent a crash, use the NTP if |tabs| is empty. This could happen if
+  // we expected a session restore to happen but it did not occur/succeed.
   browser = OpenTabsInBrowser(
       browser, process_startup,
       (tabs.empty()
@@ -845,17 +854,13 @@ void StartupBrowserCreatorImpl::RecordRapporOnStartupURLs(
 StartupBrowserCreatorImpl::BrowserOpenBehavior
 StartupBrowserCreatorImpl::DetermineBrowserOpenBehavior(
     const SessionStartupPref& pref,
-    bool process_startup,
-    bool is_post_crash_launch,
-    bool has_restore_switch,
-    bool has_new_window_switch,
-    bool has_cmd_line_tabs) {
-  if (!process_startup) {
+    BrowserOpenBehaviorOptions options) {
+  if (!(options & PROCESS_STARTUP)) {
     // For existing processes, restore would have happened before invoking this
     // function. If Chrome was launched with passed URLs, assume these should
     // be appended to an existing window if possible, unless overridden by a
     // switch.
-    return (has_cmd_line_tabs && !has_new_window_switch)
+    return ((options & HAS_CMD_LINE_TABS) && !(options & HAS_NEW_WINDOW_SWITCH))
                ? BrowserOpenBehavior::USE_EXISTING
                : BrowserOpenBehavior::NEW;
   }
@@ -863,9 +868,7 @@ StartupBrowserCreatorImpl::DetermineBrowserOpenBehavior(
   if (pref.type == SessionStartupPref::LAST) {
     // Don't perform a session restore on a post-crash launch, as this could
     // cause a crash loop. These checks can be overridden by a switch.
-    // TODO(crbug.com/647851): Group this check with the logic in
-    // GetSessionStartupPref.
-    if (!is_post_crash_launch || has_restore_switch)
+    if (!(options & IS_POST_CRASH_LAUNCH) || (options & HAS_RESTORE_SWITCH))
       return BrowserOpenBehavior::SYNCHRONOUS_RESTORE;
   }
 
@@ -873,11 +876,12 @@ StartupBrowserCreatorImpl::DetermineBrowserOpenBehavior(
 }
 
 // static
-uint32_t StartupBrowserCreatorImpl::DetermineSynchronousRestoreOptions(
+SessionRestore::BehaviorBitmask
+StartupBrowserCreatorImpl::DetermineSynchronousRestoreOptions(
     bool has_create_browser_default,
     bool has_create_browser_switch,
     bool was_mac_login_or_resume) {
-  uint32_t options = SessionRestore::SYNCHRONOUS;
+  SessionRestore::BehaviorBitmask options = SessionRestore::SYNCHRONOUS;
 
   // Suppress the creation of a new window on Mac when restoring with no windows
   // if launching Chrome via a login item or the resume feature in OS 10.7+.
@@ -982,7 +986,8 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
       return false;
     }
 
-    uint32_t restore_behavior = SessionRestore::SYNCHRONOUS;
+    SessionRestore::BehaviorBitmask restore_behavior =
+        SessionRestore::SYNCHRONOUS;
     if (browser_defaults::kAlwaysCreateTabbedBrowserOnSessionRestore ||
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kCreateBrowserOnStartupForTests)) {

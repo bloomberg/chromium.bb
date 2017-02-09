@@ -28,7 +28,11 @@ class WebContents;
 // variety is meant for startup and blocks until restore is complete.
 class SessionRestore {
  public:
-  enum Behavior {
+  // Bitmask representing behaviors available when restoring a session. Populate
+  // using the values below.
+  using BehaviorBitmask = uint32_t;
+
+  enum {
     // Indicates the active tab of the supplied browser should be closed.
     CLOBBER_CURRENT_TAB          = 1 << 0,
 
@@ -56,7 +60,7 @@ class SessionRestore {
   // If |urls_to_open| is non-empty, a tab is added for each of the URLs.
   static Browser* RestoreSession(Profile* profile,
                                  Browser* browser,
-                                 uint32_t behavior,
+                                 BehaviorBitmask behavior,
                                  const std::vector<GURL>& urls_to_open);
 
   // Restores the last session when the last session crashed. It's a wrapper

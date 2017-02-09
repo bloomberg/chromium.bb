@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/startup/startup_types.h"
@@ -73,6 +74,14 @@ class StartupBrowserCreatorImpl {
                            DetermineStartupTabs_CommandLine);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineStartupTabs_NewTabPage);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
+                           DetermineBrowserOpenBehavior_Startup);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
+                           DetermineBrowserOpenBehavior_CmdLineTabs);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
+                           DetermineBrowserOpenBehavior_PostCrash);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
+                           DetermineBrowserOpenBehavior_NotStartup);
 
   enum class WelcomeRunType {
     NONE,                // Do not inject the welcome page for this run.
@@ -80,11 +89,23 @@ class StartupBrowserCreatorImpl {
     FIRST_RUN_LAST_TAB,  // Inject the welcome page as the last first-run tab.
   };
 
+  // Window behaviors possible when opening Chrome.
   enum class BrowserOpenBehavior {
     NEW,                  // Open in a new browser.
     SYNCHRONOUS_RESTORE,  // Attempt a synchronous session restore.
     USE_EXISTING,         // Attempt to add to an existing tabbed browser.
   };
+
+  // Boolean flags used to indicate state for DetermineBrowserOpenBehavior.
+  enum BehaviorFlags {
+    PROCESS_STARTUP       = (1 << 0),
+    IS_POST_CRASH_LAUNCH  = (1 << 1),
+    HAS_RESTORE_SWITCH    = (1 << 2),
+    HAS_NEW_WINDOW_SWITCH = (1 << 3),
+    HAS_CMD_LINE_TABS     = (1 << 4),
+  };
+
+  using BrowserOpenBehaviorOptions = uint32_t;
 
   // Creates a tab for each of the Tabs in |tabs|. If browser is non-null
   // and a tabbed browser, the tabs are added to it. Otherwise a new tabbed
@@ -136,11 +157,10 @@ class StartupBrowserCreatorImpl {
   // Returns a browser displaying the contents of |tabs|. Based on |behavior|,
   // this may attempt a session restore or create a new browser. May also allow
   // DOM Storage to begin cleanup once it's clear it is not needed anymore.
-  Browser* RestoreOrCreateBrowser(const StartupTabs& tabs,
-                                  BrowserOpenBehavior behavior,
-                                  uint32_t restore_options,
-                                  bool process_startup,
-                                  bool is_post_crash_launch);
+  Browser* RestoreOrCreateBrowser(
+    const StartupTabs& tabs, BrowserOpenBehavior behavior,
+    SessionRestore::BehaviorBitmask restore_options, bool process_startup,
+    bool is_post_crash_launch);
 
   // Adds a Tab to |tabs| for each url in |urls| that doesn't already exist
   // in |tabs|.
@@ -157,15 +177,11 @@ class StartupBrowserCreatorImpl {
   // Determines how the launch flow should obtain a Browser.
   static BrowserOpenBehavior DetermineBrowserOpenBehavior(
       const SessionStartupPref& pref,
-      bool process_startup,
-      bool is_post_crash_launch,
-      bool has_restore_switch,
-      bool has_new_window_switch,
-      bool has_cmd_line_tabs);
+      BrowserOpenBehaviorOptions options);
 
   // Returns the relevant bitmask options which must be passed when restoring a
   // session.
-  static uint32_t DetermineSynchronousRestoreOptions(
+  static SessionRestore::BehaviorBitmask DetermineSynchronousRestoreOptions(
       bool has_create_browser_default,
       bool has_create_browser_switch,
       bool was_mac_login_or_resume);
