@@ -249,8 +249,7 @@
       },
       {
         "args": [
-          "--enable-browser-side-navigation",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter"
+          "--enable-browser-side-navigation"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -279,8 +278,7 @@
     "scripts": [
       {
         "args": [
-          "content_browsertests",
-          "../../testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter"
+          "content_browsertests"
         ],
         "name": "count_filtered_tests_content_browsertests",
         "script": "count_filtered_tests.py"

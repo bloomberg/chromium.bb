@@ -2793,8 +2793,7 @@
       },
       {
         "args": [
-          "--enable-browser-side-navigation",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter"
+          "--enable-browser-side-navigation"
         ],
         "name": "browser_side_navigation_content_browsertests",
         "swarming": {
@@ -3460,8 +3459,7 @@
       },
       {
         "args": [
-          "--enable-browser-side-navigation",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter"
+          "--enable-browser-side-navigation"
         ],
         "name": "browser_side_navigation_content_browsertests",
         "swarming": {
