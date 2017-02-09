@@ -199,8 +199,8 @@ class MockHttpCache {
   // Wrapper around http_cache()->CreateTransaction(DEFAULT_PRIORITY...)
   int CreateTransaction(std::unique_ptr<HttpTransaction>* trans);
 
-  // Wrapper to bypass the cache lock for new transactions.
-  void BypassCacheLock();
+  // Wrapper to simulate cache lock timeout for new transactions.
+  void SimulateCacheLockTimeout();
 
   // Wrapper to fail request conditionalization for new transactions.
   void FailConditionalizations();

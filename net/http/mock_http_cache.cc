@@ -572,8 +572,8 @@ int MockHttpCache::CreateTransaction(std::unique_ptr<HttpTransaction>* trans) {
   return http_cache_.CreateTransaction(DEFAULT_PRIORITY, trans);
 }
 
-void MockHttpCache::BypassCacheLock() {
-  http_cache_.BypassLockForTest();
+void MockHttpCache::SimulateCacheLockTimeout() {
+  http_cache_.SimulateCacheLockTimeout();
 }
 
 void MockHttpCache::FailConditionalizations() {

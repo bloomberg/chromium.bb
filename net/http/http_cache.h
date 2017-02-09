@@ -189,11 +189,9 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // referred to by |url| and |http_method|.
   void OnExternalCacheHit(const GURL& url, const std::string& http_method);
 
-  // Causes all transactions created after this point to effectively bypass
-  // the cache lock whenever there is lock contention.
-  void BypassLockForTest() {
-    bypass_lock_for_test_ = true;
-  }
+  // Causes all transactions created after this point to simulate lock timeout
+  // and effectively bypass the cache lock whenever there is lock contention.
+  void SimulateCacheLockTimeout() { bypass_lock_for_test_ = true; }
 
   // Causes all transactions created after this point to generate a failure
   // when attempting to conditionalize a network request.

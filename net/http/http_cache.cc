@@ -230,6 +230,8 @@ void HttpCache::MetadataWriter::Write(const GURL& url,
   DCHECK(buf->data());
   request_info_.url = url;
   request_info_.method = "GET";
+
+  // todo (crbug.com/690099): Incorrect usage of LOAD_ONLY_FROM_CACHE.
   request_info_.load_flags =
       LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION | LOAD_SKIP_VARY_CHECK;
 
