@@ -7,6 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include <algorithm>
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
@@ -651,6 +652,26 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   [self clear];
 }
 
+// On iOS10 and above, trigger a haptic vibration for the user selecting an
+// action. This is a no-op for devices that do not support it.
+- (void)triggerHapticFeedbackForAction {
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    base::scoped_nsobject<UIImpactFeedbackGenerator> generator(
+        [[UIImpactFeedbackGenerator alloc] init]);
+    [generator impactOccurred];
+  }
+}
+
+// On iOS10 and above, trigger a haptic vibration for the change in selection.
+// This is a no-op for devices that do not support it.
+- (void)triggerHapticFeedbackForSelectionChange {
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    base::scoped_nsobject<UISelectionFeedbackGenerator> generator(
+        [[UISelectionFeedbackGenerator alloc] init]);
+    [generator selectionChanged];
+  }
+}
+
 - (BOOL)isOverscrollActionEnabled {
   return _overscrollActionLock == 0 && _allowPullingActions &&
          !_isOverscrollActionsDisabledForLoading;
@@ -679,6 +700,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
         dispatch_async(dispatch_get_main_queue(), ^{
           [self recordMetricForTriggeredAction:self.overscrollActionView
                                                    .selectedAction];
+          [self triggerHapticFeedbackForAction];
           [self.delegate overscrollActionsController:self
                                     didTriggerAction:self.overscrollActionView
                                                          .selectedAction];
@@ -894,9 +916,16 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   [self scrollView].panGestureRecognizer.enabled = NO;
   [self scrollView].panGestureRecognizer.enabled = YES;
   [self startBounceWithInitialVelocity:CGPointZero];
+
+  [self triggerHapticFeedbackForAction];
   [self.delegate
       overscrollActionsController:self
                  didTriggerAction:self.overscrollActionView.selectedAction];
+}
+
+- (void)overscrollActionsView:(OverscrollActionsView*)view
+      selectedActionDidChange:(OverscrollAction)newAction {
+  [self triggerHapticFeedbackForSelectionChange];
 }
 
 @end

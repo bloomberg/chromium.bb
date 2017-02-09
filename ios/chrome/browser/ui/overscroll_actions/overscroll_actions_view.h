@@ -27,8 +27,15 @@ enum class OverscrollStyle {
 
 @protocol OverscrollActionsViewDelegate
 
+// Called when the user explicitly taps on one of the items to trigger its
+// action.
 - (void)overscrollActionsViewDidTapTriggerAction:
     (OverscrollActionsView*)overscrollActionsView;
+
+// Called after the selectedAction property changed and the animations have
+// been triggered.
+- (void)overscrollActionsView:(OverscrollActionsView*)view
+      selectedActionDidChange:(OverscrollAction)newAction;
 
 @end
 

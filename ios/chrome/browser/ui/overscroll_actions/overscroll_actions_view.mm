@@ -690,6 +690,9 @@ enum class OverscrollViewState {
         self.selectionCircleLayer.transform;
   }
   [UIView commitAnimations];
+
+  [self.delegate overscrollActionsView:self
+               selectedActionDidChange:self.selectedAction];
 }
 
 - (base::scoped_nsobject<NSArray>&)layersToCenterVertically {
