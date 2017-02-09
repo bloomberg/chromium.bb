@@ -434,18 +434,37 @@ void HandleCycleUser(SessionStateDelegate::CycleUser cycle_user) {
 
 bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
                              const ui::Accelerator& previous_accelerator) {
-  if (accelerator.key_code() == ui::VKEY_LWIN) {
-    // If something else was pressed between the Search key (LWIN)
-    // being pressed and released, then ignore the release of the
-    // Search key.
-    // TODO(danakj): Releasing Alt first breaks this: crbug.com/166495
-    if (previous_accelerator.type() == ui::ET_KEY_RELEASED ||
-        previous_accelerator.key_code() != ui::VKEY_LWIN)
-      return false;
-  }
   chromeos::input_method::InputMethodManager* ime =
       chromeos::input_method::InputMethodManager::Get();
-  return ime && ime->GetImeKeyboard();
+
+  // This shortcust is set to be trigger on release. Either the current
+  // accelerator is a Search release or Alt release.
+  if (accelerator.key_code() == ui::VKEY_LWIN &&
+      accelerator.type() == ui::ET_KEY_RELEASED) {
+    // The previous must be either an Alt press or Search press:
+    // 1. Press Alt, Press Search, Release Search, Release Alt.
+    // 2. Press Search, Press Alt, Release Search, Release Alt.
+    if (previous_accelerator.type() == ui::ET_KEY_PRESSED &&
+        (previous_accelerator.key_code() == ui::VKEY_LWIN ||
+         previous_accelerator.key_code() == ui::VKEY_MENU)) {
+      return ime && ime->GetImeKeyboard();
+    }
+  }
+
+  // Alt release.
+  if (accelerator.key_code() == ui::VKEY_MENU &&
+      accelerator.type() == ui::ET_KEY_RELEASED) {
+    // The previous must be either an Alt press or Search press:
+    // 3. Press Alt, Press Search, Release Alt, Release Search.
+    // 4. Press Search, Press Alt, Release Alt, Release Search.
+    if (previous_accelerator.type() == ui::ET_KEY_PRESSED &&
+        (previous_accelerator.key_code() == ui::VKEY_LWIN ||
+         previous_accelerator.key_code() == ui::VKEY_MENU)) {
+      return ime && ime->GetImeKeyboard();
+    }
+  }
+
+  return false;
 }
 
 void HandleToggleCapsLock() {

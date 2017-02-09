@@ -38,6 +38,10 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/base/ime/chromeos/fake_ime_keyboard.h"
+#include "ui/base/ime/chromeos/ime_keyboard.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/chromeos/mock_input_method_manager.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -1120,6 +1124,85 @@ TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
 }
 
 namespace {
+
+class TestInputMethodManager
+    : public chromeos::input_method::MockInputMethodManager {
+ public:
+  TestInputMethodManager() = default;
+  ~TestInputMethodManager() override = default;
+
+  // MockInputMethodManager:
+  chromeos::input_method::ImeKeyboard* GetImeKeyboard() override {
+    return &keyboard_;
+  }
+
+ private:
+  chromeos::input_method::FakeImeKeyboard keyboard_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestInputMethodManager);
+};
+
+class ToggleCapsLockTest : public AcceleratorControllerTest {
+ public:
+  ToggleCapsLockTest() = default;
+  ~ToggleCapsLockTest() override = default;
+
+  void SetUp() override {
+    AcceleratorControllerTest::SetUp();
+    chromeos::input_method::InputMethodManager::Initialize(
+        new TestInputMethodManager);
+  }
+
+  void TearDown() override {
+    chromeos::input_method::InputMethodManager::Shutdown();
+    AcceleratorControllerTest::TearDown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ToggleCapsLockTest);
+};
+
+// Tests the four combinations of the TOGGLE_CAPS_LOCK accelerator.
+TEST_F(ToggleCapsLockTest, ToggleCapsLockAccelerators) {
+  chromeos::input_method::InputMethodManager* input_method_manager =
+      chromeos::input_method::InputMethodManager::Get();
+  ASSERT_TRUE(input_method_manager);
+  EXPECT_FALSE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
+
+  // 1. Press Alt, Press Search, Release Search, Release Alt.
+  // Note when you press Alt then press search, the key_code at this point is
+  // VKEY_LWIN (for search) and Alt is the modifier.
+  const ui::Accelerator press_alt_then_search(ui::VKEY_LWIN, ui::EF_ALT_DOWN);
+  EXPECT_FALSE(ProcessInController(press_alt_then_search));
+  // When you release Search before Alt, the key_code is still VKEY_LWIN and
+  // Alt is still the modifier.
+  const ReleaseAccelerator release_search_before_alt(ui::VKEY_LWIN,
+                                                     ui::EF_ALT_DOWN);
+  EXPECT_TRUE(ProcessInController(release_search_before_alt));
+  EXPECT_TRUE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
+  input_method_manager->GetImeKeyboard()->SetCapsLockEnabled(false);
+
+  // 2. Press Search, Press Alt, Release Search, Release Alt.
+  const ui::Accelerator press_search_then_alt(ui::VKEY_MENU,
+                                              ui::EF_COMMAND_DOWN);
+  EXPECT_FALSE(ProcessInController(press_search_then_alt));
+  EXPECT_TRUE(ProcessInController(release_search_before_alt));
+  EXPECT_TRUE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
+  input_method_manager->GetImeKeyboard()->SetCapsLockEnabled(false);
+
+  // 3. Press Alt, Press Search, Release Alt, Release Search.
+  EXPECT_FALSE(ProcessInController(press_alt_then_search));
+  const ReleaseAccelerator release_alt_before_search(ui::VKEY_MENU,
+                                                     ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(ProcessInController(release_alt_before_search));
+  EXPECT_TRUE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
+  input_method_manager->GetImeKeyboard()->SetCapsLockEnabled(false);
+
+  // 4. Press Search, Press Alt, Release Alt, Release Search.
+  EXPECT_FALSE(ProcessInController(press_search_then_alt));
+  EXPECT_TRUE(ProcessInController(release_alt_before_search));
+  EXPECT_TRUE(input_method_manager->GetImeKeyboard()->CapsLockIsEnabled());
+}
 
 class PreferredReservedAcceleratorsTest : public test::AshTestBase {
  public:
