@@ -41,8 +41,8 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
 
     ts_mon_config.SetupTsMonGlobalState.assert_called_once_with(
         '', auto_flush=False)
-    ts_mon_config.time.time.assert_not_called()
-    ts_mon_config.metrics.Flush.assert_not_called()
+    self.assertFalse(ts_mon_config.time.time.called)
+    self.assertFalse(ts_mon_config.metrics.Flush.called)
 
   def testConsumeOneMetric(self):
     """Tests that sending one metric calls flush once."""

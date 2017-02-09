@@ -268,4 +268,4 @@ warning: Skipped upgrade to unverified version
     self.PatchObject(cros_build_lib, 'RunCommand', return_value=cmd_result)
     self.repo._RepoSelfupdate()
 
-    mock_rm.assert_not_called()
+    self.assertFalse(mock_rm.called)
