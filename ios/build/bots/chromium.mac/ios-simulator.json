@@ -1,8 +1,6 @@
 {
   "comments": [
-    "Tests for 64-bit iOS 10.0 simulators.",
-    "Tests run on iPhone 6s and iPad Air 2, both 64-bit.",
-    "Build is performed with gn+ninja."
+    "Runs tests on @3x, @2x, 64-bit, 32-bit, phone, tablet, iOS 10, and iOS 9."
   ],
   "xcode version": "8.0",
   "gn_args": [
@@ -23,13 +21,53 @@
   "tests": [
     {
       "include": "common_tests.json",
+      "device type": "iPhone 6s Plus",
+      "os": "10.0"
+    },
+    {
+      "include": "common_tests.json",
       "device type": "iPhone 6s",
+      "os": "10.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 5",
       "os": "10.0"
     },
     {
       "include": "common_tests.json",
       "device type": "iPad Air 2",
       "os": "10.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPad Retina",
+      "os": "10.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 6s Plus",
+      "os": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 6s",
+      "os": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 5",
+      "os": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPad Air 2",
+      "os": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPad Retina",
+      "os": "9.0"
     }
   ]
 }
