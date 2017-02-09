@@ -4,7 +4,6 @@
 
 #include "ash/common/accessibility_types.h"
 #include "ash/common/login_status.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/test/test_session_state_delegate.h"
@@ -240,23 +239,17 @@ class TrayAccessibilityTest
   }
 
   // In material design we show the help button but theme it as disabled if
-  // it is not possible to load the the help page.
+  // it is not possible to load the help page.
   bool IsHelpAvailableOnDetailMenu() const {
-    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      return tray()->detailed_menu_->help_view_->state() ==
-             views::Button::STATE_NORMAL;
-    }
-    return tray()->detailed_menu_->help_view_;
+    return tray()->detailed_menu_->help_view_->state() ==
+           views::Button::STATE_NORMAL;
   }
 
   // In material design we show the settings button but theme it as disabled if
-  // it is not possible to load the the settings page.
+  // it is not possible to load the settings page.
   bool IsSettingsAvailableOnDetailMenu() const {
-    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      return tray()->detailed_menu_->settings_view_->state() ==
-             views::Button::STATE_NORMAL;
-    }
-    return tray()->detailed_menu_->settings_view_;
+    return tray()->detailed_menu_->settings_view_->state() ==
+           views::Button::STATE_NORMAL;
   }
 
   bool IsNotificationShown() const {

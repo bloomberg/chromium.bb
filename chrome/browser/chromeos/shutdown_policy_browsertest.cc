@@ -6,7 +6,6 @@
 #include <string>
 
 #include "ash/common/login_status.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/date/date_default_view.h"
 #include "ash/common/system/date/tray_date.h"
@@ -160,12 +159,7 @@ class ShutdownPolicyInSessionTest
   // Gets the shutdown button view.
   const views::View* GetShutdownButton() {
     ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
-    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      return tray->GetTrayTilesForTesting()
-          ->GetDefaultViewForTesting()
-          ->GetShutdownButtonViewForTest();
-    }
-    return tray->GetTrayDateForTesting()
+    return tray->GetTrayTilesForTesting()
         ->GetDefaultViewForTesting()
         ->GetShutdownButtonViewForTest();
   }

@@ -7,7 +7,6 @@
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
@@ -438,13 +437,6 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
   }
   SendKeyPress(ui::VKEY_RETURN);
 
-  if (!ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    while (true) {
-      if (base::MatchPattern(speech_monitor_.GetNextUtterance(), "*Bluetooth"))
-        break;
-    }
-  }
-
   // Navigate to return to previous menu button and press it.
   while (true) {
     std::string utterance = speech_monitor_.GetNextUtterance();
@@ -456,13 +448,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
 
   while (true) {
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      if (base::MatchPattern(utterance, "Bluetooth*"))
-        break;
-    } else {
-      if (base::MatchPattern(utterance, "*Bluetooth"))
-        break;
-    }
+    if (base::MatchPattern(utterance, "Bluetooth*"))
+      break;
   }
 }
 

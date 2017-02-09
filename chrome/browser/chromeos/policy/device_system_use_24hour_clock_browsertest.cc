@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/common/login_status.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/date/date_default_view.h"
 #include "ash/common/system/date/date_view.h"
 #include "ash/common/system/date/system_info_default_view.h"
@@ -77,79 +76,43 @@ class SystemUse24HourClockPolicyTest
   }
 
   static base::HourClockType TestGetPrimarySystemTrayTimeHourType() {
-    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      const ash::TraySystemInfo* tray_system_info =
-          ash::Shell::GetInstance()
-              ->GetPrimarySystemTray()
-              ->GetTraySystemInfoForTesting();
-      const ash::tray::TimeView* time_tray =
-          tray_system_info->GetTimeTrayForTesting();
-
-      return time_tray->GetHourTypeForTesting();
-    }
-
-    const ash::TrayDate* tray_date = ash::Shell::GetInstance()
-                                         ->GetPrimarySystemTray()
-                                         ->GetTrayDateForTesting();
-    const ash::tray::TimeView* time_tray = tray_date->GetTimeTrayForTesting();
+    const ash::TraySystemInfo* tray_system_info =
+        ash::Shell::GetInstance()
+            ->GetPrimarySystemTray()
+            ->GetTraySystemInfoForTesting();
+    const ash::tray::TimeView* time_tray =
+        tray_system_info->GetTimeTrayForTesting();
 
     return time_tray->GetHourTypeForTesting();
   }
 
   static bool TestPrimarySystemTrayHasDateDefaultView() {
-    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      const ash::TraySystemInfo* tray_system_info =
-          ash::Shell::GetInstance()
-              ->GetPrimarySystemTray()
-              ->GetTraySystemInfoForTesting();
-      const ash::SystemInfoDefaultView* system_info_default_view =
-          tray_system_info->GetDefaultViewForTesting();
-      return system_info_default_view != nullptr;
-    }
-
-    const ash::TrayDate* tray_date = ash::Shell::GetInstance()
-                                         ->GetPrimarySystemTray()
-                                         ->GetTrayDateForTesting();
-    const ash::DateDefaultView* date_default_view =
-        tray_date->GetDefaultViewForTesting();
-    return date_default_view != nullptr;
+    const ash::TraySystemInfo* tray_system_info =
+        ash::Shell::GetInstance()
+            ->GetPrimarySystemTray()
+            ->GetTraySystemInfoForTesting();
+    const ash::SystemInfoDefaultView* system_info_default_view =
+        tray_system_info->GetDefaultViewForTesting();
+    return system_info_default_view != nullptr;
   }
 
   static void TestPrimarySystemTrayCreateDefaultView() {
-    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      ash::TraySystemInfo* tray_system_info =
-          ash::Shell::GetInstance()
-              ->GetPrimarySystemTray()
-              ->GetTraySystemInfoForTesting();
-      tray_system_info->CreateDefaultViewForTesting(
-          ash::LoginStatus::NOT_LOGGED_IN);
-    } else {
-      ash::TrayDate* tray_date = ash::Shell::GetInstance()
-                                     ->GetPrimarySystemTray()
-                                     ->GetTrayDateForTesting();
-      tray_date->CreateDefaultViewForTesting(ash::LoginStatus::NOT_LOGGED_IN);
-    }
+    ash::TraySystemInfo* tray_system_info = ash::Shell::GetInstance()
+                                                ->GetPrimarySystemTray()
+                                                ->GetTraySystemInfoForTesting();
+    tray_system_info->CreateDefaultViewForTesting(
+        ash::LoginStatus::NOT_LOGGED_IN);
   }
 
   static base::HourClockType TestGetPrimarySystemTrayDateHourType() {
-    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      const ash::TraySystemInfo* tray_system_info =
-          ash::Shell::GetInstance()
-              ->GetPrimarySystemTray()
-              ->GetTraySystemInfoForTesting();
-      const ash::SystemInfoDefaultView* system_info_default_view =
-          tray_system_info->GetDefaultViewForTesting();
+    const ash::TraySystemInfo* tray_system_info =
+        ash::Shell::GetInstance()
+            ->GetPrimarySystemTray()
+            ->GetTraySystemInfoForTesting();
+    const ash::SystemInfoDefaultView* system_info_default_view =
+        tray_system_info->GetDefaultViewForTesting();
 
-      return system_info_default_view->GetDateView()->GetHourTypeForTesting();
-    }
-
-    const ash::TrayDate* tray_date = ash::Shell::GetInstance()
-                                         ->GetPrimarySystemTray()
-                                         ->GetTrayDateForTesting();
-    const ash::DateDefaultView* date_default_view =
-        tray_date->GetDefaultViewForTesting();
-
-    return date_default_view->GetDateView()->GetHourTypeForTesting();
+    return system_info_default_view->GetDateView()->GetHourTypeForTesting();
   }
 
  private:
