@@ -860,9 +860,10 @@ load_modules(struct weston_compositor *ec, const char *modules,
 		snprintf(buffer, sizeof buffer, "%.*s", (int) (end - p), p);
 
 		if (strstr(buffer, "xwayland.so")) {
-			weston_log("Old Xwayland module loading detected:"
-				   "Please use --xwayland command line option"
-				   "or weston.ini xwayland=true\n");
+			weston_log("Old Xwayland module loading detected: "
+				   "Please use --xwayland command line option "
+				   "or set xwayland=true in the [core] section "
+				   "in weston.ini\n");
 			*xwayland = 1;
 		} else {
 			if (wet_load_module(ec, buffer, argc, argv) < 0)
