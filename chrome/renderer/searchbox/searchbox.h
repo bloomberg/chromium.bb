@@ -67,7 +67,7 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends HistorySyncCheck to the browser.
   void CheckIsUserSyncingHistory();
 
-  // Sends SearchBoxDeleteMostVisitedItem to the browser.
+  // Sends DeleteMostVisitedItem to the browser.
   void DeleteMostVisitedItem(InstantRestrictedID most_visited_item_id);
 
   // Generates the image URL of |type| for the most visited item specified in
@@ -121,10 +121,10 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends ChromeViewHostMsg_StopCapturingKeyStrokes to the browser.
   void StopCapturingKeyStrokes();
 
-  // Sends SearchBoxUndoAllMostVisitedDeletions to the browser.
+  // Sends UndoAllMostVisitedDeletions to the browser.
   void UndoAllMostVisitedDeletions();
 
-  // Sends SearchBoxUndoMostVisitedDeletion to the browser.
+  // Sends UndoMostVisitedDeletion to the browser.
   void UndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id);
 
   bool is_focused() const { return is_focused_; }

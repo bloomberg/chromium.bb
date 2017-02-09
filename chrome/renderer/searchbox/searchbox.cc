@@ -286,7 +286,7 @@ void SearchBox::CheckIsUserSyncingHistory() {
 
 void SearchBox::DeleteMostVisitedItem(
     InstantRestrictedID most_visited_item_id) {
-  instant_service_->SearchBoxDeleteMostVisitedItem(
+  instant_service_->DeleteMostVisitedItem(
       page_seq_no_, GetURLForMostVisitedItem(most_visited_item_id));
 }
 
@@ -330,12 +330,12 @@ void SearchBox::StopCapturingKeyStrokes() {
 }
 
 void SearchBox::UndoAllMostVisitedDeletions() {
-  instant_service_->SearchBoxUndoAllMostVisitedDeletions(page_seq_no_);
+  instant_service_->UndoAllMostVisitedDeletions(page_seq_no_);
 }
 
 void SearchBox::UndoMostVisitedDeletion(
     InstantRestrictedID most_visited_item_id) {
-  instant_service_->SearchBoxUndoMostVisitedDeletion(
+  instant_service_->UndoMostVisitedDeletion(
       page_seq_no_, GetURLForMostVisitedItem(most_visited_item_id));
 }
 

@@ -175,11 +175,9 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void InstantSupportDetermined(int page_seq_no,
                                 bool supports_instant) override;
   void FocusOmnibox(int page_id, OmniboxFocusState state) override;
-  void SearchBoxDeleteMostVisitedItem(int page_seq_no,
-                                      const GURL& url) override;
-  void SearchBoxUndoMostVisitedDeletion(int page_seq_no,
-                                        const GURL& url) override;
-  void SearchBoxUndoAllMostVisitedDeletions(int page_seq_no) override;
+  void DeleteMostVisitedItem(int page_seq_no, const GURL& url) override;
+  void UndoMostVisitedDeletion(int page_seq_no, const GURL& url) override;
+  void UndoAllMostVisitedDeletions(int page_seq_no) override;
   void LogEvent(int page_seq_no,
                 NTPLoggingEventType event,
                 base::TimeDelta time) override;

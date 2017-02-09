@@ -369,8 +369,8 @@ TEST_F(SearchIPCRouterTest, ProcessDeleteMostVisitedItemMsg) {
   EXPECT_CALL(*policy, ShouldProcessDeleteMostVisitedItem()).Times(1)
       .WillOnce(testing::Return(true));
 
-  GetSearchIPCRouter().SearchBoxDeleteMostVisitedItem(GetSearchIPCRouterSeqNo(),
-                                                      item_url);
+  GetSearchIPCRouter().DeleteMostVisitedItem(GetSearchIPCRouterSeqNo(),
+                                             item_url);
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreDeleteMostVisitedItemMsg) {
@@ -382,8 +382,8 @@ TEST_F(SearchIPCRouterTest, IgnoreDeleteMostVisitedItemMsg) {
   EXPECT_CALL(*policy, ShouldProcessDeleteMostVisitedItem()).Times(1)
       .WillOnce(testing::Return(false));
 
-  GetSearchIPCRouter().SearchBoxDeleteMostVisitedItem(GetSearchIPCRouterSeqNo(),
-                                                      item_url);
+  GetSearchIPCRouter().DeleteMostVisitedItem(GetSearchIPCRouterSeqNo(),
+                                             item_url);
 }
 
 TEST_F(SearchIPCRouterTest, ProcessUndoMostVisitedDeletionMsg) {
@@ -395,8 +395,8 @@ TEST_F(SearchIPCRouterTest, ProcessUndoMostVisitedDeletionMsg) {
   EXPECT_CALL(*policy, ShouldProcessUndoMostVisitedDeletion()).Times(1)
       .WillOnce(testing::Return(true));
 
-  GetSearchIPCRouter().SearchBoxUndoMostVisitedDeletion(
-      GetSearchIPCRouterSeqNo(), item_url);
+  GetSearchIPCRouter().UndoMostVisitedDeletion(GetSearchIPCRouterSeqNo(),
+                                               item_url);
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreUndoMostVisitedDeletionMsg) {
@@ -408,8 +408,8 @@ TEST_F(SearchIPCRouterTest, IgnoreUndoMostVisitedDeletionMsg) {
   EXPECT_CALL(*policy, ShouldProcessUndoMostVisitedDeletion()).Times(1)
       .WillOnce(testing::Return(false));
 
-  GetSearchIPCRouter().SearchBoxUndoMostVisitedDeletion(
-      GetSearchIPCRouterSeqNo(), item_url);
+  GetSearchIPCRouter().UndoMostVisitedDeletion(GetSearchIPCRouterSeqNo(),
+                                               item_url);
 }
 
 TEST_F(SearchIPCRouterTest, ProcessUndoAllMostVisitedDeletionsMsg) {
@@ -420,8 +420,7 @@ TEST_F(SearchIPCRouterTest, ProcessUndoAllMostVisitedDeletionsMsg) {
   EXPECT_CALL(*policy, ShouldProcessUndoAllMostVisitedDeletions()).Times(1)
       .WillOnce(testing::Return(true));
 
-  GetSearchIPCRouter().SearchBoxUndoAllMostVisitedDeletions(
-      GetSearchIPCRouterSeqNo());
+  GetSearchIPCRouter().UndoAllMostVisitedDeletions(GetSearchIPCRouterSeqNo());
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreUndoAllMostVisitedDeletionsMsg) {
@@ -432,8 +431,7 @@ TEST_F(SearchIPCRouterTest, IgnoreUndoAllMostVisitedDeletionsMsg) {
   EXPECT_CALL(*policy, ShouldProcessUndoAllMostVisitedDeletions()).Times(1)
       .WillOnce(testing::Return(false));
 
-  GetSearchIPCRouter().SearchBoxUndoAllMostVisitedDeletions(
-      GetSearchIPCRouterSeqNo());
+  GetSearchIPCRouter().UndoAllMostVisitedDeletions(GetSearchIPCRouterSeqNo());
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreMessageIfThePageIsNotActive) {
@@ -451,15 +449,15 @@ TEST_F(SearchIPCRouterTest, IgnoreMessageIfThePageIsNotActive) {
 
   EXPECT_CALL(*mock_delegate(), OnDeleteMostVisitedItem(item_url)).Times(0);
   EXPECT_CALL(*policy, ShouldProcessDeleteMostVisitedItem()).Times(0);
-  GetSearchIPCRouter().SearchBoxDeleteMostVisitedItem(page_seq_no, item_url);
+  GetSearchIPCRouter().DeleteMostVisitedItem(page_seq_no, item_url);
 
   EXPECT_CALL(*mock_delegate(), OnUndoMostVisitedDeletion(item_url)).Times(0);
   EXPECT_CALL(*policy, ShouldProcessUndoMostVisitedDeletion()).Times(0);
-  GetSearchIPCRouter().SearchBoxUndoMostVisitedDeletion(page_seq_no, item_url);
+  GetSearchIPCRouter().UndoMostVisitedDeletion(page_seq_no, item_url);
 
   EXPECT_CALL(*mock_delegate(), OnUndoAllMostVisitedDeletions()).Times(0);
   EXPECT_CALL(*policy, ShouldProcessUndoAllMostVisitedDeletions()).Times(0);
-  GetSearchIPCRouter().SearchBoxUndoAllMostVisitedDeletions(page_seq_no);
+  GetSearchIPCRouter().UndoAllMostVisitedDeletions(page_seq_no);
 
   EXPECT_CALL(*mock_delegate(), FocusOmnibox(OMNIBOX_FOCUS_VISIBLE)).Times(0);
   EXPECT_CALL(*policy, ShouldProcessFocusOmnibox(is_active_tab)).Times(0);

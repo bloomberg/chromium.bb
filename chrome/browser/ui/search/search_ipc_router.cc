@@ -204,8 +204,7 @@ void SearchIPCRouter::FocusOmnibox(int page_seq_no, OmniboxFocusState state) {
   delegate_->FocusOmnibox(state);
 }
 
-void SearchIPCRouter::SearchBoxDeleteMostVisitedItem(int page_seq_no,
-                                                     const GURL& url) {
+void SearchIPCRouter::DeleteMostVisitedItem(int page_seq_no, const GURL& url) {
   if (!IsRenderedInInstantProcess(web_contents()))
     return;
   if (page_seq_no != commit_counter_)
@@ -218,8 +217,8 @@ void SearchIPCRouter::SearchBoxDeleteMostVisitedItem(int page_seq_no,
   delegate_->OnDeleteMostVisitedItem(url);
 }
 
-void SearchIPCRouter::SearchBoxUndoMostVisitedDeletion(int page_seq_no,
-                                                       const GURL& url) {
+void SearchIPCRouter::UndoMostVisitedDeletion(int page_seq_no,
+                                              const GURL& url) {
   if (!IsRenderedInInstantProcess(web_contents()))
     return;
   if (page_seq_no != commit_counter_)
@@ -232,7 +231,7 @@ void SearchIPCRouter::SearchBoxUndoMostVisitedDeletion(int page_seq_no,
   delegate_->OnUndoMostVisitedDeletion(url);
 }
 
-void SearchIPCRouter::SearchBoxUndoAllMostVisitedDeletions(int page_seq_no) {
+void SearchIPCRouter::UndoAllMostVisitedDeletions(int page_seq_no) {
   if (!IsRenderedInInstantProcess(web_contents()))
     return;
   if (page_seq_no != commit_counter_)

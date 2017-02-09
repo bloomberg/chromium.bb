@@ -25,15 +25,14 @@ interface Instant {
   // Tells InstantExtended to set the omnibox focus state.
   FocusOmnibox(int32 page_seq_no, OmniboxFocusState state);
 
-  // TODO(treib): Remove the SearchBox prefix from these three methods.
   // Tells InstantExtended to delete a most visited item.
-  SearchBoxDeleteMostVisitedItem(int32 page_seq_no, url.mojom.Url url);
+  DeleteMostVisitedItem(int32 page_seq_no, url.mojom.Url url);
 
   // Tells InstantExtended to undo all most visited item deletions.
-  SearchBoxUndoAllMostVisitedDeletions(int32 page_seq_no);
+  UndoAllMostVisitedDeletions(int32 page_seq_no);
 
   // Tells InstantExtended to undo one most visited item deletion.
-  SearchBoxUndoMostVisitedDeletion(int32 page_seq_no, url.mojom.Url url);
+  UndoMostVisitedDeletion(int32 page_seq_no, url.mojom.Url url);
 
   // Logs events from InstantExtended New Tab Pages.
   LogEvent(int32 page_seq_no,
