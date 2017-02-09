@@ -1,15 +1,11 @@
-<!DOCTYPE HTML>
-<title>Canvas test: filling a pattern with an empty image should not crash and should return a null pattern.</title>
-<div id="console"></div>
-<canvas id="canvas" class="output" width="100" height="100"><p class="fallback">FAIL (fallback content)</p></canvas>
-<script>
-if (window.testRunner)
-    testRunner.dumpAsText();
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<canvas id="canvas" width="100" height="100"></canvas>
 
-var canvas = document.getElementById("canvas").getContext("2d");
-var pattern = canvas.createPattern(new Image, "repeat")
-if (pattern)
-    document.getElementById("console").innerHTML = "TEST FAILED";
-else
-    document.getElementById("console").innerHTML = "TEST PASSED";
+<script>
+test(function(t) {
+    var ctx = document.getElementById("canvas").getContext("2d");
+    var pattern = ctx.createPattern(new Image, "repeat")
+    assert_equals(pattern, null);
+}, 'Test if filling a pattern with an empty image does not crash and returns a null pattern.');
 </script>

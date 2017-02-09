@@ -1,27 +1,20 @@
-<!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body>
-<p id="description"></p>
-<div id="console"></div>
-
 <script>
-description("Tests CanvasPathMethods ellipse with negative radii.");
-
-var canvas = document.createElement("canvas");
-var ctx = canvas.getContext('2d');
-
-shouldNotThrow("ctx.ellipse(10, 10, 10, 5, 0, 0, 1, false)");
-shouldNotThrow("ctx.ellipse(10, 10, 10, 0, 0, 0, 1, false)");
-shouldNotThrow("ctx.ellipse(10, 10, -0, 5, 0, 0, 1, false)");
-
-shouldThrow("ctx.ellipse(10, 10, -2, 5, 0, 0, 1, false)");
-shouldThrow("ctx.ellipse(10, 10, 0, -1.5, 0, 0, 1, false)");
-shouldThrow("ctx.ellipse(10, 10, -2, -5, 0, 0, 1, false)");
-
-// FIXME: When this is exposed on Path as well as CanvasRenderingContext2D, add tests for Path as well.
+test(function(t) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    
+    ctx.ellipse(10, 10, 10, 5, 0, 0, 1, false);
+    ctx.ellipse(10, 10, 10, 0, 0, 0, 1, false);
+    ctx.ellipse(10, 10, -0, 5, 0, 0, 1, false);
+    
+    assert_throws(null, function() {ctx.ellipse(10, 10, -2, 5, 0, 0, 1, false);});
+    assert_throws(null, function() {ctx.ellipse(10, 10, 0, -1.5, 0, 0, 1, false);});
+    assert_throws(null, function() {ctx.ellipse(10, 10, -2, -5, 0, 0, 1, false);});
+    
+    // FIXME: When this is exposed on Path as well as CanvasRenderingContext2D, add tests for Path as well.
+}, 'Tests CanvasPathMethods ellipse with negative radii.');
 </script>
 </body>
-</html>
