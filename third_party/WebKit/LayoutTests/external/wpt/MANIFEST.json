@@ -17311,6 +17311,18 @@
      {}
     ]
    ],
+   "IndexedDB/idb-binary-key-detached.htm": [
+    [
+     "/IndexedDB/idb-binary-key-detached.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/idb-binary-key-roundtrip.htm": [
+    [
+     "/IndexedDB/idb-binary-key-roundtrip.htm",
+     {}
+    ]
+   ],
    "IndexedDB/idb_binary_key_conversion.htm": [
     [
      "/IndexedDB/idb_binary_key_conversion.htm",
@@ -34824,6 +34836,14 @@
    "0c4584e1b021a286445a2a9d3388ff011a1b933e",
    "testharness"
   ],
+  "IndexedDB/idb-binary-key-detached.htm": [
+   "e7ed8b831bce3a06d21d629cd0112480dfc0f6a5",
+   "testharness"
+  ],
+  "IndexedDB/idb-binary-key-roundtrip.htm": [
+   "ed1e8ae0ca73fdc6fd4d15fcd7623f8f15b7f296",
+   "testharness"
+  ],
   "IndexedDB/idb_binary_key_conversion.htm": [
    "7af8d37d63bbef60a973082f7b9fde99d5dcfca6",
    "testharness"
@@ -35993,7 +36013,7 @@
    "support"
   ],
   "IndexedDB/support.js": [
-   "d419c2daaafebb732e83c0810be816393fdb14f7",
+   "a236eaf6599ad94f26166144a7afe21fafcc5770",
    "support"
   ],
   "IndexedDB/transaction-abort-generator-revert.html": [
