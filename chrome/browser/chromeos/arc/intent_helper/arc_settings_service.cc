@@ -204,6 +204,11 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
     SyncSpokenFeedbackEnabled();
   } else if (pref_name == prefs::kAccessibilityVirtualKeyboardEnabled) {
     SyncAccessibilityVirtualKeyboardEnabled();
+  } else if (pref_name == prefs::kArcLocationServiceEnabled) {
+    const PrefService* const prefs =
+        ProfileManager::GetActiveUserProfile()->GetPrefs();
+    if (prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled))
+      SyncLocationServiceEnabled();
   } else if (pref_name == prefs::kUse24HourClock) {
     SyncUse24HourClock();
   } else if (pref_name == prefs::kWebKitDefaultFixedFontSize ||
@@ -253,6 +258,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(prefs::kAccessibilitySpokenFeedbackEnabled);
   AddPrefToObserve(prefs::kAccessibilityVirtualKeyboardEnabled);
   AddPrefToObserve(prefs::kArcBackupRestoreEnabled);
+  AddPrefToObserve(prefs::kArcLocationServiceEnabled);
   AddPrefToObserve(prefs::kUse24HourClock);
   AddPrefToObserve(prefs::kWebKitDefaultFixedFontSize);
   AddPrefToObserve(prefs::kWebKitDefaultFontSize);
