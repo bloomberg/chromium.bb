@@ -118,6 +118,13 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
 
   void addConsoleError(const String& message);
 
+  Range* createRangeFromSelectionEditor();
+
+  bool isSelectionOfDocument() const;
+  void cacheRangeIfSelectionOfDocument(Range*);
+  Range* documentCachedRange() const;
+  void clearCachedRangeIfSelectionOfDocument();
+
   Member<const TreeScope> m_treeScope;
 };
 

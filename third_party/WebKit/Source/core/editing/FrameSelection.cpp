@@ -1428,6 +1428,18 @@ bool FrameSelection::isCaretBlinkingSuspended() const {
   return m_frameCaret->isCaretBlinkingSuspended();
 }
 
+void FrameSelection::cacheRangeOfDocument(Range* range) {
+  m_selectionEditor->cacheRangeOfDocument(range);
+}
+
+Range* FrameSelection::documentCachedRange() const {
+  return m_selectionEditor->documentCachedRange();
+}
+
+void FrameSelection::clearDocumentCachedRange() {
+  m_selectionEditor->clearDocumentCachedRange();
+}
+
 }  // namespace blink
 
 #ifndef NDEBUG

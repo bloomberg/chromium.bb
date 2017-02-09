@@ -82,6 +82,10 @@ class SelectionEditor final
   // layout if needed.
   void updateIfNeeded();
 
+  void cacheRangeOfDocument(Range*);
+  Range* documentCachedRange() const;
+  void clearDocumentCachedRange();
+
   DECLARE_TRACE();
 
  private:
@@ -100,11 +104,15 @@ class SelectionEditor final
   VisibleSelectionInFlatTree m_selectionInFlatTree;
   bool m_observingVisibleSelection;
 
+  // TODO(editing-dev): Removing |m_logicalRange|
   // The range specified by the user, which may not be visually canonicalized
   // (hence "logical"). This will be invalidated if the underlying
   // |VisibleSelection| changes. If that happens, this variable will
   // become |nullptr|, in which case logical positions == visible positions.
   Member<Range> m_logicalRange;
+  // If document is root, document.getSelection().addRange(range) is cached on
+  // this.
+  Member<Range> m_cachedRange;
 };
 
 }  // namespace blink

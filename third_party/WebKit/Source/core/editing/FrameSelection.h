@@ -289,6 +289,10 @@ class CORE_EXPORT FrameSelection final
   // to use updated selection, we should make |updateIfNeeded()| private.
   void updateIfNeeded();
 
+  void cacheRangeOfDocument(Range*);
+  Range* documentCachedRange() const;
+  void clearDocumentCachedRange();
+
   DECLARE_TRACE();
 
  private:

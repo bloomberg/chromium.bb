@@ -50,6 +50,7 @@ void SelectionEditor::clearVisibleSelection() {
 
 void SelectionEditor::dispose() {
   resetLogicalRange();
+  clearDocumentCachedRange();
   clearVisibleSelection();
 }
 
@@ -85,6 +86,8 @@ void SelectionEditor::setVisibleSelection(
     FrameSelection::SetSelectionOptions options) {
   DCHECK(newSelection.isValidFor(document())) << newSelection;
   resetLogicalRange();
+  clearDocumentCachedRange();
+
   m_selection = newSelection;
   if (options & FrameSelection::DoNotAdjustInFlatTree) {
     m_selectionInFlatTree.setWithoutValidation(
@@ -103,6 +106,8 @@ void SelectionEditor::setVisibleSelection(
   DCHECK(newSelection.isValidFor(document())) << newSelection;
   DCHECK(!(options & FrameSelection::DoNotAdjustInFlatTree));
   resetLogicalRange();
+  clearDocumentCachedRange();
+
   m_selectionInFlatTree = newSelection;
   SelectionAdjuster::adjustSelectionInDOMTree(&m_selection,
                                               m_selectionInFlatTree);
@@ -115,6 +120,8 @@ void SelectionEditor::setWithoutValidation(const Position& base,
     DCHECK_EQ(base.document(), document());
   if (extent.isNotNull())
     DCHECK_EQ(extent.document(), document());
+  clearDocumentCachedRange();
+
   m_selection.setWithoutValidation(base, extent);
   m_selectionInFlatTree.setWithoutValidation(toPositionInFlatTree(base),
                                              toPositionInFlatTree(extent));
@@ -164,12 +171,25 @@ void SelectionEditor::updateIfNeeded() {
   m_selectionInFlatTree.updateIfNeeded();
 }
 
+void SelectionEditor::cacheRangeOfDocument(Range* range) {
+  m_cachedRange = range;
+}
+
+Range* SelectionEditor::documentCachedRange() const {
+  return m_cachedRange;
+}
+
+void SelectionEditor::clearDocumentCachedRange() {
+  m_cachedRange = nullptr;
+}
+
 DEFINE_TRACE(SelectionEditor) {
   visitor->trace(m_document);
   visitor->trace(m_frame);
   visitor->trace(m_selection);
   visitor->trace(m_selectionInFlatTree);
   visitor->trace(m_logicalRange);
+  visitor->trace(m_cachedRange);
 }
 
 }  // namespace blink

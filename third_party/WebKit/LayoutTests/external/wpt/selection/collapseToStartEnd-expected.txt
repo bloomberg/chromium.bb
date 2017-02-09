@@ -134,14 +134,11 @@ FAIL Range 37 [document, 1, document, 2] collapseToEnd() assert_equals: focusNod
 FAIL Range 38 [testDiv, 0, comment, 5] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
 </p><p id="b" s... but got Text node "Äb̈c̈d̈ëf̈g̈ḧ
 "
-FAIL Range 38 [testDiv, 0, comment, 5] collapseToEnd() assert_equals: focusNode must equal the original end node expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Text node "Qrstuvwx"
+FAIL Range 38 [testDiv, 0, comment, 5] collapseToEnd() assert_equals: focusNode must equal the original end node expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
 PASS Range 39 [paras[2].firstChild, 4, comment, 2] collapseToStart() 
-FAIL Range 39 [paras[2].firstChild, 4, comment, 2] collapseToEnd() assert_equals: focusNode must equal the original end node expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Text node "Qrstuvwx"
+FAIL Range 39 [paras[2].firstChild, 4, comment, 2] collapseToEnd() assert_equals: focusNode must equal the original end node expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
 FAIL Range 40 [paras[3], 1, comment, 8] collapseToStart() assert_equals: focusNode must equal the original start node expected Element node <p id="d" style="display:none">Yzabcdef</p> but got Text node "Qrstuvwx"
-FAIL Range 40 [paras[3], 1, comment, 8] collapseToEnd() assert_equals: focusNode must equal the original end node expected Element node <div id="test"><p id="a">Äb̈c̈d̈ëf̈g̈ḧ
-</p><p id="b" s... but got Text node "Qrstuvwx"
+FAIL Range 40 [paras[3], 1, comment, 8] collapseToEnd() assert_equals: focusNode must equal the original end node expected Comment node <!--Alphabet soup?--> but got Text node "Qrstuvwx"
 FAIL Range 41 [foreignDoc, 0, foreignDoc, 0] collapseToStart() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
 FAIL Range 41 [foreignDoc, 0, foreignDoc, 0] collapseToEnd() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0
 FAIL Range 42 [foreignDoc, 1, foreignComment, 2] collapseToStart() assert_equals: Sanity check: rangeCount must equal 1 after addRange() expected 1 but got 0

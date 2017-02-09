@@ -175,6 +175,8 @@ String DOMSelection::type() const {
 int DOMSelection::rangeCount() const {
   if (!isAvailable())
     return 0;
+  if (documentCachedRange())
+    return 1;
   return frame()->selection().isNone() ? 0 : 1;
 }
 
@@ -286,6 +288,8 @@ void DOMSelection::setBaseAndExtent(Node* baseNode,
   if (!isValidForPosition(baseNode) || !isValidForPosition(extentNode))
     return;
 
+  clearCachedRangeIfSelectionOfDocument();
+
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // In the long term, we should change FrameSelection::setSelection to take a
@@ -386,6 +390,7 @@ void DOMSelection::extend(Node* node,
   if (!isValidForPosition(node))
     return;
 
+  clearCachedRangeIfSelectionOfDocument();
   const Position& base = frame()->selection().base();
   if (base.isNull()) {
     // TODO(editing-dev): We should throw |InvalidStateError| if selection is
@@ -416,6 +421,15 @@ Range* DOMSelection::getRangeAt(int index, ExceptionState& exceptionState) {
   // If you're hitting this, you've added broken multi-range selection support
   DCHECK_EQ(rangeCount(), 1);
 
+  if (Range* cachedRange = documentCachedRange())
+    return cachedRange;
+
+  Range* range = createRangeFromSelectionEditor();
+  cacheRangeIfSelectionOfDocument(range);
+  return range;
+}
+
+Range* DOMSelection::createRangeFromSelectionEditor() {
   Position anchor = anchorPosition(visibleSelection());
   if (!anchor.anchorNode()->isInShadowTree())
     return frame()->selection().firstRange();
@@ -428,6 +442,28 @@ Range* DOMSelection::getRangeAt(int index, ExceptionState& exceptionState) {
                          anchorOffset());
   return Range::create(*anchor.document(), node, anchorOffset(), focusNode(),
                        focusOffset());
+}
+
+bool DOMSelection::isSelectionOfDocument() const {
+  return m_treeScope == m_treeScope->document();
+}
+
+void DOMSelection::cacheRangeIfSelectionOfDocument(Range* range) {
+  if (!isSelectionOfDocument())
+    return;
+  frame()->selection().cacheRangeOfDocument(range);
+}
+
+Range* DOMSelection::documentCachedRange() const {
+  if (!isSelectionOfDocument())
+    return nullptr;
+  return frame()->selection().documentCachedRange();
+}
+
+void DOMSelection::clearCachedRangeIfSelectionOfDocument() {
+  if (!isSelectionOfDocument())
+    return;
+  frame()->selection().clearDocumentCachedRange();
 }
 
 void DOMSelection::removeAllRanges() {
@@ -466,6 +502,7 @@ void DOMSelection::addRange(Range* newRange) {
 
   if (selection.isNone()) {
     selection.setSelectedRange(EphemeralRange(newRange), VP_DEFAULT_AFFINITY);
+    cacheRangeIfSelectionOfDocument(newRange);
     return;
   }
 
@@ -513,6 +550,7 @@ void DOMSelection::addRange(Range* newRange) {
       EphemeralRange(start->startPosition(), end->endPosition());
   TextAffinity affinity = selection.selection().affinity();
   selection.setSelectedRange(merged, affinity);
+  cacheRangeIfSelectionOfDocument(createRange(merged));
 }
 
 void DOMSelection::deleteFromDocument() {
