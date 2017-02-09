@@ -348,6 +348,11 @@ bool TabRestoreServiceHelper::OnMemoryDump(
       base::trace_event::MemoryDumpManager::GetInstance()
           ->system_allocator_pool_name();
 
+  if (entries_.empty()) {
+    // Nothing to report
+    return true;
+  }
+
   std::string entries_dump_name = base::StringPrintf(
       "tab_restore/service_helper_0x%" PRIXPTR "/entries",
       reinterpret_cast<uintptr_t>(this));
