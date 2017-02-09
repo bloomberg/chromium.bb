@@ -47,7 +47,8 @@ class JsTranslateManagerTest : public PlatformTest {
   base::scoped_nsobject<JsTranslateManager> manager_;
 };
 
-TEST_F(JsTranslateManagerTest, PerformancePlaceholder) {
+// TODO(crbug.com/658619#c47): Test reported as flaky.
+TEST_F(JsTranslateManagerTest, DISABLED_PerformancePlaceholder) {
   [manager_ inject];
   EXPECT_TRUE(IsDefined(@"performance"));
   EXPECT_TRUE(IsDefined(@"performance.now"));
