@@ -105,6 +105,10 @@ class CC_SURFACES_EXPORT Surface {
     return referenced_surfaces_;
   }
 
+  const SurfaceDependencies& blocking_surfaces_for_testing() const {
+    return blocking_surfaces_;
+  }
+
   bool HasActiveFrame() const { return active_frame_.has_value(); }
   bool HasPendingFrame() const { return pending_frame_.has_value(); }
 
@@ -136,6 +140,7 @@ class CC_SURFACES_EXPORT Surface {
   // on multiple Displays.
   std::set<BeginFrameSource*> begin_frame_sources_;
 
+  // The total set of CompositorFrames referenced by the active CompositorFrame.
   std::vector<SurfaceId> referenced_surfaces_;
 
   SurfaceDependencies blocking_surfaces_;

@@ -881,6 +881,7 @@ cc_test("cc_unittests") {
     "animation/transform_operations_unittest.cc",
 
     # Surfaces test files.
+    "surfaces/compositor_frame_sink_support_unittest.cc",
     "surfaces/direct_compositor_frame_sink_unittest.cc",
     "surfaces/display_scheduler_unittest.cc",
     "surfaces/display_unittest.cc",

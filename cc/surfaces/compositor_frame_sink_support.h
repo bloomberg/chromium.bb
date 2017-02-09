@@ -42,6 +42,10 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
+  Surface* current_surface_for_testing() {
+    return surface_factory_.current_surface_for_testing();
+  }
+
   void EvictFrame();
   void SetNeedsBeginFrame(bool needs_begin_frame);
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
