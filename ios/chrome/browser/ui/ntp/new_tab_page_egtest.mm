@@ -114,14 +114,12 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
 // Tests that all items are accessible on the most visited page.
 - (void)testAccessibilityOnMostVisited {
   SelectNewTabPagePanel(NewTabPage::kMostVisitedPanel);
-  // TODO(crbug.com/640179): Implement and call
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
 // Tests that all items are accessible on the open tabs page.
 - (void)testAccessibilityOnOpenTabs {
   SelectNewTabPagePanel(NewTabPage::kOpenTabsPanel);
-  // TODO(crbug.com/640179): Implement and call
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   DismissNewTabPagePanel();
 }
@@ -129,7 +127,6 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
 // Tests that all items are accessible on the bookmarks page.
 - (void)testAccessibilityOnBookmarks {
   SelectNewTabPagePanel(NewTabPage::kBookmarksPanel);
-  // TODO(crbug.com/640179): Implement and call
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   DismissNewTabPagePanel();
 }
@@ -139,7 +136,6 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
   chrome_test_util::OpenNewIncognitoTab();
   SelectNewTabPagePanel(NewTabPage::kIncognitoPanel);
   WaitForHistoryToDisappear();
-  // TODO(crbug.com/640179): Implement and call
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   chrome_test_util::CloseAllIncognitoTabs();
 }
