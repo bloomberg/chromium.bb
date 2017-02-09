@@ -95,6 +95,18 @@ using suggestions::ImageDecoderImpl;
 using syncer::SyncService;
 using translate::LanguageModel;
 
+// For now, ContentSuggestionsService must only be instantiated on Android.
+// See also crbug.com/688366.
+#if defined(OS_ANDROID)
+#define CONTENT_SUGGESTIONS_ENABLED 1
+#else
+#define CONTENT_SUGGESTIONS_ENABLED 0
+#endif  // OS_ANDROID
+
+// The actual #if that does the work is below in BuildServiceInstanceFor. This
+// one is just required to avoid "unused code" compiler errors.
+#if CONTENT_SUGGESTIONS_ENABLED
+
 namespace {
 
 #if defined(OS_ANDROID)
@@ -124,6 +136,7 @@ void RegisterDownloadsProvider(OfflinePageModel* offline_page_model,
       pref_service, base::MakeUnique<base::DefaultClock>());
   service->RegisterProvider(std::move(provider));
 }
+
 #endif  // OS_ANDROID
 
 void RegisterBookmarkProvider(BookmarkModel* bookmark_model,
@@ -150,6 +163,7 @@ void RegisterPhysicalWebPageProvider(
       service, physical_web_data_source, pref_service);
   service->RegisterProvider(std::move(provider));
 }
+
 #endif  // OS_ANDROID
 
 void RegisterArticleProvider(SigninManagerBase* signin_manager,
@@ -213,6 +227,8 @@ void RegisterForeignSessionsProvider(SyncService* sync_service,
 
 }  // namespace
 
+#endif  // CONTENT_SUGGESTIONS_ENABLED
+
 // static
 ContentSuggestionsServiceFactory*
 ContentSuggestionsServiceFactory::GetInstance() {
@@ -251,6 +267,8 @@ ContentSuggestionsServiceFactory::~ContentSuggestionsServiceFactory() = default;
 
 KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+#if CONTENT_SUGGESTIONS_ENABLED
+
   using State = ContentSuggestionsService::State;
   Profile* profile = Profile::FromBrowserContext(context);
   DCHECK(!profile->IsOffTheRecord());
@@ -329,4 +347,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   }
 
   return service;
+
+#else
+  return nullptr;
+#endif  // CONTENT_SUGGESTIONS_ENABLED
 }
