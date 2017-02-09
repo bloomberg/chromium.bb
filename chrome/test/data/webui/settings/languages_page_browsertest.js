@@ -116,7 +116,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
 
       setup(function(done) {
         var addLanguagesButton =
-            languagesCollapse.querySelector('.list-button:last-of-type');
+            languagesCollapse.querySelector('#addLanguages');
         MockInteractions.tap(addLanguagesButton);
 
         // The page stamps the dialog, registers listeners, and populates the
@@ -412,7 +412,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
       if (cr.isChromeOS) {
         assertTrue(inputMethodSettingsExist);
         var manageInputMethodsButton =
-            inputMethodsCollapse.querySelector('.list-button:last-of-type');
+            inputMethodsCollapse.querySelector('#manageInputMethods');
         MockInteractions.tap(manageInputMethodsButton);
         assertTrue(!!languagesPage.$$('settings-manage-input-methods-page'));
       } else {
@@ -451,7 +451,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
     });
 
     if (!cr.isMac) {
-      test('spellcheck edit dictionary page add word button', function() {
+      test('spellcheck edit dictionary page add word validation', function() {
         assertFalse(!!languagesPage.$$('settings-edit-dictionary-page'));
         var spellCheckCollapse = languagesPage.$.spellCheckCollapse;
         MockInteractions.tap(
