@@ -20,6 +20,10 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
 
+#ifdef HEADLESS_USE_EMBEDDED_RESOURCES
+#include "headless/embedded_resource_pak.h"
+#endif
+
 namespace headless {
 namespace {
 // Keep in sync with content/common/content_constants_internal.h.
@@ -177,6 +181,13 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
   ui::ResourceBundle::InitSharedInstanceWithLocale(
       locale, nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
+#ifdef HEADLESS_USE_EMBEDDED_RESOURCES
+  ResourceBundle::GetSharedInstance().AddDataPackFromBuffer(
+      base::StringPiece(
+          reinterpret_cast<const char*>(kHeadlessResourcePak.contents),
+          kHeadlessResourcePak.length),
+      ui::SCALE_FACTOR_NONE);
+#else
   // Try loading the headless library pak file first. If it doesn't exist (i.e.,
   // when we're running with the --headless switch), fall back to the browser's
   // resource pak.
@@ -185,6 +196,7 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
     pak_file = dir_module.Append(FILE_PATH_LITERAL("resources.pak"));
   ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_file, ui::SCALE_FACTOR_NONE);
+#endif
 }
 
 content::ContentBrowserClient*

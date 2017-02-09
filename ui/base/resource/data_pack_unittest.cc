@@ -142,6 +142,31 @@ TEST(DataPackTest, LoadFromFileRegion) {
   ASSERT_FALSE(pack.GetStringPiece(140, &data));
 }
 
+TEST(DataPackTest, LoadFromBuffer) {
+  DataPack pack(SCALE_FACTOR_100P);
+
+  ASSERT_TRUE(pack.LoadFromBuffer(
+      base::StringPiece(kSamplePakContents, kSamplePakSize)));
+
+  base::StringPiece data;
+  ASSERT_TRUE(pack.HasResource(4));
+  ASSERT_TRUE(pack.GetStringPiece(4, &data));
+  EXPECT_EQ("this is id 4", data);
+  ASSERT_TRUE(pack.HasResource(6));
+  ASSERT_TRUE(pack.GetStringPiece(6, &data));
+  EXPECT_EQ("this is id 6", data);
+
+  // Try reading zero-length data blobs, just in case.
+  ASSERT_TRUE(pack.GetStringPiece(1, &data));
+  EXPECT_EQ(0U, data.length());
+  ASSERT_TRUE(pack.GetStringPiece(10, &data));
+  EXPECT_EQ(0U, data.length());
+
+  // Try looking up an invalid key.
+  ASSERT_FALSE(pack.HasResource(140));
+  ASSERT_FALSE(pack.GetStringPiece(140, &data));
+}
+
 INSTANTIATE_TEST_CASE_P(WriteBINARY, DataPackTest, ::testing::Values(
     DataPack::BINARY));
 INSTANTIATE_TEST_CASE_P(WriteUTF8, DataPackTest, ::testing::Values(

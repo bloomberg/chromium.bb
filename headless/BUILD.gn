@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//headless/headless.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
@@ -10,6 +11,10 @@ import("//tools/grit/repack.gni")
 
 config("headless_implementation") {
   defines = [ "HEADLESS_IMPLEMENTATION" ]
+
+  if (headless_use_embedded_resources) {
+    defines += [ "HEADLESS_USE_EMBEDDED_RESOURCES" ]
+  }
 }
 
 group("headless") {
@@ -58,6 +63,39 @@ repack("pak") {
   ]
 
   output = "$root_out_dir/headless_lib.pak"
+}
+
+action("embed_resources") {
+  # TODO(altimin): Consider zipping file here, it can reduce size up to 80%.
+  script = "//headless/lib/embed_data.py"
+
+  inputs = [
+    "$root_out_dir/headless_lib.pak",
+  ]
+
+  outputs = [
+    "$root_gen_dir/headless/embedded_resource_pak.cc",
+    "$root_gen_dir/headless/embedded_resource_pak.h",
+  ]
+
+  args = [
+    "--data_file",
+    rebase_path("$root_out_dir/headless_lib.pak"),
+    "--gendir",
+    rebase_path("$root_gen_dir"),
+    "--header_file",
+    "headless/embedded_resource_pak.h",
+    "--source_file",
+    "headless/embedded_resource_pak.cc",
+    "--namespace",
+    "headless",
+    "--variable_name",
+    "kHeadlessResourcePak",
+  ]
+
+  deps = [
+    ":pak",
+  ]
 }
 
 grit("resources") {
@@ -228,7 +266,6 @@ static_library("headless_lib") {
 
   deps = [
     ":gen_devtools_client_api",
-    ":pak",
     "//base",
     "//components/security_state/content",
     "//components/security_state/core",
@@ -246,6 +283,16 @@ static_library("headless_lib") {
     "//ui/events/devices",
     "//url",
   ]
+
+  if (headless_use_embedded_resources) {
+    deps += [ ":embed_resources" ]
+    sources += [
+      "$root_gen_dir/headless/embedded_resource_pak.cc",
+      "$root_gen_dir/headless/embedded_resource_pak.h",
+    ]
+  } else {
+    deps += [ ":pak" ]
+  }
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]

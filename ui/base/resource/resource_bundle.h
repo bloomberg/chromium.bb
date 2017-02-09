@@ -146,6 +146,7 @@ class UI_BASE_EXPORT ResourceBundle {
   // Returns true after the global resource loader instance has been created.
   static bool HasSharedInstance();
 
+  // Initialize the ResourceBundle using data pack from given buffer.
   // Return the global resource loader instance.
   static ResourceBundle& GetSharedInstance();
 
@@ -169,6 +170,10 @@ class UI_BASE_EXPORT ResourceBundle {
   void AddDataPackFromFileRegion(base::File file,
                                  const base::MemoryMappedFile::Region& region,
                                  ScaleFactor scale_factor);
+
+  // Same as above but using contents of the given buffer.
+  void AddDataPackFromBuffer(base::StringPiece buffer,
+                             ScaleFactor scale_factor);
 
   // Same as AddDataPackFromPath but does not log an error if the pack fails to
   // load.

@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
@@ -68,6 +69,52 @@ void LogDataPackError(LoadErrors error) {
 
 namespace ui {
 
+// Abstraction of a data source (memory mapped file or in-memory buffer).
+class DataPack::DataSource {
+ public:
+  virtual ~DataSource() {}
+
+  virtual size_t GetLength() const = 0;
+  virtual const uint8_t* GetData() const = 0;
+};
+
+class DataPack::MemoryMappedDataSource : public DataPack::DataSource {
+ public:
+  explicit MemoryMappedDataSource(std::unique_ptr<base::MemoryMappedFile> mmap)
+      : mmap_(std::move(mmap)) {}
+
+  ~MemoryMappedDataSource() override {}
+
+  // DataPack::DataSource:
+  size_t GetLength() const override { return mmap_->length(); }
+
+  const uint8_t* GetData() const override { return mmap_->data(); }
+
+ private:
+  std::unique_ptr<base::MemoryMappedFile> mmap_;
+
+  DISALLOW_COPY_AND_ASSIGN(MemoryMappedDataSource);
+};
+
+class DataPack::BufferDataSource : public DataPack::DataSource {
+ public:
+  explicit BufferDataSource(base::StringPiece buffer) : buffer_(buffer) {}
+
+  ~BufferDataSource() override {}
+
+  // DataPack::DataSource:
+  size_t GetLength() const override { return buffer_.length(); }
+
+  const uint8_t* GetData() const override {
+    return reinterpret_cast<const uint8_t*>(buffer_.data());
+  }
+
+ private:
+  base::StringPiece buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(BufferDataSource);
+};
+
 DataPack::DataPack(ui::ScaleFactor scale_factor)
     : resource_count_(0),
       text_encoding_type_(BINARY),
@@ -78,14 +125,15 @@ DataPack::~DataPack() {
 }
 
 bool DataPack::LoadFromPath(const base::FilePath& path) {
-  mmap_.reset(new base::MemoryMappedFile);
-  if (!mmap_->Initialize(path)) {
+  std::unique_ptr<base::MemoryMappedFile> mmap =
+      base::MakeUnique<base::MemoryMappedFile>();
+  if (!mmap->Initialize(path)) {
     DLOG(ERROR) << "Failed to mmap datapack";
     LogDataPackError(INIT_FAILED);
-    mmap_.reset();
+    mmap.reset();
     return false;
   }
-  return LoadImpl();
+  return LoadImpl(base::MakeUnique<MemoryMappedDataSource>(std::move(mmap)));
 }
 
 bool DataPack::LoadFromFile(base::File file) {
@@ -96,34 +144,38 @@ bool DataPack::LoadFromFile(base::File file) {
 bool DataPack::LoadFromFileRegion(
     base::File file,
     const base::MemoryMappedFile::Region& region) {
-  mmap_.reset(new base::MemoryMappedFile);
-  if (!mmap_->Initialize(std::move(file), region)) {
+  std::unique_ptr<base::MemoryMappedFile> mmap =
+      base::MakeUnique<base::MemoryMappedFile>();
+  if (!mmap->Initialize(std::move(file), region)) {
     DLOG(ERROR) << "Failed to mmap datapack";
     LogDataPackError(INIT_FAILED_FROM_FILE);
-    mmap_.reset();
+    mmap.reset();
     return false;
   }
-  return LoadImpl();
+  return LoadImpl(base::MakeUnique<MemoryMappedDataSource>(std::move(mmap)));
 }
 
-bool DataPack::LoadImpl() {
+bool DataPack::LoadFromBuffer(base::StringPiece buffer) {
+  return LoadImpl(base::MakeUnique<BufferDataSource>(buffer));
+}
+
+bool DataPack::LoadImpl(std::unique_ptr<DataPack::DataSource> data_source) {
   // Sanity check the header of the file.
-  if (kHeaderLength > mmap_->length()) {
+  if (kHeaderLength > data_source->GetLength()) {
     DLOG(ERROR) << "Data pack file corruption: incomplete file header.";
     LogDataPackError(HEADER_TRUNCATED);
-    mmap_.reset();
     return false;
   }
 
   // Parse the header of the file.
   // First uint32_t: version; second: resource count;
-  const uint32_t* ptr = reinterpret_cast<const uint32_t*>(mmap_->data());
+  const uint32_t* ptr =
+      reinterpret_cast<const uint32_t*>(data_source->GetData());
   uint32_t version = ptr[0];
   if (version != kFileFormatVersion) {
     LOG(ERROR) << "Bad data pack version: got " << version << ", expected "
                << kFileFormatVersion;
     LogDataPackError(BAD_VERSION);
-    mmap_.reset();
     return false;
   }
   resource_count_ = ptr[1];
@@ -136,7 +188,6 @@ bool DataPack::LoadImpl() {
     LOG(ERROR) << "Bad data pack text encoding: got " << text_encoding_type_
                << ", expected between " << BINARY << " and " << UTF16;
     LogDataPackError(WRONG_ENCODING);
-    mmap_.reset();
     return false;
   }
 
@@ -144,33 +195,34 @@ bool DataPack::LoadImpl() {
   // 1) Check we have enough entries. There's an extra entry after the last item
   // which gives the length of the last item.
   if (kHeaderLength + (resource_count_ + 1) * sizeof(DataPackEntry) >
-      mmap_->length()) {
+      data_source->GetLength()) {
     LOG(ERROR) << "Data pack file corruption: too short for number of "
                   "entries specified.";
     LogDataPackError(INDEX_TRUNCATED);
-    mmap_.reset();
     return false;
   }
   // 2) Verify the entries are within the appropriate bounds. There's an extra
   // entry after the last item which gives us the length of the last item.
   for (size_t i = 0; i < resource_count_ + 1; ++i) {
     const DataPackEntry* entry = reinterpret_cast<const DataPackEntry*>(
-        mmap_->data() + kHeaderLength + (i * sizeof(DataPackEntry)));
-    if (entry->file_offset > mmap_->length()) {
+        data_source->GetData() + kHeaderLength + (i * sizeof(DataPackEntry)));
+    if (entry->file_offset > data_source->GetLength()) {
       LOG(ERROR) << "Entry #" << i << " in data pack points off end of file. "
                  << "Was the file corrupted?";
       LogDataPackError(ENTRY_NOT_FOUND);
-      mmap_.reset();
       return false;
     }
   }
+
+  data_source_ = std::move(data_source);
 
   return true;
 }
 
 bool DataPack::HasResource(uint16_t resource_id) const {
-  return !!bsearch(&resource_id, mmap_->data() + kHeaderLength, resource_count_,
-                   sizeof(DataPackEntry), DataPackEntry::CompareById);
+  return !!bsearch(&resource_id, data_source_->GetData() + kHeaderLength,
+                   resource_count_, sizeof(DataPackEntry),
+                   DataPackEntry::CompareById);
 }
 
 bool DataPack::GetStringPiece(uint16_t resource_id,
@@ -186,9 +238,9 @@ bool DataPack::GetStringPiece(uint16_t resource_id,
   #error DataPack assumes little endian
 #endif
 
-  const DataPackEntry* target = reinterpret_cast<const DataPackEntry*>(
-      bsearch(&resource_id, mmap_->data() + kHeaderLength, resource_count_,
-              sizeof(DataPackEntry), DataPackEntry::CompareById));
+  const DataPackEntry* target = reinterpret_cast<const DataPackEntry*>(bsearch(
+      &resource_id, data_source_->GetData() + kHeaderLength, resource_count_,
+      sizeof(DataPackEntry), DataPackEntry::CompareById));
   if (!target) {
     return false;
   }
@@ -197,9 +249,9 @@ bool DataPack::GetStringPiece(uint16_t resource_id,
   // If the next entry points beyond the end of the file this data pack's entry
   // table is corrupt. Log an error and return false. See
   // http://crbug.com/371301.
-  if (next_entry->file_offset > mmap_->length()) {
-    size_t entry_index = target -
-        reinterpret_cast<const DataPackEntry*>(mmap_->data() + kHeaderLength);
+  if (next_entry->file_offset > data_source_->GetLength()) {
+    size_t entry_index = target - reinterpret_cast<const DataPackEntry*>(
+                                      data_source_->GetData() + kHeaderLength);
     LOG(ERROR) << "Entry #" << entry_index << " in data pack points off end "
                << "of file. This should have been caught when loading. Was the "
                << "file modified?";
@@ -207,7 +259,8 @@ bool DataPack::GetStringPiece(uint16_t resource_id,
   }
 
   size_t length = next_entry->file_offset - target->file_offset;
-  data->set(reinterpret_cast<const char*>(mmap_->data() + target->file_offset),
+  data->set(reinterpret_cast<const char*>(data_source_->GetData() +
+                                          target->file_offset),
             length);
   return true;
 }
@@ -234,7 +287,7 @@ void DataPack::CheckForDuplicateResources(
     const ScopedVector<ResourceHandle>& packs) {
   for (size_t i = 0; i < resource_count_ + 1; ++i) {
     const DataPackEntry* entry = reinterpret_cast<const DataPackEntry*>(
-        mmap_->data() + kHeaderLength + (i * sizeof(DataPackEntry)));
+        data_source_->GetData() + kHeaderLength + (i * sizeof(DataPackEntry)));
     const uint16_t resource_id = entry->resource_id;
     const float resource_scale = GetScaleForScaleFactor(scale_factor_);
     for (const ResourceHandle* handle : packs) {

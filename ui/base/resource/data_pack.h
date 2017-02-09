@@ -46,6 +46,10 @@ class UI_DATA_PACK_EXPORT DataPack : public ResourceHandle {
   bool LoadFromFileRegion(base::File file,
                           const base::MemoryMappedFile::Region& region);
 
+  // Loads a pack file from |buffer|, returning false on error.
+  // Data is not copied, |buffer| should stay alive during |DataPack| lifetime.
+  bool LoadFromBuffer(base::StringPiece buffer);
+
   // Writes a pack file containing |resources| to |path|. If there are any
   // text resources to be written, their encoding must already agree to the
   // |textEncodingType| specified. If no text resources are present, please
@@ -70,11 +74,15 @@ class UI_DATA_PACK_EXPORT DataPack : public ResourceHandle {
 #endif
 
  private:
-  // Does the actual loading of a pack file. Called by Load and LoadFromFile.
-  bool LoadImpl();
+  class DataSource;
+  class BufferDataSource;
+  class MemoryMappedDataSource;
 
-  // The memory-mapped data.
-  std::unique_ptr<base::MemoryMappedFile> mmap_;
+  // Does the actual loading of a pack file.
+  // Called by Load and LoadFromFile and LoadFromBuffer.
+  bool LoadImpl(std::unique_ptr<DataSource> data_source);
+
+  std::unique_ptr<DataSource> data_source_;
 
   // Number of resources in the data.
   size_t resource_count_;
