@@ -183,37 +183,48 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
     }
 
     /**
-     * Expect only the ABORT_REASON_NO_MATCHING_PAYMENT_METHOD enum value gets logged when a Payment
-     * Request gets cancelled because the user does not have any of the payment methods accepted by
-     * the merchant and the merchant does not accept credit cards.
+     * Expect no abort metrics to be logged even if there are no matching payment methods because
+     * the Payment Request was not shown to the user (a Payment Request gets cancelled because the
+     * user does not have any of the payment methods accepted by the merchant and the merchant does
+     * not accept credit cards). It should instead be logged as a reason why the Payment Request was
+     * not shown to the user.
      */
     @MediumTest
     @Feature({"Payments"})
-    public void testAbortMetrics_NoMatchingPaymentMethod() throws InterruptedException,
-            ExecutionException, TimeoutException {
+    public void testMetrics_NoMatchingPaymentMethod()
+            throws InterruptedException, ExecutionException, TimeoutException {
         // Android Pay is supported but no instruments are present.
         installPaymentApp("https://android.com/pay", NO_INSTRUMENTS, DELAYED_RESPONSE);
         openPageAndClickNodeAndWait("androidPayBuy", mShowFailed);
         expectResultContains(new String[] {"The payment method is not supported"});
 
-        assertOnlySpecificAbortMetricLogged(
-                PaymentRequestMetrics.ABORT_REASON_NO_MATCHING_PAYMENT_METHOD);
+        // Make sure that it is not logged as an abort.
+        assertOnlySpecificAbortMetricLogged(-1 /* none */);
+        // Make sure that it was logged as a reason why the Payment Request was not shown.
+        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
+                                "PaymentRequest.CheckoutFunnel.NoShow",
+                                PaymentRequestMetrics.NO_SHOW_NO_MATCHING_PAYMENT_METHOD));
     }
 
     /**
-     * Expect only the ABORT_REASON_NO_SUPPORTED_PAYMENT_METHOD enum value gets logged when a
-     * Payment Request gets cancelled because the merchant only accepts payment methods we don't
-     * support.
+     * Expect no abort metrics to be logged even if there are no matching payment methods because
+     * the Payment Request was not shown to the user (a Payment Request gets cancelled because the
+     * merchant only accepts payment methods we don't support. It should instead be logged as a
+     * reason why the Payment Request was not shown to the user.
      */
     @MediumTest
     @Feature({"Payments"})
-    public void testAbortMetrics_NoSupportedPaymentMethod() throws InterruptedException,
-            ExecutionException, TimeoutException {
+    public void testMetrics_NoSupportedPaymentMethod()
+            throws InterruptedException, ExecutionException, TimeoutException {
         openPageAndClickNodeAndWait("noSupported", mShowFailed);
         expectResultContains(new String[] {"The payment method is not supported"});
 
-        assertOnlySpecificAbortMetricLogged(
-                PaymentRequestMetrics.ABORT_REASON_NO_SUPPORTED_PAYMENT_METHOD);
+        // Make sure that it is not logged as an abort.
+        assertOnlySpecificAbortMetricLogged(-1 /* none */);
+        // Make sure that it was logged as a reason why the Payment Request was not shown.
+        assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
+                                "PaymentRequest.CheckoutFunnel.NoShow",
+                                PaymentRequestMetrics.NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD));
     }
 
     /**
