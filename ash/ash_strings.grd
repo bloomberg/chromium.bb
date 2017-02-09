@@ -167,9 +167,6 @@ This file contains the strings for ash.
       </message>
 
       <!-- Status tray items -->
-      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the status tray.">
-        Status tray
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the status tray and the information on it.">
         Status tray, time <ph name="time">$1<ex>9:50</ex></ph>, <ph name="battery">$2<ex>Battery is full.</ex></ph>
       </message>
@@ -244,12 +241,6 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_CAST_DESKTOP" desc="The label used in the tray popup to notify that desktop may be cast.">
         Cast devices available
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAST_NO_DEVICE" desc="The label used in the tray popup to notify that no cast devices are available.">
-        No cast devices
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAST_OPTIONS" desc="The label used in the tray popup to manage cast options.">
-        Options
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_STOP" desc="The label used in the tray popup to stop casting.">
         Stop
       </message>
@@ -300,12 +291,6 @@ Press Ctrl+Alt+Z to disable.
         Mute
       </message>
 
-      <message name="IDS_ASH_STATUS_TRAY_DRIVE" desc="The label used for Google Drive tray details header.">
-        Google Drive
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DRIVE_SETTINGS" desc="The label used for Google Drive settings entry.">
-        Google Drive settings...
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_IME" desc="The label used as the header in the IME popup.">
         Input methods
       </message>
@@ -354,15 +339,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_MONO_AUDIO" desc="The label used in the accessibility menu of the system tray to toggle on/off mono audio output.">
-        Play the same audio through all speakers (mono audio)
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LEARN_MORE" desc="The label used in the accessibility menu of the system tray
      to open a webpage (article on help center) containing explanation about accessibility feature.">
         Learn more...
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS" desc="The label of the item 'Settings...' used in the accessibility menu of the system tray to open an accessibility setting page.">
-        Settings...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HELP" desc="The accessible text for the help button.">
         Help
@@ -411,9 +390,6 @@ Press Ctrl+Alt+Z to disable.
         DISMISS
       </message>
 
-      <message name="IDS_ASH_NOTIFICATION_UNREAD_COUNT_NINE_PLUS" desc="The text shown in the notification icon for the unread count when the count is more than 9.">
-        9+
-      </message>
       <message name="IDS_ASH_EXIT_WARNING_POPUP_TEXT" desc="The text of the popup when the user preses the exit shortcut.">
         Press Ctrl+Shift+Q twice to quit.
       </message>
