@@ -26,6 +26,10 @@ CRIWVBrowserState* CRIWVWebClient::browser_state() const {
   return web_main_parts_->browser_state();
 }
 
+CRIWVBrowserState* CRIWVWebClient::off_the_record_browser_state() const {
+  return web_main_parts_->off_the_record_browser_state();
+}
+
 std::string CRIWVWebClient::GetProduct() const {
   return base::SysNSStringToUTF8([delegate_ partialUserAgent]);
 }

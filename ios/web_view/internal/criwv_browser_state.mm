@@ -28,7 +28,8 @@ const char kPreferencesFilename[] = FILE_PATH_LITERAL("Preferences");
 
 namespace ios_web_view {
 
-CRIWVBrowserState::CRIWVBrowserState() : web::BrowserState() {
+CRIWVBrowserState::CRIWVBrowserState(bool off_the_record)
+    : web::BrowserState(), off_the_record_(off_the_record) {
   CHECK(PathService::Get(base::DIR_APP_DATA, &path_));
 
   request_context_getter_ = new CRIWVURLRequestContextGetter(
@@ -67,7 +68,7 @@ CRIWVBrowserState* CRIWVBrowserState::FromBrowserState(
 }
 
 bool CRIWVBrowserState::IsOffTheRecord() const {
-  return false;
+  return off_the_record_;
 }
 
 base::FilePath CRIWVBrowserState::GetStatePath() const {

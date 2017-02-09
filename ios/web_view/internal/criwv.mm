@@ -11,11 +11,11 @@
 #include "base/single_thread_task_runner.h"
 #include "ios/web/public/app/web_main.h"
 #include "ios/web/public/web_thread.h"
-#include "ios/web_view/internal/criwv_browser_state.h"
-#import "ios/web_view/internal/criwv_web_client.h"
 #import "ios/web_view/internal/criwv_web_main_delegate.h"
-#import "ios/web_view/internal/criwv_web_view_internal.h"
 #import "ios/web_view/public/criwv_delegate.h"
+#import "ios/web_view/public/criwv_web_view.h"
+#import "ios/web_view/public/criwv_web_view_configuration.h"
+#import "ios/web_view/public/criwv_website_data_store.h"
 
 namespace {
 CRIWV* g_criwv = nil;
@@ -28,7 +28,6 @@ CRIWV* g_criwv = nil;
 }
 
 - (instancetype)initWithDelegate:(id<CRIWVDelegate>)delegate;
-- (ios_web_view::CRIWVBrowserState*)browserState;
 @end
 
 @implementation CRIWV
@@ -43,9 +42,12 @@ CRIWV* g_criwv = nil;
 }
 
 + (CRIWVWebView*)webViewWithFrame:(CGRect)frame {
-  return
-      [[[CRIWVWebView alloc] initWithFrame:frame
-                              browserState:[g_criwv browserState]] autorelease];
+  CRIWVWebViewConfiguration* configuration =
+      [[CRIWVWebViewConfiguration alloc] init];
+  configuration.websiteDataStore = [CRIWVWebsiteDataStore defaultDataStore];
+
+  return [[[CRIWVWebView alloc] initWithFrame:frame configuration:configuration]
+      autorelease];
 }
 
 - (instancetype)initWithDelegate:(id<CRIWVDelegate>)delegate {
@@ -63,12 +65,6 @@ CRIWV* g_criwv = nil;
   _webMain.reset();
   _webMainDelegate.reset();
   [super dealloc];
-}
-
-- (ios_web_view::CRIWVBrowserState*)browserState {
-  ios_web_view::CRIWVWebClient* client =
-      static_cast<ios_web_view::CRIWVWebClient*>(web::GetWebClient());
-  return client->browser_state();
 }
 
 @end

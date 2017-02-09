@@ -26,12 +26,20 @@ class CRIWVWebMainParts : public web::WebMainParts {
   // Returns the CRIWVBrowserState for this embedder.
   CRIWVBrowserState* browser_state() const { return browser_state_.get(); }
 
+  // Returns the off the record CRIWVBrowserState for this embedder.
+  CRIWVBrowserState* off_the_record_browser_state() const {
+    return off_the_record_browser_state_.get();
+  }
+
  private:
   // This object's delegate.
   id<CRIWVDelegate> delegate_;
 
   // The BrowserState for this embedder.
   std::unique_ptr<CRIWVBrowserState> browser_state_;
+
+  // The BrowserState for this embedder.
+  std::unique_ptr<CRIWVBrowserState> off_the_record_browser_state_;
 };
 
 }  // namespace ios_web_view

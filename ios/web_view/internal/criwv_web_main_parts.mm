@@ -32,7 +32,8 @@ void CRIWVWebMainParts::PreMainMessageLoopRun() {
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_file, ui::SCALE_FACTOR_NONE);
 
-  browser_state_ = base::MakeUnique<CRIWVBrowserState>();
+  browser_state_ = base::MakeUnique<CRIWVBrowserState>(false);
+  off_the_record_browser_state_ = base::MakeUnique<CRIWVBrowserState>(true);
 
   // Initialize translate.
   translate::TranslateDownloadManager* download_manager =

@@ -2,6 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("internal_arc") {
+  visibility = [
+    "//ios/web_view",
+    "//ios/web_view/internal/*",
+  ]
+
+  sources = [
+    "criwv_web_view_configuration.mm",
+    "criwv_website_data_store.mm",
+    "criwv_website_data_store_internal.h",
+  ]
+
+  deps = [
+    "//ios/web/public/app",
+    "//ios/web_view/public",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("internal") {
   visibility = [
     "//ios/web_view",
@@ -23,7 +43,6 @@ source_set("internal") {
     "criwv_web_main_parts.h",
     "criwv_web_main_parts.mm",
     "criwv_web_view.mm",
-    "criwv_web_view_internal.h",
     "pref_names.cc",
     "pref_names.h",
   ]
@@ -44,5 +63,13 @@ source_set("internal") {
     "//ui/base",
     "//url",
   ]
-  allow_circular_includes_from = [ "//ios/web_view/internal/translate" ]
+
+  public_deps = [
+    ":internal_arc",
+  ]
+
+  allow_circular_includes_from = [
+    ":internal_arc",
+    "//ios/web_view/internal/translate",
+  ]
 }

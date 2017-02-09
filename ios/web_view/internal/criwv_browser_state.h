@@ -24,7 +24,7 @@ class CRIWVURLRequestContextGetter;
 // CRIWV implementation of BrowserState.  Can only be called from the UI thread.
 class CRIWVBrowserState : public web::BrowserState {
  public:
-  CRIWVBrowserState();
+  explicit CRIWVBrowserState(bool off_the_record);
   ~CRIWVBrowserState() override;
 
   // web::BrowserState implementation.
@@ -44,6 +44,9 @@ class CRIWVBrowserState : public web::BrowserState {
 
   // The path associated with this BrowserState object.
   base::FilePath path_;
+
+  // Whether this BrowserState is incognito.
+  bool off_the_record_;
 
   // The request context getter for this BrowserState object.
   scoped_refptr<CRIWVURLRequestContextGetter> request_context_getter_;

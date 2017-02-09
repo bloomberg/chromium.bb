@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/internal/criwv_web_view_internal.h"
+#import "ios/web_view/public/criwv_web_view.h"
 
 #include <memory>
 #include <utility>
@@ -17,15 +17,18 @@
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web_view/internal/criwv_browser_state.h"
+#import "ios/web_view/internal/criwv_website_data_store_internal.h"
 #import "ios/web_view/internal/translate/criwv_translate_client.h"
+#import "ios/web_view/public/criwv_web_view_configuration.h"
 #import "ios/web_view/public/criwv_web_view_delegate.h"
+#import "ios/web_view/public/criwv_website_data_store.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 @interface CRIWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
   id<CRIWVWebViewDelegate> _delegate;
-  ios_web_view::CRIWVBrowserState* _browserState;
+  CRIWVWebViewConfiguration* _configuration;
   std::unique_ptr<web::WebState> _webState;
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
@@ -40,12 +43,13 @@
 @synthesize loadProgress = _loadProgress;
 
 - (instancetype)initWithFrame:(CGRect)frame
-                 browserState:(ios_web_view::CRIWVBrowserState*)browserState {
+                configuration:(CRIWVWebViewConfiguration*)configuration {
   self = [super initWithFrame:frame];
   if (self) {
-    _browserState = browserState;
+    _configuration = [configuration copy];
 
-    web::WebState::CreateParams webStateCreateParams(_browserState);
+    web::WebState::CreateParams webStateCreateParams(
+        [configuration.websiteDataStore browserState]);
     _webState = web::WebState::Create(webStateCreateParams);
     _webState->SetWebUsageEnabled(true);
 

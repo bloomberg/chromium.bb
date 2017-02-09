@@ -27,9 +27,10 @@ class CRIWVWebClient : public web::WebClient {
   std::string GetProduct() const override;
   std::string GetUserAgent(bool desktop_user_agent) const override;
 
-  // TODO(crbug.com/679895): Find a better way to get a BrowserState object to
-  // AppDelegate.
+  // Normal browser state associated with the receiver.
   CRIWVBrowserState* browser_state() const;
+  // Off the record browser state  associated with the receiver.
+  CRIWVBrowserState* off_the_record_browser_state() const;
 
  private:
   // This object's delegate.
