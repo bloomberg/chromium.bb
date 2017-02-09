@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromecast/chromecast.gni")
+import("//testing/test.gni")
+
 # Targets may depend on this to bring in every CMA component.
 group("cma") {
   public_deps = [
@@ -9,4 +12,58 @@ group("cma") {
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/pipeline",
   ]
+}
+
+test("cast_cma_unittests") {
+  sources = [
+    "backend/audio_video_pipeline_device_unittest.cc",
+    "base/balanced_media_task_runner_unittest.cc",
+    "base/buffering_controller_unittest.cc",
+    "base/buffering_frame_provider_unittest.cc",
+    "base/decoder_buffer_adapter_unittest.cc",
+    "base/demuxer_stream_adapter_unittest.cc",
+    "base/demuxer_stream_for_test.cc",
+    "base/demuxer_stream_for_test.h",
+    "base/multi_demuxer_stream_adapter_unittest.cc",
+    "pipeline/audio_video_pipeline_impl_unittest.cc",
+    "test/frame_generator_for_test.cc",
+    "test/frame_generator_for_test.h",
+    "test/frame_segmenter_for_test.cc",
+    "test/frame_segmenter_for_test.h",
+    "test/mock_frame_consumer.cc",
+    "test/mock_frame_consumer.h",
+    "test/mock_frame_provider.cc",
+    "test/mock_frame_provider.h",
+    "test/mock_media_pipeline_backend.cc",
+    "test/mock_media_pipeline_backend.h",
+    "test/run_all_unittests.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//base/test:test_support",
+    "//chromecast/base",
+    "//chromecast/base/metrics:test_support",
+    "//chromecast/common/media:interfaces",
+    "//chromecast/media",
+    "//chromecast/media/audio",
+    "//chromecast/media/cma/backend",
+    "//chromecast/media/cma/base",
+    "//chromecast/media/cma/pipeline",
+    "//chromecast/public",
+    "//media",
+    "//media/base:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/display",
+    "//ui/gfx/geometry",
+  ]
+
+  # MultizoneBackendTest verifies rendering delay reported by the backend.
+  # Since rendering delay is optional on video platforms, enable this test
+  # on audio devices only.
+  if (is_cast_audio_only && !is_cast_desktop_build) {
+    sources += [ "backend/multizone_backend_unittest.cc" ]
+  }
 }

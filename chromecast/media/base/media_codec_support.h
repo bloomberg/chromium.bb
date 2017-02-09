@@ -26,7 +26,8 @@ namespace media {
 
 VideoCodec ToCastVideoCodec(const ::media::VideoCodec codec);
 VideoProfile ToCastVideoProfile(const ::media::VideoCodecProfile profile);
-
+CodecProfileLevel ToCastCodecProfileLevel(
+    const ::media::CodecProfileLevel& codec_profile_level);
 }  // namespace media
 }  // namespace chromecast
 

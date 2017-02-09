@@ -25,10 +25,22 @@ source_set("backend") {
   ]
 
   if (is_android) {
-    sources += [ "cast_media_android.cc" ]
+    deps += [ ":cast_media_android" ]
   } else {
     deps += [ ":libcast_media_1.0" ]
   }
+}
+
+source_set("cast_media_android") {
+  sources = [
+    "cast_media_android.cc",
+  ]
+  deps = [
+    "//base",
+    "//chromecast:chromecast_features",
+    "//chromecast/public",
+    "//chromecast/public/media",
+  ]
 }
 
 # Target for OEM partners to override media shared library, i.e.

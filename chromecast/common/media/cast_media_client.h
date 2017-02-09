@@ -7,6 +7,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "media/base/media_client.h"
 
 namespace chromecast {
@@ -19,7 +20,7 @@ class CastMediaClient : public ::media::MediaClient {
  public:
   // Initialize CastMediaClient and SetMediaClient(). Note that the instance
   // is not exposed because no content code needs to directly access it.
-  static void Initialize();
+  static void Initialize(SupportedCodecProfileLevelsMemo* memo);
 
   // MediaClient implementation
   void AddKeySystemsInfoForUMA(std::vector<::media::KeySystemInfoForUMA>*
@@ -36,10 +37,12 @@ class CastMediaClient : public ::media::MediaClient {
  private:
   friend struct base::DefaultLazyInstanceTraits<CastMediaClient>;
 
-  CastMediaClient();
+  CastMediaClient(::media::MediaClient* content_media_client,
+                  SupportedCodecProfileLevelsMemo* supported_profiles);
   ~CastMediaClient() override;
 
   ::media::MediaClient* content_media_client_;
+  SupportedCodecProfileLevelsMemo* supported_profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaClient);
 };

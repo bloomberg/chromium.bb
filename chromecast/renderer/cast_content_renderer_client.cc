@@ -13,6 +13,7 @@
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/common/media/cast_media_client.h"
 #include "chromecast/crash/cast_crash_keys.h"
+#include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "chromecast/renderer/cast_render_frame_action_deferrer.h"
 #include "chromecast/renderer/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
@@ -44,7 +45,8 @@ const blink::WebColor kColorBlack = 0xFF000000;
 }  // namespace
 
 CastContentRendererClient::CastContentRendererClient()
-    : allow_hidden_media_playback_(
+    : supported_profiles_(new media::SupportedCodecProfileLevelsMemo()),
+      allow_hidden_media_playback_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAllowHiddenMediaPlayback)) {
 #if defined(OS_ANDROID)
@@ -69,10 +71,11 @@ void CastContentRendererClient::RenderThreadStarted() {
   media::mojom::MediaCapsPtr media_caps;
   thread->GetRemoteInterfaces()->GetInterface(&media_caps);
   media::mojom::MediaCapsObserverPtr proxy;
-  media_caps_observer_.reset(new media::MediaCapsObserverImpl(&proxy));
+  media_caps_observer_.reset(
+      new media::MediaCapsObserverImpl(&proxy, supported_profiles_.get()));
   media_caps->AddObserver(std::move(proxy));
 
-  chromecast::media::CastMediaClient::Initialize();
+  chromecast::media::CastMediaClient::Initialize(supported_profiles_.get());
 
   prescient_networking_dispatcher_.reset(
       new network_hints::PrescientNetworkingDispatcher());

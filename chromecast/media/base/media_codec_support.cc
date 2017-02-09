@@ -91,7 +91,7 @@ VideoProfile ToCastVideoProfile(
     case ::media::H264PROFILE_SCALABLEHIGH:
       return kH264ScalableHigh;
     case ::media::H264PROFILE_STEREOHIGH:
-      return kH264Stereohigh;
+      return kH264StereoHigh;
     case ::media::H264PROFILE_MULTIVIEWHIGH:
       return kH264MultiviewHigh;
     case ::media::HEVCPROFILE_MAIN:
@@ -114,6 +114,15 @@ VideoProfile ToCastVideoProfile(
       LOG(INFO) << "Unsupported video codec profile " << codec_profile;
   }
   return kVideoProfileUnknown;
+}
+
+CodecProfileLevel ToCastCodecProfileLevel(
+    const ::media::CodecProfileLevel& codec_profile_level) {
+  CodecProfileLevel result;
+  result.codec = ToCastVideoCodec(codec_profile_level.codec);
+  result.profile = ToCastVideoProfile(codec_profile_level.profile);
+  result.level = codec_profile_level.level;
+  return result;
 }
 
 }  // namespace media

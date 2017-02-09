@@ -494,6 +494,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   media_resource_tracker()->InitializeMediaLib();
 #endif
   ::media::InitializeMediaLibrary();
+  media_caps_->Initialize();
 
   device::GeolocationProvider::SetGeolocationDelegate(
       new CastGeolocationDelegate(cast_browser_process_->browser_context()));

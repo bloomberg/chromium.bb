@@ -33,6 +33,7 @@ cast_test_group("cast_tests") {
     "//chromecast/base:cast_base_unittests",
     "//chromecast/base/component:cast_component_unittests",
     "//chromecast/crypto:cast_crypto_unittests",
+    "//chromecast/media:cast_media_unittests",
     "//chromecast/system/reboot:cast_reboot_unittests",
     "//content/test:content_unittests",
     "//crypto:crypto_unittests",
@@ -66,7 +67,7 @@ cast_test_group("cast_tests") {
     tests += [
       ":cast_shell_browsertests",
       ":cast_shell_unittests",
-      "//chromecast/media:cast_media_unittests",
+      "//chromecast/media/cma:cast_cma_unittests",
       "//ipc:ipc_tests",
       "//jingle:jingle_unittests",
       "//url:url_unittests",

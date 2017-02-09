@@ -4,10 +4,22 @@
 
 #include "chromecast/browser/media/media_caps_impl.h"
 
+#include "base/logging.h"
+#include "chromecast/browser/media/supported_codec_finder.h"
 #include "chromecast/media/base/media_caps.h"
+#include "chromecast/public/media/decoder_config.h"
 
 namespace chromecast {
 namespace media {
+
+mojom::CodecProfileLevelPtr ConvertCodecProfileLevelToMojo(
+    const CodecProfileLevel& codec_profile_level) {
+  mojom::CodecProfileLevelPtr result = mojom::CodecProfileLevel::New();
+  result->codec = codec_profile_level.codec;
+  result->profile = codec_profile_level.profile;
+  result->level = codec_profile_level.level;
+  return result;
+}
 
 MediaCapsImpl::MediaCapsImpl()
     : supported_codecs_bitmask_(0),
@@ -21,6 +33,11 @@ MediaCapsImpl::MediaCapsImpl()
       screen_resolution_(0, 0) {}
 
 MediaCapsImpl::~MediaCapsImpl() = default;
+
+void MediaCapsImpl::Initialize() {
+  media::SupportedCodecFinder supported_codec_finder;
+  supported_codec_finder.FindSupportedCodecProfileLevels(this);
+}
 
 void MediaCapsImpl::AddBinding(mojom::MediaCapsRequest request) {
   bindings_.AddBinding(this, std::move(request));
@@ -70,6 +87,18 @@ void MediaCapsImpl::ScreenInfoChanged(int hdcp_version,
   });
 }
 
+void MediaCapsImpl::AddSupportedCodecProfileLevel(
+    const CodecProfileLevel& codec_profile_level) {
+  codec_profile_levels_.push_back(codec_profile_level);
+  observers_.ForAllPtrs(
+      [&codec_profile_level](mojom::MediaCapsObserver* observer) {
+        mojom::CodecProfileLevelPtr mojo_codec_profile_level(
+            ConvertCodecProfileLevelToMojo(codec_profile_level));
+        observer->AddSupportedCodecProfileLevel(
+            std::move(mojo_codec_profile_level));
+      });
+}
+
 void MediaCapsImpl::AddObserver(mojom::MediaCapsObserverPtr observer) {
   observer->SupportedHdmiSinkCodecsChanged(supported_codecs_bitmask_);
   observer->ScreenResolutionChanged(screen_resolution_.width(),
@@ -78,6 +107,12 @@ void MediaCapsImpl::AddObserver(mojom::MediaCapsObserverPtr observer) {
                               dolby_vision_flags_, screen_width_mm_,
                               screen_height_mm_, current_mode_supports_hdr_,
                               current_mode_supports_dv_);
+  DVLOG(1) << __func__ << ": Sending " << codec_profile_levels_.size()
+           << " supported codec profile levels to observer.";
+  for (const auto& codec_profile_level : codec_profile_levels_) {
+    observer->AddSupportedCodecProfileLevel(
+        ConvertCodecProfileLevelToMojo(codec_profile_level));
+  }
   observers_.AddPtr(std::move(observer));
 }
 

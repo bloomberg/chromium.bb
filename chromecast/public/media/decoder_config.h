@@ -80,7 +80,7 @@ enum VideoProfile : int {
   kH264High444Predictive,
   kH264ScalableBaseline,
   kH264ScalableHigh,
-  kH264Stereohigh,
+  kH264StereoHigh,
   kH264MultiviewHigh,
   kVP8ProfileAny,
   kVP9Profile0,
@@ -97,6 +97,12 @@ enum VideoProfile : int {
 
   kVideoProfileMin = kVideoProfileUnknown,
   kVideoProfileMax = kHEVCMainStillPicture,
+};
+
+struct CodecProfileLevel {
+  VideoCodec codec;
+  VideoProfile profile;
+  int level;
 };
 
 // Specification of whether and how the stream is encrypted (in whole or part).

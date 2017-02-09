@@ -5,8 +5,11 @@
 #ifndef CHROMECAST_RENDERER_MEDIA_MEDIA_CAPS_OBSERVER_IMPL_H_
 #define CHROMECAST_RENDERER_MEDIA_MEDIA_CAPS_OBSERVER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chromecast/common/media/media_caps.mojom.h"
+#include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -15,7 +18,8 @@ namespace media {
 
 class MediaCapsObserverImpl : public mojom::MediaCapsObserver {
  public:
-  explicit MediaCapsObserverImpl(mojom::MediaCapsObserverPtr* proxy);
+  MediaCapsObserverImpl(mojom::MediaCapsObserverPtr* proxy,
+                        SupportedCodecProfileLevelsMemo* supported_profiles);
   ~MediaCapsObserverImpl() override;
 
  private:
@@ -29,7 +33,10 @@ class MediaCapsObserverImpl : public mojom::MediaCapsObserver {
                          int32_t screen_height_mm,
                          bool current_mode_supports_hdr,
                          bool current_mode_supports_dolby_vision) override;
+  void AddSupportedCodecProfileLevel(
+      mojom::CodecProfileLevelPtr codec_profile_level) override;
 
+  std::unique_ptr<SupportedCodecProfileLevelsMemo> supported_profiles_;
   mojo::Binding<mojom::MediaCapsObserver> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCapsObserverImpl);

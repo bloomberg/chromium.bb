@@ -19,53 +19,20 @@ test("cast_media_unittests") {
     "audio/cast_audio_mixer_unittest.cc",
     "audio/cast_audio_output_stream_unittest.cc",
     "base/media_resource_tracker_unittest.cc",
-    "cma/backend/audio_video_pipeline_device_unittest.cc",
-    "cma/base/balanced_media_task_runner_unittest.cc",
-    "cma/base/buffering_controller_unittest.cc",
-    "cma/base/buffering_frame_provider_unittest.cc",
-    "cma/base/decoder_buffer_adapter_unittest.cc",
-    "cma/base/demuxer_stream_adapter_unittest.cc",
-    "cma/base/demuxer_stream_for_test.cc",
-    "cma/base/demuxer_stream_for_test.h",
-    "cma/base/multi_demuxer_stream_adapter_unittest.cc",
-    "cma/pipeline/audio_video_pipeline_impl_unittest.cc",
-    "cma/test/frame_generator_for_test.cc",
-    "cma/test/frame_generator_for_test.h",
-    "cma/test/frame_segmenter_for_test.cc",
-    "cma/test/frame_segmenter_for_test.h",
-    "cma/test/mock_frame_consumer.cc",
-    "cma/test/mock_frame_consumer.h",
-    "cma/test/mock_frame_provider.cc",
-    "cma/test/mock_frame_provider.h",
-    "cma/test/mock_media_pipeline_backend.cc",
-    "cma/test/mock_media_pipeline_backend.h",
-    "cma/test/run_all_unittests.cc",
+    "base/supported_codec_profile_levels_memo_unittest.cc",
   ]
 
   deps = [
     ":media",
     "//base",
-    "//base:i18n",
+    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//chromecast/base",
     "//chromecast/base/metrics:test_support",
-    "//chromecast/media/audio",
-    "//chromecast/media/cma/backend",
-    "//chromecast/media/cma/base",
-    "//chromecast/media/cma/pipeline",
     "//chromecast/public",
     "//media",
     "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//ui/display",
-    "//ui/gfx/geometry",
   ]
-
-  # MultizoneBackendTest verifies rendering delay reported by the backend.
-  # Since rendering delay is optional on video platforms, enable this test
-  # on audio devices only.
-  if (is_cast_audio_only && !is_cast_desktop_build) {
-    sources += [ "cma/backend/multizone_backend_unittest.cc" ]
-  }
 }

@@ -14,14 +14,17 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "jni/CodecProfileLevelList_jni.h"
 #include "jni/MediaCodecUtil_jni.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/base/video_codecs.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaIntArrayToIntVector;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace media {
@@ -63,6 +66,32 @@ static std::string CodecTypeToAndroidMimeType(const std::string& codec) {
 
   DLOG(WARNING) << "Cannot convert codec to Android MIME type: " << codec;
   return std::string();
+}
+
+static VideoCodec AndroidCodecToCodecEnum(const std::string& codec) {
+  if (codec == "AVC")
+    return kCodecH264;
+  if (codec == "VP8")
+    return kCodecVP8;
+  if (codec == "VP9")
+    return kCodecVP9;
+  if (codec == "HEVC")
+    return kCodecHEVC;
+  DLOG(WARNING) << "Unknown video codec name \"" << codec << "\"";
+  return kUnknownVideoCodec;
+}
+
+static CodecProfileLevel MediaCodecProfileLevelToChromiumProfileLevel(
+    JNIEnv* env,
+    const jobject& j_codec_profile_level) {
+  ScopedJavaLocalRef<jstring> codec =
+      Java_CodecProfileLevelAdapter_getCodec(env, j_codec_profile_level);
+  int profile =
+      Java_CodecProfileLevelAdapter_getProfile(env, j_codec_profile_level);
+  int level =
+      Java_CodecProfileLevelAdapter_getLevel(env, j_codec_profile_level);
+  return {AndroidCodecToCodecEnum(ConvertJavaStringToUTF8(codec)),
+          static_cast<VideoCodecProfile>(profile), level};
 }
 
 static bool IsSupportedAndroidMimeType(const std::string& mime_type) {
@@ -164,6 +193,25 @@ bool MediaCodecUtil::CanDecode(const std::string& codec, bool is_secure) {
     return false;
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
   return Java_MediaCodecUtil_canDecode(env, j_mime, is_secure);
+}
+
+// static
+bool MediaCodecUtil::AddSupportedCodecProfileLevels(
+    std::vector<CodecProfileLevel>* result) {
+  DCHECK(result);
+  if (!IsMediaCodecAvailable())
+    return false;
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> j_codec_profile_levels(
+      Java_MediaCodecUtil_getSupportedCodecProfileLevels(env));
+  int java_array_length = env->GetArrayLength(j_codec_profile_levels.obj());
+  for (int i = 0; i < java_array_length; ++i) {
+    const jobject& java_codec_profile_level =
+        env->GetObjectArrayElement(j_codec_profile_levels.obj(), i);
+    result->push_back(MediaCodecProfileLevelToChromiumProfileLevel(
+        env, java_codec_profile_level));
+  }
+  return true;
 }
 
 // static

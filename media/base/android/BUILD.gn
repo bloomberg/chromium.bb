@@ -126,6 +126,7 @@ if (is_android) {
     sources = [
       "java/src/org/chromium/media/AudioManagerAndroid.java",
       "java/src/org/chromium/media/AudioRecordInput.java",
+      "java/src/org/chromium/media/CodecProfileLevelList.java",
       "java/src/org/chromium/media/MediaCodecBridge.java",
       "java/src/org/chromium/media/MediaCodecUtil.java",
       "java/src/org/chromium/media/MediaDrmBridge.java",
@@ -145,6 +146,7 @@ if (is_android) {
     java_files = [
       "java/src/org/chromium/media/AudioManagerAndroid.java",
       "java/src/org/chromium/media/AudioRecordInput.java",
+      "java/src/org/chromium/media/CodecProfileLevelList.java",
       "java/src/org/chromium/media/MediaCodecBridge.java",
       "java/src/org/chromium/media/MediaCodecUtil.java",
       "java/src/org/chromium/media/MediaDrmBridge.java",

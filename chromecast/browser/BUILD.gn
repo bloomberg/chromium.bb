@@ -47,6 +47,8 @@ source_set("browser") {
     "geolocation/cast_access_token_store.h",
     "media/media_caps_impl.cc",
     "media/media_caps_impl.h",
+    "media/supported_codec_finder.cc",
+    "media/supported_codec_finder.h",
     "metrics/cast_metrics_prefs.cc",
     "metrics/cast_metrics_prefs.h",
     "metrics/cast_metrics_service_client.cc",

@@ -4,8 +4,8 @@
 
 #include "chromecast/common/media/cast_media_client.h"
 
-#include "base/lazy_instance.h"
 #include "chromecast/media/base/media_codec_support.h"
+#include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
 
 // TODO(servolk): Is there a better way to override just IsSupportedVideoConfig
@@ -18,19 +18,20 @@ MEDIA_EXPORT MediaClient* GetMediaClient();
 namespace chromecast {
 namespace media {
 
-static base::LazyInstance<CastMediaClient>::Leaky g_cast_media_client =
-    LAZY_INSTANCE_INITIALIZER;
-
-void CastMediaClient::Initialize() {
-  g_cast_media_client.Get();
+void CastMediaClient::Initialize(
+    SupportedCodecProfileLevelsMemo* supported_profiles) {
+  ::media::SetMediaClient(
+      new CastMediaClient(::media::GetMediaClient(), supported_profiles));
 }
 
-CastMediaClient::CastMediaClient() {
-  content_media_client_ = ::media::GetMediaClient();
+CastMediaClient::CastMediaClient(
+    ::media::MediaClient* content_media_client,
+    SupportedCodecProfileLevelsMemo* supported_profiles) {
   // Ensure that CastMediaClient gets initialized after the
   // content::RenderMediaClient.
-  DCHECK(content_media_client_);
-  ::media::SetMediaClient(this);
+  DCHECK(content_media_client);
+  content_media_client_ = content_media_client;
+  supported_profiles_ = supported_profiles;
 }
 
 CastMediaClient::~CastMediaClient() {}
@@ -59,8 +60,13 @@ void CastMediaClient::RecordRapporURL(const std::string& metric,
 bool CastMediaClient::IsSupportedVideoConfig(::media::VideoCodec codec,
                                              ::media::VideoCodecProfile profile,
                                              int level) {
+#if defined(OS_ANDROID)
+  return supported_profiles_->IsSupportedVideoConfig(
+      ToCastVideoCodec(codec), ToCastVideoProfile(profile), level);
+#else
   return MediaCapabilitiesShlib::IsSupportedVideoConfig(
       ToCastVideoCodec(codec), ToCastVideoProfile(profile), level);
+#endif
 }
 
 }  // namespace media

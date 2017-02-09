@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "media/base/android/media_codec_direction.h"
 #include "media/base/media_export.h"
+#include "media/base/video_codecs.h"
 
 class GURL;
 
@@ -52,6 +53,10 @@ class MEDIA_EXPORT MediaCodecUtil {
   // Returns whether MediaCodecBridge has a decoder that |is_secure| and can
   // decode |codec| type.
   static bool CanDecode(const std::string& codec, bool is_secure);
+
+  // Returns a vector of supported codecs profiles and levels.
+  static bool AddSupportedCodecProfileLevels(
+      std::vector<CodecProfileLevel>* out);
 
   // Get a list of encoder supported color formats for |mime_type|.
   // The mapping of color format name and its value refers to

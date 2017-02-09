@@ -34,9 +34,11 @@ enum VideoCodec {
 };
 
 // Video codec profiles. Keep in sync with mojo::VideoCodecProfile (see
-// media/mojo/interfaces/media_types.mojom) and gpu::VideoCodecProfile (see
-// gpu/config/gpu_info.h), as well as PP_VideoDecoder_Profile (translation is
-// performed in content/renderer/pepper/ppb_video_decoder_impl.cc).
+// media/mojo/interfaces/media_types.mojom), gpu::VideoCodecProfile (see
+// gpu/config/gpu_info.h), and
+// media/base/android/java/src/org/chromium/media/CodecProfileLevelList.java,
+// as well as PP_VideoDecoder_Profile (translation is performed in
+// content/renderer/pepper/ppb_video_decoder_impl.cc).
 // NOTE: These values are histogrammed over time in UMA so the values must
 // never ever change (add new values to tools/metrics/histograms/histograms.xml)
 enum VideoCodecProfile {
@@ -73,6 +75,12 @@ enum VideoCodecProfile {
   HEVCPROFILE_MAIN_STILL_PICTURE = 18,
   HEVCPROFILE_MAX = HEVCPROFILE_MAIN_STILL_PICTURE,
   VIDEO_CODEC_PROFILE_MAX = HEVCPROFILE_MAX,
+};
+
+struct CodecProfileLevel {
+  VideoCodec codec;
+  VideoCodecProfile profile;
+  int level;
 };
 
 std::string MEDIA_EXPORT GetCodecName(VideoCodec codec);
