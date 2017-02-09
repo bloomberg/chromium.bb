@@ -205,7 +205,6 @@ function fillMostVisited(location, fill) {
     // Means that the suggestion data comes from the server. Create data object.
     data = {
       url: params.url,
-      largeIconUrl: params.liu || '',
       thumbnailUrl: params.tu || '',
       title: params.ti || '',
       direction: params.di || '',

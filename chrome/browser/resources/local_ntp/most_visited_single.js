@@ -44,13 +44,6 @@ var NUMBER_OF_TILES = 8;
 
 
 /**
- * Whether to use icons instead of thumbnails.
- * @type {boolean}
- */
-var USE_ICONS = false;
-
-
-/**
  * Number of lines to display in titles.
  * @type {number}
  */
@@ -198,8 +191,6 @@ var updateTheme = function(info) {
         'background-color: #fff; }');
     themeStyle.push('.thumb-ntp .mv-x:active::after { ' +
         'background-color: rgba(255,255,255,0.5); }');
-    themeStyle.push('.icon-ntp .mv-tile:focus { ' +
-        'background: rgba(255,255,255,0.2); }');
   }
   if (info.tileTitleColor) {
     themeStyle.push('body { color: ' + info.tileTitleColor + '; }');
@@ -361,9 +352,7 @@ var renderTile = function(data) {
   tile.className = 'mv-tile';
   tile.setAttribute('data-tid', data.tid);
   var html = [];
-  if (!USE_ICONS) {
-    html.push('<div class="mv-favicon"></div>');
-  }
+  html.push('<div class="mv-favicon"></div>');
   html.push('<div class="mv-title"></div><div class="mv-thumb"></div>');
   html.push('<div class="mv-x" role="button"></div>');
   tile.innerHTML = html.join('');
@@ -428,120 +417,97 @@ var renderTile = function(data) {
     title.classList.add('multiline');
   }
 
-  if (USE_ICONS) {
-    var thumb = tile.querySelector('.mv-thumb');
-    if (data.largeIconUrl) {
-      var img = document.createElement('img');
-      img.title = data.title;
-      img.src = data.largeIconUrl;
-      img.classList.add('large-icon');
-      loadedCounter += 1;
-      img.addEventListener('load', countLoad);
-      img.addEventListener('load', function(ev) {
-        thumb.classList.add('large-icon-outer');
-      });
-      img.addEventListener('error', countLoad);
-      img.addEventListener('error', function(ev) {
-        thumb.classList.add('failed-img');
-        thumb.removeChild(img);
-      });
-      thumb.appendChild(img);
-    } else {
-      thumb.classList.add('failed-img');
-    }
-  } else { // THUMBNAILS
-    // We keep track of the outcome of loading possible thumbnails for this
-    // tile. Possible values:
-    //   - null: waiting for load/error
-    //   - false: error
-    //   - a string: URL that loaded correctly.
-    // This is populated by acceptImage/rejectImage and loadBestImage
-    // decides the best one to load.
-    var results = [];
-    var thumb = tile.querySelector('.mv-thumb');
-    var img = document.createElement('img');
-    var loaded = false;
+  // We keep track of the outcome of loading possible thumbnails for this
+  // tile. Possible values:
+  //   - null: waiting for load/error
+  //   - false: error
+  //   - a string: URL that loaded correctly.
+  // This is populated by acceptImage/rejectImage and loadBestImage
+  // decides the best one to load.
+  var results = [];
+  var thumb = tile.querySelector('.mv-thumb');
+  var img = document.createElement('img');
+  var loaded = false;
 
-    var loadBestImage = function() {
-      if (loaded) {
+  var loadBestImage = function() {
+    if (loaded) {
+      return;
+    }
+    for (var i = 0; i < results.length; ++i) {
+      if (results[i] === null) {
         return;
       }
-      for (var i = 0; i < results.length; ++i) {
-        if (results[i] === null) {
-          return;
-        }
-        if (results[i] != false) {
-          img.src = results[i];
-          loaded = true;
-          return;
-        }
+      if (results[i] != false) {
+        img.src = results[i];
+        loaded = true;
+        return;
       }
-      thumb.classList.add('failed-img');
-      thumb.removeChild(img);
-      countLoad();
-    };
+    }
+    thumb.classList.add('failed-img');
+    thumb.removeChild(img);
+    countLoad();
+  };
 
-    var acceptImage = function(idx, url) {
-      return function(ev) {
-        results[idx] = url;
-        loadBestImage();
-      };
+  var acceptImage = function(idx, url) {
+    return function(ev) {
+      results[idx] = url;
+      loadBestImage();
     };
+  };
 
-    var rejectImage = function(idx) {
-      return function(ev) {
-        results[idx] = false;
-        loadBestImage();
-      };
+  var rejectImage = function(idx) {
+    return function(ev) {
+      results[idx] = false;
+      loadBestImage();
     };
+  };
 
-    img.title = data.title;
-    img.classList.add('thumbnail');
+  img.title = data.title;
+  img.classList.add('thumbnail');
+  loadedCounter += 1;
+  img.addEventListener('load', countLoad);
+  img.addEventListener('error', countLoad);
+  img.addEventListener('error', function(ev) {
+    thumb.classList.add('failed-img');
+    thumb.removeChild(img);
+  });
+  thumb.appendChild(img);
+
+  if (data.thumbnailUrl) {
+    img.src = data.thumbnailUrl;
+  } else {
+    // Get all thumbnailUrls for the tile.
+    // They are ordered from best one to be used to worst.
+    for (var i = 0; i < data.thumbnailUrls.length; ++i) {
+      results.push(null);
+    }
+    for (var i = 0; i < data.thumbnailUrls.length; ++i) {
+      if (data.thumbnailUrls[i]) {
+        var image = new Image();
+        image.src = data.thumbnailUrls[i];
+        image.onload = acceptImage(i, data.thumbnailUrls[i]);
+        image.onerror = rejectImage(i);
+      } else {
+        rejectImage(i)(null);
+      }
+    }
+  }
+
+  var favicon = tile.querySelector('.mv-favicon');
+  if (data.faviconUrl) {
+    var fi = document.createElement('img');
+    fi.src = data.faviconUrl;
+    // Set the title to empty so screen readers won't say the image name.
+    fi.title = '';
     loadedCounter += 1;
-    img.addEventListener('load', countLoad);
-    img.addEventListener('error', countLoad);
-    img.addEventListener('error', function(ev) {
-      thumb.classList.add('failed-img');
-      thumb.removeChild(img);
-    });
-    thumb.appendChild(img);
-
-    if (data.thumbnailUrl) {
-      img.src = data.thumbnailUrl;
-    } else {
-      // Get all thumbnailUrls for the tile.
-      // They are ordered from best one to be used to worst.
-      for (var i = 0; i < data.thumbnailUrls.length; ++i) {
-        results.push(null);
-      }
-      for (var i = 0; i < data.thumbnailUrls.length; ++i) {
-        if (data.thumbnailUrls[i]) {
-          var image = new Image();
-          image.src = data.thumbnailUrls[i];
-          image.onload = acceptImage(i, data.thumbnailUrls[i]);
-          image.onerror = rejectImage(i);
-        } else {
-          rejectImage(i)(null);
-        }
-      }
-    }
-
-    var favicon = tile.querySelector('.mv-favicon');
-    if (data.faviconUrl) {
-      var fi = document.createElement('img');
-      fi.src = data.faviconUrl;
-      // Set the title to empty so screen readers won't say the image name.
-      fi.title = '';
-      loadedCounter += 1;
-      fi.addEventListener('load', countLoad);
-      fi.addEventListener('error', countLoad);
-      fi.addEventListener('error', function(ev) {
-        favicon.classList.add('failed-favicon');
-      });
-      favicon.appendChild(fi);
-    } else {
+    fi.addEventListener('load', countLoad);
+    fi.addEventListener('error', countLoad);
+    fi.addEventListener('error', function(ev) {
       favicon.classList.add('failed-favicon');
-    }
+    });
+    favicon.appendChild(fi);
+  } else {
+    favicon.classList.add('failed-favicon');
   }
 
   var mvx = tile.querySelector('.mv-x');
@@ -572,17 +538,13 @@ var init = function() {
     queryArgs[decodeURIComponent(val[0])] = decodeURIComponent(val[1]);
   }
 
-  // Apply class for icon NTP, if specified.
-  USE_ICONS = queryArgs['icons'] == '1';
   if ('ntl' in queryArgs) {
     var ntl = parseInt(queryArgs['ntl'], 10);
     if (isFinite(ntl))
       NUM_TITLE_LINES = ntl;
   }
 
-  // Duplicating NTP_DESIGN.mainClass.
-  document.querySelector('#most-visited').classList.add(
-      USE_ICONS ? 'icon-ntp' : 'thumb-ntp');
+  document.querySelector('#most-visited').classList.add('thumb-ntp');
 
   // Enable RTL.
   if (queryArgs['rtl'] == '1') {

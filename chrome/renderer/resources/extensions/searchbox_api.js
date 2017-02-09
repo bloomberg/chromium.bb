@@ -82,8 +82,6 @@ if (!chrome.embeddedSearch) {
           delete item.domain;
           delete item.direction;
           delete item.renderViewId;
-          delete item.largeIconUrl;
-          delete item.fallbackIconUrl;
         }
         return mostVisitedItems;
       }
@@ -116,21 +114,7 @@ if (!chrome.embeddedSearch) {
       // This method is restricted to chrome-search://most-visited pages by
       // checking the invoking context's origin in searchbox_extension.cc.
       this.getMostVisitedItemData = function(restrictedId) {
-        var item = GetMostVisitedItemData(restrictedId);
-        if (item) {
-          var sizeInPx = Math.floor(48 * window.devicePixelRatio + 0.5);
-          // Populate large icon and fallback icon data, if they exist. We'll
-          // render everything here, once these become available by default.
-          if (item.largeIconUrl) {
-            item.largeIconUrl +=
-                sizeInPx + "/" + item.renderViewId + "/" + item.rid;
-          }
-          if (item.fallbackIconUrl) {
-            item.fallbackIconUrl +=
-                sizeInPx + ",,,,/" + item.renderViewId + "/" + item.rid;
-          }
-        }
-        return item;
+        return GetMostVisitedItemData(restrictedId);
       };
 
       // This method is restricted to chrome-search://most-visited pages by
