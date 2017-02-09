@@ -2354,9 +2354,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
                                   fullstopCharacter};
   DEFINE_STATIC_LOCAL(AtomicString, fullstopCharacterStr,
                       (fullStopString, fullStopStringLength));
-  DEFINE_STATIC_LOCAL(AtomicString, ellipsisStr,
-                      (&horizontalEllipsisCharacter, 1));
-  AtomicString& selectedEllipsisStr = ellipsisStr;
+  AtomicString selectedEllipsisStr(&horizontalEllipsisCharacter, 1);
 
   const Font& firstLineFont = firstLineStyle()->font();
   // FIXME: We should probably not hard-code the direction here.
@@ -2384,7 +2382,6 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
   if (!ellipsisWidth) {
     ASSERT(font.primaryFont());
     if (font.primaryFont()->glyphForCharacter(horizontalEllipsisCharacter)) {
-      selectedEllipsisStr = ellipsisStr;
       ellipsisWidth =
           font.width(constructTextRun(font, &horizontalEllipsisCharacter, 1,
                                       styleRef(), ellipsisDirection));
