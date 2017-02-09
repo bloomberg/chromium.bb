@@ -18,7 +18,7 @@
 
 class DevToolsDeviceDiscovery {
  public:
-  class RemotePage : public base::RefCounted<RemotePage> {
+  class RemotePage : public base::RefCountedThreadSafe<RemotePage> {
    public:
     scoped_refptr<AndroidDeviceManager::Device> device() { return device_; }
     const std::string& socket() { return browser_id_; }
@@ -26,7 +26,7 @@ class DevToolsDeviceDiscovery {
     scoped_refptr<content::DevToolsAgentHost> CreateTarget();
 
    private:
-    friend class base::RefCounted<RemotePage>;
+    friend class base::RefCountedThreadSafe<RemotePage>;
     friend class DevToolsDeviceDiscovery;
 
     RemotePage(scoped_refptr<AndroidDeviceManager::Device> device,
@@ -45,7 +45,7 @@ class DevToolsDeviceDiscovery {
 
   using RemotePages = std::vector<scoped_refptr<RemotePage>>;
 
-  class RemoteBrowser : public base::RefCounted<RemoteBrowser> {
+  class RemoteBrowser : public base::RefCountedThreadSafe<RemoteBrowser> {
    public:
     const std::string& serial() { return serial_; }
     const std::string& socket() { return browser_id_; }
@@ -61,7 +61,7 @@ class DevToolsDeviceDiscovery {
     ParsedVersion GetParsedVersion();
 
    private:
-    friend class base::RefCounted<RemoteBrowser>;
+    friend class base::RefCountedThreadSafe<RemoteBrowser>;
     friend class DevToolsDeviceDiscovery;
 
     RemoteBrowser(const std::string& serial,
@@ -82,7 +82,7 @@ class DevToolsDeviceDiscovery {
 
   using RemoteBrowsers = std::vector<scoped_refptr<RemoteBrowser>>;
 
-  class RemoteDevice : public base::RefCounted<RemoteDevice> {
+  class RemoteDevice : public base::RefCountedThreadSafe<RemoteDevice> {
    public:
     std::string serial() { return serial_; }
     std::string model() { return model_; }
@@ -91,7 +91,7 @@ class DevToolsDeviceDiscovery {
     gfx::Size screen_size() { return screen_size_; }
 
    private:
-    friend class base::RefCounted<RemoteDevice>;
+    friend class base::RefCountedThreadSafe<RemoteDevice>;
     friend class DevToolsDeviceDiscovery;
 
     RemoteDevice(const std::string& serial,
