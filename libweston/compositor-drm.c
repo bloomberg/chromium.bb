@@ -94,7 +94,6 @@ struct drm_backend {
 		char *filename;
 	} drm;
 	struct gbm_device *gbm;
-	uint32_t connector_allocator;
 	struct wl_listener session_listener;
 	uint32_t gbm_format;
 
@@ -2548,8 +2547,6 @@ drm_output_destroy(struct weston_output *base)
 	if (output->backlight)
 		backlight_destroy(output->backlight);
 
-	b->connector_allocator &= ~(1 << output->connector_id);
-
 	free(output);
 }
 
@@ -2624,8 +2621,6 @@ create_output_for_connector(struct drm_backend *b,
 	output->destroy_pending = 0;
 	output->disable_pending = 0;
 	output->original_crtc = NULL;
-
-	b->connector_allocator |= (1 << output->connector_id);
 
 	weston_output_init(&output->base, b->compositor);
 	weston_compositor_add_pending_output(&output->base, b->compositor);
@@ -2754,12 +2749,18 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 	drmModeConnector *connector;
 	drmModeRes *resources;
 	struct drm_output *output, *next;
-	uint32_t connected = 0, disconnects = 0;
+	uint32_t *connected;
 	int i;
 
 	resources = drmModeGetResources(b->drm.fd);
 	if (!resources) {
 		weston_log("drmModeGetResources failed\n");
+		return;
+	}
+
+	connected = calloc(resources->count_connectors, sizeof(uint32_t));
+	if (!connected) {
+		drmModeFreeResources(resources);
 		return;
 	}
 
@@ -2781,7 +2782,7 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 			continue;
 		}
 
-		connected |= (1 << connector_id);
+		connected[i] = connector_id;
 
 		if (drm_output_find_by_connector(b, connector_id)) {
 			drmModeFreeConnector(connector);
@@ -2792,30 +2793,45 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 					    connector, drm_device);
 		weston_log("connector %d connected\n", connector_id);
 	}
-	drmModeFreeResources(resources);
 
-	disconnects = b->connector_allocator & ~connected;
-	if (disconnects) {
-		wl_list_for_each_safe(output, next, &b->compositor->output_list,
-				      base.link) {
-			if (disconnects & (1 << output->connector_id)) {
-				disconnects &= ~(1 << output->connector_id);
-				weston_log("connector %d disconnected\n",
-				       output->connector_id);
-				drm_output_destroy(&output->base);
+	wl_list_for_each_safe(output, next, &b->compositor->output_list,
+			      base.link) {
+		bool disconnected = true;
+
+		for (i = 0; i < resources->count_connectors; i++) {
+			if (connected[i] == output->connector_id) {
+				disconnected = false;
+				break;
 			}
 		}
 
-		wl_list_for_each_safe(output, next, &b->compositor->pending_output_list,
-				      base.link) {
-			if (disconnects & (1 << output->connector_id)) {
-				disconnects &= ~(1 << output->connector_id);
-				weston_log("connector %d disconnected\n",
-				       output->connector_id);
-				drm_output_destroy(&output->base);
-			}
-		}
+		if (!disconnected)
+			continue;
+
+		weston_log("connector %d disconnected\n", output->connector_id);
+		drm_output_destroy(&output->base);
 	}
+
+	wl_list_for_each_safe(output, next, &b->compositor->pending_output_list,
+			      base.link) {
+		bool disconnected = true;
+
+		for (i = 0; i < resources->count_connectors; i++) {
+			if (connected[i] == output->connector_id) {
+				disconnected = false;
+				break;
+			}
+		}
+
+		if (!disconnected)
+			continue;
+
+		weston_log("connector %d disconnected\n", output->connector_id);
+		drm_output_destroy(&output->base);
+	}
+
+	free(connected);
+	drmModeFreeResources(resources);
 }
 
 static int
