@@ -44,9 +44,7 @@ void TestGLES2Interface::GenQueriesEXT(GLsizei n, GLuint* queries) {
 }
 
 void TestGLES2Interface::DeleteTextures(GLsizei n, const GLuint* textures) {
-  for (GLsizei i = 0; i < n; ++i) {
-    test_context_->deleteTexture(textures[i]);
-  }
+  test_context_->deleteTextures(n, textures);
 }
 
 void TestGLES2Interface::DeleteBuffers(GLsizei n, const GLuint* buffers) {

@@ -130,10 +130,10 @@ class TestWebGraphicsContext3D {
   virtual void genRenderbuffers(GLsizei count, GLuint* ids);
   virtual void genTextures(GLsizei count, GLuint* ids);
 
-  virtual void deleteBuffers(GLsizei count, GLuint* ids);
-  virtual void deleteFramebuffers(GLsizei count, GLuint* ids);
-  virtual void deleteRenderbuffers(GLsizei count, GLuint* ids);
-  virtual void deleteTextures(GLsizei count, GLuint* ids);
+  virtual void deleteBuffers(GLsizei count, const GLuint* ids);
+  virtual void deleteFramebuffers(GLsizei count, const GLuint* ids);
+  virtual void deleteRenderbuffers(GLsizei count, const GLuint* ids);
+  virtual void deleteTextures(GLsizei count, const GLuint* ids);
 
   virtual GLuint createBuffer();
   virtual GLuint createFramebuffer();

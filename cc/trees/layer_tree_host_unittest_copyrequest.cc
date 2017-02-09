@@ -814,6 +814,11 @@ class LayerTreeHostCopyRequestTestDeleteTexture
                 base::Unretained(this)));
         break;
       case 1:
+        // Copy requests cause a followup commit and draw without the separate
+        // RenderPass required. This changes the number of active textures. So
+        // wait for that draw before counting textures and proceeding.
+        break;
+      case 2:
         // We did a readback, so there will be a readback texture around now.
         num_textures_after_readback_ =
             display_context_provider_->TestContext3d()->NumTextures();

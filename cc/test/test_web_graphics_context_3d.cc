@@ -184,13 +184,13 @@ void TestWebGraphicsContext3D::genTextures(GLsizei count, GLuint* ids) {
     namespace_->textures.Append(ids[i], new TestTexture());
 }
 
-void TestWebGraphicsContext3D::deleteBuffers(GLsizei count, GLuint* ids) {
+void TestWebGraphicsContext3D::deleteBuffers(GLsizei count, const GLuint* ids) {
   for (int i = 0; i < count; ++i)
     RetireBufferId(ids[i]);
 }
 
-void TestWebGraphicsContext3D::deleteFramebuffers(
-    GLsizei count, GLuint* ids) {
+void TestWebGraphicsContext3D::deleteFramebuffers(GLsizei count,
+                                                  const GLuint* ids) {
   for (int i = 0; i < count; ++i) {
     if (ids[i]) {
       RetireFramebufferId(ids[i]);
@@ -200,13 +200,14 @@ void TestWebGraphicsContext3D::deleteFramebuffers(
   }
 }
 
-void TestWebGraphicsContext3D::deleteRenderbuffers(
-    GLsizei count, GLuint* ids) {
+void TestWebGraphicsContext3D::deleteRenderbuffers(GLsizei count,
+                                                   const GLuint* ids) {
   for (int i = 0; i < count; ++i)
     RetireRenderbufferId(ids[i]);
 }
 
-void TestWebGraphicsContext3D::deleteTextures(GLsizei count, GLuint* ids) {
+void TestWebGraphicsContext3D::deleteTextures(GLsizei count,
+                                              const GLuint* ids) {
   for (int i = 0; i < count; ++i)
     RetireTextureId(ids[i]);
   base::AutoLock lock(namespace_->lock);

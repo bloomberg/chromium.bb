@@ -55,6 +55,11 @@ class WebGraphicsContext3DUploadCounter : public TestWebGraphicsContext3D {
     TestWebGraphicsContext3D::deleteTexture(texture);
   }
 
+  void deleteTextures(GLsizei count, const GLuint* ids) override {
+    created_texture_count_ -= count;
+    TestWebGraphicsContext3D::deleteTextures(count, ids);
+  }
+
   int UploadCount() { return upload_count_; }
   void ResetUploadCount() { upload_count_ = 0; }
 
