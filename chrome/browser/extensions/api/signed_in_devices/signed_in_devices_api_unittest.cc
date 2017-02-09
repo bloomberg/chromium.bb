@@ -156,12 +156,12 @@ std::unique_ptr<KeyedService> CreateProfileSyncServiceMock(
 }
 
 class ExtensionSignedInDevicesTest : public ExtensionApiUnittest {
- public:
-  void SetUp() override {
-    ExtensionApiUnittest::SetUp();
-
-    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
-        profile(), CreateProfileSyncServiceMock);
+ private:
+  TestingProfile* CreateProfile() override {
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
+                              CreateProfileSyncServiceMock);
+    return builder.Build().release();
   }
 };
 
