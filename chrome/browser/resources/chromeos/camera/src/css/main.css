@@ -820,17 +820,26 @@ body.album #album {
     display: none;
   }
 
+  #browser .padder {
+    align-items: flex-start;
+  }
+
   /* Reset styles to default on the borwser view, and set the maximum dimensions
      to 100%. */
   #browser div.media-wrapper.selected {
+    display: block; /* Allows to keep aspect ratio of children. */
     -webkit-transform: scale(1);
     border: none;
     box-shadow: none;
-    height: auto;
     margin: auto;
+    position: absolute;
+  }
+
+  #browser div.media-wrapper.selected img,
+  #browser div.media-wrapper.selected video {
+    height: auto;
     max-height: 100%;
     max-width: 100%;
-    position: absolute;
     width: auto;
   }
 
@@ -842,6 +851,7 @@ body.album #album {
     box-shadow: none;
     height: auto;
     max-width: 30%;
+    outline: none;
   }
 }
 
@@ -992,4 +1002,3 @@ body:not(.initializing) #initializing {
   transition: opacity 200ms, visibility 0 200ms;
   visibility: hidden;
 }
-
