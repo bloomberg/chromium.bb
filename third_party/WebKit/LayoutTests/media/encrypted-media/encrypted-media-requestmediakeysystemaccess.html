@@ -245,39 +245,45 @@
             }, 'Space at end of codecs parameter');
 
             // contentType is not case sensitive (except the codec names).
+            // From RFC 2045: "All media type values, subtype values, and
+            // parameter names as defined are case-insensitive.  However,
+            // parameter values are case-sensitive unless otherwise specified
+            // for the specific parameter."
             expect_config('org.w3.clearkey', [{
                 videoCapabilities: [{contentType: 'Video/webm; codecs="vp8"'}],
             }], {
                 videoCapabilities: [{contentType: 'Video/webm; codecs="vp8"'}],
-            }, 'Video/webm');
+            }, 'Media type value is case-insensitive');
 
             expect_config('org.w3.clearkey', [{
                 videoCapabilities: [{contentType: 'video/Webm; codecs="vp8"'}],
             }], {
                 videoCapabilities: [{contentType: 'video/Webm; codecs="vp8"'}],
-            }, 'video/Webm');
-
-            expect_config('org.w3.clearkey', [{
-                videoCapabilities: [{contentType: 'video/webm; Codecs="vp8"'}],
-            }], {
-                videoCapabilities: [{contentType: 'video/webm; Codecs="vp8"'}],
-            }, 'Codecs=');
+            }, 'Media subtype value is case-insensitive');
 
             expect_config('org.w3.clearkey', [{
                 videoCapabilities: [{contentType: 'VIDEO/WEBM; codecs="vp8"'}],
             }], {
                 videoCapabilities: [{contentType: 'VIDEO/WEBM; codecs="vp8"'}],
-            }, 'VIDEO/WEBM');
+            }, 'Media type values and subtype values are case-insensitive');
 
             expect_config('org.w3.clearkey', [{
                 videoCapabilities: [{contentType: 'video/webm; CODECS="vp8"'}],
             }], {
                 videoCapabilities: [{contentType: 'video/webm; CODECS="vp8"'}],
-            }, 'CODECS=');
+            }, 'Media parameter name is case-insensitive');
+
+            expect_error('org.w3.clearkey', [{
+                videoCapabilities: [{contentType: 'video/webm; CODECS="foo"'}],
+            }], 'NotSupportedError', 'Unsupported codec');
+
+            expect_error('org.w3.clearkey', [{
+                videoCapabilities: [{contentType: 'video/webm; codecs="VP8"'}],
+            }], 'NotSupportedError', 'Codec is case-sensitive');
 
             // Unrecognized attributes are not allowed.
             // TODO(jrummell): Unrecognized attributes are ignored currently.
-            // http://crbug.com/449690
+            // http://crbug.com/690131
 //          expect_error('org.w3.clearkey', [{
 //              videoCapabilities: [{contentType: 'video/webm; foo="bar"'}],
 //          }], 'NotSupportedError', 'Unrecognized foo');

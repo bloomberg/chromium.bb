@@ -23,6 +23,7 @@
 #include "platform/EncryptedMediaRequest.h"
 #include "platform/Histogram.h"
 #include "platform/network/ParsedContentType.h"
+#include "platform/network/mime/ContentType.h"
 #include "public/platform/WebEncryptedMediaClient.h"
 #include "public/platform/WebEncryptedMediaRequest.h"
 #include "public/platform/WebMediaKeySystemConfiguration.h"
@@ -52,9 +53,10 @@ static WebVector<WebMediaKeySystemMediaCapability> convertCapabilities(
     result[i].contentType = contentType;
     if (isValidContentType(contentType)) {
       // FIXME: Fail if there are unrecognized parameters.
-      ParsedContentType type(capabilities[i].contentType());
-      result[i].mimeType = type.mimeType();
-      result[i].codecs = type.parameterValueForName("codecs");
+      // http://crbug.com/690131
+      ContentType type(capabilities[i].contentType());
+      result[i].mimeType = type.type();
+      result[i].codecs = type.parameter("codecs");
     }
     result[i].robustness = capabilities[i].robustness();
   }
