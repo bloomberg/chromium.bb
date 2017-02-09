@@ -5,12 +5,6 @@
   <message name="IDS_CLEAR_BROWSING_DATA_CALCULATING" desc="A text that is shown while the data volume is being counted.">
     Calculating...
   </message>
-  <message name="IDS_CLEAR_BROWSING_DATA_UNKNOWN_SIZE" desc="A text that is shown when the data volume could not be calculated. This string refers to uncountable objects, such as cache.">
-    unknown size
-  </message>
-  <message name="IDS_CLEAR_BROWSING_DATA_UNKNOWN_AMOUNT" desc="A text that is shown when the data volume could not be calculated. This string refers to countable objects, such as history entries or passwords.">
-    unknown amount
-  </message>
   <message name="IDS_DEL_BROWSING_HISTORY_COUNTER" desc="A counter showing how many items of browsing history the user has.">
     {COUNT, plural,
      =0 {none}
