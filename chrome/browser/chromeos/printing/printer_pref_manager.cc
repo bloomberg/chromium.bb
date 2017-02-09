@@ -13,61 +13,48 @@
 #include "base/json/json_reader.h"
 #include "base/md5.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
+#include "chrome/browser/chromeos/printing/specifics_translation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/printer_translator.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/scoped_user_pref_update.h"
 
 namespace chromeos {
 
 namespace {
 
-const base::ListValue* GetPrinterList(Profile* profile) {
-  return profile->GetPrefs()->GetList(prefs::kPrintingDevices);
-}
-
-// Returns the printer with the matching |id| from the list |values|.  The
-// returned value is mutable and |values| could be modified.
-base::DictionaryValue* FindPrinterPref(const base::ListValue* values,
-                                       const std::string& id) {
-  for (const auto& value : *values) {
-    base::DictionaryValue* printer_dictionary;
-    if (!value->GetAsDictionary(&printer_dictionary))
-      continue;
-
-    std::string printer_id;
-    if (printer_dictionary->GetString(printing::kPrinterId, &printer_id) &&
-        id == printer_id)
-      return printer_dictionary;
+// Adds |printer| with |id| to prefs.  Returns true if the printer is new,
+// false for an update.
+bool UpdatePrinterPref(PrintersSyncBridge* sync_bridge,
+                       const std::string& id,
+                       const Printer& printer) {
+  base::Optional<sync_pb::PrinterSpecifics> specifics =
+      sync_bridge->GetPrinter(id);
+  if (!specifics.has_value()) {
+    sync_bridge->AddPrinter(printing::PrinterToSpecifics(printer));
+    return true;
   }
 
-  return nullptr;
-}
+  // Preserve fields in the proto which we don't understand.
+  std::unique_ptr<sync_pb::PrinterSpecifics> updated_printer =
+      base::MakeUnique<sync_pb::PrinterSpecifics>(*specifics);
+  printing::MergePrinterToSpecifics(printer, updated_printer.get());
+  sync_bridge->AddPrinter(std::move(updated_printer));
 
-void UpdatePrinterPref(
-    Profile* profile,
-    const std::string& id,
-    std::unique_ptr<base::DictionaryValue> printer_dictionary) {
-  ListPrefUpdate update(profile->GetPrefs(), prefs::kPrintingDevices);
-  base::ListValue* printer_list = update.Get();
-  DCHECK(printer_list) << "Register the printer preference";
-  base::DictionaryValue* printer = FindPrinterPref(printer_list, id);
-  if (!printer) {
-    printer_list->Append(std::move(printer_dictionary));
-    return;
-  }
-
-  printer->MergeDictionary(printer_dictionary.get());
+  return false;
 }
 
 }  // anonymous namespace
 
-PrinterPrefManager::PrinterPrefManager(Profile* profile) : profile_(profile) {
+PrinterPrefManager::PrinterPrefManager(
+    Profile* profile,
+    std::unique_ptr<PrintersSyncBridge> sync_bridge)
+    : profile_(profile), sync_bridge_(std::move(sync_bridge)) {
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kRecommendedNativePrinters,
@@ -81,27 +68,18 @@ PrinterPrefManager::~PrinterPrefManager() {}
 // static
 void PrinterPrefManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  // TODO(skau): Change to user_prefs::PrefRegistrySyncable::SYNCABLE_PREF) when
-  // sync is implemented.
   registry->RegisterListPref(prefs::kPrintingDevices,
-                             PrefRegistry::NO_REGISTRATION_FLAGS);
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kRecommendedNativePrinters);
 }
 
 std::vector<std::unique_ptr<Printer>> PrinterPrefManager::GetPrinters() const {
   std::vector<std::unique_ptr<Printer>> printers;
 
-  const base::ListValue* values = GetPrinterList(profile_);
-  for (const auto& value : *values) {
-    const base::DictionaryValue* printer_dictionary = nullptr;
-    value->GetAsDictionary(&printer_dictionary);
-
-    DCHECK(printer_dictionary);
-
-    std::unique_ptr<Printer> printer =
-        printing::PrefToPrinter(*printer_dictionary);
-    if (printer)
-      printers.push_back(std::move(printer));
+  std::vector<sync_pb::PrinterSpecifics> values =
+      sync_bridge_->GetAllPrinters();
+  for (const auto& value : values) {
+    printers.push_back(printing::SpecificsToPrinter(value));
   }
 
   return printers;
@@ -133,30 +111,62 @@ std::unique_ptr<Printer> PrinterPrefManager::GetPrinter(
   if (found != policy_printers.end())
     return printing::RecommendedPrinterToPrinter(*(found->second));
 
-  const base::ListValue* values = GetPrinterList(profile_);
-  const base::DictionaryValue* printer = FindPrinterPref(values, printer_id);
-
-  return printer ? printing::PrefToPrinter(*printer) : nullptr;
+  base::Optional<sync_pb::PrinterSpecifics> printer =
+      sync_bridge_->GetPrinter(printer_id);
+  return printer.has_value() ? printing::SpecificsToPrinter(*printer) : nullptr;
 }
 
 void PrinterPrefManager::RegisterPrinter(std::unique_ptr<Printer> printer) {
-  if (printer->id().empty())
+  if (printer->id().empty()) {
     printer->set_id(base::GenerateGUID());
+  }
 
   DCHECK_EQ(Printer::SRC_USER_PREFS, printer->source());
-  std::unique_ptr<base::DictionaryValue> updated_printer =
-      printing::PrinterToPref(*printer);
-  UpdatePrinterPref(profile_, printer->id(), std::move(updated_printer));
+  bool new_printer =
+      UpdatePrinterPref(sync_bridge_.get(), printer->id(), *printer);
+
+  if (new_printer) {
+    for (Observer& obs : observers_) {
+      obs.OnPrinterAdded(*printer);
+    }
+  } else {
+    for (Observer& obs : observers_) {
+      obs.OnPrinterUpdated(*printer);
+    }
+  }
 }
 
 bool PrinterPrefManager::RemovePrinter(const std::string& printer_id) {
   DCHECK(!printer_id.empty());
-  ListPrefUpdate update(profile_->GetPrefs(), prefs::kPrintingDevices);
-  base::ListValue* printer_list = update.Get();
-  DCHECK(printer_list) << "Printer preference not registered";
-  base::DictionaryValue* printer = FindPrinterPref(printer_list, printer_id);
 
-  return printer && printer_list->Remove(*printer, nullptr);
+  base::Optional<sync_pb::PrinterSpecifics> printer =
+      sync_bridge_->GetPrinter(printer_id);
+  bool success = false;
+  if (printer.has_value()) {
+    std::unique_ptr<Printer> p = printing::SpecificsToPrinter(*printer);
+    success = sync_bridge_->RemovePrinter(p->id());
+    if (success) {
+      for (Observer& obs : observers_) {
+        obs.OnPrinterRemoved(*p);
+      }
+    }
+  } else {
+    LOG(WARNING) << "Could not find printer" << printer_id;
+  }
+
+  return success;
+}
+
+void PrinterPrefManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PrinterPrefManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+PrintersSyncBridge* PrinterPrefManager::GetSyncBridge() {
+  return sync_bridge_.get();
 }
 
 // This method is not thread safe and could interact poorly with readers of

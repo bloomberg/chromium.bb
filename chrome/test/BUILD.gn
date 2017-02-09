@@ -849,6 +849,8 @@ if (!is_android) {
       "../browser/sync/test/integration/passwords_helper.h",
       "../browser/sync/test/integration/preferences_helper.cc",
       "../browser/sync/test/integration/preferences_helper.h",
+      "../browser/sync/test/integration/printers_helper.cc",
+      "../browser/sync/test/integration/printers_helper.h",
       "../browser/sync/test/integration/profile_sync_service_harness.cc",
       "../browser/sync/test/integration/profile_sync_service_harness.h",
       "../browser/sync/test/integration/quiesce_status_change_checker.cc",
@@ -925,6 +927,8 @@ if (!is_android) {
     }
     if (!is_chromeos) {
       sources -= [
+        "../browser/sync/test/integration/printers_helper.cc",
+        "../browser/sync/test/integration/printers_helper.h",
         "../browser/sync/test/integration/sync_arc_package_helper.cc",
         "../browser/sync/test/integration/sync_arc_package_helper.h",
         "../browser/sync/test/integration/wifi_credentials_helper.cc",
@@ -2719,6 +2723,7 @@ if (!is_android) {
       "../browser/sync/test/integration/single_client_password_manager_setting_migrator_service_sync_test.cc",
       "../browser/sync/test/integration/single_client_passwords_sync_test.cc",
       "../browser/sync/test/integration/single_client_preferences_sync_test.cc",
+      "../browser/sync/test/integration/single_client_printers_sync_test.cc",
       "../browser/sync/test/integration/single_client_search_engines_sync_test.cc",
       "../browser/sync/test/integration/single_client_sessions_sync_test.cc",
       "../browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc",
@@ -2740,6 +2745,7 @@ if (!is_android) {
       "../browser/sync/test/integration/two_client_password_manager_setting_migrator_service_sync_test.cc",
       "../browser/sync/test/integration/two_client_passwords_sync_test.cc",
       "../browser/sync/test/integration/two_client_preferences_sync_test.cc",
+      "../browser/sync/test/integration/two_client_printers_sync_test.cc",
       "../browser/sync/test/integration/two_client_search_engines_sync_test.cc",
       "../browser/sync/test/integration/two_client_sessions_sync_test.cc",
       "../browser/sync/test/integration/two_client_themes_sync_test.cc",
@@ -2824,8 +2830,10 @@ if (!is_android) {
     if (!is_chromeos) {
       sources -= [
         "../browser/sync/test/integration/single_client_arc_package_sync_test.cc",
+        "../browser/sync/test/integration/single_client_printers_sync_test.cc",
         "../browser/sync/test/integration/single_client_wifi_credentials_sync_test.cc",
         "../browser/sync/test/integration/two_client_arc_package_sync_test.cc",
+        "../browser/sync/test/integration/two_client_printers_sync_test.cc",
         "../browser/sync/test/integration/two_client_wifi_credentials_sync_test.cc",
       ]
     }

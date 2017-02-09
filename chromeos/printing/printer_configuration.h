@@ -50,7 +50,7 @@ class CHROMEOS_EXPORT Printer {
   explicit Printer(const std::string& id);
 
   // Copy constructor and assignment.
-  explicit Printer(const Printer& printer);
+  Printer(const Printer& printer);
   Printer& operator=(const Printer& printer);
 
   ~Printer();

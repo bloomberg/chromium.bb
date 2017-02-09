@@ -283,6 +283,14 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             ui_thread_));
   }
 
+#if defined(OS_CHROMEOS)
+  if (!disabled_types.Has(syncer::PRINTERS)) {
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<ModelTypeController>(syncer::PRINTERS, sync_client_,
+                                              ui_thread_));
+  }
+#endif
+
   // Reading list sync is enabled by default only on iOS. Register unless
   // Reading List or Reading List Sync is explicitly disabled.
   if (!disabled_types.Has(syncer::READING_LIST) &&

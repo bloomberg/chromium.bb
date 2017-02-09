@@ -1196,6 +1196,8 @@ source_set("chromeos") {
     "printing/printer_pref_manager.h",
     "printing/printer_pref_manager_factory.cc",
     "printing/printer_pref_manager_factory.h",
+    "printing/printers_sync_bridge.cc",
+    "printing/printers_sync_bridge.h",
     "printing/specifics_translation.cc",
     "printing/specifics_translation.h",
     "profiles/avatar_menu_actions_chromeos.cc",

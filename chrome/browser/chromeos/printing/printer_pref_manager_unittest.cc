@@ -7,10 +7,17 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
+#include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sync/model/fake_model_type_change_processor.h"
+#include "components/sync/model/model_type_store.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,72 +41,138 @@ const char kLexJson[] = R"json({
         },
       } )json";
 
+// Helper class to record observed events.
+class LoggingObserver : public PrinterPrefManager::Observer {
+ public:
+  void OnPrinterAdded(const Printer& printer) override {
+    last_added_ = printer;
+  }
+
+  void OnPrinterUpdated(const Printer& printer) override {
+    last_updated_ = printer;
+  }
+
+  void OnPrinterRemoved(const Printer& printer) override {
+    last_removed_ = printer;
+  }
+
+  // Returns true if OnPrinterAdded was called.
+  bool AddCalled() const { return last_added_.has_value(); }
+
+  // Returns true if OnPrinterUpdated was called.
+  bool UpdateCalled() const { return last_updated_.has_value(); }
+
+  // Returns true if OnPrinterRemoved was called.
+  bool RemoveCalled() const { return last_removed_.has_value(); }
+
+  // Returns the last printer that was added.  If AddCalled is false, there will
+  // be no printer.
+  base::Optional<Printer> LastAdded() const { return last_added_; }
+  // Returns the last printer that was updated.  If UpdateCalled is false, there
+  // will be no printer.
+  base::Optional<Printer> LastUpdated() const { return last_updated_; }
+  // Returns the last printer that was removed.  If RemoveCalled is false, there
+  // will be no printer.
+  base::Optional<Printer> LastRemoved() const { return last_removed_; }
+
+ private:
+  base::Optional<Printer> last_added_;
+  base::Optional<Printer> last_updated_;
+  base::Optional<Printer> last_removed_;
+};
+
 }  // namespace
 
-TEST(PrinterPrefManagerTest, AddPrinter) {
-  content::TestBrowserThreadBundle thread_bundle;
-  auto profile = base::MakeUnique<TestingProfile>();
-  PrinterPrefManager* manager =
-      PrinterPrefManagerFactory::GetForBrowserContext(profile.get());
+class PrinterPrefManagerTest : public testing::Test {
+ protected:
+  PrinterPrefManagerTest() : profile_(base::MakeUnique<TestingProfile>()) {
+    thread_bundle_ = base::MakeUnique<content::TestBrowserThreadBundle>();
 
-  manager->RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
+    auto sync_bridge = base::MakeUnique<PrintersSyncBridge>(
+        base::Bind(&syncer::ModelTypeStore::CreateInMemoryStoreForTest,
+                   syncer::PRINTERS),
+        base::BindRepeating(
+            base::IgnoreResult(&base::debug::DumpWithoutCrashing)));
 
-  auto printers = manager->GetPrinters();
+    manager_ = base::MakeUnique<PrinterPrefManager>(profile_.get(),
+                                                    std::move(sync_bridge));
+
+    base::RunLoop().RunUntilIdle();
+  }
+
+  ~PrinterPrefManagerTest() override {
+    manager_.reset();
+
+    // Explicitly release the profile before the thread_bundle.  Otherwise, the
+    // profile destructor throws an error.
+    profile_.reset();
+    thread_bundle_.reset();
+  }
+
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<PrinterPrefManager> manager_;
+
+ private:
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+};
+
+TEST_F(PrinterPrefManagerTest, AddPrinter) {
+  LoggingObserver observer;
+  manager_->AddObserver(&observer);
+  manager_->RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
+
+  auto printers = manager_->GetPrinters();
   ASSERT_EQ(1U, printers.size());
   EXPECT_EQ(kPrinterId, printers[0]->id());
   EXPECT_EQ(Printer::Source::SRC_USER_PREFS, printers[0]->source());
+
+  EXPECT_TRUE(observer.AddCalled());
+  EXPECT_FALSE(observer.UpdateCalled());
 }
 
-TEST(PrinterPrefManagerTest, UpdatePrinterAssignsId) {
-  content::TestBrowserThreadBundle thread_bundle;
-  auto profile = base::MakeUnique<TestingProfile>();
-  PrinterPrefManager* manager =
-      PrinterPrefManagerFactory::GetForBrowserContext(profile.get());
+TEST_F(PrinterPrefManagerTest, UpdatePrinterAssignsId) {
+  manager_->RegisterPrinter(base::MakeUnique<Printer>());
 
-  manager->RegisterPrinter(base::MakeUnique<Printer>());
-
-  auto printers = manager->GetPrinters();
+  auto printers = manager_->GetPrinters();
   ASSERT_EQ(1U, printers.size());
   EXPECT_FALSE(printers[0]->id().empty());
 }
 
-TEST(PrinterPrefManagerTest, UpdatePrinter) {
-  content::TestBrowserThreadBundle thread_bundle;
-  auto profile = base::MakeUnique<TestingProfile>();
-  PrinterPrefManager* manager =
-      PrinterPrefManagerFactory::GetForBrowserContext(profile.get());
-
-  manager->RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
+TEST_F(PrinterPrefManagerTest, UpdatePrinter) {
+  manager_->RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
   auto updated_printer = base::MakeUnique<Printer>(kPrinterId);
   updated_printer->set_uri(kUri);
-  manager->RegisterPrinter(std::move(updated_printer));
 
-  auto printers = manager->GetPrinters();
+  // Register observer so it only receives the update event.
+  LoggingObserver observer;
+  manager_->AddObserver(&observer);
+
+  manager_->RegisterPrinter(std::move(updated_printer));
+
+  auto printers = manager_->GetPrinters();
   ASSERT_EQ(1U, printers.size());
   EXPECT_EQ(kUri, printers[0]->uri());
+
+  EXPECT_TRUE(observer.UpdateCalled());
+  EXPECT_FALSE(observer.AddCalled());
 }
 
-TEST(PrinterPrefManagerTest, RemovePrinter) {
-  content::TestBrowserThreadBundle thread_bundle;
-  auto profile = base::MakeUnique<TestingProfile>();
-  PrinterPrefManager* manager =
-      PrinterPrefManagerFactory::GetForBrowserContext(profile.get());
+TEST_F(PrinterPrefManagerTest, RemovePrinter) {
+  manager_->RegisterPrinter(base::MakeUnique<Printer>("OtherUUID"));
+  manager_->RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
+  manager_->RegisterPrinter(base::MakeUnique<Printer>());
 
-  manager->RegisterPrinter(base::MakeUnique<Printer>("OtherUUID"));
-  manager->RegisterPrinter(base::MakeUnique<Printer>(kPrinterId));
-  manager->RegisterPrinter(base::MakeUnique<Printer>());
+  manager_->RemovePrinter(kPrinterId);
 
-  manager->RemovePrinter(kPrinterId);
-
-  auto printers = manager->GetPrinters();
+  auto printers = manager_->GetPrinters();
   ASSERT_EQ(2U, printers.size());
   EXPECT_NE(kPrinterId, printers.at(0)->id());
   EXPECT_NE(kPrinterId, printers.at(1)->id());
 }
 
-TEST(PrinterPrefManagerTest, RecommendedPrinters) {
-  content::TestBrowserThreadBundle thread_bundle;
+// Tests for policy printers
 
+TEST_F(PrinterPrefManagerTest, RecommendedPrinters) {
   std::string first_printer =
       R"json({
       "display_name": "Color Laser",
@@ -120,42 +193,32 @@ TEST(PrinterPrefManagerTest, RecommendedPrinters) {
   value->AppendString(first_printer);
   value->AppendString(second_printer);
 
-  TestingProfile profile;
   sync_preferences::TestingPrefServiceSyncable* prefs =
-      profile.GetTestingPrefService();
+      profile_->GetTestingPrefService();
   // TestingPrefSyncableService assumes ownership of |value|.
   prefs->SetManagedPref(prefs::kRecommendedNativePrinters, value.release());
 
-  PrinterPrefManager* manager =
-      PrinterPrefManagerFactory::GetForBrowserContext(&profile);
-
-  auto printers = manager->GetRecommendedPrinters();
+  auto printers = manager_->GetRecommendedPrinters();
   ASSERT_EQ(2U, printers.size());
   EXPECT_EQ("Color Laser", printers[0]->display_name());
   EXPECT_EQ("ipp://192.168.1.5", printers[1]->uri());
   EXPECT_EQ(Printer::Source::SRC_POLICY, printers[1]->source());
 }
 
-TEST(PrinterPrefManagerTest, GetRecommendedPrinter) {
-  content::TestBrowserThreadBundle thread_bundle;
-
+TEST_F(PrinterPrefManagerTest, GetRecommendedPrinter) {
   std::string printer = kLexJson;
   auto value = base::MakeUnique<base::ListValue>();
   value->AppendString(printer);
 
-  TestingProfile profile;
   sync_preferences::TestingPrefServiceSyncable* prefs =
-      profile.GetTestingPrefService();
+      profile_->GetTestingPrefService();
   // TestingPrefSyncableService assumes ownership of |value|.
   prefs->SetManagedPref(prefs::kRecommendedNativePrinters, value.release());
 
-  PrinterPrefManager* manager =
-      PrinterPrefManagerFactory::GetForBrowserContext(&profile);
-
-  auto printers = manager->GetRecommendedPrinters();
+  auto printers = manager_->GetRecommendedPrinters();
 
   const Printer& from_list = *(printers.front());
-  std::unique_ptr<Printer> retrieved = manager->GetPrinter(from_list.id());
+  std::unique_ptr<Printer> retrieved = manager_->GetPrinter(from_list.id());
 
   EXPECT_EQ(from_list.id(), retrieved->id());
   EXPECT_EQ("LexaPrint", from_list.display_name());

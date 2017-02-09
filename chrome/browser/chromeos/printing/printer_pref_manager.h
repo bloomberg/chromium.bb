@@ -10,6 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/printer_translator.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -25,7 +28,15 @@ namespace chromeos {
 
 class PrinterPrefManager : public KeyedService {
  public:
-  explicit PrinterPrefManager(Profile* profile);
+  class Observer {
+   public:
+    virtual void OnPrinterAdded(const Printer& printer) = 0;
+    virtual void OnPrinterUpdated(const Printer& printer) = 0;
+    virtual void OnPrinterRemoved(const Printer& printer) = 0;
+  };
+
+  PrinterPrefManager(Profile* profile,
+                     std::unique_ptr<PrintersSyncBridge> sync_bridge);
   ~PrinterPrefManager() override;
 
   // Register the printing preferences with the |registry|.
@@ -48,6 +59,19 @@ class PrinterPrefManager : public KeyedService {
   // the printer was successfully removed.
   bool RemovePrinter(const std::string& printer_id);
 
+  // Attach |observer| for notification of events.  |observer| is expected to
+  // live on the same thread (UI) as this object.  OnPrinter* methods are
+  // invoked inline so calling RegisterPrinter in response to OnPrinterAdded is
+  // forbidden.
+  void AddObserver(PrinterPrefManager::Observer* observer);
+
+  // Remove |observer| so that it no longer receives notifications.  After the
+  // completion of this method, the |observer| can be safely destroyed.
+  void RemoveObserver(PrinterPrefManager::Observer* observer);
+
+  // Returns a ModelTypeSyncBridge for the sync client.
+  PrintersSyncBridge* GetSyncBridge();
+
  private:
   // Updates the in-memory recommended printer list.
   void UpdateRecommendedPrinters();
@@ -55,11 +79,18 @@ class PrinterPrefManager : public KeyedService {
   Profile* profile_;
   PrefChangeRegistrar pref_change_registrar_;
 
+  // The backend for profile printers.
+  std::unique_ptr<PrintersSyncBridge> sync_bridge_;
+
   // Contains the keys for all recommended printers in order so we can return
   // the list of recommended printers in the order they were received.
   std::vector<std::string> recommended_printer_ids_;
   std::map<std::string, std::unique_ptr<base::DictionaryValue>>
       recommended_printers_;
+
+  base::ObserverList<Observer> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrinterPrefManager);
 };
 
 }  // namespace chromeos

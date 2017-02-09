@@ -104,6 +104,9 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/printing/printer_pref_manager.h"
+#include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
+#include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_data_type_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "components/sync_wifi/wifi_credential_syncable_service.h"
@@ -448,6 +451,12 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
       return autofill::AutocompleteSyncBridge::FromWebDataService(
                  web_data_service_.get())
           ->AsWeakPtr();
+#if defined(OS_CHROMEOS)
+    case syncer::PRINTERS:
+      return chromeos::PrinterPrefManagerFactory::GetForBrowserContext(profile_)
+          ->GetSyncBridge()
+          ->AsWeakPtr();
+#endif
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();
@@ -626,6 +635,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
             syncer::WIFI_CREDENTIALS, error_callback, this, syncer::GROUP_UI,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
   }
+
   // TODO(lgcheng): Add switch for this.
   sync_service->RegisterDataTypeController(
       base::MakeUnique<ArcPackageSyncDataTypeController>(

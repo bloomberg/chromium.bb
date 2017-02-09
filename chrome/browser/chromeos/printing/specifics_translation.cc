@@ -31,18 +31,15 @@ Printer::PpdReference SpecificsToPpd(
   return ref;
 }
 
-sync_pb::PrinterPPDReference ReferenceToSpecifics(
-    const Printer::PpdReference& ref) {
-  sync_pb::PrinterPPDReference specifics;
+void MergeReferenceToSpecifics(sync_pb::PrinterPPDReference* specifics,
+                               const Printer::PpdReference& ref) {
   if (!ref.user_supplied_ppd_url.empty()) {
-    specifics.set_user_supplied_ppd_url(ref.user_supplied_ppd_url);
+    specifics->set_user_supplied_ppd_url(ref.user_supplied_ppd_url);
   }
 
   if (!ref.effective_make_and_model.empty()) {
-    specifics.set_effective_make_and_model(ref.effective_make_and_model);
+    specifics->set_effective_make_and_model(ref.effective_make_and_model);
   }
-
-  return specifics;
 }
 
 }  // namespace
@@ -70,6 +67,14 @@ std::unique_ptr<sync_pb::PrinterSpecifics> PrinterToSpecifics(
 
   auto specifics = base::MakeUnique<sync_pb::PrinterSpecifics>();
   specifics->set_id(printer.id());
+  MergePrinterToSpecifics(printer, specifics.get());
+  return specifics;
+}
+
+void MergePrinterToSpecifics(const Printer& printer,
+                             sync_pb::PrinterSpecifics* specifics) {
+  // Never update id it needs to be stable.
+  DCHECK_EQ(printer.id(), specifics->id());
 
   if (!printer.display_name().empty())
     specifics->set_display_name(printer.display_name());
@@ -89,10 +94,8 @@ std::unique_ptr<sync_pb::PrinterSpecifics> PrinterToSpecifics(
   if (!printer.uuid().empty())
     specifics->set_uuid(printer.uuid());
 
-  *specifics->mutable_ppd_reference() =
-      ReferenceToSpecifics(printer.ppd_reference());
-
-  return specifics;
+  MergeReferenceToSpecifics(specifics->mutable_ppd_reference(),
+                            printer.ppd_reference());
 }
 
 }  // namespace printing

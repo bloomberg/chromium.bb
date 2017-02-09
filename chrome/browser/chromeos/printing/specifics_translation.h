@@ -19,6 +19,10 @@ std::unique_ptr<Printer> SpecificsToPrinter(
 std::unique_ptr<sync_pb::PrinterSpecifics> PrinterToSpecifics(
     const Printer& printer);
 
+// Merge fields from |printer| into |specifics|.
+void MergePrinterToSpecifics(const Printer& printer,
+                             sync_pb::PrinterSpecifics* specifics);
+
 }  // namespace printing
 }  // namespace chromeos
 
