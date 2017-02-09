@@ -112,7 +112,7 @@ void ArrayBufferContents::allocateMemoryWithFlags(size_t size,
                                                   int flags,
                                                   void*& data) {
   data = PartitionAllocGenericFlags(
-      WTF::Partitions::bufferPartition(), flags, size,
+      Partitions::arrayBufferPartition(), flags, size,
       WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
   if (policy == ZeroInitialize && data)
     memset(data, '\0', size);
@@ -131,7 +131,7 @@ void ArrayBufferContents::allocateMemoryOrNull(size_t size,
 }
 
 void ArrayBufferContents::freeMemory(void* data, size_t size) {
-  Partitions::bufferFree(data);
+  PartitionFreeGeneric(Partitions::arrayBufferPartition(), data);
 }
 
 ArrayBufferContents::DataHolder::DataHolder()

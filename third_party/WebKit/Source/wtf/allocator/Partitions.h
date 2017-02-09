@@ -49,6 +49,11 @@ class WTF_EXPORT Partitions {
   static const char* const kAllocatedObjectPoolName;
 
   static void initialize(ReportPartitionAllocSizeFunction);
+  ALWAYS_INLINE static base::PartitionRootGeneric* arrayBufferPartition() {
+    DCHECK(s_initialized);
+    return m_arrayBufferAllocator.root();
+  }
+
   ALWAYS_INLINE static base::PartitionRootGeneric* bufferPartition() {
     DCHECK(s_initialized);
     return m_bufferAllocator.root();
@@ -76,6 +81,7 @@ class WTF_EXPORT Partitions {
   static size_t totalSizeOfCommittedPages() {
     size_t totalSize = 0;
     totalSize += m_fastMallocAllocator.root()->total_size_of_committed_pages;
+    totalSize += m_arrayBufferAllocator.root()->total_size_of_committed_pages;
     totalSize += m_bufferAllocator.root()->total_size_of_committed_pages;
     totalSize += m_layoutAllocator.root()->total_size_of_committed_pages;
     return totalSize;
@@ -131,12 +137,14 @@ class WTF_EXPORT Partitions {
   //     is for performance: As LayoutObjects are guaranteed to only be used
   //     by the main thread, we can bypass acquiring a lock. Also we can
   //     improve memory locality by putting LayoutObjects together.
-  //   - Buffer partition: A partition to allocate objects that have a strong
-  //     risk where the length and/or the contents are exploited from user
-  //     scripts. Vectors, HashTables, ArrayBufferContents and Strings are
-  //     allocated in the buffer partition.
+  //   - ArrayBuffer partition: A partition to allocate array buffers.
+  //   - Buffer partition: A partition to allocate other buffers that have
+  //     a strong risk where the length and/or the contents are exploited from
+  //     user scripts. Vectors, HashTables and Strings are allocated in the
+  //      buffer partition.
   //   - Fast malloc partition: A partition to allocate all other objects.
   static base::PartitionAllocatorGeneric m_fastMallocAllocator;
+  static base::PartitionAllocatorGeneric m_arrayBufferAllocator;
   static base::PartitionAllocatorGeneric m_bufferAllocator;
   static base::SizeSpecificPartitionAllocator<1024> m_layoutAllocator;
   static ReportPartitionAllocSizeFunction m_reportSizeFunction;

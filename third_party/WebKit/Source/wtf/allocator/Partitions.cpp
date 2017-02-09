@@ -43,6 +43,7 @@ base::subtle::SpinLock Partitions::s_initializationLock;
 bool Partitions::s_initialized = false;
 
 base::PartitionAllocatorGeneric Partitions::m_fastMallocAllocator;
+base::PartitionAllocatorGeneric Partitions::m_arrayBufferAllocator;
 base::PartitionAllocatorGeneric Partitions::m_bufferAllocator;
 base::SizeSpecificPartitionAllocator<1024> Partitions::m_layoutAllocator;
 Partitions::ReportPartitionAllocSizeFunction Partitions::m_reportSizeFunction =
@@ -55,6 +56,7 @@ void Partitions::initialize(
   if (!s_initialized) {
     base::PartitionAllocGlobalInit(&Partitions::handleOutOfMemory);
     m_fastMallocAllocator.init();
+    m_arrayBufferAllocator.init();
     m_bufferAllocator.init();
     m_layoutAllocator.init();
     m_reportSizeFunction = reportSizeFunction;
@@ -67,6 +69,8 @@ void Partitions::decommitFreeableMemory() {
   if (!s_initialized)
     return;
 
+  PartitionPurgeMemoryGeneric(arrayBufferPartition(),
+                              base::PartitionPurgeDecommitEmptyPages);
   PartitionPurgeMemoryGeneric(bufferPartition(),
                               base::PartitionPurgeDecommitEmptyPages);
   PartitionPurgeMemoryGeneric(fastMallocPartition(),
@@ -100,6 +104,8 @@ void Partitions::dumpMemoryStats(
 
   decommitFreeableMemory();
   PartitionDumpStatsGeneric(fastMallocPartition(), "fast_malloc", isLightDump,
+                            partitionStatsDumper);
+  PartitionDumpStatsGeneric(arrayBufferPartition(), "array_buffer", isLightDump,
                             partitionStatsDumper);
   PartitionDumpStatsGeneric(bufferPartition(), "buffer", isLightDump,
                             partitionStatsDumper);

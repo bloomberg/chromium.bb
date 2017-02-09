@@ -68,6 +68,7 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "web_cache/Other_resources",
     "partition_alloc/allocated_objects",
     "partition_alloc/partitions",
+    "partition_alloc/partitions/array_buffer",
     "partition_alloc/partitions/buffer",
     "partition_alloc/partitions/fast_malloc",
     "partition_alloc/partitions/layout",
