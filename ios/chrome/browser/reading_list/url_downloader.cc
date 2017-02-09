@@ -255,9 +255,9 @@ void URLDownloader::DistillerCallback(
     const std::string& title) {
   if (html.empty()) {
     // The page may not be HTML. Check the mime-type to see if another handler
-    // can save offline content
+    // can save offline content.
     if (mime_type_ == "application/pdf") {
-      // PDF handler just downloads the PDF dfile
+      // PDF handler just downloads the PDF file.
       FetchPDFFile();
       return;
     }
