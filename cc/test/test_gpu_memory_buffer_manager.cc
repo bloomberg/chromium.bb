@@ -129,7 +129,10 @@ TestGpuMemoryBufferManager::TestGpuMemoryBufferManager() {
 }
 
 TestGpuMemoryBufferManager::~TestGpuMemoryBufferManager() {
-  DCHECK(buffers_.empty());
+  {
+    base::AutoLock hold(buffers_lock_);
+    DCHECK(buffers_.empty());
+  }
   DCHECK(clients_.empty());
   if (parent_gpu_memory_buffer_manager_)
     parent_gpu_memory_buffer_manager_->clients_.erase(client_id_);
@@ -148,6 +151,7 @@ TestGpuMemoryBufferManager::CreateClientGpuMemoryBufferManager() {
 
 void TestGpuMemoryBufferManager::OnGpuMemoryBufferDestroyed(
     gfx::GpuMemoryBufferId gpu_memory_buffer_id) {
+  base::AutoLock hold(buffers_lock_);
   DCHECK(buffers_.find(gpu_memory_buffer_id.id) != buffers_.end());
   buffers_.erase(gpu_memory_buffer_id.id);
 }
@@ -168,6 +172,7 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBuffer(
       this, last_gpu_memory_buffer_id_, size, format, std::move(shared_memory),
       0, base::checked_cast<int>(
              gfx::RowSizeForBufferFormat(size.width(), format, 0))));
+  base::AutoLock hold(buffers_lock_);
   buffers_[last_gpu_memory_buffer_id_] = result.get();
   return result;
 }
