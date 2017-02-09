@@ -909,7 +909,11 @@ if (is_win) {
       script = "//chrome/tools/build/mac/copy_keystone_framework.py"
 
       framework_path = "//third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework"
-      output_path = "$root_out_dir/$chrome_framework_name.framework/Frameworks/"
+      output_path = "$root_out_dir/$chrome_framework_name.framework/"
+      if (defined(chrome_framework_version)) {
+        output_path += "/Versions/$chrome_framework_version/"
+      }
+      output_path += "Frameworks/"
 
       sources = [
         framework_path,
@@ -1013,7 +1017,10 @@ if (is_win) {
       ]
 
       if (is_chrome_branded) {
-        framework_contents += [ "Default Apps" ]
+        framework_contents += [
+          "Default Apps",
+          "Frameworks",  # For KeystoneRegistration.framework.
+        ]
       }
       if (enable_nacl) {
         framework_contents += [ "Internet Plug-Ins" ]
