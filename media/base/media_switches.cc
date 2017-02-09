@@ -204,6 +204,13 @@ const base::Feature kExternalClearKeyForTesting{
 // Lock the screen orientation when a video goes fullscreen.
 const base::Feature kVideoFullscreenOrientationLock{
     "VideoFullscreenOrientationLock", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// An experimental feature to enable persistent-license type support in MediaDrm
+// when using Encrypted Media Extensions (EME) API.
+// TODO(xhwang): Remove this after feature launch. See http://crbug.com/493521
+const base::Feature kMediaDrmPersistentLicense{
+    "MediaDrmPersistentLicense", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif
 
 }  // namespace media

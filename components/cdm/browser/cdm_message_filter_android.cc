@@ -118,6 +118,9 @@ void CdmMessageFilterAndroid::OnQueryKeySystemSupport(
   // TODO(qinmin): check composition is supported or not.
   response->compositing_codecs = GetSupportedCodecs(request, true);
   response->non_compositing_codecs = GetSupportedCodecs(request, false);
+
+  response->is_persistent_license_supported =
+      MediaDrmBridge::IsPersistentLicenseTypeSupported(request.key_system);
 }
 
 void CdmMessageFilterAndroid::OnGetPlatformKeySystemNames(

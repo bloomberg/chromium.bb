@@ -79,6 +79,8 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       const std::string& key_system,
       const std::string& container_mime_type);
 
+  static bool IsPersistentLicenseTypeSupported(const std::string& key_system);
+
   // Returns the list of the platform-supported key system names that
   // are not handled by Chrome explicitly.
   static std::vector<std::string> GetPlatformKeySystemNames();

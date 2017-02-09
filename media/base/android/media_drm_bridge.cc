@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/hash_tables.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -29,6 +30,7 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_drm_bridge_delegate.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/media_switches.h"
 #include "media/base/provision_fetcher.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
@@ -259,6 +261,20 @@ bool MediaDrmBridge::IsKeySystemSupported(const std::string& key_system) {
 }
 
 // static
+bool MediaDrmBridge::IsPersistentLicenseTypeSupported(
+    const std::string& key_system) {
+  if (!MediaDrmBridge::IsAvailable())
+    return false;
+
+  if (!base::FeatureList::IsEnabled(kMediaDrmPersistentLicense)) {
+    return false;
+  }
+
+  NOTIMPLEMENTED() << "In development. See http://crbug.com/493521";
+  return false;
+}
+
+// static
 bool MediaDrmBridge::IsKeySystemSupportedWithType(
     const std::string& key_system,
     const std::string& container_mime_type) {
@@ -423,6 +439,8 @@ void MediaDrmBridge::LoadSession(
     std::unique_ptr<media::NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;
+
+  DCHECK(base::FeatureList::IsEnabled(kMediaDrmPersistentLicense));
 
   NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
   promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
