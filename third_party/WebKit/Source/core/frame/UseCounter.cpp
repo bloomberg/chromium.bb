@@ -1246,7 +1246,6 @@ void UseCounter::count(CSSParserMode cssParserMode, CSSPropertyID property) {
 }
 
 void UseCounter::count(Feature feature) {
-  DCHECK(Deprecation::deprecationMessage(feature).isEmpty());
   recordMeasurement(feature);
 }
 

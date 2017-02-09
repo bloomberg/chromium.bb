@@ -39,7 +39,7 @@ void SharedWorkerRepository::connect(
   params.creation_context_type = creation_context_type;
   ViewHostMsg_CreateWorker_Reply reply;
 
-  // This proxy will self-destruct when a connection is established.
+  // This proxy will self-destruct when a worker is destroyed.
   new WebSharedWorkerProxy(std::move(listener), params, channel);
 }
 

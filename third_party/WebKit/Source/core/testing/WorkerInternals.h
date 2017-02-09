@@ -11,6 +11,7 @@
 namespace blink {
 
 class OriginTrialsTest;
+class ScriptState;
 
 class WorkerInternals final : public GarbageCollectedFinalized<WorkerInternals>,
                               public ScriptWrappable {
@@ -19,7 +20,10 @@ class WorkerInternals final : public GarbageCollectedFinalized<WorkerInternals>,
  public:
   static WorkerInternals* create() { return new WorkerInternals(); }
   virtual ~WorkerInternals();
+
   OriginTrialsTest* originTrialsTest() const;
+  void countFeature(ScriptState*, uint32_t feature);
+  void countDeprecation(ScriptState*, uint32_t feature);
 
   DEFINE_INLINE_TRACE() {}
 

@@ -69,7 +69,7 @@ class CORE_EXPORT UseCounter {
 
   UseCounter(Context = DefaultContext);
 
-  enum Feature {
+  enum Feature : uint32_t {
     // Do not change assigned numbers of existing items: add new features
     // to the end of the list.
     OBSOLETE_PageDestruction = 0,

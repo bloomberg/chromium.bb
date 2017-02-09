@@ -538,7 +538,19 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WorkerScriptLoadFailed)
 
 // Sent when the worker has connected.
 // This message is sent only if the worker successfully loaded the script.
-IPC_MESSAGE_ROUTED0(ViewMsg_WorkerConnected)
+// |used_features| is the set of features that the worker has used. The values
+// must be from blink::UseCounter::Feature enum.
+IPC_MESSAGE_ROUTED1(ViewMsg_WorkerConnected,
+                    std::set<uint32_t> /* used_features */)
+
+// Sent when the worker is destroyed.
+IPC_MESSAGE_ROUTED0(ViewMsg_WorkerDestroyed)
+
+// Sent when the worker calls API that should be recored in UseCounter.
+// |feature| must be one of the values from blink::UseCounter::Feature
+// enum.
+IPC_MESSAGE_ROUTED1(ViewMsg_CountFeatureOnSharedWorker,
+                    uint32_t /* feature */)
 
 // Sent by the browser to synchronize with the next compositor frame. Used only
 // for tests.

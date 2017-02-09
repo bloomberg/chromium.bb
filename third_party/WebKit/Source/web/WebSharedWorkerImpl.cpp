@@ -222,16 +222,18 @@ WebSharedWorkerImpl::createClientMessageLoop() {
 
 // WorkerReportingProxy --------------------------------------------------------
 
-void WebSharedWorkerImpl::countFeature(UseCounter::Feature) {
-  // TODO(nhiroki): Support UseCounter for SharedWorker. Send an IPC message to
-  // the browser process and ask each connected document to record API use in
-  // its UseCounter (https://crbug.com/376039).
+void WebSharedWorkerImpl::countFeature(UseCounter::Feature feature) {
+  m_parentFrameTaskRunners->get(TaskType::UnspecedTimer)
+      ->postTask(BLINK_FROM_HERE,
+                 crossThreadBind(&WebSharedWorkerClient::countFeature,
+                                 crossThreadUnretained(m_client), feature));
 }
 
-void WebSharedWorkerImpl::countDeprecation(UseCounter::Feature) {
-  // TODO(nhiroki): Support UseCounter for SharedWorker. Send an IPC message to
-  // the browser process and ask each connected document to record API use in
-  // its UseCounter (https://crbug.com/376039).
+void WebSharedWorkerImpl::countDeprecation(UseCounter::Feature feature) {
+  // Go through the same code path with countFeature() because a deprecation
+  // message is already shown on the worker console and a remaining work is just
+  // to record an API use.
+  countFeature(feature);
 }
 
 void WebSharedWorkerImpl::reportException(const String& errorMessage,

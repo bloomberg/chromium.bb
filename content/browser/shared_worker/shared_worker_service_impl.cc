@@ -347,6 +347,15 @@ void SharedWorkerServiceImpl::DocumentDetached(
   }
 }
 
+void SharedWorkerServiceImpl::CountFeature(SharedWorkerMessageFilter* filter,
+                                           int worker_route_id,
+                                           uint32_t feature) {
+  if (SharedWorkerHost* host =
+          FindSharedWorkerHost(filter->render_process_id(), worker_route_id)) {
+    host->CountFeature(feature);
+  }
+}
+
 void SharedWorkerServiceImpl::WorkerContextClosed(
     SharedWorkerMessageFilter* filter,
     int worker_route_id) {
@@ -360,6 +369,10 @@ void SharedWorkerServiceImpl::WorkerContextDestroyed(
     SharedWorkerMessageFilter* filter,
     int worker_route_id) {
   ScopedWorkerDependencyChecker checker(this);
+  if (SharedWorkerHost* host =
+          FindSharedWorkerHost(filter->render_process_id(), worker_route_id)) {
+    host->WorkerContextDestroyed();
+  }
   ProcessRouteIdPair key(filter->render_process_id(), worker_route_id);
   worker_hosts_.erase(key);
 }

@@ -60,6 +60,8 @@ bool WebSharedWorkerProxy::OnMessageReceived(const IPC::Message& message) {
                         OnWorkerScriptLoadFailed)
     IPC_MESSAGE_HANDLER(ViewMsg_WorkerConnected,
                         OnWorkerConnected)
+    IPC_MESSAGE_HANDLER(ViewMsg_WorkerDestroyed, OnWorkerDestroyed)
+    IPC_MESSAGE_HANDLER(ViewMsg_CountFeatureOnSharedWorker, OnCountFeature)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -76,9 +78,19 @@ void WebSharedWorkerProxy::OnWorkerScriptLoadFailed() {
   delete this;
 }
 
-void WebSharedWorkerProxy::OnWorkerConnected() {
+void WebSharedWorkerProxy::OnWorkerConnected(
+    const std::set<uint32_t>& used_features) {
   listener_->connected();
+  for (uint32_t feature : used_features)
+    listener_->countFeature(feature);
+}
+
+void WebSharedWorkerProxy::OnWorkerDestroyed() {
   delete this;
+}
+
+void WebSharedWorkerProxy::OnCountFeature(uint32_t feature) {
+  listener_->countFeature(feature);
 }
 
 }  // namespace content

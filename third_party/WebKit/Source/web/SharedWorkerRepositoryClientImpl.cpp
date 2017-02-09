@@ -96,6 +96,11 @@ class SharedWorkerConnectListener final
 
   void connected() override { m_worker->setIsBeingConnected(false); }
 
+  void countFeature(uint32_t feature) override {
+    UseCounter::count(m_worker->getExecutionContext(),
+                      static_cast<UseCounter::Feature>(feature));
+  }
+
   Persistent<SharedWorker> m_worker;
 };
 

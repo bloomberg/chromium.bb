@@ -4,4 +4,9 @@
 
 interface WorkerInternals {
     OriginTrialsTest originTrialsTest();
+
+    // Records |feature| in worker's use counter. |feature| must be one of the
+    // values from the UseCounter::Feature enum.
+    [CallWith=ScriptState] void countFeature(unsigned long feature);
+    [CallWith=ScriptState] void countDeprecation(unsigned long feature);
 };

@@ -89,6 +89,14 @@ IPC_MESSAGE_ROUTED0(WorkerMsg_WorkerObjectDestroyed)
 // WorkerHost messages
 // These are messages sent from the worker (renderer process) to the worker
 // host (browser process).
+
+// Sent when the worker calls API that should be recored in UseCounter.
+// |feature| must be one of the values from blink::UseCounter::Feature
+// enum.
+IPC_MESSAGE_CONTROL2(WorkerHostMsg_CountFeature,
+                     int /* worker_route_id */,
+                     uint32_t /* feature */)
+
 IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerContextClosed,
                      int /* worker_route_id */)
 

@@ -209,6 +209,10 @@ void EmbeddedSharedWorkerStub::workerScriptLoadFailed() {
   Shutdown();
 }
 
+void EmbeddedSharedWorkerStub::countFeature(uint32_t feature) {
+  Send(new WorkerHostMsg_CountFeature(route_id_, feature));
+}
+
 void EmbeddedSharedWorkerStub::workerContextClosed() {
   Send(new WorkerHostMsg_WorkerContextClosed(route_id_));
 }

@@ -7,6 +7,7 @@
 
 #include <list>
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -62,12 +63,13 @@ class SharedWorkerHost {
   // referenced by active documents.
   void RenderFrameDetached(int render_process_id, int render_frame_id);
 
+  void CountFeature(uint32_t feature);
   void WorkerContextClosed();
+  void WorkerContextDestroyed();
   void WorkerReadyForInspection();
   void WorkerScriptLoaded();
   void WorkerScriptLoadFailed();
   void WorkerConnected(int message_port_id);
-  void WorkerContextDestroyed();
   void AllowFileSystem(const GURL& url,
                        std::unique_ptr<IPC::Message> reply_msg);
   void AllowIndexedDB(const GURL& url,
@@ -140,6 +142,10 @@ class SharedWorkerHost {
   bool termination_message_sent_ = false;
   bool closed_ = false;
   const base::TimeTicks creation_time_;
+
+  // This is the set of features that this worker has used. The values must be
+  // from blink::UseCounter::Feature enum.
+  std::set<uint32_t> used_features_;
 
   base::WeakPtrFactory<SharedWorkerHost> weak_factory_;
 

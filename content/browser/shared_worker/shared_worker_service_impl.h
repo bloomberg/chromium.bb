@@ -61,6 +61,9 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
                        int sent_message_port_id);
   void DocumentDetached(SharedWorkerMessageFilter* filter,
                         unsigned long long document_id);
+  void CountFeature(SharedWorkerMessageFilter* filter,
+                    int worker_route_id,
+                    uint32_t feature);
   void WorkerContextClosed(SharedWorkerMessageFilter* filter,
                            int worker_route_id);
   void WorkerContextDestroyed(SharedWorkerMessageFilter* filter,

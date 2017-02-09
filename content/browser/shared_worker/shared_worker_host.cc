@@ -130,6 +130,15 @@ void SharedWorkerHost::RenderFrameDetached(int render_process_id,
   }
 }
 
+void SharedWorkerHost::CountFeature(uint32_t feature) {
+  if (!used_features_.insert(feature).second)
+    return;
+  for (const auto& filter_info : filters_) {
+    filter_info.filter()->Send(new ViewMsg_CountFeatureOnSharedWorker(
+        filter_info.route_id(), feature));
+  }
+}
+
 void SharedWorkerHost::WorkerContextClosed() {
   // Set the closed flag - this will stop any further messages from
   // being sent to the worker (messages can still be sent from the worker,
@@ -137,6 +146,13 @@ void SharedWorkerHost::WorkerContextClosed() {
   closed_ = true;
   if (!termination_message_sent_)
     NotifyWorkerDestroyed(worker_process_id_, worker_route_id_);
+}
+
+void SharedWorkerHost::WorkerContextDestroyed() {
+  for (const auto& filter_info : filters_) {
+    filter_info.filter()->Send(
+        new ViewMsg_WorkerDestroyed(filter_info.route_id()));
+  }
 }
 
 void SharedWorkerHost::WorkerReadyForInspection() {
@@ -159,7 +175,8 @@ void SharedWorkerHost::WorkerConnected(int message_port_id) {
   for (const FilterInfo& info : filters_) {
     if (info.message_port_id() != message_port_id)
       continue;
-    info.filter()->Send(new ViewMsg_WorkerConnected(info.route_id()));
+    info.filter()->Send(
+        new ViewMsg_WorkerConnected(info.route_id(), used_features_));
     return;
   }
 }

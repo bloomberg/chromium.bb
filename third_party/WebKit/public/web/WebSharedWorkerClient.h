@@ -53,6 +53,7 @@ class WebWorkerContentSettingsClientProxy;
 // or workerContextDestroyed() is called).
 class WebSharedWorkerClient {
  public:
+  virtual void countFeature(uint32_t) = 0;
   virtual void workerContextClosed() = 0;
   virtual void workerContextDestroyed() = 0;
   virtual void workerReadyForInspection() {}

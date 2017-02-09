@@ -351,6 +351,18 @@ void CheckViewMsgWorkerCreated(MockRendererProcessHost* renderer_host,
   EXPECT_EQ(connector->route_id(), msg->routing_id());
 }
 
+void CheckViewMsgCountFeature(MockRendererProcessHost* renderer_host,
+                              MockSharedWorkerConnector* connector,
+                              uint32_t expected_feature) {
+  std::unique_ptr<IPC::Message> msg(renderer_host->PopMessage());
+  EXPECT_EQ(ViewMsg_CountFeatureOnSharedWorker::ID, msg->type());
+  EXPECT_EQ(connector->route_id(), msg->routing_id());
+  ViewMsg_CountFeatureOnSharedWorker::Param params;
+  EXPECT_TRUE(ViewMsg_CountFeatureOnSharedWorker::Read(msg.get(), &params));
+  uint32_t feature = std::get<0>(params);
+  EXPECT_EQ(expected_feature, feature);
+}
+
 void CheckMessagePortMsgMessagesQueued(MockRendererProcessHost* renderer_host,
                                        MockSharedWorkerConnector* connector) {
   std::unique_ptr<IPC::Message> msg(renderer_host->PopMessage());
@@ -385,10 +397,15 @@ void CheckMessagePortMsgMessage(MockRendererProcessHost* renderer_host,
 }
 
 void CheckViewMsgWorkerConnected(MockRendererProcessHost* renderer_host,
-                                 MockSharedWorkerConnector* connector) {
+                                 MockSharedWorkerConnector* connector,
+                                 std::set<uint32_t> expected_used_features) {
   std::unique_ptr<IPC::Message> msg(renderer_host->PopMessage());
   EXPECT_EQ(ViewMsg_WorkerConnected::ID, msg->type());
   EXPECT_EQ(connector->route_id(), msg->routing_id());
+  ViewMsg_WorkerConnected::Param params;
+  EXPECT_TRUE(ViewMsg_WorkerConnected::Read(msg.get(), &params));
+  std::set<uint32_t> used_features = std::get<0>(params);
+  EXPECT_EQ(expected_used_features, used_features);
 }
 
 }  // namespace
@@ -465,7 +482,8 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
           connector->remote_port_id(), worker_route_id)));
   EXPECT_EQ(1U, renderer_host->QueuedMessageCount());
   // ViewMsg_WorkerConnected should be sent to SharedWorkerConnector side.
-  CheckViewMsgWorkerConnected(renderer_host.get(), connector.get());
+  CheckViewMsgWorkerConnected(renderer_host.get(), connector.get(),
+                              std::set<uint32_t>());
 
   // When SharedWorkerConnector side sends MessagePortHostMsg_PostMessage,
   // SharedWorker side shuold receive MessagePortMsg_Message.
@@ -484,6 +502,28 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
   EXPECT_EQ(1U, renderer_host->QueuedMessageCount());
   CheckMessagePortMsgMessage(
       renderer_host.get(), connector->local_port_route_id(), "test2");
+
+  // SharedWorker sends WorkerHostMsg_CountFeature in
+  // EmbeddedSharedWorkerStub::CountFeature().
+  uint32_t feature1 = 124;
+  EXPECT_TRUE(renderer_host->OnMessageReceived(
+      new WorkerHostMsg_CountFeature(worker_route_id, feature1)));
+  EXPECT_EQ(1U, renderer_host->QueuedMessageCount());
+  // ViewMsg_CountFeature should be sent to SharedWorkerConnector side.
+  CheckViewMsgCountFeature(renderer_host.get(), connector.get(), feature1);
+  // A message should be sent only one time per feature.
+  EXPECT_TRUE(renderer_host->OnMessageReceived(
+      new WorkerHostMsg_CountFeature(worker_route_id, feature1)));
+  EXPECT_EQ(0U, renderer_host->QueuedMessageCount());
+
+  // SharedWorker sends WorkerHostMsg_CountFeature in
+  // EmbeddedSharedWorkerStub::CountFeature() for another feature use.
+  uint32_t feature2 = 901;
+  EXPECT_TRUE(renderer_host->OnMessageReceived(
+      new WorkerHostMsg_CountFeature(worker_route_id, feature2)));
+  EXPECT_EQ(1U, renderer_host->QueuedMessageCount());
+  // ViewMsg_CountFeature should be sent to SharedWorkerConnector side.
+  CheckViewMsgCountFeature(renderer_host.get(), connector.get(), feature2);
 
   // UpdateWorkerDependency should not be called.
   EXPECT_EQ(0, s_update_worker_dependency_call_count_);
@@ -562,7 +602,8 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
           connector0->remote_port_id(), worker_route_id)));
   EXPECT_EQ(1U, renderer_host0->QueuedMessageCount());
   // ViewMsg_WorkerConnected should be sent to SharedWorkerConnector side.
-  CheckViewMsgWorkerConnected(renderer_host0.get(), connector0.get());
+  CheckViewMsgWorkerConnected(renderer_host0.get(), connector0.get(),
+                              std::set<uint32_t>());
 
   // When SharedWorkerConnector side sends MessagePortHostMsg_PostMessage,
   // SharedWorker side shuold receive MessagePortMsg_Message.
@@ -581,6 +622,21 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   EXPECT_EQ(1U, renderer_host0->QueuedMessageCount());
   CheckMessagePortMsgMessage(
       renderer_host0.get(), connector0->local_port_route_id(), "test2");
+
+  // SharedWorker sends WorkerHostMsg_CountFeature in
+  // EmbeddedSharedWorkerStub::CountFeature().
+  uint32_t feature1 = 124;
+  EXPECT_TRUE(renderer_host0->OnMessageReceived(
+      new WorkerHostMsg_CountFeature(worker_route_id, feature1)));
+  EXPECT_EQ(1U, renderer_host0->QueuedMessageCount());
+  // ViewMsg_CountFeature should be sent to SharedWorkerConnector side.
+  CheckViewMsgCountFeature(renderer_host0.get(), connector0.get(), feature1);
+  uint32_t feature2 = 901;
+  EXPECT_TRUE(renderer_host0->OnMessageReceived(
+      new WorkerHostMsg_CountFeature(worker_route_id, feature2)));
+  EXPECT_EQ(1U, renderer_host0->QueuedMessageCount());
+  // ViewMsg_CountFeature should be sent to SharedWorkerConnector side.
+  CheckViewMsgCountFeature(renderer_host0.get(), connector0.get(), feature2);
 
   // The second renderer host.
   std::unique_ptr<MockRendererProcessHost> renderer_host1(
@@ -642,7 +698,8 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
           connector1->remote_port_id(), worker_route_id)));
   EXPECT_EQ(1U, renderer_host1->QueuedMessageCount());
   // ViewMsg_WorkerConnected should be sent to SharedWorkerConnector side.
-  CheckViewMsgWorkerConnected(renderer_host1.get(), connector1.get());
+  CheckViewMsgWorkerConnected(renderer_host1.get(), connector1.get(),
+                              {feature1, feature2});
 
   // When SharedWorkerConnector side sends MessagePortHostMsg_PostMessage,
   // SharedWorker side shuold receive MessagePortMsg_Message.
@@ -660,6 +717,27 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   EXPECT_EQ(1U, renderer_host1->QueuedMessageCount());
   CheckMessagePortMsgMessage(
       renderer_host1.get(), connector1->local_port_route_id(), "test4");
+
+  // SharedWorker sends WorkerHostMsg_CountFeature in
+  // EmbeddedSharedWorkerStub::CountFeature(). These used_features are already
+  // counted in the browser-side, so messages should not be sent to
+  // SharedWorkerConnectors.
+  EXPECT_TRUE(renderer_host0->OnMessageReceived(
+      new WorkerHostMsg_CountFeature(worker_route_id, feature1)));
+  EXPECT_EQ(0U, renderer_host0->QueuedMessageCount());
+  EXPECT_EQ(0U, renderer_host1->QueuedMessageCount());
+
+  // SharedWorker sends WorkerHostMsg_CountFeature in
+  // EmbeddedSharedWorkerStub::CountFeature() for another feature use.
+  uint32_t feature3 = 1019;
+  EXPECT_TRUE(renderer_host0->OnMessageReceived(
+      new WorkerHostMsg_CountFeature(worker_route_id, feature3)));
+  // ViewMsg_CountFeature should be sent to all SharedWorkerConnectors
+  // connecting to this worker.
+  EXPECT_EQ(1U, renderer_host0->QueuedMessageCount());
+  CheckViewMsgCountFeature(renderer_host0.get(), connector0.get(), feature3);
+  EXPECT_EQ(1U, renderer_host1->QueuedMessageCount());
+  CheckViewMsgCountFeature(renderer_host1.get(), connector1.get(), feature3);
 
   EXPECT_EQ(1, s_update_worker_dependency_call_count_);
   renderer_host1.reset();

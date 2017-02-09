@@ -489,8 +489,8 @@ class Internals final : public GarbageCollected<Internals>,
   float visualViewportScrollY();
 
   // Return true if the given use counter exists for the given document.
-  // |useCounterId| must be one of the values from the UseCounter::Feature enum.
-  bool isUseCounted(Document*, int useCounterId);
+  // |feature| must be one of the values from the UseCounter::Feature enum.
+  bool isUseCounted(Document*, uint32_t feature);
   bool isCSSPropertyUseCounted(Document*, const String&);
 
   String unscopableAttribute();

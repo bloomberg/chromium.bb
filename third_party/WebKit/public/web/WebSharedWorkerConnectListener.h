@@ -48,6 +48,10 @@ class WebSharedWorkerConnectListener {
 
   // Called when a connection is established.
   virtual void connected() = 0;
+
+  // Called when some API to be recorded in UseCounter is called on the worker
+  // global scope.
+  virtual void countFeature(uint32_t) = 0;
 };
 
 }  // namespace blink

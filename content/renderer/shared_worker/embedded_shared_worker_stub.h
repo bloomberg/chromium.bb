@@ -59,6 +59,7 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   void OnChannelError() override;
 
   // blink::WebSharedWorkerClient implementation.
+  void countFeature(uint32_t feature) override;
   void workerContextClosed() override;
   void workerContextDestroyed() override;
   void workerReadyForInspection() override;

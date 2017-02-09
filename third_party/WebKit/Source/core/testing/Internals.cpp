@@ -2997,11 +2997,11 @@ ValueIterable<int>::IterationSource* Internals::startIteration(
   return new InternalsIterationSource();
 }
 
-bool Internals::isUseCounted(Document* document, int useCounterId) {
-  if (useCounterId < 0 || useCounterId >= UseCounter::NumberOfFeatures)
+bool Internals::isUseCounted(Document* document, uint32_t feature) {
+  if (feature >= UseCounter::NumberOfFeatures)
     return false;
   return UseCounter::isCounted(*document,
-                               static_cast<UseCounter::Feature>(useCounterId));
+                               static_cast<UseCounter::Feature>(feature));
 }
 
 bool Internals::isCSSPropertyUseCounted(Document* document,

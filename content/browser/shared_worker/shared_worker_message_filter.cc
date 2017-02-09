@@ -58,6 +58,9 @@ bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         SharedWorkerServiceImpl::GetInstance(),
                         SharedWorkerServiceImpl::DocumentDetached)
     // Only sent from SharedWorker in renderer.
+    IPC_MESSAGE_FORWARD(WorkerHostMsg_CountFeature,
+                        SharedWorkerServiceImpl::GetInstance(),
+                        SharedWorkerServiceImpl::CountFeature)
     IPC_MESSAGE_FORWARD(WorkerHostMsg_WorkerContextClosed,
                         SharedWorkerServiceImpl::GetInstance(),
                         SharedWorkerServiceImpl::WorkerContextClosed)

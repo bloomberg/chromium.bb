@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<title>Shared Worker: UseCounter</title>
+<script>
+self.connectToWorker = () => {
+  return new Promise(resolve => {
+    var worker = new SharedWorker('shared-worker-usecounter.js');
+    worker.port.onmessage = resolve;
+  });
+};
+window.opener.postMessage('LOADED', '*');
+</script>
