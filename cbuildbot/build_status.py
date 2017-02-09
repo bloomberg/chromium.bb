@@ -139,26 +139,30 @@ class SlaveStatus(object):
     else:
       return all_cidb_status_dict
 
-  def _GetAllSlaveBuildbucketInfo(self):
-    """Get buildbucket info for all slave builds from Buildbucket.
+  def _GetAllSlaveBuildbucketInfo(self, scheduled_buildbucket_info_dict):
+    """Get buildbucket info from Buildbucket for all scheduled slave builds.
 
-    For slave builds scheduled by Buildbucket, query statuses from Buildbucket
-    and return a build to BuildbucketInfo dict.
+    For each build in the scheduled builds dict, get build status and build
+    result from Buildbucket and return a updated buildbucket_info_dict.
+
+    Args:
+      scheduled_buildbucket_info_dict: A dict mapping scheduled slave build
+        config name to its buildbucket information in the format of
+        BuildbucketInfo (see buildbucket.GetBuildInfoDict for details).
 
     Returns:
-      A dict mapping all slave build config names to their BuildbucketInfos
-      (The BuildbucketInfo of the most recently retried one of there're
-      multiple retries for a slave build config).
+      A dict mapping all scheduled slave build config names to their
+      BuildbucketInfos (The BuildbucketInfo of the most recently retried one of
+      there're multiple retries for a slave build config).
     """
     assert self.buildbucket_client is not None, 'buildbucket_client is None'
 
-    buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(self.metadata)
     all_buildbucket_info_dict = {}
 
-    for build_config in buildbucket_info_dict.keys():
-      buildbucket_id = buildbucket_info_dict[build_config].buildbucket_id
-      retry = buildbucket_info_dict[build_config].retry
-      created_ts = buildbucket_info_dict[build_config].created_ts
+    for build_config, build_info in scheduled_buildbucket_info_dict.iteritems():
+      buildbucket_id = build_info.buildbucket_id
+      retry = build_info.retry
+      created_ts = build_info.created_ts
       status = None
       result = None
 
@@ -209,7 +213,11 @@ class SlaveStatus(object):
     if (self.config is not None and
         self.metadata is not None and
         config_lib.UseBuildbucketScheduler(self.config)):
-      self.all_buildbucket_info_dict = self._GetAllSlaveBuildbucketInfo()
+      scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
+          self.metadata)
+      self.builders_array = scheduled_buildbucket_info_dict.keys()
+      self.all_buildbucket_info_dict = self._GetAllSlaveBuildbucketInfo(
+          scheduled_buildbucket_info_dict)
       self.buildbucket_info_dict = self._GetNewlyCompletedSlaveBuildbucketInfo(
           self.all_buildbucket_info_dict, self.completed_builds)
       self._SetStatusBuildsDict()

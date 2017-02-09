@@ -10,6 +10,7 @@ import mock
 import os
 import tempfile
 
+from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import build_status
 from chromite.cbuildbot import build_status_unittest
 from chromite.cbuildbot import manifest_version
@@ -458,6 +459,9 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(build_status.SlaveStatus,
                      '_GetAllSlaveCIDBStatusInfo',
                      side_effect=status_runs)
+    self.PatchObject(buildbucket_lib,
+                     'GetBuildInfoDict',
+                     side_effect=buildbucket_info_dicts)
     self.PatchObject(build_status.SlaveStatus,
                      '_GetAllSlaveBuildbucketInfo',
                      side_effect=buildbucket_info_dicts)

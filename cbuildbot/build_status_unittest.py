@@ -134,10 +134,13 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
                             return_value=cidb_status)
 
   def _Mock_GetSlaveStatusesFromBuildbucket(self, buildbucket_info_dict=None):
-    buildbucket_info_dict = buildbucket_info_dict or {}
-    return self.PatchObject(build_status.SlaveStatus,
-                            '_GetNewlyCompletedSlaveBuildbucketInfo',
-                            return_value=buildbucket_info_dict)
+    self.PatchObject(build_status.SlaveStatus,
+                     '_GetAllSlaveBuildbucketInfo')
+    self.PatchObject(build_status.SlaveStatus,
+                     '_GetNewlyCompletedSlaveBuildbucketInfo',
+                     return_value=buildbucket_info_dict)
+    self.PatchObject(buildbucket_lib, 'GetBuildInfoDict',
+                     return_value=buildbucket_info_dict)
 
   def _Mock_GetRetriableBuilds(self, builds=None):
     return self.PatchObject(build_status.SlaveStatus,
@@ -570,6 +573,15 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self._Mock_GetRetriableBuilds(builds=set())
     slaveStatusCompleted = self._GetSlaveStatus(
         builders_array=builders_array,
+        config=self.master_cq_config)
+    self.assertTrue(slaveStatusCompleted._Completed())
+
+  def testCompletedWithNoSlaveScheduledByBuildbucket(self):
+    """Tests Completed returns True when no slaves are scheduled."""
+    self._Mock_GetSlaveStatusesFromCIDB({})
+    self._Mock_GetSlaveStatusesFromBuildbucket({})
+    slaveStatusCompleted = self._GetSlaveStatus(
+        builders_array=['build1', 'build2'],
         config=self.master_cq_config)
     self.assertTrue(slaveStatusCompleted._Completed())
 
@@ -1039,7 +1051,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
         config=self.master_cq_config)
     slave_status.buildbucket_client.GetBuildRequest.return_value = content
     updated_buildbucket_info_dict = (
-        slave_status._GetAllSlaveBuildbucketInfo())
+        slave_status._GetAllSlaveBuildbucketInfo(buildbucket_info_dict))
 
     self.assertEqual(updated_buildbucket_info_dict['build1'].status,
                      expected_status)
@@ -1060,7 +1072,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     }
     slave_status.buildbucket_client.GetBuildRequest.return_value = content
     updated_buildbucket_info_dict = (
-        slave_status._GetAllSlaveBuildbucketInfo())
+        slave_status._GetAllSlaveBuildbucketInfo(buildbucket_info_dict))
 
     self.assertEqual(updated_buildbucket_info_dict['build1'].status,
                      expected_status)
@@ -1075,7 +1087,7 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     slave_status.buildbucket_client.GetBuildRequest.side_effect = (
         buildbucket_lib.BuildbucketResponseException)
     updated_buildbucket_info_dict = (
-        slave_status._GetAllSlaveBuildbucketInfo())
+        slave_status._GetAllSlaveBuildbucketInfo(buildbucket_info_dict))
     self.assertIsNone(updated_buildbucket_info_dict['build1'].status)
     self.assertIsNone(updated_buildbucket_info_dict['build2'].status)
 
