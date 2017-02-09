@@ -15,8 +15,11 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/notification_database_data.h"
+#include "content/public/common/notification_resources.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/mock_platform_notification_service.h"
+#include "content/test/test_content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -24,6 +27,19 @@ namespace content {
 
 // Fake Service Worker registration id to use in tests requiring one.
 const int64_t kFakeServiceWorkerRegistrationId = 42;
+
+class NotificationBrowserClient : public TestContentBrowserClient {
+ public:
+  NotificationBrowserClient()
+      : platform_notification_service_(new MockPlatformNotificationService()) {}
+
+  PlatformNotificationService* GetPlatformNotificationService() override {
+    return platform_notification_service_.get();
+  }
+
+ private:
+  std::unique_ptr<PlatformNotificationService> platform_notification_service_;
+};
 
 class PlatformNotificationContextTest : public ::testing::Test {
  public:
@@ -482,6 +498,71 @@ TEST_F(PlatformNotificationContextTest, ReadAllServiceWorkerDataFilled) {
     EXPECT_EQ(kFakeServiceWorkerRegistrationId,
               notification_database_datas[i].service_worker_registration_id);
   }
+}
+
+TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
+  NotificationBrowserClient notification_browser_client;
+  SetBrowserClientForTesting(&notification_browser_client);
+
+  scoped_refptr<PlatformNotificationContextImpl> context =
+      CreatePlatformNotificationContext();
+
+  GURL origin("https://example.com");
+  NotificationDatabaseData notification_database_data;
+  notification_database_data.service_worker_registration_id =
+      kFakeServiceWorkerRegistrationId;
+  PlatformNotificationData notification_data;
+  content::NotificationResources notification_resources;
+
+  context->WriteNotificationData(
+      origin, notification_database_data,
+      base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
+                 base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(success());
+  EXPECT_FALSE(notification_id().empty());
+
+  PlatformNotificationService* service =
+      notification_browser_client.GetPlatformNotificationService();
+
+  service->DisplayPersistentNotification(browser_context(), notification_id(),
+                                         origin, origin, notification_data,
+                                         notification_resources);
+
+  std::vector<NotificationDatabaseData> notification_database_datas;
+  context->ReadAllNotificationDataForServiceWorkerRegistration(
+      origin, kFakeServiceWorkerRegistrationId,
+      base::Bind(&PlatformNotificationContextTest::DidReadAllNotificationDatas,
+                 base::Unretained(this), &notification_database_datas));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(success());
+  ASSERT_EQ(1u, notification_database_datas.size());
+
+  // Delete the notification from the display service without removing it from
+  // the database. It should automatically synchronize on the next read.
+  service->ClosePersistentNotification(browser_context(), notification_id());
+  context->ReadAllNotificationDataForServiceWorkerRegistration(
+      origin, kFakeServiceWorkerRegistrationId,
+      base::Bind(&PlatformNotificationContextTest::DidReadAllNotificationDatas,
+                 base::Unretained(this), &notification_database_datas));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(success());
+  ASSERT_EQ(0u, notification_database_datas.size());
+
+  context->ReadNotificationData(
+      notification_id(), origin,
+      base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
+                 base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The notification was removed, so we shouldn't be able to read it from
+  // the database anymore.
+  EXPECT_FALSE(success());
 }
 
 }  // namespace content
