@@ -190,7 +190,8 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // Returns whether or not the main thread appears unresponsive, based on the
   // length and frequency of recent main thread tasks. To be called from the
   // compositor thread.
-  virtual bool MainThreadSeemsUnresponsive() = 0;
+  virtual bool MainThreadSeemsUnresponsive(
+      base::TimeDelta main_thread_responsiveness_threshold) = 0;
 
  protected:
   RendererScheduler();

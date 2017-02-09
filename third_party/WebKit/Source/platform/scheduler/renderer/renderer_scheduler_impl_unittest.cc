@@ -206,10 +206,7 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
 
   RendererSchedulerImplForTest(
       scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-      : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {
-    main_thread_responsiveness_threshold_ =
-        base::TimeDelta::FromMilliseconds(200);
-  }
+      : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {}
 
   void UpdatePolicyLocked(UpdateType update_type) override {
     update_policy_count_++;
@@ -639,6 +636,10 @@ class RendererSchedulerImplTest : public testing::Test {
   static base::TimeDelta rails_response_time() {
     return base::TimeDelta::FromMilliseconds(
         RendererSchedulerImpl::kRailsResponseTimeMillis);
+  }
+
+  static base::TimeDelta responsiveness_threshold() {
+    return base::TimeDelta::FromMilliseconds(200);
   }
 
   template <typename E>
@@ -3755,44 +3756,53 @@ TEST_F(RendererSchedulerImplTest,
 }
 
 TEST_F(RendererSchedulerImplTest, UnresponsiveMainThread) {
-  EXPECT_FALSE(scheduler_->MainThreadSeemsUnresponsive());
+  EXPECT_FALSE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
 
   // Add one second long task.
   AdvanceTimeWithTask(1);
-  EXPECT_TRUE(scheduler_->MainThreadSeemsUnresponsive());
+  EXPECT_TRUE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
 
   // Wait a second.
   clock_->Advance(base::TimeDelta::FromSecondsD(2));
 
   AdvanceTimeWithTask(0.5);
-  EXPECT_FALSE(scheduler_->MainThreadSeemsUnresponsive());
+  EXPECT_FALSE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
 }
 
 TEST_F(RendererSchedulerImplTest, ResponsiveMainThreadDuringTask) {
-  EXPECT_FALSE(scheduler_->MainThreadSeemsUnresponsive());
+  EXPECT_FALSE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
   clock_->Advance(base::TimeDelta::FromSecondsD(2));
   scheduler_->willProcessTask(
       scheduler_->TimerTaskRunner().get(),
       (clock_->NowTicks() - base::TimeTicks()).InSecondsF());
-  EXPECT_FALSE(scheduler_->MainThreadSeemsUnresponsive());
+  EXPECT_FALSE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
 }
 
 TEST_F(RendererSchedulerImplTest, UnresponsiveMainThreadWithContention) {
   // Process a long task, lock the queueing time estimator, and check that we
   // still report the main thread is unresponsive.
   AdvanceTimeWithTask(1);
-  EXPECT_TRUE(scheduler_->MainThreadSeemsUnresponsive());
+  EXPECT_TRUE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
   GetQueueingTimeEstimatorLock();
-  EXPECT_TRUE(scheduler_->MainThreadSeemsUnresponsive());
+  EXPECT_TRUE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
 
   // Advance the clock, so that in the last second, we were responsive.
   clock_->Advance(base::TimeDelta::FromSecondsD(2));
   // While the queueing time estimator is locked, we believe the thread to still
   // be unresponsive.
-  EXPECT_TRUE(scheduler_->MainThreadSeemsUnresponsive());
+  EXPECT_TRUE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
   // Once we've dropped the lock, we realize the main thread is responsive.
   DropQueueingTimeEstimatorLock();
-  EXPECT_FALSE(scheduler_->MainThreadSeemsUnresponsive());
+  EXPECT_FALSE(
+      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
 }
 
 }  // namespace scheduler

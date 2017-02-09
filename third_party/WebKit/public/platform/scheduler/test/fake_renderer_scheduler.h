@@ -60,7 +60,8 @@ class FakeRendererScheduler : public RendererScheduler {
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
   void SetRAILModeObserver(RAILModeObserver* observer) override;
-  bool MainThreadSeemsUnresponsive() override;
+  bool MainThreadSeemsUnresponsive(
+      base::TimeDelta main_thread_responsiveness_threshold) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeRendererScheduler);

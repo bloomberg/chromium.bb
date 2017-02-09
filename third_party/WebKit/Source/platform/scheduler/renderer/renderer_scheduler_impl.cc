@@ -47,9 +47,6 @@ constexpr base::TimeDelta kThreadLoadTrackerWaitingPeriodBeforeReporting =
 // We do not throttle anything while audio is played and shortly after that.
 constexpr base::TimeDelta kThrottlingDelayAfterAudioIsPlayed =
     base::TimeDelta::FromSeconds(5);
-// Maximum task queueing time before the main thread is considered unresponsive.
-constexpr base::TimeDelta kMainThreadResponsivenessThreshold =
-    base::TimeDelta::FromMilliseconds(200);
 
 void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
   int load_percentage = static_cast<int>(load * 100);
@@ -114,7 +111,6 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                         helper_.scheduler_tqm_delegate().get(),
                         helper_.scheduler_tqm_delegate()->NowTicks()),
       policy_may_need_update_(&any_thread_lock_),
-      main_thread_responsiveness_threshold_(kMainThreadResponsivenessThreshold),
       weak_factory_(this) {
   task_queue_throttler_.reset(
       new TaskQueueThrottler(this, "renderer.scheduler"));
@@ -1623,7 +1619,8 @@ void RendererSchedulerImpl::SetRAILModeObserver(RAILModeObserver* observer) {
   MainThreadOnly().rail_mode_observer = observer;
 }
 
-bool RendererSchedulerImpl::MainThreadSeemsUnresponsive() {
+bool RendererSchedulerImpl::MainThreadSeemsUnresponsive(
+    base::TimeDelta main_thread_responsiveness_threshold) {
   base::TimeTicks now = tick_clock()->NowTicks();
   base::TimeDelta estimated_queueing_time;
 
@@ -1651,7 +1648,7 @@ bool RendererSchedulerImpl::MainThreadSeemsUnresponsive() {
       queueing_time_estimator.EstimateQueueingTimeIncludingCurrentTask(now);
 
   bool main_thread_seems_unresponsive =
-      estimated_queueing_time > main_thread_responsiveness_threshold_;
+      estimated_queueing_time > main_thread_responsiveness_threshold;
   CompositorThreadOnly().main_thread_seems_unresponsive =
       main_thread_seems_unresponsive;
 

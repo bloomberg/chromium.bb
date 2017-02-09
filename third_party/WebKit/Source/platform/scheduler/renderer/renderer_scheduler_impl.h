@@ -127,7 +127,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
   void SetRAILModeObserver(RAILModeObserver* observer) override;
-  bool MainThreadSeemsUnresponsive() override;
+  bool MainThreadSeemsUnresponsive(
+      base::TimeDelta main_thread_responsiveness_threshold) override;
 
   // RenderWidgetSignals::Observer implementation:
   void SetAllRenderWidgetsHidden(bool hidden) override;
@@ -523,9 +524,6 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   }
 
   PollableThreadSafeFlag policy_may_need_update_;
-  // The maximum expected queueing time before the main thread is considered
-  // unresponsive.
-  base::TimeDelta main_thread_responsiveness_threshold_;
 
   base::WeakPtrFactory<RendererSchedulerImpl> weak_factory_;
 

@@ -122,7 +122,8 @@ void FakeRendererScheduler::SetTopLevelBlameContext(
 
 void FakeRendererScheduler::SetRAILModeObserver(RAILModeObserver* observer) {}
 
-bool FakeRendererScheduler::MainThreadSeemsUnresponsive() {
+bool FakeRendererScheduler::MainThreadSeemsUnresponsive(
+    base::TimeDelta main_thread_responsiveness_threshold) {
   return false;
 }
 

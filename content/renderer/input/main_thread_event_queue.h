@@ -149,12 +149,14 @@ class CONTENT_EXPORT MainThreadEventQueue
   bool IsRafAlignedEvent(const blink::WebInputEvent& event);
 
   friend class MainThreadEventQueueTest;
+  friend class MainThreadEventQueueInitializationTest;
   int routing_id_;
   MainThreadEventQueueClient* client_;
   std::unique_ptr<EventWithDispatchType> in_flight_event_;
   bool last_touch_start_forced_nonblocking_due_to_fling_;
   bool enable_fling_passive_listener_flag_;
   bool enable_non_blocking_due_to_main_thread_responsiveness_flag_;
+  base::TimeDelta main_thread_responsiveness_threshold_;
   bool handle_raf_aligned_touch_input_;
   bool handle_raf_aligned_mouse_input_;
 

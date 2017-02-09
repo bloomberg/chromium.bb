@@ -4,7 +4,9 @@
 
 #include "content/renderer/input/main_thread_event_queue.h"
 
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/common/input/event_with_latency_info.h"
 #include "content/common/input_messages.h"
 
@@ -73,7 +75,26 @@ MainThreadEventQueue::MainThreadEventQueue(
       handle_raf_aligned_mouse_input_(
           base::FeatureList::IsEnabled(features::kRafAlignedMouseInputEvents)),
       main_task_runner_(main_task_runner),
-      renderer_scheduler_(renderer_scheduler) {}
+      renderer_scheduler_(renderer_scheduler) {
+  if (enable_non_blocking_due_to_main_thread_responsiveness_flag_) {
+    std::string group = base::FieldTrialList::FindFullName(
+        "MainThreadResponsivenessScrollIntervention");
+
+    // The group name will be of the form Enabled$THRESHOLD_MS. Trim the prefix
+    // "Enabled", and parse the threshold.
+    int threshold_ms = 0;
+    std::string prefix = "Enabled";
+    group.erase(0, prefix.length());
+    base::StringToInt(group, &threshold_ms);
+
+    if (threshold_ms <= 0) {
+      enable_non_blocking_due_to_main_thread_responsiveness_flag_ = false;
+    } else {
+      main_thread_responsiveness_threshold_ =
+          base::TimeDelta::FromMilliseconds(threshold_ms);
+    }
+  }
+}
 
 MainThreadEventQueue::~MainThreadEventQueue() {}
 
@@ -123,7 +144,8 @@ bool MainThreadEventQueue::HandleEvent(
     if (enable_non_blocking_due_to_main_thread_responsiveness_flag_ &&
         touch_event->dispatchType == blink::WebInputEvent::Blocking) {
       bool passive_due_to_unresponsive_main =
-          renderer_scheduler_->MainThreadSeemsUnresponsive();
+          renderer_scheduler_->MainThreadSeemsUnresponsive(
+              main_thread_responsiveness_threshold_);
       if (passive_due_to_unresponsive_main) {
         touch_event->dispatchType = blink::WebInputEvent::
             ListenersForcedNonBlockingDueToMainThreadResponsiveness;

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -710,5 +711,69 @@ INSTANTIATE_TEST_CASE_P(
     MainThreadEventQueueTest,
     testing::Range(0u,
                    (kRafAlignedEnabledTouch | kRafAlignedEnabledMouse) + 1));
+
+class DummyMainThreadEventQueueClient : public MainThreadEventQueueClient {
+  void HandleEventOnMainThread(int routing_id,
+                               const blink::WebCoalescedInputEvent* event,
+                               const ui::LatencyInfo& latency,
+                               InputEventDispatchType dispatch_type) override {}
+
+  void SendInputEventAck(int routing_id,
+                         blink::WebInputEvent::Type type,
+                         InputEventAckState ack_result,
+                         uint32_t touch_event_id) override {}
+
+  void NeedsMainFrame(int routing_id) override {}
+};
+
+class MainThreadEventQueueInitializationTest
+    : public testing::Test {
+ public:
+  MainThreadEventQueueInitializationTest()
+      : field_trial_list_(new base::FieldTrialList(nullptr)) {}
+
+  base::TimeDelta main_thread_responsiveness_threshold() {
+    return queue_->main_thread_responsiveness_threshold_;
+  }
+
+  bool enable_non_blocking_due_to_main_thread_responsiveness_flag() {
+    return queue_->enable_non_blocking_due_to_main_thread_responsiveness_flag_;
+  }
+
+ protected:
+  scoped_refptr<MainThreadEventQueue> queue_;
+  base::test::ScopedFeatureList feature_list_;
+  blink::scheduler::MockRendererScheduler renderer_scheduler_;
+  scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  DummyMainThreadEventQueueClient dummy_main_thread_event_queue_client_;
+};
+
+TEST_F(MainThreadEventQueueInitializationTest,
+       MainThreadResponsivenessThresholdEnabled) {
+  feature_list_.InitFromCommandLine(
+      features::kMainThreadBusyScrollIntervention.name, "");
+
+  base::FieldTrialList::CreateFieldTrial(
+      "MainThreadResponsivenessScrollIntervention", "Enabled123");
+  queue_ = new MainThreadEventQueue(kTestRoutingID,
+                                    &dummy_main_thread_event_queue_client_,
+                                    main_task_runner_, &renderer_scheduler_);
+  EXPECT_TRUE(enable_non_blocking_due_to_main_thread_responsiveness_flag());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(123),
+            main_thread_responsiveness_threshold());
+}
+
+TEST_F(MainThreadEventQueueInitializationTest,
+       MainThreadResponsivenessThresholdDisabled) {
+  base::FieldTrialList::CreateFieldTrial(
+      "MainThreadResponsivenessScrollIntervention", "Control");
+  queue_ = new MainThreadEventQueue(kTestRoutingID,
+                                    &dummy_main_thread_event_queue_client_,
+                                    main_task_runner_, &renderer_scheduler_);
+  EXPECT_FALSE(enable_non_blocking_due_to_main_thread_responsiveness_flag());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0),
+            main_thread_responsiveness_threshold());
+}
 
 }  // namespace content
