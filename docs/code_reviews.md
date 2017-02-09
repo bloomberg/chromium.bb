@@ -10,16 +10,19 @@ page.
 # Code review policies
 
 Ideally the reviewer is someone who is familiar with the area of code you are
-touching. If you have doubts, look at the git blame for the file and the OWNERS
-files (see below).
+touching. Any committer can review code, but an owner must provide a review
+for each directory you are touching. If you have doubts, look at the git blame
+for the file and the `OWNERS` files (see below).
 
-Any committer can review code, but there must be at least one owner for each
-directory you are touching. If you have multiple reviewers, make it clear in
-the message you send requesting review what you expect from each reviewer.
-Otherwise people might assume their input is not required or waste time with
-redundant reviews.
+To indicate a positive review, the reviewer types "LGTM" (case insensitive)
+into a comment on the code review. This stands for "Looks Good To Me." The text
+"not LGTM" will cancel out a previous positive review.
 
-## Expectations for all reviewers
+If you have multiple reviewers, make it clear in the message you send
+requesting review what you expect from each reviewer. Otherwise people might
+assume their input is not required or waste time with redundant reviews.
+
+#### Expectations for all reviewers
 
   * Aim to provide some kind of actionable response within 24 hours of receipt
     (not counting weekends and holidays). This doesn't mean you have to have
@@ -34,15 +37,16 @@ redundant reviews.
 
 ## OWNERS files
 
-In various directories there are files named "OWNERS" that list the email
+In various directories there are files named `OWNERS` that list the email
 addresses of people qualified to review changes in that directory. You must
 get a positive review from an owner of each directory your change touches.
 
-Owners files are recursive, so each file also applies to its subdirectories. If
-an owner file contains the text "set noparent" it will stop owner propagation
-from parent directories.
+Owners files are recursive, so each file also applies to its subdirectories.
+It's generally best to pick more specific owners. People listed in higher-level
+directories may have less experience with the code in question. More detail on
+the owners file format is provided in the "More information" section below.
 
-Tip: The "git cl owners" command can help find owners.
+*Tip:* The `git cl owners` command can help find owners.
 
 While owners must approve all patches, any committer can contribute to the
 review. In some directories the owners can be overloaded or there might be
@@ -52,17 +56,38 @@ appropriate person, and then request a high-level owner review once that's
 complete. As always, be clear what you expect of each reviewer to avoid
 duplicated work.
 
-### Expectations for owners
+Owners do not have to pick other owners for reviews. Since they should already
+be familiar with the code in question, a thorough review from any appropriate
+committer is sufficient.
 
-  * OWNERS files should contain only people actively reviewing code in that
+#### Expectations of owners
+
+The existing owners of a directory approve additions to the list. It is
+preferrable to have many directories, each with a smaller number of specific
+owners rather than large directories with many owners. Owners must:
+
+  * Demonstrate excellent judgment, teamwork and ability to uphold Chrome
+    development principles.
+
+  * Be already acting as an owner, providing high-quality reviews and design
+    feedback
+
+  * Be a Chromium project member with full commit access of at least 6
+    months tenure.
+
+  * Have submitted a substantial number of non-trivial changes to the affected
     directory.
 
-  * If you aren't doing code reviews in a directory, remove yourself. Don't
-    try to discourage people from sending reviews in comments in the OWNERS
-    file. This includes writing "slow" or "emeritus" after your name.
+  * Have committed or reviewed substantial work to the affected directory
+    within the last 90 days.
 
-  * If the code review load is unsustainable, work to expand the number of
-    owners.
+  * Have the bandwidth to contribute to reviews in a timely manner. If the load
+    is unsustainable, work to expand the number of owners. Don't try to
+    discourage people from sending reviews, including writing "slow" or
+    "emeritus" after your name.
+
+Seldom-updated directories may have exceptions. Directories in `third_party`
+should list those most familiar with the library.
 
 ## TBR ("To Be Reviewed")
 
@@ -70,12 +95,12 @@ duplicated work.
 only in cases where a review is unnecessary or as described below. The most
 common use of TBR is to revert patches that broke the build.
 
-TBR does not mean "no review." A reviewer on a TBRed on a change should still
-review the change. If there comments after landing the author is still
-obligated to address them in a followup patch.
+TBR does not mean "no review." A reviewer TBR-ed on a change should still
+review the change. If there comments after landing the author is obligated to
+address them in a followup patch.
 
 Do not use TBR just because a change is urgent or the reviewer is being slow.
-Work to contact a reviewer who can do your review in a timely manner.
+Contact the reviewer directly or find somebody.
 
 To send a change TBR, annotate the description and send email like normal.
 Otherwise the reviewer won't know to review the patch.
@@ -94,8 +119,8 @@ Sometimes you might do something that affects many callers in different
 directories. For example, adding a parameter to a common function in //base.
 If the updates to the callers is mechanical, you can:
 
-  * Get a normal owner of the lower-level directory (in this example, //base)
-    you're changing to do a proper review of those changes.
+  * Get a normal owner of the lower-level directory you're changing (in this
+    example, `//base`) to do a proper review of those changes.
 
   * Get _somebody_ to review the downstream changes. This is often the same
     person from the previous step but could be somebody else.
@@ -114,15 +139,63 @@ in source files become more like code and should be reviewed normally (not
 using TBR). Non-TBR-able stuff includes things like function contracts and most
 comments inside functions.
 
-  * Use your best judgement. If you're changing something very important,
-    tricky, or something you may not be very familiar with, ask for the code
-    review up-front.
+  * Use good judgement. If you're changing something very important, tricky,
+    or something you may not be very familiar with, ask for the code review
+    up-front.
 
   * Don't TBR changes to policy documents like the style guide or this document.
 
   * Don't mix unrelated documentation updates with code changes.
 
   * Be sure to actually send out the email for the code review. If you get one,
-    please actually read the changes. Even the best writers have editors and
-    checking prose for clarity is much faster than checking code for
-    correctness.
+    please actually read the changes.
+
+## More information
+
+### OWNERS file details
+
+Refer to the [source code](https://chromium.googlesource.com/chromium/tools/depot_tools/+/master/owners.py)
+for all details on the file format. 
+
+This example indicates that two people are owners, in addition to any owners
+from the parent directory. `git cl owners` will list the comment after an
+owner address, so this is a good place to include restrictions or special
+instructions.
+```
+# You can include comments like this.
+a@chromium.org
+b@chromium.org  # Only for the frobinator.
+```
+
+A `*` indicates that all committers are owners:
+```
+*
+```
+
+The text `set noparent` it will stop owner propagation from parent directories.
+This is used for specialized code. In this example, only the two listed people
+are owners:
+```
+set noparent
+a@chromium.org
+b@chromium.org
+```
+
+The `per-file` directive allows owners to be added that apply only to files
+matching a pattern. In this example, owners from the parent directiory
+apply, plus one person for some classes of files, and all committers are
+owners for the readme:
+```
+per-file foo_bar.cc=a@chromium.org
+per-file foo.*=a@chromium.org
+
+per-file readme.txt=*
+```
+
+Other `OWNERS` files can be included by reference by listing the path to the
+file with `file://...`. This example indicates that only the people listed in
+`//ipc/SECURITY_OWNERS` can review the messages files:
+```
+per-file *_messages*.h=set noparent
+per-file *_messages*.h=file://ipc/SECURITY_OWNERS
+```
