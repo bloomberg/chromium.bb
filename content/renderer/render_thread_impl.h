@@ -526,6 +526,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // base::MemoryCoordinatorClient implementation:
   void OnMemoryStateChange(base::MemoryState state) override;
+  void OnPurgeMemory() override;
 
   void ClearMemory();
 

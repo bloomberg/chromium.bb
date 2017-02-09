@@ -19,6 +19,8 @@ class WebMemoryCoordinator {
   BLINK_PLATFORM_EXPORT static void onMemoryPressure(WebMemoryPressureLevel);
 
   BLINK_PLATFORM_EXPORT static void onMemoryStateChange(MemoryState);
+
+  BLINK_PLATFORM_EXPORT static void onPurgeMemory();
 };
 
 }  // namespace blink

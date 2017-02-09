@@ -51,6 +51,8 @@ class PLATFORM_EXPORT MemoryCoordinator final
 
   void onMemoryStateChange(MemoryState);
 
+  void onPurgeMemory();
+
   DECLARE_TRACE();
 
  private:

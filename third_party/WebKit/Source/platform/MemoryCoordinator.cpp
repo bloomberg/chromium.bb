@@ -74,6 +74,12 @@ void MemoryCoordinator::onMemoryStateChange(MemoryState state) {
   WTF::Partitions::decommitFreeableMemory();
 }
 
+void MemoryCoordinator::onPurgeMemory() {
+  // TODO(tasak|bashi): Move code from onMemoryStateChange(). Currently
+  // onMemoryStateChange() is called when the purge+throttled experiment is
+  // enabled.
+}
+
 void MemoryCoordinator::clearMemory() {
   // Clear the image cache.
   // TODO(tasak|bashi): Make ImageDecodingStore and FontCache be

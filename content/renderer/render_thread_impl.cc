@@ -2218,36 +2218,18 @@ void RenderThreadImpl::OnMemoryPressure(
 }
 
 void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
-  // TODO(hajimehoshi): Adjust the size of this memory usage according to
-  // |state|. RenderThreadImpl doesn't have a feature to limit memory usage at
-  // present.
   if (blink_platform_impl_) {
     blink::WebMemoryCoordinator::onMemoryStateChange(
         static_cast<blink::MemoryState>(state));
   }
-  switch (state) {
-    case base::MemoryState::NORMAL:
-      break;
-    case base::MemoryState::THROTTLED:
-      // TODO(bashi): Figure out what kind of strategy is suitable on
-      // THROTTLED state. crbug.com/674815
-#if defined(OS_ANDROID)
-      OnTrimMemoryImmediately();
-#else
-      OnSyncMemoryPressure(
-          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
-#endif
-      ReleaseFreeMemory();
-      break;
-    case base::MemoryState::SUSPENDED:
-      OnTrimMemoryImmediately();
-      ReleaseFreeMemory();
-      ClearMemory();
-      break;
-    case base::MemoryState::UNKNOWN:
-      NOTREACHED();
-      break;
-  }
+}
+
+void RenderThreadImpl::OnPurgeMemory() {
+  OnTrimMemoryImmediately();
+  ReleaseFreeMemory();
+  ClearMemory();
+  if (blink_platform_impl_)
+    blink::WebMemoryCoordinator::onPurgeMemory();
 }
 
 void RenderThreadImpl::ClearMemory() {
