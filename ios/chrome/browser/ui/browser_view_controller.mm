@@ -77,6 +77,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
 #import "ios/chrome/browser/storekit_launcher.h"
+#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
 #import "ios/chrome/browser/tabs/tab_headers_delegate.h"
@@ -675,8 +676,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 - (void)showSnackbar:(NSString*)message;
 // Induces an intentional crash in the browser process.
 - (void)induceBrowserCrash;
-// Returns Tab that corresponds to the given |webState|.
-- (Tab*)tabForWebState:(web::WebState*)webState;
 // Saves the image or display error message, based on privacy settings.
 - (void)managePermissionAndSaveImage:(NSData*)data;
 // Saves the image. In order to keep the metadata of the image, the image is
@@ -2333,7 +2332,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                           referrer:params.referrer
                         transition:params.transition
                         windowName:nil
-                            opener:[self tabForWebState:webState]
+                            opener:LegacyTabHelper::GetTabForWebState(webState)
                        openedByDOM:NO
                            atIndex:TabModelConstants::kTabPositionAutomatically
                       inBackground:(params.disposition ==
@@ -2508,11 +2507,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     runRepostFormDialogWithCompletionHandler:(void (^)(BOOL))handler {
   // Display the action sheet with the arrow pointing at the top center of the
   // web contents.
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   UIView* view = webState->GetView();
   CGPoint dialogLocation =
       CGPointMake(CGRectGetMidX(view.frame),
-                  CGRectGetMinY(view.frame) +
-                      [self headerHeightForTab:[self tabForWebState:webState]]);
+                  CGRectGetMinY(view.frame) + [self headerHeightForTab:tab]);
   auto helper = RepostFormTabHelper::FromWebState(webState);
   helper->PresentDialog(dialogLocation, base::BindBlock(^(bool shouldContinue) {
                           handler(shouldContinue);
@@ -3590,14 +3589,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 - (web::WebState*)currentWebState {
   return [[_model currentTab] webState];
-}
-
-- (Tab*)tabForWebState:(web::WebState*)webState {
-  for (Tab* tab in _model.get()) {
-    if (tab.webState == webState)
-      return tab;
-  }
-  return nil;
 }
 
 // This is called from within an animation block.

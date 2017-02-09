@@ -4,6 +4,7 @@
 
 source_set("tabs") {
   sources = [
+    "legacy_tab_helper.h",
     "tab.h",
     "tab_delegate.h",
     "tab_dialog_delegate.h",
@@ -116,7 +117,6 @@ source_set("tabs_internal") {
 
 source_set("tabs_internal_arc") {
   sources = [
-    "legacy_tab_helper.h",
     "legacy_tab_helper.mm",
     "tab_model_list.mm",
   ]
