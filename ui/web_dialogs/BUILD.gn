@@ -26,7 +26,7 @@ component("web_dialogs") {
   ]
 
   if (!is_ios) {
-    deps += [ "//third_party/WebKit/public:blink_minimal" ]
+    deps += [ "//third_party/WebKit/public:blink_headers" ]
   }
 }
 
