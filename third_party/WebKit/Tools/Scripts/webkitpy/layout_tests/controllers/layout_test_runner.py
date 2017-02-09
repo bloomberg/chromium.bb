@@ -206,7 +206,7 @@ class LayoutTestRunner(object):
     def _handle_finished_test_list(self, worker_name, list_name):
         pass
 
-    def _handle_finished_test(self, worker_name, result, log_messages=[]):
+    def _handle_finished_test(self, worker_name, result, log_messages=None):  # pylint: disable=unused-argument
         self._update_summary_with_result(self._current_run_results, result)
 
     def _handle_device_failed(self, worker_name, list_name, remaining_tests):

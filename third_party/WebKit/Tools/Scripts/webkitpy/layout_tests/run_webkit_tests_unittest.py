@@ -1159,9 +1159,9 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
 
 class PortTest(unittest.TestCase):
 
-    def assert_mock_port_works(self, port_name, args=[]):
-        self.assertTrue(passing_run(args + ['--platform', 'mock-' + port_name,
-                                            'fast/harness/results.html'], tests_included=True, host=Host()))
+    def assert_mock_port_works(self, port_name):
+        self.assertTrue(passing_run(['--platform', 'mock-' + port_name,
+                                     'fast/harness/results.html'], tests_included=True, host=Host()))
 
     def disabled_test_mac_lion(self):
         self.assert_mock_port_works('mac-lion')

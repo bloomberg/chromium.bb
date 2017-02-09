@@ -121,8 +121,8 @@ class Command(object):
 
     # main() exists so that Commands can be turned into stand-alone scripts.
     # Other parts of the code will likely require modification to work stand-alone.
-    def main(self, args=sys.argv):
-        (options, args) = self.parse_args(args)
+    def main(self, args=None):
+        options, args = self.parse_args(args)
         # Some commands might require a dummy tool
         return self.check_arguments_and_execute(options, args)
 

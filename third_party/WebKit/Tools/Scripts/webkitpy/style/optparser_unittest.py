@@ -40,7 +40,7 @@ class ArgumentPrinterTest(unittest.TestCase):
     def _create_options(self,
                         output_format='emacs',
                         min_confidence=3,
-                        filter_rules=[],
+                        filter_rules=None,
                         git_commit=None):
         return ProcessorOptions(filter_rules=filter_rules,
                                 git_commit=git_commit,

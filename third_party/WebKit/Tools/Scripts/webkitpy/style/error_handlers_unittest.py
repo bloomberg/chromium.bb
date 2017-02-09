@@ -90,7 +90,8 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
         """Test the __eq__() method for the return value of False."""
         def make_handler(configuration=self._style_checker_configuration(),
                          file_path='foo.txt', increment_error_count=lambda: True,
-                         line_numbers=[100]):
+                         line_numbers=None):
+            line_numbers = line_numbers or [100]
             return DefaultStyleErrorHandler(configuration=configuration,
                                             file_path=file_path,
                                             increment_error_count=increment_error_count,

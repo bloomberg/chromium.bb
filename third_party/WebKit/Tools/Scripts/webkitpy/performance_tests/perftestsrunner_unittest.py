@@ -47,6 +47,7 @@ from webkitpy.performance_tests.perftestsrunner import PerfTestsRunner
 class MainTest(unittest.TestCase):
 
     def create_runner(self, args=[]):
+        args = args or []
         options, _ = PerfTestsRunner._parse_args(args)
         test_port = TestPort(host=MockHost(), options=options)
         runner = PerfTestsRunner(args=args, port=test_port)
@@ -392,7 +393,8 @@ class IntegrationTest(unittest.TestCase):
         json_content = runner._host.filesystem.read_text_file(runner._output_json_path())
         return json.loads(re.sub(r'("stdev":\s*\d+\.\d{5})\d+', r'\1', json_content))
 
-    def create_runner(self, args=[], driver_class=TestDriver):
+    def create_runner(self, args=None, driver_class=TestDriver):
+        args = args or []
         options, _ = PerfTestsRunner._parse_args(args)
         test_port = TestPort(host=MockHost(), options=options)
         test_port.create_driver = lambda worker_number=None, no_timeout=False: driver_class()
@@ -564,7 +566,8 @@ class IntegrationTest(unittest.TestCase):
             "tests": self._event_target_wrapper_and_inspector_results,
             "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
 
-    def create_runner_and_setup_results_template(self, args=[]):
+    def create_runner_and_setup_results_template(self, args=None):
+        args = args or []
         runner, port = self.create_runner(args)
         filesystem = port.host.filesystem
         filesystem.write_text_file(

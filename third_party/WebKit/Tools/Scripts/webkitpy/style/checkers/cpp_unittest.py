@@ -2079,7 +2079,7 @@ class CppStyleTest(CppStyleTestBase):
                     'Consider converting bool bitfields to unsigned.  [runtime/bitfields] [5]'
                     % (name, bool_list, unsigned_list))
 
-        def build_test_case(bitfields, name, will_warn, extra_warnings=[]):
+        def build_test_case(bitfields, name, will_warn, extra_warnings=None):
             bool_bitfields = []
             unsigned_bitfields = []
             test_string = 'class %s {\n' % (name,)
