@@ -8,9 +8,12 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 typedef BOOL (^ArrayFilterProcedure)(id object, NSUInteger index, BOOL* stop);
@@ -50,8 +53,7 @@ NSString* ParseStringWithTag(NSString* text,
 
   tag_text_range.location = after_begin_tag;
   tag_text_range.length = end_range.location - tag_text_range.location;
-  base::scoped_nsobject<NSMutableString> out_text(
-      [[NSMutableString alloc] init]);
+  NSMutableString* out_text = [[NSMutableString alloc] init];
   // First part - before the tag.
   if (begin_range.location > 0)
     [out_text appendString:[text substringToIndex:begin_range.location]];
@@ -112,8 +114,8 @@ NSString* CleanNSStringForDisplay(NSString* dirty, BOOL removeGraphicChars) {
         componentsSeparatedByCharactersInSet:GraphicCharactersSet()]
         componentsJoinedByString:@" "];
   }
-  base::scoped_nsobject<NSMutableArray> spaceSeparatedCompoments(
-      [[cleanString componentsSeparatedByCharactersInSet:wspace] mutableCopy]);
+  NSMutableArray* spaceSeparatedCompoments =
+      [[cleanString componentsSeparatedByCharactersInSet:wspace] mutableCopy];
   ArrayFilterProcedure filter = ^(id object, NSUInteger index, BOOL* stop) {
     return [object isEqualToString:@""];
   };
@@ -142,16 +144,16 @@ NSString* SubstringOfWidth(NSString* string,
 
   // Function to get the correct substring while insulating against
   // length overrun/underrun.
-  base::mac::ScopedBlock<SubstringExtractionProcedure> getSubstring;
+  SubstringExtractionProcedure getSubstring;
   if (trailing) {
-    getSubstring.reset([^NSString*(NSUInteger chars) {
+    getSubstring = [^NSString*(NSUInteger chars) {
       NSUInteger length = [string length];
       return [string substringFromIndex:length - MIN(length, chars)];
-    } copy]);
+    } copy];
   } else {
-    getSubstring.reset([^NSString*(NSUInteger chars) {
+    getSubstring = [^NSString*(NSUInteger chars) {
       return [string substringToIndex:MIN(chars, [string length])];
-    } copy]);
+    } copy];
   }
 
   // Guess at the number of characters that will fit, assuming
@@ -160,11 +162,11 @@ NSString* SubstringOfWidth(NSString* string,
   NSUInteger characters =
       MIN(targetWidth / (font.xHeight * 0.8), [string length]);
   NSInteger increment = 1;
-  NSString* substring = getSubstring.get()(characters);
+  NSString* substring = getSubstring(characters);
   CGFloat prevWidth = [substring sizeWithAttributes:attributes].width;
   do {
     characters += increment;
-    substring = getSubstring.get()(characters);
+    substring = getSubstring(characters);
     CGFloat thisWidth = [substring sizeWithAttributes:attributes].width;
     if (prevWidth > targetWidth) {
       if (thisWidth <= targetWidth)
@@ -175,7 +177,7 @@ NSString* SubstringOfWidth(NSString* string,
       if (thisWidth < targetWidth)
         increment = 1;  // Grow the string
       else {
-        substring = getSubstring.get()(characters - increment);
+        substring = getSubstring(characters - increment);
         break;  // Growing the string, found the right size.
       }
     }

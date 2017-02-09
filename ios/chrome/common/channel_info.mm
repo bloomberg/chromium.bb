@@ -12,6 +12,10 @@
 #import "base/strings/sys_string_conversions.h"
 #include "components/version_info/version_info.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 #if defined(GOOGLE_CHROME_BUILD)

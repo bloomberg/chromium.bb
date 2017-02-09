@@ -4,6 +4,10 @@
 
 #import "ios/chrome/common/material_timing.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 UIViewAnimationOptions AnimationOptionsForceLinearTiming(
@@ -39,8 +43,10 @@ const CGFloat kDuration7 = 0.4 * kSlowAnimationModifier;
 const CGFloat kDuration8 = 0.07 * kSlowAnimationModifier;
 
 CAMediaTimingFunction* TransformCurve2() {
-  return [[[CAMediaTimingFunction alloc]
-      initWithControlPoints:0.0f :0.84f :0.13f :0.99f] autorelease];
+  return [[CAMediaTimingFunction alloc] initWithControlPoints:
+                                                         0.0f:
+                                                        0.84f:
+                                                        0.13f:0.99f];
 }
 
 CAMediaTimingFunction* TimingFunction(Curve curve) {
@@ -48,18 +54,24 @@ CAMediaTimingFunction* TimingFunction(Curve curve) {
     case CurveEaseInOut:
       // This curve is slow both at the begining and end.
       // Visualization of curve  http://cubic-bezier.com/#.4,0,.2,1
-      return [[[CAMediaTimingFunction alloc]
-          initWithControlPoints:0.4f :0.0f :0.2f :1.0f] autorelease];
+      return [[CAMediaTimingFunction alloc] initWithControlPoints:
+                                                             0.4f:
+                                                             0.0f:
+                                                             0.2f:1.0f];
     case CurveEaseOut:
       // This curve is slow at the end.
       // Visualization of curve  http://cubic-bezier.com/#0,0,.2,1
-      return [[[CAMediaTimingFunction alloc]
-          initWithControlPoints:0.0f :0.0f :0.2f :1.0f] autorelease];
+      return [[CAMediaTimingFunction alloc] initWithControlPoints:
+                                                             0.0f:
+                                                             0.0f:
+                                                             0.2f:1.0f];
     case CurveEaseIn:
       // This curve is slow at the begining.
       // Visualization of curve  http://cubic-bezier.com/#.4,0,1,1
-      return [[[CAMediaTimingFunction alloc]
-          initWithControlPoints:0.4f :0.0f :1.0f :1.0f] autorelease];
+      return [[CAMediaTimingFunction alloc] initWithControlPoints:
+                                                             0.4f:
+                                                             0.0f:
+                                                             1.0f:1.0f];
     case CurveLinear:
       // This curve is linear.
       return
