@@ -135,7 +135,7 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
 
   // Creates the contents of the |site_settings_view_|. The ownership of the
   // returned view is transferred to the caller.
-  views::View* CreateSiteSettingsView() WARN_UNUSED_RESULT;
+  views::View* CreateSiteSettingsView(int side_margin) WARN_UNUSED_RESULT;
 
   // Used to asynchronously handle clicks since these calls may cause the
   // destruction of the settings view and the base class window still needs to
