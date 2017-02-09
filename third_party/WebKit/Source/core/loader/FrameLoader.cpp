@@ -1239,6 +1239,11 @@ void FrameLoader::stopAllLoaders() {
 
   m_inStopAllLoaders = true;
 
+  if (m_isNavigationHandledByClient) {
+    client()->dispatchDidFailProvisionalLoad(
+        ResourceError::cancelledError(String()), StandardCommit);
+  }
+
   m_isNavigationHandledByClient = false;
 
   for (Frame* child = m_frame->tree().firstChild(); child;

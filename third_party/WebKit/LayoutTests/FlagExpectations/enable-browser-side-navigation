@@ -50,17 +50,6 @@ crbug.com/576270 virtual/mojo-loading/http/tests/security/mixedContent/redirect-
 crbug.com/638900 http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
 crbug.com/638900 virtual/mojo-loading/http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
 
-# https://crbug.com/640631: Failing due to difference in WebFrameClient
-# callback sequence on renderer-initiated failed navigations.
-crbug.com/640631 http/tests/loading/bad-scheme-subframe.html [ Timeout Failure ]
-crbug.com/640631 http/tests/loading/bad-server-subframe.html [ Failure ]
-crbug.com/640631 http/tests/loading/pdf-commit-load-callbacks.html [ Crash Failure ]
-crbug.com/640631 http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
-crbug.com/640631 virtual/mojo-loading/http/tests/loading/bad-scheme-subframe.html [ Timeout Failure ]
-crbug.com/640631 virtual/mojo-loading/http/tests/loading/bad-server-subframe.html [ Failure ]
-crbug.com/640631 virtual/mojo-loading/http/tests/loading/pdf-commit-load-callbacks.html [ Crash Failure ]
-crbug.com/640631 virtual/mojo-loading/http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
-
 # https://crbug.com/647698: Failing due to absence of call to
 # WebFrameClient::didReceiveServerRedirectForProvisionalLoad.
 crbug.com/647698 http/tests/loading/307-after-303-after-post.html [ Failure ]

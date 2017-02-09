@@ -3503,13 +3503,6 @@ void RenderFrameImpl::didFailProvisionalLoad(
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::didFailProvisionalLoad", "id", routing_id_);
   DCHECK_EQ(frame_, frame);
-  WebDataSource* ds = frame->provisionalDataSource();
-  DCHECK(ds);
-
-  const WebURLRequest& failed_request = ds->getRequest();
-
-  // Notify the browser that we failed a provisional load with an error.
-  //
   // Note: It is important this notification occur before DidStopLoading so the
   //       SSL manager can react to the provisional load failure before being
   //       notified the load stopped.
@@ -3519,6 +3512,13 @@ void RenderFrameImpl::didFailProvisionalLoad(
   for (auto& observer : observers_)
     observer.DidFailProvisionalLoad(error);
 
+  WebDataSource* ds = frame->provisionalDataSource();
+  if (!ds)
+    return;
+
+  const WebURLRequest& failed_request = ds->getRequest();
+
+  // Notify the browser that we failed a provisional load with an error.
   SendFailedProvisionalLoad(failed_request, error, frame);
 
   if (!ShouldDisplayErrorPageForFailedLoad(error.reason, error.unreachableURL))
@@ -5225,6 +5225,11 @@ void RenderFrameImpl::OnFailedNavigation(
   std::unique_ptr<HistoryEntry> history_entry;
   if (request_params.page_state.IsValid())
     history_entry = PageStateToHistoryEntry(request_params.page_state);
+
+  // For renderer initiated navigations, we send out a didFailProvisionalLoad()
+  // notification.
+  if (request_params.nav_entry_id == 0)
+    didFailProvisionalLoad(frame_, error, blink::WebStandardCommit);
   LoadNavigationErrorPage(failed_request, error, replace, history_entry.get());
   browser_side_navigation_pending_ = false;
 }
