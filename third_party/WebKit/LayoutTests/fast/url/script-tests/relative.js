@@ -47,19 +47,10 @@ cases = [
   ["http://host/a", "#ref", "http://host/a#ref"],
   ["http://host/a#b", "#", "http://host/a#"],
   ["http://host/a?foo=bar#hello", "#bye", "http://host/a?foo=bar#bye"],
-  // Non-hierarchical base: no relative handling. Relative input should
-  // error, and if a scheme is present, it should be treated as absolute.
-  ["data:foobar", "baz.html", ""],
-  ["data:foobar", "data:baz", "data:baz"],
-  ["data:foobar", "data:/base", "data:/base"],
-  // Non-hierarchical base: absolute input should succeed.
-  ["data:foobar", "http://host/", "http://host/"],
-  ["data:foobar", "http:host", "http://host/"],
   // Invalid schemes should be treated as relative.
   ["http://foo/bar", "./asd:fgh", "http://foo/asd:fgh"],
   ["http://foo/bar", ":foo", "http://foo/:foo"],
   ["http://foo/bar", " hello world", "http://foo/hello%20world"],
-  ["data:asdf", ":foo", ""],
   // We should treat semicolons like any other character in URL resolving
   ["http://host/a", ";foo", "http://host/;foo"],
   ["http://host/a;", ";foo", "http://host/;foo"],

@@ -6297,16 +6297,6 @@
      {}
     ]
    ],
-   "html/browsers/history/the-location-interface/location-protocol-setter-non-broken-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/browsers/history/the-location-interface/location-prototype-setting-expected.txt": [
     [
      {}
@@ -12462,11 +12452,6 @@
      {}
     ]
    ],
-   "html/semantics/forms/the-input-element/time-2-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/forms/the-input-element/time-expected.txt": [
     [
      {}
@@ -14053,6 +14038,11 @@
     ]
    ],
    "pointerevents/README.md": [
+    [
+     {}
+    ]
+   ],
+   "pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual-expected.txt": [
     [
      {}
     ]
@@ -24905,6 +24895,12 @@
      {}
     ]
    ],
+   "html/semantics/document-metadata/the-base-element/base_href_data.html": [
+    [
+     "/html/semantics/document-metadata/the-base-element/base_href_data.html",
+     {}
+    ]
+   ],
    "html/semantics/document-metadata/the-base-element/base_href_empty.html": [
     [
      "/html/semantics/document-metadata/the-base-element/base_href_empty.html",
@@ -34573,7 +34569,7 @@
    "support"
   ],
   "./MANIFEST.json": [
-   "468e5393eadca675d9f361840bdb4412f33351ac",
+   "3627cc58604c1dac4d80a81119a1ec865d71b576",
    "support"
   ],
   "./README.md": [
@@ -40503,14 +40499,6 @@
   "html/browsers/history/the-location-interface/location-pathname-setter-question-mark.html": [
    "011522f6b56184f49dd6555b507d6d895b53f11e",
    "testharness"
-  ],
-  "html/browsers/history/the-location-interface/location-protocol-setter-non-broken-expected.txt": [
-   "dba0da022025260daffcf99f99ee4d65bfaa6dfe",
-   "support"
-  ],
-  "html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird-expected.txt": [
-   "60f2755719f6074c3f6e67e4fe140358acf6093c",
-   "support"
   ],
   "html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird.html": [
    "13a360b3010a85c1661d9357355894453137c9df",
@@ -46820,6 +46808,10 @@
    "6867a4d38382a9c981832c93712aa0484bf161f3",
    "testharness"
   ],
+  "html/semantics/document-metadata/the-base-element/base_href_data.html": [
+   "8590b50188c6e27bdf0a18141b47a13f415a0128",
+   "testharness"
+  ],
   "html/semantics/document-metadata/the-base-element/base_href_empty.html": [
    "737d8340ecefb177759786e52084d681620d2e13",
    "testharness"
@@ -48339,10 +48331,6 @@
   "html/semantics/forms/the-input-element/text.html": [
    "993f122c7e27413ca2c27d753b0096b8568cdd28",
    "testharness"
-  ],
-  "html/semantics/forms/the-input-element/time-2-expected.txt": [
-   "c927616a4c7b06f019d162eaaf6c51e8543fb2b8",
-   "support"
   ],
   "html/semantics/forms/the-input-element/time-2.html": [
    "240583799de313db3e3176a83f5dcdf845e5cf74",
@@ -51540,6 +51528,10 @@
    "91a8bd86357b0d96ba3ab8f08f88c28436de484c",
    "support"
   ],
+  "pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual-expected.txt": [
+   "c042d299f01622588c89152939840e23be0c613f",
+   "support"
+  ],
   "pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html": [
    "cba44e2dd2a3c54106bfecc6cdd407643e2ba995",
    "manual"
@@ -51653,7 +51645,7 @@
    "manual"
   ],
   "pointerevents/pointerevent_releasepointercapture_events_to_original_target-manual.html": [
-   "3f75075494c8ea9197bb9af0c08b5b85ef2c52ac",
+   "72e098fbfe60563a467676f652d51f61b9b11f1e",
    "manual"
   ],
   "pointerevents/pointerevent_releasepointercapture_invalid_pointerid-manual.html": [
@@ -52193,7 +52185,7 @@
    "manual"
   ],
   "selection/extend-00-expected.txt": [
-   "d718f8593a75a89942cb2c0c0084839c0f5dc5df",
+   "d66939957d8f36c0d33c33ca07c39a6ed9710f1a",
    "support"
   ],
   "selection/extend-00.html": [
@@ -52201,7 +52193,7 @@
    "testharness"
   ],
   "selection/extend-20-expected.txt": [
-   "68a7eb924d2a5307934461fc8bde8f1912766c45",
+   "8aaefb9260e65d8743e1d424fa0438715768e355",
    "support"
   ],
   "selection/extend-20.html": [
@@ -52209,7 +52201,7 @@
    "testharness"
   ],
   "selection/extend-40-expected.txt": [
-   "bff22969d6b2a6a57dc72e6367532ed0e7a33bc9",
+   "4a0755f5c0d8af70327206382bb8c9ec99232e51",
    "support"
   ],
   "selection/extend-40.html": [
@@ -52229,7 +52221,7 @@
    "testharness"
   ],
   "selection/interfaces-expected.txt": [
-   "ccb4664f886a9f11a3c48eb4d99ca2fe854b0e23",
+   "f9641f08468142aea0e2a53c65ab10c04f8cf48e",
    "support"
   ],
   "selection/interfaces.html": [
@@ -52245,7 +52237,7 @@
    "testharness"
   ],
   "selection/removeAllRanges-expected.txt": [
-   "3907bae41f9f68bdf29d1f2c5baba3716fd96f7f",
+   "a42008351e66b52f39dd98485ce68582f9ff68fa",
    "support"
   ],
   "selection/removeAllRanges.html": [

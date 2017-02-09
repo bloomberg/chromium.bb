@@ -862,7 +862,8 @@ void TokenPreloadScanner::updatePredictedBaseURL(const Token& token) {
           token.getAttributeItem(hrefAttr)) {
     KURL url(m_documentURL, stripLeadingAndTrailingHTMLSpaces(
                                 hrefAttribute->value8BitIfNecessary()));
-    m_predictedBaseElementURL = url.isValid() ? url.copy() : KURL();
+    m_predictedBaseElementURL =
+        url.isValid() && !url.protocolIsData() ? url.copy() : KURL();
   }
 }
 

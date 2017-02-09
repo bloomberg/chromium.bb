@@ -3325,13 +3325,17 @@ void Document::processBaseElement() {
   }
 
   if (!baseElementURL.isEmpty()) {
-    if (baseElementURL.protocolIsData())
+    if (baseElementURL.protocolIsData()) {
       UseCounter::count(*this, UseCounter::BaseWithDataHref);
+      addConsoleMessage(ConsoleMessage::create(
+          SecurityMessageSource, ErrorMessageLevel,
+          "'data:' URLs may not be used as base URLs for a document."));
+    }
     if (!this->getSecurityOrigin()->canRequest(baseElementURL))
       UseCounter::count(*this, UseCounter::BaseWithCrossOriginHref);
   }
 
-  if (m_baseElementURL != baseElementURL &&
+  if (baseElementURL != m_baseElementURL && !baseElementURL.protocolIsData() &&
       contentSecurityPolicy()->allowBaseURI(baseElementURL)) {
     m_baseElementURL = baseElementURL;
     updateBaseURL();
