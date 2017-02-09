@@ -590,20 +590,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Nexus 9
     self.Fail('deqp/data/gles2/shaders/functions.html',
         ['android', 'nvidia'], bug=478572)
-    self.Skip('conformance/extensions/oes-texture-float-with-video.html',
-        ['android', 'nvidia'], bug=499555) # flaky
     self.Fail('conformance/glsl/bugs/multiplication-assignment.html',
-        ['android', 'nvidia'], bug=606096)
-    self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
-        ['android', 'nvidia'], bug=606096)
-    self.Fail('conformance/glsl/constructors/glsl-construct-mat3.html',
-        ['android', 'nvidia'], bug=606096)
-    self.Fail('conformance/glsl/constructors/glsl-construct-mat4.html',
         ['android', 'nvidia'], bug=606096)
     self.Fail('WebglExtension_WEBGL_compressed_texture_atc',
         ['android', ('nvidia', 'NVIDIA Tegra')])
-    self.Fail('deqp/data/gles2/shaders/conversions.html',
-        ['android', ('nvidia', 'NVIDIA Tegra')], bug=478572)
 
     # Pixel C
     self.Fail('conformance/glsl/bugs/constant-precision-qualifier.html',
