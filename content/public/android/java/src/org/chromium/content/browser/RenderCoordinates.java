@@ -46,7 +46,6 @@ public class RenderCoordinates {
     private float mWheelScrollFactor;
 
     private float mTopContentOffsetYPix;
-    private float mBottomContentOffsetYPix;
 
     private boolean mHasFrameInfo;
 
@@ -87,14 +86,13 @@ public class RenderCoordinates {
             float contentWidthCss, float contentHeightCss,
             float viewportWidthCss, float viewportHeightCss,
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor,
-            float contentOffsetYPix, float contentOffsetYPixBottom) {
+            float contentOffsetYPix) {
         mScrollXCss = scrollXCss;
         mScrollYCss = scrollYCss;
         mPageScaleFactor = pageScaleFactor;
         mMinPageScaleFactor = minPageScaleFactor;
         mMaxPageScaleFactor = maxPageScaleFactor;
         mTopContentOffsetYPix = contentOffsetYPix;
-        mBottomContentOffsetYPix = contentOffsetYPixBottom;
 
         updateContentSizeCss(contentWidthCss, contentHeightCss);
         mLastFrameViewportWidthCss = viewportWidthCss;
@@ -330,13 +328,6 @@ public class RenderCoordinates {
      */
     public float getContentOffsetYPix() {
         return mTopContentOffsetYPix;
-    }
-
-    /**
-     * @return The Physical on-screen Y offset amount below the bottom controls.
-     */
-    public float getContentOffsetYPixBottom() {
-        return mBottomContentOffsetYPix;
     }
 
     /**

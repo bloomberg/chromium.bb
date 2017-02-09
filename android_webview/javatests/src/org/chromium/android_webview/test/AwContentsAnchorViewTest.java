@@ -27,7 +27,7 @@ public class AwContentsAnchorViewTest extends AwTestBase {
     public void setUp() throws Exception {
         super.setUp();
         mContainerView = new FrameLayout(getActivity());
-        mViewDelegate = new AwViewAndroidDelegate(mContainerView, new RenderCoordinates());
+        mViewDelegate = new AwViewAndroidDelegate(mContainerView, null, new RenderCoordinates());
     }
 
     @Feature({"AndroidWebView"})

@@ -65,6 +65,7 @@ component("android") {
     "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//url",
   ]
 }
 
