@@ -4,6 +4,7 @@
 
 #include "core/css/parser/CSSAtRuleID.h"
 
+#include "core/css/parser/CSSParserContext.h"
 #include "core/frame/UseCounter.h"
 
 namespace blink {
@@ -34,8 +35,7 @@ CSSAtRuleID cssAtRuleID(StringView name) {
   return CSSAtRuleInvalid;
 }
 
-void countAtRule(UseCounter* useCounter, CSSAtRuleID ruleId) {
-  ASSERT(useCounter);
+void countAtRule(const CSSParserContext* context, CSSAtRuleID ruleId) {
   UseCounter::Feature feature;
 
   switch (ruleId) {
@@ -81,7 +81,7 @@ void countAtRule(UseCounter* useCounter, CSSAtRuleID ruleId) {
       ASSERT_NOT_REACHED();
       return;
   }
-  useCounter->count(feature);
+  context->count(feature);
 }
 
 }  // namespace blink

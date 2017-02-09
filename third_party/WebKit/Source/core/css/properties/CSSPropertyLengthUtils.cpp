@@ -17,24 +17,21 @@ bool validWidthOrHeightKeyword(CSSValueID id, const CSSParserContext* context) {
       id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent ||
       id == CSSValueMinContent || id == CSSValueMaxContent ||
       id == CSSValueFitContent) {
-    if (context->isUseCounterRecordingEnabled()) {
-      UseCounter* useCounter = context->useCounter();
-      switch (id) {
-        case CSSValueWebkitMinContent:
-          useCounter->count(UseCounter::CSSValuePrefixedMinContent);
-          break;
-        case CSSValueWebkitMaxContent:
-          useCounter->count(UseCounter::CSSValuePrefixedMaxContent);
-          break;
-        case CSSValueWebkitFillAvailable:
-          useCounter->count(UseCounter::CSSValuePrefixedFillAvailable);
-          break;
-        case CSSValueWebkitFitContent:
-          useCounter->count(UseCounter::CSSValuePrefixedFitContent);
-          break;
-        default:
-          break;
-      }
+    switch (id) {
+      case CSSValueWebkitMinContent:
+        context->count(UseCounter::CSSValuePrefixedMinContent);
+        break;
+      case CSSValueWebkitMaxContent:
+        context->count(UseCounter::CSSValuePrefixedMaxContent);
+        break;
+      case CSSValueWebkitFillAvailable:
+        context->count(UseCounter::CSSValuePrefixedFillAvailable);
+        break;
+      case CSSValueWebkitFitContent:
+        context->count(UseCounter::CSSValuePrefixedFitContent);
+        break;
+      default:
+        break;
     }
     return true;
   }

@@ -1487,10 +1487,6 @@ class CORE_EXPORT UseCounter {
   // Invoked when a new document is loaded into the main frame of the page.
   void didCommitLoad(KURL);
 
-  static UseCounter* getFrom(const Document*);
-  static UseCounter* getFrom(const CSSStyleSheet*);
-  static UseCounter* getFrom(const StyleSheetContents*);
-
   static int mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID);
 
   // When muted, all calls to "count" functions are ignoed.  May be nested.

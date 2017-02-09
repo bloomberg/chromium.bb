@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class UseCounter;
+class CSSParserContext;
 
 enum CSSAtRuleID {
   CSSAtRuleInvalid = 0,
@@ -30,7 +30,7 @@ enum CSSAtRuleID {
 
 CSSAtRuleID cssAtRuleID(StringView name);
 
-void countAtRule(UseCounter*, CSSAtRuleID);
+void countAtRule(const CSSParserContext*, CSSAtRuleID);
 
 }  // namespace blink
 

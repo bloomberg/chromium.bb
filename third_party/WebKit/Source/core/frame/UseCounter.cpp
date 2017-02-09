@@ -1249,26 +1249,6 @@ void UseCounter::count(Feature feature) {
   recordMeasurement(feature);
 }
 
-UseCounter* UseCounter::getFrom(const Document* document) {
-  if (document && document->frameHost())
-    return &document->frameHost()->useCounter();
-  return 0;
-}
-
-UseCounter* UseCounter::getFrom(const CSSStyleSheet* sheet) {
-  if (sheet)
-    return getFrom(sheet->contents());
-  return 0;
-}
-
-UseCounter* UseCounter::getFrom(const StyleSheetContents* sheetContents) {
-  // FIXME: We may want to handle stylesheets that have multiple owners
-  //        https://crbug.com/242125
-  if (sheetContents && sheetContents->hasSingleOwnerNode())
-    return getFrom(sheetContents->singleOwnerDocument());
-  return 0;
-}
-
 EnumerationHistogram& UseCounter::featuresHistogram() const {
   // Every SVGImage has it's own Page instance, and multiple web pages can
   // share the usage of a single SVGImage.  Ideally perhaps we'd delegate

@@ -120,7 +120,7 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
       DummyPageHolder::create(IntSize(500, 500));
   CSSParserContext* context = CSSParserContext::create(
       HTMLStandardMode, CSSParserContext::DynamicProfile,
-      UseCounter::getFrom(&dummyHolder->document()));
+      &dummyHolder->document());
   m_cachedContents = StyleSheetContents::create(context);
   {
     CSSStyleSheet* sheet =

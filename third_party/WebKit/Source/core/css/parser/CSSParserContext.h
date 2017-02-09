@@ -7,6 +7,8 @@
 
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserMode.h"
+#include "core/dom/Document.h"
+#include "core/frame/UseCounter.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
@@ -14,9 +16,7 @@
 namespace blink {
 
 class CSSStyleSheet;
-class Document;
 class StyleSheetContents;
-class UseCounter;
 
 class CORE_EXPORT CSSParserContext
     : public GarbageCollectedFinalized<CSSParserContext> {
@@ -25,7 +25,7 @@ class CORE_EXPORT CSSParserContext
   enum SelectorProfile { DynamicProfile, StaticProfile };
 
   // All three of these factories copy the context and override the current
-  // UseCounter handle.
+  // Document handle used for UseCounter.
   static CSSParserContext* createWithStyleSheet(const CSSParserContext*,
                                                 const CSSStyleSheet*);
   static CSSParserContext* createWithStyleSheetContents(
@@ -34,20 +34,19 @@ class CORE_EXPORT CSSParserContext
   // FIXME: This constructor shouldn't exist if we properly piped the UseCounter
   // through the CSS subsystem. Currently the UseCounter life time is too crazy
   // and we need a way to override it.
-  static CSSParserContext* create(const CSSParserContext* other, UseCounter*);
+  static CSSParserContext* create(const CSSParserContext* other,
+                                  const Document* useCounterDocument);
 
   static CSSParserContext* create(CSSParserMode,
                                   SelectorProfile = DynamicProfile,
-                                  UseCounter* = nullptr);
-  // FIXME: We shouldn't need the UseCounter argument as we could infer it from
-  // the Document but some callers want to disable use counting (e.g. the
-  // WebInspector).
-  static CSSParserContext* create(const Document&, UseCounter*);
+                                  const Document* useCounterDocument = nullptr);
+  static CSSParserContext* create(const Document&,
+                                  const Document* useCounterDocument);
   static CSSParserContext* create(const Document&,
                                   const KURL& baseURLOverride = KURL(),
                                   const String& charset = emptyString,
                                   SelectorProfile = DynamicProfile,
-                                  UseCounter* = nullptr);
+                                  const Document* useCounterDocument = nullptr);
 
   bool operator==(const CSSParserContext&) const;
   bool operator!=(const CSSParserContext& other) const {
@@ -80,16 +79,16 @@ class CORE_EXPORT CSSParserContext
 
   KURL completeURL(const String& url) const;
 
-  // This may return nullptr if counting is disabled.
-  // See comments on constructors.
-  UseCounter* useCounter() const { return m_useCounter; }
-  bool isUseCounterRecordingEnabled() const { return m_useCounter; }
+  void count(UseCounter::Feature) const;
+  void count(CSSParserMode, CSSPropertyID) const;
+  bool isUseCounterRecordingEnabled() const { return m_document; }
+  bool isDocumentHandleEqual(const Document* other) const;
 
   ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy() const {
     return m_shouldCheckContentSecurityPolicy;
   }
 
-  DEFINE_INLINE_TRACE() {}
+  DECLARE_TRACE();
 
  private:
   CSSParserContext(const KURL& baseURL,
@@ -101,7 +100,7 @@ class CORE_EXPORT CSSParserContext
                    bool isHTMLDocument,
                    bool useLegacyBackgroundSizeShorthandBehavior,
                    ContentSecurityPolicyDisposition,
-                   UseCounter*);
+                   const Document* useCounterDocument);
 
   KURL m_baseURL;
   String m_charset;
@@ -113,7 +112,7 @@ class CORE_EXPORT CSSParserContext
   bool m_useLegacyBackgroundSizeShorthandBehavior;
   ContentSecurityPolicyDisposition m_shouldCheckContentSecurityPolicy;
 
-  UseCounter* m_useCounter;
+  WeakMember<const Document> m_document;
 };
 
 CORE_EXPORT const CSSParserContext* strictCSSParserContext();

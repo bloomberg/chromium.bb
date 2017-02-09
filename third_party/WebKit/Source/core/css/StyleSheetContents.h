@@ -61,6 +61,8 @@ class CORE_EXPORT StyleSheetContents
     return new StyleSheetContents(ownerRule, originalURL, context);
   }
 
+  static const Document* singleOwnerDocument(const StyleSheetContents*);
+
   ~StyleSheetContents();
 
   const CSSParserContext* parserContext() const { return m_parserContext; }

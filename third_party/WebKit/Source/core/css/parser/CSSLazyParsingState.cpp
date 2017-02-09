@@ -45,9 +45,8 @@ const CSSParserContext* CSSLazyParsingState::context() {
   if (!m_document)
     m_document = m_owningContents->anyOwnerDocument();
 
-  UseCounter* useCounter = UseCounter::getFrom(m_document);
-  if (useCounter != m_context->useCounter())
-    m_context = CSSParserContext::create(m_context, useCounter);
+  if (!m_context->isDocumentHandleEqual(m_document))
+    m_context = CSSParserContext::create(m_context, m_document);
   return m_context;
 }
 

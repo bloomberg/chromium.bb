@@ -80,6 +80,14 @@ static bool isAcceptableCSSStyleSheetParent(const Node& parentNode) {
 }
 #endif
 
+// static
+const Document* CSSStyleSheet::singleOwnerDocument(
+    const CSSStyleSheet* styleSheet) {
+  if (styleSheet)
+    return StyleSheetContents::singleOwnerDocument(styleSheet->contents());
+  return nullptr;
+}
+
 CSSStyleSheet* CSSStyleSheet::create(StyleSheetContents* sheet,
                                      CSSImportRule* ownerRule) {
   return new CSSStyleSheet(sheet, ownerRule);

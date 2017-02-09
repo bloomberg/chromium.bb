@@ -39,6 +39,16 @@
 
 namespace blink {
 
+// static
+const Document* StyleSheetContents::singleOwnerDocument(
+    const StyleSheetContents* styleSheetContents) {
+  // TODO(https://crbug.com/242125): We may want to handle stylesheets that have
+  // multiple owners when this is used for UseCounter.
+  if (styleSheetContents && styleSheetContents->hasSingleOwnerNode())
+    return styleSheetContents->singleOwnerDocument();
+  return nullptr;
+}
+
 // Rough size estimate for the memory cache.
 unsigned StyleSheetContents::estimatedSizeInBytes() const {
   // Note that this does not take into account size of the strings hanging from

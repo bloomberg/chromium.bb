@@ -21,8 +21,8 @@ const CSSValue* CSSPropertyAPIOffsetPosition::parseSingleValue(
       range, context->mode(), CSSPropertyParserHelpers::UnitlessQuirk::Forbid);
 
   // Count when we receive a valid position other than 'auto'.
-  if (context->isUseCounterRecordingEnabled() && value && value->isValuePair())
-    context->useCounter()->count(UseCounter::CSSOffsetInEffect);
+  if (value && value->isValuePair())
+    context->count(UseCounter::CSSOffsetInEffect);
   return value;
 }
 

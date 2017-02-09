@@ -42,11 +42,11 @@ const CSSValue* CSSPropertyAPICursor::parseSingleValue(
   }
 
   CSSValueID id = range.peek().id();
-  if (!range.atEnd() && context->isUseCounterRecordingEnabled()) {
+  if (!range.atEnd()) {
     if (id == CSSValueWebkitZoomIn)
-      context->useCounter()->count(UseCounter::PrefixedCursorZoomIn);
+      context->count(UseCounter::PrefixedCursorZoomIn);
     else if (id == CSSValueWebkitZoomOut)
-      context->useCounter()->count(UseCounter::PrefixedCursorZoomOut);
+      context->count(UseCounter::PrefixedCursorZoomOut);
   }
   CSSValue* cursorType = nullptr;
   if (id == CSSValueHand) {

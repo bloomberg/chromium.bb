@@ -47,6 +47,8 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   WTF_MAKE_NONCOPYABLE(CSSStyleSheet);
 
  public:
+  static const Document* singleOwnerDocument(const CSSStyleSheet*);
+
   static CSSStyleSheet* create(StyleSheetContents*,
                                CSSImportRule* ownerRule = nullptr);
   static CSSStyleSheet* create(StyleSheetContents*, Node& ownerNode);

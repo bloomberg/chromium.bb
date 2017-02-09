@@ -156,8 +156,7 @@ ImmutableStylePropertySet* CSSParserImpl::parseInlineStyleDeclaration(
     Element* element) {
   Document& document = element->document();
   CSSParserContext* context = CSSParserContext::create(
-      document.elementSheet().contents()->parserContext(),
-      UseCounter::getFrom(&document));
+      document.elementSheet().contents()->parserContext(), &document);
   CSSParserMode mode = element->isHTMLElement() && !document.inQuirksMode()
                            ? HTMLStandardMode
                            : HTMLQuirksMode;
@@ -453,7 +452,7 @@ StyleRuleBase* CSSParserImpl::consumeAtRule(CSSParserTokenRange& range,
   CSSParserTokenRange prelude = range.makeSubRange(preludeStart, &range.peek());
   CSSAtRuleID id = cssAtRuleID(name);
   if (id != CSSAtRuleInvalid && m_context->isUseCounterRecordingEnabled())
-    countAtRule(m_context->useCounter(), id);
+    countAtRule(m_context, id);
 
   if (range.atEnd() || range.peek().type() == SemicolonToken) {
     range.consume();
@@ -701,8 +700,7 @@ StyleRuleKeyframes* CSSParserImpl::consumeKeyframesRule(
   if (nameToken.type() == IdentToken) {
     name = nameToken.value().toString();
   } else if (nameToken.type() == StringToken && webkitPrefixed) {
-    if (m_context->isUseCounterRecordingEnabled())
-      m_context->useCounter()->count(UseCounter::QuotedKeyframesRule);
+    m_context->count(UseCounter::QuotedKeyframesRule);
     name = nameToken.value().toString();
   } else {
     return nullptr;  // Parse error; expected ident token in @keyframes header

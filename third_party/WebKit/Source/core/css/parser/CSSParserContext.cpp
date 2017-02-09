@@ -6,6 +6,7 @@
 
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/imports/HTMLImportsController.h"
@@ -16,41 +17,42 @@ namespace blink {
 CSSParserContext* CSSParserContext::createWithStyleSheet(
     const CSSParserContext* other,
     const CSSStyleSheet* styleSheet) {
-  return CSSParserContext::create(other, UseCounter::getFrom(styleSheet));
+  return CSSParserContext::create(
+      other, CSSStyleSheet::singleOwnerDocument(styleSheet));
 }
 
 // static
 CSSParserContext* CSSParserContext::createWithStyleSheetContents(
     const CSSParserContext* other,
     const StyleSheetContents* styleSheetContents) {
-  return CSSParserContext::create(other,
-                                  UseCounter::getFrom(styleSheetContents));
+  return CSSParserContext::create(
+      other, StyleSheetContents::singleOwnerDocument(styleSheetContents));
 }
 
 // static
 CSSParserContext* CSSParserContext::create(const CSSParserContext* other,
-                                           UseCounter* useCounter) {
+                                           const Document* m_document) {
   return new CSSParserContext(
       other->m_baseURL, other->m_charset, other->m_mode, other->m_matchMode,
       other->m_profile, other->m_referrer, other->m_isHTMLDocument,
       other->m_useLegacyBackgroundSizeShorthandBehavior,
-      other->m_shouldCheckContentSecurityPolicy, useCounter);
+      other->m_shouldCheckContentSecurityPolicy, m_document);
 }
 
 // static
 CSSParserContext* CSSParserContext::create(CSSParserMode mode,
                                            SelectorProfile profile,
-                                           UseCounter* useCounter) {
+                                           const Document* m_document) {
   return new CSSParserContext(KURL(), emptyString, mode, mode, profile,
                               Referrer(), false, false,
-                              DoNotCheckContentSecurityPolicy, useCounter);
+                              DoNotCheckContentSecurityPolicy, m_document);
 }
 
 // static
 CSSParserContext* CSSParserContext::create(const Document& document,
-                                           UseCounter* useCounter) {
+                                           const Document* m_document) {
   return CSSParserContext::create(document, KURL(), emptyString, DynamicProfile,
-                                  useCounter);
+                                  m_document);
 }
 
 // static
@@ -58,7 +60,7 @@ CSSParserContext* CSSParserContext::create(const Document& document,
                                            const KURL& baseURLOverride,
                                            const String& charset,
                                            SelectorProfile profile,
-                                           UseCounter* useCounter) {
+                                           const Document* m_document) {
   const KURL baseURL =
       baseURLOverride.isNull() ? document.baseURL() : baseURLOverride;
 
@@ -89,7 +91,7 @@ CSSParserContext* CSSParserContext::create(const Document& document,
   return new CSSParserContext(baseURL, charset, mode, matchMode, profile,
                               referrer, document.isHTMLDocument(),
                               useLegacyBackgroundSizeShorthandBehavior,
-                              policyDisposition, useCounter);
+                              policyDisposition, m_document);
 }
 
 CSSParserContext::CSSParserContext(
@@ -102,7 +104,7 @@ CSSParserContext::CSSParserContext(
     bool isHTMLDocument,
     bool useLegacyBackgroundSizeShorthandBehavior,
     ContentSecurityPolicyDisposition policyDisposition,
-    UseCounter* useCounter)
+    const Document* m_document)
     : m_baseURL(baseURL),
       m_charset(charset),
       m_mode(mode),
@@ -113,7 +115,7 @@ CSSParserContext::CSSParserContext(
       m_useLegacyBackgroundSizeShorthandBehavior(
           useLegacyBackgroundSizeShorthandBehavior),
       m_shouldCheckContentSecurityPolicy(policyDisposition),
-      m_useCounter(useCounter) {}
+      m_document(m_document) {}
 
 bool CSSParserContext::operator==(const CSSParserContext& other) const {
   return m_baseURL == other.m_baseURL && m_charset == other.m_charset &&
@@ -136,6 +138,27 @@ KURL CSSParserContext::completeURL(const String& url) const {
   if (charset().isEmpty())
     return KURL(baseURL(), url);
   return KURL(baseURL(), url, charset());
+}
+
+void CSSParserContext::count(UseCounter::Feature feature) const {
+  if (isUseCounterRecordingEnabled())
+    UseCounter::count(*m_document, feature);
+}
+
+void CSSParserContext::count(CSSParserMode mode, CSSPropertyID property) const {
+  if (isUseCounterRecordingEnabled() && m_document->frameHost()) {
+    UseCounter* useCounter = &m_document->frameHost()->useCounter();
+    if (useCounter)
+      useCounter->count(mode, property);
+  }
+}
+
+bool CSSParserContext::isDocumentHandleEqual(const Document* other) const {
+  return m_document.get() == other;
+}
+
+DEFINE_TRACE(CSSParserContext) {
+  visitor->trace(m_document);
 }
 
 }  // namespace blink

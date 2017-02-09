@@ -126,8 +126,8 @@ bool CSSPropertyParser::parseValue(
   }
 
   // This doesn't count UA style sheets
-  if (parseSuccess && context->isUseCounterRecordingEnabled())
-    context->useCounter()->count(context->mode(), unresolvedProperty);
+  if (parseSuccess)
+    context->count(context->mode(), unresolvedProperty);
 
   if (!parseSuccess)
     parsedProperties.shrink(parsedPropertiesSize);
@@ -497,8 +497,7 @@ static CSSValue* consumeAnimationName(CSSParserTokenRange& range,
 
   if (allowQuotedName && range.peek().type() == StringToken) {
     // Legacy support for strings in prefixed animations.
-    if (context->isUseCounterRecordingEnabled())
-      context->useCounter()->count(UseCounter::QuotedAnimationName);
+    context->count(UseCounter::QuotedAnimationName);
 
     const CSSParserToken& token = range.consumeIncludingWhitespace();
     if (equalIgnoringASCIICase(token.value(), "none"))
@@ -793,8 +792,7 @@ static CSSFunctionValue* consumeFilterFunction(
     parsedValue = parseSingleShadow(args, context->mode(), false, false);
   } else {
     if (args.atEnd()) {
-      if (context->isUseCounterRecordingEnabled())
-        context->useCounter()->count(UseCounter::CSSFilterFunctionNoArguments);
+      context->count(UseCounter::CSSFilterFunctionNoArguments);
       return filterValue;
     }
     if (filterType == CSSValueBrightness) {
@@ -934,12 +932,11 @@ static CSSValue* consumeOffsetPath(CSSParserTokenRange& range,
   CSSValue* value = consumePathOrNone(range);
 
   // Count when we receive a valid path other than 'none'.
-  if (context->isUseCounterRecordingEnabled() && value &&
-      !value->isIdentifierValue()) {
+  if (value && !value->isIdentifierValue()) {
     if (isMotionPath) {
-      context->useCounter()->count(UseCounter::CSSMotionInEffect);
+      context->count(UseCounter::CSSMotionInEffect);
     } else {
-      context->useCounter()->count(UseCounter::CSSOffsetInEffect);
+      context->count(UseCounter::CSSOffsetInEffect);
     }
   }
   return value;
@@ -1013,10 +1010,7 @@ static bool consumePerspective(CSSParserTokenRange& args,
     double perspective;
     if (!consumeNumberRaw(args, perspective) || perspective < 0)
       return false;
-    if (context->isUseCounterRecordingEnabled()) {
-      context->useCounter()->count(
-          UseCounter::UnitlessPerspectiveInTransformProperty);
-    }
+    context->count(UseCounter::UnitlessPerspectiveInTransformProperty);
     parsedValue = CSSPrimitiveValue::create(
         perspective, CSSPrimitiveValue::UnitType::Pixels);
   }
@@ -1162,10 +1156,7 @@ static CSSValue* consumePerspective(CSSParserTokenRange& range,
     double perspective;
     if (!consumeNumberRaw(range, perspective))
       return nullptr;
-    if (context->isUseCounterRecordingEnabled()) {
-      context->useCounter()->count(
-          UseCounter::UnitlessPerspectiveInPerspectiveProperty);
-    }
+    context->count(UseCounter::UnitlessPerspectiveInPerspectiveProperty);
     parsedValue = CSSPrimitiveValue::create(
         perspective, CSSPrimitiveValue::UnitType::Pixels);
   }
@@ -2016,21 +2007,20 @@ static void countKeywordOnlyPropertyUsage(CSSPropertyID property,
         else
           feature = UseCounter::CSSValueAppearanceOthers;
       }
-      context->useCounter()->count(feature);
+      context->count(feature);
       break;
     }
 
     case CSSPropertyWebkitUserModify: {
       switch (valueID) {
         case CSSValueReadOnly:
-          context->useCounter()->count(UseCounter::CSSValueUserModifyReadOnly);
+          context->count(UseCounter::CSSValueUserModifyReadOnly);
           break;
         case CSSValueReadWrite:
-          context->useCounter()->count(UseCounter::CSSValueUserModifyReadWrite);
+          context->count(UseCounter::CSSValueUserModifyReadWrite);
           break;
         case CSSValueReadWritePlaintextOnly:
-          context->useCounter()->count(
-              UseCounter::CSSValueUserModifyReadWritePlaintextOnly);
+          context->count(UseCounter::CSSValueUserModifyReadWritePlaintextOnly);
           break;
         default:
           NOTREACHED();

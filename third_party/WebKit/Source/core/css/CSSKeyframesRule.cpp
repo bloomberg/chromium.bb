@@ -173,8 +173,12 @@ CSSKeyframeRule* CSSKeyframesRule::item(unsigned index) const {
 
 CSSKeyframeRule* CSSKeyframesRule::anonymousIndexedGetter(
     unsigned index) const {
-  if (UseCounter* useCounter = UseCounter::getFrom(parentStyleSheet()))
-    useCounter->count(UseCounter::CSSKeyframesRuleAnonymousIndexedGetter);
+  const Document* parentDocument =
+      CSSStyleSheet::singleOwnerDocument(parentStyleSheet());
+  if (parentDocument) {
+    UseCounter::count(*parentDocument,
+                      UseCounter::CSSKeyframesRuleAnonymousIndexedGetter);
+  }
   return item(index);
 }
 

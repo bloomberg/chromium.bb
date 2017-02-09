@@ -1200,16 +1200,12 @@ static CSSValue* consumeGeneratedImage(CSSParserTokenRange& range,
     result = consumeRadialGradient(args, context->mode(), Repeating);
   } else if (id == CSSValueWebkitLinearGradient) {
     // FIXME: This should send a deprecation message.
-    if (context->isUseCounterRecordingEnabled())
-      context->useCounter()->count(UseCounter::DeprecatedWebKitLinearGradient);
+    context->count(UseCounter::DeprecatedWebKitLinearGradient);
     result = consumeLinearGradient(args, context->mode(), NonRepeating,
                                    CSSPrefixedLinearGradient);
   } else if (id == CSSValueWebkitRepeatingLinearGradient) {
     // FIXME: This should send a deprecation message.
-    if (context->isUseCounterRecordingEnabled()) {
-      context->useCounter()->count(
-          UseCounter::DeprecatedWebKitRepeatingLinearGradient);
-    }
+    context->count(UseCounter::DeprecatedWebKitRepeatingLinearGradient);
     result = consumeLinearGradient(args, context->mode(), Repeating,
                                    CSSPrefixedLinearGradient);
   } else if (id == CSSValueRepeatingLinearGradient) {
@@ -1220,20 +1216,15 @@ static CSSValue* consumeGeneratedImage(CSSParserTokenRange& range,
                                    CSSLinearGradient);
   } else if (id == CSSValueWebkitGradient) {
     // FIXME: This should send a deprecation message.
-    if (context->isUseCounterRecordingEnabled())
-      context->useCounter()->count(UseCounter::DeprecatedWebKitGradient);
+    context->count(UseCounter::DeprecatedWebKitGradient);
     result = consumeDeprecatedGradient(args, context->mode());
   } else if (id == CSSValueWebkitRadialGradient) {
     // FIXME: This should send a deprecation message.
-    if (context->isUseCounterRecordingEnabled())
-      context->useCounter()->count(UseCounter::DeprecatedWebKitRadialGradient);
+    context->count(UseCounter::DeprecatedWebKitRadialGradient);
     result =
         consumeDeprecatedRadialGradient(args, context->mode(), NonRepeating);
   } else if (id == CSSValueWebkitRepeatingRadialGradient) {
-    if (context->isUseCounterRecordingEnabled()) {
-      context->useCounter()->count(
-          UseCounter::DeprecatedWebKitRepeatingRadialGradient);
-    }
+    context->count(UseCounter::DeprecatedWebKitRepeatingRadialGradient);
     result = consumeDeprecatedRadialGradient(args, context->mode(), Repeating);
   } else if (id == CSSValueWebkitCrossFade) {
     result = consumeCrossFade(args, context);

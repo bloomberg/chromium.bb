@@ -26,17 +26,17 @@ const CSSValue* CSSPropertyAPIZoom::parseSingleValue(
           CSSPropertyParserHelpers::consumeNumber(range, ValueRangeNonNegative);
     }
   }
-  if (zoom && context->isUseCounterRecordingEnabled()) {
+  if (zoom) {
     if (!(token.id() == CSSValueNormal ||
           (token.type() == NumberToken &&
            toCSSPrimitiveValue(zoom)->getDoubleValue() == 1) ||
           (token.type() == PercentageToken &&
            toCSSPrimitiveValue(zoom)->getDoubleValue() == 100)))
-      context->useCounter()->count(UseCounter::CSSZoomNotEqualToOne);
+      context->count(UseCounter::CSSZoomNotEqualToOne);
     if (token.id() == CSSValueReset)
-      context->useCounter()->count(UseCounter::CSSZoomReset);
+      context->count(UseCounter::CSSZoomReset);
     if (token.id() == CSSValueDocument)
-      context->useCounter()->count(UseCounter::CSSZoomDocument);
+      context->count(UseCounter::CSSZoomDocument);
   }
   return zoom;
 }
