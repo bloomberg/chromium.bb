@@ -255,6 +255,7 @@ static_library("headless_lib") {
               "public/util/in_memory_request_job.h",
               "public/util/managed_dispatch_url_request_job.cc",
               "public/util/managed_dispatch_url_request_job.h",
+              "public/util/navigation_request.h",
               "public/util/testing/generic_url_request_mocks.cc",
               "public/util/testing/generic_url_request_mocks.h",
               "public/util/url_fetcher.cc",
@@ -407,8 +408,11 @@ test("headless_browsertests") {
 static_library("headless_shell_lib") {
   sources = [
     "app/headless_shell.cc",
+    "app/headless_shell.h",
     "app/headless_shell_switches.cc",
     "app/headless_shell_switches.h",
+    "app/shell_navigation_request.cc",
+    "app/shell_navigation_request.h",
     "public/headless_shell.h",
   ]
 

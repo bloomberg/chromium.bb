@@ -8,8 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "headless/public/util/navigation_request.h"
 #include "headless/public/util/testing/fake_managed_dispatch_url_request_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,6 +83,53 @@ TEST_F(ExpeditedDispatcherTest, ErrorsAndDataReadyDispatchedInCallOrder) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(notifications, ElementsAre("id: 4 OK", "id: 3 err: -123",
                                          "id: 2 OK", "id: 1 OK"));
+}
+
+namespace {
+class NavigationRequestForTest : public NavigationRequest {
+ public:
+  explicit NavigationRequestForTest(base::Closure* done_closure)
+      : done_closure_(done_closure) {}
+
+  ~NavigationRequestForTest() override {}
+
+  // NavigationRequest implementation:
+  void StartProcessing(base::Closure done_callback) override {
+    *done_closure_ = std::move(done_callback);
+  }
+
+ private:
+  base::Closure* done_closure_;  // NOT OWNED
+};
+}  // namespace
+
+TEST_F(ExpeditedDispatcherTest, NavigationDoesNotBlockUrlRequests) {
+  std::vector<std::string> notifications;
+  std::unique_ptr<FakeManagedDispatchURLRequestJob> job1(
+      new FakeManagedDispatchURLRequestJob(expedited_dispatcher_.get(), 1,
+                                           &notifications));
+  base::Closure navigation_done_closure;
+  expedited_dispatcher_->NavigationRequested(
+      base::MakeUnique<NavigationRequestForTest>(&navigation_done_closure));
+  std::unique_ptr<FakeManagedDispatchURLRequestJob> job2(
+      new FakeManagedDispatchURLRequestJob(expedited_dispatcher_.get(), 2,
+                                           &notifications));
+  std::unique_ptr<FakeManagedDispatchURLRequestJob> job3(
+      new FakeManagedDispatchURLRequestJob(expedited_dispatcher_.get(), 3,
+                                           &notifications));
+  std::unique_ptr<FakeManagedDispatchURLRequestJob> job4(
+      new FakeManagedDispatchURLRequestJob(expedited_dispatcher_.get(), 4,
+                                           &notifications));
+  job1->DispatchHeadersComplete();
+  job2->DispatchHeadersComplete();
+  job3->DispatchHeadersComplete();
+  job4->DispatchHeadersComplete();
+
+  EXPECT_TRUE(notifications.empty());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(notifications,
+              ElementsAre("id: 1 OK", "id: 2 OK", "id: 3 OK", "id: 4 OK"));
 }
 
 }  // namespace headless

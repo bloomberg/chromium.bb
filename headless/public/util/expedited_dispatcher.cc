@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "headless/public/util/managed_dispatch_url_request_job.h"
+#include "headless/public/util/navigation_request.h"
 
 namespace headless {
 
@@ -35,5 +36,14 @@ void ExpeditedDispatcher::DataReady(ManagedDispatchURLRequestJob* job) {
 }
 
 void ExpeditedDispatcher::JobDeleted(ManagedDispatchURLRequestJob*) {}
+
+void ExpeditedDispatcher::NavigationRequested(
+    std::unique_ptr<NavigationRequest> navigation) {
+  // For the ExpeditedDispatcher we don't care when the navigation is done,
+  // hence the empty closure.
+  io_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&NavigationRequest::StartProcessing,
+                            std::move(navigation), base::Closure()));
+}
 
 }  // namespace headless

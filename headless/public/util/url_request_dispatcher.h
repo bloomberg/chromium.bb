@@ -10,6 +10,7 @@
 
 namespace headless {
 class ManagedDispatchURLRequestJob;
+class NavigationRequest;
 
 // Interface to abstract and potentially reorder (for determinism) calls to
 // ManagedDispatchUrlRequestJob::OnHeadersComplete and
@@ -35,6 +36,10 @@ class URLRequestDispatcher {
 
   // Tells us the job has finished. Can be called from any thread.
   virtual void JobDeleted(ManagedDispatchURLRequestJob* job) = 0;
+
+  // Tells us a navigation has been requested. Can be called from any thread.
+  virtual void NavigationRequested(
+      std::unique_ptr<NavigationRequest> navigation_request) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLRequestDispatcher);

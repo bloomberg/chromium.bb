@@ -29,6 +29,8 @@ class ExpeditedDispatcher : public URLRequestDispatcher {
   void JobFailed(ManagedDispatchURLRequestJob* job, net::Error error) override;
   void DataReady(ManagedDispatchURLRequestJob* job) override;
   void JobDeleted(ManagedDispatchURLRequestJob* job) override;
+  void NavigationRequested(
+      std::unique_ptr<NavigationRequest> navigation_request) override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
