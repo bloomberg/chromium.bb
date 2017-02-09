@@ -5,8 +5,6 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/stack_view/card_set.h"
 #import "ios/chrome/browser/ui/stack_view/stack_card.h"
@@ -16,6 +14,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -31,13 +33,12 @@ const CGFloat kViewportDimension = 200;
   CGSize cardSize_;
   CGFloat layoutAxisPosition_;
   BOOL initialConfigurationSet_;
-  id observer_;
 }
 
 // CardSet simulation
-@property(nonatomic, retain, readwrite) UIView* displayView;
+@property(nonatomic, strong, readwrite) UIView* displayView;
 @property(nonatomic, assign, readwrite) CGSize cardSize;
-@property(nonatomic, assign, readwrite) id<CardSetObserver> observer;
+@property(nonatomic, weak, readwrite) id<CardSetObserver> observer;
 @property(nonatomic, assign, readwrite) BOOL keepOnlyVisibleCardViewsAlive;
 
 - (void)configureLayoutParametersWithMargin:(CGFloat)margin;
@@ -111,13 +112,13 @@ class StackViewControllerTest : public BlockCleanupTest {
   void SetUp() override {
     BlockCleanupTest::SetUp();
 
-    main_card_set_.reset([[MockCardSet alloc] init]);
-    otr_card_set_.reset([[MockCardSet alloc] init]);
+    main_card_set_ = [[MockCardSet alloc] init];
+    otr_card_set_ = [[MockCardSet alloc] init];
 
-    view_controller_.reset([[StackViewController alloc]
-        initWithMainCardSet:(CardSet*)main_card_set_.get()
-                 otrCardSet:(CardSet*)otr_card_set_.get()
-              activeCardSet:(CardSet*)main_card_set_.get()]);
+    view_controller_ = [[StackViewController alloc]
+        initWithMainCardSet:static_cast<CardSet*>(main_card_set_)
+                 otrCardSet:static_cast<CardSet*>(otr_card_set_)
+              activeCardSet:static_cast<CardSet*>(main_card_set_)];
     // Resize the view and call VC lifecycle events
     [view_controller_ view].frame =
         CGRectMake(0.0, 0.0, kViewportDimension, kViewportDimension);
@@ -127,7 +128,7 @@ class StackViewControllerTest : public BlockCleanupTest {
   void TearDown() override {
     // The view controller uses a delayed selector call, so in the unittests
     // that causes the controller to be retained and outlive the test.
-    [NSObject cancelPreviousPerformRequestsWithTarget:view_controller_.get()];
+    [NSObject cancelPreviousPerformRequestsWithTarget:view_controller_];
     // And there are likely animations still running.
     for (UIView* view in [[view_controller_ scrollView] subviews]) {
       // Remove any animations on cards themselves.
@@ -183,9 +184,9 @@ class StackViewControllerTest : public BlockCleanupTest {
     }
   }
 
-  base::scoped_nsobject<StackViewController> view_controller_;
-  base::scoped_nsobject<MockCardSet> main_card_set_;
-  base::scoped_nsobject<MockCardSet> otr_card_set_;
+  StackViewController* view_controller_;
+  MockCardSet* main_card_set_;
+  MockCardSet* otr_card_set_;
 };
 
 TEST_F(StackViewControllerTest, BasicConfiguration) {
@@ -204,10 +205,12 @@ TEST_F(StackViewControllerTest, BasicConfiguration) {
 
 TEST_F(StackViewControllerTest, IncognitoHandling) {
   EXPECT_FALSE([view_controller_ isCurrentSetIncognito]);
-  EXPECT_EQ((CardSet*)otr_card_set_.get(), [view_controller_ inactiveCardSet]);
+  EXPECT_EQ(static_cast<CardSet*>(otr_card_set_),
+            [view_controller_ inactiveCardSet]);
   [view_controller_ setActiveCardSet:[view_controller_ inactiveCardSet]];
   EXPECT_TRUE([view_controller_ isCurrentSetIncognito]);
-  EXPECT_EQ((CardSet*)main_card_set_.get(), [view_controller_ inactiveCardSet]);
+  EXPECT_EQ(static_cast<CardSet*>(main_card_set_),
+            [view_controller_ inactiveCardSet]);
   // Incognito should always be right of (or below in landscape) the main set.
   EXPECT_GT([otr_card_set_ layoutAxisPosition],
             [main_card_set_ layoutAxisPosition]);

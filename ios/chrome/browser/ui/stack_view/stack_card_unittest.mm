@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/stack_view/card_view.h"
 #import "ios/chrome/browser/ui/stack_view/stack_card.h"
@@ -10,6 +9,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Mocked-out CardView object
 @interface MockCardView : UIView
@@ -26,7 +29,7 @@
 
 @implementation MockCardViewProvider
 - (CardView*)cardViewWithFrame:(CGRect)frame forStackCard:(StackCard*)card {
-  return (CardView*)[[[MockCardView alloc] initWithFrame:frame] autorelease];
+  return static_cast<CardView*>([[MockCardView alloc] initWithFrame:frame]);
 }
 @end
 
@@ -36,16 +39,13 @@ namespace {
 
 class StackCardTest : public PlatformTest {
  protected:
-  void SetUp() override {
-    view_provider_.reset([[MockCardViewProvider alloc] init]);
-  }
+  StackCardTest() { view_provider_ = [[MockCardViewProvider alloc] init]; }
 
-  base::scoped_nsobject<MockCardViewProvider> view_provider_;
+  MockCardViewProvider* view_provider_;
 };
 
 TEST_F(StackCardTest, LazyCreation) {
-  base::scoped_nsobject<StackCard> card(
-      [[StackCard alloc] initWithViewProvider:view_provider_]);
+  StackCard* card = [[StackCard alloc] initWithViewProvider:view_provider_];
   // Set attributes before asking for the view.
   LayoutRect layout = LayoutRectMake(10, 300, 20, 55, 98);
   CGRect frame = LayoutRectGetRect(layout);
@@ -61,8 +61,7 @@ TEST_F(StackCardTest, LazyCreation) {
 }
 
 TEST_F(StackCardTest, LiveViewUpdating) {
-  base::scoped_nsobject<StackCard> card(
-      [[StackCard alloc] initWithViewProvider:view_provider_]);
+  StackCard* card = [[StackCard alloc] initWithViewProvider:view_provider_];
   // Get the view, then set attributes.
   UIView* view = [card view];
   LayoutRect layout = LayoutRectMake(10, 300, 20, 55, 98);
@@ -76,8 +75,7 @@ TEST_F(StackCardTest, LiveViewUpdating) {
 }
 
 TEST_F(StackCardTest, BoundsUpdatePreservesCenter) {
-  base::scoped_nsobject<StackCard> card(
-      [[StackCard alloc] initWithViewProvider:view_provider_]);
+  StackCard* card = [[StackCard alloc] initWithViewProvider:view_provider_];
   LayoutRect layout = LayoutRectMake(0, 300, 0, 40, 100);
   CGRect frame = LayoutRectGetRect(layout);
   [card setLayout:layout];
@@ -89,8 +87,7 @@ TEST_F(StackCardTest, BoundsUpdatePreservesCenter) {
 }
 
 TEST_F(StackCardTest, PixelAlignmentOfViewFrameAfterLiveUpdate) {
-  base::scoped_nsobject<StackCard> card(
-      [[StackCard alloc] initWithViewProvider:view_provider_]);
+  StackCard* card = [[StackCard alloc] initWithViewProvider:view_provider_];
   // Get the view, then set attributes.
   UIView* view = [card view];
   const LayoutRectPosition kPosition = LayoutRectPositionMake(10.3, 20.4);
@@ -112,8 +109,7 @@ TEST_F(StackCardTest, PixelAlignmentOfViewFrameAfterLiveUpdate) {
 }
 
 TEST_F(StackCardTest, ViewFrameSynchronization) {
-  base::scoped_nsobject<StackCard> card(
-      [[StackCard alloc] initWithViewProvider:view_provider_]);
+  StackCard* card = [[StackCard alloc] initWithViewProvider:view_provider_];
   // Get the view, then set attributes.
   UIView* view = [card view];
   const LayoutRect kFirstLayout = LayoutRectMake(10, 300, 20, 55, 98);
@@ -148,8 +144,7 @@ TEST_F(StackCardTest, ViewFrameSynchronization) {
 }
 
 TEST_F(StackCardTest, ViewLayoutSynchronization) {
-  base::scoped_nsobject<StackCard> card(
-      [[StackCard alloc] initWithViewProvider:view_provider_]);
+  StackCard* card = [[StackCard alloc] initWithViewProvider:view_provider_];
   // Get the view, then set attributes.
   UIView* view = [card view];
   const LayoutRect kFirstLayout = LayoutRectMake(30, 300, 40, 200, 100);
@@ -185,8 +180,7 @@ TEST_F(StackCardTest, ViewLayoutSynchronization) {
 }
 
 TEST_F(StackCardTest, PixelAlignmentOfViewAfterSynchronization) {
-  base::scoped_nsobject<StackCard> card(
-      [[StackCard alloc] initWithViewProvider:view_provider_]);
+  StackCard* card = [[StackCard alloc] initWithViewProvider:view_provider_];
   // Get the view, then set attributes.
   UIView* view = [card view];
   const CGFloat kBoundingWidth = 300;

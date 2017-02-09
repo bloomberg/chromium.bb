@@ -4,8 +4,6 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/stringprintf.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -21,10 +19,14 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface MockTabModel : NSObject<NSFastEnumeration> {
  @private
-  base::scoped_nsobject<NSMutableArray> tabs_;
-  id<TabModelObserver> observer_;  // weak
+  NSMutableArray* tabs_;
+  __weak id<TabModelObserver> observer_;
 }
 
 // Adds a new mock tab with the given properties.
@@ -56,22 +58,22 @@ typedef const GURL& (^CardSetTestTabMock_url)(void);
 
 - (id)init {
   if ((self = [super init])) {
-    tabs_.reset([[NSMutableArray alloc] init]);
+    tabs_ = [[NSMutableArray alloc] init];
   }
   return self;
 }
 
 - (void)addTabWithTitle:(NSString*)title location:(const GURL&)url {
-  base::scoped_nsobject<id> tab([[CardSetTestTabMock alloc]
-      initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]]);
-  UIView* dummyView = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+  id tab = [[CardSetTestTabMock alloc]
+      initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]];
+  UIView* dummyView = [[UIView alloc] initWithFrame:CGRectZero];
   static int sCounter = 0;
   NSString* sessionID = [NSString stringWithFormat:@"%d", sCounter++];
   BOOL no = NO;
   [[[tab stub] andReturn:dummyView] view];
-  base::scoped_nsobject<id> block([^{
+  id block = [^{
     return (const GURL&)url;
-  } copy]);
+  } copy];
   [tab onSelector:@selector(url) callBlockExpectation:block];
 
   [[tab expect] retrieveSnapshot:[OCMArg any]];
@@ -91,7 +93,6 @@ typedef const GURL& (^CardSetTestTabMock_url)(void);
 
 - (void)removeTabAtIndex:(NSUInteger)index {
   id tab = [tabs_ objectAtIndex:index];
-  [[tab retain] autorelease];
   [tabs_ removeObjectAtIndex:index];
 
   // A tab was removed at the given index.
@@ -129,7 +130,7 @@ typedef const GURL& (^CardSetTestTabMock_url)(void);
 }
 
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
-                                  objects:(id*)stackbuf
+                                  objects:(__unsafe_unretained id*)stackbuf
                                     count:(NSUInteger)len {
   return [tabs_ countByEnumeratingWithState:state objects:stackbuf count:len];
 }
@@ -163,19 +164,17 @@ CardStackLayoutManager* CreateMockCardStackLayoutManager() {
 class CardSetTest : public PlatformTest {
  protected:
   virtual void SetUpWithTabs(int nb_tabs) {
-    tab_model_.reset([[MockTabModel alloc] init]);
+    tab_model_ = [[MockTabModel alloc] init];
 
     for (int i = 0; i < nb_tabs; ++i) {
       std::string url = base::StringPrintf("http://%d.example.com", i);
       [tab_model_ addTabWithTitle:@"NewTab" location:GURL(url)];
     }
 
-    card_set_.reset(
-        [[CardSet alloc] initWithModel:(TabModel*)tab_model_.get()]);
+    card_set_ = [[CardSet alloc] initWithModel:(TabModel*)tab_model_];
 
-    display_view_.reset(
-        [[UIView alloc] initWithFrame:CGRectMake(0, 0, kViewportDimension,
-                                                 kViewportDimension)]);
+    display_view_ = [[UIView alloc]
+        initWithFrame:CGRectMake(0, 0, kViewportDimension, kViewportDimension)];
     // Do some initial configuration of the card set.
     [card_set_ setDisplayView:display_view_];
     [card_set_ setCardSize:CGSizeMake(kCardDimension, kCardDimension)];
@@ -185,9 +184,9 @@ class CardSetTest : public PlatformTest {
 
   void SetUp() override { SetUpWithTabs(2); }
 
-  base::scoped_nsobject<MockTabModel> tab_model_;
-  base::scoped_nsobject<UIView> display_view_;
-  base::scoped_nsobject<CardSet> card_set_;
+  MockTabModel* tab_model_;
+  UIView* display_view_;
+  CardSet* card_set_;
 };
 
 TEST_F(CardSetTest, InitialLayoutState) {

@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/stack_view/card_stack_layout_manager.h"
 #import "ios/chrome/browser/ui/stack_view/stack_card.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface CardStackLayoutManager (Private)
 - (CGFloat)minStackStaggerAmount;
@@ -113,8 +116,7 @@ CardStackLayoutManager* newStackOfNCards(unsigned int n, BOOL layoutIsVertical)
   CardStackLayoutManager* stack = [[CardStackLayoutManager alloc] init];
   stack.layoutIsVertical = layoutIsVertical;
   for (unsigned int i = 0; i < n; ++i) {
-    base::scoped_nsobject<StackCard> card(
-        (StackCard*)[[MockStackCard alloc] init]);
+    StackCard* card = static_cast<StackCard*>([[MockStackCard alloc] init]);
     [stack addCard:card];
   }
 
@@ -132,19 +134,15 @@ CardStackLayoutManager* newStackOfNCards(unsigned int n, BOOL layoutIsVertical)
 TEST_F(CardStackLayoutManagerTest, CardSizing) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        [[CardStackLayoutManager alloc] init]);
-    stack.get().layoutIsVertical = boolValues[i];
+    CardStackLayoutManager* stack = [[CardStackLayoutManager alloc] init];
+    stack.layoutIsVertical = boolValues[i];
 
-    base::scoped_nsobject<StackCard> view1(
-        (StackCard*)[[MockStackCard alloc] init]);
-    base::scoped_nsobject<StackCard> view2(
-        (StackCard*)[[MockStackCard alloc] init]);
-    base::scoped_nsobject<StackCard> view3(
-        (StackCard*)[[MockStackCard alloc] init]);
-    [stack addCard:view1.get()];
-    [stack addCard:view2.get()];
-    [stack addCard:view3.get()];
+    StackCard* view1 = static_cast<StackCard*>([[MockStackCard alloc] init]);
+    StackCard* view2 = static_cast<StackCard*>([[MockStackCard alloc] init]);
+    StackCard* view3 = static_cast<StackCard*>([[MockStackCard alloc] init]);
+    [stack addCard:view1];
+    [stack addCard:view2];
+    [stack addCard:view3];
     // Ensure that removed cards are not altered.
     [stack removeCard:view2];
 
@@ -168,9 +166,8 @@ TEST_F(CardStackLayoutManagerTest, CardSizing) {
 TEST_F(CardStackLayoutManagerTest, StackSizes) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        [[CardStackLayoutManager alloc] init]);
-    stack.get().layoutIsVertical = boolValues[i];
+    CardStackLayoutManager* stack = [[CardStackLayoutManager alloc] init];
+    stack.layoutIsVertical = boolValues[i];
     CGRect cardFrame = CGRectMake(0, 0, 100, 200);
     [stack setCardSize:cardFrame.size];
     [stack setMaxStagger:30];
@@ -178,8 +175,8 @@ TEST_F(CardStackLayoutManagerTest, StackSizes) {
     // Asking the size for a collapsed stack should give the same result.
     CGFloat emptyCollapsedSize = [stack fullyCollapsedStackLength];
     for (int i = 0; i < 10; ++i) {
-      base::scoped_nsobject<StackCard> card(
-          (StackCard*)[[UIView alloc] initWithFrame:cardFrame]);
+      StackCard* card =
+          static_cast<StackCard*>([[UIView alloc] initWithFrame:cardFrame]);
       [stack addCard:card];
     }
     CGFloat largeCollapsedSize = [stack fullyCollapsedStackLength];
@@ -191,8 +188,7 @@ TEST_F(CardStackLayoutManagerTest, StackSizes) {
     EXPECT_GT(largeExpandedSize, largeCollapsedSize);
     CGFloat largeMaximumSize = [stack maximumStackLength];
     EXPECT_GT(largeMaximumSize, largeExpandedSize);
-    base::scoped_nsobject<StackCard> card(
-        (StackCard*)[[MockStackCard alloc] init]);
+    StackCard* card = static_cast<StackCard*>([[MockStackCard alloc] init]);
     [stack addCard:card];
     CGFloat evenLargerExpandedSize = [stack fannedStackLength];
     EXPECT_LT(largeExpandedSize, evenLargerExpandedSize);
@@ -211,8 +207,7 @@ TEST_F(CardStackLayoutManagerTest, StackLayout) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 30;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -235,8 +230,7 @@ TEST_F(CardStackLayoutManagerTest, PreservingPositionsOnCardSizeChange) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -272,8 +266,7 @@ TEST_F(CardStackLayoutManagerTest, SwappingPositionsOnOrientationChange) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -308,8 +301,7 @@ TEST_F(CardStackLayoutManagerTest, EndStackRecomputationOnEndLimitChange) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     CGFloat endLimit = [stack maximumStackLength];
     [stack setEndLimit:endLimit];
@@ -355,8 +347,7 @@ TEST_F(CardStackLayoutManagerTest, StackLayoutAtSpecificIndex) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 30;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     NSInteger startIndex = 10;
 
@@ -386,8 +377,7 @@ TEST_F(CardStackLayoutManagerTest, CardIsCovered) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -417,8 +407,7 @@ TEST_F(CardStackLayoutManagerTest, CardIsCollapsed) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -451,8 +440,7 @@ TEST_F(CardStackLayoutManagerTest, BasicScroll) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
     StackCard* firstCard = [[stack cards] objectAtIndex:0];
 
     const float kEndLimit =
@@ -491,8 +479,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollCardAwayFromNeighbor) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
     StackCard* firstCard = [[stack cards] objectAtIndex:0];
 
     // Configure the stack so that the first card is > the scroll-away distance
@@ -558,8 +545,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollNotScrollingLeadingCards) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 4;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
     StackCard* firstCard = [[stack cards] objectAtIndex:0];
 
     // Make the stack large enough to fan out all its cards to avoid having to
@@ -610,8 +596,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollCollapseExpansionOfLargeStack) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 10;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -662,8 +647,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollCollapseExpansionOfStackCornerCases) {
   BOOL boolValues[2] = {NO, YES};
   const unsigned int kCardCount = 1;
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     // A laid-out stack with one card is fully collapsed and fully fanned out,
     // but not fully overextended.
@@ -686,8 +670,7 @@ TEST_F(CardStackLayoutManagerTest, OneCardOverscroll) {
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 1;
     const float kScrollAwayAmount = 20.0;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
     StackCard* firstCard = [[stack cards] objectAtIndex:0];
 
     const float kEndLimit =
@@ -734,8 +717,7 @@ TEST_F(CardStackLayoutManagerTest, MaximumOverextensionAmount) {
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 1;
     const float kScrollAwayAmount = 20.0;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
     StackCard* firstCard = [[stack cards] objectAtIndex:0];
 
     const float kEndLimit =
@@ -807,8 +789,7 @@ TEST_F(CardStackLayoutManagerTest, DecayOnOverscroll) {
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 1;
     const float kScrollAwayAmount = 10.0;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
     StackCard* firstCard = [[stack cards] objectAtIndex:0];
 
     const float kEndLimit =
@@ -863,8 +844,7 @@ TEST_F(CardStackLayoutManagerTest, EliminateOverextension) {
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 2;
     const float kScrollAwayAmount = 20.0;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
     StackCard* firstCard = [[stack cards] objectAtIndex:0];
     StackCard* secondCard = [[stack cards] objectAtIndex:1];
 
@@ -956,8 +936,7 @@ TEST_F(CardStackLayoutManagerTest, MultiCardOverscroll) {
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
     const float kScrollAwayAmount = 100.0;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
     StackCard* firstCard = [[stack cards] objectAtIndex:0];
 
     const float kEndLimit =
@@ -1013,8 +992,7 @@ TEST_F(CardStackLayoutManagerTest, Fling) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
     StackCard* firstCard = [[stack cards] objectAtIndex:0];
 
     const float kEndLimit =
@@ -1051,8 +1029,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollAroundStartStack) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -1114,8 +1091,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollAroundEndStack) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 7;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit = 0.2 * [stack fannedStackLength];
     [stack setEndLimit:kEndLimit];
@@ -1178,8 +1154,7 @@ TEST_F(CardStackLayoutManagerTest, BasicMultitouch) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -1205,8 +1180,7 @@ TEST_F(CardStackLayoutManagerTest, MultitouchBoundedByNeighbor) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     // Make sure that the stack end limit isn't hit in this test.
     const float kEndLimit = 2.0 * [stack maximumStackLength];
@@ -1249,8 +1223,7 @@ TEST_F(CardStackLayoutManagerTest, OverpinchTowardStart) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 2;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -1283,8 +1256,7 @@ TEST_F(CardStackLayoutManagerTest, OverpinchTowardEnd) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 2;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -1315,8 +1287,7 @@ TEST_F(CardStackLayoutManagerTest, StressMultitouch) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 30;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -1352,8 +1323,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollAfterMultitouch) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -1398,8 +1368,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollEveningOutAfterMultitouch) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -1458,8 +1427,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollAroundStartStackAfterMultitouch) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -1517,8 +1485,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollAroundEndStackAfterMultitouch) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 7;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit = 0.3 * [stack fannedStackLength];
     const float kPinchDistance = 20;
@@ -1578,8 +1545,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollAfterPinchOutOfStartStack) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 3;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit =
         kDefaultEndLimitFraction * [stack fannedStackLength];
@@ -1648,8 +1614,7 @@ TEST_F(CardStackLayoutManagerTest, ScrollAfterPinchOutOfEndStack) {
   BOOL boolValues[2] = {NO, YES};
   for (unsigned long i = 0; i < arraysize(boolValues); i++) {
     const unsigned int kCardCount = 7;
-    base::scoped_nsobject<CardStackLayoutManager> stack(
-        newStackOfNCards(kCardCount, boolValues[i]));
+    CardStackLayoutManager* stack = newStackOfNCards(kCardCount, boolValues[i]);
 
     const float kEndLimit = 0.3 * [stack fannedStackLength];
     const float kPinchDistance = 20;

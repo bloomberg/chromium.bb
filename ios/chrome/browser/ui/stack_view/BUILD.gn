@@ -106,6 +106,7 @@ source_set("stack_view") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "card_set_unittest.mm",
