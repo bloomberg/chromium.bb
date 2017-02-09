@@ -116,6 +116,8 @@ source_set("tabs_internal") {
 
 source_set("tabs_internal_arc") {
   sources = [
+    "legacy_tab_helper.h",
+    "legacy_tab_helper.mm",
     "tab_model_list.mm",
   ]
   deps = [
@@ -123,6 +125,7 @@ source_set("tabs_internal_arc") {
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/web",
   ]
   libs = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]

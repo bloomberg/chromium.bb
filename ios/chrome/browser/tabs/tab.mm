@@ -88,6 +88,7 @@
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/storekit_launcher.h"
 #include "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
+#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_delegate.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
 #import "ios/chrome/browser/tabs/tab_headers_delegate.h"
@@ -534,6 +535,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     webStateImpl_.reset(static_cast<web::WebStateImpl*>(webState.release()));
     webStateObserver_.reset(
         new web::WebStateObserverBridge(webStateImpl_.get(), self));
+
+    // Do not respect |attachTabHelpers| as this tab helper is required for
+    // proper conversion from WebState to Tab.
+    LegacyTabHelper::CreateForWebState(webStateImpl_.get(), self);
 
     [self.webController setDelegate:self];
 
@@ -1248,6 +1253,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // to drive its own destruction.
   base::scoped_nsobject<Tab> kungFuDeathGrip([self retain]);
   [parentTabModel_ didCloseTab:self];  // Inform parent of tab closure.
+
+  LegacyTabHelper::RemoveFromWebState(webStateImpl_.get());
   webStateImpl_.reset();
 }
 
