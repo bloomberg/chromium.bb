@@ -64,6 +64,10 @@ complete.
   Oger
 - Fixes for the French 6 and 8 dots tables thanks to Michel Such. Some
   errors have been fixed and many unicode characters have been added.
+- Add an extended 8-dot computer braille table for U.S. English thanks
+  to Davy Kager. The table is tailored for use on Windows (CP-1252)
+  and uses dot patterns from Windows screen readers, but should be
+  useful on other platforms too.
 
 ** Backwards incompatible changes
 None
