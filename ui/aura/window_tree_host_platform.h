@@ -50,7 +50,7 @@ class AURA_EXPORT WindowTreeHostPlatform
   explicit WindowTreeHostPlatform(std::unique_ptr<WindowPort> window_port);
 
   void SetPlatformWindow(std::unique_ptr<ui::PlatformWindow> window);
-  ui::PlatformWindow* platform_window() { return window_.get(); }
+  ui::PlatformWindow* platform_window() { return platform_window_.get(); }
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;
@@ -67,7 +67,7 @@ class AURA_EXPORT WindowTreeHostPlatform
 
  private:
   gfx::AcceleratedWidget widget_;
-  std::unique_ptr<ui::PlatformWindow> window_;
+  std::unique_ptr<ui::PlatformWindow> platform_window_;
   gfx::NativeCursor current_cursor_;
   gfx::Rect bounds_;
 
