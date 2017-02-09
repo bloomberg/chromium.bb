@@ -17,7 +17,10 @@ namespace chrome_test_util {
 // error resulting from the execution, if one occurs. The return value is the
 // result of the JavaScript execution. If the request is timed out, then nil is
 // returned.
-id ExecuteJavaScript(NSString* javascript, NSError** out_error);
+// TODO(crbug.com/690057): Remove __unsafe_unretained once all callers are
+// converted to ARC.
+id ExecuteJavaScript(NSString* javascript,
+                     NSError* __unsafe_unretained* out_error);
 
 }  // namespace chrome_test_util
 

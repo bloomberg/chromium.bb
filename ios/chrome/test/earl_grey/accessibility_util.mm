@@ -7,6 +7,10 @@
 
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Returns whether a UIView is hidden from the screen, based on the alpha

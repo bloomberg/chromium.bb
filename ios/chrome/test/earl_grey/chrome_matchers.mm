@@ -23,6 +23,10 @@
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Script that returns document.body as a string.
@@ -50,7 +54,7 @@ id ExecuteScriptInStaticController(
                                            }),
       @"JavaScript did not complete");
 
-  return [result autorelease];
+  return result;
 }
 
 // TODO(crbug.com/684142): This matcher uses too many implementation details,
@@ -68,9 +72,8 @@ id<GREYMatcher> WebViewWithNavDelegateOfClass(Class cls) {
     [description appendText:@"navigation delegate"];
   };
 
-  return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                               descriptionBlock:describe]
-      autorelease];
+  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                              descriptionBlock:describe];
 }
 
 id<GREYMatcher> CollectionViewSwitchIsOn(BOOL isOn) {
@@ -86,9 +89,8 @@ id<GREYMatcher> CollectionViewSwitchIsOn(BOOL isOn) {
                                    isOn ? @"ON" : @"OFF"];
     [description appendText:name];
   };
-  return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                               descriptionBlock:describe]
-      autorelease];
+  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                              descriptionBlock:describe];
 }
 
 }  // namespace
@@ -156,9 +158,8 @@ id<GREYMatcher> StaticHtmlViewContainingText(NSString* text) {
 
   return grey_allOf(
       WebViewWithNavDelegateOfClass([StaticHtmlViewController class]),
-      [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                            descriptionBlock:describe]
-          autorelease],
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
       nil);
 }
 

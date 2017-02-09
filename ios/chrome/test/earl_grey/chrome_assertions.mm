@@ -10,6 +10,10 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/testing/wait_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace chrome_test_util {
 
 void AssertMainTabCount(NSUInteger expected_tab_count) {

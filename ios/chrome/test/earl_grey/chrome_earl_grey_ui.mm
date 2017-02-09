@@ -13,6 +13,10 @@
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using testing::WaitUntilConditionOrTimeout;
 using testing::kWaitForPageLoadTimeout;
 

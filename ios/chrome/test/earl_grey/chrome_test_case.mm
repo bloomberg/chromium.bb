@@ -17,6 +17,10 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/web/public/test/http_server.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 NSString* const kFlakyEarlGreyTestTargetSuffix = @"_flaky_egtests";
@@ -76,7 +80,7 @@ const CFTimeInterval kDrainTimeout = 5;
 
 @interface ChromeTestCase () {
   // Block to be executed during object tearDown.
-  base::mac::ScopedBlock<ProceduralBlock> _tearDownHandler;
+  ProceduralBlock _tearDownHandler;
 
   BOOL _isHTTPServerStopped;
   BOOL _isMockAuthenticationDisabled;
@@ -157,7 +161,7 @@ const CFTimeInterval kDrainTimeout = 5;
   [super setUp];
   _isHTTPServerStopped = NO;
   _isMockAuthenticationDisabled = NO;
-  _tearDownHandler.reset();
+  _tearDownHandler = nil;
 
   chrome_test_util::OpenNewTab();
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -168,7 +172,7 @@ const CFTimeInterval kDrainTimeout = 5;
 // server are running.
 - (void)tearDown {
   if (_tearDownHandler) {
-    _tearDownHandler.get()();
+    _tearDownHandler();
   }
 
   // Clear any remaining test accounts and signed in users.
@@ -197,7 +201,7 @@ const CFTimeInterval kDrainTimeout = 5;
 - (void)setTearDownHandler:(ProceduralBlock)tearDownHandler {
   // Enforce that only one |_tearDownHandler| is set per test.
   DCHECK(!_tearDownHandler);
-  _tearDownHandler.reset([tearDownHandler copy]);
+  _tearDownHandler = [tearDownHandler copy];
 }
 
 + (void)removeAnyOpenMenusAndInfoBars {
