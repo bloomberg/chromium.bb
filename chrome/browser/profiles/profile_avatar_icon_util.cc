@@ -369,6 +369,10 @@ int GetPlaceholderAvatarIconResourceID() {
   return IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE;
 }
 
+std::string GetPlaceholderAvatarIconUrl() {
+  return "chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE";
+}
+
 const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
   CHECK_LT(index, kDefaultAvatarIconsCount);
   static const IconResourceInfo resource_info[kDefaultAvatarIconsCount] = {

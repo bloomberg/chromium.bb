@@ -76,14 +76,19 @@ void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
 }
 
 void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
+  std::string picture_url_to_load;
   GURL url;
-  if (profiles::GetImageURLWithThumbnailSize(GURL(picture_url),
-                                             kProfileImageSize,
-                                             &url)) {
-    base::StringValue picture_url_value(url.spec());
-    web_ui()->CallJavascriptFunctionUnsafe("sync.confirmation.setUserImageURL",
-                                           picture_url_value);
+  if (picture_url != AccountTrackerService::kNoPictureURLFound &&
+      profiles::GetImageURLWithThumbnailSize(GURL(picture_url),
+                                             kProfileImageSize, &url)) {
+    picture_url_to_load = url.spec();
+  } else {
+    // Use the placeholder avatar icon until the account picture URL is fetched.
+    picture_url_to_load = profiles::GetPlaceholderAvatarIconUrl();
   }
+  base::StringValue picture_url_value(picture_url_to_load);
+  web_ui()->CallJavascriptFunctionUnsafe("sync.confirmation.setUserImageURL",
+                                         picture_url_value);
 }
 
 void SyncConfirmationHandler::OnAccountUpdated(const AccountInfo& info) {
@@ -91,8 +96,11 @@ void SyncConfirmationHandler::OnAccountUpdated(const AccountInfo& info) {
     return;
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  AccountTrackerServiceFactory::GetForProfile(profile)->RemoveObserver(this);
+  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
+  if (info.account_id != signin_manager->GetAuthenticatedAccountId())
+    return;
 
+  AccountTrackerServiceFactory::GetForProfile(profile)->RemoveObserver(this);
   SetUserImageURL(info.picture_url);
 }
 
@@ -113,18 +121,23 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
     return;
 
   Profile* profile = browser->profile();
-  std::vector<AccountInfo> accounts =
-      AccountTrackerServiceFactory::GetForProfile(profile)->GetAccounts();
-
-  if (accounts.empty())
+  std::string account_id =
+      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId();
+  if (account_id.empty()) {
+    // No account is signed in, so there is nothing to be displayed in the sync
+    // confirmation dialog.
     return;
+  }
+  AccountTrackerService* account_tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile);
+  AccountInfo account_info = account_tracker->GetAccountInfo(account_id);
 
-  AccountInfo primary_account_info = accounts[0];
-
-  if (!primary_account_info.IsValid())
-    AccountTrackerServiceFactory::GetForProfile(profile)->AddObserver(this);
-  else
-    SetUserImageURL(primary_account_info.picture_url);
+  if (!account_info.IsValid()) {
+    SetUserImageURL(AccountTrackerService::kNoPictureURLFound);
+    account_tracker->AddObserver(this);
+  } else {
+    SetUserImageURL(account_info.picture_url);
+  }
 
   signin::SetInitializedModalHeight(web_ui(), args);
 

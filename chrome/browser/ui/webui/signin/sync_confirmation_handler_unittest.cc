@@ -175,7 +175,7 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
   base::ListValue args;
   args.Set(0, new base::FundamentalValue(kDefaultDialogHeight));
   handler()->HandleInitializedWithSize(&args);
-  EXPECT_EQ(1U, web_ui()->call_data().size());
+  EXPECT_EQ(2U, web_ui()->call_data().size());
 
   account_fetcher_service()->FakeUserInfoFetchSuccess(
       "gaia",
@@ -187,20 +187,30 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
       "locale",
       "http://picture.example.com/picture.jpg");
 
-  EXPECT_EQ(2U, web_ui()->call_data().size());
+  EXPECT_EQ(3U, web_ui()->call_data().size());
 
   // When the primary account isn't yet ready when the dialog is shown,
-  // clearFocus is called before setUserImageURL.
-  EXPECT_EQ("sync.confirmation.clearFocus",
-            web_ui()->call_data()[0]->function_name());
-
+  // setUserImageURL is called with the default placeholder image.
   EXPECT_EQ("sync.confirmation.setUserImageURL",
-            web_ui()->call_data()[1]->function_name());
+            web_ui()->call_data()[0]->function_name());
   EXPECT_TRUE(
-      web_ui()->call_data()[1]->arg1()->IsType(base::Value::Type::STRING));
+      web_ui()->call_data()[0]->arg1()->IsType(base::Value::Type::STRING));
   std::string passed_picture_url;
   EXPECT_TRUE(
-      web_ui()->call_data()[1]->arg1()->GetAsString(&passed_picture_url));
+      web_ui()->call_data()[0]->arg1()->GetAsString(&passed_picture_url));
+  EXPECT_EQ(profiles::GetPlaceholderAvatarIconUrl(), passed_picture_url);
+
+  // When the primary account isn't yet ready when the dialog is shown,
+  // clearFocus is called before the second call to setUserImageURL.
+  EXPECT_EQ("sync.confirmation.clearFocus",
+            web_ui()->call_data()[1]->function_name());
+
+  EXPECT_EQ("sync.confirmation.setUserImageURL",
+            web_ui()->call_data()[2]->function_name());
+  EXPECT_TRUE(
+      web_ui()->call_data()[2]->arg1()->IsType(base::Value::Type::STRING));
+  EXPECT_TRUE(
+      web_ui()->call_data()[2]->arg1()->GetAsString(&passed_picture_url));
 
   std::string original_picture_url =
       AccountTrackerServiceFactory::GetForProfile(profile())->
@@ -210,6 +220,35 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
                                                      kExpectedProfileImageSize,
                                                      &picture_url_with_size));
   EXPECT_EQ(picture_url_with_size.spec(), passed_picture_url);
+}
+
+TEST_F(SyncConfirmationHandlerTest,
+       TestSetImageIgnoredIfSecondaryAccountUpdated) {
+  base::ListValue args;
+  args.Set(0, new base::FundamentalValue(kDefaultDialogHeight));
+  handler()->HandleInitializedWithSize(&args);
+  EXPECT_EQ(2U, web_ui()->call_data().size());
+
+  AccountTrackerServiceFactory::GetForProfile(profile())->SeedAccountInfo(
+      "bar_gaia", "bar@example.com");
+  account_fetcher_service()->FakeUserInfoFetchSuccess(
+      "bar_gaia", "bar@example.com", "bar_gaia", "", "bar_full_name",
+      "bar_given_name", "bar_locale",
+      "http://picture.example.com/bar_picture.jpg");
+
+  // Updating the account info of a secondary account should not update the
+  // image of the sync confirmation dialog.
+  EXPECT_EQ(2U, web_ui()->call_data().size());
+
+  account_fetcher_service()->FakeUserInfoFetchSuccess(
+      "gaia", "foo@example.com", "gaia", "", "full_name", "given_name",
+      "locale", "http://picture.example.com/picture.jpg");
+
+  // Updating the account info of the primary account should update the
+  // image of the sync confirmation dialog.
+  EXPECT_EQ(3U, web_ui()->call_data().size());
+  EXPECT_EQ("sync.confirmation.setUserImageURL",
+            web_ui()->call_data()[2]->function_name());
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {

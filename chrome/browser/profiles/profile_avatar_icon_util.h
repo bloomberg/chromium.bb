@@ -90,6 +90,9 @@ size_t GetPlaceholderAvatarIndex();
 // Gets the resource ID of the placeholder avatar icon.
 int GetPlaceholderAvatarIconResourceID();
 
+// Returns a URL for the placeholder avatar icon.
+std::string GetPlaceholderAvatarIconUrl();
+
 // Gets the resource ID of the default avatar icon at |index|.
 int GetDefaultAvatarIconResourceIDAtIndex(size_t index);
 
