@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -13,6 +12,10 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // TestWebState subclass that supports the WebStateDestroyed() callback for a
@@ -77,9 +80,9 @@ class DialogPresenterTest : public PlatformTest {
   DialogPresenter* presenter() { return presenter_; }
 
  private:
-  base::scoped_nsobject<TestDialogPresenterDelegate> delegate_;
-  base::scoped_nsobject<UIViewController> viewController_;
-  base::scoped_nsobject<DialogPresenter> presenter_;
+  TestDialogPresenterDelegate* delegate_;
+  UIViewController* viewController_;
+  DialogPresenter* presenter_;
 };
 
 // Tests that a dialog was successfully shown and that the delegate was notified

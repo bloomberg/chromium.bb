@@ -58,6 +58,7 @@ source_set("dialogs_internal") {
 }
 
 source_set("unit_tests_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "dialog_presenter_unittest.mm",

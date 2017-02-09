@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
 
 #include "base/ios/ios_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,6 +12,10 @@
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using namespace ios_internal::nsurlprotectionspace_util;
 
@@ -27,11 +30,11 @@ NSString* const kTestHttpsOrigin = @"https://chromium.org:80";
 NSURLProtectionSpace* GetProtectionSpaceForHost(NSString* host,
                                                 NSString* protocol,
                                                 NSInteger port) {
-  return [[[NSURLProtectionSpace alloc] initWithHost:host
-                                                port:port
-                                            protocol:protocol
-                                               realm:nil
-                                authenticationMethod:nil] autorelease];
+  return [[NSURLProtectionSpace alloc] initWithHost:host
+                                               port:port
+                                           protocol:protocol
+                                              realm:nil
+                               authenticationMethod:nil];
 }
 
 // Returns protection space for the given |host| and |protocol| and port 80.
@@ -43,11 +46,11 @@ NSURLProtectionSpace* GetProtectionSpaceForHost(NSString* host,
 // Returns protection space for the given proxy |host| and |protocol|.
 NSURLProtectionSpace* GetProtectionSpaceForProxyHost(NSString* host,
                                                      NSString* type) {
-  return [[[NSURLProtectionSpace alloc] initWithProxyHost:host
-                                                     port:80
-                                                     type:type
-                                                    realm:nil
-                                     authenticationMethod:nil] autorelease];
+  return [[NSURLProtectionSpace alloc] initWithProxyHost:host
+                                                    port:80
+                                                    type:type
+                                                   realm:nil
+                                    authenticationMethod:nil];
 }
 
 }  // namespace
