@@ -11,10 +11,10 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/printing/printer_discoverer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "chromeos/printing/printer_discoverer.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {

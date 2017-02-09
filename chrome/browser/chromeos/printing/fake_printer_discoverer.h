@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_PRINTING_FAKE_PRINTER_DISCOVERER_H_
-#define CHROMEOS_PRINTING_FAKE_PRINTER_DISCOVERER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_PRINTING_FAKE_PRINTER_DISCOVERER_H_
+#define CHROME_BROWSER_CHROMEOS_PRINTING_FAKE_PRINTER_DISCOVERER_H_
 
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/printing/printer_discoverer.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "chromeos/printing/printer_discoverer.h"
 
 namespace chromeos {
 
@@ -38,4 +38,4 @@ class FakePrinterDiscoverer : public PrinterDiscoverer {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_PRINTING_FAKE_PRINTER_DISCOVERER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_PRINTING_FAKE_PRINTER_DISCOVERER_H_

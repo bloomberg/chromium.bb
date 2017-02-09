@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/printing/fake_printer_discoverer.h"
+#include "chrome/browser/chromeos/printing/fake_printer_discoverer.h"
 
 #include <algorithm>
 #include <iterator>
@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chromeos/printing/printer_discoverer.h"
+#include "chrome/browser/chromeos/printing/printer_discoverer.h"
 
 namespace chromeos {
 
