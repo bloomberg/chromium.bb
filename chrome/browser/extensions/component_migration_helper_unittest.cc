@@ -15,7 +15,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/common/feature_switch.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,10 +59,6 @@ class ComponentMigrationHelperTest : public ExtensionServiceTestBase {
   ~ComponentMigrationHelperTest() override {}
 
   void SetUp() override {
-    extension_action_redesign_.reset(new FeatureSwitch::ScopedOverride(
-        FeatureSwitch::extension_action_redesign(),
-        FeatureSwitch::OVERRIDE_ENABLED));
-
     ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
 
@@ -97,7 +92,6 @@ class ComponentMigrationHelperTest : public ExtensionServiceTestBase {
 
   StrictMock<MockComponentActionDelegate> mock_delegate_;
   std::unique_ptr<StrictMock<MockComponentMigrationHelper>> mock_helper_;
-  std::unique_ptr<FeatureSwitch::ScopedOverride> extension_action_redesign_;
 
   // Migrated extensions with browser actions.
   scoped_refptr<const Extension> migrated_extension_a_;

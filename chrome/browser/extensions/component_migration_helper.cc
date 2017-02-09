@@ -15,7 +15,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/common/feature_switch.h"
 
 namespace extensions {
 
@@ -60,7 +59,6 @@ void ComponentMigrationHelper::Unregister(
 
 void ComponentMigrationHelper::OnFeatureEnabled(
     const std::string& component_action_id) {
-  DCHECK(FeatureSwitch::extension_action_redesign()->IsEnabled());
   std::vector<ExtensionId> extension_ids =
       GetExtensionIdsForActionId(component_action_id);
   DCHECK(!extension_ids.empty());
@@ -102,8 +100,7 @@ void ComponentMigrationHelper::OnFeatureDisabled(
   enabled_actions_.erase(component_action_id);
   RemoveComponentActionPref(component_action_id);
 
-  if (FeatureSwitch::extension_action_redesign()->IsEnabled() &&
-      delegate_->HasComponentAction(component_action_id))
+  if (delegate_->HasComponentAction(component_action_id))
     delegate_->RemoveComponentAction(component_action_id);
 }
 
