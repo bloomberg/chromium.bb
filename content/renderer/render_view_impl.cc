@@ -531,6 +531,37 @@ class AlwaysDrawSwapPromise : public cc::SwapPromise {
   ui::LatencyInfo latency_info_;
 };
 
+const char kWindowFeatureBackground[] = "background";
+const char kWindowFeaturePersistent[] = "persistent";
+
+WindowContainerType WindowFeaturesToContainerType(
+    const blink::WebWindowFeatures& window_features) {
+  bool background = false;
+  bool persistent = false;
+
+  for (size_t i = 0; i < window_features.additionalFeatures.size(); ++i) {
+    blink::WebString feature = window_features.additionalFeatures[i];
+    if (feature.containsOnlyASCII()) {
+      std::string featureASCII = feature.ascii();
+      if (base::LowerCaseEqualsASCII(featureASCII, kWindowFeatureBackground)) {
+        background = true;
+      } else if (base::LowerCaseEqualsASCII(featureASCII,
+                                            kWindowFeaturePersistent)) {
+        persistent = true;
+      }
+    }
+  }
+
+  if (background) {
+    if (persistent)
+      return WINDOW_CONTAINER_TYPE_PERSISTENT;
+    else
+      return WINDOW_CONTAINER_TYPE_BACKGROUND;
+  } else {
+    return WINDOW_CONTAINER_TYPE_NORMAL;
+  }
+}
+
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,

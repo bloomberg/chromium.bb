@@ -8,12 +8,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/window_container_type.mojom.h"
 
-namespace blink {
-
-struct WebWindowFeatures;
-
-}
-
 using WindowContainerType = content::mojom::WindowContainerType;
 
 // TODO(rockot): Remove these duplicate definitions by updating all references
@@ -25,9 +19,5 @@ WINDOW_CONTAINER_TYPE_BACKGROUND;
 
 extern const WindowContainerType CONTENT_EXPORT
 WINDOW_CONTAINER_TYPE_PERSISTENT;
-
-// Conversion function:
-WindowContainerType WindowFeaturesToContainerType(
-    const blink::WebWindowFeatures& window_features);
 
 #endif  // CONTENT_PUBLIC_COMMON_WINDOW_CONTAINER_TYPE_H_
