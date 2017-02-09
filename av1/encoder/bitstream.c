@@ -2887,7 +2887,12 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
   int mi_row, mi_col;
 
 #if CONFIG_DEPENDENT_HORZTILES
+#if CONFIG_TILE_GROUPS
+  if (!cm->dependent_horz_tiles || mi_row_start == 0 ||
+      tile->tg_horz_boundary) {
+#else
   if (!cm->dependent_horz_tiles || mi_row_start == 0) {
+#endif
     av1_zero_above_context(cm, mi_col_start, mi_col_end);
   }
 #else
@@ -4179,6 +4184,9 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #endif
       av1_tile_set_col(&tile_info, cm, tile_col);
 
+#if CONFIG_DEPENDENT_HORZTILES && CONFIG_TILE_GROUPS
+      av1_tile_set_tg_boundary(&tile_info, cm, tile_row, tile_col);
+#endif
       buf->data = dst + total_size;
 
       // The last tile does not have a header.

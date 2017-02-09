@@ -374,6 +374,10 @@ typedef struct AV1Common {
 
 #if CONFIG_DEPENDENT_HORZTILES
   int dependent_horz_tiles;
+#if CONFIG_TILE_GROUPS
+  int tile_group_start_row[MAX_TILE_ROWS][MAX_TILE_COLS];
+  int tile_group_start_col[MAX_TILE_ROWS][MAX_TILE_COLS];
+#endif
 #endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
   int loop_filter_across_tiles_enabled;
@@ -603,7 +607,11 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
   xd->mb_to_right_edge = ((mi_cols - bw - mi_col) * MI_SIZE) * 8;
 
   if (dependent_horz_tile_flag) {
+#if CONFIG_TILE_GROUPS
+    xd->up_available = (mi_row > tile->mi_row_start) || !tile->tg_horz_boundary;
+#else
     xd->up_available = (mi_row > 0);
+#endif
   } else {
     // Are edges available for intra prediction?
     xd->up_available = (mi_row > tile->mi_row_start);

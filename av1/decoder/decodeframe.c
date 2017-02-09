@@ -3349,6 +3349,10 @@ static void get_tile_buffers(
   const int num_bits = OD_ILOG(num_tiles) - 1;
   const int hdr_size = pbi->uncomp_hdr_size + pbi->first_partition_size;
   const int tg_size_bit_offset = pbi->tg_size_bit_offset;
+#if CONFIG_DEPENDENT_HORZTILES
+  int tile_group_start_col = 0;
+  int tile_group_start_row = 0;
+#endif
 
   for (r = 0; r < tile_rows; ++r) {
     for (c = 0; c < tile_cols; ++c, ++tc) {
@@ -3363,6 +3367,10 @@ static void get_tile_buffers(
         if (num_tiles) {
           pbi->tg_start = aom_rb_read_literal(&rb_tg_hdr, num_bits);
           pbi->tg_size = 1 + aom_rb_read_literal(&rb_tg_hdr, num_bits);
+#if CONFIG_DEPENDENT_HORZTILES
+          tile_group_start_row = r;
+          tile_group_start_col = c;
+#endif
         }
       }
       first_tile_in_tg += tc == first_tile_in_tg ? pbi->tg_size : 0;
@@ -3370,6 +3378,10 @@ static void get_tile_buffers(
       get_tile_buffer(data_end, pbi->tile_size_bytes, is_last,
                       &pbi->common.error, &data, pbi->decrypt_cb,
                       pbi->decrypt_state, buf);
+#if CONFIG_DEPENDENT_HORZTILES
+      cm->tile_group_start_row[r][c] = tile_group_start_row;
+      cm->tile_group_start_col[r][c] = tile_group_start_col;
+#endif
     }
   }
 #else
@@ -3580,7 +3592,13 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_tile_set_col(&tile_info, cm, col);
 
 #if CONFIG_DEPENDENT_HORZTILES
+#if CONFIG_TILE_GROUPS
+      av1_tile_set_tg_boundary(&tile_info, cm, tile_row, tile_col);
+      if (!cm->dependent_horz_tiles || tile_row == 0 ||
+          tile_info.tg_horz_boundary) {
+#else
       if (!cm->dependent_horz_tiles || tile_row == 0) {
+#endif
         av1_zero_above_context(cm, tile_info.mi_col_start,
                                tile_info.mi_col_end);
       }
@@ -3732,7 +3750,11 @@ static int tile_worker_hook(TileWorkerData *const tile_data,
   tile_data->error_info.setjmp = 1;
   tile_data->xd.error_info = &tile_data->error_info;
 #if CONFIG_DEPENDENT_HORZTILES
+#if CONFIG_TILE_GROUPS
+  if (!cm->dependent_horz_tiles || tile->tg_horz_boundary) {
+#else
   if (!cm->dependent_horz_tiles) {
+#endif
     av1_zero_above_context(&pbi->common, tile->mi_col_start, tile->mi_col_end);
   }
 #else

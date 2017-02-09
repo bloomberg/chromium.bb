@@ -821,7 +821,10 @@ void av1_new_framerate(AV1_COMP *cpi, double framerate) {
 
 static void set_tile_info(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-
+#if CONFIG_TILE_GROUPS && CONFIG_DEPENDENT_HORZTILES
+  int tile_row, tile_col, num_tiles_in_tg;
+  int tg_row_start, tg_col_start;
+#endif
 #if CONFIG_EXT_TILE
 #if CONFIG_EXT_PARTITION
   if (cpi->oxcf.superblock_size != AOM_SUPERBLOCK_SIZE_64X64) {
@@ -878,6 +881,29 @@ static void set_tile_info(AV1_COMP *cpi) {
 #if CONFIG_DEPENDENT_HORZTILES
   cm->dependent_horz_tiles = cpi->oxcf.dependent_horz_tiles;
   if (cm->log2_tile_rows == 0) cm->dependent_horz_tiles = 0;
+#if CONFIG_TILE_GROUPS
+  if (cpi->oxcf.mtu == 0) {
+    cm->num_tg = cpi->oxcf.num_tile_groups;
+  } else {
+    // Use a default value for the purposes of weighting costs in probability
+    // updates
+    cm->num_tg = DEFAULT_MAX_NUM_TG;
+  }
+  num_tiles_in_tg =
+      (cm->tile_cols * cm->tile_rows + cm->num_tg - 1) / cm->num_tg;
+  tg_row_start = 0;
+  tg_col_start = 0;
+  for (tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
+    for (tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
+      if ((tile_row * cm->tile_cols + tile_col) % num_tiles_in_tg == 0) {
+        tg_row_start = tile_row;
+        tg_col_start = tile_col;
+      }
+      cm->tile_group_start_row[tile_row][tile_col] = tg_row_start;
+      cm->tile_group_start_col[tile_row][tile_col] = tg_col_start;
+    }
+  }
+#endif
 #endif
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES

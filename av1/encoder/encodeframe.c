@@ -4849,7 +4849,12 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   od_adapt_ctx *adapt;
 #endif
 #if CONFIG_DEPENDENT_HORZTILES
+#if CONFIG_TILE_GROUPS
+  if ((!cm->dependent_horz_tiles) || (tile_row == 0) ||
+      tile_info->tg_horz_boundary) {
+#else
   if ((!cm->dependent_horz_tiles) || (tile_row == 0)) {
+#endif
     av1_zero_above_context(cm, tile_info->mi_col_start, tile_info->mi_col_end);
   }
 #else
