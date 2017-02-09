@@ -10,9 +10,8 @@
 #include <memory>
 #include <string>
 
+#include "chrome/common/extensions/removable_storage_writer.mojom.h"
 #include "chrome/utility/image_writer/image_writer.h"
-#include "chrome/utility/utility_message_handler.h"
-#include "ipc/ipc_message.h"
 
 namespace base {
 class FilePath;
@@ -20,31 +19,29 @@ class FilePath;
 
 namespace image_writer {
 
-// A handler for messages related to writing images.  This class is added as a
-// handler in ChromeContentUtilityClient.
-class ImageWriterHandler : public UtilityMessageHandler {
+class ImageWriterHandler {
  public:
   ImageWriterHandler();
-  ~ImageWriterHandler() override;
+  ~ImageWriterHandler();
 
-  // Methods for sending the different messages back to the browser process.
-  // Generally should be called by chrome::image_writer::ImageWriter.
-  virtual void SendSucceeded();
-  virtual void SendCancelled();
-  virtual void SendFailed(const std::string& message);
+  void Write(const base::FilePath& image,
+             const base::FilePath& device,
+             extensions::mojom::RemovableStorageWriterClientPtr client);
+  void Verify(const base::FilePath& image,
+              const base::FilePath& device,
+              extensions::mojom::RemovableStorageWriterClientPtr client);
+
+  // Methods for sending the different messages back to the |client_|.
+  // Generally should be called by image_writer::ImageWriter.
   virtual void SendProgress(int64_t progress);
+  virtual void SendSucceeded();
+  virtual void SendFailed(const std::string& error);
+  virtual void SendCancelled() {}
 
  private:
-  bool OnMessageReceived(const IPC::Message& message) override;
+  void Cancel();
 
-  // Small wrapper for sending on the UtilityProcess.
-  void Send(IPC::Message* msg);
-
-  // Message handlers.
-  void OnWriteStart(const base::FilePath& image, const base::FilePath& device);
-  void OnVerifyStart(const base::FilePath& image, const base::FilePath& device);
-  void OnCancel();
-
+  extensions::mojom::RemovableStorageWriterClientPtr client_;
   std::unique_ptr<ImageWriter> image_writer_;
 };
 

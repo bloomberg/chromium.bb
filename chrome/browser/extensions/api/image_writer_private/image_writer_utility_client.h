@@ -7,16 +7,17 @@
 
 #include <stdint.h>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/utility_process_host_client.h"
+#include "chrome/common/extensions/removable_storage_writer.mojom.h"
+#include "content/public/browser/utility_process_mojo_client.h"
 
 // Writes a disk image to a device inside the utility process.
-class ImageWriterUtilityClient : public content::UtilityProcessHostClient {
+class ImageWriterUtilityClient
+    : public base::RefCountedThreadSafe<ImageWriterUtilityClient> {
  public:
   typedef base::Callback<void()> CancelCallback;
   typedef base::Callback<void()> SuccessCallback;
@@ -25,7 +26,7 @@ class ImageWriterUtilityClient : public content::UtilityProcessHostClient {
 
   ImageWriterUtilityClient();
 
-  // Starts the write.
+  // Starts the write operation.
   // |progress_callback|: Called periodically with the count of bytes processed.
   // |success_callback|: Called at successful completion.
   // |error_callback|: Called with an error message on failure.
@@ -37,53 +38,56 @@ class ImageWriterUtilityClient : public content::UtilityProcessHostClient {
                      const base::FilePath& source,
                      const base::FilePath& target);
 
-  // Starts a verification.
+  // Starts a verify operation.
   // |progress_callback|: Called periodically with the count of bytes processed.
   // |success_callback|: Called at successful completion.
   // |error_callback|: Called with an error message on failure.
   // |source|: The path to the source file to read data from.
-  // |target|: The path to the target device to write the image file to.
+  // |target|: The path to the target device file to verify.
   virtual void Verify(const ProgressCallback& progress_callback,
                       const SuccessCallback& success_callback,
                       const ErrorCallback& error_callback,
                       const base::FilePath& source,
                       const base::FilePath& target);
 
-  // Cancels any pending write or verification.
+  // Cancels any pending write or verify operation.
   // |cancel_callback|: Called when the cancel has actually occurred.
   virtual void Cancel(const CancelCallback& cancel_callback);
 
-  // Shuts down the Utility thread that may have been created.
+  // Shuts down the utility process that may have been created.
   virtual void Shutdown();
 
  protected:
-  // It's a reference-counted object, so destructor is not public.
-  ~ImageWriterUtilityClient() override;
+  friend class base::RefCountedThreadSafe<ImageWriterUtilityClient>;
+
+  virtual ~ImageWriterUtilityClient();
 
  private:
-  // Ensures the UtilityProcessHost has been created.
-  void StartHost();
+  class RemovableStorageWriterClientImpl;
 
-  // UtilityProcessHostClient implementation.
-  void OnProcessCrashed(int exit_code) override;
-  void OnProcessLaunchFailed(int error_code) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-  virtual bool Send(IPC::Message* msg);
+  // Ensures the utility process has been created.
+  void StartUtilityProcess();
 
-  // IPC message handlers.
-  void OnWriteImageSucceeded();
-  void OnWriteImageCancelled();
-  void OnWriteImageFailed(const std::string& message);
-  void OnWriteImageProgress(int64_t progress);
+  void UtilityProcessError();
 
-  CancelCallback cancel_callback_;
+  void OperationProgress(int64_t progress);
+  void OperationSucceeded();
+  void OperationFailed(const std::string& error);
+
+  void ResetRequest();
+
   ProgressCallback progress_callback_;
   SuccessCallback success_callback_;
   ErrorCallback error_callback_;
 
-  base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  std::unique_ptr<content::UtilityProcessMojoClient<
+      extensions::mojom::RemovableStorageWriter>>
+      utility_process_mojo_client_;
+
+  std::unique_ptr<RemovableStorageWriterClientImpl>
+      removable_storage_writer_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageWriterUtilityClient);
 };

@@ -1,3 +1,0 @@
-# For security review of utility process message whitelisting
-per-file chrome_content_utility_ipc_whitelist.cc=set noparent
-per-file chrome_content_utility_ipc_whitelist.cc=file://ipc/SECURITY_OWNERS

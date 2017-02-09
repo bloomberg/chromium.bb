@@ -62,7 +62,6 @@ class MockHandler : public ImageWriterHandler {
   MOCK_METHOD1(SendProgress, void(int64_t));
   MOCK_METHOD1(SendFailed, void(const std::string& message));
   MOCK_METHOD0(SendSucceeded, void());
-  MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message& message));
 };
 
 // This Mock has the additional feature that it will start verification when

@@ -26,6 +26,7 @@ group("test_features") {
 mojom("mojo_bindings") {
   sources = [
     "media_parser.mojom",
+    "removable_storage_writer.mojom",
   ]
 
   if (is_win) {

@@ -2563,6 +2563,7 @@ test("browser_tests") {
     }
     if (is_mac || is_win) {
       sources += [
+        "../browser/extensions/api/image_writer_private/image_writer_utility_client_browsertest.cc",
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_service_client_apitest.cc",
         "../browser/media_galleries/fileapi/itunes_data_provider_browsertest.cc",

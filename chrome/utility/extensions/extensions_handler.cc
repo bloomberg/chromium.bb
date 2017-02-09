@@ -7,14 +7,17 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/common/extensions/media_parser.mojom.h"
+#include "chrome/common/extensions/removable_storage_writer.mojom.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/utility/chrome_content_utility_client.h"
+#include "chrome/utility/image_writer/image_writer_handler.h"
 #include "chrome/utility/media_galleries/ipc_data_source.h"
 #include "chrome/utility/media_galleries/media_metadata_parser.h"
 #include "content/public/common/content_paths.h"
@@ -103,6 +106,37 @@ class MediaParserImpl : public extensions::mojom::MediaParser {
   DISALLOW_COPY_AND_ASSIGN(MediaParserImpl);
 };
 
+class RemovableStorageWriterImpl
+    : public extensions::mojom::RemovableStorageWriter {
+ public:
+  RemovableStorageWriterImpl() = default;
+  ~RemovableStorageWriterImpl() override = default;
+
+  static void Create(extensions::mojom::RemovableStorageWriterRequest request) {
+    mojo::MakeStrongBinding(base::MakeUnique<RemovableStorageWriterImpl>(),
+                            std::move(request));
+  }
+
+ private:
+  void Write(
+      const base::FilePath& source,
+      const base::FilePath& target,
+      extensions::mojom::RemovableStorageWriterClientPtr client) override {
+    writer_.Write(source, target, std::move(client));
+  }
+
+  void Verify(
+      const base::FilePath& source,
+      const base::FilePath& target,
+      extensions::mojom::RemovableStorageWriterClientPtr client) override {
+    writer_.Verify(source, target, std::move(client));
+  }
+
+  image_writer::ImageWriterHandler writer_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemovableStorageWriterImpl);
+};
+
 #if defined(OS_WIN)
 class WiFiCredentialsGetterImpl
     : public extensions::mojom::WiFiCredentialsGetter {
@@ -169,12 +203,16 @@ void ExtensionsHandler::ExposeInterfacesToBrowser(
   // services to the interface registry.
   if (running_elevated) {
 #if defined(OS_WIN)
+    registry->AddInterface(base::Bind(&RemovableStorageWriterImpl::Create));
     registry->AddInterface(base::Bind(&WiFiCredentialsGetterImpl::Create));
 #endif
     return;
   }
 
   registry->AddInterface(base::Bind(&MediaParserImpl::Create, utility_client));
+#if !defined(OS_WIN)
+  registry->AddInterface(base::Bind(&RemovableStorageWriterImpl::Create));
+#endif
 }
 
 bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
