@@ -323,7 +323,7 @@ def get_waterfall_config():
     'chromium-rel-win7-gpu-ati', 'win',
     swarming=[
       {
-       'gpu': '1002:6779',
+       'gpu': '1002:6613',
        'os': 'Windows-2008ServerR2-SP1',
        'device_ids': [
            'build101-m1', 'build102-m1',
