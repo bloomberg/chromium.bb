@@ -5,6 +5,8 @@
 source_set("cpp") {
   sources = [
     "coordinator.h",
+    "memory_dump_manager_delegate_impl.cc",
+    "memory_dump_manager_delegate_impl.h",
   ]
 
   deps = [
@@ -12,7 +14,10 @@ source_set("cpp") {
   ]
 
   public_deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
     "//services/memory_instrumentation/public/interfaces",
+    "//services/service_manager/public/cpp",
   ]
 }
 
