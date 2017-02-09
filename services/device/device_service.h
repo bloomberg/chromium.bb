@@ -6,9 +6,9 @@
 #define SERVICES_DEVICE_DEVICE_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
-#include "device/power_monitor/public/interfaces/power_monitor.mojom.h"
 #include "device/time_zone_monitor/public/interfaces/time_zone_monitor.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/device/public/interfaces/power_monitor.mojom.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 

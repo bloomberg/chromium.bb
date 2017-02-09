@@ -4,21 +4,19 @@
 
 import("//build/config/features.gni")
 
-component("power_monitor") {
+source_set("power_monitor") {
   sources = [
-    "power_monitor_export.h",
-    "power_monitor_message_broadcaster.cc",
-    "power_monitor_message_broadcaster.h",
+    "power_monitor_broadcast_source.cc",
+    "power_monitor_broadcast_source.h",
   ]
-
-  defines = [ "DEVICE_POWER_MONITOR_IMPLEMENTATION" ]
 
   deps = [
     "//base",
     "//mojo/public/cpp/bindings",
+    "//services/service_manager/public/cpp",
   ]
 
   public_deps = [
-    "//device/power_monitor/public/interfaces",
+    "//services/device/public/interfaces",
   ]
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/power_monitor/public/cpp/power_monitor_broadcast_source.h"
+#include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
 
 #include "base/location.h"
 #include "base/macros.h"

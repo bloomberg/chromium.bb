@@ -13,8 +13,8 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//device/power_monitor",
     "//device/time_zone_monitor",
+    "//services/device/power_monitor",
     "//services/service_manager/public/cpp",
   ]
 
@@ -23,6 +23,24 @@ source_set("lib") {
     # but content_shell fails to link in the component build if
     # this isn't here as a public_dep.
     "//device/time_zone_monitor/public/interfaces",
+  ]
+}
+
+source_set("tests") {
+  testonly = true
+
+  sources = [
+    "power_monitor/power_monitor_message_broadcaster_unittest.cc",
+    "public/cpp/power_monitor/power_monitor_broadcast_source_unittest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//mojo/public/cpp/bindings",
+    "//services/device/power_monitor",
+    "//services/device/public/cpp/power_monitor",
+    "//testing/gtest",
   ]
 }
 

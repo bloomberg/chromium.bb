@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/power_monitor/power_monitor_message_broadcaster.h"
+#include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/power_monitor/power_monitor.h"

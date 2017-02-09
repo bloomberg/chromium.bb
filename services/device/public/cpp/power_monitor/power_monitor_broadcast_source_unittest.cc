@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
+
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
-#include "device/power_monitor/public/cpp/power_monitor_broadcast_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

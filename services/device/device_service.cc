@@ -8,8 +8,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/power_monitor/power_monitor_message_broadcaster.h"
 #include "device/time_zone_monitor/time_zone_monitor.h"
+#include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 

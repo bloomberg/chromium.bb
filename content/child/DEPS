@@ -9,7 +9,7 @@ include_rules = [
 
   "+content/app/strings/grit",  # For generated headers
   "+content/public/child",
-  "+device/power_monitor/public",
+  "+services/device/public/cpp/power_monitor",
   "+services/device/public/interfaces",
   "+services/service_manager",
   "+services/service_manager",
