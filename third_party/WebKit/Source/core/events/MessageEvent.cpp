@@ -198,6 +198,28 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
         ->registerMemoryAllocatedWithCurrentScriptContext();
 }
 
+void MessageEvent::initMessageEvent(const AtomicString& type,
+                                    bool canBubble,
+                                    bool cancelable,
+                                    const String& data,
+                                    const String& origin,
+                                    const String& lastEventId,
+                                    EventTarget* source,
+                                    MessagePortArray* ports) {
+  if (isBeingDispatched())
+    return;
+
+  initEvent(type, canBubble, cancelable);
+
+  m_dataType = DataTypeString;
+  m_dataAsString = data;
+  m_origin = origin;
+  m_lastEventId = lastEventId;
+  m_source = source;
+  m_ports = ports;
+  m_suborigin = "";
+}
+
 const AtomicString& MessageEvent::interfaceName() const {
   return EventNames::MessageEvent;
 }

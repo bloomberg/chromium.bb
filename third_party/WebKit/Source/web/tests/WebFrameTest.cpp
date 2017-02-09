@@ -38,6 +38,7 @@
 #include "SkCanvas.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/serialization/V8ScriptValueSerializer.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -990,6 +991,21 @@ TEST_P(ParameterizedWebFrameTest, DispatchMessageEventWithOriginCheck) {
   EXPECT_EQ(std::string::npos, content.find("Message 2."));
 }
 
+namespace {
+
+RefPtr<SerializedScriptValue> serializeString(const StringView& message,
+                                              ScriptState* scriptState) {
+  // This is inefficient, but avoids duplicating serialization logic for the
+  // sake of this test.
+  NonThrowableExceptionState exceptionState;
+  ScriptState::Scope scope(scriptState);
+  V8ScriptValueSerializer serializer(scriptState);
+  return serializer.serialize(v8String(scriptState->isolate(), message),
+                              nullptr, exceptionState);
+}
+
+}  // namespace
+
 TEST_P(ParameterizedWebFrameTest, PostMessageThenDetach) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initializeAndLoad("about:blank");
@@ -997,10 +1013,11 @@ TEST_P(ParameterizedWebFrameTest, PostMessageThenDetach) {
   LocalFrame* frame =
       toLocalFrame(webViewHelper.webView()->page()->mainFrame());
   NonThrowableExceptionState exceptionState;
+  RefPtr<SerializedScriptValue> message =
+      serializeString("message", ScriptState::forMainWorld(frame));
   MessagePortArray messagePorts;
-  frame->domWindow()->postMessage(SerializedScriptValue::serialize("message"),
-                                  messagePorts, "*", frame->domWindow(),
-                                  exceptionState);
+  frame->domWindow()->postMessage(message, messagePorts, "*",
+                                  frame->domWindow(), exceptionState);
   webViewHelper.reset();
   EXPECT_FALSE(exceptionState.hadException());
 

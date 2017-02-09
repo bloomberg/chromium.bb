@@ -350,9 +350,8 @@ void EventSource::onMessageEvent(const AtomicString& eventType,
                                  const String& data,
                                  const AtomicString& lastEventId) {
   MessageEvent* e = MessageEvent::create();
-  e->initMessageEvent(eventType, false, false,
-                      SerializedScriptValue::serialize(data),
-                      m_eventStreamOrigin, lastEventId, 0, nullptr);
+  e->initMessageEvent(eventType, false, false, data, m_eventStreamOrigin,
+                      lastEventId, 0, nullptr);
 
   InspectorInstrumentation::willDispatchEventSourceEvent(
       getExecutionContext(), this, eventType, lastEventId, data);

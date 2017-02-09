@@ -70,11 +70,6 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::serialize(
       isolate, value, transferables, blobInfo, exception);
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::serialize(
-    const String& str) {
-  return create(ScriptValueSerializer::serializeWTFString(str));
-}
-
 PassRefPtr<SerializedScriptValue>
 SerializedScriptValue::serializeAndSwallowExceptions(
     v8::Isolate* isolate,

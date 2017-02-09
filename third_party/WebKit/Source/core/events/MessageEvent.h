@@ -108,6 +108,14 @@ class CORE_EXPORT MessageEvent final : public Event {
                         const String& lastEventId,
                         EventTarget* source,
                         MessagePortArray*);
+  void initMessageEvent(const AtomicString& type,
+                        bool canBubble,
+                        bool cancelable,
+                        const String& data,
+                        const String& origin,
+                        const String& lastEventId,
+                        EventTarget* source,
+                        MessagePortArray*);
 
   const String& origin() const { return m_origin; }
   const String& suborigin() const { return m_suborigin; }

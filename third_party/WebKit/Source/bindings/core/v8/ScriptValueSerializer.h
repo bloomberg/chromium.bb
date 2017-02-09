@@ -233,8 +233,6 @@ class CORE_EXPORT ScriptValueSerializer {
                                               Transferables*,
                                               ExceptionState&);
 
-  static String serializeWTFString(const String&);
-
  protected:
   class StateBase {
     USING_FAST_MALLOC(StateBase);

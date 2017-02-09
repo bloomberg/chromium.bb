@@ -801,13 +801,6 @@ void ScriptValueSerializer::transferData(
       isolate(), transferables->offscreenCanvases, exceptionState);
 }
 
-// static
-String ScriptValueSerializer::serializeWTFString(const String& data) {
-  SerializedScriptValueWriter valueWriter;
-  valueWriter.writeWebCoreString(data);
-  return valueWriter.takeWireString();
-}
-
 ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(
     v8::Local<v8::Value> value,
     StateBase* next) {

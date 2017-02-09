@@ -79,7 +79,6 @@ class CORE_EXPORT SerializedScriptValue
                                                      Transferables*,
                                                      WebBlobInfoArray*,
                                                      ExceptionState&);
-  static PassRefPtr<SerializedScriptValue> serialize(const String&);
   static PassRefPtr<SerializedScriptValue> serializeAndSwallowExceptions(
       v8::Isolate*,
       v8::Local<v8::Value>);
