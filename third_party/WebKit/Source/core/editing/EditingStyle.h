@@ -148,6 +148,9 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
   void mergeInlineStyleOfElement(HTMLElement*,
                                  CSSPropertyOverrideMode,
                                  PropertiesToInclude = AllProperties);
+  void mergeInlineAndImplicitStyleOfElement(Element*,
+                                            CSSPropertyOverrideMode,
+                                            PropertiesToInclude);
   static EditingStyle* wrappingStyleForAnnotatedSerialization(
       ContainerNode* context);
   static EditingStyle* wrappingStyleForSerialization(ContainerNode* context);
@@ -161,6 +164,8 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
 
   float fontSizeDelta() const { return m_fontSizeDelta; }
   bool hasFontSizeDelta() const { return m_fontSizeDelta != NoFontDelta; }
+
+  void setProperty(CSSPropertyID, const String& value, bool important = false);
 
   static EditingStyle* styleAtSelectionStart(
       const VisibleSelection&,
@@ -185,7 +190,6 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
   EditingStyle(CSSPropertyID, const String& value);
   void init(Node*, PropertiesToInclude);
   void removeInheritedColorsIfNeeded(const ComputedStyle*);
-  void setProperty(CSSPropertyID, const String& value, bool important = false);
   void replaceFontSizeByKeywordIfPossible(const ComputedStyle*,
                                           CSSComputedStyleDeclaration*);
   void extractFontSizeDelta();
@@ -195,9 +199,6 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
       HTMLElement*,
       EditingStyle* extractedStyle,
       Vector<CSSPropertyID>* conflictingProperties) const;
-  void mergeInlineAndImplicitStyleOfElement(Element*,
-                                            CSSPropertyOverrideMode,
-                                            PropertiesToInclude);
   void mergeStyle(const StylePropertySet*, CSSPropertyOverrideMode);
 
   Member<MutableStylePropertySet> m_mutableStyle;

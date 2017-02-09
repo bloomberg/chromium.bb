@@ -20,6 +20,8 @@ blink_core_sources("editing") {
     "EditingStrategy.cpp",
     "EditingStrategy.h",
     "EditingStyle.cpp",
+    "EditingStyleUtilities.cpp",
+    "EditingStyleUtilities.h",
     "EditingUtilities.cpp",
     "EditingUtilities.h",
     "Editor.cpp",
