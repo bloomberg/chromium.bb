@@ -2259,7 +2259,6 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass T
 
 crbug.com/678487 http/tests/inspector/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
 crbug.com/678487 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
-crbug.com/678488 http/tests/inspector/search/source-frame-replace-2.html [ Timeout Pass ]
 crbug.com/678489 http/tests/inspector/tracing/timeline-script-parse.html [ Timeout Pass ]
 crbug.com/678489 virtual/mojo-loading/http/tests/inspector/tracing/timeline-script-parse.html [ Timeout Pass ]
 crbug.com/678490 http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure Pass ]
