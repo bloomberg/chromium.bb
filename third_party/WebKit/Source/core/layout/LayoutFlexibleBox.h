@@ -179,9 +179,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   LayoutUnit availableAlignmentSpaceForChild(LayoutUnit lineCrossAxisExtent,
                                              const LayoutBox& child);
-  LayoutUnit availableAlignmentSpaceForChildBeforeStretching(
-      LayoutUnit lineCrossAxisExtent,
-      const LayoutBox& child);
   LayoutUnit marginBoxAscentForChild(const LayoutBox& child);
 
   LayoutUnit computeChildMarginValue(Length margin);

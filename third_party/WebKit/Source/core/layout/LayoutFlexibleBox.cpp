@@ -1092,15 +1092,6 @@ LayoutUnit LayoutFlexibleBox::availableAlignmentSpaceForChild(
   return lineCrossAxisExtent - childCrossExtent;
 }
 
-LayoutUnit LayoutFlexibleBox::availableAlignmentSpaceForChildBeforeStretching(
-    LayoutUnit lineCrossAxisExtent,
-    const LayoutBox& child) {
-  DCHECK(!child.isOutOfFlowPositioned());
-  LayoutUnit childCrossExtent = crossAxisMarginExtentForChild(child) +
-                                crossAxisIntrinsicExtentForChild(child);
-  return lineCrossAxisExtent - childCrossExtent;
-}
-
 bool LayoutFlexibleBox::updateAutoMarginsInCrossAxis(
     LayoutBox& child,
     LayoutUnit availableAlignmentSpace) {
@@ -2089,16 +2080,12 @@ void LayoutFlexibleBox::applyStretchAlignmentToChild(
     LayoutBox& child,
     LayoutUnit lineCrossAxisExtent) {
   if (!hasOrthogonalFlow(child) && child.style()->logicalHeight().isAuto()) {
-    LayoutUnit heightBeforeStretching = childIntrinsicLogicalHeight(child);
     LayoutUnit stretchedLogicalHeight =
         std::max(child.borderAndPaddingLogicalHeight(),
-                 heightBeforeStretching +
-                     availableAlignmentSpaceForChildBeforeStretching(
-                         lineCrossAxisExtent, child));
+                 lineCrossAxisExtent - crossAxisMarginExtentForChild(child));
     DCHECK(!child.needsLayout());
     LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(
-        stretchedLogicalHeight,
-        heightBeforeStretching - child.borderAndPaddingLogicalHeight());
+        stretchedLogicalHeight, child.intrinsicContentLogicalHeight());
 
     // FIXME: Can avoid laying out here in some cases. See
     // https://webkit.org/b/87905.
