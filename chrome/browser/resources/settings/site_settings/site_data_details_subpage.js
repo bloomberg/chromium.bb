@@ -22,7 +22,7 @@ Polymer({
 
     /**
      * The cookie entries for the given site.
-     * @type {!Array<!CookieDataItem>}
+     * @type {!Array<!CookieDetails>}
      * @private
      */
     entries_: Array,
@@ -83,14 +83,14 @@ Polymer({
   },
 
   /**
-   * @param {!CookieDataSummaryItem} cookies
+   * @param {!CookieList} cookies
    * @private
    */
   onCookiesLoaded_: function(cookies) {
     this.siteId_ = cookies.id;
     this.entries_ = cookies.children;
     // Set up flag for expanding cookie details.
-    this.entries_.map(function(e) { return e.expanded_ = false; });
+    this.entries_.forEach(function(e) { e.expanded_ = false; });
   },
 
   /**

@@ -48,6 +48,7 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
   settings.TestBrowserProxy.call(this, [
     'fetchUsbDevices',
     'fetchZoomLevels',
+    'getCookieDetails',
     'getDefaultValueForContentType',
     'getExceptionList',
     'observeProtocolHandlers',
@@ -72,6 +73,9 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
 
   /** @private {!Array<!ProtocolEntry>} */
   this.protocolHandlers_ = [];
+
+  /** @private {?CookieList} */
+  this.cookieDetails_ = null;
 };
 
 TestSiteSettingsPrefsBrowserProxy.prototype = {
@@ -123,6 +127,19 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
   setDefaultValueForContentType: function(contentType, defaultValue) {
     this.methodCalled(
         'setDefaultValueForContentType', [contentType, defaultValue]);
+  },
+
+  /** @override */
+  getCookieDetails: function(site) {
+    this.methodCalled('getCookieDetails', site);
+    return Promise.resolve(this.cookieDetails_  || {id: '', children: []});
+  },
+
+  /**
+   * @param {!CookieList} cookieList
+   */
+  setCookieDetails: function(cookieList) {
+    this.cookieDetails_ = cookieList;
   },
 
   /** @override */

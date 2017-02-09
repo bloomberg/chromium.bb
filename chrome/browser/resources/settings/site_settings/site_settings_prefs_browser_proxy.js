@@ -106,7 +106,7 @@ cr.define('settings', function() {
     /**
      * Gets the cookie details for a particular site.
      * @param {string} site The name of the site.
-     * @return {!Promise<!CookieDataSummaryItem>}
+     * @return {!Promise<!CookieList>}
      */
     getCookieDetails: function(site) {},
 

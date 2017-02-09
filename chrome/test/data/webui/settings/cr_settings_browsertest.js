@@ -689,7 +689,8 @@ CrSettingsSiteSettingsTest.prototype = {
     'test_site_settings_prefs_browser_proxy.js',
     'zoom_levels_tests.js',
     'usb_devices_tests.js',
-    'protocol_handlers_tests.js'
+    'protocol_handlers_tests.js',
+    'site_data_details_subpage_tests.js',
   ]),
 };
 

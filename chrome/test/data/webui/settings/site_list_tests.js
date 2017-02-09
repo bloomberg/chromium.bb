@@ -347,6 +347,9 @@ cr.define('site_list', function() {
 
       teardown(function() {
         closeActionMenu();
+        // The code being tested changes the Route. Reset so that state is not
+        // leaked across tests.
+        settings.resetRouteForTesting();
       });
 
       /**
