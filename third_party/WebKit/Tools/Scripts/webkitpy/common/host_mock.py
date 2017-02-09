@@ -43,7 +43,7 @@ class MockHost(MockSystemHost):
     def __init__(self,
                  log_executive=False,
                  web=None,
-                 scm=None,
+                 git=None,
                  os_name=None,
                  os_version=None,
                  time_return_val=123):
@@ -55,7 +55,7 @@ class MockHost(MockSystemHost):
 
         add_unit_tests_to_mock_filesystem(self.filesystem)
         self.web = web or MockWeb()
-        self._scm = scm
+        self._git = git
 
         self.buildbot = MockBuildBot()
 
@@ -65,12 +65,12 @@ class MockHost(MockSystemHost):
 
         self.builders = BuilderList(BUILDERS)
 
-    def scm(self, path=None):
+    def git(self, path=None):
         if path:
             return MockGit(cwd=path, filesystem=self.filesystem, executive=self.executive)
-        if not self._scm:
-            self._scm = MockGit(filesystem=self.filesystem, executive=self.executive)
+        if not self._git:
+            self._git = MockGit(filesystem=self.filesystem, executive=self.executive)
         # Various pieces of code (wrongly) call filesystem.chdir(checkout_root).
         # Making the checkout_root exist in the mock filesystem makes that chdir not raise.
-        self.filesystem.maybe_make_directory(self._scm.checkout_root)
-        return self._scm
+        self.filesystem.maybe_make_directory(self._git.checkout_root)
+        return self._git

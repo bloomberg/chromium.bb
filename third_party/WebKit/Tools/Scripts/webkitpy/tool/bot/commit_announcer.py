@@ -49,7 +49,7 @@ class CommitAnnouncer(SingleServerIRCBot):
     def __init__(self, tool, announce_path, irc_password):
         SingleServerIRCBot.__init__(self, [(SERVER, PORT, irc_password)], NICKNAME, NICKNAME)
         self.announce_path = announce_path
-        self.git = tool.scm(path=tool.scm().checkout_root)
+        self.git = tool.git(path=tool.git().checkout_root)
         self.commands = {
             'help': self.help,
             'ping': self.ping,

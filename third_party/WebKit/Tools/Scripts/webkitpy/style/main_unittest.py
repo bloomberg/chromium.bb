@@ -51,7 +51,7 @@ class ChangeDirectoryTest(LoggingTestCase):
         paths = self._change_directory(checkout_root=self._checkout_root, paths=paths)
         self._assert_result(paths, ["foo1.txt", "foo2.txt"], [], self._checkout_root)
 
-    def test_with_scm_paths_unconvertible(self):
+    def test_with_git_paths_unconvertible(self):
         paths = ["/chromium/src/foo1.txt", "/outside/foo2.txt"]
         paths = self._change_directory(checkout_root=self._checkout_root, paths=paths)
         log_messages = [

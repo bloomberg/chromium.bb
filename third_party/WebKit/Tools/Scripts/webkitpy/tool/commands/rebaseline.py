@@ -300,7 +300,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         try:
             verbose_args = ['--verbose'] if verbose else []
             stderr = self._tool.executive.run_command([self._tool.path()] + verbose_args +
-                                                      args, cwd=self._tool.scm().checkout_root, return_stderr=True)
+                                                      args, cwd=self._tool.git().checkout_root, return_stderr=True)
             for line in stderr.splitlines():
                 _log.warning(line)
         except ScriptError:
@@ -341,7 +341,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
     def _rebaseline_commands(self, test_prefix_list, options):
         path_to_webkit_patch = self._tool.path()
-        cwd = self._tool.scm().checkout_root
+        cwd = self._tool.git().checkout_root
         copy_baseline_commands = []
         rebaseline_commands = []
         lines_to_remove = {}
@@ -421,7 +421,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 cmd_line.append('--verbose')
 
             path_to_webkit_patch = self._tool.path()
-            cwd = self._tool.scm().checkout_root
+            cwd = self._tool.git().checkout_root
             optimize_commands.append(tuple([[self._tool.executable, path_to_webkit_patch, 'optimize-baselines'] + cmd_line, cwd]))
         return optimize_commands
 
@@ -491,7 +491,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 TODO(qyearsley): Replace test_prefix_list everywhere with some
                 sort of class that contains the same data.
         """
-        if self._tool.scm().has_working_directory_changes(pathspec=self._layout_tests_dir()):
+        if self._tool.git().has_working_directory_changes(pathspec=self._layout_tests_dir()):
             _log.error('There are uncommitted changes in the layout tests directory; aborting.')
             return
 
@@ -524,13 +524,13 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
         self._remove_all_pass_testharness_baselines(test_prefix_list)
 
-        self._tool.scm().add_list(self.unstaged_baselines())
+        self._tool.git().add_list(self.unstaged_baselines())
 
     def unstaged_baselines(self):
         """Returns absolute paths for unstaged (including untracked) baselines."""
         baseline_re = re.compile(r'.*[\\/]LayoutTests[\\/].*-expected\.(txt|png|wav)$')
-        unstaged_changes = self._tool.scm().unstaged_changes()
-        return sorted(self._tool.scm().absolute_path(path) for path in unstaged_changes if re.match(baseline_re, path))
+        unstaged_changes = self._tool.git().unstaged_changes()
+        return sorted(self._tool.git().absolute_path(path) for path in unstaged_changes if re.match(baseline_re, path))
 
     def _remove_all_pass_testharness_baselines(self, test_prefix_list):
         """Removes all of the all-PASS baselines for the given builders and tests.

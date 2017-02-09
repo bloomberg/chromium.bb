@@ -151,7 +151,7 @@ class TestImporterTest(LoggingTestCase):
             '# external/wpt/foo [ Pass ]\n')
         git = MockGit()
         git.changed_files = lambda: ['third_party/WebKit/LayoutTests/external/wpt/foo/x.html']
-        host.scm = lambda: git
+        host.git = lambda: git
         importer = TestImporter(host)
         self.assertEqual(importer.get_directory_owners(), {'someone@chromium.org': 'external/wpt/foo'})
 

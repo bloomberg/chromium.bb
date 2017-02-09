@@ -47,7 +47,7 @@ class TestConfig(object):
         self.platforms = platforms
         self.host = host
         self.filesystem = host.filesystem
-        self.scm = host.scm()
+        self.git = host.git()
 
 
 class RebaselineServer(AbstractLocalServerCommand):

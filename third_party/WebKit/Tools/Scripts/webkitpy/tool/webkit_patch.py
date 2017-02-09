@@ -152,9 +152,9 @@ class WebKitPatch(Host):
             option_parser.add_option(option)
 
     def _should_execute_command(self, command):
-        if command.requires_local_commits and not self.scm().supports_local_commits():
+        if command.requires_local_commits and not self.git().supports_local_commits():
             failure_reason = "%s requires local commits using %s in %s." % (
-                command.name, self.scm().display_name(), self.scm().checkout_root)
+                command.name, self.git().display_name(), self.git().checkout_root)
             return (False, failure_reason)
         return (True, None)
 
@@ -165,7 +165,7 @@ class WebKitPatch(Host):
         if not command.show_in_main_help:
             return False
         if command.requires_local_commits:
-            return self.scm().supports_local_commits()
+            return self.git().supports_local_commits()
         return True
 
     def command_by_name(self, command_name):

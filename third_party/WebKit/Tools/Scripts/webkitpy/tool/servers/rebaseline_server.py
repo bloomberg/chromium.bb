@@ -63,7 +63,7 @@ def _rebaseline_test(test_file, baseline_target, baseline_move_to, test_config, 
 
     actual_result_files = _get_actual_result_files(test_file, test_config)
     filesystem = test_config.filesystem
-    scm = test_config.scm
+    git = test_config.git
     layout_tests_directory = test_config.layout_tests_directory
     target_expectations_directory = filesystem.join(
         layout_tests_directory, 'platform', baseline_target, test_directory)
@@ -112,7 +112,7 @@ def _rebaseline_test(test_file, baseline_target, baseline_move_to, test_config, 
         destination_path = filesystem.join(
             target_expectations_directory, destination_file)
         filesystem.copyfile(source_path, destination_path)
-        exit_code = scm.add(destination_path, return_exit_code=True)
+        exit_code = git.add(destination_path, return_exit_code=True)
         if exit_code:
             log('    Could not update %s in SCM, exit code %d' %
                 (destination_file, exit_code))
@@ -148,7 +148,7 @@ def _move_test_baselines(test_file, extensions_to_move, source_platform, destina
         source_path = filesystem.join(source_directory, file_name)
         destination_path = filesystem.join(destination_directory, file_name)
         filesystem.copyfile(source_path, destination_path)
-        exit_code = test_config.scm.add(destination_path, return_exit_code=True)
+        exit_code = test_config.git.add(destination_path, return_exit_code=True)
         if exit_code:
             log('    Could not update %s in SCM, exit code %d' %
                 (file_name, exit_code))

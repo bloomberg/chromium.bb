@@ -59,7 +59,7 @@ class BaselineOptimizerTest(unittest.TestCase):
         self.assertEqual(host.filesystem.read_binary_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'), 'result A')
 
-    def test_move_baselines_skip_scm_commands(self):
+    def test_move_baselines_skip_git_commands(self):
         host = MockHost()
         host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites', '[]')
         host.filesystem.write_binary_file(

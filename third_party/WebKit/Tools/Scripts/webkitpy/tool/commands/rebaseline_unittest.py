@@ -485,8 +485,8 @@ class TestRebaselineJson(BaseTestCase):
             ])
 
     def test_unstaged_baselines(self):
-        scm = self.tool.scm()
-        scm.unstaged_changes = lambda: {
+        git = self.tool.git()
+        git.unstaged_changes = lambda: {
             'third_party/WebKit/LayoutTests/x/foo-expected.txt': 'M',
             'third_party/WebKit/LayoutTests/x/foo-expected.something': '?',
             'third_party/WebKit/LayoutTests/x/foo-expected.png': '?',

@@ -25,13 +25,13 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
         self._write_text_file('foo_file', 'foo')
         self._run(['git', 'add', 'foo_file'])
         self._run(['git', 'commit', '-am', 'dummy commit'])
-        self.untracking_scm = Git(cwd=self.untracking_checkout_path, filesystem=self.filesystem, executive=self.executive)
+        self.untracking_git = Git(cwd=self.untracking_checkout_path, filesystem=self.filesystem, executive=self.executive)
 
         # Then set up a second git repo that tracks the first one.
         self.tracking_git_checkout_path = self._mkdtemp(suffix='-git_unittest_tracking')
         self._run(['git', 'clone', '--quiet', self.untracking_checkout_path, self.tracking_git_checkout_path])
         self._chdir(self.tracking_git_checkout_path)
-        self.tracking_scm = Git(cwd=self.tracking_git_checkout_path, filesystem=self.filesystem, executive=self.executive)
+        self.tracking_git = Git(cwd=self.tracking_git_checkout_path, filesystem=self.filesystem, executive=self.executive)
 
     def tearDown(self):
         self._chdir(self.original_cwd)
@@ -76,7 +76,7 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
 
     def test_add_list(self):
         self._chdir(self.untracking_checkout_path)
-        git = self.untracking_scm
+        git = self.untracking_git
         self._mkdir('added_dir')
         self._write_text_file('added_dir/added_file', 'new stuff')
         print self._run(['ls', 'added_dir'])
@@ -87,7 +87,7 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
 
     def test_delete_recursively(self):
         self._chdir(self.untracking_checkout_path)
-        git = self.untracking_scm
+        git = self.untracking_git
         self._mkdir('added_dir')
         self._write_text_file('added_dir/added_file', 'new stuff')
         git.add_list(['added_dir/added_file'])
@@ -97,7 +97,7 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
 
     def test_delete_recursively_or_not(self):
         self._chdir(self.untracking_checkout_path)
-        git = self.untracking_scm
+        git = self.untracking_git
         self._mkdir('added_dir')
         self._write_text_file('added_dir/added_file', 'new stuff')
         self._write_text_file('added_dir/another_added_file', 'more new stuff')
@@ -109,7 +109,7 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
 
     def test_exists(self):
         self._chdir(self.untracking_checkout_path)
-        git = self.untracking_scm
+        git = self.untracking_git
         self._chdir(git.checkout_root)
         self.assertFalse(git.exists('foo.txt'))
         self._write_text_file('foo.txt', 'some stuff')
@@ -123,7 +123,7 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
 
     def test_move(self):
         self._chdir(self.untracking_checkout_path)
-        git = self.untracking_scm
+        git = self.untracking_git
         self._write_text_file('added_file', 'new stuff')
         git.add_list(['added_file'])
         git.move('added_file', 'moved_file')
@@ -131,7 +131,7 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
 
     def test_move_recursive(self):
         self._chdir(self.untracking_checkout_path)
-        git = self.untracking_scm
+        git = self.untracking_git
         self._mkdir('added_dir')
         self._write_text_file('added_dir/added_file', 'new stuff')
         self._write_text_file('added_dir/another_added_file', 'more new stuff')
@@ -142,13 +142,13 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
 
     def test_remote_branch_ref(self):
         # This tests a protected method. pylint: disable=protected-access
-        self.assertEqual(self.tracking_scm._remote_branch_ref(), 'refs/remotes/origin/master')
+        self.assertEqual(self.tracking_git._remote_branch_ref(), 'refs/remotes/origin/master')
         self._chdir(self.untracking_checkout_path)
-        self.assertRaises(ScriptError, self.untracking_scm._remote_branch_ref)
+        self.assertRaises(ScriptError, self.untracking_git._remote_branch_ref)
 
     def test_create_patch(self):
         self._chdir(self.tracking_git_checkout_path)
-        git = self.tracking_scm
+        git = self.tracking_git
         self._write_text_file('test_file_commit1', 'contents')
         self._run(['git', 'add', 'test_file_commit1'])
         git.commit_locally_with_message('message')
@@ -158,7 +158,7 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
 
     def test_patches_have_filenames_with_prefixes(self):
         self._chdir(self.tracking_git_checkout_path)
-        git = self.tracking_scm
+        git = self.tracking_git
         self._write_text_file('test_file_commit1', 'contents')
         self._run(['git', 'add', 'test_file_commit1'])
         git.commit_locally_with_message('message')
@@ -171,7 +171,7 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
 
     def test_rename_files(self):
         self._chdir(self.tracking_git_checkout_path)
-        git = self.tracking_scm
+        git = self.tracking_git
         git.move('foo_file', 'bar_file')
         git.commit_locally_with_message('message')
 
@@ -191,26 +191,26 @@ Date:   Mon Sep 28 19:10:30 2015 -0700
     Cr-Commit-Position: refs/heads/master@{#1234567}
 """
         self._chdir(self.tracking_git_checkout_path)
-        git = self.tracking_scm
+        git = self.tracking_git
         self.assertEqual(git._commit_position_from_git_log(git_log), 1234567)
 
     def test_timestamp_of_revision(self):
         # This tests a protected method. pylint: disable=protected-access
         self._chdir(self.tracking_git_checkout_path)
-        git = self.tracking_scm
+        git = self.tracking_git
         position_regex = git._commit_position_regex_for_timestamp()
         git.most_recent_log_matching(position_regex, git.checkout_root)
 
 
 class GitTestWithMock(unittest.TestCase):
 
-    def make_scm(self):
+    def make_git(self):
         git = Git(cwd='.', executive=MockExecutive(), filesystem=MockFileSystem())
         git.read_git_config = lambda *args, **kw: 'MOCKKEY:MOCKVALUE'
         return git
 
     def _assert_timestamp_of_revision(self, canned_git_output, expected):
-        git = self.make_scm()
+        git = self.make_git()
         git.find_checkout_root = lambda path: ''
         # Modifying protected method. pylint: disable=protected-access
         git._run_git = lambda args: canned_git_output
@@ -226,7 +226,7 @@ class GitTestWithMock(unittest.TestCase):
         self._assert_timestamp_of_revision('Date: 2013-02-08 01:55:21 -0800', '2013-02-08T09:55:21Z')
 
     def test_unstaged_files(self):
-        scm = self.make_scm()
+        git = self.make_git()
         status_lines = [
             ' M d/modified.txt',
             ' D d/deleted.txt',
@@ -236,9 +236,9 @@ class GitTestWithMock(unittest.TestCase):
             'A  d/added-staged.txt',
         ]
         # pylint: disable=protected-access
-        scm._run_git = lambda args: '\x00'.join(status_lines) + '\x00'
+        git._run_git = lambda args: '\x00'.join(status_lines) + '\x00'
         self.assertEqual(
-            scm.unstaged_changes(),
+            git.unstaged_changes(),
             {
                 'd/modified.txt': 'M',
                 'd/deleted.txt': 'D',

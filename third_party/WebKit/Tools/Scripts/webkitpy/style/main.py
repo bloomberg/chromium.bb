@@ -140,7 +140,7 @@ class CheckWebKitStyle(object):
 
         configuration = checker.check_webkit_style_configuration(options)
 
-        paths = change_directory(host.filesystem, checkout_root=host.scm().checkout_root, paths=paths)
+        paths = change_directory(host.filesystem, checkout_root=host.git().checkout_root, paths=paths)
 
         style_processor = StyleProcessor(configuration)
         file_reader = TextFileReader(host.filesystem, style_processor)
@@ -149,7 +149,7 @@ class CheckWebKitStyle(object):
             file_reader.process_paths(paths)
         else:
             changed_files = paths if options.diff_files else None
-            patch = host.scm().create_patch(options.git_commit, changed_files=changed_files)
+            patch = host.git().create_patch(options.git_commit, changed_files=changed_files)
             patch_checker = PatchReader(file_reader)
             patch_checker.check(patch)
 

@@ -31,7 +31,7 @@ class TestOptimizeBaselines(BaseTestCase):
             oc = OutputCapture()
             oc.capture_output()
             self.command.execute(
-                optparse.Values({'suffixes': 'txt,wav,png', 'no_modify_scm': True, 'platform': 'test-mac-mac10.10'}),
+                optparse.Values({'suffixes': 'txt,wav,png', 'no_modify_git': True, 'platform': 'test-mac-mac10.10'}),
                 ['another/test.html'],
                 self.tool)
         finally:

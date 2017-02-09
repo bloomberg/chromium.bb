@@ -114,12 +114,12 @@ class LayoutTestResults(object):
         return self._results["builder_name"]
 
     @memoized
-    def chromium_revision(self, scm=None):
+    def chromium_revision(self, git=None):
         """Returns the revision of the results in commit position number format."""
         revision = self._chromium_revision or self._results["chromium_revision"]
         if not revision.isdigit():
-            assert scm, "scm is required if the original revision is a git hash."
-            revision = scm.commit_position_from_git_commit(revision)
+            assert git, "git is required if the original revision is a git hash."
+            revision = git.commit_position_from_git_commit(revision)
         return int(revision)
 
     def result_for_test(self, test):

@@ -318,8 +318,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ])
 
     def test_bails_when_there_are_unstaged_baselines(self):
-        scm = self.tool.scm()
-        scm.unstaged_changes = lambda: {'third_party/WebKit/LayoutTests/my-test-expected.txt': '?'}
+        git = self.tool.git()
+        git.unstaged_changes = lambda: {'third_party/WebKit/LayoutTests/my-test-expected.txt': '?'}
         return_code = self.command.execute(self.command_options(issue=11112222), [], self.tool)
         self.assertEqual(return_code, 1)
         self.assertLog([

@@ -261,7 +261,7 @@ class PerfTestsRunner(object):
     def _generate_results_dict(self, timestamp, description, platform, builder_name, build_number):
         revisions = {}
         path = self._port.repository_path()
-        git = self._host.scm(path=path)
+        git = self._host.git(path=path)
         revision = str(git.commit_position(path))
         revisions['chromium'] = {'revision': revision, 'timestamp': git.timestamp_of_revision(path, revision)}
 

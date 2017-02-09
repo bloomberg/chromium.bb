@@ -47,13 +47,13 @@ class Host(SystemHost):
         SystemHost.__init__(self)
         self.web = web.Web()
 
-        self._scm = None
+        self._git = None
 
         # Everything below this line is WebKit-specific and belongs on a higher-level object.
         self.buildbot = BuildBot()
 
         # FIXME: Unfortunately Port objects are currently the central-dispatch objects of the NRWT world.
-        # In order to instantiate a port correctly, we have to pass it at least an executive, user, scm, and filesystem
+        # In order to instantiate a port correctly, we have to pass it at least an executive, user, git, and filesystem
         # so for now we just pass along the whole Host object.
         # FIXME: PortFactory doesn't belong on this Host object if Port is going to have a Host (circular dependency).
         self.port_factory = PortFactory(self)
@@ -76,9 +76,9 @@ class Host(SystemHost):
         self.environ['LC_MESSAGES'] = 'en_US.UTF-8'
         self.environ['LC_ALL'] = ''
 
-    def scm(self, path=None):
+    def git(self, path=None):
         if path:
             return Git(cwd=path, executive=self.executive, filesystem=self.filesystem)
-        if not self._scm:
-            self._scm = Git(filesystem=self.filesystem, executive=self.executive)
-        return self._scm
+        if not self._git:
+            self._git = Git(filesystem=self.filesystem, executive=self.executive)
+        return self._git
