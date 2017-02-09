@@ -2018,7 +2018,6 @@ crbug.com/683066 external/wpt/selection/addRange-16.html [ Failure ]
 crbug.com/683066 external/wpt/selection/addRange-28.html [ Failure ]
 crbug.com/683066 external/wpt/selection/addRange-32.html [ Failure ]
 crbug.com/683066 external/wpt/selection/addRange-36.html [ Failure ]
-crbug.com/683066 fast/css/first-letter-rtc-crash.html [ NeedsRebaseline ]
 
 # mojo-loading: This is an experimental feature. failing virtual tests are
 # listed below.
