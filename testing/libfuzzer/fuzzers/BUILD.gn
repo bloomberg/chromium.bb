@@ -331,7 +331,6 @@ fuzzer_test("third_party_re2_fuzzer") {
   deps = [
     "//third_party/re2:re2",
   ]
-  libfuzzer_options = [ "max_len=32" ]
 }
 
 fuzzer_test("libxml_xml_regexp_compile_fuzzer") {
