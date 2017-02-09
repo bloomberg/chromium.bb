@@ -31,9 +31,6 @@ class CONTENT_EXPORT AudioOutputDelegate {
 
     // All these methods are called on the IO thread.
 
-    // Called when the state changes between playing and not playing.
-    virtual void OnStreamStateChanged(bool playing) = 0;
-
     // Called when construction is finished and the stream is ready for
     // playout.
     virtual void OnStreamCreated(int stream_id,

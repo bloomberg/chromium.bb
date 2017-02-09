@@ -57,8 +57,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   void WidgetRestored() override;
   void WidgetHidden() override;
   int VisibleWidgetCount() const override;
-  void AudioStateChanged() override;
   bool IsForGuestsOnly() const override;
+  void OnAudioStreamAdded() override;
+  void OnAudioStreamRemoved() override;
   StoragePartition* GetStoragePartition() const override;
   virtual void AddWord(const base::string16& word);
   bool Shutdown(int exit_code, bool wait) override;

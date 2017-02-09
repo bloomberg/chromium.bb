@@ -143,11 +143,13 @@ int MockRenderProcessHost::VisibleWidgetCount() const {
   return 1;
 }
 
-void MockRenderProcessHost::AudioStateChanged() {}
-
 bool MockRenderProcessHost::IsForGuestsOnly() const {
   return is_for_guests_only_;
 }
+
+void MockRenderProcessHost::OnAudioStreamAdded() {}
+
+void MockRenderProcessHost::OnAudioStreamRemoved() {}
 
 StoragePartition* MockRenderProcessHost::GetStoragePartition() const {
   return BrowserContext::GetDefaultStoragePartition(browser_context_);

@@ -180,7 +180,6 @@ void AudioOutputDelegateImpl::UpdatePlayingState(bool playing) {
     return;
 
   playing_ = playing;
-  subscriber_->OnStreamStateChanged(playing);
   if (playing) {
     // Note that this takes a reference to |controller_|, and
     // (Start|Stop)MonitoringStream calls are async, so we don't have a

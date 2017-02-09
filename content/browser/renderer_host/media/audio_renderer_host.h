@@ -93,11 +93,6 @@ class CONTENT_EXPORT AudioRendererHost
                        base::SharedMemory* shared_memory,
                        base::CancelableSyncSocket* foreign_socket) override;
   void OnStreamError(int stream_id) override;
-  void OnStreamStateChanged(bool is_playing) override;
-
-  // Returns true if any streams managed by this host are actively playing.  Can
-  // be called from any thread.
-  bool HasActiveAudio();
 
   void OverrideDevicePermissionsForTesting(bool has_access);
 
@@ -216,10 +211,6 @@ class CONTENT_EXPORT AudioRendererHost
   // A list of the current open streams.
   AudioOutputDelegateVector delegates_;
 
-  // The number of streams in the playing state. Atomic read safe from any
-  // thread, but should only be updated from the IO thread.
-  base::AtomicRefCount num_playing_streams_;
-
   // Salt required to translate renderer device IDs to raw device unique IDs
   std::string salt_;
 
@@ -233,10 +224,6 @@ class CONTENT_EXPORT AudioRendererHost
   // UI thread to validate render frame IDs. A default is set by the
   // constructor, but this can be overridden by unit tests.
   ValidateRenderFrameIdFunction validate_render_frame_id_function_;
-
-  // The maximum number of simultaneous streams during the lifetime of this
-  // host. Reported as UMA stat at shutdown.
-  size_t max_simultaneous_streams_;
 
   AudioOutputAuthorizationHandler authorization_handler_;
 

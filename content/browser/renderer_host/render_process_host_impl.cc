@@ -1569,7 +1569,14 @@ int RenderProcessHostImpl::VisibleWidgetCount() const {
   return visible_widgets_;
 }
 
-void RenderProcessHostImpl::AudioStateChanged() {
+void RenderProcessHostImpl::OnAudioStreamAdded() {
+  ++audio_stream_count_;
+  UpdateProcessPriority();
+}
+
+void RenderProcessHostImpl::OnAudioStreamRemoved() {
+  DCHECK_GT(audio_stream_count_, 0);
+  --audio_stream_count_;
   UpdateProcessPriority();
 }
 
@@ -2828,7 +2835,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   // visible widgets -- the callers must call this function whenever we
   // transition in/out of those states.
   const bool should_background =
-      visible_widgets_ == 0 && !audio_renderer_host_->HasActiveAudio() &&
+      visible_widgets_ == 0 && audio_stream_count_ == 0 &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRendererBackgrounding);
 

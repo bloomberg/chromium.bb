@@ -78,7 +78,6 @@ class MockObserver : public content::MediaObserver {
 
 class MockEventHandler : public AudioOutputDelegate::EventHandler {
  public:
-  MOCK_METHOD1(OnStreamStateChanged, void(bool playing));
   MOCK_METHOD3(OnStreamCreated,
                void(int stream_id,
                     base::SharedMemory* shared_memory,
@@ -153,11 +152,6 @@ class AudioOutputDelegateTest : public testing::Test {
                 OnStreamCreated(kStreamId, NotNull(), NotNull()));
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
-    {
-      InSequence s;
-      EXPECT_CALL(event_handler_, OnStreamStateChanged(true));
-      EXPECT_CALL(event_handler_, OnStreamStateChanged(false));
-    }
 
     {
       AudioOutputDelegateImpl delegate(
@@ -212,13 +206,6 @@ class AudioOutputDelegateTest : public testing::Test {
                 OnStreamCreated(kStreamId, NotNull(), NotNull()));
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
-    {
-      InSequence s;
-      EXPECT_CALL(event_handler_, OnStreamStateChanged(true));
-      EXPECT_CALL(event_handler_, OnStreamStateChanged(false));
-      EXPECT_CALL(event_handler_, OnStreamStateChanged(true));
-      EXPECT_CALL(event_handler_, OnStreamStateChanged(false));
-    }
 
     {
       AudioOutputDelegateImpl delegate(
@@ -248,11 +235,6 @@ class AudioOutputDelegateTest : public testing::Test {
                 OnStreamCreated(kStreamId, NotNull(), NotNull()));
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
-    {
-      InSequence s;
-      EXPECT_CALL(event_handler_, OnStreamStateChanged(true));
-      EXPECT_CALL(event_handler_, OnStreamStateChanged(false));
-    }
 
     {
       AudioOutputDelegateImpl delegate(
@@ -340,11 +322,6 @@ class AudioOutputDelegateTest : public testing::Test {
                 OnStreamCreated(kStreamId, NotNull(), NotNull()));
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
-    {
-      InSequence s;
-      EXPECT_CALL(event_handler_, OnStreamStateChanged(true));
-      EXPECT_CALL(event_handler_, OnStreamStateChanged(false));
-    }
 
     DummyAudioOutputStream stream;
     {

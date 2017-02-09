@@ -123,7 +123,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void WidgetRestored() override;
   void WidgetHidden() override;
   int VisibleWidgetCount() const override;
-  void AudioStateChanged() override;
   bool IsForGuestsOnly() const override;
   StoragePartition* GetStoragePartition() const override;
   bool Shutdown(int exit_code, bool wait) override;
@@ -286,6 +285,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
   void RecomputeAndUpdateWebKitPreferences();
+
+  // Called when an audio stream is added or removed and used to determine if
+  // the process should be backgrounded or not.
+  void OnAudioStreamAdded() override;
+  void OnAudioStreamRemoved() override;
+  int get_audio_stream_count_for_testing() const { return audio_stream_count_; }
 
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
@@ -598,6 +603,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
   mojom::RendererAssociatedPtr renderer_interface_;
+
+  // Tracks active audio streams within the render process; used to determine if
+  // if a process should be backgrounded.
+  int audio_stream_count_ = 0;
 
   // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend
   // WeakPtrs which are invalidated any time the RPHI is recycled.
