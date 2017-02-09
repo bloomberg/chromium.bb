@@ -83,12 +83,14 @@ const char kGetRouteIdScript[] =
     "}"
     "domAutomationController.send('');";
 const char kFindSinkScript[] =
-    "var sinks = document.getElementById('media-router-container')."
-    "  shadowRoot.getElementById('sink-list').getElementsByTagName('span');"
-    "for (var i=0; i<sinks.length; i++) {"
-    "  if (sinks[i].textContent.trim() == '%s') {"
-    "    domAutomationController.send(true);"
-    "}}"
+    "var sinkList = document.getElementById('media-router-container')."
+    "  shadowRoot.getElementById('sink-list');"
+    "if (sinkList) {"
+    "  var sinks = sinkList.getElementsByTagName('span');"
+    "  for (var i=0; i<sinks.length; i++) {"
+    "    if (sinks[i].textContent.trim() == '%s') {"
+    "      domAutomationController.send(true);"
+    "}}}"
     "domAutomationController.send(false);";
 const char kCheckDialogLoadedScript[] =
     "var container = document.getElementById('media-router-container');"
