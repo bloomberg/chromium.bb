@@ -20,16 +20,14 @@
 // <!doctype html>
 // <html>
 // <head>
-//  <script src="resources/compatibility.js"></script>
-//  <script src="resources/buffer-loader.js"></script>
-//  <script src="../resources/js-test.js"></script>
-//  <script src="resources/oscillator-testing.js"></script>
-//  <script src="resources/audio-testing.js"></script>
+// <script src="../resources/testharness.js"></script>
+// <script src="resources/oscillator-testing.js"></script>
+// <script src="resources/audit-util.js"></script>
 // </head>
 // <body>
-//  <script>
-//    OscillatorTestingUtils.createNewReference("sine");
-//  </script>
+// <script>
+//   OscillatorTestingUtils.createNewReference("sine");
+// </script>
 // </body>
 // </html>
 
