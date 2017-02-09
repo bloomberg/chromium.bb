@@ -19,5 +19,10 @@ Polymer({
     chromeMessage: {
       type: String,
     },
+
+    /**
+     * ARIA-label for the button.
+     */
+    ariaLabel: String,
   },
 });

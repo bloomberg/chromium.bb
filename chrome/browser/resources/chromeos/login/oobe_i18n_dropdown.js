@@ -28,12 +28,9 @@ Polymer({
     },
 
     /**
-     * Accessibility label.
-     * @type {!string}
+     * ARIA-label for the selection menu.
      */
-    label: {
-      type: String,
-    },
+    ariaLabel: String,
   },
 
   /**

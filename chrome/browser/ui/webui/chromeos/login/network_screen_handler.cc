@@ -160,6 +160,7 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   // MD-OOBE
   builder->Add("oobeOKButtonText", IDS_OOBE_OK_BUTTON_TEXT);
   builder->Add("welcomeNextButtonText", IDS_OOBE_WELCOME_NEXT_BUTTON_TEXT);
+  builder->Add("languageButtonLabel", IDS_LANGUAGE_BUTTON_LABEL);
   builder->Add("languageSectionTitle", IDS_LANGUAGE_SECTION_TITLE);
   builder->Add("accessibilitySectionTitle", IDS_ACCESSIBILITY_SECTION_TITLE);
   builder->Add("accessibilitySectionHint", IDS_ACCESSIBILITY_SECTION_HINT);
@@ -168,7 +169,9 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("networkSectionHint", IDS_NETWORK_SECTION_HINT);
 
   builder->Add("languageDropdownTitle", IDS_LANGUAGE_DROPDOWN_TITLE);
+  builder->Add("languageDropdownLabel", IDS_LANGUAGE_DROPDOWN_LABEL);
   builder->Add("keyboardDropdownTitle", IDS_KEYBOARD_DROPDOWN_TITLE);
+  builder->Add("keyboardDropdownLabel", IDS_KEYBOARD_DROPDOWN_LABEL);
   builder->Add("proxySettingsMenuName", IDS_PROXY_SETTINGS_MENU_NAME);
   builder->Add("addWiFiNetworkMenuName", IDS_ADD_WI_FI_NETWORK_MENU_NAME);
   builder->Add("addMobileNetworkMenuName", IDS_ADD_MOBILE_NETWORK_MENU_NAME);

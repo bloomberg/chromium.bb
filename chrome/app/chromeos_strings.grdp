@@ -1692,6 +1692,9 @@ Press any key to continue exploring.
   <message name="IDS_OOBE_OK_BUTTON_TEXT" desc="Text on 'OK' button" meaning="This is 'OK' text for all 'OK' buttons on ChromeOS initial device setup screens.">
     OK
   </message>
+  <message name="IDS_LANGUAGE_BUTTON_LABEL" desc="Navigation label attached to the 'Select Language' button on ChromeOS initial device setup screen" meaning="The button itself displays only current language name. But for accessibility mode we need full description of this button. So this label suggests that pressing on a button will allow to change current language and input method. And it should also include the name of currently selected language.">
+    Select language and keyboard button. Currently selected language is <ph name="LANGUAGE">$1<ex>English (United States)</ex></ph>.
+  </message>
   <message name="IDS_LANGUAGE_SECTION_TITLE" desc="Title of language selection screen" meaning="A title of the dialog where user should select ChromeOS UI language and default keyboard layout during initial device setup.">
     Choose your language &amp; keyboard
   </message>
@@ -1760,6 +1763,12 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OOBE_CLOSE_ACCESSIBILITY_MENU" desc="Text to be spoken when focus is set to the close button of accessibility options menu.">
     Close accessibility menu
+  </message>
+  <message name="IDS_LANGUAGE_DROPDOWN_LABEL" desc="Navigation label attached to the 'List of languages' dropdown menu on ChromeOS Language and keyboard initial device setup screen" meaning="The menu itself displays only current language name. But for accessibility mode we need full description of this menu. So this label suggests that activating a menu will allow to change current language. And it should also include the name of currently selected language.">
+    Language selection menu. Currently selected language is <ph name="LANGUAGE">$1<ex>English (United States)</ex></ph>.
+  </message>
+  <message name="IDS_KEYBOARD_DROPDOWN_LABEL" desc="Navigation label attached to the 'List of keyboards' dropdown menu on ChromeOS Language and keyboard initial device setup screen" meaning="The menu itself displays only current keyboard layout name. But for accessibility mode we need full description of this menu. So this label suggests that activating a menu will allow to change current input method. And it should also include the name of currently selected input method.">
+    Input method selection menu. Currently selected input method is <ph name="KEYBOARD">$1<ex>English (US)</ex></ph>.
   </message>
   <message name="IDS_OOBE_OTHER_LANGUAGES" desc="Option group name dividing vendor-configured languages from other available languages in out-of-box 'Select language' select control.">
     Other languages

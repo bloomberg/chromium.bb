@@ -9,6 +9,8 @@ Polymer({
     disabled: {type: Boolean, value: false, reflectToAttribute: true},
 
     inverse: Boolean,
+
+    ariaLabel: String,
   },
 
   focus: function() {
@@ -26,6 +28,8 @@ Polymer({
 
   properties: {
     disabled: {type: Boolean, value: false, reflectToAttribute: true},
+
+    ariaLabel: String,
   },
 
   focus: function() {

@@ -19,11 +19,20 @@ Polymer({
     },
 
     /**
+     * Currently selected input method (display name).
+     */
+    currentKeyboard: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * List of languages for language selector dropdown.
      * @type {!Array<OobeTypes.LanguageDsc>}
      */
     languages: {
       type: Array,
+      observer: "onLanguagesChanged_",
     },
 
     /**
@@ -32,6 +41,7 @@ Polymer({
      */
     keyboards: {
       type: Array,
+      observer: "onKeyboardsChanged_",
     },
 
     /**
@@ -115,7 +125,7 @@ Polymer({
     isConnected_: {
       type: Boolean,
       value: false,
-    }
+    },
   },
 
   /** @override */
@@ -390,6 +400,7 @@ Polymer({
   onLanguageSelected_: function(event) {
     var item = event.detail;
     var languageId = item.value;
+    this.currentLanguage = item.title;
     this.screen.onLanguageSelected_(languageId);
   },
 
@@ -402,7 +413,16 @@ Polymer({
   onKeyboardSelected_: function(event) {
     var item = event.detail;
     var inputMethodId = item.value;
+    this.currentKeyboard = item.title;
     this.screen.onKeyboardSelected_(inputMethodId);
+  },
+
+  onLanguagesChanged_: function() {
+    this.currentLanguage = Oobe.getSelectedTitle(this.languages);
+  },
+
+  onKeyboardsChanged_: function() {
+    this.currentKeyboard = Oobe.getSelectedTitle(this.keyboards);
   },
 
   /**
@@ -464,5 +484,15 @@ Polymer({
       return;
 
     this.screen.onTimezoneSelected_(item.value);
+  },
+
+  /**
+    * This function formats message for labels.
+    * @param String label i18n string ID.
+    * @param String parameter i18n string parameter.
+    * @private
+    */
+  formatMessage_: function(label, parameter) {
+    return loadTimeData.getStringF(label, parameter);
   },
 });

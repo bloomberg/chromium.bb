@@ -81,7 +81,8 @@
             </div>
             <oobe-i18n-dropdown id="languageSelect" items="[[languages]]"
                 on-select-item="onLanguageSelected_"
-                label="$i18n{languageDropdownTitle}">
+                aria-label="[[formatMessage_('languageDropdownLabel',
+                    currentLanguage)]]">
             </oobe-i18n-dropdown>
           </div>
           <div id="keyboardDropdownContainer"
@@ -91,7 +92,8 @@
             </div>
             <oobe-i18n-dropdown id="keyboardSelect" items="[[keyboards]]"
                 on-select-item="onKeyboardSelected_"
-                label="$i18n{keyboardDropdownTitle}">
+                aria-label="[[formatMessage_('keyboardDropdownLabel',
+                    currentKeyboard)]]">
             </oobe-i18n-dropdown>
           </div>
         </template>
@@ -112,35 +114,40 @@
       <div class="footer layout vertical">
         <oobe-a11y-option checked="[[a11yStatus.spokenFeedbackEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableSpokenFeedback">
+            chrome-message="enableSpokenFeedback"
+            aria-label="$i18n{spokenFeedbackOption}">
           <span class="title">$i18n{spokenFeedbackOption}</span>
           <span class="checked-value">$i18n{spokenFeedbackOptionOn}</span>
           <span class="unchecked-value">$i18n{spokenFeedbackOptionOff}</span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.largeCursorEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableLargeCursor">
+            chrome-message="enableLargeCursor"
+            aria-label="$i18n{largeCursorOption}">
           <span class="title">$i18n{largeCursorOption}</span>
           <span class="checked-value">$i18n{largeCursorOptionOn}</span>
           <span class="unchecked-value">$i18n{largeCursorOptionOff}</span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.highContrastEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableHighContrast">
+            chrome-message="enableHighContrast"
+            aria-label="$i18n{highContrastOption}">
           <span class="title">$i18n{highContrastOption}</span>
           <span class="checked-value">$i18n{highContrastOptionOn}</span>
           <span class="unchecked-value">$i18n{highContrastOptionOff}</span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.screenMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableScreenMagnifier">
+            chrome-message="enableScreenMagnifier"
+            aria-label="$i18n{screenMagnifierOption}">
           <span class="title">$i18n{screenMagnifierOption}</span>
           <span class="checked-value">$i18n{screenMagnifierOptionOn}</span>
           <span class="unchecked-value">$i18n{screenMagnifierOptionOff}</span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.virtualKeyboardEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableVirtualKeyboard">
+            chrome-message="enableVirtualKeyboard"
+            aria-label="$i18n{virtualKeyboardOption}">
           <span class="title">$i18n{virtualKeyboardOption}</span>
           <span class="checked-value">$i18n{virtualKeyboardOptionOn}</span>
           <span class="unchecked-value">$i18n{virtualKeyboardOptionOff}</span>
@@ -165,7 +172,7 @@
           </div>
           <oobe-i18n-dropdown id="timezoneSelect" items="[[timezones]]"
               on-select-item="onTimezoneSelected_"
-              label="$i18n{timezoneDropdownTitle}">
+              aria-label="$i18n{timezoneDropdownTitle}">
           </oobe-i18n-dropdown>
         </div>
       </div>

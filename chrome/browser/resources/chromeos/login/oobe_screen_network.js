@@ -43,7 +43,6 @@ login.createScreen('NetworkScreen', 'connect', function() {
 
       var languageList = loadTimeData.getValue('languageList');
       welcomeScreen.languages = languageList;
-      welcomeScreen.currentLanguage = Oobe.getSelectedTitle(languageList);
 
       var inputMethodsList = loadTimeData.getValue('inputMethodsList');
       welcomeScreen.keyboards = inputMethodsList;
@@ -184,7 +183,6 @@ login.createScreen('NetworkScreen', 'connect', function() {
       if (useMDOobe) {
         var welcomeScreen = $('oobe-welcome-md');
         var languageList = loadTimeData.getValue('languageList');
-        welcomeScreen.currentLanguage = Oobe.getSelectedTitle(languageList);
         welcomeScreen.languages = languageList;
 
         welcomeScreen.keyboards = loadTimeData.getValue('inputMethodsList');
