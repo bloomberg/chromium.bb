@@ -20,6 +20,11 @@
                 "{{ path }}",
 {% endfor %}
             ]
+            res.srcDirs = [
+{% for path in variables.res_dirs %}
+                "{{ path }}",
+{% endfor %}
+            ]
         }
 {% endif %}
 {% endmacro %}

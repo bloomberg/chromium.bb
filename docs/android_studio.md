@@ -21,7 +21,7 @@ By default, only common targets are generated. To customize the list of targets
 to generate projects for:
 
 ```shell
-build/android/gradle/generate_gradle.py --target //some:target_apk --target //some/other:target_apk
+build/android/gradle/generate_gradle.py --target //chrome/android:chrome_public_apk --target //android_webview/test:android_webview_apk
 ```
 
 For first-time Android Studio users:
@@ -34,14 +34,15 @@ For first-time Android Studio users:
 To import the project:
 
 * Use "Import Project", and select the directory containing the generated
-  project, by default `out-gn/Debug/gradle`.
+  project, by default `out/Debug/gradle`.
 
 You need to re-run `generate_gradle.py` whenever `BUILD.gn` files change.
 
 * After regenerating, Android Studio should prompt you to "Sync". If it
   doesn't, use:
+    * Button with two arrows on the right side of the top strip.
     * Help -&gt; Find Action -&gt; "Sync Project with Gradle Files"
-
+    * After `gn clean` you may need to restart Android Studio.
 
 ## How it Works
 
@@ -115,7 +116,7 @@ resources, native libraries, etc.
     * Add the line `org.gradle.daemon=true` to `~/.gradle/gradle.properties`,
       creating it if necessary.
 
-## Status (as of Jan 19, 2017)
+## Status (as of Feb 7th, 2017)
 
 ### What works
 
@@ -123,10 +124,12 @@ resources, native libraries, etc.
 * Java editing and gradle compile works.
 * Instrumentation tests included as androidTest.
 * Symlinks to existing .so files in jniLibs (doesn't generate them).
+* Editing resource xml files.
 
 ### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
-* Make gradle aware of resources and assets
+* Make gradle aware of assets
+* Layout editor
 * Add a mode in which gradle is responsible for generating `R.java`
 * Add support for native code editing
 * Make the "Make Project" button work correctly
