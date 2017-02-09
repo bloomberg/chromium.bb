@@ -84,9 +84,16 @@ static INLINE int rabs_read(struct AnsDecoder *ans, AnsP8 p0) {
 // Decode one rABS encoded boolean where the probability of the value being zero
 // is one half.
 static INLINE int rabs_read_bit(struct AnsDecoder *ans) {
-  // TODO(aconverse@google.com): Provide an optimized implementation of this
-  // routine.
-  return rabs_read(ans, 128);
+#if ANS_MAX_SYMBOLS
+  if (ans->symbols_left-- == 0) {
+    ans_read_reinit(ans);
+    ans->symbols_left--;
+  }
+#endif
+  unsigned state = refill_state(ans, ans->state);
+  const int value = !!(state & 0x80);
+  ans->state = ((state >> 1) & ~0x7F) | (state & 0x7F);
+  return value;
 }
 
 struct rans_dec_sym {
