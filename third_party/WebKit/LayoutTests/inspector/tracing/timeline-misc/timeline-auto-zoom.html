@@ -33,7 +33,8 @@ function test()
         {"name": "FunctionCall", "ts": 6000000, "dur":  1000, "ph": "X", args: {},  "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline", "args":{"data":{}}}
     ];
 
-    InspectorTest.setTraceEvents(InspectorTest.timelineModel(), InspectorTest.tracingModel(), traceEvents);
+    UI.panels.timeline._setModel(InspectorTest.createPerformanceModelWithEvents(traceEvents));
+
     var overview = UI.panels.timeline._overviewPane;
     var startTime = overview._windowStartTime;
     var endTime = overview._windowEndTime;

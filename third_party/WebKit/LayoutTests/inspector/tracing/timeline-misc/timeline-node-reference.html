@@ -27,8 +27,8 @@ function test()
 
     function clickValueLink(event, row)
     {
-        var panel = UI.panels.timeline;
-        Timeline.TimelineUIUtils.buildTraceEventDetails(event, panel._model, new Components.Linkifier(), true, onDetailsContentReady);
+        var model = UI.panels.timeline._performanceModel.timelineModel();
+        Timeline.TimelineUIUtils.buildTraceEventDetails(event, model, new Components.Linkifier(), true, onDetailsContentReady);
 
         function onDetailsContentReady(element)
         {

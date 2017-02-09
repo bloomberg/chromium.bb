@@ -45,8 +45,8 @@ function test()
             InspectorTest.completeTest();
         }
     };
-
-    var controller = new Timeline.TimelineController(SDK.targetManager.mainTarget(), new TestTimelineLifecycleDelegate(), InspectorTest.createTracingModel());
+    var performanceModel = new Timeline.PerformanceModel();
+    var controller = new Timeline.TimelineController(SDK.targetManager.mainTarget(), performanceModel, new TestTimelineLifecycleDelegate());
     controller.startRecording({}, []);
 }
 

@@ -79,7 +79,7 @@ InspectorTest.createTracingModel = function()
 
 InspectorTest.tracingModel = function()
 {
-    return UI.panels.timeline._tracingModel;
+    return UI.panels.timeline._performanceModel.tracingModel();
 }
 
 InspectorTest.invokeWithTracing = function(functionName, callback, additionalCategories, enableJSSampling)
@@ -104,37 +104,36 @@ InspectorTest.invokeWithTracing = function(functionName, callback, additionalCat
     }
 }
 
+InspectorTest.performanceModel = function()
+{
+    return UI.panels.timeline._performanceModel;
+}
+
 InspectorTest.timelineModel = function()
 {
-    return UI.panels.timeline._model;
+    return InspectorTest.performanceModel().timelineModel();
 }
 
 InspectorTest.timelineFrameModel = function()
 {
-    return UI.panels.timeline._frameModel;
+    return InspectorTest.performanceModel().frameModel();
 }
 
-InspectorTest.setTraceEvents = function(timelineModel, tracingModel, events)
-{
-    tracingModel.reset();
-    tracingModel.addEvents(events);
-    tracingModel.tracingComplete();
-    timelineModel.setEvents(tracingModel);
-}
-
-InspectorTest.createTimelineModelWithEvents = function(events)
+InspectorTest.createPerformanceModelWithEvents = function(events)
 {
     var tracingModel = new SDK.TracingModel(new Bindings.TempFileBackingStorage("tracing"));
-    var timelineModel = new TimelineModel.TimelineModel();
-    InspectorTest.setTraceEvents(timelineModel, tracingModel, events);
-    return timelineModel;
+    tracingModel.addEvents(events);
+    tracingModel.tracingComplete();
+    var performanceModel = new Timeline.PerformanceModel();
+    performanceModel.setTracingModel(tracingModel);
+    return performanceModel;
 }
 
 InspectorTest.timelineController = function()
 {
-    var mainTarget = SDK.targetManager.mainTarget();
-    var timelinePanel =  UI.panels.timeline;
-    return new Timeline.TimelineController(mainTarget, timelinePanel, timelinePanel._tracingModel);
+    var performanceModel = new Timeline.PerformanceModel();
+    UI.panels.timeline._pendingPerformanceModel = performanceModel;
+    return new Timeline.TimelineController(SDK.targetManager.mainTarget(), performanceModel, UI.panels.timeline);
 }
 
 InspectorTest.startTimeline = function(callback)
@@ -215,9 +214,10 @@ InspectorTest.printTimelineRecordsWithDetails = function(name)
 
 InspectorTest.walkTimelineEventTree = function(callback)
 {
-    var model = InspectorTest.timelineModel();
-    var view = new Timeline.EventsTimelineTreeView(model, UI.panels.timeline._filters, null);
-    var selection = Timeline.TimelineSelection.fromRange(model.minimumRecordTime(), model.maximumRecordTime());
+    var performanceModel = InspectorTest.performanceModel();
+    var view = new Timeline.EventsTimelineTreeView(UI.panels.timeline._filters, null);
+    view.setModel(performanceModel);
+    var selection = Timeline.TimelineSelection.fromRange(performanceModel.timelineModel().minimumRecordTime(), performanceModel.timelineModel().maximumRecordTime());
     view.updateContents(selection);
     InspectorTest.walkTimelineEventTreeUnderNode(callback, view._currentTree, 0);
 }

@@ -276,20 +276,11 @@ function test()
         ],
     };
 
-    var frameModel = new TimelineModel.TimelineFrameModel(event => Timeline.TimelineUIUtils.eventStyle(event).category.name);
-
-    function loadEvents(events)
-    {
-        var tracingTimelineModel = InspectorTest.createTimelineModelWithEvents(events);
-        frameModel.reset();
-        frameModel.addTraceEvents(SDK.targetManager.mainTarget(), tracingTimelineModel.inspectedTargetEvents(), sessionId);
-    }
-
     for (var testName in testData) {
         var data = testData[testName];
-        loadEvents(commonMetadata.concat(data))
+        var performanceModel = InspectorTest.createPerformanceModelWithEvents(commonMetadata.concat(data));
         InspectorTest.addResult("Test: " + testName);
-        frameModel.frames().forEach(InspectorTest.dumpFrame, InspectorTest);
+        performanceModel.frameModel().frames().forEach(InspectorTest.dumpFrame, InspectorTest);
     }
     InspectorTest.completeTest();
 }

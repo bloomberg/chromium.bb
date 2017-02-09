@@ -12,8 +12,6 @@ function test()
 
     InspectorTest.loadTimeline(InspectorTest.timelineData());
 
-    timeline._currentViews[0].refreshRecords();
-
     overviewPane._update();
     InspectorTest.addResult("OverviewPane:");
     overviewPane._overviewCalculator.setDisplayWidth(450);

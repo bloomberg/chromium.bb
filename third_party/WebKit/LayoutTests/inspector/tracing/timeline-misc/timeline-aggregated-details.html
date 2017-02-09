@@ -594,7 +594,7 @@ function test()
     ];
 
     var timeline = UI.panels.timeline;
-    InspectorTest.setTraceEvents(InspectorTest.timelineModel(), InspectorTest.tracingModel(), rawTraceEvents);
+    timeline._setModel(InspectorTest.createPerformanceModelWithEvents(rawTraceEvents));
 
     timeline.requestWindowTimes(0, Infinity);
     var groupByEnum = Timeline.AggregatedTimelineTreeView.GroupBy;

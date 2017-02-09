@@ -20,12 +20,11 @@ function test()
     var requestId;
     var scriptUrl = "timeline-network-resource.js";
 
-    var model = UI.panels.timeline._model;
-
     InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
+        var model = InspectorTest.timelineModel();
         model.mainThreadEvents().forEach(event => {
             if (event.name === TimelineModel.TimelineModel.RecordType.ResourceSendRequest)
                 printSend(event);

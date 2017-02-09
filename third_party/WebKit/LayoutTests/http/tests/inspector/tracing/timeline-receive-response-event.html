@@ -27,7 +27,6 @@ function test()
 {
     UI.viewManager.showView("timeline");
     const panel = UI.panels.timeline;
-    panel._model._currentTarget = SDK.targetManager.mainTarget();
     panel._disableCaptureJSProfileSetting.set(true);
     InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 

@@ -24,12 +24,11 @@ function performActions()
 
 function test()
 {
-    var model = UI.panels.timeline._model;
     InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
-        var event = model.mainThreadEvents().find(e => e.name === TimelineModel.TimelineModel.RecordType.RunMicrotasks);
+        var event = InspectorTest.timelineModel().mainThreadEvents().find(e => e.name === TimelineModel.TimelineModel.RecordType.RunMicrotasks);
         InspectorTest.printTraceEventProperties(event);
         InspectorTest.completeTest();
     }
