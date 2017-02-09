@@ -464,6 +464,18 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
 
   bool isSVGElement = element && element->isSVGElement();
   if (isSVGElement) {
+    // display: contents computes to inline for replaced elements and form
+    // controls, and isn't specified for other kinds of SVG content[1], so let's
+    // just do the same here for all other SVG elements.
+    //
+    // If we wouldn't do this, then we'd need to ensure that display: contents
+    // doesn't prevent SVG elements from generating a LayoutObject in
+    // SVGElement::layoutObjectIsNeeded.
+    //
+    // [1]: https://www.w3.org/TR/SVG/painting.html#DisplayProperty
+    if (style.display() == EDisplay::Contents)
+      style.setDisplay(EDisplay::Inline);
+
     // Only the root <svg> element in an SVG document fragment tree honors css
     // position.
     if (!(isSVGSVGElement(*element) && element->parentNode() &&

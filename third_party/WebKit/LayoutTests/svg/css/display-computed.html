@@ -9,6 +9,7 @@ svg { width: 0; height: 0; }
 #t4, #t4 g { display: inline-table; }
 #t5, #t5 g { display: table; }
 #t6, #t6 g { display: table-cell; }
+#t7, #t7 g { display: contents; }
 </style>
 <svg id="t1"><g/></svg>
 <svg id="t2"><g/></svg>
@@ -16,6 +17,7 @@ svg { width: 0; height: 0; }
 <svg id="t4"><g/></svg>
 <svg id="t5"><g/></svg>
 <svg id="t6"><g/></svg>
+<svg id="t7"><g/></svg>
 <script>
 test(function(){ assert_equals(getComputedStyle(document.querySelector("#t1")).display, "inline"); }, "svg:svg display inline");
 test(function(){ assert_equals(getComputedStyle(document.querySelector("#t1 g")).display, "inline"); }, "svg:g display inline");
@@ -29,4 +31,6 @@ test(function(){ assert_equals(getComputedStyle(document.querySelector("#t5")).d
 test(function(){ assert_equals(getComputedStyle(document.querySelector("#t5 g")).display, "table"); }, "svg:g display table");
 test(function(){ assert_equals(getComputedStyle(document.querySelector("#t6")).display, "table-cell"); }, "svg:svg display table-cell");
 test(function(){ assert_equals(getComputedStyle(document.querySelector("#t6 g")).display, "table-cell"); }, "svg:g display table-cell");
+test(function(){ assert_equals(getComputedStyle(document.querySelector("#t7")).display, "inline"); }, "svg:svg display contents computes to inline");
+test(function(){ assert_equals(getComputedStyle(document.querySelector("#t7 g")).display, "inline"); }, "svg:g display contents computes to inline");
 </script>
