@@ -983,8 +983,24 @@ bool Resource::hasCacheControlNoStoreHeader() const {
          resourceRequest().cacheControlContainsNoStore();
 }
 
-bool Resource::hasVaryHeader() const {
-  return !response().httpHeaderField(HTTPNames::Vary).isNull();
+bool Resource::mustReloadDueToVaryHeader(
+    const ResourceRequest& newRequest) const {
+  const AtomicString& vary = response().httpHeaderField(HTTPNames::Vary);
+  if (vary.isNull())
+    return false;
+  if (vary == "*")
+    return true;
+
+  CommaDelimitedHeaderSet varyHeaders;
+  parseCommaDelimitedHeader(vary, varyHeaders);
+  for (const String& header : varyHeaders) {
+    AtomicString atomicHeader(header);
+    if (resourceRequest().httpHeaderField(atomicHeader) !=
+        newRequest.httpHeaderField(atomicHeader)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool Resource::mustRevalidateDueToCacheHeaders() const {

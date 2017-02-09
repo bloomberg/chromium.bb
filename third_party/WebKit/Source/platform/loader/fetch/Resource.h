@@ -264,7 +264,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool canUseCacheValidator() const;
   bool isCacheValidator() const { return m_isRevalidating; }
   bool hasCacheControlNoStoreHeader() const;
-  bool hasVaryHeader() const;
+  bool mustReloadDueToVaryHeader(const ResourceRequest& newRequest) const;
 
   bool isEligibleForIntegrityCheck(SecurityOrigin*) const;
 

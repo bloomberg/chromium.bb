@@ -970,8 +970,7 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
       existingResource == cachedResource(request.url()))
     return Use;
 
-  // Defer to the browser process cache for Vary header handling.
-  if (existingResource->hasVaryHeader())
+  if (existingResource->mustReloadDueToVaryHeader(request))
     return Reload;
 
   // If any of the redirects in the chain to loading the resource were not

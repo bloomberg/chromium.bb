@@ -154,7 +154,7 @@ TEST_F(ResourceFetcherTest, Vary) {
   response.setHTTPHeaderField(HTTPNames::Vary, "*");
   resource->responseReceived(response, nullptr);
   resource->finish();
-  ASSERT_TRUE(resource->hasVaryHeader());
+  ASSERT_TRUE(resource->mustReloadDueToVaryHeader(url));
 
   ResourceFetcher* fetcher = ResourceFetcher::create(context());
   ResourceRequest resourceRequest(url);
@@ -220,7 +220,7 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
   response.setHTTPHeaderField(HTTPNames::Vary, "*");
   resource->responseReceived(response, nullptr);
   resource->finish();
-  ASSERT_TRUE(resource->hasVaryHeader());
+  ASSERT_TRUE(resource->mustReloadDueToVaryHeader(url));
 
   ResourceRequest resourceRequest(url);
   resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
@@ -245,7 +245,7 @@ TEST_F(ResourceFetcherTest, VaryResource) {
   Resource* resource = MockResource::fetch(fetchRequestOriginal, fetcher);
   ASSERT_TRUE(resource);
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ASSERT_TRUE(resource->hasVaryHeader());
+  ASSERT_TRUE(resource->mustReloadDueToVaryHeader(url));
 
   FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
   Resource* newResource = MockResource::fetch(fetchRequest, fetcher);
