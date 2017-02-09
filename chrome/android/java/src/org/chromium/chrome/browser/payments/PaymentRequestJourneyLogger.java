@@ -21,10 +21,10 @@ public class PaymentRequestJourneyLogger {
     public static final int CAN_MAKE_PAYMENT_NOT_USED = 1;
     public static final int CAN_MAKE_PAYMENT_USE_MAX = 2;
 
-    // Used to log CanMakePayment's effect on whether the transaction was completed.
-    public static final int CMP_EFFECT_ON_COMPLETION_COMPLETED = 0;
-    public static final int CMP_EFFECT_ON_COMPLETION_ABORTED = 1;
-    public static final int CMP_EFFECT_ON_COMPLETION_MAX = 2;
+    // Used to log different parameters' effect on whether the transaction was completed.
+    public static final int COMPLETION_STATUS_COMPLETED = 0;
+    public static final int COMPLETION_STATUS_ABORTED = 1;
+    public static final int COMPLETION_STATUS_MAX = 2;
 
     // Used to mesure the impact of the CanMakePayment return value on whether the Payment Request
     // is shown to the user.
@@ -131,9 +131,8 @@ public class PaymentRequestJourneyLogger {
 
         // Record the CanMakePayment metrics based on whether the transaction was completed or
         // aborted by the user (UserAborted) or otherwise (OtherAborted).
-        recordCanMakePaymentStats(submissionType.contains("Abort")
-                        ? CMP_EFFECT_ON_COMPLETION_ABORTED
-                        : CMP_EFFECT_ON_COMPLETION_COMPLETED);
+        recordCanMakePaymentStats(submissionType.contains("Abort") ? COMPLETION_STATUS_ABORTED
+                                                                   : COMPLETION_STATUS_COMPLETED);
     }
 
     /**
@@ -142,6 +141,9 @@ public class PaymentRequestJourneyLogger {
      * @param submissionType A string indicating the way the payment request was concluded.
      */
     private void recordSectionSpecificStats(String submissionType) {
+        // Record whether the user had suggestions for each requested information.
+        boolean userHadAllRequestedInformation = true;
+
         for (int i = 0; i < mSections.length; ++i) {
             String nameSuffix = "";
             switch (i) {
@@ -178,7 +180,25 @@ public class PaymentRequestJourneyLogger {
                         "PaymentRequest.NumberOfSuggestionsShown." + nameSuffix,
                         Math.min(mSections[i].mNumberSuggestionsShown, MAX_EXPECTED_SAMPLE),
                         MIN_EXPECTED_SAMPLE, MAX_EXPECTED_SAMPLE, NUMBER_BUCKETS);
+
+                if (mSections[i].mNumberSuggestionsShown == 0) {
+                    userHadAllRequestedInformation = false;
+                }
             }
+        }
+
+        // Record metrics about completion based on whether the user had suggestions for each
+        // requested information.
+        int completionStatus = submissionType.contains("Abort") ? COMPLETION_STATUS_ABORTED
+                                                                : COMPLETION_STATUS_COMPLETED;
+        if (userHadAllRequestedInformation) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "PaymentRequest.UserHadSuggestionsForEverything.EffectOnCompletion",
+                    completionStatus, COMPLETION_STATUS_MAX);
+        } else {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "PaymentRequest.UserDidNotHaveSuggestionsForEverything.EffectOnCompletion",
+                    completionStatus, COMPLETION_STATUS_MAX);
         }
     }
 
@@ -231,6 +251,6 @@ public class PaymentRequestJourneyLogger {
         }
 
         RecordHistogram.recordEnumeratedHistogram(
-                histogramName, completionStatus, CMP_EFFECT_ON_COMPLETION_MAX);
+                histogramName, completionStatus, COMPLETION_STATUS_MAX);
     }
 }

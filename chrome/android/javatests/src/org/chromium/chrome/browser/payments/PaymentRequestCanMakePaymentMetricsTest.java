@@ -72,7 +72,7 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
         assertEquals(
                 1, RecordHistogram.getHistogramValueCountForTesting(
                            "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
-                           PaymentRequestJourneyLogger.CMP_EFFECT_ON_COMPLETION_ABORTED));
+                           PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
     }
 
     /**
@@ -113,7 +113,7 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
         assertEquals(
                 1, RecordHistogram.getHistogramValueCountForTesting(
                            "PaymentRequest.CanMakePayment.Used.FalseWithShowEffectOnCompletion",
-                           PaymentRequestJourneyLogger.CMP_EFFECT_ON_COMPLETION_COMPLETED));
+                           PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
     }
 
     /**
@@ -157,7 +157,7 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
         // the user.
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                                 "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.CMP_EFFECT_ON_COMPLETION_ABORTED));
+                                PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
     }
 
     /**
@@ -191,7 +191,7 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
         // the user.
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                                 "PaymentRequest.CanMakePayment.Used.TrueWithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.CMP_EFFECT_ON_COMPLETION_COMPLETED));
+                                PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
     }
 
     /**
@@ -225,7 +225,7 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
         // shown to the user.
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                                 "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.CMP_EFFECT_ON_COMPLETION_ABORTED));
+                                PaymentRequestJourneyLogger.COMPLETION_STATUS_ABORTED));
     }
 
     /**
@@ -252,6 +252,6 @@ public class PaymentRequestCanMakePaymentMetricsTest extends PaymentRequestTestB
         // shown to the user.
         assertEquals(1, RecordHistogram.getHistogramValueCountForTesting(
                                 "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
-                                PaymentRequestJourneyLogger.CMP_EFFECT_ON_COMPLETION_COMPLETED));
+                                PaymentRequestJourneyLogger.COMPLETION_STATUS_COMPLETED));
     }
 }
