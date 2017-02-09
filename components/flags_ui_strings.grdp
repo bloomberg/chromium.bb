@@ -33,9 +33,6 @@
   <message name="IDS_FLAGS_UI_NOT_AVAILABLE" desc="Shown instead of the Enable/Disable link, to let the user know that an experiment is not available on the current platform.">
     Sorry, this experiment is not available on your platform.
   </message>
-  <message name="IDS_FLAGS_UI_ENABLE_NACL_NAME" desc="Name of the 'Enable Native Client' lab.">
-    Native Client
-  </message>
   <if expr="not chromeos">
     <message name="IDS_FLAGS_UI_RELAUNCH_BUTTON" desc="Text on a button that relaunches Chrome when clicked. ">
       Relaunch Now
