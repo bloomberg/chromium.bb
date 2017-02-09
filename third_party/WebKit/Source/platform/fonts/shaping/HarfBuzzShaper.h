@@ -31,12 +31,8 @@
 #ifndef HarfBuzzShaper_h
 #define HarfBuzzShaper_h
 
-#include <hb.h>
-#include <unicode/uscript.h>
-#include <memory>
 #include "platform/fonts/shaping/RunSegmenter.h"
 #include "platform/fonts/shaping/ShapeResult.h"
-#include "platform/text/TextRun.h"
 #include "wtf/Allocator.h"
 #include "wtf/Deque.h"
 #include "wtf/Vector.h"
@@ -71,33 +67,25 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   ~HarfBuzzShaper() {}
 
  private:
-  using FeaturesVector = Vector<hb_feature_t, 6>;
+  struct RangeData;
 
   // Shapes a single seqment, as identified by the RunSegmenterRange parameter,
   // one or more times taking font fallback into account. The start and end
   // parameters are for the entire text run, not the segment, and are used to
   // determine pre- and post-context for shaping.
-  void shapeSegment(ShapeResult*,
-                    Deque<HolesQueueItem>*,
-                    hb_buffer_t*,
-                    const Font*,
-                    TextDirection,
-                    FeaturesVector*,
+  void shapeSegment(RangeData*,
                     RunSegmenter::RunSegmenterRange,
-                    unsigned start,
-                    unsigned end) const;
+                    ShapeResult*) const;
 
-  bool extractShapeResults(hb_buffer_t*,
-                           ShapeResult*,
+  bool extractShapeResults(RangeData*,
                            bool& fontCycleQueued,
-                           Deque<HolesQueueItem>*,
                            const HolesQueueItem&,
-                           const Font*,
-                           TextDirection,
                            const SimpleFontData*,
                            UScriptCode,
-                           bool isLastResort) const;
-  bool collectFallbackHintChars(const Deque<HolesQueueItem>*,
+                           bool isLastResort,
+                           ShapeResult*) const;
+
+  bool collectFallbackHintChars(const Deque<HolesQueueItem>&,
                                 Vector<UChar32>& hint) const;
 
   const UChar* m_text;
