@@ -43,6 +43,10 @@ constexpr char kResourcePrefetchPredictorPrecisionHistogram[] =
     "ResourcePrefetchPredictor.LearningPrecision";
 constexpr char kResourcePrefetchPredictorRecallHistogram[] =
     "ResourcePrefetchPredictor.LearningRecall";
+constexpr char kResourcePrefetchPredictorCountHistogram[] =
+    "ResourcePrefetchPredictor.LearningCount";
+constexpr char kResourcePrefetchPredictorPrefetchingDurationHistogram[] =
+    "ResourcePrefetchPredictor.PrefetchingDuration";
 }  // namespace internal
 
 class TestObserver;
@@ -210,6 +214,8 @@ class ResourcePrefetchPredictor
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetPrefetchData);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            TestPrecisionRecallHistograms);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
+                           TestPrefetchingDurationHistogram);
 
   enum InitializationState {
     NOT_INITIALIZED = 0,
@@ -283,7 +289,7 @@ class ResourcePrefetchPredictor
   void OnHistoryAndCacheLoaded();
 
   // Removes data for navigations where the onload never fired. Will cleanup
-  // inflight_navigations_.
+  // inflight_navigations_ and inflight_prefetches_.
   void CleanupAbandonedNavigations(const NavigationID& navigation_id);
 
   // Deletes all URLs from the predictor database, the caches and removes all
@@ -364,6 +370,7 @@ class ResourcePrefetchPredictor
   std::unique_ptr<RedirectDataMap> url_redirect_table_cache_;
   std::unique_ptr<RedirectDataMap> host_redirect_table_cache_;
 
+  std::map<GURL, base::TimeTicks> inflight_prefetches_;
   NavigationMap inflight_navigations_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>

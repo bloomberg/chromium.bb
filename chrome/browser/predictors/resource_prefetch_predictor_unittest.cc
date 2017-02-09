@@ -1601,6 +1601,31 @@ TEST_F(ResourcePrefetchPredictorTest, TestPrecisionRecallHistograms) {
       internal::kResourcePrefetchPredictorRecallHistogram, 50, 1);
   histogram_tester_->ExpectBucketCount(
       internal::kResourcePrefetchPredictorPrecisionHistogram, 33, 1);
+  histogram_tester_->ExpectBucketCount(
+      internal::kResourcePrefetchPredictorCountHistogram, 3, 1);
+}
+
+TEST_F(ResourcePrefetchPredictorTest, TestPrefetchingDurationHistogram) {
+  // Prefetching duration for an url without resources in the database
+  // shouldn't be recorded.
+  const std::string main_frame_url = "http://google.com/?query=cats";
+  predictor_->StartPrefetching(GURL(main_frame_url), PrefetchOrigin::EXTERNAL);
+  predictor_->StopPrefetching(GURL(main_frame_url));
+  histogram_tester_->ExpectTotalCount(
+      internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 0);
+
+  // Fill the database to record a duration.
+  PrefetchData google = CreatePrefetchData("google.com", 1);
+  InitializeResourceData(
+      google.add_resources(), "https://cdn.google.com/script.js",
+      content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1, net::MEDIUM, false, false);
+  predictor_->host_table_cache_->insert(
+      std::make_pair(google.primary_key(), google));
+
+  predictor_->StartPrefetching(GURL(main_frame_url), PrefetchOrigin::EXTERNAL);
+  predictor_->StopPrefetching(GURL(main_frame_url));
+  histogram_tester_->ExpectTotalCount(
+      internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 1);
 }
 
 }  // namespace predictors

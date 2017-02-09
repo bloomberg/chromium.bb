@@ -150,6 +150,8 @@ void ReportPredictionAccuracy(
       precision_percentage);
   UMA_HISTOGRAM_PERCENTAGE(internal::kResourcePrefetchPredictorRecallHistogram,
                            recall_percentage);
+  UMA_HISTOGRAM_COUNTS_100(internal::kResourcePrefetchPredictorCountHistogram,
+                           predicted_urls.size());
 }
 
 }  // namespace
@@ -506,6 +508,12 @@ void ResourcePrefetchPredictor::StartPrefetching(const GURL& url,
                                                  PrefetchOrigin origin) {
   TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StartPrefetching", "url",
                url.spec());
+  // Save prefetch start time to report prefetching duration.
+  if (inflight_prefetches_.find(url) == inflight_prefetches_.end() &&
+      IsUrlPrefetchable(url)) {
+    inflight_prefetches_.insert(std::make_pair(url, base::TimeTicks::Now()));
+  }
+
   if (!prefetch_manager_.get())  // Prefetching not enabled.
     return;
   if (!config_.IsPrefetchingEnabledForOrigin(profile_, origin))
@@ -524,6 +532,13 @@ void ResourcePrefetchPredictor::StartPrefetching(const GURL& url,
 void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
   TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StopPrefetching", "url",
                url.spec());
+  auto it = inflight_prefetches_.find(url);
+  if (it != inflight_prefetches_.end()) {
+    UMA_HISTOGRAM_TIMES(
+        internal::kResourcePrefetchPredictorPrefetchingDurationHistogram,
+        base::TimeTicks::Now() - it->second);
+    inflight_prefetches_.erase(it);
+  }
   if (!prefetch_manager_.get())  // Not enabled.
     return;
 
@@ -768,6 +783,14 @@ void ResourcePrefetchPredictor::CleanupAbandonedNavigations(
     } else {
       ++it;
     }
+  }
+
+  for (auto it = inflight_prefetches_.begin();
+       it != inflight_prefetches_.end();) {
+    if (time_now - it->second > max_navigation_age)
+      it = inflight_prefetches_.erase(it);
+    else
+      ++it;
   }
 }
 
