@@ -1678,46 +1678,6 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
   heap().decommitCallbackStacks();
 }
 
-void ThreadState::collectGarbageForTerminatingThread() {
-  // A thread-specific termination GC must not allow other global GCs to go
-  // ahead while it is running, hence the termination GC does not enter a
-  // safepoint. VisitorScope will not enter also a safepoint scope for
-  // ThreadTerminationGC.
-  GCForbiddenScope gcForbiddenScope(this);
-
-  {
-    std::unique_ptr<Visitor> visitor =
-        Visitor::create(this, VisitorMarkingMode::ThreadLocalMarking);
-
-    NoAllocationScope noAllocationScope(this);
-
-    heap().commitCallbackStacks();
-    preGC();
-
-    // 1. Trace the thread local persistent roots. For thread local GCs we
-    // don't trace the stack (ie. no conservative scanning) since this is
-    // only called during thread shutdown where there should be no objects
-    // on the stack.
-    // We also assume that orphaned pages have no objects reachable from
-    // persistent handles on other threads or CrossThreadPersistents.  The
-    // only cases where this could happen is if a subsequent conservative
-    // global GC finds a "pointer" on the stack or due to a programming
-    // error where an object has a dangling cross-thread pointer to an
-    // object on this heap.
-    visitPersistents(visitor.get());
-
-    // 2. Trace objects reachable from the thread's persistent roots
-    // including ephemerons.
-    heap().processMarkingStack(visitor.get());
-
-    heap().postMarkingProcessing(visitor.get());
-    heap().globalWeakProcessing(visitor.get());
-  }
-
-  postGC(BlinkGC::GCWithSweep);
-  heap().decommitCallbackStacks();
-}
-
 void ThreadState::collectAllGarbage() {
   // We need to run multiple GCs to collect a chain of persistent handles.
   size_t previousLiveObjects = 0;

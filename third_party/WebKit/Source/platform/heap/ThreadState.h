@@ -512,7 +512,6 @@ class PLATFORM_EXPORT ThreadState {
   BlinkGC::StackState stackState() const { return m_stackState; }
 
   void collectGarbage(BlinkGC::StackState, BlinkGC::GCType, BlinkGC::GCReason);
-  void collectGarbageForTerminatingThread();
   void collectAllGarbage();
 
   // Register the pre-finalizer for the |self| object. The class T must have
