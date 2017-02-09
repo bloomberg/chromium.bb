@@ -914,8 +914,7 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
 }
 
 bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
-  GURL url = request_.url();
-  if (!url.SchemeIs(url::kDataScheme))
+  if (!request_.url().protocolIs(url::kDataScheme))
     return false;
 
   // The fast paths for data URL, Start() and HandleDataURL(), don't support
