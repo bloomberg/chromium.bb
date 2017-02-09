@@ -40,7 +40,6 @@
 #include "platform/fonts/opentype/OpenTypeCapsSupport.h"
 #include "platform/fonts/shaping/CaseMappingHarfBuzzBufferFiller.h"
 #include "platform/fonts/shaping/HarfBuzzFace.h"
-#include "platform/fonts/shaping/RunSegmenter.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/Compiler.h"
@@ -55,6 +54,17 @@
 
 namespace blink {
 using FeaturesVector = Vector<hb_feature_t, 6>;
+
+enum HolesQueueItemAction { HolesQueueNextFont, HolesQueueRange };
+
+struct HolesQueueItem {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  HolesQueueItemAction m_action;
+  unsigned m_startIndex;
+  unsigned m_numCharacters;
+  HolesQueueItem(HolesQueueItemAction action, unsigned start, unsigned num)
+      : m_action(action), m_startIndex(start), m_numCharacters(num){};
+};
 
 template <typename T>
 class HarfBuzzScopedPtr {
@@ -81,12 +91,8 @@ class HarfBuzzScopedPtr {
   DestroyFunction m_destroy;
 };
 
-HarfBuzzShaper::HarfBuzzShaper(const UChar* text,
-                               unsigned length,
-                               TextDirection direction)
-    : m_normalizedBuffer(text),
-      m_normalizedBufferLength(length),
-      m_textDirection(direction) {}
+HarfBuzzShaper::HarfBuzzShaper(const UChar* text, unsigned length)
+    : m_text(text), m_textLength(length) {}
 
 namespace {
 
@@ -112,7 +118,7 @@ static inline hb_direction_t TextDirectionToHBDirection(
                                     : harfBuzzDirection;
 }
 
-inline bool shapeRange(hb_buffer_t* harfBuzzBuffer,
+inline bool shapeRange(hb_buffer_t* buffer,
                        hb_feature_t* fontFeatures,
                        unsigned fontFeaturesSize,
                        const SimpleFontData* currentFont,
@@ -127,24 +133,25 @@ inline bool shapeRange(hb_buffer_t* harfBuzzBuffer,
     return false;
   }
 
-  hb_buffer_set_language(harfBuzzBuffer, language);
-  hb_buffer_set_script(harfBuzzBuffer, ICUScriptToHBScript(currentRunScript));
-  hb_buffer_set_direction(harfBuzzBuffer, direction);
+  hb_buffer_set_language(buffer, language);
+  hb_buffer_set_script(buffer, ICUScriptToHBScript(currentRunScript));
+  hb_buffer_set_direction(buffer, direction);
 
   hb_font_t* hbFont = face->getScaledFont(std::move(currentFontRangeSet));
-  hb_shape(hbFont, harfBuzzBuffer, fontFeatures, fontFeaturesSize);
+  hb_shape(hbFont, buffer, fontFeatures, fontFeaturesSize);
 
   return true;
 }
 
 }  // namespace
 
-bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
+bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* buffer,
                                          ShapeResult* shapeResult,
                                          bool& fontCycleQueued,
                                          Deque<HolesQueueItem>* holesQueue,
                                          const HolesQueueItem& currentQueueItem,
                                          const Font* font,
+                                         TextDirection textDirection,
                                          const SimpleFontData* currentFont,
                                          UScriptCode currentRunScript,
                                          bool isLastResort) const {
@@ -154,9 +161,9 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
   unsigned previousCluster = 0;
   unsigned currentCluster = 0;
 
-  // Find first notdef glyph in harfBuzzBuffer.
-  unsigned numGlyphs = hb_buffer_get_length(harfBuzzBuffer);
-  hb_glyph_info_t* glyphInfo = hb_buffer_get_glyph_infos(harfBuzzBuffer, 0);
+  // Find first notdef glyph in buffer.
+  unsigned numGlyphs = hb_buffer_get_length(buffer);
+  hb_glyph_info_t* glyphInfo = hb_buffer_get_glyph_infos(buffer, 0);
 
   unsigned lastChangePosition = 0;
 
@@ -212,7 +219,7 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
     unsigned numCharacters = 0;
     unsigned numGlyphsToInsert = 0;
     unsigned startIndex = 0;
-    if (HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(harfBuzzBuffer))) {
+    if (HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(buffer))) {
       startIndex = glyphInfo[lastChangePosition].cluster;
       if (glyphIndex == numGlyphs) {
         numCharacters = currentQueueItem.m_startIndex +
@@ -260,14 +267,13 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
     // choice than adding boxes to the ShapeResult.
     if ((currentClusterResult == NotDef && numCharacters) || isLastResort) {
       hb_direction_t direction = TextDirectionToHBDirection(
-          m_textDirection, font->getFontDescription().orientation(),
-          currentFont);
+          textDirection, font->getFontDescription().orientation(), currentFont);
       // Here we need to specify glyph positions.
       ShapeResult::RunInfo* run = new ShapeResult::RunInfo(
           currentFont, direction, ICUScriptToHBScript(currentRunScript),
           startIndex, numGlyphsToInsert, numCharacters);
       shapeResult->insertRun(WTF::wrapUnique(run), lastChangePosition,
-                             numGlyphsToInsert, harfBuzzBuffer);
+                             numGlyphsToInsert, buffer);
     }
     lastChangePosition = glyphIndex;
   }
@@ -290,23 +296,22 @@ static inline const SimpleFontData* fontDataAdjustedForOrientation(
 }
 
 bool HarfBuzzShaper::collectFallbackHintChars(
-    const Deque<HolesQueueItem>& holesQueue,
+    const Deque<HolesQueueItem>* holesQueue,
     Vector<UChar32>& hint) const {
-  if (!holesQueue.size())
+  DCHECK(holesQueue);
+  if (!holesQueue->size())
     return false;
 
   hint.clear();
 
   size_t numCharsAdded = 0;
-  for (auto it = holesQueue.begin(); it != holesQueue.end(); ++it) {
+  for (auto it = holesQueue->begin(); it != holesQueue->end(); ++it) {
     if (it->m_action == HolesQueueNextFont)
       break;
 
     UChar32 hintChar;
-    RELEASE_ASSERT(it->m_startIndex + it->m_numCharacters <=
-                   m_normalizedBufferLength);
-    UTF16TextIterator iterator(m_normalizedBuffer + it->m_startIndex,
-                               it->m_numCharacters);
+    RELEASE_ASSERT(it->m_startIndex + it->m_numCharacters <= m_textLength);
+    UTF16TextIterator iterator(m_text + it->m_startIndex, it->m_numCharacters);
     while (iterator.consume(hintChar)) {
       hint.push_back(hintChar);
       numCharsAdded++;
@@ -317,13 +322,11 @@ bool HarfBuzzShaper::collectFallbackHintChars(
 }
 
 namespace {
-using HolesQueueItem = HarfBuzzShaper::HolesQueueItem;
-using HolesQueueItemAction = HarfBuzzShaper::HolesQueueItemAction;
 
 void splitUntilNextCaseChange(
     const UChar* normalizedBuffer,
-    Deque<HolesQueueItem>* queue,
-    HolesQueueItem& currentQueueItem,
+    Deque<blink::HolesQueueItem>* queue,
+    blink::HolesQueueItem& currentQueueItem,
     SmallCapsIterator::SmallCapsBehavior& smallCapsBehavior) {
   unsigned numCharactersUntilCaseChange = 0;
   SmallCapsIterator smallCapsIterator(
@@ -332,8 +335,8 @@ void splitUntilNextCaseChange(
   smallCapsIterator.consume(&numCharactersUntilCaseChange, &smallCapsBehavior);
   if (numCharactersUntilCaseChange > 0 &&
       numCharactersUntilCaseChange < currentQueueItem.m_numCharacters) {
-    queue->prepend(HolesQueueItem(
-        HolesQueueItemAction::HolesQueueRange,
+    queue->prepend(blink::HolesQueueItem(
+        blink::HolesQueueItemAction::HolesQueueRange,
         currentQueueItem.m_startIndex + numCharactersUntilCaseChange,
         currentQueueItem.m_numCharacters - numCharactersUntilCaseChange));
     currentQueueItem.m_numCharacters = numCharactersUntilCaseChange;
@@ -546,132 +549,159 @@ CapsFeatureSettingsScopedOverlay::~CapsFeatureSettingsScopedOverlay() {
 
 }  // namespace
 
-PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult(const Font* font) const {
-  RefPtr<ShapeResult> result =
-      ShapeResult::create(font, m_normalizedBufferLength, m_textDirection);
-  HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(),
-                                                hb_buffer_destroy);
-  FeaturesVector fontFeatures;
-  setFontFeatures(font, &fontFeatures);
+void HarfBuzzShaper::shapeSegment(ShapeResult* result,
+                                  Deque<HolesQueueItem>* holesQueue,
+                                  hb_buffer_t* buffer,
+                                  const Font* font,
+                                  TextDirection textDirection,
+                                  FeaturesVector* fontFeatures,
+                                  RunSegmenter::RunSegmenterRange segment,
+                                  unsigned start,
+                                  unsigned end) const {
+  DCHECK(result);
+  DCHECK(holesQueue);
+  DCHECK(buffer);
+
   const FontDescription& fontDescription = font->getFontDescription();
   const hb_language_t language =
       fontDescription.localeOrDefault().harfbuzzLanguage();
-
   bool needsCapsHandling =
       fontDescription.variantCaps() != FontDescription::CapsNormal;
   OpenTypeCapsSupport capsSupport;
+
+  FontOrientation orientation = font->getFontDescription().orientation();
+  RefPtr<FontFallbackIterator> fallbackIterator =
+      font->createFontFallbackIterator(segment.fontFallbackPriority);
+
+  holesQueue->append(HolesQueueItem(HolesQueueNextFont, 0, 0));
+  holesQueue->append(HolesQueueItem(HolesQueueRange, segment.start,
+                                    segment.end - segment.start));
+
+  bool fontCycleQueued = false;
+  Vector<UChar32> fallbackCharsHint;
+  RefPtr<FontDataForRangeSet> currentFontDataForRangeSet;
+  while (holesQueue->size()) {
+    HolesQueueItem currentQueueItem = holesQueue->takeFirst();
+
+    if (currentQueueItem.m_action == HolesQueueNextFont) {
+      // For now, we're building a character list with which we probe
+      // for needed fonts depending on the declared unicode-range of a
+      // segmented CSS font. Alternatively, we can build a fake font
+      // for the shaper and check whether any glyphs were found, or
+      // define a new API on the shaper which will give us coverage
+      // information?
+      if (!collectFallbackHintChars(holesQueue, fallbackCharsHint)) {
+        // Give up shaping since we cannot retrieve a font fallback
+        // font without a hintlist.
+        holesQueue->clear();
+        break;
+      }
+
+      currentFontDataForRangeSet = fallbackIterator->next(fallbackCharsHint);
+      if (!currentFontDataForRangeSet->fontData()) {
+        DCHECK(!holesQueue->size());
+        break;
+      }
+      fontCycleQueued = false;
+      continue;
+    }
+
+    const SimpleFontData* fontData = currentFontDataForRangeSet->fontData();
+    SmallCapsIterator::SmallCapsBehavior smallCapsBehavior =
+        SmallCapsIterator::SmallCapsSameCase;
+    if (needsCapsHandling) {
+      capsSupport = OpenTypeCapsSupport(fontData->platformData().harfBuzzFace(),
+                                        fontDescription.variantCaps(),
+                                        ICUScriptToHBScript(segment.script));
+      if (capsSupport.needsRunCaseSplitting()) {
+        splitUntilNextCaseChange(m_text, holesQueue, currentQueueItem,
+                                 smallCapsBehavior);
+      }
+    }
+
+    DCHECK(currentQueueItem.m_numCharacters);
+    const SimpleFontData* smallcapsAdjustedFont =
+        needsCapsHandling && capsSupport.needsSyntheticFont(smallCapsBehavior)
+            ? fontData->smallCapsFontData(fontDescription).get()
+            : fontData;
+
+    // Compatibility with SimpleFontData approach of keeping a flag for
+    // overriding drawing direction.
+    // TODO: crbug.com/506224 This should go away in favor of storing that
+    // information elsewhere, for example in ShapeResult.
+    const SimpleFontData* directionAndSmallCapsAdjustedFont =
+        fontDataAdjustedForOrientation(smallcapsAdjustedFont, orientation,
+                                       segment.renderOrientation);
+
+    CaseMapIntend caseMapIntend = CaseMapIntend::KeepSameCase;
+    if (needsCapsHandling)
+      caseMapIntend = capsSupport.needsCaseChange(smallCapsBehavior);
+
+    // Clamp the start and end offsets of the queue item to the offsets
+    // representing the shaping window.
+    unsigned shapeStart = std::max(start, currentQueueItem.m_startIndex);
+    unsigned shapeEnd = std::min(
+        end, currentQueueItem.m_startIndex + currentQueueItem.m_numCharacters);
+
+    CaseMappingHarfBuzzBufferFiller(
+        caseMapIntend, fontDescription.localeOrDefault(), buffer, m_text,
+        m_textLength, shapeStart, shapeEnd - shapeStart);
+
+    CapsFeatureSettingsScopedOverlay capsOverlay(
+        fontFeatures, capsSupport.fontFeatureToUse(smallCapsBehavior));
+    hb_direction_t direction = TextDirectionToHBDirection(
+        textDirection, orientation, directionAndSmallCapsAdjustedFont);
+
+    if (!shapeRange(buffer, fontFeatures->isEmpty() ? 0 : fontFeatures->data(),
+                    fontFeatures->size(), directionAndSmallCapsAdjustedFont,
+                    currentFontDataForRangeSet->ranges(), segment.script,
+                    direction, language))
+      DLOG(ERROR) << "Shaping range failed.";
+
+    if (!extractShapeResults(buffer, result, fontCycleQueued, holesQueue,
+                             currentQueueItem, font, textDirection,
+                             directionAndSmallCapsAdjustedFont, segment.script,
+                             !fallbackIterator->hasNext()))
+      DLOG(ERROR) << "Shape result extraction failed.";
+
+    hb_buffer_reset(buffer);
+  }
+}
+
+PassRefPtr<ShapeResult> HarfBuzzShaper::shape(const Font* font,
+                                              TextDirection direction,
+                                              unsigned start,
+                                              unsigned end) const {
+  DCHECK(end >= start);
+  DCHECK(end <= m_textLength);
+
+  unsigned length = end - start;
+  RefPtr<ShapeResult> result = ShapeResult::create(font, length, direction);
+  HarfBuzzScopedPtr<hb_buffer_t> buffer(hb_buffer_create(), hb_buffer_destroy);
+
+  FeaturesVector fontFeatures;
+  setFontFeatures(font, &fontFeatures);
   FontOrientation orientation = font->getFontDescription().orientation();
 
-  RunSegmenter::RunSegmenterRange segmentRange = {
-      0, 0, USCRIPT_INVALID_CODE, OrientationIterator::OrientationInvalid,
-      FontFallbackPriority::Invalid};
-  RunSegmenter runSegmenter(m_normalizedBuffer, m_normalizedBufferLength,
-                            orientation);
+  // Run segmentation needs to operate on the entire string, regardless of the
+  // shaping window (defined by the start and end parameters).
+  RunSegmenter::RunSegmenterRange segmentRange = RunSegmenter::nullRange();
+  RunSegmenter runSegmenter(m_text, m_textLength, orientation);
 
-  Vector<UChar32> fallbackCharsHint;
-
-  // TODO: Check whether this treatAsZerowidthspace from the previous script
-  // segmentation plays a role here, does the new scriptRuniterator handle that
-  // correctly?
   Deque<HolesQueueItem> holesQueue;
   while (runSegmenter.consume(&segmentRange)) {
-    RefPtr<FontFallbackIterator> fallbackIterator =
-        font->createFontFallbackIterator(segmentRange.fontFallbackPriority);
-
-    holesQueue.append(HolesQueueItem(HolesQueueNextFont, 0, 0));
-    holesQueue.append(HolesQueueItem(HolesQueueRange, segmentRange.start,
-                                     segmentRange.end - segmentRange.start));
-
-    RefPtr<FontDataForRangeSet> currentFontDataForRangeSet;
-
-    bool fontCycleQueued = false;
-    while (holesQueue.size()) {
-      HolesQueueItem currentQueueItem = holesQueue.takeFirst();
-
-      if (currentQueueItem.m_action == HolesQueueNextFont) {
-        // For now, we're building a character list with which we probe
-        // for needed fonts depending on the declared unicode-range of a
-        // segmented CSS font. Alternatively, we can build a fake font
-        // for the shaper and check whether any glyphs were found, or
-        // define a new API on the shaper which will give us coverage
-        // information?
-        if (!collectFallbackHintChars(holesQueue, fallbackCharsHint)) {
-          // Give up shaping since we cannot retrieve a font fallback
-          // font without a hintlist.
-          holesQueue.clear();
-          break;
-        }
-
-        currentFontDataForRangeSet = fallbackIterator->next(fallbackCharsHint);
-        if (!currentFontDataForRangeSet->fontData()) {
-          DCHECK(!holesQueue.size());
-          break;
-        }
-        fontCycleQueued = false;
-        continue;
-      }
-
-      const SimpleFontData* fontData = currentFontDataForRangeSet->fontData();
-      SmallCapsIterator::SmallCapsBehavior smallCapsBehavior =
-          SmallCapsIterator::SmallCapsSameCase;
-      if (needsCapsHandling) {
-        capsSupport =
-            OpenTypeCapsSupport(fontData->platformData().harfBuzzFace(),
-                                fontDescription.variantCaps(),
-                                ICUScriptToHBScript(segmentRange.script));
-        if (capsSupport.needsRunCaseSplitting()) {
-          splitUntilNextCaseChange(m_normalizedBuffer, &holesQueue,
-                                   currentQueueItem, smallCapsBehavior);
-        }
-      }
-
-      ASSERT(currentQueueItem.m_numCharacters);
-
-      const SimpleFontData* smallcapsAdjustedFont =
-          needsCapsHandling && capsSupport.needsSyntheticFont(smallCapsBehavior)
-              ? fontData->smallCapsFontData(fontDescription).get()
-              : fontData;
-
-      // Compatibility with SimpleFontData approach of keeping a flag for
-      // overriding drawing direction.
-      // TODO: crbug.com/506224 This should go away in favor of storing that
-      // information elsewhere, for example in ShapeResult.
-      const SimpleFontData* directionAndSmallCapsAdjustedFont =
-          fontDataAdjustedForOrientation(smallcapsAdjustedFont, orientation,
-                                         segmentRange.renderOrientation);
-
-      CaseMapIntend caseMapIntend = CaseMapIntend::KeepSameCase;
-      if (needsCapsHandling)
-        caseMapIntend = capsSupport.needsCaseChange(smallCapsBehavior);
-
-      CaseMappingHarfBuzzBufferFiller(
-          caseMapIntend, fontDescription.localeOrDefault(),
-          harfBuzzBuffer.get(), m_normalizedBuffer, m_normalizedBufferLength,
-          currentQueueItem.m_startIndex, currentQueueItem.m_numCharacters);
-
-      CapsFeatureSettingsScopedOverlay capsOverlay(
-          &fontFeatures, capsSupport.fontFeatureToUse(smallCapsBehavior));
-
-      hb_direction_t direction = TextDirectionToHBDirection(
-          m_textDirection, orientation, directionAndSmallCapsAdjustedFont);
-
-      if (!shapeRange(harfBuzzBuffer.get(),
-                      fontFeatures.isEmpty() ? 0 : fontFeatures.data(),
-                      fontFeatures.size(), directionAndSmallCapsAdjustedFont,
-                      currentFontDataForRangeSet->ranges(), segmentRange.script,
-                      direction, language))
-        DLOG(ERROR) << "Shaping range failed.";
-
-      if (!extractShapeResults(
-              harfBuzzBuffer.get(), result.get(), fontCycleQueued, &holesQueue,
-              currentQueueItem, font, directionAndSmallCapsAdjustedFont,
-              segmentRange.script, !fallbackIterator->hasNext()))
-        DLOG(ERROR) << "Shape result extraction failed.";
-
-      hb_buffer_reset(harfBuzzBuffer.get());
+    // Only shape segments overlapping with the  range indicated by start and
+    // end. Not only those strictly within.
+    if (start < segmentRange.end && end > segmentRange.start) {
+      shapeSegment(result.get(), &holesQueue, buffer.get(), font, direction,
+                   &fontFeatures, segmentRange, start, end);
     }
   }
   return result.release();
 }
 
+PassRefPtr<ShapeResult> HarfBuzzShaper::shape(const Font* font,
+                                              TextDirection direction) const {
+  return shape(font, direction, 0, m_textLength);
+}
 }  // namespace blink

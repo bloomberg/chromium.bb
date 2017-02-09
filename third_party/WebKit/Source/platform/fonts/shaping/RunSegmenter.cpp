@@ -18,9 +18,7 @@ RunSegmenter::RunSegmenter(const UChar* buffer,
                            unsigned bufferSize,
                            FontOrientation runOrientation)
     : m_bufferSize(bufferSize),
-      m_candidateRange({0, 0, USCRIPT_INVALID_CODE,
-                        OrientationIterator::OrientationKeep,
-                        FontFallbackPriority::Text}),
+      m_candidateRange(nullRange()),
       m_scriptRunIterator(
           WTF::makeUnique<ScriptRunIterator>(buffer, bufferSize)),
       m_orientationIterator(

@@ -43,8 +43,8 @@ static inline String to16Bit(const char* text, unsigned length) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
   String latinCommon = to16Bit("ABC DEF.", 8);
-  HarfBuzzShaper shaper(latinCommon.characters16(), 8, TextDirection::kLtr);
-  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
+  HarfBuzzShaper shaper(latinCommon.characters16(), 8);
+  RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
   ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
@@ -56,8 +56,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLeadingCommon) {
   String leadingCommon = to16Bit("... test", 8);
-  HarfBuzzShaper shaper(leadingCommon.characters16(), 8, TextDirection::kLtr);
-  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
+  HarfBuzzShaper shaper(leadingCommon.characters16(), 8);
+  RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
   ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
@@ -81,8 +81,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
       {"Not-defined Variants", {0x41, 0xDB40, 0xDDEF}, 3, HB_SCRIPT_LATIN},
   };
   for (auto& test : testlist) {
-    HarfBuzzShaper shaper(test.string, test.length, TextDirection::kLtr);
-    RefPtr<ShapeResult> result = shaper.shapeResult(&font);
+    HarfBuzzShaper shaper(test.string, test.length);
+    RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
     EXPECT_EQ(1u, testInfo(result)->numberOfRunsForTesting()) << test.name;
     ASSERT_TRUE(
@@ -109,9 +109,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon) {
   UChar devanagariCommonString[] = {0x915, 0x94d, 0x930, 0x28, 0x20, 0x29};
   String devanagariCommonLatin(devanagariCommonString, 6);
-  HarfBuzzShaper shaper(devanagariCommonLatin.characters16(), 6,
-                        TextDirection::kLtr);
-  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
+  HarfBuzzShaper shaper(devanagariCommonLatin.characters16(), 6);
+  RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
   ASSERT_EQ(2u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
@@ -130,8 +129,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon) {
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon) {
   UChar devanagariCommonLatinString[] = {0x915, 0x94d, 0x930, 0x20,
                                          0x61,  0x62,  0x2E};
-  HarfBuzzShaper shaper(devanagariCommonLatinString, 7, TextDirection::kLtr);
-  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
+  HarfBuzzShaper shaper(devanagariCommonLatinString, 7);
+  RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
   ASSERT_EQ(3u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
@@ -155,8 +154,8 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin) {
   UChar mixedString[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
-  HarfBuzzShaper shaper(mixedString, 6, TextDirection::kLtr);
-  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
+  HarfBuzzShaper shaper(mixedString, 6);
+  RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
 
   ASSERT_EQ(4u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
@@ -186,20 +185,20 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatinTwice) {
   UChar mixedString[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
-  HarfBuzzShaper shaper(mixedString, 6, TextDirection::kLtr);
-  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
+  HarfBuzzShaper shaper(mixedString, 6);
+  RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kLtr);
   ASSERT_EQ(4u, testInfo(result)->numberOfRunsForTesting());
 
   // Shape again on the same shape object and check the number of runs.
   // Should be equal if no state was retained between shape calls.
-  RefPtr<ShapeResult> result2 = shaper.shapeResult(&font);
+  RefPtr<ShapeResult> result2 = shaper.shape(&font, TextDirection::kLtr);
   ASSERT_EQ(4u, testInfo(result2)->numberOfRunsForTesting());
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic) {
   UChar arabicString[] = {0x628, 0x64A, 0x629};
-  HarfBuzzShaper shaper(arabicString, 3, TextDirection::kRtl);
-  RefPtr<ShapeResult> result = shaper.shapeResult(&font);
+  HarfBuzzShaper shaper(arabicString, 3);
+  RefPtr<ShapeResult> result = shaper.shape(&font, TextDirection::kRtl);
 
   ASSERT_EQ(1u, testInfo(result)->numberOfRunsForTesting());
   ASSERT_TRUE(
@@ -207,6 +206,63 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic) {
   EXPECT_EQ(0u, startIndex);
   EXPECT_EQ(3u, numGlyphs);
   EXPECT_EQ(HB_SCRIPT_ARABIC, script);
+}
+
+// This is a simplified test and doesn't accuratly reflect how the shape range
+// is to be used. If you instead of the string you imagine the following HTML:
+// <div>Hello <span>World</span>!</div>
+// It better reflects the intended use where the range given to each shape call
+// corresponds to the text content of a TextNode.
+TEST_F(HarfBuzzShaperTest, ShapeLatinSegment) {
+  String string = to16Bit("Hello World!", 12);
+  TextDirection direction = TextDirection::kLtr;
+
+  HarfBuzzShaper shaper(string.characters16(), 12);
+  RefPtr<ShapeResult> combined = shaper.shape(&font, direction);
+  RefPtr<ShapeResult> first = shaper.shape(&font, direction, 0, 6);
+  RefPtr<ShapeResult> second = shaper.shape(&font, direction, 6, 11);
+  RefPtr<ShapeResult> third = shaper.shape(&font, direction, 11, 12);
+
+  HarfBuzzShaper shaper2(string.characters16(), 6);
+  RefPtr<ShapeResult> firstReference = shaper2.shape(&font, direction);
+
+  HarfBuzzShaper shaper3(string.characters16() + 6, 5);
+  RefPtr<ShapeResult> secondReference = shaper3.shape(&font, direction);
+
+  HarfBuzzShaper shaper4(string.characters16() + 11, 1);
+  RefPtr<ShapeResult> thirdReference = shaper4.shape(&font, direction);
+
+  // Width of each segment should be the same when shaped using start and end
+  // offset as it is when shaping the three segments using separate shaper
+  // instances.
+  // A full pixel is needed for tolerance to account for kerning on some
+  // platforms.
+  ASSERT_NEAR(firstReference->width(), first->width(), 1);
+  ASSERT_NEAR(secondReference->width(), second->width(), 1);
+  ASSERT_NEAR(thirdReference->width(), third->width(), 1);
+
+  // Width of shape results for the entire string should match the combined
+  // shape results from the three segments.
+  float totalWidth = first->width() + second->width() + third->width();
+  ASSERT_NEAR(combined->width(), totalWidth, 1);
+}
+
+// Represents the case where a part of a cluster has a different color.
+// <div>0x647<span style="color: red;">0x64A</span></div>
+// This test requires context-aware shaping which hasn't been implemented yet.
+// See crbug.com/689155
+TEST_F(HarfBuzzShaperTest, DISABLED_ShapeArabicWithContext) {
+  UChar arabicString[] = {0x647, 0x64A};
+  HarfBuzzShaper shaper(arabicString, 2);
+
+  RefPtr<ShapeResult> combined = shaper.shape(&font, TextDirection::kRtl);
+
+  RefPtr<ShapeResult> first = shaper.shape(&font, TextDirection::kRtl, 0, 1);
+  RefPtr<ShapeResult> second = shaper.shape(&font, TextDirection::kRtl, 1, 2);
+
+  // Combined width should be the same when shaping the two characters
+  // separately as when shaping them combined.
+  ASSERT_NEAR(combined->width(), first->width() + second->width(), 0.1);
 }
 
 }  // namespace blink

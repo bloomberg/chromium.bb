@@ -41,6 +41,11 @@ class PLATFORM_EXPORT RunSegmenter {
 
   bool consume(RunSegmenterRange*);
 
+  static RunSegmenterRange nullRange() {
+    return {0, 0, USCRIPT_INVALID_CODE, OrientationIterator::OrientationKeep,
+            FontFallbackPriority::Text};
+  }
+
  private:
   void consumeOrientationIteratorPastLastSplit();
   void consumeScriptIteratorPastLastSplit();
