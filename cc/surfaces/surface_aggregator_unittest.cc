@@ -474,7 +474,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RootCopyRequest) {
 
   // Ensure copy requests have been removed from root surface.
   const CompositorFrame& original_frame =
-      manager_.GetSurfaceForId(root_surface_id)->GetEligibleFrame();
+      manager_.GetSurfaceForId(root_surface_id)->GetActiveFrame();
   const RenderPassList& original_pass_list = original_frame.render_pass_list;
   ASSERT_EQ(2u, original_pass_list.size());
   DCHECK(original_pass_list[0]->copy_requests.empty());

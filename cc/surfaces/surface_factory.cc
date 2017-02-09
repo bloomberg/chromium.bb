@@ -65,14 +65,9 @@ void SurfaceFactory::SubmitCompositorFrame(
     surface = std::move(current_surface_);
   } else {
     surface = Create(local_surface_id);
-    gfx::Size frame_size;
-    // CompositorFrames may not be populated with a RenderPass in unit tests.
-    if (!frame.render_pass_list.empty())
-      frame_size = frame.render_pass_list.back()->output_rect.size();
-    manager_->SurfaceCreated(SurfaceInfo(
-        surface->surface_id(), frame.metadata.device_scale_factor, frame_size));
   }
   surface->QueueFrame(std::move(frame), callback);
+
   if (!manager_->SurfaceModified(SurfaceId(frame_sink_id_, local_surface_id))) {
     TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
     surface->RunDrawCallbacks();
@@ -120,15 +115,41 @@ void SurfaceFactory::UnrefResources(const ReturnedResourceArray& resources) {
   holder_.UnrefResources(resources);
 }
 
+void SurfaceFactory::OnSurfaceActivated(Surface* surface) {
+  DCHECK(surface->HasActiveFrame());
+  const CompositorFrame& frame = surface->GetActiveFrame();
+  // CompositorFrames might not be populated with a RenderPass in unit tests.
+  gfx::Size frame_size;
+  if (!frame.render_pass_list.empty())
+    frame_size = frame.render_pass_list.back()->output_rect.size();
+
+  // SurfaceCreated only applies for the first Surface activation. Thus,
+  // SurfaceFactory stops observing new activations after the first one.
+  manager_->SurfaceCreated(SurfaceInfo(
+      surface->surface_id(), frame.metadata.device_scale_factor, frame_size));
+  surface->RemoveObserver(this);
+}
+
+void SurfaceFactory::OnSurfaceDependenciesChanged(
+    Surface* pending_surface,
+    const SurfaceDependencies& added_dependencies,
+    const SurfaceDependencies& removed_dependencies) {}
+
+void SurfaceFactory::OnSurfaceDiscarded(Surface* pending_surface) {}
+
 std::unique_ptr<Surface> SurfaceFactory::Create(
     const LocalSurfaceId& local_surface_id) {
   auto surface = base::MakeUnique<Surface>(
       SurfaceId(frame_sink_id_, local_surface_id), weak_factory_.GetWeakPtr());
   manager_->RegisterSurface(surface.get());
+  // Observe a Surface from the time it's created until it's activated for the
+  // first time.
+  surface->AddObserver(this);
   return surface;
 }
 
 void SurfaceFactory::Destroy(std::unique_ptr<Surface> surface) {
+  surface->RemoveObserver(this);
   if (manager_)
     manager_->Destroy(std::move(surface));
 }

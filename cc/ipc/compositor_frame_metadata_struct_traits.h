@@ -106,6 +106,11 @@ struct StructTraits<cc::mojom::CompositorFrameMetadataDataView,
     return metadata.referenced_surfaces;
   }
 
+  static bool can_activate_before_dependencies(
+      const cc::CompositorFrameMetadata& metadata) {
+    return metadata.can_activate_before_dependencies;
+  }
+
   static bool Read(cc::mojom::CompositorFrameMetadataDataView data,
                    cc::CompositorFrameMetadata* out);
 };

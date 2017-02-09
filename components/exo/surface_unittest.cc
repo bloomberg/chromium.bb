@@ -98,7 +98,7 @@ const cc::CompositorFrame& GetFrameFromSurface(Surface* surface) {
   cc::SurfaceManager* surface_manager =
       aura::Env::GetInstance()->context_factory_private()->GetSurfaceManager();
   const cc::CompositorFrame& frame =
-      surface_manager->GetSurfaceForId(surface_id)->GetEligibleFrame();
+      surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
   return frame;
 }
 

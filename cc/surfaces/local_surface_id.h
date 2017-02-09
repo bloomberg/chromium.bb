@@ -53,6 +53,7 @@ class LocalSurfaceId {
   }
 
   size_t hash() const {
+    DCHECK(is_valid()) << ToString();
     return base::HashInts(
         local_id_, static_cast<uint64_t>(base::UnguessableTokenHash()(nonce_)));
   }

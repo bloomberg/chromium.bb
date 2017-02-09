@@ -151,7 +151,7 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceObserver {
   void RefCurrentFrameResources() {
     Surface* surface = manager_.GetSurfaceForId(
         SurfaceId(factory_->frame_sink_id(), local_surface_id_));
-    factory_->RefResources(surface->GetEligibleFrame().resource_list);
+    factory_->RefResources(surface->GetActiveFrame().resource_list);
   }
 
  protected:

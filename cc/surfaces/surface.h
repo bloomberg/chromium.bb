@@ -20,6 +20,7 @@
 #include "base/optional.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/pending_frame_observer.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_sequence.h"
@@ -54,14 +55,30 @@ class CC_SURFACES_EXPORT Surface {
   void QueueFrame(CompositorFrame frame, const DrawCallback& draw_callback);
   void EvictFrame();
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
+
+  // Notifies the Surface that a blocking SurfaceId now has an active frame.
+  void NotifySurfaceIdAvailable(const SurfaceId& surface_id);
+
+  void AddObserver(PendingFrameObserver* observer);
+  void RemoveObserver(PendingFrameObserver* observer);
+
+  // Called if a deadline has been hit and this surface is not yet active but
+  // it's marked as respecting deadlines.
+  void ActivatePendingFrameForDeadline();
+
   // Adds each CopyOutputRequest in the current frame to copy_requests. The
   // caller takes ownership of them. |copy_requests| is keyed by RenderPass ids.
   void TakeCopyOutputRequests(
       std::multimap<int, std::unique_ptr<CopyOutputRequest>>* copy_requests);
 
   // Returns the most recent frame that is eligible to be rendered.
-  // You must check whether HasFrame() returns true before calling this method.
-  const CompositorFrame& GetEligibleFrame() const;
+  // You must check whether HasActiveFrame() returns true before calling this
+  // method.
+  const CompositorFrame& GetActiveFrame() const;
+
+  // Returns the currently pending frame. You must check where HasPendingFrame()
+  // returns true before calling this method.
+  const CompositorFrame& GetPendingFrame();
 
   // Returns a number that increments by 1 every time a new frame is enqueued.
   int frame_index() const { return frame_index_; }
@@ -88,12 +105,20 @@ class CC_SURFACES_EXPORT Surface {
     return referenced_surfaces_;
   }
 
-  bool HasFrame() const { return current_frame_.has_value(); }
+  bool HasActiveFrame() const { return active_frame_.has_value(); }
+  bool HasPendingFrame() const { return pending_frame_.has_value(); }
 
   bool destroyed() const { return destroyed_; }
   void set_destroyed(bool destroyed) { destroyed_ = destroyed; }
 
  private:
+  void ActivatePendingFrame();
+  // Called when all of the surface's dependencies have been resolved.
+  void ActivateFrame(CompositorFrame frame);
+  void UpdateBlockingSurfaces(
+      const base::Optional<CompositorFrame>& previous_pending_frame,
+      const CompositorFrame& current_frame);
+
   void UnrefFrameResources(const CompositorFrame& frame_data);
   void ClearCopyRequests();
 
@@ -101,7 +126,8 @@ class CC_SURFACES_EXPORT Surface {
   SurfaceId previous_frame_surface_id_;
   base::WeakPtr<SurfaceFactory> factory_;
   // TODO(jamesr): Support multiple frames in flight.
-  base::Optional<CompositorFrame> current_frame_;
+  base::Optional<CompositorFrame> pending_frame_;
+  base::Optional<CompositorFrame> active_frame_;
   int frame_index_;
   bool destroyed_;
   std::vector<SurfaceSequence> destruction_dependencies_;
@@ -112,10 +138,15 @@ class CC_SURFACES_EXPORT Surface {
 
   std::vector<SurfaceId> referenced_surfaces_;
 
+  SurfaceDependencies blocking_surfaces_;
+  base::ObserverList<PendingFrameObserver, true> observers_;
+
   DrawCallback draw_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };
+
+using PendingSurfaceSet = base::flat_set<Surface*>;
 
 }  // namespace cc
 

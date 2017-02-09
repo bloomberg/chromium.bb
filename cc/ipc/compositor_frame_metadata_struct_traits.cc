@@ -38,6 +38,8 @@ bool StructTraits<cc::mojom::CompositorFrameMetadataDataView,
   out->bottom_controls_shown_ratio = data.bottom_controls_shown_ratio();
 
   out->root_background_color = data.root_background_color();
+  out->can_activate_before_dependencies =
+      data.can_activate_before_dependencies();
   return data.ReadSelection(&out->selection) &&
          data.ReadLatencyInfo(&out->latency_info) &&
          data.ReadReferencedSurfaces(&out->referenced_surfaces);

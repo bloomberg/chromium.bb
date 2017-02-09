@@ -219,7 +219,7 @@ void Display::InitializeRenderer() {
 
 void Display::UpdateRootSurfaceResourcesLocked() {
   Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
-  bool root_surface_resources_locked = !surface || !surface->HasFrame();
+  bool root_surface_resources_locked = !surface || !surface->HasActiveFrame();
   if (scheduler_)
     scheduler_->SetRootSurfaceResourcesLocked(root_surface_resources_locked);
 }
@@ -374,8 +374,8 @@ void Display::OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) {
       aggregator_->previous_contained_surfaces().count(surface_id)) {
     Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
     if (surface) {
-      if (!surface->HasFrame() ||
-          surface->GetEligibleFrame().resource_list.empty()) {
+      if (!surface->HasActiveFrame() ||
+          surface->GetActiveFrame().resource_list.empty()) {
         aggregator_->ReleaseResources(surface_id);
       }
     }

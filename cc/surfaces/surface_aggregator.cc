@@ -168,9 +168,9 @@ void SurfaceAggregator::HandleSurfaceQuad(
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   if (!surface)
     return;
-  if (!surface->HasFrame())
+  if (!surface->HasActiveFrame())
     return;
-  const CompositorFrame& frame = surface->GetEligibleFrame();
+  const CompositorFrame& frame = surface->GetActiveFrame();
 
   // A map keyed by RenderPass id.
   std::multimap<int, std::unique_ptr<CopyOutputRequest>> copy_requests;
@@ -536,9 +536,9 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
     return gfx::Rect();
   }
   contained_surfaces_[surface_id] = surface->frame_index();
-  if (!surface->HasFrame())
+  if (!surface->HasActiveFrame())
     return gfx::Rect();
-  const CompositorFrame& frame = surface->GetEligibleFrame();
+  const CompositorFrame& frame = surface->GetActiveFrame();
   int child_id = 0;
   // TODO(jbauman): hack for unit tests that don't set up rp
   if (provider_) {
@@ -719,9 +719,9 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
     Surface* surface = manager_->GetSurfaceForId(surface_id);
     if (!surface)
       continue;
-    if (!surface->HasFrame())
+    if (!surface->HasActiveFrame())
       continue;
-    const CompositorFrame& frame = surface->GetEligibleFrame();
+    const CompositorFrame& frame = surface->GetActiveFrame();
     bool surface_has_copy_requests = false;
     for (const auto& render_pass : frame.render_pass_list) {
       surface_has_copy_requests |= !render_pass->copy_requests.empty();
@@ -769,10 +769,10 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   DCHECK(surface);
   contained_surfaces_[surface_id] = surface->frame_index();
 
-  if (!surface->HasFrame())
+  if (!surface->HasActiveFrame())
     return CompositorFrame();
 
-  const CompositorFrame& root_surface_frame = surface->GetEligibleFrame();
+  const CompositorFrame& root_surface_frame = surface->GetActiveFrame();
   TRACE_EVENT0("cc", "SurfaceAggregator::Aggregate");
 
   CompositorFrame frame;

@@ -80,6 +80,16 @@ std::string SurfaceManager::SurfaceReferencesToString() {
 }
 #endif
 
+void SurfaceManager::SetDependencyTracker(
+    std::unique_ptr<SurfaceDependencyTracker> dependency_tracker) {
+  dependency_tracker_ = std::move(dependency_tracker);
+}
+
+void SurfaceManager::RequestSurfaceResolution(Surface* pending_surface) {
+  if (dependency_tracker_)
+    dependency_tracker_->RequestSurfaceResolution(pending_surface);
+}
+
 void SurfaceManager::RegisterSurface(Surface* surface) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(surface);
@@ -597,10 +607,19 @@ void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
     *str << surface->surface_id().ToString();
     *str << (surface->destroyed() ? " destroyed " : " live ");
 
-    if (surface->HasFrame()) {
+    if (surface->HasPendingFrame()) {
       // This provides the surface size from the root render pass.
-      const CompositorFrame& frame = surface->GetEligibleFrame();
-      *str << frame.render_pass_list.back()->output_rect.size().ToString();
+      const CompositorFrame& frame = surface->GetPendingFrame();
+      *str << "pending "
+           << frame.render_pass_list.back()->output_rect.size().ToString()
+           << " ";
+    }
+
+    if (surface->HasActiveFrame()) {
+      // This provides the surface size from the root render pass.
+      const CompositorFrame& frame = surface->GetActiveFrame();
+      *str << "active "
+           << frame.render_pass_list.back()->output_rect.size().ToString();
     }
   } else {
     *str << surface_id;
