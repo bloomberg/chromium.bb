@@ -887,6 +887,110 @@ int av1_get_pred_context_comp_ref_p2(const AV1_COMMON *cm,
   return pred_context;
 }
 
+#if CONFIG_ALTREF2
+
+// Obtain contexts to signal a reference frame be either BWDREF/ALTREF2, or
+// ALTREF.
+int av1_get_pred_context_brfarf2_or_arf(const MACROBLOCKD *xd) {
+  const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
+  const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
+  const int above_in_image = xd->up_available;
+  const int left_in_image = xd->left_available;
+
+  // Counts of BWDREF, ALTREF2, or ALTREF frames (B, A2, or A)
+  int bwdref_counts[ALTREF_FRAME - BWDREF_FRAME + 1] = { 0 };
+
+  if (above_in_image && is_inter_block(above_mbmi)) {
+    if (above_mbmi->ref_frame[0] >= BWDREF_FRAME)
+      ++bwdref_counts[above_mbmi->ref_frame[0] - BWDREF_FRAME];
+    if (has_second_ref(above_mbmi)) {
+      if (above_mbmi->ref_frame[1] >= BWDREF_FRAME)
+        ++bwdref_counts[above_mbmi->ref_frame[1] - BWDREF_FRAME];
+    }
+  }
+
+  if (left_in_image && is_inter_block(left_mbmi)) {
+    if (left_mbmi->ref_frame[0] >= BWDREF_FRAME)
+      ++bwdref_counts[left_mbmi->ref_frame[0] - BWDREF_FRAME];
+    if (has_second_ref(left_mbmi)) {
+      if (left_mbmi->ref_frame[1] >= BWDREF_FRAME)
+        ++bwdref_counts[left_mbmi->ref_frame[1] - BWDREF_FRAME];
+    }
+  }
+
+  const int brfarf2_count = bwdref_counts[BWDREF_FRAME - BWDREF_FRAME] +
+                            bwdref_counts[ALTREF2_FRAME - BWDREF_FRAME];
+  const int arf_count = bwdref_counts[ALTREF_FRAME - BWDREF_FRAME];
+  const int pred_context =
+      (brfarf2_count == arf_count) ? 1 : ((brfarf2_count < arf_count) ? 0 : 2);
+
+  assert(pred_context >= 0 && pred_context < REF_CONTEXTS);
+  return pred_context;
+}
+
+// Obtain contexts to signal a reference frame be either BWDREF or ALTREF2.
+int av1_get_pred_context_brf_or_arf2(const MACROBLOCKD *xd) {
+  const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
+  const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
+  const int above_in_image = xd->up_available;
+  const int left_in_image = xd->left_available;
+
+  // Count of BWDREF frames (B)
+  int brf_count = 0;
+  // Count of ALTREF2 frames (A2)
+  int arf2_count = 0;
+
+  if (above_in_image && is_inter_block(above_mbmi)) {
+    if (above_mbmi->ref_frame[0] == BWDREF_FRAME)
+      ++brf_count;
+    else if (above_mbmi->ref_frame[0] == ALTREF2_FRAME)
+      ++arf2_count;
+    if (has_second_ref(above_mbmi)) {
+      if (above_mbmi->ref_frame[1] == BWDREF_FRAME)
+        ++brf_count;
+      else if (above_mbmi->ref_frame[1] == ALTREF2_FRAME)
+        ++arf2_count;
+    }
+  }
+
+  if (left_in_image && is_inter_block(left_mbmi)) {
+    if (left_mbmi->ref_frame[0] == BWDREF_FRAME)
+      ++brf_count;
+    else if (left_mbmi->ref_frame[0] == ALTREF2_FRAME)
+      ++arf2_count;
+    if (has_second_ref(left_mbmi)) {
+      if (left_mbmi->ref_frame[1] == BWDREF_FRAME)
+        ++brf_count;
+      else if (left_mbmi->ref_frame[1] == ALTREF2_FRAME)
+        ++arf2_count;
+    }
+  }
+
+  const int pred_context =
+      (brf_count == arf2_count) ? 1 : ((brf_count < arf2_count) ? 0 : 2);
+
+  assert(pred_context >= 0 && pred_context < REF_CONTEXTS);
+  return pred_context;
+}
+
+// Signal the 2nd reference frame for a compound mode be either
+// ALTREF, or ALTREF2/BWDREF.
+int av1_get_pred_context_comp_bwdref_p(const AV1_COMMON *cm,
+                                       const MACROBLOCKD *xd) {
+  (void)cm;
+  return av1_get_pred_context_brfarf2_or_arf(xd);
+}
+
+// Signal the 2nd reference frame for a compound mode be either
+// ALTREF2 or BWDREF.
+int av1_get_pred_context_comp_bwdref_p1(const AV1_COMMON *cm,
+                                        const MACROBLOCKD *xd) {
+  (void)cm;
+  return av1_get_pred_context_brf_or_arf2(xd);
+}
+
+#else                                                  // !CONFIG_ALTREF2
+
 // Returns a context number for the given MB prediction signal
 int av1_get_pred_context_comp_bwdref_p(const AV1_COMMON *cm,
                                        const MACROBLOCKD *xd) {
@@ -1009,8 +1113,9 @@ int av1_get_pred_context_comp_bwdref_p(const AV1_COMMON *cm,
 
   return pred_context;
 }
+#endif  // CONFIG_ALTREF2
 
-#else  // CONFIG_EXT_REFS
+#else  // !CONFIG_EXT_REFS
 
 // Returns a context number for the given MB prediction signal
 int av1_get_pred_context_comp_ref_p(const AV1_COMMON *cm,
@@ -1099,10 +1204,8 @@ int av1_get_pred_context_comp_ref_p(const AV1_COMMON *cm,
 
 #if CONFIG_EXT_REFS
 
-// For the bit to signal whether the single reference is a ALTREF_FRAME
-// or a BWDREF_FRAME.
-//
-// NOTE(zoeliu): The probability of ref_frame[0] is ALTREF/BWDREF.
+// For the bit to signal whether the single reference is a forward reference
+// frame or a backward reference frame.
 int av1_get_pred_context_single_ref_p1(const MACROBLOCKD *xd) {
   int pred_context;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
@@ -1164,11 +1267,12 @@ int av1_get_pred_context_single_ref_p1(const MACROBLOCKD *xd) {
 }
 
 // For the bit to signal whether the single reference is ALTREF_FRAME or
-// BWDREF_FRAME, knowing that it shall be either of these 2 choices.
-//
-// NOTE(zoeliu): The probability of ref_frame[0] is ALTREF_FRAME, conditioning
-// on it is either ALTREF_FRAME/BWDREF_FRAME.
+// non-ALTREF backward reference frame, knowing that it shall be either of
+// these 2 choices.
 int av1_get_pred_context_single_ref_p2(const MACROBLOCKD *xd) {
+#if CONFIG_ALTREF2
+  return av1_get_pred_context_brfarf2_or_arf(xd);
+#else   // !CONFIG_ALTREF2
   int pred_context;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
@@ -1255,13 +1359,11 @@ int av1_get_pred_context_single_ref_p2(const MACROBLOCKD *xd) {
 
   assert(pred_context >= 0 && pred_context < REF_CONTEXTS);
   return pred_context;
+#endif  // CONFIG_ALTREF2
 }
 
 // For the bit to signal whether the single reference is LAST3/GOLDEN or
 // LAST2/LAST, knowing that it shall be either of these 2 choices.
-//
-// NOTE(zoeliu): The probability of ref_frame[0] is LAST3/GOLDEN, conditioning
-// on it is either LAST3/GOLDEN/LAST2/LAST.
 int av1_get_pred_context_single_ref_p3(const MACROBLOCKD *xd) {
   int pred_context;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
@@ -1538,7 +1640,15 @@ int av1_get_pred_context_single_ref_p5(const MACROBLOCKD *xd) {
   return pred_context;
 }
 
-#else  // CONFIG_EXT_REFS
+#if CONFIG_ALTREF2
+// For the bit to signal whether the single reference is ALTREF2_FRAME or
+// BWDREF_FRAME, knowing that it shall be either of these 2 choices.
+int av1_get_pred_context_single_ref_p6(const MACROBLOCKD *xd) {
+  return av1_get_pred_context_brf_or_arf2(xd);
+}
+#endif  // CONFIG_ALTREF2
+
+#else  // !CONFIG_EXT_REFS
 
 int av1_get_pred_context_single_ref_p1(const MACROBLOCKD *xd) {
   int pred_context;

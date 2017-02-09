@@ -9850,7 +9850,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       cm->base_qindex, cm->y_dc_delta_q, cm->bit_depth);
   const int *const intra_mode_cost = cpi->mbmode_cost[size_group_lookup[bsize]];
   int best_skip2 = 0;
-  uint8_t ref_frame_skip_mask[2] = { 0 };
+  uint16_t ref_frame_skip_mask[2] = { 0 };
   uint32_t mode_skip_mask[TOTAL_REFS_PER_FRAME] = { 0 };
 #if CONFIG_EXT_INTER && CONFIG_INTERINTRA
   MV_REFERENCE_FRAME best_single_inter_ref = LAST_FRAME;
