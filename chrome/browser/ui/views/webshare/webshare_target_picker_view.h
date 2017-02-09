@@ -22,6 +22,10 @@ namespace views {
 class TableView;
 }
 
+namespace {
+class WebShareTargetPickerViewTest;
+}
+
 // Dialog that presents the user with a list of share target apps. Allows the
 // user to pick one target to be opened and have data passed to it.
 //
@@ -59,6 +63,9 @@ class WebShareTargetPickerView : public views::DialogDelegateView,
   void OnDoubleClick() override;
 
  private:
+  // For access to |table_|.
+  friend class WebShareTargetPickerViewTest;
+
   views::TableView* table_ = nullptr;
 
   const std::vector<std::pair<base::string16, GURL>> targets_;
