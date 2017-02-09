@@ -65,14 +65,14 @@ function PiexLoader() {
   this.naclModule_ = document.createElement('embed');
 
   /**
-   * @private {!Promise}
+   * @private {!Promise<boolean>}
    * @const
    */
   this.naclPromise_ = new Promise(function(fulfill) {
     chrome.fileManagerPrivate.isPiexLoaderEnabled(fulfill);
   }).then(function(enabled) {
     if (!enabled)
-      return Promise.reject('PiexLoader is not enabled for chromium build.');
+      return false;
     return new Promise(function(fulfill, reject) {
       var embed = this.naclModule_;
       embed.setAttribute('type', 'application/x-pnacl');
@@ -88,7 +88,8 @@ function PiexLoader() {
       // 'load' event fires.
       var listenerContainer = document.createElement('div');
       listenerContainer.appendChild(embed);
-      listenerContainer.addEventListener('load', fulfill, true);
+      listenerContainer.addEventListener(
+          'load', fulfill.bind(null, true), true);
       listenerContainer.addEventListener(
           'message', this.onMessage_.bind(this), true);
       listenerContainer.addEventListener('error', function() {
@@ -100,7 +101,10 @@ function PiexLoader() {
       listenerContainer.style.height = '0px';
       document.body.appendChild(listenerContainer);
     }.bind(this));
-  }.bind(this));
+  }.bind(this)).catch(function (error) {
+    console.error(error);
+    return false;
+  });
 
   /**
    * @private {!Object<number, PiexRequestCallbacks>}
@@ -135,7 +139,9 @@ PiexLoader.prototype.onMessage_ = function(event) {
  * @return {!Promise<!PiexLoaderResponse>}
  */
 PiexLoader.prototype.load = function(url) {
-  return this.naclPromise_.then(function() {
+  return this.naclPromise_.then(function(loaded) {
+    if (!loaded)
+      return Promise.reject('Piex is not loaded');
     var message = {
       id: this.requestIdCount_++,
       name: 'loadThumbnail',
@@ -144,6 +150,9 @@ PiexLoader.prototype.load = function(url) {
     this.naclModule_.postMessage(message);
     return new Promise(function(fulfill, reject) {
       this.requests_[message.id] = {fulfill: fulfill, reject: reject};
-    }.bind(this));
+    }.bind(this)).catch(function(error) {
+      console.error('PiexLoaderError: ', error);
+      return Promise.reject(error);
+    });
   }.bind(this));
 };

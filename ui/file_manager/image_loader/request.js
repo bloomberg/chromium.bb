@@ -261,8 +261,8 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
       this.image_.src = url;
       this.request_.orientation = data.orientation;
       this.request_.colorSpace = data.colorSpace;
-    }.bind(this), function(error) {
-      console.error('PiexLoaderError: ', error);
+    }.bind(this), function() {
+      // The error has already been logged in PiexLoader.
       onFailure();
     });
     return;
