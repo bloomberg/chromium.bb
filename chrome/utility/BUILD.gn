@@ -49,6 +49,7 @@ static_library("utility") {
     "//content/public/utility",
     "//courgette:courgette_lib",
     "//extensions/features",
+    "//ipc",
     "//media",
     "//net:net_with_v8",
     "//printing/features",

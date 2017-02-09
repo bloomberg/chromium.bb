@@ -68,6 +68,7 @@ void ChannelProxy::Context::CreateChannel(
       channel_->GetAssociatedInterfaceSupport();
   if (support) {
     associated_group_ = *support->GetAssociatedGroup();
+    thread_safe_channel_ = support->CreateThreadSafeChannel();
 
     base::AutoLock l(pending_filters_lock_);
     for (auto& entry : pending_io_thread_interfaces_)
@@ -398,19 +399,6 @@ void ChannelProxy::Context::Send(Message* message) {
                             base::Passed(base::WrapUnique(message))));
 }
 
-// Called on the IPC::Channel thread
-void ChannelProxy::Context::GetRemoteAssociatedInterface(
-    const std::string& name,
-    mojo::ScopedInterfaceEndpointHandle handle) {
-  if (!channel_)
-    return;
-  Channel::AssociatedInterfaceSupport* associated_interface_support =
-      channel_->GetAssociatedInterfaceSupport();
-  DCHECK(associated_interface_support);
-  associated_interface_support->GetGenericRemoteAssociatedInterface(
-      name, std::move(handle));
-}
-
 //-----------------------------------------------------------------------------
 
 // static
@@ -580,14 +568,14 @@ void ChannelProxy::GetGenericRemoteAssociatedInterface(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
   DCHECK(did_init_);
-  context_->ipc_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Context::GetRemoteAssociatedInterface,
-                            context_, name, base::Passed(&handle)));
+  mojom::GenericInterfaceAssociatedRequest request;
+  request.Bind(std::move(handle));
+  context()->thread_safe_channel().GetAssociatedInterface(name,
+                                                          std::move(request));
 }
 
 void ChannelProxy::ClearIPCTaskRunner() {
   DCHECK(CalledOnValidThread());
-
   context()->ClearIPCTaskRunner();
 }
 

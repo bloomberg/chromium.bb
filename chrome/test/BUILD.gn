@@ -3773,6 +3773,7 @@ test("unit_tests") {
         [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
     deps += [
       "//device/battery:mojo_bindings",
+      "//ipc",
       "//third_party/libaddressinput",
     ]
   }
@@ -4384,7 +4385,10 @@ test("unit_tests") {
       "../utility/cloud_print/pwg_encoder_unittest.cc",
     ]
 
-    deps += [ "//printing:test_support" ]
+    deps += [
+      "//ipc",
+      "//printing:test_support",
+    ]
   }
 
   if (enable_media_router) {

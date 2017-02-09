@@ -233,7 +233,6 @@ target(link_target_type, "child") {
     "//crypto:platform",
     "//gpu/command_buffer/client",
     "//ipc",
-    "//ipc:mojom",
     "//media",
     "//mojo/common",
     "//mojo/edk/system",

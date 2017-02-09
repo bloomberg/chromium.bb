@@ -22,8 +22,10 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
+#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -209,17 +211,22 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   }
 #endif
 
+  // Creates a ThreadSafeAssociatedInterfacePtr for |Interface|. This object
+  // may be used to send messages on the interface from any thread and those
+  // messages will remain ordered with respect to other messages sent on the
+  // same thread over other ThreadSafeAssociatedInterfacePtrs associated with
+  // the same Channel.
   template <typename Interface>
-  using AssociatedInterfaceRetrievedCallback =
-      base::Callback<void(mojo::AssociatedInterfacePtr<Interface>)>;
-  // Creates an AssociatedInterfacePtr to |Interface| on the IO thread and
-  // passes it to |callback|, also invoked on the IO thread.
-  template <typename Interface>
-  void RetrieveAssociatedInterfaceOnIOThread(
-      const AssociatedInterfaceRetrievedCallback<Interface>& callback) {
-    context_->ipc_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&Context::RetrieveAssociatedInterface<Interface>,
-                              context_, callback));
+  void GetThreadSafeRemoteAssociatedInterface(
+      scoped_refptr<mojo::ThreadSafeAssociatedInterfacePtr<Interface>>*
+          out_ptr) {
+    mojo::AssociatedInterfacePtrInfo<Interface> ptr_info;
+    mojo::AssociatedInterfaceRequest<Interface> request;
+    GetAssociatedGroup()->CreateAssociatedInterface(
+        mojo::AssociatedGroup::WILL_PASS_REQUEST, &ptr_info, &request);
+    GetGenericRemoteAssociatedInterface(Interface::Name_, request.PassHandle());
+    *out_ptr = mojo::ThreadSafeAssociatedInterfacePtr<Interface>::Create(
+        std::move(ptr_info), ipc_task_runner());
   }
 
   base::SingleThreadTaskRunner* ipc_task_runner() const {
@@ -250,11 +257,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 
     // Sends |message| from appropriate thread.
     void Send(Message* message);
-
-    // Requests a remote associated interface on the IPC thread.
-    void GetRemoteAssociatedInterface(
-        const std::string& name,
-        mojo::ScopedInterfaceEndpointHandle handle);
 
    protected:
     friend class base::RefCountedThreadSafe<Context>;
@@ -299,14 +301,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     void OnSendMessage(std::unique_ptr<Message> message_ptr);
     void OnAddFilter();
     void OnRemoveFilter(MessageFilter* filter);
-    template <typename Interface>
-    void RetrieveAssociatedInterface(
-        const AssociatedInterfaceRetrievedCallback<Interface>& callback) {
-      mojo::AssociatedInterfacePtr<Interface> interface_ptr;
-      channel_->GetAssociatedInterfaceSupport()->GetRemoteAssociatedInterface(
-          &interface_ptr);
-      callback.Run(std::move(interface_ptr));
-    }
 
     // Methods called on the listener thread.
     void AddFilter(MessageFilter* filter);
@@ -320,6 +314,9 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     void ClearChannel();
 
     mojo::AssociatedGroup* associated_group() { return &associated_group_; }
+    mojom::Channel& thread_safe_channel() {
+      return thread_safe_channel_->proxy();
+    }
 
     void AddGenericAssociatedInterfaceForIOThread(
         const std::string& name,
@@ -359,6 +356,11 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     base::Lock peer_pid_lock_;
 
     mojo::AssociatedGroup associated_group_;
+
+    // A thread-safe mojom::Channel interface we use to make remote interface
+    // requests from the proxy thread.
+    std::unique_ptr<mojo::ThreadSafeForwarder<mojom::Channel>>
+        thread_safe_channel_;
 
     // Holds associated interface binders added by
     // AddGenericAssociatedInterfaceForIOThread until the underlying channel has

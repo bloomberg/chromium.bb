@@ -86,7 +86,6 @@ source_set("browser") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc/host",
     "//ipc",
-    "//ipc:mojom",
     "//media",
     "//media/capture",
     "//media/capture/mojo:image_capture",

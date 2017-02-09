@@ -21,11 +21,13 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_factory.h"
 #include "ipc/ipc_export.h"
 #include "ipc/ipc_message_pipe_reader.h"
 #include "ipc/ipc_mojo_bootstrap.h"
+#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace IPC {
@@ -42,7 +44,6 @@ namespace IPC {
 class IPC_EXPORT ChannelMojo
     : public Channel,
       public Channel::AssociatedInterfaceSupport,
-      public NON_EXPORTED_BASE(MojoBootstrap::Delegate),
       public NON_EXPORTED_BASE(internal::MessagePipeReader::Delegate) {
  public:
   // Creates a ChannelMojo.
@@ -84,10 +85,6 @@ class IPC_EXPORT ChannelMojo
       Message* message,
       base::Optional<std::vector<mojom::SerializedHandlePtr>>* handles);
 
-  // MojoBootstrapDelegate implementation
-  void OnPipesAvailable(mojom::ChannelAssociatedPtr sender,
-                        mojom::ChannelAssociatedRequest receiver) override;
-
   // MessagePipeReader::Delegate
   void OnPeerPidReceived(int32_t peer_pid) override;
   void OnMessageReceived(const Message& message) override;
@@ -103,8 +100,15 @@ class IPC_EXPORT ChannelMojo
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
+  void ForwardMessageFromThreadSafePtr(mojo::Message message);
+  void ForwardMessageWithResponderFromThreadSafePtr(
+      mojo::Message message,
+      std::unique_ptr<mojo::MessageReceiver> responder);
+
   // Channel::AssociatedInterfaceSupport:
   mojo::AssociatedGroup* GetAssociatedGroup() override;
+  std::unique_ptr<mojo::ThreadSafeForwarder<mojom::Channel>>
+  CreateThreadSafeChannel() override;
   void AddGenericAssociatedInterface(
       const std::string& name,
       const GenericAssociatedInterfaceFactory& factory) override;
@@ -113,7 +117,7 @@ class IPC_EXPORT ChannelMojo
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
   // A TaskRunner which runs tasks on the ChannelMojo's owning thread.
-  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   const mojo::MessagePipeHandle pipe_;
   std::unique_ptr<MojoBootstrap> bootstrap_;

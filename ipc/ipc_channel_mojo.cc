@@ -274,25 +274,49 @@ ChannelMojo::ChannelMojo(
     Mode mode,
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
-    : pipe_(handle.get()), listener_(listener), weak_factory_(this) {
-  // Create MojoBootstrap after all members are set as it touches
-  // ChannelMojo from a different thread.
-  bootstrap_ =
-      MojoBootstrap::Create(std::move(handle), mode, this, ipc_task_runner);
+    : task_runner_(ipc_task_runner),
+      pipe_(handle.get()),
+      listener_(listener),
+      weak_factory_(this) {
+  bootstrap_ = MojoBootstrap::Create(std::move(handle), mode, ipc_task_runner);
+}
+
+void ChannelMojo::ForwardMessageFromThreadSafePtr(mojo::Message message) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  if (!message_reader_)
+    return;
+  message_reader_->sender().internal_state()->ForwardMessage(
+      std::move(message));
+}
+
+void ChannelMojo::ForwardMessageWithResponderFromThreadSafePtr(
+    mojo::Message message,
+    std::unique_ptr<mojo::MessageReceiver> responder) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  if (!message_reader_)
+    return;
+  message_reader_->sender().internal_state()->ForwardMessageWithResponder(
+      std::move(message), std::move(responder));
 }
 
 ChannelMojo::~ChannelMojo() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   Close();
 }
 
 bool ChannelMojo::Connect() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   WillConnect();
 
-  DCHECK(!task_runner_);
-  task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  DCHECK(!message_reader_);
+  mojom::ChannelAssociatedPtr sender;
+  mojom::ChannelAssociatedRequest receiver;
+  bootstrap_->Connect(&sender, &receiver);
 
-  bootstrap_->Connect();
+  DCHECK(!message_reader_);
+  sender->SetPeerPid(GetSelfPID());
+  message_reader_.reset(new internal::MessagePipeReader(
+      pipe_, std::move(sender), std::move(receiver), this));
   return true;
 }
 
@@ -319,14 +343,6 @@ void ChannelMojo::Close() {
 
   base::AutoLock lock(associated_interface_lock_);
   associated_interfaces_.clear();
-}
-
-// MojoBootstrap::Delegate implementation
-void ChannelMojo::OnPipesAvailable(mojom::ChannelAssociatedPtr sender,
-                                   mojom::ChannelAssociatedRequest receiver) {
-  sender->SetPeerPid(GetSelfPID());
-  message_reader_.reset(new internal::MessagePipeReader(
-      pipe_, std::move(sender), std::move(receiver), this));
 }
 
 void ChannelMojo::OnPipeError() {
@@ -376,6 +392,15 @@ bool ChannelMojo::Send(Message* message) {
 
 Channel::AssociatedInterfaceSupport*
 ChannelMojo::GetAssociatedInterfaceSupport() { return this; }
+
+std::unique_ptr<mojo::ThreadSafeForwarder<mojom::Channel>>
+ChannelMojo::CreateThreadSafeChannel() {
+  return base::MakeUnique<mojo::ThreadSafeForwarder<mojom::Channel>>(
+      task_runner_, base::Bind(&ChannelMojo::ForwardMessageFromThreadSafePtr,
+                               weak_factory_.GetWeakPtr()),
+      base::Bind(&ChannelMojo::ForwardMessageWithResponderFromThreadSafePtr,
+                 weak_factory_.GetWeakPtr()));
+}
 
 void ChannelMojo::OnPeerPidReceived(int32_t peer_pid) {
   listener_->OnChannelConnected(peer_pid);

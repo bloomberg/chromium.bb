@@ -1055,50 +1055,53 @@ TEST_F(AssociatedInterfaceTest, ThreadSafeAssociatedInterfacePtr) {
 struct ForwarderTestContext {
   IntegerSenderConnectionPtr connection_ptr;
   std::unique_ptr<IntegerSenderConnectionImpl> interface_impl;
+  IntegerSenderAssociatedRequest sender_request;
 };
 
-TEST_F(AssociatedInterfaceTest, BindLaterThreadSafeAssociatedInterfacePtr) {
+TEST_F(AssociatedInterfaceTest,
+       ThreadSafeAssociatedInterfacePtrWithTaskRunner) {
   // Start the thread from where we'll bind the interface pointer.
   base::Thread other_thread("service test thread");
   other_thread.Start();
   const scoped_refptr<base::SingleThreadTaskRunner>& other_thread_task_runner =
       other_thread.message_loop()->task_runner();
-  ForwarderTestContext* context = new ForwarderTestContext();
 
-  base::WaitableEvent echo_called_event(
+  ForwarderTestContext* context = new ForwarderTestContext();
+  IntegerSenderAssociatedPtrInfo sender_info;
+  base::WaitableEvent sender_info_bound_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
+  auto setup = [](base::WaitableEvent* sender_info_bound_event,
+                  IntegerSenderAssociatedPtrInfo* sender_info,
+                  ForwarderTestContext* context) {
+    context->interface_impl = base::MakeUnique<IntegerSenderConnectionImpl>(
+        MakeRequest(&context->connection_ptr));
 
-  // Create a ThreadSafeAssociatedPtr that we'll bind from a different thread.
+    IntegerSenderAssociatedPtr sender;
+    IntegerSenderAssociatedRequest sender_request =
+        MakeRequest(&sender, context->connection_ptr.associated_group());
+    *sender_info = sender.PassInterface();
+
+    context->connection_ptr->GetSender(std::move(sender_request));
+
+    // Unblock the main thread as soon as |sender_info| is set.
+    sender_info_bound_event->Signal();
+  };
+  other_thread_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(setup, &sender_info_bound_event, &sender_info, context));
+  sender_info_bound_event.Wait();
+
+  // Create a ThreadSafeAssociatedPtr that binds on the background thread and is
+  // associated with |connection_ptr| there.
   scoped_refptr<ThreadSafeIntegerSenderAssociatedPtr> thread_safe_ptr =
-      ThreadSafeIntegerSenderAssociatedPtr::CreateUnbound(
-          other_thread_task_runner);
+      ThreadSafeIntegerSenderAssociatedPtr::Create(std::move(sender_info),
+                                                   other_thread_task_runner);
 
-  base::RunLoop bind_run_loop;
-  auto run_method = base::Bind(
-      [](base::WaitableEvent* echo_called_event,
-         const scoped_refptr<ThreadSafeIntegerSenderAssociatedPtr>&
-             thread_safe_ptr,
-          ForwarderTestContext* context) {
-        // Wait for echo to be called on the main thread so the interface method
-        // call happens before the bind.
-        echo_called_event->Wait();
-
-        // We are on the background thread, create the interface ptr.
-        context->interface_impl =
-            base::MakeUnique<IntegerSenderConnectionImpl>(
-                MakeRequest(&(context->connection_ptr)));
-        IntegerSenderAssociatedPtr sender;
-        context->connection_ptr->GetSender(
-            MakeRequest(&sender, context->connection_ptr.associated_group()));
-        thread_safe_ptr->Bind(std::move(sender));
-      },
-      &echo_called_event, thread_safe_ptr, context);
-
-  other_thread_task_runner->PostTask(FROM_HERE, run_method);
-
+  // Issue a call on the thread-safe ptr immediately. Note that this may happen
+  // before the interface is bound on the background thread, and that must be
+  // OK.
   {
-    // Now we can call methods on the interface from the main thread.
     auto echo_callback =
         base::Bind([](const base::Closure& quit_closure, int32_t result) {
           EXPECT_EQ(123, result);
@@ -1107,9 +1110,6 @@ TEST_F(AssociatedInterfaceTest, BindLaterThreadSafeAssociatedInterfacePtr) {
     base::RunLoop run_loop;
     (*thread_safe_ptr)
         ->Echo(123, base::Bind(echo_callback, run_loop.QuitClosure()));
-
-    // Let the bind happen on the background thread.
-    echo_called_event.Signal();
 
     // Block until the method callback is called.
     run_loop.Run();

@@ -31,14 +31,6 @@ namespace IPC {
 // UI thread as Channel::Create() can be.
 class IPC_EXPORT MojoBootstrap {
  public:
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    virtual void OnPipesAvailable(mojom::ChannelAssociatedPtr sender,
-                                  mojom::ChannelAssociatedRequest receiver) = 0;
-  };
-
   virtual ~MojoBootstrap() {}
 
   // Create the MojoBootstrap instance, using |handle| as the message pipe, in
@@ -46,11 +38,11 @@ class IPC_EXPORT MojoBootstrap {
   static std::unique_ptr<MojoBootstrap> Create(
       mojo::ScopedMessagePipeHandle handle,
       Channel::Mode mode,
-      Delegate* delegate,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   // Start the handshake over the underlying message pipe.
-  virtual void Connect() = 0;
+  virtual void Connect(mojom::ChannelAssociatedPtr* sender,
+                       mojom::ChannelAssociatedRequest* receiver) = 0;
 
   // Stop transmitting messages and start queueing them instead.
   virtual void Pause() = 0;

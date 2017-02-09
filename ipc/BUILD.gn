@@ -98,12 +98,12 @@ component("ipc") {
   defines = [ "IPC_IMPLEMENTATION" ]
 
   public_deps = [
+    ":mojom",
     ":param_traits",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
   ]
   deps = [
-    ":mojom",
     "//base",
   ]
 
@@ -122,6 +122,9 @@ mojom("mojom") {
   sources = [
     "ipc.mojom",
   ]
+  export_class_attribute = "IPC_EXPORT"
+  export_define = "IPC_IMPLEMENTATION"
+  export_header = "ipc/ipc_export.h"
 }
 
 mojom("test_interfaces") {
@@ -180,7 +183,6 @@ if (!is_ios) {
 
     deps = [
       ":ipc",
-      ":mojom",
       ":run_all_unittests",
       ":test_interfaces",
       ":test_support",

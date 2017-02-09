@@ -129,7 +129,6 @@ class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class RendererGpuVideoAcceleratorFactories;
 class ResourceDispatchThrottler;
-class ThreadSafeAssociatedInterfacePtrProvider;
 class VideoCaptureImplManager;
 
 #if defined(OS_ANDROID)
@@ -627,8 +626,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Used on the render thread.
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;
-  std::unique_ptr<ThreadSafeAssociatedInterfacePtrProvider>
-      thread_safe_associated_interface_ptr_provider_;
 
   std::unique_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
 

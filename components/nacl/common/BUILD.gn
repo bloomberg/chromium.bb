@@ -36,7 +36,6 @@ if (enable_nacl) {
       "//base:base_static",
       "//content/public/common:service_names",
       "//ipc",
-      "//ipc:mojom",
       "//mojo/edk/system",
       "//services/service_manager/public/cpp",
     ]

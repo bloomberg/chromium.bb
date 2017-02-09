@@ -109,7 +109,6 @@
 #include "content/renderer/media/render_media_client.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
-#include "content/renderer/mojo/thread_safe_associated_interface_ptr_provider.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -630,11 +629,8 @@ void RenderThreadImpl::Init(
     gpu_ = ui::Gpu::Create(GetRemoteInterfaces(), GetIOTaskRunner());
   }
 
-  thread_safe_associated_interface_ptr_provider_ =
-      base::MakeUnique<ThreadSafeAssociatedInterfacePtrProvider>(channel());
-  thread_safe_render_message_filter_ =
-      thread_safe_associated_interface_ptr_provider_
-          ->CreateInterfacePtr<mojom::RenderMessageFilter>();
+  channel()->GetThreadSafeRemoteAssociatedInterface(
+      &thread_safe_render_message_filter_);
   shared_bitmap_manager_.reset(
       new ChildSharedBitmapManager(thread_safe_render_message_filter_));
 

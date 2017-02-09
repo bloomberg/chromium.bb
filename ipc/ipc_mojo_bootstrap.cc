@@ -885,11 +885,8 @@ class MojoBootstrapImpl : public MojoBootstrap {
  public:
   MojoBootstrapImpl(
       mojo::ScopedMessagePipeHandle handle,
-      Delegate* delegate,
       const scoped_refptr<ChannelAssociatedGroupController> controller)
-            : controller_(controller),
-        handle_(std::move(handle)),
-        delegate_(delegate) {
+      : controller_(controller), handle_(std::move(handle)) {
     associated_group_ = controller_->CreateAssociatedGroup();
   }
 
@@ -898,15 +895,10 @@ class MojoBootstrapImpl : public MojoBootstrap {
   }
 
  private:
-  // MojoBootstrap:
-  void Connect() override {
+  void Connect(mojom::ChannelAssociatedPtr* sender,
+               mojom::ChannelAssociatedRequest* receiver) override {
     controller_->Bind(std::move(handle_));
-
-    IPC::mojom::ChannelAssociatedPtr sender;
-    IPC::mojom::ChannelAssociatedRequest receiver;
-    controller_->CreateChannelEndpoints(&sender, &receiver);
-
-    delegate_->OnPipesAvailable(std::move(sender), std::move(receiver));
+    controller_->CreateChannelEndpoints(sender, receiver);
   }
 
   void Pause() override {
@@ -928,7 +920,6 @@ class MojoBootstrapImpl : public MojoBootstrap {
   scoped_refptr<ChannelAssociatedGroupController> controller_;
 
   mojo::ScopedMessagePipeHandle handle_;
-  Delegate* delegate_;
   std::unique_ptr<mojo::AssociatedGroup> associated_group_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoBootstrapImpl);
@@ -940,12 +931,10 @@ class MojoBootstrapImpl : public MojoBootstrap {
 std::unique_ptr<MojoBootstrap> MojoBootstrap::Create(
     mojo::ScopedMessagePipeHandle handle,
     Channel::Mode mode,
-    Delegate* delegate,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
   return base::MakeUnique<MojoBootstrapImpl>(
-      std::move(handle), delegate,
-      new ChannelAssociatedGroupController(mode == Channel::MODE_SERVER,
-                                           ipc_task_runner));
+      std::move(handle), new ChannelAssociatedGroupController(
+                             mode == Channel::MODE_SERVER, ipc_task_runner));
 }
 
 }  // namespace IPC

@@ -152,6 +152,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    "//ipc",
     "//remoting/host",
     "//remoting/host:test_support",
     "//remoting/host/it2me:common",

@@ -126,7 +126,10 @@ template("implement_content_app") {
     }
 
     configs += extra_configs
-    deps = content_app_deps + [ ":$runner_target_name" ]
+    deps = content_app_deps + [
+             ":$runner_target_name",
+             "//ipc",
+           ]
     forward_variables_from(invoker,
                            [
                              "defines",

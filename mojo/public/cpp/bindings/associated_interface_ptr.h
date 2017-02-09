@@ -31,6 +31,9 @@ namespace mojo {
 template <typename Interface>
 class AssociatedInterfacePtr {
  public:
+  using InterfaceType = Interface;
+  using PtrInfoType = AssociatedInterfacePtrInfo<Interface>;
+
   // Constructs an unbound AssociatedInterfacePtr.
   AssociatedInterfacePtr() {}
   AssociatedInterfacePtr(decltype(nullptr)) {}

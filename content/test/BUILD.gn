@@ -719,7 +719,7 @@ test("content_browsertests") {
     "//gin",
     "//gpu",
     "//gpu/ipc/host",
-    "//ipc:mojom",
+    "//ipc",
     "//ipc:test_support",
     "//media",
     "//media:test_support",

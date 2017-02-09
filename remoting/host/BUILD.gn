@@ -725,6 +725,7 @@ if (enable_me2me_host) {
       "//base",
       "//base:i18n",
       "//components/policy/core/common",
+      "//ipc",
       "//net",
       "//remoting/base",
       "//remoting/host",

@@ -40,6 +40,9 @@ class AssociatedGroup;
 template <typename Interface>
 class InterfacePtr {
  public:
+  using InterfaceType = Interface;
+  using PtrInfoType = InterfacePtrInfo<Interface>;
+
   // Constructs an unbound InterfacePtr.
   InterfacePtr() {}
   InterfacePtr(decltype(nullptr)) {}

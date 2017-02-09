@@ -18,132 +18,53 @@
 
 namespace mojo {
 
-struct ThreadSafeInterfacePtrDeleter;
-
-// ThreadSafeInterfacePtr and ThreadSafeAssociatedInterfacePtr are versions of
-// InterfacePtr and AssociatedInterfacePtr that let callers invoke
-// interface methods from any threads. Callbacks are received on the thread that
-// performed the interface call.
-//
-// To create a ThreadSafeInterfacePtr/ThreadSafeAssociatedInterfacePtr, first
-// create a regular InterfacePtr/AssociatedInterfacePtr that
-// you then provide to ThreadSafeInterfacePtr/AssociatedInterfacePtr::Create.
-// You can then call methods on the
-// ThreadSafeInterfacePtr/AssociatedInterfacePtr instance from any thread.
-//
-// Ex for ThreadSafeInterfacePtr:
-// frob::FrobinatorPtr frobinator;
-// frob::FrobinatorImpl impl(MakeRequest(&frobinator));
-// scoped_refptr<frob::ThreadSafeFrobinatorPtr> thread_safe_frobinator =
-//     frob::ThreadSafeFrobinatorPtr::Create(std::move(frobinator));
-// (*thread_safe_frobinator)->FrobinateToTheMax();
-//
-// An alternate way is to create the ThreadSafeInterfacePtr unbound (not
-// associated with an InterfacePtr) and call Bind() at a later time when the
-// InterfacePtr becomes available. Note that you shouldn't call any interface
-// methods on the ThreadSafeInterfacePtr before it is bound.
-
-template <typename Interface, template <typename> class InterfacePtrType>
-class ThreadSafeInterfacePtrBase
-    : public MessageReceiverWithResponder,
-      public base::RefCountedThreadSafe<
-          ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>,
-          ThreadSafeInterfacePtrDeleter> {
+// Instances of this class may be used from any thread to serialize |Interface|
+// messages and forward them elsewhere. In general you should use one of the
+// ThreadSafeInterfacePtrBase helper aliases defined below, but this type may be
+// useful if you need/want to manually manage the lifetime of the underlying
+// proxy object which will be used to ultimately send messages.
+template <typename Interface>
+class ThreadSafeForwarder : public MessageReceiverWithResponder {
  public:
   using ProxyType = typename Interface::Proxy_;
+  using ForwardMessageCallback = base::Callback<void(Message)>;
+  using ForwardMessageWithResponderCallback =
+      base::Callback<void(Message, std::unique_ptr<MessageReceiver>)>;
 
-  static scoped_refptr<ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>>
-  Create(InterfacePtrType<Interface> interface_ptr) {
-    scoped_refptr<ThreadSafeInterfacePtrBase> ptr(
-        new ThreadSafeInterfacePtrBase());
-    return ptr->Bind(std::move(interface_ptr)) ? ptr : nullptr;
-  }
+  // Constructs a ThreadSafeForwarder through which Messages are forwarded to
+  // |forward| or |forward_with_responder| by posting to |task_runner|.
+  //
+  // Any message sent through this forwarding interface will dispatch its reply,
+  // if any, back to the thread which called the corresponding interface method.
+  ThreadSafeForwarder(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const ForwardMessageCallback& forward,
+      const ForwardMessageWithResponderCallback& forward_with_responder)
+      : proxy_(this),
+        task_runner_(task_runner),
+        forward_(forward),
+        forward_with_responder_(forward_with_responder) {}
 
-  // Creates a ThreadSafeInterfacePtrBase with no associated InterfacePtr.
-  // Call Bind() with the InterfacePtr once available, which must be called on
-  // the |bind_task_runner|.
-  // Providing the TaskRunner here allows you to post a task to
-  // |bind_task_runner| to do the bind and then immediately start calling
-  // methods on the returned interface.
-  static scoped_refptr<ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>>
-  CreateUnbound(
-      const scoped_refptr<base::SingleThreadTaskRunner>& bind_task_runner) {
-    scoped_refptr<ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>> ptr =
-        new ThreadSafeInterfacePtrBase();
-    ptr->interface_ptr_task_runner_ = bind_task_runner;
-    return ptr;
-  }
+  ~ThreadSafeForwarder() override {}
 
-  // Binds a ThreadSafeInterfacePtrBase previously created with CreateUnbound().
-  // This must be called on the thread that |interface_ptr| should be used.
-  // If created with CreateUnbound() that thread should be the same as the one
-  // provided at creation time.
-  bool Bind(InterfacePtrType<Interface> interface_ptr) {
-    DCHECK(!interface_ptr_task_runner_ ||
-        interface_ptr_task_runner_ == base::ThreadTaskRunnerHandle::Get());
-    if (!interface_ptr.is_bound()) {
-      LOG(ERROR) << "Attempting to bind a ThreadSafe[Associated]InterfacePtr "
-                    "from an unbound InterfacePtr.";
-      return false;
-    }
-    interface_ptr_ = std::move(interface_ptr);
-    interface_ptr_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    return true;
-  }
-
-  ~ThreadSafeInterfacePtrBase() override {}
-
-  Interface* get() { return &proxy_; }
-  Interface* operator->() { return get(); }
-  Interface& operator*() { return *get(); }
+  ProxyType& proxy() { return proxy_; }
 
  private:
-  friend class base::RefCountedThreadSafe<
-      ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>>;
-  friend struct ThreadSafeInterfacePtrDeleter;
-
-  ThreadSafeInterfacePtrBase() : proxy_(this), weak_ptr_factory_(this) {}
-
-  void DeleteOnCorrectThread() const {
-    if (interface_ptr_task_runner_ &&
-        !interface_ptr_task_runner_->BelongsToCurrentThread() &&
-        interface_ptr_task_runner_->DeleteSoon(FROM_HERE, this)) {
-      return;
-    }
-    delete this;
-  }
-
   // MessageReceiverWithResponder implementation:
   bool Accept(Message* message) override {
-    interface_ptr_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadSafeInterfacePtrBase::AcceptOnInterfacePtrThread,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(std::move(*message))));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(forward_, base::Passed(message)));
     return true;
   }
 
   bool AcceptWithResponder(Message* message,
-                           MessageReceiver* responder) override {
-    auto forward_responder = base::MakeUnique<ForwardToCallingThread>(
-        base::WrapUnique(responder));
-    interface_ptr_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ThreadSafeInterfacePtrBase::
-                                  AcceptWithResponderOnInterfacePtrThread,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              base::Passed(std::move(*message)),
-                              base::Passed(std::move(forward_responder))));
+                           MessageReceiver* response_receiver) override {
+    auto responder = base::MakeUnique<ForwardToCallingThread>(
+        base::WrapUnique(response_receiver));
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(forward_with_responder_, base::Passed(message),
+                              base::Passed(&responder)));
     return true;
-  }
-
-  void AcceptOnInterfacePtrThread(Message message) {
-    interface_ptr_.internal_state()->ForwardMessage(std::move(message));
-  }
-  void AcceptWithResponderOnInterfacePtrThread(
-      Message message,
-      std::unique_ptr<MessageReceiver> responder) {
-    interface_ptr_.internal_state()->ForwardMessageWithResponder(
-        std::move(message), std::move(responder));
   }
 
   class ForwardToCallingThread : public MessageReceiver {
@@ -175,28 +96,143 @@ class ThreadSafeInterfacePtrBase
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
   };
 
-  scoped_refptr<base::SingleThreadTaskRunner> interface_ptr_task_runner_;
   ProxyType proxy_;
-  InterfacePtrType<Interface> interface_ptr_;
-  base::WeakPtrFactory<ThreadSafeInterfacePtrBase> weak_ptr_factory_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const ForwardMessageCallback forward_;
+  const ForwardMessageWithResponderCallback forward_with_responder_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadSafeForwarder);
 };
 
-struct ThreadSafeInterfacePtrDeleter {
-  template <typename Interface, template <typename> class InterfacePtrType>
-  static void Destruct(
-      const ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>*
-          interface_ptr) {
-    interface_ptr->DeleteOnCorrectThread();
+template <typename InterfacePtrType>
+class ThreadSafeInterfacePtrBase
+    : public base::RefCountedThreadSafe<
+          ThreadSafeInterfacePtrBase<InterfacePtrType>> {
+ public:
+  using InterfaceType = typename InterfacePtrType::InterfaceType;
+  using PtrInfoType = typename InterfacePtrType::PtrInfoType;
+
+  explicit ThreadSafeInterfacePtrBase(
+      std::unique_ptr<ThreadSafeForwarder<InterfaceType>> forwarder)
+      : forwarder_(std::move(forwarder)) {}
+
+  // Creates a ThreadSafeInterfacePtrBase wrapping an underlying non-thread-safe
+  // InterfacePtrType which is bound to the calling thread. All messages sent
+  // via this thread-safe proxy will internally be sent by first posting to this
+  // (the calling) thread's TaskRunner.
+  static scoped_refptr<ThreadSafeInterfacePtrBase> Create(
+      InterfacePtrType interface_ptr) {
+    scoped_refptr<PtrWrapper> wrapper =
+        new PtrWrapper(std::move(interface_ptr));
+    return new ThreadSafeInterfacePtrBase(wrapper->CreateForwarder());
   }
+
+  // Creates a ThreadSafeInterfacePtrBase which binds the underlying
+  // non-thread-safe InterfacePtrType on the specified TaskRunner. All messages
+  // sent via this thread-safe proxy will internally be sent by first posting to
+  // that TaskRunner.
+  static scoped_refptr<ThreadSafeInterfacePtrBase> Create(
+      PtrInfoType ptr_info,
+      const scoped_refptr<base::SingleThreadTaskRunner>& bind_task_runner) {
+    scoped_refptr<PtrWrapper> wrapper = new PtrWrapper(bind_task_runner);
+    wrapper->BindOnTaskRunner(std::move(ptr_info));
+    return new ThreadSafeInterfacePtrBase(wrapper->CreateForwarder());
+  }
+
+  InterfaceType* get() { return &forwarder_->proxy(); }
+  InterfaceType* operator->() { return get(); }
+  InterfaceType& operator*() { return *get(); }
+
+ private:
+  friend class base::RefCountedThreadSafe<
+      ThreadSafeInterfacePtrBase<InterfacePtrType>>;
+
+  struct PtrWrapperDeleter;
+
+  // Helper class which owns an |InterfacePtrType| instance on an appropriate
+  // thread. This is kept alive as long its bound within some
+  // ThreadSafeForwarder's callbacks.
+  class PtrWrapper
+      : public base::RefCountedThreadSafe<PtrWrapper, PtrWrapperDeleter> {
+   public:
+    explicit PtrWrapper(InterfacePtrType ptr)
+        : PtrWrapper(base::ThreadTaskRunnerHandle::Get()) {
+      ptr_ = std::move(ptr);
+    }
+
+    explicit PtrWrapper(
+        const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+        : task_runner_(task_runner) {}
+
+    void BindOnTaskRunner(PtrInfoType ptr_info) {
+      task_runner_->PostTask(FROM_HERE, base::Bind(&PtrWrapper::Bind, this,
+                                                   base::Passed(&ptr_info)));
+    }
+
+    std::unique_ptr<ThreadSafeForwarder<InterfaceType>> CreateForwarder() {
+      return base::MakeUnique<ThreadSafeForwarder<InterfaceType>>(
+          task_runner_, base::Bind(&PtrWrapper::Accept, this),
+          base::Bind(&PtrWrapper::AcceptWithResponder, this));
+    }
+
+   private:
+    friend struct PtrWrapperDeleter;
+
+    ~PtrWrapper() {}
+
+    void Bind(PtrInfoType ptr_info) {
+      DCHECK(task_runner_->RunsTasksOnCurrentThread());
+      ptr_.Bind(std::move(ptr_info));
+    }
+
+    void Accept(Message message) {
+      ptr_.internal_state()->ForwardMessage(std::move(message));
+    }
+
+    void AcceptWithResponder(Message message,
+                             std::unique_ptr<MessageReceiver> responder) {
+      ptr_.internal_state()->ForwardMessageWithResponder(std::move(message),
+                                                         std::move(responder));
+    }
+
+    void DeleteOnCorrectThread() const {
+      if (!task_runner_->RunsTasksOnCurrentThread()) {
+        // NOTE: This is only called when there are no more references to
+        // |this|, so binding it unretained is both safe and necessary.
+        task_runner_->PostTask(FROM_HERE,
+                               base::Bind(&PtrWrapper::DeleteOnCorrectThread,
+                                          base::Unretained(this)));
+      } else {
+        delete this;
+      }
+    }
+
+    InterfacePtrType ptr_;
+    const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+    DISALLOW_COPY_AND_ASSIGN(PtrWrapper);
+  };
+
+  struct PtrWrapperDeleter {
+    static void Destruct(const PtrWrapper* interface_ptr) {
+      interface_ptr->DeleteOnCorrectThread();
+    }
+  };
+
+  ~ThreadSafeInterfacePtrBase() {}
+
+  const std::unique_ptr<ThreadSafeForwarder<InterfaceType>> forwarder_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadSafeInterfacePtrBase);
 };
 
 template <typename Interface>
 using ThreadSafeAssociatedInterfacePtr =
-    ThreadSafeInterfacePtrBase<Interface, AssociatedInterfacePtr>;
+    ThreadSafeInterfacePtrBase<AssociatedInterfacePtr<Interface>>;
 
 template <typename Interface>
 using ThreadSafeInterfacePtr =
-    ThreadSafeInterfacePtrBase<Interface, InterfacePtr>;
+    ThreadSafeInterfacePtrBase<InterfacePtr<Interface>>;
 
 }  // namespace mojo
 

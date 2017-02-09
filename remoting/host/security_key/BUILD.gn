@@ -36,6 +36,7 @@ source_set("security_key") {
   ]
 
   deps = [
+    "//ipc",
     "//mojo/edk/system",
     "//remoting/proto",
     "//third_party/webrtc/modules/desktop_capture",
@@ -112,6 +113,7 @@ static_library("test_support") {
   ]
 
   deps = [
+    "//ipc",
     "//remoting/proto",
     "//testing/gtest",
   ]

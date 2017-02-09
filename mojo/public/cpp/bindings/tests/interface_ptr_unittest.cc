@@ -853,16 +853,20 @@ TEST_F(InterfacePtrTest, ThreadSafeInterfacePointer) {
   run_loop.Run();
 }
 
-TEST_F(InterfacePtrTest, BindLaterThreadSafeInterfacePointer) {
+TEST_F(InterfacePtrTest, ThreadSafeInterfacePointerWithTaskRunner) {
   // Create and start the thread from where we'll bind the interface pointer.
   base::Thread other_thread("service test thread");
   other_thread.Start();
   const scoped_refptr<base::SingleThreadTaskRunner>& other_thread_task_runner =
       other_thread.message_loop()->task_runner();
 
+  math::CalculatorPtr ptr;
+  math::CalculatorRequest request(&ptr);
+
   // Create a ThreadSafeInterfacePtr that we'll bind from a different thread.
   scoped_refptr<math::ThreadSafeCalculatorPtr> thread_safe_ptr =
-      math::ThreadSafeCalculatorPtr::CreateUnbound(other_thread_task_runner);
+      math::ThreadSafeCalculatorPtr::Create(ptr.PassInterface(),
+                                            other_thread_task_runner);
   ASSERT_TRUE(thread_safe_ptr);
 
   MathCalculatorImpl* math_calc_impl = nullptr;
@@ -872,15 +876,15 @@ TEST_F(InterfacePtrTest, BindLaterThreadSafeInterfacePointer) {
         [](const scoped_refptr<base::TaskRunner>& main_task_runner,
            const base::Closure& quit_closure,
            const scoped_refptr<math::ThreadSafeCalculatorPtr>& thread_safe_ptr,
+           math::CalculatorRequest request,
            MathCalculatorImpl** math_calc_impl) {
           math::CalculatorPtr ptr;
           // In real life, the implementation would have a legitimate owner.
-          *math_calc_impl = new MathCalculatorImpl(MakeRequest(&ptr));
-          thread_safe_ptr->Bind(std::move(ptr));
+          *math_calc_impl = new MathCalculatorImpl(std::move(request));
           main_task_runner->PostTask(FROM_HERE, quit_closure);
         },
         base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure(),
-        thread_safe_ptr, &math_calc_impl);
+        thread_safe_ptr, base::Passed(&request), &math_calc_impl);
     other_thread.message_loop()->task_runner()->PostTask(FROM_HERE, run_method);
     run_loop.Run();
   }
