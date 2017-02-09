@@ -8,10 +8,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
 #include "google_apis/gaia/account_tracker.h"
@@ -154,7 +155,8 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   // Indicates whether shutdown has been called.
   bool shutdown_called_;
 
-  ScopedVector<OAuth2TokenService::Request> pending_token_requests_;
+  std::vector<std::unique_ptr<OAuth2TokenService::Request>>
+      pending_token_requests_;
 
   // Creates weak pointers used to postpone reporting tokens. See
   // ScheduleReportTokens.

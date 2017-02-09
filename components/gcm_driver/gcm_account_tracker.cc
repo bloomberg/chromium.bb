@@ -308,8 +308,11 @@ base::TimeDelta GCMAccountTracker::GetTimeToNextTokenReporting() const {
 
 void GCMAccountTracker::DeleteTokenRequest(
     const OAuth2TokenService::Request* request) {
-  ScopedVector<OAuth2TokenService::Request>::iterator iter = std::find(
-      pending_token_requests_.begin(), pending_token_requests_.end(), request);
+  auto iter = std::find_if(
+      pending_token_requests_.begin(), pending_token_requests_.end(),
+      [request](const std::unique_ptr<OAuth2TokenService::Request>& r) {
+        return request == r.get();
+      });
   if (iter != pending_token_requests_.end())
     pending_token_requests_.erase(iter);
 }
@@ -341,7 +344,7 @@ void GCMAccountTracker::GetToken(AccountInfos::iterator& account_iter) {
   std::unique_ptr<OAuth2TokenService::Request> request =
       GetTokenService()->StartRequest(account_iter->first, scopes, this);
 
-  pending_token_requests_.push_back(request.release());
+  pending_token_requests_.push_back(std::move(request));
   account_iter->second.state = GETTING_TOKEN;
 }
 
