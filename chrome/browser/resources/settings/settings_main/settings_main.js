@@ -124,7 +124,8 @@ Polymer({
     // How much of the overscroll is visible (may be negative).
     var visibleOverscroll = overscroll.scrollHeight -
                             (overscrollBottom - visibleBottom);
-    this.overscroll_ = Math.max(opt_minHeight || 0, visibleOverscroll);
+    this.overscroll_ =
+        Math.max(opt_minHeight || 0, Math.ceil(visibleOverscroll));
   },
 
   /**
