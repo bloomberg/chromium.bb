@@ -176,8 +176,9 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 
 // Shows the enrollment screen and simulates an enrollment failure. Verifies
 // that the error screen is displayed.
+// TODO(crbug.com/690634): Disabled due to timeout flakiness.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       TestProperPageGetsLoadedOnEnrollmentFailure) {
+                       DISABLED_TestProperPageGetsLoadedOnEnrollmentFailure) {
   ShowEnrollmentScreen();
 
   enrollment_screen()->OnEnrollmentError(policy::EnrollmentStatus::ForStatus(
