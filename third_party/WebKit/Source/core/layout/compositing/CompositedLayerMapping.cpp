@@ -1515,10 +1515,8 @@ void CompositedLayerMapping::registerScrollingLayers() {
   bool isContainer =
       m_owningLayer.layoutObject()->style()->canContainFixedPositionObjects() &&
       !m_owningLayer.isRootLayer();
-  // FIXME: we should make certain that childForSuperLayers will never be the
-  // m_squashingContainmentLayer here
   scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(
-      childForSuperlayers(), isContainer);
+      m_graphicsLayer.get(), isContainer);
 }
 
 void CompositedLayerMapping::updateInternalHierarchy() {

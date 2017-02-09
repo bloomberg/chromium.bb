@@ -600,10 +600,6 @@ void Layer::SetPosition(const gfx::PointF& position) {
 }
 
 bool Layer::IsContainerForFixedPositionLayers() const {
-  if (!inputs_.transform.IsIdentityOrTranslation())
-    return true;
-  if (parent_ && !parent_->inputs_.transform.IsIdentityOrTranslation())
-    return true;
   return inputs_.is_container_for_fixed_position_layers;
 }
 
