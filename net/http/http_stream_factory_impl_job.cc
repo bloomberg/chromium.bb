@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -61,6 +62,10 @@ namespace net {
 
 namespace {
 
+// Experiment to preconnect only one connection if HttpServerProperties is
+// not supported or initialized.
+const base::Feature kLimitEarlyPreconnectsExperiment{
+    "LimitEarlyPreconnects", base::FEATURE_DISABLED_BY_DEFAULT};
 void DoNothingAsyncCallback(int result) {}
 void RecordChannelIDKeyMatch(SSLClientSocket* ssl_socket,
                              ChannelIDService* channel_id_service,
@@ -278,8 +283,16 @@ int HttpStreamFactoryImpl::Job::Preconnect(int num_streams) {
   DCHECK_GT(num_streams, 0);
   HttpServerProperties* http_server_properties =
       session_->http_server_properties();
-  // Preconnect one connection if the server supports H2 or QUIC.
-  if (http_server_properties &&
+  DCHECK(http_server_properties);
+  // Preconnect one connection if either of the following is true:
+  //   (1) kLimitEarlyPreconnectsStreamExperiment is turned on,
+  //   HttpServerProperties is not initialized, and url scheme is cryptographic.
+  //   (2) The server supports H2 or QUIC.
+  bool connect_one_stream =
+      base::FeatureList::IsEnabled(kLimitEarlyPreconnectsExperiment) &&
+      !http_server_properties->IsInitialized() &&
+      request_info_.url.SchemeIsCryptographic();
+  if (connect_one_stream ||
       http_server_properties->SupportsRequestPriority(
           url::SchemeHostPort(request_info_.url))) {
     num_streams_ = 1;

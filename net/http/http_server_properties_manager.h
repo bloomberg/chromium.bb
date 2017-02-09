@@ -160,6 +160,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   size_t max_server_configs_stored_in_properties() const override;
   void SetMaxServerConfigsStoredInProperties(
       size_t max_server_configs_stored_in_properties) override;
+  bool IsInitialized() const override;
 
  protected:
   // The location where ScheduleUpdatePrefsOnNetworkThread was called.
@@ -283,6 +284,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void SaveQuicServerInfoMapToServerPrefs(
       QuicServerInfoMap* quic_server_info_map,
       base::DictionaryValue* http_server_properties_dict);
+  void SetInitialized();
 
   // -----------
   // Pref thread
@@ -301,6 +303,9 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   // --------------
   // Network thread
   // --------------
+
+  // Whether InitializeOnNetworkThread() has completed.
+  bool is_initialized_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 

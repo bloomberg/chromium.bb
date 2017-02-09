@@ -177,9 +177,16 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
         new StrictMock<TestingHttpServerPropertiesManager>(
             pref_delegate_, pref_test_task_runner_, net_test_task_runner_));
 
+    EXPECT_FALSE(http_server_props_manager_->IsInitialized());
     ExpectCacheUpdate();
     EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
     pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+    // InitializeOnNetworkThread() is called from the test thread, so
+    // PostTaskAndReply() will post back to the test thread.
+    // TODO(xunjieli): Fix this in a follow-up so we can use
+    // |net_test_task_runner_|->RunUntilIdle().
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(http_server_props_manager_->IsInitialized());
     EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
     EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
   }
@@ -191,8 +198,10 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
             pref_delegate_, base::ThreadTaskRunnerHandle::Get(),
             net_test_task_runner_));
 
+    EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
     ExpectCacheUpdate();
     base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(http_server_props_manager_->IsInitialized());
   }
 
   void TearDown() override {

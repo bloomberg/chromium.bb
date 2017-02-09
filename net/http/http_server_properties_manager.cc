@@ -79,6 +79,7 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
     : pref_task_runner_(pref_task_runner),
       pref_delegate_(pref_delegate),
       setting_prefs_(false),
+      is_initialized_(false),
       network_task_runner_(network_task_runner) {
   DCHECK(pref_delegate_);
   pref_weak_ptr_factory_.reset(
@@ -98,16 +99,22 @@ HttpServerPropertiesManager::~HttpServerPropertiesManager() {
 
 void HttpServerPropertiesManager::InitializeOnNetworkThread() {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+
   network_weak_ptr_factory_.reset(
       new base::WeakPtrFactory<HttpServerPropertiesManager>(this));
   http_server_properties_impl_.reset(new HttpServerPropertiesImpl());
 
   network_prefs_update_timer_.reset(new base::OneShotTimer);
   network_prefs_update_timer_->SetTaskRunner(network_task_runner_);
-  pref_task_runner_->PostTask(
+  // UpdateCacheFromPrefsOnPrefThread() will post a task to network thread to
+  // update server properties. SetInitialized() will be run after that task is
+  // run as |network_task_runner_| is single threaded.
+  pref_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread,
-                 pref_weak_ptr_));
+                 pref_weak_ptr_),
+      base::Bind(&HttpServerPropertiesManager::SetInitialized,
+                 network_weak_ptr_factory_->GetWeakPtr()));
 }
 
 void HttpServerPropertiesManager::ShutdownOnPrefThread() {
@@ -351,6 +358,12 @@ void HttpServerPropertiesManager::SetMaxServerConfigsStoredInProperties(
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   return http_server_properties_impl_->SetMaxServerConfigsStoredInProperties(
       max_server_configs_stored_in_properties);
+}
+
+bool HttpServerPropertiesManager::IsInitialized() const {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+
+  return is_initialized_;
 }
 
 //
@@ -757,22 +770,20 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkThread(
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
 
   UMA_HISTOGRAM_COUNTS("Net.CountOfSpdyServers", spdy_servers->size());
-  http_server_properties_impl_->InitializeSpdyServers(spdy_servers, true);
+  http_server_properties_impl_->SetSpdyServers(spdy_servers, true);
 
   // Update the cached data and use the new alternative service list from
   // preferences.
   UMA_HISTOGRAM_COUNTS("Net.CountOfAlternateProtocolServers",
                        alternative_service_map->size());
-  http_server_properties_impl_->InitializeAlternativeServiceServers(
+  http_server_properties_impl_->SetAlternativeServiceServers(
       alternative_service_map);
 
-  http_server_properties_impl_->InitializeSupportsQuic(last_quic_address);
+  http_server_properties_impl_->SetSupportsQuic(last_quic_address);
 
-  http_server_properties_impl_->InitializeServerNetworkStats(
-      server_network_stats_map);
+  http_server_properties_impl_->SetServerNetworkStats(server_network_stats_map);
 
-  http_server_properties_impl_->InitializeQuicServerInfoMap(
-      quic_server_info_map);
+  http_server_properties_impl_->SetQuicServerInfoMap(quic_server_info_map);
 
   // Update the prefs with what we have read (delete all corrupted prefs).
   if (detected_corrupted_prefs)
@@ -1127,6 +1138,11 @@ void HttpServerPropertiesManager::OnHttpServerPropertiesChanged() {
   DCHECK(pref_task_runner_->RunsTasksOnCurrentThread());
   if (!setting_prefs_)
     ScheduleUpdateCacheOnPrefThread();
+}
+
+void HttpServerPropertiesManager::SetInitialized() {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  is_initialized_ = true;
 }
 
 }  // namespace net
