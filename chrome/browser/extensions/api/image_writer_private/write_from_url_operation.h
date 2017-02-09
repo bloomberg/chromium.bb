@@ -29,7 +29,8 @@ class WriteFromUrlOperation : public Operation, public net::URLFetcherDelegate {
                         net::URLRequestContextGetter* request_context,
                         GURL url,
                         const std::string& hash,
-                        const std::string& storage_unit_id);
+                        const std::string& storage_unit_id,
+                        const base::FilePath& download_folder);
   void StartImpl() override;
 
  protected:

@@ -40,7 +40,8 @@ class OperationForTest : public WriteFromUrlOperation {
                               request_context,
                               url,
                               hash,
-                              storage_unit_id) {}
+                              storage_unit_id,
+                              base::FilePath(FILE_PATH_LITERAL("/var/tmp"))) {}
 
   void StartImpl() override {}
 

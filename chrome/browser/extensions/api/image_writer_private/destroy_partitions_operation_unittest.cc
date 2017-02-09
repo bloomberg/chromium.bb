@@ -28,7 +28,8 @@ TEST_F(ImageWriterDestroyPartitionsOperationTest, EndToEnd) {
       new DestroyPartitionsOperation(
           manager.AsWeakPtr(),
           kDummyExtensionId,
-          test_utils_.GetDevicePath().AsUTF8Unsafe()));
+          test_utils_.GetDevicePath().AsUTF8Unsafe(),
+          base::FilePath(FILE_PATH_LITERAL("/var/tmp"))));
 
   EXPECT_CALL(
       manager,

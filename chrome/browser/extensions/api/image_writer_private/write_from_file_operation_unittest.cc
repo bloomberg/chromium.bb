@@ -29,7 +29,8 @@ TEST_F(ImageWriterFromFileTest, InvalidFile) {
       new WriteFromFileOperation(manager_.AsWeakPtr(),
                                  kDummyExtensionId,
                                  test_utils_.GetImagePath(),
-                                 test_utils_.GetDevicePath().AsUTF8Unsafe());
+                                 test_utils_.GetDevicePath().AsUTF8Unsafe(),
+                                 base::FilePath(FILE_PATH_LITERAL("/var/tmp")));
 
   base::DeleteFile(test_utils_.GetImagePath(), false);
 
@@ -52,7 +53,8 @@ TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
       new WriteFromFileOperation(manager_.AsWeakPtr(),
                                  kDummyExtensionId,
                                  test_utils_.GetImagePath(),
-                                 test_utils_.GetDevicePath().AsUTF8Unsafe());
+                                 test_utils_.GetDevicePath().AsUTF8Unsafe(),
+                                 base::FilePath(FILE_PATH_LITERAL("/var/tmp")));
   EXPECT_CALL(manager_,
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, _))
       .Times(AnyNumber());

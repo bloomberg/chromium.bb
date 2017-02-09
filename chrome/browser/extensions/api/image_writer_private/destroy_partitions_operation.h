@@ -19,7 +19,8 @@ class DestroyPartitionsOperation : public Operation {
  public:
   DestroyPartitionsOperation(base::WeakPtr<OperationManager> manager,
                              const ExtensionId& extension_id,
-                             const std::string& storage_unit_id);
+                             const std::string& storage_unit_id,
+                             const base::FilePath& download_folder);
   void StartImpl() override;
 
  private:

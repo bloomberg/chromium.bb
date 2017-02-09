@@ -62,7 +62,8 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
 
   Operation(base::WeakPtr<OperationManager> manager,
             const ExtensionId& extension_id,
-            const std::string& device_path);
+            const std::string& device_path,
+            const base::FilePath& download_folder);
 
   // Starts the operation.
   void Start();
@@ -223,6 +224,11 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
   // CleanUp operations that must be run.  All these functions are run on the
   // FILE thread.
   std::vector<base::Closure> cleanup_functions_;
+
+  // The download folder on Chrome OS.
+  const base::FilePath download_folder_;
+
+  DISALLOW_COPY_AND_ASSIGN(Operation);
 };
 
 }  // namespace image_writer

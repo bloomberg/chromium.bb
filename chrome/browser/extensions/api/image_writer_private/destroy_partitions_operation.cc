@@ -20,8 +20,9 @@ const int kPartitionTableSize = 2 * 4096;
 DestroyPartitionsOperation::DestroyPartitionsOperation(
     base::WeakPtr<OperationManager> manager,
     const ExtensionId& extension_id,
-    const std::string& storage_unit_id)
-    : Operation(manager, extension_id, storage_unit_id) {}
+    const std::string& storage_unit_id,
+    const base::FilePath& download_folder)
+    : Operation(manager, extension_id, storage_unit_id, download_folder) {}
 
 DestroyPartitionsOperation::~DestroyPartitionsOperation() {}
 

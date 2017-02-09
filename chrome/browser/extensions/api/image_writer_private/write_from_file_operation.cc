@@ -16,8 +16,9 @@ WriteFromFileOperation::WriteFromFileOperation(
     base::WeakPtr<OperationManager> manager,
     const ExtensionId& extension_id,
     const base::FilePath& user_file_path,
-    const std::string& device_path)
-    : Operation(manager, extension_id, device_path) {
+    const std::string& device_path,
+    const base::FilePath& download_folder)
+    : Operation(manager, extension_id, device_path, download_folder) {
   image_path_ = user_file_path;
 }
 
