@@ -213,11 +213,10 @@ class ServiceManagerConnectionImpl::IOThreadContext
   void RemoveConnectionFilterOnIOThread(int filter_id) {
     base::AutoLock lock(lock_);
     auto it = connection_filters_.find(filter_id);
-    // TODO(crbug.com/687247): This DCHECK is hit when the browser is shut down
-    // by the service manager (e.g. in response to an ash crash under mash).
-    // Figure out why.
-    DCHECK(it != connection_filters_.end());
-    connection_filters_.erase(it);
+    // During shutdown the connection filters might have been cleared already
+    // by ClearConnectionFiltersOnIOThread() above, so this id might not exist.
+    if (it != connection_filters_.end())
+      connection_filters_.erase(it);
   }
 
   void OnBrowserConnectionLost() {
