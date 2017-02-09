@@ -709,7 +709,7 @@ void NavigatorImpl::DidNavigate(
                                         params.url,
                                         transition_type);
     navigation_handle->DidCommitNavigation(params, details.did_replace_entry,
-                                           details.previous_url,
+                                           details.previous_url, details.type,
                                            render_frame_host);
     navigation_handle.reset();
   }

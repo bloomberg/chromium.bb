@@ -108,6 +108,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       is_stream_(false),
       started_from_context_menu_(started_from_context_menu),
       reload_type_(ReloadType::NONE),
+      navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       weak_factory_(this) {
   DCHECK(!navigation_start.is_null());
   if (redirect_chain_.empty())
@@ -431,7 +432,8 @@ void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
   params.page_state = PageState::CreateFromURL(url);
   params.contents_mime_type = std::string("text/html");
 
-  DidCommitNavigation(params, false, GURL(), render_frame_host_);
+  DidCommitNavigation(params, false, GURL(), NAVIGATION_TYPE_NEW_PAGE,
+                      render_frame_host_);
 }
 
 bool NavigationHandleImpl::WasStartedFromContextMenu() const {
@@ -611,6 +613,7 @@ void NavigationHandleImpl::DidCommitNavigation(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool did_replace_entry,
     const GURL& previous_url,
+    NavigationType navigation_type,
     RenderFrameHostImpl* render_frame_host) {
   DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   DCHECK_EQ(frame_tree_node_, render_frame_host->frame_tree_node());
@@ -625,6 +628,7 @@ void NavigationHandleImpl::DidCommitNavigation(
   previous_url_ = previous_url;
   base_url_ = params.base_url;
   socket_address_ = params.socket_address;
+  navigation_type_ = navigation_type;
 
   // If an error page reloads, net_error_code might be 200 but we still want to
   // count it as an error page.

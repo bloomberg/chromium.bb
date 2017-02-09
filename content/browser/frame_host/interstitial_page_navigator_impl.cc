@@ -49,8 +49,8 @@ void InterstitialPageNavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params,
     std::unique_ptr<NavigationHandleImpl> navigation_handle) {
-  navigation_handle->DidCommitNavigation(input_params, false, GURL(),
-                                         render_frame_host);
+  navigation_handle->DidCommitNavigation(
+      input_params, false, GURL(), NAVIGATION_TYPE_NEW_PAGE, render_frame_host);
   navigation_handle.reset();
 
   // TODO(nasko): Move implementation here, but for the time being call out

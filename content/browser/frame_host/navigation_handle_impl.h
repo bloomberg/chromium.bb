@@ -24,6 +24,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/navigation_type.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/request_context_type.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
@@ -289,6 +290,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool did_replace_entry,
       const GURL& previous_url,
+      NavigationType navigation_type,
       RenderFrameHostImpl* render_frame_host);
 
   // Called during commit. Takes ownership of the embedder's NavigationData
@@ -312,6 +314,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void set_searchable_form_url(const GURL& url) { searchable_form_url_ = url; }
   void set_searchable_form_encoding(const std::string& encoding) {
     searchable_form_encoding_ = encoding;
+  }
+
+  NavigationType navigation_type() {
+    DCHECK_GE(state_, DID_COMMIT);
+    return navigation_type_;
   }
 
   void set_response_headers_for_testing(
@@ -481,6 +488,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   GURL previous_url_;
   GURL base_url_;
   net::HostPortPair socket_address_;
+  NavigationType navigation_type_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 
