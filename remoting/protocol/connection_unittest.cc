@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/base/constants.h"
@@ -258,7 +259,8 @@ class ConnectionTest : public testing::Test,
                        public testing::WithParamInterface<bool> {
  public:
   ConnectionTest()
-      : video_encode_thread_("VideoEncode"),
+      : scoped_task_scheduler_(&message_loop_),
+        video_encode_thread_("VideoEncode"),
         audio_encode_thread_("AudioEncode"),
         audio_decode_thread_("AudioDecode") {
     video_encode_thread_.Start();
@@ -429,6 +431,7 @@ class ConnectionTest : public testing::Test,
   }
 
   base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   MockConnectionToClientEventHandler host_event_handler_;
