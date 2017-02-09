@@ -225,13 +225,6 @@ size_t BaseArena::objectPayloadSizeForTesting() {
   return objectPayloadSize;
 }
 
-void BaseArena::prepareHeapForTermination() {
-  ASSERT(!m_firstUnsweptPage);
-  for (BasePage* page = m_firstPage; page; page = page->next()) {
-    page->setTerminating();
-  }
-}
-
 void BaseArena::prepareForSweep() {
   ASSERT(getThreadState()->isInGC());
   ASSERT(!m_firstUnsweptPage);
@@ -1242,7 +1235,6 @@ BasePage::BasePage(PageMemory* storage, BaseArena* arena)
     : m_storage(storage),
       m_arena(arena),
       m_next(nullptr),
-      m_terminating(false),
       m_swept(true) {
   ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
 }

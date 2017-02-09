@@ -153,7 +153,6 @@ ThreadState::ThreadState()
       m_accumulatedSweepingTime(0),
       m_vectorBackingArenaIndex(BlinkGC::Vector1ArenaIndex),
       m_currentArenaAges(0),
-      m_isTerminating(false),
       m_gcMixinMarker(nullptr),
       m_shouldFlushHeapDoesNotContainCache(false),
       m_gcState(NoGCScheduled),
@@ -223,17 +222,6 @@ void ThreadState::runTerminationGC() {
   completeSweep();
 
   releaseStaticPersistentNodes();
-
-  // From here on ignore all conservatively discovered
-  // pointers into the heap owned by this thread.
-  m_isTerminating = true;
-
-  // Set the terminate flag on all heap pages of this thread. This is used to
-  // ensure we don't trace pages on other threads that are not part of the
-  // thread local GC.
-  // TODO(haraken): Remove this. This is not needed once we remove a thread-
-  // local termination GC.
-  prepareForThreadStateTermination();
 
   ProcessHeap::crossThreadPersistentRegion().prepareForThreadStateTermination(
       this);
@@ -1198,12 +1186,6 @@ void ThreadState::postSweep() {
     default:
       ASSERT_NOT_REACHED();
   }
-}
-
-void ThreadState::prepareForThreadStateTermination() {
-  ASSERT(checkThread());
-  for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
-    m_arenas[i]->prepareHeapForTermination();
 }
 
 #if DCHECK_IS_ON()

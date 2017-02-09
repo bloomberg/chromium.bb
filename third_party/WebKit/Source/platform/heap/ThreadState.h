@@ -165,8 +165,6 @@ class PLATFORM_EXPORT ThreadState {
   void lockThreadAttachMutex();
   void unlockThreadAttachMutex();
 
-  bool isTerminating() { return m_isTerminating; }
-
   static void attachMainThread();
 
   // Associate ThreadState object with the current thread. After this
@@ -611,8 +609,6 @@ class PLATFORM_EXPORT ThreadState {
 
   void removeAllPages();
 
-  void prepareForThreadStateTermination();
-
   void invokePreFinalizers();
 
   void takeSnapshot(SnapshotType);
@@ -664,7 +660,6 @@ class PLATFORM_EXPORT ThreadState {
   size_t m_arenaAges[BlinkGC::NumberOfArenas];
   size_t m_currentArenaAges;
 
-  bool m_isTerminating;
   GarbageCollectedMixinConstructorMarker* m_gcMixinMarker;
 
   bool m_shouldFlushHeapDoesNotContainCache;

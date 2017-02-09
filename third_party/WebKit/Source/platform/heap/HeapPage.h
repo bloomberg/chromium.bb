@@ -434,8 +434,6 @@ class BasePage {
   Address getAddress() { return reinterpret_cast<Address>(this); }
   PageMemory* storage() const { return m_storage; }
   BaseArena* arena() const { return m_arena; }
-  bool terminating() { return m_terminating; }
-  void setTerminating() { m_terminating = true; }
 
   // Returns true if this page has been swept by the ongoing lazy sweep.
   bool hasBeenSwept() const { return m_swept; }
@@ -454,8 +452,6 @@ class BasePage {
   PageMemory* m_storage;
   BaseArena* m_arena;
   BasePage* m_next;
-  // Whether the page is part of a terminating thread or not.
-  bool m_terminating;
 
   // Track the sweeping state of a page. Set to true once
   // the lazy sweep completes has processed it.
@@ -727,7 +723,6 @@ class PLATFORM_EXPORT BaseArena {
   virtual bool isConsistentForGC() = 0;
 #endif
   size_t objectPayloadSizeForTesting();
-  void prepareHeapForTermination();
   void prepareForSweep();
 #if defined(ADDRESS_SANITIZER)
   void poisonArena();
