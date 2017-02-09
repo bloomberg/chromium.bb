@@ -1,0 +1,74 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/chrome_build.gni")
+import("//build/config/ios/rules.gni")
+import("//remoting/build/config/remoting_build.gni")
+
+bundle_data("assets") {
+  sources = [
+    "Assets.xcassets/ic_desktop.imageset/Contents.json",
+    "Assets.xcassets/ic_desktop.imageset/ic_desktop.png",
+    "Assets.xcassets/ic_desktop.imageset/ic_desktop@2x.png",
+    "Assets.xcassets/ic_desktop.imageset/ic_desktop@3x.png",
+    "Assets.xcassets/ic_desktop_windows.imageset/Contents.json",
+    "Assets.xcassets/ic_desktop_windows.imageset/ic_desktop_windows.png",
+    "Assets.xcassets/ic_desktop_windows.imageset/ic_desktop_windows@2x.png",
+    "Assets.xcassets/ic_desktop_windows.imageset/ic_desktop_windows@3x.png",
+    "Assets.xcassets/ic_fullscreen.imageset/Contents.json",
+    "Assets.xcassets/ic_fullscreen.imageset/ic_fullscreen.png",
+    "Assets.xcassets/ic_fullscreen.imageset/ic_fullscreen@2x.png",
+    "Assets.xcassets/ic_fullscreen.imageset/ic_fullscreen@3x.png",
+    "Assets.xcassets/ic_fullscreen_exit.imageset/Contents.json",
+    "Assets.xcassets/ic_fullscreen_exit.imageset/ic_fullscreen_exit.png",
+    "Assets.xcassets/ic_fullscreen_exit.imageset/ic_fullscreen_exit@2x.png",
+    "Assets.xcassets/ic_fullscreen_exit.imageset/ic_fullscreen_exit@3x.png",
+    "Assets.xcassets/ic_mouse.imageset/Contents.json",
+    "Assets.xcassets/ic_mouse.imageset/ic_mouse.png",
+    "Assets.xcassets/ic_mouse.imageset/ic_mouse@2x.png",
+    "Assets.xcassets/ic_mouse.imageset/ic_mouse@3x.png",
+    "Assets.xcassets/ic_touch_app.imageset/Contents.json",
+    "Assets.xcassets/ic_touch_app.imageset/ic_touch_app.png",
+    "Assets.xcassets/ic_touch_app.imageset/ic_touch_app_2x.png",
+    "Assets.xcassets/ic_touch_app.imageset/ic_touch_app_3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
+bundle_data("launchscreen_assets") {
+  sources = [
+    "launchscreen_images.xcassets/Contents.json",
+    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/Contents.json",
+    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo.png",
+    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo@2x.png",
+    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo@3x.png",
+    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/Contents.json",
+    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name.png",
+    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name@2x.png",
+    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
+bundle_data("remoting_icons") {
+  sources = [
+    "chromium/Icon-120.png",
+    "chromium/Icon-152.png",
+    "chromium/Icon-167.png",
+    "chromium/Icon-180.png",
+    "chromium/Icon-29.png",
+    "chromium/Icon-40.png",
+    "chromium/Icon-58.png",
+    "chromium/Icon-76.png",
+    "chromium/Icon-80.png",
+    "chromium/Icon-87.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
