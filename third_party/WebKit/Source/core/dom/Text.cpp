@@ -254,6 +254,8 @@ static inline bool canHaveWhitespaceChildren(const LayoutObject& parent) {
 
 bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style,
                                     const LayoutObject& parent) const {
+  DCHECK(!document().childNeedsDistributionRecalc());
+
   if (!parent.canHaveChildren())
     return false;
 
@@ -278,11 +280,6 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style,
 
   // pre/pre-wrap/pre-line always make layoutObjects.
   if (style.preserveNewline())
-    return true;
-
-  // childNeedsDistributionRecalc() here is rare, only happens JS calling
-  // surroundContents() etc. from DOMNodeInsertedIntoDocument etc.
-  if (document().childNeedsDistributionRecalc())
     return true;
 
   // Avoiding creation of a layoutObject for the text node is a non-essential
@@ -423,9 +420,14 @@ static bool shouldUpdateLayoutByReattaching(const Text& textNode,
   DCHECK_EQ(textNode.layoutObject(), textLayoutObject);
   if (!textLayoutObject)
     return true;
-  if (!textNode.textLayoutObjectIsNeeded(*textLayoutObject->style(),
-                                         *textLayoutObject->parent()))
+  // In general we do not want to branch on lifecycle states such as
+  // |childNeedsDistributionRecalc|, but this code tries to figure out if we can
+  // use an optimized code path that avoids reattach.
+  if (!textNode.document().childNeedsDistributionRecalc() &&
+      !textNode.textLayoutObjectIsNeeded(*textLayoutObject->style(),
+                                         *textLayoutObject->parent())) {
     return true;
+  }
   if (textLayoutObject->isTextFragment()) {
     // Changes of |textNode| may change first letter part, so we should
     // reattach.
