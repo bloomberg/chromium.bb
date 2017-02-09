@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/display/screen_manager_ozone.h"
+#include "services/ui/display/screen_manager_ozone_internal.h"
 
 #include <string>
 #include <utility>
@@ -55,12 +55,12 @@ void SwapRecursive(const std::map<int64_t, DisplayPlacement*>& id_to_placement,
 
 // static
 std::unique_ptr<ScreenManager> ScreenManager::Create() {
-  return base::MakeUnique<ScreenManagerOzone>();
+  return base::MakeUnique<ScreenManagerOzoneInternal>();
 }
 
-ScreenManagerOzone::ScreenManagerOzone() {}
+ScreenManagerOzoneInternal::ScreenManagerOzoneInternal() {}
 
-ScreenManagerOzone::~ScreenManagerOzone() {
+ScreenManagerOzoneInternal::~ScreenManagerOzoneInternal() {
   // We are shutting down and don't want to make anymore display changes.
   fake_display_controller_ = nullptr;
 
@@ -78,7 +78,7 @@ ScreenManagerOzone::~ScreenManagerOzone() {
     display_manager_.reset();
 }
 
-void ScreenManagerOzone::SetPrimaryDisplayId(int64_t display_id) {
+void ScreenManagerOzoneInternal::SetPrimaryDisplayId(int64_t display_id) {
   DCHECK_NE(kInvalidDisplayId, display_id);
   if (primary_display_id_ == display_id)
     return;
@@ -132,13 +132,13 @@ void ScreenManagerOzone::SetPrimaryDisplayId(int64_t display_id) {
   delegate_->OnPrimaryDisplayChanged(primary_display_id_);
 }
 
-void ScreenManagerOzone::AddInterfaces(
+void ScreenManagerOzoneInternal::AddInterfaces(
     service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::DisplayController>(this);
   registry->AddInterface<mojom::TestDisplayController>(this);
 }
 
-void ScreenManagerOzone::Init(ScreenManagerDelegate* delegate) {
+void ScreenManagerOzoneInternal::Init(ScreenManagerDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 
@@ -188,7 +188,7 @@ void ScreenManagerOzone::Init(ScreenManagerDelegate* delegate) {
       &display_configurator_, display_manager_.get());
 }
 
-void ScreenManagerOzone::RequestCloseDisplay(int64_t display_id) {
+void ScreenManagerOzoneInternal::RequestCloseDisplay(int64_t display_id) {
   if (!fake_display_controller_)
     return;
 
@@ -197,11 +197,11 @@ void ScreenManagerOzone::RequestCloseDisplay(int64_t display_id) {
   fake_display_controller_->RemoveDisplay(display_id);
 }
 
-int64_t ScreenManagerOzone::GetPrimaryDisplayId() const {
+int64_t ScreenManagerOzoneInternal::GetPrimaryDisplayId() const {
   return primary_display_id_;
 }
 
-void ScreenManagerOzone::ToggleAddRemoveDisplay() {
+void ScreenManagerOzoneInternal::ToggleAddRemoveDisplay() {
   if (!fake_display_controller_)
     return;
   DVLOG(1) << "ToggleAddRemoveDisplay";
@@ -219,7 +219,7 @@ void ScreenManagerOzone::ToggleAddRemoveDisplay() {
   }
 }
 
-void ScreenManagerOzone::ToggleDisplayResolution() {
+void ScreenManagerOzoneInternal::ToggleDisplayResolution() {
   if (primary_display_id_ == kInvalidDisplayId)
     return;
 
@@ -244,26 +244,26 @@ void ScreenManagerOzone::ToggleDisplayResolution() {
     display_manager_->SetDisplayMode(primary_display_id_, mode);
 }
 
-void ScreenManagerOzone::IncreaseInternalDisplayZoom() {
+void ScreenManagerOzoneInternal::IncreaseInternalDisplayZoom() {
   if (Display::HasInternalDisplay())
     display_manager_->ZoomInternalDisplay(false);
 }
 
-void ScreenManagerOzone::DecreaseInternalDisplayZoom() {
+void ScreenManagerOzoneInternal::DecreaseInternalDisplayZoom() {
   if (Display::HasInternalDisplay())
     display_manager_->ZoomInternalDisplay(true);
 }
 
-void ScreenManagerOzone::ResetInternalDisplayZoom() {
+void ScreenManagerOzoneInternal::ResetInternalDisplayZoom() {
   if (Display::HasInternalDisplay())
     display_manager_->ResetInternalDisplayZoom();
 }
 
-void ScreenManagerOzone::RotateCurrentDisplayCW() {
+void ScreenManagerOzoneInternal::RotateCurrentDisplayCW() {
   NOTIMPLEMENTED();
 }
 
-void ScreenManagerOzone::SwapPrimaryDisplay() {
+void ScreenManagerOzoneInternal::SwapPrimaryDisplay() {
   // Can't swap if there is only 1 display and swapping isn't supported for 3 or
   // more displays.
   if (display_manager_->GetNumDisplays() != 2)
@@ -280,28 +280,28 @@ void ScreenManagerOzone::SwapPrimaryDisplay() {
     SetPrimaryDisplayId(display_ids[0]);
 }
 
-void ScreenManagerOzone::ToggleMirrorMode() {
+void ScreenManagerOzoneInternal::ToggleMirrorMode() {
   NOTIMPLEMENTED();
 }
 
-void ScreenManagerOzone::SetDisplayWorkArea(int64_t display_id,
-                                            const gfx::Size& size,
-                                            const gfx::Insets& insets) {
+void ScreenManagerOzoneInternal::SetDisplayWorkArea(int64_t display_id,
+                                                    const gfx::Size& size,
+                                                    const gfx::Insets& insets) {
   // TODO(kylechar): Check the size of the display matches the current size.
   display_manager_->UpdateWorkAreaOfDisplay(display_id, insets);
 }
 
-void ScreenManagerOzone::TakeDisplayControl(
+void ScreenManagerOzoneInternal::TakeDisplayControl(
     const TakeDisplayControlCallback& callback) {
   display_configurator_.TakeControl(callback);
 }
 
-void ScreenManagerOzone::RelinquishDisplayControl(
+void ScreenManagerOzoneInternal::RelinquishDisplayControl(
     const RelinquishDisplayControlCallback& callback) {
   display_configurator_.RelinquishControl(callback);
 }
 
-void ScreenManagerOzone::OnDisplayAdded(const Display& display) {
+void ScreenManagerOzoneInternal::OnDisplayAdded(const Display& display) {
   ViewportMetrics metrics = GetViewportMetricsForDisplay(display);
   DVLOG(1) << "OnDisplayAdded: " << display.ToString() << "\n  "
            << metrics.ToString();
@@ -309,7 +309,7 @@ void ScreenManagerOzone::OnDisplayAdded(const Display& display) {
   delegate_->OnDisplayAdded(display.id(), metrics);
 }
 
-void ScreenManagerOzone::OnDisplayRemoved(const Display& display) {
+void ScreenManagerOzoneInternal::OnDisplayRemoved(const Display& display) {
   // TODO(kylechar): If we're removing the primary display we need to first set
   // a new primary display. This will crash until then.
 
@@ -318,8 +318,9 @@ void ScreenManagerOzone::OnDisplayRemoved(const Display& display) {
   delegate_->OnDisplayRemoved(display.id());
 }
 
-void ScreenManagerOzone::OnDisplayMetricsChanged(const Display& display,
-                                                 uint32_t changed_metrics) {
+void ScreenManagerOzoneInternal::OnDisplayMetricsChanged(
+    const Display& display,
+    uint32_t changed_metrics) {
   ViewportMetrics metrics = GetViewportMetricsForDisplay(display);
   DVLOG(1) << "OnDisplayModified: " << display.ToString() << "\n  "
            << metrics.ToString();
@@ -327,7 +328,7 @@ void ScreenManagerOzone::OnDisplayMetricsChanged(const Display& display,
   delegate_->OnDisplayModified(display.id(), metrics);
 }
 
-ViewportMetrics ScreenManagerOzone::GetViewportMetricsForDisplay(
+ViewportMetrics ScreenManagerOzoneInternal::GetViewportMetricsForDisplay(
     const Display& display) {
   const ManagedDisplayInfo& managed_info =
       display_manager_->GetDisplayInfo(display.id());
@@ -344,20 +345,21 @@ ViewportMetrics ScreenManagerOzone::GetViewportMetricsForDisplay(
   return metrics;
 }
 
-void ScreenManagerOzone::CreateOrUpdateMirroringDisplay(
+void ScreenManagerOzoneInternal::CreateOrUpdateMirroringDisplay(
     const DisplayInfoList& display_info_list) {
   NOTIMPLEMENTED();
 }
 
-void ScreenManagerOzone::CloseMirroringDisplayIfNotNecessary() {
+void ScreenManagerOzoneInternal::CloseMirroringDisplayIfNotNecessary() {
   NOTIMPLEMENTED();
 }
 
-void ScreenManagerOzone::PreDisplayConfigurationChange(bool clear_focus) {
+void ScreenManagerOzoneInternal::PreDisplayConfigurationChange(
+    bool clear_focus) {
   DVLOG(1) << "PreDisplayConfigurationChange";
 }
 
-void ScreenManagerOzone::PostDisplayConfigurationChange(
+void ScreenManagerOzoneInternal::PostDisplayConfigurationChange(
     bool must_clear_window) {
   // Set primary display if not set yet.
   if (primary_display_id_ == kInvalidDisplayId) {
@@ -377,17 +379,17 @@ void ScreenManagerOzone::PostDisplayConfigurationChange(
   DVLOG(1) << "PostDisplayConfigurationChange";
 }
 
-DisplayConfigurator* ScreenManagerOzone::display_configurator() {
+DisplayConfigurator* ScreenManagerOzoneInternal::display_configurator() {
   return &display_configurator_;
 }
 
-void ScreenManagerOzone::Create(
+void ScreenManagerOzoneInternal::Create(
     const service_manager::Identity& remote_identity,
     mojom::DisplayControllerRequest request) {
   controller_bindings_.AddBinding(this, std::move(request));
 }
 
-void ScreenManagerOzone::Create(
+void ScreenManagerOzoneInternal::Create(
     const service_manager::Identity& remote_identity,
     mojom::TestDisplayControllerRequest request) {
   test_bindings_.AddBinding(this, std::move(request));

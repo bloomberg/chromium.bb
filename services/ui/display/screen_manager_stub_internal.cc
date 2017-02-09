@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/display/screen_manager_stub.h"
+#include "services/ui/display/screen_manager_stub_internal.h"
 
 #include <memory>
 
@@ -40,30 +40,32 @@ ViewportMetrics DefaultViewportMetrics() {
 
 // static
 std::unique_ptr<ScreenManager> ScreenManager::Create() {
-  return base::MakeUnique<ScreenManagerStub>();
+  return base::MakeUnique<ScreenManagerStubInternal>();
 }
 
-ScreenManagerStub::ScreenManagerStub() : weak_ptr_factory_(this) {}
+ScreenManagerStubInternal::ScreenManagerStubInternal()
+    : weak_ptr_factory_(this) {}
 
-ScreenManagerStub::~ScreenManagerStub() {}
+ScreenManagerStubInternal::~ScreenManagerStubInternal() {}
 
-void ScreenManagerStub::FixedSizeScreenConfiguration() {
+void ScreenManagerStubInternal::FixedSizeScreenConfiguration() {
   delegate_->OnDisplayAdded(display_id_, display_metrics_);
 }
 
-void ScreenManagerStub::AddInterfaces(
+void ScreenManagerStubInternal::AddInterfaces(
     service_manager::InterfaceRegistry* registry) {}
 
-void ScreenManagerStub::Init(ScreenManagerDelegate* delegate) {
+void ScreenManagerStubInternal::Init(ScreenManagerDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
   display_metrics_ = DefaultViewportMetrics();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ScreenManagerStub::FixedSizeScreenConfiguration,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::Bind(&ScreenManagerStubInternal::FixedSizeScreenConfiguration,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ScreenManagerStub::RequestCloseDisplay(int64_t display_id) {
+void ScreenManagerStubInternal::RequestCloseDisplay(int64_t display_id) {
   if (display_id == display_id_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ScreenManagerDelegate::OnDisplayRemoved,
@@ -71,7 +73,7 @@ void ScreenManagerStub::RequestCloseDisplay(int64_t display_id) {
   }
 }
 
-int64_t ScreenManagerStub::GetPrimaryDisplayId() const {
+int64_t ScreenManagerStubInternal::GetPrimaryDisplayId() const {
   return display_id_;
 }
 

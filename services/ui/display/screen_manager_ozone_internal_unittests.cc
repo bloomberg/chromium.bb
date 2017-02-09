@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "services/ui/common/task_runner_test_base.h"
-#include "services/ui/display/screen_manager_ozone.h"
+#include "services/ui/display/screen_manager_ozone_internal.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,13 +112,13 @@ class TestScreenManagerDelegate : public ScreenManagerDelegate {
 }  // namespace
 
 // Test fixture with helpers to act like DisplayConfigurator and send
-// OnDisplayModeChanged() to ScreenManagerOzone.
-class ScreenManagerOzoneTest : public ui::TaskRunnerTestBase {
+// OnDisplayModeChanged() to ScreenManagerOzoneInternal.
+class ScreenManagerOzoneInternalTest : public ui::TaskRunnerTestBase {
  public:
-  ScreenManagerOzoneTest() {}
-  ~ScreenManagerOzoneTest() override {}
+  ScreenManagerOzoneInternalTest() {}
+  ~ScreenManagerOzoneInternalTest() override {}
 
-  ScreenManagerOzone* screen_manager() { return screen_manager_.get(); }
+  ScreenManagerOzoneInternal* screen_manager() { return screen_manager_.get(); }
   TestScreenManagerDelegate* delegate() { return &delegate_; }
 
   // Adds a display snapshot with specified ID and default size.
@@ -152,7 +152,7 @@ class ScreenManagerOzoneTest : public ui::TaskRunnerTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitchNative(
         switches::kScreenConfig, "none");
 
-    screen_manager_ = base::MakeUnique<ScreenManagerOzone>();
+    screen_manager_ = base::MakeUnique<ScreenManagerOzoneInternal>();
 
     // Create NDD for FakeDisplayController.
     std::unique_ptr<NativeDisplayDelegate> ndd =
@@ -187,10 +187,10 @@ class ScreenManagerOzoneTest : public ui::TaskRunnerTestBase {
 
   FakeDisplayController* fake_display_controller_ = nullptr;
   TestScreenManagerDelegate delegate_;
-  std::unique_ptr<ScreenManagerOzone> screen_manager_;
+  std::unique_ptr<ScreenManagerOzoneInternal> screen_manager_;
 };
 
-TEST_F(ScreenManagerOzoneTest, AddDisplay) {
+TEST_F(ScreenManagerOzoneInternalTest, AddDisplay) {
   AddDisplay(FakeDisplaySnapshot::Builder()
                  .SetId(2)
                  .SetNativeMode(gfx::Size(1600, 900))
@@ -202,7 +202,7 @@ TEST_F(ScreenManagerOzoneTest, AddDisplay) {
   EXPECT_THAT(delegate()->added()[0], DisplayBoundsIs("1024,0 1600x900"));
 }
 
-TEST_F(ScreenManagerOzoneTest, RemoveDisplay) {
+TEST_F(ScreenManagerOzoneInternalTest, RemoveDisplay) {
   AddDisplay(2);
   delegate()->Reset();
 
@@ -212,7 +212,7 @@ TEST_F(ScreenManagerOzoneTest, RemoveDisplay) {
   EXPECT_EQ("Removed(2)", delegate()->changes());
 }
 
-TEST_F(ScreenManagerOzoneTest, DISABLED_RemovePrimaryDisplay) {
+TEST_F(ScreenManagerOzoneInternalTest, DISABLED_RemovePrimaryDisplay) {
   AddDisplay(2);
   delegate()->Reset();
 
@@ -226,7 +226,7 @@ TEST_F(ScreenManagerOzoneTest, DISABLED_RemovePrimaryDisplay) {
   EXPECT_THAT(delegate()->modified()[0], DisplayBoundsIs("0,0 1024x768"));
 }
 
-TEST_F(ScreenManagerOzoneTest, AddRemoveMultipleDisplay) {
+TEST_F(ScreenManagerOzoneInternalTest, AddRemoveMultipleDisplay) {
   AddDisplay(2);
   AddDisplay(3);
   EXPECT_EQ("Added(2);Added(3)", delegate()->changes());
@@ -245,7 +245,7 @@ TEST_F(ScreenManagerOzoneTest, AddRemoveMultipleDisplay) {
   EXPECT_EQ("Removed(3)", delegate()->changes());
 }
 
-TEST_F(ScreenManagerOzoneTest, AddDisplay4k) {
+TEST_F(ScreenManagerOzoneInternalTest, AddDisplay4k) {
   AddDisplay(FakeDisplaySnapshot::Builder()
                  .SetId(2)
                  .SetNativeMode(gfx::Size(4096, 2160))
@@ -259,7 +259,7 @@ TEST_F(ScreenManagerOzoneTest, AddDisplay4k) {
   EXPECT_THAT(delegate()->added()[0], DisplayPixelSizeIs("4096x2160"));
 }
 
-TEST_F(ScreenManagerOzoneTest, SwapPrimaryDisplay) {
+TEST_F(ScreenManagerOzoneInternalTest, SwapPrimaryDisplay) {
   AddDisplay(2);
   delegate()->Reset();
 

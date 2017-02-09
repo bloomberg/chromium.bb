@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_DISPLAY_SCREEN_MANAGER_OZONE_H_
-#define SERVICES_UI_DISPLAY_SCREEN_MANAGER_OZONE_H_
+#ifndef SERVICES_UI_DISPLAY_SCREEN_MANAGER_OZONE_INTERNAL_H_
+#define SERVICES_UI_DISPLAY_SCREEN_MANAGER_OZONE_INTERNAL_H_
 
 #include <stdint.h>
 
@@ -30,9 +30,10 @@ class FakeDisplayController;
 class ScreenBase;
 class TouchTransformController;
 
-// ScreenManagerOzone provides the necessary functionality to configure all
-// attached physical displays on the ozone platform.
-class ScreenManagerOzone
+// ScreenManagerOzoneInternal provides the necessary functionality to configure
+// all attached physical displays on the the ozone platform when operating in
+// internal window mode.
+class ScreenManagerOzoneInternal
     : public ScreenManager,
       public mojom::TestDisplayController,
       public mojom::DisplayController,
@@ -41,8 +42,8 @@ class ScreenManagerOzone
       public service_manager::InterfaceFactory<mojom::DisplayController>,
       public service_manager::InterfaceFactory<mojom::TestDisplayController> {
  public:
-  ScreenManagerOzone();
-  ~ScreenManagerOzone() override;
+  ScreenManagerOzoneInternal();
+  ~ScreenManagerOzoneInternal() override;
 
   void SetPrimaryDisplayId(int64_t display_id);
 
@@ -71,7 +72,7 @@ class ScreenManagerOzone
       const RelinquishDisplayControlCallback& callback) override;
 
  private:
-  friend class ScreenManagerOzoneTest;
+  friend class ScreenManagerOzoneInternalTest;
 
   ViewportMetrics GetViewportMetricsForDisplay(const Display& display);
 
@@ -116,9 +117,9 @@ class ScreenManagerOzone
   mojo::BindingSet<mojom::DisplayController> controller_bindings_;
   mojo::BindingSet<mojom::TestDisplayController> test_bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenManagerOzone);
+  DISALLOW_COPY_AND_ASSIGN(ScreenManagerOzoneInternal);
 };
 
 }  // namespace display
 
-#endif  // SERVICES_UI_DISPLAY_SCREEN_MANAGER_OZONE_H_
+#endif  // SERVICES_UI_DISPLAY_SCREEN_MANAGER_OZONE_INTERNAL_H_

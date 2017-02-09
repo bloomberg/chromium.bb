@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_DISPLAY_SCREEN_MANAGER_STUB_H_
-#define SERVICES_UI_DISPLAY_SCREEN_MANAGER_STUB_H_
+#ifndef SERVICES_UI_DISPLAY_SCREEN_MANAGER_STUB_INTERNAL_H_
+#define SERVICES_UI_DISPLAY_SCREEN_MANAGER_STUB_INTERNAL_H_
 
 #include <stdint.h>
 
@@ -13,12 +13,13 @@
 
 namespace display {
 
-// ScreenManagerStub provides the necessary functionality to configure a fixed
+// ScreenManagerStubInternal provides the necessary functionality to configure a
+// fixed
 // 1024x768 display for non-ozone platforms.
-class ScreenManagerStub : public ScreenManager {
+class ScreenManagerStubInternal : public ScreenManager {
  public:
-  ScreenManagerStub();
-  ~ScreenManagerStub() override;
+  ScreenManagerStubInternal();
+  ~ScreenManagerStubInternal() override;
 
  private:
   // Fake creation of a single 1024x768 display.
@@ -36,11 +37,11 @@ class ScreenManagerStub : public ScreenManager {
 
   ScreenManagerDelegate* delegate_ = nullptr;
 
-  base::WeakPtrFactory<ScreenManagerStub> weak_ptr_factory_;
+  base::WeakPtrFactory<ScreenManagerStubInternal> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenManagerStub);
+  DISALLOW_COPY_AND_ASSIGN(ScreenManagerStubInternal);
 };
 
 }  // namespace display
 
-#endif  // SERVICES_UI_DISPLAY_SCREEN_MANAGER_STUB_H_
+#endif  // SERVICES_UI_DISPLAY_SCREEN_MANAGER_STUB_INTERNAL_H_
