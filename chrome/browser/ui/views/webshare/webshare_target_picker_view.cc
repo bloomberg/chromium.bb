@@ -8,18 +8,57 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/table_model.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/window/dialog_client_view.h"
+#include "url/gurl.h"
 
 namespace {
 
 int kDialogWidth = 500;
 int kDialogHeight = 400;
 
-}  // namespace
+}
+
+// Supplies data to the table view.
+class TargetPickerTableModel : public ui::TableModel {
+ public:
+  explicit TargetPickerTableModel(
+      const std::vector<std::pair<base::string16, GURL>>* targets);
+
+ private:
+  // ui::TableModel overrides:
+  int RowCount() override;
+  base::string16 GetText(int row, int column_id) override;
+  void SetObserver(ui::TableModelObserver* observer) override;
+
+  // Owned by WebShareTargetPickerView.
+  const std::vector<std::pair<base::string16, GURL>>* targets_;
+
+  DISALLOW_COPY_AND_ASSIGN(TargetPickerTableModel);
+};
+
+TargetPickerTableModel::TargetPickerTableModel(
+    const std::vector<std::pair<base::string16, GURL>>* targets)
+    : targets_(targets) {}
+
+int TargetPickerTableModel::RowCount() {
+  return targets_->size();
+}
+
+base::string16 TargetPickerTableModel::GetText(int row, int /*column_id*/) {
+  // Show "title (origin)", to disambiguate titles that are the same, and as a
+  // security measure.
+  return (*targets_)[row].first +
+         base::UTF8ToUTF16(" (" + (*targets_)[row].second.GetOrigin().spec() +
+                           ")");
+}
+
+void TargetPickerTableModel::SetObserver(ui::TableModelObserver* observer) {}
 
 namespace chrome {
 
@@ -37,7 +76,9 @@ void ShowWebShareTargetPickerDialog(
 WebShareTargetPickerView::WebShareTargetPickerView(
     const std::vector<std::pair<base::string16, GURL>>& targets,
     const base::Callback<void(base::Optional<std::string>)>& close_callback)
-    : targets_(targets), close_callback_(close_callback) {
+    : targets_(targets),
+      table_model_(base::MakeUnique<TargetPickerTableModel>(&targets_)),
+      close_callback_(close_callback) {
   views::BoxLayout* layout = new views::BoxLayout(
       views::BoxLayout::kVertical, views::kPanelHorizMargin,
       views::kPanelVertMargin, views::kRelatedControlVerticalSpacing);
@@ -48,9 +89,10 @@ WebShareTargetPickerView::WebShareTargetPickerView(
   AddChildView(overview_label);
 
   std::vector<ui::TableColumn> table_columns{ui::TableColumn()};
-  table_ = new views::TableView(this, table_columns, views::TEXT_ONLY, true);
+  table_ = new views::TableView(table_model_.get(), table_columns,
+                                views::TEXT_ONLY, true);
   // Select the first row.
-  if (RowCount() > 0)
+  if (targets_.size() > 0)
     table_->Select(0);
 
   table_->set_observer(this);
@@ -63,7 +105,12 @@ WebShareTargetPickerView::WebShareTargetPickerView(
   layout->SetFlexForView(table_parent, 1);
 }
 
-WebShareTargetPickerView::~WebShareTargetPickerView() {}
+WebShareTargetPickerView::~WebShareTargetPickerView() {
+  // Clear the pointer from |table_| which currently points at |table_model_|.
+  // Otherwise, |table_model_| will be deleted before |table_|, and |table_|'s
+  // destructor will try to call a method on the model.
+  table_->SetModel(nullptr);
+}
 
 gfx::Size WebShareTargetPickerView::GetPreferredSize() const {
   return gfx::Size(kDialogWidth, kDialogHeight);
@@ -117,17 +164,3 @@ void WebShareTargetPickerView::OnSelectionChanged() {
 void WebShareTargetPickerView::OnDoubleClick() {
   GetDialogClientView()->AcceptWindow();
 }
-
-int WebShareTargetPickerView::RowCount() {
-  return targets_.size();
-}
-
-base::string16 WebShareTargetPickerView::GetText(int row, int /*column_id*/) {
-  // Show "title (origin)", to disambiguate titles that are the same, and as a
-  // security measure.
-  return targets_[row].first +
-         base::UTF8ToUTF16(" (" + targets_[row].second.GetOrigin().spec() +
-                           ")");
-}
-
-void WebShareTargetPickerView::SetObserver(ui::TableModelObserver* observer) {}
