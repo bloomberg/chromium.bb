@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -11,6 +10,10 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface NewTabPageBar (Testing)
 - (void)buttonDidTap:(UIButton*)button;
@@ -22,9 +25,9 @@ class NewTabPageBarTest : public PlatformTest {
  protected:
   void SetUp() override {
     CGRect frame = CGRectMake(0, 0, 320, 44);
-    bar_.reset([[NewTabPageBar alloc] initWithFrame:frame]);
+    bar_ = [[NewTabPageBar alloc] initWithFrame:frame];
   };
-  base::scoped_nsobject<NewTabPageBar> bar_;
+  NewTabPageBar* bar_;
 };
 
 TEST_F(NewTabPageBarTest, SetItems) {
@@ -45,14 +48,14 @@ TEST_F(NewTabPageBarTest, SetItems) {
                            image:[UIImage imageNamed:@"ntp_bookmarks"]];
 
   [bar_ setItems:[NSArray arrayWithObject:firstItem]];
-  EXPECT_EQ(bar_.get().buttons.count, 1U);
+  EXPECT_EQ(bar_.buttons.count, 1U);
   [bar_ setItems:[NSArray arrayWithObjects:firstItem, secondItem, nil]];
-  EXPECT_EQ(bar_.get().buttons.count, 2U);
+  EXPECT_EQ(bar_.buttons.count, 2U);
   [bar_ setItems:[NSArray
                      arrayWithObjects:firstItem, secondItem, thirdItem, nil]];
-  EXPECT_EQ(bar_.get().buttons.count, 3U);
+  EXPECT_EQ(bar_.buttons.count, 3U);
   [bar_ setItems:[NSArray arrayWithObject:firstItem]];
-  EXPECT_EQ(bar_.get().buttons.count, 1U);
+  EXPECT_EQ(bar_.buttons.count, 1U);
 }
 
 TEST_F(NewTabPageBarTest, SetSelectedIndex_iPadOnly) {

@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/search_engines/template_url_service.h"
@@ -18,6 +17,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -49,14 +52,13 @@ class GoogleLandingControllerTest : public BlockCleanupTest {
     template_url_service->Load();
 
     // Set up stub UrlLoader.
-    mockUrlLoader_.reset(
-        [[OCMockObject mockForProtocol:@protocol(UrlLoader)] retain]);
-    controller_.reset([[GoogleLandingController alloc]
-            initWithLoader:(id<UrlLoader>)mockUrlLoader_.get()
+    mockUrlLoader_ = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
+    controller_ = [[GoogleLandingController alloc]
+            initWithLoader:(id<UrlLoader>)mockUrlLoader_
               browserState:chrome_browser_state_.get()
                    focuser:nil
         webToolbarDelegate:nil
-                  tabModel:nil]);
+                  tabModel:nil];
   };
 
   base::MessageLoopForUI message_loop_;
@@ -64,12 +66,12 @@ class GoogleLandingControllerTest : public BlockCleanupTest {
   web::TestWebThread io_thread_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<OCMockObject> mockUrlLoader_;
-  base::scoped_nsobject<GoogleLandingController> controller_;
+  OCMockObject* mockUrlLoader_;
+  GoogleLandingController* controller_;
 };
 
 TEST_F(GoogleLandingControllerTest, TestConstructorDestructor) {
-  EXPECT_TRUE(controller_.get());
+  EXPECT_TRUE(controller_);
 }
 
 }  // anonymous namespace

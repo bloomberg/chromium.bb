@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -30,6 +28,10 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface NewTabPageController (TestSupport)
 - (id<NewTabPagePanelProtocol>)currentController;
 - (id<NewTabPagePanelProtocol>)bookmarkController;
@@ -51,7 +53,7 @@
 }
 
 - (id<NewTabPagePanelProtocol>)incognitoController {
-  return incognitoController_.get();
+  return incognitoController_;
 }
 
 @end
@@ -84,17 +86,17 @@ class NewTabPageControllerTest : public BlockCleanupTest {
         ios::BookmarkModelFactory::GetForBrowserState(
             chrome_browser_state_.get()));
     GURL url(kChromeUINewTabURL);
-    controller_.reset([[NewTabPageController alloc]
-               initWithUrl:url
-                    loader:nil
-                   focuser:nil
-               ntpObserver:nil
-              browserState:chrome_browser_state_.get()
-                colorCache:nil
-        webToolbarDelegate:nil
-                  tabModel:nil]);
+    controller_ =
+        [[NewTabPageController alloc] initWithUrl:url
+                                           loader:nil
+                                          focuser:nil
+                                      ntpObserver:nil
+                                     browserState:chrome_browser_state_.get()
+                                       colorCache:nil
+                               webToolbarDelegate:nil
+                                         tabModel:nil];
 
-    incognitoController_.reset([[NewTabPageController alloc]
+    incognitoController_ = [[NewTabPageController alloc]
                initWithUrl:url
                     loader:nil
                    focuser:nil
@@ -103,12 +105,12 @@ class NewTabPageControllerTest : public BlockCleanupTest {
                                ->GetOffTheRecordChromeBrowserState()
                 colorCache:nil
         webToolbarDelegate:nil
-                  tabModel:nil]);
+                  tabModel:nil];
   };
 
   void TearDown() override {
-    incognitoController_.reset();
-    controller_.reset();
+    incognitoController_ = nil;
+    controller_ = nil;
 
     // There may be blocks released below that have weak references to |profile|
     // owned by chrome_browser_state_.  Ensure BlockCleanupTest::TearDown() is
@@ -120,11 +122,8 @@ class NewTabPageControllerTest : public BlockCleanupTest {
   web::TestWebThreadBundle thread_bundle_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<NewTabPageController> controller_;
-  base::scoped_nsobject<NewTabPageController> incognitoController_;
-  // The pool has to be the last declared field because it must be destroyed
-  // first.
-  base::mac::ScopedNSAutoreleasePool pool_;
+  NewTabPageController* controller_;
+  NewTabPageController* incognitoController_;
 };
 
 TEST_F(NewTabPageControllerTest, NewTabBarItemDidChange) {
