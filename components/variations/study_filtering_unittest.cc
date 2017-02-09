@@ -84,6 +84,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
     Study_FormFactor_DESKTOP,
     Study_FormFactor_PHONE,
     Study_FormFactor_TABLET,
+    Study_FormFactor_KIOSK,
   };
 
   ASSERT_EQ(Study_FormFactor_FormFactor_ARRAYSIZE,
@@ -98,7 +99,8 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
                             filter.form_factor_size() == 0;
       const bool result = internal::CheckStudyFormFactor(filter,
                                                          form_factors[j]);
-      EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
+      EXPECT_EQ(expected, result) << "form_factor: case " << i << "," << j
+                                  << " failed!";
     }
 
     if (i < arraysize(form_factors)) {
@@ -116,13 +118,53 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
                             filter.form_factor_size() == 0;
       const bool result = internal::CheckStudyFormFactor(filter,
                                                          form_factors[j]);
-      EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
+      EXPECT_EQ(expected, result) << "form_factor: case " << i << "," << j
+                                  << " failed!";
     }
 
     if (i < arraysize(form_factors)) {
       const int index = arraysize(form_factors) - i - 1;
       filter.add_form_factor(form_factors[index]);
       form_factor_added[index] = true;
+    }
+  }
+
+  // Test exclude_form_factors, forward order.
+  filter.clear_form_factor();
+  bool form_factor_excluded[arraysize(form_factors)] = { 0 };
+  for (size_t i = 0; i <= arraysize(form_factors); ++i) {
+    for (size_t j = 0; j < arraysize(form_factors); ++j) {
+      const bool expected = filter.exclude_form_factor_size() == 0 ||
+                            !form_factor_excluded[j];
+      const bool result = internal::CheckStudyFormFactor(filter,
+                                                         form_factors[j]);
+      EXPECT_EQ(expected, result) << "exclude_form_factor: case " << i << ","
+                                  << j << " failed!";
+    }
+
+    if (i < arraysize(form_factors)) {
+      filter.add_exclude_form_factor(form_factors[i]);
+      form_factor_excluded[i] = true;
+    }
+  }
+
+  // Test exclude_form_factors, reverse order.
+  filter.clear_exclude_form_factor();
+  memset(&form_factor_excluded, 0, sizeof(form_factor_excluded));
+  for (size_t i = 0; i <= arraysize(form_factors); ++i) {
+    for (size_t j = 0; j < arraysize(form_factors); ++j) {
+      const bool expected = filter.exclude_form_factor_size() == 0 ||
+                            !form_factor_excluded[j];
+      const bool result = internal::CheckStudyFormFactor(filter,
+                                                         form_factors[j]);
+      EXPECT_EQ(expected, result) << "exclude_form_factor: case " << i << ","
+                                  << j << " failed!";
+    }
+
+    if (i < arraysize(form_factors)) {
+      const int index = arraysize(form_factors) - i - 1;
+      filter.add_exclude_form_factor(form_factors[index]);
+      form_factor_excluded[index] = true;
     }
   }
 }

@@ -195,12 +195,13 @@ message Study {
     DESKTOP = 0;
     PHONE   = 1;
     TABLET  = 2;
+    KIOSK   = 3;
   }
 
   // Filtering criteria specifying whether this study is applicable to a given
   // Chrome instance.
   //
-  // Next tag: 14
+  // Next tag: 15
   message Filter {
     // The start date of the study in Unix time format. (Seconds since midnight
     // January 1, 1970 UTC). See: http://en.wikipedia.org/wiki/Unix_time
@@ -253,9 +254,16 @@ message Study {
     repeated string exclude_locale = 12;
 
     // List of form factors that will receive this study. If omitted, the study
-    // applies to all form factors.
+    // applies to all form factors, unless |exclude_form_factor| is specified.
+    // Mutually exclusive with |exclude_form_factor|.
     // Ex: [PHONE, TABLET]
     repeated FormFactor form_factor = 7;
+
+    // List of form factors that will be excluded from this study. If omitted,
+    // the study applies to all form factors unless |form_factor| is specified.
+    // Mutually exclusive with |form_factor|.
+    // Takes the same range of values as form_factor, e.g. [PHONE, TABLET].
+    repeated FormFactor exclude_form_factor = 14;
 
     // List of ChromeOS hardware classes that will receive this study. Each
     // entry is treated as a substring of the actual device hardware_class,

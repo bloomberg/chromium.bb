@@ -59,15 +59,19 @@ bool CheckStudyChannel(const Study_Filter& filter, Study_Channel channel) {
 
 bool CheckStudyFormFactor(const Study_Filter& filter,
                           Study_FormFactor form_factor) {
-  // An empty form factor list matches all form factors.
-  if (filter.form_factor_size() == 0)
+  // Empty whitelist and blacklist signifies matching any form factor.
+  if (filter.form_factor_size() == 0 && filter.exclude_form_factor_size() == 0)
     return true;
 
-  for (int i = 0; i < filter.form_factor_size(); ++i) {
-    if (filter.form_factor(i) == form_factor)
-      return true;
-  }
-  return false;
+  // Allow the form_factor if it matches the whitelist.
+  // Note if both a whitelist and blacklist are specified, the blacklist is
+  // ignored. We do not expect both to be present for Chrome due to server-side
+  // checks.
+  if (filter.form_factor_size() > 0)
+    return base::ContainsValue(filter.form_factor(), form_factor);
+
+  // Omit if we match the blacklist.
+  return !base::ContainsValue(filter.exclude_form_factor(), form_factor);
 }
 
 bool CheckStudyHardwareClass(const Study_Filter& filter,
