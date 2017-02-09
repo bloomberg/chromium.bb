@@ -104,8 +104,6 @@ extern const base::Feature kNativeNotifications;
 
 extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
 
-extern const base::Feature kParallelDownloading;
-
 extern const base::Feature kPermissionsBlacklist;
 
 #if defined(OS_WIN)

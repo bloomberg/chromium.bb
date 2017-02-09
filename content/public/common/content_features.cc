@@ -146,6 +146,10 @@ const base::Feature kOptimizeLoadingIPCForSmallResources{
 const base::Feature kOriginTrials{"OriginTrials",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether a download can be handled by parallel jobs.
+const base::Feature kParallelDownloading{
+    "ParallelDownloading", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether document level event listeners should default 'passive' to true.
 const base::Feature kPassiveDocumentEventListeners{
     "PassiveDocumentEventListeners", base::FEATURE_ENABLED_BY_DEFAULT};
