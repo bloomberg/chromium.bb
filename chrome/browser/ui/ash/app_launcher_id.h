@@ -8,7 +8,6 @@
 #include <string>
 
 namespace ash {
-namespace launcher {
 
 // A unique chrome launcher id used to identify a shelf item. This class is a
 // wrapper for the chrome launcher identifier. |app_launcher_id_| includes the
@@ -41,7 +40,6 @@ class AppLauncherId {
   std::string launch_id_;
 };
 
-}  // namespace launcher
 }  // namespace ash
 
 #endif  // CHROME_BROWSER_UI_ASH_APP_LAUNCHER_ID_H_

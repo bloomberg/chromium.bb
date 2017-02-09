@@ -127,8 +127,8 @@ void AppListControllerDelegateAsh::LaunchApp(
     AppListSource source,
     int event_flags) {
   ChromeLauncherController::instance()->LaunchApp(
-      ash::launcher::AppLauncherId(extension->id()),
-      AppListSourceToLaunchSource(source), event_flags);
+      ash::AppLauncherId(extension->id()), AppListSourceToLaunchSource(source),
+      event_flags);
   DismissView();
 }
 

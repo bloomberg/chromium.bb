@@ -108,9 +108,8 @@ AppShortcutLauncherItemController::Activate(ash::LaunchSource source) {
 
     // Launching some items replaces this item controller instance, which
     // destroys the app and launch id strings; making copies avoid crashes.
-    launcher_controller()->LaunchApp(
-        ash::launcher::AppLauncherId(app_id(), launch_id()), source,
-        ui::EF_NONE);
+    launcher_controller()->LaunchApp(ash::AppLauncherId(app_id(), launch_id()),
+                                     source, ui::EF_NONE);
     return kNewWindowCreated;
   }
   return ActivateContent(content);

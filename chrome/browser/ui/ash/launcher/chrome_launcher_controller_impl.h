@@ -156,7 +156,7 @@ class ChromeLauncherControllerImpl
   // Creates a new app shortcut item and controller on the shelf at |index|.
   // Use kInsertItemAtEnd to add a shortcut as the last item.
   ash::ShelfID CreateAppShortcutLauncherItem(
-      const ash::launcher::AppLauncherId& app_launcher_id,
+      const ash::AppLauncherId& app_launcher_id,
       int index);
 
  private:
@@ -178,7 +178,7 @@ class ChromeLauncherControllerImpl
   // Creates a new app shortcut item and controller on the shelf at |index|.
   // Use kInsertItemAtEnd to add a shortcut as the last item.
   ash::ShelfID CreateAppShortcutLauncherItemWithType(
-      const ash::launcher::AppLauncherId& app_launcher_id,
+      const ash::AppLauncherId& app_launcher_id,
       int index,
       ash::ShelfItemType shelf_item_type);
 

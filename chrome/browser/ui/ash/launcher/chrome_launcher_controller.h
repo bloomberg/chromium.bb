@@ -137,7 +137,7 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
 
   // Opens a new instance of the application identified by the AppLauncherId.
   // Used by the app-list, and by pinned-app shelf items.
-  void LaunchApp(ash::launcher::AppLauncherId id,
+  void LaunchApp(ash::AppLauncherId id,
                  ash::LaunchSource source,
                  int event_flags);
 

@@ -7,7 +7,6 @@
 #include "base/logging.h"
 
 namespace ash {
-namespace launcher {
 
 AppLauncherId::AppLauncherId(const std::string& app_id,
                              const std::string& launch_id)
@@ -23,5 +22,4 @@ AppLauncherId::AppLauncherId() {}
 
 AppLauncherId::~AppLauncherId() {}
 
-}  // namespace launcher
 }  // namespace ash

@@ -42,7 +42,7 @@ class LauncherControllerHelper : public ExtensionEnableFlowDelegate {
   // Note that already running applications are ignored by the restore process.
   virtual bool IsValidIDForCurrentUser(const std::string& id) const;
 
-  void LaunchApp(ash::launcher::AppLauncherId id,
+  void LaunchApp(ash::AppLauncherId id,
                  ash::LaunchSource source,
                  int event_flags);
 

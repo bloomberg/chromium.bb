@@ -36,7 +36,7 @@ void ChromeLauncherController::Init() {
   OnInit();
 }
 
-void ChromeLauncherController::LaunchApp(ash::launcher::AppLauncherId id,
+void ChromeLauncherController::LaunchApp(ash::AppLauncherId id,
                                          ash::LaunchSource source,
                                          int event_flags) {
   launcher_controller_helper_->LaunchApp(id, source, event_flags);

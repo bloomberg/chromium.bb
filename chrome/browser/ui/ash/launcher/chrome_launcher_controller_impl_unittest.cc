@@ -407,8 +407,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     DCHECK(!test_controller_);
     ash::ShelfID id =
         launcher_controller_->CreateAppShortcutLauncherItemWithType(
-            ash::launcher::AppLauncherId(app_id), model_->item_count(),
-            ash::TYPE_APP);
+            ash::AppLauncherId(app_id), model_->item_count(), ash::TYPE_APP);
     DCHECK(id);
     // Change the created launcher controller into a V2 app controller.
     test_controller_ = new TestV2AppLauncherItemController(app_id,

@@ -26,9 +26,10 @@ class PrefRegistrySyncable;
 }
 
 namespace ash {
-namespace launcher {
 
 class AppLauncherId;
+
+namespace launcher {
 
 // Path within the dictionary entries in the prefs::kPinnedLauncherApps list
 // specifying the extension ID of the app to be pinned by that entry.
