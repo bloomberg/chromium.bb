@@ -1,3 +1,7 @@
+# This OWNERS file also covers:
+#
+# //content/test/mock_platform_notification_service.*
+
 johnme@chromium.org
 mkwst@chromium.org
 mvanouwerkerk@chromium.org
