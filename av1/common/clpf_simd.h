@@ -76,6 +76,42 @@ static void clpf_block8(const uint8_t *src, uint8_t *dst, int sstride,
   }
 }
 
+// As above, but with no clipping tests
+static void clpf_block8_noclip(const uint8_t *src, uint8_t *dst, int sstride,
+                               int dstride, int x0, int y0, int sizey,
+                               unsigned int strength) {
+  int y;
+
+  dst += x0 + y0 * dstride;
+  src += x0 + y0 * sstride;
+
+  for (y = 0; y < sizey; y += 2) {
+    const v64 l1 = v64_load_aligned(src);
+    const v64 l2 = v64_load_aligned(src + sstride);
+    const v64 l3 = v64_load_aligned(src - sstride);
+    const v64 l4 = v64_load_aligned(src + 2 * sstride);
+    const v128 a = v128_from_v64(v64_load_aligned(src - 2 * sstride), l3);
+    const v128 b = v128_from_v64(l3, l1);
+    const v128 g = v128_from_v64(l2, l4);
+    const v128 h = v128_from_v64(l4, v64_load_aligned(src + 3 * sstride));
+    const v128 c = v128_from_v64(v64_load_unaligned(src - 2),
+                                 v64_load_unaligned(src - 2 + sstride));
+    const v128 d = v128_from_v64(v64_load_unaligned(src - 1),
+                                 v64_load_unaligned(src - 1 + sstride));
+    const v128 e = v128_from_v64(v64_load_unaligned(src + 1),
+                                 v64_load_unaligned(src + 1 + sstride));
+    const v128 f = v128_from_v64(v64_load_unaligned(src + 2),
+                                 v64_load_unaligned(src + 2 + sstride));
+    const v128 o =
+        calc_delta(v128_from_v64(l1, l2), a, b, c, d, e, f, g, h, strength);
+
+    v64_store_aligned(dst, v128_high_v64(o));
+    v64_store_aligned(dst + dstride, v128_low_v64(o));
+    src += sstride * 2;
+    dst += dstride * 2;
+  }
+}
+
 // Process blocks of width 4, four lines at a time, 8 bit.
 static void clpf_block4(const uint8_t *src, uint8_t *dst, int sstride,
                         int dstride, int x0, int y0, int sizey,
@@ -153,6 +189,58 @@ static void clpf_block4(const uint8_t *src, uint8_t *dst, int sstride,
   }
 }
 
+// As above, but with no clipping tests
+static void clpf_block4_noclip(const uint8_t *src, uint8_t *dst, int sstride,
+                               int dstride, int x0, int y0, int sizey,
+                               unsigned int strength) {
+  int y;
+
+  dst += x0 + y0 * dstride;
+  src += x0 + y0 * sstride;
+
+  for (y = 0; y < sizey; y += 4) {
+    const uint32_t l0 = u32_load_aligned(src - 2 * sstride);
+    const uint32_t l1 = u32_load_aligned(src - sstride);
+    const uint32_t l2 = u32_load_aligned(src);
+    const uint32_t l3 = u32_load_aligned(src + sstride);
+    const uint32_t l4 = u32_load_aligned(src + 2 * sstride);
+    const uint32_t l5 = u32_load_aligned(src + 3 * sstride);
+    const uint32_t l6 = u32_load_aligned(src + 4 * sstride);
+    const uint32_t l7 = u32_load_aligned(src + 5 * sstride);
+    const v128 a = v128_from_32(l0, l1, l2, l3);
+    const v128 b = v128_from_32(l1, l2, l3, l4);
+    const v128 g = v128_from_32(l3, l4, l5, l6);
+    const v128 h = v128_from_32(l4, l5, l6, l7);
+    const v128 c = v128_from_32(u32_load_unaligned(src - 2),
+                                u32_load_unaligned(src + sstride - 2),
+                                u32_load_unaligned(src + 2 * sstride - 2),
+                                u32_load_unaligned(src + 3 * sstride - 2));
+    const v128 d = v128_from_32(u32_load_unaligned(src - 1),
+                                u32_load_unaligned(src + sstride - 1),
+                                u32_load_unaligned(src + 2 * sstride - 1),
+                                u32_load_unaligned(src + 3 * sstride - 1));
+    const v128 e = v128_from_32(u32_load_unaligned(src + 1),
+                                u32_load_unaligned(src + sstride + 1),
+                                u32_load_unaligned(src + 2 * sstride + 1),
+                                u32_load_unaligned(src + 3 * sstride + 1));
+    const v128 f = v128_from_32(u32_load_unaligned(src + 2),
+                                u32_load_unaligned(src + sstride + 2),
+                                u32_load_unaligned(src + 2 * sstride + 2),
+                                u32_load_unaligned(src + 3 * sstride + 2));
+
+    const v128 o = calc_delta(v128_from_32(l2, l3, l4, l5), a, b, c, d, e, f, g,
+                              h, strength);
+
+    u32_store_aligned(dst, v128_low_u32(v128_shr_n_byte(o, 12)));
+    u32_store_aligned(dst + dstride, v128_low_u32(v128_shr_n_byte(o, 8)));
+    u32_store_aligned(dst + 2 * dstride, v128_low_u32(v128_shr_n_byte(o, 4)));
+    u32_store_aligned(dst + 3 * dstride, v128_low_u32(o));
+
+    dst += 4 * dstride;
+    src += 4 * sstride;
+  }
+}
+
 void SIMD_FUNC(aom_clpf_block)(const uint8_t *src, uint8_t *dst, int sstride,
                                int dstride, int x0, int y0, int sizex,
                                int sizey, unsigned int strength,
@@ -164,8 +252,12 @@ void SIMD_FUNC(aom_clpf_block)(const uint8_t *src, uint8_t *dst, int sstride,
     aom_clpf_block_c(src, dst, sstride, dstride, x0, y0, sizex, sizey, strength,
                      bt, bd);
   } else {
-    (sizex == 4 ? clpf_block4 : clpf_block8)(src, dst, sstride, dstride, x0, y0,
-                                             sizey, bt, strength);
+    if (bt)
+      (sizex == 4 ? clpf_block4 : clpf_block8)(src, dst, sstride, dstride, x0,
+                                               y0, sizey, bt, strength);
+    else
+      (sizex == 4 ? clpf_block4_noclip : clpf_block8_noclip)(
+          src, dst, sstride, dstride, x0, y0, sizey, strength);
   }
 }
 
@@ -286,6 +378,42 @@ SIMD_INLINE void clpf_block_hbd4(const uint16_t *src, uint16_t *dst,
   }
 }
 
+// As above, but with no clipping tests
+SIMD_INLINE void clpf_block_hbd4_noclip(const uint16_t *src, uint16_t *dst,
+                                        int sstride, int dstride, int x0,
+                                        int y0, int sizey,
+                                        unsigned int strength,
+                                        unsigned int bd) {
+  int y;
+
+  dst += x0 + y0 * dstride;
+  src += x0 + y0 * sstride;
+
+  for (y = 0; y < sizey; y += 2) {
+    const v64 l1 = v64_load_aligned(src);
+    const v64 l2 = v64_load_aligned(src + sstride);
+    const v64 l3 = v64_load_aligned(src - sstride);
+    const v64 l4 = v64_load_aligned(src + 2 * sstride);
+    const v128 a = v128_from_v64(v64_load_aligned(src - 2 * sstride), l3);
+    const v128 b = v128_from_v64(l3, l1);
+    const v128 g = v128_from_v64(l2, l4);
+    const v128 h = v128_from_v64(l4, v64_load_aligned(src + 3 * sstride));
+    const v128 c = v128_from_v64(v64_load_unaligned(src - 2),
+                                 v64_load_unaligned(src - 2 + sstride));
+    const v128 d = v128_from_v64(v64_load_unaligned(src - 1),
+                                 v64_load_unaligned(src - 1 + sstride));
+    const v128 e = v128_from_v64(v64_load_unaligned(src + 1),
+                                 v64_load_unaligned(src + 1 + sstride));
+    const v128 f = v128_from_v64(v64_load_unaligned(src + 2),
+                                 v64_load_unaligned(src + 2 + sstride));
+
+    calc_delta_hbd4(v128_from_v64(l1, l2), a, b, c, d, e, f, g, h, dst,
+                    strength, bd, dstride);
+    src += sstride * 2;
+    dst += dstride * 2;
+  }
+}
+
 // The most simple case.  Start here if you need to understand the functions.
 SIMD_INLINE void clpf_block_hbd(const uint16_t *src, uint16_t *dst, int sstride,
                                 int dstride, int x0, int y0, int sizey,
@@ -340,6 +468,33 @@ SIMD_INLINE void clpf_block_hbd(const uint16_t *src, uint16_t *dst, int sstride,
   }
 }
 
+// As above, but with no clipping tests
+SIMD_INLINE void clpf_block_hbd_noclip(const uint16_t *src, uint16_t *dst,
+                                       int sstride, int dstride, int x0, int y0,
+                                       int sizey, unsigned int strength,
+                                       unsigned int bd) {
+  int y;
+
+  dst += x0 + y0 * dstride;
+  src += x0 + y0 * sstride;
+
+  for (y = 0; y < sizey; y++) {
+    const v128 o = v128_load_aligned(src);
+    const v128 a = v128_load_aligned(src - 2 * sstride);
+    const v128 b = v128_load_aligned(src - 1 * sstride);
+    const v128 g = v128_load_aligned(src + sstride);
+    const v128 h = v128_load_aligned(src + 2 * sstride);
+    const v128 c = v128_load_unaligned(src - 2);
+    const v128 d = v128_load_unaligned(src - 1);
+    const v128 e = v128_load_unaligned(src + 1);
+    const v128 f = v128_load_unaligned(src + 2);
+
+    calc_delta_hbd8(o, a, b, c, d, e, f, g, h, dst, strength, bd);
+    src += sstride;
+    dst += dstride;
+  }
+}
+
 void SIMD_FUNC(aom_clpf_block_hbd)(const uint16_t *src, uint16_t *dst,
                                    int sstride, int dstride, int x0, int y0,
                                    int sizex, int sizey, unsigned int strength,
@@ -351,8 +506,12 @@ void SIMD_FUNC(aom_clpf_block_hbd)(const uint16_t *src, uint16_t *dst,
     aom_clpf_block_hbd_c(src, dst, sstride, dstride, x0, y0, sizex, sizey,
                          strength, bt, bd);
   } else {
-    (sizex == 4 ? clpf_block_hbd4 : clpf_block_hbd)(
-        src, dst, sstride, dstride, x0, y0, sizey, strength, bt, bd);
+    if (bt)
+      (sizex == 4 ? clpf_block_hbd4 : clpf_block_hbd)(
+          src, dst, sstride, dstride, x0, y0, sizey, strength, bt, bd);
+    else
+      (sizex == 4 ? clpf_block_hbd4_noclip : clpf_block_hbd_noclip)(
+          src, dst, sstride, dstride, x0, y0, sizey, strength, bd);
   }
 }
 #endif
