@@ -104,7 +104,7 @@ class CORE_EXPORT FrameCaret final
 
   const Member<const SelectionEditor> m_selectionEditor;
   const Member<LocalFrame> m_frame;
-  const std::unique_ptr<CaretDisplayItemClient> m_caretBase;
+  const std::unique_ptr<CaretDisplayItemClient> m_displayItemClient;
   CaretVisibility m_caretVisibility;
   // TODO(https://crbug.com/668758): Consider using BeginFrame update for this.
   TaskRunnerTimer<FrameCaret> m_caretBlinkTimer;

@@ -77,7 +77,7 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   void nodeWillBeRemoved(Node&) final;
 
   PositionWithAffinity m_position;
-  const std::unique_ptr<CaretDisplayItemClient> m_caretBase;
+  const std::unique_ptr<CaretDisplayItemClient> m_displayItemClient;
 };
 
 }  // namespace blink

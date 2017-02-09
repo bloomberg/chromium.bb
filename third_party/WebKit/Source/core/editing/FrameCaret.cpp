@@ -47,7 +47,7 @@ FrameCaret::FrameCaret(LocalFrame& frame,
                        const SelectionEditor& selectionEditor)
     : m_selectionEditor(&selectionEditor),
       m_frame(frame),
-      m_caretBase(new CaretDisplayItemClient()),
+      m_displayItemClient(new CaretDisplayItemClient()),
       m_caretVisibility(CaretVisibility::Hidden),
       m_caretBlinkTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
                         this,
@@ -64,7 +64,7 @@ DEFINE_TRACE(FrameCaret) {
 }
 
 const DisplayItemClient& FrameCaret::displayItemClient() const {
-  return *m_caretBase;
+  return *m_displayItemClient;
 }
 
 const PositionWithAffinity FrameCaret::caretPosition() const {
@@ -140,11 +140,11 @@ void FrameCaret::setCaretVisibility(CaretVisibility visibility) {
 }
 
 void FrameCaret::clearPreviousVisualRect(const LayoutBlock& block) {
-  m_caretBase->clearPreviousVisualRect(block);
+  m_displayItemClient->clearPreviousVisualRect(block);
 }
 
 void FrameCaret::layoutBlockWillBeDestroyed(const LayoutBlock& block) {
-  m_caretBase->layoutBlockWillBeDestroyed(block);
+  m_displayItemClient->layoutBlockWillBeDestroyed(block);
 }
 
 void FrameCaret::updateStyleAndLayoutIfNeeded() {
@@ -153,14 +153,14 @@ void FrameCaret::updateStyleAndLayoutIfNeeded() {
       m_caretVisibility == CaretVisibility::Visible &&
       m_selectionEditor->visibleSelection<EditingStrategy>().hasEditableStyle();
 
-  m_caretBase->updateStyleAndLayoutIfNeeded(
+  m_displayItemClient->updateStyleAndLayoutIfNeeded(
       shouldPaintCaret ? caretPosition() : PositionWithAffinity());
 }
 
 void FrameCaret::invalidatePaintIfNeeded(const LayoutBlock& block,
                                          const PaintInvalidatorContext& context,
                                          PaintInvalidationReason reason) {
-  m_caretBase->invalidatePaintIfNeeded(block, context, reason);
+  m_displayItemClient->invalidatePaintIfNeeded(block, context, reason);
 }
 
 bool FrameCaret::caretPositionIsValidForDocument(
@@ -206,12 +206,12 @@ void FrameCaret::setShouldShowBlockCursor(bool shouldShowBlockCursor) {
 }
 
 bool FrameCaret::shouldPaintCaret(const LayoutBlock& block) const {
-  return m_caretBase->shouldPaintCaret(block);
+  return m_displayItemClient->shouldPaintCaret(block);
 }
 
 void FrameCaret::paintCaret(GraphicsContext& context,
                             const LayoutPoint& paintOffset) const {
-  m_caretBase->paintCaret(context, paintOffset, DisplayItem::kCaret);
+  m_displayItemClient->paintCaret(context, paintOffset, DisplayItem::kCaret);
 }
 
 bool FrameCaret::shouldBlinkCaret() const {

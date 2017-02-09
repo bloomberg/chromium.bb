@@ -33,7 +33,7 @@
 
 namespace blink {
 
-DragCaret::DragCaret() : m_caretBase(new CaretDisplayItemClient()) {}
+DragCaret::DragCaret() : m_displayItemClient(new CaretDisplayItemClient()) {}
 
 DragCaret::~DragCaret() = default;
 
@@ -42,15 +42,15 @@ DragCaret* DragCaret::create() {
 }
 
 void DragCaret::clearPreviousVisualRect(const LayoutBlock& block) {
-  m_caretBase->clearPreviousVisualRect(block);
+  m_displayItemClient->clearPreviousVisualRect(block);
 }
 
 void DragCaret::layoutBlockWillBeDestroyed(const LayoutBlock& block) {
-  m_caretBase->layoutBlockWillBeDestroyed(block);
+  m_displayItemClient->layoutBlockWillBeDestroyed(block);
 }
 
 void DragCaret::updateStyleAndLayoutIfNeeded() {
-  m_caretBase->updateStyleAndLayoutIfNeeded(
+  m_displayItemClient->updateStyleAndLayoutIfNeeded(
       rootEditableElementOf(m_position.position()) ? m_position
                                                    : PositionWithAffinity());
 }
@@ -58,7 +58,7 @@ void DragCaret::updateStyleAndLayoutIfNeeded() {
 void DragCaret::invalidatePaintIfNeeded(const LayoutBlock& block,
                                         const PaintInvalidatorContext& context,
                                         PaintInvalidationReason reason) {
-  m_caretBase->invalidatePaintIfNeeded(block, context, reason);
+  m_displayItemClient->invalidatePaintIfNeeded(block, context, reason);
 }
 
 bool DragCaret::isContentRichlyEditable() const {
@@ -108,14 +108,16 @@ DEFINE_TRACE(DragCaret) {
 }
 
 bool DragCaret::shouldPaintCaret(const LayoutBlock& block) const {
-  return m_caretBase->shouldPaintCaret(block);
+  return m_displayItemClient->shouldPaintCaret(block);
 }
 
 void DragCaret::paintDragCaret(const LocalFrame* frame,
                                GraphicsContext& context,
                                const LayoutPoint& paintOffset) const {
-  if (m_position.anchorNode()->document().frame() == frame)
-    m_caretBase->paintCaret(context, paintOffset, DisplayItem::kDragCaret);
+  if (m_position.anchorNode()->document().frame() != frame)
+    return;
+  m_displayItemClient->paintCaret(context, paintOffset,
+                                  DisplayItem::kDragCaret);
 }
 
 }  // namespace blink
