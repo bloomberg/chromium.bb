@@ -609,7 +609,7 @@ class PLATFORM_EXPORT ThreadState {
   void poisonAllHeaps();
 #endif
 
-  void cleanupPages();
+  void removeAllPages();
 
   void prepareForThreadStateTermination();
 

@@ -108,15 +108,6 @@ class AdjustAndMarkTrait<T, true> {
   static void mark(VisitorDispatcher visitor, const T* self) {
     if (!self)
       return;
-
-    // If you hit this ASSERT, it means that there is a dangling pointer
-    // from a live thread heap to a dead thread heap. We must eliminate
-    // the dangling pointer.
-    // Release builds don't have the ASSERT, but it is OK because
-    // release builds will crash at the following self->adjustAndMark
-    // because all the entries of the orphaned arenas are zeroed out and
-    // thus the item does not have a valid vtable.
-    ASSERT(!pageFromObject(self)->orphaned());
     self->adjustAndMark(visitor);
   }
 };

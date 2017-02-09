@@ -189,7 +189,6 @@ ThreadHeap::ThreadHeap()
       m_heapDoesNotContainCache(WTF::wrapUnique(new HeapDoesNotContainCache)),
       m_safePointBarrier(WTF::makeUnique<SafePointBarrier>()),
       m_freePagePool(WTF::wrapUnique(new FreePagePool)),
-      m_orphanedPagePool(WTF::wrapUnique(new OrphanedPagePool)),
       m_markingStack(CallbackStack::create()),
       m_postMarkingCallbackStack(CallbackStack::create()),
       m_globalWeakCallbackStack(CallbackStack::create()),
@@ -282,7 +281,6 @@ Address ThreadHeap::checkAndMarkPointer(Visitor* visitor, Address address) {
 
   if (BasePage* page = lookupPageForAddress(address)) {
     ASSERT(page->contains(address));
-    ASSERT(!page->orphaned());
     ASSERT(!m_heapDoesNotContainCache->lookup(address));
     DCHECK(&visitor->heap() == &page->arena()->getThreadState()->heap());
     page->checkAndMarkPointer(visitor, address);
@@ -310,7 +308,6 @@ Address ThreadHeap::checkAndMarkPointer(
 
   if (BasePage* page = lookupPageForAddress(address)) {
     DCHECK(page->contains(address));
-    DCHECK(!page->orphaned());
     DCHECK(!m_heapDoesNotContainCache->lookup(address));
     DCHECK(&visitor->heap() == &page->arena()->getThreadState()->heap());
     page->checkAndMarkPointer(visitor, address, callback);
@@ -325,8 +322,6 @@ Address ThreadHeap::checkAndMarkPointer(
 void ThreadHeap::pushTraceCallback(void* object, TraceCallback callback) {
   ASSERT(ThreadState::current()->isInGC());
 
-  // Trace should never reach an orphaned page.
-  ASSERT(!getOrphanedPagePool()->contains(object));
   CallbackStack::Item* slot = m_markingStack->allocateEntry();
   *slot = CallbackStack::Item(object, callback);
 }
@@ -342,8 +337,6 @@ bool ThreadHeap::popAndInvokeTraceCallback(Visitor* visitor) {
 void ThreadHeap::pushPostMarkingCallback(void* object, TraceCallback callback) {
   ASSERT(ThreadState::current()->isInGC());
 
-  // Trace should never reach an orphaned page.
-  ASSERT(!getOrphanedPagePool()->contains(object));
   CallbackStack::Item* slot = m_postMarkingCallbackStack->allocateEntry();
   *slot = CallbackStack::Item(object, callback);
 }
@@ -359,8 +352,6 @@ bool ThreadHeap::popAndInvokePostMarkingCallback(Visitor* visitor) {
 void ThreadHeap::pushGlobalWeakCallback(void** cell, WeakCallback callback) {
   ASSERT(ThreadState::current()->isInGC());
 
-  // Trace should never reach an orphaned page.
-  ASSERT(!getOrphanedPagePool()->contains(cell));
   CallbackStack::Item* slot = m_globalWeakCallbackStack->allocateEntry();
   *slot = CallbackStack::Item(cell, callback);
 }
@@ -370,8 +361,6 @@ void ThreadHeap::pushThreadLocalWeakCallback(void* closure,
                                              WeakCallback callback) {
   ASSERT(ThreadState::current()->isInGC());
 
-  // Trace should never reach an orphaned page.
-  ASSERT(!getOrphanedPagePool()->contains(object));
   ThreadState* state = pageFromObject(object)->arena()->getThreadState();
   state->pushThreadLocalWeakCallback(closure, callback);
 }
@@ -389,8 +378,6 @@ void ThreadHeap::registerWeakTable(void* table,
                                    EphemeronCallback iterationDoneCallback) {
   ASSERT(ThreadState::current()->isInGC());
 
-  // Trace should never reach an orphaned page.
-  ASSERT(!getOrphanedPagePool()->contains(table));
   CallbackStack::Item* slot = m_ephemeronStack->allocateEntry();
   *slot = CallbackStack::Item(table, iterationCallback);
 
@@ -645,8 +632,7 @@ void ThreadHeap::leaveSafePoint(ThreadState* threadState,
 BasePage* ThreadHeap::lookupPageForAddress(Address address) {
   ASSERT(ThreadState::current()->isInGC());
   if (PageMemoryRegion* region = m_regionTree->lookup(address)) {
-    BasePage* page = region->pageFromAddress(address);
-    return page && !page->orphaned() ? page : nullptr;
+    return region->pageFromAddress(address);
   }
   return nullptr;
 }

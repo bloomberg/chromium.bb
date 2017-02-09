@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class BasePage;
 class PageMemory;
 
 template <typename DataType>
@@ -53,30 +52,6 @@ class FreePagePool : public PagePool<PageMemory> {
 
  private:
   Mutex m_mutex[BlinkGC::NumberOfArenas];
-};
-
-class OrphanedPagePool : public PagePool<BasePage> {
- public:
-  // The orphaned zap value must be zero in the lowest bits to allow for
-  // using the mark bit when tracing.
-  static const uint8_t orphanedZapValue = 0xdc;
-
-  ~OrphanedPagePool();
-  void addOrphanedPage(int, BasePage*);
-  void decommitOrphanedPages();
-#if DCHECK_IS_ON()
-  bool contains(void*);
-#endif
-
-  // For orphaned pages, we need to memset with ASan disabled, because
-  // the orphaned pages can still contain poisoned memory or annotated
-  // container but we want to forcibly clear the orphaned pages without
-  // causing ASan errors. asanDisabledMemset must not be used for
-  // non-orphaned pages.
-  static void asanDisabledMemset(Address, char, size_t);
-
- private:
-  void clearMemory(PageMemory*);
 };
 
 }  // namespace blink

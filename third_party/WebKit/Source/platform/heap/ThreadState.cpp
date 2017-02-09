@@ -206,15 +206,15 @@ void ThreadState::attachCurrentThread() {
   new ThreadState();
 }
 
-void ThreadState::cleanupPages() {
+void ThreadState::removeAllPages() {
   ASSERT(checkThread());
   for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
-    m_arenas[i]->cleanupPages();
+    m_arenas[i]->removeAllPages();
 }
 
 void ThreadState::runTerminationGC() {
   if (isMainThread()) {
-    cleanupPages();
+    removeAllPages();
     return;
   }
   ASSERT(checkThread());
@@ -259,9 +259,7 @@ void ThreadState::runTerminationGC() {
   ASSERT(m_orderedPreFinalizers.isEmpty());
   RELEASE_ASSERT(gcState() == NoGCScheduled);
 
-  // Add pages to the orphaned page pool to ensure any global GCs from this
-  // point on will not trace objects on this thread's arenas.
-  cleanupPages();
+  removeAllPages();
 }
 
 void ThreadState::detachCurrentThread() {
@@ -366,11 +364,6 @@ void ThreadState::pushThreadLocalWeakCallback(void* object,
 
 bool ThreadState::popAndInvokeThreadLocalWeakCallback(Visitor* visitor) {
   ASSERT(checkThread());
-  // For weak processing we should never reach orphaned pages since orphaned
-  // pages are not traced and thus objects on those pages are never be
-  // registered as objects on orphaned pages. We cannot assert this here since
-  // we might have an off-heap collection. We assert it in
-  // ThreadHeap::pushThreadLocalWeakCallback.
   if (CallbackStack::Item* item = m_threadLocalWeakCallbackStack->pop()) {
     item->call(visitor);
     return true;
@@ -1657,11 +1650,6 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
       heap().postMarkingProcessing(visitor.get());
       heap().globalWeakProcessing(visitor.get());
     }
-
-    // Now we can delete all orphaned pages because there are no dangling
-    // pointers to the orphaned pages.  (If we have such dangling pointers,
-    // we should have crashed during marking before getting here.)
-    heap().getOrphanedPagePool()->decommitOrphanedPages();
 
     double markingTimeInMilliseconds = WTF::currentTimeMS() - startTime;
     heap().heapStats().setEstimatedMarkingTimePerByte(

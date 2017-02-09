@@ -413,7 +413,6 @@ class BasePage {
                                    Address,
                                    MarkedPointerCallbackForTesting) = 0;
 #endif
-  virtual void markOrphaned();
 
   class HeapSnapshotInfo {
     STACK_ALLOCATED();
@@ -435,7 +434,6 @@ class BasePage {
   Address getAddress() { return reinterpret_cast<Address>(this); }
   PageMemory* storage() const { return m_storage; }
   BaseArena* arena() const { return m_arena; }
-  bool orphaned() { return !m_arena; }
   bool terminating() { return m_terminating; }
   void setTerminating() { m_terminating = true; }
 
@@ -498,7 +496,6 @@ class NormalPage final : public BasePage {
                            Address,
                            MarkedPointerCallbackForTesting) override;
 #endif
-  void markOrphaned() override;
 
   void takeSnapshot(base::trace_event::MemoryAllocatorDump*,
                     ThreadState::GCSnapshotInfo&,
@@ -580,7 +577,6 @@ class LargeObjectPage final : public BasePage {
                            Address,
                            MarkedPointerCallbackForTesting) override;
 #endif
-  void markOrphaned() override;
 
   void takeSnapshot(base::trace_event::MemoryAllocatorDump*,
                     ThreadState::GCSnapshotInfo&,
@@ -717,7 +713,7 @@ class PLATFORM_EXPORT BaseArena {
  public:
   BaseArena(ThreadState*, int);
   virtual ~BaseArena();
-  void cleanupPages();
+  void removeAllPages();
 
   void takeSnapshot(const String& dumpBaseName, ThreadState::GCSnapshotInfo&);
 #if DCHECK_IS_ON()
@@ -867,7 +863,7 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
 
 #if DCHECK_IS_ON()
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::checkHeader() const {
-  return !pageFromObject(this)->orphaned() && m_magic == magic;
+  return m_magic == magic;
 }
 #endif
 

@@ -18,14 +18,6 @@ inline void Visitor::markHeader(HeapObjectHeader* header,
   DCHECK(header);
   DCHECK(objectPointer);
 
-  // If you hit this DCHECK, it means that there is a dangling pointer
-  // from a live thread heap to a dead thread heap.  We must eliminate
-  // the dangling pointer.
-  // Release builds don't have the DCHECK, but it is OK because
-  // release builds will crash in the following header->isMarked()
-  // because all the entries of the orphaned arenas are zapped.
-  DCHECK(!pageFromObject(objectPointer)->orphaned());
-
   if (header->isMarked())
     return;
 

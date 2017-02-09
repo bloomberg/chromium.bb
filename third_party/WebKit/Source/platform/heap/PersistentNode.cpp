@@ -165,10 +165,6 @@ void CrossThreadPersistentRegion::prepareForThreadStateTermination(
         continue;
       BasePage* page = pageFromObject(rawObject);
       ASSERT(page);
-      // The main thread will upon detach just mark its heap pages as orphaned,
-      // but not invalidate its CrossThreadPersistent<>s.
-      if (page->orphaned())
-        continue;
       if (page->arena()->getThreadState() == threadState) {
         persistent->clear();
         ASSERT(slots->m_slot[i].isUnused());
