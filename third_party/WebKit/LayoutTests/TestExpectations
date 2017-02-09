@@ -1671,8 +1671,6 @@ crbug.com/402376 external/wpt/fullscreen/api/element-request-fullscreen-timing-m
 
 crbug.com/567230 [ Debug ] virtual/threaded/animations/restart-not-visible.html [ Timeout ]
 
-crbug.com/667966 compositing/transitions/scale-transition-no-start.html [ NeedsRebaseline ]
-
 crbug.com/567419 inspector/elements/styles-2/metrics-box-sizing.html [ Skip ]
 
 crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
