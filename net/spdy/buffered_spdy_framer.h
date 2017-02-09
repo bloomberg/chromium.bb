@@ -230,6 +230,9 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
 
   int frames_received() const { return frames_received_; }
 
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
+
  private:
   SpdyFramer spdy_framer_;
   BufferedSpdyFramerVisitorInterface* visitor_;
@@ -258,6 +261,9 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     SpdyStreamId last_accepted_stream_id;
     SpdyErrorCode error_code;
     std::string debug_data;
+
+    // Returns the estimate of dynamically allocated memory in bytes.
+    size_t EstimateMemoryUsage() const;
   };
   std::unique_ptr<GoAwayFields> goaway_fields_;
 

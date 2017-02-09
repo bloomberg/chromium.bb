@@ -207,7 +207,7 @@ class ServerIdOriginFilter : public QuicCryptoClientConfig::ServerIdFilter {
 
 // Returns the estimate of dynamically allocated memory of |server_id|.
 size_t EstimateServerIdMemoryUsage(const QuicServerId& server_id) {
-  return HostPortPair::EstimateMemoryUsage(server_id.host_port_pair());
+  return base::trace_event::EstimateMemoryUsage(server_id.host_port_pair());
 }
 
 }  // namespace
@@ -1093,7 +1093,7 @@ bool QuicStreamFactory::QuicSessionKey::operator==(
 }
 
 size_t QuicStreamFactory::QuicSessionKey::EstimateMemoryUsage() const {
-  return HostPortPair::EstimateMemoryUsage(destination_) +
+  return base::trace_event::EstimateMemoryUsage(destination_) +
          EstimateServerIdMemoryUsage(server_id_);
 }
 

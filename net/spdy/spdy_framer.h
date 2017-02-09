@@ -528,6 +528,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     return GetHpackDecoder();
   }
 
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
+
  protected:
   friend class BufferedSpdyFramer;
   friend class HttpNetworkLayer;  // This is temporary for the server.
@@ -553,6 +556,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     const char* data() const { return buffer_.get(); }
     size_t len() const { return len_; }
 
+    size_t EstimateMemoryUsage() const;
+
    private:
     std::unique_ptr<char[]> buffer_;
     size_t capacity_;
@@ -563,6 +568,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   struct SpdySettingsScratch {
     SpdySettingsScratch();
     void Reset();
+    size_t EstimateMemoryUsage() const;
 
     // Buffer contains up to one complete key/value pair.
     CharBuffer buffer;

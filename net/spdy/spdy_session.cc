@@ -46,6 +46,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -582,6 +583,10 @@ base::WeakPtr<SpdyStream> SpdyStreamRequest::ReleaseStream() {
   return stream;
 }
 
+size_t SpdyStreamRequest::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateItemMemoryUsage(url_);
+}
+
 void SpdyStreamRequest::OnRequestCompleteSuccess(
     const base::WeakPtr<SpdyStream>& stream) {
   DCHECK(session_);
@@ -658,6 +663,11 @@ SpdySession::UnclaimedPushedStreamContainer::insert(
       std::make_pair(
           url, SpdySession::UnclaimedPushedStreamContainer::PushedStreamInfo(
                    stream_id, creation_time)));
+}
+
+size_t SpdySession::UnclaimedPushedStreamContainer::EstimateMemoryUsage()
+    const {
+  return SpdyEstimateMemoryUsage(streams_);
 }
 
 // static
@@ -1349,10 +1359,27 @@ bool SpdySession::CloseOneIdleConnection() {
   return false;
 }
 
-void SpdySession::DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
-                                  bool* is_session_active) const {
+size_t SpdySession::DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
+                                    bool* is_session_active) const {
+  // TODO(xunjieli): Include |pending_create_stream_queues_| when WeakPtr is
+  // supported in memory_usage_estimator.h.
   *is_session_active = is_active();
   connection_->DumpMemoryStats(stats);
+
+  // |connection_| is estimated in stats->total_size. |read_buffer_| is
+  // estimated in kReadBufferSize. TODO(xunjieli): Make them use EMU().
+  return stats->total_size + kReadBufferSize +
+         SpdyEstimateMemoryUsage(spdy_session_key_) +
+         SpdyEstimateMemoryUsage(pooled_aliases_) +
+         SpdyEstimateMemoryUsage(active_streams_) +
+         SpdyEstimateMemoryUsage(unclaimed_pushed_streams_) +
+         SpdyEstimateMemoryUsage(created_streams_) +
+         SpdyEstimateMemoryUsage(write_queue_) +
+         SpdyEstimateMemoryUsage(in_flight_write_) +
+         SpdyEstimateMemoryUsage(buffered_spdy_framer_) +
+         SpdyEstimateMemoryUsage(initial_settings_) +
+         SpdyEstimateMemoryUsage(stream_send_unstall_queue_) +
+         SpdyEstimateMemoryUsage(priority_dependency_state_);
 }
 
 // {,Try}CreateStream() can be called with |in_io_loop_| set if a stream is

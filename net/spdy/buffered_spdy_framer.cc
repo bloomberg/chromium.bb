@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
 
 namespace net {
 
@@ -304,6 +305,17 @@ std::unique_ptr<SpdySerializedFrame> BufferedSpdyFramer::CreatePriority(
 
 SpdyPriority BufferedSpdyFramer::GetHighestPriority() const {
   return spdy_framer_.GetHighestPriority();
+}
+
+size_t BufferedSpdyFramer::EstimateMemoryUsage() const {
+  return SpdyEstimateMemoryUsage(spdy_framer_) +
+         SpdyEstimateMemoryUsage(coalescer_) +
+         SpdyEstimateMemoryUsage(control_frame_fields_) +
+         SpdyEstimateMemoryUsage(goaway_fields_);
+}
+
+size_t BufferedSpdyFramer::GoAwayFields::EstimateMemoryUsage() const {
+  return SpdyEstimateMemoryUsage(debug_data);
 }
 
 }  // namespace net

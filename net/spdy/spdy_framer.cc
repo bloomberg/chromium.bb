@@ -28,6 +28,7 @@
 #include "net/spdy/hpack/hpack_decoder2.h"
 #include "net/spdy/hpack/hpack_decoder3.h"
 #include "net/spdy/http2_frame_decoder_adapter.h"
+#include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/spdy/spdy_bitmasks.h"
 #include "net/spdy/spdy_bug_tracker.h"
 #include "net/spdy/spdy_flags.h"
@@ -563,12 +564,20 @@ void SpdyFramer::CharBuffer::Rewind() {
   len_ = 0;
 }
 
+size_t SpdyFramer::CharBuffer::EstimateMemoryUsage() const {
+  return capacity_;
+}
+
 SpdyFramer::SpdySettingsScratch::SpdySettingsScratch()
     : buffer(8), last_setting_id(-1) {}
 
 void SpdyFramer::SpdySettingsScratch::Reset() {
   buffer.Rewind();
   last_setting_id = -1;
+}
+
+size_t SpdyFramer::SpdySettingsScratch::EstimateMemoryUsage() const {
+  return SpdyEstimateMemoryUsage(buffer);
 }
 
 SpdyFrameType SpdyFramer::ValidateFrameHeader(bool is_control_frame,
@@ -2350,6 +2359,15 @@ void SpdyFramer::SetDecoderHeaderTableDebugVisitor(
 void SpdyFramer::SetEncoderHeaderTableDebugVisitor(
     std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
   GetHpackEncoder()->SetHeaderTableDebugVisitor(std::move(visitor));
+}
+
+size_t SpdyFramer::EstimateMemoryUsage() const {
+  return SpdyEstimateMemoryUsage(current_frame_buffer_) +
+         SpdyEstimateMemoryUsage(settings_scratch_) +
+         SpdyEstimateMemoryUsage(altsvc_scratch_) +
+         SpdyEstimateMemoryUsage(hpack_encoder_) +
+         SpdyEstimateMemoryUsage(hpack_decoder_) +
+         SpdyEstimateMemoryUsage(decoder_adapter_);
 }
 
 void SpdyFramer::UpdateHeaderEncoderTableSize(uint32_t value) {
