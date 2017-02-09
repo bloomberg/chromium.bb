@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
@@ -57,19 +56,18 @@ const char kRateParamName[] = "sampling_rate_per_mille";
 const base::Feature kMetricsReportingFeature{"MetricsReporting",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Run |GoogleUpdateSettings::StoreMetricsClientInfo| asynchronously. This
-// method cannot run on the UI thread because it does file I/O.
+// Posts |GoogleUpdateSettings::StoreMetricsClientInfo| on blocking pool thread
+// because it needs access to IO and cannot work from UI thread.
 void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
-  // The UI thread starts running tasks after TaskScheduler is initialized.
-  // Posting a task to the UI thread to post a task to TaskScheduler ensures
-  // that TaskScheduler is ready to accept tasks at that time.
+  // The message loop processes messages after the blocking pool is initialized.
+  // Posting a task to the message loop to post a task to the blocking pool
+  // ensures that the blocking pool is ready to accept tasks at that time.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(
           [](const metrics::ClientInfo& client_info) {
-            base::PostTaskWithTraits(
-                FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                               base::TaskPriority::BACKGROUND),
+            content::BrowserThread::PostBlockingPoolTask(
+                FROM_HERE,
                 base::Bind(&GoogleUpdateSettings::StoreMetricsClientInfo,
                            client_info));
           },
