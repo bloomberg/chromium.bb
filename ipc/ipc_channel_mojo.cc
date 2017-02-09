@@ -283,7 +283,7 @@ ChannelMojo::ChannelMojo(
 
 void ChannelMojo::ForwardMessageFromThreadSafePtr(mojo::Message message) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  if (!message_reader_)
+  if (!message_reader_ || !message_reader_->sender().is_bound())
     return;
   message_reader_->sender().internal_state()->ForwardMessage(
       std::move(message));
@@ -293,7 +293,7 @@ void ChannelMojo::ForwardMessageWithResponderFromThreadSafePtr(
     mojo::Message message,
     std::unique_ptr<mojo::MessageReceiver> responder) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  if (!message_reader_)
+  if (!message_reader_ || !message_reader_->sender().is_bound())
     return;
   message_reader_->sender().internal_state()->ForwardMessageWithResponder(
       std::move(message), std::move(responder));
