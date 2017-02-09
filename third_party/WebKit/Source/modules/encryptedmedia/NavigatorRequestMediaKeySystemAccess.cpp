@@ -339,19 +339,6 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
                          "The supportedConfigurations parameter is empty."));
   }
 
-  // Note: This method should only be exposed to secure contexts as indicated
-  // by the [SecureContext] IDL attribute. Since that will break some existing
-  // sites, we simply keep track of sites that aren't secure and output a
-  // deprecation message.
-  if (executionContext->isSecureContext()) {
-    UseCounter::count(executionContext, UseCounter::EncryptedMediaSecureOrigin);
-  } else {
-    Deprecation::countDeprecation(executionContext,
-                                  UseCounter::EncryptedMediaInsecureOrigin);
-    // TODO(ddorwin): Implement the following:
-    // Reject promise with a new DOMException whose name is NotSupportedError.
-  }
-
   // 3. Let document be the calling context's Document.
   //    (Done at the begining of this function.)
   if (!document->page()) {

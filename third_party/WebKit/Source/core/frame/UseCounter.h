@@ -569,8 +569,6 @@ class CORE_EXPORT UseCounter {
     FullscreenInsecureOrigin = 766,
     DialogInSandboxedContext = 767,
     SVGSMILAnimationInImageRegardlessOfCache = 768,
-    EncryptedMediaSecureOrigin = 770,
-    EncryptedMediaInsecureOrigin = 771,
     PerformanceFrameTiming = 772,
     V8Element_Animate_Method = 773,
     // The above items are available in M44 branch.

@@ -16,7 +16,6 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     if (!window.internals)
         assert_unreached('window.internals is required for this test');
 
-
     // Tests for APIs that are deprecated, but still allowed, on
     // insecure origins
     async_test(function() {
@@ -31,11 +30,6 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
         testRunner.setMockDeviceOrientation(11.1, 22.2, 33.3, true);
         window.addEventListener('deviceorientation', this.step_func_done());
     }, 'device orientation');
-
-    promise_test(function(test) {
-        return navigator.requestMediaKeySystemAccess('org.w3.clearkey',
-            [{ videoCapabilities: [{contentType: 'video/webm; codecs="vp9"'}] }]);
-    }, 'requestMediaKeySystemAccess');
 
     // Tests for APIs that have been turned off on insecure origins
     async_test(function() {
@@ -87,6 +81,10 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
 
         applicationCache.addEventListener('cached', cached, false);
     }, 'appcache');
+
+    test(function() {
+      assert_false('requestMediaKeySystemAccess' in navigator);
+    }, 'requestMediaKeySystemAccess');
 }
 </script>
 </body>

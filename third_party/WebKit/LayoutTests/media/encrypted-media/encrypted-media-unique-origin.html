@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Unique origin is unable to create MediaKeys</title>
+        <title>requestMediaKeySystemAccess() is not available on unique origin</title>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
     </head>
@@ -31,22 +31,15 @@
             }
 
             promise_test(function(test) {
+                // TODO(xhwang): Also check other EME APIs.
                 var script = 'data:text/html,' +
                     '<script>' +
                     '    window.onmessage = function(e) {' +
-                    '        navigator.requestMediaKeySystemAccess(\'org.w3.clearkey\', [{' +
-                    '           initDataTypes: [ \'keyids\' ],' +
-                    '           audioCapabilities: [' +
-                    '               { contentType: \'audio/mp4; codecs="mp4a.40.2"\' },' +
-                    '               { contentType: \'audio/webm; codecs="opus"\' }' +
-                    '           ]' +
-                    '       }]).then(function(access) {' +
-                    '            return access.createMediaKeys();' +
-                    '        }).then(function(mediaKeys) {' +
-                    '            window.parent.postMessage({result: \'allowed\'}, \'*\');' +
-                    '        }, function(error) {' +
-                    '            window.parent.postMessage({result: \'failed\'}, \'*\');' +
-                    '        });' +
+                    '        if (\'requestMediaKeySystemAccess\' in navigator) {' +
+                    '            window.parent.postMessage({result: \'available\'}, \'*\');' +
+                    '        } else { ' +
+                    '            window.parent.postMessage({result: \'unavailable\'}, \'*\');' +
+                    '        }' +
                     '    };' +
                     '<\/script>';
 
@@ -66,9 +59,9 @@
                     iframe.contentWindow.postMessage({}, '*');
                     return wait_for_message();
                 }).then(function(message) {
-                    assert_equals(message.result, 'failed');
+                    assert_equals(message.result, 'unavailable');
                 });
-            }, 'Unique origin is unable to create MediaKeys');
+            }, 'requestMediaKeySystemAccess() is not available on unique origin');
         </script>
     </body>
 </html>
