@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
@@ -231,6 +232,44 @@ IN_PROC_BROWSER_TEST_F(HandsOffNetworkScreenTest, MAYBE_RequiresNoInput) {
       "}"
       "SendReplyIfEnrollmentDone();",
       &done));
+
+  // Reset the enrollment helper so there is no side effect with other tests.
+  static_cast<EnrollmentScreen*>(wizard_controller->current_screen())
+      ->enrollment_helper_.reset();
+}
+
+IN_PROC_BROWSER_TEST_F(HandsOffNetworkScreenTest, ContinueClickedOnlyOnce) {
+  WizardController* wizard_controller = WizardController::default_controller();
+
+  // Allow the WizardController to advance through the enrollment flow.
+  network_screen_->base_screen_delegate_ = wizard_controller;
+
+  // Check that OnContinueButtonPressed has not been called yet.
+  ASSERT_EQ(0, network_screen_->continue_attempts_);
+
+  // Connect to network "net0".
+  EXPECT_CALL(*mock_network_state_helper_, GetCurrentNetworkName())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(base::ASCIIToUTF16("net0")));
+  EXPECT_CALL(*mock_network_state_helper_, IsConnected())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(true));
+
+  // Stop waiting for net0.
+  network_screen_->StopWaitingForConnection(base::ASCIIToUTF16("net0"));
+
+  // Check that OnContinueButtonPressed has been called exactly once.
+  ASSERT_EQ(1, network_screen_->continue_attempts_);
+
+  // Stop waiting for another network, net1.
+  network_screen_->StopWaitingForConnection(base::ASCIIToUTF16("net1"));
+
+  // Check that OnContinueButtonPressed stil has been called exactly once
+  ASSERT_EQ(1, network_screen_->continue_attempts_);
+
+  // Wait for the enrollment screen.
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT)
+      .WaitNoAssertCurrentScreen();
 
   // Reset the enrollment helper so there is no side effect with other tests.
   static_cast<EnrollmentScreen*>(wizard_controller->current_screen())

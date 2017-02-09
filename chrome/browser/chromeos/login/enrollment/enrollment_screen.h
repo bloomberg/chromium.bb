@@ -96,6 +96,7 @@ class EnrollmentScreen
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
                            TestAuthCodeGetsProperlyReceivedFromGaia);
   FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, RequiresNoInput);
+  FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, ContinueClickedOnlyOnce);
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenUnitTest, Retries);
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenUnitTest, DoesNotRetryOnTopOfUser);
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenUnitTest, DoesNotRetryAfterSuccess);

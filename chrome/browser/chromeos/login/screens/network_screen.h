@@ -98,6 +98,7 @@ class NetworkScreen : public BaseScreen,
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, CanConnect);
   FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, RequiresNoInput);
+  FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, ContinueClickedOnlyOnce);
 
   // BaseScreen implementation:
   void Show() override;
@@ -178,8 +179,14 @@ class NetworkScreen : public BaseScreen,
   // ID of the the network that we are waiting for.
   base::string16 network_id_;
 
-  // True if user pressed continue button so we should proceed with OOBE
-  // as soon as we are connected.
+  // Keeps track of the number of times OnContinueButtonPressed was called.
+  // OnContinueButtonPressed is called either in response to the user
+  // pressing the continue button, or automatically during hands-off enrollment
+  // after a network connection is established.
+  int continue_attempts_ = 0;
+
+  // True if the user pressed the continue button in the UI.
+  // Indicates that we should proceed with OOBE as soon as we are connected.
   bool continue_pressed_ = false;
 
   // Timer for connection timeout.
