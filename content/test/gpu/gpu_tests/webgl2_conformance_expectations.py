@@ -655,17 +655,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac', 'intel'], bug=618464)
 
-    # Mac ASAN only
-    self.Fail('conformance/more/functions/copyTexImage2D.html',
-        ['mac', 'asan'], bug=681641)
-    self.Fail('conformance/more/functions/copyTexSubImage2D.html',
-        ['mac', 'asan'], bug=681641)
-    self.Fail('deqp/functional/gles3/negativetextureapi.html',
-        ['mac', 'asan'], bug=681641)
-    self.Fail(
-        'deqp/functional/gles3/texturespecification/basic_copyteximage2d.html',
-        ['mac', 'asan'], bug=681641)
-
     # Linux only.
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_byte.html',
