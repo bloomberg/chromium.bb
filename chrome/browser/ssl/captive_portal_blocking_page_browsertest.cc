@@ -295,17 +295,31 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                    EXPECT_WIFI_YES, EXPECT_WIFI_SSID_YES, EXPECT_LOGIN_URL_YES);
 }
 
+// Flaky on mac: https://crbug.com/690170
+#if defined(OS_MACOSX)
+#define MAYBE_WiFi_NoSSID_LoginURL DISABLED_WiFi_NoSSID_LoginURL
+#else
+#define MAYBE_WiFi_NoSSID_LoginURL WiFi_NoSSID_LoginURL
+#endif
+
 // Same as above, with login URL but no SSID.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
-                       WiFi_NoSSID_LoginURL) {
+                       MAYBE_WiFi_NoSSID_LoginURL) {
   TestInterstitial(true, std::string(),
                    GURL("http://captive.portal/landing_url"), EXPECT_WIFI_YES,
                    EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_YES);
 }
 
+// Flaky on mac: https://crbug.com/690125
+#if defined(OS_MACOSX)
+#define MAYBE_WiFi_SSID_NoLoginURL DISABLED_WiFi_SSID_NoLoginURL
+#else
+#define MAYBE_WiFi_SSID_NoLoginURL WiFi_SSID_NoLoginURL
+#endif
+
 // Same as above, with SSID but no login URL.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
-                       WiFi_SSID_NoLoginURL) {
+                       MAYBE_WiFi_SSID_NoLoginURL) {
   const GURL kLandingUrl(captive_portal::CaptivePortalDetector::kDefaultURL);
   TestInterstitial(true, kWiFiSSID, kLandingUrl,
                    EXPECT_WIFI_YES, EXPECT_WIFI_SSID_YES, EXPECT_LOGIN_URL_NO);
