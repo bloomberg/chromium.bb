@@ -155,6 +155,9 @@ template("fuzzer_test") {
     if (defined(invoker.seed_corpus)) {
       assert(invoker.seed_corpus == [] || invoker.seed_corpus != [])
     }
+    if (defined(invoker.seed_corpuses)) {
+      assert(invoker.seed_corpuses == [] || invoker.seed_corpuses != [])
+    }
     assert(!defined(invoker.check_includes) || invoker.check_includes != [])
     assert(!defined(invoker.include_dirs) || invoker.include_dirs != [])
     assert(!defined(invoker.defines) || invoker.defines != [])
