@@ -826,8 +826,8 @@ void GlobalHistogramAllocator::Set(
   // likely has histograms stored within it. If the backing memory is also
   // also released, future accesses to those histograms will seg-fault.
   CHECK(!subtle::NoBarrier_Load(&g_allocator));
-  subtle::NoBarrier_Store(&g_allocator,
-                          reinterpret_cast<uintptr_t>(allocator.release()));
+  subtle::Release_Store(&g_allocator,
+                        reinterpret_cast<uintptr_t>(allocator.release()));
   size_t existing = StatisticsRecorder::GetHistogramCount();
 
   DVLOG_IF(1, existing)
@@ -837,7 +837,7 @@ void GlobalHistogramAllocator::Set(
 // static
 GlobalHistogramAllocator* GlobalHistogramAllocator::Get() {
   return reinterpret_cast<GlobalHistogramAllocator*>(
-      subtle::NoBarrier_Load(&g_allocator));
+      subtle::Acquire_Load(&g_allocator));
 }
 
 // static
@@ -867,7 +867,7 @@ GlobalHistogramAllocator::ReleaseForTesting() {
     DCHECK_NE(kResultHistogram, data->name);
   }
 
-  subtle::NoBarrier_Store(&g_allocator, 0);
+  subtle::Release_Store(&g_allocator, 0);
   return WrapUnique(histogram_allocator);
 };
 
