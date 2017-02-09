@@ -363,7 +363,8 @@ external/wpt/webgl [ Skip ]
 external/wpt/websockets [ Skip ]
 ## Owners: michaeln@chromium.org,jsbell@chromium.org
 # external/wpt/webstorage [ Pass ]
-external/wpt/webvtt [ Skip ]
+## Owners: foolip@chromium.org, maksim.sisov@intel.com
+# external/wpt/webvtt [ Pass ]
 ## Owners: nhiroki@chromium.org
 # external/wpt/workers [ Pass ]
 
