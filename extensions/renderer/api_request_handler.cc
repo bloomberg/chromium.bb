@@ -9,6 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
+#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 namespace extensions {
 
@@ -17,7 +19,11 @@ APIRequestHandler::PendingRequest::PendingRequest(
     v8::Local<v8::Function> callback,
     v8::Local<v8::Context> context,
     const std::vector<v8::Local<v8::Value>>& local_callback_args)
-    : isolate(isolate), context(isolate, context), callback(isolate, callback) {
+    : isolate(isolate),
+      context(isolate, context),
+      callback(isolate, callback),
+      user_gesture_token(
+          blink::WebUserGestureIndicator::currentUserGestureToken()) {
   if (!local_callback_args.empty()) {
     callback_arguments.reserve(local_callback_args.size());
     for (const auto& arg : local_callback_args)
@@ -74,6 +80,7 @@ void APIRequestHandler::CompleteRequest(int request_id,
   for (const auto& arg : response_args)
     args.push_back(converter->ToV8Value(arg.get(), context));
 
+  blink::WebScopedUserGesture user_gesture(pending_request.user_gesture_token);
   // args.size() is converted to int, but args is controlled by chrome and is
   // never close to std::numeric_limits<int>::max.
   call_js_.Run(pending_request.callback.Get(isolate), context, args.size(),

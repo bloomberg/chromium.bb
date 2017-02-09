@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "third_party/WebKit/public/web/WebUserGestureToken.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -63,6 +64,7 @@ class APIRequestHandler {
     v8::Global<v8::Context> context;
     v8::Global<v8::Function> callback;
     std::vector<v8::Global<v8::Value>> callback_arguments;
+    blink::WebUserGestureToken user_gesture_token;
   };
 
   // The next available request identifier.

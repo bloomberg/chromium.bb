@@ -17,6 +17,7 @@
 #include "gin/converter.h"
 #include "gin/public/context_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -126,8 +127,7 @@ class APIBindingUnittest : public APIBindingTest {
  public:
   void OnFunctionCall(std::unique_ptr<APIBinding::Request> request,
                       v8::Local<v8::Context> context) {
-    arguments_ = std::move(request->arguments);
-    had_callback_ = request->has_callback;
+    last_request_ = std::move(request);
   }
 
  protected:
@@ -206,7 +206,11 @@ class APIBindingUnittest : public APIBindingTest {
             expected_error);
   }
 
-  bool HandlerWasInvoked() const { return arguments_ != nullptr; }
+  bool HandlerWasInvoked() const { return last_request_ != nullptr; }
+  const APIBinding::Request* last_request() const {
+    return last_request_.get();
+  }
+  void reset_last_request() { last_request_.reset(); }
   APIBinding* binding() { return binding_.get(); }
   APIEventHandler* event_handler() { return event_handler_.get(); }
   APIRequestHandler* request_handler() { return request_handler_.get(); }
@@ -221,8 +225,7 @@ class APIBindingUnittest : public APIBindingTest {
                bool expect_callback,
                const std::string& expected_error);
 
-  std::unique_ptr<base::ListValue> arguments_;
-  bool had_callback_ = false;
+  std::unique_ptr<APIBinding::Request> last_request_;
   std::unique_ptr<APIBinding> binding_;
   std::unique_ptr<APIEventHandler> event_handler_;
   std::unique_ptr<APIRequestHandler> request_handler_;
@@ -243,7 +246,7 @@ void APIBindingUnittest::RunTest(v8::Local<v8::Context> context,
                                  const std::string& expected_json_arguments,
                                  bool expect_callback,
                                  const std::string& expected_error) {
-  EXPECT_FALSE(arguments_);
+  EXPECT_FALSE(last_request_);
   std::string wrapped_script_source =
       base::StringPrintf("(function(obj) { %s })", script_source.c_str());
 
@@ -255,16 +258,16 @@ void APIBindingUnittest::RunTest(v8::Local<v8::Context> context,
 
   if (should_pass) {
     RunFunction(func, context, 1, argv);
-    ASSERT_TRUE(arguments_) << script_source;
-    EXPECT_EQ(expected_json_arguments, ValueToString(*arguments_));
-    EXPECT_EQ(expect_callback, had_callback_) << script_source;
+    ASSERT_TRUE(last_request_) << script_source;
+    EXPECT_EQ(expected_json_arguments,
+              ValueToString(*last_request_->arguments));
+    EXPECT_EQ(expect_callback, last_request_->has_callback) << script_source;
   } else {
     RunFunctionAndExpectError(func, context, 1, argv, expected_error);
-    EXPECT_FALSE(arguments_);
+    EXPECT_FALSE(last_request_);
   }
 
-  arguments_.reset();
-  had_callback_ = false;
+  last_request_.reset();
 }
 
 TEST_F(APIBindingUnittest, TestEmptyAPI) {
@@ -983,6 +986,35 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
   // Other methods, like stringAndInt(), should behave normally.
   ExpectPass(binding_object, "obj.stringAndInt('foo', 42);",
              "['foo',42]", false);
+}
+
+// Test that user gestures are properly recorded when calling APIs.
+TEST_F(APIBindingUnittest, TestUserGestures) {
+  SetFunctions(kFunctions);
+  InitializeBinding();
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+
+  v8::Local<v8::Function> function =
+      FunctionFromString(context, "(function(obj) { obj.oneString('foo');})");
+  ASSERT_FALSE(function.IsEmpty());
+
+  v8::Local<v8::Value> argv[] = {binding_object};
+  RunFunction(function, context, arraysize(argv), argv);
+  ASSERT_TRUE(last_request());
+  EXPECT_FALSE(last_request()->has_user_gesture);
+  reset_last_request();
+
+  blink::WebScopedUserGesture user_gesture(nullptr);
+  RunFunction(function, context, arraysize(argv), argv);
+  ASSERT_TRUE(last_request());
+  EXPECT_TRUE(last_request()->has_user_gesture);
+
+  reset_last_request();
 }
 
 }  // namespace extensions

@@ -20,6 +20,7 @@
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/arguments.h"
 #include "gin/per_context_data.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 namespace extensions {
 
@@ -335,8 +336,8 @@ void APIBinding::HandleCall(const std::string& name,
         isolate, callback, context, callback_args);
     request->has_callback = true;
   }
-  // TODO(devlin): Query and curry user gestures around.
-  request->has_user_gesture = false;
+  request->has_user_gesture =
+      blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe();
   request->arguments = std::move(converted_arguments);
   request->method_name = name;
 

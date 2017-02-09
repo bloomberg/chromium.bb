@@ -3,14 +3,18 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
 #include "extensions/renderer/api_request_handler.h"
 #include "gin/converter.h"
+#include "gin/function_template.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/isolate_holder.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 namespace extensions {
 
@@ -190,6 +194,58 @@ TEST_F(APIRequestHandlerTest, CustomCallbackArguments) {
             GetStringPropertyFromObject(context->Global(), context, "result"));
 
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
+}
+
+// Test user gestures being curried around for API requests.
+TEST_F(APIRequestHandlerTest, UserGestureTest) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  APIRequestHandler request_handler(
+      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)));
+
+  auto callback = [](base::Optional<bool>* ran_with_user_gesture) {
+    *ran_with_user_gesture =
+        blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe();
+  };
+
+  // Set up a callback to be used with the request so we can check if a user
+  // gesture was active.
+  base::Optional<bool> ran_with_user_gesture;
+  v8::Local<v8::FunctionTemplate> function_template =
+      gin::CreateFunctionTemplate(isolate(),
+                                  base::Bind(callback, &ran_with_user_gesture));
+  v8::Local<v8::Function> v8_callback =
+      function_template->GetFunction(context).ToLocalChecked();
+
+  // Try first without a user gesture.
+  int request_id = request_handler.AddPendingRequest(isolate(), v8_callback,
+                                                     context, ArgumentList());
+  request_handler.CompleteRequest(request_id, *ListValueFromString("[]"));
+
+  ASSERT_TRUE(ran_with_user_gesture);
+  EXPECT_FALSE(*ran_with_user_gesture);
+  ran_with_user_gesture.reset();
+
+  // Next try calling with a user gesture. Since a gesture will be active at the
+  // time of the call, it should also be active during the callback.
+  {
+    blink::WebScopedUserGesture user_gesture(nullptr);
+    EXPECT_TRUE(
+        blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe());
+    request_id = request_handler.AddPendingRequest(isolate(), v8_callback,
+                                                   context, ArgumentList());
+  }
+  EXPECT_FALSE(
+      blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe());
+
+  request_handler.CompleteRequest(request_id, *ListValueFromString("[]"));
+  ASSERT_TRUE(ran_with_user_gesture);
+  EXPECT_TRUE(*ran_with_user_gesture);
+  // Sanity check - after the callback ran, there shouldn't be an active
+  // gesture.
+  EXPECT_FALSE(
+      blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe());
 }
 
 }  // namespace extensions
