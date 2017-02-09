@@ -11,8 +11,8 @@
 // clang-format off
 
 // TODO(dglazkov): Use chromium-style path.
-#ifndef TestInterface3_h
-#define TestInterface3_h
+#ifndef TEST_INTERFACE_3_H
+#define TEST_INTERFACE_3_H
 
 namespace blink {
 namespace api {
@@ -23,4 +23,4 @@ class TestInterface3 {
 }  // namespace api
 }  // namespace blink
 
-#endif  // TestInterface3_h
+#endif  // TEST_INTERFACE_3_H

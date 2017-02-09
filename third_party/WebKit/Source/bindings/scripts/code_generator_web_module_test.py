@@ -80,7 +80,11 @@ class InterfaceContextBuilderTest(unittest.TestCase):
         builder.set_class_name('foo')
         self.assertEqual({
             'code_generator': 'test',
-            'class_name': 'foo',
+            'class_name': {
+                'snake_case': 'foo',
+                'macro_case': 'FOO',
+                'upper_camel_case': 'Foo'
+            },
         }, builder.build())
 
     def test_set_inheritance(self):

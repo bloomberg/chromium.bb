@@ -25,6 +25,7 @@ import posixpath
 from code_generator import CodeGeneratorBase, render_template
 # TODO(dglazkov): Move TypedefResolver to code_generator.py
 from code_generator_v8 import TypedefResolver
+from name_style_converter import NameStyleConverter
 
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
 
@@ -81,7 +82,8 @@ class InterfaceContextBuilder(object):
         self.type_resolver = type_resolver
 
     def set_class_name(self, class_name):
-        self.result['class_name'] = class_name
+        converter = NameStyleConverter(class_name)
+        self.result['class_name'] = converter.to_all_cases()
 
     def set_inheritance(self, base_interface):
         if base_interface is None:
@@ -140,13 +142,14 @@ class CodeGeneratorWebModule(CodeGeneratorBase):
         template_filename = 'web_module_interface.%s.tmpl' % file_extension
         return self.jinja_env.get_template(template_filename)
 
-    # TODO(dglazkov): Move to CodeGeneratorBase.
-    def output_paths(self, definition_name):
-        header_path = posixpath.join(self.output_dir,
-                                     'Web%s.h' % definition_name)
-        cpp_path = posixpath.join(self.output_dir,
-                                  'Web%s.cpp' % definition_name)
-        return header_path, cpp_path
+    def generate_file(self, template_context, file_extension):
+        template = self.get_template(file_extension)
+        path = posixpath.join(
+            self.output_dir,
+            '%s.%s' % (template_context['class_name']['snake_case'],
+                       file_extension))
+        text = render_template(template, template_context)
+        return (path, text)
 
     def generate_interface_code(self, interface):
         # TODO(dglazkov): Implement callback interfaces.
@@ -156,22 +159,14 @@ class CodeGeneratorWebModule(CodeGeneratorBase):
 
         template_context = interface_context(interface)
 
-        cpp_template = self.get_template('cpp')
-        header_template = self.get_template('h')
-        cpp_text = render_template(cpp_template, template_context)
-        header_text = render_template(header_template, template_context)
-        header_path, cpp_path = self.output_paths(interface.name)
-
         return (
-            (header_path, header_text),
-            (cpp_path, cpp_text)
+            self.generate_file(template_context, 'h'),
+            self.generate_file(template_context, 'cc')
         )
 
     def generate_code(self, definitions, definition_name):
         self.typedef_resolver.resolve(definitions, definition_name)
-        header_path, cpp_path = self.output_paths(definition_name)
 
-        template_context = {}
         # TODO(dglazkov): Implement dictionaries
         if definition_name not in definitions.interfaces:
             return None

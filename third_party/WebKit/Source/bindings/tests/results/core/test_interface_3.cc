@@ -6,11 +6,11 @@
 // DO NOT MODIFY!
 
 // This file has been generated from the Jinja2 template in
-// third_party/WebKit/Source/bindings/templates/web_module_interface.cpp.tmpl
+// third_party/WebKit/Source/bindings/templates/web_module_interface.cc.tmpl
 
 // clang-format off
 
-#include "TestInterface3.h"
+#include "test_interface_3.h"
 
 // TODO(dglazkov): Implement generating includes.
 #include "wtf/text/WTFString.h.h"
@@ -26,7 +26,7 @@ namespace api {
 // DOMString readonlyStringifierAttribute
 
 // TODO(dglazkov): Implement method generation
-// void CppTestInterface3::voidMethodDocument
+// void TestInterface3::voidMethodDocument
 
 }  // namespace api
 }  // namespace blink

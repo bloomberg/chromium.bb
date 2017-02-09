@@ -2,7 +2,7 @@
 
 {% include 'copyright_block.txt' %}
 
-#include "{{class_name}}.h"
+#include "{{class_name.snake_case}}.h"
 
 // TODO(dglazkov): Implement generating includes.
 {% for filename in cpp_includes %}
@@ -26,7 +26,7 @@ namespace api {
 
 // TODO(dglazkov): Implement method generation
 {% for method in methods %}
-// {{method.return_type}} Cpp{{class_name}}::{{method.name}}
+// {{method.return_type}} {{class_name.upper_camel_case}}::{{method.name}}
 {% endfor %}
 
 }  // namespace api

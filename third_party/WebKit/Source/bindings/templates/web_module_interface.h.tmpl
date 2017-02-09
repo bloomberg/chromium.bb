@@ -3,8 +3,8 @@
 {% include 'copyright_block.txt' %}
 
 // TODO(dglazkov): Use chromium-style path.
-#ifndef {{class_name}}_h
-#define {{class_name}}_h
+#ifndef {{class_name.macro_case}}_H
+#define {{class_name.macro_case}}_H
 
 {% for include_file in header_includes %}
 #include "{{include_file}}"
@@ -13,13 +13,13 @@
 namespace blink {
 namespace api {
 
-class {{class_name}}{{inherits_expression}} {
+class {{class_name.upper_camel_case}}{{inherits_expression}} {
 
 };
 
 }  // namespace api
 }  // namespace blink
 
-#endif  // {{class_name}}_h
+#endif  // {{class_name.macro_case}}_H
 
 {% endfilter %}
