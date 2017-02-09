@@ -57,8 +57,8 @@
 #define MEDIA_AUDIO_WIN_AUDIO_LOW_LATENCY_INPUT_WIN_H_
 
 #include <Audioclient.h>
-#include <endpointvolume.h>
 #include <MMDeviceAPI.h>
+#include <endpointvolume.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -120,37 +120,62 @@ class MEDIA_EXPORT WASAPIAudioInputStream
 
   // The Open() method is divided into these sub methods.
   HRESULT SetCaptureDevice();
-  HRESULT ActivateCaptureDevice();
   HRESULT GetAudioEngineStreamFormat();
   bool DesiredFormatIsSupported();
   HRESULT InitializeAudioEngine();
+  void ReportOpenResult() const;
+
+  // Used to track down where we fail during initialization which at the
+  // moment seems to be happening frequently and we're not sure why.
+  // The reason might be expected (e.g. trying to open "default" on a machine
+  // that has no audio devices).
+  // Note: This enum is used to record a histogram value and should not be
+  // re-ordered.
+  enum StreamOpenResult {
+    OPEN_RESULT_OK = 0,
+    OPEN_RESULT_CREATE_INSTANCE = 1,
+    OPEN_RESULT_NO_ENDPOINT = 2,
+    OPEN_RESULT_NO_STATE = 3,
+    OPEN_RESULT_DEVICE_NOT_ACTIVE = 4,
+    OPEN_RESULT_ACTIVATION_FAILED = 5,
+    OPEN_RESULT_FORMAT_NOT_SUPPORTED = 6,
+    OPEN_RESULT_AUDIO_CLIENT_INIT_FAILED = 7,
+    OPEN_RESULT_GET_BUFFER_SIZE_FAILED = 8,
+    OPEN_RESULT_LOOPBACK_ACTIVATE_FAILED = 9,
+    OPEN_RESULT_LOOPBACK_INIT_FAILED = 10,
+    OPEN_RESULT_SET_EVENT_HANDLE = 11,
+    OPEN_RESULT_NO_CAPTURE_CLIENT = 12,
+    OPEN_RESULT_NO_AUDIO_VOLUME = 13,
+    OPEN_RESULT_MAX = OPEN_RESULT_NO_AUDIO_VOLUME
+  };
 
   // Our creator, the audio manager needs to be notified when we close.
-  AudioManagerWin* manager_;
+  AudioManagerWin* const manager_;
 
   // Capturing is driven by this thread (which has no message loop).
   // All OnData() callbacks will be called from this thread.
-  base::DelegateSimpleThread* capture_thread_;
+  std::unique_ptr<base::DelegateSimpleThread> capture_thread_;
 
   // Contains the desired audio format which is set up at construction.
   WAVEFORMATEX format_;
 
-  bool opened_;
-  bool started_;
+  bool opened_ = false;
+  bool started_ = false;
+  StreamOpenResult open_result_ = OPEN_RESULT_OK;
 
   // Size in bytes of each audio frame (4 bytes for 16-bit stereo PCM)
-  size_t frame_size_;
+  size_t frame_size_ = 0;
 
   // Size in audio frames of each audio packet where an audio packet
   // is defined as the block of data which the user received in each
   // OnData() callback.
-  size_t packet_size_frames_;
+  size_t packet_size_frames_ = 0;
 
   // Size in bytes of each audio packet.
-  size_t packet_size_bytes_;
+  size_t packet_size_bytes_ = 0;
 
   // Length of the audio endpoint buffer.
-  uint32_t endpoint_buffer_size_frames_;
+  uint32_t endpoint_buffer_size_frames_ = 0;
 
   // Contains the unique name of the selected endpoint device.
   // Note that AudioDeviceDescription::kDefaultDeviceId represents the default
@@ -159,14 +184,14 @@ class MEDIA_EXPORT WASAPIAudioInputStream
 
   // Conversion factor used in delay-estimation calculations.
   // Converts a raw performance counter value to 100-nanosecond unit.
-  double perf_count_to_100ns_units_;
+  double perf_count_to_100ns_units_ = 0.0;
 
   // Conversion factor used in delay-estimation calculations.
   // Converts from milliseconds to audio frames.
-  double ms_to_frame_count_;
+  double ms_to_frame_count_ = 0.0;
 
   // Pointer to the object that will receive the recorded audio samples.
-  AudioInputCallback* sink_;
+  AudioInputCallback* sink_ = nullptr;
 
   // Windows Multimedia Device (MMDevice) API interfaces.
 
@@ -216,7 +241,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // kLoopbackWithMuteDeviceId.
   // True, if we have muted the system audio for the stream capturing, and
   // indicates that we need to unmute the system audio when stopping capturing.
-  bool mute_done_;
+  bool mute_done_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WASAPIAudioInputStream);
 };
