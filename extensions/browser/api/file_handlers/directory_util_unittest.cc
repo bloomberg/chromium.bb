@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/file_handlers/directory_util.h"
+#include "extensions/browser/api/file_handlers/directory_util.h"
 
 #include <memory>
 #include <set>
@@ -12,10 +12,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -44,7 +45,8 @@ class IsDirectoryUtilTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  ExtensionsAPIClient extensions_api_client_;
+  content::TestBrowserContext context_;
   base::FilePath dir_path_;
   base::FilePath file_path_;
 };
@@ -55,7 +57,7 @@ TEST_F(IsDirectoryUtilTest, CollectForEntriesPaths) {
   paths.push_back(file_path_);
   paths.push_back(base::FilePath::FromUTF8Unsafe(kRandomPath));
 
-  IsDirectoryCollector collector(&profile_);
+  IsDirectoryCollector collector(&context_);
   std::set<base::FilePath> result;
   collector.CollectForEntriesPaths(
       paths, base::Bind(&OnCollectForEntriesPath, &result));

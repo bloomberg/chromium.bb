@@ -1,4 +1,6 @@
 include_rules = [
   "+device/base",
   "+device/hid",
+  "+storage/browser/fileapi",
+  "+storage/common/fileapi",
 ]
