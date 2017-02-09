@@ -41,6 +41,7 @@ class UkmServiceTest : public testing::Test {
   }
 
   Report GetPersistedReport() {
+    EXPECT_GE(GetPersistedLogCount(), 1);
     metrics::PersistedLogs result_persisted_logs(
         base::MakeUnique<ukm::PersistedLogsMetricsImpl>(), &prefs_,
         prefs::kUkmPersistedLogs,
@@ -58,6 +59,14 @@ class UkmServiceTest : public testing::Test {
     Report report;
     EXPECT_TRUE(report.ParseFromString(uncompressed_log_data));
     return report;
+  }
+
+  std::unique_ptr<UkmSource> MakeSource(std::string url, int paint_msec) {
+    auto source = base::MakeUnique<UkmSource>();
+    source->set_committed_url(GURL(url));
+    source->set_first_contentful_paint(
+        base::TimeDelta::FromMilliseconds(paint_msec));
+    return source;
   }
 
  protected:
@@ -80,6 +89,7 @@ TEST_F(UkmServiceTest, EnableDisableSchedule) {
   EXPECT_TRUE(task_runner_->HasPendingTask());
   // Allow initialization to complete.
   task_runner_->RunUntilIdle();
+  service.EnableRecording();
   service.EnableReporting();
   EXPECT_TRUE(task_runner_->HasPendingTask());
   service.DisableReporting();
@@ -92,11 +102,14 @@ TEST_F(UkmServiceTest, PersistAndPurge) {
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
+  service.EnableRecording();
   service.EnableReporting();
+  service.RecordSource(MakeSource("https://google.com", 300));
   // Should init, generate a log, and start an upload.
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client_.uploader()->is_uploading());
   // Flushes the generated log to disk and generates a new one.
+  service.RecordSource(MakeSource("https://google.com", 300));
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 2);
   service.Purge();
@@ -108,13 +121,10 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
   task_runner_->RunUntilIdle();
+  service.EnableRecording();
   service.EnableReporting();
 
-  std::unique_ptr<UkmSource> source = base::WrapUnique(new UkmSource());
-  source->set_committed_url(GURL("https://google.com"));
-  source->set_first_contentful_paint(base::TimeDelta::FromMilliseconds(300));
-
-  service.RecordSource(std::move(source));
+  service.RecordSource(MakeSource("https://google.com", 300));
 
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 1);
@@ -140,9 +150,10 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   EXPECT_FALSE(provider->provide_system_profile_metrics_called());
 
   task_runner_->RunUntilIdle();
+  service.EnableRecording();
   service.EnableReporting();
 
-  service.RecordSource(base::WrapUnique(new UkmSource()));
+  service.RecordSource(MakeSource("https://google.com", 300));
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 1);
 
@@ -151,6 +162,30 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
 
   // Providers have now supplied system profile information.
   EXPECT_TRUE(provider->provide_system_profile_metrics_called());
+}
+
+TEST_F(UkmServiceTest, LogsUploadedWithSourcesOnly) {
+  UkmService service(&prefs_, &client_);
+  EXPECT_EQ(GetPersistedLogCount(), 0);
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording();
+  service.EnableReporting();
+
+  EXPECT_TRUE(task_runner_->HasPendingTask());
+  // Neither rotation or Flush should generate logs
+  task_runner_->RunPendingTasks();
+  service.Flush();
+  EXPECT_EQ(GetPersistedLogCount(), 0);
+
+  service.RecordSource(MakeSource("https://google.com", 300));
+  // Includes a Source, so will persist.
+  service.Flush();
+  EXPECT_EQ(GetPersistedLogCount(), 1);
+
+  // Current log has no Sources.
+  service.Flush();
+  EXPECT_EQ(GetPersistedLogCount(), 1);
 }
 
 }  // namespace ukm

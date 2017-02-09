@@ -19,6 +19,7 @@
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/ukm/observers/history_delete_observer.h"
+#include "components/ukm/observers/sync_disable_observer.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
 
 class IOSChromeStabilityMetricsProvider;
@@ -45,6 +46,7 @@ class IOSChromeMetricsServiceClient
     : public metrics::MetricsServiceClient,
       public metrics::TrackingSynchronizerObserver,
       public ukm::HistoryDeleteObserver,
+      public ukm::SyncDisableObserver,
       public web::GlobalWebStateObserver {
  public:
   ~IOSChromeMetricsServiceClient() override;
@@ -76,8 +78,11 @@ class IOSChromeMetricsServiceClient
   base::string16 GetRegistryBackupKey() override;
   void OnRendererProcessCrash() override;
 
-  // ukm::HistoryDeleteObserver
+  // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;
+
+  // ukm::SyncDisableObserver:
+  void OnSyncPrefsChanged(bool must_purge) override;
 
   // web::GlobalWebStateObserver:
   void WebStateDidStartLoading(web::WebState* web_state) override;
@@ -118,8 +123,8 @@ class IOSChromeMetricsServiceClient
   // there was recent activity.
   void RegisterForNotifications();
 
-  // Register to observe history delete events on a browser state.
-  void RegisterForHistoryDeletions(ios::ChromeBrowserState* browser_state);
+  // Register to observe events on a browser state's services.
+  void RegisterForBrowserStateEvents(ios::ChromeBrowserState* browser_state);
 
   // Called when a tab is parented.
   void OnTabParented(web::WebState* web_state);

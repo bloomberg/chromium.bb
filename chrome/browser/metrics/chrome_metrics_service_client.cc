@@ -41,6 +41,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_metrics_provider.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
@@ -50,6 +51,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/util_constants.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/browser_watcher/stability_debugging.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
@@ -895,15 +897,19 @@ void ChromeMetricsServiceClient::RegisterForNotifications() {
                  content::NotificationService::AllBrowserContextsAndSources());
   for (Profile* profile :
        g_browser_process->profile_manager()->GetLoadedProfiles()) {
-    RegisterForHistoryDeletions(profile);
+    RegisterForProfileEvents(profile);
   }
 }
 
-void ChromeMetricsServiceClient::RegisterForHistoryDeletions(Profile* profile) {
+void ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS);
   ObserveServiceForDeletions(history_service);
+  browser_sync::ProfileSyncService* sync =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  if (sync)
+    ObserveServiceForSyncDisables(static_cast<syncer::SyncService*>(sync));
 }
 
 void ChromeMetricsServiceClient::Observe(
@@ -925,7 +931,7 @@ void ChromeMetricsServiceClient::Observe(
       break;
 
     case chrome::NOTIFICATION_PROFILE_ADDED:
-      RegisterForHistoryDeletions(content::Source<Profile>(source).ptr());
+      RegisterForProfileEvents(content::Source<Profile>(source).ptr());
       break;
 
     default:
@@ -944,4 +950,15 @@ bool ChromeMetricsServiceClient::IsUMACellularUploadLogicEnabled() {
 void ChromeMetricsServiceClient::OnHistoryDeleted() {
   if (ukm_service_)
     ukm_service_->Purge();
+}
+
+void ChromeMetricsServiceClient::OnSyncPrefsChanged(bool must_purge) {
+  if (!ukm_service_)
+    return;
+  if (must_purge) {
+    ukm_service_->Purge();
+    ukm_service_->ResetClientId();
+  }
+  // Signal service manager to enable/disable UKM based on new state.
+  UpdateRunningServices();
 }

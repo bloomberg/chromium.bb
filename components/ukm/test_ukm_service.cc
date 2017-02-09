@@ -18,6 +18,7 @@ UkmServiceTestingHarness::~UkmServiceTestingHarness() = default;
 
 TestUkmService::TestUkmService(PrefService* prefs_service)
     : UkmService(prefs_service, &test_metrics_service_client_) {
+  EnableRecording();
   DisableReporting();
 }
 

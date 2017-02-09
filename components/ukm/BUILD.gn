@@ -36,11 +36,14 @@ static_library("observers") {
   sources = [
     "observers/history_delete_observer.cc",
     "observers/history_delete_observer.h",
+    "observers/sync_disable_observer.cc",
+    "observers/sync_disable_observer.h",
   ]
 
   deps = [
     "//base",
     "//components/history/core/browser",
+    "//components/sync",
   ]
 }
 
@@ -64,10 +67,12 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "observers/sync_disable_observer_unittest.cc",
     "ukm_service_unittest.cc",
   ]
 
   deps = [
+    ":observers",
     ":test_support",
     ":ukm",
     "//base",
@@ -75,6 +80,7 @@ source_set("unit_tests") {
     "//components/metrics",
     "//components/metrics:test_support",
     "//components/prefs:test_support",
+    "//components/sync:test_support_driver",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/zlib:compression_utils",

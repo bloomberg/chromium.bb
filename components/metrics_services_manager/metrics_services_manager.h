@@ -79,7 +79,7 @@ class MetricsServicesManager {
 
   // Update the managed services when permissions for recording/uploading
   // metrics change.
-  void UpdatePermissions(bool may_record, bool may_upload);
+  void UpdatePermissions(bool current_may_record, bool current_may_upload);
 
   // Update the managed services when permissions for uploading metrics change.
   void UpdateUploadPermissions(bool may_upload);
@@ -97,6 +97,9 @@ class MetricsServicesManager {
 
   // Update which services are running to match current permissions.
   void UpdateRunningServices();
+
+  // Update the state of UkmService to match current permissions.
+  void UpdateUkmService();
 
   // The client passed in from the embedder.
   std::unique_ptr<MetricsServicesManagerClient> client_;

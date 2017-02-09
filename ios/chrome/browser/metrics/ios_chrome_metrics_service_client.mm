@@ -20,6 +20,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/threading/platform_thread.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -54,6 +55,7 @@
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
 #include "ios/chrome/browser/tabs/tab_model_list.h"
@@ -327,16 +329,20 @@ void IOSChromeMetricsServiceClient::RegisterForNotifications() {
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
   for (ios::ChromeBrowserState* browser_state : loaded_browser_states) {
-    RegisterForHistoryDeletions(browser_state);
+    RegisterForBrowserStateEvents(browser_state);
   }
 }
 
-void IOSChromeMetricsServiceClient::RegisterForHistoryDeletions(
+void IOSChromeMetricsServiceClient::RegisterForBrowserStateEvents(
     ios::ChromeBrowserState* browser_state) {
   history::HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::IMPLICIT_ACCESS);
   ObserveServiceForDeletions(history_service);
+  browser_sync::ProfileSyncService* sync =
+      IOSChromeProfileSyncServiceFactory::GetInstance()->GetForBrowserState(
+          browser_state);
+  ObserveServiceForSyncDisables(static_cast<syncer::SyncService*>(sync));
 }
 
 void IOSChromeMetricsServiceClient::OnTabParented(web::WebState* web_state) {
@@ -356,4 +362,15 @@ IOSChromeMetricsServiceClient::GetMetricsReportingDefaultState() {
 void IOSChromeMetricsServiceClient::OnHistoryDeleted() {
   if (ukm_service_)
     ukm_service_->Purge();
+}
+
+void IOSChromeMetricsServiceClient::OnSyncPrefsChanged(bool must_purge) {
+  if (!ukm_service_)
+    return;
+  if (must_purge) {
+    ukm_service_->Purge();
+    ukm_service_->ResetClientId();
+  }
+  // Signal service manager to enable/disable UKM based on new state.
+  UpdateRunningServices();
 }

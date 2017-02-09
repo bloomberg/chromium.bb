@@ -47,6 +47,10 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // Initializes the UKM service.
   void Initialize();
 
+  // Enables/disables recording control if data is allowed to be collected.
+  void EnableRecording();
+  void DisableRecording();
+
   // Enables/disables transmission of accumulated logs. Logs that have already
   // been created will remain persisted to disk.
   void EnableReporting();
@@ -61,6 +65,9 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
 
   // Deletes any unsent local data.
   void Purge();
+
+  // Resets the client id stored in prefs.
+  void ResetClientId();
 
   // Registers the specified |provider| to provide additional metrics into the
   // UKM log. Should be called during MetricsService initialization only.
@@ -99,6 +106,9 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
 
   // A weak pointer to the PrefService used to read and write preferences.
   PrefService* pref_service_;
+
+  // Whether recording new data is currently allowed.
+  bool recording_enabled_;
 
   // The UKM client id stored in prefs.
   uint64_t client_id_;

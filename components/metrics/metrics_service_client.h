@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_reporting_default_state.h"
@@ -33,7 +33,8 @@ class MetricsService;
 // environment.
 class MetricsServiceClient {
  public:
-  virtual ~MetricsServiceClient() {}
+  MetricsServiceClient();
+  virtual ~MetricsServiceClient();
 
   // Returns the MetricsService instance that this client is associated with.
   // With the exception of testing contexts, the returned instance must be valid
@@ -120,6 +121,21 @@ class MetricsServiceClient {
 
   // Returns whether cellular logic is enabled for metrics reporting.
   virtual bool IsUMACellularUploadLogicEnabled();
+
+  // Returns if history sync is enabled on all active profiles.
+  virtual bool IsHistorySyncEnabledOnAllProfiles();
+
+  // Sets the callback to run MetricsServiceManager::UpdateRunningServices.
+  void SetUpdateRunningServicesCallback(const base::Closure& callback);
+
+ protected:
+  // Notify MetricsServiceManager to UpdateRunningServices using callback.
+  void UpdateRunningServices();
+
+ private:
+  base::Closure update_running_services_;
+
+  DISALLOW_COPY_AND_ASSIGN(MetricsServiceClient);
 };
 
 }  // namespace metrics

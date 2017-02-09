@@ -69,15 +69,33 @@ std::string GetServerUrl() {
   return kDefaultServerUrl;
 }
 
+// Generates a new client id and stores it in prefs.
+uint64_t GenerateClientId(PrefService* pref_service) {
+  uint64_t client_id = 0;
+  while (!client_id)
+    client_id = base::RandUint64();
+  pref_service->SetInt64(prefs::kUkmClientId, client_id);
+  return client_id;
+}
+
 uint64_t LoadOrGenerateClientId(PrefService* pref_service) {
   uint64_t client_id = pref_service->GetInt64(prefs::kUkmClientId);
-  if (!client_id) {
-    // Generate and store a new client id.
-    while (!client_id)
-      client_id = base::RandUint64();
-    pref_service->SetInt64(prefs::kUkmClientId, client_id);
-  }
+  if (!client_id)
+    client_id = GenerateClientId(pref_service);
   return client_id;
+}
+
+enum class DroppedSourceReason {
+  NOT_DROPPED = 0,
+  RECORDING_DISABLED = 1,
+  MAX_SOURCES_HIT = 2,
+  NUM_DROPPED_SOURCES_REASONS
+};
+
+void RecordDroppedSource(DroppedSourceReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "UKM.Sources.Dropped", static_cast<int>(reason),
+      static_cast<int>(DroppedSourceReason::NUM_DROPPED_SOURCES_REASONS));
 }
 
 }  // namespace
@@ -87,6 +105,7 @@ const base::Feature kUkmFeature = {"Ukm", base::FEATURE_DISABLED_BY_DEFAULT};
 UkmService::UkmService(PrefService* pref_service,
                        metrics::MetricsServiceClient* client)
     : pref_service_(pref_service),
+      recording_enabled_(false),
       client_(client),
       persisted_logs_(std::unique_ptr<ukm::PersistedLogsMetricsImpl>(
                           new ukm::PersistedLogsMetricsImpl()),
@@ -134,6 +153,14 @@ void UkmService::Initialize() {
       base::TimeDelta::FromSeconds(kInitializationDelaySeconds));
 }
 
+void UkmService::EnableRecording() {
+  recording_enabled_ = true;
+}
+
+void UkmService::DisableRecording() {
+  recording_enabled_ = false;
+}
+
 void UkmService::EnableReporting() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "UkmService::EnableReporting";
@@ -167,6 +194,10 @@ void UkmService::Purge() {
   DVLOG(1) << "UkmService::Purge";
   persisted_logs_.Purge();
   sources_.clear();
+}
+
+void UkmService::ResetClientId() {
+  client_id_ = GenerateClientId(pref_service_);
 }
 
 void UkmService::RegisterMetricsProvider(
@@ -208,6 +239,10 @@ void UkmService::RotateLog() {
 void UkmService::BuildAndStoreLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "UkmService::BuildAndStoreLog";
+  // Suppress generating a log if we have no new data to include.
+  if (sources_.empty())
+    return;
+
   Report report;
   report.set_client_id(client_id_);
 
@@ -233,6 +268,11 @@ void UkmService::BuildAndStoreLog() {
 void UkmService::StartScheduledUpload() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!log_upload_in_progress_);
+  if (persisted_logs_.empty()) {
+    // No logs to send, so early out and schedule the next rotation.
+    scheduler_->UploadFinished(true, /* has_unsent_logs */ false);
+    return;
+  }
   if (!persisted_logs_.has_staged_log())
     persisted_logs_.StageLog();
   // TODO(holte): Handle data usage on cellular, etc.
@@ -282,8 +322,12 @@ void UkmService::OnLogUploadComplete(int response_code) {
 }
 
 void UkmService::RecordSource(std::unique_ptr<UkmSource> source) {
+  if (!recording_enabled_) {
+    RecordDroppedSource(DroppedSourceReason::RECORDING_DISABLED);
+    return;
+  }
   if (sources_.size() >= kMaxSources) {
-    UMA_HISTOGRAM_BOOLEAN("UKM.Sources.MaxSourcesHit", true);
+    RecordDroppedSource(DroppedSourceReason::MAX_SOURCES_HIT);
     return;
   }
 

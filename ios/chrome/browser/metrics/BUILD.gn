@@ -25,6 +25,7 @@ source_set("metrics") {
   ]
   deps = [
     "//base",
+    "//components/browser_sync",
     "//components/crash/core/common",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",

@@ -8,6 +8,10 @@
 
 namespace metrics {
 
+MetricsServiceClient::MetricsServiceClient() : update_running_services_() {}
+
+MetricsServiceClient::~MetricsServiceClient() {}
+
 ukm::UkmService* MetricsServiceClient::GetUkmService() {
   return nullptr;
 }
@@ -30,6 +34,20 @@ bool MetricsServiceClient::IsUMACellularUploadLogicEnabled() {
 
 std::string MetricsServiceClient::GetMetricsServerUrl() {
   return metrics::kDefaultMetricsServerUrl;
+}
+
+bool MetricsServiceClient::IsHistorySyncEnabledOnAllProfiles() {
+  return false;
+}
+
+void MetricsServiceClient::SetUpdateRunningServicesCallback(
+    const base::Closure& callback) {
+  update_running_services_ = callback;
+}
+
+void MetricsServiceClient::UpdateRunningServices() {
+  if (update_running_services_)
+    update_running_services_.Run();
 }
 
 }  // namespace metrics
