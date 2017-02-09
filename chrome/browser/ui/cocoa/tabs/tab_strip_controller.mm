@@ -1127,6 +1127,10 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
     }
     isLastTabPinned = isPinned;
 
+    // Flip if in RTL mode.
+    tabFrame.origin.x =
+        FlipXInView(tabStripView_, tabFrame.size.width, tabFrame.origin.x);
+
     if (laidOutNonPinnedTabs > numberOfNonPinnedTabs) {
       // There is not enough space to fit this tab.
       tabFrame.size.width = 0;
@@ -1144,9 +1148,6 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
         droppedTabFrame_ = NSZeroRect;
       }
     }
-
-    tabFrame.origin.x =
-        FlipXInView(tabStripView_, tabFrame.size.width, tabFrame.origin.x);
 
     // Check the frame by identifier to avoid redundant calls to animator.
     id frameTarget = visible && animate ? [[tab view] animator] : [tab view];
