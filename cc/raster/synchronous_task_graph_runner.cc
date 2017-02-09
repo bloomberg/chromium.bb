@@ -67,6 +67,9 @@ void SynchronousTaskGraphRunner::RunUntilIdle() {
 }
 
 bool SynchronousTaskGraphRunner::RunTask() {
+  // Since we do not have posted from location for tasks, record the context for
+  // tasks as "cc" in heap profiler.
+  TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION scoped_event("cc");
   TRACE_EVENT0("toplevel", "SynchronousTaskGraphRunner::RunTask");
 
   // Find the first category with any tasks to run. This task graph runner
