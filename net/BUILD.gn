@@ -1490,6 +1490,8 @@ component("net") {
       "spdy/multiplexed_http_stream.h",
       "spdy/multiplexed_session.cc",
       "spdy/multiplexed_session.h",
+      "spdy/platform/api/spdy_estimate_memory_usage.h",
+      "spdy/platform/impl/spdy_estimate_memory_usage_impl.h",
       "spdy/priority_write_scheduler.h",
       "spdy/server_push_delegate.h",
       "spdy/spdy_alt_svc_wire_format.cc",
