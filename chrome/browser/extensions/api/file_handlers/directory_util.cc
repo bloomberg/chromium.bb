@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/file_handlers/directory_util.h"
+#include "chrome/browser/extensions/api/file_handlers/directory_util.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/browser/browser_context.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/filename_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -37,14 +37,14 @@ void OnGetIsDirectoryFromFileInfoCompleted(
 // The callback parameter contains the result and is required to support
 // both native local directories to avoid UI thread and non native local
 // path directories for the IsNonNativeLocalPathDirectory API.
-void EntryIsDirectory(content::BrowserContext* context,
+void EntryIsDirectory(Profile* profile,
                       const base::FilePath& path,
                       const base::Callback<void(bool)>& callback) {
 #if defined(OS_CHROMEOS)
   NonNativeFileSystemDelegate* delegate =
       ExtensionsAPIClient::Get()->GetNonNativeFileSystemDelegate();
-  if (delegate && delegate->IsUnderNonNativeLocalPath(context, path)) {
-    delegate->IsNonNativeLocalPathDirectory(context, path, callback);
+  if (delegate && delegate->IsUnderNonNativeLocalPath(profile, path)) {
+    delegate->IsNonNativeLocalPathDirectory(profile, path, callback);
     return;
   }
 #endif
@@ -61,8 +61,8 @@ void EntryIsDirectory(content::BrowserContext* context,
 
 }  // namespace
 
-IsDirectoryCollector::IsDirectoryCollector(content::BrowserContext* context)
-    : context_(context), left_(0), weak_ptr_factory_(this) {}
+IsDirectoryCollector::IsDirectoryCollector(Profile* profile)
+    : profile_(profile), left_(0), weak_ptr_factory_(this) {}
 
 IsDirectoryCollector::~IsDirectoryCollector() {}
 
@@ -86,7 +86,7 @@ void IsDirectoryCollector::CollectForEntriesPaths(
   }
 
   for (size_t i = 0; i < paths.size(); ++i) {
-    EntryIsDirectory(context_, paths[i],
+    EntryIsDirectory(profile_, paths[i],
                      base::Bind(&IsDirectoryCollector::OnIsDirectoryCollected,
                                 weak_ptr_factory_.GetWeakPtr(), i));
   }

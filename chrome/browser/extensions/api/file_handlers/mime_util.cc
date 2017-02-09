@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/file_handlers/mime_util.h"
+#include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/public/browser/browser_context.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_sniffer.h"
@@ -38,10 +38,11 @@ void SniffMimeType(const base::FilePath& local_path, std::string* result) {
   std::vector<char> content(net::kMaxBytesToSniff);
 
   const int bytes_read =
-      base::ReadFile(local_path, &content[0], static_cast<int>(content.size()));
+      base::ReadFile(local_path, &content[0], content.size());
 
   if (bytes_read >= 0) {
-    net::SniffMimeType(&content[0], bytes_read,
+    net::SniffMimeType(&content[0],
+                       bytes_read,
                        net::FilePathToFileURL(local_path),
                        std::string(),  // type_hint (passes no hint)
                        result);
@@ -76,10 +77,13 @@ void OnGetMimeTypeFromMetadataForNonNativeLocalPathCompleted(
   std::string* const mime_type_from_extension_ptr =
       mime_type_from_extension.get();
   BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile),
-                            local_path, mime_type_from_extension_ptr),
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile),
+                 local_path,
+                 mime_type_from_extension_ptr),
       base::Bind(&OnGetMimeTypeFromFileForNonNativeLocalPathCompleted,
-                 base::Passed(&mime_type_from_extension), callback));
+                 base::Passed(&mime_type_from_extension),
+                 callback));
 }
 #endif
 
@@ -117,27 +121,31 @@ void OnGetMimeTypeFromFileForNativeLocalPathCompleted(
       new std::string(kMimeTypeApplicationOctetStream));
   std::string* const sniffed_mime_type_ptr = sniffed_mime_type.get();
   BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(&SniffMimeType, local_path, sniffed_mime_type_ptr),
+      FROM_HERE,
+      base::Bind(&SniffMimeType, local_path, sniffed_mime_type_ptr),
       base::Bind(&OnSniffMimeTypeForNativeLocalPathCompleted,
-                 base::Passed(&sniffed_mime_type), callback));
+                 base::Passed(&sniffed_mime_type),
+                 callback));
 }
 
 // Fetches MIME type for a local path and returns it with a |callback|.
 void GetMimeTypeForLocalPath(
-    content::BrowserContext* context,
+    Profile* profile,
     const base::FilePath& local_path,
     const base::Callback<void(const std::string&)>& callback) {
 #if defined(OS_CHROMEOS)
   NonNativeFileSystemDelegate* delegate =
       ExtensionsAPIClient::Get()->GetNonNativeFileSystemDelegate();
-  if (delegate && delegate->IsUnderNonNativeLocalPath(context, local_path)) {
+  if (delegate && delegate->IsUnderNonNativeLocalPath(profile, local_path)) {
     // For non-native files, try to get the MIME type from metadata. If not
     // available, then try to guess from the extension. Never sniff (because
     // it can be very slow).
     delegate->GetNonNativeLocalPathMimeType(
-        context, local_path,
+        profile,
+        local_path,
         base::Bind(&OnGetMimeTypeFromMetadataForNonNativeLocalPathCompleted,
-                   local_path, callback));
+                   local_path,
+                   callback));
     return;
   }
 #endif
@@ -148,16 +156,22 @@ void GetMimeTypeForLocalPath(
   std::string* const mime_type_from_extension_ptr =
       mime_type_from_extension.get();
   BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile),
-                            local_path, mime_type_from_extension_ptr),
-      base::Bind(&OnGetMimeTypeFromFileForNativeLocalPathCompleted, local_path,
-                 base::Passed(&mime_type_from_extension), callback));
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile),
+                 local_path,
+                 mime_type_from_extension_ptr),
+      base::Bind(&OnGetMimeTypeFromFileForNativeLocalPathCompleted,
+                 local_path,
+                 base::Passed(&mime_type_from_extension),
+                 callback));
 }
 
-MimeTypeCollector::MimeTypeCollector(content::BrowserContext* context)
-    : context_(context), left_(0), weak_ptr_factory_(this) {}
+MimeTypeCollector::MimeTypeCollector(Profile* profile)
+    : profile_(profile), left_(0), weak_ptr_factory_(this) {
+}
 
-MimeTypeCollector::~MimeTypeCollector() {}
+MimeTypeCollector::~MimeTypeCollector() {
+}
 
 void MimeTypeCollector::CollectForURLs(
     const std::vector<storage::FileSystemURL>& urls,
@@ -189,9 +203,11 @@ void MimeTypeCollector::CollectForLocalPaths(
   }
 
   for (size_t i = 0; i < local_paths.size(); ++i) {
-    GetMimeTypeForLocalPath(context_, local_paths[i],
+    GetMimeTypeForLocalPath(profile_,
+                            local_paths[i],
                             base::Bind(&MimeTypeCollector::OnMimeTypeCollected,
-                                       weak_ptr_factory_.GetWeakPtr(), i));
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       i));
   }
 }
 

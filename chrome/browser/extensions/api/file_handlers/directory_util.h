@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_FILE_HANDLERS_DIRECTORY_UTIL_H_
-#define EXTENSIONS_BROWSER_API_FILE_HANDLERS_DIRECTORY_UTIL_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_DIRECTORY_UTIL_H_
+#define CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_DIRECTORY_UTIL_H_
 
 #include <memory>
 #include <set>
@@ -14,9 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
-namespace content {
-class BrowserContext;
-}
+class Profile;
 
 namespace base {
 class FilePath;
@@ -30,7 +28,7 @@ class IsDirectoryCollector {
   typedef base::Callback<void(std::unique_ptr<std::set<base::FilePath>>)>
       CompletionCallback;
 
-  explicit IsDirectoryCollector(content::BrowserContext* context);
+  explicit IsDirectoryCollector(Profile* profile);
   virtual ~IsDirectoryCollector();
 
   // For the given paths obtains a set with which of them are directories.
@@ -41,7 +39,7 @@ class IsDirectoryCollector {
  private:
   void OnIsDirectoryCollected(size_t index, bool directory);
 
-  content::BrowserContext* context_;
+  Profile* profile_;
   std::vector<base::FilePath> paths_;
   std::unique_ptr<std::set<base::FilePath>> result_;
   size_t left_;
@@ -54,4 +52,4 @@ class IsDirectoryCollector {
 }  // namespace app_file_handler_util
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_FILE_HANDLERS_DIRECTORY_UTIL_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_DIRECTORY_UTIL_H_
