@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/currency_formatter.h"
 #include "components/payments/payment_request.mojom.h"
+#include "components/payments/payment_request_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace autofill {
@@ -24,7 +26,6 @@ class WebContents;
 
 namespace payments {
 
-class PaymentRequestDelegate;
 class PaymentRequestWebContentsManager;
 
 class PaymentRequest : payments::mojom::PaymentRequest {
@@ -94,6 +95,10 @@ class PaymentRequest : payments::mojom::PaymentRequest {
   // It's not guaranteed to be complete. Returns nullptr if there is no selected
   // card.
   autofill::CreditCard* GetCurrentlySelectedCreditCard();
+
+  autofill::PersonalDataManager* personal_data_manager() {
+    return delegate_->GetPersonalDataManager();
+  }
 
   payments::mojom::PaymentDetails* details() { return details_.get(); }
   content::WebContents* web_contents() { return web_contents_; }

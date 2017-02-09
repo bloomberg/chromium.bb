@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
+#include "chrome/browser/ui/views/payments/validating_textfield.h"
 
 namespace payments {
 
@@ -21,11 +22,27 @@ class CreditCardEditorViewController : public EditorViewController {
                                  PaymentRequestDialogView* dialog);
   ~CreditCardEditorViewController() override;
 
-  // EditorViewController implementation.
+  // EditorViewController:
   std::vector<EditorField> GetFieldDefinitions() override;
   bool ValidateModelAndSave() override;
+  std::unique_ptr<ValidatingTextfield::Delegate> CreateValidationDelegate(
+      const EditorField& field) override;
 
  private:
+  class ValidationDelegate : public ValidatingTextfield::Delegate {
+   public:
+    explicit ValidationDelegate(const EditorField& field);
+    ~ValidationDelegate() override;
+
+    // ValidatingTextfield::Delegate:
+    bool ValidateTextfield(views::Textfield* textfield) override;
+
+   private:
+    EditorField field_;
+
+    DISALLOW_COPY_AND_ASSIGN(ValidationDelegate);
+  };
+
   DISALLOW_COPY_AND_ASSIGN(CreditCardEditorViewController);
 };
 

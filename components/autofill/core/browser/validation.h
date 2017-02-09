@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "components/autofill/core/browser/field_types.h"
 
 namespace base {
 class Time;
@@ -42,6 +43,12 @@ bool IsValidZip(const base::string16& text);
 
 // Returns true if |text| looks like an SSN, with or without separators.
 bool IsSSN(const base::string16& text);
+
+// Returns whether |value| is valid for the given |type|. If not null,
+// |error_message| is populated when the function returns false.
+bool IsValidForType(const base::string16& value,
+                    ServerFieldType type,
+                    base::string16* error_message);
 
 }  // namespace autofill
 

@@ -10,9 +10,11 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/test_chrome_payment_request_delegate.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/payments/payment_request.mojom.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/views/widget/widget_observer.h"
@@ -80,6 +82,14 @@ class PaymentRequestInteractiveTestBase
   // Click on a view from within the dialog and waits for an observed event
   // to be observed.
   void ClickOnDialogViewAndWait(DialogViewID view_id);
+
+  // Setting the |value| in the textfield of a given |type|.
+  void SetEditorTextfieldValue(const base::string16& value,
+                               autofill::ServerFieldType type);
+
+  // Whether the editor textfield for the given |type| is currently in an
+  // invalid state.
+  bool IsEditorTextfieldInvalid(autofill::ServerFieldType type);
 
   // Sets proper animation delegates and waits for animation to finish.
   void WaitForAnimation();

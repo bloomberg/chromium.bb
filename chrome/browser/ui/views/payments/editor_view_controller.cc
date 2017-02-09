@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 
+#include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
@@ -36,7 +38,7 @@ enum class EditorViewControllerTags : int {
   SAVE_BUTTON = kFirstTagValue,
 };
 
-constexpr int kNumCharactersInShortField = 6;
+constexpr int kNumCharactersInShortField = 8;
 constexpr int kNumCharactersInLongField = 20;
 
 }  // namespace
@@ -60,19 +62,8 @@ std::unique_ptr<views::View> EditorViewController::CreateView() {
   // Create an input label/textfield for each field definition.
   std::vector<EditorField> fields = GetFieldDefinitions();
   for (const auto& field : fields) {
-    views::Textfield* text_field = nullptr;
-    content_view->AddChildView(CreateInputField(field, &text_field).release());
-    // |field| is moved out of the |fields| structure and should not be
-    // referenced after the following line.
-    text_fields_.insert(std::make_pair(text_field, std::move(field)));
+    content_view->AddChildView(CreateInputField(field).release());
   }
-
-  // TODO(mathp): Use the save button in the footer once it's built.
-  views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
-  button->set_tag(static_cast<int>(EditorViewControllerTags::SAVE_BUTTON));
-  button->set_id(static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
-  content_view->AddChildView(button);
 
   return CreatePaymentView(
       CreateSheetHeaderView(
@@ -80,6 +71,15 @@ std::unique_ptr<views::View> EditorViewController::CreateView() {
                     IDS_PAYMENT_REQUEST_CREDIT_CARD_EDITOR_ADD_TITLE),
           this),
       std::move(content_view));
+}
+
+std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
+  std::unique_ptr<views::Button> button(
+      views::MdTextButton::CreateSecondaryUiBlueButton(
+          this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON)));
+  button->set_tag(static_cast<int>(EditorViewControllerTags::SAVE_BUTTON));
+  button->set_id(static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));
+  return button;
 }
 
 void EditorViewController::ButtonPressed(views::Button* sender,
@@ -97,12 +97,11 @@ void EditorViewController::ButtonPressed(views::Button* sender,
 
 void EditorViewController::ContentsChanged(views::Textfield* sender,
                                            const base::string16& new_contents) {
-  // TODO(mathp): Validate the |sender| textfield and display errors.
+  static_cast<ValidatingTextfield*>(sender)->OnContentsChanged();
 }
 
 std::unique_ptr<views::View> EditorViewController::CreateInputField(
-    const EditorField& field,
-    views::Textfield** text_field) {
+    const EditorField& field) {
   std::unique_ptr<views::View> row = base::MakeUnique<views::View>();
 
   row->SetBorder(payments::CreatePaymentRequestRowBorder());
@@ -127,16 +126,19 @@ std::unique_ptr<views::View> EditorViewController::CreateInputField(
   layout->StartRow(0, 0);
   layout->AddView(new views::Label(field.label));
 
-  *text_field = new views::Textfield();
-  (*text_field)->set_controller(this);
-  (*text_field)
-      ->set_default_width_in_chars(field.length_hint ==
-                                           EditorField::LengthHint::HINT_SHORT
-                                       ? kNumCharactersInShortField
-                                       : kNumCharactersInLongField);
-  // |text_field| will now be owned by the layout, but the caller kept a
-  // reference.
-  layout->AddView(*text_field);
+  ValidatingTextfield* text_field =
+      new ValidatingTextfield(CreateValidationDelegate(field));
+  text_field->set_controller(this);
+  // Using autofill field type as a view ID (for testing).
+  text_field->set_id(static_cast<int>(field.type));
+  text_field->set_default_width_in_chars(
+      field.length_hint == EditorField::LengthHint::HINT_SHORT
+          ? kNumCharactersInShortField
+          : kNumCharactersInLongField);
+
+  text_fields_.insert(std::make_pair(text_field, field));
+  // |text_field| will now be owned by the layout.
+  layout->AddView(text_field);
 
   return row;
 }

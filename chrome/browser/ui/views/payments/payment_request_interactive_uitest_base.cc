@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
+#include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -177,6 +178,25 @@ void PaymentRequestInteractiveTestBase::ClickOnDialogViewAndWait(
   WaitForAnimation();
 
   WaitForObservedEvent();
+}
+
+void PaymentRequestInteractiveTestBase::SetEditorTextfieldValue(
+    const base::string16& value,
+    autofill::ServerFieldType type) {
+  ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
+      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  DCHECK(textfield);
+  textfield->SetText(value);
+  textfield->OnContentsChanged();
+  textfield->OnBlur();
+}
+
+bool PaymentRequestInteractiveTestBase::IsEditorTextfieldInvalid(
+    autofill::ServerFieldType type) {
+  ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
+      delegate_->dialog_view()->GetViewByID(static_cast<int>(type)));
+  DCHECK(textfield);
+  return textfield->invalid();
 }
 
 void PaymentRequestInteractiveTestBase::WaitForAnimation() {

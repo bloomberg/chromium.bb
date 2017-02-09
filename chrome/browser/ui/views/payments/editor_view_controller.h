@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
+#include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "ui/views/controls/button/vector_icon_button_delegate.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -46,6 +47,9 @@ struct EditorField {
 class EditorViewController : public PaymentRequestSheetController,
                              public views::TextfieldController {
  public:
+  using TextFieldsMap =
+      std::unordered_map<ValidatingTextfield*, const EditorField>;
+
   // Does not take ownership of the arguments, which should outlive this object.
   EditorViewController(PaymentRequest* request,
                        PaymentRequestDialogView* dialog);
@@ -58,6 +62,16 @@ class EditorViewController : public PaymentRequestSheetController,
   virtual std::vector<EditorField> GetFieldDefinitions() = 0;
   // Validates the data entered and attempts to save; returns true on success.
   virtual bool ValidateModelAndSave() = 0;
+  // Creates a ValidatingTextfield::Delegate which knows how to validate for a
+  // given |field| definition.
+  virtual std::unique_ptr<ValidatingTextfield::Delegate>
+  CreateValidationDelegate(const EditorField& field) = 0;
+
+  const TextFieldsMap& text_fields() const { return text_fields_; }
+
+ protected:
+  // PaymentRequestSheetController;
+  std::unique_ptr<views::Button> CreatePrimaryButton() override;
 
  private:
   // PaymentRequestSheetController:
@@ -70,14 +84,13 @@ class EditorViewController : public PaymentRequestSheetController,
   // Creates a view for an input field to be added in the editor sheet. |field|
   // is the field definition, which contains the label and the hint about
   // the length of the input field.
-  std::unique_ptr<views::View> CreateInputField(const EditorField& field,
-                                                views::Textfield** text_field);
+  std::unique_ptr<views::View> CreateInputField(const EditorField& field);
 
   // Used to remember the association between the input field UI element and the
-  // original field definition. The Textfield* are owned by their parent view,
-  // this only keeps a reference that is good as long as the Textfield is
-  // visible.
-  std::unordered_map<views::Textfield*, const EditorField> text_fields_;
+  // original field definition. The ValidatingTextfield* are owned by their
+  // parent view, this only keeps a reference that is good as long as the
+  // textfield is visible.
+  TextFieldsMap text_fields_;
 
   DISALLOW_COPY_AND_ASSIGN(EditorViewController);
 };

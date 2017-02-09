@@ -5,9 +5,7 @@
 #include "components/payments/payment_request.h"
 
 #include "base/memory/ptr_util.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/payment_details_validation.h"
-#include "components/payments/payment_request_delegate.h"
 #include "components/payments/payment_request_web_contents_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -123,11 +121,8 @@ const std::vector<autofill::AutofillProfile*>&
 autofill::CreditCard* PaymentRequest::GetCurrentlySelectedCreditCard() {
   // TODO(anthonyvd): Change this code to prioritize server cards and implement
   // a way to modify this function's return value.
-  autofill::PersonalDataManager* data_manager =
-      delegate_->GetPersonalDataManager();
-
   const std::vector<autofill::CreditCard*> cards =
-      data_manager->GetCreditCardsToSuggest();
+      personal_data_manager()->GetCreditCardsToSuggest();
 
   auto first_complete_card = std::find_if(
       cards.begin(),
@@ -140,10 +135,8 @@ autofill::CreditCard* PaymentRequest::GetCurrentlySelectedCreditCard() {
 }
 
 void PaymentRequest::PopulateProfileCache() {
-  autofill::PersonalDataManager* data_manager =
-      delegate_->GetPersonalDataManager();
   std::vector<autofill::AutofillProfile*> profiles =
-      data_manager->GetProfilesToSuggest();
+      personal_data_manager()->GetProfilesToSuggest();
 
   // PaymentRequest may outlive the Profiles returned by the Data Manager.
   // Thus, we store copies, and return a vector of pointers to these copies

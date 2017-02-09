@@ -664,50 +664,6 @@ bool CreditCard::IsValid() const {
                                          AutofillClock::Now());
 }
 
-void CreditCard::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
-  supported_types->insert(CREDIT_CARD_NAME_FULL);
-  supported_types->insert(CREDIT_CARD_NAME_FIRST);
-  supported_types->insert(CREDIT_CARD_NAME_LAST);
-  supported_types->insert(CREDIT_CARD_NUMBER);
-  supported_types->insert(CREDIT_CARD_TYPE);
-  supported_types->insert(CREDIT_CARD_EXP_MONTH);
-  supported_types->insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
-  supported_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-  supported_types->insert(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
-  supported_types->insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
-}
-
-base::string16 CreditCard::ExpirationMonthAsString() const {
-  if (expiration_month_ == 0)
-    return base::string16();
-
-  base::string16 month = base::IntToString16(expiration_month_);
-  if (expiration_month_ >= 10)
-    return month;
-
-  base::string16 zero = ASCIIToUTF16("0");
-  zero.append(month);
-  return zero;
-}
-
-base::string16 CreditCard::TypeForFill() const {
-  return ::autofill::TypeForFill(type_);
-}
-
-base::string16 CreditCard::Expiration4DigitYearAsString() const {
-  if (expiration_year_ == 0)
-    return base::string16();
-
-  return base::IntToString16(Expiration4DigitYear());
-}
-
-base::string16 CreditCard::Expiration2DigitYearAsString() const {
-  if (expiration_year_ == 0)
-    return base::string16();
-
-  return base::IntToString16(Expiration2DigitYear());
-}
-
 bool CreditCard::SetExpirationMonthFromString(const base::string16& text,
                                               const std::string& app_locale) {
   base::string16 trimmed;
@@ -773,6 +729,50 @@ void CreditCard::SetExpirationDateFromString(const base::string16& text) {
   converted = base::StringToInt(year, &num);
   DCHECK(converted);
   SetExpirationYear(num);
+}
+
+void CreditCard::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
+  supported_types->insert(CREDIT_CARD_NAME_FULL);
+  supported_types->insert(CREDIT_CARD_NAME_FIRST);
+  supported_types->insert(CREDIT_CARD_NAME_LAST);
+  supported_types->insert(CREDIT_CARD_NUMBER);
+  supported_types->insert(CREDIT_CARD_TYPE);
+  supported_types->insert(CREDIT_CARD_EXP_MONTH);
+  supported_types->insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  supported_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+  supported_types->insert(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
+  supported_types->insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
+}
+
+base::string16 CreditCard::ExpirationMonthAsString() const {
+  if (expiration_month_ == 0)
+    return base::string16();
+
+  base::string16 month = base::IntToString16(expiration_month_);
+  if (expiration_month_ >= 10)
+    return month;
+
+  base::string16 zero = ASCIIToUTF16("0");
+  zero.append(month);
+  return zero;
+}
+
+base::string16 CreditCard::TypeForFill() const {
+  return ::autofill::TypeForFill(type_);
+}
+
+base::string16 CreditCard::Expiration4DigitYearAsString() const {
+  if (expiration_year_ == 0)
+    return base::string16();
+
+  return base::IntToString16(Expiration4DigitYear());
+}
+
+base::string16 CreditCard::Expiration2DigitYearAsString() const {
+  if (expiration_year_ == 0)
+    return base::string16();
+
+  return base::IntToString16(Expiration2DigitYear());
 }
 
 void CreditCard::SetNumber(const base::string16& number) {

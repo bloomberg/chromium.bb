@@ -25,6 +25,7 @@ class PaymentRequestDelegate {
   virtual void CloseDialog() = 0;
 
   // Gets the PersonalDataManager associated with this PaymentRequest flow.
+  // Cannot be null.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
 };
 

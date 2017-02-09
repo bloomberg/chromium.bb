@@ -25,26 +25,14 @@
   <message name="IDS_PAYMENTS_ADD_CARD" desc="The title of the dialog for user to add new payment card." formatter_data="android_java">
     Add card
   </message>
-  <message name="IDS_PAYMENTS_BILLING_ADDRESS_REQUIRED" desc="The label to indicate billing address is required for payment card." formatter_data="android_java">
-    Billing address required
-  </message>
   <message name="IDS_PAYMENTS_ADD_BILLING_ADDRESS" desc="The title of the dialog for user to add billing address to payment card." formatter_data="android_java">
     Add billing address
-  </message>
-  <message name="IDS_PAYMENTS_NAME_ON_CARD_REQUIRED" desc="The label to indicate name on card is required for payment card." formatter_data="android_java">
-    Name on card required
   </message>
   <message name="IDS_PAYMENTS_ADD_NAME_ON_CARD" desc="The title of the dialog for user to add name on card to payment card." formatter_data="android_java">
     Add name on card
   </message>
-  <message name="IDS_PAYMENTS_CARD_NUMBER_INVALID" desc="The label to indicate payment card number is invalid." formatter_data="android_java">
-    Card number invalid
-  </message>
   <message name="IDS_PAYMENTS_ADD_VALID_CARD_NUMBER" desc="The title of the dialog for user to add valid payment card number." formatter_data="android_java">
     Add valid card number
-  </message>
-  <message name="IDS_PAYMENTS_MORE_INFORMATION_REQUIRED" desc="The label to indicate more information is required for payment card or shipping address or contact info." formatter_data="android_java">
-    More information required
   </message>
   <message name="IDS_PAYMENTS_ADD_MORE_INFORMATION" desc="The title of the dialog for user to add more information to payment card or shipping address or contact info." formatter_data="android_java">
     Add more information
@@ -55,32 +43,17 @@
   <message name="IDS_PAYMENTS_CREDIT_CARD_EXPIRATION_DATE_ABBR" desc="Abbreviated label for credit card expiration date. [CHAR-LIMIT=32]" formatter_data="android_java">
     Exp: <ph name="EXPIRATION_MONTH">%1$s<ex>06</ex></ph>/<ph name="EXPIRATION_YEAR">%2$s<ex>17</ex></ph>
   </message>
-  <message name="IDS_PAYMENTS_PHONE_NUMBER_REQUIRED" desc="The label to indicate phone number is required in the shipping address or contact info. This phone number can be used, for example, if there's a problem with shipping a package to its destination." formatter_data="android_java">
-    Phone number required
-  </message>
   <message name="IDS_PAYMENTS_ADD_PHONE_NUMBER" desc="The title of the dialog for user to add phone number to the shipping address or contact info. This phone number can be used, for example, if there's a problem with shipping a package to its destination." formatter_data="android_java">
     Add phone number
-  </message>
-  <message name="IDS_PAYMENTS_RECIPIENT_REQUIRED" desc="The label to indicate recipient is required in the shipping address. The recipient could be a person or institute name identifies the receiver of the shipping package." formatter_data="android_java">
-    Recipient required
   </message>
   <message name="IDS_PAYMENTS_ADD_RECIPIENT" desc="The title of the dialog for user to add recipient in the shipping address. The recipient could be a person or institute name identifies the receiver of the shipping package." formatter_data="android_java">
     Add recipient
   </message>
-  <message name="IDS_PAYMENTS_INVALID_ADDRESS" desc="The label to indicate the shipping address is invalid. For example, missing state or city name." formatter_data="android_java">
-    Invalid address
-  </message>
   <message name="IDS_PAYMENTS_ADD_VALID_ADDRESS" desc="The title of the dialog for user to add valid shipping address. For example, missing state or city name." formatter_data="android_java">
     Add valid address
   </message>
-  <message name="IDS_PAYMENTS_EMAIL_REQUIRED" desc="The label to indicate email is required for the contact details. This email can be used to contact the payer." formatter_data="android_java">
-    Email required
-  </message>
   <message name="IDS_PAYMENTS_ADD_EMAIL" desc="The title of the dialog for user to add email to the contact details. This email can be used to contact the payer." formatter_data="android_java">
     Add email
-  </message>
-  <message name="IDS_PAYMENTS_NAME_REQUIRED" desc="The label to indicate name is required for the contact details. This name could be a person or institute name of the payer." formatter_data="android_java">
-    Name required
   </message>
   <message name="IDS_PAYMENTS_ADD_NAME" desc="The title of the dialog for user to add name to the contact details. This name could be a person or institute name of the payer." formatter_data="android_java">
     Add name
@@ -100,6 +73,38 @@
   <message name="IDS_PAYMENTS_ERROR_MESSAGE" desc="The text that informs the user that there is error in verifying and charging the payment." formatter_data="android_java">
     There was an error processing your order.  Please check your account and try again.
   </message>
+  <message name="IDS_PAYMENTS_ADD_CONTACT" desc="Text on a button that lets a user add new contact details, like the user's full name, an email address or a phone number." formatter_data="android_java">
+    Add contact info
+  </message>
+  <message name="IDS_PAYMENTS_CHECKING_OPTION" desc="Text explaining that the option the user selected is being checked and verified." formatter_data="android_java">
+    Checking
+  </message>
+  <message name="IDS_PAYMENTS_UPDATED_LABEL" desc="The text that informs the user that the total value of their cart has been updated." formatter_data="android_java">
+    Updated
+  </message>
+  <message name="IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS" desc="Label of the section containing the link to go to the settings page for card and address options." formatter_data="android_java">
+    You can manage cards and addresses in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+  </message>
+  <message name="IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN" desc="Label of the section containing the origin description and the link to go to the settings page for card and address options. This label is used when the user is signed in." formatter_data="android_java">
+    Card and address options are from your Google Account (<ph name="ACCOUNT_EMAIL">%1$s<ex>johndoe@gmail.com</ex></ph>) and Chrome. You can manage these in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+  </message>
+  <message name="IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT" desc="Label of the section containing the origin description and the link to go to the settings page for card and address options. This label is used when the user is not signed in." formatter_data="android_java">
+    Card and address options are from Chrome. You can manage these in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+  </message>
+
+  <!-- Validation -->
+  <message name="IDS_PAYMENTS_VALIDATION_INVALID_NAME" desc="Message displayed to user when name validation fails.">
+    Invalid name
+  </message>
+  <message name="IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_YEAR" desc="Message displayed to user when the credit card expiration year is in an invalid format.">
+    Invalid expiration year
+  </message>
+  <message name="IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_MONTH" desc="Message displayed to user when the credit card expiration month is in an invalid format.">
+    Invalid expiration month
+  </message>
+  <message name="IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED" desc="Message displayed to user when the credit card is expired.">
+    The card is expired
+  </message>
   <message name="IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE" desc="The text that informs the user that '*' character indicates an input field that is required. The '*' character should not be changed." formatter_data="android_java">
     * indicates required field
   </message>
@@ -118,23 +123,52 @@
   <message name="IDS_PAYMENTS_CARD_EXPIRATION_INVALID_VALIDATION_MESSAGE" desc="The text that informs the user that the credit card expiration date they have entered is not valid." formatter_data="android_java">
     Invalid expiration date
   </message>
-  <message name="IDS_PAYMENTS_ADD_CONTACT" desc="Text on a button that lets a user add new contact details, like the user's full name, an email address or a phone number." formatter_data="android_java">
-    Add contact info
+  <message name="IDS_PAYMENTS_BILLING_ADDRESS_REQUIRED" desc="The label to indicate billing address is required for payment card." formatter_data="android_java">
+    Billing address required
   </message>
-  <message name="IDS_PAYMENTS_CHECKING_OPTION" desc="Text explaining that the option the user selected is being checked and verified." formatter_data="android_java">
-    Checking
+  <message name="IDS_PAYMENTS_NAME_ON_CARD_REQUIRED" desc="The label to indicate name on card is required for payment card." formatter_data="android_java">
+    Name on card required
   </message>
-  <message name="IDS_PAYMENTS_UPDATED_LABEL" desc="The text that informs the user that the total value of their cart has been updated." formatter_data="android_java">
-    Updated
+  <message name="IDS_PAYMENTS_CARD_NUMBER_INVALID" desc="The label to indicate payment card number is invalid." formatter_data="android_java">
+    Card number invalid
   </message>
-  <message name="IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS" desc="Label of the section containing the link to go to the settings page for card and address options." formatter_data="android_java">
-    You can manage cards and addresses in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+  <message name="IDS_PAYMENTS_MORE_INFORMATION_REQUIRED" desc="The label to indicate more information is required for payment card or shipping address or contact info." formatter_data="android_java">
+    More information required
   </message>
-  <message name="IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN" desc="Label of the section containing the origin description and the link to go to the settings page for card and address options. This label is used when the user is signed in." formatter_data="android_java">
-    Card and address options are from your Google Account (<ph name="ACCOUNT_EMAIL">%1$s<ex>johndoe@gmail.com</ex></ph>) and Chrome. You can manage these in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+  <message name="IDS_PAYMENTS_PHONE_NUMBER_REQUIRED" desc="The label to indicate phone number is required in the shipping address or contact info. This phone number can be used, for example, if there's a problem with shipping a package to its destination." formatter_data="android_java">
+    Phone number required
   </message>
-  <message name="IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT" desc="Label of the section containing the origin description and the link to go to the settings page for card and address options. This label is used when the user is not signed in." formatter_data="android_java">
-    Card and address options are from Chrome. You can manage these in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+  <message name="IDS_PAYMENTS_RECIPIENT_REQUIRED" desc="The label to indicate recipient is required in the shipping address. The recipient could be a person or institute name identifies the receiver of the shipping package." formatter_data="android_java">
+    Recipient required
+  </message>
+  <message name="IDS_PAYMENTS_INVALID_ADDRESS" desc="The label to indicate the shipping address is invalid. For example, missing state or city name." formatter_data="android_java">
+    Invalid address
+  </message>
+  <message name="IDS_PAYMENTS_EMAIL_REQUIRED" desc="The label to indicate email is required for the contact details. This email can be used to contact the payer." formatter_data="android_java">
+    Email required
+  </message>
+  <message name="IDS_PAYMENTS_NAME_REQUIRED" desc="The label to indicate name is required for the contact details. This name could be a person or institute name of the payer." formatter_data="android_java">
+    Name required
+  </message>
+
+  <!-- Payment Request (Sections mode) -->
+  <message name="IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_NAME" desc="The name of the Order Summary section in the Payment Sheet of the Payment Request dialog.">
+    Order summary
+  </message>
+  <message name="IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_TOTAL_FORMAT" desc="The format specifier of the Total label in the Order Summary section of the Payment Sheet of the Payment Request dialog.">
+    <ph name="TOTAL_LABEL">$1<ex>Total</ex></ph> <ph name="CURRENCY_CODE">$2<ex>USD</ex></ph> <ph name="FORMATTED_TOTAL_AMOUNT">$3<ex>$ 12.34</ex></ph>
+  </message>
+  <message name="IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME" desc="The name of the Payment Method section in the Payment Sheet of the Payment Request dialog.">
+    Payment
+  </message>
+  <message name="IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT" desc="The format specifier of the Total label in the Order Summary Sheet of the Payment Request dialog.">
+    <ph name="CURRENCY_CODE">$1<ex>USD</ex></ph> <ph name="FORMATTED_TOTAL_AMOUNT">$2<ex>$ 12.34</ex></ph>
+  </message>
+  <message name="IDS_PAYMENT_REQUEST_SHIPPING_SECTION_NAME" desc="The name of the Shipping Address section in the Payment Sheet of the Payment Request dialog.">
+    Shipping address
+  </message>
+  <message name="IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME" desc="The name of the Contact Info section in the Payment Sheet of the Payment Request dialog.">
+    Contact info
   </message>
 
   <!-- Shipping address in web payments API -->
@@ -190,5 +224,4 @@
   <message name="IDS_PAYMENTS_ANDROID_APP_ERROR" desc="Error message that is shown when an Android payment application fails to start." formatter_data="android_java">
     Unable to launch payment app.
   </message>
-
 </grit-part>
