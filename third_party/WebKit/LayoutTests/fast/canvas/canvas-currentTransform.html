@@ -1,9 +1,329 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body>
-<script src="script-tests/canvas-currentTransform.js"></script>
+<script>
+test(function(t) {
+    var ctx = document.createElement('canvas').getContext('2d');
+    
+    var matrix = ctx.currentTransform;
+    assert_equals(matrix.a, 1);
+    assert_equals(matrix.b, 0);
+    assert_equals(matrix.c, 0);
+    assert_equals(matrix.d, 1);
+    assert_equals(matrix.e, 0);
+    assert_equals(matrix.f, 0);
+    
+    function setCurrentTransform(ctx, a, b, c, d, e, f)
+    {
+        matrix.a = a;
+        matrix.b = b;
+        matrix.c = c;
+        matrix.d = d;
+        matrix.e = e;
+        matrix.f = f;
+        ctx.currentTransform = matrix;
+        matrix.a = NaN;
+        matrix.b = NaN;
+        matrix.c = NaN;
+        matrix.d = NaN;
+        matrix.e = NaN;
+        matrix.f = NaN;
+        matrix = ctx.currentTransform;
+        assert_equals(matrix.a, a);
+        assert_equals(matrix.b, b);
+        assert_equals(matrix.c, c);
+        assert_equals(matrix.d, d);
+        assert_equals(matrix.e, e);
+        assert_equals(matrix.f, f);
+    }
+    
+    matrix.a = 2;
+    
+    assert_equals(ctx.currentTransform.a, 1);
+    assert_equals(ctx.currentTransform.b, 0);
+    assert_equals(ctx.currentTransform.c, 0);
+    assert_equals(ctx.currentTransform.d, 1);
+    assert_equals(ctx.currentTransform.e, 0);
+    assert_equals(ctx.currentTransform.f, 0);
+    
+    
+    ctx.beginPath();
+    ctx.scale(0.5, 0.5);
+    matrix = ctx.currentTransform;
+    assert_equals(matrix.a, 0.5);
+    assert_equals(matrix.b, 0);
+    assert_equals(matrix.c, 0);
+    assert_equals(matrix.d, 0.5);
+    assert_equals(matrix.e, 0);
+    assert_equals(matrix.f, 0);
+    setCurrentTransform(ctx, 1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = 'green';
+    ctx.fillRect(0, 0, 100, 100);
+    
+    var imageData = ctx.getImageData(1, 1, 98, 98);
+    var imgdata = imageData.data;
+    assert_equals(imgdata[4], 0);
+    assert_equals(imgdata[5], 128);
+    assert_equals(imgdata[6], 0);
+    
+    
+    ctx.beginPath();
+    ctx.rect(0,0,100,100);
+    ctx.save();
+    setCurrentTransform(ctx, 0.5, 0, 0, 0.5, 10, 10);
+    ctx.fillStyle = 'red';
+    ctx.fillRect(0, 0, 100, 100);
+    ctx.restore();
+    matrix = ctx.currentTransform;
+    assert_equals(matrix.a, 1);
+    assert_equals(matrix.b, 0);
+    assert_equals(matrix.c, 0);
+    assert_equals(matrix.d, 1);
+    assert_equals(matrix.e, 0);
+    assert_equals(matrix.f, 0);
+    ctx.fillStyle = 'green';
+    ctx.fillRect(0, 0, 100, 100);
+    
+    imageData = ctx.getImageData(1, 1, 98, 98);
+    imgdata = imageData.data;
+    assert_equals(imgdata[4], 0);
+    assert_equals(imgdata[5], 128);
+    assert_equals(imgdata[6], 0);
+    
+    
+    ctx.beginPath();
+    ctx.fillStyle = 'green';
+    ctx.save();
+    setCurrentTransform(ctx, 0.5, 0, 0, 0.5, 0, 0);
+    ctx.fillStyle = 'red';
+    ctx.fillRect(0, 0, 100, 100);
+    ctx.restore();
+    matrix = ctx.currentTransform;
+    assert_equals(matrix.a, 1);
+    assert_equals(matrix.b, 0);
+    assert_equals(matrix.c, 0);
+    assert_equals(matrix.d, 1);
+    assert_equals(matrix.e, 0);
+    assert_equals(matrix.f, 0);
+    ctx.fillRect(0, 0, 100, 100);
+    
+    imageData = ctx.getImageData(1, 1, 98, 98);
+    imgdata = imageData.data;
+    assert_equals(imgdata[4], 0);
+    assert_equals(imgdata[5], 128);
+    assert_equals(imgdata[6], 0);
+    
+    
+    ctx.beginPath();
+    ctx.fillStyle = 'green';
+    ctx.fillRect(0, 0, 100, 100);
+    setCurrentTransform(ctx, 0, 0, 0, 0, 0, 0);
+    ctx.fillStyle = 'red';
+    ctx.fillRect(0, 0, 100, 100);
+    
+    imageData = ctx.getImageData(1, 1, 98, 98);
+    imgdata = imageData.data;
+    assert_equals(imgdata[4], 0);
+    assert_equals(imgdata[5], 128);
+    assert_equals(imgdata[6], 0);
+    
+    
+    ctx.beginPath();
+    ctx.resetTransform();
+    matrix = ctx.currentTransform;
+    assert_equals(matrix.a, 1);
+    assert_equals(matrix.b, 0);
+    assert_equals(matrix.c, 0);
+    assert_equals(matrix.d, 1);
+    assert_equals(matrix.e, 0);
+    assert_equals(matrix.f, 0);
+    ctx.save();
+    setCurrentTransform(ctx, 0, 0, 0, 0, 0, 0);
+    ctx.fillStyle = 'red';
+    ctx.fillRect(0, 0, 100, 100);
+    ctx.restore();
+    matrix = ctx.currentTransform;
+    assert_equals(matrix.a, 1);
+    assert_equals(matrix.b, 0);
+    assert_equals(matrix.c, 0);
+    assert_equals(matrix.d, 1);
+    assert_equals(matrix.e, 0);
+    assert_equals(matrix.f, 0);
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(0, 0, 100, 100);
+    
+    imageData = ctx.getImageData(1, 1, 98, 98);
+    imgdata = imageData.data;
+    assert_equals(imgdata[4], 0);
+    assert_equals(imgdata[5], 0);
+    assert_equals(imgdata[6], 255);
+    
+    ctx.beginPath();
+    ctx.fillStyle = 'red';
+    ctx.fillRect(0, 0, 100, 100);
+    setCurrentTransform(ctx, 0, 0, 0, 0, 0, 0);
+    ctx.fillStyle = 'green';
+    ctx.fillRect(0, 0, 100, 100);
+    setCurrentTransform(ctx, 1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(0, 0, 100, 100);
+    
+    imageData = ctx.getImageData(1, 1, 98, 98);
+    imgdata = imageData.data;
+    assert_equals(imgdata[4], 0);
+    assert_equals(imgdata[5], 0);
+    assert_equals(imgdata[6], 255);
+    
+    setCurrentTransform(ctx, 1, 0, 0, 1, 1, 2);
+    ctx.scale(0, 0);
+    matrix = ctx.currentTransform;
+    assert_equals(matrix.a, 0);
+    assert_equals(matrix.b, 0);
+    assert_equals(matrix.c, 0);
+    assert_equals(matrix.d, 0);
+    assert_equals(matrix.e, 1);
+    assert_equals(matrix.f, 2);
+    setCurrentTransform(ctx, 1, 0, 0, 1, 0, 0);
+    
+    // throws: TypeError: Failed to set the \'currentTransform\' property on \'CanvasRenderingContext2D\': The provided value is not of type \'SVGMatrix\'.
+    assert_throws(null, function() {ctx.currentTransform = ctx;});
+    // throws: TypeError: Failed to set the \'currentTransform\' property on \'CanvasRenderingContext2D\': The provided value is not of type \'SVGMatrix\'.
+    assert_throws(null, function() {ctx.currentTransform = undefined;});
+    // throws: TypeError: Failed to set the \'currentTransform\' property on \'CanvasRenderingContext2D\': The provided value is not of type \'SVGMatrix\'.
+    assert_throws(null, function() {ctx.currentTransform = null;});
+    
+    ctx.fillStyle = 'red';
+    ctx.fillRect(0, 0, 100, 100);
+    
+    function setCurrentTransformToNonfinite(parameters)
+    {
+        ctx = parameters[0];
+        matrix.a = parameters[1];
+        matrix.b = parameters[2];
+        matrix.c = parameters[3];
+        matrix.d = parameters[4];
+        matrix.e = parameters[5];
+        matrix.f = parameters[6];
+        ctx.currentTransform = matrix;
+        matrix.a = NaN;
+        matrix.b = NaN;
+        matrix.c = NaN;
+        matrix.d = NaN;
+        matrix.e = NaN;
+        matrix.f = NaN;
+        matrix = ctx.currentTransform;
+        assert_equals(matrix.a, 1);
+        assert_equals(matrix.b, 0);
+        assert_equals(matrix.c, 0);
+        assert_equals(matrix.d, 1);
+        assert_equals(matrix.e, 100);
+        assert_equals(matrix.f, 10);
+    }
+    
+    ctx.translate(100, 10);
+    matrix = ctx.currentTransform;
+    assert_equals(matrix.a, 1);
+    assert_equals(matrix.b, 0);
+    assert_equals(matrix.c, 0);
+    assert_equals(matrix.d, 1);
+    assert_equals(matrix.e, 100);
+    assert_equals(matrix.f, 10);
+
+    testScenarios = [
+        ['Case 1' , [ctx, Infinity, 0, 0, 0, 0, 0]],
+        ['Case 2' , [ctx, -Infinity, 0, 0, 0, 0, 0]],
+        ['Case 3' , [ctx, NaN, 0, 0, 0, 0, 0]],
+        ['Case 4' , [ctx, 0, Infinity, 0, 0, 0, 0]],
+        ['Case 5' , [ctx, 0, -Infinity, 0, 0, 0, 0]],
+        ['Case 6' , [ctx, 0, NaN, 0, 0, 0, 0]],
+        ['Case 7' , [ctx, 0, 0, Infinity, 0, 0, 0]],
+        ['Case 8' , [ctx, 0, 0, -Infinity, 0, 0, 0]],
+        ['Case 9' , [ctx, 0, 0, NaN, 0, 0, 0]],
+        ['Case 10' , [ctx, 0, 0, 0, Infinity, 0, 0]],
+        ['Case 11' , [ctx, 0, 0, 0, -Infinity, 0, 0]],
+        ['Case 12' , [ctx, 0, 0, 0, NaN, 0, 0]],
+        ['Case 13' , [ctx, 0, 0, 0, 0, Infinity, 0]],
+        ['Case 14' , [ctx, 0, 0, 0, 0, -Infinity, 0]],
+        ['Case 15' , [ctx, 0, 0, 0, 0, NaN, 0]],
+        ['Case 16' , [ctx, 0, 0, 0, 0, 0, Infinity]],
+        ['Case 17' , [ctx, 0, 0, 0, 0, 0, -Infinity]],
+        ['Case 18' , [ctx, 0, 0, 0, 0, 0, NaN]],
+        ['Case 19' , [ctx, Infinity, Infinity, 0, 0, 0, 0]],
+        ['Case 20' , [ctx, Infinity, Infinity, Infinity, 0, 0, 0]],
+        ['Case 21' , [ctx, Infinity, Infinity, Infinity, Infinity, 0, 0]],
+        ['Case 22' , [ctx, Infinity, Infinity, Infinity, Infinity, Infinity, 0]],
+        ['Case 23' , [ctx, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity]],
+        ['Case 24' , [ctx, Infinity, Infinity, Infinity, Infinity, 0, Infinity]],
+        ['Case 25' , [ctx, Infinity, Infinity, Infinity, 0, Infinity, 0]],
+        ['Case 26' , [ctx, Infinity, Infinity, Infinity, 0, Infinity, Infinity]],
+        ['Case 27' , [ctx, Infinity, Infinity, Infinity, 0, 0, Infinity]],
+        ['Case 28' , [ctx, Infinity, Infinity, 0, Infinity, 0, 0]],
+        ['Case 29' , [ctx, Infinity, Infinity, 0, Infinity, Infinity, 0]],
+        ['Case 30' , [ctx, Infinity, Infinity, 0, Infinity, Infinity, Infinity]],
+        ['Case 31' , [ctx, Infinity, Infinity, 0, Infinity, 0, Infinity]],
+        ['Case 32' , [ctx, Infinity, Infinity, 0, 0, Infinity, 0]],
+        ['Case 33' , [ctx, Infinity, Infinity, 0, 0, Infinity, Infinity]],
+        ['Case 34' , [ctx, Infinity, Infinity, 0, 0, 0, Infinity]],
+        ['Case 35' , [ctx, Infinity, 0, Infinity, 0, 0, 0]],
+        ['Case 36' , [ctx, Infinity, 0, Infinity, Infinity, 0, 0]],
+        ['Case 37' , [ctx, Infinity, 0, Infinity, Infinity, Infinity, 0]],
+        ['Case 38' , [ctx, Infinity, 0, Infinity, Infinity, Infinity, Infinity]],
+        ['Case 39' , [ctx, Infinity, 0, Infinity, Infinity, 0, Infinity]],
+        ['Case 40' , [ctx, Infinity, 0, Infinity, 0, Infinity, 0]],
+        ['Case 41' , [ctx, Infinity, 0, Infinity, 0, Infinity, Infinity]],
+        ['Case 42' , [ctx, Infinity, 0, Infinity, 0, 0, Infinity]],
+        ['Case 43' , [ctx, Infinity, 0, 0, Infinity, 0, 0]],
+        ['Case 44' , [ctx, Infinity, 0, 0, Infinity, Infinity, 0]],
+        ['Case 45' , [ctx, Infinity, 0, 0, Infinity, Infinity, Infinity]],
+        ['Case 46' , [ctx, Infinity, 0, 0, Infinity, 0, Infinity]],
+        ['Case 47' , [ctx, Infinity, 0, 0, 0, Infinity, 0]],
+        ['Case 48' , [ctx, Infinity, 0, 0, 0, Infinity, Infinity]],
+        ['Case 49' , [ctx, Infinity, 0, 0, 0, 0, Infinity]],
+        ['Case 50' , [ctx, 0, Infinity, Infinity, 0, 0, 0]],
+        ['Case 51' , [ctx, 0, Infinity, Infinity, Infinity, 0, 0]],
+        ['Case 52' , [ctx, 0, Infinity, Infinity, Infinity, Infinity, 0]],
+        ['Case 53' , [ctx, 0, Infinity, Infinity, Infinity, Infinity, Infinity]],
+        ['Case 54' , [ctx, 0, Infinity, Infinity, Infinity, 0, Infinity]],
+        ['Case 55' , [ctx, 0, Infinity, Infinity, 0, Infinity, 0]],
+        ['Case 56' , [ctx, 0, Infinity, Infinity, 0, Infinity, Infinity]],
+        ['Case 57' , [ctx, 0, Infinity, Infinity, 0, 0, Infinity]],
+        ['Case 58' , [ctx, 0, Infinity, 0, Infinity, 0, 0]],
+        ['Case 59' , [ctx, 0, Infinity, 0, Infinity, Infinity, 0]],
+        ['Case 60' , [ctx, 0, Infinity, 0, Infinity, Infinity, Infinity]],
+        ['Case 61' , [ctx, 0, Infinity, 0, Infinity, 0, Infinity]],
+        ['Case 62' , [ctx, 0, Infinity, 0, 0, Infinity, 0]],
+        ['Case 63' , [ctx, 0, Infinity, 0, 0, Infinity, Infinity]],
+        ['Case 64' , [ctx, 0, Infinity, 0, 0, 0, Infinity]],
+        ['Case 65' , [ctx, 0, 0, Infinity, Infinity, 0, 0]],
+        ['Case 66' , [ctx, 0, 0, Infinity, Infinity, Infinity, 0]],
+        ['Case 67' , [ctx, 0, 0, Infinity, Infinity, Infinity, Infinity]],
+        ['Case 68' , [ctx, 0, 0, Infinity, Infinity, 0, Infinity]],
+        ['Case 69' , [ctx, 0, 0, Infinity, 0, Infinity, 0]],
+        ['Case 70' , [ctx, 0, 0, Infinity, 0, Infinity, Infinity]],
+        ['Case 71' , [ctx, 0, 0, Infinity, 0, 0, Infinity]],
+        ['Case 72' , [ctx, 0, 0, 0, Infinity, Infinity, 0]],
+        ['Case 73' , [ctx, 0, 0, 0, Infinity, Infinity, Infinity]],
+        ['Case 74' , [ctx, 0, 0, 0, Infinity, 0, Infinity]],
+        ['Case 75' , [ctx, 0, 0, 0, 0, Infinity, Infinity]]
+    ]
+    generate_tests(setCurrentTransformToNonfinite, testScenarios);
+    
+    matrix = ctx.currentTransform;
+    assert_equals(matrix.a, 1);
+    assert_equals(matrix.b, 0);
+    assert_equals(matrix.c, 0);
+    assert_equals(matrix.d, 1);
+    assert_equals(matrix.e, 100);
+    assert_equals(matrix.f, 10);
+    
+    ctx.fillStyle = 'green';
+    ctx.fillRect(-100, -10, 100, 100);
+    
+    imageData = ctx.getImageData(1, 1, 98, 98);
+    imgdata = imageData.data;
+    assert_equals(imgdata[4], 0);
+    assert_equals(imgdata[5], 128);
+    assert_equals(imgdata[6], 0);
+}, "Series of tests to ensure correct behaviour of canvas.currentTransform");
+</script>
 </body>
-</html>

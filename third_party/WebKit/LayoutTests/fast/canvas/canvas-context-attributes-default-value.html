@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-
   var trueAttributes = {
     alpha : true,
   };
@@ -31,26 +28,20 @@
     window.actualContextAttributes = context.getContextAttributes();
 
     for (key in expectedAttributes)
-      shouldBe("actualContextAttributes." + key,
-          expectedAttributes[key].toString());
+      assert_equals(eval("actualContextAttributes." + key),
+        expectedAttributes[key]);
   }
 
-</script>
-</head>
-<body>
-<script>
+  test(function(t) {
+    testAttributes(trueAttributes);
+  }, 'Test default value');
 
-  debug("Testing default value:");
-  testAttributes(trueAttributes);
-  debug("")
+  test(function(t) {
+    testAttributes(trueAttributes, undefined);
+  }, 'Test undfined value');
 
-  debug("Testing undefined value:");
-  testAttributes(trueAttributes, undefined);
-  debug("")
-
-  debug("Testing null value:");
-  testAttributes(falseAttributes, null);
-  debug("")
-
+  test(function(t) {
+    testAttributes(falseAttributes, null);
+  }, 'Test null value');
 </script>
 </body>

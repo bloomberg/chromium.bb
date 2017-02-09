@@ -1,31 +1,38 @@
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-description("Verify that the custom properties on a Canvas 2D rendering context object are retained across GCs.");
-
-window.jsTestIsAsync = true;
-
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
+function gc() {
+    if (typeof GCController !== "undefined")
+        GCController.collectAll();
+    else {
+        var gcRec = function (n) {
+            if (n < 1)
+                return {};
+            var temp = {i: "ab" + i + (i / 100000)};
+            temp += "foo";
+            gcRec(n-1);
+        };
+        for (var i = 0; i < 1000; i++)
+            gcRec(10);
+    }
 }
 
 function runTest() {
     canvas = document.createElement("canvas");
     context = canvas.getContext("2d");
     context.customProperty = "value";
-    shouldBeEqualToString("context.customProperty", "value");
+    assert_equals(context.customProperty, "value");
     context = null;
     gc();
     context = canvas.getContext("2d");
-    shouldBeEqualToString("context.customProperty", "value");
-    finishJSTest();
+    assert_equals(context.customProperty, "value");
 }
 
-window.onload = runTest;
+async_test(t => {
+        window.onload = function() {
+            t.step(runTest);
+            t.done();
+        }
+}, 'Verify that the custom properties on a Canvas 2D rendering context object are retained across GCs.');
+
 </script>
-</body>
-</html>
