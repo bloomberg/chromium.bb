@@ -66,7 +66,7 @@ void StylusHandler::UpdateNoteTakingApps() {
     waiting_for_android = true;
   } else {
     std::vector<NoteTakingAppInfo> available_apps =
-        NoteTakingHelper::Get()->GetAvailableApps(Profile::FromWebUI(web_ui()));
+        helper->GetAvailableApps(Profile::FromWebUI(web_ui()));
     for (const NoteTakingAppInfo& info : available_apps) {
       auto dict = base::MakeUnique<base::DictionaryValue>();
       dict->SetString(kAppNameKey, info.name);
@@ -78,13 +78,13 @@ void StylusHandler::UpdateNoteTakingApps() {
     }
   }
 
+  AllowJavascript();
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::StringValue("onNoteTakingAppsUpdated"),
       apps_list, base::FundamentalValue(waiting_for_android));
 }
 
 void StylusHandler::RequestApps(const base::ListValue* unused_args) {
-  AllowJavascript();
   UpdateNoteTakingApps();
 }
 
@@ -104,13 +104,13 @@ void StylusHandler::SetPreferredNoteTakingApp(const base::ListValue* args) {
 }
 
 void StylusHandler::HandleInitialize(const base::ListValue* args) {
-  AllowJavascript();
   if (ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete())
     SendHasStylus();
 }
 
 void StylusHandler::SendHasStylus() {
   DCHECK(ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete());
+  AllowJavascript();
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::StringValue("has-stylus-changed"),
       base::FundamentalValue(ash::palette_utils::HasStylusInput()));
