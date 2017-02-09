@@ -604,8 +604,10 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo,
     selectionEnd = textRun.length();
 
   bool ltr = m_inlineTextBox.isLeftToRightDirection();
-  bool flowIsLTR =
-      m_inlineTextBox.getLineLayoutItem().style()->isLeftToRightDirection();
+  bool flowIsLTR = m_inlineTextBox.getLineLayoutItem()
+                       .containingBlock()
+                       .style()
+                       ->isLeftToRightDirection();
   if (m_inlineTextBox.truncation() != cNoTruncation) {
     // In a mixed-direction flow the ellipsis is at the start of the text
     // rather than at the end of it.
@@ -995,8 +997,10 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context,
   unsigned start = m_inlineTextBox.start();
   int length = m_inlineTextBox.len();
   bool ltr = m_inlineTextBox.isLeftToRightDirection();
-  bool flowIsLTR =
-      m_inlineTextBox.getLineLayoutItem().style()->isLeftToRightDirection();
+  bool flowIsLTR = m_inlineTextBox.getLineLayoutItem()
+                       .containingBlock()
+                       .style()
+                       ->isLeftToRightDirection();
   if (m_inlineTextBox.truncation() != cNoTruncation) {
     // In a mixed-direction flow the ellipsis is at the start of the text
     // so we need to start after it. Otherwise we just need to make sure
