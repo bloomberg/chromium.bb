@@ -839,15 +839,6 @@ STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::Normal,
 STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::Aggressive,
                    V8CacheStrategiesForCacheStorage::Aggressive);
 
-STATIC_ASSERT_ENUM(WebSecurityPolicy::PolicyAreaNone,
-                   SchemeRegistry::PolicyAreaNone);
-STATIC_ASSERT_ENUM(WebSecurityPolicy::PolicyAreaImage,
-                   SchemeRegistry::PolicyAreaImage);
-STATIC_ASSERT_ENUM(WebSecurityPolicy::PolicyAreaStyle,
-                   SchemeRegistry::PolicyAreaStyle);
-STATIC_ASSERT_ENUM(WebSecurityPolicy::PolicyAreaAll,
-                   SchemeRegistry::PolicyAreaAll);
-
 STATIC_ASSERT_ENUM(WebSandboxFlags::None, SandboxNone);
 STATIC_ASSERT_ENUM(WebSandboxFlags::Navigation, SandboxNavigation);
 STATIC_ASSERT_ENUM(WebSandboxFlags::Plugins, SandboxPlugins);

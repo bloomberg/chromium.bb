@@ -54,6 +54,10 @@ class URLSchemesRegistry final {
       schemesWithUniqueOrigins.insert(scheme.c_str());
     for (auto& scheme : url::GetCORSEnabledSchemes())
       CORSEnabledSchemes.insert(scheme.c_str());
+    for (auto& scheme : url::GetCSPBypassingSchemes()) {
+      contentSecurityPolicyBypassingSchemes.insert(
+          scheme.c_str(), SchemeRegistry::PolicyAreaAll);
+    }
   }
   ~URLSchemesRegistry() = default;
 

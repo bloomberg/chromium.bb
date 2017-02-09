@@ -269,11 +269,6 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   // Register WebSecurityPolicy whitelists for the chrome-extension:// scheme.
   WebString extension_scheme(WebString::fromASCII(kExtensionScheme));
 
-  // Resources should bypass Content Security Policy checks when included in
-  // protected resources. TODO(kalman): What are "protected resources"?
-  WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
-      extension_scheme);
-
   // Extension resources are HTTP-like and safe to expose to the fetch API. The
   // rules for the fetch API are consistent with XHR.
   WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI(extension_scheme);

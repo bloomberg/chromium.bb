@@ -96,6 +96,7 @@ std::vector<std::string>* local_schemes = nullptr;
 std::vector<std::string>* no_access_schemes = nullptr;
 std::vector<std::string>* cors_enabled_schemes = nullptr;
 std::vector<std::string>* web_storage_schemes = nullptr;
+std::vector<std::string>* csp_bypassing_schemes = nullptr;
 
 // See the LockSchemeRegistries declaration in the header.
 bool scheme_registries_locked = false;
@@ -524,6 +525,7 @@ void Initialize() {
               arraysize(kCORSEnabledSchemes));
   InitSchemes(&web_storage_schemes, kWebStorageSchemes,
               arraysize(kWebStorageSchemes));
+  InitSchemes(&csp_bypassing_schemes, nullptr, 0);
   initialized = true;
 }
 
@@ -543,6 +545,8 @@ void Shutdown() {
   cors_enabled_schemes = nullptr;
   delete web_storage_schemes;
   web_storage_schemes = nullptr;
+  delete csp_bypassing_schemes;
+  csp_bypassing_schemes = nullptr;
 }
 
 void AddStandardScheme(const char* new_scheme, SchemeType type) {
@@ -603,6 +607,16 @@ void AddWebStorageScheme(const char* new_scheme) {
 const std::vector<std::string>& GetWebStorageSchemes() {
   Initialize();
   return *web_storage_schemes;
+}
+
+void AddCSPBypassingScheme(const char* new_scheme) {
+  Initialize();
+  DoAddScheme(new_scheme, csp_bypassing_schemes);
+}
+
+const std::vector<std::string>& GetCSPBypassingSchemes() {
+  Initialize();
+  return *csp_bypassing_schemes;
 }
 
 void LockSchemeRegistries() {

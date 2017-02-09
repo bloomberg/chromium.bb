@@ -618,6 +618,8 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
   // overridden by the web_accessible_resources manifest key.
   // TODO(kalman): See what happens with a service worker.
   schemes->cors_enabled_schemes.push_back(extensions::kExtensionScheme);
+
+  schemes->csp_bypassing_schemes.push_back(extensions::kExtensionScheme);
 #endif
 
 #if defined(OS_CHROMEOS)

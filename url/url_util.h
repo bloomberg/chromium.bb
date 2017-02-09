@@ -106,6 +106,11 @@ URL_EXPORT const std::vector<std::string>& GetCORSEnabledSchemes();
 URL_EXPORT void AddWebStorageScheme(const char* new_scheme);
 URL_EXPORT const std::vector<std::string>& GetWebStorageSchemes();
 
+// Adds an application-defined scheme to the list of schemes that can bypass the
+// Content-Security-Policy(CSP) checks.
+URL_EXPORT void AddCSPBypassingScheme(const char* new_scheme);
+URL_EXPORT const std::vector<std::string>& GetCSPBypassingSchemes();
+
 // Sets a flag to prevent future calls to Add*Scheme from succeeding.
 //
 // This is designed to help prevent errors for multithreaded applications.

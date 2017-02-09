@@ -55,18 +55,6 @@ void WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI(
   SchemeRegistry::registerURLSchemeAsSupportingFetchAPI(scheme);
 }
 
-void WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
-    const WebString& scheme) {
-  SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(scheme);
-}
-
-void WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
-    const WebString& scheme,
-    PolicyAreas policyAreas) {
-  SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(
-      scheme, static_cast<SchemeRegistry::PolicyAreas>(policyAreas));
-}
-
 void WebSecurityPolicy::registerURLSchemeAsFirstPartyWhenTopLevel(
     const WebString& scheme) {
   SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel(scheme);

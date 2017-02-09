@@ -79,6 +79,7 @@ void ShellContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->savable_schemes.push_back(kExtensionScheme);
   schemes->secure_schemes.push_back(kExtensionScheme);
   schemes->cors_enabled_schemes.push_back(kExtensionScheme);
+  schemes->csp_bypassing_schemes.push_back(kExtensionScheme);
 }
 
 std::string ShellContentClient::GetUserAgent() const {

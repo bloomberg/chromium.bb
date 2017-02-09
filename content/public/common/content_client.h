@@ -111,6 +111,7 @@ class CONTENT_EXPORT ContentClient {
     std::vector<std::string> local_schemes;
     std::vector<std::string> no_access_schemes;
     std::vector<std::string> cors_enabled_schemes;
+    std::vector<std::string> csp_bypassing_schemes;
     // See https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
     std::vector<std::string> secure_schemes;
     std::vector<GURL> secure_origins;
