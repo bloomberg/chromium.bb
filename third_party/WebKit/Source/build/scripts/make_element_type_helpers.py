@@ -7,31 +7,27 @@ import sys
 from collections import defaultdict
 
 import hasher
-import in_generator
+import json5_generator
 import name_utilities
 import template_expander
 
-from in_file import InFile
-
 
 def _symbol(tag):
-    # FIXME: Remove this special case for the ugly x-webkit-foo attributes.
-    if tag['name'].startswith('-webkit-'):
-        return tag['name'].replace('-', '_')[1:]
     return name_utilities.cpp_name(tag).replace('-', '_')
 
-class MakeElementTypeHelpersWriter(in_generator.Writer):
-    defaults = {
-        'Conditional': None,
-        'ImplementedAs': None,
-        'JSInterfaceName': None,
-        'constructorNeedsCreatedByParser': None,
-        'interfaceName': None,
-        'noConstructor': None,
-        'noTypeHelpers': None,
-        'runtimeEnabled': None,
-    }
+
+class MakeElementTypeHelpersWriter(json5_generator.Writer):
     default_parameters = {
+        'Conditional': {},
+        'ImplementedAs': {},
+        'JSInterfaceName': {},
+        'constructorNeedsCreatedByParser': {},
+        'interfaceName': {},
+        'noConstructor': {},
+        'noTypeHelpers': {},
+        'runtimeEnabled': {},
+    }
+    default_metadata = {
         'attrsNullNamespace': None,
         'export': '',
         'fallbackInterfaceName': '',
@@ -45,11 +41,11 @@ class MakeElementTypeHelpersWriter(in_generator.Writer):
         'symbol': _symbol,
     }
 
-    def __init__(self, in_file_path):
-        super(MakeElementTypeHelpersWriter, self).__init__(in_file_path)
+    def __init__(self, json5_file_path):
+        super(MakeElementTypeHelpersWriter, self).__init__(json5_file_path)
 
-        self.namespace = self.in_file.parameters['namespace'].strip('"')
-        self.fallbackInterface = self.in_file.parameters['fallbackInterfaceName'].strip('"')
+        self.namespace = self.json5_file.metadata['namespace'].strip('"')
+        self.fallback_interface = self.json5_file.metadata['fallbackInterfaceName'].strip('"')
 
         assert self.namespace, 'A namespace is required.'
 
@@ -60,7 +56,7 @@ class MakeElementTypeHelpersWriter(in_generator.Writer):
 
         self._template_context = {
             'namespace': self.namespace,
-            'tags': self.in_file.name_dictionaries,
+            'tags': self.json5_file.name_dictionaries,
             'elements': set(),
         }
 
@@ -73,7 +69,7 @@ class MakeElementTypeHelpersWriter(in_generator.Writer):
             elements.add(tag['interface'])
 
         for tag in tags:
-            tag['multipleTagNames'] = (interface_counts[tag['interface']] > 1 or tag['interface'] == self.fallbackInterface)
+            tag['multipleTagNames'] = (interface_counts[tag['interface']] > 1 or tag['interface'] == self.fallback_interface)
 
     @template_expander.use_jinja("ElementTypeHelpers.h.tmpl", filters=filters)
     def generate_helper_header(self):
@@ -97,4 +93,4 @@ class MakeElementTypeHelpersWriter(in_generator.Writer):
         return '%s%sElement' % (self.namespace, name)
 
 if __name__ == "__main__":
-    in_generator.Maker(MakeElementTypeHelpersWriter).main(sys.argv)
+    json5_generator.Maker(MakeElementTypeHelpersWriter).main()

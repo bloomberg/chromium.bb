@@ -152,7 +152,11 @@ class Json5File(object):
             return entry
         if "name" not in item:
             raise Exception("Missing name in item: %s" % item)
+        if not self.parameters:
+            entry.update(item)
+            return entry
         entry["name"] = item.pop("name")
+        # Validate parameters if it's specified.
         for key, value in item.items():
             if key not in self.parameters:
                 raise Exception(
