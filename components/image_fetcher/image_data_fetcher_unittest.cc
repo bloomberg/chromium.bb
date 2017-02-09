@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -33,11 +34,14 @@ class ImageDataFetcherTest : public testing::Test {
         image_data_fetcher_(test_request_context_getter_.get()) {}
   ~ImageDataFetcherTest() override {}
 
-  MOCK_METHOD1(OnImageDataFetched, void(const std::string&));
+  MOCK_METHOD2(OnImageDataFetched,
+               void(const std::string&, const RequestMetadata&));
 
-  MOCK_METHOD1(OnImageDataFetchedFailedRequest, void(const std::string&));
+  MOCK_METHOD2(OnImageDataFetchedFailedRequest,
+               void(const std::string&, const RequestMetadata&));
 
-  MOCK_METHOD1(OnImageDataFetchedMultipleRequests, void(const std::string&));
+  MOCK_METHOD2(OnImageDataFetchedMultipleRequests,
+               void(const std::string&, const RequestMetadata&));
 
  protected:
   base::MessageLoop message_loop_;
@@ -57,7 +61,11 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
       GURL(kImageURL),
       base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
                  base::Unretained(this)));
-  EXPECT_CALL(*this, OnImageDataFetched(std::string(kURLResponseData)));
+
+  RequestMetadata expected_metadata;
+  expected_metadata.mime_type = std::string("image/gif");
+  EXPECT_CALL(*this, OnImageDataFetched(std::string(kURLResponseData),
+                                        expected_metadata));
 
   // Get and configure the TestURLFetcher.
   net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
@@ -65,6 +73,15 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
   test_url_fetcher->set_status(
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
   test_url_fetcher->SetResponseString(kURLResponseData);
+
+  std::string raw_header =
+      "HTTP/1.1 200 OK\n"
+      "Content-type: image/gif\n\n";
+  std::replace(raw_header.begin(), raw_header.end(), '\n', '\0');
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders(raw_header));
+
+  test_url_fetcher->set_response_headers(headers);
 
   // Call the URLFetcher delegate to continue the test.
   test_url_fetcher->delegate()->OnURLFetchComplete(test_url_fetcher);
@@ -75,7 +92,10 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FailedRequest) {
       GURL(kImageURL),
       base::Bind(&ImageDataFetcherTest::OnImageDataFetchedFailedRequest,
                  base::Unretained(this)));
-  EXPECT_CALL(*this, OnImageDataFetchedFailedRequest(std::string()));
+
+  RequestMetadata expected_metadata;
+  EXPECT_CALL(
+      *this, OnImageDataFetchedFailedRequest(std::string(), expected_metadata));
 
   // Get and configure the TestURLFetcher.
   net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
@@ -92,7 +112,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_MultipleRequests) {
   ImageDataFetcher::ImageDataFetcherCallback callback =
       base::Bind(&ImageDataFetcherTest::OnImageDataFetchedMultipleRequests,
                  base::Unretained(this));
-  EXPECT_CALL(*this, OnImageDataFetchedMultipleRequests(testing::_)).Times(2);
+  EXPECT_CALL(*this, OnImageDataFetchedMultipleRequests(testing::_, testing::_))
+      .Times(2);
 
   image_data_fetcher_.FetchImageData(GURL(kImageURL), callback);
   image_data_fetcher_.FetchImageData(GURL(kImageURL), callback);

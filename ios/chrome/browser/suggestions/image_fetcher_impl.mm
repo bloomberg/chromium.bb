@@ -59,7 +59,7 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
   // If image_fetcher_ is destroyed the request will be cancelled and this block
   // will never be called. A reference to delegate_ can be kept.
   image_fetcher::IOSImageDataFetcherCallback fetcher_callback =
-      ^(NSData* data) {
+      ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
         if (data) {
           // Most likely always returns 1x images.
           UIImage* ui_image = [UIImage imageWithData:data scale:1];

@@ -63,7 +63,8 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
 }
 
 void ImageFetcherImpl::OnImageURLFetched(const GURL& image_url,
-                                         const std::string& image_data) {
+                                         const std::string& image_data,
+                                         const RequestMetadata& metadata) {
   // Inform the ImageFetcherDelegate.
   if (delegate_) {
     auto it = pending_net_requests_.find(image_url);

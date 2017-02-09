@@ -24,7 +24,8 @@ class GURL;
 namespace image_fetcher {
 
 // Callback that informs of the download of an image encoded in |data|.
-using IOSImageDataFetcherCallback = void (^)(NSData* data);
+using IOSImageDataFetcherCallback = void (^)(NSData* data,
+                                             const RequestMetadata& metadata);
 
 class IOSImageDataFetcherWrapper {
  public:

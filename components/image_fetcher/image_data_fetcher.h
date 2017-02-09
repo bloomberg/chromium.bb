@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/image_fetcher/request_metadata.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -27,7 +28,8 @@ namespace image_fetcher {
 class ImageDataFetcher : public net::URLFetcherDelegate {
  public:
   using ImageDataFetcherCallback =
-      base::Callback<void(const std::string& image_data)>;
+      base::Callback<void(const std::string& image_data,
+                          const RequestMetadata& request_metadata)>;
 
   using DataUseServiceName = data_use_measurement::DataUseUserData::ServiceName;
 

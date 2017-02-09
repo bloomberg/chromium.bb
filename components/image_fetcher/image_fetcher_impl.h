@@ -76,7 +76,9 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
 
   // Processes image URL fetched events. This is the continuation method used
   // for creating callbacks that are passed to the ImageDataFetcher.
-  void OnImageURLFetched(const GURL& image_url, const std::string& image_data);
+  void OnImageURLFetched(const GURL& image_url,
+                         const std::string& image_data,
+                         const RequestMetadata& metadata);
 
   // Processes image decoded events. This is the continuation method used for
   // creating callbacks that are passed to the ImageDecoder.

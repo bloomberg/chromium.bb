@@ -112,7 +112,8 @@ IOSImageDataFetcherWrapper::CallbackForImageDataFetcher(
     IOSImageDataFetcherCallback callback) {
   scoped_refptr<base::TaskRunner> task_runner = task_runner_;
 
-  return base::BindBlockArc(^(const std::string& image_data) {
+  return base::BindBlockArc(^(const std::string& image_data,
+                              const RequestMetadata& metadata) {
     // Create a NSData from the returned data and notify the callback.
     NSData* data =
         [NSData dataWithBytes:image_data.data() length:image_data.size()];
@@ -120,14 +121,18 @@ IOSImageDataFetcherWrapper::CallbackForImageDataFetcher(
     if (data.length < 12 ||
         image_data.compare(0, 4, kWEBPFirstMagicPattern) != 0 ||
         image_data.compare(8, 4, kWEBPSecondMagicPattern) != 0) {
-      callback(data);
+      callback(data, metadata);
       return;
     }
+
+    RequestMetadata webp_metadata = metadata;
 
     // The image is a webp image.
     base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE,
                                      base::Bind(&DecodeWebpImage, data),
-                                     base::BindBlockArc(callback));
+                                     base::BindBlockArc(^(NSData* data) {
+                                       callback(data, webp_metadata);
+                                     }));
   });
 }
 
