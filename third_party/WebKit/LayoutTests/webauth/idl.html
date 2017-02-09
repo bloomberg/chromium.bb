@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<script src=../resources/testharness.js></script>
+<script src=../resources/testharnessreport.js></script>
+<script src=../resources/WebIDLParser.js></script>
+<script src=../resources/idlharness.js></script>
+<script type="text/plain" id="tested">
+[SecureContext]
+interface ScopedCredentialInfo {
+    readonly attribute ArrayBuffer  clientData;
+    readonly attribute ArrayBuffer  attestation;
+};
+
+dictionary RelyingPartyAccount {
+    required DOMString rpDisplayName;
+    required DOMString displayName;
+    required DOMString id;
+    DOMString          name;
+    DOMString          imageURL;
+};
+
+dictionary ScopedCredentialParameters {
+    required ScopedCredentialType  type;
+    required AlgorithmIdentifier   algorithm;
+};
+
+dictionary ScopedCredentialOptions {
+    unsigned long                             timeoutSeconds;
+    USVString                                 rpId;
+    sequence < ScopedCredentialDescriptor >   excludeList;
+    AuthenticationExtension                   extensions;
+};
+
+[SecureContext]
+interface AuthenticationAssertion {
+    readonly attribute ScopedCredential  credential;
+    readonly attribute ArrayBuffer       clientData;
+    readonly attribute ArrayBuffer       authenticatorData;
+    readonly attribute ArrayBuffer       signature;
+};
+
+dictionary AssertionOptions {
+    unsigned long                            timeoutSeconds;
+    USVString                                rpId;
+    sequence < ScopedCredentialDescriptor >  allowList;
+    AuthenticationExtension                  extensions;
+};
+
+dictionary AuthenticationExtension {
+};
+
+dictionary AuthenticationClientData {
+    required DOMString           challenge;
+    required DOMString           origin;
+    required AlgorithmIdentifier hashAlg;
+    DOMString                    tokenBinding;
+    AuthenticationExtension      extensions;
+};
+
+enum ScopedCredentialType {
+    "ScopedCred"
+};
+
+[SecureContext]
+interface ScopedCredential {
+    readonly attribute ScopedCredentialType type;
+    readonly attribute ArrayBuffer          id;
+};
+
+dictionary ScopedCredentialDescriptor {
+    required ScopedCredentialType type;
+    required BufferSource   id;
+    sequence < Transport >  transports;
+};
+
+enum Transport {
+    "usb",
+    "nfc",
+    "ble"
+};
+[SecureContext]
+interface WebAuthentication {
+    Promise < ScopedCredentialInfo > makeCredential (
+        Account                                 accountInformation,
+        sequence < ScopedCredentialParameters > cryptoParameters,
+        BufferSource                            attestationChallenge,
+        optional ScopedCredentialOptions        options
+    );
+
+    Promise < AuthenticationAssertion > getAssertion (
+        BufferSource               assertionChallenge,
+        optional AssertionOptions  options
+    );
+};
+</script>
+<script>
+(function() {
+    "use strict";
+    var idl_array = new IdlArray();
+    idl_array.add_idls(document.querySelector('#tested').textContent);
+    idl_array.add_objects({
+      WebAuthentication: ['navigator.authentication']
+    });
+    idl_array.test();
+})();
+</script>

@@ -1,0 +1,39 @@
+This is a testharness.js-based test.
+PASS ScopedCredentialInfo interface: existence and properties of interface object 
+PASS ScopedCredentialInfo interface object length 
+PASS ScopedCredentialInfo interface object name 
+FAIL ScopedCredentialInfo interface: existence and properties of interface prototype object assert_equals: class string of ScopedCredentialInfo.prototype expected "[object ScopedCredentialInfoPrototype]" but got "[object ScopedCredentialInfo]"
+PASS ScopedCredentialInfo interface: existence and properties of interface prototype object's "constructor" property 
+PASS ScopedCredentialInfo interface: attribute clientData 
+PASS ScopedCredentialInfo interface: attribute attestation 
+PASS AuthenticationAssertion interface: existence and properties of interface object 
+PASS AuthenticationAssertion interface object length 
+PASS AuthenticationAssertion interface object name 
+FAIL AuthenticationAssertion interface: existence and properties of interface prototype object assert_equals: class string of AuthenticationAssertion.prototype expected "[object AuthenticationAssertionPrototype]" but got "[object AuthenticationAssertion]"
+PASS AuthenticationAssertion interface: existence and properties of interface prototype object's "constructor" property 
+PASS AuthenticationAssertion interface: attribute credential 
+PASS AuthenticationAssertion interface: attribute clientData 
+PASS AuthenticationAssertion interface: attribute authenticatorData 
+PASS AuthenticationAssertion interface: attribute signature 
+PASS ScopedCredential interface: existence and properties of interface object 
+PASS ScopedCredential interface object length 
+PASS ScopedCredential interface object name 
+FAIL ScopedCredential interface: existence and properties of interface prototype object assert_equals: class string of ScopedCredential.prototype expected "[object ScopedCredentialPrototype]" but got "[object ScopedCredential]"
+PASS ScopedCredential interface: existence and properties of interface prototype object's "constructor" property 
+PASS ScopedCredential interface: attribute type 
+PASS ScopedCredential interface: attribute id 
+PASS WebAuthentication interface: existence and properties of interface object 
+PASS WebAuthentication interface object length 
+PASS WebAuthentication interface object name 
+FAIL WebAuthentication interface: existence and properties of interface prototype object assert_equals: class string of WebAuthentication.prototype expected "[object WebAuthenticationPrototype]" but got "[object WebAuthentication]"
+PASS WebAuthentication interface: existence and properties of interface prototype object's "constructor" property 
+PASS WebAuthentication interface: operation makeCredential(Account,[object Object],BufferSource,ScopedCredentialOptions) 
+PASS WebAuthentication interface: operation getAssertion(BufferSource,AssertionOptions) 
+PASS WebAuthentication must be primary interface of navigator.authentication 
+PASS Stringification of navigator.authentication 
+PASS WebAuthentication interface: navigator.authentication must inherit property "makeCredential" with the proper type (0) 
+PASS WebAuthentication interface: calling makeCredential(Account,[object Object],BufferSource,ScopedCredentialOptions) on navigator.authentication with too few arguments must throw TypeError 
+PASS WebAuthentication interface: navigator.authentication must inherit property "getAssertion" with the proper type (1) 
+PASS WebAuthentication interface: calling getAssertion(BufferSource,AssertionOptions) on navigator.authentication with too few arguments must throw TypeError 
+Harness: the test ran to completion.
+
