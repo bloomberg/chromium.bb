@@ -151,8 +151,8 @@ crbug.com/681471 virtual/disable-spinvalidation/paint/invalidation/media-audio-n
 # LayoutNG - is a new layout system for Blink.
 
 #### css2.1/20110323
-#### Passed: 110
-#### Skipped: 299
+#### Passed: 109
+#### Skipped: 300
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-002.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-zero-height-wrap-001.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-zero-height-wrap-002.htm [ Skip ]
@@ -425,6 +425,7 @@ crbug.com/635619 virtual/layout_ng/css2.1/20110323/outline-color-applies-to-010.
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/outline-color-applies-to-014.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/overflow-applies-to-007.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/overflow-applies-to-009.htm [ Skip ]
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/overflow-applies-to-010.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/overflow-applies-to-012.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/overflow-applies-to-013.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/overflow-applies-to-014.htm [ Skip ]

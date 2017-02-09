@@ -18,7 +18,6 @@ namespace blink {
 
 class ComputedStyle;
 class NGBlockBreakToken;
-class NGBoxFragment;
 class NGConstraintSpace;
 class NGConstraintSpaceBuilder;
 class NGInlineNode;
@@ -98,9 +97,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
     return content_size_;
   }
 
-  // Calculates offset for the provided fragment which is relative to the
-  // fragment's parent.
-  NGLogicalOffset CalculateRelativeOffset(const NGBoxFragment& fragment);
+  // Calculates logical offset for the current fragment using either
+  // {@code content_size_} when the fragment doesn't know it's offset
+  // or {@code known_fragment_offset} if the fragment knows it's offset
+  // @return Fragment's offset relative to the fragment's parent.
+  NGLogicalOffset CalculateLogicalOffset(
+      const WTF::Optional<NGLogicalOffset>& known_fragment_offset);
+
   NGLogicalOffset GetChildSpaceOffset() const {
     return NGLogicalOffset(border_and_padding_.inline_start, content_size_);
   }

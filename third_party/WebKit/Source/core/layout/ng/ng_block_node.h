@@ -59,9 +59,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
     return fragment_ && !fragment_->BreakToken();
   }
 
-  // Used for debugging purposes only.
-  const LayoutBox* LegacyLayoutBox() const { return layout_box_; }
-
   DECLARE_VIRTUAL_TRACE();
 
   // Runs layout on layout_box_ and creates a fragment for the resulting

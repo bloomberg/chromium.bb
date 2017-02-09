@@ -110,7 +110,6 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGMarginStrut MarginStrut() const { return margin_strut_; }
 
-  // TODO(glebl): Rename to Offset() or AbsoluteOffset().
   NGLogicalOffset BfcOffset() const { return bfc_offset_; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
