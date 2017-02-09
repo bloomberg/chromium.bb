@@ -94,7 +94,6 @@ struct drm_backend {
 		char *filename;
 	} drm;
 	struct gbm_device *gbm;
-	uint32_t crtc_allocator;
 	uint32_t connector_allocator;
 	struct wl_listener session_listener;
 	uint32_t gbm_format;
@@ -237,6 +236,25 @@ static int
 drm_sprite_crtc_supported(struct drm_output *output, struct drm_sprite *sprite)
 {
 	return !!(sprite->possible_crtcs & (1 << output->pipe));
+}
+
+static struct drm_output *
+drm_output_find_by_crtc(struct drm_backend *b, uint32_t crtc_id)
+{
+	struct drm_output *output;
+
+	wl_list_for_each(output, &b->compositor->output_list, base.link) {
+		if (output->crtc_id == crtc_id)
+			return output;
+	}
+
+	wl_list_for_each(output, &b->compositor->pending_output_list,
+			 base.link) {
+		if (output->crtc_id == crtc_id)
+			return output;
+	}
+
+	return NULL;
 }
 
 static void
@@ -1819,9 +1837,13 @@ find_crtc_for_connector(struct drm_backend *b,
 		drmModeFreeEncoder(encoder);
 
 		for (i = 0; i < resources->count_crtcs; i++) {
-			if (possible_crtcs & (1 << i) &&
-			    !(b->crtc_allocator & (1 << resources->crtcs[i])))
-				return i;
+			if (!(possible_crtcs & (1 << i)))
+				continue;
+
+			if (drm_output_find_by_crtc(b, resources->crtcs[i]))
+				continue;
+
+			return i;
 		}
 	}
 
@@ -2507,7 +2529,6 @@ drm_output_destroy(struct weston_output *base)
 	if (output->backlight)
 		backlight_destroy(output->backlight);
 
-	b->crtc_allocator &= ~(1 << output->crtc_id);
 	b->connector_allocator &= ~(1 << output->connector_id);
 
 	free(output);
@@ -2585,7 +2606,6 @@ create_output_for_connector(struct drm_backend *b,
 	output->disable_pending = 0;
 	output->original_crtc = NULL;
 
-	b->crtc_allocator |= (1 << output->crtc_id);
 	b->connector_allocator |= (1 << output->connector_id);
 
 	weston_output_init(&output->base, b->compositor);
