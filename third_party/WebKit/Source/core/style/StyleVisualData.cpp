@@ -37,6 +37,8 @@ StyleVisualData::StyleVisualData(const StyleVisualData& o)
       clip(o.clip),
       hasAutoClip(o.hasAutoClip),
       textDecoration(o.textDecoration),
-      m_zoom(ComputedStyle::initialZoom()) {}
+      m_zoom(ComputedStyle::initialZoom()) {
+  DCHECK(m_zoom == o.m_zoom);  // crbug.com/689330
+}
 
 }  // namespace blink
