@@ -54,8 +54,8 @@ class WPTExpectationsUpdater(object):
         # Here we build up a dict of failing test results for all platforms.
         test_expectations = {}
         for build in builds:
-            platform_results = self.get_failing_results_dict(build)
-            test_expectations = self.merge_dicts(test_expectations, platform_results)
+            port_results = self.get_failing_results_dict(build)
+            test_expectations = self.merge_dicts(test_expectations, port_results)
 
         # And then we merge results for different platforms that had the same results.
         for test_name, platform_result in test_expectations.iteritems():
@@ -87,57 +87,57 @@ class WPTExpectationsUpdater(object):
 
         Returns:
             A dictionary with the structure: {
-                'key': {
+                'full-port-name': {
                     'expected': 'TIMEOUT',
                     'actual': 'CRASH',
                     'bug': 'crbug.com/11111'
                 }
             }
             If there are no failing results or no results could be fetched,
-            this will return an empty dict.
+            this will return an empty dictionary.
         """
         layout_test_results = self.host.buildbot.fetch_results(build)
         if layout_test_results is None:
             _log.warning('No results for build %s', build)
             return {}
-        platform = self.host.builders.port_name_for_builder_name(build.builder_name)
+        port_name = self.host.builders.port_name_for_builder_name(build.builder_name)
         test_results = layout_test_results.didnt_run_as_expected_results()
-        failing_results_dict = self.generate_results_dict(platform, test_results)
+        failing_results_dict = self.generate_results_dict(port_name, test_results)
         return failing_results_dict
 
     def generate_results_dict(self, full_port_name, test_results):
         """Makes a dict with results for one platform.
 
         Args:
-            full_port_name: The full port name, e.g. "win-win10".
+            full_port_name: The fully-qualified port name, e.g. "win-win10".
             test_results: A list of LayoutTestResult objects.
 
         Returns:
-            A dict mapping to platform string (e.g. "Win10") to a dict with
-            the results for that test and that platform.
+            A dict mapping the full port name to a dict with the results for
+            the given test and platform.
         """
-        platform = self._port_name_to_platform_specifier(full_port_name)
         test_dict = {}
         for result in test_results:
-            test_dict[result.test_name()] = {
-                platform: {
+            test_name = result.test_name()
+            test_dict[test_name] = {
+                full_port_name: {
                     'expected': result.expected_results(),
                     'actual': result.actual_results(),
                     'bug': 'crbug.com/626703'
-                }}
+                }
+            }
         return test_dict
 
     def _port_name_to_platform_specifier(self, port_name):
-        """Maps a port name to the string used in test expectations lines.
+        """Maps a port name to the platform specifier used in expectation lines.
 
         For example:
             linux-trusty -> Trusty
             mac-mac10.11 -> Mac10.11.
         """
-        # TODO(qyearsley): Do this in a more robust way with Port classes.
-        if '-' in port_name:
-            return port_name[port_name.find('-') + 1:].capitalize()
-        return port_name
+        builder_name = self.host.builders.builder_name_for_port_name(port_name)
+        specifiers = self.host.builders.specifiers_for_builder(builder_name)
+        return specifiers[0]
 
     def merge_dicts(self, target, source, path=None):
         """Recursively merges nested dictionaries.
@@ -264,21 +264,21 @@ class WPTExpectationsUpdater(object):
             ['BUG_URL [PLATFORM(S)] TEST_MAME [EXPECTATION(S)]']
         """
         line_list = []
-        for test_name, platform_results in merged_results.iteritems():
-            for platform in platform_results:
+        for test_name, port_results in merged_results.iteritems():
+            for port_names in port_results:
                 if test_name.startswith('external'):
-                    platform_list = []
-                    bug = []
-                    expectations = []
-                    if isinstance(platform, tuple):
-                        platform_list = list(platform)
-                    else:
-                        platform_list.append(platform)
-                    bug.append(platform_results[platform]['bug'])
-                    expectations = self.get_expectations(platform_results[platform])
-                    line = '%s [ %s ] %s [ %s ]' % (bug[0], ' '.join(platform_list), test_name, ' '.join(expectations))
-                    line_list.append(str(line))
+                    bug_part = port_results[port_names]['bug']
+                    specifier_part = '[ %s ]' % ' '.join(self.to_list(port_names))
+                    expectations_part = '[ %s ]' % ' '.join(self.get_expectations(port_results[port_names]))
+                    line = ' '.join([bug_part, specifier_part, test_name, expectations_part])
+                    line_list.append(line)
         return line_list
+
+    @staticmethod
+    def to_list(tuple_or_value):
+        if isinstance(tuple_or_value, tuple):
+            return list(tuple_or_value)
+        return [tuple_or_value]
 
     def write_to_test_expectations(self, line_list):
         """Writes to TestExpectations.
