@@ -30,7 +30,7 @@
 import os.path
 import sys
 
-import in_generator
+import json5_generator
 import make_runtime_features
 import name_utilities
 import template_expander
@@ -41,8 +41,8 @@ import template_expander
 class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
     class_name = 'InternalRuntimeFlags'
 
-    def __init__(self, in_file_path):
-        super(InternalRuntimeFlagsWriter, self).__init__(in_file_path)
+    def __init__(self, json5_file_path):
+        super(InternalRuntimeFlagsWriter, self).__init__(json5_file_path)
         self._outputs = {(self.class_name + '.idl'): self.generate_idl,
                          (self.class_name + '.h'): self.generate_header,
                         }
@@ -64,4 +64,4 @@ class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
 
 
 if __name__ == '__main__':
-    in_generator.Maker(InternalRuntimeFlagsWriter).main(sys.argv)
+    json5_generator.Maker(InternalRuntimeFlagsWriter).main()

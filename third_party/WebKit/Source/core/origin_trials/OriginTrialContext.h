@@ -25,7 +25,7 @@ class WebTrialTokenValidator;
 // context.  This class is not for direct use by feature implementers.
 // Instead, the OriginTrials generated namespace provides a method for each
 // trial to check if it is enabled. Experimental features must be defined in
-// RuntimeEnabledFeatures.in, which is used to generate OriginTrials.h/cpp.
+// RuntimeEnabledFeatures.json5, which is used to generate OriginTrials.h/cpp.
 //
 // Origin trials are defined by string names, provided by the implementers. The
 // framework does not maintain an enum or constant list for trial names.

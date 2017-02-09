@@ -17,6 +17,7 @@ scripts_for_in_files = [
   "$_scripts_dir/hasher.py",
   "$_scripts_dir/in_file.py",
   "$_scripts_dir/in_generator.py",
+  "$_scripts_dir/json5_generator.py",
   "$_scripts_dir/license.py",
   "$_scripts_dir/name_utilities.py",
   "$_scripts_dir/template_expander.py",
