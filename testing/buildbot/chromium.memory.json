@@ -593,7 +593,6 @@
   },
   "Linux TSan Tests": {
     "disabled_tests": {
-      "app_shell_browsertests": "http://crbug.com/455633",
       "browser_tests": "Too many errors, clean content_browsertests first. http://crbug.com/368525",
       "cc_unittests": "http://crbug.com/437454",
       "interactive_ui_tests": "http://crbug.com/455679"
