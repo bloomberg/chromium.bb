@@ -88,9 +88,9 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     private static final int FRE_PROGRESS_COMPLETED_NOT_SIGNED_IN = 5;
     private static final int FRE_PROGRESS_MAX = 6;
     private static final EnumeratedHistogramSample sMobileFreProgressMainIntentHistogram =
-            new EnumeratedHistogramSample("MobileFre.SignInChoice.MainIntent", FRE_PROGRESS_MAX);
+            new EnumeratedHistogramSample("MobileFre.Progress.MainIntent", FRE_PROGRESS_MAX);
     private static final EnumeratedHistogramSample sMobileFreProgressViewIntentHistogram =
-            new EnumeratedHistogramSample("MobileFre.SignInChoice.ViewIntent", FRE_PROGRESS_MAX);
+            new EnumeratedHistogramSample("MobileFre.Progress.ViewIntent", FRE_PROGRESS_MAX);
 
     @VisibleForTesting
     static FirstRunGlue sGlue = new FirstRunGlueImpl();
