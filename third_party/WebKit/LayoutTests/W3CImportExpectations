@@ -285,7 +285,8 @@ external/wpt/mediacapture-record [ Skip ]
 ## Owners: phoglund@chromium.org
 # external/wpt/mediacapture-streams [ Pass ]
 external/wpt/microdata [ Skip ]
-external/wpt/mixed-content [ Skip ]
+## Owners: mkwst@chromium.org
+# external/wpt/mixed-content [ Pass ]
 ## Owners: sunjian@chromium.org,panicker@chromium.org
 external/wpt/navigation-timing [ Pass ]
 external/wpt/notifications [ Skip ]
@@ -303,11 +304,10 @@ external/wpt/progress-events [ Skip ]
 external/wpt/proximity [ Skip ]
 ## Owners: rob.buis@samsung.com
 # external/wpt/quirks-mode [ Skip ]
-## Owners: mkwst@chromium.org
-# http://crbug.com/360762: Requires HTTPS server with python.
-external/wpt/referrer-policy [ Skip ]
 ## Owners: avayvod@chromium.org,mlamouri@chromium.org
 # external/wpt/remote-playback [ Pass ]
+## Owners: jochen@chromium.org,estark@chromium.org
+# external/wpt/referrer-policy [ Pass ]
 external/wpt/resource-timing [ Skip ]
 ## Owners: jsbell@chromium.org
 # external/wpt/resources [ Pass ]
@@ -332,8 +332,8 @@ external/wpt/server-side.md [ Skip ]
 # external/wpt/shadow-dom [ Pass ]
 ## Owners: domenic@chromium.org,ricea@chromium.org,tyoshino@chromium.org
 external/wpt/streams [ Pass ]
-## Owners: jww@chromium.org
-external/wpt/subresource-integrity [ Skip ]
+## Owners: mkwst@chromium.org,jochen@chromium.org
+# external/wpt/subresource-integrity [ Pass ]
 ## Owners: foolip@chromium.org
 # external/wpt/svg [ Pass ]
 external/wpt/svg/import [ Skip ]
