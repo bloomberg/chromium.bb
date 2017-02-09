@@ -293,11 +293,13 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container,
   RootInlineBox* box = nullptr;
   LineLayoutItem curr = child.previousSibling();
   if (child.isFloating() && !curr) {
-    LineLayoutItem parent = child.parent();
-    while (parent && parent.isLayoutInline() && !parent.previousSibling())
-      parent = parent.parent();
-    if (parent)
-      curr = parent.previousSibling();
+    LineLayoutInline outerInline;
+    for (LineLayoutItem parent = child.parent();
+         parent && parent.isLayoutInline() && !parent.previousSibling();
+         parent = parent.parent())
+      outerInline = LineLayoutInline(parent);
+    if (outerInline)
+      curr = outerInline.previousSibling();
   }
 
   for (; curr; curr = curr.previousSibling()) {
