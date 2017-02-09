@@ -68,7 +68,7 @@ class Profiler(object):
         self._host = host
         self._executable_path = executable_path
         self._output_dir = output_dir
-        self._identifier = "test"
+        self._identifier = identifier or 'test'
         self._host.filesystem.maybe_make_directory(self._output_dir)
 
     def adjusted_environment(self, env):
@@ -86,9 +86,20 @@ class SingleFileOutputProfiler(Profiler):
     def __init__(self, host, executable_path, output_dir, output_suffix, identifier=None):
         super(SingleFileOutputProfiler, self).__init__(host, executable_path, output_dir, identifier)
         # FIXME: Currently all reports are kept as test.*, until we fix that, search up to 1000 names before giving up.
-        self._output_path = self._host.workspace.find_unused_filename(
-            self._output_dir, self._identifier, output_suffix, search_limit=1000)
+        self._output_path = self._find_unused_filename(self._output_dir, self._identifier, output_suffix)
         assert self._output_path
+
+    def _find_unused_filename(self, directory, name, extension, search_limit=1000):
+        for count in range(search_limit):
+            if count:
+                target_name = "%s-%s.%s" % (name, count, extension)
+            else:
+                target_name = "%s.%s" % (name, extension)
+            target_path = self._host.filesystem.join(directory, target_name)
+            if not self._host.filesystem.exists(target_path):
+                return target_path
+        # If we can't find an unused name in search_limit tries, just give up.
+        return None
 
 
 class GooglePProf(SingleFileOutputProfiler):

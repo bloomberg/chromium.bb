@@ -32,7 +32,6 @@ from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.platform_info_mock import MockPlatformInfo
 from webkitpy.common.system.user_mock import MockUser
-from webkitpy.common.system.workspace_mock import MockWorkspace
 
 
 class MockSystemHost(object):
@@ -53,9 +52,6 @@ class MockSystemHost(object):
             self.platform.os_name = os_name
         if os_version:
             self.platform.os_version = os_version
-
-        # FIXME: Should this take pointers to the filesystem and the executive?
-        self.workspace = MockWorkspace()
 
         self.stdin = StringIO()
         self.stdout = StringIO()

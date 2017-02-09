@@ -31,18 +31,20 @@ import platform
 import sys
 import time
 
-from webkitpy.common.system import executive, filesystem, platform_info, user, workspace
+from webkitpy.common.system.executive import Executive
+from webkitpy.common.system.filesystem import FileSystem
+from webkitpy.common.system.platform_info import PlatformInfo
+from webkitpy.common.system.user import User
 
 
 class SystemHost(object):
 
     def __init__(self):
         self.executable = sys.executable
-        self.executive = executive.Executive()
-        self.filesystem = filesystem.FileSystem()
-        self.user = user.User()
-        self.platform = platform_info.PlatformInfo(sys, platform, self.filesystem, self.executive)
-        self.workspace = workspace.Workspace(self.filesystem, self.executive)
+        self.executive = Executive()
+        self.filesystem = FileSystem()
+        self.user = User()
+        self.platform = PlatformInfo(sys, platform, self.filesystem, self.executive)
         self.stdin = sys.stdin
         self.stdout = sys.stdout
         self.stderr = sys.stderr
