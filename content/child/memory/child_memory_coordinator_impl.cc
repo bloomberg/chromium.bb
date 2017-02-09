@@ -59,11 +59,11 @@ ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {
 }
 
 void ChildMemoryCoordinatorImpl::PurgeMemory() {
-  base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
-  // TODO(bashi): Remove following notification when all clients implement
+  // TODO(bashi): Remove Notify() call when all clients implement
   // OnPurgeMemory();
   base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
       base::MemoryState::SUSPENDED);
+  base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
 }
 
 void ChildMemoryCoordinatorImpl::OnStateChange(mojom::MemoryState state) {
