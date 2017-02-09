@@ -28,7 +28,10 @@ bool IsArcAllowedForProfile(const Profile* profile) {
     return false;
   }
 
-  if (!IsArcAvailable()) {
+  // ARC Kiosk can be enabled even if ARC is not yet supported on the device.
+  // In that case IsArcKioskMode() should return true as profile is already
+  // created.
+  if (!IsArcAvailable() && !(IsArcKioskMode() && IsArcKioskAvailable())) {
     VLOG(1) << "ARC is not available.";
     return false;
   }

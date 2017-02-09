@@ -171,10 +171,11 @@ void ArcKioskAppManager::RemoveObserver(ArcKioskAppManagerObserver* observer) {
 }
 
 void ArcKioskAppManager::UpdateApps() {
-  // Do not populate ARC kiosk apps if ARC apps can't be run on the device.
+  // Do not populate ARC kiosk apps if ARC kiosk apps can't be run on the
+  // device.
   // Apps won't be added to kiosk Apps menu and won't be auto-launched.
-  if (!arc::IsArcAvailable()) {
-    VLOG(1) << "Device doesn't support ARC apps, don't populate ARC kiosk apps";
+  if (!arc::IsArcKioskAvailable()) {
+    VLOG(1) << "Device doesn't support ARC kiosk";
     return;
   }
 

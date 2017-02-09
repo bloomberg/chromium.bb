@@ -179,7 +179,30 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_ActiveDirectoryDisabled) {
   EXPECT_FALSE(IsArcAllowedForProfile(profile()));
 }
 
-TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_Kiosk) {
+TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcEnabled) {
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmail(profile()->GetProfileUserName()),
+                    user_manager::USER_TYPE_ARC_KIOSK_APP);
+  EXPECT_FALSE(chromeos::ProfileHelper::Get()
+                   ->GetUserByProfile(profile())
+                   ->HasGaiaAccount());
+  EXPECT_TRUE(IsArcAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcDisabled) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv({""});
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmail(profile()->GetProfileUserName()),
+                    user_manager::USER_TYPE_ARC_KIOSK_APP);
+  EXPECT_FALSE(chromeos::ProfileHelper::Get()
+                   ->GetUserByProfile(profile())
+                   ->HasGaiaAccount());
+  EXPECT_FALSE(IsArcAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskOnlyEnabled) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=installed-only-kiosk-supported"});
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmail(profile()->GetProfileUserName()),
                     user_manager::USER_TYPE_ARC_KIOSK_APP);

@@ -64,6 +64,7 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/timezone/timezone_resolver.h"
+#include "components/arc/arc_util.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -872,6 +873,7 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {
 
 void ChromeUserManagerImpl::ArcKioskAppLoggedIn(user_manager::User* user) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(arc::IsArcKioskAvailable());
 
   active_user_ = user;
   active_user_->SetStubImage(
@@ -881,13 +883,6 @@ void ChromeUserManagerImpl::ArcKioskAppLoggedIn(user_manager::User* user) {
       user_manager::User::USER_IMAGE_INVALID, false);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  // This works partially, because sevices calling IsArcAvailable()
-  // before Kiosk log-in does not work. This causes an issue that ARC apps
-  // may not be shown in App launcher. cf) crbug.com/685393, crbug.com/678846.
-  // TODO(hidehiko|poromov|lhchavez): Find a correct approach, then remove
-  // this.
-  command_line->AppendSwitchASCII(chromeos::switches::kArcAvailability,
-                                  "officially-supported");
   command_line->AppendSwitch(::switches::kForceAndroidAppMode);
   command_line->AppendSwitch(::switches::kSilentLaunch);
 

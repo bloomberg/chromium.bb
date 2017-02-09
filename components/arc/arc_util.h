@@ -26,6 +26,17 @@ namespace arc {
 // check, so it is ok to access them directly.
 bool IsArcAvailable();
 
+// Returns true if ARC is installed and running ARC kiosk apps on the current
+// device is officially supported.
+// It doesn't follow that ARC is available for user sessions and
+// IsArcAvailable() will return true, although the reverse should be.
+// This is used to distinguish special cases when ARC kiosk is available on
+// the device, but is not yet supported for regular user sessions.
+// In most cases, IsArcAvailable() check should be used instead of this.
+// Also not that this function may return true when ARC is not running in
+// Kiosk mode, it checks only ARC Kiosk availability.
+bool IsArcKioskAvailable();
+
 // For testing ARC in browser tests, this function should be called in
 // SetUpCommandLine(), and its argument should be passed to this function.
 // Also, in unittests, this can be called in SetUp() with
@@ -33,7 +44,10 @@ bool IsArcAvailable();
 // |command_line| must not be nullptr.
 void SetArcAvailableCommandLineForTesting(base::CommandLine* command_line);
 
-// Returns true if ARC should run under Kiosk mode.
+// Returns true if ARC should run under Kiosk mode for the current profile.
+// As it can return true only when user is already initialized, it implies
+// that ARC availability was checked before and IsArcKioskAvailable()
+// should also return true in that case.
 bool IsArcKioskMode();
 
 // Returns true if it is allowed to use ARC with Active Directory managed
