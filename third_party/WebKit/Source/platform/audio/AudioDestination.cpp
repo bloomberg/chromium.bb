@@ -28,14 +28,14 @@
 
 #include "platform/audio/AudioDestination.h"
 
+#include <memory>
 #include "platform/Histogram.h"
-#include "platform/audio/AudioPullFIFO.h"
 #include "platform/audio/AudioUtilities.h"
+#include "platform/audio/PushPullFIFO.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -67,6 +67,8 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
       m_outputBus(AudioBus::create(numberOfOutputChannels,
                                    AudioUtilities::kRenderQuantumFrames,
                                    false)),
+      m_renderBus(AudioBus::create(numberOfOutputChannels,
+                                   AudioUtilities::kRenderQuantumFrames)),
       m_framesElapsed(0) {
   // Calculate the optimum buffer size first.
   if (calculateBufferSize()) {
@@ -80,9 +82,8 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
     DCHECK(m_webAudioDevice);
 
     // Create a FIFO.
-    m_fifo = WTF::wrapUnique(
-        new AudioPullFIFO(*this, numberOfOutputChannels, kFIFOSize,
-                          AudioUtilities::kRenderQuantumFrames));
+    m_fifo =
+        WTF::wrapUnique(new PushPullFIFO(numberOfOutputChannels, kFIFOSize));
   } else {
     NOTREACHED();
   }
@@ -97,13 +98,8 @@ void AudioDestination::render(const WebVector<float*>& destinationData,
                               double delay,
                               double delayTimestamp,
                               size_t priorFramesSkipped) {
-  DCHECK_EQ(destinationData.size(), m_numberOfOutputChannels);
-  if (destinationData.size() != m_numberOfOutputChannels)
-    return;
-
-  DCHECK_EQ(numberOfFrames, m_callbackBufferSize);
-  if (numberOfFrames != m_callbackBufferSize)
-    return;
+  CHECK_EQ(destinationData.size(), m_numberOfOutputChannels);
+  CHECK_EQ(numberOfFrames, m_callbackBufferSize);
 
   m_framesElapsed -= std::min(m_framesElapsed, priorFramesSkipped);
   double outputPosition =
@@ -116,32 +112,41 @@ void AudioDestination::render(const WebVector<float*>& destinationData,
   // FIFO.
   for (unsigned i = 0; i < m_numberOfOutputChannels; ++i)
     m_outputBus->setChannelMemory(i, destinationData[i], numberOfFrames);
-  m_fifo->consume(m_outputBus.get(), numberOfFrames);
 
-  m_framesElapsed += numberOfFrames;
-}
+  // Number of frames to render via WebAudio graph. |framesToRender > 0| means
+  // the frames in FIFO is not enough to fulfill the requested frames from the
+  // audio device.
+  size_t framesToRender = numberOfFrames > m_fifo->framesAvailable()
+                              ? numberOfFrames - m_fifo->framesAvailable()
+                              : 0;
 
-void AudioDestination::provideInput(AudioBus* outputBus,
-                                    size_t framesToProcess) {
-  AudioIOPosition outputPosition = m_outputPosition;
+  for (size_t pushedFrames = 0; pushedFrames < framesToRender;
+       pushedFrames += AudioUtilities::kRenderQuantumFrames) {
+    // If platform buffer is more than two times longer than |framesToProcess|
+    // we do not want output position to get stuck so we promote it
+    // using the elapsed time from the moment it was initially obtained.
+    if (m_callbackBufferSize > AudioUtilities::kRenderQuantumFrames * 2) {
+      double delta =
+          (base::TimeTicks::Now() - m_outputPositionReceivedTimestamp)
+              .InSecondsF();
+      m_outputPosition.position += delta;
+      m_outputPosition.timestamp += delta;
+    }
 
-  // If platform buffer is more than two times longer than |framesToProcess|
-  // we do not want output position to get stuck so we promote it
-  // using the elapsed time from the moment it was initially obtained.
-  if (m_callbackBufferSize > framesToProcess * 2) {
-    double delta = (base::TimeTicks::Now() - m_outputPositionReceivedTimestamp)
-                       .InSecondsF();
-    outputPosition.position += delta;
-    outputPosition.timestamp += delta;
+    // Some implementations give only rough estimation of |delay| so
+    // we might have negative estimation |outputPosition| value.
+    if (m_outputPosition.position < 0.0)
+      m_outputPosition.position = 0.0;
+
+    // Process WebAudio graph and push the rendered output to FIFO.
+    m_callback.render(nullptr, m_renderBus.get(),
+                      AudioUtilities::kRenderQuantumFrames, m_outputPosition);
+    m_fifo->push(m_renderBus.get());
   }
 
-  // Some implementations give only rough estimation of |delay| so
-  // we might have negative estimation |outputPosition| value.
-  if (outputPosition.position < 0.0)
-    outputPosition.position = 0.0;
+  m_fifo->pull(m_outputBus.get(), numberOfFrames);
 
-  // To fill the FIFO, start the render call chain of the destination node.
-  m_callback.render(nullptr, outputBus, framesToProcess, outputPosition);
+  m_framesElapsed += numberOfFrames;
 }
 
 void AudioDestination::start() {
