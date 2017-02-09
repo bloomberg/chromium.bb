@@ -233,6 +233,11 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
   auto* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvh));
   AccessibilityMode mode = web_contents->GetAccessibilityMode();
+  // Note: this is slightly confusing, because:
+  // - Turning a11y ON for given web content will always turn it on, however
+  // - Turning a11y OFF for given web content will revert it to the
+  //   global state (not necessarily off)
+  // TODO(aleventhal): clear this up through chrome:/accessibility UI update
   if ((mode & ACCESSIBILITY_MODE_COMPLETE) != ACCESSIBILITY_MODE_COMPLETE) {
     web_contents->AddAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
   } else {
