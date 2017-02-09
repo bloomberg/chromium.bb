@@ -274,6 +274,9 @@ cr.define('settings_people_page_sync_page', function() {
         // on a background tab (which has throttled timers) and will timeout.
         link.target = '';
         link.href = '#';
+        // Prevent the link from triggering a page navigation when tapped.
+        // Breaks the test in Vulcanized mode.
+        link.addEventListener('tap', function(e) { e.preventDefault(); });
 
         MockInteractions.tap(link);
 
