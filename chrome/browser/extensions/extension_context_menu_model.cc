@@ -38,7 +38,6 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -72,35 +71,26 @@ bool MenuItemMatchesAction(ExtensionContextMenuModel::ActionType type,
   return false;
 }
 
-// Returns the id for the visibility command for the given |extension|, or -1
-// if none should be shown.
+// Returns the id for the visibility command for the given |extension|.
 int GetVisibilityStringId(
     Profile* profile,
     const Extension* extension,
     ExtensionContextMenuModel::ButtonVisibility button_visibility) {
   DCHECK(profile);
   int string_id = -1;
-  if (!FeatureSwitch::extension_action_redesign()->IsEnabled()) {
-    // Without the toolbar redesign, we only show the visibility toggle for
-    // browser actions, and only give the option to hide.
-    if (ExtensionActionManager::Get(profile)->GetBrowserAction(*extension)) {
-      string_id = IDS_EXTENSIONS_HIDE_BUTTON;
-    }
-  } else {
-    // With the redesign, we display "show" or "hide" based on the icon's
-    // visibility, and can have "transitively shown" buttons that are shown
-    // only while the button has a popup or menu visible.
-    switch (button_visibility) {
-      case (ExtensionContextMenuModel::VISIBLE):
-        string_id = IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU;
-        break;
-      case (ExtensionContextMenuModel::TRANSITIVELY_VISIBLE):
-        string_id = IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR;
-        break;
-      case (ExtensionContextMenuModel::OVERFLOWED):
-        string_id = IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR;
-        break;
-    }
+  // We display "show" or "hide" based on the icon's visibility, and can have
+  // "transitively shown" buttons that are shown only while the button has a
+  // popup or menu visible.
+  switch (button_visibility) {
+    case (ExtensionContextMenuModel::VISIBLE):
+      string_id = IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU;
+      break;
+    case (ExtensionContextMenuModel::TRANSITIVELY_VISIBLE):
+      string_id = IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR;
+      break;
+    case (ExtensionContextMenuModel::OVERFLOWED):
+      string_id = IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR;
+      break;
   }
   return string_id;
 }
@@ -259,11 +249,6 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       break;
     case TOGGLE_VISIBILITY: {
       bool currently_visible = button_visibility_ == VISIBLE;
-      // Without the toolbar redesign turned on, action visibility refers to
-      // any action presence in the toolbar, independent of whether the action
-      // is visible or overflowed. So any action present is considered visible.
-      if (!FeatureSwitch::extension_action_redesign()->IsEnabled())
-        currently_visible = true;
       ToolbarActionsModel::Get(browser_->profile())
           ->SetActionVisibility(extension->id(), !currently_visible);
       break;
@@ -339,8 +324,8 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
   // toolbar.
   int visibility_string_id =
       GetVisibilityStringId(profile_, extension, button_visibility);
-  if (visibility_string_id != -1)
-    AddItemWithStringId(TOGGLE_VISIBILITY, visibility_string_id);
+  DCHECK_NE(-1, visibility_string_id);
+  AddItemWithStringId(TOGGLE_VISIBILITY, visibility_string_id);
 
   if (!is_component_) {
     AddSeparator(ui::NORMAL_SEPARATOR);

@@ -340,79 +340,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
 }
 
 // Test that the "show" and "hide" menu items appear correctly in the extension
-// context menu without the toolbar redesign.
-TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHideLegacy) {
-  // Start with the toolbar redesign disabled.
-  FeatureSwitch::ScopedOverride toolbar_redesign_override(
-      FeatureSwitch::extension_action_redesign(), false);
-
-  InitializeEmptyExtensionService();
-  Browser* browser = GetBrowser();
-  extension_action_test_util::CreateToolbarModelForProfile(profile());
-
-  const Extension* page_action = AddExtension(
-      "page_action_extension", manifest_keys::kPageAction, Manifest::INTERNAL);
-  const Extension* browser_action =
-      AddExtension("browser_action_extension", manifest_keys::kBrowserAction,
-                   Manifest::INTERNAL);
-
-  // For laziness.
-  const ExtensionContextMenuModel::MenuEntries visibility_command =
-      ExtensionContextMenuModel::TOGGLE_VISIBILITY;
-  base::string16 hide_string =
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_BUTTON);
-
-  {
-    ExtensionContextMenuModel menu(page_action, browser,
-                                   ExtensionContextMenuModel::VISIBLE, nullptr);
-
-    // Without the toolbar redesign switch, page action menus shouldn't have a
-    // visibility option.
-    EXPECT_EQ(-1, menu.GetIndexOfCommandId(visibility_command));
-  }
-
-  {
-    ExtensionContextMenuModel menu(browser_action, browser,
-                                   ExtensionContextMenuModel::VISIBLE, nullptr);
-    int index = menu.GetIndexOfCommandId(visibility_command);
-    // Browser actions should have the visibility option.
-    EXPECT_NE(-1, index);
-    // Since the action is currently visible, it should have the option to hide
-    // it.
-    EXPECT_EQ(hide_string, menu.GetLabelAt(index));
-  }
-
-  {
-    ExtensionContextMenuModel menu(browser_action, browser,
-                                   ExtensionContextMenuModel::OVERFLOWED,
-                                   nullptr);
-    int index = menu.GetIndexOfCommandId(visibility_command);
-    EXPECT_NE(-1, index);
-    // Without the redesign, 'hiding' refers to removing the action from the
-    // toolbar entirely, so even with the action overflowed, the string should
-    // be 'Hide action'.
-    EXPECT_EQ(hide_string, menu.GetLabelAt(index));
-
-    ExtensionActionAPI* action_api = ExtensionActionAPI::Get(profile());
-    // At the start, the action should be visible.
-    EXPECT_TRUE(action_api->GetBrowserActionVisibility(browser_action->id()));
-    menu.ExecuteCommand(visibility_command, 0);
-    // After execution, it should be hidden.
-    EXPECT_FALSE(action_api->GetBrowserActionVisibility(browser_action->id()));
-
-    // Cleanup - make the action visible again.
-    action_api->SetBrowserActionVisibility(browser_action->id(), true);
-  }
-}
-
-// Test that the "show" and "hide" menu items appear correctly in the extension
-// context menu with the toolbar redesign.
-TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHideRedesign) {
-  // Start with the toolbar redesign disabled.
-  std::unique_ptr<FeatureSwitch::ScopedOverride> toolbar_redesign_override(
-      new FeatureSwitch::ScopedOverride(
-          FeatureSwitch::extension_action_redesign(), true));
-
+// context menu.
+TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   InitializeEmptyExtensionService();
   Browser* browser = GetBrowser();
   extension_action_test_util::CreateToolbarModelForProfile(profile());
@@ -428,20 +357,20 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHideRedesign) {
   // For laziness.
   const ExtensionContextMenuModel::MenuEntries visibility_command =
       ExtensionContextMenuModel::TOGGLE_VISIBILITY;
-  base::string16 redesign_hide_string =
+  base::string16 hide_string =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU);
-  base::string16 redesign_show_string =
+  base::string16 show_string =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR);
-  base::string16 redesign_keep_string =
+  base::string16 keep_string =
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR);
 
   {
-    // Even page actions should have a visibility option with the redesign on.
+    // Even page actions should have a visibility option.
     ExtensionContextMenuModel menu(page_action, browser,
                                    ExtensionContextMenuModel::VISIBLE, nullptr);
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
-    EXPECT_EQ(redesign_hide_string, menu.GetLabelAt(index));
+    EXPECT_EQ(hide_string, menu.GetLabelAt(index));
   }
 
   {
@@ -449,12 +378,13 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHideRedesign) {
                                    ExtensionContextMenuModel::VISIBLE, nullptr);
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
-    EXPECT_EQ(redesign_hide_string, menu.GetLabelAt(index));
+    EXPECT_EQ(hide_string, menu.GetLabelAt(index));
 
     ExtensionActionAPI* action_api = ExtensionActionAPI::Get(profile());
     EXPECT_TRUE(action_api->GetBrowserActionVisibility(browser_action->id()));
-    // Executing the 'hide' command shouldn't modify the prefs with the redesign
-    // turned on (the ordering behavior is tested in ToolbarActionsModel tests).
+    // Executing the 'hide' command shouldn't modify the prefs (the ordering
+    // behavior is tested in ToolbarActionsModel tests).
+    // TODO(devlin): We should be able to get rid of the pref.
     menu.ExecuteCommand(visibility_command, 0);
     EXPECT_TRUE(action_api->GetBrowserActionVisibility(browser_action->id()));
   }
@@ -467,7 +397,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHideRedesign) {
                                    nullptr);
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
-    EXPECT_EQ(redesign_show_string, menu.GetLabelAt(index));
+    EXPECT_EQ(show_string, menu.GetLabelAt(index));
   }
 
   {
@@ -478,7 +408,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHideRedesign) {
         ExtensionContextMenuModel::TRANSITIVELY_VISIBLE, nullptr);
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
-    EXPECT_EQ(redesign_keep_string, menu.GetLabelAt(index));
+    EXPECT_EQ(keep_string, menu.GetLabelAt(index));
   }
 }
 
@@ -675,10 +605,6 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
 }
 
 TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {
-  std::unique_ptr<FeatureSwitch::ScopedOverride> toolbar_redesign_override(
-      new FeatureSwitch::ScopedOverride(
-          FeatureSwitch::extension_action_redesign(), true));
-
   InitializeEmptyExtensionService();
   {
     const Extension* page_action = AddExtension(
@@ -700,9 +626,8 @@ TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {
     EXPECT_GE(0, inspect_popup_index);
   }
   {
-    // With the extension toolbar redesign, an extension with no specified
-    // action has one synthesized. However, there will never be a popup to
-    // inspect, so we shouldn't add a menu item.
+    // An extension with no specified action has one synthesized. However,
+    // there will never be a popup to inspect, so we shouldn't add a menu item.
     const Extension* no_action = AddExtension(
         "no_action", nullptr, Manifest::INTERNAL);
     ExtensionContextMenuModel menu(no_action, GetBrowser(),
