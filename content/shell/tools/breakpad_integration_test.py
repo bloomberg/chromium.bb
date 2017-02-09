@@ -11,6 +11,7 @@ well as that the tools can symbolize a stack trace."""
 
 
 import glob
+import json
 import optparse
 import os
 import shutil
@@ -34,6 +35,8 @@ def main():
                     type='int', help='Number of parallel tasks to run.')
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Print verbose status output.')
+  parser.add_option('', '--json', default='',
+                    help='Path to JSON output.')
 
   (options, _) = parser.parse_args()
 
@@ -130,10 +133,17 @@ def main():
 
   except:
     print "FAIL: %s" % failure
+    if options.json:
+      with open(options.json, 'w') as json_file:
+        json.dump([failure], json_file)
+
     return 1
 
   else:
     print "PASS: Breakpad integration test ran successfully."
+    if options.json:
+      with open(options.json, 'w') as json_file:
+        json.dump([], json_file)
     return 0
 
   finally:

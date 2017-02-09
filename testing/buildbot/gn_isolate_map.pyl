@@ -343,6 +343,11 @@
     "label": "//content/public/android:content_junit_tests",
     "type": "junit_test",
   },
+  "content_shell_crash_test": {
+    "label": "//content/shell:content_shell_crash_test",
+    "type": "script",
+    "script": "//testing/scripts/content_shell_crash_test.py",
+  },
   "content_shell_test_apk": {
     "label": "//content/shell/android:content_shell_test_apk",
     "type": "console_test_launcher",

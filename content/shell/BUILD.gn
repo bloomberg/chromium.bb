@@ -767,3 +767,42 @@ mojom("mojo_bindings") {
     "//url/mojo:url_mojom_gurl",
   ]
 }
+
+group("content_shell_crash_test") {
+  testonly = true
+  data_deps = [
+    ":content_shell",
+    "//third_party/mesa:osmesa",
+  ]
+  data = [
+    "//content/shell/tools/breakpad_integration_test.py",
+    "//testing/scripts/common.py",
+    "//testing/scripts/content_shell_crash_test.py",
+    "//testing/xvfb.py",
+  ]
+  if (is_posix) {
+    data += [
+      "//components/crash/content/tools/generate_breakpad_symbols.py",
+      "//components/crash/content/tools/dmp2minidump.py",
+    ]
+  }
+  if (is_win) {
+    data_deps += [ ":content_shell_crash_service" ]
+  }
+  if (is_posix && !is_android) {
+    data_deps += [
+      "//breakpad:dump_syms($host_toolchain)",
+      "//breakpad:minidump_stackwalk($host_toolchain)",
+    ]
+  }
+  if (is_android) {
+    data_deps += [
+      "//breakpad:dump_syms",
+      "//breakpad:microdump_stackwalk",
+      "//breakpad:minidump_dump",
+      "//breakpad:minidump_stackwalk",
+      "//breakpad:symupload",
+      "//tools/android/forwarder2",
+    ]
+  }
+}
