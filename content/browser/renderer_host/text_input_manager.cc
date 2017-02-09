@@ -328,8 +328,10 @@ TextInputManager::TextSelection::~TextSelection() {}
 
 bool TextInputManager::TextSelection::GetSelectedText(
     base::string16* selected_text) const {
-  if (text.empty() || range.is_empty())
+  if (text.empty() || range.is_empty()) {
+    selected_text->clear();
     return true;
+  }
 
   size_t pos = range.GetMin() - offset;
   size_t n = range.length();
