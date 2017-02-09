@@ -1261,13 +1261,12 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
 
         // End the test! Don't race with copy request callbacks, so post the end
         // to the main thread.
-        draw_happened_ = true;
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
             base::Bind(
                 &LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest::
                     TryEndTest,
-                base::Unretained(this)));
+                base::Unretained(this), WhatHappened::DRAW));
         break;
     }
     return draw_result;
@@ -1275,11 +1274,23 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
 
   void CopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {
     EXPECT_FALSE(TestEnded());
-    copy_happened_ = true;
-    TryEndTest();
+    TryEndTest(WhatHappened::COPY);
   }
 
-  void TryEndTest() {
+  enum class WhatHappened {
+    DRAW,
+    COPY,
+  };
+
+  void TryEndTest(WhatHappened what) {
+    switch (what) {
+      case WhatHappened::DRAW:
+        draw_happened_ = true;
+        break;
+      case WhatHappened::COPY:
+        copy_happened_ = true;
+        break;
+    }
     if (draw_happened_ && copy_happened_)
       EndTest();
   }
