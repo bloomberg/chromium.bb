@@ -5,15 +5,11 @@
 #ifndef UI_VIEWS_FOCUS_FOCUS_MANAGER_H_
 #define UI_VIEWS_FOCUS_FOCUS_MANAGER_H_
 
-#include <list>
-#include <map>
 #include <memory>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
 // FocusManager handles focus traversal, stores and restores focused views, and
@@ -75,7 +71,7 @@
 // AccessibleToolbarView is FocusTraversable.
 
 namespace ui {
-class AcceleratorManager;
+class Accelerator;
 class AcceleratorTarget;
 class KeyEvent;
 }
@@ -149,7 +145,7 @@ class VIEWS_EXPORT FocusManager {
     kNoWrap
   };
 
-  FocusManager(Widget* widget, FocusManagerDelegate* delegate);
+  FocusManager(Widget* widget, std::unique_ptr<FocusManagerDelegate> delegate);
   virtual ~FocusManager();
 
   // Processes the passed key event for accelerators and keyboard traversal.
@@ -189,10 +185,6 @@ class VIEWS_EXPORT FocusManager {
   // is no view available to advance focus to, focus will be cleared.
   void AdvanceFocusIfNecessary();
 
-  // Validates the focused view, clearing it if the window it belongs too is not
-  // attached to the window hierarchy anymore.
-  void ValidateFocusedView();
-
   // Stores the focused view. Used when the widget loses activation.
   // |clear_native_focus| indicates whether this should invoke ClearFocus().
   // Typically |true| should be passed in.
@@ -215,9 +207,6 @@ class VIEWS_EXPORT FocusManager {
 
   // Clears the stored focused view.
   void ClearStoredFocusedView();
-
-  // Returns true if in the process of changing the focused view.
-  bool is_changing_focus() const { return is_changing_focus_; }
 
   // Disable shortcut handling.
   void set_shortcut_handling_suspended(bool suspended) {
@@ -353,26 +342,23 @@ class VIEWS_EXPORT FocusManager {
   std::unique_ptr<FocusManagerDelegate> delegate_;
 
   // The view that currently is focused.
-  View* focused_view_;
+  View* focused_view_ = nullptr;
 
   // The AcceleratorManager this FocusManager is associated with.
-  std::unique_ptr<ui::AcceleratorManager> accelerator_manager_;
+  ui::AcceleratorManager accelerator_manager_;
 
   // Keeps track of whether shortcut handling is currently suspended.
-  bool shortcut_handling_suspended_;
+  bool shortcut_handling_suspended_ = false;
 
   // The storage id used in the ViewStorage to store/restore the view that last
   // had focus.
-  int stored_focused_view_storage_id_;
+  const int stored_focused_view_storage_id_;
 
   // The reason why the focus most recently changed.
-  FocusChangeReason focus_change_reason_;
+  FocusChangeReason focus_change_reason_ = kReasonDirectFocusChange;
 
   // The list of registered FocusChange listeners.
   base::ObserverList<FocusChangeListener, true> focus_change_listeners_;
-
-  // See description above getter.
-  bool is_changing_focus_;
 
   // This is true if full keyboard accessibility is needed. This causes
   // IsAccessibilityFocusable() to be checked rather than IsFocusable(). This
@@ -380,8 +366,7 @@ class VIEWS_EXPORT FocusManager {
   // addition to its own accessibility mode, which handles accessibility at the
   // FocusTraversable level. Currently only used on Mac, when Full Keyboard
   // access is enabled.
-  // Default value is false.
-  bool keyboard_accessible_;
+  bool keyboard_accessible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FocusManager);
 };

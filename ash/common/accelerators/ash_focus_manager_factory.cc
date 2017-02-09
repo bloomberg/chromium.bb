@@ -6,6 +6,7 @@
 
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/wm_shell.h"
+#include "base/memory/ptr_util.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace ash {
@@ -16,7 +17,9 @@ AshFocusManagerFactory::~AshFocusManagerFactory() {}
 views::FocusManager* AshFocusManagerFactory::CreateFocusManager(
     views::Widget* widget,
     bool desktop_widget) {
-  return new views::FocusManager(widget, desktop_widget ? NULL : new Delegate);
+  return new views::FocusManager(
+      widget,
+      desktop_widget ? nullptr : base::WrapUnique<Delegate>(new Delegate));
 }
 
 bool AshFocusManagerFactory::Delegate::ProcessAccelerator(

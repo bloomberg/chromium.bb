@@ -4,9 +4,8 @@
 
 #include "ui/views/focus/focus_manager_factory.h"
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager_delegate.h"
 
 namespace views {
 
@@ -20,14 +19,14 @@ class DefaultFocusManagerFactory : public FocusManagerFactory {
  protected:
   FocusManager* CreateFocusManager(Widget* widget,
                                    bool desktop_widget) override {
-    return new FocusManager(widget, NULL /* delegate */);
+    return new FocusManager(widget, nullptr /* delegate */);
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultFocusManagerFactory);
 };
 
-FocusManagerFactory* focus_manager_factory = NULL;
+FocusManagerFactory* focus_manager_factory = nullptr;
 
 }  // namespace
 

@@ -9,7 +9,6 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
-#include "build/build_config.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
@@ -28,18 +27,13 @@ namespace views {
 
 bool FocusManager::arrow_key_traversal_enabled_ = false;
 
-FocusManager::FocusManager(Widget* widget, FocusManagerDelegate* delegate)
+FocusManager::FocusManager(Widget* widget,
+                           std::unique_ptr<FocusManagerDelegate> delegate)
     : widget_(widget),
-      delegate_(delegate),
-      focused_view_(NULL),
-      accelerator_manager_(new ui::AcceleratorManager),
-      shortcut_handling_suspended_(false),
-      focus_change_reason_(kReasonDirectFocusChange),
-      is_changing_focus_(false),
-      keyboard_accessible_(false) {
+      delegate_(std::move(delegate)),
+      stored_focused_view_storage_id_(
+          ViewStorage::GetInstance()->CreateStorageID()) {
   DCHECK(widget_);
-  stored_focused_view_storage_id_ =
-      ViewStorage::GetInstance()->CreateStorageID();
 }
 
 FocusManager::~FocusManager() {
@@ -59,7 +53,7 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
   if (event.type() == ui::ET_KEY_PRESSED) {
     // If the focused view wants to process the key event as is, let it be.
     if (focused_view_ && focused_view_->SkipDefaultKeyEventProcessing(event) &&
-        !accelerator_manager_->HasPriorityHandler(accelerator))
+        !accelerator_manager_.HasPriorityHandler(accelerator))
       return true;
 
     // Intercept Tab related messages for focus traversal.
@@ -108,16 +102,11 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
   return true;
 }
 
-void FocusManager::ValidateFocusedView() {
-  if (focused_view_ && !ContainsView(focused_view_))
-    ClearFocus();
-}
-
 // Tests whether a view is valid, whether it still belongs to the window
 // hierarchy of the FocusManager.
 bool FocusManager::ContainsView(View* view) {
   Widget* widget = view->GetWidget();
-  return widget ? widget->GetFocusManager() == this : false;
+  return widget && widget->GetFocusManager() == this;
 }
 
 void FocusManager::AdvanceFocus(bool reverse) {
@@ -204,10 +193,10 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
                                          Widget* starting_widget,
                                          bool reverse,
                                          bool dont_loop) {
-  FocusTraversable* focus_traversable = NULL;
+  DCHECK(!focused_view_ || ContainsView(focused_view_)) << " focus_view="
+                                                        << focused_view_;
 
-  // Let's revalidate the focused view.
-  ValidateFocusedView();
+  FocusTraversable* focus_traversable = NULL;
 
   View* starting_view = NULL;
   if (original_starting_view) {
@@ -328,7 +317,6 @@ void FocusManager::SetFocusedViewWithReason(
   }
 #endif
 
-  base::AutoReset<bool> auto_changing_focus(&is_changing_focus_, true);
   // Update the reason for the focus change (since this is checked by
   // some listeners), then notify all listeners.
   focus_change_reason_ = reason;
@@ -497,20 +485,20 @@ void FocusManager::RegisterAccelerator(
     const ui::Accelerator& accelerator,
     ui::AcceleratorManager::HandlerPriority priority,
     ui::AcceleratorTarget* target) {
-  accelerator_manager_->Register({accelerator}, priority, target);
+  accelerator_manager_.Register({accelerator}, priority, target);
 }
 
 void FocusManager::UnregisterAccelerator(const ui::Accelerator& accelerator,
                                          ui::AcceleratorTarget* target) {
-  accelerator_manager_->Unregister(accelerator, target);
+  accelerator_manager_.Unregister(accelerator, target);
 }
 
 void FocusManager::UnregisterAccelerators(ui::AcceleratorTarget* target) {
-  accelerator_manager_->UnregisterAll(target);
+  accelerator_manager_.UnregisterAll(target);
 }
 
 bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
-  if (accelerator_manager_->Process(accelerator))
+  if (accelerator_manager_.Process(accelerator))
     return true;
   if (delegate_.get())
     return delegate_->ProcessAccelerator(accelerator);
@@ -519,7 +507,7 @@ bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
 
 bool FocusManager::HasPriorityHandler(
     const ui::Accelerator& accelerator) const {
-  return accelerator_manager_->HasPriorityHandler(accelerator);
+  return accelerator_manager_.HasPriorityHandler(accelerator);
 }
 
 // static
