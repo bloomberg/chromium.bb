@@ -121,8 +121,9 @@ ActivityTrackerMemoryAllocator::GetObjectReference() {
     Reference cached = cache_values_[--cache_used_];
     // Change the type of the cached object to the proper type and return it.
     // If the type-change fails that means another thread has taken this from
-    // under us (via the search below) so ignore it and keep trying.
-    if (allocator_->ChangeType(cached, object_type_, object_free_type_))
+    // under us (via the search below) so ignore it and keep trying. Don't
+    // clear the memory because that was done when the type was made "free".
+    if (allocator_->ChangeType(cached, object_type_, object_free_type_, false))
       return cached;
   }
 
@@ -140,7 +141,7 @@ ActivityTrackerMemoryAllocator::GetObjectReference() {
       // Found a free object. Change it to the proper type and return it. If
       // the type-change fails that means another thread has taken this from
       // under us so ignore it and keep trying.
-      if (allocator_->ChangeType(found, object_type_, object_free_type_))
+      if (allocator_->ChangeType(found, object_type_, object_free_type_, false))
         return found;
     }
     if (found == last) {
@@ -161,14 +162,9 @@ ActivityTrackerMemoryAllocator::GetObjectReference() {
 }
 
 void ActivityTrackerMemoryAllocator::ReleaseObjectReference(Reference ref) {
-  // Zero the memory so that it is ready for immediate use if needed later.
-  char* mem_base = allocator_->GetAsArray<char>(
-      ref, object_type_, PersistentMemoryAllocator::kSizeAny);
-  DCHECK(mem_base);
-  memset(mem_base, 0, object_size_);
-
   // Mark object as free.
-  bool success = allocator_->ChangeType(ref, object_free_type_, object_type_);
+  bool success = allocator_->ChangeType(ref, object_free_type_, object_type_,
+                                        /*clear=*/true);
   DCHECK(success);
 
   // Add this reference to our "free" cache if there is space. If not, the type
@@ -1217,8 +1213,7 @@ void GlobalActivityTracker::RecordModuleInfo(const ModuleInfo& info) {
   }
 
   size_t required_size = ModuleInfoRecord::EncodedSize(info);
-  ModuleInfoRecord* record =
-      allocator_->AllocateObject<ModuleInfoRecord>(required_size);
+  ModuleInfoRecord* record = allocator_->New<ModuleInfoRecord>(required_size);
   if (!record)
     return;
 

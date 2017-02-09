@@ -322,7 +322,7 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::AllocateHistogram(
   // confusion by another process trying to read it. It will be corrected
   // once histogram construction is complete.
   PersistentHistogramData* histogram_data =
-      memory_allocator_->AllocateObject<PersistentHistogramData>(
+      memory_allocator_->New<PersistentHistogramData>(
           offsetof(PersistentHistogramData, name) + name.length() + 1);
   if (histogram_data) {
     memcpy(histogram_data->name, name.c_str(), name.size() + 1);
@@ -428,7 +428,8 @@ void PersistentHistogramAllocator::FinalizeHistogram(Reference ref,
     // be created. The allocator does not support releasing the acquired memory
     // so just change the type to be empty.
     memory_allocator_->ChangeType(ref, 0,
-                                  PersistentHistogramData::kPersistentTypeId);
+                                  PersistentHistogramData::kPersistentTypeId,
+                                  /*clear=*/false);
   }
 }
 

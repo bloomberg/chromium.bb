@@ -1078,7 +1078,7 @@ void FieldTrialList::ClearParamsFromSharedMemoryForTesting() {
     pickle.WriteString(group_name);
     size_t total_size = sizeof(FieldTrial::FieldTrialEntry) + pickle.size();
     FieldTrial::FieldTrialEntry* new_entry =
-        allocator->AllocateObject<FieldTrial::FieldTrialEntry>(total_size);
+        allocator->New<FieldTrial::FieldTrialEntry>(total_size);
     subtle::NoBarrier_Store(&new_entry->activated,
                             subtle::NoBarrier_Load(&prev_entry->activated));
     new_entry->pickle_size = pickle.size();
@@ -1098,7 +1098,8 @@ void FieldTrialList::ClearParamsFromSharedMemoryForTesting() {
 
     // Mark the existing entry as unused.
     allocator->ChangeType(prev_ref, 0,
-                          FieldTrial::FieldTrialEntry::kPersistentTypeId);
+                          FieldTrial::FieldTrialEntry::kPersistentTypeId,
+                          /*clear=*/false);
   }
 
   for (const auto& ref : new_refs) {
