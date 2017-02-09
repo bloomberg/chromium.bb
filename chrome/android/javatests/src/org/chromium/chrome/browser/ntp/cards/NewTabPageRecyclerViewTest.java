@@ -53,15 +53,15 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
     private Tab mTab;
     private NewTabPage mNtp;
-    private String[] mFakeMostVisitedUrls;
-    private FakeMostVisitedSites mFakeMostVisitedSites;
+    private String[] mSiteSuggestionUrls;
+    private FakeMostVisitedSites mMostVisitedSites;
     private EmbeddedTestServer mTestServer;
     private FakeSuggestionsSource mSource;
 
     @Override
     protected void setUp() throws Exception {
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
-        mFakeMostVisitedUrls = new String[] {mTestServer.getURL(TEST_PAGE)};
+        mSiteSuggestionUrls = new String[] {mTestServer.getURL(TEST_PAGE)};
 
         mSource = new FakeSuggestionsSource();
         mSource.setInfoForCategory(KnownCategories.ARTICLES,
@@ -93,12 +93,12 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
             public void run() {
                 // Create FakeMostVisitedSites after starting the activity, since it depends on
                 // native code.
-                mFakeMostVisitedSites = new FakeMostVisitedSites(mTab.getProfile(),
-                        FAKE_MOST_VISITED_TITLES, mFakeMostVisitedUrls,
+                mMostVisitedSites = new FakeMostVisitedSites(mTab.getProfile(),
+                        FAKE_MOST_VISITED_TITLES, mSiteSuggestionUrls,
                         FAKE_MOST_VISITED_WHITELIST_ICON_PATHS, FAKE_MOST_VISITED_SOURCES);
             }
         });
-        TileGroupDelegateImpl.setMostVisitedSitesForTests(mFakeMostVisitedSites);
+        TileGroupDelegateImpl.setMostVisitedSitesForTests(mMostVisitedSites);
 
         loadUrl(UrlConstants.NTP_URL);
         NewTabPageTestUtils.waitForNtpLoaded(mTab);

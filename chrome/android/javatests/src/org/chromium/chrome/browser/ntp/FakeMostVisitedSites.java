@@ -15,27 +15,28 @@ import java.util.List;
  * A fake implementation of MostVisitedSites that returns a fixed list of most visited sites.
  */
 public class FakeMostVisitedSites extends MostVisitedSites {
-
-    private final String[] mMostVisitedTitles;
-    private final String[] mMostVisitedUrls;
-    private final String[] mMostVisitedWhitelistIconPaths;
-    private final int[] mMostVisitedSources;
-
-    private final List<String> mBlacklistedUrls = new ArrayList<String>();
+    private final String[] mTitles;
+    private final String[] mUrls;
+    private final String[] mWhitelistIconPaths;
+    private final int[] mSources;
+    private final List<String> mBlacklistedUrls = new ArrayList<>();
 
     /**
-     * @param p The profile to associated most visited with.
-     * @param mostVisitedTitles The titles of the fixed list of most visited sites.
-     * @param mostVisitedUrls The URLs of the fixed list of most visited sites.
+     * @param profile The profile for which to fetch site suggestions.
+     * @param titles The titles of the site suggestions.
+     * @param urls The URLs of the site suggestions.
+     * @param whitelistIconPaths The paths to the icon image files for whitelisted tiles, empty
+     *                           strings otherwise.
+     * @param sources For each tile, the {@code NTPTileSource} that generated the tile.
      */
-    public FakeMostVisitedSites(Profile p, String[] mostVisitedTitles, String[] mostVisitedUrls,
-            String[] mostVisitedWhitelistIconPaths, int[] mostVisitedSources) {
-        super(p);
-        assert mostVisitedTitles.length == mostVisitedUrls.length;
-        mMostVisitedTitles = mostVisitedTitles.clone();
-        mMostVisitedUrls = mostVisitedUrls.clone();
-        mMostVisitedWhitelistIconPaths = mostVisitedWhitelistIconPaths.clone();
-        mMostVisitedSources = mostVisitedSources.clone();
+    public FakeMostVisitedSites(Profile profile, String[] titles, String[] urls,
+            String[] whitelistIconPaths, int[] sources) {
+        super(profile);
+        assert titles.length == urls.length;
+        mTitles = titles.clone();
+        mUrls = urls.clone();
+        mWhitelistIconPaths = whitelistIconPaths.clone();
+        mSources = sources.clone();
     }
 
     @Override
@@ -43,9 +44,8 @@ public class FakeMostVisitedSites extends MostVisitedSites {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                observer.onMostVisitedURLsAvailable(mMostVisitedTitles.clone(),
-                        mMostVisitedUrls.clone(), mMostVisitedWhitelistIconPaths.clone(),
-                        mMostVisitedSources.clone());
+                observer.onMostVisitedURLsAvailable(mTitles.clone(), mUrls.clone(),
+                        mWhitelistIconPaths.clone(), mSources.clone());
             }
         });
     }

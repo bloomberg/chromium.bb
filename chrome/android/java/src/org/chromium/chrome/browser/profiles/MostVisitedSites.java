@@ -27,10 +27,13 @@ public class MostVisitedSites {
          * @param urls Array of most visited URLs, including popular URLs if
          *             available and necessary (i.e. there aren't enough most
          *             visited URLs).
+         * @param whitelistIconPaths The paths to the icon image files for whitelisted tiles, empty
+         *                           strings otherwise.
+         * @param sources For each tile, the {@code NTPTileSource} that generated the tile.
          */
         @CalledByNative("MostVisitedURLsObserver")
-        public void onMostVisitedURLsAvailable(String[] titles, String[] urls,
-                String[] whitelistIconPaths, int[] sources);
+        void onMostVisitedURLsAvailable(
+                String[] titles, String[] urls, String[] whitelistIconPaths, int[] sources);
 
         /**
          * This is called when a previously uncached icon has been fetched.
@@ -39,7 +42,7 @@ public class MostVisitedSites {
          * @param siteUrl URL of site with newly-cached icon.
          */
         @CalledByNative("MostVisitedURLsObserver")
-        public void onIconMadeAvailable(String siteUrl);
+        void onIconMadeAvailable(String siteUrl);
     }
 
     /**
