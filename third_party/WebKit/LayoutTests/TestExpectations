@@ -839,9 +839,6 @@ crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
 crbug.com/659123 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 
-crbug.com/688957 fast/css/text-overflow-ellipsis-strict.html [ NeedsRebaseline ]
-crbug.com/688957 fast/css/text-overflow-ellipsis.html [ NeedsRebaseline ]
-
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 
