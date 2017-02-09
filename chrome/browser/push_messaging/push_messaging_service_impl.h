@@ -113,6 +113,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void OnMenuClick() override;
 
   void SetMessageCallbackForTesting(const base::Closure& callback);
+  void SetUnsubscribeCallbackForTesting(const base::Closure& callback);
   void SetContentSettingChangedCallbackForTesting(
       const base::Closure& callback);
   void SetServiceWorkerUnregisteredCallbackForTesting(
@@ -192,15 +193,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                                   const std::string& sender_id,
                                   const UnregisterCallback& callback);
 
+  void DidUnregister(bool was_subscribed, gcm::GCMClient::Result result);
   void DidDeleteID(const std::string& app_id,
                    bool was_subscribed,
-                   const UnregisterCallback&,
                    instance_id::InstanceID::Result result);
-
   void DidUnsubscribe(const std::string& app_id_when_instance_id,
-                      bool was_subscribed,
-                      const UnregisterCallback& callback,
-                      content::PushUnregistrationStatus status);
+                      bool was_subscribed);
 
   // OnContentSettingChanged methods -------------------------------------------
 
@@ -252,6 +250,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   int pending_push_subscription_count_;
 
   base::Closure message_callback_for_testing_;
+  base::Closure unsubscribe_callback_for_testing_;
   base::Closure content_setting_changed_callback_for_testing_;
   base::Closure service_worker_unregistered_callback_for_testing_;
 

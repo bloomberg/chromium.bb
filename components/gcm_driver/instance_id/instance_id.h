@@ -27,21 +27,26 @@ extern const char kGCMScope[];
 // Instance ID is managed by the InstanceIDDriver.
 class InstanceID {
  public:
+  // Used in UMA. Can add enum values, but never renumber or delete and reuse.
   enum Result {
     // Successful operation.
-    SUCCESS,
+    SUCCESS = 0,
     // Invalid parameter.
-    INVALID_PARAMETER,
+    INVALID_PARAMETER = 1,
     // Instance ID is disabled.
-    DISABLED,
+    DISABLED = 2,
     // Previous asynchronous operation is still pending to finish.
-    ASYNC_OPERATION_PENDING,
+    ASYNC_OPERATION_PENDING = 3,
     // Network socket error.
-    NETWORK_ERROR,
+    NETWORK_ERROR = 4,
     // Problem at the server.
-    SERVER_ERROR,
+    SERVER_ERROR = 5,
+    // 6 is omitted, in case we ever merge this enum with GCMClient::Result.
     // Other errors.
-    UNKNOWN_ERROR
+    UNKNOWN_ERROR = 7,
+
+    // Used for UMA. Keep LAST_RESULT up to date and sync with histograms.xml.
+    LAST_RESULT = UNKNOWN_ERROR
   };
 
   // Asynchronous callbacks. Must not synchronously delete |this| (using

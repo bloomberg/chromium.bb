@@ -51,6 +51,7 @@ class GCMClient {
     IMMEDIATE_START
   };
 
+  // Used for UMA. Can add enum values, but never renumber or delete and reuse.
   enum Result {
     // Successful operation.
     SUCCESS,
@@ -68,7 +69,10 @@ class GCMClient {
     // Exceeded the specified TTL during message sending.
     TTL_EXCEEDED,
     // Other errors.
-    UNKNOWN_ERROR
+    UNKNOWN_ERROR,
+
+    // Used for UMA. Keep LAST_RESULT up to date and sync with histograms.xml.
+    LAST_RESULT = UNKNOWN_ERROR
   };
 
   enum ChromePlatform {

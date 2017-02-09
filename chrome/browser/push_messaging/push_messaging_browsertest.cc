@@ -569,7 +569,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeWorker) {
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
-  EXPECT_NE(push_service(), GetAppHandler());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
@@ -615,7 +614,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
-  EXPECT_NE(push_service(), GetAppHandler());
 
   // After unsubscribing, subscribe again from the worker with no key.
   // The sender id should again be read from the datastore, so the
@@ -628,7 +626,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
-  EXPECT_NE(push_service(), GetAppHandler());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -667,7 +664,6 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
-  EXPECT_NE(push_service(), GetAppHandler());
 
   // After unsubscribing, try to resubscribe again without a key.
   // This should again fail.
@@ -770,7 +766,6 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
-  EXPECT_NE(push_service(), GetAppHandler());
 
   // After unsubscribing, subscribe again from the worker with no key.
   // The sender id should again be read from the datastore, so the
@@ -783,7 +778,6 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
-  EXPECT_NE(push_service(), GetAppHandler());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -829,7 +823,6 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
-  EXPECT_NE(push_service(), GetAppHandler());
 
   // After unsubscribing, subscribe again from the worker with no key.
   // The sender id should again be read from the datastore, so the
@@ -842,7 +835,6 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
-  EXPECT_NE(push_service(), GetAppHandler());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, ResubscribeWithMismatchedKey) {
@@ -885,7 +877,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, ResubscribeWithMismatchedKey) {
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
-  EXPECT_NE(push_service(), GetAppHandler());
 
   // Resubscribe with a different key after unsubscribing.
   // Should succeed, and we should get a new subscription token.
@@ -898,7 +889,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, ResubscribeWithMismatchedKey) {
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
-  EXPECT_NE(push_service(), GetAppHandler());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribePersisted) {
@@ -983,10 +973,17 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, AppHandlerOnlyIfSubscribed) {
   ASSERT_NO_FATAL_FAILURE(RestartPushService());
   EXPECT_EQ(push_service(), GetAppHandler());
 
-  // Unsubscribe.
   std::string script_result;
+
+  // Unsubscribe.
+  base::RunLoop run_loop;
+  push_service()->SetUnsubscribeCallbackForTesting(run_loop.QuitClosure());
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
+  // The app handler is only guaranteed to be unregistered once the unsubscribe
+  // callback for testing has been run (PushSubscription.unsubscribe() usually
+  // resolves before that, in order to avoid blocking on network retries etc).
+  run_loop.Run();
 
   EXPECT_NE(push_service(), GetAppHandler());
   ASSERT_NO_FATAL_FAILURE(RestartPushService());
@@ -1695,6 +1692,33 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, LegacyUnsubscribeSuccess) {
   EXPECT_EQ("unsubscribe result: false", script_result);
 }
 
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnsubscribeOffline) {
+  std::string script_result;
+
+  EXPECT_NE(push_service(), GetAppHandler());
+
+  std::string token;
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(true /* use_key */, &token));
+
+  gcm_service_->set_offline(true);
+
+  // Should quickly resolve true after deleting local state (rather than waiting
+  // until unsubscribing over the network exceeds the maximum backoff duration).
+  ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
+  EXPECT_EQ("unsubscribe result: true", script_result);
+  histogram_tester_.ExpectUniqueSample(
+      "PushMessaging.UnregistrationReason",
+      content::PUSH_UNREGISTRATION_REASON_JAVASCRIPT_API, 1);
+
+  // Since the service is offline, the network request to GCM is still being
+  // retried, so the app handler shouldn't have been unregistered yet.
+  EXPECT_EQ(push_service(), GetAppHandler());
+  // But restarting the push service will unregister the app handler, since the
+  // subscription is no longer stored in the PushMessagingAppIdentifier map.
+  ASSERT_NO_FATAL_FAILURE(RestartPushService());
+  EXPECT_NE(push_service(), GetAppHandler());
+}
+
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        UnregisteringServiceWorkerUnsubscribes) {
   std::string script_result;
@@ -2130,8 +2154,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   // After dropping the last subscription it is still inactive.
   std::string script_result;
+  base::RunLoop run_loop;
+  push_service()->SetUnsubscribeCallbackForTesting(run_loop.QuitClosure());
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
+  // Background mode is only guaranteed to have updated once the unsubscribe
+  // callback for testing has been run (PushSubscription.unsubscribe() usually
+  // resolves before that, in order to avoid blocking on network retries etc).
+  run_loop.Run();
   ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
 }
 
@@ -2161,8 +2191,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBackgroundModeEnabledBrowserTest,
 
   // Dropping the last subscription deactivates background mode.
   std::string script_result;
+  base::RunLoop run_loop;
+  push_service()->SetUnsubscribeCallbackForTesting(run_loop.QuitClosure());
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
+  // Background mode is only guaranteed to have updated once the unsubscribe
+  // callback for testing has been run (PushSubscription.unsubscribe() usually
+  // resolves before that, in order to avoid blocking on network retries etc).
+  run_loop.Run();
   ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
 }
 
@@ -2192,8 +2228,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBackgroundModeDisabledBrowserTest,
 
   // After dropping the last subscription background mode is still inactive.
   std::string script_result;
+  base::RunLoop run_loop;
+  push_service()->SetUnsubscribeCallbackForTesting(run_loop.QuitClosure());
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
+  // Background mode is only guaranteed to have updated once the unsubscribe
+  // callback for testing has been run (PushSubscription.unsubscribe() usually
+  // resolves before that, in order to avoid blocking on network retries etc).
+  run_loop.Run();
   ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
 }
 #endif  // BUILDFLAG(ENABLE_BACKGROUND) && !defined(OS_CHROMEOS)

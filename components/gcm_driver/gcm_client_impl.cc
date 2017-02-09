@@ -961,14 +961,17 @@ void GCMClientImpl::OnRegisterCompleted(
   Result result;
   PendingRegistrationRequests::const_iterator iter =
       pending_registration_requests_.find(registration_info);
-  if (iter == pending_registration_requests_.end())
+  if (iter == pending_registration_requests_.end()) {
     result = UNKNOWN_ERROR;
-  else if (status == RegistrationRequest::INVALID_SENDER)
+  } else if (status == RegistrationRequest::INVALID_SENDER) {
     result = INVALID_PARAMETER;
-  else if (registration_id.empty())
+  } else if (registration_id.empty()) {
+    // All other errors are currently treated as SERVER_ERROR (including
+    // REACHED_MAX_RETRIES due to the device being offline!).
     result = SERVER_ERROR;
-  else
+  } else {
     result = SUCCESS;
+  }
 
   if (result == SUCCESS) {
     // Cache it.
@@ -1114,7 +1117,8 @@ void GCMClientImpl::OnUnregisterCompleted(
       result = INVALID_PARAMETER;
       break;
     default:
-      // All other errors are treated as SERVER_ERROR.
+      // All other errors are currently treated as SERVER_ERROR (including
+      // REACHED_MAX_RETRIES due to the device being offline!).
       result = SERVER_ERROR;
       break;
   }
