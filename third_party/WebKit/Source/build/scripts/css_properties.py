@@ -59,3 +59,6 @@ class CSSProperties(json5_generator.Writer):
             aliased_property = self._properties[name_utilities.enum_for_css_property(property['alias_for'])]
             property['enum_value'] = aliased_property['enum_value'] + 512
         self._properties_including_aliases += self._aliases
+
+    def properties(self):
+        return self._properties
