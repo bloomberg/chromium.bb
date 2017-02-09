@@ -365,6 +365,22 @@ class GerritHelper(object):
       return
     gob_util.SetTopic(self.host, self._to_changenum(change), topic=topic)
 
+  def SetHashtags(self, change, add, remove, dryrun=False):
+    """Add/Remove hashtags for a gerrit change.
+
+    Args:
+      change: A gerrit change number.
+      add: a list of hashtags to add.
+      remove: a list of hashtags to remove.
+      dryrun: If True, don't actually set the hashtag.
+    """
+    if dryrun:
+      logging.info('Would add %r and remove %r for change %s',
+                   add, remove, change)
+      return
+    gob_util.SetHashtags(self.host, self._to_changenum(change),
+                         add=add, remove=remove)
+
   def RemoveReady(self, change, extra_labels=None, dryrun=False):
     """Set the 'Commit-Queue' and 'Trybot-Ready' labels on a |change| to '0'."""
     labels_to_reset = {'Commit-Queue', 'Trybot-Ready'}

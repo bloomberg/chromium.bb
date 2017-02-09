@@ -407,6 +407,20 @@ def UserActTopic(opts, topic, *args):
     helper.SetTopic(arg, topic, dryrun=opts.dryrun)
 
 
+def UserActSethashtags(opts, cl, *args):
+  """Add/remove hashtags for CL <n> (prepend with '~' to remove)"""
+  hashtags = args
+  add = []
+  remove = []
+  for hashtag in hashtags:
+    if hashtag.startswith('~'):
+      remove.append(hashtag[1:])
+    else:
+      add.append(hashtag)
+  helper, cl = GetGerrit(opts, cl)
+  helper.SetHashtags(cl, add, remove, dryrun=opts.dryrun)
+
+
 def UserActDeletedraft(opts, *args):
   """Delete draft CL <n> [n ...]"""
   for arg in args:

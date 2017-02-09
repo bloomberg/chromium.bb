@@ -521,6 +521,21 @@ def SetTopic(host, change, topic):
   return FetchUrlJson(host, path, reqtype='PUT', body=body, ignore_404=False)
 
 
+def SetHashtags(host, change, add, remove):
+  """Adds and / or removes hashtags from a change.
+
+  Args:
+    host: Hostname (without protocol prefix) of the gerrit server.
+    change: A gerrit change number.
+    add: a list of hashtags to be added.
+    remove: a list of hashtags to be removed.
+  """
+  path = '%s/hashtags' % _GetChangePath(change)
+  return FetchUrlJson(host, path, reqtype='POST',
+                      body={'add': add, 'remove': remove},
+                      ignore_404=False)
+
+
 def ResetReviewLabels(host, change, label, value='0', revision='current',
                       message=None, notify=None):
   """Reset the value of a given label for all reviewers on a change."""
