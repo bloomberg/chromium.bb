@@ -21,7 +21,6 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
-#include "ash/common/test/material_design_controller_test_api.h"
 #include "ash/common/test/test_shelf_delegate.h"
 #include "ash/common/test/test_shelf_item_delegate.h"
 #include "ash/common/test/test_system_tray_delegate.h"
@@ -1806,54 +1805,6 @@ TEST_F(ShelfViewTest, CheckOverflowStatusPinOpenedAppToShelf) {
   EXPECT_FALSE(GetButtonByID(platform_app_id)->visible());
 }
 
-// Tests that the AppListButton renders as active in response to touches.
-TEST_F(ShelfViewTest, AppListButtonTouchFeedback) {
-  // Touch feedback is not available in material mode.
-  if (ash::MaterialDesignController::IsShelfMaterial())
-    return;
-
-  AppListButton* app_list_button = shelf_view_->GetAppListButton();
-  EXPECT_FALSE(app_list_button->draw_background_as_active());
-
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(
-      app_list_button->GetBoundsInScreen().CenterPoint());
-  generator.PressTouch();
-  EXPECT_TRUE(app_list_button->draw_background_as_active());
-
-  generator.ReleaseTouch();
-  EXPECT_FALSE(app_list_button->draw_background_as_active());
-  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
-}
-
-// Tests that a touch that slides out of the bounds of the AppListButton leads
-// to the end of rendering an active state.
-TEST_F(ShelfViewTest, AppListButtonTouchFeedbackCancellation) {
-  // Touch feedback is not available in material mode.
-  if (ash::MaterialDesignController::IsShelfMaterial())
-    return;
-
-  AppListButton* app_list_button = shelf_view_->GetAppListButton();
-  EXPECT_FALSE(app_list_button->draw_background_as_active());
-
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(
-      app_list_button->GetBoundsInScreen().CenterPoint());
-  generator.PressTouch();
-  EXPECT_TRUE(app_list_button->draw_background_as_active());
-
-  gfx::Point moved_point(
-      app_list_button->GetBoundsInScreen().right() + 1,
-      app_list_button->GetBoundsInScreen().CenterPoint().y());
-  generator.MoveTouch(moved_point);
-  EXPECT_FALSE(app_list_button->draw_background_as_active());
-
-  generator.set_current_location(moved_point);
-  generator.ReleaseTouch();
-  EXPECT_FALSE(app_list_button->draw_background_as_active());
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
-}
-
 // Verifies that Launcher_ButtonPressed_* UMA user actions are recorded when an
 // item is selected.
 TEST_F(ShelfViewTest,
@@ -2025,8 +1976,7 @@ class ListMenuShelfItemDelegate : public TestShelfItemDelegate {
 
 }  // namespace
 
-// Test fixture that forces material design mode in order to test ink drop
-// ripples on shelf.
+// Test fixture for testing material design ink drop ripples on shelf.
 class ShelfViewInkDropTest : public ShelfViewTest {
  public:
   ShelfViewInkDropTest() {}
@@ -2034,8 +1984,6 @@ class ShelfViewInkDropTest : public ShelfViewTest {
 
   void SetUp() override {
     ash_test_helper()->set_test_shell_delegate(CreateTestShellDelegate());
-
-    set_material_mode(ash::MaterialDesignController::MATERIAL_EXPERIMENTAL);
 
     ShelfViewTest::SetUp();
   }
