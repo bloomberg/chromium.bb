@@ -74,6 +74,7 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
+#include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
@@ -107,7 +108,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_request_details.h"
-#include "content/public/browser/screen_orientation_provider.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
@@ -322,6 +322,11 @@ WebContents* WebContents::FromFrameTreeNodeId(int frame_tree_node_id) {
   if (!frame_tree_node)
     return nullptr;
   return FromRenderFrameHost(frame_tree_node->current_frame_host());
+}
+
+void WebContents::SetScreenOrientationDelegate(
+    ScreenOrientationDelegate* delegate) {
+  ScreenOrientationProvider::SetDelegate(delegate);
 }
 
 // WebContentsImpl::DestructionObserver ----------------------------------------
@@ -929,9 +934,9 @@ WebContentsView* WebContentsImpl::GetView() const {
   return view_.get();
 }
 
-ScreenOrientationProvider* WebContentsImpl::GetScreenOrientationProvider()
-    const {
-  return screen_orientation_provider_.get();
+void WebContentsImpl::OnScreenOrientationChange() {
+  DCHECK(screen_orientation_provider_);
+  return screen_orientation_provider_->OnOrientationChange();
 }
 
 SkColor WebContentsImpl::GetThemeColor() const {

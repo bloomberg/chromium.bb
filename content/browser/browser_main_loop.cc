@@ -127,7 +127,6 @@
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
-#include "content/public/browser/screen_orientation_provider.h"
 #include "media/base/android/media_client_android.h"
 #include "ui/android/screen_android.h"
 #include "ui/display/screen.h"
@@ -796,7 +795,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
                  "BrowserMainLoop::Subsystem:ScreenOrientationProvider");
     screen_orientation_delegate_.reset(
         new ScreenOrientationDelegateAndroid());
-    ScreenOrientationProvider::SetDelegate(screen_orientation_delegate_.get());
   }
 #endif
 

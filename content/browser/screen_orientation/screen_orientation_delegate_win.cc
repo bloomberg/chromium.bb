@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "content/public/browser/screen_orientation_provider.h"
+#include "content/browser/screen_orientation/screen_orientation_provider.h"
 
 namespace {
 

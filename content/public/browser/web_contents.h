@@ -21,6 +21,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/save_page_type.h"
+#include "content/public/browser/screen_orientation_delegate.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
@@ -190,6 +191,10 @@ class WebContents : public PageNavigator,
   // Returns the WebContents associated with the |frame_tree_node_id|.
   CONTENT_EXPORT static WebContents* FromFrameTreeNodeId(
       int frame_tree_node_id);
+
+  // Sets delegate for platform specific screen orientation functionality.
+  CONTENT_EXPORT static void SetScreenOrientationDelegate(
+      ScreenOrientationDelegate* delegate);
 
   ~WebContents() override {}
 

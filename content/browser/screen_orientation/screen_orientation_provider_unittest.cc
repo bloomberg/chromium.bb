@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/screen_orientation_provider.h"
+#include "content/browser/screen_orientation/screen_orientation_provider.h"
 
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -100,14 +100,14 @@ class ScreenOrientationProviderTest : public RenderViewHostImplTestHarness {
   void CallLockAndGetResult(
       blink::WebScreenOrientationLockType orientation,
       base::Optional<ScreenOrientationLockResult>* out_result) {
-    contents()->GetScreenOrientationProvider()->LockOrientation(
+    contents()->GetScreenOrientationProviderForTesting()->LockOrientation(
         orientation, base::Bind(&LockResultCallback, out_result));
 
     base::RunLoop().RunUntilIdle();
   }
 
   void CallUnlock() {
-    contents()->GetScreenOrientationProvider()->UnlockOrientation();
+    contents()->GetScreenOrientationProviderForTesting()->UnlockOrientation();
   }
 
  private:

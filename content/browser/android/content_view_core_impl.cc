@@ -43,7 +43,6 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/screen_orientation_provider.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -1375,9 +1374,7 @@ void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
   if (rwhv)
     rwhv->UpdateScreenInfo(GetViewAndroid());
 
-  static_cast<WebContentsImpl*>(web_contents())
-      ->GetScreenOrientationProvider()
-      ->OnOrientationChange();
+  static_cast<WebContentsImpl*>(web_contents())->OnScreenOrientationChange();
 }
 
 jint ContentViewCoreImpl::GetCurrentRenderProcessId(

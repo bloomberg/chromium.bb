@@ -209,7 +209,11 @@ class CONTENT_EXPORT WebContentsImpl
 
   WebContentsView* GetView() const;
 
-  ScreenOrientationProvider* GetScreenOrientationProvider() const;
+  void OnScreenOrientationChange();
+
+  ScreenOrientationProvider* GetScreenOrientationProviderForTesting() const {
+    return screen_orientation_provider_.get();
+  }
 
   bool should_normally_be_visible() { return should_normally_be_visible_; }
 

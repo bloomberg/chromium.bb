@@ -5,6 +5,7 @@
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 
 #include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "jni/ScreenOrientationProvider_jni.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/native_widget_types.h"
@@ -12,9 +13,11 @@
 namespace content {
 
 ScreenOrientationDelegateAndroid::ScreenOrientationDelegateAndroid() {
+  ScreenOrientationProvider::SetDelegate(this);
 }
 
 ScreenOrientationDelegateAndroid::~ScreenOrientationDelegateAndroid() {
+  ScreenOrientationProvider::SetDelegate(nullptr);
 }
 
 // static
