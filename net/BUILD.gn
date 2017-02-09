@@ -951,6 +951,8 @@ component("net") {
       "http2/http2_constants.h",
       "http2/http2_structures.cc",
       "http2/http2_structures.h",
+      "http2/platform/api/http2_reconstruct_object.h",
+      "http2/platform/impl/http2_reconstruct_object_impl.h",
       "http2/tools/http2_bug_tracker.h",
       "log/file_net_log_observer.cc",
       "log/file_net_log_observer.h",
