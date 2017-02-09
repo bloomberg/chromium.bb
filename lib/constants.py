@@ -565,8 +565,14 @@ VALID_BUILD_TYPES = (
 )
 
 # The default list of pre-cq configs to use.
-PRE_CQ_DEFAULT_CONFIGS = ['rambi-pre-cq', 'mixed-a-pre-cq', 'mixed-b-pre-cq',
-                          'mixed-c-pre-cq', 'x86-alex-no-vmtest-pre-cq']
+PRE_CQ_DEFAULT_CONFIGS = [
+    'daisy_spring-no-vmtest-pre-cq',  # kernel 3.8 coverage
+    'lumpy-no-vmtest-pre-cq',         # kernel 3.8 coverage
+    'rambi-pre-cq',                   # vmtest coverage
+    'samus-no-vmtest-pre-cq',         # kernel 3.14 coverage
+    'whirlwind-no-vmtest-pre-cq',     # brillo coverage
+    'x86-alex-no-vmtest-pre-cq',      # x86 coverage
+]
 
 # The name of the pre-cq launching config.
 PRE_CQ_LAUNCHER_CONFIG = 'pre-cq-launcher'
