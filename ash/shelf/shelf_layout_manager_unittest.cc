@@ -7,7 +7,6 @@
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/focus_cycler.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_layout_manager_observer.h"
@@ -168,15 +167,6 @@ class ShelfDragCallback {
     } else if (SHELF_ALIGNMENT_LEFT == shelf->GetAlignment()) {
       EXPECT_EQ(auto_hidden_shelf_widget_bounds_.x(), shelf_bounds.x());
       EXPECT_EQ(shelf_widget_bounds_.x(), shelf_bounds.x());
-    }
-
-    // Auto hidden shelf has a visible height of 0 in MD (where this inequality
-    // does not apply); whereas auto hidden shelf has a visible height of 3 in
-    // non-MD.
-    if (!ash::MaterialDesignController::IsImmersiveModeMaterial() ||
-        shelf->GetAutoHideState() != ash::SHELF_AUTO_HIDE_HIDDEN) {
-      EXPECT_GE(shelf_bounds.height(),
-                auto_hidden_shelf_widget_bounds_.height());
     }
 
     float scroll_delta =
@@ -510,12 +500,7 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   gfx::Rect bounds_fullscreen = window->bounds();
   EXPECT_TRUE(widget->IsFullscreen());
 
-  // Shelf hints are removed in immersive full screen mode in MD; and some shelf
-  // hints are shown in non-MD mode.
-  if (ash::MaterialDesignController::IsImmersiveModeMaterial())
-    EXPECT_EQ(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
-  else
-    EXPECT_NE(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
+  EXPECT_EQ(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
 
   // Swipe up. This should show the shelf.
   end = below_start - delta;
