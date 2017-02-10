@@ -319,7 +319,7 @@ launcher_direct_get_vt(struct weston_launcher *base)
 	return minor(s.st_rdev);
 }
 
-struct launcher_interface launcher_direct_iface = {
+const struct launcher_interface launcher_direct_iface = {
 	launcher_direct_connect,
 	launcher_direct_destroy,
 	launcher_direct_open,

@@ -290,7 +290,7 @@ launcher_weston_launch_get_vt(struct weston_launcher *base)
 	return minor(s.st_rdev);
 }
 
-struct launcher_interface launcher_weston_launch_iface = {
+const struct launcher_interface launcher_weston_launch_iface = {
 	launcher_weston_launch_connect,
 	launcher_weston_launch_destroy,
 	launcher_weston_launch_open,

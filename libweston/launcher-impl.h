@@ -42,9 +42,9 @@ struct launcher_interface {
 };
 
 struct weston_launcher {
-	struct launcher_interface *iface;
+	const struct launcher_interface *iface;
 };
 
-extern struct launcher_interface launcher_logind_iface;
-extern struct launcher_interface launcher_weston_launch_iface;
-extern struct launcher_interface launcher_direct_iface;
+extern const struct launcher_interface launcher_logind_iface;
+extern const struct launcher_interface launcher_weston_launch_iface;
+extern const struct launcher_interface launcher_direct_iface;

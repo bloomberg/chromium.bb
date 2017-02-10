@@ -837,7 +837,7 @@ launcher_logind_get_vt(struct weston_launcher *launcher)
 	return wl->vtnr;
 }
 
-struct launcher_interface launcher_logind_iface = {
+const struct launcher_interface launcher_logind_iface = {
 	launcher_logind_connect,
 	launcher_logind_destroy,
 	launcher_logind_open,

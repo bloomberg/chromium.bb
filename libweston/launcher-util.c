@@ -35,7 +35,7 @@
 #include <unistd.h>
 #include <linux/input.h>
 
-static struct launcher_interface *ifaces[] = {
+static const struct launcher_interface *ifaces[] = {
 #ifdef HAVE_SYSTEMD_LOGIN
 	&launcher_logind_iface,
 #endif
@@ -48,10 +48,10 @@ WL_EXPORT struct weston_launcher *
 weston_launcher_connect(struct weston_compositor *compositor, int tty,
 			const char *seat_id, bool sync_drm)
 {
-	struct launcher_interface **it;
+	const struct launcher_interface **it;
 
 	for (it = ifaces; *it != NULL; it++) {
-		struct launcher_interface *iface = *it;
+		const struct launcher_interface *iface = *it;
 		struct weston_launcher *launcher;
 
 		if (iface->connect(&launcher, compositor, tty, seat_id, sync_drm) == 0)
