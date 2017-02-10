@@ -18,20 +18,22 @@ class CastPage(page.Page):
   def ChooseSink(self, tab, sink_name):
     """Chooses a specific sink in the list."""
 
-    tab.ExecuteJavaScript(
-      'var sinks = window.document.getElementById("media-router-container").'
-      '  shadowRoot.getElementById("sink-list").getElementsByTagName("span");'
-      'for (var i=0; i<sinks.length; i++) {'
-      '  if(sinks[i].textContent.trim() == "%s") {'
-      '    sinks[i].click();'
-      '    break;'
-      '}}' % sink_name);
+    tab.ExecuteJavaScript2("""
+        var sinks = window.document.getElementById("media-router-container").
+            shadowRoot.getElementById("sink-list").getElementsByTagName("span");
+        for (var i=0; i<sinks.length; i++) {
+          if(sinks[i].textContent.trim() == {{ sink_name }}) {
+            sinks[i].click();
+            break;
+        }}
+        """,
+        sink_name=sink_name)
 
   def CloseDialog(self, tab):
     """Closes media router dialog."""
 
     try:
-      tab.ExecuteJavaScript(
+      tab.ExecuteJavaScript2(
           'window.document.getElementById("media-router-container").' +
           'shadowRoot.getElementById("container-header").shadowRoot.' +
           'getElementById("close-button").click();')
@@ -49,7 +51,7 @@ class CastPage(page.Page):
       if tab.url == 'chrome://media-router/':
         if self.CheckIfExistingRoute(tab, sink_name):
           self.ChooseSink(tab, sink_name)
-          tab.ExecuteJavaScript(
+          tab.ExecuteJavaScript2(
               "window.document.getElementById('media-router-container')."
               "shadowRoot.getElementById('route-details').shadowRoot."
               "getElementById('close-route-button').click();")
@@ -60,26 +62,27 @@ class CastPage(page.Page):
   def CheckIfExistingRoute(self, tab, sink_name):
     """"Checks if there is existing route for the specific sink."""
 
-    tab.ExecuteJavaScript(
-        "var sinks = window.document.getElementById('media-router-container')."
-        "  allSinks;"
-        "var sink_id = null;"
-        "for (var i=0; i<sinks.length; i++) {"
-        "  if (sinks[i].name == '%s') {"
-        "    console.info('sink id: ' + sinks[i].id); "
-        "    sink_id = sinks[i].id;"
-        "    break;"
-        "  }"
-        "}"
-        "var routes = window.document.getElementById('media-router-container')."
-        "  routeList;"
-        "for (var i=0; i<routes.length; i++) {"
-        "  if (!!sink_id && routes[i].sinkId == sink_id) {"
-        "    window.__telemetry_route_id = routes[i].id;"
-        "    break;"
-        "  }"
-        "}" % sink_name)
-    route = tab.EvaluateJavaScript('!!window.__telemetry_route_id')
+    tab.ExecuteJavaScript2("""
+        var sinks = window.document.getElementById('media-router-container').
+          allSinks;
+        var sink_id = null;
+        for (var i=0; i<sinks.length; i++) {
+          if (sinks[i].name == {{ sink_name }}) {
+            console.info('sink id: ' + sinks[i].id);
+            sink_id = sinks[i].id;
+            break;
+          }
+        }
+        var routes = window.document.getElementById('media-router-container').
+          routeList;
+        for (var i=0; i<routes.length; i++) {
+          if (!!sink_id && routes[i].sinkId == sink_id) {
+            window.__telemetry_route_id = routes[i].id;
+            break;
+          }
+        }""",
+        sink_name=sink_name)
+    route = tab.EvaluateJavaScript2('!!window.__telemetry_route_id')
     logging.info('Is there existing route? ' + str(route))
     return route
 
@@ -87,7 +90,7 @@ class CastPage(page.Page):
                              error_message, timeout=5):
     """Executes async javascript function and waits until it finishes."""
 
-    action_runner.ExecuteJavaScript(script)
+    action_runner.ExecuteJavaScript2(script)
     self._WaitForResult(action_runner, verify_func, error_message,
                         timeout=timeout)
 
@@ -96,7 +99,7 @@ class CastPage(page.Page):
 
     self._WaitForResult(
         action_runner,
-        lambda: tab.EvaluateJavaScript(
+        lambda: tab.EvaluateJavaScript2(
              '!!window.document.getElementById('
              '"media-router-container") &&'
              'window.document.getElementById('

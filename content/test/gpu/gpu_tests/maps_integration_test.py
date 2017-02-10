@@ -11,7 +11,6 @@ from gpu_tests import cloud_storage_integration_test_base
 from gpu_tests import maps_expectations
 from gpu_tests import path_util
 
-import py_utils
 from py_utils import cloud_storage
 
 data_path = os.path.join(path_util.GetChromiumSrcDir(),
@@ -87,35 +86,30 @@ class MapsIntegrationTest(
     return json_contents
 
   def _SpinWaitOnRAF(self, iterations, timeout=60):
-    tab = self.tab
-    waitScript = r"""
-      window.__spinWaitOnRAFDone = false;
-      var iterationsLeft = %d;
+    self.tab.ExecuteJavaScript2("""
+        window.__spinWaitOnRAFDone = false;
+        var iterationsLeft = {{ iterations }};
 
-      function spin() {
-        iterationsLeft--;
-        if (iterationsLeft == 0) {
-          window.__spinWaitOnRAFDone = true;
-          return;
+        function spin() {
+          iterationsLeft--;
+          if (iterationsLeft == 0) {
+            window.__spinWaitOnRAFDone = true;
+            return;
+          }
+          window.requestAnimationFrame(spin);
         }
         window.requestAnimationFrame(spin);
-      }
-      window.requestAnimationFrame(spin);
-    """ % iterations
-
-    def IsWaitComplete():
-      return tab.EvaluateJavaScript('window.__spinWaitOnRAFDone')
-
-    tab.ExecuteJavaScript(waitScript)
-    py_utils.WaitFor(IsWaitComplete, timeout)
+        """, iterations=iterations)
+    self.tab.WaitForJavaScriptCondition2(
+        'window.__spinWaitOnRAFDone', timeout=timeout)
 
   def RunActualGpuTest(self, url, *args):
     tab = self.tab
     pixel_expectations_file = args[0]
     action_runner = tab.action_runner
     action_runner.Navigate(url)
-    action_runner.WaitForJavaScriptCondition(
-        'window.testDone', timeout_in_seconds=180)
+    action_runner.WaitForJavaScriptCondition2(
+        'window.testDone', timeout=180)
 
     # TODO(kbr): This should not be necessary, but it's not clear if the test
     # is failing on the bots in its absence. Remove once we can verify that
@@ -128,7 +122,7 @@ class MapsIntegrationTest(
     if screenshot is None:
       self.fail('Could not capture screenshot')
 
-    dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
+    dpr = tab.EvaluateJavaScript2('window.devicePixelRatio')
     print 'Maps\' devicePixelRatio is ' + str(dpr)
     # Even though the Maps test uses a fixed devicePixelRatio so that
     # it fetches all of the map tiles at the same resolution, on two

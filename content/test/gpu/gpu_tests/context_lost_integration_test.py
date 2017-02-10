@@ -10,7 +10,6 @@ from gpu_tests import gpu_integration_test
 from gpu_tests import context_lost_expectations
 from gpu_tests import path_util
 
-import py_utils
 from telemetry.core import exceptions
 
 data_path = os.path.join(
@@ -107,8 +106,8 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def _WaitForPageToFinish(self, tab):
     try:
-      py_utils.WaitFor(lambda: tab.EvaluateJavaScript(
-        'window.domAutomationController._finished'), wait_timeout)
+      tab.WaitForJavaScriptCondition2(
+        'window.domAutomationController._finished', timeout=wait_timeout)
       return True
     except exceptions.TimeoutException:
       return False
@@ -123,14 +122,14 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       expected_kills = x + 1
 
       # Reset the test's state.
-      tab.EvaluateJavaScript(
+      tab.EvaluateJavaScript2(
         'window.domAutomationController.reset()')
 
       # If we're running the GPU process crash test, we need the test
       # to have fully reset before crashing the GPU process.
       if check_crash_count:
-        py_utils.WaitFor(lambda: tab.EvaluateJavaScript(
-          'window.domAutomationController._finished'), wait_timeout)
+        tab.WaitForJavaScriptCondition2(
+          'window.domAutomationController._finished', timeout=wait_timeout)
 
       # Crash the GPU process.
       gpucrash_tab = tab.browser.tabs.New()
@@ -155,7 +154,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         print 'Tab crashed while closing chrome://gpucrash'
       if not completed:
         self.fail('Test didn\'t complete (no context lost event?)')
-      if not tab.EvaluateJavaScript(
+      if not tab.EvaluateJavaScript2(
         'window.domAutomationController._succeeded'):
         self.fail('Test failed (context not restored properly?)')
 
@@ -163,7 +162,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if not tab.browser.supports_system_info:
       self.fail('Browser must support system info')
 
-    if not tab.EvaluateJavaScript(
+    if not tab.EvaluateJavaScript2(
         'window.domAutomationController._succeeded'):
       self.fail('Test failed (didn\'t render content properly?)')
 
@@ -198,7 +197,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     url = self.UrlOfStaticFilePath(test_path)
     tab = self.tab
     tab.Navigate(url, script_to_evaluate_on_commit=harness_script)
-    tab.action_runner.WaitForJavaScriptCondition(
+    tab.action_runner.WaitForJavaScriptCondition2(
       'window.domAutomationController._loaded')
 
   def _WaitForTabAndCheckCompletion(self):
@@ -206,7 +205,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     completed = self._WaitForPageToFinish(tab)
     if not completed:
       self.fail('Test didn\'t complete (no context restored event?)')
-    if not tab.EvaluateJavaScript('window.domAutomationController._succeeded'):
+    if not tab.EvaluateJavaScript2('window.domAutomationController._succeeded'):
       self.fail('Test failed (context not restored properly?)')
 
   # The browser test runner synthesizes methods with the exact name
@@ -228,7 +227,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     url = self.UrlOfStaticFilePath(test_path)
     tab = self.tab
     tab.Navigate(url, script_to_evaluate_on_commit=harness_script)
-    tab.action_runner.WaitForJavaScriptCondition(
+    tab.action_runner.WaitForJavaScriptCondition2(
       'window.domAutomationController._finished')
 
   def _ContextLost_WebGLContextLostFromQuantity(self, test_path):
@@ -249,7 +248,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # doesn't crash.
     tab = self.tab
     dummy_tab = tab.browser.tabs.New()
-    tab.EvaluateJavaScript('loseContextUsingExtension()')
+    tab.EvaluateJavaScript2('loseContextUsingExtension()')
     tab.Activate()
     self._WaitForTabAndCheckCompletion()
 

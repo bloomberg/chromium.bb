@@ -68,9 +68,10 @@ class HardwareAcceleratedFeatureIntegrationTest(
     feature = args[0]
     self._Navigate(test_path)
     tab = self.tab
-    if not tab.EvaluateJavaScript('VerifyHardwareAccelerated("%s")' % feature):
+    if not tab.EvaluateJavaScript2(
+        'VerifyHardwareAccelerated({{ feature }})', feature=feature):
       print 'Test failed. Printing page contents:'
-      print tab.EvaluateJavaScript('document.body.innerHTML')
+      print tab.EvaluateJavaScript2('document.body.innerHTML')
       self.fail('%s not hardware accelerated' % feature)
 
 def load_tests(loader, tests, pattern):

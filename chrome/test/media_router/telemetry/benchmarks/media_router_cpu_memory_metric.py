@@ -27,7 +27,7 @@ class MediaRouterCPUMemoryMetric(Metric):
   def AddResults(self, tab, results):
     results_json = None
     try:
-      results_json = tab.EvaluateJavaScript(
+      results_json = tab.EvaluateJavaScript2(
           'JSON.stringify(window.perfResults)')
     except exceptions.EvaluateException:
       pass

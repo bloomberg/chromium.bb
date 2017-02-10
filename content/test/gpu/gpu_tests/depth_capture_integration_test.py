@@ -77,11 +77,11 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     url = self.UrlOfStaticFilePath(test_path)
     tab = self.tab
     tab.Navigate(url, script_to_evaluate_on_commit=harness_script)
-    tab.action_runner.WaitForJavaScriptCondition(
-      'domAutomationController._finished', timeout_in_seconds=60)
-    if not tab.EvaluateJavaScript('domAutomationController._succeeded'):
+    tab.action_runner.WaitForJavaScriptCondition2(
+      'domAutomationController._finished', timeout=60)
+    if not tab.EvaluateJavaScript2('domAutomationController._succeeded'):
       self.fail('page indicated test failure:' +
-                tab.EvaluateJavaScript('domAutomationController._error_msg'))
+                tab.EvaluateJavaScript2('domAutomationController._error_msg'))
 
   @classmethod
   def _CreateExpectations(cls):

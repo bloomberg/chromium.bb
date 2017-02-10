@@ -207,8 +207,8 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self.tab.Navigate(url, script_to_evaluate_on_commit=harness_script)
 
   def _CheckTestCompletion(self):
-    self.tab.action_runner.WaitForJavaScriptCondition(
-        'webglTestHarness._finished', timeout_in_seconds=300)
+    self.tab.action_runner.WaitForJavaScriptCondition2(
+        'webglTestHarness._finished', timeout=300)
     if not self._DidWebGLTestSucceed(self.tab):
       self.fail(self._WebGLTestMessages(self.tab))
 
@@ -222,8 +222,8 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def _RunExtensionCoverageTest(self, test_path, *args):
     self._NavigateTo(test_path, self._GetExtensionHarnessScript())
-    self.tab.action_runner.WaitForJavaScriptCondition(
-        'window._loaded', timeout_in_seconds=300)
+    self.tab.action_runner.WaitForJavaScriptCondition2(
+        'window._loaded', timeout=300)
     extension_list = args[0]
     webgl_version = args[1]
     context_type = "webgl2" if webgl_version == 2 else "webgl"
@@ -231,20 +231,21 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     for extension in extension_list:
       extension_list_string = extension_list_string + extension + ", "
     extension_list_string = extension_list_string + "]"
-    self.tab.action_runner.EvaluateJavaScript(
-      'checkSupportedExtensions("%s", "%s")' % (
-        extension_list_string, context_type))
+    self.tab.action_runner.EvaluateJavaScript2(
+        'checkSupportedExtensions({{ extensions_string }}, {{context_type}})',
+        extensions_string=extension_list_string, context_type=context_type)
     self._CheckTestCompletion()
 
   def _RunExtensionTest(self, test_path, *args):
     self._NavigateTo(test_path, self._GetExtensionHarnessScript())
-    self.tab.action_runner.WaitForJavaScriptCondition(
-        'window._loaded', timeout_in_seconds=300)
+    self.tab.action_runner.WaitForJavaScriptCondition2(
+        'window._loaded', timeout=300)
     extension = args[0]
     webgl_version = args[1]
     context_type = "webgl2" if webgl_version == 2 else "webgl"
-    self.tab.action_runner.EvaluateJavaScript(
-      'checkExtension("%s", "%s")' % (extension, context_type))
+    self.tab.action_runner.EvaluateJavaScript2(
+      'checkExtension({{ extension }}, {{ context_type }})',
+      extension=extension, context_type=context_type)
     self._CheckTestCompletion()
 
   @classmethod
@@ -328,11 +329,11 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @staticmethod
   def _DidWebGLTestSucceed(tab):
-    return tab.EvaluateJavaScript('webglTestHarness._allTestSucceeded')
+    return tab.EvaluateJavaScript2('webglTestHarness._allTestSucceeded')
 
   @staticmethod
   def _WebGLTestMessages(tab):
-    return tab.EvaluateJavaScript('webglTestHarness._messages')
+    return tab.EvaluateJavaScript2('webglTestHarness._messages')
 
   @classmethod
   def _ParseTests(cls, path, version, webgl2_only, folder_min_version):

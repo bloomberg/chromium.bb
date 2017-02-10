@@ -93,8 +93,8 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # Perform page navigation.
     url = self.UrlOfStaticFilePath(test_path)
     tab.Navigate(url, script_to_evaluate_on_commit=test_harness_script)
-    tab.action_runner.WaitForJavaScriptCondition(
-      'domAutomationController._finished', timeout_in_seconds=30)
+    tab.action_runner.WaitForJavaScriptCondition2(
+      'domAutomationController._finished', timeout=30)
 
     # Stop tracing.
     timeline_data = tab.browser.platform.tracing_controller.StopTracing()
