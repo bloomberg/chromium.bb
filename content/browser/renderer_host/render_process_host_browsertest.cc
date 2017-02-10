@@ -18,6 +18,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_service.mojom.h"
 #include "content/shell/browser/shell.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/test_data_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -302,17 +303,21 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
 
   {
     // Force a bad message event to occur which will terminate the renderer.
+    // Note: We post task the QuitClosure since RenderProcessExited() is called
+    // before destroying BrowserMessageFilters; and the next portion of the test
+    // must run after these notifications have been delivered.
     base::RunLoop run_loop;
-    set_process_exit_callback(run_loop.QuitClosure());
+    set_process_exit_callback(media::BindToCurrentLoop(run_loop.QuitClosure()));
     service->DoSomething(base::Bind(&base::DoNothing));
     run_loop.Run();
   }
 
   {
-    // Cycle UI loop once to ensure audio stream notifications are sent.
+    // Cycle UI and IO loop once to ensure OnChannelClosing() has been delivered
+    // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            run_loop.QuitClosure());
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            media::BindToCurrentLoop(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
