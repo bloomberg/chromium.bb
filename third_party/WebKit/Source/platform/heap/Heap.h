@@ -47,7 +47,7 @@
 
 namespace blink {
 
-class FreePagePool;
+class PagePool;
 
 class PLATFORM_EXPORT HeapAllocHooks {
  public:
@@ -442,7 +442,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void flushHeapDoesNotContainCache();
 
-  FreePagePool* getFreePagePool() { return m_freePagePool.get(); }
+  PagePool* getFreePagePool() { return m_freePagePool.get(); }
 
   // This look-up uses the region search tree and a negative contains cache to
   // provide an efficient mapping from arbitrary addresses to the containing
@@ -479,7 +479,7 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<RegionTree> m_regionTree;
   std::unique_ptr<HeapDoesNotContainCache> m_heapDoesNotContainCache;
   std::unique_ptr<SafePointBarrier> m_safePointBarrier;
-  std::unique_ptr<FreePagePool> m_freePagePool;
+  std::unique_ptr<PagePool> m_freePagePool;
   std::unique_ptr<CallbackStack> m_markingStack;
   std::unique_ptr<CallbackStack> m_postMarkingCallbackStack;
   std::unique_ptr<CallbackStack> m_globalWeakCallbackStack;

@@ -13,29 +13,6 @@ namespace blink {
 
 class PageMemory;
 
-template <typename DataType>
-class PagePool {
-  USING_FAST_MALLOC(PagePool);
-
- protected:
-  PagePool() {
-    for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
-      m_pool[i] = nullptr;
-  }
-
-  class PoolEntry {
-    USING_FAST_MALLOC(PoolEntry);
-
-   public:
-    PoolEntry(DataType* data, PoolEntry* next) : data(data), next(next) {}
-
-    DataType* data;
-    PoolEntry* next;
-  };
-
-  PoolEntry* m_pool[BlinkGC::NumberOfArenas];
-};
-
 // Once pages have been used for one type of thread heap they will never be
 // reused for another type of thread heap.  Instead of unmapping, we add the
 // pages to a pool of pages to be reused later by a thread heap of the same
@@ -44,13 +21,27 @@ class PagePool {
 // types of objects.  Holding on to pages ensures that the same virtual address
 // space cannot be used for objects of another type than the type contained
 // in this page to begin with.
-class FreePagePool : public PagePool<PageMemory> {
+class PagePool {
+  USING_FAST_MALLOC(PagePool);
+
  public:
-  ~FreePagePool();
-  void addFreePage(int, PageMemory*);
-  PageMemory* takeFreePage(int);
+  PagePool();
+  ~PagePool();
+  void add(int, PageMemory*);
+  PageMemory* take(int);
 
  private:
+  class PoolEntry {
+    USING_FAST_MALLOC(PoolEntry);
+
+   public:
+    PoolEntry(PageMemory* data, PoolEntry* next) : data(data), next(next) {}
+
+    PageMemory* data;
+    PoolEntry* next;
+  };
+
+  PoolEntry* m_pool[BlinkGC::NumberOfArenas];
   Mutex m_mutex[BlinkGC::NumberOfArenas];
 };
 

@@ -598,7 +598,7 @@ void NormalPageArena::takeFreelistSnapshot(const String& dumpName) {
 void NormalPageArena::allocatePage() {
   getThreadState()->shouldFlushHeapDoesNotContainCache();
   PageMemory* pageMemory =
-      getThreadState()->heap().getFreePagePool()->takeFreePage(arenaIndex());
+      getThreadState()->heap().getFreePagePool()->take(arenaIndex());
 
   if (!pageMemory) {
     // Allocate a memory region for blinkPagesPerRegion pages that
@@ -623,8 +623,7 @@ void NormalPageArena::allocatePage() {
         RELEASE_ASSERT(result);
         pageMemory = memory;
       } else {
-        getThreadState()->heap().getFreePagePool()->addFreePage(arenaIndex(),
-                                                                memory);
+        getThreadState()->heap().getFreePagePool()->add(arenaIndex(), memory);
       }
     }
   }
@@ -650,7 +649,7 @@ void NormalPageArena::freePage(NormalPage* page) {
 
   PageMemory* memory = page->storage();
   page->~NormalPage();
-  getThreadState()->heap().getFreePagePool()->addFreePage(arenaIndex(), memory);
+  getThreadState()->heap().getFreePagePool()->add(arenaIndex(), memory);
 }
 
 bool NormalPageArena::coalesce() {

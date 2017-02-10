@@ -10,7 +10,13 @@
 
 namespace blink {
 
-FreePagePool::~FreePagePool() {
+PagePool::PagePool() {
+  for (int i = 0; i < BlinkGC::NumberOfArenas; ++i) {
+    m_pool[i] = nullptr;
+  }
+}
+
+PagePool::~PagePool() {
   for (int index = 0; index < BlinkGC::NumberOfArenas; ++index) {
     while (PoolEntry* entry = m_pool[index]) {
       m_pool[index] = entry->next;
@@ -22,7 +28,7 @@ FreePagePool::~FreePagePool() {
   }
 }
 
-void FreePagePool::addFreePage(int index, PageMemory* memory) {
+void PagePool::add(int index, PageMemory* memory) {
   // When adding a page to the pool we decommit it to ensure it is unused
   // while in the pool.  This also allows the physical memory, backing the
   // page, to be given back to the OS.
@@ -32,7 +38,7 @@ void FreePagePool::addFreePage(int index, PageMemory* memory) {
   m_pool[index] = entry;
 }
 
-PageMemory* FreePagePool::takeFreePage(int index) {
+PageMemory* PagePool::take(int index) {
   MutexLocker locker(m_mutex[index]);
   while (PoolEntry* entry = m_pool[index]) {
     m_pool[index] = entry->next;

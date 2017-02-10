@@ -188,7 +188,7 @@ ThreadHeap::ThreadHeap()
     : m_regionTree(WTF::makeUnique<RegionTree>()),
       m_heapDoesNotContainCache(WTF::wrapUnique(new HeapDoesNotContainCache)),
       m_safePointBarrier(WTF::makeUnique<SafePointBarrier>()),
-      m_freePagePool(WTF::wrapUnique(new FreePagePool)),
+      m_freePagePool(WTF::wrapUnique(new PagePool)),
       m_markingStack(CallbackStack::create()),
       m_postMarkingCallbackStack(CallbackStack::create()),
       m_globalWeakCallbackStack(CallbackStack::create()),
