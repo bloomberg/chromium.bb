@@ -92,7 +92,7 @@ namespace cc {
 
 PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
                                    int id,
-                                   bool is_mask)
+                                   Layer::LayerMaskType mask_type)
     : LayerImpl(tree_impl, id),
       twin_layer_(nullptr),
       tilings_(CreatePictureLayerTilingSet()),
@@ -107,7 +107,7 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
       low_res_raster_contents_scale_(0.f),
       was_screen_space_transform_animating_(false),
       only_used_low_res_last_append_quads_(false),
-      is_mask_(is_mask),
+      mask_type_(mask_type),
       nearest_neighbor_(false),
       is_directly_composited_image_(false) {
   layer_tree_impl()->RegisterPictureLayerImpl(this);
@@ -125,12 +125,12 @@ const char* PictureLayerImpl::LayerTypeAsString() const {
 
 std::unique_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PictureLayerImpl::Create(tree_impl, id(), is_mask_);
+  return PictureLayerImpl::Create(tree_impl, id(), mask_type());
 }
 
 void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
-  DCHECK_EQ(layer_impl->is_mask_, is_mask_);
+  DCHECK_EQ(layer_impl->mask_type_, mask_type_);
 
   LayerImpl::PushPropertiesTo(base_layer);
 
@@ -694,7 +694,11 @@ std::unique_ptr<Tile> PictureLayerImpl::CreateTile(
 
   // We don't handle solid color masks, so we shouldn't bother analyzing those.
   // Otherwise, always analyze to maximize memory savings.
-  if (!is_mask_)
+  // TODO(sunxd): the condition should be (mask_type_ ==
+  // Layer::LayerMaskType::NOT_MASK
+  // || (layer_tree_impl()->settings().enable_mask_tiling && mask_type ==
+  // Layer::LayerMaskType::MULTI_TEXTURE_MASK)).
+  if (mask_type_ == Layer::LayerMaskType::NOT_MASK)
     flags = Tile::USE_PICTURE_ANALYSIS;
 
   if (contents_opaque())
@@ -736,7 +740,11 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
   int max_texture_size =
       layer_tree_impl()->resource_provider()->max_texture_size();
 
-  if (is_mask_) {
+  // TODO(sunxd): the condition should be mask_type_ == Layer::LayerMaskType::
+  // SINGLE_TEXTURE_MASK || (mask_type_ ==
+  // Layer::LayerMaskType::MULTI_TEXTURE_MASK &&
+  // !layer_tree_impl()->settings().enable_mask_tiling)
+  if (mask_type_ != Layer::LayerMaskType::NOT_MASK) {
     // Masks are not tiled, so if we can't cover the whole mask with one tile,
     // we shouldn't have such a tiling at all.
     DCHECK_LE(content_bounds.width(), max_texture_size);
@@ -1174,9 +1182,14 @@ float PictureLayerImpl::MaximumContentsScale() const {
   // max_texture_size since they use a single tile for the entire
   // tiling. Other layers can have tilings such that dimension * scale
   // does not overflow.
+  // TODO(sunxd): the condition should be:
+  // mask_type_ == Layer::LayerMaskType::SINGLE_TEXTURE_MASK || (mask_type_ ==
+  // Layer::LayerMaskType::MULTI_TEXTURE_MASK && !layer_tree_impl()->settings().
+  // enable_mask_tiling)
   float max_dimension = static_cast<float>(
-      is_mask_ ? layer_tree_impl()->resource_provider()->max_texture_size()
-               : std::numeric_limits<int>::max());
+      mask_type_ != Layer::LayerMaskType::NOT_MASK
+          ? layer_tree_impl()->resource_provider()->max_texture_size()
+          : std::numeric_limits<int>::max());
   float max_scale_width = max_dimension / bounds().width();
   float max_scale_height = max_dimension / bounds().height();
   float max_scale = std::min(max_scale_width, max_scale_height);

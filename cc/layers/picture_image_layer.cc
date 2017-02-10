@@ -27,7 +27,7 @@ PictureImageLayer::~PictureImageLayer() {
 
 std::unique_ptr<LayerImpl> PictureImageLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  auto layer_impl = PictureLayerImpl::Create(tree_impl, id(), is_mask());
+  auto layer_impl = PictureLayerImpl::Create(tree_impl, id(), mask_type());
   layer_impl->set_is_directly_composited_image(true);
   return std::move(layer_impl);
 }

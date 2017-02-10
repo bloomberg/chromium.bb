@@ -6610,7 +6610,7 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
 
     gfx::Size mask_size(100, 100);
     mask_layer->SetBounds(mask_size);
-    mask_layer->SetIsMask(true);
+    mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
@@ -6695,7 +6695,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     content_layer->SetBounds(scaling_layer_size);
 
     mask_layer->SetBounds(scaling_layer_size);
-    mask_layer->SetIsMask(true);
+    mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
@@ -6784,7 +6784,7 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
 
     gfx::Size mask_size(100, 100);
     mask_layer->SetBounds(mask_size);
-    mask_layer->SetIsMask(true);
+    mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();

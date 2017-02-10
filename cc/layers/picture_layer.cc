@@ -27,7 +27,7 @@ scoped_refptr<PictureLayer> PictureLayer::Create(ContentLayerClient* client) {
 PictureLayer::PictureLayer(ContentLayerClient* client)
     : instrumentation_object_tracker_(id()),
       update_source_frame_number_(-1),
-      is_mask_(false) {
+      mask_type_(Layer::LayerMaskType::NOT_MASK) {
   picture_layer_inputs_.client = client;
 }
 
@@ -42,15 +42,15 @@ PictureLayer::~PictureLayer() {
 
 std::unique_ptr<LayerImpl> PictureLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PictureLayerImpl::Create(tree_impl, id(), is_mask_);
+  return PictureLayerImpl::Create(tree_impl, id(), mask_type_);
 }
 
 void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   Layer::PushPropertiesTo(base_layer);
   TRACE_EVENT0("cc", "PictureLayer::PushPropertiesTo");
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
-  // TODO(danakj): Make is_mask_ a constructor parameter for PictureLayer.
-  DCHECK_EQ(layer_impl->is_mask(), is_mask_);
+  // TODO(danakj): Make mask_type_ a constructor parameter for PictureLayer.
+  DCHECK_EQ(layer_impl->mask_type(), mask_type());
   DropRecordingSourceContentIfInvalid();
 
   layer_impl->SetNearestNeighbor(picture_layer_inputs_.nearest_neighbor);
@@ -137,8 +137,8 @@ bool PictureLayer::Update() {
   return updated;
 }
 
-void PictureLayer::SetIsMask(bool is_mask) {
-  is_mask_ = is_mask;
+void PictureLayer::SetLayerMaskType(Layer::LayerMaskType mask_type) {
+  mask_type_ = mask_type;
 }
 
 sk_sp<SkPicture> PictureLayer::GetPicture() const {

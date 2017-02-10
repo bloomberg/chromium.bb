@@ -1444,8 +1444,8 @@ TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
   FakePictureLayerTilingClient tiling_client;
   tiling_client.SetTileSize(size);
 
-  std::unique_ptr<PictureLayerImpl> layer_impl =
-      PictureLayerImpl::Create(host_impl()->active_tree(), 1, false);
+  std::unique_ptr<PictureLayerImpl> layer_impl = PictureLayerImpl::Create(
+      host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
   layer_impl->set_is_drawn_render_surface_layer_list_member(true);
   PictureLayerTilingSet* tiling_set = layer_impl->picture_layer_tiling_set();
 
@@ -1647,8 +1647,8 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     FakePictureLayerTilingClient tiling_client;
     tiling_client.SetTileSize(size);
 
-    std::unique_ptr<PictureLayerImpl> layer =
-        PictureLayerImpl::Create(host_impl()->active_tree(), 1, false);
+    std::unique_ptr<PictureLayerImpl> layer = PictureLayerImpl::Create(
+        host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
     PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
     layer->set_is_drawn_render_surface_layer_list_member(true);
 

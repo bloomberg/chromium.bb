@@ -84,7 +84,7 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayer) {
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetIsMask(true);
+  mask->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
   green->SetMaskLayer(mask.get());
 
   RunPixelResourceTest(background,
@@ -99,7 +99,7 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
 
   scoped_refptr<PictureImageLayer> mask = PictureImageLayer::Create();
   mask->SetIsDrawable(true);
-  mask->SetIsMask(true);
+  mask->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
   mask->SetBounds(mask_bounds);
 
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(200, 200);
@@ -141,7 +141,7 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetIsMask(true);
+  mask->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
   green->SetMaskLayer(mask.get());
 
   RunPixelResourceTest(
@@ -266,7 +266,7 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetIsMask(true);
+  mask->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
   blur->SetMaskLayer(mask.get());
 
   float percentage_pixels_large_error = 2.5f;  // 2.5%, ~250px / (100*100)
@@ -317,7 +317,7 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
-  mask->SetIsMask(true);
+  mask->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
   picture_horizontal->SetMaskLayer(mask.get());
 
   float percentage_pixels_large_error = 0.04f;  // 0.04%, ~6px / (128*128)

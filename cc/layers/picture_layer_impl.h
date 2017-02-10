@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
+#include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
@@ -29,14 +30,13 @@ class CC_EXPORT PictureLayerImpl
     : public LayerImpl,
       NON_EXPORTED_BASE(public PictureLayerTilingClient) {
  public:
-  static std::unique_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl,
-                                                  int id,
-                                                  bool is_mask) {
-    return base::WrapUnique(new PictureLayerImpl(tree_impl, id, is_mask));
+  static std::unique_ptr<PictureLayerImpl>
+  Create(LayerTreeImpl* tree_impl, int id, Layer::LayerMaskType mask_type) {
+    return base::WrapUnique(new PictureLayerImpl(tree_impl, id, mask_type));
   }
   ~PictureLayerImpl() override;
 
-  bool is_mask() const { return is_mask_; }
+  Layer::LayerMaskType mask_type() const { return mask_type_; }
 
   // LayerImpl overrides.
   const char* LayerTypeAsString() const override;
@@ -99,7 +99,9 @@ class CC_EXPORT PictureLayerImpl
   }
 
  protected:
-  PictureLayerImpl(LayerTreeImpl* tree_impl, int id, bool is_mask);
+  PictureLayerImpl(LayerTreeImpl* tree_impl,
+                   int id,
+                   Layer::LayerMaskType mask_type);
   PictureLayerTiling* AddTiling(float contents_scale);
   void RemoveAllTilings();
   void AddTilingsForRasterScale();
@@ -143,7 +145,7 @@ class CC_EXPORT PictureLayerImpl
 
   bool was_screen_space_transform_animating_;
   bool only_used_low_res_last_append_quads_;
-  const bool is_mask_;
+  const Layer::LayerMaskType mask_type_;
 
   bool nearest_neighbor_;
   bool is_directly_composited_image_;

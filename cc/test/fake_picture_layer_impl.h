@@ -21,15 +21,22 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   static std::unique_ptr<FakePictureLayerImpl> Create(LayerTreeImpl* tree_impl,
                                                       int id) {
-    bool is_mask = false;
-    return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id, is_mask));
+    Layer::LayerMaskType mask_type = Layer::LayerMaskType::NOT_MASK;
+    return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id, mask_type));
   }
 
   static std::unique_ptr<FakePictureLayerImpl> CreateMask(
       LayerTreeImpl* tree_impl,
       int id) {
-    bool is_mask = true;
-    return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id, is_mask));
+    Layer::LayerMaskType mask_type = Layer::LayerMaskType::MULTI_TEXTURE_MASK;
+    return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id, mask_type));
+  }
+
+  static std::unique_ptr<FakePictureLayerImpl> CreateSingleTextureMask(
+      LayerTreeImpl* tree_impl,
+      int id) {
+    Layer::LayerMaskType mask_type = Layer::LayerMaskType::SINGLE_TEXTURE_MASK;
+    return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id, mask_type));
   }
 
   // Create layer from a raster source that covers the entire layer.
@@ -37,9 +44,9 @@ class FakePictureLayerImpl : public PictureLayerImpl {
       LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<RasterSource> raster_source) {
-    bool is_mask = false;
+    Layer::LayerMaskType mask_type = Layer::LayerMaskType::NOT_MASK;
     return base::WrapUnique(
-        new FakePictureLayerImpl(tree_impl, id, raster_source, is_mask));
+        new FakePictureLayerImpl(tree_impl, id, raster_source, mask_type));
   }
 
   // Create layer from a raster source that only covers part of the layer.
@@ -48,9 +55,9 @@ class FakePictureLayerImpl : public PictureLayerImpl {
       int id,
       scoped_refptr<RasterSource> raster_source,
       const gfx::Size& layer_bounds) {
-    bool is_mask = false;
+    Layer::LayerMaskType mask_type = Layer::LayerMaskType::NOT_MASK;
     return base::WrapUnique(new FakePictureLayerImpl(
-        tree_impl, id, raster_source, is_mask, layer_bounds));
+        tree_impl, id, raster_source, mask_type, layer_bounds));
   }
 
   // Create layer from a raster source that covers the entire layer and is a
@@ -59,9 +66,19 @@ class FakePictureLayerImpl : public PictureLayerImpl {
       LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<RasterSource> raster_source) {
-    bool is_mask = true;
+    Layer::LayerMaskType mask_type = Layer::LayerMaskType::MULTI_TEXTURE_MASK;
     return base::WrapUnique(
-        new FakePictureLayerImpl(tree_impl, id, raster_source, is_mask));
+        new FakePictureLayerImpl(tree_impl, id, raster_source, mask_type));
+  }
+
+  static std::unique_ptr<FakePictureLayerImpl>
+  CreateSingleTextureMaskWithRasterSource(
+      LayerTreeImpl* tree_impl,
+      int id,
+      scoped_refptr<RasterSource> raster_source) {
+    Layer::LayerMaskType mask_type = Layer::LayerMaskType::SINGLE_TEXTURE_MASK;
+    return base::WrapUnique(
+        new FakePictureLayerImpl(tree_impl, id, raster_source, mask_type));
   }
 
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -155,13 +172,15 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   FakePictureLayerImpl(LayerTreeImpl* tree_impl,
                        int id,
                        scoped_refptr<RasterSource> raster_source,
-                       bool is_mask);
+                       Layer::LayerMaskType mask_type);
   FakePictureLayerImpl(LayerTreeImpl* tree_impl,
                        int id,
                        scoped_refptr<RasterSource> raster_source,
-                       bool is_mask,
+                       Layer::LayerMaskType mask_type,
                        const gfx::Size& layer_bounds);
-  FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id, bool is_mask);
+  FakePictureLayerImpl(LayerTreeImpl* tree_impl,
+                       int id,
+                       Layer::LayerMaskType mask_type);
 
  private:
   gfx::Size fixed_tile_size_;

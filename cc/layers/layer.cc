@@ -419,7 +419,13 @@ void Layer::SetMaskLayer(Layer* mask_layer) {
     inputs_.mask_layer->RemoveFromParent();
     DCHECK(!inputs_.mask_layer->parent());
     inputs_.mask_layer->SetParent(this);
-    inputs_.mask_layer->SetIsMask(true);
+    if (inputs_.filters.IsEmpty()) {
+      inputs_.mask_layer->SetLayerMaskType(
+          Layer::LayerMaskType::MULTI_TEXTURE_MASK);
+    } else {
+      inputs_.mask_layer->SetLayerMaskType(
+          Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
+    }
   }
   SetSubtreePropertyChanged();
   SetNeedsFullTreeSync();
@@ -430,6 +436,9 @@ void Layer::SetFilters(const FilterOperations& filters) {
   if (inputs_.filters == filters)
     return;
   inputs_.filters = filters;
+  if (inputs_.mask_layer)
+    inputs_.mask_layer->SetLayerMaskType(
+        Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
   SetSubtreePropertyChanged();
   SetNeedsCommit();
 }

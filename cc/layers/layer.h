@@ -65,6 +65,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     INVALID_ID = -1,
   };
 
+  enum LayerMaskType {
+    NOT_MASK = 0,
+    MULTI_TEXTURE_MASK,
+    SINGLE_TEXTURE_MASK,
+  };
+
   static scoped_refptr<Layer> Create();
 
   int id() const { return inputs_.layer_id; }
@@ -312,7 +318,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual void SavePaintProperties();
   // Returns true iff anything was updated that needs to be committed.
   virtual bool Update();
-  virtual void SetIsMask(bool is_mask) {}
+  virtual void SetLayerMaskType(Layer::LayerMaskType type) {}
   virtual bool IsSuitableForGpuRasterization() const;
 
   virtual std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
