@@ -311,6 +311,11 @@ void CronetEnvironment::InitializeOnNetworkThread() {
 
   context_builder.set_host_resolver(std::move(mapped_host_resolver));
 
+  // TODO(690969): This behavior matches previous behavior of CookieStoreIOS in
+  // CrNet, but should change to adhere to App's Cookie Accept Policy instead
+  // of changing it.
+  [[NSHTTPCookieStorage sharedHTTPCookieStorage]
+      setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
   std::unique_ptr<net::CookieStore> cookie_store =
       base::MakeUnique<net::CookieStoreIOS>(
           [NSHTTPCookieStorage sharedHTTPCookieStorage]);

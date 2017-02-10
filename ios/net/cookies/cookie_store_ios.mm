@@ -591,8 +591,7 @@ void CookieStoreIOS::ClearSystemStore() {
 
 bool CookieStoreIOS::SystemCookiesAllowed() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return [system_store_ cookieAcceptPolicy] ==
-         NSHTTPCookieAcceptPolicyAlways;
+  return [system_store_ cookieAcceptPolicy] == NSHTTPCookieAcceptPolicyAlways;
 }
 
 void CookieStoreIOS::WriteToCookieMonster(NSArray* system_cookies) {
