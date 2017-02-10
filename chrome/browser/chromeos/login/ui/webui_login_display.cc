@@ -327,6 +327,12 @@ void WebUILoginDisplay::SetDisplayEmail(const std::string& email) {
     delegate_->SetDisplayEmail(email);
 }
 
+void WebUILoginDisplay::SetDisplayAndGivenName(const std::string& display_name,
+                                               const std::string& given_name) {
+  if (delegate_)
+    delegate_->SetDisplayAndGivenName(display_name, given_name);
+}
+
 void WebUILoginDisplay::Signout() {
   delegate_->Signout();
 }

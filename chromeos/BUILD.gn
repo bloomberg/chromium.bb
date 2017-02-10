@@ -25,6 +25,7 @@ component("chromeos") {
   ]
   deps = [
     ":attestation_proto",
+    ":authpolicy_proto",
     ":cryptohome_proto",
     ":power_manager_proto",
     "//base",
@@ -224,4 +225,12 @@ proto_library("cryptohome_signkey_proto") {
   ]
 
   proto_out_dir = "chromeos/cryptohome"
+}
+
+proto_library("authpolicy_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/authpolicy/active_directory_account_data.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/authpolicy"
 }

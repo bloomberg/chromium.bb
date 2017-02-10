@@ -102,7 +102,9 @@ void FakeAuthPolicyClient::AuthenticateUser(
     const std::string& user_principal_name,
     int password_fd,
     const AuthCallback& callback) {
-  callback.Run(authpolicy::ERROR_NONE, base::MD5String(user_principal_name));
+  authpolicy::ActiveDirectoryAccountData account_data;
+  account_data.set_account_id(base::MD5String(user_principal_name));
+  callback.Run(authpolicy::ERROR_NONE, account_data);
 }
 
 void FakeAuthPolicyClient::RefreshDevicePolicy(

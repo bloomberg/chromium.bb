@@ -189,6 +189,12 @@ void AppLaunchSigninScreen::SetDisplayEmail(const std::string& email) {
   return;
 }
 
+void AppLaunchSigninScreen::SetDisplayAndGivenName(
+    const std::string& display_name,
+    const std::string& given_name) {
+  NOTREACHED();
+}
+
 void AppLaunchSigninScreen::Signout() {
   NOTREACHED();
 }

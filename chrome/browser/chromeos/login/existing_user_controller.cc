@@ -515,6 +515,13 @@ void ExistingUserController::SetDisplayEmail(const std::string& email) {
   display_email_ = email;
 }
 
+void ExistingUserController::SetDisplayAndGivenName(
+    const std::string& display_name,
+    const std::string& given_name) {
+  display_name_ = base::UTF8ToUTF16(display_name);
+  given_name_ = base::UTF8ToUTF16(given_name);
+}
+
 void ExistingUserController::ShowWrongHWIDScreen() {
   host_->StartWizard(OobeScreen::SCREEN_WRONG_HWID);
 }
@@ -665,8 +672,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
   if (auth_status_consumer_)
     auth_status_consumer_->OnAuthFailure(failure);
 
-  // Clear the recorded displayed email so it won't affect any future attempts.
-  display_email_.clear();
+  ClearRecordedNames();
 
   // TODO(ginkage): Fix this case once crbug.com/469990 is ready.
   /*
@@ -724,8 +730,14 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   if (!display_email_.empty()) {
     user_manager::UserManager::Get()->SaveUserDisplayEmail(
         user_context.GetAccountId(), display_email_);
-    display_email_.clear();
   }
+  if (!display_name_.empty() || !given_name_.empty()) {
+    user_manager::UserManager::Get()->UpdateUserAccountData(
+        user_context.GetAccountId(),
+        user_manager::UserManager::UserAccountData(display_name_, given_name_,
+                                                   std::string() /* locale */));
+  }
+  ClearRecordedNames();
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile,
@@ -806,14 +818,14 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
         AuthFailure(AuthFailure::WHITELIST_CHECK_FAILED));
   }
 
-  display_email_.clear();
+  ClearRecordedNames();
 }
 
 void ExistingUserController::PolicyLoadFailed() {
   ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST, "");
 
   PerformLoginFinishedActions(false /* don't start auto login timer */);
-  display_email_.clear();
+  ClearRecordedNames();
 }
 
 void ExistingUserController::SetAuthFlowOffline(bool offline) {
@@ -857,7 +869,7 @@ void ExistingUserController::LoginAsGuest() {
     // Disallowed. The UI should normally not show the guest session button.
     LOG(ERROR) << "Guest login attempt when guest mode is disallowed.";
     PerformLoginFinishedActions(true /* start auto login timer */);
-    display_email_.clear();
+    ClearRecordedNames();
     return;
   }
 
@@ -1346,6 +1358,12 @@ void ExistingUserController::OnTokenHandleChecked(
   RecordPasswordChangeFlow(LOGIN_PASSWORD_CHANGE_FLOW_CRYPTOHOME_FAILURE);
   VLOG(1) << "Show unrecoverable cryptohome error dialog.";
   login_display_->ShowUnrecoverableCrypthomeErrorDialog();
+}
+
+void ExistingUserController::ClearRecordedNames() {
+  display_email_.clear();
+  display_name_.clear();
+  given_name_.clear();
 }
 
 }  // namespace chromeos

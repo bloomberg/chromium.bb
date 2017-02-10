@@ -123,17 +123,25 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
 
   void HandleAuthCallback(const AuthCallback& callback,
                           dbus::Response* response) {
+    authpolicy::ActiveDirectoryAccountData account_data;
     if (!response) {
       DLOG(ERROR) << "Auth: Failed to  call to authpolicy";
-      callback.Run(authpolicy::ERROR_DBUS_FAILURE, std::string());
+      callback.Run(authpolicy::ERROR_DBUS_FAILURE, account_data);
       return;
     }
     dbus::MessageReader reader(response);
     const authpolicy::ErrorType error(GetErrorFromReader(&reader));
-    std::string user_id;
-    if (!reader.PopString(&user_id))
+    if (reader.PopArrayOfBytesAsProto(&account_data)) {
+      callback.Run(error, account_data);
+      return;
+    }
+    DLOG(WARNING) << "Failed to parse protobuf. Fallback to string";
+    // TODO(rsorokin): Remove once both ChromiumOS and Chromium use protobuf.
+    std::string account_id;
+    if (!reader.PopString(&account_id))
       DLOG(ERROR) << "Auth: Failed to get user_id from the response";
-    callback.Run(error, user_id);
+    account_data.set_account_id(account_id);
+    callback.Run(error, account_data);
   }
 
   dbus::Bus* bus_ = nullptr;

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/authpolicy/active_directory_account_data.pb.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -23,8 +24,9 @@ class CHROMEOS_EXPORT AuthPolicyClient : public DBusClient {
  public:
   // |user_id| is a unique id for the users. Using objectGUID from Active
   // Directory server.
-  using AuthCallback = base::Callback<void(authpolicy::ErrorType error,
-                                           const std::string& user_id)>;
+  using AuthCallback = base::Callback<void(
+      authpolicy::ErrorType error,
+      const authpolicy::ActiveDirectoryAccountData& account_data)>;
   using JoinCallback = base::Callback<void(authpolicy::ErrorType error)>;
   using RefreshPolicyCallback = base::Callback<void(bool success)>;
 

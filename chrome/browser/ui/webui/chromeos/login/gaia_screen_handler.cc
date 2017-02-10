@@ -503,15 +503,19 @@ AccountId GaiaScreenHandler::GetAccountId(
   return account_id;
 }
 
-void GaiaScreenHandler::DoAdAuth(const std::string& username,
-                                 const Key& key,
-                                 authpolicy::ErrorType error,
-                                 const std::string& uid) {
+void GaiaScreenHandler::DoAdAuth(
+    const std::string& username,
+    const Key& key,
+    authpolicy::ErrorType error,
+    const authpolicy::ActiveDirectoryAccountData& account_data) {
   switch (error) {
     case authpolicy::ERROR_NONE: {
-      DCHECK(!uid.empty());
-      const AccountId account_id(
-          GetAccountId(username, uid, AccountType::ACTIVE_DIRECTORY));
+      DCHECK(!account_data.has_account_id() &&
+             !account_data.account_id().empty());
+      const AccountId account_id(GetAccountId(
+          username, account_data.account_id(), AccountType::ACTIVE_DIRECTORY));
+      Delegate()->SetDisplayAndGivenName(account_data.display_name(),
+                                         account_data.given_name());
       UserContext user_context(account_id);
       user_context.SetKey(key);
       user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);

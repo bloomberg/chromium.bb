@@ -98,6 +98,8 @@ class ExistingUserController
   void ResetAutoLoginTimer() override;
   void ResyncUserData() override;
   void SetDisplayEmail(const std::string& email) override;
+  void SetDisplayAndGivenName(const std::string& display_name,
+                              const std::string& given_name) override;
   void ShowWrongHWIDScreen() override;
   void Signout() override;
   bool IsUserWhitelisted(const AccountId& account_id) override;
@@ -261,6 +263,10 @@ class ExistingUserController
       const AccountId&,
       TokenHandleUtil::TokenHandleStatus token_handle_status);
 
+  // Clear the recorded displayed email, displayed name, given name so it won't
+  // affect any future attempts.
+  void ClearRecordedNames();
+
   // Public session auto-login timer.
   std::unique_ptr<base::OneShotTimer> auto_login_timer_;
 
@@ -308,6 +314,13 @@ class ExistingUserController
 
   // The displayed email for the next login attempt set by |SetDisplayEmail|.
   std::string display_email_;
+
+  // The displayed name for the next login attempt set by
+  // |SetDisplayAndGivenName|.
+  base::string16 display_name_;
+
+  // The given name for the next login attempt set by |SetDisplayAndGivenName|.
+  base::string16 given_name_;
 
   // Whether login attempt is running.
   bool is_login_in_progress_ = false;

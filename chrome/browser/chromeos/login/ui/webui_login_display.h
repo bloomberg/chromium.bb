@@ -84,6 +84,8 @@ class WebUILoginDisplay : public LoginDisplay,
   bool AllowNewUserChanged() const override;
   bool IsUserSigninCompleted() const override;
   void SetDisplayEmail(const std::string& email) override;
+  void SetDisplayAndGivenName(const std::string& display_name,
+                              const std::string& given_name) override;
 
   void HandleGetUsers() override;
   void CheckUserStatus(const AccountId& account_id) override;

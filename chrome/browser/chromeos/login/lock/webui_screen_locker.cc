@@ -335,6 +335,11 @@ void WebUIScreenLocker::SetDisplayEmail(const std::string& email) {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::SetDisplayAndGivenName(const std::string& display_name,
+                                               const std::string& given_name) {
+  NOTREACHED();
+}
+
 void WebUIScreenLocker::Signout() {
   chromeos::ScreenLocker::default_screen_locker()->Signout();
 }
