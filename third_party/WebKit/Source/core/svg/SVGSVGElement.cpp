@@ -510,7 +510,7 @@ bool SVGSVGElement::layoutObjectIsNeeded(const ComputedStyle& style) {
   // https://bugs.webkit.org/show_bug.cgi?id=103493
   if (document().documentElement() == this)
     return true;
-  return Element::layoutObjectIsNeeded(style);
+  return SVGElement::layoutObjectIsNeeded(style);
 }
 
 LayoutObject* SVGSVGElement::createLayoutObject(const ComputedStyle&) {

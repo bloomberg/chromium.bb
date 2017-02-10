@@ -49,7 +49,7 @@ bool SVGGElement::layoutObjectIsNeeded(const ComputedStyle&) {
   // even if display is set to 'none' - which is special to SVG <g> container
   // elements.
   return parentOrShadowHostElement() &&
-         parentOrShadowHostElement()->isSVGElement();
+         parentOrShadowHostElement()->isSVGElement() && isValid();
 }
 
 }  // namespace blink

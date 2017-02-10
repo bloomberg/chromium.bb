@@ -1026,6 +1026,21 @@ PassRefPtr<ComputedStyle> SVGElement::customStyleForLayoutObject() {
       correspondingElement(), style, DisallowStyleSharing);
 }
 
+bool SVGElement::layoutObjectIsNeeded(const ComputedStyle& style) {
+  // SVG elements only render when inside <svg>, or if the element is an <svg>
+  // itself.
+  if (!isSVGSVGElement(*this)) {
+    ContainerNode* parent = FlatTreeTraversal::parent(*this);
+    if (!parent || !parent->isSVGElement())
+      return false;
+  }
+
+  if (!isValid())
+    return false;
+
+  return Element::layoutObjectIsNeeded(style);
+}
+
 MutableStylePropertySet* SVGElement::animatedSMILStyleProperties() const {
   if (hasSVGRareData())
     return svgRareData()->animatedSMILStyleProperties();

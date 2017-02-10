@@ -38,7 +38,7 @@ bool SVGTSpanElement::layoutObjectIsNeeded(const ComputedStyle& style) {
   if (parentNode() &&
       (isSVGAElement(*parentNode()) || isSVGTextElement(*parentNode()) ||
        isSVGTextPathElement(*parentNode()) || isSVGTSpanElement(*parentNode())))
-    return Element::layoutObjectIsNeeded(style);
+    return SVGElement::layoutObjectIsNeeded(style);
 
   return false;
 }
