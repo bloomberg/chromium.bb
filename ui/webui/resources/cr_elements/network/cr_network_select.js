@@ -54,7 +54,6 @@ Polymer({
         return [];
       },
     },
-
   },
 
   /**
@@ -72,6 +71,9 @@ Polymer({
    */
   deviceStateListChangedListener_: function() {},
 
+  /** @private {number|null} */
+  scanIntervalId_: null,
+
   /** @override */
   attached: function() {
     this.networkListChangedListener_ = this.refreshNetworks.bind(this);
@@ -83,11 +85,18 @@ Polymer({
         this.deviceStateListChangedListener_);
 
     this.refreshNetworks();
+
+    /** @const */ var INTERVAL_MS = 10 * 1000;
     chrome.networkingPrivate.requestNetworkScan();
+    this.scanIntervalId_ = window.setInterval(function() {
+      chrome.networkingPrivate.requestNetworkScan();
+    }.bind(this), INTERVAL_MS);
   },
 
   /** @override */
   detached: function() {
+    if (this.scanIntervalId_ !== null)
+      window.clearInterval(this.scanIntervalId_);
     chrome.networkingPrivate.onNetworkListChanged.removeListener(
         this.networkListChangedListener_);
     chrome.networkingPrivate.onDeviceStateListChanged.removeListener(

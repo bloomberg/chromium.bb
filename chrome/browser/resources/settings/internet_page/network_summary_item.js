@@ -43,6 +43,12 @@ Polymer({
     },
 
     /**
+     * Type of networks in networkStateList. Used to initialte scanning.
+     * @type {CrOnc.Type}
+     */
+    networkType: String,
+
+    /**
      * Interface for networkingPrivate calls, passed from internet_page.
      * @type {!NetworkingPrivate}
      */
@@ -69,6 +75,19 @@ Polymer({
     },
   },
 
+  observers: ['updateScanning_(networkingPrivate, networkType, expanded_)'],
+
+  /** @private {number|null} */
+  scanIntervalId_: null,
+
+  /** override */
+  detached: function() {
+    if (this.scanIntervalId_ !== null) {
+      window.clearInterval(this.scanIntervalId_);
+      this.scanIntervalId_ = null;
+    }
+  },
+
   /** @private */
   expandedChanged_: function() {
     var type = this.deviceState ? this.deviceState.Type : '';
@@ -79,6 +98,27 @@ Polymer({
   deviceStateChanged_: function() {
     if (this.expanded_ && !this.deviceIsEnabled_(this.deviceState))
       this.expanded_ = false;
+  },
+
+  /** @private */
+  updateScanning_: function() {
+    if (this.scanIntervalId_ != null) {
+      if (!this.expanded_) {
+        window.clearInterval(this.scanIntervalId_);
+        this.scanIntervalId_ = null;
+      }
+      return;
+    }
+    if (!this.expanded_ ||
+        (this.networkType != CrOnc.Type.ALL &&
+         this.networkType != CrOnc.Type.WI_FI)) {
+      return;
+    }
+    /** @const */ var INTERVAL_MS = 10 * 1000;
+    this.networkingPrivate.requestNetworkScan();
+    this.scanIntervalId_ = window.setInterval(function() {
+      this.networkingPrivate.requestNetworkScan();
+    }.bind(this), INTERVAL_MS);
   },
 
   /**

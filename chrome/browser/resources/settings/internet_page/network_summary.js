@@ -161,8 +161,6 @@ Polymer({
       return;
     // Get the latest network states.
     this.getNetworkStates_();
-    if (event.detail.type == CrOnc.Type.WI_FI)
-      this.networkingPrivate.requestNetworkScan();
   },
 
   /**
