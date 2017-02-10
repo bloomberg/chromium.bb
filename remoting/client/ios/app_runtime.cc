@@ -31,7 +31,7 @@ namespace ios {
 AppRuntime::AppRuntime() {
   // TODO(sergeyu): Consider adding separate pools for different task classes.
   const int kMaxBackgroundThreads = 5;
-  if (!TaskScheduler::GetInstance()) {
+  if (!base::TaskScheduler::GetInstance()) {
     // Make sure TaskScheduler is initialized.
     base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
   }
