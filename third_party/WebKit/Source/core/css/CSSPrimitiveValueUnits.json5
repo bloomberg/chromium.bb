@@ -1,0 +1,118 @@
+{
+  // This file specifies the unit strings used in CSSPrimitiveValues.
+
+  parameters: {
+    unit_type: {},
+  },
+
+  data: [
+    {
+      name: "em",
+      unit_type: "Ems",
+    },
+    {
+      name: "ex",
+      unit_type: "Exs",
+    },
+    {
+      name: "px",
+      unit_type: "Pixels",
+    },
+    {
+      name: "cm",
+      unit_type: "Centimeters",
+    },
+    {
+      name: "mm",
+      unit_type: "Millimeters",
+    },
+    {
+      name: "in",
+      unit_type: "Inches",
+    },
+    {
+      name: "pt",
+      unit_type: "Points",
+    },
+    {
+      name: "pc",
+      unit_type: "Picas",
+    },
+    {
+      name: "deg",
+      unit_type: "Degrees",
+    },
+    {
+      name: "rad",
+      unit_type: "Radians",
+    },
+    {
+      name: "grad",
+      unit_type: "Gradians",
+    },
+    {
+      name: "ms",
+      unit_type: "Milliseconds",
+    },
+    {
+      name: "s",
+      unit_type: "Seconds",
+    },
+    {
+      name: "hz",
+      unit_type: "Hertz",
+    },
+    {
+      name: "khz",
+      unit_type: "Kilohertz",
+    },
+    {
+      name: "dpi",
+      unit_type: "DotsPerInch",
+    },
+    {
+      name: "dpcm",
+      unit_type: "DotsPerCentimeter",
+    },
+    {
+      name: "dppx",
+      unit_type: "DotsPerPixel",
+    },
+    {
+      name: "vw",
+      unit_type: "ViewportWidth",
+    },
+    {
+      name: "vh",
+      unit_type: "ViewportHeight",
+    },
+    {
+      name: "vmin",
+      unit_type: "ViewportMin",
+    },
+    {
+      name: "vmax",
+      unit_type: "ViewportMax",
+    },
+    {
+      name: "rem",
+      unit_type: "Rems",
+    },
+    {
+      name: "fr",
+      unit_type: "Fraction",
+    },
+    {
+      name: "turn",
+      unit_type: "Turns",
+    },
+    {
+      name: "ch",
+      unit_type: "Chs",
+    },
+    {
+      name: "__qem",
+      unit_type: "QuirkyEms",
+    },
+  ],
+}

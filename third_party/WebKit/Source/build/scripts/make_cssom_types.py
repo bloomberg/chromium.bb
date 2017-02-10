@@ -6,14 +6,14 @@
 import sys
 
 import css_properties
-import in_generator
+import json5_generator
 from name_utilities import enum_for_css_keyword
 import template_expander
 
 
 class CSSOMTypesWriter(css_properties.CSSProperties):
-    def __init__(self, in_file_path):
-        super(CSSOMTypesWriter, self).__init__(in_file_path)
+    def __init__(self, json5_file_path):
+        super(CSSOMTypesWriter, self).__init__(json5_file_path)
 
         for property in self._properties.values():
             types = []
@@ -50,4 +50,4 @@ class CSSOMTypesWriter(css_properties.CSSProperties):
         }
 
 if __name__ == '__main__':
-    in_generator.Maker(CSSOMTypesWriter).main(sys.argv)
+    json5_generator.Maker(CSSOMTypesWriter).main()

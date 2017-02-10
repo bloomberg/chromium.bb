@@ -35,6 +35,9 @@ import optparse
 from in_file import InFile
 
 
+#########################################################
+# This is now deprecated - use json5_generator.py instead
+#########################################################
 class GenericWriter(object):
     def __init__(self, in_files):
         self._outputs = {}  # file_name -> generator

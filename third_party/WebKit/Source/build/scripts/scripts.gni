@@ -9,14 +9,12 @@ import("//third_party/WebKit/Source/config.gni")
 # them without worrying about the current directory.
 _scripts_dir = "//third_party/WebKit/Source/build/scripts"
 
-scripts_for_in_files = [
+scripts_for_json5_files = [
   # jinja2/__init__.py contains version string, so sufficient as
   # dependency for whole jinja2 package
   "//third_party/jinja2/__init__.py",
   "//third_party/markupsafe/__init__.py",  # jinja2 dep
   "$_scripts_dir/hasher.py",
-  "$_scripts_dir/in_file.py",
-  "$_scripts_dir/in_generator.py",
   "$_scripts_dir/json5_generator.py",
   "$_scripts_dir/license.py",
   "$_scripts_dir/name_utilities.py",
@@ -25,21 +23,21 @@ scripts_for_in_files = [
 ]
 
 css_properties_files =
-    scripts_for_in_files + [ "$_scripts_dir/css_properties.py" ]
+    scripts_for_json5_files + [ "$_scripts_dir/css_properties.py" ]
 
-make_event_factory_files = scripts_for_in_files + [
+make_event_factory_files = scripts_for_json5_files + [
                              "$_scripts_dir/make_event_factory.py",
                              "$_scripts_dir/templates/EventFactory.cpp.tmpl",
                            ]
 
-make_names_files = scripts_for_in_files + [
+make_names_files = scripts_for_json5_files + [
                      "$_scripts_dir/make_names.py",
                      "$_scripts_dir/templates/MakeNames.cpp.tmpl",
                      "$_scripts_dir/templates/MakeNames.h.tmpl",
                    ]
 
 make_qualified_names_files =
-    scripts_for_in_files + [
+    scripts_for_json5_files + [
       "$_scripts_dir/make_qualified_names.py",
       "$_scripts_dir/templates/MakeQualifiedNames.cpp.tmpl",
       "$_scripts_dir/templates/MakeQualifiedNames.h.tmpl",
@@ -60,7 +58,7 @@ make_element_type_helpers_files =
     ]
 
 make_trie_helpers_files =
-    scripts_for_in_files + [ "$_scripts_dir/trie_builder.py" ]
+    scripts_for_json5_files + [ "$_scripts_dir/trie_builder.py" ]
 
 # The executables are relative to the build directory. Don't rebase it because
 # on Posix we want to run the system one on the path.
@@ -85,8 +83,8 @@ make_core_generated_deps = [
 #   script: script to run.
 #   in_files: ".in" files to pass to the script
 #   other_inputs: (optional) other input files the script depends on
-#                 defaults to "scripts_for_in_files" (if specified, we assume
-#                 that the contents of "scripts_for_in_files" are included in
+#                 defaults to "scripts_for_json5_files" (if specified, we assume
+#                 that the contents of "scripts_for_json5_files" are included in
 #                 this list).
 #   outputs: expected results. Note that the directory of the 0th item in this
 #            list will be taken to be the output path.
@@ -101,7 +99,7 @@ template("process_in_files") {
     if (defined(invoker.other_inputs)) {
       inputs += invoker.other_inputs
     } else {
-      inputs += scripts_for_in_files
+      inputs += scripts_for_json5_files
     }
     outputs = invoker.outputs
 
