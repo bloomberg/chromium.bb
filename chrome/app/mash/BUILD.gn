@@ -3,8 +3,11 @@
 # found in the LICENSE file.
 
 import("//build/config/nacl/config.gni")
+import("//chrome/common/features.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
+
+assert(enable_package_mash_services)
 
 source_set("mash") {
   sources = [
@@ -80,4 +83,11 @@ catalog("catalog") {
 catalog_cpp_source("chrome_mash_catalog") {
   catalog = ":catalog"
   generated_function_name = "CreateChromeMashCatalog"
+}
+
+source_set("mash_service_overrides") {
+  testonly = true
+  data = [
+    "mash_service_overrides.json",
+  ]
 }

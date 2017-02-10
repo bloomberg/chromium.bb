@@ -1165,22 +1165,6 @@ if (!is_android) {
       ":browser_tests",
     ]
   }
-
-  # TODO(GYP_GONE): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("mash_browser_tests_run") {
-    testonly = true
-    deps = [
-      ":mash_browser_tests",
-    ]
-  }
-
-  group("mash_browser_tests") {
-    testonly = true
-    data_deps = [
-      ":browser_tests",
-    ]
-  }
 }
 
 static_library("browser_tests_runner") {
@@ -1191,7 +1175,7 @@ static_library("browser_tests_runner") {
     ":test_support",
   ]
 
-  if (is_chromeos) {
+  if (enable_package_mash_services) {
     sources += [
       "base/browser_tests_main_chromeos.cc",
       "base/mash_browser_tests_main.cc",
@@ -5129,7 +5113,24 @@ if (is_android) {
   }
 }
 
-if (is_chromeos) {
+if (enable_package_mash_services) {
+  # TODO(GYP_GONE): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("mash_browser_tests_run") {
+    testonly = true
+    deps = [
+      ":mash_browser_tests",
+    ]
+  }
+
+  group("mash_browser_tests") {
+    testonly = true
+    data_deps = [
+      ":browser_tests",
+      "//chrome/app/mash:mash_service_overrides",
+    ]
+  }
+
   service_manifest("mash_browser_tests_manifest") {
     name = "mash_browser_tests"
 
