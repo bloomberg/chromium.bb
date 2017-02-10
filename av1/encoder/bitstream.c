@@ -435,7 +435,11 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const BLOCK_SIZE bsize = mbmi->sb_type;
 // For sub8x8 blocks the tx_size symbol does not need to be sent
 #if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
+#if CONFIG_RECT_TX
   if (bsize > BLOCK_4X4) {
+#else
+  if (bsize >= BLOCK_8X8 || (bsize > BLOCK_4X4 && is_inter_block(mbmi))) {
+#endif  // CONFIG_RECT_TX
 #else
   if (bsize >= BLOCK_8X8) {
 #endif
@@ -446,7 +450,6 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                      : intra_tx_size_cat_lookup[bsize];
     const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
     const int depth = tx_size_to_depth(coded_tx_size);
-
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
     assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
     assert(
@@ -1428,7 +1431,11 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 
   if (cm->tx_mode == TX_MODE_SELECT &&
 #if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
+#if CONFIG_RECT_TX
       bsize > BLOCK_4X4 &&
+#else
+      (bsize >= BLOCK_8X8 || (bsize > BLOCK_4X4 && is_inter)) &&
+#endif  // CONFIG_RECT_TX
 #else
       bsize >= BLOCK_8X8 &&
 #endif
@@ -1795,7 +1802,11 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   if (cm->tx_mode == TX_MODE_SELECT &&
 #if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
+#if CONFIG_RECT_TX
       bsize > BLOCK_4X4 &&
+#else
+      bsize >= BLOCK_8X8 &&
+#endif  // CONFIG_RECT_TX
 #else
       bsize >= BLOCK_8X8 &&
 #endif
