@@ -40,6 +40,7 @@ class AwBrowserTerminator : public breakpad::CrashDumpObserver::Client {
 
  private:
   static void ProcessTerminationStatus(int child_process_id,
+                                       base::ProcessHandle pid,
                                        std::unique_ptr<base::SyncSocket> pipe);
 
   // This map should only be accessed with its lock aquired as it is accessed

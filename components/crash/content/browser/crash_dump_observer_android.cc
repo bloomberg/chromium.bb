@@ -42,6 +42,9 @@ CrashDumpObserver* CrashDumpObserver::GetInstance() {
 
 CrashDumpObserver::CrashDumpObserver() {
   notification_registrar_.Add(this,
+                              content::NOTIFICATION_RENDERER_PROCESS_CREATED,
+                              content::NotificationService::AllSources());
+  notification_registrar_.Add(this,
                               content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,
@@ -142,13 +145,26 @@ void CrashDumpObserver::Observe(int type,
       app_state = base::android::ApplicationStatusListener::GetState();
       break;
     }
+    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
+      // The child process pid isn't available when process is gone, keep a
+      // mapping between child_process_id and pid, so we can find it later.
+      child_process_id_to_pid_[rph->GetID()] = rph->GetHandle();
+      return;
+    }
     default:
       NOTREACHED();
       return;
   }
-
-  OnChildExit(rph->GetID(), rph->GetHandle(), content::PROCESS_TYPE_RENDERER,
-              term_status, app_state);
+  base::ProcessHandle pid = rph->GetHandle();
+  const auto& iter = child_process_id_to_pid_.find(rph->GetID());
+  if (iter != child_process_id_to_pid_.end()) {
+    if (pid == base::kNullProcessHandle) {
+      pid = iter->second;
+    }
+    child_process_id_to_pid_.erase(iter);
+  }
+  OnChildExit(rph->GetID(), pid, content::PROCESS_TYPE_RENDERER, term_status,
+              app_state);
 }
 
 }  // namespace breakpad

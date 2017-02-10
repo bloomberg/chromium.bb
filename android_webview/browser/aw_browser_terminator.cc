@@ -61,22 +61,26 @@ void OnRenderProcessGone(int child_process_id) {
     delegate->OnRenderProcessGone(child_process_id);
 }
 
-void OnRenderProcessGoneDetail(int child_process_id, bool crashed) {
+void OnRenderProcessGoneDetail(int child_process_id,
+                               base::ProcessHandle child_process_pid,
+                               bool crashed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<AwRenderProcessGoneDelegate*> delegates;
   GetAwRenderProcessGoneDelegatesForRenderProcess(child_process_id, &delegates);
   for (auto delegate : delegates) {
-    if (!delegate->OnRenderProcessGoneDetail(child_process_id, crashed)) {
+    if (!delegate->OnRenderProcessGoneDetail(child_process_pid, crashed)) {
       if (crashed) {
         // Keeps this log unchanged, CTS test uses it to detect crash.
-        LOG(FATAL) << "Render process's crash wasn't handled by all associated"
-                   << " webviews, triggering application crash";
+        LOG(FATAL) << "Render process (" << child_process_pid << ")'s crash"
+                   << " wasn't handled by all associated  webviews, triggering"
+                   << " application crash.";
       } else {
         // The render process was most likely killed for OOM or switching
         // WebView provider, to make WebView backward compatible, kills the
         // browser process instead of triggering crash.
-        LOG(ERROR) << "Render process kill (OOM or update) wasn't handed by"
-                   << " all associated webviews, killing application.";
+        LOG(ERROR) << "Render process (" << child_process_pid << ") kill (OOM"
+                   << " or update) wasn't handed by all associated webviews,"
+                   << " killing application.";
         kill(getpid(), SIGKILL);
       }
     }
@@ -107,6 +111,7 @@ void AwBrowserTerminator::OnChildStart(int child_process_id,
 
 void AwBrowserTerminator::ProcessTerminationStatus(
     int child_process_id,
+    base::ProcessHandle pid,
     std::unique_ptr<base::SyncSocket> pipe) {
   bool crashed = false;
 
@@ -116,13 +121,14 @@ void AwBrowserTerminator::ProcessTerminationStatus(
     int exit_code;
     pipe->Receive(&exit_code, sizeof(exit_code));
     crash_reporter::SuppressDumpGeneration();
-    LOG(ERROR) << "Renderer process crash detected (code " << exit_code << ").";
+    LOG(ERROR) << "Renderer process (" << pid << ") crash detected (code "
+               << exit_code << ").";
     crashed = true;
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&OnRenderProcessGoneDetail, child_process_id, crashed));
+      base::Bind(&OnRenderProcessGoneDetail, child_process_id, pid, crashed));
 }
 
 void AwBrowserTerminator::OnChildExit(
@@ -151,8 +157,7 @@ void AwBrowserTerminator::OnChildExit(
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&AwBrowserTerminator::ProcessTerminationStatus,
-                 child_process_id,
-                 base::Passed(std::move(pipe))));
+                 child_process_id, pid, base::Passed(std::move(pipe))));
 }
 
 }  // namespace breakpad
