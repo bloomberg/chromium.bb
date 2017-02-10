@@ -96,6 +96,15 @@ _VERSION_SPECIFIC_FILTER['56'] = [
     'ChromeDriverTest.testMouseMoveTo',
     'ChromeDriverTest.testHoverOverElement',
 ]
+_VERSION_SPECIFIC_FILTER['57'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1625
+    'ChromeDriverTest.testWindowMaximize',
+    'ChromeDriverTest.testWindowPosition',
+    'ChromeDriverTest.testWindowSize',
+    'ChromeExtensionsCapabilityTest.testCanInspectBackgroundPage',
+    'ChromeExtensionsCapabilityTest.testCanLaunchApp',
+    'MobileEmulationCapabilityTest.testDeviceMetricsWithStandardWidth',
+]
 
 _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
