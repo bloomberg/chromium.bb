@@ -378,7 +378,7 @@ void ThreadState::threadLocalWeakProcessing() {
 
   GCForbiddenScope gcForbiddenScope(this);
   std::unique_ptr<Visitor> visitor =
-      Visitor::create(this, VisitorMarkingMode::WeakProcessing);
+      Visitor::create(this, Visitor::WeakProcessing);
 
   // Perform thread-specific weak processing.
   while (popAndInvokeThreadLocalWeakCallback(visitor.get())) {
@@ -1579,16 +1579,15 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
 
     std::unique_ptr<Visitor> visitor;
     if (gcType == BlinkGC::TakeSnapshot) {
-      visitor = Visitor::create(this, VisitorMarkingMode::SnapshotMarking);
+      visitor = Visitor::create(this, Visitor::SnapshotMarking);
     } else {
       DCHECK(gcType == BlinkGC::GCWithSweep ||
              gcType == BlinkGC::GCWithoutSweep);
       if (heap().compaction()->shouldCompact(this, gcType, reason)) {
         heap().compaction()->initialize(this);
-        visitor = Visitor::create(
-            this, VisitorMarkingMode::GlobalMarkingWithCompaction);
+        visitor = Visitor::create(this, Visitor::GlobalMarkingWithCompaction);
       } else {
-        visitor = Visitor::create(this, VisitorMarkingMode::GlobalMarking);
+        visitor = Visitor::create(this, Visitor::GlobalMarking);
       }
     }
 

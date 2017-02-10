@@ -12,12 +12,11 @@
 
 namespace blink {
 
-std::unique_ptr<Visitor> Visitor::create(ThreadState* state,
-                                         VisitorMarkingMode mode) {
+std::unique_ptr<Visitor> Visitor::create(ThreadState* state, MarkingMode mode) {
   return WTF::makeUnique<Visitor>(state, mode);
 }
 
-Visitor::Visitor(ThreadState* state, VisitorMarkingMode markingMode)
+Visitor::Visitor(ThreadState* state, MarkingMode markingMode)
     : m_state(state), m_markingMode(markingMode) {
   // See ThreadState::runScheduledGC() why we need to already be in a
   // GCForbiddenScope before any safe point is entered.

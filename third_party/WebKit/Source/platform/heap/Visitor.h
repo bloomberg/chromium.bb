@@ -94,25 +94,6 @@ struct TraceMethodDelegate {
 #define DEFINE_INLINE_TRACE() DEFINE_INLINE_TRACE_IMPL(EMPTY_MACRO_ARGUMENT)
 #define DEFINE_INLINE_VIRTUAL_TRACE() DEFINE_INLINE_TRACE_IMPL(virtual)
 
-enum class VisitorMarkingMode {
-  // This is a default visitor. This is used for GCType=GCWithSweep
-  // and GCType=GCWithoutSweep.
-  GlobalMarking,
-  // This visitor just marks objects and ignores weak processing.
-  // This is used for GCType=TakeSnapshot.
-  SnapshotMarking,
-  // This visitor is used to trace objects during weak processing.
-  // This visitor is allowed to trace only already marked objects.
-  WeakProcessing,
-  // Perform global marking along with preparing for additional sweep
-  // compaction of heap arenas afterwards. Compared to the GlobalMarking
-  // visitor, this visitor will also register references to objects
-  // that might be moved during arena compaction -- the compaction
-  // pass will then fix up those references when the object move goes
-  // ahead.
-  GlobalMarkingWithCompaction,
-};
-
 // Visitor is used to traverse the Blink object graph. Used for the
 // marking phase of the mark-sweep garbage collector.
 //
@@ -124,9 +105,28 @@ enum class VisitorMarkingMode {
 // contained pointers and push them on the marking stack.
 class PLATFORM_EXPORT Visitor {
  public:
-  static std::unique_ptr<Visitor> create(ThreadState*, VisitorMarkingMode);
+  enum MarkingMode {
+    // This is a default visitor. This is used for GCType=GCWithSweep
+    // and GCType=GCWithoutSweep.
+    GlobalMarking,
+    // This visitor just marks objects and ignores weak processing.
+    // This is used for GCType=TakeSnapshot.
+    SnapshotMarking,
+    // This visitor is used to trace objects during weak processing.
+    // This visitor is allowed to trace only already marked objects.
+    WeakProcessing,
+    // Perform global marking along with preparing for additional sweep
+    // compaction of heap arenas afterwards. Compared to the GlobalMarking
+    // visitor, this visitor will also register references to objects
+    // that might be moved during arena compaction -- the compaction
+    // pass will then fix up those references when the object move goes
+    // ahead.
+    GlobalMarkingWithCompaction,
+  };
 
-  Visitor(ThreadState*, VisitorMarkingMode);
+  static std::unique_ptr<Visitor> create(ThreadState*, MarkingMode);
+
+  Visitor(ThreadState*, MarkingMode);
   virtual ~Visitor();
 
   // One-argument templated mark method. This uses the static type of
@@ -310,7 +310,7 @@ class PLATFORM_EXPORT Visitor {
   inline ThreadState* state() const { return m_state; }
   inline ThreadHeap& heap() const { return state()->heap(); }
 
-  inline VisitorMarkingMode getMarkingMode() const { return m_markingMode; }
+  inline MarkingMode getMarkingMode() const { return m_markingMode; }
 
  private:
   template <typename T>
@@ -319,7 +319,7 @@ class PLATFORM_EXPORT Visitor {
   static void markNoTracingCallback(Visitor*, void*);
 
   ThreadState* const m_state;
-  const VisitorMarkingMode m_markingMode;
+  const MarkingMode m_markingMode;
 };
 
 }  // namespace blink

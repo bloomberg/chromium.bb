@@ -22,7 +22,7 @@ inline void Visitor::markHeader(HeapObjectHeader* header,
     return;
 
   DCHECK(ThreadState::current()->isInGC());
-  DCHECK(getMarkingMode() != VisitorMarkingMode::WeakProcessing);
+  DCHECK(getMarkingMode() != WeakProcessing);
 
   // A GC should only mark the objects that belong in its heap.
   DCHECK(&pageFromObject(objectPointer)->arena()->getThreadState()->heap() ==
@@ -51,7 +51,7 @@ inline void Visitor::markHeaderNoTracing(HeapObjectHeader* header) {
 }
 
 inline void Visitor::registerDelayedMarkNoTracing(const void* objectPointer) {
-  DCHECK(getMarkingMode() != VisitorMarkingMode::WeakProcessing);
+  DCHECK(getMarkingMode() != WeakProcessing);
   heap().pushPostMarkingCallback(const_cast<void*>(objectPointer),
                                  &markNoTracingCallback);
 }
@@ -59,9 +59,9 @@ inline void Visitor::registerDelayedMarkNoTracing(const void* objectPointer) {
 inline void Visitor::registerWeakMembers(const void* closure,
                                          const void* objectPointer,
                                          WeakCallback callback) {
-  DCHECK(getMarkingMode() != VisitorMarkingMode::WeakProcessing);
+  DCHECK(getMarkingMode() != WeakProcessing);
   // We don't want to run weak processings when taking a snapshot.
-  if (getMarkingMode() == VisitorMarkingMode::SnapshotMarking)
+  if (getMarkingMode() == SnapshotMarking)
     return;
   heap().pushThreadLocalWeakCallback(
       const_cast<void*>(closure), const_cast<void*>(objectPointer), callback);
@@ -71,7 +71,7 @@ inline void Visitor::registerWeakTable(
     const void* closure,
     EphemeronCallback iterationCallback,
     EphemeronCallback iterationDoneCallback) {
-  DCHECK(getMarkingMode() != VisitorMarkingMode::WeakProcessing);
+  DCHECK(getMarkingMode() != WeakProcessing);
   heap().registerWeakTable(const_cast<void*>(closure), iterationCallback,
                            iterationDoneCallback);
 }
@@ -101,15 +101,15 @@ inline bool Visitor::ensureMarked(const void* objectPointer) {
 
 inline void Visitor::registerWeakCellWithCallback(void** cell,
                                                   WeakCallback callback) {
-  DCHECK(getMarkingMode() != VisitorMarkingMode::WeakProcessing);
+  DCHECK(getMarkingMode() != WeakProcessing);
   // We don't want to run weak processings when taking a snapshot.
-  if (getMarkingMode() == VisitorMarkingMode::SnapshotMarking)
+  if (getMarkingMode() == SnapshotMarking)
     return;
   heap().pushGlobalWeakCallback(cell, callback);
 }
 
 inline void Visitor::registerBackingStoreReference(void* slot) {
-  if (getMarkingMode() != VisitorMarkingMode::GlobalMarkingWithCompaction)
+  if (getMarkingMode() != GlobalMarkingWithCompaction)
     return;
   heap().registerMovingObjectReference(
       reinterpret_cast<MovableReference*>(slot));
@@ -118,7 +118,7 @@ inline void Visitor::registerBackingStoreReference(void* slot) {
 inline void Visitor::registerBackingStoreCallback(void* backingStore,
                                                   MovingObjectCallback callback,
                                                   void* callbackData) {
-  if (getMarkingMode() != VisitorMarkingMode::GlobalMarkingWithCompaction)
+  if (getMarkingMode() != GlobalMarkingWithCompaction)
     return;
   heap().registerMovingObjectCallback(
       reinterpret_cast<MovableReference>(backingStore), callback, callbackData);

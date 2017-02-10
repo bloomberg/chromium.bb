@@ -3785,7 +3785,7 @@ TEST(HeapTest, CheckAndMarkPointer) {
   {
     TestGCScope scope(BlinkGC::HeapPointersOnStack);
     ThreadState::GCForbiddenScope gcScope(ThreadState::current());
-    Visitor visitor(ThreadState::current(), VisitorMarkingMode::GlobalMarking);
+    Visitor visitor(ThreadState::current(), Visitor::GlobalMarking);
     EXPECT_TRUE(scope.allThreadsParked());  // Fail the test if we could not
                                             // park all threads.
     heap.flushHeapDoesNotContainCache();
@@ -3811,7 +3811,7 @@ TEST(HeapTest, CheckAndMarkPointer) {
   {
     TestGCScope scope(BlinkGC::HeapPointersOnStack);
     ThreadState::GCForbiddenScope gcScope(ThreadState::current());
-    Visitor visitor(ThreadState::current(), VisitorMarkingMode::GlobalMarking);
+    Visitor visitor(ThreadState::current(), Visitor::GlobalMarking);
     EXPECT_TRUE(scope.allThreadsParked());
     heap.flushHeapDoesNotContainCache();
     for (size_t i = 0; i < objectAddresses.size(); i++) {
