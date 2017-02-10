@@ -43,7 +43,8 @@ void DeleteProfileCallback(std::unique_ptr<ScopedKeepAlive> keep_alive,
 }  // namespace
 
 void OpenNewWindowForProfile(Profile* profile) {
-  if (signin::IsForceSigninEnabled()) {
+  if (signin::IsForceSigninEnabled() ||
+      profiles::IsProfileLocked(profile->GetPath())) {
     if (!UserManager::IsShowing()) {
       UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
                         profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
