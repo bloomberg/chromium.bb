@@ -12,13 +12,14 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.suggestions.MostVisitedSites.MostVisitedURLsObserver;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -35,7 +36,7 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
     private static MostVisitedSites sMostVisitedSitesForTests;
 
     private final Context mContext;
-    private final Tab mTab;
+    private final SnackbarManager mSnackbarManager;
     private final TabModelSelector mTabModelSelector;
     private final SuggestionsNavigationDelegate mNavigationDelegate;
     private final MostVisitedSites mMostVisitedSites;
@@ -43,13 +44,13 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
     private boolean mIsDestroyed;
     private SnackbarController mTileRemovedSnackbarController;
 
-    public TileGroupDelegateImpl(Context context, Tab tab, TabModelSelector tabModelSelector,
-            SuggestionsNavigationDelegate navigationDelegate) {
-        mContext = context;
-        mTab = tab;
+    public TileGroupDelegateImpl(ChromeActivity activity, Profile profile,
+            TabModelSelector tabModelSelector, SuggestionsNavigationDelegate navigationDelegate) {
+        mContext = activity;
+        mSnackbarManager = activity.getSnackbarManager();
         mTabModelSelector = tabModelSelector;
         mNavigationDelegate = navigationDelegate;
-        mMostVisitedSites = buildMostVisitedSites(tab.getProfile());
+        mMostVisitedSites = buildMostVisitedSites(profile);
     }
 
     @Override
@@ -109,7 +110,7 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
         mIsDestroyed = true;
 
         if (mTileRemovedSnackbarController != null) {
-            mTab.getSnackbarManager().dismissSnackbars(mTileRemovedSnackbarController);
+            mSnackbarManager.dismissSnackbars(mTileRemovedSnackbarController);
         }
         mMostVisitedSites.destroy();
     }
@@ -146,7 +147,7 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
                                             mTileRemovedSnackbarController, Snackbar.TYPE_ACTION,
                                             Snackbar.UMA_NTP_MOST_VISITED_DELETE_UNDO)
                                     .setAction(mContext.getString(R.string.undo), url);
-        mTab.getSnackbarManager().showSnackbar(snackbar);
+        mSnackbarManager.showSnackbar(snackbar);
     }
 
     private void recordOpenedTile(Tile tile) {

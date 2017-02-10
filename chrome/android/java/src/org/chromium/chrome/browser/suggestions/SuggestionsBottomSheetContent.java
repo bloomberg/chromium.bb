@@ -60,7 +60,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         });
 
         mTileGroupDelegate =
-                new TileGroupDelegateImpl(activity, tab, tabModelSelector, navigationDelegate);
+                new TileGroupDelegateImpl(activity, profile, tabModelSelector, navigationDelegate);
 
         NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsManager,
                 /* aboveTheFoldView = */ null, uiConfig, OfflinePageBridge.getForProfile(profile),

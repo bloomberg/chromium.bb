@@ -327,10 +327,10 @@ public class NewTabPage
      * {@link NewTabPage}.
      */
     private class NewTabPageTileGroupDelegate extends TileGroupDelegateImpl {
-        private NewTabPageTileGroupDelegate(Context context, Tab tab,
+        private NewTabPageTileGroupDelegate(ChromeActivity activity, Profile profile,
                 TabModelSelector tabModelSelector,
                 SuggestionsNavigationDelegate navigationDelegate) {
-            super(context, tab, tabModelSelector, navigationDelegate);
+            super(activity, profile, tabModelSelector, navigationDelegate);
         }
 
         @Override
@@ -394,7 +394,7 @@ public class NewTabPage
         mNewTabPageManager = new NewTabPageManagerImpl(
                 mSnippetsBridge, mSnippetsBridge, navigationDelegate, profile, tab);
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(
-                activity, tab, tabModelSelector, navigationDelegate);
+                activity, profile, tabModelSelector, navigationDelegate);
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
         mBackgroundColor = ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg);
