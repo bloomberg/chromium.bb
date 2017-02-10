@@ -61,6 +61,11 @@ void BrowserTabStripTracker::MaybeTrackBrowser(Browser* browser) {
   if (!ShouldTrackBrowser(browser))
     return;
 
+  // It's possible that a browser is added to the observed browser list twice.
+  // In this case it might cause crash as seen in crbug.com/685731.
+  if (browsers_observing_.find(browser) != browsers_observing_.end())
+    return;
+
   browsers_observing_.insert(browser);
 
   if (browser_list_observer_)
