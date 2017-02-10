@@ -14,7 +14,7 @@ promise_test(() => {
     .then(characteristic => {
       return characteristic.startNotifications()
         .then(() => new Promise(resolve => {
-          let event_listener = e => {
+          let event_listener = () => {
             characteristic.removeEventListener(
               'characteristicvaluechanged', event_listener);
             resolve();

@@ -8,7 +8,7 @@ promise_test(() => {
   // The iframe we create will subscribe to notifications and will ensure
   // that the browser keeps receiving notifications even after this frame's
   // device disconnects.
-  let iframe_connected = new Promise(resolve => {
+  let iframe_connected = new Promise((resolve, reject) => {
     window.onmessage = messageEvent => {
       if (messageEvent.data === 'Ready') {
         let iframe = document.querySelector('iframe');
@@ -41,7 +41,7 @@ promise_test(() => {
         .then(characteristic => characteristic.startNotifications())
         .then(characteristic => new Promise(resolve => {
           // Make sure we are receiving events.
-          let event_listener = e => {
+          let event_listener = () => {
             characteristic.removeEventListener(
               'characteristicvaluechanged', event_listener);
             resolve(characteristic);

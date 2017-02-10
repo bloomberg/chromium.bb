@@ -325,7 +325,7 @@ function generate_string(size, char) {
 class EventCatcher {
   constructor(object, event) {
     this.eventFired = false;
-    let event_listener = e => {
+    let event_listener = () => {
       object.removeEventListener(event, event_listener);
       this.eventFired = true;
     }

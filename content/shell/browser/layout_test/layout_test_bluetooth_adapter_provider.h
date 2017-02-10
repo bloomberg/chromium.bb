@@ -18,7 +18,7 @@
 namespace content {
 
 // Implements fake adapters with named mock data set for use in tests as a
-// result of layout tests calling testRunner.setBluetoothMockDataSet.
+// result of layout tests calling testRunner.setBluetoothFakeAdapter.
 
 // An adapter named 'FooAdapter' in
 // https://webbluetoothcg.github.io/web-bluetooth/tests/ is provided by a
