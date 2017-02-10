@@ -7,6 +7,7 @@ var vrShellUi = (function() {
 
   let ui = new scene.Scene();
   let uiManager;
+  let nativeCommandHandler;
 
   let uiRootElement = document.querySelector('#ui');
   let uiStyle = window.getComputedStyle(uiRootElement);
@@ -687,8 +688,12 @@ var vrShellUi = (function() {
       this.reloadUiButton = new ReloadUiButton();
     }
 
-    setMode(mode, fullscreen) {
+    setMode(mode) {
       this.mode = mode;
+      this.updateState();
+    }
+
+    setFullscreen(fullscreen) {
       this.fullscreen = fullscreen;
       this.updateState();
     }
@@ -706,6 +711,7 @@ var vrShellUi = (function() {
 
       api.doAction(api.Action.SET_CONTENT_PAUSED, {'paused': menuMode});
 
+      this.background.setEnabled(mode == api.Mode.STANDARD);
       this.contentQuad.setEnabled(mode == api.Mode.STANDARD);
       this.contentQuad.setFullscreen(this.fullscreen);
       this.contentQuad.setMenuMode(menuMode);
@@ -736,51 +742,77 @@ var vrShellUi = (function() {
 
   function initialize() {
     uiManager = new UiManager();
+    nativeCommandHandler = new UiCommandHandler(uiManager);
     ui.flush();
 
     api.domLoaded();
   }
 
+  class UiCommandHandler extends api.NativeCommandHandler {
+    constructor(uiManager) {
+      super();
+      this.manager = uiManager;
+    }
+
+    /** @override */
+    onSetMode(mode) {
+      this.manager.setMode(mode);
+    }
+
+    /** @override */
+    onSetFullscreen(fullscreen) {
+      this.manager.setFullscreen(fullscreen);
+    }
+
+    /** @override */
+    onAppButtonClicked() {
+      this.manager.handleAppButtonClicked();
+    }
+
+    /** @override */
+    onSetSecurityLevel(level) {
+      this.manager.setSecurityLevel(level);
+    }
+
+    /** @override */
+    onSetWebVRSecureOrigin(secure) {
+      this.manager.setWebVRSecureOrigin(secure);
+    }
+
+    /** @override */
+    onSetReloadUiCapabilityEnabled(enabled) {
+      this.manager.reloadUiButton.setDevMode(enabled);
+    }
+
+    /** @override */
+    onSetUrl(host, path) {
+      this.manager.urlIndicator.setURL(host, path);
+      this.manager.omnibox.setURL(host, path);
+    }
+
+    /** @override */
+    onSetLoading(loading) {
+      this.manager.urlIndicator.setLoading(loading);
+    }
+
+    /** @override */
+    onSetLoadingProgress(progress) {
+      this.manager.urlIndicator.setLoadProgress(progress);
+    }
+
+    /** @override */
+    onSetOmniboxSuggestions(suggestions) {
+      this.manager.omnibox.setSuggestions(suggestions);
+    }
+
+    /** @override */
+    onCommandHandlerFinished() {
+      ui.flush();
+    }
+  }
+
   function command(dict) {
-    if ('mode' in dict) {
-      uiManager.setMode(dict['mode'], dict['fullscreen']);
-    }
-    if ('appButtonClicked' in dict) {
-      uiManager.handleAppButtonClicked();
-    }
-    if ('securityLevel' in dict) {
-      uiManager.setSecurityLevel(dict['securityLevel']);
-    }
-    if ('webVRSecureOrigin' in dict) {
-      uiManager.setWebVRSecureOrigin(dict['webVRSecureOrigin']);
-    }
-    if ('enableReloadUi' in dict) {
-      uiManager.reloadUiButton.setDevMode(dict['enableReloadUi']);
-    }
-    if ('url' in dict) {
-      let url = dict['url'];
-      uiManager.urlIndicator.setURL(url['host'], url['path']);
-      uiManager.omnibox.setURL(url['host'] + url['path']);
-    }
-    if ('loading' in dict) {
-      uiManager.urlIndicator.setLoading(dict['loading']);
-    }
-    if ('loadProgress' in dict) {
-      uiManager.urlIndicator.setLoadProgress(dict['loadProgress']);
-    }
-    if ('suggestions' in dict) {
-      uiManager.omnibox.setSuggestions(dict['suggestions']);
-    }
-    if ('setTabs' in dict) {
-      console.log(dict['setTabs']);
-    }
-    if ('updateTab' in dict) {
-      console.log(dict['updateTab']);
-    }
-    if ('removeTab' in dict) {
-      console.log(dict['removeTab']);
-    }
-    ui.flush();
+    nativeCommandHandler.handleCommand(dict);
   }
 
   return {
