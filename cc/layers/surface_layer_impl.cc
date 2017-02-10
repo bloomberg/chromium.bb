@@ -59,20 +59,23 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
 
+  float layer_to_content_scale_x, layer_to_content_scale_y;
+
   if (stretch_content_to_fill_bounds_) {
     // Stretches the surface contents to exactly fill the layer bounds,
     // regardless of scale or aspect ratio differences.
-    float scale_x = static_cast<float>(surface_info_.size_in_pixels().width()) /
-                    bounds().width();
-    float scale_y =
+    layer_to_content_scale_x =
+        static_cast<float>(surface_info_.size_in_pixels().width()) /
+        bounds().width();
+    layer_to_content_scale_y =
         static_cast<float>(surface_info_.size_in_pixels().height()) /
         bounds().height();
-    PopulateScaledSharedQuadState(shared_quad_state, scale_x, scale_y);
   } else {
-    PopulateScaledSharedQuadState(shared_quad_state,
-                                  surface_info_.device_scale_factor(),
-                                  surface_info_.device_scale_factor());
+    layer_to_content_scale_x = layer_to_content_scale_y =
+        surface_info_.device_scale_factor();
   }
+  PopulateScaledSharedQuadState(shared_quad_state, layer_to_content_scale_x,
+                                layer_to_content_scale_y);
 
   if (!surface_info_.id().is_valid())
     return;
@@ -80,7 +83,11 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
   gfx::Rect quad_rect(surface_info_.size_in_pixels());
   gfx::Rect visible_quad_rect =
       draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
-          quad_rect);
+          gfx::Rect(bounds()));
+
+  visible_quad_rect = gfx::ScaleToEnclosedRect(
+      visible_quad_rect, layer_to_content_scale_x, layer_to_content_scale_y);
+  visible_quad_rect = gfx::IntersectRects(quad_rect, visible_quad_rect);
 
   if (visible_quad_rect.IsEmpty())
     return;

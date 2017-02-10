@@ -48,9 +48,11 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
   Region remaining = rect;
 
   for (auto iter = quads.cbegin(); iter != quads.cend(); ++iter) {
+    EXPECT_TRUE(iter->rect.Contains(iter->visible_rect));
+
     gfx::RectF quad_rectf = MathUtil::MapClippedRect(
         iter->shared_quad_state->quad_to_target_transform,
-        gfx::RectF(iter->rect));
+        gfx::RectF(iter->visible_rect));
 
     // Before testing for exact coverage in the integer world, assert that
     // rounding will not round the rect incorrectly.

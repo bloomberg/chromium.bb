@@ -8,12 +8,84 @@
 
 #include "cc/layers/append_quads_data.h"
 #include "cc/test/layer_test_common.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 namespace {
 
 static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
+
+TEST(SurfaceLayerImplTest, OcclusionWithDeviceScaleFactor) {
+  float device_scale_factor = 1.25f;
+
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size scaled_surface_size(
+      gfx::ScaleToCeiledSize(layer_size, device_scale_factor));
+  gfx::Size viewport_size(1250, 1325);
+
+  const LocalSurfaceId kArbitraryLocalSurfaceId(
+      9, base::UnguessableToken::Create());
+
+  LayerTestCommon::LayerImplTest impl;
+
+  SurfaceLayerImpl* surface_layer_impl =
+      impl.AddChildToRoot<SurfaceLayerImpl>();
+  surface_layer_impl->SetBounds(layer_size);
+  surface_layer_impl->SetDrawsContent(true);
+  SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
+  surface_layer_impl->SetSurfaceInfo(
+      SurfaceInfo(surface_id, device_scale_factor, scaled_surface_size));
+
+  LayerImplList layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      impl.root_layer_for_testing(), viewport_size, device_scale_factor,
+      &layer_list);
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+
+  {
+    SCOPED_TRACE("No occlusion");
+    gfx::Rect occluded;
+    impl.AppendQuadsWithOcclusion(surface_layer_impl, occluded);
+
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(
+        impl.quad_list(), gfx::Rect(scaled_surface_size));
+    EXPECT_EQ(1u, impl.quad_list().size());
+  }
+
+  {
+    SCOPED_TRACE("Full occlusion");
+    gfx::Rect occluded(scaled_surface_size);
+    impl.AppendQuadsWithOcclusion(surface_layer_impl, occluded);
+
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    EXPECT_EQ(impl.quad_list().size(), 0u);
+  }
+
+  {
+    SCOPED_TRACE("Partial occlusion");
+    gfx::Rect occluded(gfx::ScaleToEnclosingRect(gfx::Rect(200, 0, 800, 1000),
+                                                 device_scale_factor));
+    impl.AppendQuadsWithOcclusion(surface_layer_impl, occluded);
+
+    size_t partially_occluded_count = 0;
+    LayerTestCommon::VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                                            &partially_occluded_count);
+    // The layer outputs one quad, which is partially occluded.
+    EXPECT_EQ(1u, impl.quad_list().size());
+    EXPECT_EQ(1u, partially_occluded_count);
+  }
+  {
+    SCOPED_TRACE("No outside occlusion");
+    gfx::Rect occluded(gfx::ScaleToEnclosingRect(gfx::Rect(0, 1000, 1250, 300),
+                                                 device_scale_factor));
+    impl.AppendQuadsWithOcclusion(surface_layer_impl, occluded);
+
+    LayerTestCommon::VerifyQuadsExactlyCoverRect(
+        impl.quad_list(), gfx::Rect(scaled_surface_size));
+    EXPECT_EQ(1u, impl.quad_list().size());
+  }
+}
 
 TEST(SurfaceLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
