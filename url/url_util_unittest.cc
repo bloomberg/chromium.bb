@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 #include "url/url_canon_stdstring.h"
@@ -415,79 +414,6 @@ TEST(URLUtilTest, TestDomainIs) {
     EXPECT_EQ(
         test_case.expected_domain_is,
         DomainIs(test_case.canonicalized_host, test_case.lower_ascii_domain));
-  }
-}
-
-TEST(URLUtilTest, IsAboutBlank) {
-  const std::string kAboutBlankUrls[] = {"about:blank", "about:blank?foo",
-                                         "about:blank/#foo",
-                                         "about:blank?foo#foo"};
-  for (const auto& url : kAboutBlankUrls)
-    EXPECT_TRUE(IsAboutBlank(GURL(url)));
-
-  const std::string kNotAboutBlankUrls[] = {
-      "http:blank",      "about:blan",          "about://blank",
-      "about:blank/foo", "about://:8000/blank", "about://foo:foo@/blank",
-      "foo@about:blank", "foo:bar@about:blank", "about:blank:8000"};
-  for (const auto& url : kNotAboutBlankUrls)
-    EXPECT_FALSE(IsAboutBlank(GURL(url)));
-}
-
-TEST(URLUtilTest, EqualsIgnoringRef) {
-  const struct {
-    const char* url_a;
-    const char* url_b;
-    bool are_equals;
-  } kTestCases[] = {
-      // No ref.
-      {"http://a.com", "http://a.com", true},
-      {"http://a.com", "http://b.com", false},
-
-      // Same Ref.
-      {"http://a.com#foo", "http://a.com#foo", true},
-      {"http://a.com#foo", "http://b.com#foo", false},
-
-      // Different Refs.
-      {"http://a.com#foo", "http://a.com#bar", true},
-      {"http://a.com#foo", "http://b.com#bar", false},
-
-      // One has a ref, the other doesn't.
-      {"http://a.com#foo", "http://a.com", true},
-      {"http://a.com#foo", "http://b.com", false},
-
-      // Empty refs.
-      {"http://a.com#", "http://a.com#", true},
-      {"http://a.com#", "http://a.com", true},
-
-      // URLs that differ only by their last character.
-      {"http://aaa", "http://aab", false},
-      {"http://aaa#foo", "http://aab#foo", false},
-
-      // Different size of the part before the ref.
-      {"http://123#a", "http://123456#a", false},
-
-      // Blob URLs
-      {"blob:http://a.com#foo", "blob:http://a.com#foo", true},
-      {"blob:http://a.com#foo", "blob:http://a.com#bar", true},
-      {"blob:http://a.com#foo", "blob:http://b.com#bar", false},
-
-      // Filesystem URLs
-      {"filesystem:http://a.com#foo", "filesystem:http://a.com#foo", true},
-      {"filesystem:http://a.com#foo", "filesystem:http://a.com#bar", true},
-      {"filesystem:http://a.com#foo", "filesystem:http://b.com#bar", false},
-  };
-
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message()
-                 << std::endl
-                 << "url_a = " << test_case.url_a << std::endl
-                 << "url_b = " << test_case.url_b << std::endl);
-    // A versus B.
-    EXPECT_EQ(test_case.are_equals,
-              GURL(test_case.url_a).EqualsIgnoringRef(GURL(test_case.url_b)));
-    // B versus A.
-    EXPECT_EQ(test_case.are_equals,
-              GURL(test_case.url_b).EqualsIgnoringRef(GURL(test_case.url_a)));
   }
 }
 

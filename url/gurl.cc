@@ -348,6 +348,19 @@ bool GURL::IsStandard() const {
   return url::IsStandard(spec_.data(), parsed_.scheme);
 }
 
+bool GURL::IsAboutBlank() const {
+  if (!SchemeIs(url::kAboutScheme))
+    return false;
+
+  if (has_host() || has_username() || has_password() || has_port())
+    return false;
+
+  if (path() != url::kAboutBlankPath && path() != url::kAboutBlankWithHashPath)
+    return false;
+
+  return true;
+}
+
 bool GURL::SchemeIs(base::StringPiece lower_ascii_scheme) const {
   DCHECK(base::IsStringASCII(lower_ascii_scheme));
   DCHECK(base::ToLowerASCII(lower_ascii_scheme) == lower_ascii_scheme);

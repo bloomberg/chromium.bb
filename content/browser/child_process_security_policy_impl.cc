@@ -30,7 +30,6 @@
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "url/gurl.h"
-#include "url/url_util.h"
 
 namespace content {
 
@@ -629,7 +628,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
   if (IsPseudoScheme(url.scheme())) {
     // Every child process can request <about:blank>, <about:blank?foo>,
     // <about:blank/#foo> and <about:srcdoc>.
-    if (url::IsAboutBlank(url) || url == kAboutSrcDocURL)
+    if (url.IsAboutBlank() || url == kAboutSrcDocURL)
       return true;
     // URLs like <about:version>, <about:crash>, <view-source:...> shouldn't be
     // requestable by any child process.  Also, this case covers
