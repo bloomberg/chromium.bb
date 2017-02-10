@@ -113,44 +113,12 @@ public class BackgroundOfflinerTaskTest {
 
     @Test
     @Feature({"OfflinePages"})
-    public void testIncomingTask() {
-        BackgroundOfflinerTask task =
-                new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
-        ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1000);
-        task.processBackgroundRequests(mTaskExtras, mDeviceConditions, waiter);
-
-        // Check with BackgroundSchedulerProcessor that it started processing.
-        assertTrue(mStubBackgroundSchedulerProcessor.getDidStartProcessing());
-        assertSame(mDeviceConditions, mStubBackgroundSchedulerProcessor.getDeviceConditions());
-
-        // Call the callback and then waiter should not block.
-        mStubBackgroundSchedulerProcessor.callback();
-        waiter.startWaiting();
-    }
-
-    @Test
-    @Feature({"OfflinePages"})
-    public void testIncomingTaskNotStarted() {
-        mStubBackgroundSchedulerProcessor.setFailToStart(true);
-        BackgroundOfflinerTask task = new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
-        ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1000);
-        task.processBackgroundRequests(mTaskExtras, mDeviceConditions, waiter);
-
-        // Check with BackgroundSchedulerProcessor that it did not start.
-        assertFalse(mStubBackgroundSchedulerProcessor.getDidStartProcessing());
-
-        // The waiter should not block if startScheduledProcessing returned false.
-        waiter.startWaiting();
-    }
-
-    @Test
-    @Feature({"OfflinePages"})
     public void testStartBackgroundRequests() {
         BackgroundOfflinerTask task = new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
         ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1);
         assertNull("Nothing scheduled", mGcmNetworkManager.getScheduledTask());
-        assertTrue(task.startBackgroundRequests(
-                RuntimeEnvironment.application, mTaskExtras, waiter));
+
+        task.startBackgroundRequests(RuntimeEnvironment.application, mTaskExtras, waiter);
 
         // Check that the backup task was scheduled.
         Task gcmTask = mGcmNetworkManager.getScheduledTask();
@@ -158,23 +126,50 @@ public class BackgroundOfflinerTaskTest {
         assertEquals(mTriggerConditions,
                 TaskExtrasPacker.unpackTriggerConditionsFromBundle(gcmTask.getExtras()));
 
-        // Check with BackgroundSchedulerProcessor that startScheduledProcessing got called.
+        // Check with BackgroundSchedulerProcessor that processing stated.
         assertTrue(mStubBackgroundSchedulerProcessor.getDidStartProcessing());
         assertSame(mDeviceConditions, mStubBackgroundSchedulerProcessor.getDeviceConditions());
+
+        // Waiter is only released at the end of the test, when the processing concludes.
+        mStubBackgroundSchedulerProcessor.callback();
+        waiter.startWaiting();
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testStartBackgroundRequestsNotStarted() {
+        mStubBackgroundSchedulerProcessor.setFailToStart(true);
+        BackgroundOfflinerTask task = new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
+        ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1);
+        assertNull("Nothing scheduled", mGcmNetworkManager.getScheduledTask());
+
+        task.startBackgroundRequests(RuntimeEnvironment.application, mTaskExtras, waiter);
+        waiter.startWaiting();
+
+        // Check that the backup task was scheduled.
+        Task gcmTask = mGcmNetworkManager.getScheduledTask();
+        assertNotNull("Backup task scheduled", gcmTask);
+        assertEquals(mTriggerConditions,
+                TaskExtrasPacker.unpackTriggerConditionsFromBundle(gcmTask.getExtras()));
+
+        // Check with BackgroundSchedulerProcessor that it did not start.
+        assertFalse(mStubBackgroundSchedulerProcessor.getDidStartProcessing());
     }
 
     @Test
     @Feature({"OfflinePages"})
     public void testStartBackgroundRequestsForLowBatteryLevel() {
+        // Setup low battery conditions.
         DeviceConditions deviceConditionsLowBattery = new DeviceConditions(
                 !POWER_CONNECTED, MINIMUM_BATTERY_LEVEL - 1, ConnectionType.CONNECTION_WIFI);
         when(mOfflinePageUtils.getDeviceConditionsImpl(any(Context.class)))
                 .thenReturn(deviceConditionsLowBattery);
+
         BackgroundOfflinerTask task = new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
         ChromeBackgroundServiceWaiter waiter = new ChromeBackgroundServiceWaiter(1);
         assertNull("Nothing scheduled", mGcmNetworkManager.getScheduledTask());
-        assertFalse(task.startBackgroundRequests(
-                RuntimeEnvironment.application, mTaskExtras, waiter));
+        task.startBackgroundRequests(RuntimeEnvironment.application, mTaskExtras, waiter);
+        waiter.startWaiting();
 
         // Check that the backup task was scheduled.
         Task gcmTask = mGcmNetworkManager.getScheduledTask();
@@ -190,11 +185,16 @@ public class BackgroundOfflinerTaskTest {
                 POWER_CONNECTED, MINIMUM_BATTERY_LEVEL - 1, ConnectionType.CONNECTION_WIFI);
         when(mOfflinePageUtils.getDeviceConditionsImpl(any(Context.class)))
                 .thenReturn(deviceConditionsPowerConnected);
+
         BackgroundOfflinerTask task2 =
                 new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
         ChromeBackgroundServiceWaiter waiter2 = new ChromeBackgroundServiceWaiter(1);
-        assertTrue(task2.startBackgroundRequests(
-                RuntimeEnvironment.application, mTaskExtras, waiter2));
+        task2.startBackgroundRequests(RuntimeEnvironment.application, mTaskExtras, waiter2);
+
+        assertTrue(mStubBackgroundSchedulerProcessor.getDidStartProcessing());
+
+        mStubBackgroundSchedulerProcessor.callback();
+        waiter2.startWaiting();
     }
 
     @Test
@@ -207,8 +207,8 @@ public class BackgroundOfflinerTaskTest {
         // Transition the test Activity to a running state.
         ApplicationStatus.onStateChangeForTesting(mTestActivity, ActivityState.STARTED);
 
-        assertFalse(task.startBackgroundRequests(
-                RuntimeEnvironment.application, mTaskExtras, waiter));
+        task.startBackgroundRequests(RuntimeEnvironment.application, mTaskExtras, waiter);
+        waiter.startWaiting();
 
         // Check that the backup task was scheduled.
         Task gcmTask = mGcmNetworkManager.getScheduledTask();
@@ -224,7 +224,11 @@ public class BackgroundOfflinerTaskTest {
         BackgroundOfflinerTask task2 =
                 new BackgroundOfflinerTask(mStubBackgroundSchedulerProcessor);
         ChromeBackgroundServiceWaiter waiter2 = new ChromeBackgroundServiceWaiter(1);
-        assertTrue(task2.startBackgroundRequests(
-                RuntimeEnvironment.application, mTaskExtras, waiter2));
+        task2.startBackgroundRequests(RuntimeEnvironment.application, mTaskExtras, waiter2);
+
+        assertTrue(mStubBackgroundSchedulerProcessor.getDidStartProcessing());
+
+        mStubBackgroundSchedulerProcessor.callback();
+        waiter2.startWaiting();
     }
 }
