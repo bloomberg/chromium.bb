@@ -82,9 +82,11 @@ Polymer({
     cr.addWebUIListener(
         'storage-android-size-changed',
         this.handleAndroidSizeChanged_.bind(this));
-    cr.addWebUIListener(
-        'storage-other-users-size-changed',
-        this.handleOtherUsersSizeChanged_.bind(this));
+    if (!this.isGuest_) {
+      cr.addWebUIListener(
+          'storage-other-users-size-changed',
+          this.handleOtherUsersSizeChanged_.bind(this));
+    }
     cr.addWebUIListener(
         'storage-drive-enabled-changed',
         this.handleDriveEnabledChanged_.bind(this));
@@ -178,7 +180,8 @@ Polymer({
    * @private
    */
   handleDriveCacheSizeChanged_: function(size) {
-    this.$.driveCacheSize.textContent = size;
+    if (this.driveEnabled_)
+      this.$$('#driveCacheSize').textContent = size;
   },
 
   /**
@@ -196,7 +199,8 @@ Polymer({
    * @private
    */
   handleAndroidSizeChanged_: function(size) {
-    this.$.androidSize.textContent = size;
+    if (this.androidEnabled_)
+      this.$$('#androidSize').textContent = size;
   },
 
   /**
@@ -204,7 +208,8 @@ Polymer({
    * @private
    */
   handleOtherUsersSizeChanged_: function(size) {
-    this.$.otherUsersSize.textContent = size;
+    if (!this.isGuest_)
+      this.$$('#otherUsersSize').textContent = size;
   },
 
   /**
