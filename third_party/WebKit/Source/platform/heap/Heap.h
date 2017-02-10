@@ -287,8 +287,6 @@ class PLATFORM_EXPORT ThreadHeap {
   void detach(ThreadState*);
   void lockThreadAttachMutex();
   void unlockThreadAttachMutex();
-  bool park();
-  void resume();
 
   void visitPersistentRoots(Visitor*);
   void visitStackRoots(Visitor*);

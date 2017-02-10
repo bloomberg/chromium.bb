@@ -57,45 +57,6 @@ namespace blink {
 HeapAllocHooks::AllocationHook* HeapAllocHooks::m_allocationHook = nullptr;
 HeapAllocHooks::FreeHook* HeapAllocHooks::m_freeHook = nullptr;
 
-class ParkThreadsScope final {
-  STACK_ALLOCATED();
-
- public:
-  explicit ParkThreadsScope(ThreadState* state)
-      : m_state(state), m_shouldResumeThreads(false) {}
-
-  bool parkThreads() {
-    TRACE_EVENT0("blink_gc", "ThreadHeap::ParkThreadsScope");
-
-    // TODO(haraken): In an unlikely coincidence that two threads decide
-    // to collect garbage at the same time, avoid doing two GCs in
-    // a row and return false.
-    double startTime = WTF::currentTimeMS();
-
-    m_shouldResumeThreads = m_state->heap().park();
-
-    double timeForStoppingThreads = WTF::currentTimeMS() - startTime;
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, timeToStopThreadsHistogram,
-        new CustomCountHistogram("BlinkGC.TimeForStoppingThreads", 1, 1000,
-                                 50));
-    timeToStopThreadsHistogram.count(timeForStoppingThreads);
-
-    return m_shouldResumeThreads;
-  }
-
-  ~ParkThreadsScope() {
-    // Only cleanup if we parked all threads in which case the GC happened
-    // and we need to resume the other threads.
-    if (m_shouldResumeThreads)
-      m_state->heap().resume();
-  }
-
- private:
-  ThreadState* m_state;
-  bool m_shouldResumeThreads;
-};
-
 void ThreadHeap::flushHeapDoesNotContainCache() {
   m_heapDoesNotContainCache->flush();
 }
@@ -241,14 +202,6 @@ void ThreadHeap::detach(ThreadState* thread) {
     DCHECK_EQ(heapStats().allocatedSpace(), 0u);
   if (isLastThread)
     delete this;
-}
-
-bool ThreadHeap::park() {
-  return m_safePointBarrier->parkOthers();
-}
-
-void ThreadHeap::resume() {
-  m_safePointBarrier->resumeOthers();
 }
 
 #if DCHECK_IS_ON()

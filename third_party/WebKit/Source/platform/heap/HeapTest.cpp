@@ -278,31 +278,16 @@ namespace blink {
 class TestGCScope {
  public:
   explicit TestGCScope(BlinkGC::StackState state)
-      : m_state(ThreadState::current()),
-        m_safePointScope(state),
-        m_parkedAllThreads(false) {
+      : m_state(ThreadState::current()), m_safePointScope(state) {
     ASSERT(m_state->checkThread());
-    if (LIKELY(m_state->heap().park())) {
-      m_state->heap().preGC();
-      m_parkedAllThreads = true;
-    }
+    m_state->heap().preGC();
   }
 
-  bool allThreadsParked() { return m_parkedAllThreads; }
-
-  ~TestGCScope() {
-    // Only cleanup if we parked all threads in which case the GC happened
-    // and we need to resume the other threads.
-    if (LIKELY(m_parkedAllThreads)) {
-      m_state->heap().postGC(BlinkGC::GCWithSweep);
-      m_state->heap().resume();
-    }
-  }
+  ~TestGCScope() { m_state->heap().postGC(BlinkGC::GCWithSweep); }
 
  private:
   ThreadState* m_state;
   SafePointScope m_safePointScope;
-  bool m_parkedAllThreads;  // False if we fail to park all threads
 };
 
 class SimpleObject : public GarbageCollected<SimpleObject> {
@@ -3786,8 +3771,6 @@ TEST(HeapTest, CheckAndMarkPointer) {
     TestGCScope scope(BlinkGC::HeapPointersOnStack);
     ThreadState::GCForbiddenScope gcScope(ThreadState::current());
     Visitor visitor(ThreadState::current(), Visitor::GlobalMarking);
-    EXPECT_TRUE(scope.allThreadsParked());  // Fail the test if we could not
-                                            // park all threads.
     heap.flushHeapDoesNotContainCache();
     for (size_t i = 0; i < objectAddresses.size(); i++) {
       EXPECT_TRUE(heap.checkAndMarkPointer(&visitor, objectAddresses[i],
@@ -3812,7 +3795,6 @@ TEST(HeapTest, CheckAndMarkPointer) {
     TestGCScope scope(BlinkGC::HeapPointersOnStack);
     ThreadState::GCForbiddenScope gcScope(ThreadState::current());
     Visitor visitor(ThreadState::current(), Visitor::GlobalMarking);
-    EXPECT_TRUE(scope.allThreadsParked());
     heap.flushHeapDoesNotContainCache();
     for (size_t i = 0; i < objectAddresses.size(); i++) {
       // We would like to assert that checkAndMarkPointer returned false

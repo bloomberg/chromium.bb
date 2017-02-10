@@ -99,45 +99,6 @@ const char* ThreadState::gcReasonString(BlinkGC::GCReason reason) {
   return "<Unknown>";
 }
 
-class ParkThreadsScope final {
-  STACK_ALLOCATED();
-
- public:
-  explicit ParkThreadsScope(ThreadState* state)
-      : m_state(state), m_shouldResumeThreads(false) {}
-
-  bool parkThreads() {
-    TRACE_EVENT0("blink_gc", "ThreadHeap::ParkThreadsScope");
-
-    // TODO(haraken): In an unlikely coincidence that two threads decide
-    // to collect garbage at the same time, avoid doing two GCs in
-    // a row and return false.
-    double startTime = WTF::currentTimeMS();
-
-    m_shouldResumeThreads = m_state->heap().park();
-
-    double timeForStoppingThreads = WTF::currentTimeMS() - startTime;
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, timeToStopThreadsHistogram,
-        new CustomCountHistogram("BlinkGC.TimeForStoppingThreads", 1, 1000,
-                                 50));
-    timeToStopThreadsHistogram.count(timeForStoppingThreads);
-
-    return m_shouldResumeThreads;
-  }
-
-  ~ParkThreadsScope() {
-    // Only cleanup if we parked all threads in which case the GC happened
-    // and we need to resume the other threads.
-    if (m_shouldResumeThreads)
-      m_state->heap().resume();
-  }
-
- private:
-  ThreadState* m_state;
-  bool m_shouldResumeThreads;
-};
-
 ThreadState::ThreadState()
     : m_thread(currentThread()),
       m_persistentRegion(WTF::makeUnique<PersistentRegion>()),
@@ -1569,13 +1530,6 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
 
   {
     SafePointScope safePointScope(stackState, this);
-
-    // Resume all parked threads upon leaving this scope.
-    ParkThreadsScope parkThreadsScope(this);
-
-    // Try to park the other threads. If we're unable to, bail out of the GC.
-    if (!parkThreadsScope.parkThreads())
-      return;
 
     std::unique_ptr<Visitor> visitor;
     if (gcType == BlinkGC::TakeSnapshot) {
