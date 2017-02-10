@@ -15,7 +15,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.git_cl.upload(u"Do the thing foobar\nNow with emoji: 😄")
+  api.git_cl.upload("Do the thing foobar\nNow with emoji: 😄")
   api.git_cl.issue()
   result = api.git_cl.get_description(
       patch='https://code.review/123', codereview='rietveld', suffix='build')
