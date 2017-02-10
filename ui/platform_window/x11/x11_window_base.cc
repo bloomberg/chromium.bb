@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/platform_window_defaults.h"
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
@@ -29,8 +30,6 @@ namespace {
 const char* kAtomsToCache[] = {"UTF8_STRING",  "WM_DELETE_WINDOW",
                                "_NET_WM_NAME", "_NET_WM_PID",
                                "_NET_WM_PING", NULL};
-
-bool g_override_redirect = false;
 
 XID FindXEventTarget(const XEvent& xev) {
   XID target = xev.xany.window;
@@ -78,7 +77,7 @@ void X11WindowBase::Create() {
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
   swa.bit_gravity = NorthWestGravity;
-  swa.override_redirect = g_override_redirect;
+  swa.override_redirect = UseTestConfigForPlatformWindows();
   xwindow_ =
       XCreateWindow(xdisplay_, xroot_window_, bounds_.x(), bounds_.y(),
                     bounds_.width(), bounds_.height(),
@@ -304,11 +303,4 @@ void X11WindowBase::ProcessXWindowEvent(XEvent* xev) {
   }
 }
 
-namespace test {
-
-void SetUseOverrideRedirectWindowByDefault(bool override_redirect) {
-  g_override_redirect = override_redirect;
-}
-
-}  // namespace test
 }  // namespace ui

@@ -26,6 +26,7 @@
 #include "ui/aura/window_port_local.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/platform_window_defaults.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -33,7 +34,6 @@
 #include "ui/wm/core/wm_state.h"
 
 #if defined(USE_X11)
-#include "ui/aura/window_tree_host_x11.h"
 #include "ui/base/x/x11_util.h"  // nogncheck
 #endif
 
@@ -51,9 +51,7 @@ AuraTestHelper::AuraTestHelper(base::MessageLoopForUI* message_loop)
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
-#if defined(USE_X11)
-  test::SetUseOverrideRedirectWindowByDefault(true);
-#endif
+  ui::test::EnableTestConfigForPlatformWindows();
   InitializeAuraEventGeneratorDelegate();
 }
 

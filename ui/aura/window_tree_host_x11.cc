@@ -31,6 +31,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/platform_window_defaults.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/x/x11_util.h"
@@ -109,8 +110,6 @@ void SelectXInput2EventsForRootWindow(XDisplay* display, ::Window root_window) {
 #endif
 }
 
-bool default_override_redirect = false;
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,7 +127,7 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
   swa.bit_gravity = NorthWestGravity;
-  swa.override_redirect = default_override_redirect;
+  swa.override_redirect = ui::UseTestConfigForPlatformWindows();
   xwindow_ = XCreateWindow(
       xdisplay_, x_root_window_,
       bounds.x(), bounds.y(), bounds.width(), bounds.height(),
@@ -575,11 +574,4 @@ WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds_in_pixels) {
   return new WindowTreeHostX11(bounds_in_pixels);
 }
 
-namespace test {
-
-void SetUseOverrideRedirectWindowByDefault(bool override_redirect) {
-  default_override_redirect = override_redirect;
-}
-
-}  // namespace test
 }  // namespace aura

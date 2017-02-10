@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ui/base/platform_window_defaults.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
@@ -20,7 +21,6 @@
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
-#include "ui/platform_window/x11/x11_window.h"
 #endif
 
 namespace gl {
@@ -31,8 +31,8 @@ void GLSurfaceTestSupport::InitializeOneOff() {
 
 #if defined(USE_X11)
   XInitThreads();
-  ui::test::SetUseOverrideRedirectWindowByDefault(true);
 #endif
+  ui::test::EnableTestConfigForPlatformWindows();
 
   bool use_osmesa = true;
 

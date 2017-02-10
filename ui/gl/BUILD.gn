@@ -325,6 +325,7 @@ static_library("test_support") {
   ]
   deps = [
     "//testing/gtest",
+    "//ui/base",
   ]
 
   if (use_x11) {

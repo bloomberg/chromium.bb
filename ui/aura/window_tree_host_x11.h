@@ -103,13 +103,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostX11);
 };
 
-namespace test {
-
-// Set the default value of the override redirect flag used to
-// create a X window for WindowTreeHostX11.
-AURA_EXPORT void SetUseOverrideRedirectWindowByDefault(bool override_redirect);
-
-}  // namespace test
 }  // namespace aura
 
 #endif  // UI_AURA_WINDOW_TREE_HOST_X11_H_

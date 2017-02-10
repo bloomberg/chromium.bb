@@ -32,6 +32,7 @@
 #include "net/base/network_interfaces.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/platform_window_defaults.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_implementation.h"
@@ -54,9 +55,6 @@
 #if defined(USE_AURA)
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"  // nogncheck
-#if defined(USE_X11)
-#include "ui/aura/window_tree_host_x11.h"  // nogncheck
-#endif
 #endif
 
 namespace content {
@@ -152,9 +150,7 @@ BrowserTestBase::BrowserTestBase()
   base::mac::SetOverrideAmIBundled(true);
 #endif
 
-#if defined(USE_AURA) && defined(USE_X11)
-  aura::test::SetUseOverrideRedirectWindowByDefault(true);
-#endif
+  ui::test::EnableTestConfigForPlatformWindows();
 
 #if defined(OS_POSIX)
   handle_sigterm_ = true;
