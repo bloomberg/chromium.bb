@@ -54,7 +54,6 @@ function test()
     var view = new Timeline.EventsTimelineTreeView(UI.panels.timeline._filters, null);
     view.setModel(model);
     view.updateContents(Timeline.TimelineSelection.fromRange(model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime()));
-    var filtersControl = view._filtersControl;
     function printEventMessage(event, level)
     {
         InspectorTest.addResult(" ".repeat(level) + event.args["data"].message);
@@ -70,12 +69,11 @@ function test()
     dumpRecords();
 
     InspectorTest.addResult("Filtered by 'bar':");
-    var textFilterUI = filtersControl._textFilterUI;
-    textFilterUI._internalSetValue("bar", true);
+    view._textFilterUI._internalSetValue("bar", true);
     dumpRecords();
 
     InspectorTest.addResult("Filtered by 'foo':");
-    textFilterUI._internalSetValue("foo", true);
+    view._textFilterUI._internalSetValue("foo", true);
     dumpRecords();
 
     InspectorTest.completeTest();
