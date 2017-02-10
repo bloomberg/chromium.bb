@@ -66,7 +66,6 @@
 <translation id="2068952045031577364">Последната седмица</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="209018056901015185">Заявка за настолния сайт</translation>
-<translation id="2100215774115172756">Списъкът ви за четене е налице офлайн.</translation>
 <translation id="2103075008456228677">Към history.google.com</translation>
 <translation id="2116625576999540962">Преместихте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> елемента</translation>
 <translation id="2149973817440762519">Редактиране на отметката</translation>
@@ -121,7 +120,6 @@
 <translation id="3175081911749765310">Уеб услуги</translation>
 <translation id="3207960819495026254">С отметка</translation>
 <translation id="3210163015918861891">Синхронизирането е изключено</translation>
-<translation id="3237561509210981547">За да добавите страница към списъка си за четене, докоснете <ph name="BEGIN_BOLD_FONT" />Споделяне &gt; Четене по-късно<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Връзката е копирана</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> от <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@
 <translation id="3414292259312108062">Chrome ще съхрани тази парола при <ph name="BEGIN_LINK" />останалите, запазени в Google<ph name="END_LINK" />, и автоматично ще я попълва вместо вас, за да не се налага да я помните.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
 <translation id="3448016392200048164">Разделен изглед</translation>
-<translation id="3474068797193663261">За да добавите страница към списъка си за четене, докоснете <ph name="BEGIN_BOLD_FONT" />иконата за меню &gt; Споделяне &gt; Четене по-късно<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Формулярите са попълнени.</translation>
 <translation id="3478058380795961209">Месец на валидност</translation>
 <translation id="3482959374254649722">Разделите ви се синхронизират...</translation>

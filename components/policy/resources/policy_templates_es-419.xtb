@@ -855,7 +855,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
 <translation id="3601614035698083789">Configura una lista de favoritos administrados.
 
-      La política consiste de favoritos en los que cada uno es un
+      La política consiste en favoritos, mientras que cada uno de ellos es un
       diccionario que contiene las claves <ph name="NAME" /> y <ph name="URL_LABEL" /> con el nombre y objetivo del favorito. Puede
       configurarse una subcarpeta al definir un favorito sin una clave <ph name="URL_LABEL" />, pero con una clave <ph name="CHILDREN" /> adicional que contenga una lista de
       favoritos, como se define anteriormente (algunos pueden ser carpetas). <ph name="PRODUCT_NAME" /> modifica las URL incompletas
@@ -863,7 +863,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Estos favoritos se guardan en la carpeta "Favoritos administrados". El usuario no puede modificar esta carpeta, pero puede ocultarla en la barra de favoritos. Los favoritos administrados no se sincronizan con la cuenta del usuario y no se pueden modificar mediante extensiones.
 
-      A partir de la liberación 51, el nombre de la carpeta para los favoritos puede personalizarse al agregar un elemento de la lista {"toplevel_name": "some name"}.</translation>
+      A partir de la versión 51, el nombre de la carpeta para los favoritos puede personalizarse al agregar un elemento de la lista {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Habilita o inhabilita el servicio web de revisión ortográfica.</translation>
 <translation id="3646859102161347133">Establece el tipo de lupa.</translation>
 <translation id="3653237928288822292">Ícono del proveedor de búsqueda predeterminado</translation>
@@ -1548,7 +1548,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="5906199912611534122">Permite habilitar o inhabilitar la velocidad moderada de la red.
       Esta acción se aplica a todos los usuarios y todas las interfaces en 
       el dispositivo. Si se establece, la velocidad moderada persiste hasta 
-      que se cambia la política se cambia para inhabilitarla.
+      que se cambia la política para inhabilitarla.
 
       Si se establece como falsa, no se aplica la velocidad moderada.
       Si se establece como verdadera, el sistema se acelera para alcanzar las velocidades de carga y descarga (en kbits/s).</translation>
@@ -1680,8 +1680,8 @@ desactivarlo).</translation>
           instalaciones no se hayan forzado).
 
           Esta política tiene prioridad por sobre una política de
-          ExtensionsInstallBlacklist posiblemente conflictiva. Si una app o extensión
-          cuya instalación se forzó anteriormente se quita de esta lista,
+          ExtensionsInstallBlacklist posiblemente conflictiva. Si una app o extensión,
+          cuya instalación se forzó anteriormente, se quita de esta lista,
           <ph name="PRODUCT_NAME" /> la desinstala de forma automática.
 
           Para las instancias de Windows que no están unidas a un dominio

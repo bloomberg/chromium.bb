@@ -66,7 +66,6 @@
 <translation id="2068952045031577364">Geçen Hafta</translation>
 <translation id="2079545284768500474">Geri al</translation>
 <translation id="209018056901015185">Masaüstü Sitesi İste</translation>
-<translation id="2100215774115172756">Okuma listeniz çevrimdışı olarak kullanılabilir.</translation>
 <translation id="2103075008456228677">history.google.com'u aç</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> öğe taşındı</translation>
 <translation id="2149973817440762519">Yer İşaretini Düzenle</translation>
@@ -121,7 +120,6 @@
 <translation id="3175081911749765310">Web Hizmetleri</translation>
 <translation id="3207960819495026254">Yer işareti koyuldu</translation>
 <translation id="3210163015918861891">Senkronizasyon Kapalı</translation>
-<translation id="3237561509210981547">Okuma listenize bir sayfa eklemek için <ph name="BEGIN_BOLD_FONT" />Paylaş &gt; Daha Sonra Oku<ph name="END_BOLD_FONT" />'ya dokunun.</translation>
 <translation id="3240426699337459095">Bağlantı kopyalandı</translation>
 <translation id="3244271242291266297">AA</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@
 <translation id="3414292259312108062">Chrome, daha sonra hatırlamak zorunda kalmamanız için bunu <ph name="BEGIN_LINK" />Google kayıtlı şifrelerinizde<ph name="END_LINK" /> depolar ve sizin için otomatik olarak doldurur.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> dk.</translation>
 <translation id="3448016392200048164">Bölünmüş Görünüm</translation>
-<translation id="3474068797193663261">Okuma listenize bir sayfa eklemek için <ph name="BEGIN_BOLD_FONT" />Menü &gt; Paylaş &gt; Daha Sonra Oku<ph name="END_BOLD_FONT" />'ya dokunun.</translation>
 <translation id="3474649192738347024">Form dolduruldu.</translation>
 <translation id="3478058380795961209">Son Kullanım Ayı</translation>
 <translation id="3482959374254649722">Sekmeleriniz senkronize ediliyor...</translation>
@@ -218,7 +215,7 @@ Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak 
 <translation id="5300589172476337783">Göster</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="5327248766486351172">Ad</translation>
-<translation id="5332219387342487447">Gönderme Yöntemi</translation>
+<translation id="5332219387342487447">Gönderim Yöntemi</translation>
 <translation id="5388358297987318779">Resmi Aç</translation>
 <translation id="5409365236829784218">Bu dosyayı açabilecek yüklü uygulama yok.</translation>
 <translation id="54401264925851789">Sayfa Güvenlik Bilgileri</translation>

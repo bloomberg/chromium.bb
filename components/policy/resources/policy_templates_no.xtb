@@ -890,14 +890,16 @@
 <translation id="3601614035698083789">Konfigurerer en liste over administrerte bokmerker.
 
       Regelen består av en liste over bokmerker, der hvert bokmerke er en
-      ordliste som inneholder nøklene <ph name="NAME" /> og <ph name="URL_LABEL" /> som inneholder bokmerkets navn og mål. En
-      undermappe kan konfigureres ved å definere et bokmerke uten <ph name="URL_LABEL" />-nøkkel, men med en ekstra <ph name="CHILDREN" />-nøkkel som i seg selv inneholder en liste over
+      ordliste som inneholder nøklene <ph name="NAME" />, og <ph name="URL_LABEL" /> som inneholder bokmerkets navn og mål.
+      En undermappe kan konfigureres ved å definere et bokmerke uten <ph name="URL_LABEL" />-nøkkel,
+
+      men med en ekstra <ph name="CHILDREN" />-nøkkel som i seg selv inneholder en liste over
       bokmerker, som definert ovenfor (noen av disse kan igjen være mapper). <ph name="PRODUCT_NAME" /> retter ufullstendige nettadresser
       som om de er sendt inn via multifunksjonsfeltet. <ph name="GOOGLE_COM" /> blir for eksempel <ph name="HTTPS_GOOGLE_COM" />.
 
       Disse bokmerkene plasseres i en «Administrerte bokmerker»-mappe som ikke kan modifiseres av brukeren. Brukeren kan imidlertid velge å skjule den fra bokmerkeraden. Administrerte bokmerker synkroniseres ikke med brukerkontoen og kan ikke modifiseres av utvidelser.
 
-      Fra og med versjon 51 kan mappenavnet for bokmerkene tilpasses ved å legge til et {"toppnivå_navn": "ett eller annet navn"}-listeelement.</translation>
+      Fra og med versjon 51 kan mappenavnet for bokmerkene tilpasses ved å legge til et listeelement på formatet {"toplevel_name": "ett eller annet navn"}.</translation>
 <translation id="3627678165642179114">Aktiver eller deaktiver nett-tjeneste for stavekontroll</translation>
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
 <translation id="3653237928288822292">Ikon for standard søkeleverandør</translation>
@@ -1766,26 +1768,26 @@
           automatisk avinstallert av <ph name="PRODUCT_NAME" />.
 
           For Windows-forekomster som ikke er knyttet til noe Active Directory-
-          domene, er tvungen installasjon begrenset til appene og utvidelsene som finnes på
-          Chrome Nettmarked.
+          domene, er tvungen installasjon begrenset til appene og utvidelsene
+          som finnes på Chrome Nettmarked.
 
-          Vær oppmerksom på at kildekoden til enhver utvidelse kan endres av brukere via
-          utviklerverktøyene (noe som potensielt kan ødelegge
+          Vær oppmerksom på at kildekoden til enhver utvidelse kan endres av 
+          brukere via utviklerverktøyene (noe som potensielt kan ødelegge
           utvidelsen). Hvis du er redd for dette, bør du angi DeveloperToolsDisabled-
           regelen.
 
           Hvert listeelement er en streng som inneholder en utvidelses-ID
-          og en «oppdaterings»-nettadresse, atskilt av semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er den 32-tegn lange strengen
-          som for eksempel finnes på <ph name="CHROME_EXTENSIONS_LINK" /> i
-          utviklermodus. «Oppdaterings»-nettadressen bør peke til et oppdateringsmanifest
-          i form av et XML-dokument, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Vær
-          oppmerksom på at «oppdaterings»-nettadressen som er angitt i denne regelen, bare brukes under den første
-          installeringen. Etterfølgende oppdateringer av utvidelsen bruker «oppdaterings»-
-          nettadressen som er angitt i utvidelsens manifest.
+          og en oppdateringsnettadresse ("update"), atskilt av semikolon (<ph name="SEMICOLON" />). 
+          Utvidelses-ID-en er den 32-tegn lange strengen som for eksempel finnes 
+          på <ph name="CHROME_EXTENSIONS_LINK" /> i utviklermodus. «Oppdaterings»-nettadressen bør peke til et
+          oppdateringsmanifest i form av et XML-dokument, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Vær
+          oppmerksom på at oppdateringsnettadressen ("update") som er angitt i denne regelen,
+          bare brukes under den første installeringen. Etterfølgende oppdateringer av utvidelsen
+          bruker oppdateringsnettadressen som er angitt i utvidelsens manifest.
 
           <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer
-          for eksempel <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />-appen fra den standard «oppdaterings»-nettadressen til Chrome
-          Nettmarked. Du finner mer informasjon om å være vert for utvidelser på <ph name="LINK_TO_EXTENSION_DOC2" />.
+          for eksempel <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />-appen fra den standardnettadressen for oppdatering ("update") for Chrome
+          Nettmarked. Se <ph name="LINK_TO_EXTENSION_DOC2" /> for mer informasjon om verter for utvidelser.
 
           Hvis denne regelen ikke angis, blir ingen apper eller utvidelser installert
           automatisk, og brukeren kan avinstallere alle apper og utvidelser i <ph name="PRODUCT_NAME" />.</translation>

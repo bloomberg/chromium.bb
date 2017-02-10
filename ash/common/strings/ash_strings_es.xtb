@@ -46,7 +46,6 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="225680501294068881">Buscando dispositivos...</translation>
 <translation id="2268130516524549846">Bluetooth inhabilitado</translation>
 <translation id="2268813581635650749">Cerrar todas las sesiones</translation>
-<translation id="2297568595583585744">Bandeja de estado</translation>
 <translation id="2303600792989757991">Activar descripción general de ventanas</translation>
 <translation id="2354174487190027830">Activación de <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="3626281679859535460">Brillo</translation>
 <translation id="3683428399328702079">Se ha modificado la resolución de <ph name="DISPLAY_NAME" /> a <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Habilitar Wi-Fi</translation>
-<translation id="3709443003275901162">+9</translation>
 <translation id="3712407551474845318">Capturar parte de la pantalla</translation>
 <translation id="372094107052732682">Pulsa Ctrl+Mayús+Q dos veces para salir.</translation>
 <translation id="3742055079367172538">Captura de pantalla hecha</translation>
@@ -140,7 +138,6 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="4957722034734105353">Más información...</translation>
 <translation id="4961318399572185831">Enviar pantalla</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Configuración de Google Drive...</translation>
 <translation id="510924152490034944">Puede que la conexión esté supervisada</translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
 <translation id="5170568018924773124">Mostrar en carpeta</translation>
@@ -199,7 +196,6 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="6521655319214113338">Escritura a mano</translation>
 <translation id="6537270692134705506">Capturar pantalla</translation>
 <translation id="6549021752953852991">No hay ninguna red móvil disponible.</translation>
-<translation id="6550675742724504774">Configuración</translation>
 <translation id="6585808820553845416">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Dirección IP</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce la clave de contraseña <ph name="PASSKEY" /> en el dispositivo</translation>
@@ -211,10 +207,8 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Conectarse a otra red...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="7029814467594812963">Cerrar sesión</translation>
-<translation id="703171847531699602">No hay dispositivos de transmisión</translation>
 <translation id="7034339000180558234">Enviando <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Establecer fondo de pantalla...</translation>
 <translation id="7066646422045619941">El administrador ha inhabilitado esta red.</translation>
@@ -235,7 +229,6 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> no admite una resolución de <ph name="SPECIFIED_RESOLUTION" />. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta de emojis</translation>
 <translation id="7573962313813535744">Modo acoplado</translation>
-<translation id="7580671184200851182">Reproducir el mismo audio en todos los altavoces (audio mono)</translation>
 <translation id="7581273696622423628">Responder encuesta</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7649070708921625228">Ayuda</translation>

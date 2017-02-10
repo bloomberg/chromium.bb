@@ -46,7 +46,6 @@
 <translation id="225680501294068881">சாதனங்களைக் கண்டறிகிறது...</translation>
 <translation id="2268130516524549846">புளூடூத் முடக்கப்பட்டது</translation>
 <translation id="2268813581635650749">அனைவரையும் வெளியேற்று</translation>
-<translation id="2297568595583585744">நிலைத் தட்டு</translation>
 <translation id="2303600792989757991">சாளர மேலோட்டத்தை நிலைமாற்று</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ஐச் செயல்படுத்துகிறது</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@
 <translation id="3626281679859535460">ஒளிர்வு</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> தெளிவுத்திறன் <ph name="RESOLUTION" /> க்கு மாற்றப்பட்டது</translation>
 <translation id="370649949373421643">Wi-fi ஐ இயக்கு</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">பகுதியைப் படமெடு</translation>
 <translation id="372094107052732682">வெளியேற Ctrl+Shift+Q ஐ இருமுறை அழுத்தவும்.</translation>
 <translation id="3742055079367172538">ஸ்கிரீன் ஷாட் எடுக்கப்பட்டது</translation>
@@ -140,7 +138,6 @@
 <translation id="4957722034734105353">மேலும் அறிக...</translation>
 <translation id="4961318399572185831">அனுப்புதல் திரை</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Google இயக்கக அமைப்புகள்...</translation>
 <translation id="510924152490034944">இணைப்பு கண்காணிக்கப்படலாம்</translation>
 <translation id="5168181903108465623">அனுப்பும் சாதனங்கள் உள்ளன</translation>
 <translation id="5170568018924773124">கோப்புறையில் காண்பி</translation>
@@ -199,7 +196,6 @@
 <translation id="6521655319214113338">கையெழுத்து உள்ளீடு</translation>
 <translation id="6537270692134705506">திரையைப் படமெடு</translation>
 <translation id="6549021752953852991">செல்லுலார் நெட்வொர்க் இல்லை</translation>
-<translation id="6550675742724504774">விருப்பத்தேர்வுகள்</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும்.</translation>
 <translation id="6596816719288285829">IP முகவரி</translation>
 <translation id="6650933572246256093">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்தக் கடவுச்சொல்லை உள்ளிடவும்: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> ஐ செயல்படுத்து</translation>
 <translation id="6911468394164995108">மற்றொன்றில் சேர்...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google இயக்ககம்</translation>
 <translation id="6981982820502123353">அணுகல் தன்மை</translation>
 <translation id="7029814467594812963">அமர்விலிருந்து வெளியேறவும்</translation>
-<translation id="703171847531699602">அனுப்பும் சாதனங்கள் இல்லை</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" />ஐ <ph name="RECEIVER_NAME" />க்கு அனுப்புகிறது</translation>
 <translation id="7052914147756339792">வால்பேப்பரை அமை...</translation>
 <translation id="7066646422045619941">இந்த நெட்வொர்க் உங்கள் நிர்வாகியால் முடக்கப்பட்டுள்ளது.</translation>
@@ -235,7 +229,6 @@
 <translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION" /> ஐ <ph name="DISPLAY_NAME" /> ஆதரிக்கவில்லை. <ph name="FALLBACK_RESOLUTION" /> க்குத் தெளிவு மாற்றப்பட்டது</translation>
 <translation id="7562368315689366235">ஈமொஜி தட்டு</translation>
 <translation id="7573962313813535744">டாக் செய்யப்பட்ட பயன்முறை</translation>
-<translation id="7580671184200851182">எல்லா ஸ்பீக்கர்களிலும் ஒரே ஆடியோவை இயக்கு (மோனோ ஆடியோ)</translation>
 <translation id="7581273696622423628">கருத்துக்கணிப்பைத் தொடங்கு</translation>
 <translation id="7593891976182323525">Search அல்லது Shift</translation>
 <translation id="7649070708921625228">உதவி</translation>

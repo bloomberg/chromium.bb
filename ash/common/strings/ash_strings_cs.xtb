@@ -45,7 +45,6 @@
 <translation id="225680501294068881">Vyhledávání zařízení…</translation>
 <translation id="2268130516524549846">Rozhraní Bluetooth deaktivováno</translation>
 <translation id="2268813581635650749">Odhlásit vše</translation>
-<translation id="2297568595583585744">Stavový panel</translation>
 <translation id="2303600792989757991">Přepnutí přehledu okna</translation>
 <translation id="2354174487190027830">Aktivace sítě <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -98,7 +97,6 @@
 <translation id="3626281679859535460">Jas</translation>
 <translation id="3683428399328702079">Rozlišení displeje <ph name="DISPLAY_NAME" /> bylo změněno na <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Povolit Wi-Fi</translation>
-<translation id="3709443003275901162">&gt;9</translation>
 <translation id="3712407551474845318">Pořídit snímek oblasti</translation>
 <translation id="372094107052732682">Práci ukončíte dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="3742055079367172538">Byl vytvořen snímek obrazovky</translation>
@@ -138,7 +136,6 @@
 <translation id="4957722034734105353">Další informace...</translation>
 <translation id="4961318399572185831">Odesílání obrazovky</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Nastavení Disku Google...</translation>
 <translation id="510924152490034944">Připojení může být sledováno</translation>
 <translation id="5168181903108465623">Dostupná zařízení Cast</translation>
 <translation id="5170568018924773124">Zobrazit ve složce</translation>
@@ -196,7 +193,6 @@
 <translation id="6521655319214113338">Zadávání psaním rukou</translation>
 <translation id="6537270692134705506">Pořídit snímek obrazovky</translation>
 <translation id="6549021752953852991">Není k dispozici žádná mobilní síť.</translation>
-<translation id="6550675742724504774">Možnosti</translation>
 <translation id="6585808820553845416">Relace skončí za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP adresa</translation>
 <translation id="6650933572246256093">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. V zařízení prosím zadejte následující přístupový klíč: <ph name="PASSKEY" /></translation>
@@ -208,10 +204,8 @@
 <translation id="6857811139397017780">Aktivovat: <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Připojit k jiné...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Disk Google</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
 <translation id="7029814467594812963">Ukončit relaci</translation>
-<translation id="703171847531699602">Nejsou k dispozici žádná zařízení Cast</translation>
 <translation id="7034339000180558234">Odesílání karty <ph name="TAB_NAME" /> do zařízení <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Nastavení tapety...</translation>
 <translation id="7066646422045619941">Tato síť je zakázána vaším administrátorem.</translation>
@@ -232,7 +226,6 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> rozlišení <ph name="SPECIFIED_RESOLUTION" /> nepodporuje. Rozlišení bylo změněno zpět na <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Paleta emodži</translation>
 <translation id="7573962313813535744">Ukotvený režim</translation>
-<translation id="7580671184200851182">Přehrávat ve všech reproduktorech stejný zvuk (mono)</translation>
 <translation id="7581273696622423628">Zúčastnit se průzkumu</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
 <translation id="7649070708921625228">Nápověda</translation>

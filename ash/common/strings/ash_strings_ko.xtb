@@ -46,7 +46,6 @@
 <translation id="225680501294068881">기기 검색 중...</translation>
 <translation id="2268130516524549846">블루투스를 사용 안 함</translation>
 <translation id="2268813581635650749">모두 로그아웃</translation>
-<translation id="2297568595583585744">상태 표시줄</translation>
 <translation id="2303600792989757991">창 전환 개요</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> 활성화 중</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@
 <translation id="3626281679859535460">밝기</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> 해상도가 <ph name="RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="370649949373421643">Wi-Fi 사용</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">영역 캡처</translation>
 <translation id="372094107052732682">종료하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="3742055079367172538">찍은 캡처화면</translation>
@@ -140,7 +138,6 @@
 <translation id="4957722034734105353">자세히 알아보기...</translation>
 <translation id="4961318399572185831">화면 전송</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Google 문서함 설정...</translation>
 <translation id="510924152490034944">연결이 모니터링될 수 있음</translation>
 <translation id="5168181903108465623">전송 기기를 사용할 수 있음</translation>
 <translation id="5170568018924773124">폴더 열기</translation>
@@ -199,7 +196,6 @@
 <translation id="6521655319214113338">필기 입력</translation>
 <translation id="6537270692134705506">화면 캡처</translation>
 <translation id="6549021752953852991">사용 가능한 휴대전화 네트워크가 없음</translation>
-<translation id="6550675742724504774">옵션</translation>
 <translation id="6585808820553845416">세션이 <ph name="SESSION_TIME_REMAINING" /> 후에 종료됩니다.</translation>
 <translation id="6596816719288285829">IP 주소</translation>
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> 활성화</translation>
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="6981982820502123353">접근성</translation>
 <translation id="7029814467594812963">세션 종료</translation>
-<translation id="703171847531699602">전송 기기 없음</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" />을(를) <ph name="RECEIVER_NAME" />(으)로 전송 중</translation>
 <translation id="7052914147756339792">배경화면 설정...</translation>
 <translation id="7066646422045619941">관리자가 사용 중지한 네트워크입니다.</translation>
@@ -235,7 +229,6 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="7562368315689366235">그림 이모티콘 팔레트</translation>
 <translation id="7573962313813535744">고정 모드</translation>
-<translation id="7580671184200851182">모든 스피커에서 동일한 오디오 실행(모노 오디오)</translation>
 <translation id="7581273696622423628">설문조사 참여</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7649070708921625228">도움말</translation>

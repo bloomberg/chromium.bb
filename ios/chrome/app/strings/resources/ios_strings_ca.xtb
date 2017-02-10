@@ -66,7 +66,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2068952045031577364">La darrera setmana</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="209018056901015185">Mostra com a ordinador</translation>
-<translation id="2100215774115172756">La teva llista de lectura està disponible sense connexió.</translation>
 <translation id="2103075008456228677">Obre history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elements desplaçats</translation>
 <translation id="2149973817440762519">Edició de l'adreça d'interès</translation>
@@ -121,7 +120,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="3175081911749765310">Serveis web</translation>
 <translation id="3207960819495026254">S'ha afegit a les adreces d'interès.</translation>
 <translation id="3210163015918861891">La sincronització està desactivada.</translation>
-<translation id="3237561509210981547">Per afegir una pàgina a la teva llista de lectura, toca <ph name="BEGIN_BOLD_FONT" />Comparteix &gt; Ho vull llegir més tard<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">S'ha copiat l'enllaç.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="3414292259312108062">Chrome l'emmagatzemarà a les <ph name="BEGIN_LINK" />contrasenyes desades a Google<ph name="END_LINK" /> i l'emplenarà automàticament perquè no us calgui recordar-la.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Visualització dividida</translation>
-<translation id="3474068797193663261">Per afegir una pàgina a la teva llista de lectura, toca <ph name="BEGIN_BOLD_FONT" />Menú &gt; Comparteix &gt; Ho vull llegir més tard<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">S'han emplenat els formularis.</translation>
 <translation id="3478058380795961209">Mes de caducitat</translation>
 <translation id="3482959374254649722">S'estan sincronitzant les pestanyes...</translation>
@@ -271,7 +268,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="6255097610484507482">Edita la targeta de crèdit</translation>
 <translation id="6308436439357671616">Això et permet fer i penjar fotos.</translation>
 <translation id="6314335155547195432">Genera una contrasenya</translation>
-<translation id="6324528485781869530">Canvia a un compte sincronitzat</translation>
+<translation id="6324528485781869530">Canvia de compte de sincronització</translation>
 <translation id="6324669097367352121">Configuració d'inici de sessió</translation>
 <translation id="6337234675334993532">Encriptació</translation>
 <translation id="633809752005859102">S'ha produït un error. Estem treballant per solucionar-lo.</translation>

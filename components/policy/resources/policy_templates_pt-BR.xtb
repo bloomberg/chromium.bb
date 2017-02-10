@@ -856,8 +856,8 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
 <translation id="3601614035698083789">Configura uma lista de favoritos gerenciados.
 
-      A política consiste em uma lista de favoritos. E cada favorito é um
-      dicionário contendo as chaves <ph name="NAME" /> e <ph name="URL_LABEL" />, que detêm o nome do favorito e o destino dele. É
+      A política consiste em uma lista de favoritos na qual cada favorito é um
+      dicionário contendo as chaves <ph name="NAME" /> e <ph name="URL_LABEL" />, com o nome do favorito e o destino dele. É
       possível configurar uma subpasta definindo um favorito sem uma chave <ph name="URL_LABEL" />, mas com uma chave <ph name="CHILDREN" /> adicional que, por si só, contenha uma lista de
       favoritos, conforme definido acima (alguns deles podem ser pastas novamente). O <ph name="PRODUCT_NAME" /> altera URLs incompletos
       como se eles fossem enviados pela Omnibox. Por exemplo, <ph name="GOOGLE_COM" /> torna-se <ph name="HTTPS_GOOGLE_COM" />.
@@ -1076,7 +1076,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Esta política não decide quais páginas serão abertas na inicialização. Isso é controlado pelas políticas RestoreOnStartup, que podem definir que a página aberta será a "Nova guia".
 
-          É possível definir NewTabPageLocation para o URL que você especificar aqui. Isso também afeta a página inicial, caso esteja definida para abrir a página "Nova guia", e a página de inicialização, caso esteja definida como a página "Nova guia".
+          É possível definir o NewTabPageLocation para o URL que você especificar aqui. Isso também afeta a página inicial, caso esteja definida para abrir a página "Nova guia", e a página de inicialização, caso esteja definida como a página "Nova guia".
 
           Se a política não estiver definida ou for deixada em branco, a página "Nova guia" padrão será usada.
 
@@ -1537,12 +1537,12 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
            Se essa configuração não está ativada ou configurada, as solicitações de autenticação gnubby não são transmitidas por proxy.</translation>
 <translation id="5898486742390981550">Quando vários usuários estão conectados, somente o usuário principal pode usar os apps Android.</translation>
-<translation id="5906199912611534122">Permite ativar ou desativar o acelerador de rede.
+<translation id="5906199912611534122">Permite ativar ou desativar a limitação da rede.
       Essa opção se aplica a todos os usuários e todas as interfaces no dispositivo. Depois que a política é definida,
-      o acelerador permanece ativado até que ela seja alterada para desativá-lo.
+      a limitação permanece ativada até que ela seja alterada para desativá-la.
 
-      Se a política é definida como false, não há acelerador.
-      Se definida como true, o sistema é suspenso para arquivar as taxas de upload e download (em kbits/s) fornecidas.</translation>
+      Se a política é definida como false, não há limitação.
+      Se definida como true, o sistema é limitado para atingir as taxas de upload e download (em kbits/s) estabelecidas.</translation>
 <translation id="5921713479449475707">Permitir atualização automática de downloads via HTTP</translation>
 <translation id="5921888683953999946">Definir o estado padrão do recurso de acessibilidade do cursor grande na tela de login.
 
@@ -2578,7 +2578,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       em contato com o Servidor Quirks automaticamente e faz o download dos arquivos de configuração,
       se eles estão disponíveis, e os armazena no dispositivo. Esses arquivos podem ser usados,
       por exemplo, para melhorar a qualidade de exibição dos monitores acoplados.</translation>
-<translation id="8906768759089290519">Ativa o modo de visitante</translation>
+<translation id="8906768759089290519">Ativa o modo visitante</translation>
 <translation id="8908294717014659003">Permite definir se os sites podem ter acesso a dispositivos de captura de mídia. O acesso a dispositivos de captura de mídia pode ser permitido por padrão, ou uma pergunta será feita ao usuário cada vez que um site quiser ter acesso a dispositivos de captura de mídia.
 
       Se esta política não for definida, será usado "PromptOnAccess", e o usuário poderá  fazer alterações.</translation>

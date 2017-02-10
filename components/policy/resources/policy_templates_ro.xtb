@@ -880,7 +880,7 @@
 
       Aceste marcaje sunt plasate într-un dosar „Marcaje gestionate” care nu poate fi modificat de utilizator, dar acesta poate alege să îl ascundă din bara de marcaje. Marcajele gestionate nu sunt sincronizate cu contul utilizatorului și nu pot fi modificate de extensii.
 
-      Începând cu versiunea 51, numele dosarului pentru marcaje poate fi personalizat prin adăugarea unui element din listă {"toplevel_name": "some name"}.</translation>
+      Începând cu versiunea 51, numele dosarului pentru marcaje poate fi personalizat prin adăugarea unui element din listă {"toplevel_name": "numele dorit"}.</translation>
 <translation id="3627678165642179114">Activați sau dezactivați serviciul web de verificare a ortografiei</translation>
 <translation id="3646859102161347133">Setați tipul lupei pentru ecran</translation>
 <translation id="3653237928288822292">Pictogramă pentru furnizorul de căutare prestabilit</translation>
@@ -1578,7 +1578,7 @@
       limitarea se aplică până când politica este modificată pentru a o dezactiva.
 
       Dacă este dezactivată, nu există limitare.
-      Dacă este activată, sistemul este limitat la cotele de încărcare și de descărcare specificate (în KB/s).</translation>
+      Dacă este activată, sistemul este limitat la cotele de încărcare și de descărcare specificate (în kilobiți/s).</translation>
 <translation id="5921713479449475707">Permite descărcarea actualizărilor automate prin HTTP</translation>
 <translation id="5921888683953999946">Setați funcția de accesibilitate pentru cursorul mare ca stare prestabilită pe ecranul de conectare.
 

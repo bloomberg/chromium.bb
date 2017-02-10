@@ -1141,7 +1141,7 @@
 
       Jei ši politika nustatyta kaip „false“, naudotojai negalės užrakinti ekrano (bus galima tik atsijungti nuo naudotojo seanso). Jei nustatymas nustatytas kaip „true“ arba nenustatytas, ekraną galės užrakinti naudotojai, autentifikuoti naudojant slaptažodį.</translation>
 <translation id="4121350739760194865">Neleisti rodyti programų reklamų naujo skirtuko puslapyje</translation>
-<translation id="4133301551755536858">Konfigūruojamas numatytasis naujo skirtuko puslapio URL sistemoje „<ph name="PRODUCT_NAME" />“ ir neleidžiama naudotojams jo keisti.
+<translation id="4133301551755536858">Numatytasis naujo skirtuko puslapio URL sistemoje „<ph name="PRODUCT_NAME" />“ konfigūruojamas ir neleidžiama naudotojams jo keisti.
 
           Naujo skirtuko puslapis – tai puslapis, atidaromas kuriant naujus skirtukus (įskaitant tą, kuris atidarytas naujuose languose).
 

@@ -46,7 +46,6 @@
 <translation id="225680501294068881">ডিভাইসগুলির জন্য স্ক্যান করা হচ্ছে...</translation>
 <translation id="2268130516524549846">ব্লুটুথ অক্ষমিত</translation>
 <translation id="2268813581635650749">সবগুলি প্রস্থান করুন করুন</translation>
-<translation id="2297568595583585744">স্থিতি ট্রে</translation>
 <translation id="2303600792989757991">উইন্ডোর ওভারভিউ টগল করুন</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> সক্রিয় করা হচ্ছে</translation>
 <translation id="2391579633712104609">১৮০°</translation>
@@ -100,7 +99,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3626281679859535460">উজ্জ্বলতা</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> এর রেসুলিউশান বদল  করে <ph name="RESOLUTION" /> করা হয়েছে</translation>
 <translation id="370649949373421643">Wi-fi সক্ষম করুন</translation>
-<translation id="3709443003275901162">৯+</translation>
 <translation id="3712407551474845318">অঞ্চল ক্যাপচার করুন</translation>
 <translation id="372094107052732682">প্রস্থান করার জন্য দুবার Ctrl+Shift+Q টিপুন৷</translation>
 <translation id="3742055079367172538">স্ক্রীনশট নেওয়া হয়েছে</translation>
@@ -140,7 +138,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="4957722034734105353">আরো জানুন...</translation>
 <translation id="4961318399572185831">স্ক্রীন কাস্ট করুন</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Google ড্রাইভ সেটিংস ...</translation>
 <translation id="510924152490034944">সংযোগ নিরীক্ষণ করা হতে পারে</translation>
 <translation id="5168181903108465623">কাস্ট ডিভাইসগুলি উপলব্ধ</translation>
 <translation id="5170568018924773124">ফোল্ডারে দেখান</translation>
@@ -199,7 +196,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6521655319214113338">হাতে লেখা ইনপুট</translation>
 <translation id="6537270692134705506">স্ক্রীন ক্যাপচার করুন</translation>
 <translation id="6549021752953852991">কোনো সেলুলার নেটওয়ার্ক উপলব্ধ নেই</translation>
-<translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
 <translation id="6596816719288285829">IP ঠিকানা</translation>
 <translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পাস কীটি প্রবেশ করুন: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6857811139397017780">সক্রিয় করুন <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">অন্যতে যোগদান করুন ...</translation>
 <translation id="6915678159055240887">ক্রোমবাক্স</translation>
-<translation id="6979158407327259162">Google ড্রাইভ</translation>
 <translation id="6981982820502123353">অ্যাক্সেযোগ্যতা</translation>
 <translation id="7029814467594812963">সেশন থেকে প্রস্থান</translation>
-<translation id="703171847531699602">কোনো কাস্ট ডিভাইস নেই</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> কে <ph name="RECEIVER_NAME" /> এ কাস্ট করা হচ্ছে</translation>
 <translation id="7052914147756339792">ওয়ালপেপার সেট করুন...</translation>
 <translation id="7066646422045619941">এই নেটওয়ার্কটি আপনার প্রশাসকের দ্বারা অক্ষম করা হয়েছে৷</translation>
@@ -234,7 +228,6 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> সমর্থন করে না৷ রেজোলিউশন <ph name="FALLBACK_RESOLUTION" /> এ পরিবর্তিত হয়েছে</translation>
 <translation id="7562368315689366235">ইমোজি প্যালেট</translation>
 <translation id="7573962313813535744">ডকযুক্ত মোড</translation>
-<translation id="7580671184200851182">সব স্পিকারে একই অডিও বাজান (মনো অডিও)</translation>
 <translation id="7581273696622423628">সমীক্ষায় যোগ দিন</translation>
 <translation id="7593891976182323525">Search অথবা Shift</translation>
 <translation id="7649070708921625228">সহায়তা</translation>

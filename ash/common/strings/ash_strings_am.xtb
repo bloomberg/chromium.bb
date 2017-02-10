@@ -46,7 +46,6 @@
 <translation id="225680501294068881">መሣሪያዎችን በመቃኘት ላይ...</translation>
 <translation id="2268130516524549846">ብሉቱዝ ተሰናክሏል</translation>
 <translation id="2268813581635650749">ሁሉንም ዘግተህ ውጣ</translation>
-<translation id="2297568595583585744">የሁኔታ መሳቢያ</translation>
 <translation id="2303600792989757991">የመስኮት አጠቃላይ እይታን ቀያይር</translation>
 <translation id="2354174487190027830"><ph name="NAME" />ን በማግበር ላይ</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@
 <translation id="3626281679859535460">ብሩህነት</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> ጥራት ወደ <ph name="RESOLUTION" /> ተለውጧል</translation>
 <translation id="370649949373421643">Wi-Fi ያንቁ</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">ክልልን አንሳ</translation>
 <translation id="372094107052732682">ለመውጣት Ctrl+Shift+Qን ይጫኑ</translation>
 <translation id="3742055079367172538">ቅጽበታዊ ገጽ እይታ ተነስቷል</translation>
@@ -140,7 +138,6 @@
 <translation id="4957722034734105353">ተጨማሪ ለመረዳት...</translation>
 <translation id="4961318399572185831">የCast ማያ ገጽ</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">የGoogle Drive ቅንብሮች...</translation>
 <translation id="510924152490034944">ግንኙነት ክትትል የሚደረግበት ሊሆን ይችላል</translation>
 <translation id="5168181903108465623">የCast መሣሪያዎች ይገኛሉ</translation>
 <translation id="5170568018924773124">በአቃፊ አሳይ</translation>
@@ -199,7 +196,6 @@
 <translation id="6521655319214113338">የእጅ ጽሑፍ ግቤት</translation>
 <translation id="6537270692134705506">ማያ ገጽን አንሳ</translation>
 <translation id="6549021752953852991">ምንም የተንቀሳቃሽ ሞደም አውታረ መረብ አይገኝም</translation>
-<translation id="6550675742724504774">አማራጮች</translation>
 <translation id="6585808820553845416">ክፍለ-ጊዜ በ<ph name="SESSION_TIME_REMAINING" /> ውስጥ ያበቃል።</translation>
 <translation id="6596816719288285829">IP አድራሻ</translation>
 <translation id="6650933572246256093">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የይለፍ ቁልፍ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" />ን አግብር</translation>
 <translation id="6911468394164995108">ሌላ ይቀላቀሉ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">ተደራሽነት</translation>
 <translation id="7029814467594812963">ከክፍለ-ጊዜ ውጣ</translation>
-<translation id="703171847531699602">ምንም የሚወሰዱ መሣሪያዎች የሉም</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" />ን ወደ <ph name="RECEIVER_NAME" /> Cast በማድረግ ላይ</translation>
 <translation id="7052914147756339792">ልጣፍ አዘጋጅ...</translation>
 <translation id="7066646422045619941">ይህ አውታረ መረብ በአስተዳዳሪዎ ነው የተሰናከለው።</translation>
@@ -235,7 +229,6 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />ን አይደግፍም። ጥራቱ ወደ <ph name="FALLBACK_RESOLUTION" /> ተቀይሯል</translation>
 <translation id="7562368315689366235">ስሜት ገላጭ ሥዕል ቤተ-ሥዕል</translation>
 <translation id="7573962313813535744">ትክል ሁነታ</translation>
-<translation id="7580671184200851182">ተመሳሳዩን ኦዲዮ በሁሉም ድምፅ ማጉያዎች በኩል አጫውት (ሞኖ ኦዲዮ)</translation>
 <translation id="7581273696622423628">አጠቃላይ ጥናት ላይ ይሳተፉ</translation>
 <translation id="7593891976182323525">Search ወይም Shift</translation>
 <translation id="7649070708921625228">እገዛ</translation>

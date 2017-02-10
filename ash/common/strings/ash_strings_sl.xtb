@@ -46,7 +46,6 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="225680501294068881">Iskanje naprav ...</translation>
 <translation id="2268130516524549846">Bluetooth onemogočen</translation>
 <translation id="2268813581635650749">Odjava vseh</translation>
-<translation id="2297568595583585744">Pladenj stanja</translation>
 <translation id="2303600792989757991">Preklop pregleda okna</translation>
 <translation id="2354174487190027830">Aktiviranje omrežja <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="3626281679859535460">Svetlost</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> – ločljivost je bila spremenjena na: <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Omogoči Wi-Fi</translation>
-<translation id="3709443003275901162">Več kot 9</translation>
 <translation id="3712407551474845318">Zajem območja</translation>
 <translation id="372094107052732682">Dvakrat pritisnite Ctrl + Shift + Q, če želite končati.</translation>
 <translation id="3742055079367172538">Posnetek zaslona je narejen</translation>
@@ -140,7 +138,6 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="4957722034734105353">Več o tem ...</translation>
 <translation id="4961318399572185831">Predvajanje zaslona</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Nastavitve za Google Drive ...</translation>
 <translation id="510924152490034944">Povezava je morda nadzorovana</translation>
 <translation id="5168181903108465623">Naprave za predvajanje so na voljo</translation>
 <translation id="5170568018924773124">Prikaži v mapi</translation>
@@ -199,7 +196,6 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="6521655319214113338">Vnos z rokopisom</translation>
 <translation id="6537270692134705506">Zajem zaslona</translation>
 <translation id="6549021752953852991">Mobilno omrežje ni na voljo</translation>
-<translation id="6550675742724504774">Možnosti</translation>
 <translation id="6585808820553845416">Seja se konča čez <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Naslov IP</translation>
 <translation id="6650933572246256093">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi vaše dovoljenje za seznanjanje. V napravi vnesite to geslo: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Pridružitev drugemu omrežju ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Dostopnost</translation>
 <translation id="7029814467594812963">Zapusti sejo</translation>
-<translation id="703171847531699602">Ni naprav za predvajanje</translation>
 <translation id="7034339000180558234">Predvajanje zavihka v <ph name="TAB_NAME" /> sprejemniku <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Nastavi sliko za ozadje ...</translation>
 <translation id="7066646422045619941">To omrežje je onemogočil skrbnik.</translation>
@@ -235,7 +229,6 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ne podpira ločljivosti <ph name="SPECIFIED_RESOLUTION" />. Spremenjena je bila na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta znakov »emoji«</translation>
 <translation id="7573962313813535744">Zasidran način</translation>
-<translation id="7580671184200851182">Predvajaj isti zvok prek vseh zvočnikov (mono zvok)</translation>
 <translation id="7581273696622423628">Izpolnjevanje ankete</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
 <translation id="7649070708921625228">Pomoč</translation>
@@ -252,7 +245,7 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="8000066093800657092">Ni omrežja</translation>
 <translation id="8054466585765276473">Izračunavanje časa trajanja akumulatorja.</translation>
 <translation id="8077816382010018681">Naslov sporočila o funkciji hitrega odklepanja je tukaj.</translation>
-<translation id="8098591350844501178">Ustavit predvajanje zaslona v napravi <ph name="RECEIVER_NAME" /></translation>
+<translation id="8098591350844501178">Ustavi predvajanje zaslona v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">Sporočila SMS: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Povezava z <ph name="NAME" /> je vzpostavljena </translation>
 <translation id="8180896103888046100">Ustvari predvajanje v neznanem sprejemniku</translation>

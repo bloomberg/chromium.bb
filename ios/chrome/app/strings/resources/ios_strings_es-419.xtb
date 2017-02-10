@@ -66,7 +66,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="2068952045031577364">La semana pasada</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="209018056901015185">Versión para escritorio</translation>
-<translation id="2100215774115172756">Tu lista de lectura está disponible sin conexión.</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos movidos</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
@@ -121,7 +120,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="3175081911749765310">Servicios web</translation>
 <translation id="3207960819495026254">Agregada a favoritos</translation>
 <translation id="3210163015918861891">Sincronización desactivada</translation>
-<translation id="3237561509210981547">Para agregar una página a tu lista de lectura, presiona <ph name="BEGIN_BOLD_FONT" />Compartir &gt; Leer más tarde<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Vínculo copiado</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="3414292259312108062">Chrome almacenará esto en tus <ph name="BEGIN_LINK" />contraseñas de Google guardadas<ph name="END_LINK" /> y las autocompletará para que no tengas que recordarlas.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
-<translation id="3474068797193663261">Para agregar una página a tu lista de lectura, presiona <ph name="BEGIN_BOLD_FONT" />Menú &gt; Compartir &gt; Leer más tarde<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Formularios completos</translation>
 <translation id="3478058380795961209">Mes vencimiento</translation>
 <translation id="3482959374254649722">Sincronizando las pestañas...</translation>

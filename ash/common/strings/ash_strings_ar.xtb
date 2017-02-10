@@ -46,7 +46,6 @@
 <translation id="225680501294068881">جارٍ البحث عن أجهزة...</translation>
 <translation id="2268130516524549846">تم تعطيل البلوتوث</translation>
 <translation id="2268813581635650749">خروج الجميع</translation>
-<translation id="2297568595583585744">علبة الحالة</translation>
 <translation id="2303600792989757991">نظرة عامة لنافذة التبديل</translation>
 <translation id="2354174487190027830">تنشيط <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180 درجة</translation>
@@ -99,7 +98,6 @@
 <translation id="3626281679859535460">السطوع</translation>
 <translation id="3683428399328702079">تم تغيير درجة دقة <ph name="DISPLAY_NAME" /> إلى <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">‏تمكين Wi-Fi</translation>
-<translation id="3709443003275901162">‏‎9+‎‏</translation>
 <translation id="3712407551474845318">التقاط منطقة</translation>
 <translation id="372094107052732682">‏للإنهاء، اضغط على Ctrl+Shift+Q مرتين.</translation>
 <translation id="3742055079367172538">تم التقاط لقطة الشاشة</translation>
@@ -139,7 +137,6 @@
 <translation id="4957722034734105353">مزيد من المعلومات...</translation>
 <translation id="4961318399572185831">إرسال الشاشة</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">‏إعدادات Google Drive...</translation>
 <translation id="510924152490034944">قد تتم مراقبة الاتصال</translation>
 <translation id="5168181903108465623">أجهزة البث متاحة</translation>
 <translation id="5170568018924773124">العرض في المجلد</translation>
@@ -198,7 +195,6 @@
 <translation id="6521655319214113338">الإدخال بالكتابة اليدوية</translation>
 <translation id="6537270692134705506">التقاط الشاشة</translation>
 <translation id="6549021752953852991">لا تتوفر شبكة خلوية</translation>
-<translation id="6550675742724504774">خيارات</translation>
 <translation id="6585808820553845416">تنتهي الجلسة في <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">‏عنوان IP</translation>
 <translation id="6650933572246256093">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. الرجاء إدخال مفتاح المرور هذا في هذا الجهاز: <ph name="PASSKEY" /></translation>
@@ -210,10 +206,8 @@
 <translation id="6857811139397017780">تنشيط <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">الانضمام إلى شبكة أخرى...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">إمكانية الدخول</translation>
 <translation id="7029814467594812963">إنهاء الجلسة</translation>
-<translation id="703171847531699602">لا توجد أجهزة بث</translation>
 <translation id="7034339000180558234">إرسال <ph name="TAB_NAME" /> إلى <ph name="RECEIVER_NAME" />.</translation>
 <translation id="7052914147756339792">تعيين خلفية...</translation>
 <translation id="7066646422045619941">تم تعطيل هذه الشبكة من قِبل مشرفك.</translation>
@@ -232,7 +226,6 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> غير متوافق مع <ph name="SPECIFIED_RESOLUTION" />. تم تغيير الدقة إلى <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">لوحة ألوان الرموز التعبيرية</translation>
 <translation id="7573962313813535744">وضع الإرساء</translation>
-<translation id="7580671184200851182">تشغيل نفس الصوت عبر جميع مكبرات الصوت (صوت أحادي)</translation>
 <translation id="7581273696622423628">المشاركة في استطلاع الرأي</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
 <translation id="7649070708921625228">مساعدة</translation>

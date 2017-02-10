@@ -74,7 +74,7 @@
 <translation id="1680732992526857724">Kontakten <ph name="NAME" /> er slået til</translation>
 <translation id="1692077714702418899">strukturel linje</translation>
 <translation id="1700517974991662022">Besøgt</translation>
-<translation id="1714116687360794776">Meter</translation>
+<translation id="1714116687360794776">Måler</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">si.fo</translation>
 <translation id="174268867904053074">Næste grafik</translation>
@@ -234,7 +234,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3321460131042519426">Aktivér tekstombrydning</translation>
 <translation id="3322936298410871309">Forrige niveau 1-overskrift</translation>
 <translation id="3323447499041942178">Tekstfelt</translation>
-<translation id="3338224621010291843">Skyder for <ph name="VALUE" /> <ph name="NAME" /></translation>
+<translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> skyder</translation>
 <translation id="3353420241558113817">{"ar": "arabisk",
         "bg": "bulgarsk",
         "ca": "catalansk",

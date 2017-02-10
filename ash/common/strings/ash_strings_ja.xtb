@@ -46,7 +46,6 @@
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="2268130516524549846">Bluetooth オフ</translation>
 <translation id="2268813581635650749">すべてログアウト</translation>
-<translation id="2297568595583585744">ステータス トレイ</translation>
 <translation id="2303600792989757991">ウィンドウ切り替えの概要</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> を有効にしています</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@
 <translation id="3626281679859535460">輝度</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> の解像度を <ph name="RESOLUTION" /> に変更しました</translation>
 <translation id="370649949373421643">Wi-Fi を有効にする</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">一部分をキャプチャ</translation>
 <translation id="372094107052732682">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
 <translation id="3742055079367172538">スクリーンショット撮影完了</translation>
@@ -140,7 +138,6 @@
 <translation id="4957722034734105353">詳細...</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Google ドライブの設定...</translation>
 <translation id="510924152490034944">接続は監視される可能性があります</translation>
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
 <translation id="5170568018924773124">フォルダを開く</translation>
@@ -199,7 +196,6 @@
 <translation id="6521655319214113338">手書き入力</translation>
 <translation id="6537270692134705506">画面をキャプチャ</translation>
 <translation id="6549021752953852991">利用可能なセルラー ネットワークがありません</translation>
-<translation id="6550675742724504774">オプション</translation>
 <translation id="6585808820553845416">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。</translation>
 <translation id="6596816719288285829">IP アドレス</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> を有効にする</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="7029814467594812963">セッションを終了</translation>
-<translation id="703171847531699602">キャスト デバイスがありません</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> を <ph name="RECEIVER_NAME" /> にキャスト中</translation>
 <translation id="7052914147756339792">壁紙を設定...</translation>
 <translation id="7066646422045619941">このネットワークは管理者によって無効にされています。</translation>
@@ -235,7 +229,6 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION" /> に変更されました</translation>
 <translation id="7562368315689366235">絵文字パレット</translation>
 <translation id="7573962313813535744">ドッキング モード</translation>
-<translation id="7580671184200851182">すべてのスピーカーで同じオーディオを再生（モノラル オーディオ）</translation>
 <translation id="7581273696622423628">アンケートに答える</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7649070708921625228">ヘルプ</translation>

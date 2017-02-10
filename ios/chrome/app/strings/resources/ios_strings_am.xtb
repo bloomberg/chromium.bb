@@ -66,7 +66,6 @@
 <translation id="2068952045031577364">ያለፈው ሳምንት</translation>
 <translation id="2079545284768500474">ቀልብስ</translation>
 <translation id="209018056901015185">የዴስክቶፕ ጣቢያን ጠይቅ</translation>
-<translation id="2100215774115172756">የንባብ ዝርዝርዎ ከመስመር ውጭ ይገኛል።</translation>
 <translation id="2103075008456228677">history.google.comን ክፈት</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ንጥሎች ተንቀሳቅሰዋል</translation>
 <translation id="2149973817440762519">እልባት አርትዕ</translation>
@@ -121,7 +120,6 @@
 <translation id="3175081911749765310">የድር አገልግሎቶች</translation>
 <translation id="3207960819495026254">ዕልባት ተደርጎበታል</translation>
 <translation id="3210163015918861891">አመሳስል ጠፍቷል</translation>
-<translation id="3237561509210981547">አንድ ገጽ ወደ የንባብ ዝርዝርዎ ለማከል <ph name="BEGIN_BOLD_FONT" />አጋራ &gt; በኋላ አንብብ<ph name="END_BOLD_FONT" />ን መታ ያድርጉ።</translation>
 <translation id="3240426699337459095">አገናኝ ተቀድቷል</translation>
 <translation id="3244271242291266297">ወወ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />፣ <ph name="ADDITIONAL_INFO" />፣ <ph name="INDEX" /> ከ<ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@
 <translation id="3414292259312108062">Chrome ይህንን በእርስዎ በ<ph name="BEGIN_LINK" />Google የተቀመጡ የይለፍ ቃሎች<ph name="END_LINK" /> ያከማቸው እና እራስዎ ማስታወስ እንዳያስፈልግዎት በራስ-ሰር ይሞላልዎታል።</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> ደቂቃዎች</translation>
 <translation id="3448016392200048164">የተከፈለ ዕይታ</translation>
-<translation id="3474068797193663261">አንድ ገጽ ወደ የንባብ ዝርዝርዎ ለማከል <ph name="BEGIN_BOLD_FONT" />ምናሌ &gt; አጋራ &gt; በኋላ አንብብ<ph name="END_BOLD_FONT" />ን መታ ያድርጉ።</translation>
 <translation id="3474649192738347024">ቅጾች ተሞልተዋል።</translation>
 <translation id="3478058380795961209">ጊዜው የሚያልፍበት ወር</translation>
 <translation id="3482959374254649722">የእርስዎን ትሮች በማሰመር ላይ...</translation>

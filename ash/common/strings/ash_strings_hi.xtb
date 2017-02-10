@@ -46,7 +46,6 @@
 <translation id="225680501294068881">डिवाइस स्कैन किए जा रहे हैं...</translation>
 <translation id="2268130516524549846">ब्लूटूथ अक्षम किया गया</translation>
 <translation id="2268813581635650749">सभी प्रस्थान करें</translation>
-<translation id="2297568595583585744">स्थिति ट्रे</translation>
 <translation id="2303600792989757991">टॉगल विंडो का संक्षिप्त विवरण</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय हो रहा है</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@
 <translation id="3626281679859535460">स्क्रीन की रोशनी</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> रिज़ॉल्यूशन को <ph name="RESOLUTION" /> में बदल दिया गया</translation>
 <translation id="370649949373421643">वाई-फ़ाई  सक्षम करें</translation>
-<translation id="3709443003275901162">9 से अधिक</translation>
 <translation id="3712407551474845318">क्षेत्र कैप्‍चर करें</translation>
 <translation id="372094107052732682">छोड़ने के लिए Ctrl+Shift+Q दो बार दबाएं.</translation>
 <translation id="3742055079367172538">स्क्रीनशॉट लिया गया</translation>
@@ -140,7 +138,6 @@
 <translation id="4957722034734105353">अधिक जानें...</translation>
 <translation id="4961318399572185831">स्‍क्रीन कास्‍ट करें</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Google डिस्क सेटिंग...</translation>
 <translation id="510924152490034944">कनेक्शन पर नज़र रखी जा सकती है</translation>
 <translation id="5168181903108465623">कास्ट डिवाइस उपलब्ध हैं</translation>
 <translation id="5170568018924773124">फ़ोल्डर में दिखाएं</translation>
@@ -199,7 +196,6 @@
 <translation id="6521655319214113338">हस्तलेखन इनपुट</translation>
 <translation id="6537270692134705506">स्क्रीन कैप्चर करें</translation>
 <translation id="6549021752953852991">कोई सेल्युलर नेटवर्क उपलब्ध नहीं</translation>
-<translation id="6550675742724504774">विकल्प</translation>
 <translation id="6585808820553845416">सत्र <ph name="SESSION_TIME_REMAINING" /> में समाप्त होने वाला है.</translation>
 <translation id="6596816719288285829">IP पता</translation>
 <translation id="6650933572246256093">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया डिवाइस पर यह पासकुंजी डालें: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> को सक्रिय करें</translation>
 <translation id="6911468394164995108">अन्य में शामिल हों...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google डिस्क</translation>
 <translation id="6981982820502123353">पहुंच क्षमता</translation>
 <translation id="7029814467594812963">सत्र से बाहर निकलें</translation>
-<translation id="703171847531699602">कोई कास्ट डिवाइस नहीं</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> को <ph name="RECEIVER_NAME" /> पर कास्‍ट किया जा रहा है</translation>
 <translation id="7052914147756339792">वॉलपेपर सेट करें...</translation>
 <translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
@@ -234,7 +228,6 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> का समर्थन नहीं करता. रिज़ॉल्यूशन को <ph name="FALLBACK_RESOLUTION" /> में बदल दिया गया था</translation>
 <translation id="7562368315689366235">इमोजी पैलेट</translation>
 <translation id="7573962313813535744">डॉक मोड</translation>
-<translation id="7580671184200851182">सभी स्पीकर से समान ऑडियो चलाएं (मोनो ऑडियो)</translation>
 <translation id="7581273696622423628">सर्वेक्षण में भाग लें</translation>
 <translation id="7593891976182323525">Search या Shift</translation>
 <translation id="7649070708921625228">सहायता</translation>

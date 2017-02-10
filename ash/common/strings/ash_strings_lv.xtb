@@ -46,7 +46,6 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="225680501294068881">Notiek ierīču meklēšana...</translation>
 <translation id="2268130516524549846">Bluetooth atspējots</translation>
 <translation id="2268813581635650749">Izrakstīt visus</translation>
-<translation id="2297568595583585744">Statusa tekne</translation>
 <translation id="2303600792989757991">Pārslēgt loga kopsavilkumu</translation>
 <translation id="2354174487190027830">Notiek <ph name="NAME" /> aktivizēšana.</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="3626281679859535460">Spilgtums</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> izšķirtspēja tika mainīta uz <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Iespējot Wi-Fi</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">Uzņemt ekrāna daļas attēlu</translation>
 <translation id="372094107052732682">Lai izietu, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
 <translation id="3742055079367172538">Ekrānuzņēmums ir uzņemts</translation>
@@ -140,7 +138,6 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="4957722034734105353">Uzzināt vairāk...</translation>
 <translation id="4961318399572185831">Ekrāna apraide</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Google diska iestatījumi...</translation>
 <translation id="510924152490034944">Savienojums var tikt uzraudzīts.</translation>
 <translation id="5168181903108465623">Pieejamas apraides ierīces</translation>
 <translation id="5170568018924773124">Rādīt mapē</translation>
@@ -199,7 +196,6 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="6521655319214113338">Rokraksta ievade</translation>
 <translation id="6537270692134705506">Uzņemt ekrāna attēlu</translation>
 <translation id="6549021752953852991">Mobilais tīkls nav pieejams.</translation>
-<translation id="6550675742724504774">Opcijas</translation>
 <translation id="6585808820553845416">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP adrese</translation>
 <translation id="6650933572246256093">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Lūdzu, ievadiet ierīcē šo ieejas atslēgu: <ph name="PASSKEY" />.</translation>
@@ -211,10 +207,8 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="6857811139397017780">Aktivizēt <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Pievienoties citam...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google disks</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
 <translation id="7029814467594812963">Iziet no sesijas</translation>
-<translation id="703171847531699602">Nav nevienas apraides ierīces</translation>
 <translation id="7034339000180558234">Notiek cilnes <ph name="TAB_NAME" /> apraide šādā vietā: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Iestatīt fona tapeti...</translation>
 <translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
@@ -235,7 +229,6 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> neatbalsta šādu izšķirtspēju: <ph name="SPECIFIED_RESOLUTION" />. Izšķirtspēja tika mainīta uz <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Emocijzīmju palete</translation>
 <translation id="7573962313813535744">Dokošanas režīms</translation>
-<translation id="7580671184200851182">Atskaņot to pašu audio saturu visos skaļruņos (mono audio)</translation>
 <translation id="7581273696622423628">Piedalīties aptaujā</translation>
 <translation id="7593891976182323525">Meklēt vai Shift</translation>
 <translation id="7649070708921625228">Palīdzība</translation>

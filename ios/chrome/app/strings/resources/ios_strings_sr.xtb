@@ -66,7 +66,6 @@
 <translation id="2068952045031577364">Претходна недеља</translation>
 <translation id="2079545284768500474">Опозови</translation>
 <translation id="209018056901015185">Захтевај сајт за рачунар</translation>
-<translation id="2100215774115172756">Листа за читање је доступна офлајн.</translation>
 <translation id="2103075008456228677">Отвори history.google.com</translation>
 <translation id="2116625576999540962">Број премештених ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Измените обележивач</translation>
@@ -121,7 +120,6 @@
 <translation id="3175081911749765310">Веб-услуге</translation>
 <translation id="3207960819495026254">Обележено</translation>
 <translation id="3210163015918861891">Синхронизација је искључена</translation>
-<translation id="3237561509210981547">Да бисте додали страницу на листу за читање, додирните <ph name="BEGIN_BOLD_FONT" />Дели &gt; Прочитајте касније<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Линк је копиран</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> од <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@
 <translation id="3414292259312108062">Chrome ће ово сачувати у вашим <ph name="BEGIN_LINK" />Google сачуваним лозинкама<ph name="END_LINK" /> и аутоматски унети тако да не морате да памтите.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
 <translation id="3448016392200048164">Подељени приказ</translation>
-<translation id="3474068797193663261">Да бисте додали страницу на листу за читање, додирните <ph name="BEGIN_BOLD_FONT" />Мени &gt; Дели &gt; Прочитајте касније<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Обрасци су попуњени.</translation>
 <translation id="3478058380795961209">Месец истека</translation>
 <translation id="3482959374254649722">Синхронизација картица је у току...</translation>

@@ -46,7 +46,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="225680501294068881">Procurando dispositivos...</translation>
 <translation id="2268130516524549846">Bluetooth desativado</translation>
 <translation id="2268813581635650749">Desconectar todos</translation>
-<translation id="2297568595583585744">Bandeja de status</translation>
 <translation id="2303600792989757991">Visão geral da janela de alternância</translation>
 <translation id="2354174487190027830">Ativando <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -99,7 +98,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3626281679859535460">Brilho</translation>
 <translation id="3683428399328702079">A resolução de <ph name="DISPLAY_NAME" /> foi alterada para <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Ativar Wi-Fi</translation>
-<translation id="3709443003275901162">Mais de 9</translation>
 <translation id="3712407551474845318">Capturar região</translation>
 <translation id="372094107052732682">Pressione Ctrl+Shift+Q duas vezes para sair.</translation>
 <translation id="3742055079367172538">Captura de tela realizada</translation>
@@ -139,7 +137,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="4957722034734105353">Saiba mais...</translation>
 <translation id="4961318399572185831">Transmitir tela</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Configurações do Google Drive...</translation>
 <translation id="510924152490034944">A conexão pode ser monitorada</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
 <translation id="5170568018924773124">Mostrar na pasta</translation>
@@ -198,7 +195,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6521655319214113338">Entrada de texto manuscrito</translation>
 <translation id="6537270692134705506">Capturar tela</translation>
 <translation id="6549021752953852991">Nenhuma rede celular disponível</translation>
-<translation id="6550675742724504774">Opções</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Endereço IP</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Digite esta senha no dispositivo: <ph name="PASSKEY" /></translation>
@@ -210,10 +206,8 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Conectar-se a outra...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
-<translation id="703171847531699602">Nenhum dispositivo de transmissão</translation>
 <translation id="7034339000180558234">Transmitindo <ph name="TAB_NAME" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Definir plano de fundo...</translation>
 <translation id="7066646422045619941">Esta rede foi desativada pelo seu administrador.</translation>
@@ -234,7 +228,6 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta de emoticons</translation>
 <translation id="7573962313813535744">Modo ancorado</translation>
-<translation id="7580671184200851182">Reproduzir o mesmo áudio pelos alto-falantes (áudio mono)</translation>
 <translation id="7581273696622423628">Responder à pesquisa</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7649070708921625228">Ajuda</translation>

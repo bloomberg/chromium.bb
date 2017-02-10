@@ -64,7 +64,6 @@
 <translation id="2068952045031577364">สัปดาห์ที่ผ่านมา</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="209018056901015185">ขอไซต์สำหรับเดสก์ท็อป</translation>
-<translation id="2100215774115172756">รายการรออ่านพร้อมใช้งานแบบออฟไลน์</translation>
 <translation id="2103075008456228677">เปิด history.google.com</translation>
 <translation id="2116625576999540962">ย้ายแล้ว <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
 <translation id="2149973817440762519">แก้ไขบุ๊กมาร์ก</translation>
@@ -119,7 +118,6 @@
 <translation id="3175081911749765310">บริการทางเว็บ</translation>
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
 <translation id="3210163015918861891">ซิงค์ปิดอยู่</translation>
-<translation id="3237561509210981547">หากต้องการเพิ่มหน้าในรายการรออ่าน ให้แตะ <ph name="BEGIN_BOLD_FONT" />แชร์ &gt; อ่านภายหลัง<ph name="END_BOLD_FONT" /></translation>
 <translation id="3240426699337459095">คัดลอกลิงก์แล้ว</translation>
 <translation id="3244271242291266297">ดด</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> จาก <ph name="NUM_SUGGESTIONS" /></translation>
@@ -132,7 +130,6 @@
 <translation id="3414292259312108062">Chrome จะเก็บข้อมูลนี้ไว้ใน<ph name="BEGIN_LINK" />รหัสผ่านที่บันทึกไว้ของ Google<ph name="END_LINK" /> และป้อนให้คุณโดยอัตโนมัติ เพื่อให้คุณไม่ต้องจำเอง</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> นาที</translation>
 <translation id="3448016392200048164">Split View</translation>
-<translation id="3474068797193663261">หากต้องการเพิ่มหน้าในรายการรออ่าน ให้แตะ <ph name="BEGIN_BOLD_FONT" />เมนู &gt; แชร์ &gt; อ่านภายหลัง<ph name="END_BOLD_FONT" /></translation>
 <translation id="3474649192738347024">กรอกฟอร์มแล้ว</translation>
 <translation id="3478058380795961209">เดือนที่หมดอายุ</translation>
 <translation id="3482959374254649722">กำลังซิงค์แท็บ...</translation>

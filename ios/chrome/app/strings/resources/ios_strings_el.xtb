@@ -66,7 +66,6 @@
 <translation id="2068952045031577364">Τελευταία εβδομάδα</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="209018056901015185">Αίτηση ιστότ. για υπολογ.</translation>
-<translation id="2100215774115172756">Η λίστα ανάγνωσης είναι διαθέσιμη εκτός σύνδεσης.</translation>
 <translation id="2103075008456228677">Ανοίξτε το history.google.com</translation>
 <translation id="2116625576999540962">Μετακινήθηκαν <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία</translation>
 <translation id="2149973817440762519">Επεξεργασία σελιδοδείκτη</translation>
@@ -121,7 +120,6 @@
 <translation id="3175081911749765310">Υπηρ.ιστού</translation>
 <translation id="3207960819495026254">Προστέθηκε στους σελιδοδείκτες</translation>
 <translation id="3210163015918861891">Ο συγχρονισμός είναι ανενεργός</translation>
-<translation id="3237561509210981547">Για να προσθέσετε μια σελίδα στη λίστα ανάγνωσης, πατήστε <ph name="BEGIN_BOLD_FONT" />Κοινή χρήση &gt; Ανάγνωση αργότερα<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Ο σύνδεσμος αντιγράφηκε</translation>
 <translation id="3244271242291266297">ΜΜ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> από <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@
 <translation id="3414292259312108062">Το Chrome θα αποθηκεύσει αυτόν τον κωδικό στους <ph name="BEGIN_LINK" />αποθηκευμένους κωδικούς πρόσβασης Google<ph name="END_LINK" /> και θα τον συμπληρώνει αυτόματα, έτσι ώστε να μην χρειάζεται να τον απομνημονεύσετε.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> λεπτά</translation>
 <translation id="3448016392200048164">Προβολή διαχωρισμού οθόνης</translation>
-<translation id="3474068797193663261">Για να προσθέσετε μια σελίδα στη λίστα ανάγνωσης, πατήστε <ph name="BEGIN_BOLD_FONT" />Μενού &gt; Κοινή χρήση &gt; Ανάγνωση αργότερα<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Οι φόρμες συμπληρώθηκαν.</translation>
 <translation id="3478058380795961209">Μήνας λήξης</translation>
 <translation id="3482959374254649722">Συγχρονισμός των καρτελών σας…</translation>

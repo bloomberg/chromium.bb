@@ -873,7 +873,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Estes marcadores são colocados numa pasta "Marcadores geridos" que não pode ser modificada pelo utilizador, embora o utilizador possa optar por ocultá-la da barra de marcadores. Os marcadores geridos não são sincronizados com a conta do utilizador e não podem ser modificados por extensões.
 
-      A partir da versão 51, o nome da pasta para os marcadores é personalizável ao adicionar um item de lista {"toplevel_name": "some name"}.</translation>
+      A partir da versão 51, o nome da pasta para os marcadores é personalizável ao adicionar um item de lista {"toplevel_name": "qualquer nome"}.</translation>
 <translation id="3627678165642179114">Ativar ou desativar o serviço Web de verificação ortográfica</translation>
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
 <translation id="3653237928288822292">Ícone do fornecedor de pesquisas predefinido</translation>

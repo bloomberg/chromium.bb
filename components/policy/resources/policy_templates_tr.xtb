@@ -1816,7 +1816,7 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
 
           Örneğin, <ph name="EXTENSION_POLICY_EXAMPLE" />, standart Chrome Web Mağazası
           "güncelleme" URL'sinden <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />
-          uygulamasını yükler. Uzantıların barındırılması ile ilgili daha fazla bilgi için
+          uzantısını yükler. Uzantıların barındırılması ile ilgili daha fazla bilgi için
           bkz. <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Bu politika ayarlanmadan bırakılırsa, hiçbir uygulama veya uzantı otomatik

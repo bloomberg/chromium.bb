@@ -45,7 +45,6 @@
 <translation id="225680501294068881">درحال جستجو برای دستگاه‌ها...</translation>
 <translation id="2268130516524549846">بلوتوث غیرفعال است</translation>
 <translation id="2268813581635650749">خروج همه از سیستم</translation>
-<translation id="2297568595583585744">سینی وضعیت</translation>
 <translation id="2303600792989757991">مروری کلی بر پنجره تغییر حالت</translation>
 <translation id="2354174487190027830">فعال‌سازی <ph name="NAME" /></translation>
 <translation id="2391579633712104609">۱۸۰°</translation>
@@ -99,7 +98,6 @@
 <translation id="3626281679859535460">روشنایی</translation>
 <translation id="3683428399328702079">وضوح <ph name="DISPLAY_NAME" /> به <ph name="RESOLUTION" /> تغییر یافت</translation>
 <translation id="370649949373421643">‏فعال کردن Wi-Fi</translation>
-<translation id="3709443003275901162">+۹</translation>
 <translation id="3712407551474845318">محدوده گرفتن عکس</translation>
 <translation id="372094107052732682">‏برای خروج Ctrl+Shift+Q را دو بار فشار دهید.</translation>
 <translation id="3742055079367172538">عکس صفحه‌نمایش گرفته شد</translation>
@@ -139,7 +137,6 @@
 <translation id="4957722034734105353">اطلاعات بیشتر...</translation>
 <translation id="4961318399572185831">فرستادن صفحه</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">‏تنظیمات Google Drive...</translation>
 <translation id="510924152490034944">اتصال ممکن است پایش شود</translation>
 <translation id="5168181903108465623">دستگاه‌های فرستادن موجود هستند</translation>
 <translation id="5170568018924773124">نمایش در پوشه</translation>
@@ -197,7 +194,6 @@
 <translation id="6521655319214113338">ورودی دست‌نویس</translation>
 <translation id="6537270692134705506">ضبط کردن صفحه‌نمایش</translation>
 <translation id="6549021752953852991">هیچ شبکه سلولی در دسترس نیست</translation>
-<translation id="6550675742724504774">گزینه‌ها</translation>
 <translation id="6585808820553845416">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد.</translation>
 <translation id="6596816719288285829">‏آدرس IP</translation>
 <translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلیدواژه را در آن دستگاه وارد کنید: <ph name="PASSKEY" /></translation>
@@ -209,10 +205,8 @@
 <translation id="6857811139397017780">فعال سازی <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">پیوستن به شبکه دیگر…</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">قابلیت دسترسی</translation>
 <translation id="7029814467594812963">خروج از جلسه</translation>
-<translation id="703171847531699602">هیچ دستگاه فرستادنی وجود ندارد</translation>
 <translation id="7034339000180558234">ارسال محتوای <ph name="TAB_NAME" /> به <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">تنظیم کاغذدیواری...</translation>
 <translation id="7066646422045619941">این شبکه توسط سرپرست شما غیرفعال شده است.</translation>
@@ -233,7 +227,6 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />،‏ <ph name="SPECIFIED_RESOLUTION" /> را پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION" /> تغییر کرد</translation>
 <translation id="7562368315689366235">پالت صورتک</translation>
 <translation id="7573962313813535744">حالت اتصال به پایه</translation>
-<translation id="7580671184200851182">یک صدا را از طریق همه بلندگوها پخش کنید (تک صوتی)</translation>
 <translation id="7581273696622423628">در نظرسنجی شرکت کنید</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
 <translation id="7649070708921625228">راهنما</translation>

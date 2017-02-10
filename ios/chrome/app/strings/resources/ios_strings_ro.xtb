@@ -66,7 +66,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2068952045031577364">Din ultima săptămână</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="209018056901015185">Site desktop</translation>
-<translation id="2100215774115172756">Lista de lectură este disponibilă offline.</translation>
 <translation id="2103075008456228677">Deschide history.google.com</translation>
 <translation id="2116625576999540962">Elemente mutate: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Editați marcajul</translation>
@@ -121,7 +120,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="3175081911749765310">Servicii web</translation>
 <translation id="3207960819495026254">Marcată</translation>
 <translation id="3210163015918861891">Sincronizarea este dezactivată</translation>
-<translation id="3237561509210981547">Pentru a adăuga o pagină în lista de lectură, atinge <ph name="BEGIN_BOLD_FONT" />Trimite &gt; Citește mai târziu<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Linkul a fost copiat</translation>
 <translation id="3244271242291266297">LL</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> din <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="3414292259312108062">Chrome o va stoca în <ph name="BEGIN_LINK" />parolele Google salvate<ph name="END_LINK" /> și o va completa automat ca să nu mai fie nevoie să o ții minte.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Vizualizare împărțită</translation>
-<translation id="3474068797193663261">Pentru a adăuga o pagină în lista de lectură, atinge <ph name="BEGIN_BOLD_FONT" />Meniu &gt; Trimite &gt; Citește mai târziu<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Formulare completate.</translation>
 <translation id="3478058380795961209">Lună expirare</translation>
 <translation id="3482959374254649722">Se sincronizează filele...</translation>

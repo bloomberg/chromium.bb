@@ -1784,7 +1784,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Habilitar la opción de autocompletar nombre de dominio durante el inicio de sesión del usuario</translation>
 <translation id="6312861131491040487">
-          Especifica una lista de aplicaciones y extensiones que se instalan de forma automática,
+          Especifica una lista de aplicaciones y extensiones que se instalan de forma silenciosa,
           sin la interacción del usuario, y que este no puede
           desinstalar. Los permisos solicitados por las aplicaciones o extensiones se aceptan de forma
           implícita sin la interacción del usuario, incluidos otros

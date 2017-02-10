@@ -234,7 +234,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3321460131042519426">Habilitar ajuste de palabras</translation>
 <translation id="3322936298410871309">Encabezado anterior de nivel 1</translation>
 <translation id="3323447499041942178">Cuadro de texto</translation>
-<translation id="3338224621010291843">Control deslizante <ph name="VALUE" /> / <ph name="NAME" /></translation>
+<translation id="3338224621010291843">Control deslizante del <ph name="NAME" /> al <ph name="VALUE" /></translation>
 <translation id="3353420241558113817">{"ar": "Árabe",
         "bg": "Búlgaro",
         "ca": "Catalán",

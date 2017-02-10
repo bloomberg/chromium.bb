@@ -66,7 +66,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2068952045031577364">Seneste uge</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="209018056901015185">Vis computerversion</translation>
-<translation id="2100215774115172756">Din læseliste er tilgængelig offline.</translation>
 <translation id="2103075008456228677">Åbn history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev flyttet</translation>
 <translation id="2149973817440762519">Rediger bogmærke</translation>
@@ -99,7 +98,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2747003861858887689">Forrige felt</translation>
 <translation id="2780046210906776326">Ingen e-mailkonti</translation>
 <translation id="2800683595868705743">Luk Faneskift</translation>
-<translation id="283291358677939992">Find på side...</translation>
+<translation id="283291358677939992">Find på siden...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Nulstil oversættelsesindstillinger</translation>
 <translation id="285960592395650245">Prøv at downloade igen</translation>
@@ -121,7 +120,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3175081911749765310">Webtjenester</translation>
 <translation id="3207960819495026254">Bogmærket</translation>
 <translation id="3210163015918861891">Synkronisering er slået fra</translation>
-<translation id="3237561509210981547">Hvis du vil føje en side til din læseliste, skal du trykke på <ph name="BEGIN_BOLD_FONT" />Del &gt; Læs senere<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Linket er kopieret</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> af <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3414292259312108062">Chrome gemmer denne i dine <ph name="BEGIN_LINK" />Gemte adgangskoder på Google<ph name="END_LINK" /> og autofylder den for dig, så du ikke behøver at huske den selv.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Opdelt visning</translation>
-<translation id="3474068797193663261">Hvis du vil føje en side til din læseliste, skal du trykke på <ph name="BEGIN_BOLD_FONT" />Menu &gt; Del &gt; Læs senere<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Formularerne er udfyldt.</translation>
 <translation id="3478058380795961209">Udløbsmåned:</translation>
 <translation id="3482959374254649722">Synkroniserer dine faner...</translation>

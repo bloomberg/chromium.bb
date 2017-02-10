@@ -66,7 +66,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="2068952045031577364">Minggu Lalu</translation>
 <translation id="2079545284768500474">Urungkan</translation>
 <translation id="209018056901015185">Ubah situs desktop</translation>
-<translation id="2100215774115172756">Daftar bacaan Anda tersedia secara offline.</translation>
 <translation id="2103075008456228677">Buka history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dipindah</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
@@ -121,7 +120,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="3175081911749765310">Layanan Web</translation>
 <translation id="3207960819495026254">Diberi bookmark</translation>
 <translation id="3210163015918861891">Sinkronisasi Nonaktif</translation>
-<translation id="3237561509210981547">Untuk menambahkan halaman ke daftar bacaan, tap <ph name="BEGIN_BOLD_FONT" />Bagikan &gt; Baca Nanti<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Tautan disalin</translation>
 <translation id="3244271242291266297">BB</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> dari <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="3414292259312108062">Chrome akan menyimpan sandi ini pada <ph name="BEGIN_LINK" />sandi tersimpan Google<ph name="END_LINK" /> dan melengkapinya secara otomatis sehingga Anda tidak perlu mengingatnya.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> mnt</translation>
 <translation id="3448016392200048164">Layar Terpisah</translation>
-<translation id="3474068797193663261">Untuk menambahkan halaman ke daftar bacaan, tap <ph name="BEGIN_BOLD_FONT" />Menu &gt; Bagikan &gt; Baca Nanti<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Formulir terisi.</translation>
 <translation id="3478058380795961209">Bulan Masa Berlaku Habis</translation>
 <translation id="3482959374254649722">Menyinkronkan tab Anda...</translation>
@@ -150,7 +147,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyaring penelusuran, geser panel ke atas kemudian sentuh kotak telusur.</translation>
 <translation id="3607167657931203000">Data Isi-Otomatis</translation>
 <translation id="3608436266458100337">Mode pembaca</translation>
-<translation id="3638472932233958418">Pramuat Laman Web</translation>
+<translation id="3638472932233958418">Pramuat Halaman Web</translation>
 <translation id="3691593122358196899">Dibookmark ke <ph name="FOLDER_TITLE" /></translation>
 <translation id="3692781555820666866">Jika diaktifkan, omnibox akan menyertakan saran untuk laman web yang disiarkan oleh perangkat di sekitar Anda.</translation>
 <translation id="3706658020782046159">Pilih alamat pengiriman untuk memeriksa metode dan persyaratan pengiriman.</translation>

@@ -66,7 +66,6 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2068952045031577364">Elmúlt hét</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="209018056901015185">Asztali webhely kérése</translation>
-<translation id="2100215774115172756">Az olvasólista offline módban áll rendelkezésre</translation>
 <translation id="2103075008456228677">A history.google.com megnyitása</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem áthelyezve</translation>
 <translation id="2149973817440762519">Könyvjelző szerkesztése</translation>
@@ -121,7 +120,6 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="3175081911749765310">Webszolgáltató</translation>
 <translation id="3207960819495026254">Könyvjelzőzött</translation>
 <translation id="3210163015918861891">A szinkronizálás ki van kapcsolva</translation>
-<translation id="3237561509210981547">Ha oldalt szeretne hozzáadni az olvasólistájához, koppintson a <ph name="BEGIN_BOLD_FONT" />Megosztás &gt; Olvasás később<ph name="END_BOLD_FONT" /> lehetőségre.</translation>
 <translation id="3240426699337459095">Link másolva</translation>
 <translation id="3244271242291266297">HH</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" />/<ph name="INDEX" />. javaslat</translation>
@@ -134,7 +132,6 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="3414292259312108062">A Chrome eltárolja ezt a jelszót a <ph name="BEGIN_LINK" />mentett Google-jelszavak<ph name="END_LINK" /> közé, és szükség esetén automatikusan beilleszti, így Önnek nem kell megjegyeznie.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> perc</translation>
 <translation id="3448016392200048164">Osztott nézet</translation>
-<translation id="3474068797193663261">Ha oldalt szeretne hozzáadni az olvasólistájához, koppintson a <ph name="BEGIN_BOLD_FONT" />Menü &gt; Megosztás &gt; Olvasás később<ph name="END_BOLD_FONT" /> lehetőségre.</translation>
 <translation id="3474649192738347024">Mezők kitöltve.</translation>
 <translation id="3478058380795961209">Lejárat hónapja</translation>
 <translation id="3482959374254649722">Lapok szinkronizálása…</translation>

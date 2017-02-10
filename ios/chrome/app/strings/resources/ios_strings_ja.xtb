@@ -66,7 +66,6 @@
 <translation id="2068952045031577364">過去 1 週間</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="209018056901015185">PC版サイトをリクエスト</translation>
-<translation id="2100215774115172756">リーディング リストはオフラインで使用できます。</translation>
 <translation id="2103075008456228677">history.google.com を開く</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を移動しました</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
@@ -121,7 +120,6 @@
 <translation id="3175081911749765310">ウェブサービス</translation>
 <translation id="3207960819495026254">ブックマークしました</translation>
 <translation id="3210163015918861891">同期はOFFです</translation>
-<translation id="3237561509210981547">ページをリーディング リストに追加するには、<ph name="BEGIN_BOLD_FONT" />[共有] &gt; [後で読む]<ph name="END_BOLD_FONT" /> をタップします。</translation>
 <translation id="3240426699337459095">リンクをコピーしました</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />、<ph name="ADDITIONAL_INFO" />、<ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@
 <translation id="3414292259312108062">このパスワードは<ph name="BEGIN_LINK" />Googleの保存パスワード<ph name="END_LINK" />として保存され、次回から自動入力されます。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分</translation>
 <translation id="3448016392200048164">分割表示</translation>
-<translation id="3474068797193663261">ページをリーディング リストに追加するには、<ph name="BEGIN_BOLD_FONT" />メニュー &gt; [共有] &gt; [後で読む]<ph name="END_BOLD_FONT" /> をタップします。</translation>
 <translation id="3474649192738347024">フォームに入力されました。</translation>
 <translation id="3478058380795961209">有効期限（月）</translation>
 <translation id="3482959374254649722">タブを同期しています...</translation>

@@ -860,7 +860,7 @@ El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estab
 
       Aquestes adreces d'interès se situen en una carpeta d'adreces d'interès gestionades que l'usuari no pot modificar, però sí que pot treure-la de la barra d'adreces d'interès. Les adreces d'interès gestionades no se sincronitzen amb el compte de l'usuari i no es poden modificar amb extensions.
 
-      A partir de la versió 51, el nom de la carpeta d'adreces d'interès es pot personalitzar afegint-hi un element de llista {"toplevel_name": "some name"}.</translation>
+      A partir de la versió 51, el nom de la carpeta d'adreces d'interès es pot personalitzar afegint-hi un element de llista {"nom_del_nivell_superior": "qualsevol nom"}.</translation>
 <translation id="3627678165642179114">Activació o desactivació del servei web de correcció ortogràfica</translation>
 <translation id="3646859102161347133">Defineix el tipus de lupa</translation>
 <translation id="3653237928288822292">Icona del proveïdor de cerca predeterminat</translation>
@@ -1068,9 +1068,9 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           La pàgina Pestanya nova és la pàgina que s'obre quan es creen pestanyes noves, encara que s'obrin en una altra finestra.
 
-          Aquesta política no estableix les pàgines que s'obren en iniciar el dispositiu. Això ho controlen les polítiques RestoreOnStartup, que es poden utilitzar per obrir la pàgina Pestanya nova.
+          Aquesta política no estableix les pàgines que s'obren en iniciar el navegador. Això ho controlen les polítiques RestoreOnStartup, que es poden utilitzar per obrir la pàgina Pestanya nova.
 
-          La política NewTabPageLocation es pot establir en un URL que especifiquis aquí. També afectarà la pàgina d'inici i la pàgina que s'obre en iniciar el dispositiu si s'han configurat perquè obrin la pàgina Pestanya nova.
+          La política NewTabPageLocation es pot establir en un URL que especifiquis aquí. També afectarà la pàgina d'inici i la pàgina que s'obre en iniciar el navegador si s'han configurat perquè obrin la pàgina Pestanya nova.
 
           Si no estableixes aquesta política o la deixes buida, s'utilitzarà la pàgina Pestanya nova predeterminada.
 

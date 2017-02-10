@@ -1698,7 +1698,7 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
 
           W przypadku systemów Windows niepodłączonych do domeny
           Active Directory wymuszona instalacja jest ograniczona do rozszerzeń
-          wymienionych w Chrome Web Store.
+          dostępnych w Chrome Web Store.
 
           Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować
           za pomocą narzędzi dla programistów (potencjalnie blokując jego
@@ -1707,7 +1707,7 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
 
           Każdy element na liście tej zasady jest ciągiem zawierającym
           identyfikator rozszerzenia i URL „aktualizacji” oddzielony
-          średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to 32-znakowy ciąg,
+          średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków,
           który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty.
           URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji
           w postaci dokumentu XML, zgodnie z opisem w dokumencie <ph name="LINK_TO_EXTENSION_DOC1" />.

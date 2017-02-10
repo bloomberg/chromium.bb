@@ -66,7 +66,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2068952045031577364">Senaste veckan</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="209018056901015185">Använd skrivbordsversion</translation>
-<translation id="2100215774115172756">Läslistan är tillgänglig offline.</translation>
 <translation id="2103075008456228677">Öppna history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt flyttades</translation>
 <translation id="2149973817440762519">Redigera bokmärke</translation>
@@ -121,7 +120,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="3175081911749765310">Webbtjänster</translation>
 <translation id="3207960819495026254">Bokmärkt</translation>
 <translation id="3210163015918861891">Synkronisering har inaktiverats</translation>
-<translation id="3237561509210981547">Tryck på <ph name="BEGIN_BOLD_FONT" />Dela &gt; Läs senare<ph name="END_BOLD_FONT" /> om du vill lägga till en sida i läslistan.</translation>
 <translation id="3240426699337459095">Länken har kopierats</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> av <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="3414292259312108062">Chrome vill spara lösenordet i <ph name="BEGIN_LINK" />lösenord som Google sparat<ph name="END_LINK" /> och fylla i det automatiskt så att du slipper komma ihåg det.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Delad vy</translation>
-<translation id="3474068797193663261">Tryck på <ph name="BEGIN_BOLD_FONT" />Meny &gt; Dela &gt; Läs senare<ph name="END_BOLD_FONT" /> om du vill lägga till en sida i läslistan.</translation>
 <translation id="3474649192738347024">Formulären har fyllts i.</translation>
 <translation id="3478058380795961209">Sista giltighetsmånad</translation>
 <translation id="3482959374254649722">Flikarna synkroniseras ...</translation>

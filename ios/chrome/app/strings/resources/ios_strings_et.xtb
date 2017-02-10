@@ -66,7 +66,6 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="2068952045031577364">Viimane nädal</translation>
 <translation id="2079545284768500474">Võta tagasi</translation>
 <translation id="209018056901015185">Taotle Desktopi saiti</translation>
-<translation id="2100215774115172756">Teie lugemisloend on võrguühenduseta saadaval.</translation>
 <translation id="2103075008456228677">Ava history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> üksust on teisaldatud</translation>
 <translation id="2149973817440762519">Muuda järjehoidjat</translation>
@@ -121,7 +120,6 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="3175081911749765310">Teenused</translation>
 <translation id="3207960819495026254">Järjehoidjatesse lisatud</translation>
 <translation id="3210163015918861891">Sünkroonimine on välja lülitatud</translation>
-<translation id="3237561509210981547">Lehe lisamiseks lugemisloendisse puudutage valikuid <ph name="BEGIN_BOLD_FONT" />Jagamine &gt; Hiljem lugemiseks<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Link on kopeeritud</translation>
 <translation id="3244271242291266297">kk</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> <ph name="NUM_SUGGESTIONS" />-st</translation>
@@ -134,7 +132,6 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="3414292259312108062">Chrome salvestab selle <ph name="BEGIN_LINK" />Google'i salvestatud paroolide<ph name="END_LINK" /> hulka ja täidab parooli automaatselt, nii et te ei pea seda meeles pidama.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Poolitatud vaade</translation>
-<translation id="3474068797193663261">Lehe lisamiseks lugemisloendisse puudutage valikuid <ph name="BEGIN_BOLD_FONT" />Menüü &gt; Jagamine &gt; Hiljem lugemiseks<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Vormid on täidetud.</translation>
 <translation id="3478058380795961209">Aegumiskuu</translation>
 <translation id="3482959374254649722">Vahelehtede sünkroonimine ...</translation>

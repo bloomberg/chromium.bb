@@ -46,7 +46,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="225680501294068881">Etsitään laitteita...</translation>
 <translation id="2268130516524549846">Bluetooth pois käytöstä</translation>
 <translation id="2268813581635650749">Kirjaa kaikki ulos</translation>
-<translation id="2297568595583585744">Tila-alue</translation>
 <translation id="2303600792989757991">Vaihda ikkunan yleiskatsausta</translation>
 <translation id="2354174487190027830">Aktivoidaan <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -99,7 +98,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3626281679859535460">Kirkkaus</translation>
 <translation id="3683428399328702079">Ruudun <ph name="DISPLAY_NAME" /> tarkkuudeksi vaihdettiin <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Ota Wi-Fi käyttöön</translation>
-<translation id="3709443003275901162">Yli 9</translation>
 <translation id="3712407551474845318">Tallenna kuvakaappaus alueesta</translation>
 <translation id="372094107052732682">Lopeta painamalla kahdesti Ctrl+Shift+Q.</translation>
 <translation id="3742055079367172538">Kuvakaappaus otettu</translation>
@@ -139,7 +137,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="4957722034734105353">Lisätietoja...</translation>
 <translation id="4961318399572185831">Suoratoista näyttö</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Google Driven asetukset...</translation>
 <translation id="510924152490034944">Yhteyttä saatetaan valvoa</translation>
 <translation id="5168181903108465623">Cast-laitteita käytettävissä</translation>
 <translation id="5170568018924773124">Näytä kansiossa</translation>
@@ -198,7 +195,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="6521655319214113338">Käsinkirjoitus</translation>
 <translation id="6537270692134705506">Tallenna kuvakaappaus koko näkymästä</translation>
 <translation id="6549021752953852991">Matkapuhelinverkkoja ei ole käytettävissä</translation>
-<translation id="6550675742724504774">Asetukset</translation>
 <translation id="6585808820553845416">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-osoite</translation>
 <translation id="6650933572246256093">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Anna tämä avain kyseisellä laitteella: <ph name="PASSKEY" /></translation>
@@ -210,10 +206,8 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
-<translation id="703171847531699602">Ei suoratoistolaitteita</translation>
 <translation id="7034339000180558234">Välilehti <ph name="TAB_NAME" /> peilataan kohteeseen <ph name="RECEIVER_NAME" />.</translation>
 <translation id="7052914147756339792">Aseta taustakuva...</translation>
 <translation id="7066646422045619941">Järjestelmänvalvoja on poistanut tämän verkon käytöstä.</translation>
@@ -232,7 +226,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ei tue resoluutiota <ph name="SPECIFIED_RESOLUTION" />. Resoluutioksi valittiin <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Emojipaletti</translation>
 <translation id="7573962313813535744">Telakoitu tila</translation>
-<translation id="7580671184200851182">Toista äänet samanlaisina kaikista kaiuttimista (monotoisto)</translation>
 <translation id="7581273696622423628">Vastaa kyselyyn</translation>
 <translation id="7593891976182323525">Haku tai Shift</translation>
 <translation id="7649070708921625228">Ohje</translation>

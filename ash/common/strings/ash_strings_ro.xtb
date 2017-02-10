@@ -39,14 +39,13 @@
 <translation id="1923539912171292317">Clicuri automate</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="2122028596993374965">Nu mai proiecta <ph name="TAB_NAME" /> pe <ph name="RECEIVER_NAME" /></translation>
+<translation id="2122028596993374965">Nu mai proiecta <ph name="TAB_NAME" /> pe dispozitivul <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
 <translation id="2204305834655267233">Informații despre rețea</translation>
 <translation id="2208323208084708176">Modul Desktop unificat</translation>
 <translation id="225680501294068881">Se caută gadgeturi...</translation>
 <translation id="2268130516524549846">Bluetooth dezactivat</translation>
 <translation id="2268813581635650749">Deconectați toți utilizatorii</translation>
-<translation id="2297568595583585744">Bara de stare</translation>
 <translation id="2303600792989757991">Activați/Dezactivați prezentarea ferestrei</translation>
 <translation id="2354174487190027830">Se activează <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="3626281679859535460">Luminozitate</translation>
 <translation id="3683428399328702079">Rezoluția <ph name="DISPLAY_NAME" /> a fost modificată la <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Activați Wi-Fi</translation>
-<translation id="3709443003275901162">Peste 9</translation>
 <translation id="3712407551474845318">Capturează zona</translation>
 <translation id="372094107052732682">Apăsați de două ori Ctrl+Shift+Q pentru a ieși.</translation>
 <translation id="3742055079367172538">Captură de ecran efectuată</translation>
@@ -140,7 +138,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="4957722034734105353">Aflați mai multe...</translation>
 <translation id="4961318399572185831">Proiectează ecranul</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Setări Disc Google...</translation>
 <translation id="510924152490034944">Conexiunea poate fi monitorizată</translation>
 <translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
 <translation id="5170568018924773124">Afișează în dosar</translation>
@@ -199,7 +196,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="6521655319214113338">Introducerea textului prin scrierea de mână</translation>
 <translation id="6537270692134705506">Capturează ecranul</translation>
 <translation id="6549021752953852991">Nicio rețea mobilă disponibilă</translation>
-<translation id="6550675742724504774">Opțiuni</translation>
 <translation id="6585808820553845416">Sesiunea se încheie peste <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Adresă IP</translation>
 <translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="6857811139397017780">Activează <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Conectați-vă la altă rețea...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Accesibilitate</translation>
 <translation id="7029814467594812963">Ieșiți din sesiune</translation>
-<translation id="703171847531699602">Niciun dispozitiv de proiecție</translation>
 <translation id="7034339000180558234">Se proiectează <ph name="TAB_NAME" /> pe <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Setați o imagine de fundal...</translation>
 <translation id="7066646422045619941">Această rețea este dezactivată de administrator.</translation>
@@ -235,7 +229,6 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> nu acceptă <ph name="SPECIFIED_RESOLUTION" />. Rezoluția a fost modificată la <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paletă cu emoji</translation>
 <translation id="7573962313813535744">Modul andocat</translation>
-<translation id="7580671184200851182">Redă același conținut audio în toate difuzoarele (audio mono)</translation>
 <translation id="7581273696622423628">Participă la sondaj</translation>
 <translation id="7593891976182323525">Căutare sau Shift</translation>
 <translation id="7649070708921625228">Ajutor</translation>
@@ -252,7 +245,7 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="8000066093800657092">Nicio rețea</translation>
 <translation id="8054466585765276473">Se calculează durata bateriei.</translation>
 <translation id="8077816382010018681">Titlul notificării privind funcția Deblocare rapidă trebuie să apară aici</translation>
-<translation id="8098591350844501178">Nu mai proiecta ecranul pe <ph name="RECEIVER_NAME" /></translation>
+<translation id="8098591350844501178">Nu mai proiecta ecranul pe dispozitivul <ph name="RECEIVER_NAME" /></translation>
 <translation id="8103386449138765447">Mesaje SMS: <ph name="MESSAGE_COUNT" /></translation>
 <translation id="8132793192354020517">Conectat la <ph name="NAME" /></translation>
 <translation id="8180896103888046100">Nu mai proiecta pe un receiver necunoscut</translation>

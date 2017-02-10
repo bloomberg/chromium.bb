@@ -1817,7 +1817,7 @@
           den automatiskt av <ph name="PRODUCT_NAME" />.
 
           För Windows-instanser som inte är kopplade till en Active Directory-
-          domän är den tvingande installation begränsad till appar och tillägg
+          domän är tvingad installation begränsat till appar och tillägg
           som anges i Chrome Web Store.
 
           Observera att användare kan ändra källkoden till ett tillägg

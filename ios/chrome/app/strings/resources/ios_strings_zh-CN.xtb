@@ -66,7 +66,6 @@
 <translation id="2068952045031577364">过去 1 周</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="209018056901015185">请求切换到桌面版网站</translation>
-<translation id="2100215774115172756">您阅读清单中的网页可供离线浏览。</translation>
 <translation id="2103075008456228677">打开 history.google.com</translation>
 <translation id="2116625576999540962">移动了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="2149973817440762519">修改书签</translation>
@@ -121,7 +120,6 @@
 <translation id="3175081911749765310">网络服务</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3210163015918861891">同步功能已关闭</translation>
-<translation id="3237561509210981547">要将网页添加到您的阅读清单，请依次点按<ph name="BEGIN_BOLD_FONT" />分享 &gt; 稍后阅读<ph name="END_BOLD_FONT" />。</translation>
 <translation id="3240426699337459095">已复制链接</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" />，第 <ph name="INDEX" /> 项建议（共 <ph name="NUM_SUGGESTIONS" /> 项）</translation>
@@ -134,7 +132,6 @@
 <translation id="3414292259312108062">Chrome 会将此密码存储在 <ph name="BEGIN_LINK" />Google 保存的密码<ph name="END_LINK" />中，并会在需要时自动填充此密码，因此您记不住它也没有关系。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分钟</translation>
 <translation id="3448016392200048164">分割视图</translation>
-<translation id="3474068797193663261">要将网页添加到您的阅读清单，请依次点按<ph name="BEGIN_BOLD_FONT" />菜单 &gt; 分享 &gt; 稍后阅读<ph name="END_BOLD_FONT" />。</translation>
 <translation id="3474649192738347024">表单已填好。</translation>
 <translation id="3478058380795961209">到期月份</translation>
 <translation id="3482959374254649722">正在同步您的标签页…</translation>

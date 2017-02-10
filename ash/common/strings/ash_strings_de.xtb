@@ -46,7 +46,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="225680501294068881">Nach Geräten wird gesucht...</translation>
 <translation id="2268130516524549846">Bluetooth deaktiviert</translation>
 <translation id="2268813581635650749">Alle abmelden</translation>
-<translation id="2297568595583585744">Statusleiste</translation>
 <translation id="2303600792989757991">Fensterübersicht umschalten</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> wird aktiviert</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3626281679859535460">Helligkeit</translation>
 <translation id="3683428399328702079">Auflösung von <ph name="DISPLAY_NAME" /> wurde zu <ph name="RESOLUTION" /> geändert.</translation>
 <translation id="370649949373421643">WLAN aktivieren</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">Bereich erfassen</translation>
 <translation id="372094107052732682">Drücken Sie zum Beenden zweimal Strg+Shift+Q.</translation>
 <translation id="3742055079367172538">Screenshot erstellt</translation>
@@ -140,7 +138,6 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="4957722034734105353">Weitere Informationen...</translation>
 <translation id="4961318399572185831">Bildschirmübertragung</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Google Drive-Einstellungen...</translation>
 <translation id="510924152490034944">Die Verbindung wird möglicherweise kontrolliert</translation>
 <translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>
 <translation id="5170568018924773124">In Ordner anzeigen</translation>
@@ -150,7 +147,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="5331975486040154427">USB-C-Gerät (Port hinten links)</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alle verfügbaren Nutzer wurden bereits zur Sitzung hinzugefügt.</translation>
-<translation id="5504841533973703486">Frontmikrofon</translation>
+<translation id="5504841533973703486">Mikrofon auf der Vorderseite</translation>
 <translation id="5507786745520522457">Mobile Daten einrichten</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">Die Erweiterung "<ph name="EXTENSION_NAME" />" kann die Verbindung mit diesem Netzwerk unterstützen.</translation>
@@ -162,7 +159,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="57838592816432529">Stummschalten</translation>
 <translation id="5825747213122829519">Ihre Eingabemethode hat sich in <ph name="INPUT_METHOD_ID" /> geändert.
 Drücken Sie zum Wechseln Shift+Alt.</translation>
-<translation id="5830936593837877897">Rückseitenmikrofon</translation>
+<translation id="5830936593837877897">Mikrofon auf der Rückseite</translation>
 <translation id="5871632337994001636">Geräte verwalten...</translation>
 <translation id="5895138241574237353">Neu starten</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
@@ -199,7 +196,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6521655319214113338">Handschrifteingabe</translation>
 <translation id="6537270692134705506">Screenshot aufnehmen</translation>
 <translation id="6549021752953852991">Kein Mobilfunknetz verfügbar</translation>
-<translation id="6550675742724504774">Optionen</translation>
 <translation id="6585808820553845416">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
 <translation id="6650933572246256093">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie auf dem Gerät folgenden Zugangscode ein: <ph name="PASSKEY" />.</translation>
@@ -211,10 +207,8 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktivieren</translation>
 <translation id="6911468394164995108">Andere Netzwerke...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="7029814467594812963">Sitzung beenden</translation>
-<translation id="703171847531699602">Keine Übertragungsgeräte</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> wird an <ph name="RECEIVER_NAME" /> gestreamt</translation>
 <translation id="7052914147756339792">Hintergrund ändern</translation>
 <translation id="7066646422045619941">Dieses Netzwerk wurde von Ihrem Administrator deaktiviert.</translation>
@@ -235,7 +229,6 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> unterstützt <ph name="SPECIFIED_RESOLUTION" /> nicht. Die Auflösung wurde auf <ph name="FALLBACK_RESOLUTION" /> zurückgesetzt.</translation>
 <translation id="7562368315689366235">Emoji-Palette</translation>
 <translation id="7573962313813535744">Docking-Modus</translation>
-<translation id="7580671184200851182">Dieselben Audioinhalte über alle Boxen wiedergeben (Mono-Audio)</translation>
 <translation id="7581273696622423628">An Umfrage teilnehmen</translation>
 <translation id="7593891976182323525">Suchen oder Shift</translation>
 <translation id="7649070708921625228">Hilfe</translation>

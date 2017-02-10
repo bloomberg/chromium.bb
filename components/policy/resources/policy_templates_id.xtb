@@ -1559,12 +1559,12 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, permintaan autentikasi gnubby tidak akan dilakukan melalui proxy.</translation>
 <translation id="5898486742390981550">Ketika beberapa pengguna masuk, hanya pengguna utama yang dapat menggunakan aplikasi Android.</translation>
-<translation id="5906199912611534122">Mengizinkan untuk mengaktifkan atau menonaktifkan pembatasan jaringan.
+<translation id="5906199912611534122">Mengizinkan pengaktifan atau pe-nonaktifan pembatasan jaringan.
       Kebijakan ini berlaku untuk semua pengguna, dan untuk semua antarmuka di perangkat. Setelah disetel,
       pembatasan akan terus berlanjut hingga kebijakan ini dinonaktifkan.
 
       Jika disetel ke false, tidak akan ada pembatasan.
-      Jika disetel ke true, sistem akan dibatasi untuk menerima laju upload dan download (dalam kbit/dtk).</translation>
+      Jika disetel ke true, sistem akan dibatasi untuk mencapai laju upload dan download (dalam kbit/dtk) yang tersedia.</translation>
 <translation id="5921713479449475707">Izinkan download pembaruan otomatis melalui HTTP</translation>
 <translation id="5921888683953999946">Menyetel status default fitur aksesibilitas kursor besar di layar masuk.
 
@@ -1689,17 +1689,17 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           secara implisit, tanpa interaksi pengguna, termasuk izin tambahan apa
           pun yang diminta oleh versi aplikasi/ekstensi yang berikutnya.
           Selain itu, izin diberikan untuk API ekstensi
-          enterprise.deviceAttributes dan enterprise.platformKeys.
-          (Kedua API ini tidak tersedia untuk aplikasi/ekstensi yang tidak diinstal
-          secara paksa.)
+          enterprise.deviceAttributes dan enterprise.platformKeys
+          (kedua API ini tidak tersedia untuk aplikasi/ekstensi yang tidak diinstal
+          secara paksa).
 
-          Kebijakan ini diutamakan daripada kebijakan ExtensionsInstallBlacklist
-          yang berpotensi bentrok. Jika aplikasi atau ekstensi yang
+          Kebijakan ini lebih diutamakan daripada kebijakan ExtensionsInstallBlacklist
+          yang berpotensi bertentangan. Jika aplikasi atau ekstensi yang
           sebelumnya diinstal secara paksa telah dihapus dari daftar,
           aplikasi/ekstensi tersebut di-uninstal secara otomatis oleh <ph name="PRODUCT_NAME" />.
 
-          Untuk Windows yang tidak tergabung dalam domain Active Directory,
-          domain, proses instal secara paksa dibatasi untuk aplikasi dan ekstensi
+          Untuk instance Windows yang tidak tergabung dalam domain Active Directory,
+          proses instal secara paksa dibatasi untuk aplikasi dan ekstensi
           yang tercantum dalam Toko Web Chrome.
 
           Perlu diperhatikan bahwa kode sumber untuk ekstensi apa pun dapat diubah oleh pengguna melalui

@@ -322,7 +322,7 @@
       HardwareAccelerationModeEnabled が false に設定されている場合、Disable3DAPIs は無視されて、Disable3DAPIs を true に設定したときと同じことになります。</translation>
 <translation id="2168397434410358693">アイドル状態になるまでの時間（AC 電源での実行時）</translation>
 <translation id="2170233653554726857">WPAD 最適化を有効にする</translation>
-<translation id="2178899310296064282">YouTube で制限付きモード「中」以上を強制する</translation>
+<translation id="2178899310296064282">YouTube で制限付きモード「中」以上を強制的に適用する</translation>
 <translation id="2183294522275408937">この設定では、ロックのクイック解除機能を継続して使用するために、ロック画面でパスワードの入力を求める頻度を管理します。ロック画面が表示されたときに、前回のパスワード入力からの経過時間がこの設定値を超えている場合、ロックのクイック解除機能を使ってロックを解除することはできません。ユーザーがロックを解除しないまま設定した時間が経過した場合は、次回ユーザーが誤ったコードを入力するか、またはロック画面を表示するか、いずれか早い方の時点でパスワードの入力が求められます。
 
           この設定に値を指定した場合、ロックのクイック解除機能を使用しているユーザーには、この設定に基づくタイミングでロック画面でのパスワード入力が求められます。
@@ -1083,7 +1083,7 @@
 
           NewTabPageLocation は、ここで指定した URL に設定できます。この設定は、起動ページと同様にホームページにも影響します。つまり、ホームボタンを押したときに新しいタブページを開くように設定した場合は、この URL が使用されます。
 
-          このポリシーを未設定または空白のままにした場合は、デフォルトの新しタブページが使用されます。
+          このポリシーを未設定または空白のままにした場合は、デフォルトの新しいタブページが使用されます。
 
           このポリシーは、Active Directory ドメインに追加されていない Windows インスタンスでは使用できません。</translation>
 <translation id="4147054660081653009">RemoteAccessHostTokenValidationUrl に接続するためのクライアント証明書です。
@@ -1707,7 +1707,7 @@ Active Directory ドメインに参加していない Windows インスタンス
 
           たとえば、<ph name="EXTENSION_POLICY_EXAMPLE" /> では、
           <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> アプリが標準の Chrome ウェブストアの「更新」URL からインストールされます。
-          拡張のホスティングについて詳しくは、<ph name="LINK_TO_EXTENSION_DOC2" /> をご覧ください。
+          拡張機能のホスティングについて詳しくは、<ph name="LINK_TO_EXTENSION_DOC2" /> をご覧ください。
 
           このポリシーを未設定のままにした場合、どのアプリや拡張機能も自動的にインストールされることはなく、
           ユーザーは <ph name="PRODUCT_NAME" /> からアプリや拡張機能をアンインストールできます。</translation>

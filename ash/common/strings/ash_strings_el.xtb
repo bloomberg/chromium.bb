@@ -46,7 +46,6 @@
 <translation id="225680501294068881">Σάρωση για συσκευές…</translation>
 <translation id="2268130516524549846">Το Bluetooth έχει απενεργοποιηθεί</translation>
 <translation id="2268813581635650749">Αποσύνδεση όλων</translation>
-<translation id="2297568595583585744">Δίσκος κατάστασης</translation>
 <translation id="2303600792989757991">Επισκόπηση εναλλαγής παραθύρων</translation>
 <translation id="2354174487190027830">Ενεργοποίηση <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@
 <translation id="3626281679859535460">Φωτεινότητα</translation>
 <translation id="3683428399328702079">Η ανάλυση <ph name="DISPLAY_NAME" /> άλλαξε σε <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Ενεργοποίηση Wi-Fi</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">Περιοχή λήψης</translation>
 <translation id="372094107052732682">Πατήστε Ctrl + Shift + Q δύο φορές για έξοδο.</translation>
 <translation id="3742055079367172538">Το στιγμιότυπο οθόνης έχει ληφθεί</translation>
@@ -140,7 +138,6 @@
 <translation id="4957722034734105353">Μάθετε περισσότερα…</translation>
 <translation id="4961318399572185831">Μετάδοση οθόνης</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Ρυθμίσεις Google Drive...</translation>
 <translation id="510924152490034944">Η σύνδεση μπορεί να παρακολουθείται</translation>
 <translation id="5168181903108465623">Διαθέσιμες συσκευές μετάδοσης</translation>
 <translation id="5170568018924773124">Εμφάνιση στο φάκελο</translation>
@@ -199,7 +196,6 @@
 <translation id="6521655319214113338">Είσοδος με γραφή</translation>
 <translation id="6537270692134705506">Λήψη στιγμιότυπου οθόνης</translation>
 <translation id="6549021752953852991">Δεν υπάρχει διαθέσιμο δίκτυο κινητής τηλεφωνίας</translation>
-<translation id="6550675742724504774">Επιλογές</translation>
 <translation id="6585808820553845416">Η περίοδος σύνδεσης λήγει σε <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Διεύθυνση IP</translation>
 <translation id="6650933572246256093">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτό το κλειδί πρόσβασης στη συγκεκριμένη συσκευή: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@
 <translation id="6857811139397017780">Ενεργοποίηση <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Συμμετοχή σε άλλο…</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Προσβασιμότητα</translation>
 <translation id="7029814467594812963">Έξοδος από συνεδρία</translation>
-<translation id="703171847531699602">Δεν υπάρχουν συσκευές για μετάδοση</translation>
 <translation id="7034339000180558234">Μετάδοση <ph name="TAB_NAME" /> σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ορισμός ταπετσαρίας...</translation>
 <translation id="7066646422045619941">Το δίκτυο αυτό έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
@@ -235,7 +229,6 @@
 <translation id="7561014039265304140">Το <ph name="DISPLAY_NAME" /> δεν υποστηρίζει το <ph name="SPECIFIED_RESOLUTION" />. Η ανάλυση άλλαξε σε <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Παλέτα Emoji</translation>
 <translation id="7573962313813535744">Λειτουργία βάσης σύνδεσης</translation>
-<translation id="7580671184200851182">Αναπαραγωγή του ίδιου ήχου μέσω όλων των ηχείων (μονοφωνικός ήχος)</translation>
 <translation id="7581273696622423628">Συμμετοχή σε έρευνα</translation>
 <translation id="7593891976182323525">Search ή Shift</translation>
 <translation id="7649070708921625228">Βοήθεια</translation>

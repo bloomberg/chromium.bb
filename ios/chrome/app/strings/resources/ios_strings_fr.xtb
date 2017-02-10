@@ -66,7 +66,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="2068952045031577364">Semaine dernière</translation>
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="209018056901015185">Voir version ordinateur</translation>
-<translation id="2100215774115172756">Votre liste de lecture est disponible hors connexion.</translation>
 <translation id="2103075008456228677">Ouvrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments déplacés.</translation>
 <translation id="2149973817440762519">Modifier le favori</translation>
@@ -121,7 +120,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="3175081911749765310">Services Web</translation>
 <translation id="3207960819495026254">Favori</translation>
 <translation id="3210163015918861891">Synchronisation désactivée</translation>
-<translation id="3237561509210981547">Pour ajouter une page à votre liste de lecture, appuyez sur <ph name="BEGIN_BOLD_FONT" />Partager &gt; Lire plus tard<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Le lien a bien été copié.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> sur <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="3414292259312108062">Chrome stocke ce mot de passe dans les <ph name="BEGIN_LINK" />mots de passe Google enregistrés<ph name="END_LINK" />. Il sera renseigné automatiquement afin que vous n'ayez pas à le retenir.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vue fractionnée</translation>
-<translation id="3474068797193663261">Pour ajouter une page à votre liste de lecture, appuyez sur <ph name="BEGIN_BOLD_FONT" />Menu &gt; Partager &gt; Lire plus tard<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Formulaires remplis.</translation>
 <translation id="3478058380795961209">Mois d'expiration</translation>
 <translation id="3482959374254649722">Synchronisation de vos onglets en cours…</translation>

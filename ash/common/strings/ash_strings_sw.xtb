@@ -46,7 +46,6 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="225680501294068881">Inatambazaa vifaa...</translation>
 <translation id="2268130516524549846">Bluetooth imelemazwa</translation>
 <translation id="2268813581635650749">Ondoa wote</translation>
-<translation id="2297568595583585744">Treya ya hali</translation>
 <translation id="2303600792989757991">Geuza muhtasari wa dirisha</translation>
 <translation id="2354174487190027830">Inaanza kutumia <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="3626281679859535460">Ung'aavu</translation>
 <translation id="3683428399328702079">Ubora wa <ph name="DISPLAY_NAME" /> ulibadilishwa hadi <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Wezesha Wi-Fi</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">Piga eneo picha</translation>
 <translation id="372094107052732682">Bofya Ctrl + Shift + Q mara mbili ili kuacha.</translation>
 <translation id="3742055079367172538">Picha ya skrini imepigwa</translation>
@@ -140,7 +138,6 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="4957722034734105353">Pata maelezo zaidi...</translation>
 <translation id="4961318399572185831">Tuma skrini</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Mipangilio ya Hifadhi ya Google...</translation>
 <translation id="510924152490034944">Huenda muunganisho utafuatiliwa</translation>
 <translation id="5168181903108465623">Vifaa vinavyorusha midia vinapatikana</translation>
 <translation id="5170568018924773124">Onyesha katika folda</translation>
@@ -199,7 +196,6 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6521655319214113338">Kuingiza data kwa mwandiko wa mkono</translation>
 <translation id="6537270692134705506">Piga skrini picha</translation>
 <translation id="6549021752953852991">Hakuna mtandao wa simu za mkononi unaopatikana</translation>
-<translation id="6550675742724504774">Chaguo</translation>
 <translation id="6585808820553845416">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Anwani ya IP</translation>
 <translation id="6650933572246256093">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nenosiri hili kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6857811139397017780">Amilisha <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Jiunge na mwingine...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Hifadhi ya Google</translation>
 <translation id="6981982820502123353">Upatikanaji</translation>
 <translation id="7029814467594812963">Toka kwenye kipindi</translation>
-<translation id="703171847531699602">Hakuna vifaa vinavyorusha midia</translation>
 <translation id="7034339000180558234">Inatuma <ph name="TAB_NAME" /> kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Weka Mandhari...</translation>
 <translation id="7066646422045619941">Mtandao huu umezimwa na msimamizi wako.</translation>
@@ -234,7 +228,6 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> haitumiki kwa <ph name="SPECIFIED_RESOLUTION" />. Ubora ulibadilishwa hadi <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Safu ya emoji</translation>
 <translation id="7573962313813535744">Hali ya kituo</translation>
-<translation id="7580671184200851182">Cheza sauti moja kupitia spika zote (sauti ya mono)</translation>
 <translation id="7581273696622423628">Shiriki katika utafiti</translation>
 <translation id="7593891976182323525">Utafutaji au Hama</translation>
 <translation id="7649070708921625228">Usaidizi</translation>

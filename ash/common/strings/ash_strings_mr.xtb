@@ -46,7 +46,6 @@
 <translation id="225680501294068881">डिव्हाइसेससाठी स्कॅन करत आहे...</translation>
 <translation id="2268130516524549846">Bluetooth अक्षम</translation>
 <translation id="2268813581635650749">सर्व साइन आउट करा</translation>
-<translation id="2297568595583585744">स्थिती ट्रे</translation>
 <translation id="2303600792989757991">विंडो विहंगावलोकन टॉगल करा</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय करत आहे</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@
 <translation id="3626281679859535460">ब्राइटनेस</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> रिजोल्यूशन <ph name="RESOLUTION" /> वर बदलले होते</translation>
 <translation id="370649949373421643">Wi-fi सक्षम करा</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">विभाग कॅप्‍चर करा</translation>
 <translation id="372094107052732682">बाहेर पडण्यासाठी Ctrl+Shift+Q दोनदा दाबा.</translation>
 <translation id="3742055079367172538">स्क्रीनशॉट घेतला</translation>
@@ -140,7 +138,6 @@
 <translation id="4957722034734105353">अधिक जाणून घ्या...</translation>
 <translation id="4961318399572185831">स्क्रीन कास्ट करा</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Google ड्राइव्ह सेटिंग्ज...</translation>
 <translation id="510924152490034944">कनेक्शन नियंत्रित केले जाऊ शकते</translation>
 <translation id="5168181903108465623">कास्‍ट डिव्‍हाइसेस उपलब्‍ध</translation>
 <translation id="5170568018924773124">फोल्डरमध्ये दर्शवा</translation>
@@ -199,7 +196,6 @@
 <translation id="6521655319214113338">हस्तलेखन इनपुट</translation>
 <translation id="6537270692134705506">स्क्रीन कॅप्चर करा</translation>
 <translation id="6549021752953852991">कोणतेही सेल्युलर नेटवर्क उपलब्ध नाही</translation>
-<translation id="6550675742724504774">पर्याय</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> मध्ये सत्र समाप्त होते.</translation>
 <translation id="6596816719288285829">IP पत्ता</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर ही पासकी प्रविष्ट करा: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@
 <translation id="6857811139397017780">सक्रिय करा<ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">दुसरीकडे सामील व्हा...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google ड्राइव्ह</translation>
 <translation id="6981982820502123353">प्रवेशयोग्यता</translation>
 <translation id="7029814467594812963">सत्र निर्गमन करा</translation>
-<translation id="703171847531699602">कोणतेही कास्ट डिव्‍हाइसेस नाहीत</translation>
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" /> वर <ph name="TAB_NAME" /> कास्ट करीत आहे</translation>
 <translation id="7052914147756339792">वॉलपेपर सेट करा...</translation>
 <translation id="7066646422045619941">हे नेटवर्क आपल्या प्रशासकाने अक्षम केले आहे.</translation>
@@ -234,7 +228,6 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> ला समर्थन देत नाही. रिजोल्यूशन <ph name="FALLBACK_RESOLUTION" /> मध्ये बदलले</translation>
 <translation id="7562368315689366235">इमोजी पॅलेट</translation>
 <translation id="7573962313813535744">डॉक केलेला मोड</translation>
-<translation id="7580671184200851182">सर्व स्पीकर मधून समान ऑडिओ प्ले करा (मोनो ऑडिओ)</translation>
 <translation id="7581273696622423628">सर्वेक्षण घ्या</translation>
 <translation id="7593891976182323525">Search किंवा Shift</translation>
 <translation id="7649070708921625228">मदत</translation>

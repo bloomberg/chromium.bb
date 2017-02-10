@@ -1097,7 +1097,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
           Denne politik afgør ikke, hvilke sider der skal åbnes ved start. Disse kontrolleres af RestoreOnStartup-politikkerne, som dog godt kan angive åbning af siden Ny fane.
 
-          NewTabPageLocation kan indstilles til en webadresse, som du angiver her. Den påvirker også startsiden, hvis den er indstillet til både at åbne siden Ny fane og startsiden, hvis denne er indstillet til siden Ny fane.
+          NewTabPageLocation kan indstilles til en webadresse, som du angiver her. Den påvirker også startsiden, hvis den er indstillet til både at åbne siden Ny fane og opstartssiden, hvis denne er indstillet til siden Ny fane.
 
           Hvis politikken ikke er angivet eller efterlades tom, bruges standardsiden for nye faner.
 
@@ -1717,8 +1717,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Hvert listepunkt for politikken er en streng, som indeholder et udvidelses-id og en
           "opdateringswebadresse" adskilt af et semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er den streng på 32 bogstaver,
           som f.eks. kan findes i <ph name="CHROME_EXTENSIONS_LINK" />, når
-          udviklertilstanden bruges. "Opdateringswebadressen" skal pege på et Update Manifest
-          XML-dokument, som beskrevet på <ph name="LINK_TO_EXTENSION_DOC1" />. Bemærk,
+          udviklertilstanden bruges. "Opdateringswebadressen" skal pege på et           XML-dokument med manifest om opdatering, som beskrevet på <ph name="LINK_TO_EXTENSION_DOC1" />. Bemærk,
           at "opdateringswebadressen", der angives i denne politik, kun bruges til den første
           installation. Efterfølgende opdateringer af udvidelsen anvender den opdateringswebadresse,
           som er angivet i udvidelsens manifest.

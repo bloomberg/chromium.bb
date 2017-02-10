@@ -46,7 +46,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="225680501294068881">Skanowanie w poszukiwaniu urządzeń...</translation>
 <translation id="2268130516524549846">Bluetooth wyłączony</translation>
 <translation id="2268813581635650749">Wyloguj wszystkich</translation>
-<translation id="2297568595583585744">Zasobnik stanu</translation>
 <translation id="2303600792989757991">Przełącz widok ogólny okna</translation>
 <translation id="2354174487190027830">Aktywuję <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3626281679859535460">Jasność</translation>
 <translation id="3683428399328702079">Rozdzielczość wyświetlacza <ph name="DISPLAY_NAME" /> została zmieniona na <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Włącz Wi-Fi</translation>
-<translation id="3709443003275901162">Ponad 9</translation>
 <translation id="3712407551474845318">Zrzut obszaru ekranu</translation>
 <translation id="372094107052732682">Naciśnij dwukrotnie Ctrl+Shift+Q, by zakończyć.</translation>
 <translation id="3742055079367172538">Wykonano zrzut ekranu</translation>
@@ -140,7 +138,6 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="4957722034734105353">Więcej informacji...</translation>
 <translation id="4961318399572185831">Przesyłanie ekranu</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Ustawienia Dysku Google...</translation>
 <translation id="510924152490034944">Połączenie może być monitorowane</translation>
 <translation id="5168181903108465623">Dostępne są urządzenia przesyłające</translation>
 <translation id="5170568018924773124">Pokaż w folderze</translation>
@@ -199,7 +196,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6521655319214113338">Pismo odręczne</translation>
 <translation id="6537270692134705506">Zrzut całego ekranu</translation>
 <translation id="6549021752953852991">Brak dostępnych sieci komórkowych</translation>
-<translation id="6550675742724504774">Opcje</translation>
 <translation id="6585808820553845416">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Adres IP</translation>
 <translation id="6650933572246256093">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten klucz: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6857811139397017780">Aktywuj sieć <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Połącz z inną...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Dysk Google</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
-<translation id="703171847531699602">Brak urządzeń przesyłających</translation>
 <translation id="7034339000180558234">Przesyłam kartę <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Ustaw tapetę...</translation>
 <translation id="7066646422045619941">Ta sieć została wyłączona przez administratora.</translation>
@@ -235,7 +229,6 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> nie obsługuje <ph name="SPECIFIED_RESOLUTION" />. Zmieniono rozdzielczość na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta emotikonów</translation>
 <translation id="7573962313813535744">Tryb dokowania</translation>
-<translation id="7580671184200851182">Odtwarzaj ten sam dźwięk na wszystkich głośnikach (dźwięk mono)</translation>
 <translation id="7581273696622423628">Wypełnij ankietę</translation>
 <translation id="7593891976182323525">Szukaj lub Shift</translation>
 <translation id="7649070708921625228">Pomoc</translation>

@@ -46,7 +46,6 @@
 <translation id="225680501294068881">正在掃描裝置...</translation>
 <translation id="2268130516524549846">藍牙已停用</translation>
 <translation id="2268813581635650749">登出所有使用者</translation>
-<translation id="2297568595583585744">狀態匣</translation>
 <translation id="2303600792989757991">切換視窗總覽</translation>
 <translation id="2354174487190027830">正在啟用 <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180 度</translation>
@@ -100,7 +99,6 @@
 <translation id="3626281679859535460">亮度</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> 的解析度已變更為 <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">啟用 Wi-Fi</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">擷取部分畫面</translation>
 <translation id="372094107052732682">按兩下 Ctrl+Shift+Q 鍵即可結束。</translation>
 <translation id="3742055079367172538">已拍攝螢幕擷取畫面</translation>
@@ -140,7 +138,6 @@
 <translation id="4957722034734105353">瞭解詳情...</translation>
 <translation id="4961318399572185831">投放螢幕</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Google 雲端硬碟設定...</translation>
 <translation id="510924152490034944">連線可能受到監控</translation>
 <translation id="5168181903108465623">可用的投放裝置</translation>
 <translation id="5170568018924773124">在資料夾中顯示</translation>
@@ -199,7 +196,6 @@
 <translation id="6521655319214113338">手寫輸入</translation>
 <translation id="6537270692134705506">擷取整個畫面</translation>
 <translation id="6549021752953852991">沒有可用的行動網路</translation>
-<translation id="6550675742724504774">選項</translation>
 <translation id="6585808820553845416">這個工作階段將在 <ph name="SESSION_TIME_REMAINING" />後結束。</translation>
 <translation id="6596816719288285829">IP 位址</translation>
 <translation id="6650933572246256093">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入此密碼金鑰：<ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@
 <translation id="6857811139397017780">啟用 <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">加入其他網路...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6981982820502123353">協助工具</translation>
 <translation id="7029814467594812963">結束工作階段</translation>
-<translation id="703171847531699602">沒有投放裝置</translation>
 <translation id="7034339000180558234">正在將「<ph name="TAB_NAME" />」畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
 <translation id="7052914147756339792">設定桌布...</translation>
 <translation id="7066646422045619941">您的管理員已停用這個網路。</translation>
@@ -235,7 +229,6 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> 不支援 <ph name="SPECIFIED_RESOLUTION" />，解析度已變更為 <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">表情符號面板</translation>
 <translation id="7573962313813535744">停駐模式</translation>
-<translation id="7580671184200851182">透過所有喇叭播放相同的音效 (單聲道音訊)</translation>
 <translation id="7581273696622423628">填寫問卷</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7649070708921625228">說明</translation>

@@ -46,7 +46,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="225680501294068881">Đang quét tìm thiết bị...</translation>
 <translation id="2268130516524549846">Đã tắt bluetooth</translation>
 <translation id="2268813581635650749">Đăng xuất tất cả</translation>
-<translation id="2297568595583585744">Khay trạng thái</translation>
 <translation id="2303600792989757991">Tổng quan về chuyển đổi cửa sổ</translation>
 <translation id="2354174487190027830">Kích hoạt <ph name="NAME" /></translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="3626281679859535460">Độ sáng</translation>
 <translation id="3683428399328702079">Độ phân giải <ph name="DISPLAY_NAME" /> đã được chuyển thành <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Bật Wi-Fi</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">Chụp một vùng màn hình</translation>
 <translation id="372094107052732682">Nhấn Ctrl+Shift+Q hai lần để thoát.</translation>
 <translation id="3742055079367172538">Ảnh màn hình đã chụp</translation>
@@ -140,7 +138,6 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="4957722034734105353">Tìm hiểu thêm...</translation>
 <translation id="4961318399572185831">Truyền màn hình</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Cài đặt Google Drive...</translation>
 <translation id="510924152490034944">Kết nối có thể bị theo dõi</translation>
 <translation id="5168181903108465623">Có thiết bị truyền</translation>
 <translation id="5170568018924773124">Hiển thị trong thư mục</translation>
@@ -199,7 +196,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6521655319214113338">Nhập bằng chữ viết tay</translation>
 <translation id="6537270692134705506">Chụp màn hình</translation>
 <translation id="6549021752953852991">Không có mạng di động nào</translation>
-<translation id="6550675742724504774">Tùy chọn</translation>
 <translation id="6585808820553845416">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">Địa chỉ IP</translation>
 <translation id="6650933572246256093">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã xác nhận này trên thiết bị đó: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6857811139397017780">Kích hoạt <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
-<translation id="703171847531699602">Không có thiết bị truyền nào</translation>
 <translation id="7034339000180558234">Đang truyền <ph name="TAB_NAME" /> tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Đặt hình nền...</translation>
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
@@ -235,7 +229,6 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> không hỗ trợ <ph name="SPECIFIED_RESOLUTION" />. Độ phân giải đã được thay đổi thành <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Bảng màu biểu tượng cảm xúc</translation>
 <translation id="7573962313813535744">Chế độ được gắn đế</translation>
-<translation id="7580671184200851182">Phát cùng một âm thanh qua tất cả các loa (đơn âm)</translation>
 <translation id="7581273696622423628">Thực hiện khảo sát</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>

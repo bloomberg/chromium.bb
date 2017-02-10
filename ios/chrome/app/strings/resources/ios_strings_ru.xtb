@@ -66,7 +66,6 @@
 <translation id="2068952045031577364">За прошлую неделю</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="209018056901015185">Полная версия</translation>
-<translation id="2100215774115172756">Список для чтения доступен в автономном режиме.</translation>
 <translation id="2103075008456228677">Открыть history.google.com</translation>
 <translation id="2116625576999540962">Перемещено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Закладка</translation>
@@ -121,7 +120,6 @@
 <translation id="3175081911749765310">Веб-сервисы</translation>
 <translation id="3207960819495026254">Добавлено в закладки</translation>
 <translation id="3210163015918861891">Синхронизация: выкл.</translation>
-<translation id="3237561509210981547">Чтобы добавить страницу в список для чтения, нажмите <ph name="BEGIN_BOLD_FONT" />Поделиться &gt; Читать позже<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Готово</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> из <ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@
 <translation id="3414292259312108062">Этот пароль будет добавлен в <ph name="BEGIN_LINK" />список сохраненных паролей<ph name="END_LINK" />, чтобы Chrome мог автоматически вводить его в соответствующие поля.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин.</translation>
 <translation id="3448016392200048164">Режим Split View</translation>
-<translation id="3474068797193663261">Чтобы добавить страницу в список для чтения, нажмите <ph name="BEGIN_BOLD_FONT" />Меню &gt; Поделиться &gt; Читать позже<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Формы заполнены</translation>
 <translation id="3478058380795961209">Месяц</translation>
 <translation id="3482959374254649722">Синхронизация вкладок...</translation>

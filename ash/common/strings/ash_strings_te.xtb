@@ -46,7 +46,6 @@
 <translation id="225680501294068881">పరికరాల కోసం స్కాన్ చేస్తోంది...</translation>
 <translation id="2268130516524549846">Bluetooth నిలిపివేయబడింది</translation>
 <translation id="2268813581635650749">అందరినీ సైన్ అవుట్ చేయి</translation>
-<translation id="2297568595583585744">స్థితి ట్రే</translation>
 <translation id="2303600792989757991">విండో స్థూలదృష్టిని టోగుల్ చేయి</translation>
 <translation id="2354174487190027830"><ph name="NAME" />ని సక్రియం చేస్తోంది</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -100,7 +99,6 @@
 <translation id="3626281679859535460">ప్రకాశం</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> రిజల్యూషన్ <ph name="RESOLUTION" />కి మార్చబడింది</translation>
 <translation id="370649949373421643">Wi-fiని ప్రారంభించు</translation>
-<translation id="3709443003275901162">9+</translation>
 <translation id="3712407551474845318">ప్రాంతాన్ని సంగ్రహించు</translation>
 <translation id="372094107052732682">నిష్క్రమించడానికి రెండుసార్లు Ctrl+Shift+Q నొక్కండి.</translation>
 <translation id="3742055079367172538">స్క్రీన్‌షాట్ తీసినప్పుడు</translation>
@@ -140,7 +138,6 @@
 <translation id="4957722034734105353">మరింత తెలుసుకోండి...</translation>
 <translation id="4961318399572185831">స్క్రీన్ ప్రసారం చేయండి</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="5045002648206642691">Google డిస్క్ సెట్టింగ్‌లు...</translation>
 <translation id="510924152490034944">కనెక్షన్ పర్యవేక్షించబడవచ్చు</translation>
 <translation id="5168181903108465623">Cast పరికరాలు అందుబాటులో ఉన్నాయి</translation>
 <translation id="5170568018924773124">ఫోల్డర్‌లో చూపించు</translation>
@@ -199,7 +196,6 @@
 <translation id="6521655319214113338">చేతివ్రాత ఇన్‌పుట్</translation>
 <translation id="6537270692134705506">స్క్రీన్‌ని సంగ్రహించు</translation>
 <translation id="6549021752953852991">సెల్యులార్ నెట్‌వర్క్ అందుబాటులో లేదు</translation>
-<translation id="6550675742724504774">ఎంపికలు</translation>
 <translation id="6585808820553845416">సెషన్ <ph name="SESSION_TIME_REMAINING" />లో ముగుస్తుంది.</translation>
 <translation id="6596816719288285829">IP చిరునామా</translation>
 <translation id="6650933572246256093">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది. దయచేసి ఆ పరికరంలో ఈ పాస్‌కీని నమోదు చేయండి: <ph name="PASSKEY" /></translation>
@@ -211,10 +207,8 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" />ని సక్రియం చెయ్యి</translation>
 <translation id="6911468394164995108">మరొక దానిలో చేరండి...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
-<translation id="6979158407327259162">Google డిస్క్</translation>
 <translation id="6981982820502123353">ప్రాప్యత</translation>
 <translation id="7029814467594812963">సెషన్‌ని నిష్క్రమించు</translation>
-<translation id="703171847531699602">ప్రసార పరికరాలు లేవు</translation>
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" />కి <ph name="TAB_NAME" />ని ప్రసారం చేస్తున్నాము</translation>
 <translation id="7052914147756339792">వాల్‌పేపర్‌ను సెట్ చేయి...</translation>
 <translation id="7066646422045619941">ఈ నెట్‌వర్క్‌ను మీ నిర్వాహకులు నిలిపివేసారు.</translation>
@@ -235,7 +229,6 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />కి మద్దతివ్వదు. రిజల్యూషన్ <ph name="FALLBACK_RESOLUTION" />కి మార్చబడింది</translation>
 <translation id="7562368315689366235">ఎమోజీ ఫలకం</translation>
 <translation id="7573962313813535744">డాక్ చేయబడిన మోడ్</translation>
-<translation id="7580671184200851182">అన్ని స్పీకర్‌ల్లో ఒకే ఆడియోను ప్లే చేయి (మోనో ఆడియో)</translation>
 <translation id="7581273696622423628">సర్వేలో పాల్గొనండి</translation>
 <translation id="7593891976182323525">Search లేదా Shift</translation>
 <translation id="7649070708921625228">సహాయం</translation>

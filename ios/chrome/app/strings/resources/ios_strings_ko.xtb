@@ -66,7 +66,6 @@
 <translation id="2068952045031577364">지난주</translation>
 <translation id="2079545284768500474">실행취소</translation>
 <translation id="209018056901015185">데스크톱 버전으로 보기</translation>
-<translation id="2100215774115172756">오프라인에서 읽기 목록을 사용할 수 있습니다.</translation>
 <translation id="2103075008456228677">history.google.com 열기</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 이동함</translation>
 <translation id="2149973817440762519">북마크 수정</translation>
@@ -121,7 +120,6 @@
 <translation id="3175081911749765310">웹 서비스</translation>
 <translation id="3207960819495026254">북마크됨</translation>
 <translation id="3210163015918861891">동기화 사용 안함</translation>
-<translation id="3237561509210981547">읽기 목록에 페이지를 추가하려면 <ph name="BEGIN_BOLD_FONT" />공유 &gt; 나중에 읽기<ph name="END_BOLD_FONT" />를 탭하세요.</translation>
 <translation id="3240426699337459095">링크 복사됨</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" />/<ph name="NUM_SUGGESTIONS" /></translation>
@@ -134,7 +132,6 @@
 <translation id="3414292259312108062">Chrome은 이 비밀번호를 <ph name="BEGIN_LINK" />Google에 저장된 비밀번호<ph name="END_LINK" />에 저장하고 자동완성 기능을 지원하므로 직접 기억할 필요가 없습니다.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />분</translation>
 <translation id="3448016392200048164">분할 보기</translation>
-<translation id="3474068797193663261">읽기 목록에 페이지를 추가하려면 <ph name="BEGIN_BOLD_FONT" />메뉴 &gt; 공유 &gt; 나중에 읽기<ph name="END_BOLD_FONT" />를 탭하세요.</translation>
 <translation id="3474649192738347024">양식 작성이 완료되었습니다.</translation>
 <translation id="3478058380795961209">만료 월</translation>
 <translation id="3482959374254649722">탭을 동기화하는 중...</translation>

@@ -332,7 +332,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se questa impostazione non è configurata, gli utenti possono scegliere se utilizzare o meno il servizio di controllo ortografico.</translation>
 <translation id="2294382669900758280">Il video riprodotto nelle app Android non viene considerato, anche se la norma viene impostata su <ph name="TRUE" />.</translation>
-<translation id="2298647742290373702">Configura la pagina Nuova scheda predefinita in <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2298647742290373702">Configura la pagina predefinita Nuova scheda in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Consente di specificare un elenco dei plug-in attivati</translation>
 <translation id="2309390639296060546">Impostazione di geolocalizzazione predefinita</translation>
 <translation id="2312134445771258233">Consente di configurare le pagine che vengono caricate all'avvio. I contenuti dell'elenco "Pagine da aprire all'avvio" vengono ignorati a meno che non selezioni "Apri un elenco di URL" in "Azione all'avvio".</translation>
@@ -839,7 +839,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       preferiti come definito in alto (alcuni preferiti potrebbero essere cartelle a loro volta). <ph name="PRODUCT_NAME" /> corregge gli URL incompleti
       come se fossero stati inviati tramite la omnibox, ad esempio, <ph name="GOOGLE_COM" /> diventa <ph name="HTTPS_GOOGLE_COM" />.
 
-      Questi preferiti vengono inseriti in una cartella Preferiti gestiti che non può essere modificata dall'utente, ma che l'utente può decidere di nascondere nella barra dei Preferiti. I preferiti gestiti non vengono sincronizzati con l'account utente e non possono essere modificati dalle estensioni.
+      Questi preferiti vengono inseriti in una cartella "Preferiti gestiti" che non può essere modificata dall'utente, ma che l'utente può decidere di nascondere nella barra dei Preferiti. I preferiti gestiti non vengono sincronizzati con l'account utente e non possono essere modificati dalle estensioni.
 
       A partire dalla versione 51, il nome della cartella per i preferiti è personalizzabile tramite l'aggiunta di una voce di elenco {"toplevel_name": "some name"}.</translation>
 <translation id="3627678165642179114">Attiva o disattiva il servizio web di controllo ortografico</translation>
@@ -1045,7 +1045,7 @@ Se la norma viene impostata su false, gli utenti non potranno bloccare lo scherm
 
           La norma NewTabPageLocation può essere impostata su un URL che indichi qui e che verrà utilizzato anche per la Home page, qualora sia impostato per l'apertura della pagina Nuova scheda, oltre che come pagina iniziale.
 
-          Se la norma non è impostata o risulta vuota, viene utilizzara la pagina nuova scheda predefinita.
+          Se la norma non è impostata o risulta vuota, viene utilizzara la pagina predefinita Nuova scheda.
 
           Questa norma non è disponibile per le istanze di Windows che non fanno parte di un dominio Active Directory.</translation>
 <translation id="4147054660081653009">Il certificato client per la connessione a RemoteAccessHostTokenValidationUrl.
@@ -1616,8 +1616,8 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6310223829319187614">Consente il completamento automatico del nome di dominio durante l'accesso dell'utente</translation>
 <translation id="6312861131491040487">
-          Consente di specificare un elenco di app ed estensioni che vengono installate automaticamente,,
-          senza dunque l'interazione dell'utente e che non possono essere disinstallate
+          Consente di specificare un elenco di app ed estensioni che vengono installate automaticamente,
+          senza l'interazione dell'utente, e che non possono essere disinstallate
           dall'utente. Tutte le autorizzazioni richieste dalle app/estensioni vengono concesse
           implicitamente, senza interazione dell'utente, comprese le eventuali autorizzazioni
           aggiuntive richieste dalle future versioni delle app/estensioni.
@@ -1627,12 +1627,12 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           installazione imposta).
 
           Questa norma ha precedenza su una norma
-          ExtensionsInstallBlacklist potenzialmente in contrasto. Se un'app o un'estensione con
+          ExtensionsInstallBlacklist potenzialmente in conflitto. Se un'app o un'estensione con
           installazione imposta viene rimossa da questo elenco,
-          tale app o estensione viene disisntallata automaticamente da <ph name="PRODUCT_NAME" />.
+          tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
 
           Per le istanze di Windows che non fanno parte di un dominio Active Directory,
-          l'installazione forzata è limitata alle estensioni elencate
+          l'installazione forzata è limitata alle app e alle estensioni elencate
           nel Chrome Web Store.
 
           Tieni presente che il codice sorgente delle estensioni potrebbe essere stato modificato dagli utenti tramite
@@ -1644,7 +1644,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           e un URL di "aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere
           che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> in
           modalità sviluppatore. L'URL di "aggiornamento" deve indirizzare a un documento
-          XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. L'URL di aggiornamento
+          XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. L'URL di "aggiornamento"
           impostato in questa norma viene utilizzato esclusivamente per l'installazione
           iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato
           l'URL di aggiornamento indicato nel file manifest dell'estensione.
@@ -1654,7 +1654,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           standard. Ulteriori informazioni sulle estensioni in hosting sono disponibili all'indirizzo: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Se questa norma non è impostata, nessuna app e nessuna estensione vengono installate
-          automaticamente e l'utente può disinstallate qualsiasi app o estrensione in <ph name="PRODUCT_NAME" />.</translation>
+          automaticamente e l'utente può disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6315673513957120120">Chrome mostra una pagina di avviso quando gli utenti visitano siti che presentano errori SSL. Per impostazione predefinita, o se la norma viene impostata su true, gli utenti possono fare clic nelle pagine di avviso.
       Se questa norma viene impostata su false, gli utenti non possono fare clic nelle pagine di avviso.</translation>
 <translation id="6353901068939575220">Consente di specificare i parametri utilizzati durante la ricerca di un URL con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
