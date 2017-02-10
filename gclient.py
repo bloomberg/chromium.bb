@@ -694,7 +694,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         if name not in deps:
           raise gclient_utils.Error(
               'ParseDepsFile(%s): recursedeps contains entry, '
-              'that is not referenced in deps: %s' % name)
+              'that is not referenced in deps: %s' % (self.name, name))
 
     # Convert the deps into real Dependency.
     deps_to_add = []
