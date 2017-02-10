@@ -37,6 +37,7 @@ if (!use_system_minigbm) {
       "src/rockchip.c",
       "src/tegra.c",
       "src/udl.c",
+      "src/vc4.c",
       "src/vgem.c",
       "src/virtio_gpu.c",
     ]
