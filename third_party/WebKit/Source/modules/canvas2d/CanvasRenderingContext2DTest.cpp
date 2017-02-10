@@ -1295,8 +1295,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
           ? SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat
           : SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
   SkColorSpaceXform::ColorFormat colorFormat = colorFormat32;
-  sk_sp<SkColorSpace> srcRGBColorSpace =
-      SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+  sk_sp<SkColorSpace> srcRGBColorSpace = SkColorSpace::MakeSRGB();
 
   for (uint8_t i = static_cast<uint8_t>(
            ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
@@ -1325,11 +1324,11 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorSpace = SkColorSpace::MakeSRGB();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::LINEAR_RGB:
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+        colorSpace = SkColorSpace::MakeSRGBLinear();
         colorType = SkColorType::kRGBA_F16_SkColorType;
         colorFormat = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;

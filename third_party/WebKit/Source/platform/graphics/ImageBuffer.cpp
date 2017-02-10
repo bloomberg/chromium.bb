@@ -81,10 +81,8 @@ std::unique_ptr<ImageBuffer> ImageBuffer::create(
     ImageInitializationMode initializationMode,
     sk_sp<SkColorSpace> colorSpace) {
   SkColorType colorType = kN32_SkColorType;
-  if (colorSpace &&
-      SkColorSpace::Equals(
-          colorSpace.get(),
-          SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named).get()))
+  if (colorSpace && SkColorSpace::Equals(colorSpace.get(),
+                                         SkColorSpace::MakeSRGBLinear().get()))
     colorType = kRGBA_F16_SkColorType;
 
   std::unique_ptr<ImageBufferSurface> surface(WTF::wrapUnique(
@@ -409,7 +407,7 @@ bool ImageBuffer::getImageData(Multiply multiplied,
   // pixels to a particular color space is not well-defined in Skia.
   sk_sp<SkColorSpace> colorSpace = nullptr;
   if (m_surface->colorSpace()) {
-    colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+    colorSpace = SkColorSpace::MakeSRGB();
   }
 
   SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(), colorType,
@@ -494,9 +492,9 @@ void ImageBuffer::putByteArray(Multiply multiplied,
                              m_surface->colorType(), alphaType,
                              m_surface->colorSpace());
   } else {
-    info = SkImageInfo::Make(
-        sourceRect.width(), sourceRect.height(), kRGBA_8888_SkColorType,
-        alphaType, SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named));
+    info = SkImageInfo::Make(sourceRect.width(), sourceRect.height(),
+                             kRGBA_8888_SkColorType, alphaType,
+                             SkColorSpace::MakeSRGB());
   }
   m_surface->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }

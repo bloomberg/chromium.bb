@@ -373,9 +373,9 @@ sk_sp<SkColorSpace> ImageData::imageDataColorSpaceToSkColorSpace(
     case kLegacyImageDataColorSpace:
       return ColorBehavior::globalTargetColorSpace().ToSkColorSpace();
     case kSRGBImageDataColorSpace:
-      return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+      return SkColorSpace::MakeSRGB();
     case kLinearRGBImageDataColorSpace:
-      return SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+      return SkColorSpace::MakeSRGBLinear();
   }
   NOTREACHED();
   return nullptr;

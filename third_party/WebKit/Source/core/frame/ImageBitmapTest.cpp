@@ -244,8 +244,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
 
   SkPaint p;
   p.setColor(SK_ColorRED);
-  sk_sp<SkColorSpace> srcRGBColorSpace =
-      SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+  sk_sp<SkColorSpace> srcRGBColorSpace = SkColorSpace::MakeSRGB();
 
   SkImageInfo rasterImageInfo =
       SkImageInfo::MakeN32Premul(10, 10, srcRGBColorSpace);
@@ -306,11 +305,11 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorSpace = SkColorSpace::MakeSRGB();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::LINEAR_RGB:
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+        colorSpace = SkColorSpace::MakeSRGBLinear();
         colorType = SkColorType::kRGBA_F16_SkColorType;
         colorFormat = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;
@@ -347,8 +346,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
 
   SkPaint p;
   p.setColor(SK_ColorRED);
-  sk_sp<SkColorSpace> srcRGBColorSpace =
-      SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+  sk_sp<SkColorSpace> srcRGBColorSpace = SkColorSpace::MakeSRGB();
 
   SkImageInfo rasterImageInfo =
       SkImageInfo::MakeN32Premul(10, 10, srcRGBColorSpace);
@@ -406,11 +404,11 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorSpace = SkColorSpace::MakeSRGB();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::LINEAR_RGB:
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+        colorSpace = SkColorSpace::MakeSRGBLinear();
         colorType = SkColorType::kRGBA_F16_SkColorType;
         colorFormat = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;
@@ -444,8 +442,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
   SkPaint p;
   p.setColor(SK_ColorRED);
-  sk_sp<SkColorSpace> srcRGBColorSpace =
-      SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+  sk_sp<SkColorSpace> srcRGBColorSpace = SkColorSpace::MakeSRGB();
 
   SkImageInfo rasterImageInfo =
       SkImageInfo::MakeN32Premul(10, 10, srcRGBColorSpace);
@@ -497,11 +494,11 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorSpace = SkColorSpace::MakeSRGB();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::LINEAR_RGB:
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+        colorSpace = SkColorSpace::MakeSRGBLinear();
         colorType = SkColorType::kRGBA_F16_SkColorType;
         colorFormat = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;
@@ -574,11 +571,11 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorSpace = SkColorSpace::MakeSRGB();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::LINEAR_RGB:
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+        colorSpace = SkColorSpace::MakeSRGBLinear();
         colorType = SkColorType::kRGBA_F16_SkColorType;
         colorFormat = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;

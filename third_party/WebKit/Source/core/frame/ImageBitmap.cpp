@@ -90,13 +90,11 @@ ParsedOptions parseOptions(const ImageBitmapOptions& options,
       if (options.colorSpaceConversion() == kImageBitmapOptionDefault ||
           options.colorSpaceConversion() ==
               kSRGBImageBitmapColorSpaceConversion) {
-        parsedOptions.dstColorSpace =
-            SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        parsedOptions.dstColorSpace = SkColorSpace::MakeSRGB();
         parsedOptions.dstColorType = SkColorType::kN32_SkColorType;
       } else if (options.colorSpaceConversion() ==
                  kLinearRGBImageBitmapColorSpaceConversion) {
-        parsedOptions.dstColorSpace =
-            SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+        parsedOptions.dstColorSpace = SkColorSpace::MakeSRGBLinear();
         parsedOptions.dstColorType = SkColorType::kRGBA_F16_SkColorType;
       } else {
         NOTREACHED()

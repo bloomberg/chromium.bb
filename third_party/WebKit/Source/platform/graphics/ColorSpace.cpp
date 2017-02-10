@@ -128,8 +128,7 @@ ColorSpaceGamut getColorSpaceGamut(const WebScreenInfo& screenInfo) {
 }
 
 ColorSpaceGamut getColorSpaceGamut(SkColorSpace* colorSpace) {
-  sk_sp<SkColorSpace> scRGB(
-      SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named));
+  sk_sp<SkColorSpace> scRGB(SkColorSpace::MakeSRGBLinear());
   std::unique_ptr<SkColorSpaceXform> transform(
       SkColorSpaceXform::New(colorSpace, scRGB.get()));
 

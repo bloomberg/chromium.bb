@@ -21,8 +21,7 @@ TEST(ICCProfile, Conversions) {
 
 TEST(ICCProfile, SRGB) {
   ColorSpace color_space = ColorSpace::CreateSRGB();
-  sk_sp<SkColorSpace> sk_color_space =
-      SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+  sk_sp<SkColorSpace> sk_color_space = SkColorSpace::MakeSRGB();
 
   // These should be the same pointer, not just equal.
   EXPECT_EQ(color_space.ToSkColorSpace().get(), sk_color_space.get());

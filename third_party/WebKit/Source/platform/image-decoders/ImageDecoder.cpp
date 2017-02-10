@@ -524,7 +524,7 @@ SkColorSpaceXform* ImageDecoder::colorTransform() {
   sk_sp<SkColorSpace> srcColorSpace = m_embeddedColorSpace;
   if (!srcColorSpace) {
     if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
-      srcColorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+      srcColorSpace = SkColorSpace::MakeSRGB();
     else
       return nullptr;
   }
@@ -547,7 +547,7 @@ sk_sp<SkColorSpace> ImageDecoder::colorSpaceForSkImages() const {
 
   if (m_embeddedColorSpace)
     return m_embeddedColorSpace;
-  return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+  return SkColorSpace::MakeSRGB();
 }
 
 }  // namespace blink

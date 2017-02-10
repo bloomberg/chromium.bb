@@ -234,9 +234,9 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   // Use the named SRGB and linear-SRGB instead of the generic constructors.
   if (primaries_ == PrimaryID::BT709) {
     if (transfer_ == TransferID::IEC61966_2_1)
-      return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+      return SkColorSpace::MakeSRGB();
     if (transfer_ == TransferID::LINEAR || transfer_ == TransferID::LINEAR_HDR)
-      return SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+      return SkColorSpace::MakeSRGBLinear();
   }
 
   SkMatrix44 to_xyz_d50;

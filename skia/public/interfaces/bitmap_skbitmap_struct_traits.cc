@@ -51,7 +51,7 @@ sk_sp<SkColorSpace> MojoProfileTypeToSk(skia::mojom::ColorProfileType type) {
     case skia::mojom::ColorProfileType::LINEAR:
       return nullptr;
     case skia::mojom::ColorProfileType::SRGB:
-      return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+      return SkColorSpace::MakeSRGB();
   }
   NOTREACHED();
   return nullptr;

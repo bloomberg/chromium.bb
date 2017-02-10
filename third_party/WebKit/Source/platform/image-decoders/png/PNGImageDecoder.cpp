@@ -60,7 +60,7 @@ inline float pngFixedToFloat(png_fixed_point x) {
 
 inline sk_sp<SkColorSpace> readColorSpace(png_structp png, png_infop info) {
   if (png_get_valid(png, info, PNG_INFO_sRGB)) {
-    return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+    return SkColorSpace::MakeSRGB();
   }
 
   png_charp name = nullptr;
