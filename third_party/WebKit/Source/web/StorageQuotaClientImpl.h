@@ -53,9 +53,6 @@ class StorageQuotaClientImpl
                     unsigned long long newQuotaInBytes,
                     StorageQuotaCallback*,
                     StorageErrorCallback*) override;
-  ScriptPromise requestPersistentQuota(
-      ScriptState*,
-      unsigned long long newQuotaInBytes) override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() { StorageQuotaClient::trace(visitor); }
 

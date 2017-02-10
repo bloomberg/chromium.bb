@@ -40,7 +40,6 @@ namespace blink {
 
 class Navigator;
 class StorageManager;
-class StorageQuota;
 
 class NavigatorStorageQuota final
     : public GarbageCollected<NavigatorStorageQuota>,
@@ -49,12 +48,10 @@ class NavigatorStorageQuota final
 
  public:
   static NavigatorStorageQuota& from(Navigator&);
-  static StorageQuota* storageQuota(Navigator&);
   static DeprecatedStorageQuota* webkitTemporaryStorage(Navigator&);
   static DeprecatedStorageQuota* webkitPersistentStorage(Navigator&);
   static StorageManager* storage(Navigator&);
 
-  StorageQuota* storageQuota() const;
   DeprecatedStorageQuota* webkitTemporaryStorage() const;
   DeprecatedStorageQuota* webkitPersistentStorage() const;
   StorageManager* storage() const;
@@ -65,7 +62,6 @@ class NavigatorStorageQuota final
   explicit NavigatorStorageQuota(Navigator&);
   static const char* supplementName();
 
-  mutable Member<StorageQuota> m_storageQuota;
   mutable Member<DeprecatedStorageQuota> m_temporaryStorage;
   mutable Member<DeprecatedStorageQuota> m_persistentStorage;
   mutable Member<StorageManager> m_storageManager;

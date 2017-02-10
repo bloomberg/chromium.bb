@@ -4232,7 +4232,6 @@ interface Navigator
     getter productSub
     getter serviceWorker
     getter storage
-    getter storageQuota
     getter usb
     getter userAgent
     getter vendor

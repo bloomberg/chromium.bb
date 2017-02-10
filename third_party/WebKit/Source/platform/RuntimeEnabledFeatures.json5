@@ -726,10 +726,6 @@
       status: "stable",
     },
     {
-      name: "QuotaPromise",
-      status: "experimental",
-    },
-    {
       name: "ReducedReferrerGranularity",
     },
     {

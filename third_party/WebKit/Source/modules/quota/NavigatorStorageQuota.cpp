@@ -33,7 +33,6 @@
 #include "core/frame/Navigator.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "modules/quota/StorageManager.h"
-#include "modules/quota/StorageQuota.h"
 
 namespace blink {
 
@@ -54,9 +53,6 @@ NavigatorStorageQuota& NavigatorStorageQuota::from(Navigator& navigator) {
   return *supplement;
 }
 
-StorageQuota* NavigatorStorageQuota::storageQuota(Navigator& navigator) {
-  return NavigatorStorageQuota::from(navigator).storageQuota();
-}
 
 DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage(
     Navigator& navigator) {
@@ -70,12 +66,6 @@ DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage(
 
 StorageManager* NavigatorStorageQuota::storage(Navigator& navigator) {
   return NavigatorStorageQuota::from(navigator).storage();
-}
-
-StorageQuota* NavigatorStorageQuota::storageQuota() const {
-  if (!m_storageQuota)
-    m_storageQuota = StorageQuota::create();
-  return m_storageQuota.get();
 }
 
 DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage() const {
@@ -99,7 +89,6 @@ StorageManager* NavigatorStorageQuota::storage() const {
 }
 
 DEFINE_TRACE(NavigatorStorageQuota) {
-  visitor->trace(m_storageQuota);
   visitor->trace(m_temporaryStorage);
   visitor->trace(m_persistentStorage);
   visitor->trace(m_storageManager);
