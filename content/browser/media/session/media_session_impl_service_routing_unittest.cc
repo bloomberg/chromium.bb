@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/media_session_service_impl.h"
@@ -15,10 +16,12 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
+#include "third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Eq;
+using ::testing::InvokeWithoutArgs;
 
 namespace content {
 
@@ -33,6 +36,22 @@ class MockMediaSessionServiceImpl : public MediaSessionServiceImpl {
   ~MockMediaSessionServiceImpl() override = default;
 };
 
+class MockMediaSessionClient : public blink::mojom::MediaSessionClient {
+ public:
+  MockMediaSessionClient() : binding_(this) {}
+
+  blink::mojom::MediaSessionClientPtr CreateInterfacePtrAndBind() {
+    return binding_.CreateInterfacePtrAndBind();
+  }
+
+  MOCK_METHOD1(DidReceiveAction, void(blink::mojom::MediaSessionAction action));
+
+ private:
+  mojo::Binding<blink::mojom::MediaSessionClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockMediaSessionClient);
+};
+
 class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
  public:
   explicit MockMediaSessionPlayerObserver(RenderFrameHost* rfh)
@@ -40,10 +59,11 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
 
   ~MockMediaSessionPlayerObserver() override = default;
 
-  void OnSuspend(int player_id) override {}
-  void OnResume(int player_id) override {}
-  void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override {
-  }
+  MOCK_METHOD1(OnSuspend, void(int player_id));
+  MOCK_METHOD1(OnResume, void(int player_id));
+  MOCK_METHOD2(OnSetVolumeMultiplier,
+               void(int player_id, double volume_multiplier));
+
   RenderFrameHost* GetRenderFrameHost() const override {
     return render_frame_host_;
   }
@@ -77,6 +97,7 @@ class MediaSessionImplServiceRoutingTest
   void TearDown() override {
     mock_media_session_observer_.reset();
     services_.clear();
+    clients_.clear();
 
     RenderViewHostImplTestHarness::TearDown();
   }
@@ -88,10 +109,18 @@ class MediaSessionImplServiceRoutingTest
 
   void CreateServiceForFrame(TestRenderFrameHost* frame) {
     services_[frame] = base::MakeUnique<MockMediaSessionServiceImpl>(frame);
+    clients_[frame] = base::MakeUnique<MockMediaSessionClient>();
+    services_[frame]->SetClient(clients_[frame]->CreateInterfacePtrAndBind());
   }
 
   void DestroyServiceForFrame(TestRenderFrameHost* frame) {
     services_.erase(frame);
+    clients_.erase(frame);
+  }
+
+  MockMediaSessionClient* GetClientForFrame(TestRenderFrameHost* frame) {
+    auto iter = clients_.find(frame);
+    return (iter != clients_.end()) ? iter->second.get() : nullptr;
   }
 
   void StartPlayerForFrame(TestRenderFrameHost* frame) {
@@ -109,6 +138,12 @@ class MediaSessionImplServiceRoutingTest
         ->RemovePlayer(players_[frame].get(), kPlayerId);
   }
 
+  MockMediaSessionPlayerObserver* GetPlayerForFrame(
+      TestRenderFrameHost* frame) {
+    auto iter = players_.find(frame);
+    return (iter != players_.end()) ? iter->second.get() : nullptr;
+  }
+
   MediaSessionServiceImpl* ComputeServiceForRouting() {
     return MediaSessionImpl::Get(contents())->ComputeServiceForRouting();
   }
@@ -124,6 +159,10 @@ class MediaSessionImplServiceRoutingTest
   using ServiceMap = std::map<TestRenderFrameHost*,
                               std::unique_ptr<MockMediaSessionServiceImpl>>;
   ServiceMap services_;
+
+  using ClientMap =
+      std::map<TestRenderFrameHost*, std::unique_ptr<MockMediaSessionClient>>;
+  ClientMap clients_;
 
   using PlayerMap = std::map<TestRenderFrameHost*,
                              std::unique_ptr<MockMediaSessionPlayerObserver>>;
@@ -317,6 +356,50 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   StartPlayerForFrame(main_frame_);
   ClearPlayersForFrame(main_frame_);
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       TestPauseBehaviorWhenMainFrameIsRouted) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  StartPlayerForFrame(sub_frame_);
+
+  CreateServiceForFrame(main_frame_);
+
+  EXPECT_CALL(*GetPlayerForFrame(sub_frame_), OnSuspend(_));
+  EXPECT_CALL(*GetClientForFrame(main_frame_),
+              DidReceiveAction(blink::mojom::MediaSessionAction::PAUSE))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  services_[main_frame_]->EnableAction(blink::mojom::MediaSessionAction::PAUSE);
+
+  MediaSessionImpl::Get(contents())
+      ->DidReceiveAction(blink::mojom::MediaSessionAction::PAUSE);
+
+  run_loop.Run();
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       TestPauseBehaviorWhenSubFrameIsRouted) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  StartPlayerForFrame(sub_frame_);
+
+  CreateServiceForFrame(sub_frame_);
+
+  EXPECT_CALL(*GetPlayerForFrame(main_frame_), OnSuspend(_));
+  EXPECT_CALL(*GetClientForFrame(sub_frame_),
+              DidReceiveAction(blink::mojom::MediaSessionAction::PAUSE))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  services_[sub_frame_]->EnableAction(blink::mojom::MediaSessionAction::PAUSE);
+
+  MediaSessionImpl::Get(contents())
+      ->DidReceiveAction(blink::mojom::MediaSessionAction::PAUSE);
+
+  run_loop.Run();
 }
 
 }  // namespace content

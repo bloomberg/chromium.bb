@@ -611,6 +611,38 @@ void MediaSessionImpl::OnMediaSessionActionsChanged(
 
 void MediaSessionImpl::DidReceiveAction(
     blink::mojom::MediaSessionAction action) {
+  // Pause all players in non-routed frames if the action is PAUSE.
+  //
+  // This is the default PAUSE action handler per Media Session API spec. The
+  // reason for pausing all players in all other sessions is to avoid the
+  // players in other frames keep the session active so that the UI will always
+  // show the pause button but it does not pause anything (as the routed frame
+  // already pauses when responding to the PAUSE action while other frames does
+  // not).
+  //
+  // TODO(zqzhang): Currently, this might not work well on desktop as Pepper and
+  // OneShot players are not really suspended, so that the session is still
+  // active after this. See https://crbug.com/619084 and
+  // https://crbug.com/596516.
+  if (blink::mojom::MediaSessionAction::PAUSE == action) {
+    RenderFrameHost* rfh_of_routed_service =
+        routed_service_->GetRenderFrameHost();
+    for (const auto& player : normal_players_) {
+      if (player.observer->GetRenderFrameHost() != rfh_of_routed_service)
+        player.observer->OnSuspend(player.player_id);
+    }
+    for (const auto& player : pepper_players_) {
+      if (player.observer->GetRenderFrameHost() != rfh_of_routed_service) {
+        player.observer->OnSetVolumeMultiplier(player.player_id,
+                                               kDuckingVolumeMultiplier);
+      }
+    }
+    for (const auto& player : one_shot_players_) {
+      if (player.observer->GetRenderFrameHost() != rfh_of_routed_service)
+        player.observer->OnSuspend(player.player_id);
+    }
+  }
+
   if (!routed_service_)
     return;
 
