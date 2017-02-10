@@ -1554,7 +1554,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
   alt_menu->PrepareForRun(
       false, has_mnemonics,
       source->GetMenuItem()->GetRootMenuItem()->show_mnemonics_);
-  alt_menu->controller_ = this;
+  alt_menu->controller_ = AsWeakPtr();
   SetSelection(alt_menu, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
   return true;
 }
