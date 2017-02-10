@@ -32,10 +32,10 @@
 #define VTTRegion_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -60,8 +60,8 @@ class VTTRegion final : public GarbageCollectedFinalized<VTTRegion>,
   double width() const { return m_width; }
   void setWidth(double, ExceptionState&);
 
-  long lines() const { return m_lines; }
-  void setLines(long, ExceptionState&);
+  int lines() const { return m_lines; }
+  void setLines(int, ExceptionState&);
 
   double regionAnchorX() const { return m_regionAnchor.x(); }
   void setRegionAnchorX(double, ExceptionState&);
@@ -78,9 +78,6 @@ class VTTRegion final : public GarbageCollectedFinalized<VTTRegion>,
   const AtomicString scroll() const;
   void setScroll(const AtomicString&);
 
-  void updateParametersFromRegion(VTTRegion*);
-
-  const String& regionSettings() const { return m_settings; }
   void setRegionSettings(const String&);
 
   bool isScrollingRegion() { return m_scroll; }
@@ -115,12 +112,9 @@ class VTTRegion final : public GarbageCollectedFinalized<VTTRegion>,
   RegionSetting scanSettingName(VTTScanner&);
   void parseSettingValue(RegionSetting, VTTScanner&);
 
-  static const AtomicString& textTrackCueContainerShadowPseudoId();
   static const AtomicString& textTrackCueContainerScrollingClass();
-  static const AtomicString& textTrackRegionShadowPseudoId();
 
   String m_id;
-  String m_settings;
   double m_width;
   unsigned m_lines;
   FloatPoint m_regionAnchor;
