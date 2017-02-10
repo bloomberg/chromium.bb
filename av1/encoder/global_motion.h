@@ -23,6 +23,8 @@ const double gm_advantage_thresh[TRANS_TYPES] = {
   0.85,  // Translation
   0.75,  // Rot zoom
   0.65,  // Affine
+  0.65,  // Hor Trapezoid
+  0.65,  // Ver Trapezoid
   0.50,  // Homography
 };
 

@@ -3007,7 +3007,7 @@ static int scale_down(AV1_COMP *cpi, int q) {
 
 #if CONFIG_GLOBAL_MOTION
 static int recode_loop_test_global_motion(AV1_COMP *cpi) {
-  static const int min_blocks[TRANS_TYPES] = { 0, 60, 120, 180, 240 };
+  static const int min_blocks[TRANS_TYPES] = { 0, 60, 120, 180, 180, 180, 240 };
   int i;
   int recode = 0;
   AV1_COMMON *const cm = &cpi->common;

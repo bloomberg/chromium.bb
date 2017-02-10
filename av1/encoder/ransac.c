@@ -22,6 +22,9 @@
 #define MAX_DEGENERATE_ITER 10
 #define MINPTS_MULTIPLIER 5
 
+#define INLIER_THRESHOLD 1.0
+#define MIN_TRIALS 20
+
 ////////////////////////////////////////////////////////////////////////////////
 // ransac
 typedef int (*IsDegenerateFunc)(double *p);
@@ -76,6 +79,42 @@ static void project_points_double_affine(double *mat, double *points,
   }
 }
 
+static void project_points_double_hortrapezoid(double *mat, double *points,
+                                               double *proj, const int n,
+                                               const int stride_points,
+                                               const int stride_proj) {
+  int i;
+  double x, y, Z, Z_inv;
+  for (i = 0; i < n; ++i) {
+    x = *(points++), y = *(points++);
+    Z_inv = mat[7] * y + 1;
+    assert(fabs(Z_inv) > 0.000001);
+    Z = 1. / Z_inv;
+    *(proj++) = (mat[2] * x + mat[3] * y + mat[0]) * Z;
+    *(proj++) = (mat[5] * y + mat[1]) * Z;
+    points += stride_points - 2;
+    proj += stride_proj - 2;
+  }
+}
+
+static void project_points_double_vertrapezoid(double *mat, double *points,
+                                               double *proj, const int n,
+                                               const int stride_points,
+                                               const int stride_proj) {
+  int i;
+  double x, y, Z, Z_inv;
+  for (i = 0; i < n; ++i) {
+    x = *(points++), y = *(points++);
+    Z_inv = mat[6] * x + 1;
+    assert(fabs(Z_inv) > 0.000001);
+    Z = 1. / Z_inv;
+    *(proj++) = (mat[2] * x + mat[0]) * Z;
+    *(proj++) = (mat[4] * x + mat[5] * y + mat[1]) * Z;
+    points += stride_points - 2;
+    proj += stride_proj - 2;
+  }
+}
+
 static void project_points_double_homography(double *mat, double *points,
                                              double *proj, const int n,
                                              const int stride_points,
@@ -121,10 +160,8 @@ static int ransac(int *matched_points, int npoints, int *number_of_inliers,
                   IsDegenerateFunc is_degenerate,
                   FindTransformationFunc find_transformation,
                   ProjectPointsDoubleFunc projectpoints) {
-  static const double inlier_threshold = 1.0;
   static const double PROBABILITY_REQUIRED = 0.9;
   static const double EPS = 1e-12;
-  static const int MIN_TRIALS = 20;
 
   int N = 10000, trial_count = 0;
   int i;
@@ -223,7 +260,7 @@ static int ransac(int *matched_points, int npoints, int *number_of_inliers,
       double dy = image1_coord[i * 2 + 1] - corners2[i * 2 + 1];
       double distance = sqrt(dx * dx + dy * dy);
 
-      inlier_mask[i] = distance < inlier_threshold;
+      inlier_mask[i] = distance < INLIER_THRESHOLD;
       if (inlier_mask[i]) {
         inlier_set1[num_inliers * 2] = corners1[i * 2];
         inlier_set1[num_inliers * 2 + 1] = corners1[i * 2 + 1];
@@ -331,4 +368,20 @@ int ransac_homography(int *matched_points, int npoints, int *number_of_inliers,
   return ransac(matched_points, npoints, number_of_inliers, best_inlier_mask,
                 best_params, 4, is_degenerate_homography, find_homography,
                 project_points_double_homography);
+}
+
+int ransac_hortrapezoid(int *matched_points, int npoints,
+                        int *number_of_inliers, int *best_inlier_mask,
+                        double *best_params) {
+  return ransac(matched_points, npoints, number_of_inliers, best_inlier_mask,
+                best_params, 4, is_degenerate_homography, find_hortrapezoid,
+                project_points_double_hortrapezoid);
+}
+
+int ransac_vertrapezoid(int *matched_points, int npoints,
+                        int *number_of_inliers, int *best_inlier_mask,
+                        double *best_params) {
+  return ransac(matched_points, npoints, number_of_inliers, best_inlier_mask,
+                best_params, 4, is_degenerate_homography, find_vertrapezoid,
+                project_points_double_vertrapezoid);
 }

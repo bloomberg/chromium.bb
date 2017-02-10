@@ -53,26 +53,33 @@ typedef struct mv32 {
 
 /* clang-format off */
 typedef enum {
-  IDENTITY = 0,     // identity transformation, 0-parameter
-  TRANSLATION = 1,  // translational motion 2-parameter
-  ROTZOOM = 2,      // simplified affine with rotation + zoom only, 4-parameter
-  AFFINE = 3,       // affine, 6-parameter
-  HOMOGRAPHY = 4,   // homography, 8-parameter
-  TRANS_TYPES = 5,
+  IDENTITY = 0,      // identity transformation, 0-parameter
+  TRANSLATION = 1,   // translational motion 2-parameter
+  ROTZOOM = 2,       // simplified affine with rotation + zoom only, 4-parameter
+  AFFINE = 3,        // affine, 6-parameter
+  HORTRAPEZOID = 4,  // constrained homography, hor trapezoid, 6-parameter
+  VERTRAPEZOID = 5,  // constrained homography, ver trapezoid, 6-parameter
+  HOMOGRAPHY = 6,    // homography, 8-parameter
+  TRANS_TYPES = 7,
 } TransformationType;
 /* clang-format on */
 
 // Number of types used for global motion (must be >= 3 and <= TRANS_TYPES)
+// The following can be useful:
+// GLOBAL_TRANS_TYPES 3 - up to rotation-zoom
+// GLOBAL_TRANS_TYPES 4 - up to affine
+// GLOBAL_TRANS_TYPES 6 - up to hor/ver trapezoids
+// GLOBAL_TRANS_TYPES 7 - up to full homography
 #define GLOBAL_TRANS_TYPES 3
 
 // number of parameters used by each transformation in TransformationTypes
-static const int n_trans_model_params[TRANS_TYPES] = { 0, 2, 4, 6, 8 };
+static const int trans_model_params[TRANS_TYPES] = { 0, 2, 4, 6, 6, 6, 8 };
 
 // The order of values in the wmmat matrix below is best described
 // by the homography:
-// [x'     (m2 m3 m0   [x
-//  y'  =   m4 m5 m1 *  y
-//  1]      m6 m7 1)    1]
+//      [x'     (m2 m3 m0   [x
+//  z .  y'  =   m4 m5 m1 *  y
+//       1]      m6 m7 1)    1]
 typedef struct {
   TransformationType wmtype;
   int32_t wmmat[8];
@@ -134,6 +141,10 @@ typedef struct {
 #define GM_ROTZOOM_BITS (GM_TRANSLATION_BITS + (GM_ABS_ALPHA_BITS + 1) * 2)
 #define GM_AFFINE_BITS (GM_ROTZOOM_BITS + (GM_ABS_ALPHA_BITS + 1) * 2)
 #define GM_HOMOGRAPHY_BITS (GM_AFFINE_BITS + (GM_ABS_ROW3HOMO_BITS + 1) * 2)
+#define GM_HORTRAPEZOID_BITS \
+  (GM_AFFINE_BITS - GM_ABS_ALPHA_BITS + GM_ABS_ROW3HOMO_BITS)
+#define GM_VERTRAPEZOID_BITS \
+  (GM_AFFINE_BITS - GM_ABS_ALPHA_BITS + GM_ABS_ROW3HOMO_BITS)
 
 // Convert a global motion translation vector (which may have more bits than a
 // regular motion vector) into a motion vector
@@ -154,7 +165,11 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
 }
 
 static INLINE TransformationType get_gmtype(const WarpedMotionParams *gm) {
-  // if (gm->wmmat[6] != 0 || gm->wmmat[7] != 0) return HOMOGRAPHY;
+  if (gm->wmmat[6] != 0 || gm->wmmat[7] != 0) {
+    if (!gm->wmmat[6] && !gm->wmmat[4]) return HORTRAPEZOID;
+    if (!gm->wmmat[7] && !gm->wmmat[3]) return VERTRAPEZOID;
+    return HOMOGRAPHY;
+  }
   if (gm->wmmat[5] == (1 << WARPEDMODEL_PREC_BITS) && !gm->wmmat[4] &&
       gm->wmmat[2] == (1 << WARPEDMODEL_PREC_BITS) && !gm->wmmat[3]) {
     return ((!gm->wmmat[1] && !gm->wmmat[0]) ? IDENTITY : TRANSLATION);

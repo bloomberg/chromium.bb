@@ -51,6 +51,14 @@ void project_points_affine(int32_t *mat, int *points, int *proj, const int n,
                            const int stride_points, const int stride_proj,
                            const int subsampling_x, const int subsampling_y);
 
+void project_points_hortrapezoid(int32_t *mat, int *points, int *proj,
+                                 const int n, const int stride_points,
+                                 const int stride_proj, const int subsampling_x,
+                                 const int subsampling_y);
+void project_points_vertrapezoid(int32_t *mat, int *points, int *proj,
+                                 const int n, const int stride_points,
+                                 const int stride_proj, const int subsampling_x,
+                                 const int subsampling_y);
 void project_points_homography(int32_t *mat, int *points, int *proj,
                                const int n, const int stride_points,
                                const int stride_proj, const int subsampling_x,
@@ -85,6 +93,8 @@ void av1_integerize_model(const double *model, TransformationType wmtype,
 int find_translation(const int np, double *pts1, double *pts2, double *mat);
 int find_rotzoom(const int np, double *pts1, double *pts2, double *mat);
 int find_affine(const int np, double *pts1, double *pts2, double *mat);
+int find_hortrapezoid(const int np, double *pts1, double *pts2, double *mat);
+int find_vertrapezoid(const int np, double *pts1, double *pts2, double *mat);
 int find_homography(const int np, double *pts1, double *pts2, double *mat);
 int find_projection(const int np, double *pts1, double *pts2,
                     WarpedMotionParams *wm_params);

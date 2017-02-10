@@ -4495,10 +4495,16 @@ static void write_global_motion_params(WarpedMotionParams *params,
                   &global_motion_types_encodings[type]);
   switch (type) {
     case HOMOGRAPHY:
-      aom_write_primitive_symmetric(
-          w, (params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF), GM_ABS_ROW3HOMO_BITS);
-      aom_write_primitive_symmetric(
-          w, (params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF), GM_ABS_ROW3HOMO_BITS);
+    case HORTRAPEZOID:
+    case VERTRAPEZOID:
+      if (type != HORTRAPEZOID)
+        aom_write_primitive_symmetric(
+            w, (params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF),
+            GM_ABS_ROW3HOMO_BITS);
+      if (type != VERTRAPEZOID)
+        aom_write_primitive_symmetric(
+            w, (params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF),
+            GM_ABS_ROW3HOMO_BITS);
     // fallthrough intended
     case AFFINE:
     case ROTZOOM:
@@ -4506,11 +4512,13 @@ static void write_global_motion_params(WarpedMotionParams *params,
           w,
           (params->wmmat[2] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS),
           GM_ABS_ALPHA_BITS);
-      aom_write_primitive_symmetric(w, (params->wmmat[3] >> GM_ALPHA_PREC_DIFF),
-                                    GM_ABS_ALPHA_BITS);
-      if (type == AFFINE || type == HOMOGRAPHY) {
+      if (type != VERTRAPEZOID)
         aom_write_primitive_symmetric(
-            w, (params->wmmat[4] >> GM_ALPHA_PREC_DIFF), GM_ABS_ALPHA_BITS);
+            w, (params->wmmat[3] >> GM_ALPHA_PREC_DIFF), GM_ABS_ALPHA_BITS);
+      if (type >= AFFINE) {
+        if (type != HORTRAPEZOID)
+          aom_write_primitive_symmetric(
+              w, (params->wmmat[4] >> GM_ALPHA_PREC_DIFF), GM_ABS_ALPHA_BITS);
         aom_write_primitive_symmetric(w,
                                       (params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
                                           (1 << GM_ALPHA_PREC_BITS),

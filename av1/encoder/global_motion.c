@@ -104,7 +104,9 @@ void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype) {
       wm->wmmat[2] = 1 << WARPEDMODEL_PREC_BITS;
       wm->wmmat[3] = 0;
     case ROTZOOM: wm->wmmat[4] = -wm->wmmat[3]; wm->wmmat[5] = wm->wmmat[2];
-    case AFFINE: wm->wmmat[6] = wm->wmmat[7] = 0;
+    case AFFINE: wm->wmmat[6] = wm->wmmat[7] = 0; break;
+    case HORTRAPEZOID: wm->wmmat[6] = wm->wmmat[4] = 0; break;
+    case VERTRAPEZOID: wm->wmmat[7] = wm->wmmat[3] = 0; break;
     case HOMOGRAPHY: break;
     default: assert(0);
   }
@@ -119,9 +121,12 @@ double refine_integerized_param(WarpedMotionParams *wm,
                                 uint8_t *ref, int r_width, int r_height,
                                 int r_stride, uint8_t *dst, int d_width,
                                 int d_height, int d_stride, int n_refinements) {
+  static const int max_trans_model_params[TRANS_TYPES] = {
+    0, 2, 4, 6, 8, 8, 8
+  };
   const int border = ERRORADV_BORDER;
   int i = 0, p;
-  int n_params = n_trans_model_params[wmtype];
+  int n_params = max_trans_model_params[wmtype];
   int32_t *param_mat = wm->wmmat;
   double step_error;
   int32_t step;
@@ -143,6 +148,9 @@ double refine_integerized_param(WarpedMotionParams *wm,
   for (i = 0; i < n_refinements; i++, step >>= 1) {
     for (p = 0; p < n_params; ++p) {
       int step_dir = 0;
+      // Skip searches for parameters that are forced to be 0
+      if (wmtype == HORTRAPEZOID && (p == 4 || p == 6)) continue;
+      if (wmtype == VERTRAPEZOID && (p == 3 || p == 7)) continue;
       param = param_mat + p;
       curr_param = *param;
       best_param = curr_param;
@@ -209,6 +217,8 @@ double refine_integerized_param(WarpedMotionParams *wm,
 static INLINE RansacFunc get_ransac_type(TransformationType type) {
   switch (type) {
     case HOMOGRAPHY: return ransac_homography;
+    case HORTRAPEZOID: return ransac_hortrapezoid;
+    case VERTRAPEZOID: return ransac_vertrapezoid;
     case AFFINE: return ransac_affine;
     case ROTZOOM: return ransac_rotzoom;
     case TRANSLATION: return ransac_translation;

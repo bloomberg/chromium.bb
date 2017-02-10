@@ -178,6 +178,72 @@ void project_points_affine(int32_t *mat, int *points, int *proj, const int n,
   }
 }
 
+void project_points_hortrapezoid(int32_t *mat, int *points, int *proj,
+                                 const int n, const int stride_points,
+                                 const int stride_proj, const int subsampling_x,
+                                 const int subsampling_y) {
+  int i;
+  int64_t x, y, Z;
+  int64_t xp, yp;
+  for (i = 0; i < n; ++i) {
+    x = *(points++), y = *(points++);
+    x = (subsampling_x ? 4 * x + 1 : 2 * x);
+    y = (subsampling_y ? 4 * y + 1 : 2 * y);
+
+    Z = (mat[7] * y + (1 << (WARPEDMODEL_ROW3HOMO_PREC_BITS + 1)));
+    xp = (mat[2] * x + mat[3] * y + 2 * mat[0]) *
+         (1 << (WARPEDPIXEL_PREC_BITS + WARPEDMODEL_ROW3HOMO_PREC_BITS -
+                WARPEDMODEL_PREC_BITS));
+    yp = (mat[5] * y + 2 * mat[1]) *
+         (1 << (WARPEDPIXEL_PREC_BITS + WARPEDMODEL_ROW3HOMO_PREC_BITS -
+                WARPEDMODEL_PREC_BITS));
+
+    xp = xp > 0 ? (xp + Z / 2) / Z : (xp - Z / 2) / Z;
+    yp = yp > 0 ? (yp + Z / 2) / Z : (yp - Z / 2) / Z;
+
+    if (subsampling_x) xp = (xp - (1 << (WARPEDPIXEL_PREC_BITS - 1))) / 2;
+    if (subsampling_y) yp = (yp - (1 << (WARPEDPIXEL_PREC_BITS - 1))) / 2;
+    *(proj++) = xp;
+    *(proj++) = yp;
+
+    points += stride_points - 2;
+    proj += stride_proj - 2;
+  }
+}
+
+void project_points_vertrapezoid(int32_t *mat, int *points, int *proj,
+                                 const int n, const int stride_points,
+                                 const int stride_proj, const int subsampling_x,
+                                 const int subsampling_y) {
+  int i;
+  int64_t x, y, Z;
+  int64_t xp, yp;
+  for (i = 0; i < n; ++i) {
+    x = *(points++), y = *(points++);
+    x = (subsampling_x ? 4 * x + 1 : 2 * x);
+    y = (subsampling_y ? 4 * y + 1 : 2 * y);
+
+    Z = (mat[6] * x + (1 << (WARPEDMODEL_ROW3HOMO_PREC_BITS + 1)));
+    xp = (mat[2] * x + 2 * mat[0]) *
+         (1 << (WARPEDPIXEL_PREC_BITS + WARPEDMODEL_ROW3HOMO_PREC_BITS -
+                WARPEDMODEL_PREC_BITS));
+    yp = (mat[4] * x + mat[5] * y + 2 * mat[1]) *
+         (1 << (WARPEDPIXEL_PREC_BITS + WARPEDMODEL_ROW3HOMO_PREC_BITS -
+                WARPEDMODEL_PREC_BITS));
+
+    xp = xp > 0 ? (xp + Z / 2) / Z : (xp - Z / 2) / Z;
+    yp = yp > 0 ? (yp + Z / 2) / Z : (yp - Z / 2) / Z;
+
+    if (subsampling_x) xp = (xp - (1 << (WARPEDPIXEL_PREC_BITS - 1))) / 2;
+    if (subsampling_y) yp = (yp - (1 << (WARPEDPIXEL_PREC_BITS - 1))) / 2;
+    *(proj++) = xp;
+    *(proj++) = yp;
+
+    points += stride_points - 2;
+    proj += stride_proj - 2;
+  }
+}
+
 void project_points_homography(int32_t *mat, int *points, int *proj,
                                const int n, const int stride_points,
                                const int stride_proj, const int subsampling_x,
@@ -1717,6 +1783,144 @@ int find_affine(const int np, double *pts1, double *pts2, double *mat) {
   multiply_mat(temp, b, mat, 6, np2, 1);
   denormalize_affine_reorder(mat, T1, T2);
   aom_free(a);
+  return 0;
+}
+
+int find_vertrapezoid(const int np, double *pts1, double *pts2, double *mat) {
+  const int np3 = np * 3;
+  double *a = (double *)aom_malloc(sizeof(*a) * np3 * 14);
+  double *U = a + np3 * 7;
+  double S[7], V[7 * 7], H[9];
+  int i, mini;
+  double sx, sy, dx, dy;
+  double T1[9], T2[9];
+
+  normalize_homography(pts1, np, T1);
+  normalize_homography(pts2, np, T2);
+
+  for (i = 0; i < np; ++i) {
+    dx = *(pts2++);
+    dy = *(pts2++);
+    sx = *(pts1++);
+    sy = *(pts1++);
+
+    a[i * 3 * 7 + 0] = a[i * 3 * 7 + 1] = 0;
+    a[i * 3 * 7 + 2] = -sx;
+    a[i * 3 * 7 + 3] = -sy;
+    a[i * 3 * 7 + 4] = -1;
+    a[i * 3 * 7 + 5] = dy * sx;
+    a[i * 3 * 7 + 6] = dy;
+
+    a[(i * 3 + 1) * 7 + 0] = sx;
+    a[(i * 3 + 1) * 7 + 1] = 1;
+    a[(i * 3 + 1) * 7 + 2] = a[(i * 3 + 1) * 7 + 3] = a[(i * 3 + 1) * 7 + 4] =
+        0;
+    a[(i * 3 + 1) * 7 + 5] = -dx * sx;
+    a[(i * 3 + 1) * 7 + 6] = -dx;
+
+    a[(i * 3 + 2) * 7 + 0] = -dy * sx;
+    a[(i * 3 + 2) * 7 + 1] = -dy;
+    a[(i * 3 + 2) * 7 + 2] = dx * sx;
+    a[(i * 3 + 2) * 7 + 3] = dx * sy;
+    a[(i * 3 + 2) * 7 + 4] = dx;
+    a[(i * 3 + 2) * 7 + 5] = a[(i * 3 + 2) * 7 + 6] = 0;
+  }
+  if (SVD(U, S, V, a, np3, 7)) {
+    aom_free(a);
+    return 1;
+  } else {
+    double minS = 1e12;
+    mini = -1;
+    for (i = 0; i < 7; ++i) {
+      if (S[i] < minS) {
+        minS = S[i];
+        mini = i;
+      }
+    }
+  }
+  H[1] = H[7] = 0;
+  for (i = 0; i < 1; i++) H[i] = V[i * 7 + mini];
+  for (; i < 6; i++) H[i + 1] = V[i * 7 + mini];
+  for (; i < 7; i++) H[i + 2] = V[i * 7 + mini];
+
+  denormalize_homography_reorder(H, T1, T2);
+  aom_free(a);
+  if (H[8] == 0.0) {
+    return 1;
+  } else {
+    // normalize
+    double f = 1.0 / H[8];
+    for (i = 0; i < 8; i++) mat[i] = f * H[i];
+  }
+  return 0;
+}
+
+int find_hortrapezoid(const int np, double *pts1, double *pts2, double *mat) {
+  const int np3 = np * 3;
+  double *a = (double *)aom_malloc(sizeof(*a) * np3 * 14);
+  double *U = a + np3 * 7;
+  double S[7], V[7 * 7], H[9];
+  int i, mini;
+  double sx, sy, dx, dy;
+  double T1[9], T2[9];
+
+  normalize_homography(pts1, np, T1);
+  normalize_homography(pts2, np, T2);
+
+  for (i = 0; i < np; ++i) {
+    dx = *(pts2++);
+    dy = *(pts2++);
+    sx = *(pts1++);
+    sy = *(pts1++);
+
+    a[i * 3 * 7 + 0] = a[i * 3 * 7 + 1] = a[i * 3 * 7 + 2] = 0;
+    a[i * 3 * 7 + 3] = -sy;
+    a[i * 3 * 7 + 4] = -1;
+    a[i * 3 * 7 + 5] = dy * sy;
+    a[i * 3 * 7 + 6] = dy;
+
+    a[(i * 3 + 1) * 7 + 0] = sx;
+    a[(i * 3 + 1) * 7 + 1] = sy;
+    a[(i * 3 + 1) * 7 + 2] = 1;
+    a[(i * 3 + 1) * 7 + 3] = a[(i * 3 + 1) * 7 + 4] = 0;
+    a[(i * 3 + 1) * 7 + 5] = -dx * sy;
+    a[(i * 3 + 1) * 7 + 6] = -dx;
+
+    a[(i * 3 + 2) * 7 + 0] = -dy * sx;
+    a[(i * 3 + 2) * 7 + 1] = -dy * sy;
+    a[(i * 3 + 2) * 7 + 2] = -dy;
+    a[(i * 3 + 2) * 7 + 3] = dx * sy;
+    a[(i * 3 + 2) * 7 + 4] = dx;
+    a[(i * 3 + 2) * 7 + 5] = a[(i * 3 + 2) * 7 + 6] = 0;
+  }
+
+  if (SVD(U, S, V, a, np3, 7)) {
+    aom_free(a);
+    return 1;
+  } else {
+    double minS = 1e12;
+    mini = -1;
+    for (i = 0; i < 7; ++i) {
+      if (S[i] < minS) {
+        minS = S[i];
+        mini = i;
+      }
+    }
+  }
+  H[3] = H[6] = 0;
+  for (i = 0; i < 3; i++) H[i] = V[i * 7 + mini];
+  for (; i < 5; i++) H[i + 1] = V[i * 7 + mini];
+  for (; i < 7; i++) H[i + 2] = V[i * 7 + mini];
+
+  denormalize_homography_reorder(H, T1, T2);
+  aom_free(a);
+  if (H[8] == 0.0) {
+    return 1;
+  } else {
+    // normalize
+    double f = 1.0 / H[8];
+    for (i = 0; i < 8; i++) mat[i] = f * H[i];
+  }
   return 0;
 }
 
