@@ -21,6 +21,17 @@ bool IsTechnology(HDC hdc, const char* technology) {
   if (::GetDeviceCaps(hdc, TECHNOLOGY) != DT_RASPRINTER)
     return false;
 
+  // If postscript, try to query Postscript Identify and then set to
+  // postscript mode before calling any more ExtEscape functions. Otherwise,
+  // PSLEVEL query will not work.
+  if (strcmp(technology, "PostScript") == 0 &&
+      HasEscapeSupprt(hdc, POSTSCRIPT_IDENTIFY)) {
+    DWORD mode = PSIDENT_PSCENTRIC;
+    const char* ptr = reinterpret_cast<const char*>(&mode);
+    ExtEscape(hdc, POSTSCRIPT_IDENTIFY, sizeof(DWORD), ptr, 0, nullptr);
+    return true;
+  }
+
   if (!HasEscapeSupprt(hdc, GETTECHNOLOGY))
     return false;
 
@@ -37,7 +48,7 @@ bool IsPrinterPostScript(HDC hdc, int* level) {
     return false;
   }
 
-  // Query the PS Level if possible. Many PS printers do not implement this.
+  // Query the PS Level if possible.
   if (HasEscapeSupprt(hdc, GET_PS_FEATURESETTING)) {
     constexpr int param = FEATURESETTING_PSLEVEL;
     const char* param_char_ptr = reinterpret_cast<const char*>(&param);
@@ -116,10 +127,8 @@ void PrintSettingsInitializerWin::InitPrintSettings(
   print_settings->SetPrinterPrintableArea(physical_size_device_units,
                                           printable_area_device_units,
                                           false);
-  if (IsPrinterXPS(hdc)) {
-    print_settings->set_printer_type(PrintSettings::PrinterType::TYPE_XPS);
-    return;
-  }
+  // Check for postscript first so that we can change the mode with the
+  // first command.
   int level;
   if (IsPrinterPostScript(hdc, &level)) {
     if (level == 2) {
@@ -130,6 +139,10 @@ void PrintSettingsInitializerWin::InitPrintSettings(
     DCHECK_EQ(3, level);
     print_settings->set_printer_type(
         PrintSettings::PrinterType::TYPE_POSTSCRIPT_LEVEL3);
+    return;
+  }
+  if (IsPrinterXPS(hdc)) {
+    print_settings->set_printer_type(PrintSettings::PrinterType::TYPE_XPS);
     return;
   }
   print_settings->set_printer_type(PrintSettings::PrinterType::TYPE_NONE);
