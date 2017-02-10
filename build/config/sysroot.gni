@@ -16,6 +16,10 @@ declare_args() {
   target_sysroot_dir = ""
 
   use_sysroot = true
+
+  # TODO(tonikitoo): Remove this arg when wheezy is finally dropped and we
+  # can just use debian/jessie everywhere by default. crbug.com/564904.
+  use_jessie_sysroot = false
 }
 
 if (is_linux && target_sysroot_dir != "") {
@@ -58,15 +62,8 @@ if (is_linux && target_sysroot_dir != "") {
     if (current_cpu == "x64") {
       sysroot = "//build/linux/debian_wheezy_amd64-sysroot"
 
-      # TODO(tonikitoo): Remove the whole if clause below when debian/wheezy
-      # sysroots are switched to debian/jessie, crbug.com/564904.
-      import("//build_overrides/build.gni")
-      if (build_with_chromium) {
-        import("//ui/ozone/ozone.gni")
-        import("//ui/base/ui_features.gni")
-        if (use_ozone && use_xkbcommon) {
-          sysroot = "//build/linux/debian_jessie_amd64-sysroot"
-        }
+      if (use_jessie_sysroot) {
+        sysroot = "//build/linux/debian_jessie_amd64-sysroot"
       }
     } else if (current_cpu == "x86") {
       sysroot = "//build/linux/debian_wheezy_i386-sysroot"
