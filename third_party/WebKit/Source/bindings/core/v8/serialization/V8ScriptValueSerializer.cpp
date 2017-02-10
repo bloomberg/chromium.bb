@@ -30,7 +30,6 @@ V8ScriptValueSerializer::V8ScriptValueSerializer(
     : m_scriptState(std::move(scriptState)),
       m_serializedScriptValue(SerializedScriptValue::create()),
       m_serializer(m_scriptState->isolate(), this) {
-  DCHECK(RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled());
 }
 
 RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(

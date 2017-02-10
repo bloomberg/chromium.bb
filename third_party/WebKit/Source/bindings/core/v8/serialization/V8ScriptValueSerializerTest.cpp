@@ -44,20 +44,6 @@
 namespace blink {
 namespace {
 
-class ScopedEnableV8BasedStructuredClone {
- public:
-  ScopedEnableV8BasedStructuredClone()
-      : m_wasEnabled(RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
-    RuntimeEnabledFeatures::setV8BasedStructuredCloneEnabled(true);
-  }
-  ~ScopedEnableV8BasedStructuredClone() {
-    RuntimeEnabledFeatures::setV8BasedStructuredCloneEnabled(m_wasEnabled);
-  }
-
- private:
-  bool m_wasEnabled;
-};
-
 RefPtr<SerializedScriptValue> serializedValue(const Vector<uint8_t>& bytes) {
   // TODO(jbroman): Fix this once SerializedScriptValue can take bytes without
   // endianness swapping.
@@ -133,7 +119,6 @@ String toJSON(v8::Local<v8::Object> object, const V8TestingScope& scope) {
 TEST(V8ScriptValueSerializerTest, RoundTripJSONLikeValue) {
   // Ensure that simple JavaScript objects work.
   // There are more exhaustive tests of JavaScript objects in V8.
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   v8::Local<v8::Value> object = eval("({ foo: [1, 2, 3], bar: 'baz' })", scope);
   DCHECK(object->IsObject());
@@ -149,7 +134,6 @@ TEST(V8ScriptValueSerializerTest, ThrowsDataCloneError) {
   // are encountered in V8 (for example, cloning a symbol). It should be an
   // instance of DOMException, and it should have a proper descriptive
   // message.
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
   ExceptionState exceptionState(scope.isolate(),
@@ -168,7 +152,6 @@ TEST(V8ScriptValueSerializerTest, ThrowsDataCloneError) {
 TEST(V8ScriptValueSerializerTest, RethrowsScriptError) {
   // Ensure that other exceptions, like those thrown by script, are properly
   // rethrown.
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
   ExceptionState exceptionState(scope.isolate(),
@@ -187,7 +170,6 @@ TEST(V8ScriptValueSerializerTest, RethrowsScriptError) {
 TEST(V8ScriptValueSerializerTest, DeserializationErrorReturnsNull) {
   // If there's a problem during deserialization, it results in null, but no
   // exception.
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
   RefPtr<SerializedScriptValue> invalid =
@@ -201,7 +183,6 @@ TEST(V8ScriptValueSerializerTest, DeserializationErrorReturnsNull) {
 TEST(V8ScriptValueSerializerTest, NeuteringHappensAfterSerialization) {
   // This object will throw an exception before the [[Transfer]] step.
   // As a result, the ArrayBuffer will not be transferred.
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ExceptionState exceptionState(scope.isolate(),
                                 ExceptionState::ExecutionContext, "Window",
@@ -222,7 +203,6 @@ TEST(V8ScriptValueSerializerTest, NeuteringHappensAfterSerialization) {
 
 TEST(V8ScriptValueSerializerTest, RoundTripImageData) {
   // ImageData objects should serialize and deserialize correctly.
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ImageData* imageData = ImageData::create(2, 1, ASSERT_NO_EXCEPTION);
   imageData->data()->data()[0] = 200;
@@ -241,7 +221,6 @@ TEST(V8ScriptValueSerializerTest, DecodeImageData) {
   // Backward compatibility with existing serialized ImageData objects must be
   // maintained. Add more cases if the format changes; don't remove tests for
   // old versions.
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
   RefPtr<SerializedScriptValue> input =
@@ -281,7 +260,6 @@ MessagePort* makeMessagePort(
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripMessagePort) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
 
   WebMessagePortChannel* unownedChannel;
@@ -301,7 +279,6 @@ TEST(V8ScriptValueSerializerTest, RoundTripMessagePort) {
 }
 
 TEST(V8ScriptValueSerializerTest, NeuteredMessagePortThrowsDataCloneError) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ExceptionState exceptionState(scope.isolate(),
                                 ExceptionState::ExecutionContext, "Window",
@@ -320,7 +297,6 @@ TEST(V8ScriptValueSerializerTest, NeuteredMessagePortThrowsDataCloneError) {
 
 TEST(V8ScriptValueSerializerTest,
      UntransferredMessagePortThrowsDataCloneError) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ExceptionState exceptionState(scope.isolate(),
                                 ExceptionState::ExecutionContext, "Window",
@@ -338,7 +314,6 @@ TEST(V8ScriptValueSerializerTest,
 }
 
 TEST(V8ScriptValueSerializerTest, OutOfRangeMessagePortIndex) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
   RefPtr<SerializedScriptValue> input =
@@ -378,7 +353,6 @@ TEST(V8ScriptValueSerializerTest, OutOfRangeMessagePortIndex) {
 
 // A more exhaustive set of ImageBitmap cases are covered by LayoutTests.
 TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
 
   // Make a 10x7 red ImageBitmap.
@@ -409,7 +383,6 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmap) {
   // Backward compatibility with existing serialized ImageBitmap objects must be
   // maintained. Add more cases if the format changes; don't remove tests for
   // old versions.
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -445,7 +418,6 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmap) {
 }
 
 TEST(V8ScriptValueSerializerTest, InvalidImageBitmapDecode) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
   {
@@ -484,7 +456,6 @@ TEST(V8ScriptValueSerializerTest, InvalidImageBitmapDecode) {
 
 TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
   // More thorough tests exist in LayoutTests/.
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
 
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 7);
@@ -518,7 +489,6 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
 
 TEST(V8ScriptValueSerializerTest, TransferOffscreenCanvas) {
   // More exhaustive tests in LayoutTests/. This is a sanity check.
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   OffscreenCanvas* canvas = OffscreenCanvas::create(10, 7);
   canvas->setPlaceholderCanvasId(519);
@@ -537,7 +507,6 @@ TEST(V8ScriptValueSerializerTest, TransferOffscreenCanvas) {
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripBlob) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   const char kHelloWorld[] = "Hello world!";
   Blob* blob =
@@ -555,7 +524,6 @@ TEST(V8ScriptValueSerializerTest, RoundTripBlob) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeBlob) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input = serializedValue(
       {0xff, 0x09, 0x3f, 0x00, 0x62, 0x24, 0x64, 0x38, 0x37, 0x35, 0x64,
@@ -573,7 +541,6 @@ TEST(V8ScriptValueSerializerTest, DecodeBlob) {
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripBlobIndex) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   const char kHelloWorld[] = "Hello world!";
   Blob* blob =
@@ -604,7 +571,6 @@ TEST(V8ScriptValueSerializerTest, RoundTripBlobIndex) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeBlobIndex) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x69, 0x00});
@@ -622,7 +588,6 @@ TEST(V8ScriptValueSerializerTest, DecodeBlobIndex) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeBlobIndexOutOfRange) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x69, 0x01});
@@ -641,7 +606,6 @@ TEST(V8ScriptValueSerializerTest, DecodeBlobIndexOutOfRange) {
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileNative) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   File* file = File::create("/native/path");
   v8::Local<v8::Value> wrapper = ToV8(file, scope.getScriptState());
@@ -654,7 +618,6 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileNative) {
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileBackedByBlob) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   const double modificationTime = 0.0;
   RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create();
@@ -669,7 +632,6 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileBackedByBlob) {
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileNativeSnapshot) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   FileMetadata metadata;
   metadata.platformPath = "/native/snapshot";
@@ -686,7 +648,6 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileNativeSnapshot) {
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileNonNativeSnapshot) {
   // Preserving behavior, filesystem URL is not preserved across cloning.
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   KURL url(ParsedURLString,
            "filesystem:http://example.com/isolated/hash/non-native-file");
@@ -716,7 +677,6 @@ class TimeIntervalChecker {
 };
 
 TEST(V8ScriptValueSerializerTest, DecodeFileV3) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   TimeIntervalChecker timeIntervalChecker;
   RefPtr<SerializedScriptValue> input = serializedValue(
@@ -739,7 +699,6 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV3) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileV4) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   TimeIntervalChecker timeIntervalChecker;
   RefPtr<SerializedScriptValue> input = serializedValue(
@@ -765,7 +724,6 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV4) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileV4WithSnapshot) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input = serializedValue(
       {0xff, 0x04, 0x3f, 0x00, 0x66, 0x04, 'p', 'a',  't',  'h',  0x04, 'n',
@@ -792,7 +750,6 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV4WithSnapshot) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileV7) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   TimeIntervalChecker timeIntervalChecker;
   RefPtr<SerializedScriptValue> input = serializedValue(
@@ -818,7 +775,6 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV7) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileV8WithSnapshot) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input = serializedValue(
       {0xff, 0x08, 0x3f, 0x00, 0x66, 0x04, 'p',  'a',  't',  'h',  0x04, 'n',
@@ -846,7 +802,6 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV8WithSnapshot) {
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileIndex) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   File* file = File::create("/native/path");
   v8::Local<v8::Value> wrapper = ToV8(file, scope.getScriptState());
@@ -871,7 +826,6 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileIndex) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileIndex) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x65, 0x00});
@@ -890,7 +844,6 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndex) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileIndexOutOfRange) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x65, 0x01});
@@ -912,7 +865,6 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndexOutOfRange) {
 // fairly basic.
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileList) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   FileList* fileList = FileList::create();
   fileList->append(File::create("/native/path"));
@@ -927,7 +879,6 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileList) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeEmptyFileList) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x6c, 0x00});
@@ -939,7 +890,6 @@ TEST(V8ScriptValueSerializerTest, DecodeEmptyFileList) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileListWithInvalidLength) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x6c, 0x01});
@@ -949,7 +899,6 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListWithInvalidLength) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileListV8WithoutSnapshot) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   TimeIntervalChecker timeIntervalChecker;
   RefPtr<SerializedScriptValue> input = serializedValue(
@@ -977,7 +926,6 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListV8WithoutSnapshot) {
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileListIndex) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   FileList* fileList = FileList::create();
   fileList->append(File::create("/native/path"));
@@ -1003,7 +951,6 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileListIndex) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeEmptyFileListIndex) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x4c, 0x00});
@@ -1017,7 +964,6 @@ TEST(V8ScriptValueSerializerTest, DecodeEmptyFileListIndex) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileListIndexWithInvalidLength) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x4c, 0x02});
@@ -1029,7 +975,6 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListIndexWithInvalidLength) {
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileListIndex) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x4c, 0x01, 0x00, 0x00});
@@ -1064,7 +1009,6 @@ class ScopedEnableCompositorWorker {
 
 TEST(V8ScriptValueSerializerTest, RoundTripCompositorProxy) {
   ScopedEnableCompositorWorker enableCompositorWorker;
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   HTMLElement* element = scope.document().body();
   Vector<String> properties{"transform"};
@@ -1088,7 +1032,6 @@ TEST(V8ScriptValueSerializerTest, RoundTripCompositorProxy) {
 // TODO(jbroman): Update this if that turns out not to be the case.
 
 TEST(V8ScriptValueSerializerTest, DecodeHardcodedNullValue) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   EXPECT_TRUE(V8ScriptValueDeserializer(scope.getScriptState(),
                                         SerializedScriptValue::nullValue())

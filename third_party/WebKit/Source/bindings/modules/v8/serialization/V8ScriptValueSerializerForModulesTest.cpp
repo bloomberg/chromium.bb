@@ -32,20 +32,6 @@ using ::testing::UnorderedElementsAre;
 namespace blink {
 namespace {
 
-class ScopedEnableV8BasedStructuredClone {
- public:
-  ScopedEnableV8BasedStructuredClone()
-      : m_wasEnabled(RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
-    RuntimeEnabledFeatures::setV8BasedStructuredCloneEnabled(true);
-  }
-  ~ScopedEnableV8BasedStructuredClone() {
-    RuntimeEnabledFeatures::setV8BasedStructuredCloneEnabled(m_wasEnabled);
-  }
-
- private:
-  bool m_wasEnabled;
-};
-
 RefPtr<SerializedScriptValue> serializedValue(const Vector<uint8_t>& bytes) {
   // TODO(jbroman): Fix this once SerializedScriptValue can take bytes without
   // endianness swapping.
@@ -164,7 +150,6 @@ static const uint8_t kEcdsaCertificateEncoded[] = {
     0x2d, 0x0a};
 
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
 
   // Make a certificate with the existing key above.
@@ -190,7 +175,6 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeRTCCertificate) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
 
   // This is encoded data generated from Chromium (around M55).
@@ -212,7 +196,6 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeRTCCertificate) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeInvalidRTCCertificate) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
 
   // This is valid, except that "private" is not a valid private key PEM and
@@ -398,7 +381,6 @@ WebVector<uint8_t> syncDeriveBits(ScriptState* scriptState,
 
 // AES-128-CBC uses AES key params.
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyAES) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -439,7 +421,6 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyAES) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyAES) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -469,7 +450,6 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyAES) {
 
 // HMAC-SHA256 uses HMAC key params.
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyHMAC) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -509,7 +489,6 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyHMAC) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyHMAC) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -543,7 +522,6 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyHMAC) {
 
 // RSA-PSS-SHA256 uses RSA hashed key params.
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyRSAHashed) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -586,7 +564,6 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyRSAHashed) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyRSAHashed) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -637,7 +614,6 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyRSAHashed) {
 
 // ECDSA uses EC key params.
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyEC) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -680,7 +656,6 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyEC) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyEC) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -720,7 +695,6 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyEC) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyNoParams) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -754,7 +728,6 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyNoParams) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyNoParams) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -783,7 +756,6 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyNoParams) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyInvalid) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 
@@ -887,7 +859,6 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyInvalid) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
 
   DOMFileSystem* fs = DOMFileSystem::create(
@@ -908,7 +879,6 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystemNotClonable) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ExceptionState exceptionState(scope.isolate(),
                                 ExceptionState::ExecutionContext, "Window",
@@ -927,7 +897,6 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystemNotClonable) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeDOMFileSystem) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
 
   // This is encoded data generated from Chromium (around M56).
@@ -953,7 +922,6 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeDOMFileSystem) {
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeInvalidDOMFileSystem) {
-  ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   ScriptState* scriptState = scope.getScriptState();
 

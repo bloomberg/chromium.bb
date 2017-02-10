@@ -32,7 +32,6 @@ V8ScriptValueDeserializer::V8ScriptValueDeserializer(
                      m_serializedScriptValue->data(),
                      m_serializedScriptValue->dataLengthInBytes(),
                      this) {
-  DCHECK(RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled());
   m_deserializer.SetSupportsLegacyWireFormat(true);
 }
 

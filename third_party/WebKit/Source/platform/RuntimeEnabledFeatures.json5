@@ -912,10 +912,6 @@
       status: "experimental",
     },
     {
-      name: "V8BasedStructuredClone",
-      status: "stable",
-    },
-    {
       name: "V8IdleTasks",
     },
     {
