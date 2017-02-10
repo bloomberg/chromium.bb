@@ -44,6 +44,8 @@ class CONTENT_EXPORT CursorRendererMac : public CursorRenderer {
   SkBitmap GetLastKnownCursorImage(gfx::Point* hot_point) final;
 
  private:
+  friend class CursorRendererMacTest;
+
   // Called for mouse activity events.
   void OnMouseEvent();
 

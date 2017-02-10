@@ -85,6 +85,7 @@ class CONTENT_EXPORT CursorRenderer {
 
  private:
   friend class CursorRendererAuraTest;
+  friend class CursorRendererMacTest;
 
   const gfx::NativeView captured_view_;
 
