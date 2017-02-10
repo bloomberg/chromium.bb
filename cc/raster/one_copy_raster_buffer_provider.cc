@@ -191,12 +191,13 @@ uint64_t OneCopyRasterBufferProvider::SetReadyToDrawCallback(
   DCHECK_NE(callback_id, 0u);
 
   // If the callback is different from the one the caller is already waiting on,
-  // pass the callback through to SignalSinkToken. Otherwise the request is
+  // pass the callback through to SignalSyncToken. Otherwise the request is
   // redundant.
   if (callback_id != pending_callback_id) {
-    // SignalSyncToken is threadsafe, no need for worker context lock.
-    worker_context_provider_->ContextSupport()->SignalSyncToken(sync_token,
-                                                                callback);
+    // Use the compositor context because we want this callback on the impl
+    // thread.
+    compositor_context_provider_->ContextSupport()->SignalSyncToken(sync_token,
+                                                                    callback);
   }
 
   return callback_id;
