@@ -25,6 +25,10 @@ namespace gfx {
 class Range;
 }
 
+namespace ui {
+struct CompositionUnderline;
+}
+
 namespace content {
 
 class MessageLoopRunner;
@@ -64,6 +68,15 @@ bool RequestCompositionInfoFromActiveWidget(WebContents* web_contents);
 
 // Returns true if |frame| has a focused editable element.
 bool DoesFrameHaveFocusedEditableElement(RenderFrameHost* frame);
+
+// Sends a request to the RenderWidget corresponding to |rwh| to commit the
+// given |text|.
+void SendImeCommitTextToWidget(
+    RenderWidgetHost* rwh,
+    const base::string16& text,
+    const std::vector<ui::CompositionUnderline>& underlines,
+    const gfx::Range& replacement_range,
+    int relative_cursor_pos);
 
 // This class provides the necessary API for accessing the state of and also
 // observing the TextInputManager for WebContents.
@@ -106,7 +119,7 @@ class TextInputManagerTester {
 
   // Returns the RenderWidgetHostView which has most recently updated any of its
   // state (e.g., TextInputState or otherwise).
-  const RenderWidgetHostView* GetUpdatedView();
+  RenderWidgetHostView* GetUpdatedView();
 
   // Returns true if a call to TextInputManager::UpdateTextInputState has led
   // to a change in TextInputState (since the time the observer has been

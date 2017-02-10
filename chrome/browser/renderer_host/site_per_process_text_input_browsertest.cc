@@ -271,6 +271,33 @@ class ViewTextSelectionObserver : public TextInputManagerObserverBase {
   DISALLOW_COPY_AND_ASSIGN(ViewTextSelectionObserver);
 };
 
+// This class observes all the text selection updates within a WebContents.
+class TextSelectionObserver : public TextInputManagerObserverBase {
+ public:
+  explicit TextSelectionObserver(content::WebContents* web_contents)
+      : TextInputManagerObserverBase(web_contents) {
+    tester()->SetOnTextSelectionChangedCallback(base::Bind(
+        &TextSelectionObserver::VerifyChange, base::Unretained(this)));
+  }
+
+  void WaitForSelectedText(const std::string& text) {
+    selected_text_ = text;
+    Wait();
+  }
+
+ private:
+  void VerifyChange() {
+    if (base::UTF16ToUTF8(tester()->GetUpdatedView()->GetSelectedText()) ==
+        selected_text_) {
+      OnSuccess();
+    }
+  }
+
+  std::string selected_text_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextSelectionObserver);
+};
+
 // This class is used to verify the result of form field data requests.
 class FormFieldDataVerifier {
  public:
@@ -789,6 +816,51 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
     // Send a sequence of |count| 'E' keys and wait until the view receives a
     // selection change update for a text of the corresponding size, |count|.
     send_keys_select_all_wait_for_selection_change(views[i], count++);
+  }
+}
+
+// This test verifies that committing text works as expected for all the frames
+// on the page. Specifically, the test sends an IPC to the RenderWidget
+// corresponding to a focused frame with a focused <input> to commit some text.
+// Then, it verifies that the <input>'s value matches the committed text
+// (https://crbug.com/688842).
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       ImeCommitTextForAllFrames) {
+  CreateIframePage("a(b,c(a))");
+  std::vector<content::RenderFrameHost*> frames{
+      GetFrame(IndexVector{}), GetFrame(IndexVector{0}),
+      GetFrame(IndexVector{1}), GetFrame(IndexVector{1, 0})};
+  for (size_t i = 0; i < frames.size(); ++i)
+    AddInputFieldToFrame(frames[i], "text", "", true);
+
+  std::vector<std::string> sample_text{"main", "child_b", "child_c", "child_a"};
+  ASSERT_EQ(frames.size(), sample_text.size());
+
+  // An observer of all text selection updates within a WebContents.
+  TextSelectionObserver observer(active_contents());
+  for (size_t index = 0; index < frames.size(); ++index) {
+    // Focus the input and listen to 'input' event inside the frame. When the
+    // event fires, select all the text inside the input. This will trigger a
+    // selection update on the browser side.
+    ASSERT_TRUE(ExecuteScript(frames[index],
+                              "window.focus();"
+                              "var input = document.querySelector('input');"
+                              "input.focus();"
+                              "window.addEventListener('input', function(e) {"
+                              "  input.select();"
+                              "});"))
+        << "Could not run script in frame with index:" << index;
+
+    // Commit some text for this frame.
+    content::SendImeCommitTextToWidget(
+        frames[index]->GetView()->GetRenderWidgetHost(),
+        base::UTF8ToUTF16(sample_text[index]),
+        std::vector<ui::CompositionUnderline>(), gfx::Range(), 0);
+
+    // Verify that the text we committed is now selected by listening to a
+    // selection update from a RenderWidgetHostView which has the expected
+    // selected text.
+    observer.WaitForSelectedText(sample_text[index]);
   }
 }
 

@@ -670,7 +670,13 @@ void RenderWidget::SendOrCrash(IPC::Message* message) {
 }
 
 bool RenderWidget::ShouldHandleImeEvents() const {
-  return GetWebWidget() && GetWebWidget()->isWebFrameWidget() && has_focus_;
+  // TODO(ekaramad): We track page focus in all RenderViews on the page but the
+  // RenderWidgets corresponding to OOPIFs do not get the update. For now, this
+  // method returns true when the RenderWidget is for an OOPIF, i.e., IME events
+  // will be processed regardless of page focus. We should revisit this after
+  // page focus for OOPIFs has been fully resolved (https://crbug.com/689777).
+  return GetWebWidget() && GetWebWidget()->isWebFrameWidget() &&
+         (has_focus_ || for_oopif_);
 }
 
 void RenderWidget::SetWindowRectSynchronously(
@@ -1605,7 +1611,7 @@ void RenderWidget::OnImeCommitText(
 #endif
   ImeEventGuard guard(this);
   input_handler_->set_handling_input_event(true);
-  if (auto* controller = GetInputMethodController())
+  if (auto* controller = GetInputMethodController()) {
     controller->commitText(
         WebString::fromUTF16(text),
         WebVector<WebCompositionUnderline>(underlines),
@@ -1613,6 +1619,7 @@ void RenderWidget::OnImeCommitText(
             ? WebRange(replacement_range.start(), replacement_range.length())
             : WebRange(),
         relative_cursor_pos);
+  }
   input_handler_->set_handling_input_event(false);
   UpdateCompositionInfo(false /* not an immediate request */);
 }
