@@ -821,10 +821,11 @@ void InputMethodController::extendSelectionAndDelete(int before, int after) {
     ++before;
   } while (frame().selection().start() == frame().selection().end() &&
            before <= static_cast<int>(selectionOffsets.start()));
+  Range* const range = firstRangeOf(frame().selection().selection());
   // TODO(chongz): Find a way to distinguish Forward and Backward.
-  dispatchBeforeInputEditorCommand(
-      document().focusedElement(), InputEvent::InputType::DeleteContentBackward,
-      new RangeVector(1, m_frame->selection().firstRange()));
+  dispatchBeforeInputEditorCommand(document().focusedElement(),
+                                   InputEvent::InputType::DeleteContentBackward,
+                                   new RangeVector(1, range));
   TypingCommand::deleteSelection(document());
 }
 
