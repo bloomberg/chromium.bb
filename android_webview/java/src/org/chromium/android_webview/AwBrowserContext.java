@@ -90,7 +90,7 @@ public class AwBrowserContext {
         try {
             Class<? extends SafeBrowsingApiHandler> cls =
                     (Class<? extends SafeBrowsingApiHandler>) Class.forName(safeBrowsingApiHandler);
-            SafeBrowsingApiBridge.setSafeBrowingHandlerType(cls);
+            SafeBrowsingApiBridge.setSafeBrowsingHandlerType(cls);
         } catch (ClassNotFoundException e) {
             // This is not an error; it just means this device doesn't have specialized services.
         }
