@@ -76,6 +76,7 @@ source_set("tabs") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "tab_strip_controller_unittest.mm",

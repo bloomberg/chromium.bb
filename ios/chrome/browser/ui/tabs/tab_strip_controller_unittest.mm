@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -22,9 +21,13 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface ArrayBackedTabModel : TabModel {
  @private
-  base::scoped_nsobject<NSMutableArray> tabsForTesting_;
+  NSMutableArray* tabsForTesting_;
 }
 
 @end
@@ -37,7 +40,7 @@
   if ((self = [super initWithSessionWindow:window
                             sessionService:service
                               browserState:browserState])) {
-    tabsForTesting_.reset([[NSMutableArray alloc] initWithCapacity:5]);
+    tabsForTesting_ = [[NSMutableArray alloc] initWithCapacity:5];
   }
   return self;
 }
@@ -64,7 +67,7 @@
 
 // Pass along fast enumeration calls to the tab array.
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState*)state
-                                  objects:(id*)stackbuf
+                                  objects:(id __unsafe_unretained*)stackbuf
                                     count:(NSUInteger)len {
   return [tabsForTesting_ countByEnumeratingWithState:state
                                               objects:stackbuf
@@ -91,12 +94,11 @@ class TabStripControllerTest : public PlatformTest {
     chrome_browser_state_ = test_cbs_builder.Build();
 
     // Setup mock TabModel, sessionService, and Tabs.
-    base::scoped_nsobject<TestSessionService> test_service(
-        [[TestSessionService alloc] init]);
-    real_tab_model_.reset([[ArrayBackedTabModel alloc]
+    TestSessionService* test_service = [[TestSessionService alloc] init];
+    real_tab_model_ = [[ArrayBackedTabModel alloc]
         initWithSessionWindow:nil
                sessionService:test_service
-                 browserState:chrome_browser_state_.get()]);
+                 browserState:chrome_browser_state_.get()];
     id tabModel = [OCMockObject partialMockForObject:real_tab_model_];
     id tab1 = [OCMockObject mockForClass:[Tab class]];
     id tab2 = [OCMockObject mockForClass:[Tab class]];
@@ -122,17 +124,17 @@ class TabStripControllerTest : public PlatformTest {
     [[tab1 stub] close];
     [[tab2 stub] close];
 
-    tabModel_.reset([tabModel retain]);
-    tab1_.reset([tab1 retain]);
-    tab2_.reset([tab2 retain]);
-    controller_.reset([[TabStripController alloc]
-        initWithTabModel:(TabModel*)tabModel_.get()
-                   style:TabStrip::kStyleDark]);
+    tabModel_ = tabModel;
+    tab1_ = tab1;
+    tab2_ = tab2;
+    controller_ =
+        [[TabStripController alloc] initWithTabModel:(TabModel*)tabModel_
+                                               style:TabStrip::kStyleDark];
 
     // Force the view to load.
     UIWindow* window = [[UIWindow alloc] initWithFrame:CGRectZero];
     [window addSubview:[controller_ view]];
-    window_.reset(window);
+    window_ = window;
   }
   void TearDown() override {
     if (!IsIPadIdiom())
@@ -141,13 +143,13 @@ class TabStripControllerTest : public PlatformTest {
   }
 
   web::TestWebThreadBundle thread_bundle_;
-  base::scoped_nsobject<OCMockObject> tab1_;
-  base::scoped_nsobject<OCMockObject> tab2_;
+  OCMockObject* tab1_;
+  OCMockObject* tab2_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<OCMockObject> tabModel_;
-  base::scoped_nsobject<TabStripController> controller_;
-  base::scoped_nsobject<UIWindow> window_;
-  base::scoped_nsobject<ArrayBackedTabModel> real_tab_model_;
+  OCMockObject* tabModel_;
+  TabStripController* controller_;
+  UIWindow* window_;
+  ArrayBackedTabModel* real_tab_model_;
 };
 
 TEST_F(TabStripControllerTest, LoadAndDisplay) {
