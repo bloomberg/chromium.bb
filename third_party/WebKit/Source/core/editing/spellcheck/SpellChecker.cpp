@@ -846,8 +846,8 @@ void SpellChecker::replaceMisspelledRange(const String& text) {
 
   // Dispatch 'beforeinput'.
   Element* const target = frame().editor().findEventTargetFromSelection();
-  RangeVector* const ranges =
-      new RangeVector(1, frame().selection().firstRange());
+  Range* const range = createRange(markerRange);
+  RangeVector* const ranges = new RangeVector(1, range);
   DataTransfer* const dataTransfer = DataTransfer::create(
       DataTransfer::DataTransferType::InsertReplacementText,
       DataTransferAccessPolicy::DataTransferReadable,
