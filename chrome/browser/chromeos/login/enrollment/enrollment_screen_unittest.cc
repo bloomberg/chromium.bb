@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
@@ -20,6 +21,7 @@
 #include "components/pairing/fake_controller_pairing_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;
 
@@ -47,13 +49,20 @@ class EnrollmentScreenUnitTest : public testing::Test {
     EnterpriseEnrollmentHelperMock* mock =
         new EnterpriseEnrollmentHelperMock(status_consumer);
     if (should_enroll) {
+      // Define behavior of EnrollUsingAttestation to successfully enroll.
       EXPECT_CALL(*mock, EnrollUsingAttestation())
           .Times(AnyNumber())
           .WillRepeatedly(Invoke([mock]() {
             static_cast<EnrollmentScreen*>(mock->status_consumer())
                 ->ShowEnrollmentStatusOnSuccess();
           }));
+      // Define behavior of ClearAuth to only run the callback it is given.
+      EXPECT_CALL(*mock, ClearAuth(_))
+          .Times(AnyNumber())
+          .WillRepeatedly(
+              Invoke([](const base::Closure& callback) { callback.Run(); }));
     } else {
+      // Define behavior of EnrollUsingAttestation to fail to enroll.
       EXPECT_CALL(*mock, EnrollUsingAttestation())
           .Times(AnyNumber())
           .WillRepeatedly(Invoke([mock]() {
@@ -76,6 +85,8 @@ class EnrollmentScreenUnitTest : public testing::Test {
   void FastForwardTime(base::TimeDelta time) {
     runner_.task_runner()->FastForwardBy(time);
   }
+
+  MockBaseScreenDelegate* GetBaseScreenDelegate() { return &mock_delegate_; }
 
   // testing::Test:
   void SetUp() override {
@@ -173,5 +184,24 @@ TEST_F(EnrollmentScreenUnitTest, DoesNotRetryAfterSuccess) {
 
   // Check that we do not retry.
   EXPECT_EQ(enrollment_screen_->num_retries_, 0);
+}
+
+TEST_F(EnrollmentScreenUnitTest, FinishesEnrollmentFlow) {
+  // Define behavior of EnterpriseEnrollmentHelperMock to successfully enroll.
+  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+      &EnrollmentScreenUnitTest::MockEnrollmentHelperCreator<true>);
+
+  SetUpEnrollmentScreen();
+
+  // Set up expectation for BaseScreenDelegate::OnExit to be called
+  // with BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED
+  // This is how we check that the code finishes and cleanly exits
+  // the enterprise enrollment flow.
+  EXPECT_CALL(*GetBaseScreenDelegate(),
+              OnExit(_, BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED, _))
+      .Times(1);
+
+  // Start zero-touch enrollment.
+  enrollment_screen_->Show();
 }
 }  // namespace chromeos

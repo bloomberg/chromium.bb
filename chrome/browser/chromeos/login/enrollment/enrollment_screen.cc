@@ -369,8 +369,12 @@ void EnrollmentScreen::ShowEnrollmentStatusOnSuccess() {
   retry_backoff_->InformOfRequest(true);
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeSuccess, elapsed_timer_);
-  actor_->ShowEnrollmentStatus(
-      policy::EnrollmentStatus::ForStatus(policy::EnrollmentStatus::SUCCESS));
+  if (UsingHandsOffEnrollment()) {
+    OnConfirmationClosed();
+  } else {
+    actor_->ShowEnrollmentStatus(
+        policy::EnrollmentStatus::ForStatus(policy::EnrollmentStatus::SUCCESS));
+  }
 }
 
 void EnrollmentScreen::UMA(policy::MetricEnrollment sample) {
