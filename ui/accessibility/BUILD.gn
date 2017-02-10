@@ -27,6 +27,8 @@ component("accessibility") {
     "ax_range.h",
     "ax_relative_bounds.cc",
     "ax_relative_bounds.h",
+    "ax_role_properties.cc",
+    "ax_role_properties.h",
     "ax_serializable_tree.cc",
     "ax_serializable_tree.h",
     "ax_text_utils.cc",

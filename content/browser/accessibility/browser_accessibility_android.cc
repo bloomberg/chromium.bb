@@ -432,6 +432,8 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
       case ui::AX_ROLE_POP_UP_BUTTON:
       case ui::AX_ROLE_TEXT_FIELD:
         return value;
+      default:
+        break;
     }
   }
 
@@ -534,6 +536,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ui::AX_ROLE_ARTICLE:
       message_id = IDS_AX_ROLE_ARTICLE;
       break;
+    case ui::AX_ROLE_AUDIO:
+      message_id = IDS_AX_MEDIA_AUDIO_ELEMENT;
+      break;
     case ui::AX_ROLE_BANNER:
       message_id = IDS_AX_ROLE_BANNER;
       break;
@@ -623,6 +628,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       break;
     case ui::AX_ROLE_EMBEDDED_OBJECT:
       message_id = IDS_AX_ROLE_EMBEDDED_OBJECT;
+      break;
+    case ui::AX_ROLE_FEED:
+      // TODO(patricialor): Add a string for this role.
       break;
     case ui::AX_ROLE_FIGCAPTION:
       // No role description.
@@ -716,6 +724,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ui::AX_ROLE_MATH:
       message_id = IDS_AX_ROLE_MATH;
       break;
+    case ui::AX_ROLE_MENU:
+      message_id = IDS_AX_ROLE_MENU;
+      break;
     case ui::AX_ROLE_MENU_BAR:
       message_id = IDS_AX_ROLE_MENU_BAR;
       break;
@@ -736,9 +747,6 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       break;
     case ui::AX_ROLE_MENU_LIST_POPUP:
       // No role description.
-      break;
-    case ui::AX_ROLE_MENU:
-      message_id = IDS_AX_ROLE_MENU;
       break;
     case ui::AX_ROLE_METER:
       message_id = IDS_AX_ROLE_METER;
@@ -854,6 +862,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ui::AX_ROLE_TABLE:
       message_id = IDS_AX_ROLE_TABLE;
       break;
+    case ui::AX_ROLE_TERM:
+      message_id = IDS_AX_ROLE_DESCRIPTION_TERM;
+      break;
     case ui::AX_ROLE_TEXT_FIELD:
       // No role description.
       break;
@@ -887,6 +898,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ui::AX_ROLE_TOOLTIP:
       message_id = IDS_AX_ROLE_TOOLTIP;
       break;
+    case ui::AX_ROLE_VIDEO:
+      message_id = IDS_AX_MEDIA_VIDEO_ELEMENT;
+      break;
     case ui::AX_ROLE_WEB_AREA:
       // No role description.
       break;
@@ -894,6 +908,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       // No role description.
       break;
     case ui::AX_ROLE_WINDOW:
+      // No role description.
+      break;
+    case ui::AX_ROLE_NONE:
       // No role description.
       break;
   }
@@ -923,6 +940,8 @@ int BrowserAccessibilityAndroid::GetItemIndex() const {
         index = static_cast<int>(((value - min)) * 100 / (max - min));
       break;
     }
+    default:
+      break;
   }
   return index;
 }
@@ -941,6 +960,8 @@ int BrowserAccessibilityAndroid::GetItemCount() const {
       // seek control, so we return a percentage. The real range is returned
       // in RangeMin and RangeMax.
       count = 100;
+      break;
+    default:
       break;
   }
   return count;

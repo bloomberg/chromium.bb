@@ -235,7 +235,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   int32_t GetId() const;
   const ui::AXNodeData& GetData() const;
   gfx::RectF GetLocation() const;
-  int32_t GetRole() const;
+  ui::AXRole GetRole() const;
   int32_t GetState() const;
 
   typedef base::StringPairs HtmlAttributes;

@@ -39,10 +39,12 @@ class FlexibleRoleTestView : public View {
 
   // Add a child view and resize to fit the child.
   void FitBoundsToNewChild(View* view) {
-    View::AddChildView(view);
+    AddChildView(view);
     // Fit the parent widget to the size of the child for accurate hit tests.
     SetBoundsRect(view->bounds());
   }
+
+  bool mouse_was_pressed() const { return mouse_was_pressed_; }
 
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -50,8 +52,14 @@ class FlexibleRoleTestView : public View {
     node_data->role = role_;
   }
 
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    mouse_was_pressed_ = true;
+    return false;
+  }
+
  private:
   ui::AXRole role_;
+  bool mouse_was_pressed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FlexibleRoleTestView);
 };
@@ -72,14 +80,16 @@ class NativeWidgetMacAccessibilityTest : public test::WidgetTest {
     test::WidgetTest::TearDown();
   }
 
-  id AttributeValueAtMidpoint(NSString* attribute) {
+  id A11yElementAtMidpoint() {
     // Accessibility hit tests come in Cocoa screen coordinates.
     NSPoint midpoint_in_screen_ = gfx::ScreenPointToNSPoint(
         widget_->GetWindowBoundsInScreen().CenterPoint());
-    id hit =
+    return
         [widget_->GetNativeWindow() accessibilityHitTest:midpoint_in_screen_];
-    id value = [hit accessibilityAttributeValue:attribute];
-    return value;
+  }
+
+  id AttributeValueAtMidpoint(NSString* attribute) {
+    return [A11yElementAtMidpoint() accessibilityAttributeValue:attribute];
   }
 
   Textfield* AddChildTextfield(const gfx::Size& size) {
@@ -311,14 +321,11 @@ TEST_F(NativeWidgetMacAccessibilityTest, ViewWritableAttributes) {
   view->SetSize(GetWidgetBounds().size());
   widget()->GetContentsView()->AddChildView(view);
 
-  // Get the FlexibleRoleTestView accessibility object.
-  NSPoint midpoint = gfx::ScreenPointToNSPoint(GetWidgetBounds().CenterPoint());
-  id ax_node = [widget()->GetNativeWindow() accessibilityHitTest:midpoint];
+  // Make sure the accessibility object tested is the correct one.
+  id ax_node = A11yElementAtMidpoint();
   EXPECT_TRUE(ax_node);
-
-  // Make sure it's the correct accessibility object.
-  id value = [ax_node accessibilityAttributeValue:NSAccessibilityRoleAttribute];
-  EXPECT_NSEQ(NSAccessibilityGroupRole, value);
+  EXPECT_NSEQ(NSAccessibilityGroupRole,
+              AttributeValueAtMidpoint(NSAccessibilityRoleAttribute));
 
   // Make sure |view| is focusable, then focus/unfocus it.
   view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -411,6 +418,22 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldWritableAttributes) {
   // Make sure the cursor is at the end of the replacement.
   EXPECT_EQ(gfx::Range(front.length() + replacement.length()),
             textfield->GetSelectedRange());
+}
+
+// Test performing a 'click' on Views with clickable roles work.
+TEST_F(NativeWidgetMacAccessibilityTest, PressAction) {
+  FlexibleRoleTestView* view = new FlexibleRoleTestView(ui::AX_ROLE_BUTTON);
+  widget()->GetContentsView()->AddChildView(view);
+  view->SetSize(GetWidgetBounds().size());
+
+  id ax_node = A11yElementAtMidpoint();
+  EXPECT_NSEQ(NSAccessibilityButtonRole,
+              AttributeValueAtMidpoint(NSAccessibilityRoleAttribute));
+
+  EXPECT_TRUE([[ax_node accessibilityActionNames]
+      containsObject:NSAccessibilityPressAction]);
+  [ax_node accessibilityPerformAction:NSAccessibilityPressAction];
+  EXPECT_TRUE(view->mouse_was_pressed());
 }
 
 }  // namespace views

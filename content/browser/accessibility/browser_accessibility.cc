@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/common/accessibility_messages.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -348,7 +349,7 @@ gfx::RectF BrowserAccessibility::GetLocation() const {
   return GetData().location;
 }
 
-int32_t BrowserAccessibility::GetRole() const {
+ui::AXRole BrowserAccessibility::GetRole() const {
   return GetData().role;
 }
 
@@ -1026,29 +1027,7 @@ bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
 }
 
 bool BrowserAccessibility::IsClickable() const {
-  switch (GetRole()) {
-    case ui::AX_ROLE_BUTTON:
-    case ui::AX_ROLE_CHECK_BOX:
-    case ui::AX_ROLE_COLOR_WELL:
-    case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
-    case ui::AX_ROLE_IMAGE_MAP_LINK:
-    case ui::AX_ROLE_LINK:
-    case ui::AX_ROLE_LIST_BOX_OPTION:
-    case ui::AX_ROLE_MENU_BUTTON:
-    case ui::AX_ROLE_MENU_ITEM:
-    case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
-    case ui::AX_ROLE_MENU_ITEM_RADIO:
-    case ui::AX_ROLE_MENU_LIST_OPTION:
-    case ui::AX_ROLE_MENU_LIST_POPUP:
-    case ui::AX_ROLE_POP_UP_BUTTON:
-    case ui::AX_ROLE_RADIO_BUTTON:
-    case ui::AX_ROLE_SWITCH:
-    case ui::AX_ROLE_TAB:
-    case ui::AX_ROLE_TOGGLE_BUTTON:
-      return true;
-    default:
-      return false;
-  }
+  return ui::IsRoleClickable(GetRole());
 }
 
 bool BrowserAccessibility::IsControl() const {

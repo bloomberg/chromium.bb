@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -304,7 +305,28 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 }
 
 - (NSArray*)accessibilityActionNames {
-  return nil;
+  base::scoped_nsobject<NSMutableArray> axActions(
+      [[NSMutableArray alloc] init]);
+
+  // VoiceOver expects the "press" action to be first.
+  if (ui::IsRoleClickable(node_->GetData().role))
+    [axActions addObject:NSAccessibilityPressAction];
+
+  return axActions.autorelease();
+}
+
+- (void)accessibilityPerformAction:(NSString*)action {
+  DCHECK([[self accessibilityActionNames] containsObject:action]);
+  ui::AXActionData data;
+  if ([action isEqualToString:NSAccessibilityPressAction])
+    data.action = ui::AX_ACTION_DO_DEFAULT;
+
+  // Note ui::AX_ACTIONs which are just overwriting an accessibility attribute
+  // are already implemented in -accessibilitySetValue:forAttribute:, so ignore
+  // those here.
+
+  if (data.action != ui::AX_ACTION_NONE)
+    node_->GetDelegate()->AccessibilityPerformAction(data);
 }
 
 - (NSArray*)accessibilityAttributeNames {
