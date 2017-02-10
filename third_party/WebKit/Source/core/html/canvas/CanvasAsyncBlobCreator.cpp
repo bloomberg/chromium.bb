@@ -29,10 +29,6 @@ namespace {
 const double SlackBeforeDeadline =
     0.001;  // a small slack period between deadline and current time for safety
 const int NumChannelsPng = 4;
-const int LongTaskImageSizeThreshold =
-    1000 *
-    1000;  // The max image size we expect to encode in 14ms on Linux in PNG
-           // format
 
 // The encoding task is highly likely to switch from idle task to alternative
 // code path when the startTimeoutDelay is set to be below 150ms. As we want the
@@ -252,15 +248,10 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(const double& quality) {
                         wrapPersistent(this)));
 
     } else {
-      BackgroundTaskRunner::TaskSize taskSize =
-          (m_size.height() * m_size.width() >= LongTaskImageSizeThreshold)
-              ? BackgroundTaskRunner::TaskSizeLongRunningTask
-              : BackgroundTaskRunner::TaskSizeShortRunningTask;
       BackgroundTaskRunner::postOnBackgroundThread(
           BLINK_FROM_HERE,
           crossThreadBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread,
-                          wrapCrossThreadPersistent(this), quality),
-          taskSize);
+                          wrapCrossThreadPersistent(this), quality));
     }
   } else {
     m_idleTaskStatus = IdleTaskNotStarted;

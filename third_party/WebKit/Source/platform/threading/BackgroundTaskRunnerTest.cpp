@@ -4,12 +4,13 @@
 
 #include "platform/threading/BackgroundTaskRunner.h"
 
+#include <memory>
+#include "base/test/scoped_async_task_scheduler.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -19,26 +20,14 @@ void PingPongTask(WaitableEvent* doneEvent) {
   doneEvent->signal();
 }
 
-class BackgroundTaskRunnerTest : public testing::Test {};
-
 }  // namespace
 
-TEST_F(BackgroundTaskRunnerTest, RunShortTaskOnBackgroundThread) {
+TEST(BackgroundTaskRunnerTest, RunOnBackgroundThread) {
+  base::test::ScopedAsyncTaskScheduler scopedAsyncTaskScheduler;
   std::unique_ptr<WaitableEvent> doneEvent = WTF::makeUnique<WaitableEvent>();
   BackgroundTaskRunner::postOnBackgroundThread(
       BLINK_FROM_HERE,
-      crossThreadBind(&PingPongTask, crossThreadUnretained(doneEvent.get())),
-      BackgroundTaskRunner::TaskSizeShortRunningTask);
-  // Test passes by not hanging on the following wait().
-  doneEvent->wait();
-}
-
-TEST_F(BackgroundTaskRunnerTest, RunLongTaskOnBackgroundThread) {
-  std::unique_ptr<WaitableEvent> doneEvent = WTF::makeUnique<WaitableEvent>();
-  BackgroundTaskRunner::postOnBackgroundThread(
-      BLINK_FROM_HERE,
-      crossThreadBind(&PingPongTask, crossThreadUnretained(doneEvent.get())),
-      BackgroundTaskRunner::TaskSizeLongRunningTask);
+      crossThreadBind(&PingPongTask, crossThreadUnretained(doneEvent.get())));
   // Test passes by not hanging on the following wait().
   doneEvent->wait();
 }

@@ -38,12 +38,6 @@
 
 namespace blink {
 
-// This threshold is determined by the assumption that the target audio
-// file is compressed in AAC or MP3. The decoding time varies upon different
-// audio file encoding types, but it is fair to assume the usage of compressed
-// file.
-static const unsigned kTaskSizeThresholdInByte = 512000;
-
 void AsyncAudioDecoder::decodeAsync(DOMArrayBuffer* audioData,
                                     float sampleRate,
                                     AudioBufferCallback* successCallback,
@@ -55,10 +49,6 @@ void AsyncAudioDecoder::decodeAsync(DOMArrayBuffer* audioData,
   if (!audioData)
     return;
 
-  BackgroundTaskRunner::TaskSize taskSize =
-      audioData->byteLength() < kTaskSizeThresholdInByte
-          ? BackgroundTaskRunner::TaskSizeShortRunningTask
-          : BackgroundTaskRunner::TaskSizeLongRunningTask;
   BackgroundTaskRunner::postOnBackgroundThread(
       BLINK_FROM_HERE,
       crossThreadBind(&AsyncAudioDecoder::decodeOnBackgroundThread,
@@ -66,8 +56,7 @@ void AsyncAudioDecoder::decodeAsync(DOMArrayBuffer* audioData,
                       wrapCrossThreadPersistent(successCallback),
                       wrapCrossThreadPersistent(errorCallback),
                       wrapCrossThreadPersistent(resolver),
-                      wrapCrossThreadPersistent(context)),
-      taskSize);
+                      wrapCrossThreadPersistent(context)));
 }
 
 void AsyncAudioDecoder::decodeOnBackgroundThread(

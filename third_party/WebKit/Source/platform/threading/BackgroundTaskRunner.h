@@ -13,14 +13,9 @@ namespace blink {
 
 namespace BackgroundTaskRunner {
 
-enum TaskSize {
-  TaskSizeShortRunningTask,
-  TaskSizeLongRunningTask,
-};
-
-PLATFORM_EXPORT void postOnBackgroundThread(const WebTraceLocation&,
-                                            std::unique_ptr<CrossThreadClosure>,
-                                            TaskSize);
+PLATFORM_EXPORT void postOnBackgroundThread(
+    const WebTraceLocation&,
+    std::unique_ptr<CrossThreadClosure>);
 
 }  // BackgroundTaskRunner
 
